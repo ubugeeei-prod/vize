@@ -4842,6 +4842,63 @@
     "errors": 0
   },
   {
+    "id": "c3b-v-model-on-v-slot-pattern-scope-rejected",
+    "history": "7a27316b4ef4245c943ce570658862b2b5356625",
+    "source": "<MyComponent v-slot=\"{ item }\"><input v-model=\"item\" /></MyComponent>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 1
+  },
+  {
+    "id": "c3b-v-model-on-template-slot-pattern-scope-rejected",
+    "history": "7a27316b4ef4245c943ce570658862b2b5356625",
+    "source": "<MyComponent><template #default=\"{ item }\"><input v-model=\"item\" /></template></MyComponent>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 1
+  },
+  {
+    "id": "c3b-v-model-on-nested-default-rest-slot-pattern-rejected",
+    "history": "7a27316b4ef4245c943ce570658862b2b5356625",
+    "source": "<MyComponent v-slot=\"{ a: { b = 1 }, ...rest }\"><input v-model=\"b\" /><input v-model=\"rest\" /></MyComponent>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 2
+  },
+  {
+    "id": "c3b-v-model-on-v-slot-pattern-scope-rejected-sfc",
+    "history": "7a27316b4ef4245c943ce570658862b2b5356625",
+    "source": "<script setup lang=\"ts\">\nimport MyComponent from './MyComponent.vue'\n</script>\n\n<template>\n  <MyComponent v-slot=\"{ item }\"><input v-model=\"item\" /></MyComponent>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c3b-v-model-on-slot-pattern-key-and-default-valid",
+    "history": "7a27316b4ef4245c943ce570658862b2b5356625",
+    "source": "<MyComponent v-slot=\"{ item: row = draft }\"><input v-model=\"item\" /><input v-model=\"draft\" /><input v-model=\"row.value\" /></MyComponent>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
     "id": "c3a-v-if-without-expression-1255",
     "history": "80b48da33433b29b1129ec2e5424b0b829401f6a",
     "source": "<div v-if>always</div>",

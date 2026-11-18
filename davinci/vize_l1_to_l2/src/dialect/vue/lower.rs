@@ -33,6 +33,7 @@ pub use if_keys::{BranchKey, BranchKeyKind, IfFacts, SAME_KEY_MESSAGE};
 // with exactly the enumeration the lowering used, never a second one.
 pub use css::{lower_style_block, lower_style_block_in};
 pub(crate) use expr::simple_identifier;
+pub(crate) use forop::visit_bindings;
 pub use forop::{ForName, ForParts, v_for_value};
 pub use structural::{IfChain, if_chain};
 pub use vfor::split_v_for_value;
