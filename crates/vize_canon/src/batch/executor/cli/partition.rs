@@ -270,7 +270,7 @@ fn partition(project: &VirtualProject, servers: usize, allow_leaves: bool) -> Sh
 /// `import('<spec>')`, `import '<spec>'`, `require('<spec>')`. A lexical scan
 /// is enough here — the result only feeds the shard cost model.
 fn import_specifiers(content: &str) -> Vec<&str> {
-    const TOKENS: [&[u8]; 4] = [b"from ", b"import(", b"import ", b"require("];
+    const TOKEN_COUNT: usize = 4;
 
     let bytes = content.as_bytes();
     let mut matches: SmallVec<[(usize, &str); 8]> = SmallVec::new();
@@ -280,16 +280,16 @@ fn import_specifiers(content: &str) -> Vec<&str> {
     {
         let at = cursor + next;
         let tail = bytes.get(at..).unwrap_or_default();
-        let token_index = match tail.first().copied() {
-            Some(b'f') if tail.starts_with(TOKENS[0]) => Some(0),
-            Some(b'i') if tail.starts_with(TOKENS[1]) => Some(1),
-            Some(b'i') if tail.starts_with(TOKENS[2]) => Some(2),
-            Some(b'r') if tail.starts_with(TOKENS[3]) => Some(3),
+        let token = match tail.first().copied() {
+            Some(b'f') if tail.starts_with(b"from ") => Some((0, b"from ".len())),
+            Some(b'i') if tail.starts_with(b"import(") => Some((1, b"import(".len())),
+            Some(b'i') if tail.starts_with(b"import ") => Some((2, b"import ".len())),
+            Some(b'r') if tail.starts_with(b"require(") => Some((3, b"require(".len())),
             _ => None,
         };
-        if let Some(token_index) = token_index {
+        if let Some((token_index, token_len)) = token {
             let rest = content
-                .get(at + TOKENS[token_index].len()..)
+                .get(at + token_len..)
                 .unwrap_or_default()
                 .trim_start();
             if let Some((quote, rest)) = ['\'', '"']
@@ -306,7 +306,7 @@ fn import_specifiers(content: &str) -> Vec<&str> {
     }
 
     let mut specifiers = Vec::with_capacity(matches.len());
-    for token_index in 0..TOKENS.len() {
+    for token_index in 0..TOKEN_COUNT {
         specifiers.extend(matches.iter().filter_map(|&(matched_token, specifier)| {
             (matched_token == token_index).then_some(specifier)
         }));
