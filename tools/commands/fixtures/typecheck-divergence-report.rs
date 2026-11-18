@@ -1084,6 +1084,9 @@ fn materialize_baseline_project(
             compiler_options.insert("baseUrl".to_string(), json!("."));
         }
     }
+    if let Some(types) = rewritten_compiler_types(fixture_root, &source_path, &config_dir)? {
+        compiler_options.insert("types".to_string(), Value::Array(types));
+    }
     let vue_compiler_options = rewritten_vue_compiler_options(
         fixture_root,
         &source_path,
@@ -4958,6 +4961,11 @@ struct DeclaredBaseUrl {
     value: String,
 }
 
+struct DeclaredTypes {
+    dir: PathBuf,
+    value: Vec<Value>,
+}
+
 fn winning_compiler_paths(
     fixture_root: &Path,
     source_path: &Path,
@@ -4991,6 +4999,47 @@ fn winning_compiler_paths(
         }
     }
     Ok(CompilerPaths { paths, base_url })
+}
+
+fn rewritten_compiler_types(
+    fixture_root: &Path,
+    source_path: &Path,
+    config_dir: &Path,
+) -> Result<Option<Vec<Value>>, String> {
+    let mut chain = Vec::new();
+    collect_tsconfig_extends_chain(fixture_root, source_path, &mut BTreeSet::new(), &mut chain)?;
+    let mut declared = None;
+    for (path, document) in chain {
+        let Some(value) = document
+            .pointer("/compilerOptions/types")
+            .and_then(Value::as_array)
+        else {
+            continue;
+        };
+        declared = Some(DeclaredTypes {
+            dir: path
+                .parent()
+                .ok_or_else(|| format!("tsconfig has no parent: {}", path.display()))?
+                .to_path_buf(),
+            value: value.clone(),
+        });
+    }
+    let Some(declared) = declared else {
+        return Ok(None);
+    };
+    let mut changed = false;
+    let value = declared
+        .value
+        .into_iter()
+        .map(|entry| {
+            let Some(path) = entry.as_str().filter(|path| path.starts_with('.')) else {
+                return entry;
+            };
+            changed = true;
+            json!(config_relative_path(config_dir, &declared.dir.join(path)))
+        })
+        .collect::<Vec<_>>();
+    Ok(changed.then_some(value))
 }
 
 fn rewritten_vue_compiler_options(
@@ -6008,6 +6057,40 @@ mod baseline_materialization_tests {
             json!([
                 "missing/plugin",
                 "../../node_modules/vue-router/dist/volar/sfc-route-blocks.cjs"
+            ])
+        );
+        fs::remove_dir_all(fixture).unwrap();
+    }
+
+    #[test]
+    fn relative_compiler_types_follow_their_declaring_config() {
+        let fixture = test_directory("relative-types").canonicalize().unwrap();
+        let config = fixture.join("config");
+        let package = fixture.join("packages/app");
+        let config_dir = package.join(".vize-baseline");
+        fs::create_dir_all(&config).unwrap();
+        fs::create_dir_all(&config_dir).unwrap();
+        fs::write(
+            config.join("kernel.d.ts"),
+            "declare const kernel: string;\n",
+        )
+        .unwrap();
+        fs::write(
+            config.join("base.json"),
+            serde_json::to_string(&json!({
+                "compilerOptions": {"types": ["./kernel.d.ts", "vite/client"]}
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+        let source = package.join("tsconfig.json");
+        fs::write(&source, "{\"extends\":\"../../config/base.json\"}\n").unwrap();
+
+        assert_eq!(
+            rewritten_compiler_types(&fixture, &source, &config_dir).unwrap(),
+            Some(vec![
+                json!("../../../config/kernel.d.ts"),
+                json!("vite/client")
             ])
         );
         fs::remove_dir_all(fixture).unwrap();

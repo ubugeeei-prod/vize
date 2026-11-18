@@ -197,6 +197,48 @@ test(
   },
 );
 
+test("materialized baseline keeps relative compiler types bound to the source config", () => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "vize-relative-types-baseline-"));
+  const fixtureRoot = path.join(temp, "fixture");
+  const reportDir = path.join(temp, "report");
+  fs.mkdirSync(path.join(fixtureRoot, "src/types"), { recursive: true });
+  fs.mkdirSync(reportDir);
+  fs.writeFileSync(
+    path.join(fixtureRoot, "tsconfig.json"),
+    `${JSON.stringify({
+      compilerOptions: { strict: true, noEmit: true, types: ["./src/types/kernel.d.ts"] },
+    })}\n`,
+  );
+  fs.writeFileSync(
+    path.join(fixtureRoot, "src/types/kernel.d.ts"),
+    "declare const FixtureKernel: string;\n",
+  );
+  fs.writeFileSync(
+    path.join(fixtureRoot, "src/App.vue"),
+    '<script setup lang="ts">const value: string = FixtureKernel</script>\n',
+  );
+
+  try {
+    const project = materializeBaselineProject(
+      fixtureRoot,
+      reportDir,
+      { id: "fixture", tsconfig: "tsconfig.json" },
+      { fileCount: 1, files: [{ file: "src/App.vue" }] },
+    );
+    assert.deepEqual(JSON.parse(project.source).compilerOptions.types, [
+      "../src/types/kernel.d.ts",
+    ]);
+    if (fs.existsSync(vueTsc)) {
+      const result = runVueTsc(project.path, fixtureRoot);
+      const diagnostics = result.stdout.split("\n").filter((line) => /: error TS\d+: /u.test(line));
+      assert.deepEqual(diagnostics, []);
+      assert.equal(result.status, 0, result.stderr);
+    }
+  } finally {
+    fs.rmSync(temp, { recursive: true, force: true });
+  }
+});
+
 test(
   "materialized baseline keeps the fixture's ambient declarations in the program",
   vueTscOptions,
