@@ -1,0 +1,22 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import Child from './Child.vue'
+import EmitsChild from './EmitsChild.vue'
+
+const text = ref('')
+const n = ref(0)
+const title = ref<string>()
+
+function onSave(id: number) {
+  console.log(id)
+}
+
+function onTitle(value: string | undefined) {
+  console.log(value)
+}
+</script>
+
+<template>
+  <Child v-model:count="n" />
+  <EmitsChild v-model:title="title" @save="onSave" @update:title="onTitle" />
+</template>

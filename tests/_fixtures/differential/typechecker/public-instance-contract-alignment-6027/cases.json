@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 6027,
+  "regressionCommit": "d4c05ee736862e678ff8b7cac8a728d80f2193c0",
+  "sourceRevision": "d4c05ee736862e678ff8b7cac8a728d80f2193c0",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "histoire-layout-matching-branches",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.strict-templates.json.txt"
+        },
+        {
+          "file": "src/global-components.d.ts",
+          "source": "histoire.global-components.d.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "histoire-valid.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "histoire-layout-branch-exclusive-fields",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.strict-templates.json.txt"
+        },
+        {
+          "file": "src/global-components.d.ts",
+          "source": "histoire.global-components.d.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "histoire-invalid.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 2,
+          "column": 50,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 3,
+          "column": 37,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'."
+        }
+      ]
+    },
+    {
+      "id": "public-instance-satisfies-component-public-instance",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.public-instance.json.txt"
+        },
+        {
+          "file": "src/Public.vue",
+          "source": "Public.vue.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "Generic.vue.txt"
+        },
+        {
+          "file": "src/NoEmits.vue",
+          "source": "NoEmits.vue.txt"
+        },
+        {
+          "file": "src/consumer.ts",
+          "source": "valid.consumer.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/consumer.ts",
+          "line": 12,
+          "column": 45,
+          "severity": 1,
+          "code": 2344,
+          "message": "Type '$ComponentInstance' does not satisfy the constraint 'ComponentPublicInstance'.\nType '$ComponentInstance' is not assignable to type '{ $: ComponentInternalInstance; $data: {}; $props: {}; $attrs: Attrs; $refs: Data; $slots: Readonly<InternalSlots>; ... 8 more ...; $watch<T extends string | ((...args: any) => any)>(source: T, cb: ..., options?: WatchOptions<...> | undefined): WatchStopHandle; }'.\nTypes of property '$slots' are incompatible.\nType '$Slots' is not assignable to type 'Readonly<InternalSlots>'.\nProperty 'default' is incompatible with index signature.\nType '(props: { value: string; }) => unknown' is not assignable to type 'Slot<any>'.\nType 'unknown' is not assignable to type 'VNode<RendererNode, RendererElement, { [key: string]: any; }>[]'."
+        },
+        {
+          "file": "src/consumer.ts",
+          "line": 21,
+          "column": 37,
+          "severity": 1,
+          "code": 2344,
+          "message": "Type '{ __vizeCheck: <T extends string = string>(props: $SetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { ...; } & { ...; } & Record<...>) => void; ... 9 more ...; readonly __vizeFallthroughProps?: Record<...> | undefined; } & $GenericComponent' does not satisfy the constraint 'abstract new (...args: any) => any'.\nType '{ __vizeCheck: <T extends string = string>(props: $SetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { ...; } & { ...; } & Record<...>) => void; ... 9 more ...; readonly __vizeFallthroughProps?: Record<...> | undefined; } & $GenericComponent' provides no match for the signature 'new (...args: any): any'."
+        }
+      ]
+    },
+    {
+      "id": "public-instance-exact-emit-and-constraint-controls",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.public-instance.json.txt"
+        },
+        {
+          "file": "src/Public.vue",
+          "source": "Public.vue.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "Generic.vue.txt"
+        },
+        {
+          "file": "src/NoEmits.vue",
+          "source": "NoEmits.vue.txt"
+        },
+        {
+          "file": "src/consumer.ts",
+          "source": "invalid.consumer.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/consumer.ts",
+          "line": 12,
+          "column": 45,
+          "severity": 1,
+          "code": 2344,
+          "message": "Type '$ComponentInstance' does not satisfy the constraint 'ComponentPublicInstance'.\nType '$ComponentInstance' is not assignable to type '{ $: ComponentInternalInstance; $data: {}; $props: {}; $attrs: Attrs; $refs: Data; $slots: Readonly<InternalSlots>; ... 8 more ...; $watch<T extends string | ((...args: any) => any)>(source: T, cb: ..., options?: WatchOptions<...> | undefined): WatchStopHandle; }'.\nTypes of property '$slots' are incompatible.\nType '$Slots' is not assignable to type 'Readonly<InternalSlots>'.\nProperty 'default' is incompatible with index signature.\nType '(props: { value: string; }) => unknown' is not assignable to type 'Slot<any>'.\nType 'unknown' is not assignable to type 'VNode<RendererNode, RendererElement, { [key: string]: any; }>[]'."
+        },
+        {
+          "file": "src/consumer.ts",
+          "line": 21,
+          "column": 37,
+          "severity": 1,
+          "code": 2344,
+          "message": "Type '{ __vizeCheck: <T extends string = string>(props: $SetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { ...; } & { ...; } & Record<...>) => void; ... 9 more ...; readonly __vizeFallthroughProps?: Record<...> | undefined; } & $GenericComponent' does not satisfy the constraint 'abstract new (...args: any) => any'.\nType '{ __vizeCheck: <T extends string = string>(props: $SetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { ...; } & { ...; } & Record<...>) => void; ... 9 more ...; readonly __vizeFallthroughProps?: Record<...> | undefined; } & $GenericComponent' provides no match for the signature 'new (...args: any): any'."
+        },
+        {
+          "file": "src/consumer.ts",
+          "line": 25,
+          "column": 16,
+          "severity": 1,
+          "code": 2769,
+          "message": "No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"select\"' is not assignable to parameter of type '\"update:title\"'."
+        },
+        {
+          "file": "src/consumer.ts",
+          "line": 26,
+          "column": 16,
+          "severity": 1,
+          "code": 2769,
+          "message": "No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"other\"' is not assignable to parameter of type '\"update:title\"'."
+        },
+        {
+          "file": "src/consumer.ts",
+          "line": 27,
+          "column": 29,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/consumer.ts",
+          "line": 29,
+          "column": 21,
+          "severity": 1,
+          "code": 2344,
+          "message": "Type '{ notAnInstance: true; }' does not satisfy the constraint 'ComponentPublicInstance'.\nType '{ notAnInstance: true; }' is missing the following properties from type '{ $: ComponentInternalInstance; $data: {}; $props: {}; $attrs: Attrs; $refs: Data; $slots: Readonly<InternalSlots>; ... 8 more ...; $watch<T extends string | ((...args: any) => any)>(source: T, cb: ..., options?: WatchOptions<...> | undefined): WatchStopHandle; }': $, $data, $props, $attrs, and 11 more."
+        }
+      ]
+    }
+  ]
+}

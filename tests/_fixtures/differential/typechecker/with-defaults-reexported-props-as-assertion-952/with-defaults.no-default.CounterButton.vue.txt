@@ -1,0 +1,21 @@
+<script setup lang="ts">
+const props = withDefaults(
+  defineProps<{
+    count?: number;
+    label: string;
+  }>(),
+  {},
+);
+
+const emit = defineEmits<{
+  increment: [value: number];
+}>();
+
+void props;
+</script>
+
+<template>
+  <button type="button" @click="emit('increment', count + 1)">
+    {{ label }}: {{ count }}
+  </button>
+</template>

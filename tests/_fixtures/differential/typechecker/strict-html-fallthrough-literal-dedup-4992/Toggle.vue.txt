@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ modelValue?: boolean }>()
+</script>
+
+<template>
+  <span>{{ modelValue }}</span>
+  <input type="checkbox" />
+</template>

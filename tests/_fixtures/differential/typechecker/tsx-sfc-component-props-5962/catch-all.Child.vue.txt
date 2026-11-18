@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ label?: string }>()
+defineEmits<(event: string, ...args: any[]) => void>()
+</script>
+
+<template>
+  <button>{{ label }}</button>
+</template>

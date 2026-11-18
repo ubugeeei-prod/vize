@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "d9a57097d5e3faedfe731478a2f214f4bf178373",
+  "sourceRevision": "d9a57097d5e3faedfe731478a2f214f4bf178373",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "composable-refs-interpolated",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/@vueuse/core/package.json",
+          "source": "vueuse-core.package.json.txt"
+        },
+        {
+          "file": "node_modules/@vueuse/core/index.d.ts",
+          "source": "vueuse-core.index.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "historical.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "composable-refs-number-members",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/@vueuse/core/package.json",
+          "source": "vueuse-core.package.json.txt"
+        },
+        {
+          "file": "node_modules/@vueuse/core/index.d.ts",
+          "source": "vueuse-core.index.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "members.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "composable-ref-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/@vueuse/core/package.json",
+          "source": "vueuse-core.package.json.txt"
+        },
+        {
+          "file": "node_modules/@vueuse/core/index.d.ts",
+          "source": "vueuse-core.index.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 26,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    }
+  ]
+}

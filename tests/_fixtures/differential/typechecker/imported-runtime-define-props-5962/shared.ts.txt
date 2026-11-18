@@ -1,0 +1,8 @@
+export const sharedProps = {
+  title: { type: String, default: 'Ready' },
+  disabled: Boolean,
+} as const
+
+export const layoutProps = {
+  singlePanel: Boolean,
+} as const

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import EscapedModel from './EscapedModel.vue'
+import EscapedProps from './EscapedProps.vue'
+</script>
+
+<template>
+  <EscapedModel />
+  <EscapedProps />
+</template>

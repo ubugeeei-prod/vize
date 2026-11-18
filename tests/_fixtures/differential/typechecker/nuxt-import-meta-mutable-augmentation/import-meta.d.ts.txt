@@ -1,0 +1,11 @@
+export {};
+
+declare global {
+  interface ImportMeta {
+    client: boolean;
+    server: boolean;
+    dev: boolean;
+    prod: boolean;
+    ssr: boolean;
+  }
+}

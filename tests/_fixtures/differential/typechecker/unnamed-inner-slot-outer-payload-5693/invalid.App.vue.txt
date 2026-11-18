@@ -1,0 +1,20 @@
+<script setup lang="ts">
+import List from './List.vue';
+import Card from './Card.vue';
+
+const items = [{ title: 'Ready' }];
+
+function takesString(value: string) {
+  return value;
+}
+</script>
+
+<template>
+  <List :items="items">
+    <template #default="slotProps">
+      <Card>
+        <template #title>{{ takesString(slotProps.index) }}</template>
+      </Card>
+    </template>
+  </List>
+</template>

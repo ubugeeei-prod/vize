@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { sharedProps as firstProps } from './props'
+
+const props = defineProps(firstProps)
+const value: string = props.label
+</script>
+
+<template>{{ value }} {{ label.toUpperCase() }}</template>

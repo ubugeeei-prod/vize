@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 941,
+  "regressionCommit": "cb6326e9375fa4d67cd677415bc9673524b13c46",
+  "sourceRevision": "cb6326e9375fa4d67cd677415bc9673524b13c46",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "imported-intersection-props-in-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/imported-options.ts",
+          "source": "imported-options.ts.txt"
+        },
+        {
+          "file": "src/ImportedIntersectionProps.vue",
+          "source": "historical.ImportedIntersectionProps.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "defaulted-imported-prop-not-undefined",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/imported-options.ts",
+          "source": "imported-options.ts.txt"
+        },
+        {
+          "file": "src/ImportedIntersectionProps.vue",
+          "source": "defaulted.ImportedIntersectionProps.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "imported-prop-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/imported-options.ts",
+          "source": "imported-options.ts.txt"
+        },
+        {
+          "file": "src/ImportedIntersectionProps.vue",
+          "source": "wrong-member.ImportedIntersectionProps.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/ImportedIntersectionProps.vue",
+          "line": 2,
+          "column": 35,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type '\"down\" | \"up\"'. Did you mean 'fixed'?\nProperty 'toFixed' does not exist on type '\"down\"'."
+        }
+      ]
+    },
+    {
+      "id": "undeclared-template-name",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/imported-options.ts",
+          "source": "imported-options.ts.txt"
+        },
+        {
+          "file": "src/ImportedIntersectionProps.vue",
+          "source": "undeclared.ImportedIntersectionProps.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/ImportedIntersectionProps.vue",
+          "line": 2,
+          "column": 41,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'autoLoading' does not exist on type 'Readonly<$MappedOmit<$SetupProps, \"autoLoad\" | \"direction\">> & { readonly direction: \"down\" | \"up\"; readonly autoLoad: boolean; } & {} & { ...; }'. Did you mean 'autoLoad'?"
+        }
+      ]
+    }
+  ]
+}

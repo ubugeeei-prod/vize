@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 641,
+  "regressionCommit": "93a5c14e4032bbf361b5b989a497b2b16c13139c",
+  "sourceRevision": "93a5c14e4032bbf361b5b989a497b2b16c13139c",
+  "projectOptions": {
+    "vuePackage": "absent"
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "stubbed-vue-define-component-import",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsApi.vue",
+          "source": "valid.OptionsApi.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "stubbed-vue-define-component-extra-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsApi.vue",
+          "source": "invalid.OptionsApi.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/OptionsApi.vue",
+          "line": 6,
+          "column": 4,
+          "severity": 1,
+          "code": 2554,
+          "message": "Expected 1 arguments, but got 2."
+        }
+      ]
+    }
+  ]
+}

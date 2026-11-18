@@ -1,0 +1,13 @@
+export interface MessageProps {
+  appendTo?: HTMLElement
+  label?: string
+  repeatNum?: number
+}
+
+const mutable = <T extends object>(value: T): T => value
+
+export const messageDefaults = mutable({
+  appendTo: document.body,
+  label: 'Ready',
+  repeatNum: 1,
+} as const)

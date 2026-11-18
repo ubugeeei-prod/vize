@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+function handleName(event: MouseEvent): void {
+  console.log(event);
+}
+
+const count = ref(0);
+</script>
+
+<template>
+  <button @click="handleName">Click me</button>
+  <span>{{ count }}</span>
+</template>

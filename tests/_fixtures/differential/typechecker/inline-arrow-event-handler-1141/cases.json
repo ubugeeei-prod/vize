@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1141,
+  "regressionCommit": "f1ba7b90698fc3ef57a6f4fcb2a8b641d5ab6053",
+  "sourceRevision": "f1ba7b90698fc3ef57a6f4fcb2a8b641d5ab6053",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "inline-arrow-payload-contextually-typed",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/InlineArrowHandler.vue",
+          "source": "InlineArrowHandler.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "inline-callback-forms",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/CallbackForms.vue",
+          "source": "CallbackForms.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "inline-arrow-payload-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/WrongMember.vue",
+          "source": "WrongMember.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/WrongMember.vue",
+          "line": 5,
+          "column": 40,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingMethod' does not exist on type 'PointerEvent'."
+        }
+      ]
+    },
+    {
+      "id": "inline-arrow-payload-wrong-annotation",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/WrongAnnotation.vue",
+          "source": "WrongAnnotation.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/WrongAnnotation.vue",
+          "line": 5,
+          "column": 19,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '(payload: string) => string' is not assignable to parameter of type '(_e: PointerEvent) => unknown'.\nTypes of parameters 'payload' and '_e' are incompatible.\nType 'PointerEvent' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

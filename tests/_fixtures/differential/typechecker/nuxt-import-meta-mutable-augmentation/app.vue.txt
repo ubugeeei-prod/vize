@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const side = import.meta.client ? 'client' : 'server'
+</script>
+
+<template>
+  <div>{{ side }}</div>
+</template>

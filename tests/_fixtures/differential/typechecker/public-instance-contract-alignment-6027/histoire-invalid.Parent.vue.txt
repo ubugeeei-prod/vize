@@ -1,0 +1,4 @@
+<template>
+  <Story :layout="{ type: 'grid', width: '100%', iframe: false }" />
+  <Story :layout="{ type: 'single', width: '100%', iframe: false }" />
+</template>

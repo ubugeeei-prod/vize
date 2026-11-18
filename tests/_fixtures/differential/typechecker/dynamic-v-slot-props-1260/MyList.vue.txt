@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineSlots<{ items(props: { item: string }): any }>()
+</script>
+
+<template>
+  <slot name="items" item="a" />
+</template>

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+type UnionType = { type: "a" } | { type: "b", bSpecific: () => void }
+
+const val = 0 as unknown as UnionType
+</script>
+
+<template>
+  <div v-if="val.type === 'a'" @click="val.bSpecific"></div>
+</template>

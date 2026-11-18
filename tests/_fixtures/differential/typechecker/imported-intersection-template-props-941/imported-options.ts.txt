@@ -1,0 +1,4 @@
+export type PaginationOptions = {
+  direction?: 'up' | 'down'
+  autoLoad?: boolean
+}

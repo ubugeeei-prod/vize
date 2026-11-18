@@ -1,0 +1,16 @@
+<script setup lang="ts">
+const steps = [1, 2, 3];
+const lastStep: string | undefined = steps.at(-1);
+const pageTitle: number = document.title;
+const hasLabel: boolean = Object.hasOwn({ label: "x" }, "label");
+const params = new URLSearchParams("a=1&b=2");
+const keys: string[] = [...params.keys()];
+
+void lastStep;
+void hasLabel;
+void keys;
+</script>
+
+<template>
+  <h1>{{ pageTitle }}</h1>
+</template>

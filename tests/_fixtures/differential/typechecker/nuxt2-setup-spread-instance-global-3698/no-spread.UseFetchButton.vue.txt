@@ -1,0 +1,13 @@
+<script lang="ts">
+import { defineComponent } from '@nuxtjs/composition-api'
+
+export default defineComponent({
+    setup() {
+        return { refreshFromSetup: () => {} }
+    },
+})
+</script>
+
+<template>
+  <button @click="$fetch">Refresh</button>
+</template>

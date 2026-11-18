@@ -1,0 +1,8 @@
+<script setup lang="ts">
+enum Status { Idle, Ready }
+const status = Status.Idle
+</script>
+
+<template>
+  <div>{{ status === Status.Ready }}</div>
+</template>

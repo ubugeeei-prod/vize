@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3698,
+  "regressionCommit": "6262435c1ac66de825c2862adb88f60ce952d5d1",
+  "sourceRevision": "6262435c1ac66de825c2862adb88f60ce952d5d1",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "setup-spread-dollar-fetch",
+      "inputs": [
+        {
+          "file": "nuxt.config.ts",
+          "source": "nuxt.config.ts.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/@nuxtjs/composition-api/package.json",
+          "source": "composition-api.package.json.txt"
+        },
+        {
+          "file": "node_modules/@nuxtjs/composition-api/dist/runtime/index.d.ts",
+          "source": "composition-api.index.d.ts.txt"
+        },
+        {
+          "file": "components/UseFetchButton.vue",
+          "source": "spread.UseFetchButton.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "setup-spread-handler-wrong-arity",
+      "inputs": [
+        {
+          "file": "nuxt.config.ts",
+          "source": "nuxt.config.ts.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/@nuxtjs/composition-api/package.json",
+          "source": "composition-api.package.json.txt"
+        },
+        {
+          "file": "node_modules/@nuxtjs/composition-api/dist/runtime/index.d.ts",
+          "source": "composition-api.index.d.ts.txt"
+        },
+        {
+          "file": "components/UseFetchButton.vue",
+          "source": "spread-wrong-arity.UseFetchButton.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "no-spread-dollar-fetch-instance-global",
+      "inputs": [
+        {
+          "file": "nuxt.config.ts",
+          "source": "nuxt.config.ts.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/@nuxtjs/composition-api/package.json",
+          "source": "composition-api.package.json.txt"
+        },
+        {
+          "file": "node_modules/@nuxtjs/composition-api/dist/runtime/index.d.ts",
+          "source": "composition-api.index.d.ts.txt"
+        },
+        {
+          "file": "components/UseFetchButton.vue",
+          "source": "no-spread.UseFetchButton.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "components/UseFetchButton.vue",
+          "line": 12,
+          "column": 19,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property '$fetch' does not exist on type 'ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any>'."
+        }
+      ]
+    },
+    {
+      "id": "vue-typed-spread-handler-wrong-arity",
+      "inputs": [
+        {
+          "file": "nuxt.config.ts",
+          "source": "nuxt.config.ts.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/@nuxtjs/composition-api/package.json",
+          "source": "composition-api.package.json.txt"
+        },
+        {
+          "file": "node_modules/@nuxtjs/composition-api/dist/runtime/index.d.ts",
+          "source": "composition-api.index.d.ts.txt"
+        },
+        {
+          "file": "components/UseFetchButton.vue",
+          "source": "vue-spread-wrong-arity.UseFetchButton.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "components/UseFetchButton.vue",
+          "line": 17,
+          "column": 36,
+          "severity": 1,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ]
+    },
+    {
+      "id": "vue-typed-no-spread-dollar-fetch",
+      "inputs": [
+        {
+          "file": "nuxt.config.ts",
+          "source": "nuxt.config.ts.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/@nuxtjs/composition-api/package.json",
+          "source": "composition-api.package.json.txt"
+        },
+        {
+          "file": "node_modules/@nuxtjs/composition-api/dist/runtime/index.d.ts",
+          "source": "composition-api.index.d.ts.txt"
+        },
+        {
+          "file": "components/UseFetchButton.vue",
+          "source": "vue-no-spread.UseFetchButton.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "components/UseFetchButton.vue",
+          "line": 12,
+          "column": 19,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property '$fetch' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, { refreshFromSetup: () => void; }, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ... 18 more ..., {}>'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,204 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 5962,
+  "regressionCommit": "788000753c5c6bab73faedebc979a18d6db735e2",
+  "sourceRevision": "788000753c5c6bab73faedebc979a18d6db735e2",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "imported-runtime-props-reach-script-and-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "paths.tsconfig.json.txt"
+        },
+        {
+          "file": "packages/hooks/index.ts",
+          "source": "hooks.index.ts.txt"
+        },
+        {
+          "file": "packages/hooks/use-empty-values/index.ts",
+          "source": "hooks.use-empty-values.index.ts.txt"
+        },
+        {
+          "file": "src/shared.ts",
+          "source": "shared.ts.txt"
+        },
+        {
+          "file": "src/props.ts",
+          "source": "props.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "imported.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "imported-runtime-number-prop-read-as-boolean",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "paths.tsconfig.json.txt"
+        },
+        {
+          "file": "packages/hooks/index.ts",
+          "source": "hooks.index.ts.txt"
+        },
+        {
+          "file": "packages/hooks/use-empty-values/index.ts",
+          "source": "hooks.use-empty-values.index.ts.txt"
+        },
+        {
+          "file": "src/shared.ts",
+          "source": "shared.ts.txt"
+        },
+        {
+          "file": "src/props.ts",
+          "source": "props.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "imported-wrong-reader.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 21,
+          "column": 16,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'boolean'."
+        }
+      ]
+    },
+    {
+      "id": "with-defaults-resolves-imported-omit-defaults",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "skiplib.tsconfig.json.txt"
+        },
+        {
+          "file": "src/defaults.ts",
+          "source": "defaults.ts.txt"
+        },
+        {
+          "file": "src/omit.ts",
+          "source": "omit.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "with-defaults.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "with-defaults-omitted-label-stays-optional",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "skiplib.tsconfig.json.txt"
+        },
+        {
+          "file": "src/defaults.ts",
+          "source": "defaults.ts.txt"
+        },
+        {
+          "file": "src/omit.ts",
+          "source": "omit.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "with-defaults-label-omitted.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 15,
+          "severity": 1,
+          "code": 18048,
+          "message": "'props.label' is possibly 'undefined'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 15,
+          "column": 38,
+          "severity": 1,
+          "code": 18048,
+          "message": "'label' is possibly 'undefined'."
+        }
+      ]
+    },
+    {
+      "id": "runtime-props-cache-rebinds-local-names",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "plain.tsconfig.json.txt"
+        },
+        {
+          "file": "src/props.ts",
+          "source": "rebind.props.ts.txt"
+        },
+        {
+          "file": "src/First.vue",
+          "source": "rebind.First.vue.txt"
+        },
+        {
+          "file": "src/Second.vue",
+          "source": "rebind.Second.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "runtime-props-cache-rebound-label-wrong-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "plain.tsconfig.json.txt"
+        },
+        {
+          "file": "src/props.ts",
+          "source": "rebind.props.ts.txt"
+        },
+        {
+          "file": "src/First.vue",
+          "source": "rebind.First.vue.txt"
+        },
+        {
+          "file": "src/Second.vue",
+          "source": "rebind-wrong.Second.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Second.vue",
+          "line": 5,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

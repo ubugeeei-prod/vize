@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ alpha: string }>()
+</script>
+
+<template>
+  <div>{{ alpha }}</div>
+</template>

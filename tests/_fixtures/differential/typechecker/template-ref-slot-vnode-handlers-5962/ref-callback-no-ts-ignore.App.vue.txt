@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import type { ComponentPublicInstance } from "vue"
+import Child from "./Child.vue"
+
+function acceptElement(element: Element) {
+  element.nodeName
+}
+</script>
+<template>
+  <Child :ref="
+    (vnode: Element | ComponentPublicInstance | null) => {
+      if (!vnode) return
+      acceptElement(vnode.$el)
+    }
+  " />
+</template>

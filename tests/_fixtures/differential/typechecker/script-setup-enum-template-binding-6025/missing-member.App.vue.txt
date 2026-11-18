@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+enum Status { Idle, Ready }
+const status = ref<Status>(Status.Idle)
+</script>
+
+<template>
+  <div>{{ status === Status.Missing }}</div>
+</template>

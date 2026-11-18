@@ -1,0 +1,14 @@
+<script setup lang="ts" generic="T extends string = string, P extends string = string">
+type TypedRouteLocationRawFromName<Name extends string, Params extends string = string> = {
+  name: Name
+  params?: Record<Params, string>
+}
+
+defineProps<{
+  to: string | TypedRouteLocationRawFromName<T, P>
+}>()
+</script>
+
+<template>
+  <a><slot /></a>
+</template>

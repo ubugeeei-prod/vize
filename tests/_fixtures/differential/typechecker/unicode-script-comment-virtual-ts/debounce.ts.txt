@@ -1,0 +1,4 @@
+export function debounce(fn: () => void, wait: number): () => void {
+  void wait;
+  return fn;
+}

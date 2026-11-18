@@ -1,0 +1,15 @@
+<script setup lang="ts">
+const model = defineModel({
+  type: String,
+  required: true,
+  get(value) {
+    return value.toFixed()
+  },
+  set(value) {
+    return value.trim()
+  },
+})
+const read: number = model.value
+model.value = "updated"
+void read
+</script>

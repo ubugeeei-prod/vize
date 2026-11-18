@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const row = { item: { id: 1, label: 'ok' } };
+defineSlots<{ row(props: { item: { id: number; label: string } }): unknown }>();
+</script>
+<template>
+  <slot name="row" v-bind="row" />
+</template>

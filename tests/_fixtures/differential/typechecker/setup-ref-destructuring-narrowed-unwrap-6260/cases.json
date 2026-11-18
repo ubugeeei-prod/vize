@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 6260,
+  "regressionCommit": "215ca5706f402ed831a3bac0166e96cbc21da286",
+  "sourceRevision": "215ca5706f402ed831a3bac0166e96cbc21da286",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "destructured-loop-defaults-read-unwrapped-ref",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "destructured-defaults-valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "destructured-loop-defaults-narrow-parameter-errors",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "destructured-defaults-invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 53,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string | number' is not assignable to parameter of type 'string'.\nType 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 10,
+          "column": 60,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "narrowed-maybe-ref-read-through-value",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "narrowed-maybe-ref.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "non-narrowing-guard-keeps-undefined",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "non-narrowing-guard.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 16,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number | undefined' is not assignable to parameter of type 'number'.\nType 'undefined' is not assignable to type 'number'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 28,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number | undefined' is not assignable to parameter of type 'number'.\nType 'undefined' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+<script setup lang="ts" generic="T extends string = string, P extends string = string">
+import NuxtLink from './NuxtLink.vue'
+import Icon from './Icon.vue'
+
+type TypedRouteLocationRawFromName<Name extends string, Params extends string = string> = {
+  name: Name
+  params?: Record<Params, string>
+}
+
+type BaseProps = {
+  label: string
+  prependIcon?: string
+  appendIcon?: string
+  leadingIcon?: number
+  buttonProps?: boolean
+}
+
+type LinkProps<T extends string, P extends string> = BaseProps & {
+  as: 'link'
+  to: TypedRouteLocationRawFromName<T, P>
+}
+
+type NativeProps = BaseProps & {
+  as?: 'button'
+  to?: never
+}
+
+type Props<T extends string, P extends string> = LinkProps<T, P> | NativeProps
+
+const {
+  label,
+  prependIcon: leadingIcon,
+  appendIcon,
+  ...buttonProps
+} = defineProps<Props<T, P>>()
+</script>
+
+<template>
+  <NuxtLink v-if="buttonProps.as === 'link'" :to="buttonProps.to">
+    <Icon v-if="leadingIcon" :name="leadingIcon" />
+    {{ label }}
+    <Icon v-if="appendIcon" :name="appendIcon" />
+  </NuxtLink>
+</template>

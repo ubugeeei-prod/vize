@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 930,
+  "regressionCommit": "bea7cd0664ef06b9779ac00708501230ca2897d9",
+  "sourceRevision": "bea7cd0664ef06b9779ac00708501230ca2897d9",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "defaulted-props-are-required-in-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "non-defaulted-optional-prop-stays-optional",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 40,
+          "severity": 1,
+          "code": 18048,
+          "message": "'props.raw' is possibly 'undefined'."
+        }
+      ]
+    }
+  ]
+}

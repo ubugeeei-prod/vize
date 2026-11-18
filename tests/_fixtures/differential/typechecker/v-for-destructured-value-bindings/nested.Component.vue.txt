@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const items: Array<{ id: number; meta: { label: string } }> = [
+  { id: 1, meta: { label: 'safe' } },
+]
+</script>
+
+<template>
+  <p v-for="{ id, meta: { label } } in items" :key="id">{{ label.toUpperCase() }}</p>
+</template>

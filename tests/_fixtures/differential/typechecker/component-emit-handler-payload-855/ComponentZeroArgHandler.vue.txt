@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import ZeroArgButton from './ZeroArgButton.vue'
+
+function toggle(open = false): void {
+  console.log(open)
+}
+</script>
+
+<template>
+  <ZeroArgButton @click="toggle" />
+</template>

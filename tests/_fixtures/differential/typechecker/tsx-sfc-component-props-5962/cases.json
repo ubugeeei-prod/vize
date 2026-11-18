@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 5962,
+  "regressionCommit": "788000753c5c6bab73faedebc979a18d6db735e2",
+  "sourceRevision": "788000753c5c6bab73faedebc979a18d6db735e2",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "tsx-catch-all-emit-listener-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "catch-all.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.tsx",
+          "source": "catch-all.Parent.tsx.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "tsx-catch-all-emits-wrong-label-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "catch-all.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.tsx",
+          "source": "catch-all-bad-label.Parent.tsx.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.tsx",
+          "line": 5,
+          "column": 5,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "tsx-reserved-key-and-ref-on-sfc",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "reserved.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.tsx",
+          "source": "reserved.Parent.tsx.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.tsx",
+          "line": 5,
+          "column": 40,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: InstanceType<typeof Child> | null) => void' is not assignable to type 'VNodeRef | undefined'.\nType '(value: InstanceType<typeof Child> | null) => void' is not assignable to type '(ref: Element | ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any> | null, refs: Record<...>) => void'.\nTypes of parameters 'value' and 'ref' are incompatible.\nType 'Element | ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any> | null' is not assignable to type '$ComponentInstance | null'.\nType 'Element' is not assignable to type '$ComponentInstance'.\nType 'Element' is missing the following properties from type '{ $props: Props; readonly __vizeRawProps?: Props | undefined; $emit: (event: string, ...args: any[]) => void; $slots: Readonly<InternalSlots>; }': $props, $emit, $slots"
+        }
+      ]
+    },
+    {
+      "id": "tsx-reserved-key-and-ref-wrong-label-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "reserved.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.tsx",
+          "source": "reserved-bad-label.Parent.tsx.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.tsx",
+          "line": 5,
+          "column": 40,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: InstanceType<typeof Child> | null) => void' is not assignable to type 'VNodeRef | undefined'.\nType '(value: InstanceType<typeof Child> | null) => void' is not assignable to type '(ref: Element | ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any> | null, refs: Record<...>) => void'.\nTypes of parameters 'value' and 'ref' are incompatible.\nType 'Element | ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any> | null' is not assignable to type '$ComponentInstance | null'.\nType 'Element' is not assignable to type '$ComponentInstance'.\nType 'Element' is missing the following properties from type '{ $props: Props; readonly __vizeRawProps?: Props | undefined; $emit: (event: string, ...args: any[]) => void; $slots: Readonly<InternalSlots>; }': $props, $emit, $slots"
+        },
+        {
+          "file": "src/Parent.tsx",
+          "line": 5,
+          "column": 55,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "tsx-union-component-prop-keys",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Alpha.vue",
+          "source": "Alpha.vue.txt"
+        },
+        {
+          "file": "src/Beta.vue",
+          "source": "Beta.vue.txt"
+        },
+        {
+          "file": "src/Parent.tsx",
+          "source": "union.Parent.tsx.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "tsx-union-component-wrong-alpha-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Alpha.vue",
+          "source": "Alpha.vue.txt"
+        },
+        {
+          "file": "src/Beta.vue",
+          "source": "Beta.vue.txt"
+        },
+        {
+          "file": "src/Parent.tsx",
+          "source": "union-bad-alpha.Parent.tsx.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.tsx",
+          "line": 11,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ alpha: number; beta: number; }' is not assignable to type 'IntrinsicAttributes & ((Pick<$AuthoredKeyWitness<{ alpha: unknown; }>, \"alpha\"> & Partial<Props> & Partial<$KebabProps<Props>> & ... 6 more ... & ComponentCustomProps) | (Pick<...> & ... 9 more ... & { ...; }))'.\nType '{ alpha: number; beta: number; }' is not assignable to type 'IntrinsicAttributes & Pick<$AuthoredKeyWitness<{ alpha: unknown; }>, never> & Partial<Props> & Partial<$KebabProps<Props>> & ... 7 more ... & { ...; }'.\nProperty '__vizeInvalidComponentProps' is missing in type '{ alpha: number; beta: number; }' but required in type '{ readonly __vizeInvalidComponentProps: { readonly missing: \"beta\"; readonly extra: \"alpha\"; }; }'."
+        }
+      ]
+    }
+  ]
+}

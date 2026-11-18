@@ -1,0 +1,11 @@
+export declare function defineComponent<T>(options: T): T;
+export declare function ref<T>(value: T): { value: T };
+export declare function computed<T>(getter: () => T): { value: T };
+export type PropType<T> = { new (...args: never[]): T } | { (): T };
+export declare function useContext(): { app: unknown };
+export declare function useFetch<T>(callback: () => T): {
+  fetch: () => Promise<T>;
+  $fetch: () => Promise<T>;
+};
+export declare function useStore(): { state: unknown };
+export declare function useRoute(): { value: { path: string } };
