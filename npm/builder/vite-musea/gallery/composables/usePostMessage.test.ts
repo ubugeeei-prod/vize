@@ -36,3 +36,11 @@ void test("props message snapshots read own values without proxy getter instrume
   assert.equal(Reflect.get(payload, "hasOwnProperty"), "Authored method name");
   assert.doesNotThrow(() => structuredClone(payload));
 });
+
+void test("props message snapshots recursively unwrap nested Vue proxies", () => {
+  const nested = reactive({ items: [reactive({ label: "Nested" })] });
+  const payload = snapshotMessageRecord({ nested });
+
+  assert.deepEqual(payload, { nested: { items: [{ label: "Nested" }] } });
+  assert.doesNotThrow(() => structuredClone(payload));
+});

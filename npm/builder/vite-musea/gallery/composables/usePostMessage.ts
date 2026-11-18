@@ -13,13 +13,38 @@ export function sendMessage(iframe: HTMLIFrameElement, type: string, payload: un
 
 /** Snapshot a props/attrs record without reading Vue's instrumented property getters. */
 export function snapshotMessageRecord(value: Record<string, unknown>): Record<string, unknown> {
+  return snapshotMessageValue(value, new WeakMap()) as Record<string, unknown>;
+}
+
+function snapshotMessageValue(value: unknown, seen: WeakMap<object, unknown>): unknown {
+  if (typeof value !== "object" || value === null) return value;
   const raw = toRaw(value);
-  return Object.fromEntries(
-    Object.keys(raw).map((key) => {
-      const descriptor = Object.getOwnPropertyDescriptor(raw, key);
-      return [key, descriptor && "value" in descriptor ? descriptor.value : Reflect.get(raw, key)];
-    }),
-  );
+  const cached = seen.get(raw);
+  if (cached) return cached;
+
+  if (Array.isArray(raw)) {
+    const clone: unknown[] = [];
+    seen.set(raw, clone);
+    for (const entry of raw) clone.push(snapshotMessageValue(entry, seen));
+    return clone;
+  }
+
+  const prototype = Object.getPrototypeOf(raw);
+  if (prototype !== Object.prototype && prototype !== null) return raw;
+
+  const clone: Record<string, unknown> = {};
+  seen.set(raw, clone);
+  for (const key of Object.keys(raw)) {
+    const descriptor = Object.getOwnPropertyDescriptor(raw, key);
+    const entry = descriptor && "value" in descriptor ? descriptor.value : Reflect.get(raw, key);
+    Object.defineProperty(clone, key, {
+      configurable: true,
+      enumerable: true,
+      value: snapshotMessageValue(entry, seen),
+      writable: true,
+    });
+  }
+  return clone;
 }
 
 /**
