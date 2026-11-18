@@ -206,11 +206,13 @@ const vFocus = {}
         let legacy = collect_template_referenced_names(&summary, Some(&root), None);
 
         assert_eq!(retained, legacy);
-        for expected in [
+        let expected: vize_carton::FxHashSet<vize_carton::String> = [
             "show", "rows", "field", "click", "fallback", "row", "index", "format", "item",
             "external", "Card", "vFocus",
-        ] {
-            assert!(retained.1.contains(expected), "missing {expected}");
-        }
+        ]
+        .into_iter()
+        .map(Into::into)
+        .collect();
+        assert_eq!(retained.1, expected);
     }
 }
