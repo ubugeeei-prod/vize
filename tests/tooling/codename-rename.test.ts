@@ -31,6 +31,14 @@ void test("a whole word becomes levels, an embedded one level, case and separato
   assert.equal(renameWord(`${Name}LevelMap`), "LevelMap");
 });
 
+void test("the capitalized name in prose becomes a level modifier, a plan item the plan", () => {
+  assert.equal(
+    rewriteText("crates/a/src/lib.rs", `// ${Name} lane, the ${Name} lane (${Name} P1-7); by ${Name} P2`),
+    "// Level lane, the level lane (plan P1-7); by plan P2",
+  );
+  assert.equal(rewriteText(".github/workflows/x.yml", `name: ${Name} Kani`), "name: Level Kani");
+});
+
 void test("paths move except under the kept docs directory", () => {
   assert.equal(renamePath(`${name}/vize_l2/src/lib.rs`), "levels/vize_l2/src/lib.rs");
   assert.equal(
@@ -57,7 +65,7 @@ void test("rewrites keep the docs directory, pinned links and links that resolve
     rewriteText("docs/content/guide.md", source),
     [
       `see docs/${name}/README.md and ${pinned}`,
-      `https://github.com/ubugeeei-prod/vize/tree/main/levels/vize_l0 and Levels lane, levels.expr.parses`,
+      `https://github.com/ubugeeei-prod/vize/tree/main/levels/vize_l0 and level lane, levels.expr.parses`,
       `[guide](../${name}/roadmap.md) [crate](../../levels/vize_l1/src/lib.rs)`,
     ].join("\n"),
   );
