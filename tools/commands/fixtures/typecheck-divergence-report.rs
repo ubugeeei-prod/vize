@@ -1118,8 +1118,6 @@ fn materialize_baseline_project(
             .iter()
             .map(|path| config_relative_path(&config_dir, path)),
     );
-    excludes.sort_by(|left, right| compare_bytes(left, right));
-    excludes.dedup();
     let mut config = json!({
         "extends": config_relative_path(&config_dir, &source_path),
         "compilerOptions": Value::Object(compiler_options),
