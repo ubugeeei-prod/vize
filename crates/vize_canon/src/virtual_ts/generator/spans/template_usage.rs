@@ -26,9 +26,9 @@ fn collect_template_referenced_names(
     let mut names = FxHashSet::default();
     // Keep broad TypeScript references for authored unused-binding behavior,
     // but only runtime reads may drive synthetic value captures and anchors.
-    let mut value_names = summary
-        .template_expression_reads
-        .clone()
+    let retained_reads = summary.template_expression_reads.as_ref();
+    let mut value_names: FxHashSet<String> = retained_reads
+        .map(|reads| reads.iter().cloned().collect())
         .unwrap_or_default();
     let mut expressions = FxHashSet::default();
 
@@ -54,7 +54,7 @@ fn collect_template_referenced_names(
         value_names.insert(binding);
     }
 
-    if summary.template_expression_reads.is_none() {
+    if retained_reads.is_none() {
         collect_legacy_expression_identifiers(summary, &mut value_names, &mut expressions);
     }
 
