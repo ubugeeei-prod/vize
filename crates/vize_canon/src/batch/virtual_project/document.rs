@@ -37,7 +37,7 @@ pub struct VueDocumentVirtualTsOptions {
     pub legacy_vue2: bool,
     pub experimental_patterned_template: bool,
     pub preserve_event_navigation: bool,
-    pub configured_global_template_ref: bool,
+    pub configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership,
     pub dialect: vize_carton::config::VueVersion,
     pub preserve_missing_vue_diagnostics: bool,
 }
@@ -49,7 +49,10 @@ impl Default for VueDocumentVirtualTsOptions {
             legacy_vue2: false,
             experimental_patterned_template: false,
             preserve_event_navigation: false,
-            configured_global_template_ref: false,
+            configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership {
+                global: false,
+                imports_alias: false,
+            },
             dialect: vize_carton::config::VueVersion::default(),
             preserve_missing_vue_diagnostics: true,
         }
@@ -228,7 +231,10 @@ mod tests {
                 &ImportRewriter::new(),
                 false,
                 VueDocumentVirtualTsOptions {
-                    configured_global_template_ref: configured,
+                    configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership {
+                        global: configured,
+                        imports_alias: false,
+                    },
                     ..Default::default()
                 },
             )

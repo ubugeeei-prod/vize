@@ -20,7 +20,7 @@ use vize_l0::{FxHashMap, String as CompactString, cstr};
 
 use super::mode::ProjectionMode;
 use crate::commands::check::tsconfig_inputs::{
-    TsconfigInputCache, collect_content_mapper_ambient_declarations,
+    TsconfigInputCache, collect_content_mapper_ambient_declarations, imports_alias_vue_template_ref,
 };
 
 /// Mapper diagnostic code for an options value that is not an object.
@@ -137,6 +137,12 @@ pub(super) fn resolve_open_project(
             .unwrap_or(&empty_compiler_options),
     )?;
     let mut ambient_declarations = Vec::new();
+    let imports_alias = (!params.config_file_name.is_empty())
+        .then(|| imports_alias_vue_template_ref(Path::new(params.config_file_name.as_str())))
+        .flatten();
+    let imports_alias_template_ref = imports_alias
+        .as_ref()
+        .is_some_and(|(_, reexported)| *reexported);
     let ambient_template_ref = if params.config_file_name.is_empty() {
         false
     } else {
@@ -150,7 +156,8 @@ pub(super) fn resolve_open_project(
     };
     configuration.transform_options = configuration
         .transform_options
-        .with_ambient_global_template_ref(ambient_template_ref);
+        .with_ambient_global_template_ref(ambient_template_ref)
+        .with_imports_alias_template_ref(imports_alias_template_ref);
     let mut options_api = true;
     let mut no_unused_locals = false;
     let mut check_javascript = false;
@@ -197,6 +204,11 @@ pub(super) fn resolve_open_project(
             .map(|path| CompactString::from(path.to_string_lossy().as_ref())),
     );
     watched_files.extend(shared_helpers.watched_files);
+    watched_files.extend(
+        imports_alias
+            .iter()
+            .map(|(path, _)| CompactString::from(path.to_string_lossy().as_ref())),
+    );
     watched_files.sort();
     watched_files.dedup();
     let config_identity = if shared_helpers.fingerprint.is_empty() {
@@ -212,6 +224,12 @@ pub(super) fn resolve_open_project(
         "{config_identity}:ambient-vue-template-ref:{}",
         u8::from(ambient_template_ref)
     );
+    // Only a recognized alias extends the identity, so other projects keep it.
+    let config_identity = if imports_alias_template_ref {
+        cstr!("{config_identity}:imports-vue-template-ref:1")
+    } else {
+        config_identity
+    };
     let mode = ProjectionMode::resolve(
         explicit_mode,
         params.config_file_name.as_str(),

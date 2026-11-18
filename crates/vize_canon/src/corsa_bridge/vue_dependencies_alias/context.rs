@@ -70,7 +70,7 @@ pub(in crate::corsa_bridge) struct AliasContext {
     host_facts: crate::batch::virtual_project::EditorSourceFacts,
     mirror: Option<VirtualProject>,
     virtual_ts_options: crate::virtual_ts::VirtualTsOptions,
-    configured_global_template_ref: bool,
+    configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership,
     pub(in crate::corsa_bridge) query_surface:
         std::sync::OnceLock<crate::corsa_bridge::vue_document::build::QuerySurface>,
 }
@@ -205,7 +205,9 @@ impl AliasContext {
         &self.virtual_ts_options
     }
 
-    pub(in crate::corsa_bridge) fn configured_global_template_ref(&self) -> bool {
+    pub(in crate::corsa_bridge) fn configured_global_template_ref(
+        &self,
+    ) -> crate::virtual_ts::TemplateRefOwnership {
         self.configured_global_template_ref
     }
 

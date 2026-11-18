@@ -116,6 +116,18 @@ pub(crate) fn declares_vue_template_ref_global(files: &[PathBuf]) -> bool {
         .any(|source| vize_canon::batch::declares_vue_template_ref_global(&source))
 }
 
+/// Whether the program's `#imports` alias resolves to a module that
+/// re-exports Vue's own `useTemplateRef` (Nuxt's generated `imports.d.ts`).
+pub(crate) fn imports_alias_reexports_vue_template_ref(tsconfig_path: &Path) -> bool {
+    super::imports_aliases::imports_alias_reexports_vue_template_ref(tsconfig_path)
+}
+
+/// The resolved `#imports` file, for hosts that watch it, and whether it
+/// re-exports Vue's own `useTemplateRef`.
+pub(crate) fn imports_alias_vue_template_ref(tsconfig_path: &Path) -> Option<(PathBuf, bool)> {
+    super::imports_aliases::imports_alias_vue_template_ref(tsconfig_path)
+}
+
 fn collect_default_check_files_inner(
     project_root: &Path,
     tsconfig_path: Option<&Path>,
