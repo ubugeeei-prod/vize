@@ -248,6 +248,64 @@ test("both SSR lanes come from every SSR corpus sweep", () => {
   });
 });
 
+test("a later typecheck target is pinned at its project's revision as its own row", () => {
+  withRoot((root, artifacts, out) => {
+    const registryFile = path.join(root, registryPath);
+    const registry = JSON.parse(fs.readFileSync(registryFile, "utf8"));
+    registry.projects[0].typecheckPerformance = {
+      enabled: true,
+      targets: [
+        { id: "app", tsconfig: "tsconfig.json", corpusGlobs: ["src/**/*.vue"] },
+        { id: "docs", tsconfig: "docs/tsconfig.json", corpusGlobs: ["docs/**/*.vue"] },
+      ],
+    };
+    writeJson(registryFile, registry);
+    const dir = shard(artifacts, 0, ["alpha", "beta", "gamma"]);
+    const summaryFile = path.join(dir, "summary.json");
+    const summary = JSON.parse(fs.readFileSync(summaryFile, "utf8"));
+    const outputPath = "real-project-results/shard-0/alpha@docs-typechecker.json";
+    writeJson(path.join(dir, "alpha@docs-typechecker.json"), { schema: "vize.fixtureToolRun" });
+    summary.projects.splice(1, 0, {
+      id: "alpha@docs",
+      fixturePath: projects[0].fixturePath,
+      revision: projects[0].revision,
+      runs: [{ tool: "typechecker", status: "ok", exitCode: 0, fileCount: 2, outputPath }],
+    });
+    writeJson(summaryFile, summary);
+    const { outputs } = writeRealProjectResults({
+      root,
+      sourceRevision,
+      shards: readShards(artifacts),
+      outDir: out,
+    });
+    const typechecker = outputs.find(({ product }) => product === "typechecker")!;
+    const manifest = loadProductManifest(
+      path.join(out, "T2", "typechecker", "manifest.json"),
+      "typechecker",
+    );
+    assert.deepEqual(
+      manifest.cases.map((fixture: { id: string; projectId: string }) => [
+        fixture.id,
+        fixture.projectId,
+      ]),
+      [
+        ["typechecker/real/alpha", "alpha"],
+        ["typechecker/real/alpha/docs", "alpha"],
+        ["typechecker/real/beta", "beta"],
+        ["typechecker/real/gamma", "gamma"],
+      ],
+    );
+    const docs = typechecker.report.rows.find(
+      (row: any) => row.id === "typechecker/real/alpha/docs",
+    );
+    assert.equal(docs.legacy.state, "completed");
+    assert.equal(docs.legacy.observation.fileCount, 2);
+    for (const { product, report } of outputs) {
+      if (product !== "typechecker") assert.equal(report.summary.plannedCases, 3, product);
+    }
+  });
+});
+
 test("a missing shard or raw output still yields every planned row", () => {
   withRoot((root, artifacts, out) => {
     const dir = shard(artifacts, 0, ["alpha", "gamma"]);
@@ -293,6 +351,17 @@ test("forged or stitched shard evidence fails", () => {
         writeJson(file, summary);
       },
       /alpha: revision/,
+    ],
+    [
+      "unknown typecheck target",
+      (artifacts) => {
+        const dir = shard(artifacts, 0, ["alpha"]);
+        const file = path.join(dir, "summary.json");
+        const summary = JSON.parse(fs.readFileSync(file, "utf8"));
+        summary.projects.push({ ...summary.projects[0], id: "alpha@docs" });
+        writeJson(file, summary);
+      },
+      /shard 0: unpinned project alpha@docs/,
     ],
     [
       "LSP row outside its shard",
