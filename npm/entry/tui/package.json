@@ -1,0 +1,87 @@
+{
+  "name": "@vizejs/tui",
+  "version": "0.474.0",
+  "description": "Build terminal UIs with Vue (Vize Fresco)",
+  "keywords": [
+    "terminal",
+    "tui",
+    "vize",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/entry/tui"
+  },
+  "files": [
+    "README.md",
+    "ascii-font.d.ts",
+    "ascii-font.js",
+    "components.d.ts",
+    "components.js",
+    "composables.d.ts",
+    "composables.js",
+    "index.d.ts",
+    "index.js",
+    "qr-code.d.ts",
+    "qr-code.js",
+    "testing.d.ts",
+    "testing.js"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./components": {
+      "types": "./components.d.ts",
+      "default": "./components.js"
+    },
+    "./ascii-font": {
+      "types": "./ascii-font.d.ts",
+      "default": "./ascii-font.js"
+    },
+    "./composables": {
+      "types": "./composables.d.ts",
+      "default": "./composables.js"
+    },
+    "./testing": {
+      "types": "./testing.d.ts",
+      "default": "./testing.js"
+    },
+    "./qr-code": {
+      "types": "./qr-code.d.ts",
+      "default": "./qr-code.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@vizejs/fresco": "workspace:*"
+  },
+  "devDependencies": {
+    "vue": "catalog:vue-stable"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "incubating",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  }
+}

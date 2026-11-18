@@ -4,6 +4,7 @@ packages:
   - "npm/builder/*"
   - "npm/linter/*"
   - "npm/formatter/*"
+  - "npm/entry/*"
   - "npm/compose/*"
   - "editors"
   - "editors/*"

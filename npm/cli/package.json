@@ -62,6 +62,14 @@
       "default": "./dist/config.mjs",
       "types": "./dist/config.d.mts"
     },
+    "./cli": {
+      "import": "./dist/cli.mjs",
+      "default": "./dist/cli.mjs"
+    },
+    "./content-mapper-cli": {
+      "import": "./dist/content-mapper-cli.mjs",
+      "default": "./dist/content-mapper-cli.mjs"
+    },
     "./virtual-ts": {
       "import": {
         "types": "./virtual-ts.d.mts"

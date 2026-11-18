@@ -1178,6 +1178,88 @@ importers:
         specifier: catalog:typescript
         version: 3.3.14(typescript@6.0.3)
 
+  npm/entry/compile:
+    dependencies:
+      '@vizejs/native':
+        specifier: workspace:*
+        version: link:../../native
+      vize:
+        specifier: workspace:*
+        version: link:../../cli
+
+  npm/entry/compile-jsx:
+    dependencies:
+      '@vizejs/native':
+        specifier: workspace:*
+        version: link:../../native
+
+  npm/entry/compile-tsrx:
+    dependencies:
+      '@vizejs/native':
+        specifier: workspace:*
+        version: link:../../native
+
+  npm/entry/content-mapper:
+    dependencies:
+      vize:
+        specifier: workspace:*
+        version: link:../../cli
+
+  npm/entry/curator:
+    dependencies:
+      vize:
+        specifier: workspace:*
+        version: link:../../cli
+
+  npm/entry/doctor:
+    dependencies:
+      vize:
+        specifier: workspace:*
+        version: link:../../cli
+
+  npm/entry/fmt:
+    dependencies:
+      '@vizejs/native':
+        specifier: workspace:*
+        version: link:../../native
+      vize:
+        specifier: workspace:*
+        version: link:../../cli
+
+  npm/entry/lint:
+    dependencies:
+      '@vizejs/native':
+        specifier: workspace:*
+        version: link:../../native
+      vize:
+        specifier: workspace:*
+        version: link:../../cli
+
+  npm/entry/lsp:
+    dependencies:
+      vize:
+        specifier: workspace:*
+        version: link:../../cli
+
+  npm/entry/tui:
+    dependencies:
+      '@vizejs/fresco':
+        specifier: workspace:*
+        version: link:../../fresco
+    devDependencies:
+      vue:
+        specifier: catalog:vue-stable
+        version: 3.5.35(typescript@6.0.3)
+
+  npm/entry/typecheck:
+    dependencies:
+      '@vizejs/native':
+        specifier: workspace:*
+        version: link:../../native
+      vize:
+        specifier: workspace:*
+        version: link:../../cli
+
   npm/formatter/prettier:
     dependencies:
       '@vizejs/native':

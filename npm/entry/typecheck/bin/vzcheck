@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+// `vzcheck <args>` is `vize check <args>` from the CLI release this package pins.
+process.argv.splice(2, 0, "check");
+import("vize/cli");

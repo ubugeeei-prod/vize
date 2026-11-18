@@ -1,0 +1,28 @@
+export {
+  lint,
+  lintPatinaSfc,
+  lintWithPlugins,
+  lintOxlintHtml,
+  getPatinaRules,
+  inspectLintPlan,
+  PluginLintSession,
+} from "@vizejs/native";
+export type {
+  DefineMacrosOrderOptionsNapi,
+  HtmlSelfClosingHtmlOptionsNapi,
+  HtmlSelfClosingOptionsNapi,
+  JsFactProviderNapi,
+  JsPluginNapi,
+  LintOptionsNapi,
+  LintResultNapi,
+  NoMutatingPropsOptionsNapi,
+  PatinaLintOptionsNapi,
+  PluginCacheInputNapi,
+  PluginCostNapi,
+  PluginDiagnosticNapi,
+  PluginFixNapi,
+  PluginLintOptionsNapi,
+  PluginLintOutputNapi,
+  ProviderCostNapi,
+  SfcElementOrderOptionsNapi,
+} from "@vizejs/native";
