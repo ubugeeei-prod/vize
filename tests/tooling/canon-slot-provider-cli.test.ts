@@ -91,6 +91,10 @@ import {
   applyGenericSlotPayloadIn,
   beforeGenericSlotPayloadIn,
 } from "../../tools/support/compat/content-mapper/generic-slot-payload-transition.ts";
+import {
+  applyJsxSharedHelpersIn,
+  beforeJsxSharedHelpersIn,
+} from "../../tools/support/compat/content-mapper/jsx-shared-helpers-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -239,9 +243,12 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   const defaultsSourcePreamble = applyWithDefaultsUndefinedIn(fallthroughSourcePreamble);
   assert.equal(beforeWithDefaultsUndefinedIn(defaultsSourcePreamble), fallthroughSourcePreamble);
   assert.throws(() => applyWithDefaultsUndefinedIn(defaultsSourcePreamble), /predecessor/u);
-  const currentSourcePreamble = applyGenericSlotPayloadIn(defaultsSourcePreamble);
-  assert.equal(beforeGenericSlotPayloadIn(currentSourcePreamble), defaultsSourcePreamble);
-  assert.throws(() => applyGenericSlotPayloadIn(currentSourcePreamble), /predecessor/u);
+  const genericSlotSourcePreamble = applyGenericSlotPayloadIn(defaultsSourcePreamble);
+  assert.equal(beforeGenericSlotPayloadIn(genericSlotSourcePreamble), defaultsSourcePreamble);
+  assert.throws(() => applyGenericSlotPayloadIn(genericSlotSourcePreamble), /predecessor/u);
+  const currentSourcePreamble = applyJsxSharedHelpersIn(genericSlotSourcePreamble);
+  assert.equal(beforeJsxSharedHelpersIn(currentSourcePreamble), genericSlotSourcePreamble);
+  assert.throws(() => applyJsxSharedHelpersIn(currentSourcePreamble), /not yet shared/u);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);
