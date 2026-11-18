@@ -165,6 +165,12 @@ impl MarkupRule for TraceRecorder {
             },
         );
         let mut out = out.into_inner();
+        out.push_str("] branches=[");
+        document.walk_branched_elements(&mut |entered, branches| {
+            append!(out, "{}@", entered.tag());
+            range(&mut out, entered.range());
+            append!(out, "{branches:?} ");
+        });
         out.push(']');
         self.push(out);
     }
