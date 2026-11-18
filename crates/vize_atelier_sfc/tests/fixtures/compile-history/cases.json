@@ -4917,6 +4917,42 @@
     "errors": 0
   },
   {
+    "id": "c3b-v-model-on-v-for-pattern-scope-rejected",
+    "history": "7a27316b4ef4245c943ce570658862b2b5356625",
+    "source": "<div v-for=\"{ item } in items\"><input v-model=\"item\" /></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 1
+  },
+  {
+    "id": "c3b-v-model-on-nested-default-rest-v-for-pattern-rejected",
+    "history": "7a27316b4ef4245c943ce570658862b2b5356625",
+    "source": "<div v-for=\"{ a: [b = 1], ...rest } in items\"><input v-model=\"b\" /><input v-model=\"rest\" /></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 2
+  },
+  {
+    "id": "c3b-v-model-on-v-for-pattern-key-and-default-valid",
+    "history": "7a27316b4ef4245c943ce570658862b2b5356625",
+    "source": "<div v-for=\"{ item: row = draft } in items\"><input v-model=\"item\" /><input v-model=\"draft\" /><input v-model=\"row.value\" /></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
     "id": "c3a-v-if-without-expression-1255",
     "history": "80b48da33433b29b1129ec2e5424b0b829401f6a",
     "source": "<div v-if>always</div>",

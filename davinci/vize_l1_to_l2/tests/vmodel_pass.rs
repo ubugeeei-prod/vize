@@ -242,3 +242,67 @@ fn the_pass_is_total_over_malformed_inputs() {
         assert_transformed_sound(source, name);
     }
 }
+
+#[test]
+fn a_pattern_for_alias_declares_every_bound_name() {
+    // Vue's `addIdentifiers` registers each name a destructuring value,
+    // key or index alias binds, as the slot-scope frame does.
+    for (name, source) in [
+        (
+            "value",
+            r#"<li v-for="{ row } in xs"><input v-model="row"></li>"#,
+        ),
+        (
+            "parenthesized",
+            r#"<li v-for="({ row }, i) in xs"><input v-model="row"></li>"#,
+        ),
+        (
+            "key",
+            r#"<li v-for="(v, { row }) in xs"><input v-model="row"></li>"#,
+        ),
+        (
+            "index",
+            r#"<li v-for="(v, k, { row }) in xs"><input v-model="row"></li>"#,
+        ),
+        (
+            "array-rest",
+            r#"<li v-for="[a, ...row] in xs"><input v-model="row"></li>"#,
+        ),
+        (
+            "nested-default",
+            r#"<li v-for="{ a: { row = 1 } } in xs"><input v-model="row"></li>"#,
+        ),
+    ] {
+        with_transformed(source, |lowered, _, facts, _| {
+            let messages = lowered
+                .diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.message.as_str())
+                .collect::<Vec<_>>();
+            assert_eq!(messages, [vmodel::ON_SCOPE_MESSAGE], "{name}");
+            let faults = facts
+                .model_faults
+                .sorted_entries()
+                .into_iter()
+                .map(|(_, fact)| fact.fault)
+                .collect::<Vec<_>>();
+            assert_eq!(faults, [ModelFault::OnScope], "{name}");
+        });
+        assert_transformed_sound(source, name);
+    }
+}
+
+#[test]
+fn a_pattern_for_alias_leaves_other_reads_valid() {
+    for source in [
+        r#"<li v-for="{ item: row } in xs"><input v-model="item"></li>"#,
+        r#"<li v-for="{ row = draft } in xs"><input v-model="draft"></li>"#,
+        r#"<li v-for="{ row } in xs"><input v-model="row.value"></li>"#,
+        r#"<li v-for="{ rows } in xs"><input v-model="row"></li>"#,
+    ] {
+        with_transformed(source, |lowered, _, facts, _| {
+            assert_eq!(lowered.diagnostics, vec![], "{source}");
+            assert!(facts.model_faults.is_empty(), "{source}");
+        });
+    }
+}
