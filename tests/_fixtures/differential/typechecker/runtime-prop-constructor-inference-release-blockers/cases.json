@@ -90,6 +90,61 @@
           "message": "Argument of type 'Talk[]' is not assignable to parameter of type 'Speaker[]'.\nType 'Talk' is missing the following properties from type 'Speaker': name, talks"
         }
       ]
+    },
+    {
+      "id": "custom-class-constructor-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "custom-ctor.normal-script.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "custom-class-constructor-prop-wrong-member-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "custom-ctor.normal-script.wrong-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 15,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "imported-class-constructor-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/point.ts",
+          "source": "point.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "custom-ctor.imported.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
     }
   ]
 }

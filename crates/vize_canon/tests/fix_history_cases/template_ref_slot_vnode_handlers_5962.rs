@@ -14,6 +14,8 @@ fn slot_listeners_vnode_hooks_and_ref_callbacks_keep_their_contexts() {
             "component-ref-callback-keeps-ts-ignore",
             "component-ref-callback-without-ts-ignore",
             "unresolved-global-component-ref-callback",
+            "vnode-hook-receives-vnode",
+            "vnode-hook-handler-expects-mouse-event",
         ],
     );
 }

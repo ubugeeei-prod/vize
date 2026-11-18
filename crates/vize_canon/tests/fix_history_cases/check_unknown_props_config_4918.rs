@@ -11,6 +11,7 @@ fn unknown_component_props_follow_vue_compiler_options() {
             "vue-tsc-default-config-accepts-unknown-extras",
             "explicit-check-unknown-props-false-overrides-strict-templates",
             "inherited-check-unknown-props-reports-unknown-extras",
+            "strict-templates-keeps-native-root-fallthrough-open",
         ],
     );
 }
