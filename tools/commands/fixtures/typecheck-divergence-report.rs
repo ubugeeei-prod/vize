@@ -3917,9 +3917,14 @@ fn collect_sources(
             collect_sources(cwd, &path, extensions, files)?;
         } else if path.is_file()
             && path
-                .extension()
+                .file_name()
                 .and_then(|value| value.to_str())
-                .is_some_and(|extension| extensions.contains(&extension))
+                .is_some_and(|name| {
+                    extensions.iter().any(|extension| {
+                        name.strip_suffix(extension)
+                            .is_some_and(|prefix| prefix.ends_with('.'))
+                    })
+                })
         {
             files.push(common::normalize_path(
                 path.strip_prefix(cwd).unwrap_or(&path),
@@ -5903,6 +5908,19 @@ mod native_baseline_contract_tests {
 mod typecheck_target_tests {
     use super::*;
 
+    fn test_directory(name: &str) -> PathBuf {
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let directory = env::temp_dir().join(format!(
+            "vize-typecheck-target-{name}-{}-{nonce}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&directory).unwrap();
+        directory
+    }
+
     #[test]
     fn targets_become_units_that_keep_the_first_id_and_share_the_install() {
         let project = json!({
@@ -5964,6 +5982,20 @@ mod typecheck_target_tests {
             ),
             None
         );
+    }
+
+    #[test]
+    fn corpus_globs_preserve_multi_suffix_declarations() {
+        let fixture = test_directory("declaration-glob");
+        let source = fixture.join("src/types");
+        fs::create_dir_all(&source).unwrap();
+        fs::write(source.join("ambient.d.ts"), "export {};\n").unwrap();
+        fs::write(source.join("implementation.ts"), "export {};\n").unwrap();
+
+        let files = collect_vue_input_paths(&fixture, &["src/**/*.d.ts".to_string()]).unwrap();
+
+        assert_eq!(files, vec!["src/types/ambient.d.ts"]);
+        fs::remove_dir_all(fixture).unwrap();
     }
 }
 
