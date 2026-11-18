@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import type { PopoverRootProps } from 'reka-ui'
+
+interface Props extends Pick<PopoverRootProps, 'open'> {
+  width?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  open: undefined,
+  close: undefined,
+})
+</script>
+
+<template>
+  <PopoverRoot :open="open">{{ close }}</PopoverRoot>
+</template>

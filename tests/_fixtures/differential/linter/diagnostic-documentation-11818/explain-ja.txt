@@ -43,6 +43,15 @@ compiler/character-reference-outside-unicode-range · コンパイラーエラ�
 
 ヒント:
   &#x10FFFF; 以下のコードポイントを使ってください
+=== compiler/control-character-in-input-stream
+compiler/control-character-in-input-stream · コンパイラーエラー
+入力に制御文字があります。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  見えない制御文字を削除してください。HTML のテンプレートでは使用できません
 === compiler/control-character-reference
 compiler/control-character-reference · コンパイラーエラー
 制御文字の文字参照です。

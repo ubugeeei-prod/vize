@@ -9,8 +9,6 @@ use vize_croquis::facts::{Demand, FactConsumer, FactGroup, UndefinedRefs};
 use vize_l0::cstr;
 use vize_relief::RootNode;
 
-mod props;
-
 static META: RuleMeta = RuleMeta {
     name: "vue/no-undefined-refs",
     description: "Disallow undefined variable references in templates",
@@ -39,7 +37,7 @@ impl Rule for NoUndefinedRefs {
         if ctx
             .art_script_analysis
             .or_else(|| ctx.analysis())
-            .is_some_and(props::has_unresolved_props)
+            .is_some_and(crate::rules::props_shape::has_unresolved_props)
         {
             return;
         }

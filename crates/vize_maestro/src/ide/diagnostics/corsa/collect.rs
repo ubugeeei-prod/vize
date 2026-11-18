@@ -22,6 +22,9 @@ pub(super) enum CollectFailure {
     Unavailable,
     /// The backend session answered but the request failed; not retried.
     Request(CorsaBridgeError),
+    /// A project-input change retired the editor mirror mid-preparation. The
+    /// warm session is healthy: prepare once more instead of respawning it.
+    Superseded,
     /// The backend process/transport is gone or unusable (crashed,
     /// OOM-killed, disconnected, or timed out). The carried bridge must be
     /// retired so a fresh session can be spawned (#3240, #3975).
@@ -47,6 +50,7 @@ pub(super) fn classify(
         {
             CollectFailure::Request(CorsaBridgeError::CommunicationError(message))
         }
+        error if error.is_superseded_editor_mirror() => CollectFailure::Superseded,
         CorsaBridgeError::CommunicationError(_)
         | CorsaBridgeError::ProcessTerminated
         | CorsaBridgeError::Timeout => CollectFailure::DeadBridge(bridge.clone(), error),
@@ -83,6 +87,12 @@ impl DiagnosticService {
             match result {
                 Ok(diagnostics) => return CorsaDiagnostics::Complete(diagnostics),
                 Err(CollectFailure::Unavailable) => return CorsaDiagnostics::Unavailable(vec![]),
+                // The input change also moved the request stamp, so a stale
+                // caller discards this pass; the retry warms the newer mirror.
+                Err(CollectFailure::Superseded) if attempt == 0 => {
+                    tracing::debug!("corsa editor mirror superseded for {uri}; preparing again");
+                }
+                Err(CollectFailure::Superseded) => return CorsaDiagnostics::Unavailable(vec![]),
                 Err(CollectFailure::DeadBridge(bridge, error)) if attempt == 0 => {
                     #[cfg(test)]
                     custody::error(state, uri, "dead_bridge_retry", attempt, &error);
@@ -412,6 +422,24 @@ mod tests {
                 "message":"Configuration error: cannot resolve tsconfig extends \"./base.json\" from /app/tsconfig.json"
             })
         );
+    }
+
+    #[test]
+    fn a_superseded_editor_mirror_preserves_the_backend_session() {
+        let bridge = Arc::new(CorsaBridge::new());
+        let superseded = CorsaBridgeError::superseded_editor_mirror();
+        assert!(superseded.is_superseded_editor_mirror());
+        assert!(matches!(
+            classify(&bridge, superseded),
+            CollectFailure::Superseded
+        ));
+
+        let transport = CorsaBridgeError::CommunicationError("broken pipe".into());
+        assert!(!transport.is_superseded_editor_mirror());
+        assert!(matches!(
+            classify(&bridge, transport),
+            CollectFailure::DeadBridge(_, CorsaBridgeError::CommunicationError(_))
+        ));
     }
 
     #[test]

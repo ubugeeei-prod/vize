@@ -277,7 +277,11 @@ impl<'a> Bindings<'a> {
                     if from_vue && let Some((api, _, _)) = vue_setup_call(imported.as_str()) {
                         self.aliases.push((local, api));
                     }
-                    let kind = if from_vue {
+                    // `{ default as Child }` from a `.vue` file is its
+                    // component, as a default specifier is (Vue's rule).
+                    let component =
+                        imported.as_str() == "default" && import.source.value.ends_with(".vue");
+                    let kind = if from_vue || component {
                         SetupBindingKind::SetupConst
                     } else {
                         SetupBindingKind::SetupMaybeRef

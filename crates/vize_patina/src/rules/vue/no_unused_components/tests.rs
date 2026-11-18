@@ -242,12 +242,14 @@ export default {
   components: { MdTagSwitcher, MdTableAlternateHeader, MdTableThead, MdTableRow, MdTableRowGhost, MdTableCellSelection }
 }
 </script>"#;
+    // Vue compiles the table as written, so the SFC reports no foster notice.
+    // Both findings share one span, so their order is the engine's (start,
+    // end) sort order.
     assert_eq!(
         lint_messages(sfc),
         vec![
-            "Foster parenting moved this element before the nearest open table.",
-            "Component 'MdTableRow' is registered but never used in template",
             "Component 'MdTableCellSelection' is registered but never used in template",
+            "Component 'MdTableRow' is registered but never used in template",
         ]
     );
 }

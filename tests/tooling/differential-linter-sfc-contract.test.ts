@@ -59,7 +59,7 @@ void test("all current SFC wires have the complete bounded transition and old pa
       ["current-api", "2b3b3b6305e6ee49c7654a1fbe29df4d3a487e9498c56637fbfdca58b84f12ee"],
       ["next-tick", "96b1745c527e4a65fc0347566d015d5063271e90d7fdc8d21fe160c54856c5c2"],
       ["report", "c10833e985b26e524cc9a0d0e469c3e651850fbe9dd6293d8f2854e692ef5622"],
-      ["static-class", "b409b01c2e7177419cafbdbbdb6257b11fe32e37e9a46acd9595d09d1f817116"],
+      ["static-class", "a8e75c02b01aed33a505886090952ac63f7e7b78a9fa96cc31be591852e207af"],
       ["component-name", "867a29d7c0a92c17d59fcaa6063be1e3649fb92375024fcd2932a57f27fe062c"],
     ],
   );
@@ -67,7 +67,7 @@ void test("all current SFC wires have the complete bounded transition and old pa
     sha256(
       fs.readFileSync(path.join(root, "tests/_fixtures/differential/linter/oracle-index.json")),
     ),
-    "362d9be19793e2c164af9b964b4f9b6bd9f4af781b8f2b44d3004887ab9f0448",
+    "b9f91809b14d7986f345fc4c562261417854a4f5d9e1005396fc60af7e6b3cb8",
   );
   const expected: [string, ReturnType<typeof missing> | null][] = [
     ["current-api/ref-string-untyped", null],

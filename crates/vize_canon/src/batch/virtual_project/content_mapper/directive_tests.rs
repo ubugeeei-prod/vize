@@ -10,6 +10,7 @@ mod expect_splices;
 mod inference_copies;
 mod loose_library_props;
 mod navigation_blocks;
+mod pug_equivalence;
 mod unchecked_prop_values;
 
 /// Explicit directives only; `disjoint.rs` covers the unmapped ignores.

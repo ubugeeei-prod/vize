@@ -1,0 +1,24 @@
+{
+  "row": "br-end-tag",
+  "dialect": "vue",
+  "source": "<p>a</br>b</p>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "p",
+      null,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      0,
+      "ab"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}

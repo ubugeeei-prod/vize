@@ -1,0 +1,35 @@
+{
+  "row": "script-data-escapes",
+  "dialect": "vue",
+  "source": "<div><script><!--<script></script>--></script></div>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "div",
+      null,
+      []
+    ],
+    [
+      "script",
+      0,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      1,
+      "<!--<script>"
+    ],
+    [
+      0,
+      "-->"
+    ]
+  ],
+  "comments": [],
+  "errors": [
+    "23"
+  ]
+}

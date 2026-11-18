@@ -8,6 +8,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { packetPath, packets } from "../../tools/commands/davinci/htmlish-oracle.ts";
+
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (file: string) => fs.readFileSync(path.join(repoRoot, file), "utf8");
 
@@ -93,4 +95,13 @@ test("every deliberate divergence names its decision, fixture and fuzz exemption
     assert.ok(fs.existsSync(path.join(repoRoot, divergence.fixture)), divergence.fixture);
     assert.ok(divergence.summary.length > 0 && divergence.fuzzExempt.length > 0, divergence.id);
   }
+});
+
+test("every oracle packet is the tree its oracle builds today", () => {
+  for (const packet of packets())
+    assert.equal(
+      fs.readFileSync(packetPath(packet), "utf8"),
+      JSON.stringify(packet, null, 2) + "\n",
+      `${packet.row}.${packet.dialect}: run node tools/commands/davinci/htmlish-oracle.ts`,
+    );
 });

@@ -79,17 +79,34 @@ export function validateTypecheckPerformanceTarget(
     return;
   }
   if (requireBaseline) requireFile(project, fixtureRoot, baseline.tsconfig, "baseline tsconfig");
+  const commands = baselinePrepareCommands(baseline.prepare);
   if (
-    !Array.isArray(baseline.prepare) ||
-    baseline.prepare.length < 2 ||
-    baseline.prepare[0] !== manager ||
-    baseline.prepare.some(
-      (argument) =>
-        typeof argument !== "string" || argument.length === 0 || argument.includes("\0"),
+    commands == null ||
+    commands.some(
+      (command) =>
+        command.length < 2 ||
+        command[0] !== manager ||
+        command.some(
+          (argument) =>
+            typeof argument !== "string" || argument.length === 0 || argument.includes("\0"),
+        ),
     )
   ) {
-    invalid(project, `baseline prepare must be a ${String(manager)} command argument array`);
+    invalid(
+      project,
+      `baseline prepare must be a ${String(manager)} command argument array or a list of them`,
+    );
   }
+}
+
+/**
+ * `baseline.prepare` is one command or an ordered list of commands, for
+ * fixtures whose generated inputs come from more than one script.
+ */
+export function baselinePrepareCommands(prepare: unknown): unknown[][] | null {
+  if (!Array.isArray(prepare) || prepare.length === 0) return null;
+  if (prepare.every((command) => Array.isArray(command))) return prepare as unknown[][];
+  return prepare.some((argument) => Array.isArray(argument)) ? null : [prepare];
 }
 
 function requireFile(

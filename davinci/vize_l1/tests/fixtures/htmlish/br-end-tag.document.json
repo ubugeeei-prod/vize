@@ -1,0 +1,48 @@
+{
+  "row": "br-end-tag",
+  "dialect": "document",
+  "source": "<!DOCTYPE html><html><head></head><body><p>a</br>b</p></body></html>",
+  "oracle": {
+    "name": "parse5",
+    "version": "7.3.0"
+  },
+  "elements": [
+    [
+      "html",
+      null,
+      []
+    ],
+    [
+      "head",
+      0,
+      []
+    ],
+    [
+      "body",
+      0,
+      []
+    ],
+    [
+      "p",
+      2,
+      []
+    ],
+    [
+      "br",
+      3,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      3,
+      "a"
+    ],
+    [
+      3,
+      "b"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}

@@ -219,3 +219,38 @@ defineProps<Props>();
         ]
     );
 }
+
+#[test]
+fn reports_cover_the_whole_prop_like_eslint_plugin_vue() {
+    let ranges = |source: &str| -> Vec<String> {
+        Linter::with_preset(LintPreset::Incremental)
+            .with_enabled_rules(Some(vec!["vue/require-prop-comment".into()]))
+            .lint_sfc(source, "Props.vue")
+            .diagnostics
+            .iter()
+            .filter_map(|diagnostic| source.get(diagnostic.start as usize..diagnostic.end as usize))
+            .map(String::from)
+            .collect()
+    };
+    let typed = "<script setup lang=\"ts\">\ntype Props = {\n  multiple?: false | undefined;\n  modelValue?: string,\n  pick(value: string): void\n}\ndefineProps<Props>()\n</script>\n";
+    assert_eq!(
+        ranges(typed),
+        // A TS member spans its delimiter, as in typescript-estree.
+        [
+            "multiple?: false | undefined;",
+            "modelValue?: string,",
+            "pick(value: string): void"
+        ]
+    );
+    let runtime = "<script>\nexport default {\n  props: { size: { type: String, default: 'm' }, tone: String, ['label']: String },\n}\n</script>\n";
+    assert_eq!(
+        ranges(runtime),
+        [
+            "size: { type: String, default: 'm' }",
+            "tone: String",
+            "['label']: String"
+        ]
+    );
+    let array = "<script setup>\ndefineProps(['size'])\n</script>\n";
+    assert_eq!(ranges(array), ["'size'"]);
+}

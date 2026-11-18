@@ -23,6 +23,7 @@ import {
 import { dirname, join, resolve, sep } from "node:path";
 
 import { SCALE_FIXTURES } from "./lsp-vs-volar-scale-fixtures.ts";
+import { registryPrepareSteps } from "./typecheck-vs-vue-tsc-projects.ts";
 import { type Anchor, anchorIn } from "./lsp-vs-volar-text.ts";
 
 export type RequestSpec =
@@ -273,7 +274,7 @@ interface RegistryEntry {
   id: string;
   repository: string;
   revision: string;
-  typecheckPerformance?: { baseline?: { prepare?: string[] } };
+  typecheckPerformance?: { baseline?: { prepare?: string[] | string[][] } };
 }
 
 function run(command: string, args: string[], cwd: string) {
@@ -392,8 +393,12 @@ function prepareRegistry(
     [...pnpm, "install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
     root,
   );
-  const prepare = prepareCommand ?? entry.typecheckPerformance?.baseline?.prepare?.slice(1);
-  if (prepare) run("npx", [...pnpm, ...prepare], root);
+  const steps = prepareCommand
+    ? [prepareCommand]
+    : registryPrepareSteps(entry.typecheckPerformance?.baseline?.prepare).map((step) =>
+        step.slice(1),
+      );
+  for (const step of steps) run("npx", [...pnpm, ...step], root);
   writeFileSync(stamp, `${entry.revision}\n`);
 }
 

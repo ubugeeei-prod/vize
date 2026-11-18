@@ -1,0 +1,7 @@
+﻿<script setup lang="ts">
+const answer = 42
+</script>
+
+<template>
+  <p>{{ answer }}</p>
+</template>

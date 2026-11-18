@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Child from "./child.vue"
+
+const model = { a: 1 }
+</script>
+
+<template lang="pug">
+Child(:title="model.inComponent")
+div(:title="model.inElement")
+</template>

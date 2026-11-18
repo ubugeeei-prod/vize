@@ -1,0 +1,2 @@
+const A = () => <B v-model={[a, "x", "y"]} />;
+const C = () => <B v-model={[a, ["trim", 1, m]]} />;

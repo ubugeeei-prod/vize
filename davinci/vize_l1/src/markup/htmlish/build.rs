@@ -70,6 +70,7 @@ pub(crate) fn build<
     events: &[Event],
     errors: &mut Vec<'a, crate::markup::SurfaceError>,
     repair_interactive: bool,
+    fosters: bool,
 ) -> (SurfaceTree<'a>, bool) {
     let mut b = Builder::<RAW, TAG_FACTS, STRUCTURAL_DIAGNOSTICS> {
         src,
@@ -82,6 +83,7 @@ pub(crate) fn build<
         stack: Vec::new_in(&allocator),
         recovery: scope::Recovery::new(allocator, repair_interactive),
         repaired: false,
+        fosters,
     };
     b.run();
     // EOF: bytes the tokenizer consumed without reporting structure
@@ -131,6 +133,8 @@ struct Builder<'a, 'e, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_
     stack: Vec<'a, Frame<'a>>,
     recovery: scope::Recovery<'a>,
     repaired: bool,
+    /// Report foster parenting: only for an in-DOM template.
+    fosters: bool,
 }
 
 impl<'a, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_DIAGNOSTICS: bool>
@@ -310,10 +314,15 @@ impl<'a, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_DIAGNOSTICS: b
         let tail = crate::slice::from(self.src, e.min(self.src.len()));
         let closer = match kind {
             RawKind::Comment => {
+                // `-->`; `--!>` (WHATWG closes there with an error; the lexer's
+                // content already holds its first `-`, leaving `-!>`); the
+                // abrupt empty forms `<!--->` (`->`) and `<!-->` (`>`).
                 if tail.starts_with("-->") {
                     3
                 } else if tail.starts_with("--!>") {
                     4
+                } else if tail.starts_with("-!>") || tail.starts_with("->") {
+                    tail.find('>').map_or(0, |at| at + 1)
                 } else if tail.starts_with('>') {
                     1
                 } else {

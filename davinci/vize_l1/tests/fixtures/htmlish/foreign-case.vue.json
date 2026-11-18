@@ -1,0 +1,29 @@
+{
+  "row": "foreign-case",
+  "dialect": "vue",
+  "source": "<svg viewBox=\"0 0 1 1\"><foreignObject></foreignObject></svg>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "svg",
+      null,
+      [
+        [
+          "viewBox",
+          "0 0 1 1"
+        ]
+      ]
+    ],
+    [
+      "foreignObject",
+      0,
+      []
+    ]
+  ],
+  "texts": [],
+  "comments": [],
+  "errors": []
+}

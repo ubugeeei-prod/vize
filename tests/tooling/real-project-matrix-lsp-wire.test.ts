@@ -18,6 +18,17 @@ const prefix =
 test("passive native LSP capture retains the complete original Matrix workflow", () => {
   const original = parse(originalBytes);
   const current = parse(read("../../.github/workflows/real-project-matrix.yml"));
+  // Core tools and the divergence report qualify Vize on the checker the LSP
+  // step pins, never on a fixture's own declared native preview.
+  const pinnedChecker =
+    "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc";
+  for (const id of ["core_tools", "typecheck_divergence"]) {
+    const step = current.jobs["real-project-matrix"].steps.find(
+      (candidate: { id?: string }) => candidate.id === id,
+    );
+    assert.equal(step.env.CORSA_PATH, pinnedChecker, id);
+    delete step.env.CORSA_PATH;
+  }
   assert.deepEqual(original.on.schedule, [{ cron: "37 5 * * 0" }]);
   assert.deepEqual(current.on.schedule, [{ cron: "37 5 * * *" }]);
   current.on.schedule = original.on.schedule;

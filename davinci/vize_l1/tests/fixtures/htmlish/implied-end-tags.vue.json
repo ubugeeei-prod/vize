@@ -1,0 +1,40 @@
+{
+  "row": "implied-end-tags",
+  "dialect": "vue",
+  "source": "<ul><li>a<li>b</ul>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "ul",
+      null,
+      []
+    ],
+    [
+      "li",
+      0,
+      []
+    ],
+    [
+      "li",
+      1,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      1,
+      "a"
+    ],
+    [
+      2,
+      "b"
+    ]
+  ],
+  "comments": [],
+  "errors": [
+    "24"
+  ]
+}

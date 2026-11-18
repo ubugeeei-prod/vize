@@ -132,6 +132,7 @@ impl<'a, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_DIAGNOSTICS: b
                 .push(crate::markup::SurfaceError::ignored_repeated_form(span));
         }
         if STRUCTURAL_DIAGNOSTICS
+            && self.fosters
             && !self_closing
             && !is_void_tag(tag)
             && self

@@ -1,0 +1,4 @@
+<template>
+  <span class="indicator-text">Loading</span>
+  <p title="tab	here">plain whitespace</p>
+</template>

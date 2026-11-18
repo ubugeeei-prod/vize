@@ -440,7 +440,7 @@ impl Linter {
     ) -> LintResult {
         let l2 = profile!(
             "patina.template.l1_parse_lower",
-            crate::markup::L2Template::lower(allocator, source)
+            crate::markup::L2Template::lower_for(allocator, source, env.document_kind)
         );
         let has_fatal_parse_errors = self.has_fatal_template_parse_errors(&l2);
 

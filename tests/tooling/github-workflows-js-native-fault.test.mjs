@@ -147,6 +147,36 @@ else process.exit(Number(result));
   });
 }
 
+void test("the command writes regular files that the observer relays in full (#12422)", () => {
+  // A command holding the step's pipe could see EAGAIN once another process
+  // made it nonblocking; a regular file cannot, whatever the reader does.
+  const fixture = mkdtempSync(join(tmpdir(), "vize-js-native-fault-relay-"));
+  try {
+    const program =
+      "const fs = require('node:fs');" +
+      "fs.writeSync(1, `${fs.fstatSync(1).isFile()} ${fs.fstatSync(2).isFile()}\\n`);" +
+      "for (let i = 0; i < 64; i++) fs.writeSync(1, `${String(i).padStart(2, '0')} ${'x'.repeat(8190)}\\n`);" +
+      "fs.writeSync(2, 'burst stderr\\n');";
+    const source =
+      importHelper +
+      `process.exitCode = await fault.main(["--", process.execPath, "-e", ${JSON.stringify(program)}], "linux");`;
+    const result = spawnSync(process.execPath, ["--input-type=module", "-e", source], {
+      env: environment(fixture, "126"),
+      encoding: "utf8",
+      maxBuffer: 16 * 1024 * 1024,
+    });
+    assert.equal(result.status, 0, result.stderr);
+    const lines = result.stdout.split("\n");
+    assert.equal(lines[0], "true true");
+    assert.equal(lines.length, 66);
+    for (let i = 0; i < 64; i++)
+      assert.equal(lines[i + 1], `${String(i).padStart(2, "0")} ${"x".repeat(8190)}`);
+    assert.equal(result.stderr, "burst stderr\n");
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
 void test("diagnostic collection failures retain an original command failure", () => {
   const fixture = mkdtempSync(join(tmpdir(), "vize-js-native-fault-gap-"));
   try {

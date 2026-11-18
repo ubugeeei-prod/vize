@@ -9,7 +9,7 @@ use vize_l1::{
 use vize_patina::native::{NativeLintRefusal, NativeSyntaxLint};
 
 #[test]
-fn authored_table_context_refuses_and_retains_complete_original_foster_output() {
+fn authored_table_context_refuses_and_retains_the_registered_warning() {
     let opening = "<center title='x'>";
     let source = cstr!("<template><table>{opening}</center></table></template>");
     let arena = Allocator::default();
@@ -29,14 +29,7 @@ fn authored_table_context_refuses_and_retains_complete_original_foster_output() 
     for locale in LOCALES {
         assert_eq!(
             complete(&registered(&source, locale)),
-            expected(vec![
-                parser(
-                    "error",
-                    "Foster parenting moved this element before the nearest open table.",
-                    span(&source, opening)
-                ),
-                warning(locale, span(&source, opening), "center"),
-            ])
+            expected(vec![warning(locale, span(&source, opening), "center")])
         );
     }
     assert_eq!(cstr!("{:?}", owner.component().carrier()), before);

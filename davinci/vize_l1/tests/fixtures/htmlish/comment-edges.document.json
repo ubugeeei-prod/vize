@@ -1,0 +1,56 @@
+{
+  "row": "comment-edges",
+  "dialect": "document",
+  "source": "<!DOCTYPE html><html><head></head><body><div><!--><!---><!--a--!>b</div></body></html>",
+  "oracle": {
+    "name": "parse5",
+    "version": "7.3.0"
+  },
+  "elements": [
+    [
+      "html",
+      null,
+      []
+    ],
+    [
+      "head",
+      0,
+      []
+    ],
+    [
+      "body",
+      0,
+      []
+    ],
+    [
+      "div",
+      2,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      3,
+      "b"
+    ]
+  ],
+  "comments": [
+    [
+      3,
+      ""
+    ],
+    [
+      3,
+      ""
+    ],
+    [
+      3,
+      "a"
+    ]
+  ],
+  "errors": [
+    "abrupt-closing-of-empty-comment",
+    "abrupt-closing-of-empty-comment",
+    "incorrectly-closed-comment"
+  ]
+}

@@ -3,6 +3,7 @@ use crate::linter::{LintResult, Linter};
 use crate::rule::Rule;
 use crate::rule::RuleRegistry;
 
+mod console;
 mod irregular_whitespace;
 mod negated_condition;
 mod template_wrapper_key;
@@ -484,4 +485,15 @@ fn prefer_v_model_pairs_camelized_names_and_mirror_handlers() {
             result.diagnostics
         );
     }
+}
+
+#[test]
+fn restricted_v_bind_reports_the_directive_key() {
+    assert_eq!(
+        reported(
+            Box::new(NoRestrictedVBind),
+            r#"<Card :v-bind="{ item }" /><Input key="k" :v-model="0" start-open /><i :v-show.camel />"#,
+        ),
+        [":v-bind", ":v-model", ":v-show.camel"]
+    );
 }
