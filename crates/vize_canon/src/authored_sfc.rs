@@ -183,9 +183,9 @@ fn pug_view(source: &str) -> Option<SfcView> {
     let body = template.loc.start..template.loc.end;
     match template_lang(template.lang.as_deref()) {
         Ok(TemplateLang::Html) => None,
-        Ok(TemplateLang::Pug(_)) => match vize_l0::profile!(
+        Ok(TemplateLang::Pug(profile)) => match vize_l0::profile!(
             "canon.sfc.pug.lower",
-            PugBlockView::new(source, body.clone())
+            PugBlockView::new_profiled(source, body.clone(), profile)
         ) {
             Ok(view) => Some(SfcView::Derived(view)),
             Err(refused) => blank_template(source, body, refused.diagnostics),

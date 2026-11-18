@@ -14,6 +14,12 @@ use std::path::PathBuf;
 
 use vize_patina::{LintResult, Linter};
 
+/// These tests compare `jade` with its `pug` twin; the jade profile's own
+/// findings (`vue/prefer-pug-lang`) are pinned in `jade_profile_lint`.
+fn linter() -> Linter {
+    Linter::new().with_disabled_rules(vec!["vue/prefer-pug-lang".into()])
+}
+
 fn signature(result: &LintResult) -> Vec<(String, String, String)> {
     let mut rows: Vec<_> = result
         .diagnostics
@@ -52,7 +58,7 @@ fn pug_diagnostics_match_the_html_twin_and_land_on_pug() {
         SCRIPT,
     ]
     .concat();
-    let linter = Linter::new();
+    let linter = linter();
     let (from_pug, from_html) = (
         linter.lint_sfc(&pug, "A.vue"),
         linter.lint_sfc(&html, "A.vue"),
@@ -79,7 +85,7 @@ fn jade_alias_reports_the_same_authored_diagnostics_as_pug() {
     ]
     .concat();
     let jade = pug.replacen("lang=\"pug\"", "lang=\"JADE\"", 1);
-    let linter = Linter::new();
+    let linter = linter();
     let (from_pug, from_jade) = (
         linter.lint_sfc(&pug, "Pug.vue"),
         linter.lint_sfc(&jade, "Jade.vue"),
@@ -122,7 +128,7 @@ fn dho_real_project_matches_the_pinned_eslint_plugin_vue_twin() {
         }
     }
     expected.sort();
-    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/require-v-for-key".into()]));
+    let linter = linter().with_enabled_rules(Some(vec!["vue/require-v-for-key".into()]));
     for (filename, source) in [
         ("DhoPug.vue", pug.to_owned()),
         (
@@ -140,7 +146,7 @@ fn attribute_order_judges_the_authored_order_not_pugs_class_hoisting() {
     // pug renders `.card(v-if="ok")` as `<div class="card" v-if="ok">`;
     // the author wrote the class shorthand first by pug convention, and the
     // lint view keeps `v-if` where it was authored relative to `class`.
-    let linter = Linter::new();
+    let linter = linter();
     let rule = "vue/attribute-order";
     let count = |source: &str| {
         let result = linter.lint_sfc(source, "A.vue");
@@ -173,7 +179,7 @@ fn every_matrix_fixture_lints_like_its_pug_rendered_html() {
         .collect();
     paths.sort();
     assert_eq!(paths.len(), 33);
-    let linter = Linter::new();
+    let linter = linter();
     let mut findings = 0;
     for path in &paths {
         let pug = std::fs::read_to_string(path).expect("pug");
@@ -223,7 +229,7 @@ fn refused_pug_and_jade_report_the_shared_lowering_errors_at_authored_bytes() {
         for lang in ["pug", "jade", "PuG", "JADE"] {
             let prefix = format!("<!-- 日本 🧭 -->\r\n<template lang=\"{lang}\">");
             let source = format!("{prefix}{body}</template>\r\n");
-            let result = Linter::new().lint_sfc(&source, "Refused.vue");
+            let result = linter().lint_sfc(&source, "Refused.vue");
             let actual: Vec<_> = result
                 .diagnostics
                 .iter()
@@ -326,8 +332,8 @@ fn pinned_original_pug_and_jade_attribute_blocks_lint_like_their_html_twin() {
         ),
     ] {
         let twin = "<!-- 日本 🧭 -->\n<template><div id=\"x\"></div></template>\n";
-        let result = Linter::new().lint_sfc(source, "Original.vue");
-        let expected = Linter::new().lint_sfc(twin, "Original.vue");
+        let result = linter().lint_sfc(source, "Original.vue");
+        let expected = linter().lint_sfc(twin, "Original.vue");
         assert_eq!(result.filename.as_str(), "Original.vue");
         assert_eq!((result.error_count, result.warning_count), (0, 0));
         assert_eq!(signature(&result), signature(&expected));

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { canonical, identity, jsonBytes, sha } from "./lint-preset-source-successors.ts";
 import { inverseEslintVueRulePort } from "./lint-preset-eslint-vue-port.ts";
+import { inverseJadeProfile } from "./lint-preset-jade-profile.ts";
 import { inverseRuleOptions12944 } from "./lint-preset-rule-options-12944.ts";
 import { inverseScriptUnusedAndTypeAwarePresets } from "./lint-preset-script-unused-type-aware.ts";
 
@@ -129,7 +130,10 @@ export function inversePatinaCurrentSource(name: string, body: Buffer): Buffer {
           name,
           inverseMappedRuleSource(
             name,
-            inverseScriptUnusedAndTypeAwarePresets(name, inverseRuleOptions12944(name, body)),
+            inverseScriptUnusedAndTypeAwarePresets(
+              name,
+              inverseRuleOptions12944(name, inverseJadeProfile(name, body)),
+            ),
           ),
         ),
       ),

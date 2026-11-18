@@ -6,7 +6,7 @@ use super::{PugErrorCode, check_pug_fidelity, parse_pug_within};
 fn an_oversized_source_is_one_eof_hole_with_a_size_error() {
     let allocator = Allocator::default();
     let source = "p hello";
-    let (tree, errors) = parse_pug_within(&allocator, source, 3);
+    let (tree, errors) = parse_pug_within(&allocator, source, 3, super::PugProfile::Pug3);
     assert!(tree.nodes.is_empty());
     assert_eq!(tree.eof.leading, source);
     assert_eq!(check_pug_fidelity(&tree), Ok(()));
@@ -19,7 +19,8 @@ fn an_oversized_source_is_one_eof_hole_with_a_size_error() {
 fn a_source_at_the_limit_parses_normally() {
     let allocator = Allocator::default();
     let source = "p hello";
-    let (tree, errors) = parse_pug_within(&allocator, source, source.len());
+    let (tree, errors) =
+        parse_pug_within(&allocator, source, source.len(), super::PugProfile::Pug3);
     assert_eq!(tree.nodes.len(), 1);
     assert!(errors.is_empty());
 }

@@ -54,6 +54,11 @@ export const chineseVue1: Record<string, readonly [purpose: string, bad: string,
     "模板通过 lang 选择 Pug。这是只使用 HTML 的预期规范；当前 SFC 路径不会针对该目录 ID 产生诊断。",
     "普通 HTML 模板省略 lang，直接使用段落。这展示了规范，并未声称当前 SFC 会报告问题。",
   ],
+  "vue/prefer-pug-lang": [
+    '优先使用 lang="pug"，而不是旧版 jade 1.x 模板语言',
+    "模板指定 jade，Vue 会用旧版 jade 1.x 包渲染它，并且使用了 jade 特有的带短横线的 each。",
+    "模板指定 pug，并用 pug 3 的 each 关键字编写循环。",
+  ],
   "vue/no-template-shadow": [
     "禁止使用遮蔽外层作用域变量的变量名称",
     "内层 v-for 再次声明 item，在嵌套循环中遮蔽了外层 item 绑定。",

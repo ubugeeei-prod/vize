@@ -43,7 +43,7 @@ pub(super) fn compile_sfc_inner(
             .is_some_and(|options| options.experimental_in_tag_comments),
         template_syntax,
     )?;
-    let (descriptor, mut dependencies, pug_source_map) =
+    let (descriptor, mut dependencies, pug_source_map, pug_warnings) =
         super::pug::prepare_pug_template(&descriptor)?;
     let mut result = super::super::compile_sfc_inner(
         &descriptor,
@@ -60,6 +60,7 @@ pub(super) fn compile_sfc_inner(
     )?;
     dependencies.extend(result.dependencies);
     result.dependencies = dependencies;
+    result.warnings.extend(pug_warnings);
     Ok(result)
 }
 

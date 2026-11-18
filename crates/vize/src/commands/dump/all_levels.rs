@@ -28,7 +28,7 @@ use vize_l0::{
     dump::capture::{CaptureOutcome, StageCapture},
 };
 use vize_l1::container::{ContainerFormat, Vue, lang::TemplateLang};
-use vize_l1_to_l2::lower::pug::derive_template_source;
+use vize_l1_to_l2::lower::pug::{PugRendering, derive_template_source_profiled};
 
 use super::{DumpArgs, Pipeline};
 
@@ -66,14 +66,14 @@ pub(super) fn run(args: &DumpArgs) {
                 },
             )
         }
-        (_, Some(TemplateLang::Pug(_))) => {
+        (_, Some(TemplateLang::Pug(profile))) => {
             if pipeline != Pipeline::Dom {
                 fail(
                     path,
                     "raw Pug capture currently supports only the DOM backend",
                 );
             }
-            let derived = derive_template_source(&source);
+            let derived = derive_template_source_profiled(&source, PugRendering::Pug, profile);
             if let Some(diagnostic) = derived.first_error() {
                 fail(path, diagnostic.message.as_str());
             }

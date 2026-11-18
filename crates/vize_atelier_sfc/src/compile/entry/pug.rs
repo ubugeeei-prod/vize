@@ -12,7 +12,9 @@
 
 use std::borrow::Cow;
 
-use vize_l1_to_l2::lower::pug::{PugRendering, PugSourceMap, derive_template_source_including};
+use vize_l1_to_l2::lower::pug::{
+    PugRendering, PugSourceMap, derive_template_source_including_profiled,
+};
 
 use crate::types::{BlockLocation, SfcDescriptor, SfcError};
 
@@ -23,6 +25,7 @@ type PreparedPugTemplate<'d, 's> = (
     Cow<'d, SfcDescriptor<'s>>,
     Vec<vize_l0::String>,
     Option<PugSourceMap>,
+    Vec<SfcError>,
 );
 
 /// A compile view of `descriptor` whose pug template content is its
@@ -33,7 +36,7 @@ type PreparedPugTemplate<'d, 's> = (
 pub(super) fn prepare_pug_template<'d, 's>(
     descriptor: &'d SfcDescriptor<'s>,
 ) -> Result<PreparedPugTemplate<'d, 's>, SfcError> {
-    let borrowed = || Ok((Cow::Borrowed(descriptor), Vec::new(), None));
+    let borrowed = || Ok((Cow::Borrowed(descriptor), Vec::new(), None, Vec::new()));
     let Some(template) = descriptor
         .template
         .as_ref()
@@ -41,9 +44,9 @@ pub(super) fn prepare_pug_template<'d, 's>(
     else {
         return borrowed();
     };
-    match vize_l1::container::lang::template_lang(template.lang.as_deref()) {
+    let profile = match vize_l1::container::lang::template_lang(template.lang.as_deref()) {
         Ok(vize_l1::container::lang::TemplateLang::Html) => return borrowed(),
-        Ok(vize_l1::container::lang::TemplateLang::Pug(_)) => {}
+        Ok(vize_l1::container::lang::TemplateLang::Pug(profile)) => profile,
         Err(unsupported) => {
             let unsupported = unsupported.located(&descriptor.source, template.loc.tag_start);
             let mut message = vize_l0::String::from("unsupported template lang \"");
@@ -67,12 +70,13 @@ pub(super) fn prepare_pug_template<'d, 's>(
                 loc: Some(loc),
             });
         }
-    }
-    let derived = derive_template_source_including(
+    };
+    let derived = derive_template_source_including_profiled(
         &template.content,
         PugRendering::Pug,
         &descriptor.filename,
         &mut FileIncludes,
+        profile,
     );
     if let Some(error) = derived.first_error() {
         let offset = template.loc.start + error.span.start as usize;
@@ -84,13 +88,33 @@ pub(super) fn prepare_pug_template<'d, 's>(
             loc: Some(point(&descriptor.source, offset)),
         });
     }
+    // The jade profile's warnings (`vize_l1_to_l2::lower::pug` jade module).
+    let warnings = derived
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.severity() == vize_l0::diag::Severity::Warning)
+        .map(|diagnostic| {
+            let start = template.loc.start + diagnostic.span.start as usize;
+            let end = template.loc.start + diagnostic.span.end as usize;
+            let mut message = vize_l0::String::from("jade template: ");
+            message.push_str(&diagnostic.message);
+            let mut loc = point(&descriptor.source, start);
+            loc.end = end;
+            loc.tag_end = end;
+            SfcError {
+                message,
+                code: Some("JADE_PROFILE".into()),
+                loc: Some(loc),
+            }
+        })
+        .collect();
     let dependencies = derived.dependencies.clone();
     let map = derived.map;
     let mut view = descriptor.clone();
     if let Some(template) = view.template.as_mut() {
         template.content = Cow::Owned(derived.html.into());
     }
-    Ok((Cow::Owned(view), dependencies, Some(map)))
+    Ok((Cow::Owned(view), dependencies, Some(map), warnings))
 }
 
 /// A zero-width block location at `offset` of the SFC source.

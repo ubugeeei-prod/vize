@@ -134,6 +134,8 @@ fn linted(source: &str) -> Vec<(String, (usize, usize), (usize, usize))> {
         .lint_sfc(source, "App.vue")
         .diagnostics
         .iter()
+        // `jade` names the jade 1.x profile, which this rule reports by design.
+        .filter(|diagnostic| diagnostic.rule_name != "vue/prefer-pug-lang")
         .map(|diagnostic| {
             (
                 diagnostic.rule_name.to_owned(),

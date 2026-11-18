@@ -40,6 +40,8 @@ pub(super) struct Emitter<'t> {
     pub(super) scope: Scope,
     pub(super) mixins: Mixins<'t>,
     pub(super) includes: Includes<'t>,
+    /// The pug-family language the template is written in.
+    pub(super) profile: vize_l1::markup::pug::PugProfile,
 }
 
 impl<'t> Emitter<'t> {
@@ -58,6 +60,7 @@ impl<'t> Emitter<'t> {
             scope: Scope::default(),
             mixins: Mixins::default(),
             includes,
+            profile: tree.profile,
         }
     }
 
@@ -107,6 +110,40 @@ impl<'t> Emitter<'t> {
             .push(crate::exemptions::lowering(span, &message));
     }
 
+    /// A jade 1.x profile warning at `span`, with an optional
+    /// machine-applicable rewrite of `fix.0` to `fix.1`.
+    pub(super) fn jade_warning(
+        &mut self,
+        span: Span,
+        message: String,
+        fix: Option<(Span, String)>,
+    ) {
+        let mut diagnostic = vize_l0::diag::Diagnostic::new(
+            vize_l0::diag::Advisory::Warning,
+            vize_l0::diag::Stage::Semantic,
+            span,
+            message,
+        );
+        if let Some((at, replacement)) = fix {
+            diagnostic.parts.push(vize_l0::diag::DiagnosticPart::new(
+                vize_l0::diag::PartKind::Suggestion,
+                at,
+                replacement,
+            ));
+        }
+        diagnostic.parts.push(vize_l0::diag::DiagnosticPart::new(
+            vize_l0::diag::PartKind::Help,
+            span,
+            super::jade::HINT,
+        ));
+        self.diagnostics.push(diagnostic);
+    }
+
+    /// Whether the template is written in the jade 1.x profile.
+    pub(super) fn is_jade(&self) -> bool {
+        self.profile == vize_l1::markup::pug::PugProfile::Jade1
+    }
+
     pub(super) fn nodes(&mut self, nodes: &'t [PugNode<'t>]) {
         let mut index = 0;
         while let Some(node) = nodes.get(index) {
@@ -137,7 +174,11 @@ impl<'t> Emitter<'t> {
             PugNode::Tag(tag) => self.tag(tag),
             PugNode::Call(call) => self.call(call),
             PugNode::Refused(refused) if refused.refusal == PugRefusal::Mixin => {
-                self.define(refused);
+                if self.jade_legacy_call(refused) {
+                    self.legacy_call(refused);
+                } else {
+                    self.define(refused);
+                }
             }
             PugNode::Refused(refused) if refused.refusal == PugRefusal::MixinBlock => {
                 self.mixin_block(refused);

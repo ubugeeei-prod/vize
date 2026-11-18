@@ -119,7 +119,7 @@ l1	-	davinci/vize_l1/src/markup/htmlish/event/tests.rs	0	0	0	0	1	4	0	0
 l1	-	davinci/vize_l1/src/markup/htmlish/parse.rs	0	0	0	0	1	27	0	0
 l1	-	davinci/vize_l1/src/markup/htmlish/parse/error.rs	0	0	3	0	0	0	0	0
 l1	-	davinci/vize_l1/src/markup/htmlish/parse/namespace.rs	0	0	0	0	1	2	0	0
-l1	-	davinci/vize_l1/src/markup/pug.rs	0	0	0	0	1	6	0	0
+l1	-	davinci/vize_l1/src/markup/pug.rs	0	0	0	0	1	7	0	0
 l1	-	davinci/vize_l1/src/markup/pug/build.rs	0	0	0	0	1	7	0	0
 l1	-	davinci/vize_l1/src/markup/pug/build/tag.rs	0	0	0	0	1	4	0	0
 l1	-	davinci/vize_l1/src/markup/pug/build/text.rs	0	0	0	0	1	5	0	0
@@ -299,14 +299,16 @@ l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/pug/attr_object.rs	1	8	1	10	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/pug/attrs.rs	1	9	1	11	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/pug/check.rs	0	0	1	1	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/pug/control.rs	1	4	1	8	0	0	0	0
-l1_to_l2	analysis	davinci/vize_l1_to_l2/src/lower/pug/emit.rs	1	2	1	6	0	0	0	0
+l1_to_l2	analysis	davinci/vize_l1_to_l2/src/lower/pug/emit.rs	1	2	1	8	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/pug/eval.rs	1	3	1	9	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/pug/heads.rs	1	1	0	0	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/pug/include.rs	1	11	1	13	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/pug/include/limits.rs	0	0	1	0	0	0	0	0
+l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/pug/jade.rs	1	0	1	3	0	0	0	0
+l1_to_l2	analysis	davinci/vize_l1_to_l2/src/lower/pug/jade/tests.rs	1	1	1	13	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/pug/literal.rs	0	0	1	2	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/pug/map.rs	1	1	0	0	0	0	0	0
-l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/pug/mixin.rs	1	6	1	11	0	0	0	0
+l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/pug/mixin.rs	1	9	1	12	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/pug/ops.rs	0	0	1	1	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/pug/refusal.rs	0	0	1	12	0	0	0	0
 l1_to_l2	analysis	davinci/vize_l1_to_l2/src/lower/pug/scope.rs	1	4	1	3	0	0	0	0

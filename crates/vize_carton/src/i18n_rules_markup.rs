@@ -321,6 +321,12 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "不建议在 template 块上使用 lang 属性",
     ),
     (
+        "vue/prefer-pug-lang.description",
+        "Prefer lang=\"pug\" over the legacy jade 1.x template language",
+        "旧 jade 1.x のテンプレート言語より lang=\"pug\" を優先する",
+        "优先使用 lang=\"pug\"，而不是旧版 jade 1.x 模板语言",
+    ),
+    (
         "vue/no-unused-components.description",
         "Disallow registering components that are not used inside templates",
         "テンプレートで使われないコンポーネントの登録を禁止する",
