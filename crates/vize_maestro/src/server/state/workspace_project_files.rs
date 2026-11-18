@@ -34,7 +34,7 @@ pub(super) struct Inventory {
 struct CachedPaths {
     generation: u64,
     roots: Vec<PathBuf>,
-    uris: Vec<Url>,
+    uris: Arc<[Url]>,
 }
 
 struct CachedSources {
@@ -45,12 +45,12 @@ struct CachedSources {
 }
 
 impl Inventory {
-    fn cached_paths(&self, roots: &[PathBuf], generation: u64) -> Option<Vec<Url>> {
+    fn cached_paths(&self, roots: &[PathBuf], generation: u64) -> Option<Arc<[Url]>> {
         self.paths
             .read()
             .as_ref()
             .filter(|cached| cached.generation == generation && cached.roots == roots)
-            .map(|cached| cached.uris.clone())
+            .map(|cached| Arc::clone(&cached.uris))
     }
 
     fn cached_sources(
@@ -123,6 +123,10 @@ impl ServerState {
         self.workspace_project_files
             .generation
             .fetch_add(1, Ordering::AcqRel);
+        // Membership changes can retire arbitrary directory subtrees. Drop
+        // text-free disk indexes eagerly so deleted namespaces cannot
+        // accumulate; open buffers rebuild lazily from their resident Arcs.
+        self.workspace_symbol_cache.clear();
         self.invalidate_workspace_project_source_contents();
     }
 
@@ -219,7 +223,7 @@ impl ServerState {
                 *inventory.paths.write() = Some(CachedPaths {
                     generation,
                     roots: roots.clone(),
-                    uris,
+                    uris: Arc::from(uris),
                 });
             }
             if reuse_sources && walk_complete && reads_complete {
@@ -296,7 +300,7 @@ impl ServerState {
 
     async fn read_current_project_sources(
         &self,
-        uris: Vec<Url>,
+        uris: Arc<[Url]>,
         roots: &[PathBuf],
         generation: u64,
         content_generation: u64,

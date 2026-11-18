@@ -15,7 +15,7 @@ use vize_maestro::document::DocumentStore;
 static ALLOCATOR: vize_l0::profiler::ProfilingAllocator<std::alloc::System> =
     vize_l0::profiler::ProfilingAllocator::from_allocator(std::alloc::System);
 
-type Snapshot = (Arc<[Url]>, Vec<(Url, Arc<String>)>);
+type Snapshot = (Arc<[Url]>, Arc<[(Url, Arc<String>)]>);
 
 #[derive(Clone, Copy)]
 struct Expected {
@@ -271,10 +271,10 @@ fn assert_shared_vue_text_batch_allocation_law() {
     }
 
     // Seed the metric sites and every revision's flat text outside both
-    // measured windows. This Vec models the old owned-String result exactly.
+    // measured windows. This batch models the old owned-String result exactly.
     let seeded = store.vue_texts();
     assert_eq!(seeded.len(), DOCUMENTS);
-    for (document_uri, text) in &seeded {
+    for (document_uri, text) in seeded.iter() {
         let resident = store.text_snapshot(document_uri).unwrap();
         assert!(Arc::ptr_eq(text, &resident));
     }
@@ -284,8 +284,8 @@ fn assert_shared_vue_text_batch_allocation_law() {
     for _ in 0..READS {
         let owned = store
             .vue_texts()
-            .into_iter()
-            .map(|(document_uri, text)| (document_uri, text.as_str().to_owned()))
+            .iter()
+            .map(|(document_uri, text)| (document_uri.clone(), text.as_str().to_owned()))
             .collect::<Vec<_>>();
         std::hint::black_box(&owned);
     }
@@ -295,24 +295,38 @@ fn assert_shared_vue_text_batch_allocation_law() {
     reset_allocation_counters();
     set_allocation_tracking_enabled(true);
     for _ in 0..READS {
-        let shared = store.vue_texts();
-        for ((expected_uri, expected), (actual_uri, actual)) in seeded.iter().zip(&shared) {
+        let previous_shared = seeded
+            .iter()
+            .map(|(document_uri, text)| (document_uri.clone(), Arc::clone(text)))
+            .collect::<Vec<_>>();
+        std::hint::black_box(&previous_shared);
+    }
+    let previous_shared = allocation_snapshot();
+    set_allocation_tracking_enabled(false);
+
+    reset_allocation_counters();
+    set_allocation_tracking_enabled(true);
+    for _ in 0..READS {
+        let cached = store.vue_texts();
+        assert!(Arc::ptr_eq(&seeded, &cached));
+        for ((expected_uri, expected), (actual_uri, actual)) in seeded.iter().zip(cached.iter()) {
             assert_eq!(expected_uri, actual_uri);
             assert!(Arc::ptr_eq(expected, actual));
         }
-        std::hint::black_box(&shared);
+        std::hint::black_box(&cached);
     }
-    let shared = allocation_snapshot();
+    let cached = allocation_snapshot();
     set_allocation_tracking_enabled(false);
 
     let copied_payload_bytes = READS.saturating_mul(payload_bytes);
     assert!(legacy_owned.requested_bytes() >= copied_payload_bytes);
-    assert!(
-        shared.requested_bytes() < copied_payload_bytes / 100,
-        "shared batches must allocate only result metadata, not document payloads"
-    );
+    assert!(previous_shared.allocation_calls() > 0);
+    assert!(previous_shared.requested_bytes() > 0);
+    assert_eq!(cached.allocation_calls(), 0);
+    assert_eq!(cached.requested_bytes(), 0);
     assert_eq!(legacy_owned.allocation_failures(), 0);
-    assert_eq!(shared.allocation_failures(), 0);
+    assert_eq!(previous_shared.allocation_failures(), 0);
+    assert_eq!(cached.allocation_failures(), 0);
     println!(
         "document_vue_batch_allocation={}",
         serde_json::json!({
@@ -323,11 +337,87 @@ fn assert_shared_vue_text_batch_allocation_law() {
                 "allocationCalls": legacy_owned.allocation_calls(),
                 "requestedBytes": legacy_owned.requested_bytes(),
             },
-            "shared": {
-                "allocationCalls": shared.allocation_calls(),
-                "requestedBytes": shared.requested_bytes(),
+            "previousShared": {
+                "allocationCalls": previous_shared.allocation_calls(),
+                "requestedBytes": previous_shared.requested_bytes(),
             },
-            "law": "workspace Vue batches share every resident revision buffer",
+            "cached": {
+                "allocationCalls": cached.allocation_calls(),
+                "requestedBytes": cached.requested_bytes(),
+            },
+            "law": "warm workspace Vue batch Arc clones allocate zero bytes",
+        })
+    );
+}
+
+#[cfg(feature = "micro-profiling")]
+fn assert_workspace_symbol_cache_allocation_law() {
+    use vize_l0::profiler::{
+        allocation_snapshot, reset_allocation_counters, set_allocation_tracking_enabled,
+    };
+    use vize_maestro::ide::WorkspaceSymbolsService;
+    use vize_maestro::server::ServerState;
+
+    const DOCUMENTS: usize = 32;
+    const DECLARATIONS: usize = 96;
+    const WARM_READS: u64 = 32;
+    let mut script = String::from("<script setup>\n");
+    for index in 0..DECLARATIONS {
+        script.push_str(vize_l0::cstr!("const symbol_{index:03} = {index}\n").as_str());
+    }
+    script.push_str("</script>\n<style>.root { color: red; }</style>");
+
+    let state = ServerState::new();
+    for index in 0..DOCUMENTS {
+        state.documents.open(
+            uri(vize_l0::cstr!("file:///fixture/symbols/Component{index:03}.vue").as_str()),
+            script.clone(),
+            1,
+            String::from("vue"),
+        );
+    }
+
+    reset_allocation_counters();
+    set_allocation_tracking_enabled(true);
+    let cold_result = WorkspaceSymbolsService::search(&state, "definitely_missing_symbol");
+    std::hint::black_box(&cold_result);
+    let cold = allocation_snapshot();
+    set_allocation_tracking_enabled(false);
+    assert!(cold_result.is_empty());
+
+    reset_allocation_counters();
+    set_allocation_tracking_enabled(true);
+    for _ in 0..WARM_READS {
+        let warm_result = WorkspaceSymbolsService::search(&state, "definitely_missing_symbol");
+        assert!(warm_result.is_empty());
+        std::hint::black_box(&warm_result);
+    }
+    let warm = allocation_snapshot();
+    set_allocation_tracking_enabled(false);
+
+    assert!(cold.allocation_calls() > 0);
+    assert!(cold.requested_bytes() > 0);
+    assert!(
+        warm.requested_bytes() < cold.requested_bytes() / 10,
+        "all warm queries together must allocate far less than one cold index build"
+    );
+    assert_eq!(cold.allocation_failures(), 0);
+    assert_eq!(warm.allocation_failures(), 0);
+    println!(
+        "workspace_symbol_cache_allocation={}",
+        serde_json::json!({
+            "documents": DOCUMENTS,
+            "declarationsPerDocument": DECLARATIONS,
+            "warmReads": WARM_READS,
+            "coldCacheMiss": {
+                "allocationCalls": cold.allocation_calls(),
+                "requestedBytes": cold.requested_bytes(),
+            },
+            "warmCacheHits": {
+                "allocationCalls": warm.allocation_calls(),
+                "requestedBytes": warm.requested_bytes(),
+            },
+            "law": "all repeated absent queries reuse the query-independent open-document symbol index",
         })
     );
 }
@@ -445,5 +535,6 @@ fn snapshot_producers_keep_shared_results_and_exact_utf8_payloads() {
         assert_shared_text_snapshot_allocation_law();
         assert_shared_uri_snapshot_allocation_law();
         assert_shared_vue_text_batch_allocation_law();
+        assert_workspace_symbol_cache_allocation_law();
     }
 }

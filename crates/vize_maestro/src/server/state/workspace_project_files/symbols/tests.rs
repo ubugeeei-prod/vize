@@ -9,8 +9,9 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
 };
 
-use super::{FxHashMap, ServerState, Url, WorkspaceSymbolsService, collect_sources};
+use super::{ServerState, Url, WorkspaceSymbolsService, collect_sources};
 use crate::runtime::block_on;
+use tower_lsp::lsp_types::{FileChangeType, FileEvent};
 
 const WIDGET: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -37,7 +38,7 @@ fn complete_streamed_corpus_matches_original_objects_and_materialized_consumer()
     for query in ["", "internal", "café", "value", "missing"] {
         let actual = collect_sources(
             sources.iter().map(|(uri, _)| uri.clone()).collect(),
-            &FxHashMap::<Url, String>::default(),
+            &[],
             &[],
             query,
             |path| {
@@ -91,7 +92,7 @@ fn streaming_releases_each_closed_source_before_reading_the_next_and_ranks_once(
     uris.push(uris[0].clone());
     let live = Arc::new(AtomicUsize::new(0));
     let mut read_order = Vec::new();
-    let symbols = collect_sources(uris, &FxHashMap::default(), &[], "probe", |path| {
+    let symbols = collect_sources(uris, &[], &[], "probe", |path| {
         assert_eq!(
             live.fetch_add(1, Ordering::SeqCst),
             0,
@@ -341,5 +342,219 @@ fn failed_symbol_worker_preserves_complete_open_overlay_answer() {
             WorkspaceSymbolsService::search_sources(&open, "")
         );
         assert!(state.workspace_project_files.paths.read().is_some());
+    });
+}
+
+#[test]
+fn watched_disk_index_reuses_one_generation_and_rebuilds_after_change() {
+    block_on(async {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("disk.ts");
+        std::fs::write(&path, "export const oldSymbol = 1;").unwrap();
+        let uri = Url::from_file_path(&path).unwrap();
+        let state = ServerState::new();
+        state.set_workspace_root(root.path().to_owned());
+        state.set_corsa_disk_watcher_registered();
+
+        let old = state.search_workspace_project_symbols("oldSymbol").await;
+        assert_eq!(old.len(), 1);
+        let seeded = Arc::clone(state.workspace_symbol_cache.get(&uri).unwrap().value());
+
+        // The watcher contract makes this generation authoritative until its
+        // notification arrives, so another query must not touch the disk.
+        std::fs::write(&path, "export const newSymbol = 2;").unwrap();
+        let warm = state.search_workspace_project_symbols("oldSymbol").await;
+        assert_eq!(warm.len(), 1);
+        assert!(Arc::ptr_eq(
+            &seeded,
+            state.workspace_symbol_cache.get(&uri).unwrap().value()
+        ));
+
+        state.observe_workspace_project_file_events(&[FileEvent {
+            uri: uri.clone(),
+            typ: FileChangeType::CHANGED,
+        }]);
+        assert!(
+            state
+                .search_workspace_project_symbols("oldSymbol")
+                .await
+                .is_empty()
+        );
+        let changed = state.search_workspace_project_symbols("newSymbol").await;
+        assert_eq!(changed.len(), 1);
+        assert!(!Arc::ptr_eq(
+            &seeded,
+            state.workspace_symbol_cache.get(&uri).unwrap().value()
+        ));
+    });
+}
+
+#[test]
+fn unwatched_disk_search_keeps_fresh_read_semantics() {
+    block_on(async {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("disk.ts");
+        std::fs::write(&path, "export const before = 1;").unwrap();
+        let state = ServerState::new();
+        state.set_workspace_root(root.path().to_owned());
+
+        assert_eq!(
+            state.search_workspace_project_symbols("before").await.len(),
+            1
+        );
+        assert!(state.workspace_symbol_cache.is_empty());
+
+        std::fs::write(&path, "export const after = 2;").unwrap();
+        assert!(
+            state
+                .search_workspace_project_symbols("before")
+                .await
+                .is_empty()
+        );
+        assert_eq!(
+            state.search_workspace_project_symbols("after").await.len(),
+            1
+        );
+        assert!(state.workspace_symbol_cache.is_empty());
+    });
+}
+
+#[cfg(feature = "micro-profiling")]
+#[test]
+fn native_workspace_symbol_cache_allocation_law() {
+    use vize_l0::profiler::{
+        allocation_snapshot, reset_allocation_counters, set_allocation_tracking_enabled,
+    };
+
+    const DOCUMENTS: usize = 32;
+    const DECLARATIONS: usize = 96;
+    const WARM_READS: u64 = 32;
+    let mut source = String::from("<script setup>\n");
+    for index in 0..DECLARATIONS {
+        source.push_str(vize_l0::cstr!("const symbol_{index:03} = {index}\n").as_str());
+    }
+    source.push_str("</script>\n<style>.root { color: red; }</style>");
+
+    let state = ServerState::new();
+    for index in 0..DOCUMENTS {
+        let uri = Url::parse(
+            vize_l0::cstr!("file:///workspace/symbol-profile/Component{index:03}.vue").as_str(),
+        )
+        .unwrap();
+        state
+            .documents
+            .open(uri, source.clone(), 1, String::from("vue"));
+    }
+
+    block_on(async {
+        let _paths = state.current_project_paths().await;
+        let _uris = state.documents.uris();
+
+        reset_allocation_counters();
+        set_allocation_tracking_enabled(true);
+        let cold = state
+            .search_workspace_project_symbols("definitely_missing_symbol")
+            .await;
+        let cold_allocations = allocation_snapshot();
+        set_allocation_tracking_enabled(false);
+        assert!(cold.is_empty());
+
+        reset_allocation_counters();
+        set_allocation_tracking_enabled(true);
+        for _ in 0..WARM_READS {
+            let warm = state
+                .search_workspace_project_symbols("definitely_missing_symbol")
+                .await;
+            assert!(warm.is_empty());
+        }
+        let warm_allocations = allocation_snapshot();
+        set_allocation_tracking_enabled(false);
+
+        assert!(cold_allocations.allocation_calls() > 0);
+        assert!(cold_allocations.requested_bytes() > 0);
+        assert!(
+            warm_allocations.requested_bytes() < cold_allocations.requested_bytes() / 4,
+            "all native warm queries together must allocate less than one cold index build"
+        );
+        assert_eq!(cold_allocations.allocation_failures(), 0);
+        assert_eq!(warm_allocations.allocation_failures(), 0);
+        println!(
+            "native_workspace_symbol_cache_allocation={}",
+            serde_json::json!({
+                "documents": DOCUMENTS,
+                "declarationsPerDocument": DECLARATIONS,
+                "warmReads": WARM_READS,
+                "coldCacheMiss": {
+                    "allocationCalls": cold_allocations.allocation_calls(),
+                    "requestedBytes": cold_allocations.requested_bytes(),
+                },
+                "warmCacheHits": {
+                    "allocationCalls": warm_allocations.allocation_calls(),
+                    "requestedBytes": warm_allocations.requested_bytes(),
+                },
+                "law": "native project-wide worker shares open buffers and reuses their query-independent symbol indexes",
+            })
+        );
+
+        let disk_root = tempfile::tempdir().unwrap();
+        for index in 0..DOCUMENTS {
+            std::fs::write(
+                disk_root
+                    .path()
+                    .join(vize_l0::cstr!("Component{index:03}.vue").as_str()),
+                &source,
+            )
+            .unwrap();
+        }
+        let disk_state = ServerState::new();
+        disk_state.set_workspace_root(disk_root.path().to_owned());
+        disk_state.set_corsa_disk_watcher_registered();
+        let _paths = disk_state.current_project_paths().await;
+
+        reset_allocation_counters();
+        set_allocation_tracking_enabled(true);
+        let cold = disk_state
+            .search_workspace_project_symbols("definitely_missing_symbol")
+            .await;
+        let cold_disk_allocations = allocation_snapshot();
+        set_allocation_tracking_enabled(false);
+        assert!(cold.is_empty());
+
+        reset_allocation_counters();
+        set_allocation_tracking_enabled(true);
+        for _ in 0..WARM_READS {
+            let warm = disk_state
+                .search_workspace_project_symbols("definitely_missing_symbol")
+                .await;
+            assert!(warm.is_empty());
+        }
+        let warm_disk_allocations = allocation_snapshot();
+        set_allocation_tracking_enabled(false);
+
+        assert!(cold_disk_allocations.allocation_calls() > 0);
+        assert!(cold_disk_allocations.requested_bytes() > 0);
+        assert!(
+            warm_disk_allocations.requested_bytes() < cold_disk_allocations.requested_bytes() / 4,
+            "all watched-disk warm queries together must allocate less than one cold index build"
+        );
+        assert_eq!(cold_disk_allocations.allocation_failures(), 0);
+        assert_eq!(warm_disk_allocations.allocation_failures(), 0);
+        println!(
+            "native_disk_workspace_symbol_cache_allocation={}",
+            serde_json::json!({
+                "documents": DOCUMENTS,
+                "declarationsPerDocument": DECLARATIONS,
+                "warmReads": WARM_READS,
+                "coldCacheMiss": {
+                    "allocationCalls": cold_disk_allocations.allocation_calls(),
+                    "requestedBytes": cold_disk_allocations.requested_bytes(),
+                },
+                "warmCacheHits": {
+                    "allocationCalls": warm_disk_allocations.allocation_calls(),
+                    "requestedBytes": warm_disk_allocations.requested_bytes(),
+                },
+                "law": "watched native project files reuse text-free symbol indexes without disk reads or reparsing",
+            })
+        );
     });
 }
