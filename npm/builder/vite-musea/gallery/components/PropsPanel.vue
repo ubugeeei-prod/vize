@@ -13,7 +13,7 @@ import { useRoute, useRouter } from "vue-router";
 import { usePalette } from "../composables/usePalette";
 import { useArts } from "../composables/useArts";
 import { getPreviewUrl, vMuseaGlobals } from "../api";
-import { sendMessage } from "../composables/usePostMessage";
+import { sendMessage, snapshotMessageRecord } from "../composables/usePostMessage";
 import { indentUsage, usagePropsAttributes, usageScript } from "../utils/usageCode";
 import { safeUrl } from "../utils/safeUrl";
 import { getControlComponent } from "./controlComponent";
@@ -113,6 +113,13 @@ const previewUrl = computed(() => {
   return getPreviewUrl(props.artPath, selectedVariant.value.name);
 });
 
+function sendPreviewProps(iframe: HTMLIFrameElement, values: Record<string, unknown>): void {
+  sendMessage(iframe, "musea:set-props", {
+    props: snapshotMessageRecord(values),
+    attrs: snapshotMessageRecord(variantAttrs.value),
+  });
+}
+
 watch(
   [() => props.artPath, () => selectedVariant.value?.name, () => route.query[MUSEA_PROPS_QUERY]],
   ([path, _variant, shared]) => {
@@ -133,7 +140,7 @@ watch(
   (newValues) => {
     const iframe = iframeRef.value;
     if (!iframe || !iframeReady.value) return;
-    sendMessage(iframe, "musea:set-props", { props: newValues, attrs: variantAttrs.value });
+    sendPreviewProps(iframe, newValues);
   },
   { deep: true },
 );
@@ -209,10 +216,7 @@ function onReadyMessage(event: MessageEvent) {
   const iframe = iframeRef.value;
   if (!iframe) return;
   if (Object.keys(appliedValues.value).length > 0 || Object.keys(variantAttrs.value).length > 0) {
-    sendMessage(iframe, "musea:set-props", {
-      props: appliedValues.value,
-      attrs: variantAttrs.value,
-    });
+    sendPreviewProps(iframe, appliedValues.value);
   }
   if (Object.keys(slotContent.value).length > 0) {
     sendMessage(iframe, "musea:set-slots", { slots: slotContent.value });
@@ -249,10 +253,7 @@ function onResetValues() {
   shareStatus.value = "";
   const iframe = iframeRef.value;
   if (!iframe || !iframeReady.value) return;
-  sendMessage(iframe, "musea:set-props", {
-    props: appliedValues.value,
-    attrs: variantAttrs.value,
-  });
+  sendPreviewProps(iframe, appliedValues.value);
   sendMessage(iframe, "musea:set-slots", { slots: {} });
 }
 

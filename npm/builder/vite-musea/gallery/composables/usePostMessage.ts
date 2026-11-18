@@ -8,41 +8,18 @@ export interface MuseaMessage {
 export function sendMessage(iframe: HTMLIFrameElement, type: string, payload: unknown = {}): void {
   const targetOrigin = resolvePreviewPostMessageOrigin(iframe.src, window.location.origin);
   if (!targetOrigin) return;
-  iframe.contentWindow?.postMessage({ type, payload: toPostMessagePayload(payload) }, targetOrigin);
+  iframe.contentWindow?.postMessage({ type, payload }, targetOrigin);
 }
 
-/** Vue proxies are not structured-cloneable, even when they wrap an empty object. */
-export function toPostMessagePayload<T>(value: T, seen = new WeakMap<object, unknown>()): T {
-  if (typeof value !== "object" || value === null) return value;
-
-  const raw = toRaw(value) as object;
-  const cached = seen.get(raw);
-  if (cached) return cached as T;
-
-  if (Array.isArray(raw)) {
-    const clone: unknown[] = [];
-    seen.set(raw, clone);
-    clone.push(...raw.map((entry) => toPostMessagePayload(entry, seen)));
-    return clone as T;
-  }
-
-  const prototype = Object.getPrototypeOf(raw);
-  if (prototype !== Object.prototype && prototype !== null) return raw as T;
-
-  const clone: Record<string, unknown> = Object.create(prototype);
-  seen.set(raw, clone);
-  for (const key of Object.keys(raw)) {
-    const descriptor = Object.getOwnPropertyDescriptor(raw, key);
-    if (!descriptor) continue;
-    const entry = "value" in descriptor ? descriptor.value : Reflect.get(raw, key);
-    Object.defineProperty(clone, key, {
-      configurable: true,
-      enumerable: true,
-      value: toPostMessagePayload(entry, seen),
-      writable: true,
-    });
-  }
-  return clone as T;
+/** Snapshot a props/attrs record without reading Vue's instrumented property getters. */
+export function snapshotMessageRecord(value: Record<string, unknown>): Record<string, unknown> {
+  const raw = toRaw(value);
+  return Object.fromEntries(
+    Object.keys(raw).map((key) => {
+      const descriptor = Object.getOwnPropertyDescriptor(raw, key);
+      return [key, descriptor && "value" in descriptor ? descriptor.value : Reflect.get(raw, key)];
+    }),
+  );
 }
 
 /**
