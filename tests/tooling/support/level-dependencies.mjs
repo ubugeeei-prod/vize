@@ -12,7 +12,8 @@ export function fixture() {
   const names = [
     "vize_carton",
     oldL3Package,
-    "vize_l0",
+    // The dissolved foundation substrate, a level-side package that is no alias owner.
+    "vize_substrate",
     "vize_l1",
     "vize_l2",
     "vize_l1_to_l2",
@@ -59,7 +60,7 @@ export function fixture() {
   add("vize_l1", "vize_armature");
   add("vize_l1", "vize_relief");
   add("vize_armature", "vize_relief");
-  add("vize_l2", "vize_l0");
+  add("vize_l2", "vize_substrate");
   add(oldL3Package, "vize_carton", { rename: "vize_l0" });
   add("vize_l1_to_l2", "vize_l1");
   add("vize_l1_to_l2", "vize_relief");
