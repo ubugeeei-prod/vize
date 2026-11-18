@@ -85,6 +85,12 @@ void test("kept docs keep prose and names; references to moved tracked paths fol
     "see levels/vize_l0/src/lib.rs.",
   );
   assert.equal(rewriteText(`docs/${name}/README.md`, source), source);
+  // A sibling file name follows its file; a name that is not a tracked sibling stays.
+  const siblings = knownPaths([`docs/${name}/plan/${l3}-ops.md`, `docs/${name}/plan/l3-ops.md`]);
+  assert.equal(
+    rewriteText(`docs/${name}/plan/a.md`, `[\`${l3}-ops.md\`](./${l3}-ops.md) ${l3}-gone.md`, undefined, siblings),
+    `[\`l3-ops.md\`](./l3-ops.md) ${l3}-gone.md`,
+  );
 });
 
 void test("kept Markdown keeps code spans; kept plan data changes fully, records keep bytes", () => {
