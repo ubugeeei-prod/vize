@@ -67,6 +67,20 @@ declare const Widget: (props: { label: string; count?: number }) => unknown;
 __vize_jsx_component__(Widget)({ label: "ok" });
 __vize_jsx_component__(Widget)({ label: 1 });
 __vize_jsx_component__(Widget)({});
+declare const ConstructorWidget: abstract new () => {
+  readonly __vizeRawProps?: { fooBar: string };
+  $props: { fooBar: string };
+  $slots: { default?: (props: { n: number }) => unknown };
+};
+__vize_jsx_component__(ConstructorWidget)(
+  __vize_jsx_component_spread__({ "foo-bar": "ok" }),
+);
+const normalizedWrong = __vize_jsx_component_spread__({ "foo-bar": 1 });
+__vize_jsx_component__(ConstructorWidget)(normalizedWrong);
+__vize_jsx_component_slot__(ConstructorWidget, "default", (payload) => payload.n.toFixed());
+__vize_jsx_component_slot__(ConstructorWidget, "default", (payload) =>
+  payload.n.toUpperCase(),
+);
 const View = (_props: {}, { emit, slots }: Ctx<
   { change: [value: number] },
   { default(props: { n: number }): unknown }
@@ -111,9 +125,15 @@ void View;
     [
       { code: 2322, text: "label" },
       { code: 2345, text: "{}" },
+      { code: 2345, text: "normalizedWrong" },
+      { code: 2339, text: "toUpperCase" },
       { code: 2345, text: '"bad"' },
       { code: 2322, text: "n" },
     ],
   );
-  assert.ok(diagnostics.every(({ message }) => message.includes("not assignable")));
+  assert.ok(
+    diagnostics.every(({ code, message }) =>
+      code === 2339 ? message.includes("does not exist") : message.includes("not assignable"),
+    ),
+  );
 });
