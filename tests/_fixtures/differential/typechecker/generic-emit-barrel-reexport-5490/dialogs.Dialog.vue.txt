@@ -1,0 +1,25 @@
+<script setup lang="ts" generic="T extends RegistrationType.NormalOneto | RegistrationType.TextbookOneto | RegistrationType.CauseWeakOneto">
+import { RegistrationType, type ParsedContentsInfoRaw, type ParsedQuestionItemRaw } from "./types";
+
+const { registrationType } = defineProps<{
+  registrationType: T;
+}>();
+
+void registrationType;
+
+defineEmits<{
+  parsed: [
+    value: {
+      contentsInfo: ParsedContentsInfoRaw<T>;
+      questionItems: ParsedQuestionItemRaw<T>[];
+    },
+  ];
+  cancel: [];
+}>();
+
+defineModel<boolean>({ required: true });
+</script>
+
+<template>
+  <button />
+</template>

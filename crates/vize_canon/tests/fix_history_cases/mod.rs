@@ -64,6 +64,7 @@ pub(super) mod generic_component_listener_payload_1908;
 pub(super) mod generic_component_prop_inference_796;
 pub(super) mod generic_component_props_inference_2476;
 pub(super) mod generic_default_setup_scope_2912;
+pub(super) mod generic_emit_barrel_reexport_5490;
 pub(super) mod generic_emit_overload_depth_3150;
 pub(super) mod generic_hoisted_type_params_741;
 pub(super) mod generic_imported_boolean_keys_2920;

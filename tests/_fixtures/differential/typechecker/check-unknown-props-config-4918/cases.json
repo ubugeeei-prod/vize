@@ -83,6 +83,24 @@
           "message": "Object literal may only specify known properties, and '\"gradient\"' does not exist in type '$ComponentCheckProps<Props, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; additive?: unknown; align?: unknown; ... 671 more ...; zoomAndPan?: unknown...'."
         }
       ]
+    },
+    {
+      "id": "strict-templates-keeps-native-root-fallthrough-open",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.strict-templates.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
     }
   ]
 }

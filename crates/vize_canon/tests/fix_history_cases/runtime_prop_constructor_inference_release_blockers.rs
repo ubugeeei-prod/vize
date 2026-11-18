@@ -12,6 +12,9 @@ fn runtime_prop_type_constructors_infer_values() {
             "runtime-prop-type-array-wrong-element-type",
             "computed-map-values-record-types",
             "computed-map-values-wrong-element-type",
+            "custom-class-constructor-prop",
+            "custom-class-constructor-prop-wrong-member-type",
+            "imported-class-constructor-prop",
         ],
     );
 }

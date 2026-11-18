@@ -275,6 +275,10 @@
     "test": "fix_history_cases::generic_default_setup_scope_2912::generic_default_does_not_replace_setup_parameter",
     "sourceRevision": "5afffd0b3cb0dd06d9eb347b57f40dba3d9c8e4e"
   },
+  "generic-emit-barrel-reexport-5490": {
+    "test": "fix_history_cases::generic_emit_barrel_reexport_5490::reexported_generic_emit_payload_specializes_from_enum_member_prop",
+    "sourceRevision": "b31b1e64630621cf00cb2d5cd6189e0cf80acdd9"
+  },
   "generic-emit-overload-depth-3150": {
     "test": "fix_history_cases::generic_emit_overload_depth_3150::generic_emit_overload_listener_props_stay_within_depth",
     "sourceRevision": "5257a671727fc55e94bb227247269d23a8eda13e"
