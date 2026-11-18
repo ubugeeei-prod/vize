@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4a-vapor-dotted-component-slots-1883",
+    history: "64b98a209ff2c036f2c553227a5bc6b7c71298d1",
+    source: "<template>\n  <MyComponent><template #item.alpha=\"{ value }\">{{ value }}</template><template #item.beta=\"{ value }\">{{ value }}</template><template #item.gamma=\"{ item }\">{{ item }}</template></MyComponent>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst t1 = _template(\" \")\nconst t2 = _template(\" \")\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const _component_MyComponent = _resolveComponent(\"MyComponent\")\n  const n6 = _createComponentWithFallback(_component_MyComponent, null, {\n    \"item.alpha\": (_slotProps0) => {\n      const n0 = t0()\n      _renderEffect(() => _setText(n0, _toDisplayString(_slotProps0.value)))\n      return n0\n    },\n    \"item.beta\": (_slotProps1) => {\n      const n2 = t1()\n      _renderEffect(() => _setText(n2, _toDisplayString(_slotProps1.value)))\n      return n2\n    },\n    \"item.gamma\": (_slotProps2) => {\n      const n4 = t2()\n      _renderEffect(() => _setText(n4, _toDisplayString(_slotProps2.item)))\n      return n4\n    }\n  }, true)\n  return n6\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

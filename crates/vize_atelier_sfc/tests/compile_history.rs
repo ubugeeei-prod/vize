@@ -216,7 +216,7 @@ fn full_current_compile_results() {
             .expect("strict fixture schema");
     assert_eq!(
         cases.len(),
-        500,
+        573,
         "every reviewed case must remain registered"
     );
     // Every case runs before the error counts are judged, so one run reports

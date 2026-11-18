@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4a-scoped-slot-prop-shadows-setup-prop-ssr-1953",
+    history: "8f03946b7addc515b16ae8deab19e5f820c97569",
+    source: "<script setup lang=\"ts\">\ndefineProps<{ href?: string }>()\n</script>\n\n<template>\n  <RouterLink v-slot=\"{ href }\">\n    <slot v-bind=\"{ href }\" />\n  </RouterLink>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineComponent as _defineComponent } from 'vue'\nimport { ssrRenderComponent as _ssrRenderComponent, ssrRenderSlot as _ssrRenderSlot } from \"@vue/server-renderer\"\nimport { resolveComponent as _resolveComponent, renderSlot as _renderSlot, mergeProps as _mergeProps, withCtx as _withCtx } from \"vue\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(_ssrRenderComponent(_resolveComponent(\"RouterLink\"), _attrs, {\n    default: _withCtx(({ href }, _push, _parent, _scopeId) => {\n      if (_push) {\n        _ssrRenderSlot(_ctx.$slots, \"default\", _mergeProps({ href }), null, _push, _parent, _scopeId)\n      } else {\n        return [_renderSlot(_ctx.$slots, \"default\", _mergeProps({ href }), undefined, true)]\n      }\n    }),\n    _: 3 /* FORWARDED */\n  }, _parent))\n}\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'History',\n  props: {\n    href: { type: String, required: false }\n  },\n  ssrRender: ssrRender,\n  setup(__props: any, { expose: __expose }) {\n  __expose();\n\n\nreturn {}\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "href": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

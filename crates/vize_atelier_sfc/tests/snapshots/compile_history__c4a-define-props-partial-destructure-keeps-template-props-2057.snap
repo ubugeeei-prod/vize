@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4a-define-props-partial-destructure-keeps-template-props-2057",
+    history: "54ba6d4e2b5b8330f31cde3da403df6645972a8f",
+    source: "<script setup lang=\"ts\">\nconst { a, b } = defineProps<{ label: string, a: string, b: string }>()\n</script>\n\n<template>\n  {{ label }} - {{ a }} - {{ b }}\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode } from \"vue\"\n\n\nexport default {\n  __name: 'History',\n  props: {\n    label: { type: String, required: true },\n    a: { type: String, required: true },\n    b: { type: String, required: true }\n  },\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createTextVNode(_toDisplayString(__props.label) + \" - \" + _toDisplayString(__props.a) + \" - \" + _toDisplayString(__props.b), 1 /* TEXT */)\n  ], 64 /* STABLE_FRAGMENT */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "a": Props,
+                        "label": Props,
+                        "b": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

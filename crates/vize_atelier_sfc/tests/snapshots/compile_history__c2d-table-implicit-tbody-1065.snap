@@ -28,6 +28,6 @@ Case {
 Template {
     errors: [],
     preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
-    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"table\", null, [\n    _createElementVNode(\"tbody\", null, [\n      _createElementVNode(\"tr\", null, [\n        _createElementVNode(\"td\", null, \"x\")\n      ])\n    ])\n  ]))\n}",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"table\", null, [\n    _createElementVNode(\"tr\", null, [\n      _createElementVNode(\"td\", null, \"x\")\n    ])\n  ]))\n}",
     map: None,
 }

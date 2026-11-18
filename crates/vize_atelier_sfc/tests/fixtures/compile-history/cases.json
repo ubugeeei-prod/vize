@@ -5222,5 +5222,790 @@
       "prefixIdentifiers": true
     },
     "errors": 1
+  },
+  {
+    "id": "c4a-quirks-invalid-self-closing-div-template-1071",
+    "history": "004ec2006d606f1f9469129431aa0018879f8ab5",
+    "source": "<div /><span></span>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "templateSyntax": "quirks"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4a-quirks-invalid-self-closing-div-ssr-1071",
+    "history": "004ec2006d606f1f9469129431aa0018879f8ab5",
+    "source": "<template><div /><span></span></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "templateSyntax": "quirks"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4a-quirks-invalid-self-closing-div-vapor-1071",
+    "history": "004ec2006d606f1f9469129431aa0018879f8ab5",
+    "source": "<template><div /><span></span></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "templateSyntax": "quirks"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4a-musea-art-keeps-define-art-1976",
+    "history": "06fe8eb5a16ca8f1d759874dc298a79d573ef32e",
+    "source": "<script setup lang=\"ts\">\ndefineArt(\"./CmsButton.vue\", {\n  title: \"CmsButton\",\n  category: \"Components\",\n  status: \"draft\",\n  tags: [\"button\", \"form\"],\n});\n</script>\n\n<art>\n  <variant name=\"Primary\" default>\n    <CmsButton color=\"primary\">Primary</CmsButton>\n  </variant>\n</art>\n",
+    "filename": "CmsButton.art.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4a-define-art-erased-outside-art-file-1976",
+    "history": "06fe8eb5a16ca8f1d759874dc298a79d573ef32e",
+    "source": "<script setup lang=\"ts\">\ndefineArt(\"./CmsButton.vue\", {\n  title: \"CmsButton\",\n  category: \"Components\",\n  status: \"draft\",\n  tags: [\"button\", \"form\"],\n});\n</script>\n\n<art>\n  <variant name=\"Primary\" default>\n    <CmsButton color=\"primary\">Primary</CmsButton>\n  </variant>\n</art>\n",
+    "filename": "CmsButton.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4c-scoped-css-pipeline-trailing-universal-2685",
+    "history": "1f59101b9c48df01ca9542b297f6b74638f986bd",
+    "source": "<template>\n  <div class=\"dialog__action-buttons\"><button>OK</button><slot /></div>\n</template>\n\n<style scoped>\n.dialog__action-buttons > * { flex: 1; }\n.dialog__action-buttons>*:hover { flex: 1; }\n:slotted(.extra) { flex: 2; }\n</style>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4c-scoped-css-flat-trailing-universal-control-2685",
+    "history": "1f59101b9c48df01ca9542b297f6b74638f986bd",
+    "source": "<template>\n  <div class=\"dialog__action-buttons\"><button>OK</button></div>\n</template>\n\n<style scoped>\n.dialog__action-buttons > * { flex: 1; }\n.dialog__action-buttons>*:hover { flex: 1; }\n</style>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4c-conditional-named-slot-not-implicit-default-2496",
+    "history": "6b5ee003f4a671158889bb977a8bcc4a8945d4c6",
+    "source": "<Comp><template v-if=\"show\" #footer>Footer</template></Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4c-looped-named-slot-not-implicit-default-2496",
+    "history": "6b5ee003f4a671158889bb977a8bcc4a8945d4c6",
+    "source": "<Comp><template v-for=\"name in names\" #[name]>Named</template></Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4c-default-slot-with-conditional-named-slot-2496",
+    "history": "6b5ee003f4a671158889bb977a8bcc4a8945d4c6",
+    "source": "<Comp><template #default>Body</template><template v-if=\"show\" #footer>Footer</template></Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4c-default-slot-with-looped-named-slot-2496",
+    "history": "6b5ee003f4a671158889bb977a8bcc4a8945d4c6",
+    "source": "<Comp><template #default>Body</template><template v-for=\"name in names\" #[name]>Named</template></Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4c-default-slot-with-extraneous-element-control-2496",
+    "history": "6b5ee003f4a671158889bb977a8bcc4a8945d4c6",
+    "source": "<Comp><template #default>Body</template><span>x</span></Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 1
+  },
+  {
+    "id": "c4b-options-api-method-handler-live-lookup-modifiers-2265",
+    "history": "7ae31c3258c73433ccfa9397fbee16c2331f0593",
+    "source": "<script>\nexport default {\n  methods: {\n    onFocus(event) {\n      this.$emit(\"focus\", event)\n    },\n    onBlur(event) {\n      this.$emit(\"blur\", event)\n    }\n  }\n}\n</script>\n\n<template>\n  <input id=\"test\" @focus=\"onFocus\" @blur.stop=\"onBlur\" />\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4a-scoped-slot-prop-shadows-setup-prop-dom-1953",
+    "history": "8f03946b7addc515b16ae8deab19e5f820c97569",
+    "source": "<script setup lang=\"ts\">\ndefineProps<{ href?: string }>()\n</script>\n\n<template>\n  <RouterLink v-slot=\"{ href }\">\n    <slot v-bind=\"{ href }\" />\n  </RouterLink>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "preserveTs": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4a-scoped-slot-prop-shadows-setup-prop-ssr-1953",
+    "history": "8f03946b7addc515b16ae8deab19e5f820c97569",
+    "source": "<script setup lang=\"ts\">\ndefineProps<{ href?: string }>()\n</script>\n\n<template>\n  <RouterLink v-slot=\"{ href }\">\n    <slot v-bind=\"{ href }\" />\n  </RouterLink>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "preserveTs": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4a-slot-outlet-vbind-setup-prop-control-1953",
+    "history": "8f03946b7addc515b16ae8deab19e5f820c97569",
+    "source": "<script setup lang=\"ts\">\ndefineProps<{ href?: string }>()\n</script>\n\n<template>\n  <slot v-bind=\"{ href }\" />\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "preserveTs": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4a-dotted-named-slots-template-1841",
+    "history": "21ddd6c1eb9cf7bdfd274e688a722a23954f77ab",
+    "source": "<MyComponent><template #item.alpha=\"{ value }\">{{ value }}</template><template #item.beta=\"{ value }\">{{ value }}</template><template #item.gamma=\"{ item }\">{{ item }}</template></MyComponent>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4b-type-props-union-members-stay-nested-2495",
+    "history": "25ca8a2b12bccf4dd321f0e152275233501b3883",
+    "source": "<script setup lang=\"ts\">\ninterface Props {\n  isOpened: boolean\n  interaction?:\n    | { text: string; to: string; event?: never }\n    | { text: string; event: () => void; to?: never }\n}\n\nconst props = defineProps<Props>()\n</script>\n\n<template>\n  <div v-if=\"isOpened\" :data-to=\"to\" :data-event=\"event\">{{ interaction?.text }}</div>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4a-scoped-css-scopes-parent-before-trailing-universal-2057",
+    "history": "54ba6d4e2b5b8330f31cde3da403df6645972a8f",
+    "source": "<template>\n  <div class=\"dialog__action-buttons\"><button>A</button><button>B</button></div>\n</template>\n\n<style scoped>\n.dialog__action-buttons > * { flex: 1; }\n.dialog__action-buttons>*:hover { flex: 1; }\n</style>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4a-define-props-partial-destructure-keeps-template-props-2057",
+    "history": "54ba6d4e2b5b8330f31cde3da403df6645972a8f",
+    "source": "<script setup lang=\"ts\">\nconst { a, b } = defineProps<{ label: string, a: string, b: string }>()\n</script>\n\n<template>\n  {{ label }} - {{ a }} - {{ b }}\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4a-vapor-dotted-component-slots-1883",
+    "history": "64b98a209ff2c036f2c553227a5bc6b7c71298d1",
+    "source": "<template>\n  <MyComponent><template #item.alpha=\"{ value }\">{{ value }}</template><template #item.beta=\"{ value }\">{{ value }}</template><template #item.gamma=\"{ item }\">{{ item }}</template></MyComponent>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c4d-slot-outlet-no-unused-prop-hoist-2887",
+    "history": "73d4c5caca2efba59dd939256eece8461c6c8bc9",
+    "source": "<section><slot name=\"title\" class=\"headline\">Fallback</slot></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "mode": "function",
+      "hoistStatic": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4d-slot-outlet-no-unused-prop-hoist-sfc-2887",
+    "history": "73d4c5caca2efba59dd939256eece8461c6c8bc9",
+    "source": "<template><section><slot name=\"title\" class=\"headline\">Fallback</slot></section></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4a-pascal-table-tag-compiles-as-component-1952",
+    "history": "779b6df5a262061a628072c199baec281f64cd1d",
+    "source": "<Table><span class=\"x\">hello</span></Table>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "mode": "function",
+      "hoistStatic": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4a-pascal-button-nests-without-implicit-close-1952",
+    "history": "779b6df5a262061a628072c199baec281f64cd1d",
+    "source": "<Button><Button>x</Button></Button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "mode": "function",
+      "hoistStatic": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4d-template-boundary-comment-close-tag-2844",
+    "history": "870f2ff63f8cdd8fe4806e9d3d7ae7bd18550f15",
+    "source": "<template><!-- </template> --><div>after</div></template><style>.ok {}</style>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4d-template-boundary-attr-close-tag-2844",
+    "history": "870f2ff63f8cdd8fe4806e9d3d7ae7bd18550f15",
+    "source": "<template><div title=\"</template>\">after</div></template><style>.ok {}</style>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4d-template-boundary-interp-string-close-tag-2844",
+    "history": "870f2ff63f8cdd8fe4806e9d3d7ae7bd18550f15",
+    "source": "<template>{{ '</template>' }}<div>after</div></template><style>.ok {}</style>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4d-template-boundary-interp-string-delimiter-open-tag-2844",
+    "history": "870f2ff63f8cdd8fe4806e9d3d7ae7bd18550f15",
+    "source": "<template>{{ \"}} <template>\" }}<div>after</div></template><style>.ok {}</style>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c4d-template-boundary-interp-comment-delimiter-2844",
+    "history": "870f2ff63f8cdd8fe4806e9d3d7ae7bd18550f15",
+    "source": "<template>{{ /* }} <template> */ value }}<div>after</div></template><style>.ok {}</style>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c4d-template-boundary-interp-template-literal-close-tag-2844",
+    "history": "870f2ff63f8cdd8fe4806e9d3d7ae7bd18550f15",
+    "source": "<template>{{ `</template>` }}<div>after</div></template><style>.ok {}</style>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4d-template-boundary-interp-regex-tags-2844",
+    "history": "870f2ff63f8cdd8fe4806e9d3d7ae7bd18550f15",
+    "source": "<template>{{ /<template>|<\\/template>/.test(value) }}<div>after</div></template><style>.ok {}</style>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4d-template-boundary-textarea-raw-text-2844",
+    "history": "870f2ff63f8cdd8fe4806e9d3d7ae7bd18550f15",
+    "source": "<template><textarea><template> and </template></textarea><div>after</div></template><style>.ok {}</style>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4d-template-boundary-template-prefixed-custom-elements-2844",
+    "history": "870f2ff63f8cdd8fe4806e9d3d7ae7bd18550f15",
+    "source": "<template><template-card></template-card><templateSlot></templateSlot><div>after</div></template><style>.ok {}</style>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4d-template-boundary-nested-templates-docs-block-2844",
+    "history": "870f2ff63f8cdd8fe4806e9d3d7ae7bd18550f15",
+    "source": "<template>\n  <template\n    v-if=\"show\"\n    data-marker=\"> <template> </template>\"\n  >\n    <template-card data-close=\"</template>\">\n      <x-template>custom element</x-template>\n    </template-card>\n    <template data-marker=\"/>\">\n      nested template\n    </template>\n  </template>\n  <template data-marker=\"</template>\" />\n  <div>after</div>\n</template>\n\n<docs>{\"marker\":\"<template>\"}</docs>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4d-template-boundary-unclosed-interpolation-2844",
+    "history": "870f2ff63f8cdd8fe4806e9d3d7ae7bd18550f15",
+    "source": "<template>\n  <div>{{ unclosed\n</template>\n<style>.ok {}</style>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c4b-tsx-normal-script-options-api-bindings-2345",
+    "history": "1286cef9c234eefd086406fc6063448edbd04853",
+    "source": "<script lang=\"tsx\">\nexport default {\n  data() {\n    return { count: 0 }\n  },\n  computed: {\n    label() {\n      return `Count: ${this.count}`\n    }\n  },\n  methods: {\n    renderBadge() {\n      return <span class=\"badge\">{this.count}</span>\n    }\n  }\n}\n</script>\n\n<template>\n  <p :title=\"label\" @click=\"renderBadge\">{{ count }}</p>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4b-tsx-module-script-type-export-with-setup-2345",
+    "history": "1286cef9c234eefd086406fc6063448edbd04853",
+    "source": "<script lang=\"tsx\">\nexport type Foo = { label: string };\nexport const renderFoo = (foo: Foo) => <span>{foo.label}</span>;\n</script>\n\n<script setup lang=\"tsx\">\ndefineProps<{ foo?: Foo }>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4d-quirks-adjacent-attributes-2934",
+    "history": "7093f7a443ae853f995f3bb2bb3e117a61cbc081",
+    "source": "<div id=\"a\"class=\"b\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "templateSyntax": "quirks"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4d-quirks-void-end-tag-ignored-2934",
+    "history": "7093f7a443ae853f995f3bb2bb3e117a61cbc081",
+    "source": "<img></img>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "templateSyntax": "quirks"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4d-standard-void-end-tag-error-2934",
+    "history": "7093f7a443ae853f995f3bb2bb3e117a61cbc081",
+    "source": "<img></img>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 1
+  },
+  {
+    "id": "c4d-sfc-top-level-void-link-not-block-2935",
+    "history": "9641a8d80d44561f6816af5042850800b5dc291b",
+    "source": "<script src=\"https://example.com/component.js\"></script>\n<link rel=\"stylesheet\" href=\"https://example.com/component.css\">",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4d-sfc-void-link-before-template-2935",
+    "history": "9641a8d80d44561f6816af5042850800b5dc291b",
+    "source": "<link rel=\"stylesheet\" href=\"https://example.com/component.css\">\n<template><div>after</div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4d-sfc-return-string-comment-opener-2935",
+    "history": "9641a8d80d44561f6816af5042850800b5dc291b",
+    "source": "<script setup>\nfunction accept() {\n  return \"image/*\"\n}\n</script>\n<template><input :accept=\"accept()\" /></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4b-slot-outlet-ternary-vbind-optional-chain",
+    "history": "93809d83b6d08f33237614ff16ee8f8d0ed8392c",
+    "source": "<slot v-bind=\"external ? { isActive: undefined } : { isActive: scope?.isActive }\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "mode": "function"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4b-slot-scope-ternary-vbind-optional-chain-sfc",
+    "history": "93809d83b6d08f33237614ff16ee8f8d0ed8392c",
+    "source": "<script setup lang=\"ts\">\nconst external = false\nconst to = \"/login\"\n</script>\n\n<template>\n  <NuxtLinkLocale v-slot=\"scope\" :to=\"to\">\n    <slot v-bind=\"external ? { isActive: undefined } : { isActive: scope?.isActive }\" />\n  </NuxtLinkLocale>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4d-quirks-dynamic-branch-key-allowed-2937",
+    "history": "7049991bc913751d3f48603983160bc743ccf5a5",
+    "source": "<div v-if=\"ok\" :key=\"effect\"/><div v-else :key=\"effect\"/>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "mode": "function",
+      "hoistStatic": true,
+      "templateSyntax": "quirks"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4d-quirks-static-branch-key-duplicate-2937",
+    "history": "7049991bc913751d3f48603983160bc743ccf5a5",
+    "source": "<div v-if=\"ok\" key=\"same\"/><div v-else key=\"same\"/>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "mode": "function",
+      "hoistStatic": true,
+      "templateSyntax": "quirks"
+    },
+    "errors": 1
+  },
+  {
+    "id": "c4d-quirks-literal-bound-branch-key-duplicate-2937",
+    "history": "7049991bc913751d3f48603983160bc743ccf5a5",
+    "source": "<div v-if=\"ok\" :key=\"1\"/><div v-else :key=\"1\"/>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "mode": "function",
+      "hoistStatic": true,
+      "templateSyntax": "quirks"
+    },
+    "errors": 1
+  },
+  {
+    "id": "c4d-standard-dynamic-branch-key-duplicate-2937",
+    "history": "7049991bc913751d3f48603983160bc743ccf5a5",
+    "source": "<div v-if=\"ok\" :key=\"effect\"/><div v-else :key=\"effect\"/>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "mode": "function",
+      "hoistStatic": true
+    },
+    "errors": 3
+  },
+  {
+    "id": "c4d-v-for-unsplittable-alias-terminates-2951",
+    "history": "9134569dab37612e4ca8c2a0746669c1881fd731",
+    "source": "<div v-for=\"$data.[label, value] in items\">{{ label }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4d-v-for-unsplittable-alias-terminates-ssr-2951",
+    "history": "9134569dab37612e4ca8c2a0746669c1881fd731",
+    "source": "<template><div v-for=\"$data.[label, value] in items\">{{ label }}</div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "errors": 0
+  },
+  {
+    "id": "c4d-v-slot-unbalanced-params-terminate-ssr-2951",
+    "history": "9134569dab37612e4ca8c2a0746669c1881fd731",
+    "source": "<template><Comp v-slot=\"(dep(, file)\">{{ file }}</Comp></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "errors": 1
+  },
+  {
+    "id": "c4d-expression-depth-32-left-raw-2953",
+    "history": "94243079e51384e36d2ad2f6c75196d0cdec4fd6",
+    "source": "<div>{{ ((((((((((((((((((((((((((((((((a)))))))))))))))))))))))))))))))) }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4d-expression-depth-31-prefixed-2953",
+    "history": "94243079e51384e36d2ad2f6c75196d0cdec4fd6",
+    "source": "<div>{{ (((((((((((((((((((((((((((((((a))))))))))))))))))))))))))))))) }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4d-expression-timeout-reproducer-2953",
+    "history": "94243079e51384e36d2ad2f6c75196d0cdec4fd6",
+    "source": "<div>{{\nd=\nd=efnuiProps<{[dnuiProps<{[d=efnuiProps<{[dnuiProps<{[defnuiProps<{[  cts<{[  oefnuiProps<{[dnuiProps<{[defnuiProps<{[  cts<{[  oo>>efnuiProps<{[  cts<{[  oefnuiProps<{[dnuiProps<{[defnuiProps<{[  cts<{[  oo>>> \u001a\u001a\u001a\u001a\u001atr}}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4a-custom-renderer-tres-intrinsics-dom",
+    "history": "a09d82cf408aedcba34f0a245ea4cf8005fd8cd5",
+    "source": "\n<script setup lang=\"ts\">\nimport { Primitive } from '@tresjs/core'\nconst visible = true\n</script>\n\n<template>\n  <mesh>\n    <group v-if=\"visible\">\n      <primitive />\n    </group>\n  </mesh>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "customRenderer": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4a-custom-renderer-tres-intrinsics-ssr",
+    "history": "a09d82cf408aedcba34f0a245ea4cf8005fd8cd5",
+    "source": "\n<script setup lang=\"ts\">\nimport { Primitive } from '@tresjs/core'\nconst visible = true\n</script>\n\n<template>\n  <mesh>\n    <group v-if=\"visible\">\n      <primitive />\n    </group>\n  </mesh>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "customRenderer": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4a-custom-renderer-tres-intrinsics-vapor",
+    "history": "a09d82cf408aedcba34f0a245ea4cf8005fd8cd5",
+    "source": "<script setup lang=\"ts\">\nimport { Primitive } from \"@tresjs/core\";\nconst visible = true;\n</script>\n\n<template>\n  <mesh>\n    <group v-if=\"visible\">\n      <primitive />\n    </group>\n  </mesh>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "preserveTs": true,
+      "customRenderer": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4a-custom-renderer-template-mixed-tags",
+    "history": "a09d82cf408aedcba34f0a245ea4cf8005fd8cd5",
+    "source": "<mesh><TresMesh></TresMesh><tres-light></tres-light><div></div></mesh>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "customRenderer": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4a-tres-intrinsics-without-custom-renderer-control",
+    "history": "a09d82cf408aedcba34f0a245ea4cf8005fd8cd5",
+    "source": "\n<script setup lang=\"ts\">\nimport { Primitive } from '@tresjs/core'\nconst visible = true\n</script>\n\n<template>\n  <mesh>\n    <group v-if=\"visible\">\n      <primitive />\n    </group>\n  </mesh>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4c-looped-dynamic-slot-name-v-for-alias-2733",
+    "history": "abebeb93c53eb13213b9238e55b498200ef6b893",
+    "source": "<Wrapper>\n  <template v-for=\"(_, s) of $slots\" :key=\"s\" #[s]=\"scope\">\n    <slot :name=\"s\" v-bind=\"scope\" />\n  </template>\n</Wrapper>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4c-looped-dynamic-slot-name-sfc-2733",
+    "history": "abebeb93c53eb13213b9238e55b498200ef6b893",
+    "source": "<script setup>\nconst names = ['header', 'footer']\n</script>\n\n<template>\n  <Wrapper>\n    <template v-for=\"name in names\" :key=\"name\" #[name]=\"scope\">\n      <span>{{ name }} {{ scope }}</span>\n    </template>\n  </Wrapper>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4c-looped-static-slot-name-control-2733",
+    "history": "abebeb93c53eb13213b9238e55b498200ef6b893",
+    "source": "<Wrapper><template v-for=\"item in items\" :key=\"item\" #row>{{ item }}</template></Wrapper>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4b-deep-destructure-setup-bindings-template",
+    "history": "b1c332037642fb606f7ce534b0ff3cf3e0de05a3",
+    "source": "<script setup lang=\"ts\">\nconst {\n  public: { contactFormUrl },\n  nested: { label: inquiryLabel = \"Inquiry\" },\n  urls: [firstUrl, { href: secondUrl }],\n  ...runtimeRest\n} = useRuntimeConfig()\n</script>\n\n<template>\n  <a\n    :href=\"contactFormUrl\"\n    :aria-label=\"inquiryLabel\"\n    :data-first=\"firstUrl\"\n    :data-second=\"secondUrl\"\n    :data-rest=\"runtimeRest\"\n  >\n    {{ inquiryLabel }}\n  </a>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4a-typed-router-define-page-meta-erased-2134",
+    "history": "bd113bbccb2be992217f99d60b620f3715e4f1b5",
+    "source": "<script setup lang=\"ts\">\nimport { definePageMeta } from '@typed-router'\n\ndefinePageMeta({\n  layout: 'no-header',\n})\n\nconst msg = 'ready'\n</script>\n<template>\n  <div>{{ msg }}</div>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c4a-source-map-multibyte-template-2134",
+    "history": "bd113bbccb2be992217f99d60b620f3715e4f1b5",
+    "source": "<script setup lang=\"ts\">\nconst 最大値 = \"最大\"\n</script>\n\n<template>\n  <p>{{ 最大値 }}</p>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4d-quirks-table-adjacent-v-if-v-else-2936",
+    "history": "bfeeff6e63c0798d871257810ddec5adfc03ce26",
+    "source": "<table>\n  <template v-if=\"hasRows\"><tr><td>row</td></tr></template>\n  <tr v-else><td>empty</td></tr>\n</table>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "mode": "function",
+      "hoistStatic": true,
+      "templateSyntax": "quirks"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4d-standard-table-adjacent-v-if-v-else-2936",
+    "history": "bfeeff6e63c0798d871257810ddec5adfc03ce26",
+    "source": "<table>\n  <template v-if=\"hasRows\"><tr><td>row</td></tr></template>\n  <tr v-else><td>empty</td></tr>\n</table>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "mode": "function",
+      "hoistStatic": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4b-scoped-slot-default-expressions-prefix-2494",
+    "history": "c407534af9b8fad49046490711397a5a36b5fd94",
+    "source": "<Comp v-slot=\"{ item, active = item.active, label = fallback.label, meta = { text }, id = Math.random() }\">{{ active }}{{ label }}</Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "mode": "function"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4b-scoped-slot-default-expressions-prefix-module-2494",
+    "history": "c407534af9b8fad49046490711397a5a36b5fd94",
+    "source": "<Comp v-slot=\"{ item, active = item.active, label = fallback.label, meta = { text }, id = Math.random() }\">{{ active }}{{ label }}</Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c4b-empty-sfc-missing-block-2267",
+    "history": "dfd378575309c42bc1ce77fa4a889d26e1146a89",
+    "source": "",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c4b-newline-only-sfc-missing-block-vapor-2267",
+    "history": "dfd378575309c42bc1ce77fa4a889d26e1146a89",
+    "source": "\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 1
   }
 ]
