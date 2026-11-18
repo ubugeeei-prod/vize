@@ -95,13 +95,24 @@ fn a_conflicting_union_alias_keeps_the_new_host_alone_instead_of_failing() {
         let member = members.values_mut().next().unwrap();
         assert_eq!(member.package_links.get(&leaf), Some(&own));
         // That member owns and materialized its copy of the alias.
-        let owned = member
+        let mut owned = member
             .expected_files
             .iter()
             .filter(|file| file.starts_with(&own))
             .cloned()
             .collect::<Vec<_>>();
-        assert!(owned.contains(&own.join("package.json")));
+        owned.sort();
+        assert_eq!(
+            owned,
+            [
+                "package.json",
+                "src/Btn.d.vue.ts",
+                "src/Btn.vue.ts",
+                "src/index.ts",
+                "src/util.ts"
+            ]
+            .map(|file| own.join(file))
+        );
         for file in owned {
             let copy = sibling.join(file.strip_prefix(&own).unwrap());
             fs::create_dir_all(copy.parent().unwrap()).unwrap();
@@ -116,17 +127,21 @@ fn a_conflicting_union_alias_keeps_the_new_host_alone_instead_of_failing() {
     {
         let cache = session.cache();
         let members = &cache.project_members[&mirror_root];
-        assert_eq!(members.len(), 1, "only the new host remains in the union");
-        assert!(
+        assert_eq!(
             members
                 .keys()
-                .all(|key| key.source_path.ends_with("HostC.vue"))
+                .map(|key| key.source_path.as_path())
+                .collect::<Vec<_>>(),
+            [hosts[1].as_path()],
+            "only the new host remains in the union"
         );
-        assert!(
+        assert_eq!(
             cache
                 .slots
                 .keys()
-                .all(|key| !key.source_path.ends_with("HostA.vue")),
+                .map(|key| key.source_path.as_path())
+                .collect::<Vec<_>>(),
+            [hosts[1].as_path()],
             "the retired host must not reuse a context whose files left the mirror"
         );
     }
