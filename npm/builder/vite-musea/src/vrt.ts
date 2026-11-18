@@ -7,6 +7,7 @@
 
 export {
   MuseaVrtRunner,
+  defaultVrtWorkerCount,
   normalizeVrtWorkerCount,
   type VrtResult,
   type VrtSummary,

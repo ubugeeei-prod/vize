@@ -306,12 +306,14 @@ musea-vrt test --workers 8
 musea-vrt test --json --output .vize
 ```
 
-The runner launches Chromium once and runs variants concurrently. JSON output uses the same
-structured trace as the gallery. VRT uses this play state before capture, so an interaction failure
-also stops its visual snapshot.
+The runner launches Chromium once, uses an adaptive worker pool based on available CPU parallelism
+(capped at eight), and streams each result as soon as it finishes. Pass `--workers` only when you
+want to override that default. JSON output stays in authored order and uses the same structured
+trace as the gallery. VRT uses this play state before capture, so an interaction failure also stops
+its visual snapshot.
 
-Vitest can register every play function as an ordinary test. Its watch mode, name filtering,
-reporters, retries, and CI annotations therefore keep working:
+Vitest registers every play function through `test.concurrent` when available. Its watch mode, name
+filtering, per-case reporters, retries, and CI annotations therefore keep working:
 
 ```ts
 import { afterAll, beforeAll, describe, test } from "vitest";

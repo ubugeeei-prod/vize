@@ -1,3 +1,4 @@
+import { availableParallelism } from "node:os";
 import type { ArtFileInfo, ViewportConfig } from "../types/index.js";
 
 export type VrtJob = {
@@ -6,10 +7,15 @@ export type VrtJob = {
   viewport: ViewportConfig;
 };
 
+const MAX_AUTO_WORKERS = 8;
+
+export function defaultVrtWorkerCount(parallelism = availableParallelism()): number {
+  return Math.max(1, Math.min(MAX_AUTO_WORKERS, Math.floor(parallelism)));
+}
+
 export function normalizeVrtWorkerCount(workers: number | undefined): number {
-  if (workers === undefined || !Number.isFinite(workers)) {
-    return 1;
-  }
+  if (workers === undefined) return defaultVrtWorkerCount();
+  if (!Number.isFinite(workers)) return 1;
   return Math.max(1, Math.floor(workers));
 }
 

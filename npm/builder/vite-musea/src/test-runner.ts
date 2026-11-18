@@ -31,6 +31,8 @@ export type MuseaTestRunnerOptions = {
   launchOptions?: { args?: string[]; headless?: boolean };
 };
 
+export type MuseaTestResultReporter = (result: MuseaTestResult) => void;
+
 const DEFAULT_VIEWPORT: ViewportConfig = { width: 1280, height: 720, name: "test" };
 
 export async function loadMuseaArtFiles(
@@ -79,7 +81,15 @@ export class MuseaTestRunner {
     return this.browser.close();
   }
 
-  async runAllTests(artFiles: ArtFileInfo[], baseUrl: string): Promise<MuseaTestResult[]> {
+  getWorkerCount(): number {
+    return this.workers;
+  }
+
+  async runAllTests(
+    artFiles: ArtFileInfo[],
+    baseUrl: string,
+    report?: MuseaTestResultReporter,
+  ): Promise<MuseaTestResult[]> {
     const cases = artFiles.flatMap((art) =>
       art.variants
         .filter((variant) => Boolean(variant.play))
@@ -93,7 +103,9 @@ export class MuseaTestRunner {
         const index = next++;
         const testCase = cases[index];
         if (!testCase) return;
-        results[index] = await this.runTest(testCase.art, testCase.variantName, baseUrl);
+        const result = await this.runTest(testCase.art, testCase.variantName, baseUrl);
+        results[index] = result;
+        report?.(result);
       }
     };
     await Promise.all(Array.from({ length: Math.min(this.workers, cases.length) }, () => worker()));
@@ -188,9 +200,14 @@ export function formatMuseaTestFailure(result: MuseaTestResult): string {
     .join("\n");
 }
 
+type VitestTest = {
+  (name: string, test: () => void | Promise<void>): void;
+  concurrent?: VitestTest;
+};
+
 type VitestApi = {
   describe(name: string, factory: () => void): void;
-  test(name: string, test: () => void | Promise<void>): void;
+  test: VitestTest;
   beforeAll(hook: () => void | Promise<void>): void;
   afterAll(hook: () => void | Promise<void>): void;
 };
@@ -201,13 +218,14 @@ export function registerMuseaTests(
   options: MuseaTestRunnerOptions & { artFiles: ArtFileInfo[]; baseUrl: string; name?: string },
 ): void {
   const runner = new MuseaTestRunner(options);
+  const registerTest = vitest.test.concurrent ?? vitest.test;
   vitest.describe(options.name ?? "Musea", () => {
     vitest.beforeAll(() => runner.init());
     vitest.afterAll(() => runner.close());
     for (const art of options.artFiles) {
       for (const variant of art.variants) {
         if (!variant.play) continue;
-        vitest.test(`${art.metadata.title} › ${variant.name}`, async () => {
+        registerTest(`${art.metadata.title} › ${variant.name}`, async () => {
           const result = await runner.runTest(art, variant.name, options.baseUrl);
           if (result.status === "failed") throw new Error(formatMuseaTestFailure(result));
         });

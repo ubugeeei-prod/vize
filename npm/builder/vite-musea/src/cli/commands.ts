@@ -228,15 +228,15 @@ export async function runInteractionTests(
     previewUrls: configured.previewUrls,
     launchOptions: configured.launchOptions,
   });
+  console.log(`  Using ${runner.getWorkerCount()} browser worker(s)\n`);
 
   try {
     await runner.init();
-    const results = await runner.runAllTests(artFiles, options.baseUrl);
-    for (const result of results) {
+    const results = await runner.runAllTests(artFiles, options.baseUrl, (result) => {
       const mark = result.status === "passed" ? "✓" : result.status === "failed" ? "✗" : "-";
       console.log(`  ${mark} ${result.artPath} › ${result.variantName} (${result.duration} ms)`);
       if (result.status === "failed") console.log(formatMuseaTestFailure(result));
-    }
+    });
 
     const failed = results.filter((result) => result.status === "failed");
     const passed = results.filter((result) => result.status === "passed");

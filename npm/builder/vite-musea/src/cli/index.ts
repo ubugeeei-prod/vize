@@ -16,7 +16,7 @@
  *   -o, --output     Output directory for reports (default: .vize)
  *   -t, --threshold  Diff threshold percentage (default: 0.1)
  *   --color-threshold Per-pixel color threshold, 0-1 (default: 0.1)
- *   -w, --workers    Number of concurrent captures (default: 1)
+ *   -w, --workers    Number of concurrent captures (default: CPU adaptive, max 8)
  *   --json           Output JSON report instead of HTML
  *   --ci             CI mode - exit with non-zero code on failures
  *   --a11y           Run accessibility audits alongside VRT
@@ -220,7 +220,7 @@ Options:
   -b, --base-url <url> Base URL for dev server (default: http://localhost:5173)
   --gallery-url <url>  Capture a built hosted gallery using its static manifest
   --adopt-legacy-snapshots  Adopt reviewed, unambiguous legacy PNG baselines once
-  -w, --workers <n>    Number of concurrent captures (default: 1)
+  -w, --workers <n>    Concurrent captures (default: CPU adaptive, max 8)
   --json               Output JSON report instead of HTML
   --ci                 CI mode - exit with non-zero code on failures
   --a11y               Run accessibility audits alongside VRT
