@@ -17,11 +17,10 @@
 use std::path::{Path, PathBuf};
 
 use super::manual::{
-    RESOLVABLE_SCRIPT_EXTENSIONS, RenameTarget, RenderStyle, apply_all_path_renames,
+    RESOLVABLE_SCRIPT_EXTENSIONS, RenameTarget, RenderStyle, ScanFiles, apply_all_path_renames,
     candidate_exists, is_index_file, normalize_path_buf, render_module_specifier,
     split_specifier_suffix, strip_extension,
 };
-use crate::server::ServerState;
 
 /// One effective alias: the pattern (`@/*`), and the target's base directory
 /// resolved against its declaring config (`<anchor>/src`).
@@ -30,27 +29,61 @@ struct AliasEntry {
     target_base: PathBuf,
 }
 
+/// One scanned importer. Its alias table is read once, however many
+/// specifiers and scans ask for it: discovering it probes every ancestor
+/// directory and parses the governing tsconfig.
+pub(super) struct Importer<'a> {
+    path: &'a Path,
+    roots: &'a AliasRoots,
+    aliases: std::cell::OnceCell<Option<Vec<AliasEntry>>>,
+}
+
+impl<'a> Importer<'a> {
+    pub(super) fn new(path: &'a Path, roots: &'a AliasRoots) -> Self {
+        Self {
+            path,
+            roots,
+            aliases: std::cell::OnceCell::new(),
+        }
+    }
+
+    pub(super) fn path(&self) -> &'a Path {
+        self.path
+    }
+
+    /// Longest pattern first, mirroring TypeScript's `paths` selection.
+    fn aliases(&self) -> Option<&[AliasEntry]> {
+        self.aliases
+            .get_or_init(|| {
+                let mut aliases = project_aliases(self.path, self.roots)?;
+                aliases.sort_by_key(|alias| std::cmp::Reverse(alias.pattern_prefix.len()));
+                Some(aliases)
+            })
+            .as_deref()
+    }
+}
+
 /// Rewrite one specifier for the pending renames: relative specifiers via the
 /// manual scanner's rules, aliased ones via the `paths` map. `None` leaves the
 /// specifier untouched.
 pub(super) fn rewrite_specifier(
-    state: &ServerState,
-    importer_path: &Path,
+    files: ScanFiles<'_>,
+    importer: &Importer<'_>,
     future_importer_dir: &Path,
     specifier: &str,
     rename_targets: &[RenameTarget],
 ) -> Option<std::string::String> {
     super::manual::rewrite_relative_specifier(
-        state,
-        importer_path.parent()?,
+        files,
+        importer.path().parent()?,
         future_importer_dir,
         specifier,
         rename_targets,
     )
     .or_else(|| {
         rewrite_alias_specifier(
-            state,
-            importer_path,
+            files,
+            importer,
             future_importer_dir,
             specifier,
             rename_targets,
@@ -61,8 +94,8 @@ pub(super) fn rewrite_specifier(
 /// Rewrite one non-relative specifier whose alias-resolved target is being
 /// renamed. `None` leaves the specifier untouched.
 fn rewrite_alias_specifier(
-    state: &ServerState,
-    importer_path: &Path,
+    files: ScanFiles<'_>,
+    importer: &Importer<'_>,
     future_importer_dir: &Path,
     specifier: &str,
     rename_targets: &[RenameTarget],
@@ -72,16 +105,12 @@ fn rewrite_alias_specifier(
         return None;
     }
 
-    let mut aliases = project_aliases(importer_path)?;
-    // Longest pattern wins, mirroring TypeScript's `paths` selection.
-    aliases.sort_by_key(|alias| std::cmp::Reverse(alias.pattern_prefix.len()));
-
-    for alias in &aliases {
+    for alias in importer.aliases()? {
         let Some(rest) = specifier_path.strip_prefix(alias.pattern_prefix.as_str()) else {
             continue;
         };
         let base = normalize_path_buf(&alias.target_base.join(rest));
-        let Some((resolved, style)) = probe_alias_target(state, &base, rename_targets) else {
+        let Some((resolved, style)) = probe_alias_target(files, &base, rename_targets) else {
             continue;
         };
         let future = apply_all_path_renames(&resolved, rename_targets)?;
@@ -123,12 +152,12 @@ fn render_alias_remainder(remainder: &Path, style: RenderStyle) -> std::string::
 /// then directory-index probing, mirroring the relative scanner's candidate
 /// order. The style decides how the rename is re-spelled.
 fn probe_alias_target(
-    state: &ServerState,
+    files: ScanFiles<'_>,
     base: &Path,
     rename_targets: &[RenameTarget],
 ) -> Option<(PathBuf, RenderStyle)> {
     let resolvable = |path: &Path| {
-        candidate_exists(state, path) || apply_all_path_renames(path, rename_targets).is_some()
+        candidate_exists(files, path) || apply_all_path_renames(path, rename_targets).is_some()
     };
     if base.extension().is_some() {
         return resolvable(base).then(|| (base.to_path_buf(), RenderStyle::Explicit));
@@ -152,7 +181,7 @@ fn probe_alias_target(
 
 /// The `paths` aliases governing `source_path`, resolved by the shared
 /// reader (nearest tsconfig, references-follow, string-aware jsonc).
-fn project_aliases(source_path: &Path) -> Option<Vec<AliasEntry>> {
+fn project_aliases(source_path: &Path, roots: &AliasRoots) -> Option<Vec<AliasEntry>> {
     let mut aliases = Vec::new();
     if let Some(paths) = crate::ide::tsconfig_paths::project_paths(source_path) {
         for (pattern, target) in &paths.entries {
@@ -168,7 +197,8 @@ fn project_aliases(source_path: &Path) -> Option<Vec<AliasEntry>> {
             });
         }
     }
-    if let Some(root) = nearest_nuxt_root(source_path) {
+    let directory = source_path.parent()?;
+    if let Some(root) = roots.nuxt_root(directory) {
         for pattern_prefix in ["~/", "@/"] {
             for target_base in [root.join("app"), root.clone(), root.join("src")] {
                 aliases.push(AliasEntry {
@@ -178,7 +208,7 @@ fn project_aliases(source_path: &Path) -> Option<Vec<AliasEntry>> {
             }
         }
     }
-    if let Some(root) = nearest_project_src_root(source_path) {
+    if let Some(root) = roots.project_src_root(directory) {
         aliases.push(AliasEntry {
             pattern_prefix: "@/".to_string(),
             target_base: normalize_path_buf(&root.join("src")),
@@ -187,10 +217,19 @@ fn project_aliases(source_path: &Path) -> Option<Vec<AliasEntry>> {
     (!aliases.is_empty()).then_some(aliases)
 }
 
-fn nearest_nuxt_root(file: &Path) -> Option<PathBuf> {
-    file.ancestors()
-        .skip(1)
-        .find(|dir| {
+/// The Nuxt and project `src` roots above each directory one rename scan
+/// visits. They depend only on the directory, so every importer in it, and
+/// every directory below it, reuses one probe of each ancestor.
+#[derive(Default)]
+pub(super) struct AliasRoots {
+    nuxt: dashmap::DashMap<PathBuf, Option<PathBuf>>,
+    project_src: dashmap::DashMap<PathBuf, Option<PathBuf>>,
+}
+
+impl AliasRoots {
+    /// The nearest directory at or above `dir` with a Nuxt config.
+    fn nuxt_root(&self, dir: &Path) -> Option<PathBuf> {
+        nearest(&self.nuxt, dir, &|dir| {
             [
                 "nuxt.config.ts",
                 "nuxt.config.mts",
@@ -200,14 +239,33 @@ fn nearest_nuxt_root(file: &Path) -> Option<PathBuf> {
             .iter()
             .any(|config| dir.join(config).is_file())
         })
-        .map(Path::to_path_buf)
+    }
+
+    /// The nearest directory at or above `dir` with a `src` directory and a
+    /// project marker.
+    fn project_src_root(&self, dir: &Path) -> Option<PathBuf> {
+        nearest(&self.project_src, dir, &|dir| {
+            dir.join("src").is_dir() && has_project_source_alias_marker(dir)
+        })
+    }
 }
 
-fn nearest_project_src_root(file: &Path) -> Option<PathBuf> {
-    file.ancestors()
-        .skip(1)
-        .find(|dir| dir.join("src").is_dir() && has_project_source_alias_marker(dir))
-        .map(Path::to_path_buf)
+fn nearest(
+    memo: &dashmap::DashMap<PathBuf, Option<PathBuf>>,
+    dir: &Path,
+    matches: &dyn Fn(&Path) -> bool,
+) -> Option<PathBuf> {
+    if let Some(found) = memo.get(dir) {
+        return found.clone();
+    }
+    let found = if matches(dir) {
+        Some(dir.to_path_buf())
+    } else {
+        dir.parent()
+            .and_then(|parent| nearest(memo, parent, matches))
+    };
+    memo.insert(dir.to_path_buf(), found.clone());
+    found
 }
 
 fn has_project_source_alias_marker(dir: &Path) -> bool {

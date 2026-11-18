@@ -7,7 +7,7 @@
 use vize_l0::{Namespace, Span, Vec};
 
 use super::{DocumentHtmlRefusal as Refusal, DocumentHtmlStructure, Element};
-use crate::markup::htmlish::document::{DocumentTokenKind as Kind, NativeDocument};
+use crate::markup::htmlish::document::{DocumentTokenKind as Kind, ParsedDocument};
 use crate::markup::{Document, Profile};
 
 mod head_text;
@@ -51,13 +51,13 @@ struct Tag {
 }
 
 pub(super) fn construct<'o, 'a>(
-    owner: &'o NativeDocument<'a>,
+    owner: &'o ParsedDocument<'a>,
 ) -> Result<DocumentHtmlStructure<'o, 'a>, Refusal> {
     construct_as::<Document>(owner)
 }
 
 pub(super) fn construct_as<'o, 'a, P: Profile>(
-    owner: &'o NativeDocument<'a>,
+    owner: &'o ParsedDocument<'a>,
 ) -> Result<DocumentHtmlStructure<'o, 'a>, Refusal> {
     owner.normal_completion().map_err(Refusal::Lexical)?;
     let mut builder = Builder::<P> {
@@ -82,7 +82,7 @@ pub(super) fn construct_as<'o, 'a, P: Profile>(
 }
 
 struct Builder<'o, 'a, P> {
-    owner: &'o NativeDocument<'a>,
+    owner: &'o ParsedDocument<'a>,
     elements: Vec<'a, Element>,
     stack: Vec<'a, usize>,
     mode: Mode,

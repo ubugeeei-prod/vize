@@ -7,7 +7,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeChildren, NativeTemplateComponent, SurfaceParseOptions},
+    markup::{ChildrenView, NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_patina::{
     LintDiagnostic, Linter, RuleRegistry,
@@ -75,7 +75,7 @@ enum SyntaxRule {
 // The test caller drives original children. The product entry never walks them.
 fn collect<'a>(
     lint: &NativeSyntaxLint<'_, 'a>,
-    children: NativeChildren<'_, 'a>,
+    children: ChildrenView<'_, 'a>,
     locale: Locale,
     rule: SyntaxRule,
     output: &mut Vec<Value>,

@@ -1,7 +1,7 @@
 //! One original Vue 2 interpolation, with authored filter gaps kept verbatim.
 
 use vize_l0::{Allocator, SourceBlock, Span, Vec};
-use vize_l1::{dialect::vue2::surface::TextView, embed::syntax::NativeSyntax};
+use vize_l1::{dialect::vue2::surface::TextView, embed::syntax::EmbedSyntax};
 
 use super::{Doc, ExpressionRefusal, expression::borrowed_document};
 
@@ -185,7 +185,7 @@ fn authored<'a>(block: SourceBlock<'a>, span: Span) -> Result<&'a str, Vue2TextD
 }
 
 fn append_operand<'a>(
-    original: &NativeSyntax<'a>,
+    original: &EmbedSyntax<'a>,
     block: SourceBlock<'a>,
     binding: Span,
     allocator: &'a Allocator,

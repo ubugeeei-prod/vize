@@ -10,7 +10,7 @@ use vize_glyph::native_doc::{
 };
 use vize_l0::{Allocator, Span};
 use vize_l1::embed::{DecodeSegmentKind, syntax::EmbedHole};
-use vize_l1::markup::NativeAttributeOperandError;
+use vize_l1::markup::AttributeOperandError;
 
 #[test]
 fn unquoted_current_binding_is_parked_after_all_three_prefix_families_before_whole_refusal() {
@@ -167,10 +167,10 @@ fn missing_value_keeps_the_actual_failure_and_all_earlier_families_without_curre
     let expected = NativeSfcRefusal::Template(ObservedNativeTemplateRefusal::Binding {
         span: Span::new(51, 54),
         index: 1,
-        kind: NativeAttributeOperandError::IncompleteValue,
+        kind: AttributeOperandError::IncompleteValue,
     });
     prefix(&owner, source, expected, 1, Span::new(55, 64));
     let failure = owner.binding_failure().unwrap();
-    assert_eq!(failure.kind(), NativeAttributeOperandError::IncompleteValue);
+    assert_eq!(failure.kind(), AttributeOperandError::IncompleteValue);
     assert!(failure.syntax().is_none());
 }

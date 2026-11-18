@@ -100,6 +100,11 @@ export interface AutogenOutputNapi {
 }
 
 export interface BatchCompileOptionsNapi {
+  /**
+   * Digest of a `vue.plugins` plan registered with `registerPluginPlan`;
+   * its directive contracts apply to this compile.
+   */
+  pluginPlan?: string;
   /** Fallback tsconfig when inputs have no nearest user project. */
   typeResolutionFallbackTsconfig?: string;
   whitespace?: string;
@@ -1317,6 +1322,12 @@ export interface RelatedLocationNapi {
   filename?: string;
 }
 
+/**
+ * Verify one projected `{ digest, plan }` (JSON) and keep it for later
+ * compiles; returns the digest compile options name it by.
+ */
+export declare function registerPluginPlan(projected: string): string;
+
 export declare function resolveDesignTokenReferences(categories: string): string;
 
 export declare function resolveViteAliasRequest(
@@ -1385,6 +1396,11 @@ export interface SfcBlockAttributeNapi {
 }
 
 export interface SfcCompileOptionsNapi {
+  /**
+   * Digest of a `vue.plugins` plan registered with `registerPluginPlan`;
+   * its directive contracts apply to this compile.
+   */
+  pluginPlan?: string;
   /** Fallback tsconfig when an input has no nearest user project. */
   typeResolutionFallbackTsconfig?: string;
   whitespace?: string;

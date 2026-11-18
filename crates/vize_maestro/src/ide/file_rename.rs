@@ -11,6 +11,8 @@ mod alias_tests;
 mod declaration_index_tests;
 mod manual;
 #[cfg(all(test, feature = "native"))]
+mod manual_precheck_tests;
+#[cfg(all(test, feature = "native"))]
 mod manual_tests;
 #[cfg(test)]
 mod merge_tests;

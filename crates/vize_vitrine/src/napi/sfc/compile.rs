@@ -69,6 +69,8 @@ pub fn compile_sfc(
     let custom_blocks = custom_blocks_to_napi(&descriptor.custom_blocks);
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
     let vapor = opts.vapor.unwrap_or(false);
+    let directive_contracts =
+        crate::napi::plugin_plan::compile_directives(opts.plugin_plan.as_deref())?;
     let is_ts = opts.is_ts.unwrap_or(false);
     let source_map = opts.source_map.unwrap_or(false);
     let experimentals = ExperimentalTemplateOptions::from_compile(&opts);
@@ -98,6 +100,7 @@ pub fn compile_sfc(
         };
         let mut dom_options = experimentals.dom_options();
         dom_options.scope_id = scope_id;
+        dom_options.directive_contracts = directive_contracts;
         if let Some(value) = opts.template_cache_handlers {
             dom_options.cache_handlers = value;
         }

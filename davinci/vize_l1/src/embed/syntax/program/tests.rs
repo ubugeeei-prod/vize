@@ -1,7 +1,7 @@
 use oxc_ast::ast::{Declaration, Expression, Statement};
 use vize_l0::{Allocator, Span};
 
-use super::{EmbedSource, Lang, NativeSyntax, ProgramGoal, ProgramOptions, parse_program_once};
+use super::{EmbedSource, EmbedSyntax, Lang, ProgramGoal, ProgramOptions, parse_program_once};
 use crate::embed::syntax::{EmbedHole, parse_once};
 use crate::embed::{Embed, Grammar, Shape, prepare_attribute_value};
 
@@ -14,7 +14,7 @@ fn source(text: &str) -> EmbedSource<'_> {
     EmbedSource::authored(text, Span::new(0, text.len() as u32)).unwrap()
 }
 
-fn parse<'a>(allocator: &'a Allocator, text: &'a str, lang: Lang, jsx: bool) -> NativeSyntax<'a> {
+fn parse<'a>(allocator: &'a Allocator, text: &'a str, lang: Lang, jsx: bool) -> EmbedSyntax<'a> {
     parse_program_once(
         allocator,
         source(text),
@@ -250,7 +250,7 @@ fn malformed_and_every_utf8_cut_keep_source_profile_and_owned_observations() {
         if tree.hole().is_some() {
             assert!(tree.program().is_none());
         }
-        assert!(core::mem::needs_drop::<NativeSyntax<'_>>());
+        assert!(core::mem::needs_drop::<EmbedSyntax<'_>>());
         drop(tree);
     }
 }

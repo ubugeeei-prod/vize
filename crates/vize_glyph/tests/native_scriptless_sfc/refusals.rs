@@ -10,7 +10,7 @@ use vize_l0::{Allocator, Span};
 use vize_l1::container::ContainerErrorCode;
 use vize_l1::container::vue::{DescriptorIssue, DescriptorIssueCode as Code, ScriptRole};
 use vize_l1::embed::syntax::EmbedHole;
-use vize_l1::markup::NativeInterpolationError;
+use vize_l1::markup::InterpolationError;
 use vize_l1::markup::SurfaceChild;
 
 fn refused(owner: &NativeSfcObservation<'_>, source: &str, expected: NativeSfcRefusal) {
@@ -315,7 +315,7 @@ fn genuine_recovered_parent_failure_keeps_actual_failure_without_a_fabricated_cu
     assert_eq!(owner.operands()[0].raw_content(), "1n");
     let actual = owner.interpolation_failure().unwrap();
     let pointer = core::ptr::from_ref(actual);
-    assert_eq!(actual.kind(), NativeInterpolationError::RecoveredComponent);
+    assert_eq!(actual.kind(), InterpolationError::RecoveredComponent);
     assert!(actual.syntax().is_none());
     refused(
         &owner,
@@ -323,7 +323,7 @@ fn genuine_recovered_parent_failure_keeps_actual_failure_without_a_fabricated_cu
         NativeSfcRefusal::Template(ObservedNativeTemplateRefusal::Interpolation {
             offset: 9,
             index: 1,
-            kind: NativeInterpolationError::RecoveredComponent,
+            kind: InterpolationError::RecoveredComponent,
         }),
     );
     assert_eq!(

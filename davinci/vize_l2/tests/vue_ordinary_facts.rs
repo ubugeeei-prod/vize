@@ -38,6 +38,7 @@ fn normal_runtime_bindings_follow_vue_setup_access_kinds() {
 import { ref as makeRef, reactive } from "vue";
 import store from "./store";
 import Child from "./Child.vue";
+import { default as ChildAlias, "default" as ChildString, named } from "./Child.vue";
 import * as namespace from "./namespace";
 import type TypeOnly from "./types";
 import { type NamedType } from "./types";
@@ -80,6 +81,9 @@ export enum ExportedEnum { A }
             ("reactive", SetupBindingKind::SetupConst, None),
             ("store", SetupBindingKind::SetupMaybeRef, None),
             ("Child", SetupBindingKind::SetupConst, None),
+            ("ChildAlias", SetupBindingKind::SetupConst, None),
+            ("ChildString", SetupBindingKind::SetupConst, None),
+            ("named", SetupBindingKind::SetupMaybeRef, None),
             ("namespace", SetupBindingKind::SetupConst, None),
             ("literal", SetupBindingKind::LiteralConst, None),
             ("maybe", SetupBindingKind::SetupMaybeRef, None),

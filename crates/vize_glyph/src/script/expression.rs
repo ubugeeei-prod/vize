@@ -13,7 +13,7 @@ use unicode_width::UnicodeWidthStr;
 use vize_l0::{String, ToCompactString};
 
 #[inline]
-fn trim_expression(expression: &str) -> &str {
+pub(crate) fn trim_expression(expression: &str) -> &str {
     let bytes = expression.as_bytes();
     // Graphic ASCII edges make Unicode trimming a no-op. Whitespace,
     // controls and non-ASCII edges retain the original predicate.
@@ -79,6 +79,23 @@ fn value_starts_on_next_line(value: &str) -> bool {
 #[inline(never)]
 fn unicode_attribute_value_overflows(name: &str, trimmed: &str, available_width: usize) -> bool {
     name.width() + trimmed.width() > available_width
+}
+
+/// Whether a printed value overflows its attribute line, measured like
+/// [`value_uses_standalone_layout`] measures the authored value. Byte length
+/// bounds display width, so short values answer without a width scan.
+#[inline]
+pub(crate) fn printed_value_overflows(
+    name: &str,
+    code: &str,
+    options: &FormatOptions,
+    attribute_depth: usize,
+) -> bool {
+    let fixed_width = (attribute_depth + 1) * options.tab_width as usize + 3;
+    let available_width = (options.print_width as usize).saturating_sub(fixed_width);
+    name.len() + code.len() > available_width
+        && (fixed_width >= options.print_width as usize
+            || unicode_attribute_value_overflows(name, code, available_width))
 }
 
 #[inline]

@@ -3,7 +3,7 @@ use crate::native::template::NativeTemplateElement;
 use crate::native::template::NativeTemplateRule;
 use vize_l0::SmallVec;
 
-fn checked<'o, 'a>(root: &'o NativeLintComponent<'a>) -> NativeTemplateElement<'o, 'a> {
+fn checked<'o, 'a>(root: &'o ComponentTagFacts<'a>) -> NativeTemplateElement<'o, 'a> {
     let element = root.children().next().unwrap().into_element().unwrap();
     let mut attributes = SmallVec::new();
     for original in element.attributes() {
@@ -25,7 +25,7 @@ fn whole_void_header_reporter_preserves_original_range_and_all_configured_fields
     let allocator = Allocator::new();
     let source = "<input\r\n type='text' placeholder='雪🌸' />";
     let root =
-        NativeLintComponent::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
+        ComponentTagFacts::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
             .unwrap();
     let view = checked(&root);
     let configured = crate::rules::a11y::FormControlHasLabel;
@@ -65,8 +65,8 @@ fn equal_source_foreign_owner_and_nonvoid_extent_cannot_mint_a_whole_void_findin
     let allocator = Allocator::new();
     for source in ["<input type='text'>", "<div></div>"] {
         let block = SourceRoot::new(source).unwrap().whole_block();
-        let root = NativeLintComponent::parse_in(&allocator, block).unwrap();
-        let foreign = NativeLintComponent::parse_in(&allocator, block).unwrap();
+        let root = ComponentTagFacts::parse_in(&allocator, block).unwrap();
+        let foreign = ComponentTagFacts::parse_in(&allocator, block).unwrap();
         let foreign_view = checked(&foreign);
         let linter = Linter::new();
         let mut context = NativeTemplateLintContext::new(&linter, &root, "Exact.vue");
@@ -109,7 +109,7 @@ fn authenticated_self_closed_nonvoid_header_has_a_complete_original_extent() {
     let allocator = Allocator::new();
     let source = "<div title='exact'/>";
     let root =
-        NativeLintComponent::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
+        ComponentTagFacts::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
             .unwrap();
     let view = checked(&root);
     assert!(matches!(

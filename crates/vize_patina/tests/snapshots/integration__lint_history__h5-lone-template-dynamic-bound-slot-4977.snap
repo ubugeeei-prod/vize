@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-lone-template-dynamic-bound-slot-4977",
+    history: "e2673d1fe9de71850007f0857569ac1991599e68",
+    source: "<MyComponent><template v-bind:[slot]=\"name\"><h1>Title</h1></template></MyComponent>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-lone-template",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-lone-template",
+                severity: Warning,
+                message: "`<template>` without directive is unnecessary",
+                start: 13,
+                end: 44,
+                help: Some(
+                    "Remove the `<template>` wrapper or add a directive (v-if, v-for, v-slot)",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-lone-template",
+                    severity: Warning,
+                    message: "`<template>` without directive is unnecessary",
+                    start: 13,
+                    end: 44,
+                    help: Some(
+                        "Remove the `<template>` wrapper or add a directive (v-if, v-for, v-slot)",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

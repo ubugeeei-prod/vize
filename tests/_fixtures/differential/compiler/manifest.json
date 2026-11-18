@@ -6358,6 +6358,33 @@
         "sha256": "d8fc0a8dbe744a9f9bb6d33ab49381a8cd0486c0ff6f4054f7ea1b9f6a5066a6",
         "source": "Source-built vize_atelier_jsx compile_jsx with the #12477 fix: a block-body callback with statements before its return, and a callback with a third parameter, are error diagnostics on every target instead of a renderList that reads unbound names. The issue reproduction is the entry; the reference was reviewed against the issue."
       }
+    },
+    {
+      "id": "compiler/jsx/v-model-array-shapes-13167",
+      "state": "active",
+      "adapter": "compiler-jsx-entry-source-v1",
+      "compat": "native",
+      "targets": [
+        "vdom",
+        "vapor",
+        "vdom-ssr",
+        "vapor-ssr"
+      ],
+      "inputs": {
+        "root": "jsx-v-model-array-shapes-13167",
+        "files": [
+          {
+            "path": "App.jsx.txt",
+            "role": "entry",
+            "sha256": "79f1ed6091d16311b92851f32612dbe09c49ec54279e3299326e74f8ce884b96"
+          }
+        ]
+      },
+      "reference": {
+        "path": "jsx-v-model-array-shapes-13167/modules.expected.json",
+        "sha256": "6bd5f5389c1e627bc9e9fa7f635a0c4acc62d649b2b192272c7196627451e91f",
+        "source": "Source-built vize_atelier_jsx compile_jsx with the #13167 fix: a v-model array element outside `[value, argument?, modifiers?]` and a modifier that is not a string literal are error diagnostics on every target instead of a model that binds part of the array. The issue reproduction is the entry; the reference was reviewed against the issue."
+      }
     }
   ]
 }

@@ -59,7 +59,7 @@ impl<'a> RegionBuilder<'_, 'a> {
     pub(crate) fn begin_native_else(
         &mut self,
         node: NodeId,
-        input: &vize_l1::markup::NativeAttributeElse<'a>,
+        input: &vize_l1::markup::AttributeElse<'a>,
     ) -> Result<(), ArtifactError> {
         self.builder.begin_native_else(node, input)
     }
@@ -155,6 +155,16 @@ impl<'a> RegionBuilder<'_, 'a> {
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
     ) -> Result<NodeId, ArtifactError> {
         self.builder.callback_for(head, span, children)
+    }
+    /// Create one `ui.and`; the callback builds the region a truthy `left`
+    /// renders.
+    pub fn and(
+        &mut self,
+        left: ExprRef<'a>,
+        span: Span,
+        children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
+    ) -> Result<NodeId, ArtifactError> {
+        self.builder.and(left, span, children)
     }
     /// Create one `ui.if`; the callback adds its branches in authored order.
     pub fn conditional(

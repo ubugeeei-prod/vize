@@ -1,8 +1,8 @@
-use super::{NativeAttributeOperandError, NativeConditionKind};
+use super::{AttributeOperandError, ConditionKind};
 use crate::container::Vue;
 use crate::container::vue::DescriptorOptions;
 use crate::embed::{Lang, syntax::EmbedHole};
-use crate::markup::{NativeTemplateComponent, NativeTemplateGrammar};
+use crate::markup::{NativeTemplateComponent, TemplateGrammar};
 use oxc_span::GetSpan;
 use vize_l0::{
     Allocator,
@@ -39,7 +39,7 @@ fn same_original_header_retains_complete_entity_map_and_stock_root() {
     let operand = owner
         .observe_attribute_expression(element.attributes().next().unwrap())
         .unwrap();
-    assert_eq!(operand.kind(), NativeConditionKind::If);
+    assert_eq!(operand.kind(), ConditionKind::If);
     assert_eq!(operand.raw_value(), "msg &amp;&amp; ok");
     assert_eq!(operand.value_span().slice(source), operand.raw_value());
     assert_eq!(operand.name_span().slice(source), "v-if");
@@ -131,7 +131,7 @@ fn sibling_attribute_and_independent_same_input_parse_do_not_admit() {
     );
     assert!(
         matches!(owner.observe_attribute_expression(other_element.attributes().next().unwrap()),
-        Err(error) if error.kind() == NativeAttributeOperandError::ForeignComponent)
+        Err(error) if error.kind() == AttributeOperandError::ForeignComponent)
     );
     let copied = vize_l0::String::from(source);
     let foreign = selected(&arena, copied.as_str()).unwrap();
@@ -155,7 +155,7 @@ fn selected_setup_typescript_profile_is_intrinsic_to_the_operand() {
     let operand = owner
         .observe_attribute_expression(element.attributes().next().unwrap())
         .unwrap();
-    assert_eq!(owner.grammar(), NativeTemplateGrammar::TypeScriptModule);
+    assert_eq!(owner.grammar(), TemplateGrammar::TypeScriptModule);
     assert_eq!(operand.syntax().grammar().lang, Lang::Ts);
     assert!(operand.syntax().source_type().is_typescript());
     assert!(operand.syntax().source_type().is_module());
@@ -212,7 +212,7 @@ fn unicode_plain_value_remains_the_complete_original_borrow() {
     let operand = owner
         .observe_attribute_expression(element.attributes().next().unwrap())
         .unwrap();
-    assert_eq!(operand.kind(), NativeConditionKind::ElseIf);
+    assert_eq!(operand.kind(), ConditionKind::ElseIf);
     assert_eq!(operand.syntax().grammar().lang, Lang::Js);
     assert!(operand.syntax().source().decode_map().is_none());
     assert!(core::ptr::eq(
@@ -237,7 +237,7 @@ fn recovered_component_is_retained_without_a_conditional_operand() {
     assert!(owner.component().carrier().unsupported.is_empty());
     assert!(
         matches!(owner.observe_attribute_expression(element.attributes().next().unwrap()),
-        Err(error) if error.kind() == NativeAttributeOperandError::RecoveredComponent)
+        Err(error) if error.kind() == AttributeOperandError::RecoveredComponent)
     );
     assert!(matches!(
         element.surface().close,
@@ -253,32 +253,32 @@ fn verbatim_modifiers_arguments_plain_and_missing_values_are_typed_refusals() {
         (
             "<template><p v-pre v-if='ready'/></template>",
             1,
-            NativeAttributeOperandError::Verbatim,
+            AttributeOperandError::Verbatim,
         ),
         (
             "<template><p v-if.foo='ready'/></template>",
             0,
-            NativeAttributeOperandError::UnsupportedDirective,
+            AttributeOperandError::UnsupportedDirective,
         ),
         (
             "<template><p v-if:arg='ready'/></template>",
             0,
-            NativeAttributeOperandError::UnsupportedDirective,
+            AttributeOperandError::UnsupportedDirective,
         ),
         (
             "<template><p v-if:='ready'/></template>",
             0,
-            NativeAttributeOperandError::UnsupportedDirective,
+            AttributeOperandError::UnsupportedDirective,
         ),
         (
             "<template><p class='ready'/></template>",
             0,
-            NativeAttributeOperandError::UnsupportedDirective,
+            AttributeOperandError::UnsupportedDirective,
         ),
         (
             "<template><p v-if/></template>",
             0,
-            NativeAttributeOperandError::IncompleteValue,
+            AttributeOperandError::IncompleteValue,
         ),
     ] {
         let owner = selected(&arena, source).unwrap();

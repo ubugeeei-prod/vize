@@ -19,6 +19,7 @@ use super::literal_spans::ValueLines;
 
 mod entities;
 mod normalize;
+mod standalone;
 use entities::decode_expression_attribute_entities;
 pub(crate) use normalize::normalize_attribute_with_vue_version;
 
@@ -97,7 +98,7 @@ pub(super) fn format_directive_value(
     } else {
         value
     };
-    let trimmed = value.trim();
+    let trimmed = script::trim_expression(value);
     if trimmed.is_empty() {
         return (value.to_compact_string(), false, false);
     }
@@ -170,11 +171,28 @@ pub(super) fn format_directive_value(
             if options.end_of_line != crate::EndOfLine::Cr
                 && memchr::memchr2(b'&', b'\n', formatted.code.as_bytes()).is_none() =>
         {
+            if script::printed_value_overflows(name, &formatted.code, options, attribute_depth)
+                && let Some(standalone) = standalone::format(
+                    (name, value, trimmed),
+                    (options, vue_version, attribute_depth),
+                )
+            {
+                return standalone;
+            }
             // One scan proves both no reference and the original false LF
             // indentation flag. Preserve the complete line-ownership metadata.
             (formatted.code, false, formatted.owns_attribute_lines)
         }
         Some(formatted) => {
+            if script::printed_value_overflows(name, &formatted.code, options, attribute_depth)
+                && memchr::memchr2(b'\r', b'\n', formatted.code.as_bytes()).is_none()
+                && let Some(standalone) = standalone::format(
+                    (name, value, trimmed),
+                    (options, vue_version, attribute_depth),
+                )
+            {
+                return standalone;
+            }
             // Without an actual printed ampersand, HTML cannot form a new
             // reference. Keep the common path out of the rare-path call and
             // its reference-position collection entirely.

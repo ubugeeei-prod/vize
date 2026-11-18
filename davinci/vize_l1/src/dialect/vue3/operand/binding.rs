@@ -1,12 +1,12 @@
 //! Static binding shape selected from the already decomposed original head.
 
-use crate::markup::{ArgSyntax, DirectiveName, DirectivePrefix, NativeAttributeOperandError};
+use crate::markup::{ArgSyntax, AttributeOperandError, DirectiveName, DirectivePrefix};
 use vize_l0::{SourceBlock, Span};
 
 pub(crate) fn static_binding_parts(
     parts: Option<DirectiveName>,
     block: SourceBlock<'_>,
-) -> Result<Option<Span>, NativeAttributeOperandError> {
+) -> Result<Option<Span>, AttributeOperandError> {
     let Some(head) = parts else {
         return Ok(None);
     };
@@ -15,11 +15,11 @@ pub(crate) fn static_binding_parts(
         DirectivePrefix::Full if head.name.slice(block.root_source()) == "bind" => {
             head.name.end.checked_add(1)
         }
-        DirectivePrefix::Prop => return Err(NativeAttributeOperandError::UnsupportedDirective),
+        DirectivePrefix::Prop => return Err(AttributeOperandError::UnsupportedDirective),
         _ => return Ok(None),
     };
     let Some(ArgSyntax::Static(argument)) = head.arg else {
-        return Err(NativeAttributeOperandError::UnsupportedDirective);
+        return Err(AttributeOperandError::UnsupportedDirective);
     };
     // A closed dynamic argument followed by a tail may leave Static metadata.
     // Only the exact original prefix/argument geometry selects this family.
@@ -28,7 +28,7 @@ pub(crate) fn static_binding_parts(
         || argument.start == argument.end
         || head.modifiers.start != head.modifiers.end
     {
-        return Err(NativeAttributeOperandError::UnsupportedDirective);
+        return Err(AttributeOperandError::UnsupportedDirective);
     }
     Ok(Some(argument))
 }

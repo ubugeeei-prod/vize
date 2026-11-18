@@ -205,8 +205,18 @@
       }
     },
     {
+      "file": "tests/_fixtures/tsrx/mount/and.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nconst values: Record<string, unknown> = {\n\tzero: 0,\n\tempty: '',\n\tnan: NaN,\n\tnone: null,\n\tmissing: undefined,\n\tno: false,\n\tbig: 0n,\n\ttext: 'x',\n\tyes: true\n};\n\nexport const Count = defineVaporComponent(function Count({ n, label }: { n: number; label: string }) {\n\treturn <p>{n && <b class=\"count\">{label}</b>}</p>;\n});\n\nexport const Values = defineVaporComponent(function Values({ kind }: { kind: string }) {\n\treturn <div><span>before</span>{values[kind] && <em>set</em>}<span>after</span></div>;\n});\n\nexport const Root = defineVaporComponent(function Root({ n }: { n: number }) {\n\treturn <>{n && <i>{n}</i>}</>;\n});\n\nexport const Pair = defineVaporComponent(function Pair({ a, b }: { a: number; b: string }) {\n\treturn <ul>{a && <li class=\"a\">{a}</li>}{b && <li class=\"b\">{b}</li>}</ul>;\n});\n\nconst Badge = defineVaporComponent(function Badge({ text }: { text: string }) {\n\treturn <mark>{text}</mark>;\n});\n\nexport const Tagged = defineVaporComponent(function Tagged({ count, title }: { count: number; title: string }) {\n\treturn <section>{count && <Badge text={title} />}</section>;\n});\n\nexport const Chained = defineVaporComponent(function Chained({ n, m }: { n: number; m: string }) {\n\treturn <p>{n && m && <b>{m}</b>}</p>;\n});\n\nexport const Drawn = defineVaporComponent(function Drawn({ n }: { n: number }) {\n\treturn <svg>{n && <circle r={n} />}</svg>;\n});",
+      "error": null
+    },
+    {
       "file": "tests/_fixtures/tsrx/mount/attributes.tsrx",
       "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nexport const Field = defineVaporComponent(function Field(\n\t{ name, value, disabled, tone }: { name: string; value: string; disabled: boolean; tone: string }\n) {\n\tconst id = `field-${name}`;\n\n\treturn <div class={tone} data-name={name}><label for={id}>{name}</label><input id={id} type=\"text\" value={value} disabled={disabled} /><output aria-live=\"polite\" title={value.length > 3 ? 'long' : undefined}>{value}</output></div>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/branches.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nexport const Ternary = defineVaporComponent(function Ternary({ a, b }: { a: boolean; b: boolean }) {\n\treturn <p>{a ? b ? <i>b</i> : <s>not b</s> : <u>not a</u>}</p>;\n});\n\nconst Blocks__static1 = <s>not b</s>;\nconst Blocks__static2 = <i>b</i>;\n\nexport const Blocks = defineVaporComponent(function Blocks({ a, b }: { a: boolean; b: boolean }) {\n\treturn <p>{a ? b ? Blocks__static2 : Blocks__static1 : null}</p>;\n});\n\nexport const Labels = defineVaporComponent(function Labels({ a, b, label }: { a: boolean; b: boolean; label: string }) {\n\treturn <p>{a ? b ? <i>{label}</i> : <s>{label}</s> : null}</p>;\n});\n\nexport const Several = defineVaporComponent(function Several({ a, n }: { a: boolean; n: number }) {\n\treturn <p>{a ? <><i>{n}</i><s>two</s></> : <u>none</u>}</p>;\n});\n\nexport const Texts = defineVaporComponent(function Texts({ a, n }: { a: boolean; n: number }) {\n\treturn <p>{a ? <>count {n}</> : null}</p>;\n});\n\nexport const AndIf = defineVaporComponent(function AndIf({ a, n }: { a: boolean; n: number }) {\n\treturn <p>{n && (a ? <i>a</i> : <s>not a</s>)}</p>;\n});\n\nexport const IfAnd = defineVaporComponent(function IfAnd({ a, n }: { a: boolean; n: number }) {\n\treturn <p>{a ? n && <i>{n}</i> : <u>not a</u>}</p>;\n});",
       "error": null
     },
     {

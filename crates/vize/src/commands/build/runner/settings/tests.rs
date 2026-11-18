@@ -117,7 +117,7 @@ fn entry_compiler_settings_apply_only_to_matching_files() {
         custom_elements: Vec::new(),
         dialect: None,
         host_compiler: None,
-        plugin_plan: None,
+        directive_contracts: vize_l0::config::DirectiveContracts::EMPTY,
         compiler_entries: vec![CompilerConfigEntry {
             base_path: None,
             files: Some(vec!["src/legacy/**".into()]),

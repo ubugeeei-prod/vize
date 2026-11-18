@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h12-eslint-disable-next-line-template-2057",
+    history: "54ba6d4e2b5b8330f31cde3da403df6645972a8f",
+    source: "<!-- eslint-disable-next-line vue/require-v-for-key -->\n<ul><li v-for=\"item in items\">{{ item }}</li></ul>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/require-v-for-key",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -126,7 +126,8 @@ fn op_is_supported(op: &Op<'_>) -> bool {
         Op::For(for_op) => control_flow::for_is_supported(for_op),
         // The neutral emitter has no File-qualified original-head provider.
         Op::OriginalFor(_) => false,
-        Op::Comment(_) | Op::Slot(_) => false,
+        // The JSX lowering does not build `ui.and` yet.
+        Op::Comment(_) | Op::Slot(_) | Op::And(_) => false,
     }
 }
 

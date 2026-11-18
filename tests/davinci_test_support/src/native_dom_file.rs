@@ -5,7 +5,7 @@
 )]
 
 use vize_l0::{Allocator, SourceBlock, SourceRoot};
-use vize_l1::embed::syntax::{NativeSyntax, ProgramOptions, parse_program_once};
+use vize_l1::embed::syntax::{EmbedSyntax, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
 use vize_l1_to_l2::native::{NativeComponent, NativeProduced};
 use vize_l2::file::{Declaration, TemplatePolicy, TemplateScope};
@@ -38,7 +38,7 @@ pub fn script<'a>(
     arena: &'a Allocator,
     source: &'a str,
     content: &str,
-) -> (NativeSyntax<'a>, SourceBlock<'a>) {
+) -> (EmbedSyntax<'a>, SourceBlock<'a>) {
     let block = block(source, content);
     let syntax = parse_program_once(
         arena,

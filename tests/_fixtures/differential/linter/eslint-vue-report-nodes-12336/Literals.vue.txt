@@ -1,0 +1,10 @@
+<template>
+  <Tab
+    :on-shown="
+      () => {
+        focus()
+      }
+    "
+    :icon="({ tag: 'Shared' })"
+  />
+</template>

@@ -5,7 +5,7 @@ use super::L2Markup;
 use super::bound::L2Bound;
 use super::surface::{SurfaceDirective, attr_span, attr_value};
 use crate::markup::MarkupBindingKind;
-use vize_l0::Span;
+use vize_l0::{SmallVec, Span};
 use vize_l2::op::{Attribute, BindingOp};
 
 /// Directive-name boundaries are case-sensitive; arguments/modifiers stay pre.
@@ -71,6 +71,26 @@ impl<'a> L2Item<'a> {
             Self::Surface { attr, .. } => SurfaceDirective::parse(attr.name.text).is_some(),
         }
     }
+}
+
+/// Run [`walk_items`] once per element and keep its items in the compile arena.
+///
+/// Every rule that reads an element's opening tag walks the same items, and
+/// matching each authored attribute back to the op L2 kept for it is the walk's
+/// cost. The element is matched once and each rule replays the result. `None`
+/// without an arena (hand-built documents), where callers walk directly.
+pub(in crate::markup) fn arena_items<'a>(
+    doc: &'a L2Markup<'a>,
+    attributes: &'a [Attribute<'a>],
+    bindings: &'a [BindingOp<'a>],
+    surface: Option<&'a vize_l1::markup::Element<'a>>,
+) -> Option<&'a [L2Item<'a>]> {
+    let allocator = doc.allocator?;
+    let mut items = SmallVec::<[L2Item<'a>; 8]>::new();
+    walk_items(doc, attributes, bindings, surface, &mut |item| {
+        items.push(item)
+    });
+    Some(allocator.as_oxc().alloc_slice_copy(&items))
 }
 
 /// Visit the authored items of an L2 element in authored order.

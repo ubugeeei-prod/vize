@@ -6,7 +6,7 @@ use crate::native::template::{
     NativeTemplateAttributeKind as Kind, NativeTemplateElement, NativeTemplateLintContext,
     NativeTemplateLintRefusal as Refusal, NativeTemplateRule,
 };
-use vize_l1::markup::NativeLintComponent;
+use vize_l1::markup::ComponentTagFacts;
 
 #[cfg(test)]
 mod tests;
@@ -15,7 +15,7 @@ impl NativeTemplateRule for NoDeprecatedHtmlElementIs {
     fn run_on_template<'a>(
         &self,
         context: &mut NativeTemplateLintContext<'_, 'a>,
-        owner: &NativeLintComponent<'a>,
+        owner: &ComponentTagFacts<'a>,
     ) -> Result<(), Refusal> {
         if !core::ptr::eq(context.owner(), owner) {
             return Err(Refusal::SourceMismatch);

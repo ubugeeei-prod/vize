@@ -41,8 +41,8 @@ pub use htmlish::lex::{Delimiters, LexOptions, Lexer};
 pub use htmlish::parse::{
     ComponentParse, ComponentSourceError, DirectiveAdmission, SurfaceError, SurfaceParseOptions,
     parse, parse_component, parse_component_with_authored, parse_component_with_options,
-    parse_with_authored, parse_with_authored_diagnostics, parse_with_options,
-    parse_with_options_and_caps,
+    parse_in_dom_with_authored_diagnostics, parse_with_authored, parse_with_authored_diagnostics,
+    parse_with_options, parse_with_options_and_caps,
 };
 pub use htmlish::render::{HoleCounts, check_fidelity, hole_counts, render};
 pub use htmlish::surface::{
@@ -50,24 +50,18 @@ pub use htmlish::surface::{
     SurfaceTree, Token, TokenStatus,
 };
 pub use htmlish::view::{
-    NativeAttribute, NativeAttributeBindingExpression, NativeAttributeBindingExpressionView,
-    NativeAttributeElse, NativeAttributeElseView, NativeAttributeExpression,
-    NativeAttributeExpressionFailure, NativeAttributeExpressionView, NativeAttributeForHead,
-    NativeAttributeForHeadFailure, NativeAttributeForHeadView, NativeAttributeHandler,
-    NativeAttributeHandlerFailure, NativeAttributeHandlerView, NativeAttributeHead,
-    NativeAttributeModelExpression, NativeAttributeModelExpressionView,
-    NativeAttributeOperandError, NativeAttributeValue, NativeAttributeValueFailure,
-    NativeAttributeValueView, NativeAttributes, NativeChild, NativeChildren, NativeComponent,
-    NativeConditionKind, NativeElement, NativeElementClosingName, NativeElementNameRefusal,
-    NativeElementNames, NativeInterpolationError, NativeInterpolationFailure,
-    NativeInterpolationOperand, NativeInterpolationView, NativeModelHead, NativeRootText,
-    NativeRootTextError, NativeRootTextProfile, NativeRootTextView, NativeScriptSelection,
-    NativeStaticBindingHead, NativeTemplateComponent, NativeTemplateGrammar, NativeTextValue,
-    NativeTextValueError, NativeTextValueFailure, NativeTextValueView,
+    AttributeBindingExpression, AttributeBindingExpressionView, AttributeElse, AttributeElseView,
+    AttributeExpression, AttributeExpressionFailure, AttributeExpressionView, AttributeForHead,
+    AttributeForHeadFailure, AttributeForHeadView, AttributeHandler, AttributeHandlerFailure,
+    AttributeHandlerView, AttributeHead, AttributeModelExpression, AttributeModelExpressionView,
+    AttributeOperandError, AttributeValueFailure, AttributeValueOperand, AttributeValueView,
+    AttributeView, AttributesView, ChildView, ChildrenView, ConditionKind, ElementClosingName,
+    ElementNameRefusal, ElementNames, ElementView, InterpolationError, InterpolationFailure,
+    InterpolationOperand, InterpolationView, ModelHead, NativeComponent, NativeTemplateComponent,
+    RootText, RootTextError, RootTextProfile, RootTextView, ScriptSelection, StaticBindingHead,
+    TemplateGrammar, TextValue, TextValueError, TextValueFailure, TextValueView,
 };
 pub use profile::{Component, Document, Profile, ProfileKind};
 pub use token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
 
-pub use htmlish::view::{
-    NativeLintComponent, NativeLintTag, NativeLintTagKind, NativeLintTagRefusal,
-};
+pub use htmlish::view::{ComponentTagFacts, TagFacts, TagFactsKind, TagFactsRefusal};

@@ -43,6 +43,15 @@ compiler/character-reference-outside-unicode-range · コンパイラーエラ�
 
 ヒント:
   &#x10FFFF; 以下のコードポイントを使ってください
+=== compiler/control-character-in-input-stream
+compiler/control-character-in-input-stream · コンパイラーエラー
+入力に制御文字があります。
+
+ステージ: surface
+重大度: エラー
+
+ヒント:
+  見えない制御文字を削除してください。HTML のテンプレートでは使用できません
 === compiler/control-character-reference
 compiler/control-character-reference · コンパイラーエラー
 制御文字の文字参照です。
@@ -1241,7 +1250,7 @@ css/no-id-selectors · lint ルール
 CSS での ID セレクターの使用を非推奨とする
 
 精度: exact
-対象: declarations and selectors of <style> blocks as parsed by lightningcss
+対象: the authored structure of CSS, SCSS, Sass, Less and Stylus <style> blocks, as the L1 style reader reads it
 重大度: 警告
 カテゴリー: css
 自動修正: なし
@@ -1251,7 +1260,7 @@ css/no-important · lint ルール
 CSS での !important の使用を非推奨とする
 
 精度: exact
-対象: the authored structure of <style> blocks in every style language, as the L1 style reader reads it
+対象: the authored structure of CSS, SCSS, Sass, Less and Stylus <style> blocks, as the L1 style reader reads it
 重大度: 警告
 カテゴリー: css
 自動修正: なし

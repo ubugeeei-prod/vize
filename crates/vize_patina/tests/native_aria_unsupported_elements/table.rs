@@ -1,12 +1,10 @@
 use super::support::{
-    LOCALES, NeverLookup, collect, complete, error, expected, parser, registered, selected, span,
+    LOCALES, NeverLookup, collect, complete, error, expected, registered, selected, span,
 };
 use vize_l0::{Allocator, cstr};
 use vize_patina::native::{
     NativeLintRefusal, NativeSyntaxLint, header_facts::NativeHeaderFactError,
 };
-
-const FOSTER: &str = "Foster parenting moved this element before the nearest open table.";
 
 fn refused(source: &str, depth: usize) {
     let arena = Allocator::default();
@@ -17,12 +15,12 @@ fn refused(source: &str, depth: usize) {
     let mut first_context = None;
     for _ in 1..depth {
         element = element.children().next().unwrap().into_element().unwrap();
-        let original = element.lint_tag().unwrap();
+        let original = element.tag_facts().unwrap();
         if original.in_table_context() {
             first_context.get_or_insert(original.span());
         }
     }
-    let receipt = element.lint_tag().unwrap();
+    let receipt = element.tag_facts().unwrap();
     assert!(receipt.in_table_context());
     let refusal = NativeHeaderFactError::Header(NativeLintRefusal::TableContext {
         span: receipt.span(),
@@ -49,25 +47,19 @@ fn preserved_original_table_html_role_keeps_both_registered_errors() {
     for locale in LOCALES {
         assert_eq!(
             complete(&registered(source, locale)),
-            expected(vec![
-                parser("error", FOSTER, span(source, "<html role>")),
-                error(locale, span(source, "role"), "html", "role"),
-            ])
+            expected(vec![error(locale, span(source, "role"), "html", "role")])
         );
     }
 }
 
 #[test]
-fn original_annotation_xml_namespace_ambiguity_keeps_the_complete_foster_error() {
+fn original_annotation_xml_namespace_ambiguity_keeps_the_registered_error() {
     let source = "<template><math><annotation-xml encoding='text/html'><table><html role></html></table></annotation-xml></math></template>";
     refused(source, 4);
     for locale in LOCALES {
         assert_eq!(
             complete(&registered(source, locale)),
-            expected(vec![
-                parser("error", FOSTER, span(source, "<html role>")),
-                error(locale, span(source, "role"), "html", "role"),
-            ])
+            expected(vec![error(locale, span(source, "role"), "html", "role")])
         );
     }
 }

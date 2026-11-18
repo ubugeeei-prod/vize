@@ -40,6 +40,7 @@ fn collect_ops(walk: &mut PageWalk, ops: &[Op<'_>], ids: &mut StdVec<NodeId>) {
                     collect_ops(walk, &branch.region.ops, ids);
                 }
             }
+            Op::And(and) => collect_ops(walk, &and.region.ops, ids),
             Op::For(for_op) => collect_ops(walk, &for_op.region.ops, ids),
             Op::OriginalFor(for_op) => collect_ops(walk, &for_op.region.ops, ids),
             Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => {}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-lone-template-legacy-slot-4977",
+    history: "e2673d1fe9de71850007f0857569ac1991599e68",
+    source: "<MyComponent><template slot=\"header\"><h1>Title</h1></template></MyComponent>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-lone-template",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

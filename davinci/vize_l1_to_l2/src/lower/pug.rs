@@ -43,6 +43,8 @@ mod attrs;
 mod check;
 mod control;
 mod emit;
+#[cfg(test)]
+mod escaped_value_tests;
 mod eval;
 mod heads;
 mod include;

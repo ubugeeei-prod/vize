@@ -67,6 +67,8 @@ function isExcluded(file: string): boolean {
     file.endsWith("/package.json") ||
     file === ".github/workflows/release.yml" ||
     ["ja", "zh-CN", "pt-BR", "fr"].some((locale) => file.startsWith(`docs/content/${locale}/`)) ||
+    // Generated, one row per rule; `generate-patina-rules-page.ts --check` keeps it fresh.
+    file === "docs/content/rules/all.md" ||
     file.includes(".min.") ||
     [
       "_fixtures",

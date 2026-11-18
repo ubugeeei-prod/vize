@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h9-mouse-events-dynamic-mouseenter-2418",
+    history: "a12211715ea770ecaa14322844608186a2deca36",
+    source: "<div @[mouseenter]=\"show\">Content</div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/mouse-events-have-key-events",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

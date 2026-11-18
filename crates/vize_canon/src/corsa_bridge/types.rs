@@ -61,6 +61,21 @@ impl std::fmt::Display for CorsaBridgeError {
 
 impl std::error::Error for CorsaBridgeError {}
 
+const SUPERSEDED_EDITOR_MIRROR: &str =
+    "project inputs changed while the editor mirror was being prepared";
+
+impl CorsaBridgeError {
+    /// A project-input change retired the editor mirror while it was being
+    /// prepared. The backend session is healthy; preparing again succeeds.
+    pub fn superseded_editor_mirror() -> Self {
+        Self::CommunicationError(SUPERSEDED_EDITOR_MIRROR.into())
+    }
+
+    pub fn is_superseded_editor_mirror(&self) -> bool {
+        matches!(self, Self::CommunicationError(message) if message == SUPERSEDED_EDITOR_MIRROR)
+    }
+}
+
 impl From<crate::CorsaError> for CorsaBridgeError {
     fn from(error: crate::CorsaError) -> Self {
         match error {

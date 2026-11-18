@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h12-unsafe-url-data-on-object-1744",
+    history: "9f05a990e9ce8e69a22f675ffade7e0b111baa31",
+    source: "<object :data=\"url\"></object>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-unsafe-url",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Dynamic :data binding may be vulnerable to XSS via javascript: protocol",
+                start: 8,
+                end: 19,
+                help: Some(
+                    "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Dynamic :data binding may be vulnerable to XSS via javascript: protocol",
+                    start: 8,
+                    end: 19,
+                    help: Some(
+                        "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

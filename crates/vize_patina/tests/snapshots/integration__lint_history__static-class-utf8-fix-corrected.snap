@@ -22,8 +22,8 @@ Observation {
                 rule_name: "vapor/prefer-static-class",
                 severity: Warning,
                 message: "Prefer static class attribute over dynamic :class binding for constant values",
-                start: 32,
-                end: 54,
+                start: 39,
+                end: 53,
                 help: None,
                 labels: [],
                 fix: Some(

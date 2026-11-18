@@ -198,6 +198,7 @@ fn visit<'a>(
                 region(walk, channels, env, &branch.region.ops);
             }
         }
+        Op::And(and) => region(walk, channels, env, &and.region.ops),
         Op::For(for_op) => {
             // The legacy `enter_v_for_scope` registers the alias texts
             // (value even when it is a pattern; key and index when

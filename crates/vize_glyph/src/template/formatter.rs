@@ -202,10 +202,20 @@ impl<'a> TemplateFormatter<'a> {
                     let is_void = is_void_element_str(&tag_name);
                     let is_self_closing =
                         is_self_closing || (is_void && self.options.self_close_void_elements);
+                    // The policy is pure; ordinary nonempty tags previously
+                    // queried it twice. Self-closing tags never query it.
+                    let whitespace_significant = !is_self_closing
+                        && is_whitespace_significant_element(&tag_name, &sorted_attrs);
                     let hugged_inline_suffix = if is_self_closing || joiner.locks_current_line() {
                         None
                     } else {
-                        self.hugged_inline_suffix_width::<CANONICAL>(input, end_pos, &tag_name)
+                        self.hugged_inline_suffix_width::<CANONICAL>(
+                            input,
+                            end_pos,
+                            &tag_name,
+                            depth,
+                            !is_void && !whitespace_significant,
+                        )
                     };
                     self.open_chunk(&mut output, depth, join);
                     output.push(b'<');
@@ -230,10 +240,6 @@ impl<'a> TemplateFormatter<'a> {
                         closing_bracket_on_own_line = true;
                     }
 
-                    // The policy is pure; ordinary nonempty tags previously
-                    // queried it twice. Self-closing tags never query it.
-                    let whitespace_significant = !is_self_closing
-                        && is_whitespace_significant_element(&tag_name, &sorted_attrs);
                     if is_self_closing {
                         if closing_bracket_on_own_line {
                             output.extend_from_slice(b"/>");

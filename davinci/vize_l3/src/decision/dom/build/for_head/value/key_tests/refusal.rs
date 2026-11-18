@@ -64,13 +64,13 @@ fn key_only_completion_does_not_admit_compound_mixed_grouped_nested_or_attribute
 
 #[test]
 fn unsupported_alias_shapes_and_reserved_prefixes_keep_their_earliest_original_refusal() {
-    use vize_l1::embed::syntax::NativeForRefusal;
+    use vize_l1::embed::syntax::ForRefusal;
 
     for (aliases, syntax_refusal) in [
-        ("([item],key)", Some(NativeForRefusal::AliasShape)),
-        ("({item},key)", Some(NativeForRefusal::AliasShape)),
-        ("(item=1,key)", Some(NativeForRefusal::AliasShape)),
-        ("(item,key,third)", Some(NativeForRefusal::AliasCount(3))),
+        ("([item],key)", Some(ForRefusal::AliasShape)),
+        ("({item},key)", Some(ForRefusal::AliasShape)),
+        ("(item=1,key)", Some(ForRefusal::AliasShape)),
+        ("(item,key,third)", Some(ForRefusal::AliasCount(3))),
         ("(item,_key)", None),
         ("(item,$key)", None),
     ] {
@@ -90,7 +90,7 @@ fn unsupported_alias_shapes_and_reserved_prefixes_keep_their_earliest_original_r
             ([vize_l2::file::RejectedFileFor::Syntax(input)], Some(expected)) => {
                 assert_eq!(input.kind, expected, "{aliases}");
                 assert_eq!(input.span, input.operand().value_span());
-                assert_eq!(input.operand().syntax().native_refusal(), Some(expected));
+                assert_eq!(input.operand().syntax().for_refusal(), Some(expected));
                 assert!(input.operand().syntax().aliases().unwrap().is_ok());
                 assert!(input.operand().syntax().collection().unwrap().is_ok());
                 input.operand()

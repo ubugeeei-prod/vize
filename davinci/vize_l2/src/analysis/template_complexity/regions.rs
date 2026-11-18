@@ -3,7 +3,7 @@
 //! attribute. The rules are `complexity-metrics.md`'s; each arm below
 //! names the rule it implements.
 
-use crate::op::{BindingOp, DynamicName, IfOp, Op};
+use crate::op::{AndOp, BindingOp, DynamicName, IfOp, Op};
 use crate::walk::PageWalk;
 use vize_l0::ensure_sufficient_stack;
 use vize_l0::id::NodeId;
@@ -43,6 +43,7 @@ fn visit_region_guarded(
                 score(interpolation.expression, id, depth, facts);
             }
             Op::If(if_op) => visit_if(walk, if_op, id, depth, facts),
+            Op::And(and) => visit_and(walk, and, id, depth, facts),
             Op::For(for_op) => {
                 // Rule `for`: one decision (continue or exit), a structure.
                 // The source evaluates once, outside the repeated body.
@@ -89,6 +90,28 @@ fn visit_nested(walk: &mut PageWalk, ops: &[Op<'_>], depth: u32, facts: &mut Com
     }
     facts.max_nesting = facts.max_nesting.max(depth);
     visit_region(walk, ops, depth, facts);
+}
+
+/// `left && <region>` decides like a one-branch `if`. Kept out of line:
+/// templates never reach it.
+#[inline(never)]
+fn visit_and(
+    walk: &mut PageWalk,
+    and: &AndOp<'_>,
+    id: Option<NodeId>,
+    depth: u32,
+    facts: &mut ComplexityFacts,
+) {
+    facts.push(Contribution {
+        span: and.left.span(),
+        kind: DecisionKind::If,
+        op: id,
+        nesting: depth,
+        cyclomatic: 1,
+        cognitive: 1 + depth,
+    });
+    score(and.left, id, depth, facts);
+    visit_nested(walk, &and.region.ops, depth + 1, facts);
 }
 
 /// Rules `if` / `else-if` / `else`. Every condition is one decision, so

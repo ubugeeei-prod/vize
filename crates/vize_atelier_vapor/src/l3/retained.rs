@@ -63,6 +63,10 @@ impl<'s, 'a> Retained<'s, 'a> {
                             pending.push(&branch.region);
                         }
                     }
+                    Op::And(and) => {
+                        retained.insert(and.left, false);
+                        pending.push(&and.region);
+                    }
                     Op::For(each) => {
                         retained.insert(each.binding.source, false);
                         pending.push(&each.region);

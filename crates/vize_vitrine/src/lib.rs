@@ -18,6 +18,8 @@ pub mod wasm;
 mod parse_errors;
 pub mod plugin_output;
 #[cfg(any(test, feature = "napi"))]
+mod plugin_plans;
+#[cfg(any(test, feature = "napi"))]
 mod plugin_transform;
 #[cfg(any(feature = "napi", feature = "wasm"))]
 mod template_syntax;

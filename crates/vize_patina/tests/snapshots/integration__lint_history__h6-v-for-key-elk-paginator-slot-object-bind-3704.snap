@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-v-for-key-elk-paginator-slot-object-bind-3704",
+    history: "ca4fc84f2f6c75538e85a7c9d451984981035ae8",
+    source: "<template>\n  <slot>\n    <template v-else>\n      <slot\n        v-for=\"(item, index) of items\"\n        v-bind=\"{ key: (item as U)[keyProp as keyof U] }\"\n        :item=\"item as U\"\n        :older=\"items[index + 1] as U\"\n        :newer=\"items[index - 1] as U\"\n        :index=\"index\"\n        :items=\"items as U[]\"\n      />\n    </template>\n  </slot>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/require-v-for-key",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

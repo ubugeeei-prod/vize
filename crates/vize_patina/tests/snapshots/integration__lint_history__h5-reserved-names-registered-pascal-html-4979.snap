@@ -1,0 +1,107 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-reserved-names-registered-pascal-html-4979",
+    history: "f5db9b1277106e7f6d4f2de68f314dc2c567bddb",
+    source: "<script>\nexport default {\n  components: {\n    Title,\n    Link,\n    Header: SiteHeader,\n  },\n}\n</script>\n<template><div /></template>",
+    filename: "Demo.vue",
+    entry: "sfc",
+    rule: "vue/no-reserved-component-names",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 3,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Demo.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-reserved-component-names",
+                severity: Error,
+                message: "'Title' is a reserved HTML element name and cannot be used as a component name",
+                start: 46,
+                end: 51,
+                help: Some(
+                    "Rename the component to avoid using reserved names",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-reserved-component-names",
+                severity: Error,
+                message: "'Link' is a reserved HTML element name and cannot be used as a component name",
+                start: 57,
+                end: 61,
+                help: Some(
+                    "Rename the component to avoid using reserved names",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-reserved-component-names",
+                severity: Error,
+                message: "'Header' is a reserved HTML element name and cannot be used as a component name",
+                start: 67,
+                end: 85,
+                help: Some(
+                    "Rename the component to avoid using reserved names",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 3,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Demo.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-reserved-component-names",
+                    severity: Error,
+                    message: "'Title' is a reserved HTML element name and cannot be used as a component name",
+                    start: 46,
+                    end: 51,
+                    help: Some(
+                        "Rename the component to avoid using reserved names",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-reserved-component-names",
+                    severity: Error,
+                    message: "'Link' is a reserved HTML element name and cannot be used as a component name",
+                    start: 57,
+                    end: 61,
+                    help: Some(
+                        "Rename the component to avoid using reserved names",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-reserved-component-names",
+                    severity: Error,
+                    message: "'Header' is a reserved HTML element name and cannot be used as a component name",
+                    start: 67,
+                    end: 85,
+                    help: Some(
+                        "Rename the component to avoid using reserved names",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 3,
+            warning_count: 0,
+        },
+    ),
+}

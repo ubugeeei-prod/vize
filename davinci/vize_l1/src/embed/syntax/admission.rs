@@ -6,7 +6,7 @@
 /// Maximum conservative word/punctuation units in the complete parser input,
 /// including generated delimiters, strings and comments. Larger valid snippets
 /// remain unadmitted until complete JS/TS recursion admission is implemented.
-pub const NATIVE_SYNTAX_UNIT_LIMIT: usize = 31;
+pub const EMBED_SYNTAX_UNIT_LIMIT: usize = 31;
 
 /// Every ASCII identifier/numeric run counts once; each other non-whitespace
 /// byte counts once. No quoted/comment/regex text is skipped, and non-ASCII
@@ -20,7 +20,7 @@ pub(super) fn allows_small_input(input: &str) -> bool {
         let next_word = byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$');
         if (next_word && !word) || (!next_word && !byte.is_ascii_whitespace()) {
             units += 1;
-            if units > NATIVE_SYNTAX_UNIT_LIMIT {
+            if units > EMBED_SYNTAX_UNIT_LIMIT {
                 return false;
             }
         }
@@ -31,7 +31,7 @@ pub(super) fn allows_small_input(input: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{NATIVE_SYNTAX_UNIT_LIMIT, allows_small_input};
+    use super::{EMBED_SYNTAX_UNIT_LIMIT, allows_small_input};
 
     #[test]
     fn admits_small_real_programs_and_counts_wrapper() {
@@ -39,7 +39,7 @@ mod tests {
             "/* keep */ const value: number = 1; // tail"
         ));
         assert!(allows_small_input("(\n/* lead */ (count) // tail\n)"));
-        let at_limit = "+".repeat(NATIVE_SYNTAX_UNIT_LIMIT);
+        let at_limit = "+".repeat(EMBED_SYNTAX_UNIT_LIMIT);
         assert!(allows_small_input(&at_limit));
         assert!(!allows_small_input(&vize_l0::cstr!("({at_limit})")));
     }

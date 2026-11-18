@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h9-duplicate-attrs-dynamic-on-2400",
+    history: "86de1fae13b1d08d05f6fe8b1121b638c3dc70aa",
+    source: "<div @[click]=\"a\" @click=\"b\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-duplicate-attributes",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,34 @@
+{
+  "row": "select-content-model",
+  "dialect": "vue",
+  "source": "<select><div><option>a</option></div></select>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "select",
+      null,
+      []
+    ],
+    [
+      "div",
+      0,
+      []
+    ],
+    [
+      "option",
+      1,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      2,
+      "a"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}

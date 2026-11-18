@@ -11,7 +11,7 @@ use vize_l1::{
     },
     embed::{
         EmbedSource, Lang,
-        syntax::{NativeSyntax, ProgramOptions, parse_program_once},
+        syntax::{EmbedSyntax, ProgramOptions, parse_program_once},
     },
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
@@ -53,7 +53,7 @@ use super::{NativeSfcLintRefusal as Refusal, envelope};
 pub struct NativeSfcLintOwner<'a> {
     descriptor: DescriptorObservation<'a>,
     template: NativeTemplateComponent<'a>,
-    syntax: NativeSyntax<'a>,
+    syntax: EmbedSyntax<'a>,
     file: FileArtifact<'a>,
 }
 
@@ -133,7 +133,7 @@ impl<'a> NativeSfcLintOwner<'a> {
     }
     /// Returns the single retained parse of the setup program.
     #[must_use]
-    pub fn syntax(&self) -> &NativeSyntax<'a> {
+    pub fn syntax(&self) -> &EmbedSyntax<'a> {
         &self.syntax
     }
     /// Script-only File; this is never native template/DOM/ref authority.

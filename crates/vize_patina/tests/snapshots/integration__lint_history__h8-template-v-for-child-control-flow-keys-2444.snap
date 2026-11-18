@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h8-template-v-for-child-control-flow-keys-2444",
+    history: "708d256022864e1295b7f543cb230fdfc82740cc",
+    source: "\n            <template v-for=\"row in rows\" :key=\"row\">\n              <li v-for=\"col in cols\" :key=\"col\">{{ col }}</li>\n            </template>\n            <template v-for=\"item in items\">\n              <span v-if=\"item.visible\" :key=\"item.id\" />\n            </template>\n            <template v-for=\"x in list\">\n              <span v-if=\"x.a\" :key=\"x.k1\" />\n              <span v-else-if=\"x.b\" :key=\"x.k2\" />\n              <span v-else :key=\"x.k3\" />\n            </template>\n            ",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-v-for-template-key-on-child",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

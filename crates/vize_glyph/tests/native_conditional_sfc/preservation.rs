@@ -3,7 +3,7 @@ use oxc_ast::ast::Expression;
 use vize_glyph::native_doc::LineEnding;
 use vize_l0::{Allocator, Span};
 use vize_l1::embed::DecodeSegmentKind;
-use vize_l1::markup::NativeConditionKind;
+use vize_l1::markup::ConditionKind;
 
 mod expressions;
 mod geometry;
@@ -35,13 +35,13 @@ fn mixed_interpolations_and_both_conditionals_keep_actual_original_source_order(
             .collect::<Vec<_>>(),
         [
             (
-                NativeConditionKind::If,
+                ConditionKind::If,
                 Span::new(19, 23),
                 Span::new(25, 28),
                 "a+b"
             ),
             (
-                NativeConditionKind::ElseIf,
+                ConditionKind::ElseIf,
                 Span::new(49, 58),
                 Span::new(60, 69),
                 "ready&&ok"
@@ -238,8 +238,5 @@ fn original_quotes_attribute_order_and_outer_bytes_remain_whole_source_custody()
         ]
     );
     assert_eq!(owner.attribute_operands()[0].raw_value(), " a+b ");
-    assert_eq!(
-        owner.attribute_operands()[0].kind(),
-        NativeConditionKind::ElseIf
-    );
+    assert_eq!(owner.attribute_operands()[0].kind(), ConditionKind::ElseIf);
 }

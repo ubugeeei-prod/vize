@@ -11,24 +11,47 @@ use alloc::vec::Vec as StdVec;
 use vize_l0::{Span, String, cstr};
 use vize_l1::markup::pug::{PugAttrItem, PugTag, PugTagPart};
 
+use super::PugRendering;
 use super::emit::Emitter;
 use super::eval;
-use super::literal::string_literal;
+use super::literal::{cook_body, string_literal};
 use super::value::{self, Value};
 
 /// `pug_escape`: `"`, `&`, `<`, `>` to entities.
 pub(super) fn escape(value: &str) -> String {
+    escape_for(value, PugRendering::Pug)
+}
+
+/// [`escape`], or for the authored-order view only what a quoted Vue
+/// attribute would read differently (see [`entity`]).
+fn escape_for(value: &str, rendering: PugRendering) -> String {
     let mut out = String::with_capacity(value.len());
-    for ch in value.chars() {
-        match ch {
-            '"' => out.push_str("&quot;"),
-            '&' => out.push_str("&amp;"),
-            '<' => out.push_str("&lt;"),
-            '>' => out.push_str("&gt;"),
-            other => out.push(other),
+    let mut chars = value.chars().peekable();
+    while let Some(ch) = chars.next() {
+        match entity(ch, chars.peek().copied(), rendering) {
+            Some(entity) => out.push_str(entity),
+            None => out.push(ch),
         }
     }
     out
+}
+
+/// The entity written for `ch` (followed by `next`), if any.
+///
+/// The authored-order view keeps a raw `<`, `>` and an `&` that cannot
+/// start a character reference: Vue decodes both spellings to the same
+/// value, and the authored bytes keep an expression's columns (#13295).
+fn entity(ch: char, next: Option<char>, rendering: PugRendering) -> Option<&'static str> {
+    let exact = rendering == PugRendering::Pug;
+    match ch {
+        '"' => Some("&quot;"),
+        '&' if exact || next.is_some_and(|next| next.is_ascii_alphanumeric() || next == '#') => {
+            Some("&amp;")
+        }
+        '<' if exact => Some("&lt;"),
+        '>' if exact => Some("&gt;"),
+        _ => None,
+    }
 }
 
 pub(super) struct Entry<'s> {
@@ -40,6 +63,8 @@ pub(super) struct Entry<'s> {
     pub(super) value: Value,
     /// A quoted literal's body, mapped verbatim when it renders unchanged.
     pub(super) body: Option<(&'s str, Span)>,
+    /// The quote of a cooked literal `body`; `None` for an `#id` body.
+    pub(super) quote: Option<char>,
     pub(super) escaped: bool,
     pub(super) span: Span,
 }
@@ -79,11 +104,11 @@ impl Collected<'_> {
     }
 }
 
-/// The body of a quoted literal token and its span.
+/// The body of a quoted literal token, its span and its quote.
 fn literal_body<'s>(
     emitter: &Emitter<'_>,
     value: &vize_l1::markup::Token<'s>,
-) -> Option<(&'s str, Span)> {
+) -> Option<(&'s str, Span, char)> {
     let text = value.text;
     if !emitter.is_authored(text) {
         return None;
@@ -94,7 +119,7 @@ fn literal_body<'s>(
         .filter(|ch| matches!(ch, '"' | '\'' | '`'))?;
     let body = text.get(1..)?.strip_suffix(quote)?;
     let start = emitter.offset(value) + 1;
-    Some((body, Span::new(start, start + body.len() as u32)))
+    Some((body, Span::new(start, start + body.len() as u32), quote))
 }
 
 impl<'t> Emitter<'t> {
@@ -168,6 +193,7 @@ impl<'t> Emitter<'t> {
                         body: self
                             .is_authored(token.text)
                             .then(|| (body, Span::new(span.start + 1, span.end))),
+                        quote: None,
                         escaped: false,
                         span,
                     });
@@ -244,13 +270,14 @@ impl<'t> Emitter<'t> {
                         let key_span = (rendered.as_str() == attr.name.text
                             && self.is_authored(attr.name.text))
                         .then_some(span);
-                        let body = attr.value.as_ref().and_then(|v| literal_body(self, v));
+                        let literal = attr.value.as_ref().and_then(|v| literal_body(self, v));
                         collected.entries.push(Entry {
                             key: rendered,
                             raw_key: key,
                             key_span,
                             value,
-                            body,
+                            body: literal.map(|(body, span, _)| (body, span)),
+                            quote: literal.map(|(.., quote)| quote),
                             escaped,
                             span: whole,
                         });
@@ -275,13 +302,20 @@ impl<'t> Emitter<'t> {
                 return;
             }
             Value::Bool(true) => (None, "\""),
-            Value::Str(text) => (Some(if entry.escaped { escape(&text) } else { text }), "\""),
+            Value::Str(text) => (
+                Some(if entry.escaped {
+                    escape_for(&text, self.rendering)
+                } else {
+                    text
+                }),
+                "\"",
+            ),
             other => {
                 let Some(json) = other.json() else {
                     return;
                 };
                 if entry.escaped {
-                    (Some(escape(&json)), "\"")
+                    (Some(escape_for(&json, self.rendering)), "\"")
                 } else if json.contains('"') {
                     (
                         Some(String::from(json.replace('\'', "&#39;").as_str())),
@@ -307,10 +341,93 @@ impl<'t> Emitter<'t> {
                     self.html.push_str(body);
                     self.map.push_verbatim(body.len(), span.start);
                 }
+                Some((body, span)) if self.cooked_body(entry, body, span, &text) => {}
                 _ => self.synth(&text, entry.span),
             }
             self.synth(quote, entry.span);
         }
+    }
+
+    /// A literal `body` whose cooked, escaped chars render exactly `text`:
+    /// unchanged runs stay verbatim and each rewritten char maps to the
+    /// bytes that spell it, so the value keeps its authored columns (#13295).
+    fn cooked_body(&mut self, entry: &Entry<'_>, body: &str, span: Span, text: &str) -> bool {
+        let Some(quote) = entry.quote else {
+            return false;
+        };
+        let mut chars = StdVec::with_capacity(body.len());
+        if cook_body(body, quote, |ch, raw| chars.push((ch, raw))).is_none() {
+            return false;
+        }
+        let escape = entry.escaped.then_some(self.rendering);
+        let mut buffer = [0; 4];
+        let mut rendered = 0;
+        for (index, (ch, _)) in chars.iter().enumerate() {
+            let next = chars.get(index + 1).map(|(next, _)| *next);
+            let piece = rendered_char(*ch, next, escape, &mut buffer);
+            if text.get(rendered..rendered + piece.len()) != Some(piece) {
+                return false;
+            }
+            rendered += piece.len();
+        }
+        if rendered != text.len() {
+            return false;
+        }
+        if !self.include_output(text.len(), entry.span) {
+            return true;
+        }
+        let mut run: Option<core::ops::Range<usize>> = None;
+        for (index, (ch, raw)) in chars.iter().cloned().enumerate() {
+            let next = chars.get(index + 1).map(|(next, _)| *next);
+            let piece = rendered_char(ch, next, escape, &mut buffer);
+            if body.get(raw.clone()) == Some(piece) {
+                match run.take() {
+                    Some(open) if open.end == raw.start => run = Some(open.start..raw.end),
+                    open => {
+                        if let Some(open) = open {
+                            self.body_run(body, span, open);
+                        }
+                        run = Some(raw);
+                    }
+                }
+                continue;
+            }
+            if let Some(open) = run.take() {
+                self.body_run(body, span, open);
+            }
+            self.html.push_str(piece);
+            self.map.push_synth(
+                piece.len(),
+                span.start + raw.start as u32,
+                span.start + raw.end as u32,
+            );
+        }
+        if let Some(open) = run {
+            self.body_run(body, span, open);
+        }
+        true
+    }
+
+    /// Copy `body[run]` verbatim.
+    fn body_run(&mut self, body: &str, span: Span, run: core::ops::Range<usize>) {
+        let text = body.get(run.clone()).unwrap_or_default();
+        self.html.push_str(text);
+        self.map
+            .push_verbatim(text.len(), span.start + run.start as u32);
+    }
+}
+
+/// One cooked char (followed by `next`) as `pug_attr` renders it,
+/// escaped for `escape` when the attribute is.
+fn rendered_char(
+    ch: char,
+    next: Option<char>,
+    escape: Option<PugRendering>,
+    buffer: &mut [u8; 4],
+) -> &str {
+    match escape.and_then(|rendering| entity(ch, next, rendering)) {
+        Some(entity) => entity,
+        None => ch.encode_utf8(buffer),
     }
 }
 

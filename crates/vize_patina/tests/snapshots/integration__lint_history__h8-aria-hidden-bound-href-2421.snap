@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h8-aria-hidden-bound-href-2421",
+    history: "12ae02196ee5f667c994e6c8d5ca9a8ae7e9e74e",
+    source: "<a :href=\"url\" aria-hidden=\"true\">Home</a>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/no-aria-hidden-on-focusable",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/no-aria-hidden-on-focusable",
+                severity: Error,
+                message: "aria-hidden=\"true\" must not be used on focusable elements",
+                start: 0,
+                end: 34,
+                help: Some(
+                    "Remove aria-hidden=\"true\".",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/no-aria-hidden-on-focusable",
+                    severity: Error,
+                    message: "aria-hidden=\"true\" must not be used on focusable elements",
+                    start: 0,
+                    end: 34,
+                    help: Some(
+                        "Remove aria-hidden=\"true\".",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

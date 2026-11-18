@@ -140,7 +140,7 @@ fn fostered_and_valid_table_descendants_refuse_without_dropping_registered_findi
                 .into_element()
                 .unwrap();
         }
-        let receipt = element.lint_tag().unwrap();
+        let receipt = element.tag_facts().unwrap();
         assert!(receipt.in_table_context());
         assert_eq!(
             lint.deprecated_attr(&element, &NeverLookup).err(),
@@ -150,13 +150,6 @@ fn fostered_and_valid_table_descendants_refuse_without_dropping_registered_findi
         );
         for locale in LOCALES {
             let mut diagnostics = Vec::new();
-            if foster {
-                diagnostics.push(parser(
-                    "error",
-                    "Foster parenting moved this element before the nearest open table.",
-                    span(source, "<div align='yes'>"),
-                ));
-            }
             diagnostics.push(warning(
                 locale,
                 span(source, head),
@@ -199,7 +192,7 @@ fn ignored_nested_form_keeps_parser_first_and_complete_nonempty_product_control(
     let lint = NativeSyntaxLint::new(&owner).unwrap();
     let outer = owner.children().next().unwrap().into_element().unwrap();
     let element = outer.children().next().unwrap().into_element().unwrap();
-    let receipt = element.lint_tag().unwrap();
+    let receipt = element.tag_facts().unwrap();
     assert!(receipt.in_recovery_context());
     assert_eq!(
         lint.deprecated_attr(&element, &NeverLookup).err(),

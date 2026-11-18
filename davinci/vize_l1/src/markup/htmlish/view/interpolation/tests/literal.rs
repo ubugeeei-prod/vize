@@ -2,12 +2,12 @@
 
 use super::{Allocator, selected};
 use crate::embed::{Lang, syntax::EmbedHole};
-use crate::markup::NativeInterpolationOperand;
+use crate::markup::InterpolationOperand;
 
 fn operand<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeInterpolationOperand<'a>, &'static str> {
+) -> Result<InterpolationOperand<'a>, &'static str> {
     let owner = selected(arena, source)?;
     let child = owner.children().next().ok_or("missing original root")?;
     owner

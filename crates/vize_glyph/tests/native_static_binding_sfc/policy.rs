@@ -4,7 +4,7 @@ use vize_glyph::native_doc::{
     NativeTemplateRefusal, ObservedNativeTemplateRefusal, observe_native_sfc_in,
 };
 use vize_l0::{Allocator, Span};
-use vize_l1::markup::NativeAttributeOperandError;
+use vize_l1::markup::AttributeOperandError;
 
 pub(super) fn empty_refusal(
     owner: &NativeSfcObservation<'_>,
@@ -69,28 +69,28 @@ fn recognized_unsupported_heads_refuse_before_value_observation_and_other_famili
             "<template><p :[key]='a+b'/></template>",
             NativeTemplateRefusal::BindingHead {
                 span: Span::new(13, 19),
-                kind: NativeAttributeOperandError::UnsupportedDirective,
+                kind: AttributeOperandError::UnsupportedDirective,
             },
         ),
         (
             "<template><p v-bind='a+b'/></template>",
             NativeTemplateRefusal::BindingHead {
                 span: Span::new(13, 19),
-                kind: NativeAttributeOperandError::UnsupportedDirective,
+                kind: AttributeOperandError::UnsupportedDirective,
             },
         ),
         (
             "<template><p :id.prop='a+b'/></template>",
             NativeTemplateRefusal::BindingHead {
                 span: Span::new(13, 21),
-                kind: NativeAttributeOperandError::UnsupportedDirective,
+                kind: AttributeOperandError::UnsupportedDirective,
             },
         ),
         (
             "<template><p .id='a+b'/></template>",
             NativeTemplateRefusal::BindingHead {
                 span: Span::new(13, 16),
-                kind: NativeAttributeOperandError::UnsupportedDirective,
+                kind: AttributeOperandError::UnsupportedDirective,
             },
         ),
         (
@@ -143,7 +143,7 @@ fn missing_static_value_preserves_old_bare_header_output_and_new_actual_failure_
     let expected = NativeSfcRefusal::Template(ObservedNativeTemplateRefusal::Binding {
         span: Span::new(13, 16),
         index: 0,
-        kind: NativeAttributeOperandError::IncompleteValue,
+        kind: AttributeOperandError::IncompleteValue,
     });
     assert_eq!(owner.source(), source);
     assert_eq!(owner.options(), policy);
@@ -154,7 +154,7 @@ fn missing_static_value_preserves_old_bare_header_output_and_new_actual_failure_
     assert!(owner.attribute_operands().is_empty());
     assert!(owner.operands().is_empty());
     let failure = owner.binding_failure().unwrap();
-    assert_eq!(failure.kind(), NativeAttributeOperandError::IncompleteValue);
+    assert_eq!(failure.kind(), AttributeOperandError::IncompleteValue);
     assert!(failure.syntax().is_none());
     assert!(owner.attribute_failure().is_none());
     assert!(owner.interpolation_failure().is_none());

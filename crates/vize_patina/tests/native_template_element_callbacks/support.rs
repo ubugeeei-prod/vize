@@ -3,7 +3,7 @@ use std::sync::{
     atomic::{AtomicBool, AtomicUsize, Ordering},
 };
 use vize_l0::{Span, String, ToCompactString, cstr};
-use vize_l1::markup::{DirectiveName, NativeLintComponent};
+use vize_l1::markup::{ComponentTagFacts, DirectiveName};
 use vize_patina::{
     HelpLevel, LintContext, LintResult, Linter, Locale, Rule, RuleCategory, RuleMeta, RuleRegistry,
     Severity,
@@ -130,7 +130,7 @@ impl NativeTemplateRule for Audit {
     fn run_on_template<'a>(
         &self,
         context: &mut NativeTemplateLintContext<'_, 'a>,
-        root: &NativeLintComponent<'a>,
+        root: &ComponentTagFacts<'a>,
     ) -> Result<(), Refusal> {
         assert!(core::ptr::eq(context.owner(), root));
         self.events.lock().unwrap().push(Event::Root(self.marker));

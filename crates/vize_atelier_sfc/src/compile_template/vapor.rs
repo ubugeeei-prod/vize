@@ -31,6 +31,7 @@ pub(crate) fn compile_template_block_vapor(
     codegen_options: &CodegenOptions,
     capture: Option<&mut StageCapture>,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
+    super::plugin_outputs::refuse_unsupported(options, template, "vapor")?;
     let compiler_options = options.compiler_options.as_ref();
     let TemplateBlockCompileContext {
         scope_id,

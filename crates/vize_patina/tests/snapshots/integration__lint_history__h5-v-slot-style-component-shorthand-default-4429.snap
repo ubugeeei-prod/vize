@@ -1,0 +1,61 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-v-slot-style-component-shorthand-default-4429",
+    history: "80bbc1007488009374a829428df4c10064a5f56e",
+    source: "<MyComponent #default=\"{ item }\"><p /></MyComponent>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/v-slot-style",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/v-slot-style",
+                severity: Warning,
+                message: "Expected 'v-slot' instead of '#default'",
+                start: 13,
+                end: 32,
+                help: Some(
+                    "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+                        edits: [
+                            TextEdit {
+                                start: 13,
+                                end: 21,
+                                new_text: "v-slot",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<MyComponent v-slot=\"{ item }\"><p /></MyComponent>",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

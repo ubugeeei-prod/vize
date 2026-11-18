@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-warn-custom-block-root-fragment-3210",
+    history: "f4d79ab11a9c549b03db0a3500b2465fd3fd5c2e",
+    source: "<template>\n  <fieldset />\n<hr />\n<fieldset />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/warn-custom-block",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

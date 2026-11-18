@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h10-v-model-call-2370",
+    history: "c896e5d5926653cf5d35f82b51f8765db6e03acd",
+    source: "<input v-model=\"foo()\">",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-model",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/valid-v-model",
+                severity: Error,
+                message: "v-model requires an assignable expression",
+                start: 16,
+                end: 21,
+                help: Some(
+                    "**Supported elements:**\n- `<input>` (text, checkbox, radio, etc.)\n- `<textarea>`\n- `<select>`\n- Custom components with `modelValue` prop\n\n**Examples:**\n```vue\n<input v-model=\"message\">\n<input v-model.number=\"age\" type=\"number\">\n<input v-model.trim=\"name\">\n<MyComponent v-model=\"value\">\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/valid-v-model",
+                    severity: Error,
+                    message: "v-model requires an assignable expression",
+                    start: 16,
+                    end: 21,
+                    help: Some(
+                        "**Supported elements:**\n- `<input>` (text, checkbox, radio, etc.)\n- `<textarea>`\n- `<select>`\n- Custom components with `modelValue` prop\n\n**Examples:**\n```vue\n<input v-model=\"message\">\n<input v-model.number=\"age\" type=\"number\">\n<input v-model.trim=\"name\">\n<MyComponent v-model=\"value\">\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

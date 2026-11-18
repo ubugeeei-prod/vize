@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h8-transition-bound-appear-2445",
+    history: "c2c1f09e4eb6309df91d920472be0b8068815be8",
+    source: "<transition :appear=\"shouldAppear\"><div>loading</div></transition>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/require-toggle-inside-transition",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

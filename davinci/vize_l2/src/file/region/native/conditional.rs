@@ -9,7 +9,7 @@ use crate::lang::js::{NativeConditionalInput, NativeTemplateIssueKind as Kind};
 use crate::resolution::Usage;
 use core::ops::DerefMut;
 use vize_l0::{Span, id::NodeId};
-use vize_l1::markup::{NativeAttributeHead, NativeConditionKind, NativeTemplateComponent};
+use vize_l1::markup::{AttributeHead, ConditionKind, NativeTemplateComponent};
 
 pub(super) struct ObservedConditional {
     pub(super) index: usize,
@@ -25,9 +25,9 @@ where
     pub(super) fn observe_conditional(
         &mut self,
         selected: &NativeTemplateComponent<'a>,
-        head: &NativeAttributeHead<'_, 'a>,
+        head: &AttributeHead<'_, 'a>,
     ) -> Result<ObservedConditional, Kind> {
-        if head.condition_kind() != Some(NativeConditionKind::If)
+        if head.condition_kind() != Some(ConditionKind::If)
             || !core::ptr::eq(selected.component(), head.selected().component())
             || !core::ptr::eq(self.source, selected.component().block().root_source())
         {

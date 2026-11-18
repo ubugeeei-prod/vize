@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Observe one unchanged command; core capture requires a verified private guest.
 import { spawn } from "node:child_process";
+import { once } from "node:events";
 import fs from "node:fs";
-import { constants } from "node:os";
+import { constants, tmpdir } from "node:os";
 import path from "node:path";
 import { setTimeout } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
@@ -108,13 +109,53 @@ function setCoreLimit(soft: string, hard: string): Packet {
   return result;
 }
 
+/**
+ * Give the command a regular file for one output stream and copy it to the
+ * matching stream of this process as it grows. Node children set O_NONBLOCK on an inherited
+ * pipe, which is shared with every process holding it; once the step's pipe
+ * filled, vite-plus 0.1.24 took the EAGAIN of its own write as a failed spawn
+ * and aborted the run (#12422). Writes to a regular file never return EAGAIN.
+ */
+function outputRelay(target: NodeJS.WriteStream): {
+  fd: number;
+  pump: () => Promise<void>;
+  close: () => void;
+} {
+  const directory = fs.mkdtempSync(path.join(tmpdir(), "vize-js-command-output-"));
+  const file = path.join(directory, "output.log");
+  const fd = fs.openSync(file, "w");
+  const reader = fs.openSync(file, "r");
+  const buffer = Buffer.alloc(1 << 16);
+  let offset = 0;
+  return {
+    fd,
+    async pump() {
+      for (;;) {
+        const read = fs.readSync(reader, buffer, 0, buffer.length, offset);
+        if (read === 0) return;
+        offset += read;
+        if (!target.write(Buffer.from(buffer.subarray(0, read)))) await once(target, "drain");
+      }
+    },
+    close() {
+      fs.closeSync(reader);
+      fs.rmSync(directory, { recursive: true, force: true });
+    },
+  };
+}
+
 async function runOriginal(
   command: string[],
   receipt: Packet,
   sample?: (pid: number) => void,
 ): Promise<number> {
   receipt.commandStartedAt = Date.now() / 1000;
-  const child = spawn(command[0], command.slice(1), { stdio: "inherit" });
+  const outputs = [outputRelay(process.stdout), outputRelay(process.stderr)];
+  const child = spawn(command[0], command.slice(1), {
+    stdio: ["inherit", outputs[0].fd, outputs[1].fd],
+  });
+  for (const output of outputs) fs.closeSync(output.fd);
+  const pump = () => Promise.all(outputs.map((output) => output.pump()));
   receipt.pid = child.pid;
   let completed = false;
   let spawnError: Error | undefined;
@@ -149,15 +190,18 @@ async function runOriginal(
     });
   }
   try {
-    while (!completed && sample) {
-      if (child.pid !== undefined) sample(child.pid);
-      await Promise.race([completion, setTimeout(250, undefined, { ref: false })]);
+    while (!completed) {
+      if (sample && child.pid !== undefined) sample(child.pid);
+      await pump();
+      await Promise.race([completion, setTimeout(sample ? 250 : 100, undefined, { ref: false })]);
     }
     const status = await completion;
+    await pump();
     Object.assign(receipt, { commandReturnCode: status, commandFinishedAt: Date.now() / 1000 });
     if (spawnError) throw spawnError;
     return status;
   } finally {
+    for (const output of outputs) output.close();
     for (const [index, signal] of signals.entries()) {
       process.removeAllListeners(signal);
       for (const handler of previous[index]) process.on(signal, handler);

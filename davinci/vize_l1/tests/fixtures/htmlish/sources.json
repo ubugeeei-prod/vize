@@ -1,0 +1,75 @@
+{
+  "declarations": {
+    "vue": "<!DOCTYPE html><div>a</div>"
+  },
+  "element-name-case": {
+    "vue": "<MyComp><DIV>a</DIV></MyComp>"
+  },
+  "attribute-name-case": {
+    "vue": "<div :fooBar=\"x\" DATA-Id=\"a\" @update:modelValue=\"y\"></div>"
+  },
+  "end-tag-case": {
+    "vue": "<div><span>a</SPAN></div>"
+  },
+  "foreign-case": {
+    "vue": "<svg viewBox=\"0 0 1 1\"><foreignObject></foreignObject></svg>"
+  },
+  "self-closing": {
+    "vue": "<div><span/><MyComp/></div>"
+  },
+  "attribute-whitespace": {
+    "document": "<!DOCTYPE html><html><head></head><body><div a=\"1\"b=\"2\"></div></body></html>"
+  },
+  "implied-end-tags": {
+    "vue": "<ul><li>a<li>b</ul>"
+  },
+  "br-end-tag": {
+    "document": "<!DOCTYPE html><html><head></head><body><p>a</br>b</p></body></html>",
+    "vue": "<p>a</br>b</p>"
+  },
+  "select-content-model": {
+    "vue": "<select><div><option>a</option></div></select>"
+  },
+  "raw-text": {
+    "vue": "<div><script>if (a<b) {}</script><style>a>b{}</style></div>"
+  },
+  "raw-text-legacy-elements": {
+    "document": "<!DOCTYPE html><html><head></head><body><xmp><b>a</b></xmp><iframe><b>c</b></iframe></body></html>",
+    "vue": "<div><xmp><b>a</b></xmp><iframe><b>c</b></iframe></div>"
+  },
+  "script-data-escapes": {
+    "document": "<!DOCTYPE html><html><head><script><!--<script></script>--></script></head><body></body></html>",
+    "vue": "<div><script><!--<script></script>--></script></div>"
+  },
+  "svg-title": {
+    "vue": "<svg><title><b>a</b></title></svg>"
+  },
+  "foreign-object": {
+    "vue": "<svg><foreignObject><div>a</div></foreignObject></svg>"
+  },
+  "plaintext": {
+    "document": "<!DOCTYPE html><html><head></head><body><plaintext><b>a</b></plaintext></body></html>",
+    "vue": "<div><plaintext><b>a</b></plaintext></div>"
+  },
+  "noscript": {
+    "vue": "<div><noscript><b>a</b></noscript></div>"
+  },
+  "template-contents": {
+    "document": "<!DOCTYPE html><html><head></head><body><template><td>a</td></template></body></html>",
+    "vue": "<div><template v-if=\"ok\"><span>a</span></template></div>"
+  },
+  "bogus-comments": {
+    "document": "<!DOCTYPE html><html><head></head><body><?x y?><div></ div><!x></div></body></html>",
+    "vue": "<div><?x y?><span></ span><!x></span></div>"
+  },
+  "comment-edges": {
+    "document": "<!DOCTYPE html><html><head></head><body><div><!--><!---><!--a--!>b</div></body></html>",
+    "vue": "<div><!--><!---><!--a--!>b</div>"
+  },
+  "crlf": {
+    "vue": "<div title=\"a\r\nb\">c\r\nd\re</div>"
+  },
+  "null": {
+    "vue": "<div title=\"a\u0000b\">c\u0000d<!--e\u0000f--></div>"
+  }
+}

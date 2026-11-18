@@ -130,7 +130,8 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// and update-listener keys, which only components support, so it is
     /// accepted when `allow_dynamic_arg` says the caller is lowering a component
     /// in opt-in Babel VDOM mode and rejected everywhere else rather than being
-    /// silently discarded (#3466).
+    /// silently discarded (#3466). An element outside that layout and a
+    /// modifier that is not a string literal are rejected the same way (#13167).
     pub(crate) fn lower_model_array(
         &mut self,
         array: &oxc_ast::ast::ArrayExpression<'_>,
@@ -185,6 +186,42 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
                 None => None,
             }
         };
+
+        // Every element must have a place in the layout. Babel ignores the rest
+        // (`[a, "x", "y"]` binds `x` only), which hides a mistake, so an element
+        // outside the layout is rejected like a dynamic argument (#13167).
+        let unused = elems.iter().enumerate().find(|(index, _)| {
+            *index != 0 && !(*index == 1 && arg.is_some()) && Some(*index) != modifiers_idx
+        });
+        if let Some((_, expression)) = unused {
+            let span = expression.span();
+            let source = self.mapper().slice(span);
+            self.reject_at(
+                span,
+                format_args!(
+                    "v-model array element `{source}` is not used; the array form is \
+                     `[value, argument?, modifiers?]`."
+                ),
+            );
+            return ModelArrayLowering::Rejected;
+        }
+
+        // Modifiers are names: a non-string entry would be dropped silently.
+        if let Some(idx) = modifiers_idx
+            && let Some(Expression::ArrayExpression(modifiers)) = elems.get(idx)
+            && let Some(entry) = modifiers
+                .elements
+                .iter()
+                .find(|entry| !matches!(entry.as_expression(), Some(Expression::StringLiteral(_))))
+        {
+            let span = entry.span();
+            let source = self.mapper().slice(span);
+            self.reject_at(
+                span,
+                format_args!("v-model modifier `{source}` must be a string literal."),
+            );
+            return ModelArrayLowering::Rejected;
+        }
 
         let mut directive = DirectiveNode::new(self.bump(), "model", loc.clone());
         directive.exp = Some(self.dyn_expr(value_expr.span()));

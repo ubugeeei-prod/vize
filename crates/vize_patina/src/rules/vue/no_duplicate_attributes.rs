@@ -21,7 +21,7 @@ mod directive_identity;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::FxHashSet;
+use vize_l0::SmallVec;
 use vize_l0::String;
 use vize_l0::ToCompactString;
 use vize_l0::cstr;
@@ -59,24 +59,27 @@ impl Rule for NoDuplicateAttributes {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        let mut seen_attrs: FxHashSet<String> = FxHashSet::default();
-        let mut seen_directives: FxHashSet<String> = FxHashSet::default();
-        let mut seen_custom_directives: FxHashSet<String> = FxHashSet::default();
+        let mut seen_attrs = Seen::default();
+        let mut seen_directives = Seen::default();
+        let mut seen_custom_directives = Seen::default();
 
         for prop in element.props.iter() {
             match prop {
                 PropNode::Attribute(attr) => {
-                    let name = attr.name.to_lowercase();
+                    let name = lowercase(attr.name);
 
                     // Check for duplicate static attributes
                     if seen_attrs.contains(name.as_str()) {
                         ctx.error_with_help(
-                            ctx.t_fmt("vue/no-duplicate-attributes.message", &[("attr", &name)]),
+                            ctx.t_fmt(
+                                "vue/no-duplicate-attributes.message",
+                                &[("attr", name.as_str())],
+                            ),
                             &attr.loc,
                             ctx.t("vue/no-duplicate-attributes.help"),
                         );
                     } else {
-                        seen_attrs.insert(name.clone().into());
+                        seen_attrs.insert(name.clone());
                     }
 
                     if seen_directives.contains(name.as_str())
@@ -99,7 +102,7 @@ impl Rule for NoDuplicateAttributes {
                             let Some(arg_name) = get_static_expression_content(arg) else {
                                 continue;
                             };
-                            let arg_name = arg_name.to_lowercase();
+                            let arg_name = lowercase(&arg_name);
                             let arg_name_str = arg_name.as_str();
 
                             // Check for duplicate directives
@@ -113,7 +116,7 @@ impl Rule for NoDuplicateAttributes {
                                     ctx.t("vue/no-duplicate-attributes.help"),
                                 );
                             } else {
-                                seen_directives.insert(arg_name_str.into());
+                                seen_directives.insert(arg_name.clone());
                             }
 
                             if seen_attrs.contains(arg_name_str)
@@ -137,7 +140,7 @@ impl Rule for NoDuplicateAttributes {
                                 continue;
                             };
                             // Include modifiers in the key to allow @keydown.left and @keydown.right
-                            let modifiers: Vec<&str> =
+                            let modifiers: SmallVec<[&str; 4]> =
                                 dir.modifiers.iter().map(|m| m.content).collect();
                             let event_key = if modifiers.is_empty() {
                                 cstr!("on:{}", event_name)
@@ -206,6 +209,38 @@ impl Rule for NoDuplicateAttributes {
                 }
             }
         }
+    }
+}
+
+/// The names one element has spelled so far. An element carries a handful of
+/// attributes, so a scan of an inline list replaces a hash set per element.
+#[derive(Default)]
+struct Seen(SmallVec<[String; 8]>);
+
+impl Seen {
+    fn contains(&self, name: &str) -> bool {
+        self.0.iter().any(|seen| seen.as_str() == name)
+    }
+
+    /// Record `name`; `false` when it was already seen.
+    fn insert(&mut self, name: String) -> bool {
+        if self.contains(name.as_str()) {
+            return false;
+        }
+        self.0.push(name);
+        true
+    }
+}
+
+/// `str::to_lowercase` into the inline string type, without a heap string for
+/// the ASCII names attributes almost always are.
+fn lowercase(name: &str) -> String {
+    if name.is_ascii() {
+        let mut lower = String::from(name);
+        lower.make_ascii_lowercase();
+        lower
+    } else {
+        String::from(name.to_lowercase())
     }
 }
 

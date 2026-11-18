@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h12-reserved-name-builtin-used-in-template-1781",
+    history: "708f157d7897b4d6b682a33d3365fe3045315b55",
+    source: "<script>export default { name: 'MyComponent' }</script><template><Transition name=\"fade\"><div>hello</div></Transition></template>",
+    filename: "MyComponent.vue",
+    entry: "sfc",
+    rule: "vue/no-reserved-component-names",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "MyComponent.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "MyComponent.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

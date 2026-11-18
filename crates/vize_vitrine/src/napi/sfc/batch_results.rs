@@ -52,6 +52,8 @@ fn compile_sfc_batch_with_results_inner(
     let success_count = AtomicUsize::new(0);
     let ssr = opts.ssr.unwrap_or(false);
     let vapor = opts.vapor.unwrap_or(false);
+    let directive_contracts =
+        crate::napi::plugin_plan::compile_directives(opts.plugin_plan.as_deref())?;
     let is_ts = opts.is_ts.unwrap_or(false);
     let custom_renderer = opts.custom_renderer.unwrap_or(false);
     let custom_elements = vize_atelier_core::options::CustomElementMatcher::from_patterns(
@@ -152,6 +154,7 @@ fn compile_sfc_batch_with_results_inner(
             let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
             let template_compiler_options = {
                 let mut dom_options = experimentals.dom_options();
+                dom_options.directive_contracts = directive_contracts.clone();
                 dom_options.scope_id = has_scoped.then(|| cstr!("data-v-{scope_id}"));
                 if let Some(value) = opts.template_cache_handlers {
                     dom_options.cache_handlers = value;

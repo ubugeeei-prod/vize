@@ -333,6 +333,10 @@ pub fn advance_ops(ops: &[DumpOp], next: &mut u32) {
                     advance_ops(&branch.ops, next);
                 }
             }
+            DumpOp::And(and) => {
+                *next += 1;
+                advance_ops(&and.ops, next);
+            }
             DumpOp::For(for_op) => {
                 *next += 1;
                 advance_ops(&for_op.ops, next);

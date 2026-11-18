@@ -40,6 +40,7 @@ pub(super) fn emit_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), 
             | Op::JsxChildValue(_)
             | Op::Comment(_)
             | Op::If(_)
+            | Op::And(_)
             | Op::For(_)
             | Op::Slot(_) => {
                 return Err(EmitError::unsupported_op(

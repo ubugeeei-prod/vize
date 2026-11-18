@@ -137,3 +137,51 @@ fn an_empty_table_compiles_byte_identically() {
         assert_eq!(with_unrelated.code, default.code, "ssr={ssr} vapor={vapor}");
     }
 }
+
+#[test]
+fn a_file_compiles_only_to_an_output_its_plugins_support() {
+    let vdom_only = DirectiveContracts::with_outputs(
+        tracking().as_slice().to_vec(),
+        vec![("@acme/tracking".into(), vec!["vdom".into()])],
+    );
+    // A `vapor` script attribute selects Vapor without any request flag.
+    let vapor_source = "<script setup vapor>\nconst e = 1\n</script>\n<template><a v-track.strict=\"e\">go</a></template>\n";
+    let refusals: Vec<_> = [(vapor_source, false), (SOURCE, true)]
+        .into_iter()
+        .map(|(source, ssr)| {
+            let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse SFC");
+            // A script-bearing SFC reports template errors in its result.
+            let error = match compile_sfc(&descriptor, options(ssr, false, vdom_only.clone())) {
+                Err(error) => error,
+                Ok(result) => result
+                    .errors
+                    .into_iter()
+                    .next()
+                    .expect("an unsupported output fails the template"),
+            };
+            (
+                error.code.map(|code| code.to_string()),
+                error.message.to_string(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        refusals,
+        [
+            (
+                Some("PLUGIN_OUTPUT_UNSUPPORTED".to_owned()),
+                "[plugin/host-unsupported] @acme/tracking: vue.directive `track` does not support the vapor output".to_owned(),
+            ),
+            (
+                Some("PLUGIN_OUTPUT_UNSUPPORTED".to_owned()),
+                "[plugin/host-unsupported] @acme/tracking: vue.directive `track` does not support the ssr output".to_owned(),
+            ),
+        ]
+    );
+    assert_eq!(
+        compile(SOURCE, options(false, false, vdom_only))
+            .errors
+            .len(),
+        0
+    );
+}

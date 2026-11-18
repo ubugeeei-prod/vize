@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { relocatePaths } from "./isolation.ts";
 import { canonicalJson, get, object, type Json, type JsonObject } from "./value.ts";
 
 const stagePrefix = ".lint-divergence-stage-";
@@ -33,8 +34,11 @@ export class BaselineArtifactStage {
   readonly #rawFilename: string;
   #rawCount = 0;
   #rawFd: number | null;
+  readonly #relocation: { from: string; to: string } | null;
 
-  constructor(outputDir: string) {
+  /** `relocation` renames a mirror's paths in staged results to the fixture's. */
+  constructor(outputDir: string, relocation: { from: string; to: string } | null = null) {
+    this.#relocation = relocation;
     fs.mkdirSync(outputDir, { recursive: true });
     this.#directory = fs.mkdtempSync(path.join(outputDir, stagePrefix));
     this.#rawFilename = path.join(this.#directory, "eslint-results.json-fragments");
@@ -44,7 +48,11 @@ export class BaselineArtifactStage {
   append(results: readonly Json[]): void {
     if (this.#rawFd === null) throw new Error("baseline artifact stage is already closed");
     for (const result of results) {
-      const body = canonicalJson(result, true).replaceAll("\n", "\n      ");
+      const relocated =
+        this.#relocation === null
+          ? result
+          : relocatePaths(result, this.#relocation.from, this.#relocation.to);
+      const body = canonicalJson(relocated, true).replaceAll("\n", "\n      ");
       writeAll(this.#rawFd, `${this.#rawCount ? ",\n" : "\n"}      ${body}`);
       this.#rawCount++;
     }

@@ -1,6 +1,6 @@
 use super::{assert_original, observe, selected};
 use crate::embed::{DecodeSegmentKind, syntax::EmbedHole};
-use crate::markup::{NativeAttributeBindingExpression, NativeAttributeOperandError};
+use crate::markup::{AttributeBindingExpression, AttributeOperandError};
 use alloc::vec::Vec;
 use oxc_ast::ast::CommentKind;
 use vize_l0::{Allocator, Span};
@@ -40,7 +40,7 @@ fn sibling_nested_same_buffer_and_equal_byte_copy_attributes_cannot_join_the_ori
         let before = arena.allocated_bytes();
         assert_eq!(
             owner.observe_attribute_head(attribute).err(),
-            Some(NativeAttributeOperandError::ForeignComponent)
+            Some(AttributeOperandError::ForeignComponent)
         );
         assert_eq!(arena.allocated_bytes(), before);
         assert_eq!(foreign.component().block().root_source(), source);
@@ -131,9 +131,7 @@ fn parked_move_and_selection_scope_end_preserve_original_stock_root_map_and_raw_
         ]
     );
     assert!(syntax.admitted_expression().is_some());
-    assert!(core::mem::needs_drop::<
-        NativeAttributeBindingExpression<'static>,
-    >());
+    assert!(core::mem::needs_drop::<AttributeBindingExpression<'static>>());
 }
 
 #[test]

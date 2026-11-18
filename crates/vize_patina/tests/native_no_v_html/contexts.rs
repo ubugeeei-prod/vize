@@ -23,7 +23,7 @@ fn original_foster_and_valid_table_contexts_refuse_before_lookup() {
         for _ in 0..if foster { 1 } else { 4 } {
             element = element.children().next().unwrap().into_element().unwrap();
         }
-        let receipt = element.lint_tag().unwrap();
+        let receipt = element.tag_facts().unwrap();
         assert!(receipt.in_table_context());
         assert_eq!(
             lint.no_v_html(&element, &NeverLookup).err(),
@@ -34,15 +34,7 @@ fn original_foster_and_valid_table_contexts_refuse_before_lookup() {
             ))
         );
         for locale in LOCALES {
-            let mut diagnostics = Vec::new();
-            if foster {
-                diagnostics.push(parser(
-                    "error",
-                    "Foster parenting moved this element before the nearest open table.",
-                    span(source, "<html v-html>"),
-                ));
-            }
-            diagnostics.push(warning(locale, span(source, "v-html")));
+            let diagnostics = vec![warning(locale, span(source, "v-html"))];
             assert_eq!(complete(&registered(source, locale)), expected(diagnostics));
         }
     }
@@ -66,7 +58,7 @@ fn ignored_form_refuses_and_keeps_the_complete_nonempty_registered_control() {
     let lint = NativeSyntaxLint::new(&owner).unwrap();
     let outer = owner.children().next().unwrap().into_element().unwrap();
     let element = outer.children().next().unwrap().into_element().unwrap();
-    let receipt = element.lint_tag().unwrap();
+    let receipt = element.tag_facts().unwrap();
     assert!(receipt.in_recovery_context());
     assert_eq!(
         lint.no_v_html(&element, &NeverLookup).err(),
@@ -139,7 +131,7 @@ fn five_original_pre_recovery_sources_keep_every_registered_parser_diagnostic() 
                 .into_element()
                 .unwrap();
         }
-        let receipt = element.lint_tag().unwrap();
+        let receipt = element.tag_facts().unwrap();
         assert!(receipt.header_is_literal());
         assert!(receipt.in_recovery_context());
         assert_eq!(

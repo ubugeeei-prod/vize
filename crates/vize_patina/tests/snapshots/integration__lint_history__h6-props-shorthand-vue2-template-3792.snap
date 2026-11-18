@@ -1,0 +1,35 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-props-shorthand-vue2-template-3792",
+    history: "486322ff3d90fa7d484cd663a31795fe8c2fcd14",
+    source: "<MyComponent :foo=\"foo\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/prefer-props-shorthand",
+    vue_version: Some(
+        "2",
+    ),
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

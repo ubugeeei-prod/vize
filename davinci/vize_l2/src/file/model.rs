@@ -5,12 +5,12 @@ use crate::lang::js::{NativeModelInput, NativeTemplateIssueKind};
 use crate::op::{ElementOp, ModelOp};
 use crate::resolution::BindingId;
 use vize_l0::id::NodeId;
-use vize_l1::markup::NativeAttributeExpressionFailure;
+use vize_l1::markup::AttributeExpressionFailure;
 
 #[derive(Default)]
 pub(crate) struct ModelStorage<'a> {
     rows: alloc::vec::Vec<NativeFileModel<'a>>,
-    failures: alloc::vec::Vec<NativeAttributeExpressionFailure<'a>>,
+    failures: alloc::vec::Vec<AttributeExpressionFailure<'a>>,
 }
 
 impl<'a> super::build::Facts<'a> {
@@ -25,14 +25,14 @@ impl<'a> super::build::Facts<'a> {
             .get_or_insert_with(|| alloc::boxed::Box::new(ModelStorage::default()))
             .rows
     }
-    pub(crate) fn native_model_failures(&self) -> &[NativeAttributeExpressionFailure<'a>] {
+    pub(crate) fn native_model_failures(&self) -> &[AttributeExpressionFailure<'a>] {
         self.model_storage
             .as_deref()
             .map_or(&[], |storage| storage.failures.as_slice())
     }
     pub(crate) fn native_model_failures_mut(
         &mut self,
-    ) -> &mut alloc::vec::Vec<NativeAttributeExpressionFailure<'a>> {
+    ) -> &mut alloc::vec::Vec<AttributeExpressionFailure<'a>> {
         &mut self
             .model_storage
             .get_or_insert_with(|| alloc::boxed::Box::new(ModelStorage::default()))
@@ -114,7 +114,7 @@ impl<'a> FileArtifact<'a> {
         self.facts.native_models()
     }
     #[must_use]
-    pub fn native_model_failures(&self) -> &[NativeAttributeExpressionFailure<'a>] {
+    pub fn native_model_failures(&self) -> &[AttributeExpressionFailure<'a>] {
         self.facts.native_model_failures()
     }
     #[must_use]
@@ -136,7 +136,7 @@ impl<'a> RejectedFile<'a> {
         self.facts.native_models()
     }
     #[must_use]
-    pub fn native_model_failures(&self) -> &[NativeAttributeExpressionFailure<'a>] {
+    pub fn native_model_failures(&self) -> &[AttributeExpressionFailure<'a>] {
         self.facts.native_model_failures()
     }
 }

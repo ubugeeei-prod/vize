@@ -1,6 +1,7 @@
 //! [`MarkupElement`]: one element / component / fragment / template / slot.
 
 use super::jsx_names::{jsx_element_kind, jsx_element_name, jsx_element_ref, jsx_fragment_ref};
+use super::l2::binding::{L2Item, arena_items};
 use super::l2::{L2ElementOp, L2Markup};
 use super::node::MarkupNode;
 use super::{MarkupElementKind, relief_scopes, span_to_range};
@@ -13,7 +14,7 @@ mod opening;
 pub(super) mod queries;
 mod rendered;
 
-use queries::{is_lint_component, l2_template_is_special};
+use queries::{is_component_tag, l2_template_is_special};
 
 #[derive(Clone, Copy)]
 pub(super) enum MarkupElementInner<'a> {
@@ -40,6 +41,9 @@ pub(super) enum MarkupElementInner<'a> {
         doc: &'a L2Markup<'a>,
         surface: Option<&'a vize_l1::markup::Element<'a>>,
         frozen: bool,
+        /// The opening tag's items, matched once for every rule (`None` for a
+        /// frozen element or a document without an arena).
+        items: Option<&'a [L2Item<'a>]>,
     },
     /// An authored `<template>` carrier L2 unwrapped into a `ui.if` branch or
     /// `ui.for` region: its surface comes from L1, its children from the
@@ -83,6 +87,18 @@ impl<'a> MarkupElement<'a> {
     /// Wrap an L2 element-shaped op, locating its authored L1 element when the
     /// artifact carries a surface tree.
     pub(super) fn from_l2(op: L2ElementOp<'a>, doc: &'a L2Markup<'a>) -> Self {
+        Self::from_l2_matching(op, doc, false)
+    }
+
+    /// [`from_l2`](Self::from_l2) for the element the document visitor hands
+    /// to its rules. With `match_items` (a batch of rules) every rule that
+    /// reads the opening tag replays one match kept in the template arena;
+    /// elements wrapped elsewhere (children, scopes, walks) match on demand.
+    pub(super) fn from_l2_matching(
+        op: L2ElementOp<'a>,
+        doc: &'a L2Markup<'a>,
+        match_items: bool,
+    ) -> Self {
         let surface = if doc.surface.is_none() || op.is_synthesized(doc) {
             None
         } else {
@@ -93,11 +109,17 @@ impl<'a> MarkupElement<'a> {
         // frozen. Read the literal scope from L1's retained Vue-shaped tree;
         // keep the ordinary surface element because it is the tree L2 lowered.
         let frozen = doc.frozen_at(op.span().start);
+        let items = if match_items && !frozen {
+            arena_items(doc, op.attributes(), op.bindings(), surface)
+        } else {
+            None
+        };
         Self::from_inner(MarkupElementInner::L2 {
             op,
             doc,
             surface,
             frozen,
+            items,
         })
     }
 
@@ -163,6 +185,7 @@ impl<'a> MarkupElement<'a> {
                 surface,
                 doc,
                 frozen,
+                ..
             } => {
                 let tag = match surface {
                     Some(element) => element.tag(),
@@ -179,7 +202,7 @@ impl<'a> MarkupElement<'a> {
                     // which the lint lane's rules and snapshots are not written
                     // against.
                     _ if surface.is_some() => {
-                        if is_lint_component(tag, !frozen) {
+                        if is_component_tag(tag, !frozen) {
                             MarkupElementKind::Component
                         } else {
                             MarkupElementKind::Element

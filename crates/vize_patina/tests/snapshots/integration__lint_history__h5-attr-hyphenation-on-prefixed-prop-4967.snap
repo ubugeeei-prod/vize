@@ -1,0 +1,61 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-attr-hyphenation-on-prefixed-prop-4967",
+    history: "80c4bfd6260bb2d891460a19a273ab5c28e5e8d4",
+    source: "<MyComponent :onUndo=\"undo\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/attribute-hyphenation",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/attribute-hyphenation",
+                severity: Warning,
+                message: "Attribute should be hyphenated",
+                start: 13,
+                end: 27,
+                help: Some(
+                    "Use kebab-case for attribute names",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Use kebab-case for attribute names",
+                        edits: [
+                            TextEdit {
+                                start: 14,
+                                end: 20,
+                                new_text: "on-undo",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<MyComponent :on-undo=\"undo\" />",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

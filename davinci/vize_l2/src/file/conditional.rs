@@ -7,12 +7,12 @@ use crate::{
     resolution::BindingId,
 };
 use vize_l0::id::NodeId;
-use vize_l1::markup::{NativeAttributeElse, NativeAttributeExpressionFailure};
+use vize_l1::markup::{AttributeElse, AttributeExpressionFailure};
 
 #[derive(Default)]
 pub(crate) struct ConditionalStorage<'a> {
     rows: alloc::vec::Vec<NativeFileConditional<'a>>,
-    failures: alloc::vec::Vec<NativeAttributeExpressionFailure<'a>>,
+    failures: alloc::vec::Vec<AttributeExpressionFailure<'a>>,
 }
 
 impl<'a> super::build::Facts<'a> {
@@ -29,14 +29,14 @@ impl<'a> super::build::Facts<'a> {
             .get_or_insert_with(|| alloc::boxed::Box::new(ConditionalStorage::default()))
             .rows
     }
-    pub(crate) fn native_conditional_failures(&self) -> &[NativeAttributeExpressionFailure<'a>] {
+    pub(crate) fn native_conditional_failures(&self) -> &[AttributeExpressionFailure<'a>] {
         self.conditional_storage
             .as_deref()
             .map_or(&[], |storage| storage.failures.as_slice())
     }
     pub(crate) fn native_conditional_failures_mut(
         &mut self,
-    ) -> &mut alloc::vec::Vec<NativeAttributeExpressionFailure<'a>> {
+    ) -> &mut alloc::vec::Vec<AttributeExpressionFailure<'a>> {
         &mut self
             .conditional_storage
             .get_or_insert_with(|| alloc::boxed::Box::new(ConditionalStorage::default()))
@@ -63,13 +63,13 @@ pub struct NativeFileConditional<'a> {
 /// The original valueless Else and its actual normally closed Element body.
 /// Its presence alone grants no completed File or conditional authority.
 pub struct NativeConditionalElseInput<'a> {
-    pub(crate) operand: NativeAttributeElse<'a>,
+    pub(crate) operand: AttributeElse<'a>,
     pub(crate) body: Option<(NodeId, core::ptr::NonNull<ElementOp<'a>>)>,
 }
 
 impl<'a> NativeConditionalElseInput<'a> {
     #[must_use]
-    pub const fn operand(&self) -> &NativeAttributeElse<'a> {
+    pub const fn operand(&self) -> &AttributeElse<'a> {
         &self.operand
     }
 
@@ -122,7 +122,7 @@ impl<'a> FileArtifact<'a> {
         self.facts.native_conditionals()
     }
     #[must_use]
-    pub fn native_conditional_failures(&self) -> &[NativeAttributeExpressionFailure<'a>] {
+    pub fn native_conditional_failures(&self) -> &[AttributeExpressionFailure<'a>] {
         self.facts.native_conditional_failures()
     }
     #[must_use]
@@ -144,7 +144,7 @@ impl<'a> RejectedFile<'a> {
         self.facts.native_conditionals()
     }
     #[must_use]
-    pub fn native_conditional_failures(&self) -> &[NativeAttributeExpressionFailure<'a>] {
+    pub fn native_conditional_failures(&self) -> &[AttributeExpressionFailure<'a>] {
         self.facts.native_conditional_failures()
     }
 }

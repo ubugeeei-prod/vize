@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-v-else-standalone-2326",
+    history: "c04e878b4c87422584774ad9e5eb94c4c7e39482",
+    source: "<div v-else></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-else",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/valid-v-else",
+                severity: Error,
+                message: "v-else requires a corresponding v-if or v-else-if",
+                start: 5,
+                end: 11,
+                help: Some(
+                    "**Correct usage:**\n```vue\n<div v-if=\"type === 'A'\">A</div>\n<div v-else-if=\"type === 'B'\">B</div>\n<div v-else>Other</div>\n```\n\n**Rules:**\n- `v-else` takes no expression\n- Must immediately follow `v-if` or `v-else-if`\n- No other elements between them",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/valid-v-else",
+                    severity: Error,
+                    message: "v-else requires a corresponding v-if or v-else-if",
+                    start: 5,
+                    end: 11,
+                    help: Some(
+                        "**Correct usage:**\n```vue\n<div v-if=\"type === 'A'\">A</div>\n<div v-else-if=\"type === 'B'\">B</div>\n<div v-else>Other</div>\n```\n\n**Rules:**\n- `v-else` takes no expression\n- Must immediately follow `v-if` or `v-else-if`\n- No other elements between them",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

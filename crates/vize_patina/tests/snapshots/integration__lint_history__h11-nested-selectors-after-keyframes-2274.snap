@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-nested-selectors-after-keyframes-2274",
+    history: "c3aaf4cf821adbf6b6ec1199dd2d7ac63b6bc3a3",
+    source: "<template><div /></template>\n<style>\n@keyframes loading { 0% { opacity: 0; } } .parent .child { color: red; }\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "css/prefer-nested-selectors",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "css/prefer-nested-selectors",
+                severity: Warning,
+                message: "Consider using CSS nesting for descendant selectors",
+                start: 79,
+                end: 93,
+                help: Some(
+                    "Use CSS nesting syntax to nest child selectors inside parent selectors",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "css/prefer-nested-selectors",
+                    severity: Warning,
+                    message: "Consider using CSS nesting for descendant selectors",
+                    start: 79,
+                    end: 93,
+                    help: Some(
+                        "Use CSS nesting syntax to nest child selectors inside parent selectors",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

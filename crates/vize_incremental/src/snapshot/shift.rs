@@ -86,6 +86,11 @@ fn shift_op(op: &mut DumpOp, shift: &mut Shift<'_>) {
                 }
             }
         }
+        DumpOp::And(and) => {
+            shift(&mut and.span);
+            shift_expr(&mut and.left, shift);
+            shift_ops(&mut and.ops, shift);
+        }
         DumpOp::OriginalFor(for_op) => {
             shift(&mut for_op.span);
             shift_ops(&mut for_op.ops, shift);

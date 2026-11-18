@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h9-class-objects-static-control-2405",
+    history: "33bb6ac018283643a4f7db036771078b160965ad",
+    source: "<div :class=\"[{ a }, { b }]\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-multiple-objects-in-class",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-multiple-objects-in-class",
+                severity: Warning,
+                message: "Multiple object literals in a :class array should be merged into a single object",
+                start: 5,
+                end: 28,
+                help: Some(
+                    "Merge the objects into one, e.g. :class=\"[{ a }, { b }]\" becomes :class=\"{ a, b }\".",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-multiple-objects-in-class",
+                    severity: Warning,
+                    message: "Multiple object literals in a :class array should be merged into a single object",
+                    start: 5,
+                    end: 28,
+                    help: Some(
+                        "Merge the objects into one, e.g. :class=\"[{ a }, { b }]\" becomes :class=\"{ a, b }\".",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

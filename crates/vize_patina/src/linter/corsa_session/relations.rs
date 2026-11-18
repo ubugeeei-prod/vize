@@ -254,114 +254,115 @@ impl RelationReply {
 
 /// Every node span `request` needs typed, translated and deduplicated, so the
 /// expression batch resolves each handle and type once. A span is paired with
-/// whether it names a type node (a type argument and the default it is
-/// compared with): those are typed as their outermost node with the same span,
-/// the type reference, as `getTypeAtLocation` types a type node. A bare name's
-/// own identifier types as the error type.
+/// whether it names a type node (a type argument, the default it is compared
+/// with, an `implements` type): those are typed as their outermost node with
+/// the same span, the type reference, as `getTypeAtLocation` types a type
+/// node. A bare name's own identifier types as the error type. The same span
+/// can be asked for both ways: `Foo` in `implements Foo` is a symbol to one
+/// rule and a type node to another.
 pub(super) fn spans(
     request: &RelationRequest,
     translate: &dyn Fn(Span) -> Span,
 ) -> Vec<(Span, bool)> {
-    let type_nodes = request
-        .defaults
-        .iter()
-        .flat_map(|(argument, default)| [translate(*argument), translate(*default)])
-        .collect::<FxHashSet<_>>();
     let mut seen = FxHashSet::default();
     let mut order = Vec::new();
-    let mut add = |span: Span| {
+    let mut add_node = |span: Span, type_node: bool| {
         let span = translate(span);
-        if span.0 < span.1 && seen.insert(span) {
-            order.push(span);
+        if span.0 < span.1 && seen.insert((span, type_node)) {
+            order.push((span, type_node));
         }
     };
     for ask in &request.assertions {
-        add(ask.node);
-        add(ask.expression);
+        add_node(ask.node, false);
+        add_node(ask.expression, false);
         for callee in &ask.context.generic_callees {
-            add(*callee);
+            add_node(*callee, false);
         }
         if let Some((callee, _)) = ask.context.overload {
-            add(callee);
+            add_node(callee, false);
         }
         if let Some(property) = &ask.context.property {
-            add(property.object);
+            add_node(property.object, false);
         }
         if let Some(original) = ask.original {
-            add(original);
+            add_node(original, false);
         }
         if let Some((callee, _)) = ask.iife {
-            add(callee);
+            add_node(callee, false);
         }
     }
     for ask in &request.non_null {
-        add(ask.expression);
+        add_node(ask.expression, false);
         if let Some(ContextSource::Checker(span) | ContextSource::TypeAt(span)) = ask.context {
-            add(span);
+            add_node(span, false);
         }
         if let Some(declared) = ask.declared {
-            add(declared);
+            add_node(declared, false);
         }
     }
     for span in &request.shapes {
-        add(*span);
+        add_node(*span, false);
     }
     for ask in &request.returns {
-        add(ask.class);
+        add_node(ask.class, false);
         for expression in &ask.expressions {
-            add(*expression);
+            add_node(*expression, false);
         }
     }
     for (source, target) in &request.assignable {
-        add(*source);
-        add(*target);
+        add_node(*source, false);
+        add_node(*target, false);
     }
     for (argument, default) in &request.defaults {
-        add(*argument);
-        add(*default);
+        add_node(*argument, true);
+        add_node(*default, true);
     }
     for ask in &request.deprecations {
-        add(ask.node);
+        add_node(ask.node, false);
         match &ask.kind {
             DeprecationKind::Symbol | DeprecationKind::ExportAlias => {}
-            DeprecationKind::CallLike { call } => add(*call),
-            DeprecationKind::ObjectProperty { object, .. } => add(*object),
+            DeprecationKind::CallLike { call } => add_node(*call, false),
+            DeprecationKind::ObjectProperty { object, .. } => add_node(*object, false),
             DeprecationKind::ContextualProperty { object, key, .. } => {
-                add(*object);
+                add_node(*object, false);
                 if let Some(key) = key {
-                    add(*key);
+                    add_node(*key, false);
                 }
             }
             DeprecationKind::Member { object, property } => {
-                add(*object);
-                add(*property);
+                add_node(*object, false);
+                add_node(*property, false);
             }
         }
     }
     for ask in &request.enum_checks {
-        ask.each_span(&mut add);
+        ask.each_span(&mut add_node);
     }
     for ask in &request.enum_calls {
-        ask.each_span(&mut add);
+        ask.each_span(&mut |span| add_node(span, false));
     }
     order
-        .into_iter()
-        .map(|span| (span, type_nodes.contains(&span)))
-        .collect()
 }
 
+/// Located handles and types, keyed by span and whether it was located as a
+/// type node.
 pub(super) struct Located {
-    handles: FxHashMap<Span, NodeHandle>,
-    types: FxHashMap<Span, TypeResponse>,
+    handles: FxHashMap<(Span, bool), NodeHandle>,
+    types: FxHashMap<(Span, bool), TypeResponse>,
 }
 
 impl Located {
     pub(super) fn handle(&self, span: Span) -> Option<&NodeHandle> {
-        self.handles.get(&span)
+        self.handles.get(&(span, false))
     }
 
     pub(super) fn ty(&self, span: Span) -> Option<&TypeResponse> {
-        self.types.get(&span)
+        self.types.get(&(span, false))
+    }
+
+    /// The type of the outermost node spanning `span`, a type node.
+    pub(super) fn type_node(&self, span: Span) -> Option<&TypeResponse> {
+        self.types.get(&(span, true))
     }
 }
 
@@ -370,7 +371,7 @@ pub(super) async fn answer(
     session: &CheckerMemo<'_>,
     request: &RelationRequest,
     translate: &dyn Fn(Span) -> Span,
-    spans: Vec<Span>,
+    spans: Vec<(Span, bool)>,
     handles: Vec<Option<NodeHandle>>,
     types: Vec<Option<TypeResponse>>,
 ) -> RelationReply {
@@ -422,8 +423,8 @@ pub(super) async fn answer(
     }
     for (argument, default) in &request.defaults {
         let value = match (
-            located.ty(translate(*argument)),
-            located.ty(translate(*default)),
+            located.type_node(translate(*argument)),
+            located.type_node(translate(*default)),
         ) {
             // A bare name in type position can type as the error type; two
             // of those are not proof the argument is the default.

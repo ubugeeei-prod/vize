@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h12-unsafe-url-formaction-on-button-1744",
+    history: "9f05a990e9ce8e69a22f675ffade7e0b111baa31",
+    source: "<button formaction=\"vbscript:msgbox(1)\">Submit</button>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-unsafe-url",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Static URL attribute uses a potentially unsafe protocol or active data URL",
+                start: 8,
+                end: 39,
+                help: Some(
+                    "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Static URL attribute uses a potentially unsafe protocol or active data URL",
+                    start: 8,
+                    end: 39,
+                    help: Some(
+                        "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

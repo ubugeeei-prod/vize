@@ -1,0 +1,2314 @@
+{
+  "schema": "vize.typescript-eslint.rule-corpus",
+  "version": 1,
+  "issues": [
+    12994,
+    13070
+  ],
+  "rule": "type/no-unsafe-enum-assignment",
+  "upstream": {
+    "repository": "typescript-eslint/typescript-eslint",
+    "release": "v8.72.2",
+    "commit": "12e452f0292212bf9bf443b3988ec230f4ae7097",
+    "testPath": "packages/eslint-plugin/tests/rules/no-unsafe-enum-assignment.test.ts"
+  },
+  "note": "Every valid and invalid case of the upstream test file except the JSX ones, with the packets typescript-eslint 8.72.2 reports (1-based line and column of `code`, end exclusive as ESLint reports it). Each case is linted alone as `<script lang=\"ts\">`, the code, `export {};`. A `vizeGap` case is pinned silent until it is fixed.",
+  "caseCount": 247,
+  "cases": [
+    {
+      "id": "valid[0]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst fruit: Fruit = Fruit.Apple;",
+      "expected": []
+    },
+    {
+      "id": "valid[1]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst getFruit = (): Fruit => Fruit.Apple;",
+      "expected": []
+    },
+    {
+      "id": "valid[2]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Basket {\n  fruit: Fruit = Fruit.Apple;\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[3]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst box: { fruit: Fruit } = { fruit: Fruit.Apple };",
+      "expected": []
+    },
+    {
+      "id": "valid[5]",
+      "code": "({ fruit: 1 });",
+      "expected": []
+    },
+    {
+      "id": "valid[6]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst fruits: [Fruit] = [Fruit.Apple];\nvoid fruits;",
+      "expected": []
+    },
+    {
+      "id": "valid[7]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst [fruit]: [Fruit] = [Fruit.Apple] as Fruit[];\nvoid fruit;",
+      "expected": []
+    },
+    {
+      "id": "valid[8]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nlet fruit: Fruit;\n[fruit] = [Fruit.Apple];\nvoid fruit;",
+      "expected": []
+    },
+    {
+      "id": "valid[9]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takeFruit([fruit]: Fruit[] = [Fruit.Apple]): void {\n  void fruit;\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[10]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst getFruit = (): Fruit => {\n  return Fruit.Apple;\n};\n\nvoid getFruit;",
+      "expected": []
+    },
+    {
+      "id": "valid[11]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesFruits(...fruits: Fruit[]): void {}\n\nconst fruits: Fruit[] = [Fruit.Apple];\ntakesFruits(...fruits);",
+      "expected": []
+    },
+    {
+      "id": "valid[12]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const foo: { plain: string };\n\nfoo[0];",
+      "expected": []
+    },
+    {
+      "id": "valid[13]",
+      "code": "enum Fruit {\n  Apple,\n}\n\n({})[0];",
+      "expected": []
+    },
+    {
+      "id": "valid[14]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst [fruit]: [Fruit] = [Fruit.Apple];\nvoid fruit;",
+      "expected": []
+    },
+    {
+      "id": "valid[15]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst { fruit }: { fruit: Fruit } = {} as {};\nvoid fruit;",
+      "expected": []
+    },
+    {
+      "id": "valid[16]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const fruitKey: unique symbol;\n\ntype Basket = { [fruitKey]: Fruit };\n\nconst { [fruitKey]: fruit }: Basket = { [fruitKey]: Fruit.Apple };\nvoid fruit;",
+      "expected": []
+    },
+    {
+      "id": "valid[17]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const fruitKey: unique symbol;\n\ninterface Basket {\n  [fruitKey]: Fruit;\n}\n\nclass TestBasket implements Basket {\n  [fruitKey] = Fruit.Apple;\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[18]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst fruit = Fruit.Apple as Fruit;",
+      "expected": []
+    },
+    {
+      "id": "valid[19]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Basket {\n  fruit = Fruit.Apple;\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[20]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface Basket {\n  fruit: Fruit;\n}\n\nclass TestBasket implements Basket {\n  fruit = Fruit.Apple;\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[21]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const foo: { [key in Fruit]: string };\n\nfoo[Fruit.Apple];\nfoo?.[Fruit.Apple];",
+      "expected": []
+    },
+    {
+      "id": "valid[22]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const foo: { [key in Fruit | number]: string };\n\nfoo[0];",
+      "expected": []
+    },
+    {
+      "id": "valid[23]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const something: any;\n\nconst fruit: Fruit = something;",
+      "expected": []
+    },
+    {
+      "id": "valid[24]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const something: any;\n\nfunction takesFruit(fruit: Fruit): void {}\n\ntakesFruit(something);",
+      "expected": []
+    },
+    {
+      "id": "valid[25]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const something: unknown;\n\nconst fruit: Fruit = something as Fruit;",
+      "expected": []
+    },
+    {
+      "id": "valid[26]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesFruitOrNull(fruit: Fruit | null): void {}\n\ntakesFruitOrNull(null);",
+      "expected": []
+    },
+    {
+      "id": "valid[27]",
+      "code": "enum Fruit {\n  Apple,\n  Banana,\n}\n\ndeclare const apple: Fruit;\n\nconst fruit: Fruit = apple;",
+      "expected": []
+    },
+    {
+      "id": "valid[28]",
+      "code": "const enum Direction {\n  Up,\n  Down,\n}\n\nconst dir: Direction = Direction.Up;",
+      "expected": []
+    },
+    {
+      "id": "valid[29]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nconst combined: Flags = Flags.Read | Flags.Write;",
+      "expected": []
+    },
+    {
+      "id": "valid[30]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nlet flags: Flags = Flags.Read;\nflags |= Flags.Write;\nflags &= Flags.Read;\nflags ^= Flags.Write;",
+      "expected": []
+    },
+    {
+      "id": "valid[31]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nlet fruit: Fruit | undefined;\nfruit ??= Fruit.Apple;\nfruit ||= Fruit.Apple;\nfruit &&= Fruit.Apple;",
+      "expected": []
+    },
+    {
+      "id": "valid[32]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nlet count = 1;\ncount++;\ncount += 1;\nvoid Fruit;",
+      "expected": []
+    },
+    {
+      "id": "valid[33]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const fruits: Record<Fruit, string>;\n\nconst hasApple = 0 in fruits;",
+      "expected": []
+    },
+    {
+      "id": "valid[34]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ntype Mapped<T> = { [K in keyof T]: T[K] };\n\ndeclare const source: Mapped<{ fruit: Fruit }>;\n\nconst target: { fruit: Fruit } = source;",
+      "expected": []
+    },
+    {
+      "id": "valid[35]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface Api<T> {\n  extend<U>(value: U): Api<T & U>;\n  fruit: T;\n}\n\ndeclare const api: Api<Fruit>;\n\nconst extended: Api<Fruit> = api;",
+      "expected": []
+    },
+    {
+      "id": "valid[36]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nenum Vegetable {\n  Asparagus = 'asparagus',\n}\n\nfunction takesEither(val: Fruit | Vegetable): void {}\n\ntakesEither(Fruit.Apple);\ntakesEither(Vegetable.Asparagus);",
+      "expected": []
+    },
+    {
+      "id": "valid[37]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nasync function getFruit(): Promise<Fruit> {\n  return Fruit.Apple;\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[38]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction getFruitOrNull(): Fruit | null {\n  return null;\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[39]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare function tag(strings: TemplateStringsArray, fruit: Fruit): string;\n\ntag`${Fruit.Apple}`;",
+      "expected": []
+    },
+    {
+      "id": "valid[40]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Basket {\n  constructor(public fruit: Fruit) {}\n}\n\nnew Basket(Fruit.Apple);",
+      "expected": []
+    },
+    {
+      "id": "valid[41]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst fruit = Fruit.Apple;\nconst box: { fruit: Fruit } = { fruit };",
+      "expected": []
+    },
+    {
+      "id": "valid[42]",
+      "code": "enum Mixed {\n  A = 'a',\n  B = 1,\n}\n\nconst val: Mixed = Mixed.A;\nconst val2: Mixed = Mixed.B;",
+      "expected": []
+    },
+    {
+      "id": "valid[43]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface HasFruit {\n  fruit: Fruit;\n}\n\ninterface HasNumber {\n  fruit: number;\n}\n\nclass TestBasket implements HasFruit, HasNumber {\n  fruit = 1;\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[44]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesFruit(fruit: Fruit): void {}\n\ntakesFruit(...[Fruit.Apple]);",
+      "expected": []
+    },
+    {
+      "id": "valid[45]",
+      "code": "enum Fruit {\n  Apple,\n  Banana,\n}\n\nconst fruits: Fruit[] = [Fruit.Apple, Fruit.Banana];",
+      "expected": []
+    },
+    {
+      "id": "valid[46]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst fruits: Array<Fruit | number> = [1, Fruit.Apple];",
+      "expected": []
+    },
+    {
+      "id": "valid[47]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const bar: { [Fruit.Apple]: string };\n\nbar[Fruit.Apple];\nbar?.[Fruit.Apple];",
+      "expected": []
+    },
+    {
+      "id": "valid[48]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesNothing(): void {}\n\ntakesNothing();",
+      "expected": []
+    },
+    {
+      "id": "valid[49]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesRest(first: Fruit, ...rest: Fruit[]): void {}\n\ntakesRest(Fruit.Apple, Fruit.Apple, Fruit.Apple);",
+      "expected": []
+    },
+    {
+      "id": "valid[50]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesFruits(first: Fruit, second: Fruit): void {}\n\ntakesFruits(...[Fruit.Apple, ...[Fruit.Apple]]);",
+      "expected": []
+    },
+    {
+      "id": "valid[51]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst { ['fruit']: fruit }: { fruit: Fruit } = { fruit: Fruit.Apple };\nvoid fruit;",
+      "expected": []
+    },
+    {
+      "id": "valid[52]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst [, ...rest]: Fruit[] = [Fruit.Apple, Fruit.Apple];\nvoid rest;",
+      "expected": []
+    },
+    {
+      "id": "valid[53]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nlet fruit: Fruit;\n({ fruit } = { fruit: Fruit.Apple });",
+      "expected": []
+    },
+    {
+      "id": "valid[54]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction pick({ fruit }: { fruit: Fruit } = { fruit: Fruit.Apple }): Fruit {\n  return fruit;\n}\n\npick();",
+      "expected": []
+    },
+    {
+      "id": "valid[56]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction noop(): void {\n  return;\n}\n\nnoop();",
+      "expected": []
+    },
+    {
+      "id": "valid[57]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst fruits: Fruit[] = [...[Fruit.Apple]];",
+      "expected": []
+    },
+    {
+      "id": "valid[58]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takeFruit(fruit: Fruit): void {}\ntakeFruit(...[Fruit.Apple, ...[1]]);",
+      "expected": []
+    },
+    {
+      "id": "valid[59]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesGeneric<T extends readonly unknown[]>(...args: T): void {}\n\ntakesGeneric(Fruit.Apple);",
+      "expected": []
+    },
+    {
+      "id": "valid[60]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface Basket {\n  fruit: Fruit;\n}\n\nclass Base {\n  fruit: Fruit = Fruit.Apple;\n}\n\nclass Child extends Base implements Basket {\n  fruit = Fruit.Apple;\n}\n\nvoid Child;",
+      "expected": []
+    },
+    {
+      "id": "valid[61]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface Basket {\n  fruit: Fruit;\n}\n\nclass Child implements Basket {\n  other = Fruit.Apple;\n  fruit: Fruit = Fruit.Apple;\n}\n\nvoid Child;",
+      "expected": []
+    },
+    {
+      "id": "valid[62]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nconst combined: Flags = Flags.Read | (Flags.Write & Flags.Read);\nvoid combined;",
+      "expected": []
+    },
+    {
+      "id": "valid[63]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesFruit(fruit: Fruit): void {}\ntakesFruit(Fruit.Apple, Fruit.Apple);",
+      "expected": []
+    },
+    {
+      "id": "valid[64]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const rec: Record<string, string>;\nrec[Fruit.Apple];",
+      "expected": []
+    },
+    {
+      "id": "valid[65]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndoesNotExist(Fruit.Apple);",
+      "expected": []
+    },
+    {
+      "id": "valid[66]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesFruits(fruits: Fruit[]): void {}\n\ntakesFruits([Fruit.Apple]);",
+      "expected": []
+    },
+    {
+      "id": "valid[67]",
+      "code": "enum Fruit {\n  Apple,\n}\n\n[1];",
+      "expected": []
+    },
+    {
+      "id": "valid[68]",
+      "code": "const numbers: number[] = [1];\nvoid numbers;",
+      "expected": []
+    },
+    {
+      "id": "valid[69]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface Basket {\n  fruit: Fruit;\n}\n\nclass TestBasket implements Basket {\n  #other = 1;\n  fruit = Fruit.Apple;\n}\n\nvoid TestBasket;",
+      "expected": []
+    },
+    {
+      "id": "valid[70]",
+      "code": "function foo(): void {}\n\nfoo[0];",
+      "expected": []
+    },
+    {
+      "id": "valid[71]",
+      "code": "const foo = {};\n\nfoo[0];",
+      "expected": []
+    },
+    {
+      "id": "valid[73]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction identity<T extends Fruit>(value: T): T {\n  const next: T = value;\n  return next;\n}\n\nidentity(Fruit.Apple);",
+      "expected": []
+    },
+    {
+      "id": "valid[74]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction identity<T extends Fruit, V extends T>(value: V): V {\n  const next: V = value;\n  return next;\n}\n\nidentity(Fruit.Apple);",
+      "expected": []
+    },
+    {
+      "id": "valid[75]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesBox<T extends { fruit: Fruit }>(box: T): T {\n  const next: T = box;\n  return next;\n}\n\ntakesBox({ fruit: Fruit.Apple });",
+      "expected": []
+    },
+    {
+      "id": "valid[76]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesNestedBox<T extends { box: { fruit: Fruit } }>(box: T): T {\n  return box;\n}\n\ntakesNestedBox({ box: { fruit: Fruit.Apple } });",
+      "expected": []
+    },
+    {
+      "id": "valid[77]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesArray<T extends Fruit[]>(value: T): T {\n  const next: T = value;\n  return next;\n}\n\ntakesArray([Fruit.Apple]);",
+      "expected": []
+    },
+    {
+      "id": "valid[78]",
+      "code": "enum Fruit {\n  Apple,\n  Banana,\n}\n\nfunction takesTuple<T extends [Fruit, Fruit]>(...value: T): T {\n  return value;\n}\n\ntakesTuple(Fruit.Apple, Fruit.Banana);",
+      "expected": []
+    },
+    {
+      "id": "valid[79]",
+      "code": "enum Fruit {\n  Apple,\n  Banana,\n}\n\nfunction takesReadonlyTuple<T extends readonly [Fruit, Fruit]>(value: T): T {\n  return value;\n}\n\ntakesReadonlyTuple([Fruit.Apple, Fruit.Banana] as const);",
+      "expected": []
+    },
+    {
+      "id": "valid[80]",
+      "code": "enum Fruit {\n  Apple,\n  Banana,\n}\n\nfunction takesRestTuple<T extends [Fruit, ...Fruit[]]>(...value: T): T {\n  return value;\n}\n\ntakesRestTuple(Fruit.Apple, Fruit.Banana);",
+      "expected": []
+    },
+    {
+      "id": "valid[81]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface Box<T> {\n  fruit: T;\n}\n\nfunction takesInterfaceBox<T extends Fruit>(box: Box<T>): Box<T> {\n  return box;\n}\n\ntakesInterfaceBox({ fruit: Fruit.Apple });",
+      "expected": []
+    },
+    {
+      "id": "valid[82]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Box<T> {\n  constructor(public fruit: T) {}\n}\n\nconst box: Box<Fruit> = new Box(Fruit.Apple);\nvoid box;",
+      "expected": []
+    },
+    {
+      "id": "valid[83]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nasync function getFruit<T extends Fruit>(value: T): Promise<T> {\n  return value;\n}\n\nvoid getFruit(Fruit.Apple);",
+      "expected": []
+    },
+    {
+      "id": "valid[84]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface Basket<T> {\n  fruit: T;\n}\n\nclass BasketImpl<T extends Fruit> implements Basket<T> {\n  fruit: T;\n\n  constructor(fruit: T) {\n    this.fruit = fruit;\n  }\n}\n\nvoid new BasketImpl(Fruit.Apple);",
+      "expected": []
+    },
+    {
+      "id": "valid[85]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Base<T> {\n  fruit!: T;\n}\n\nclass BasketImpl<T extends Fruit> extends Base<T> {\n  fruit: T;\n\n  constructor(fruit: T) {\n    super();\n    this.fruit = fruit;\n  }\n}\n\nvoid new BasketImpl(Fruit.Apple);",
+      "expected": []
+    },
+    {
+      "id": "valid[86]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const foo: { [key in Fruit]: string };\n\nfunction readValue<K extends Fruit>(key: K): string {\n  return foo[key];\n}\n\nreadValue(Fruit.Apple);",
+      "expected": []
+    },
+    {
+      "id": "valid[87]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction destructureArray<T extends [Fruit]>(value: T): T {\n  const [fruit] = value;\n  void fruit;\n  return value;\n}\n\ndestructureArray([Fruit.Apple]);",
+      "expected": []
+    },
+    {
+      "id": "valid[88]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst notFn = 1;\nnotFn(Fruit.Apple);\n\nconst notTag = 1;\nnotTag`fruit`;",
+      "expected": []
+    },
+    {
+      "id": "valid[89]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst box: { [key in Fruit]: number } = { [Fruit.Apple]: 1 };\nvoid box;",
+      "expected": []
+    },
+    {
+      "id": "valid[90]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare function takeBox(box: { fruit: Fruit }): void;\n\ntakeBox([Fruit.Apple]);\n\nconst value: {} = [Fruit.Apple];\nvoid value;",
+      "expected": []
+    },
+    {
+      "id": "valid[91]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ntype BadThenable = {\n  then(onfulfilled: string): unknown;\n};\n\nasync function getFruit(): Promise<Fruit> {\n  return {} as BadThenable;\n}\n\nvoid getFruit;",
+      "expected": []
+    },
+    {
+      "id": "valid[92]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ntype BadThenable = {\n  then(onfulfilled: string): unknown;\n};\n\nasync function getFruit(): BadThenable {\n  return Promise.resolve(Fruit.Apple);\n}\n\nvoid getFruit;",
+      "expected": []
+    },
+    {
+      "id": "valid[93]",
+      "code": "enum Fruit {\n  Apple,\n  Banana,\n}\n\nlet foo: { [key in Fruit]: string } = {\n  [Fruit.Apple]: 'apple',\n  [Fruit.Banana]: 'banana',\n};\n\nfoo[Math.random() > 0.5 ? Fruit.Apple : Fruit.Banana] = 'fruit';\n\nconst value = foo[Math.random() > 0.5 ? Fruit.Apple : Fruit.Banana];\nvoid value;",
+      "expected": []
+    },
+    {
+      "id": "valid[94]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction destructureObject<T extends { fruit: Fruit }>(value: T): T {\n  const { fruit } = value;\n  void fruit;\n  return value;\n}\n\ndestructureObject({ fruit: Fruit.Apple });",
+      "expected": []
+    },
+    {
+      "id": "valid[97]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nfunction getFlags(): Flags {\n  return Flags.Read | Flags.Write;\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[98]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nconst combined = (Flags.Read | Flags.Write) as Flags;",
+      "expected": []
+    },
+    {
+      "id": "valid[100]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nfunction takesFlags(flags: Flags): void {}\n\ntakesFlags(Flags.Read | Flags.Write);",
+      "expected": []
+    },
+    {
+      "id": "valid[101]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\ninterface HasFlags {\n  flags: Flags;\n}\n\nclass Permissions implements HasFlags {\n  flags = Flags.Read | Flags.Write;\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[102]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nlet flags: Flags = Flags.Read;\nflags |= Flags.Read | Flags.Write;\nflags &= ~Flags.Write;\nflags ^= Flags.Read ^ Flags.Write;",
+      "expected": []
+    },
+    {
+      "id": "valid[103]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nconst combined: Flags = Flags.Read ^ Flags.Write;\nconst masked: Flags = Flags.Read & ~Flags.Write;",
+      "expected": []
+    },
+    {
+      "id": "valid[104]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nreturn 1;",
+      "expected": []
+    },
+    {
+      "id": "valid[105]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const fruits: Fruit[];\ndeclare const fruitSet: Set<Fruit>;\n\nconst more: Fruit[] = [...fruits, ...fruitSet, , Fruit.Apple];",
+      "expected": []
+    },
+    {
+      "id": "valid[106]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const source: { fruit: Fruit };\n\nconst box: { fruit: Fruit } = { ...source };\n({ ...source });",
+      "expected": []
+    },
+    {
+      "id": "valid[107]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst box: { getFruit(): Fruit } = {\n  getFruit() {\n    return Fruit.Apple;\n  },\n};",
+      "expected": []
+    },
+    {
+      "id": "valid[108]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Basket {\n  fruits: { [key in Fruit]: string } = { [Fruit.Apple]: 'apple' };\n\n  getApple(): string {\n    return this.fruits[Fruit.Apple];\n  }\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[109]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const basket: { fruits: { [key in Fruit]: string } };\n\nbasket.fruits[Fruit.Apple];",
+      "expected": []
+    },
+    {
+      "id": "valid[110]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const bar: { [Fruit.Apple]: string; other: string };\n\nbar[Fruit.Apple];",
+      "expected": []
+    },
+    {
+      "id": "valid[111]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const fruits: Fruit[];\ndeclare const fruitSet: Set<Fruit>;\nconst notFn = 1;\n\nfunction takesFruits(...fruits: Fruit[]): void {}\n\ntakesFruits(...fruitSet);\nnotFn(...fruits);",
+      "expected": []
+    },
+    {
+      "id": "valid[112]",
+      "code": "interface FruitNode {\n  next: FruitNode;\n  value: string;\n}\n\ninterface OtherNode {\n  next: OtherNode;\n  value: string;\n}\n\ndeclare const other: OtherNode;\n\nconst node: FruitNode = other;",
+      "expected": []
+    },
+    {
+      "id": "valid[113]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesStrings(...strings: string[]): void {}\n\ntakesStrings(...'abc');",
+      "expected": []
+    },
+    {
+      "id": "valid[114]",
+      "code": "const label: string = 'label';",
+      "expected": []
+    },
+    {
+      "id": "valid[115]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nenum Vegetable {\n  Asparagus = 'asparagus',\n}\n\ndeclare const bar: {\n  [Vegetable.Asparagus]: string;\n  [Fruit.Apple]: string;\n  other: string;\n};\n\nbar[Vegetable.Asparagus];\nbar[Fruit.Apple];",
+      "expected": []
+    },
+    {
+      "id": "valid[116]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takes(first: Fruit, second: number, ...rest: Fruit[]): void {}\n\ntakes(...([Fruit.Apple] as const), 1);",
+      "expected": []
+    },
+    {
+      "id": "valid[117]",
+      "code": "enum Vegetable {\n  Asparagus = 'asparagus',\n}\n\ndeclare const something: any;\n\nconst vegetable: Vegetable = something;",
+      "expected": []
+    },
+    {
+      "id": "valid[118]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare function getFruits(): { [key in Fruit]: string };\n\ngetFruits[0];",
+      "expected": []
+    },
+    {
+      "id": "valid[119]",
+      "code": "function first() {\n  return arguments[0];\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[120]",
+      "code": "type Unwrap<T> = T extends (infer U)[] ? U : T;\n\ninterface Schema<T> {\n  in: Schema<Unwrap<T>>;\n  out: Schema<Unwrap<T>[]>;\n}\n\nfunction widen<T>(schema: Schema<T>): Schema<T | undefined> {\n  return schema;\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[121]",
+      "code": "type Unwrap<T> = T extends (infer U)[] ? U : T;\n\ninterface Schema<T> {\n  in: Schema<Unwrap<T>>;\n  out: Schema<Unwrap<T>[]>;\n}\n\ndeclare function register(schema: Schema<unknown>): void;\n\nfunction forward<T>(schema: Schema<T>) {\n  register(schema);\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[122]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ntype Unwrap<T> = T extends (infer U)[] ? U : T;\n\ninterface Schema<T> {\n  in: Schema<Unwrap<T>>;\n  out: Schema<Unwrap<T>[]>;\n}\n\ndeclare function register(schema: Schema<{ fruit: Fruit }>): void;\n\nfunction forward<T extends { fruit: Fruit }>(schema: Schema<T>) {\n  register(schema);\n}",
+      "expected": []
+    },
+    {
+      "id": "valid[123]",
+      "code": "type Wrapper<T> = { next: Wrapper<[T]>; value: T };\n\ndeclare const wrapper: Wrapper<0>;\n\nconst widened: Wrapper<0 | 1> = wrapper;",
+      "expected": []
+    },
+    {
+      "id": "invalid[0]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nlet fruit: Fruit = Fruit.Apple;\nfruit++;",
+      "expected": [
+        {
+          "line": 6,
+          "column": 1,
+          "endLine": 6,
+          "endColumn": 8,
+          "message": "This mutation can produce a value outside of the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[1]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nlet fruit: Fruit = Fruit.Apple;\nfruit += 1;",
+      "expected": [
+        {
+          "line": 6,
+          "column": 1,
+          "endLine": 6,
+          "endColumn": 11,
+          "message": "This mutation can produce a value outside of the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[2]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const basket: { fruit: Fruit };\nbasket.fruit++;",
+      "expected": [
+        {
+          "line": 6,
+          "column": 1,
+          "endLine": 6,
+          "endColumn": 15,
+          "message": "This mutation can produce a value outside of the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[3]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\ndeclare const someNumber: number;\n\nlet flags: Flags = Flags.Read;\nflags |= someNumber;",
+      "expected": [
+        {
+          "line": 9,
+          "column": 1,
+          "endLine": 9,
+          "endColumn": 20,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Flags'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[4]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nlet fruit: Fruit | undefined;\nfruit ??= 1;",
+      "expected": [
+        {
+          "line": 6,
+          "column": 1,
+          "endLine": 6,
+          "endColumn": 12,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[5]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare function takes(...args: [Fruit, Fruit]): void;\ndeclare const spread: [Fruit, ...Fruit[]];\ntakes(...spread, 1);",
+      "expected": [
+        {
+          "line": 7,
+          "column": 18,
+          "endLine": 7,
+          "endColumn": 19,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[6]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare function takes(...args: [Fruit, ...Fruit[]]): void;\n\ntakes(Fruit.Apple, Fruit.Apple, 1);",
+      "expected": [
+        {
+          "line": 7,
+          "column": 33,
+          "endLine": 7,
+          "endColumn": 34,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[7]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst fruit: Fruit = 1;",
+      "expected": [
+        {
+          "line": 5,
+          "column": 7,
+          "endLine": 5,
+          "endColumn": 23,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[8]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nlet fruit = Fruit.Apple;\nfruit = 1;",
+      "expected": [
+        {
+          "line": 6,
+          "column": 1,
+          "endLine": 6,
+          "endColumn": 10,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[9]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesFruit(fruit: Fruit = 1) {}",
+      "expected": [
+        {
+          "line": 5,
+          "column": 21,
+          "endLine": 5,
+          "endColumn": 37,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[10]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Basket {\n  fruit: Fruit = 1;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 3,
+          "endLine": 6,
+          "endColumn": 20,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[11]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface Basket {\n  fruit: Fruit;\n}\n\nclass TestBasket implements Basket {\n  fruit = 1;\n}",
+      "expected": [
+        {
+          "line": 10,
+          "column": 3,
+          "endLine": 10,
+          "endColumn": 13,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[12]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst box: { fruit: Fruit } = { fruit: 1 };",
+      "expected": [
+        {
+          "line": 5,
+          "column": 33,
+          "endLine": 5,
+          "endColumn": 41,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[13]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesFruit(fruit: Fruit): void {}\n\ntakesFruit(1);",
+      "expected": [
+        {
+          "line": 7,
+          "column": 12,
+          "endLine": 7,
+          "endColumn": 13,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[14]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const maybeFruit: Fruit | number;\n\nconst fruit: Fruit = maybeFruit;",
+      "expected": [
+        {
+          "line": 7,
+          "column": 7,
+          "endLine": 7,
+          "endColumn": 32,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[15]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction getFruit(): Fruit {\n  return 1;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 3,
+          "endLine": 6,
+          "endColumn": 12,
+          "message": "The value returned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[16]",
+      "code": "enum Vegetable {\n  Asparagus = 'asparagus',\n}\n\nconst getVegetable = (): Vegetable => 'asparagus';",
+      "expected": [
+        {
+          "line": 5,
+          "column": 39,
+          "endLine": 5,
+          "endColumn": 50,
+          "message": "The value returned here does not have a shared enum type with the expected enum 'Vegetable'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[17]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst fruit = 1 as Fruit;",
+      "expected": [
+        {
+          "line": 5,
+          "column": 15,
+          "endLine": 5,
+          "endColumn": 25,
+          "message": "The value asserted here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[18]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst fruit = <Fruit>1;",
+      "expected": [
+        {
+          "line": 5,
+          "column": 15,
+          "endLine": 5,
+          "endColumn": 23,
+          "message": "The value asserted here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[19]",
+      "code": "enum Vegetable {\n  Asparagus = 'asparagus',\n}\n\nconst vegetable: Vegetable = 'asparagus';",
+      "expected": [
+        {
+          "line": 5,
+          "column": 7,
+          "endLine": 5,
+          "endColumn": 41,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Vegetable'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[20]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesFruit(...fruit: [Fruit]): void {}\n\ntakesFruit(...([1] as const));",
+      "expected": [
+        {
+          "line": 7,
+          "column": 12,
+          "endLine": 7,
+          "endColumn": 29,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[21]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesFruit(fruit: Fruit): void {}\n\ntakesFruit(...[1]);",
+      "expected": [
+        {
+          "line": 7,
+          "column": 12,
+          "endLine": 7,
+          "endColumn": 18,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[22]",
+      "code": "enum Fruit {\n  Apple,\n  Banana,\n}\n\nfunction takesFruits(first: Fruit, second: Fruit): void {}\n\ntakesFruits(...[Fruit.Apple, 1]);",
+      "expected": [
+        {
+          "line": 8,
+          "column": 13,
+          "endLine": 8,
+          "endColumn": 32,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[23]",
+      "code": "enum Fruit {\n  Apple,\n  Banana,\n}\n\nconst fruits: Fruit[] = [1, 2];",
+      "expected": [
+        {
+          "line": 6,
+          "column": 26,
+          "endLine": 6,
+          "endColumn": 27,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        },
+        {
+          "line": 6,
+          "column": 29,
+          "endLine": 6,
+          "endColumn": 30,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[24]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesFruits(fruits: Fruit[]): void {}\n\ntakesFruits([1]);",
+      "expected": [
+        {
+          "line": 7,
+          "column": 14,
+          "endLine": 7,
+          "endColumn": 15,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[25]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst basket: { fruit: Fruit } = { fruit: Fruit.Apple };\n\nbasket.fruit = 1;",
+      "expected": [
+        {
+          "line": 7,
+          "column": 1,
+          "endLine": 7,
+          "endColumn": 17,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[27]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const foo: { [key in Fruit]: string };\n\nfoo[0];",
+      "expected": [
+        {
+          "line": 7,
+          "column": 5,
+          "endLine": 7,
+          "endColumn": 6,
+          "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ],
+      "vizeGap": "#13070: mapped enum keys"
+    },
+    {
+      "id": "invalid[28]",
+      "code": "enum Vegetable {\n  Asparagus = 'asparagus',\n}\n\ndeclare const foo: { [key in Vegetable]: string };\n\nfoo?.['asparagus'];",
+      "expected": [
+        {
+          "line": 7,
+          "column": 7,
+          "endLine": 7,
+          "endColumn": 18,
+          "message": "The computed key used here does not have a shared enum type with the expected enum 'Vegetable'."
+        }
+      ],
+      "vizeGap": "#13070: mapped enum keys"
+    },
+    {
+      "id": "invalid[29]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const bar: { [Fruit.Apple]: string };\n\nbar[0];",
+      "expected": [
+        {
+          "line": 7,
+          "column": 5,
+          "endLine": 7,
+          "endColumn": 6,
+          "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[30]",
+      "code": "const enum Direction {\n  Up,\n  Down,\n}\n\nconst dir: Direction = 0;",
+      "expected": [
+        {
+          "line": 6,
+          "column": 7,
+          "endLine": 6,
+          "endColumn": 25,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Direction'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[31]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nenum Vegetable {\n  Asparagus,\n}\n\nconst fruit: Fruit = Vegetable.Asparagus;",
+      "expected": [
+        {
+          "line": 9,
+          "column": 7,
+          "endLine": 9,
+          "endColumn": 41,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[32]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nasync function getFruit(): Promise<Fruit> {\n  return 1;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 3,
+          "endLine": 6,
+          "endColumn": 12,
+          "message": "The value returned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[33]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare function tag(strings: TemplateStringsArray, fruit: Fruit): string;\n\ntag`${1}`;",
+      "expected": [
+        {
+          "line": 7,
+          "column": 7,
+          "endLine": 7,
+          "endColumn": 8,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[34]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Basket {\n  constructor(public fruit: Fruit) {}\n}\n\nnew Basket(1);",
+      "expected": [
+        {
+          "line": 9,
+          "column": 12,
+          "endLine": 9,
+          "endColumn": 13,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[35]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const num: number;\n\nconst fruit: Fruit = num;",
+      "expected": [
+        {
+          "line": 7,
+          "column": 7,
+          "endLine": 7,
+          "endColumn": 25,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[36]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Basket {\n  constructor(private fruit: Fruit = 1) {}\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 23,
+          "endLine": 6,
+          "endColumn": 39,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[37]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const fruit: number;\n\nconst box: { fruit: Fruit } = { fruit };",
+      "expected": [
+        {
+          "line": 7,
+          "column": 33,
+          "endLine": 7,
+          "endColumn": 38,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[38]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst [fruit]: [Fruit] = [1];",
+      "expected": [
+        {
+          "line": 5,
+          "column": 27,
+          "endLine": 5,
+          "endColumn": 28,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[39]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst { fruit = 1 }: { fruit?: Fruit } = {};\nvoid fruit;",
+      "expected": [
+        {
+          "line": 5,
+          "column": 9,
+          "endLine": 5,
+          "endColumn": 18,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[40]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesFruit([fruit]: [Fruit] = [1]): void {}",
+      "expected": [
+        {
+          "line": 5,
+          "column": 41,
+          "endLine": 5,
+          "endColumn": 42,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[41]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst { fruit }: { fruit: Fruit } = { fruit: 1 };",
+      "expected": [
+        {
+          "line": 5,
+          "column": 39,
+          "endLine": 5,
+          "endColumn": 47,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[42]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesBox({ fruit }: { fruit: Fruit } = { fruit: 1 }): void {}",
+      "expected": [
+        {
+          "line": 5,
+          "column": 51,
+          "endLine": 5,
+          "endColumn": 59,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[43]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst fruits: Set<Fruit> = new Set([1, 2]);",
+      "expected": [
+        {
+          "line": 5,
+          "column": 7,
+          "endLine": 5,
+          "endColumn": 43,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[44]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const cond: boolean;\n\nconst fruit: Fruit = cond ? 1 : Fruit.Apple;",
+      "expected": [
+        {
+          "line": 7,
+          "column": 7,
+          "endLine": 7,
+          "endColumn": 44,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[45]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Basket {\n  accessor fruit: Fruit = 1;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 3,
+          "endLine": 6,
+          "endColumn": 29,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[46]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesFruit<T extends Fruit>(fruit: T): void {}\n\ntakesFruit(1);",
+      "expected": [
+        {
+          "line": 7,
+          "column": 12,
+          "endLine": 7,
+          "endColumn": 13,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[47]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst x = [1, Fruit.Apple, 2] as const;\nconst y: readonly Fruit[] = x;",
+      "expected": [
+        {
+          "line": 6,
+          "column": 7,
+          "endLine": 6,
+          "endColumn": 30,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[48]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nconst combined: Flags = 1 | 2;",
+      "expected": [
+        {
+          "line": 6,
+          "column": 7,
+          "endLine": 6,
+          "endColumn": 30,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Flags'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[49]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesRest(first: Fruit, ...rest: Fruit[]): void {}\n\ntakesRest(Fruit.Apple, 1);",
+      "expected": [
+        {
+          "line": 7,
+          "column": 24,
+          "endLine": 7,
+          "endColumn": 25,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[50]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nconst combined: Flags = Flags.Read + Flags.Write;",
+      "expected": [
+        {
+          "line": 6,
+          "column": 7,
+          "endLine": 6,
+          "endColumn": 49,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Flags'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[51]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesFruits(...fruits: Fruit[]): void {}\nconst numbers: number[] = [1, 2, 3];\n\ntakesFruits(...[1, ...numbers]);",
+      "expected": [
+        {
+          "line": 8,
+          "column": 13,
+          "endLine": 8,
+          "endColumn": 31,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[52]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface Basket {\n  fruit: Fruit;\n}\n\nclass TestBasket implements Basket {\n  accessor fruit = 1;\n}",
+      "expected": [
+        {
+          "line": 10,
+          "column": 3,
+          "endLine": 10,
+          "endColumn": 22,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[53]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction assignFruit<T extends Fruit>(): void {\n  const fruit: T = 1;\n  void fruit;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 9,
+          "endLine": 6,
+          "endColumn": 21,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[54]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction getFruit<T extends Fruit>(): T {\n  return 1;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 3,
+          "endLine": 6,
+          "endColumn": 12,
+          "message": "The value returned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[55]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction castFruit<T extends Fruit>(): T {\n  return 1 as T;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 10,
+          "endLine": 6,
+          "endColumn": 16,
+          "message": "The value asserted here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[56]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Box<T extends Fruit> {\n  constructor(public fruit: T) {}\n}\n\nnew Box(1);",
+      "expected": [
+        {
+          "line": 9,
+          "column": 9,
+          "endLine": 9,
+          "endColumn": 10,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[58]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction assignFruit<T extends Fruit, V extends T>(): V {\n  return 1;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 3,
+          "endLine": 6,
+          "endColumn": 12,
+          "message": "The value returned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[59]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesBox<T extends { fruit: Fruit }>(box: T): void {}\n\ntakesBox({ fruit: 1 });",
+      "expected": [
+        {
+          "line": 7,
+          "column": 12,
+          "endLine": 7,
+          "endColumn": 20,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[60]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction assignBox<T extends { fruit: Fruit }>(): void {\n  const box: T = { fruit: 1 };\n  void box;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 20,
+          "endLine": 6,
+          "endColumn": 28,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[61]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction getBox<T extends { fruit: Fruit }>(): T {\n  return { fruit: 1 };\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 12,
+          "endLine": 6,
+          "endColumn": 20,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[62]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction castBox<T extends { fruit: Fruit }>(): T {\n  return { fruit: 1 } as T;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 12,
+          "endLine": 6,
+          "endColumn": 20,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[63]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Box<T extends { fruit: Fruit }> {\n  constructor(public value: T) {}\n}\n\nnew Box({ fruit: 1 });",
+      "expected": [
+        {
+          "line": 9,
+          "column": 11,
+          "endLine": 9,
+          "endColumn": 19,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[65]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesNestedBox<T extends { box: { fruit: Fruit } }>(box: T): void {}\n\ntakesNestedBox({ box: { fruit: 1 } });",
+      "expected": [
+        {
+          "line": 7,
+          "column": 25,
+          "endLine": 7,
+          "endColumn": 33,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[66]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesArray<T extends Fruit[]>(value: T): void {}\n\ntakesArray([1]);",
+      "expected": [
+        {
+          "line": 7,
+          "column": 13,
+          "endLine": 7,
+          "endColumn": 14,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[67]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction assignArray<T extends Fruit[]>(): void {\n  const fruits: T = [1];\n  void fruits;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 22,
+          "endLine": 6,
+          "endColumn": 23,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[68]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction getArray<T extends Fruit[]>(): T {\n  return [1];\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 11,
+          "endLine": 6,
+          "endColumn": 12,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[69]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction castArray<T extends Fruit[]>(): T {\n  return [1] as T;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 11,
+          "endLine": 6,
+          "endColumn": 12,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[70]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesBoxes<T extends Array<{ fruit: Fruit }>>(boxes: T): void {}\n\ntakesBoxes([{ fruit: 1 }]);",
+      "expected": [
+        {
+          "line": 7,
+          "column": 15,
+          "endLine": 7,
+          "endColumn": 23,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[71]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction assignBoxes<T extends readonly { fruit: Fruit }[]>(): void {\n  const boxes: T = [{ fruit: 1 }] as const;\n  void boxes;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 9,
+          "endLine": 6,
+          "endColumn": 43,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[72]",
+      "code": "enum Fruit {\n  Apple,\n  Banana,\n}\n\nfunction assignReadonlyTuple<T extends readonly [Fruit, Fruit]>(): void {\n  const value: T = [Fruit.Apple, 1] as const;\n  void value;\n}",
+      "expected": [
+        {
+          "line": 7,
+          "column": 9,
+          "endLine": 7,
+          "endColumn": 45,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[73]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ntype Box<T> = { fruit: T };\n\nfunction takesAliasBox<T extends Fruit>(box: Box<T>): void {}\n\ntakesAliasBox({ fruit: 1 });",
+      "expected": [
+        {
+          "line": 9,
+          "column": 17,
+          "endLine": 9,
+          "endColumn": 25,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[74]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface Box<T> {\n  fruit: T;\n}\n\nconst box: Box<Fruit> = { fruit: 1 };\nvoid box;",
+      "expected": [
+        {
+          "line": 9,
+          "column": 27,
+          "endLine": 9,
+          "endColumn": 35,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[75]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Box<T> {\n  constructor(public fruit: T) {}\n}\n\nconst box: Box<Fruit> = new Box(1);\nvoid box;",
+      "expected": [
+        {
+          "line": 9,
+          "column": 7,
+          "endLine": 9,
+          "endColumn": 35,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[76]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nasync function getBox<T extends { fruit: Fruit }>(): Promise<T> {\n  return { fruit: 1 };\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 12,
+          "endLine": 6,
+          "endColumn": 20,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[77]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface Basket<T> {\n  fruit: T;\n}\n\nclass BasketImpl implements Basket<Fruit> {\n  fruit = 1;\n}",
+      "expected": [
+        {
+          "line": 10,
+          "column": 3,
+          "endLine": 10,
+          "endColumn": 13,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[78]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Base<T> {\n  fruit!: T;\n}\n\nclass BasketImpl extends Base<Fruit> {\n  fruit = 1;\n}",
+      "expected": [
+        {
+          "line": 10,
+          "column": 3,
+          "endLine": 10,
+          "endColumn": 13,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[79]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface Basket<T> {\n  fruit: T;\n}\n\nclass BasketImpl<T extends Fruit> implements Basket<T> {\n  fruit = 1;\n}",
+      "expected": [
+        {
+          "line": 10,
+          "column": 3,
+          "endLine": 10,
+          "endColumn": 13,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[80]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const foo: { [key in Fruit]: string };\n\nfunction readValue<K extends number>(key: K): string {\n  return foo[key];\n}",
+      "expected": [
+        {
+          "line": 8,
+          "column": 14,
+          "endLine": 8,
+          "endColumn": 17,
+          "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ],
+      "vizeGap": "#13070: mapped enum keys"
+    },
+    {
+      "id": "invalid[81]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction readValue<K extends number>(\n  foo: { [P in Fruit]: string },\n  key: K,\n): string {\n  return foo[key];\n}",
+      "expected": [
+        {
+          "line": 9,
+          "column": 14,
+          "endLine": 9,
+          "endColumn": 17,
+          "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ],
+      "vizeGap": "#13070: mapped enum keys"
+    },
+    {
+      "id": "invalid[82]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nconst combined: Flags = Flags.Read | (Flags.Write | 1);",
+      "expected": [
+        {
+          "line": 6,
+          "column": 7,
+          "endLine": 6,
+          "endColumn": 55,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Flags'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[83]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nconst negated: Flags = -Flags.Read;",
+      "expected": [
+        {
+          "line": 6,
+          "column": 7,
+          "endLine": 6,
+          "endColumn": 35,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Flags'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[84]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nconst shifted: Flags = Flags.Read << Flags.Write;",
+      "expected": [
+        {
+          "line": 6,
+          "column": 7,
+          "endLine": 6,
+          "endColumn": 49,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Flags'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[85]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nlet flags: Flags = Flags.Read;\nflags |= Flags.Write | 4;",
+      "expected": [
+        {
+          "line": 7,
+          "column": 1,
+          "endLine": 7,
+          "endColumn": 25,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Flags'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[86]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nlet flags: Flags = Flags.Read;\nflags &= 1;",
+      "expected": [
+        {
+          "line": 7,
+          "column": 1,
+          "endLine": 7,
+          "endColumn": 11,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Flags'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[87]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nlet flags: Flags = Flags.Read;\nflags ^= 1;",
+      "expected": [
+        {
+          "line": 7,
+          "column": 1,
+          "endLine": 7,
+          "endColumn": 11,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Flags'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[88]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nlet fruit: Fruit | undefined;\nfruit ||= 1;",
+      "expected": [
+        {
+          "line": 6,
+          "column": 1,
+          "endLine": 6,
+          "endColumn": 12,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[89]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nlet fruit: Fruit | undefined;\nfruit &&= 1;",
+      "expected": [
+        {
+          "line": 6,
+          "column": 1,
+          "endLine": 6,
+          "endColumn": 12,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[90]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const numbers: number[];\n\nconst fruits: Fruit[] = [Fruit.Apple, ...numbers];",
+      "expected": [
+        {
+          "line": 7,
+          "column": 39,
+          "endLine": 7,
+          "endColumn": 49,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[91]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst pair: [Fruit, number] = [1, 2];",
+      "expected": [
+        {
+          "line": 5,
+          "column": 32,
+          "endLine": 5,
+          "endColumn": 33,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[92]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst fruitOrFruits: Fruit | Fruit[] = [1];",
+      "expected": [
+        {
+          "line": 5,
+          "column": 41,
+          "endLine": 5,
+          "endColumn": 42,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[93]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst nested: Fruit[][] = [[1]];",
+      "expected": [
+        {
+          "line": 5,
+          "column": 29,
+          "endLine": 5,
+          "endColumn": 30,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[94]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst box: { 0: Fruit; 'the-fruit': Fruit } = { 0: 1, 'the-fruit': 1 };",
+      "expected": [
+        {
+          "line": 5,
+          "column": 49,
+          "endLine": 5,
+          "endColumn": 53,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        },
+        {
+          "line": 5,
+          "column": 55,
+          "endLine": 5,
+          "endColumn": 69,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[95]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst box: { fruits: Fruit[] } = { fruits: [1] };",
+      "expected": [
+        {
+          "line": 5,
+          "column": 45,
+          "endLine": 5,
+          "endColumn": 46,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[96]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nlet fruit: Fruit;\n[fruit] = [1];",
+      "expected": [
+        {
+          "line": 6,
+          "column": 12,
+          "endLine": 6,
+          "endColumn": 13,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[97]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nlet fruit: Fruit;\n({ fruit } = { fruit: 1 });",
+      "expected": [
+        {
+          "line": 6,
+          "column": 16,
+          "endLine": 6,
+          "endColumn": 24,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[98]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const pair: [number];\n\nconst [fruit]: [Fruit] = pair;",
+      "expected": [
+        {
+          "line": 7,
+          "column": 7,
+          "endLine": 7,
+          "endColumn": 30,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[99]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const source: { fruit: number };\n\nconst { fruit }: { fruit: Fruit } = source;",
+      "expected": [
+        {
+          "line": 7,
+          "column": 7,
+          "endLine": 7,
+          "endColumn": 43,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[100]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const source: { fruit: number };\n\nconst box: { fruit: Fruit } = { ...source };",
+      "expected": [
+        {
+          "line": 7,
+          "column": 33,
+          "endLine": 7,
+          "endColumn": 42,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[101]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const numbers: number[];\n\nfunction takesFruits(...fruits: Fruit[]): void {}\n\ntakesFruits(...numbers);",
+      "expected": [
+        {
+          "line": 9,
+          "column": 13,
+          "endLine": 9,
+          "endColumn": 23,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[102]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const numbers: number[];\n\nfunction takesFruits(...fruits: Fruit[]): void {}\n\ntakesFruits(Fruit.Apple, ...numbers, 1);",
+      "expected": [
+        {
+          "line": 9,
+          "column": 26,
+          "endLine": 9,
+          "endColumn": 36,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        },
+        {
+          "line": 9,
+          "column": 38,
+          "endLine": 9,
+          "endColumn": 39,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[103]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nasync function getFruit(): Promise<Fruit> {\n  return Promise.resolve(1);\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 3,
+          "endLine": 6,
+          "endColumn": 29,
+          "message": "The value returned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[104]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction takesBoxes<T extends { fruit: Fruit }>(boxes: T[]): void {}\n\ntakesBoxes([{ fruit: 1 }]);",
+      "expected": [
+        {
+          "line": 7,
+          "column": 15,
+          "endLine": 7,
+          "endColumn": 23,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[105]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Basket {\n  fruits: { [key in Fruit]: string } = { [Fruit.Apple]: 'apple' };\n\n  getFirst(): string {\n    return this.fruits[0];\n  }\n}",
+      "expected": [
+        {
+          "line": 9,
+          "column": 24,
+          "endLine": 9,
+          "endColumn": 25,
+          "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ],
+      "vizeGap": "#13070: mapped enum keys"
+    },
+    {
+      "id": "invalid[106]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const basket: { fruits: { [key in Fruit]: string } };\n\nbasket.fruits[0];",
+      "expected": [
+        {
+          "line": 7,
+          "column": 15,
+          "endLine": 7,
+          "endColumn": 16,
+          "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ],
+      "vizeGap": "#13070: mapped enum keys"
+    },
+    {
+      "id": "invalid[107]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface HasFruit {\n  fruit: Fruit;\n}\n\ninterface AlsoHasFruit {\n  fruit: Fruit;\n}\n\nclass Basket implements HasFruit, AlsoHasFruit {\n  fruit = 1;\n}",
+      "expected": [
+        {
+          "line": 14,
+          "column": 3,
+          "endLine": 14,
+          "endColumn": 13,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[108]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface HasNumber {\n  fruit: number;\n}\n\nclass Basket implements HasNumber {\n  fruit: Fruit = 1;\n}",
+      "expected": [
+        {
+          "line": 10,
+          "column": 3,
+          "endLine": 10,
+          "endColumn": 20,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[109]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction getFruits(): Fruit[] {\n  return [1];\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 11,
+          "endLine": 6,
+          "endColumn": 12,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[110]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst getFruits = (): Fruit[] => [1];",
+      "expected": [
+        {
+          "line": 5,
+          "column": 35,
+          "endLine": 5,
+          "endColumn": 36,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[111]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst box = { fruit: 1 } satisfies { fruit: Fruit };",
+      "expected": [
+        {
+          "line": 5,
+          "column": 15,
+          "endLine": 5,
+          "endColumn": 23,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[112]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nconst fruits: Map<string, Fruit> = new Map<string, number>();",
+      "expected": [
+        {
+          "line": 5,
+          "column": 7,
+          "endLine": 5,
+          "endColumn": 61,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[113]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface FruitNode {\n  fruit: Fruit;\n  next: FruitNode;\n}\n\ninterface NumberNode {\n  fruit: number;\n  next: NumberNode;\n}\n\ndeclare const numberNode: NumberNode;\n\nconst fruitNode: FruitNode = numberNode;",
+      "expected": [
+        {
+          "line": 17,
+          "column": 7,
+          "endLine": 17,
+          "endColumn": 40,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[114]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction increment<T extends Fruit>(fruit: T): void {\n  fruit++;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 3,
+          "endLine": 6,
+          "endColumn": 10,
+          "message": "This mutation can produce a value outside of the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[115]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const numberSet: Set<number>;\n\nconst fruits: Fruit[] = [...numberSet];",
+      "expected": [
+        {
+          "line": 7,
+          "column": 26,
+          "endLine": 7,
+          "endColumn": 38,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[116]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const numberSet: Set<number>;\n\nfunction takesFruits(...fruits: Fruit[]): void {}\n\ntakesFruits(...numberSet);",
+      "expected": [
+        {
+          "line": 9,
+          "column": 13,
+          "endLine": 9,
+          "endColumn": 25,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[117]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const numbers: number[];\n\nconst fruits: { [index: number]: Fruit } = numbers;",
+      "expected": [
+        {
+          "line": 7,
+          "column": 7,
+          "endLine": 7,
+          "endColumn": 51,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[118]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const pair: [number];\n\nconst fruitPair: { [index: number]: Fruit } = pair;",
+      "expected": [
+        {
+          "line": 7,
+          "column": 7,
+          "endLine": 7,
+          "endColumn": 51,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[119]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nenum Vegetable {\n  Asparagus = 'asparagus',\n}\n\ndeclare const bar: {\n  [Vegetable.Asparagus]: string;\n  [Fruit.Apple]: string;\n  other: string;\n};\n\nbar[0];",
+      "expected": [
+        {
+          "line": 15,
+          "column": 5,
+          "endLine": 15,
+          "endColumn": 6,
+          "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit', 'Vegetable'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[120]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nenum Vegetable {\n  Asparagus = 'asparagus',\n}\n\ndeclare const bar: {\n  [Vegetable.Asparagus]: string;\n  [Fruit.Apple]: string;\n  other: string;\n};\n\nbar['asparagus'];",
+      "expected": [
+        {
+          "line": 15,
+          "column": 5,
+          "endLine": 15,
+          "endColumn": 16,
+          "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit', 'Vegetable'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[121]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const spread: [Fruit, ...Fruit[]];\n\nfunction takes(\n  first: Fruit,\n  second: number,\n  third: number,\n  ...rest: Fruit[]\n): void {}\n\ntakes(...spread, 1);",
+      "expected": [
+        {
+          "line": 14,
+          "column": 18,
+          "endLine": 14,
+          "endColumn": 19,
+          "message": "The argument passed here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[122]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface FruitThenable {\n  fruit: Fruit;\n  then(onfulfilled: string): unknown;\n}\n\ninterface NumberThenable {\n  fruit: number;\n  then(onfulfilled: string): unknown;\n}\n\ndeclare const numberThenable: NumberThenable;\n\nfunction getThenable(): FruitThenable {\n  return numberThenable;\n}",
+      "expected": [
+        {
+          "line": 18,
+          "column": 3,
+          "endLine": 18,
+          "endColumn": 25,
+          "message": "The value returned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[123]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nclass Basket {\n  get fruits(): { [key in Fruit]: string } {\n    return { [Fruit.Apple]: 'apple' };\n  }\n\n  getFirst(): string {\n    return this.fruits[0];\n  }\n}",
+      "expected": [
+        {
+          "line": 11,
+          "column": 24,
+          "endLine": 11,
+          "endColumn": 25,
+          "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ],
+      "vizeGap": "#13070: mapped enum keys"
+    },
+    {
+      "id": "invalid[124]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction assignNestedBox<T extends { box: { fruit: Fruit } }>(): void {\n  const value: T = { box: { fruit: 1 } } as const;\n  void value;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 9,
+          "endLine": 6,
+          "endColumn": 50,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[125]",
+      "code": "enum Fruit {\n  Apple,\n}\n\nfunction assignSpreadBox<T extends { fruit: Fruit }>(): void {\n  const value: T = { ...{ fruit: 1 } } as const;\n  void value;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "column": 9,
+          "endLine": 6,
+          "endColumn": 48,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[126]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface HasBox {\n  box: { fruit: Fruit };\n}\n\nclass Basket implements HasBox {\n  box: { fruit: Fruit } = { fruit: 1 };\n}",
+      "expected": [
+        {
+          "line": 10,
+          "column": 3,
+          "endLine": 10,
+          "endColumn": 40,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[127]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const cond: boolean;\ndeclare const source: { fruit: Fruit };\n\nconst box: { fruit: Fruit } = cond ? { fruit: 1 } : source;",
+      "expected": [
+        {
+          "line": 8,
+          "column": 7,
+          "endLine": 8,
+          "endColumn": 59,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[128]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const source: { fruit: Fruit } | undefined;\n\nconst box: { fruit: Fruit } = source ?? { fruit: 1 };",
+      "expected": [
+        {
+          "line": 7,
+          "column": 7,
+          "endLine": 7,
+          "endColumn": 53,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[129]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ninterface NumberBox<T> {\n  fruit: number;\n  value: T;\n}\n\ninterface FruitBox<T> {\n  fruit: Fruit;\n  value: T;\n}\n\nfunction getFruitBox<T>(box: NumberBox<T>): FruitBox<T> {\n  return box;\n}",
+      "expected": [
+        {
+          "line": 16,
+          "column": 3,
+          "endLine": 16,
+          "endColumn": 14,
+          "message": "The value returned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[130]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const numbers: Promise<Map<string, Set<number>[]>>;\n\nconst fruits: Promise<Map<string, Set<Fruit>[]>> = numbers;",
+      "expected": [
+        {
+          "line": 7,
+          "column": 7,
+          "endLine": 7,
+          "endColumn": 59,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    },
+    {
+      "id": "invalid[131]",
+      "code": "enum Fruit {\n  Apple,\n}\n\ndeclare const config: { a: { b: { c: { d: { fruit: number } } } } };\n\nconst fruitConfig: { a: { b: { c: { d: { fruit: Fruit } } } } } = config;",
+      "expected": [
+        {
+          "line": 7,
+          "column": 7,
+          "endLine": 7,
+          "endColumn": 73,
+          "message": "The value assigned here does not have a shared enum type with the expected enum 'Fruit'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 //! Same-event original attribute selection, expression custody and quoted Doc.
 
 use vize_l0::Vec;
-use vize_l1::markup::{ElementClose, NativeElement};
+use vize_l1::markup::{ElementClose, ElementView};
 
 use super::super::{
     directive::name_document,
@@ -12,7 +12,7 @@ use super::{Builder, Doc, NativeTemplateRefusal, TemplateRefusal, expression_doc
 
 /// These original recovery/verbatim facts only select the unchanged refusal
 /// route. Positive head authority is still minted by the real L1 receiver.
-pub(super) fn eligible(element: &NativeElement<'_, '_>) -> bool {
+pub(super) fn eligible(element: &ElementView<'_, '_>) -> bool {
     let element = element.surface();
     !element.open.is_verbatim()
         && !element.open.lt_name.is_missing()
@@ -33,7 +33,7 @@ pub(super) fn eligible(element: &NativeElement<'_, '_>) -> bool {
 
 pub(super) fn open_element<'p, 'a, I: Input<'p, 'a>>(
     builder: &mut Builder<'p, 'a, I>,
-    element: &NativeElement<'p, 'a>,
+    element: &ElementView<'p, 'a>,
     parts: &mut Vec<'a, Doc<'a>>,
     depth: usize,
 ) -> Result<(), NativeTemplateRefusal> {

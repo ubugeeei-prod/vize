@@ -72,6 +72,14 @@ impl<'a> Builder<'a> {
                 },
                 &self.allocator,
             )),
+            Owner::And { left } => Op::And(Box::new_in(
+                crate::op::AndOp {
+                    left,
+                    region: children,
+                    span,
+                },
+                &self.allocator,
+            )),
             // Host loops close in `host_for`, which owns both of their regions.
             Owner::HostFor { .. } | Owner::HostRegion => {
                 return ClosedFrame {

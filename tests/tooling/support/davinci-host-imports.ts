@@ -71,6 +71,13 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
       "host_plugin_sidecar",
     );
   }
+  if (file === "crates/vize_vitrine/src/plugin_plans.rs") {
+    // In-process compiler hosts keep the plans Carton verifies (#13074).
+    storage = storage.replace(
+      /^\s*use vize_carton::config::plugin_plan::(?:\{PluginPlanError, VerifiedPluginPlan, verify_plugin_plan\}|verify_plugin_plan);$/gmu,
+      "host_plugin_plan",
+    );
+  }
   if (file === "crates/vize_vitrine/src/napi/plugin_lint.rs") {
     // Oxlint's plugin session loads its config through the same checked Carton loader.
     storage = storage.replace(

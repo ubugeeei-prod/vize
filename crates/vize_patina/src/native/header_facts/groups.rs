@@ -7,7 +7,7 @@ use vize_l0::{
     },
     pass::AnalysisId,
 };
-use vize_l1::markup::NativeLintTagKind;
+use vize_l1::markup::TagFactsKind;
 
 use crate::rules::a11y::helpers::ARIA_UNSUPPORTED_ELEMENTS;
 
@@ -84,7 +84,7 @@ impl FactProducer<Evidence> for NativeUnsupportedAria {
         };
         // This is the exact registered lint rule's authored-name contract, not
         // a DOM/runtime classification or a legacy semantic helper invocation.
-        if header.kind == NativeLintTagKind::Component
+        if header.kind == TagFactsKind::Component
             || !ARIA_UNSUPPORTED_ELEMENTS.contains(&header.tag.as_str())
             || attributes.iter().any(|(_, attr)| {
                 attr.kind == NativeBindingKind::Static

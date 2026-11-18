@@ -43,6 +43,15 @@ severity: error
 
 help:
   use a code point no greater than &#x10FFFF;
+=== compiler/control-character-in-input-stream
+compiler/control-character-in-input-stream · compiler error
+Control character in input stream.
+
+stage: surface
+severity: error
+
+help:
+  remove the invisible control character; HTML does not allow it in a template
 === compiler/control-character-reference
 compiler/control-character-reference · compiler error
 Control character reference.
@@ -1290,7 +1299,7 @@ css/no-id-selectors · lint rule
 Discourage use of ID selectors in CSS
 
 tier: exact
-domain: declarations and selectors of <style> blocks as parsed by lightningcss
+domain: the authored structure of CSS, SCSS, Sass, Less and Stylus <style> blocks, as the L1 style reader reads it
 severity: warning
 category: css
 autofix: no
@@ -1300,7 +1309,7 @@ css/no-important · lint rule
 Discourage use of !important in CSS
 
 tier: exact
-domain: the authored structure of <style> blocks in every style language, as the L1 style reader reads it
+domain: the authored structure of CSS, SCSS, Sass, Less and Stylus <style> blocks, as the L1 style reader reads it
 severity: warning
 category: css
 autofix: no

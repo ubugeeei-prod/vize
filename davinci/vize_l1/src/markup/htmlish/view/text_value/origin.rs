@@ -1,5 +1,5 @@
-use super::{NativeChild, NativeTemplateComponent, NativeTextValueError as Kind};
-use crate::markup::{Element, ElementClose, NativeTemplateGrammar, SurfaceChild, Token};
+use super::{ChildView, NativeTemplateComponent, TextValueError as Kind};
+use crate::markup::{Element, ElementClose, SurfaceChild, TemplateGrammar, Token};
 use vize_l0::{SourceBlock, Span};
 
 /// Only original immutable arena addresses survive wrapper movement.
@@ -10,13 +10,13 @@ pub(super) struct Origin<'a> {
     parent: Option<*const Element<'a>>,
     ordinal: usize,
     template_index: usize,
-    grammar: NativeTemplateGrammar,
+    grammar: TemplateGrammar,
 }
 
 impl<'a> Origin<'a> {
     pub(super) fn original(
         selected: &NativeTemplateComponent<'a>,
-        child: &NativeChild<'_, 'a>,
+        child: &ChildView<'_, 'a>,
     ) -> Result<(Self, Token<'a>), Kind> {
         if !core::ptr::eq(child.component(), selected.component()) {
             return Err(Kind::ForeignComponent);
@@ -85,7 +85,7 @@ impl<'a> Origin<'a> {
     pub(super) fn matches(
         &self,
         selected: &NativeTemplateComponent<'a>,
-        child: &NativeChild<'_, 'a>,
+        child: &ChildView<'_, 'a>,
         original: &Token<'a>,
     ) -> bool {
         let SurfaceChild::Text(token) = child.surface() else {

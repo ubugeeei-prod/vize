@@ -34,6 +34,55 @@ fn reports_style_mode_and_content_outside_blocks() {
 }
 
 #[test]
+fn style_attribute_reports_the_first_denied_style_element() {
+    let ranges = |rule: EnforceStyleAttribute, source: &str| {
+        lint(Box::new(rule), source)
+            .diagnostics
+            .iter()
+            .map(|diagnostic| (diagnostic.start, diagnostic.end))
+            .collect::<Vec<_>>()
+    };
+    let template = "<template><div /></template>\n";
+    let plain = "<style>\n.x{}\n</style>";
+    let module = "<style module=\"m\">.x{}</style>";
+    let both = "<style scoped module>.x{}</style>";
+    let scoped = "<style scoped>.x{}</style>";
+    let at = |prefix: &str, block: &str| {
+        let start = (template.len() + prefix.len()) as u32;
+        vec![(start, start + block.len() as u32)]
+    };
+    for block in [plain, module, both] {
+        let source = format!("{template}{block}");
+        assert_eq!(
+            ranges(EnforceStyleAttribute::default(), &source),
+            at("", block),
+            "{block}"
+        );
+    }
+    assert!(
+        ranges(
+            EnforceStyleAttribute::default(),
+            &format!("{template}{scoped}")
+        )
+        .is_empty()
+    );
+    // Only the first denied block is reported, after any allowed ones.
+    let source = format!("{template}{scoped}\n{plain}\n{module}");
+    assert_eq!(
+        ranges(EnforceStyleAttribute::default(), &source),
+        at(&format!("{scoped}\n"), plain)
+    );
+    let module_only = EnforceStyleAttribute::new(&[StyleAttribute::Module]);
+    assert_eq!(
+        ranges(module_only, &format!("{template}{both}")),
+        at("", both)
+    );
+    let scoped_and_module =
+        EnforceStyleAttribute::new(&[StyleAttribute::Scoped, StyleAttribute::Module]);
+    assert!(ranges(scoped_and_module, &format!("{template}{both}")).is_empty());
+}
+
+#[test]
 fn reports_setup_macro_compatibility_failures() {
     let model = lint(
         Box::new(NoDefineModelDefault),
@@ -243,5 +292,14 @@ fn sort_keys_checks_script_objects_outside_component_option_shapes() {
             "`alpha` should be before `zeta`",
             "`b2` should be before `b10`"
         ]
+    );
+}
+
+#[test]
+fn native_events_declared_on_a_local_member_report_that_member() {
+    let source = "<script setup lang=\"ts\">\nimport type { RootEmits } from 'reka-ui'\ntype GroupEmits = Omit<RootEmits, 'update:modelValue'> & { change: [event: Event] }\nconst emits = defineEmits<GroupEmits>()\n</script>";
+    assert_eq!(
+        reported(Box::new(NoShadowNativeEvents), source),
+        ["change: [event: Event]"]
     );
 }

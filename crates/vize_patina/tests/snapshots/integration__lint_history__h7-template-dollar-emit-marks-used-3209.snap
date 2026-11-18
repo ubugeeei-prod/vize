@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-template-dollar-emit-marks-used-3209",
+    history: "a9077bff41f7a03cfeb0b90a0c32459fe047fe82",
+    source: "<script setup lang=\"ts\">\nconst emit = defineEmits<{ save: [] }>();\n</script>\n\n<template>\n  <button @click=\"$emit('save')\">Save</button>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "script/no-unused-emit-declarations",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

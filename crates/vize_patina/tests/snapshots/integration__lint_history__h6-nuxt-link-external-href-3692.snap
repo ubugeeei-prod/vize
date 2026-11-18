@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-nuxt-link-external-href-3692",
+    history: "75c858f4b1b59bcf826279a9a44c3e62cbea3e78",
+    source: "<a href=\"https://example.com\">External</a>",
+    filename: "Navigation.vue",
+    entry: "template",
+    rule: "ecosystem/nuxt-prefer-nuxt-link",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Navigation.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Navigation.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

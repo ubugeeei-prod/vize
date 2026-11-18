@@ -173,6 +173,24 @@ fn stylus_resolves_indented_parents_and_skips_functions_and_loops() {
         names(Stylus, ".a\n  width {n}px\n.b\n  color red\n"),
         ["a", "b"]
     );
+    // Braces in comments and strings do not make a block.
+    assert_eq!(
+        names(
+            Stylus,
+            "// e.g. .x { color: red; }\n.a\n  content '{ a: b; }'\n"
+        ),
+        ["a"]
+    );
+    // A `;` in a string still marks a one-line rule, and an unquoted `url(…)`
+    // payload is data, not a `//` comment that hides the closing brace.
+    for source in [
+        ".main {content:\"a;b\"}\n",
+        ".main { color: red }\n",
+        ".main { background: url(http://example.com/a.png) !important }\n",
+        ".main { background: URL( //cdn.test/{a}.png ) }\n",
+    ] {
+        assert_eq!(names(Stylus, source), ["main"], "{source}");
+    }
 }
 
 #[test]

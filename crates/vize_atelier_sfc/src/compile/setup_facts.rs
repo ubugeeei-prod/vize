@@ -11,7 +11,7 @@ use vize_atelier_core::lane::ScriptTables;
 use vize_l0::{Allocator, SourceRoot, Span, String, ToCompactString};
 use vize_l1::embed::{
     EmbedSource, Lang,
-    syntax::{NativeSyntax, ProgramOptions, parse_program_once},
+    syntax::{EmbedSyntax, ProgramOptions, parse_program_once},
 };
 use vize_l2::framework::vue::{SetupBindingKind, SetupFacts, SetupObserver};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
@@ -21,7 +21,7 @@ use crate::types::{BindingMetadata, BindingType, SfcDescriptor, SfcError, Templa
 /// The setup content's Program and the facts observed over it.
 pub(crate) struct SetupAnalysis<'a> {
     content: &'a str,
-    syntax: NativeSyntax<'a>,
+    syntax: EmbedSyntax<'a>,
     facts: SetupFacts,
 }
 
@@ -139,7 +139,7 @@ pub(super) fn program_options(lang: Option<&str>) -> ProgramOptions {
     options
 }
 
-const fn binding_type(kind: SetupBindingKind) -> BindingType {
+pub(super) const fn binding_type(kind: SetupBindingKind) -> BindingType {
     match kind {
         SetupBindingKind::SetupConst => BindingType::SetupConst,
         SetupBindingKind::SetupLet => BindingType::SetupLet,
@@ -155,7 +155,7 @@ const fn binding_type(kind: SetupBindingKind) -> BindingType {
 /// The parse diagnostics of a setup that does not parse, located in the
 /// `.vue` file when `content` is the authored setup text.
 fn syntax_error(
-    syntax: &NativeSyntax<'_>,
+    syntax: &EmbedSyntax<'_>,
     content: &str,
     descriptor: &SfcDescriptor<'_>,
 ) -> SfcError {

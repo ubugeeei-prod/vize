@@ -3,8 +3,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  declaredNames,
+  identifierRenames,
   modulePathOf,
+  namesFrom,
   relocate,
+  renameIdentifiers,
   rewritePaths,
   rewriteRelativeFiles,
   rewriteRust,
@@ -109,5 +113,107 @@ test("repository paths, regex literals, test filters and relative includes", () 
       new Map(),
     ),
     'include_str!("../../../../tests/fixtures/a.json")',
+  );
+});
+
+test("identifier renames are whole words", () => {
+  assert.equal(
+    renameIdentifiers("x.lint_tag(); mod native_lint_tag; NativeLintTagKind::Element", {
+      lint_tag: "tag_facts",
+      NativeLintTagKind: "NativeTagFactsKind",
+    }),
+    "x.tag_facts(); mod native_lint_tag; NativeTagFactsKind::Element",
+  );
+});
+
+test("identifier renames keep literals and emitted TypeScript names", () => {
+  const renames = { NativeElement: "ElementView", LINT: "TAG_FACTS" };
+  const source = [
+    "/// [`NativeElement`] and the `$NativeElement` helper.",
+    'ts.push_str(": $NativeElement<"); f.debug_struct("NativeElement");',
+    "let raw = r#\"NativeElement\"#; let c = '\"'; fn f<'a>(_: &'a NativeElement) {}",
+    'let b = b"LINT"; __vizeNativeElementProp; <const LINT: bool>',
+  ].join("\n");
+  assert.equal(
+    renameIdentifiers(source, renames),
+    [
+      "/// [`ElementView`] and the `$NativeElement` helper.",
+      'ts.push_str(": $NativeElement<"); f.debug_struct("NativeElement");',
+      "let raw = r#\"NativeElement\"#; let c = '\"'; fn f<'a>(_: &'a ElementView) {}",
+      'let b = b"LINT"; __vizeNativeElementProp; <const TAG_FACTS: bool>',
+    ].join("\n"),
+  );
+  assert.equal(
+    renameIdentifiers('f.debug_struct("NativeElement"); "NativeElement {"', renames, {
+      debugNames: true,
+    }),
+    'f.debug_struct("ElementView"); "NativeElement {"',
+  );
+  assert.equal(
+    renameIdentifiers("LINT; NativeElement", renames, { only: new Set(["LINT"]) }),
+    "TAG_FACTS; NativeElement",
+  );
+});
+
+test("other packages rename only the names they use from the crate", () => {
+  const step: Step = {
+    crate: "l1",
+    name: "vize_l1",
+    moves: [],
+    items: [],
+    parents: {},
+    identifiers: { NativeElement: "ElementView", NativeChild: "ChildView", lint_tag: "tag_facts" },
+  };
+  const sources: Record<string, string> = {
+    "l1/src/lib.rs": "pub struct NativeElement; pub struct NativeChild;",
+    "l1/tests/a.rs": "use vize_l1::NativeElement;",
+    "user/src/lib.rs": "use vize_l1::{markup::NativeElement, x};\nfn f(e: &E) { e.lint_tag(); }",
+    "tool/src/lib.rs": 'use vize_l1::x; struct NativeChild; const S: &str = "$NativeElement";',
+    "probe/src/lib.rs": "struct NativeChild(Child);",
+    "tests/_fixtures/a/b.rs": "use vize_l1::NativeElement;",
+  };
+  const plan = identifierRenames(
+    step,
+    Object.keys(sources),
+    (file) => sources[file]!,
+    (dir) => ["l1", "user", "tool", "probe"].includes(dir),
+  );
+  assert.deepEqual(
+    [...plan].map(([file, { only, debugNames }]) => [file, only && [...only].sort(), debugNames]),
+    [
+      ["l1/src/lib.rs", undefined, true],
+      ["l1/tests/a.rs", undefined, true],
+      ["user/src/lib.rs", ["NativeElement", "lint_tag"], undefined],
+    ],
+  );
+  // A package with a same-named item of its own renames the crate's only by path.
+  const mixed =
+    "use vize_l1::{NativeChild as Source, NativeElement};\nenum E { NativeChild }\nE::NativeChild; NativeElement;";
+  const scope = identifierRenames(
+    step,
+    ["mixed/src/lib.rs"],
+    () => mixed,
+    (dir) => dir === "mixed",
+  ).get("mixed/src/lib.rs")!;
+  assert.equal(
+    renameIdentifiers(mixed, step.identifiers!, scope),
+    "use vize_l1::{ChildView as Source, ElementView};\nenum E { NativeChild }\nE::NativeChild; ElementView;",
+  );
+});
+
+test("use trees and paths name what a package reaches", () => {
+  assert.deepEqual(
+    [
+      ...namesFrom("use vize_l1::{a::{B, c as D}, E};\nlet x = ::vize_l1::f::G::new();", "vize_l1"),
+    ].sort(),
+    ["B", "D", "E", "G", "a", "as", "c", "f", "new", "vize_l1"],
+  );
+  assert.deepEqual(
+    [
+      ...declaredNames(
+        "enum K { #[x] A, B(u8), C { d: u8 } } struct S<T: Fn() -> u8> { pub e: Vec<(T, u8)>, f: u8 } fn g() {}",
+      ),
+    ].sort(),
+    ["A", "B", "C", "K", "S", "e", "f", "g"],
   );
 });

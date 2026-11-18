@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h10-v-memo-inside-v-for-2366",
+    history: "09588226e0a8d674c58e337aa6e6df245fc8be00",
+    source: "<div v-for=\"item in items\" :key=\"item.id\"><span v-memo=\"[item]\"></span></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-memo",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/valid-v-memo",
+                severity: Error,
+                message: "v-memo must be placed on the same element as v-for",
+                start: 48,
+                end: 63,
+                help: Some(
+                    "**Usage:**\n```vue\n<div v-memo=\"[valueA, valueB]\">\n  <!-- Only re-renders when valueA or valueB changes -->\n</div>\n```\n\n**Note:** `v-memo` accepts an array of dependencies, similar to React's `useMemo`.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/valid-v-memo",
+                    severity: Error,
+                    message: "v-memo must be placed on the same element as v-for",
+                    start: 48,
+                    end: 63,
+                    help: Some(
+                        "**Usage:**\n```vue\n<div v-memo=\"[valueA, valueB]\">\n  <!-- Only re-renders when valueA or valueB changes -->\n</div>\n```\n\n**Note:** `v-memo` accepts an array of dependencies, similar to React's `useMemo`.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

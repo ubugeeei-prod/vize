@@ -108,7 +108,7 @@ fn foreign_same_buffer_child_keeps_its_complete_failure_before_root_policy() -> 
         check(matches!(
             error.kind,
             Kind::TextValuePreparation {
-                kind: vize_l1::markup::NativeTextValueError::ForeignComponent,
+                kind: vize_l1::markup::TextValueError::ForeignComponent,
                 ..
             }
         ))?;

@@ -8,7 +8,7 @@ use alloc::{boxed::Box, vec::Vec};
 use vize_l0::{Allocator, SourceBlock, diag::Diagnostic};
 use vize_l1::{
     container::vue::TemplateView,
-    embed::{Lang, syntax::NativeSyntax},
+    embed::{Lang, syntax::EmbedSyntax},
     markup::ComponentSourceError,
 };
 
@@ -128,7 +128,7 @@ impl<'a> NativeTemplateObservation<'a> {
         self.produced().map_or(&[], |produced| &produced.embeds)
     }
     #[must_use]
-    pub fn rejected_syntax(&self) -> &[NativeSyntax<'a>] {
+    pub fn rejected_syntax(&self) -> &[EmbedSyntax<'a>] {
         if let Some(pending) = &self.pending {
             return pending.observations().rejected_syntax();
         }

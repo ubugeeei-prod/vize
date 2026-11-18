@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-attr-order-vue2-slot-unique-group-4978",
+    history: "1ab272292ebee370d20e0fc81dacc32aad7f4f95",
+    source: "<div slot=\"header\" class=\"panel\"></div><div class=\"panel\" slot-scope=\"scope\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/attribute-order",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/attribute-order",
+                severity: Warning,
+                message: "Attribute should be placed in correct order",
+                start: 58,
+                end: 76,
+                help: Some(
+                    "Reorder attributes to follow the recommended order",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/attribute-order",
+                    severity: Warning,
+                    message: "Attribute should be placed in correct order",
+                    start: 58,
+                    end: 76,
+                    help: Some(
+                        "Reorder attributes to follow the recommended order",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

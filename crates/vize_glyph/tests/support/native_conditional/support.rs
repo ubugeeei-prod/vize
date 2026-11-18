@@ -5,7 +5,7 @@ use vize_glyph::native_doc::{
 };
 use vize_l0::Allocator;
 use vize_l1::embed::{Grammar, Lang, Shape, syntax::RetainedExpression};
-use vize_l1::markup::NativeChildren;
+use vize_l1::markup::ChildrenView;
 use vize_l1::markup::SurfaceChild;
 
 use super::fingerprint;
@@ -62,7 +62,7 @@ fn assert_syntax(original: &RetainedExpression<'_>, source: &str) {
 fn assert_event_roots(owner: &NativeSfcObservation<'_>) {
     fn walk<'a>(
         owner: &NativeSfcObservation<'a>,
-        children: NativeChildren<'_, 'a>,
+        children: ChildrenView<'_, 'a>,
         interpolation: &mut usize,
         attribute: &mut usize,
     ) {

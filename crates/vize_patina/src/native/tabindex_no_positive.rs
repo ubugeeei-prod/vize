@@ -7,14 +7,14 @@ use vize_l0::{
     diag::{Advisory, Diagnostic, DiagnosticPart, MessageLookup, PartKind, Stage},
 };
 use vize_l1::markup::{
-    NativeElement,
+    ElementView,
     entity::{EntityContext, decode_one, needs_decoding},
 };
 
 use super::{NativeLintFinding, NativeLintRefusal, TABINDEX_NO_POSITIVE_RULE, attribute, header};
 
 pub(super) fn check(
-    element: &NativeElement<'_, '_>,
+    element: &ElementView<'_, '_>,
     messages: &impl MessageLookup,
 ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
     header::opening_range(element)?;

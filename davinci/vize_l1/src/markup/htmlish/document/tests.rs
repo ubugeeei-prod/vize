@@ -1,4 +1,4 @@
-use super::{DocumentLexicalRefusal, DocumentTokenKind as Kind, NativeDocument};
+use super::{DocumentLexicalRefusal, DocumentTokenKind as Kind, ParsedDocument};
 use crate::markup::{LexErrorCode, ProfileKind, parse_component};
 use alloc::vec::Vec;
 use vize_l0::config::VueDialect;
@@ -12,11 +12,11 @@ fn root(source: &str) -> SourceRoot<'_> {
 fn document_resolves_one_descriptor_before_the_sole_lex() {
     let source = r#"<script src="petite-vue"></script><main v-scope></main>"#;
     let allocator = Allocator::default();
-    let detected = NativeDocument::lex_in(&allocator, root(source));
+    let detected = ParsedDocument::lex_in(&allocator, root(source));
     assert!(detected.dialect().is_petite_document());
     assert_eq!(detected.dialect().lang(), Lang::Js);
 
-    let configured = NativeDocument::lex_in_with_dialect(
+    let configured = ParsedDocument::lex_in_with_dialect(
         &allocator,
         root(source),
         Some(VueDialect::Vue),
@@ -32,7 +32,7 @@ fn document_resolves_one_descriptor_before_the_sole_lex() {
 fn declarations_are_original_document_events_without_component_reprofiling() {
     let source = "é<!DOCTYPE html><DIV>{{ count }}</DIV>";
     let allocator = Allocator::default();
-    let document = NativeDocument::lex_in(&allocator, root(source));
+    let document = ParsedDocument::lex_in(&allocator, root(source));
     assert!(document.errors().is_empty());
     assert!(core::ptr::eq(document.source().as_ptr(), source.as_ptr()));
     let declaration = document
@@ -61,7 +61,7 @@ fn declarations_are_original_document_events_without_component_reprofiling() {
 fn declaration_start_survives_bogus_comment_and_cdata_prefixes() {
     let allocator = Allocator::default();
     for source in ["before<!-bogus>after", "before<![oops]>after"] {
-        let document = NativeDocument::lex_in(&allocator, root(source));
+        let document = ParsedDocument::lex_in(&allocator, root(source));
         let declarations: Vec<_> = document
             .tokens()
             .filter(|token| matches!(token.kind(), Kind::Declaration { .. }))
@@ -93,7 +93,7 @@ fn declaration_start_survives_bogus_comment_and_cdata_prefixes() {
 fn unterminated_declarations_retain_whole_original_frame_and_refuse() {
     let allocator = Allocator::default();
     for source in ["<!", "<!DOCTYPE html", "<!-", "<![CDA"] {
-        let document = NativeDocument::lex_in(&allocator, root(source));
+        let document = ParsedDocument::lex_in(&allocator, root(source));
         let declaration = document
             .tokens()
             .find(|token| matches!(token.kind(), Kind::Declaration { .. }))
@@ -113,7 +113,7 @@ fn unterminated_declarations_retain_whole_original_frame_and_refuse() {
 #[test]
 fn complete_comments_and_cdata_never_become_declarations() {
     let allocator = Allocator::default();
-    let document = NativeDocument::lex_in(&allocator, root("<!--ok--><![CDATA[value]]>"));
+    let document = ParsedDocument::lex_in(&allocator, root("<!--ok--><![CDATA[value]]>"));
     assert!(
         !document
             .tokens()
@@ -133,7 +133,7 @@ fn complete_comments_and_cdata_never_become_declarations() {
 fn entities_keep_one_authored_event_and_original_bytes() {
     let source = "<div title='&NotEqualTilde;'>&NotEqualTilde; {{ π }}</div>";
     let allocator = Allocator::default();
-    let document = NativeDocument::lex_in(&allocator, root(source));
+    let document = ParsedDocument::lex_in(&allocator, root(source));
     let entities: Vec<_> = document
         .tokens()
         .filter(|token| matches!(token.kind(), Kind::TextEntity | Kind::AttributeEntity))
@@ -160,7 +160,7 @@ fn entities_keep_one_authored_event_and_original_bytes() {
 fn malformed_utf8_recovery_keeps_diagnostics_and_checks_point_boundaries() {
     let source = "<x 界";
     let allocator = Allocator::default();
-    let document = NativeDocument::lex_in(&allocator, root(source));
+    let document = ParsedDocument::lex_in(&allocator, root(source));
     assert_eq!(document.errors().len(), 1);
     assert_eq!(document.errors()[0].code, LexErrorCode::EofInTag);
     assert_eq!(document.errors()[0].offset, source.len() as u32);
@@ -189,11 +189,11 @@ fn lexical_completion_never_certifies_browser_tree_policies() {
         "<p><div></div>",
         "<table>text<tr><td>x</td></tr></table>",
     ] {
-        let document = NativeDocument::lex_in(&allocator, root(source));
+        let document = ParsedDocument::lex_in(&allocator, root(source));
         let completion = document.normal_completion().expect(source);
         assert_eq!(completion.profile(), ProfileKind::Document);
     }
-    let document = NativeDocument::lex_in(&allocator, root("<MyComp></mycomp>"));
+    let document = ParsedDocument::lex_in(&allocator, root("<MyComp></mycomp>"));
     assert_eq!(
         document
             .tokens()
@@ -209,7 +209,7 @@ fn pinned_petite_vue_document_keeps_tags_interpolations_and_raw_script_style() {
     let source = include_str!("../../../../tests/fixtures/document/petite-vue-svg.html");
     assert_eq!(source.len(), 2495);
     let allocator = Allocator::default();
-    let document = NativeDocument::lex_in(&allocator, root(source));
+    let document = ParsedDocument::lex_in(&allocator, root(source));
     assert!(document.normal_completion().is_ok());
     let names: Vec<_> = document
         .tokens()
@@ -256,7 +256,7 @@ fn pinned_petite_vue_document_keeps_tags_interpolations_and_raw_script_style() {
 fn moved_owner_reborrows_original_token_and_completion_without_relexing() {
     let source = "<!DOCTYPE html><div>{{ n }}</div>";
     let allocator = Allocator::default();
-    let original = NativeDocument::lex_in(&allocator, root(source));
+    let original = ParsedDocument::lex_in(&allocator, root(source));
     let first_count = original.tokens().len();
     let moved = original;
     for _ in 0..2 {
@@ -280,7 +280,7 @@ fn moved_owner_reborrows_original_token_and_completion_without_relexing() {
 fn silent_eof_states_cannot_mint_normal_lexical_completion() {
     let allocator = Allocator::default();
     for source in ["{{", "<div/", "{", "abc&", "<x a='&"] {
-        let document = NativeDocument::lex_in(&allocator, root(source));
+        let document = ParsedDocument::lex_in(&allocator, root(source));
         assert!(
             document.errors().is_empty(),
             "silent inherited EOF: {source}"
@@ -300,7 +300,7 @@ fn silent_eof_states_cannot_mint_normal_lexical_completion() {
 fn swallowed_declaration_terminators_cannot_mint_normal_completion() {
     let allocator = Allocator::default();
     for source in ["<!>", "<!->", "<!>tail<div>", "<!->tail<div>"] {
-        let document = NativeDocument::lex_in(&allocator, root(source));
+        let document = ParsedDocument::lex_in(&allocator, root(source));
         assert_eq!(
             document
                 .normal_completion()
@@ -320,7 +320,7 @@ fn swallowed_declaration_terminators_cannot_mint_normal_completion() {
 fn later_normal_declaration_cannot_erase_an_original_recovery() {
     let allocator = Allocator::default();
     let source = "<!>tail<div><!DOCTYPE html>";
-    let document = NativeDocument::lex_in(&allocator, root(source));
+    let document = ParsedDocument::lex_in(&allocator, root(source));
     assert_eq!(
         document
             .tokens()

@@ -8,8 +8,8 @@ use crate::markup::htmlish::surface::{
     Attribute, CloseTag, Element, ElementClose, OpenTag, SurfaceChild, Token,
 };
 
-impl<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>
-    Builder<'a, '_, RAW, LINT, STRUCTURAL_DIAGNOSTICS>
+impl<'a, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_DIAGNOSTICS: bool>
+    Builder<'a, '_, RAW, TAG_FACTS, STRUCTURAL_DIAGNOSTICS>
 {
     pub(super) fn element(&mut self, ev: Event) {
         let (name_s, name_e) = (ev.start as usize, ev.end as usize);
@@ -30,12 +30,12 @@ impl<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>
                 Some(EventKind::OpenTagEnd) => {
                     let idx = self.events.get(self.i).map_or(self.cursor, |event| {
                         lt_name.mark_verbatim_opening(event.is_verbatim_opening());
-                        if LINT {
-                            lt_name.mark_lint_tag(
-                                event.lint_tag(),
-                                event.lint_header_is_literal(),
-                                event.lint_in_table_context(),
-                                event.lint_in_recovery_context(),
+                        if TAG_FACTS {
+                            lt_name.mark_tag_facts(
+                                event.tag_facts(),
+                                event.header_is_literal(),
+                                event.in_table_context(),
+                                event.in_recovery_context(),
                             );
                         }
                         event.start as usize
@@ -47,12 +47,12 @@ impl<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>
                 Some(EventKind::SelfClosingTag) => {
                     let idx = self.events.get(self.i).map_or(self.cursor, |event| {
                         lt_name.mark_verbatim_opening(event.is_verbatim_opening());
-                        if LINT {
-                            lt_name.mark_lint_tag(
-                                event.lint_tag(),
-                                event.lint_header_is_literal(),
-                                event.lint_in_table_context(),
-                                event.lint_in_recovery_context(),
+                        if TAG_FACTS {
+                            lt_name.mark_tag_facts(
+                                event.tag_facts(),
+                                event.header_is_literal(),
+                                event.in_table_context(),
+                                event.in_recovery_context(),
                             );
                         }
                         event.start as usize
@@ -107,7 +107,7 @@ impl<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>
         // The lint-header provider already records unsupported directive heads
         // in its typed `unsupported` channel. Keep that selected-owner contract
         // separate; the ordinary surface path owns parser/template diagnostics.
-        if STRUCTURAL_DIAGNOSTICS && !LINT && !inherited_v_pre {
+        if STRUCTURAL_DIAGNOSTICS && !TAG_FACTS && !inherited_v_pre {
             for attr in &attrs {
                 self.directive_errors(attr.name.text);
             }
@@ -132,6 +132,7 @@ impl<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>
                 .push(crate::markup::SurfaceError::ignored_repeated_form(span));
         }
         if STRUCTURAL_DIAGNOSTICS
+            && self.fosters
             && !self_closing
             && !is_void_tag(tag)
             && self

@@ -1,6 +1,6 @@
 use super::{
-    Allocator, Lang, NativeAttributeForHead, NativeAttributeOperandError, NativeTemplateGrammar,
-    first_attribute, selected,
+    Allocator, AttributeForHead, AttributeOperandError, Lang, TemplateGrammar, first_attribute,
+    selected,
 };
 
 #[test]
@@ -122,10 +122,7 @@ fn sibling_headers_elements_and_equal_input_parses_cannot_replace_the_original_e
         .observe_attribute_for_head(first_attribute(&equal))
         .err()
         .unwrap();
-    assert_eq!(
-        failure.kind(),
-        NativeAttributeOperandError::ForeignComponent
-    );
+    assert_eq!(failure.kind(), AttributeOperandError::ForeignComponent);
     assert!(failure.input().is_none());
     let copied = vize_l0::String::from(source);
     let foreign = selected(&arena, copied.as_str()).unwrap();
@@ -143,12 +140,12 @@ fn javascript_and_typescript_profiles_are_derived_from_selection() {
         (
             "<template><p v-for='item in items'/></template>",
             Lang::Js,
-            NativeTemplateGrammar::JavaScriptModule,
+            TemplateGrammar::JavaScriptModule,
         ),
         (
             "<template><p v-for='item in items'/></template><script lang=ts>const items=[]</script>",
             Lang::Ts,
-            NativeTemplateGrammar::TypeScriptModule,
+            TemplateGrammar::TypeScriptModule,
         ),
     ] {
         let owner = selected(&arena, source).unwrap();
@@ -177,7 +174,7 @@ fn raw_whole_head_transfer_keeps_stock_owners_after_selected_authority_is_droppe
     let source = "<template><p v-for='item in items'/></template>";
     let (head, original) = {
         let owner = selected(&arena, source).unwrap();
-        let operand: NativeAttributeForHead<'_> = owner
+        let operand: AttributeForHead<'_> = owner
             .observe_attribute_for_head(first_attribute(&owner))
             .unwrap();
         let original = operand

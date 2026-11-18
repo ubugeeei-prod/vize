@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-deprecated-slot-attribute-default-dialect-4519",
+    history: "e088c94a0b0ee197c2fa7b3963b0ab7383fd6f0b",
+    source: "<Foo><span slot=\"header\">header</span></Foo>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-deprecated-slot-attribute",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-deprecated-slot-attribute",
+                severity: Error,
+                message: "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+                start: 11,
+                end: 15,
+                help: Some(
+                    "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-deprecated-slot-attribute",
+                    severity: Error,
+                    message: "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+                    start: 11,
+                    end: 15,
+                    help: Some(
+                        "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

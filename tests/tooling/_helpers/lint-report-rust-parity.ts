@@ -129,6 +129,17 @@ export function materializeFrozenReporters() {
     throw error;
   }
 }
+/** A removed mirror of `fixture` under the isolation root, named after its project. */
+function isolatedMirror(cwd: string, fixture: string): boolean {
+  const mirrors = fs.realpathSync(path.join(os.tmpdir(), "vize-lint-divergence"));
+  const parent = path.dirname(cwd);
+  return (
+    (parent === mirrors || parent === path.join(os.tmpdir(), "vize-lint-divergence")) &&
+    /^[a-z0-9.-]+-[A-Za-z0-9]{6}$/u.test(path.basename(cwd)) &&
+    !fs.existsSync(cwd) &&
+    fs.existsSync(fixture)
+  );
+}
 let measurement = 0;
 export function runReporter(
   input: Fixture,
@@ -231,6 +242,9 @@ export function runReporter(
     assert.equal(process.stdin, "");
     assert.equal(process.lang, "C");
     assert.equal(process.lcAll, "C");
+    // The successor lints an isolated mirror of the fixture (#12336); the
+    // frozen reporters lint it in place. Only the directory name differs.
+    if (!rust && isolatedMirror(process.cwd, input.directory)) process.cwd = input.directory;
     assert.equal(process.cwd, input.directory);
   }
   return captured;

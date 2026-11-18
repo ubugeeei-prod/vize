@@ -1,0 +1,29 @@
+{
+  "row": "end-tag-case",
+  "dialect": "vue",
+  "source": "<div><span>a</SPAN></div>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "div",
+      null,
+      []
+    ],
+    [
+      "span",
+      0,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      1,
+      "a"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h10-v-show-argument-2360",
+    history: "94f3c8740f1760247d3375319676862f8201585b",
+    source: "<div v-show:foo=\"visible\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-show",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/valid-v-show",
+                severity: Error,
+                message: "v-show does not support arguments",
+                start: 12,
+                end: 15,
+                help: Some(
+                    "Add an expression to the v-show directive",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/valid-v-show",
+                    severity: Error,
+                    message: "v-show does not support arguments",
+                    start: 12,
+                    end: 15,
+                    help: Some(
+                        "Add an expression to the v-show directive",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

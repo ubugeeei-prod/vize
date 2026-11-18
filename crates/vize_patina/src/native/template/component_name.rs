@@ -4,7 +4,7 @@ use crate::{
     component_name::{EXCEPTION_NAMES, is_kebab_case, is_nuxt_route_file, is_pascal_case},
     rules::vue::ComponentDefinitionNameCasing,
 };
-use vize_l1::markup::NativeLintComponent;
+use vize_l1::markup::ComponentTagFacts;
 
 use super::{NativeTemplateLintContext, NativeTemplateLintRefusal, NativeTemplateRule};
 
@@ -12,7 +12,7 @@ impl NativeTemplateRule for ComponentDefinitionNameCasing {
     fn run_on_template<'a>(
         &self,
         context: &mut NativeTemplateLintContext<'_, 'a>,
-        root: &NativeLintComponent<'a>,
+        root: &ComponentTagFacts<'a>,
     ) -> Result<(), NativeTemplateLintRefusal> {
         if !core::ptr::eq(context.owner(), root) {
             return Err(NativeTemplateLintRefusal::SourceMismatch);
@@ -59,8 +59,8 @@ mod tests {
     fn art_filename_skips_only_the_genuine_owned_root_callback() {
         let allocator = Allocator::new();
         let block = SourceRoot::new("<div />").unwrap().whole_block();
-        let root = NativeLintComponent::parse_in(&allocator, block).unwrap();
-        let foreign = NativeLintComponent::parse_in(&allocator, block).unwrap();
+        let root = ComponentTagFacts::parse_in(&allocator, block).unwrap();
+        let foreign = ComponentTagFacts::parse_in(&allocator, block).unwrap();
         let linter = Linter::new();
         let rule = ComponentDefinitionNameCasing;
         for filename in [

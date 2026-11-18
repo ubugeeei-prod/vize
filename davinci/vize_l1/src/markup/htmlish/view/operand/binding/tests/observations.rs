@@ -1,8 +1,6 @@
 use super::{assert_original, observe, selected};
 use crate::embed::{Grammar, Lang, Shape};
-use crate::markup::{
-    ArgSyntax, DirectiveName, DirectivePrefix, NativeConditionKind, NativeTemplateGrammar,
-};
+use crate::markup::{ArgSyntax, ConditionKind, DirectiveName, DirectivePrefix, TemplateGrammar};
 use oxc_ast::ast::{Expression, TSType};
 use oxc_span::GetSpan;
 use vize_l0::{Allocator, Span};
@@ -104,7 +102,7 @@ fn unicode_nonzero_static_heads_keep_original_parts_ordinals_and_distinct_stock_
             .observe_attribute_head(element.attributes().nth(3).unwrap())
             .unwrap();
         assert_eq!(conditional.name_block().span(), Span::new(67, 71));
-        assert_eq!(conditional.condition_kind(), Some(NativeConditionKind::If));
+        assert_eq!(conditional.condition_kind(), Some(ConditionKind::If));
         assert!(conditional.static_binding().unwrap().is_none());
     }
     assert_eq!(roots.len(), 4);
@@ -123,7 +121,7 @@ fn intrinsic_js_and_setup_ts_profiles_preserve_original_parentheses_cast_and_chi
             Span::new(18, 20),
             Span::new(22, 29),
             Lang::Js,
-            NativeTemplateGrammar::JavaScriptModule,
+            TemplateGrammar::JavaScriptModule,
         ),
         (
             "前\n<template><p v-bind:id='value as boolean'/></template><script setup lang=ts>const value=true</script>",
@@ -132,7 +130,7 @@ fn intrinsic_js_and_setup_ts_profiles_preserve_original_parentheses_cast_and_chi
             Span::new(24, 26),
             Span::new(28, 44),
             Lang::Ts,
-            NativeTemplateGrammar::TypeScriptModule,
+            TemplateGrammar::TypeScriptModule,
         ),
     ] {
         let owner = selected(&arena, source);

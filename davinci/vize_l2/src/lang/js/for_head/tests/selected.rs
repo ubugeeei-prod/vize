@@ -1,4 +1,4 @@
-use super::{Allocator, BindingPattern, GetSpan, Lang, NativeForInput, NativeForRefusal, Span};
+use super::{Allocator, BindingPattern, ForRefusal, GetSpan, Lang, NativeForInput, Span};
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l1::container::{Vue, vue::DescriptorOptions};
 use vize_l1::markup::NativeTemplateComponent;
@@ -134,7 +134,7 @@ fn selected_refusal_retains_the_complete_original_attribute_and_syntax() {
         .unwrap()
         .as_ptr();
     let rejected = NativeForInput::new(operand).unwrap_err();
-    assert_eq!(rejected.kind, NativeForRefusal::Comment);
+    assert_eq!(rejected.kind, ForRefusal::Comment);
     assert_eq!(rejected.span, span);
     assert_eq!(
         rejected

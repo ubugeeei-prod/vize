@@ -1,7 +1,7 @@
 use oxc_span::GetSpan;
 use vize_l0::{Allocator, Span};
 
-use super::super::{NativeForHead, parse_vue_for_head_once, refused};
+use super::super::{ForHead, parse_vue_for_head_once, refused};
 use super::{EmbedHole, ForHeadHole, ForHeadPart, Lang, Shape, embed, parse};
 use crate::embed::syntax::parse_once;
 
@@ -122,7 +122,7 @@ fn defensive_rejection_keeps_original_ast_and_all_observation_records() {
     let root = syntax.expression().unwrap() as *const _;
     let comment = syntax.comments().next().unwrap().text().unwrap().as_ptr();
     let original = syntax.into_slot_params().unwrap_err();
-    let head = NativeForHead {
+    let head = ForHead {
         grammar: embed("x in xs", Lang::Js).grammar,
         source: embed("x in xs", Lang::Js).source,
         separator: None,
@@ -130,7 +130,7 @@ fn defensive_rejection_keeps_original_ast_and_all_observation_records() {
         collection: None,
         hole: Some(ForHeadHole::RejectedPart(ForHeadPart::Aliases)),
         origin: None,
-        native_refusal: None,
+        for_refusal: None,
     };
     assert_eq!(refused(&head), head.hole());
     assert_eq!(

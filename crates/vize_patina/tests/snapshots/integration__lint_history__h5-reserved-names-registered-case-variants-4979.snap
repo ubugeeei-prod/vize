@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-reserved-names-registered-case-variants-4979",
+    history: "f5db9b1277106e7f6d4f2de68f314dc2c567bddb",
+    source: "<script>\nexport default {\n  components: {\n    BUTTON,\n    FeBlend,\n    TextPath,\n  },\n}\n</script>\n<template><div /></template>",
+    filename: "Demo.vue",
+    entry: "sfc",
+    rule: "vue/no-reserved-component-names",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Demo.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Demo.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -143,6 +143,10 @@ fn region_references_scope(scope: &PrefixScope<'_>, region: &Region<'_>) -> bool
                     .is_some_and(|condition| expression_references_scope(scope, condition))
                     || region_references_scope(scope, &branch.region)
             }),
+            Op::And(and) => {
+                expression_references_scope(scope, and.left)
+                    || region_references_scope(scope, &and.region)
+            }
             Op::For(for_op) => {
                 expression_references_scope(scope, for_op.binding.source)
                     || region_references_scope(scope, &for_op.region)
@@ -350,6 +354,7 @@ fn walk_admit(region: &Region<'_>) -> Result<(), EmitError> {
                     walk_admit(&branch.region)?;
                 }
             }
+            Op::And(and) => walk_admit(&and.region)?,
             Op::For(for_op) => walk_admit(&for_op.region)?,
             Op::OriginalFor(for_op) => walk_admit(&for_op.region)?,
             Op::Slot(slot) => walk_admit(&slot.fallback)?,

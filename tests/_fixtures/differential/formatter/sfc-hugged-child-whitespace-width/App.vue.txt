@@ -1,0 +1,11 @@
+<template>
+  <div>
+    <Panel ref="panelEl" position="bottom-right" :class="{ intersecting: isIntersectingWithPanel }"> </Panel>
+    <el-button plain size="small" type="primary" @click="preview(true)"><i class="el-icon-view-ab"> </i>Prev</el-button>
+    <div>
+      <div>
+        <span>{{ !threadIsSending ? $t('action.publish_thread') : $t('state.publishing') + extraWords }} </span>
+      </div>
+    </div>
+  </div>
+</template>

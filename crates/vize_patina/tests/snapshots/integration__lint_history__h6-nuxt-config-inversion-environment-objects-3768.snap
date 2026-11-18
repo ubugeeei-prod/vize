@@ -1,0 +1,250 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-nuxt-config-inversion-environment-objects-3768",
+    history: "7910a3c4b072b4f2652e4f4055fdc53a38119479",
+    source: "export default { ssr: true, $test: { ssr: true, modules: [] }, $production: { build: {}, app: {} }, modules: [] }",
+    filename: "nuxt.config.ts",
+    entry: "script",
+    rule: "nuxt/nuxt-config-keys-order",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 3,
+    fixes: 3,
+}
+Observation {
+    initial: LintResult {
+        filename: "nuxt.config.ts",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "nuxt/nuxt-config-keys-order",
+                severity: Error,
+                message: "Expected config key \"ssr\" to come after \"$test\"",
+                start: 17,
+                end: 26,
+                help: None,
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Sort Nuxt config keys",
+                        edits: [
+                            TextEdit {
+                                start: 16,
+                                end: 111,
+                                new_text: " modules: [], $production: { build: {}, app: {} }, $test: { ssr: true, modules: [] }, ssr: true",
+                            },
+                        ],
+                    },
+                ),
+            },
+            LintDiagnostic {
+                rule_name: "nuxt/nuxt-config-keys-order",
+                severity: Error,
+                message: "Expected config key \"ssr\" to come after \"modules\"",
+                start: 37,
+                end: 46,
+                help: None,
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Sort Nuxt config keys",
+                        edits: [
+                            TextEdit {
+                                start: 36,
+                                end: 59,
+                                new_text: " modules: [], ssr: true",
+                            },
+                        ],
+                    },
+                ),
+            },
+            LintDiagnostic {
+                rule_name: "nuxt/nuxt-config-keys-order",
+                severity: Error,
+                message: "Expected config key \"build\" to come after \"app\"",
+                start: 78,
+                end: 87,
+                help: None,
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Sort Nuxt config keys",
+                        edits: [
+                            TextEdit {
+                                start: 77,
+                                end: 96,
+                                new_text: " app: {}, build: {}",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 3,
+        warning_count: 0,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "export default { modules: [], $production: { build: {}, app: {} }, $test: { ssr: true, modules: [] }, ssr: true }",
+            result: LintResult {
+                filename: "nuxt.config.ts",
+                diagnostics: [
+                    LintDiagnostic {
+                        rule_name: "nuxt/nuxt-config-keys-order",
+                        severity: Error,
+                        message: "Expected config key \"build\" to come after \"app\"",
+                        start: 45,
+                        end: 54,
+                        help: None,
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Sort Nuxt config keys",
+                                edits: [
+                                    TextEdit {
+                                        start: 44,
+                                        end: 63,
+                                        new_text: " app: {}, build: {}",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    LintDiagnostic {
+                        rule_name: "nuxt/nuxt-config-keys-order",
+                        severity: Error,
+                        message: "Expected config key \"ssr\" to come after \"modules\"",
+                        start: 76,
+                        end: 85,
+                        help: None,
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Sort Nuxt config keys",
+                                edits: [
+                                    TextEdit {
+                                        start: 75,
+                                        end: 98,
+                                        new_text: " modules: [], ssr: true",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ],
+                error_count: 2,
+                warning_count: 0,
+            },
+        },
+        Application {
+            diagnostic_index: 1,
+            source: "export default { ssr: true, $test: { modules: [], ssr: true }, $production: { build: {}, app: {} }, modules: [] }",
+            result: LintResult {
+                filename: "nuxt.config.ts",
+                diagnostics: [
+                    LintDiagnostic {
+                        rule_name: "nuxt/nuxt-config-keys-order",
+                        severity: Error,
+                        message: "Expected config key \"ssr\" to come after \"$test\"",
+                        start: 17,
+                        end: 26,
+                        help: None,
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Sort Nuxt config keys",
+                                edits: [
+                                    TextEdit {
+                                        start: 16,
+                                        end: 111,
+                                        new_text: " modules: [], $production: { build: {}, app: {} }, $test: { modules: [], ssr: true }, ssr: true",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    LintDiagnostic {
+                        rule_name: "nuxt/nuxt-config-keys-order",
+                        severity: Error,
+                        message: "Expected config key \"build\" to come after \"app\"",
+                        start: 78,
+                        end: 87,
+                        help: None,
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Sort Nuxt config keys",
+                                edits: [
+                                    TextEdit {
+                                        start: 77,
+                                        end: 96,
+                                        new_text: " app: {}, build: {}",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ],
+                error_count: 2,
+                warning_count: 0,
+            },
+        },
+        Application {
+            diagnostic_index: 2,
+            source: "export default { ssr: true, $test: { ssr: true, modules: [] }, $production: { app: {}, build: {} }, modules: [] }",
+            result: LintResult {
+                filename: "nuxt.config.ts",
+                diagnostics: [
+                    LintDiagnostic {
+                        rule_name: "nuxt/nuxt-config-keys-order",
+                        severity: Error,
+                        message: "Expected config key \"ssr\" to come after \"$test\"",
+                        start: 17,
+                        end: 26,
+                        help: None,
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Sort Nuxt config keys",
+                                edits: [
+                                    TextEdit {
+                                        start: 16,
+                                        end: 111,
+                                        new_text: " modules: [], $production: { app: {}, build: {} }, $test: { ssr: true, modules: [] }, ssr: true",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    LintDiagnostic {
+                        rule_name: "nuxt/nuxt-config-keys-order",
+                        severity: Error,
+                        message: "Expected config key \"ssr\" to come after \"modules\"",
+                        start: 37,
+                        end: 46,
+                        help: None,
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Sort Nuxt config keys",
+                                edits: [
+                                    TextEdit {
+                                        start: 36,
+                                        end: 59,
+                                        new_text: " modules: [], ssr: true",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ],
+                error_count: 2,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

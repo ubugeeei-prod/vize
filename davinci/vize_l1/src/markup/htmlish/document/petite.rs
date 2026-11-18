@@ -4,7 +4,7 @@ use core::ops::Range;
 
 use vize_l0::Span;
 
-use super::{DocumentLexicalRefusal, DocumentToken, DocumentTokenKind as Kind, NativeDocument};
+use super::{DocumentLexicalRefusal, DocumentToken, DocumentTokenKind as Kind, ParsedDocument};
 use crate::markup::QuoteType;
 
 /// The two directive heads owned by petite-vue rather than core Vue DOM syntax.
@@ -30,7 +30,7 @@ pub enum DocumentPetiteRefusal {
 /// ```
 #[derive(Debug)]
 pub struct DocumentPetiteDirectives<'o, 'a> {
-    owner: &'o NativeDocument<'a>,
+    owner: &'o ParsedDocument<'a>,
     cursor: usize,
     element: Option<Span>,
 }
@@ -45,7 +45,7 @@ pub struct DocumentPetiteDirectives<'o, 'a> {
 /// ```
 #[derive(Debug)]
 pub struct DocumentPetiteDirective<'o, 'a> {
-    owner: &'o NativeDocument<'a>,
+    owner: &'o ParsedDocument<'a>,
     kind: DocumentPetiteDirectiveKind,
     element: Span,
     name: Span,
@@ -61,24 +61,24 @@ pub struct DocumentPetiteDirective<'o, 'a> {
 ///
 /// ```
 /// use vize_l0::{Allocator, SourceRoot};
-/// use vize_l1::markup::htmlish::document::{DocumentPetiteDirectiveKind, NativeDocument};
+/// use vize_l1::markup::htmlish::document::{DocumentPetiteDirectiveKind, ParsedDocument};
 /// let arena = Allocator::default();
 /// let source = "<div v-scope=\"{ n: 1 }\"></div>";
-/// let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+/// let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
 /// let directive = owner.petite_directives().unwrap().next().unwrap().unwrap();
 /// assert_eq!(directive.kind(), DocumentPetiteDirectiveKind::Scope);
 /// assert_eq!(directive.value().unwrap().authored(), "{ n: 1 }");
 /// ```
 #[derive(Debug)]
 pub struct DocumentPetiteValue<'o, 'a> {
-    owner: &'o NativeDocument<'a>,
+    owner: &'o ParsedDocument<'a>,
     parts: Range<usize>,
     span: Span,
     quote: QuoteType,
 }
 
 pub(super) fn directives<'o, 'a>(
-    owner: &'o NativeDocument<'a>,
+    owner: &'o ParsedDocument<'a>,
 ) -> Result<DocumentPetiteDirectives<'o, 'a>, DocumentPetiteRefusal> {
     owner
         .normal_completion()
@@ -184,7 +184,7 @@ impl<'o, 'a> DocumentPetiteDirectives<'o, 'a> {
 
 impl<'o, 'a> DocumentPetiteDirective<'o, 'a> {
     #[must_use]
-    pub fn owner(&self) -> &'o NativeDocument<'a> {
+    pub fn owner(&self) -> &'o ParsedDocument<'a> {
         self.owner
     }
 
@@ -252,7 +252,7 @@ impl<'o, 'a> DocumentPetiteDirective<'o, 'a> {
 
 impl<'o, 'a> DocumentPetiteValue<'o, 'a> {
     #[must_use]
-    pub fn owner(&self) -> &'o NativeDocument<'a> {
+    pub fn owner(&self) -> &'o ParsedDocument<'a> {
         self.owner
     }
 

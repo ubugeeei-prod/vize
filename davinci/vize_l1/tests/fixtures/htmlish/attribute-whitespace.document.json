@@ -1,0 +1,45 @@
+{
+  "row": "attribute-whitespace",
+  "dialect": "document",
+  "source": "<!DOCTYPE html><html><head></head><body><div a=\"1\"b=\"2\"></div></body></html>",
+  "oracle": {
+    "name": "parse5",
+    "version": "7.3.0"
+  },
+  "elements": [
+    [
+      "html",
+      null,
+      []
+    ],
+    [
+      "head",
+      0,
+      []
+    ],
+    [
+      "body",
+      0,
+      []
+    ],
+    [
+      "div",
+      2,
+      [
+        [
+          "a",
+          "1"
+        ],
+        [
+          "b",
+          "2"
+        ]
+      ]
+    ]
+  ],
+  "texts": [],
+  "comments": [],
+  "errors": [
+    "missing-whitespace-between-attributes"
+  ]
+}

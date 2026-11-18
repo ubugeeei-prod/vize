@@ -3,7 +3,7 @@
 use serde_json::{Value, json};
 use vize_l0::{Allocator, Namespace, SourceRoot, Span, String};
 use vize_l1::markup::htmlish::document::{
-    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, NativeDocument,
+    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, ParsedDocument,
 };
 
 const CORPUS: &str = include_str!("fixtures/document/html-phrasing.json");
@@ -24,7 +24,7 @@ fn phrasing_packets_retain_the_complete_browser_and_legacy_tree() {
         let label = case["name"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
         let tree = owner.html_structure().expect(label);
         let elements: Vec<_> = tree.elements().collect();
         let actual_elements: Vec<_> = elements
@@ -101,7 +101,7 @@ fn adoption_agency_and_reconstruction_edges_keep_typed_refusals() {
         let needle = vize_l0::cstr!("<{token}");
         let start = source.match_indices(needle.as_str()).nth(1).unwrap().0 + 1;
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert_eq!(
             owner.html_structure().unwrap_err(),
             Refusal::FormattingRecovery(Span::new(start as u32, (start + token.len()) as u32)),
@@ -117,7 +117,7 @@ fn adoption_agency_and_reconstruction_edges_keep_typed_refusals() {
     ] {
         let source = envelope(body);
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert!(
             matches!(owner.html_structure(), Err(Refusal::ImpliedEnd(_))),
             "{body}"

@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-reserved-names-static-template-literal-names-4979",
+    history: "f5db9b1277106e7f6d4f2de68f314dc2c567bddb",
+    source: "<script>\nexport default { [`name`]: `button` }\n</script>\n<script setup>\ndefineOptions({ ['name']: `slot` })\n</script>\n<template><div /></template>",
+    filename: "Button.vue",
+    entry: "sfc",
+    rule: "vue/no-reserved-component-names",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Button.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-reserved-component-names",
+                severity: Error,
+                message: "'button' is a reserved HTML element name and cannot be used as a component name",
+                start: 36,
+                end: 44,
+                help: Some(
+                    "Rename the component to avoid using reserved names",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-reserved-component-names",
+                severity: Error,
+                message: "'slot' is a reserved HTML element name and cannot be used as a component name",
+                start: 98,
+                end: 104,
+                help: Some(
+                    "Rename the component to avoid using reserved names",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 2,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Button.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-reserved-component-names",
+                    severity: Error,
+                    message: "'button' is a reserved HTML element name and cannot be used as a component name",
+                    start: 36,
+                    end: 44,
+                    help: Some(
+                        "Rename the component to avoid using reserved names",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-reserved-component-names",
+                    severity: Error,
+                    message: "'slot' is a reserved HTML element name and cannot be used as a component name",
+                    start: 98,
+                    end: 104,
+                    help: Some(
+                        "Rename the component to avoid using reserved names",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 2,
+            warning_count: 0,
+        },
+    ),
+}

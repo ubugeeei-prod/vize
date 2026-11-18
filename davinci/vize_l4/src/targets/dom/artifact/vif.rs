@@ -1,9 +1,10 @@
-//! Native HTML `ui.if` (`v-if` / `v-else-if` / `v-else`) emission.
+//! Native HTML `ui.if` (`v-if` / `v-else-if` / `v-else`) and `ui.and`
+//! emission.
 
-use vize_l0::Span;
 use vize_l0::id::NodeId;
+use vize_l0::{Span, ToCompactString};
 use vize_l2::expr::ExprRef;
-use vize_l2::op::{IfBranch, IfOp, Op};
+use vize_l2::op::{AndOp, IfOp, Op, Region};
 
 use super::EmitCx;
 use super::EmitError;
@@ -67,7 +68,7 @@ fn emit_chain(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> Resu
         if from_template {
             super::tpl::emit_if_template_branch(cx, branch, key.as_str())?;
         } else {
-            emit_branch(cx, branch, key.as_str())?;
+            emit_branch(cx, &branch.region, branch.span, key.as_str())?;
         }
         cx.if_branch_key = saved;
         if branch.condition.is_some() && i > 0 {
@@ -90,6 +91,29 @@ fn emit_chain(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> Resu
     }
     cx.buf.deindent();
     Ok(())
+}
+
+/// `ui.and`: `(left) && <branch>`. JavaScript evaluates `left` once and
+/// yields it when falsy, and the renderer normalizes that value as a child
+/// (`0` as text, `false` and `null` as nothing); a truthy `left` yields the
+/// region's root, keyed like a one-branch `ui.if`. Kept out of line: template
+/// dispatchers never reach it.
+#[inline(never)]
+pub(super) fn emit_and(cx: &mut EmitCx<'_>, and: &AndOp<'_>) -> Result<(), EmitError> {
+    let key = next_if_key(cx).to_compact_string();
+    let left = cx.prefixed_expr(&and.left, Site::Expression)?;
+    cx.buf.push("(");
+    cx.buf.push(left.as_str());
+    cx.buf.push(")");
+    cx.buf.indent();
+    cx.buf.newline();
+    cx.buf.push("&& ");
+    let saved = cx.if_branch_key;
+    cx.if_branch_key = 0;
+    let result = emit_branch(cx, &and.region, and.span, key.as_str());
+    cx.if_branch_key = saved;
+    cx.buf.deindent();
+    result
 }
 
 fn next_if_key(cx: &mut EmitCx<'_>) -> u32 {
@@ -246,8 +270,13 @@ fn authored_condition_quote_padding<'a>(
     .then_some((leading, trailing))
 }
 
-fn emit_branch(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<(), EmitError> {
-    match branch.region.ops.as_slice() {
+fn emit_branch(
+    cx: &mut EmitCx<'_>,
+    region: &Region<'_>,
+    span: Span,
+    key: &str,
+) -> Result<(), EmitError> {
+    match region.ops.as_slice() {
         [Op::Element(element)] => {
             let id = cx.walk.mint();
             cx.walk.skip(element.bindings.len());
@@ -257,7 +286,7 @@ fn emit_branch(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<
             let _id = cx.walk.mint();
             cx.walk.skip(component.bindings.len());
             let previous = cx.template_if_branch_root;
-            cx.template_if_branch_root = authored_template_branch(cx, branch);
+            cx.template_if_branch_root = authored_template_branch(cx, span);
             let result = super::component::emit_if_branch(cx, component, key, _id);
             cx.template_if_branch_root = previous;
             result
@@ -272,18 +301,18 @@ fn emit_branch(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<
             super::emit_for_op(cx, for_op, id, Some(key))
         }
         [Op::OriginalFor(for_op)] => Err(EmitError::original_for_provider_unavailable(for_op)),
-        _ => Err(EmitError::unsupported_at(
-            Reason::IfBranchShape,
-            branch.span,
-        )),
+        [] => Err(EmitError::unsupported_at(Reason::IfBranchShape, span)),
+        // A region with no single root (a conditional, text or several
+        // nodes) is one keyed fragment, as Vue wraps a multi-root branch.
+        ops => super::tpl::emit_branch_fragment(cx, ops, key),
     }
 }
 
-fn authored_template_branch(cx: &EmitCx<'_>, branch: &IfBranch<'_>) -> bool {
-    let Ok(start) = usize::try_from(branch.span.start) else {
+fn authored_template_branch(cx: &EmitCx<'_>, span: Span) -> bool {
+    let Ok(start) = usize::try_from(span.start) else {
         return false;
     };
-    let Ok(end) = usize::try_from(branch.span.end) else {
+    let Ok(end) = usize::try_from(span.end) else {
         return false;
     };
     cx.source

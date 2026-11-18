@@ -142,10 +142,10 @@ pub struct SetupIssue {
 /// ```
 /// It also keeps the original parser observation borrowed:
 /// ```compile_fail
-/// use vize_l1::{container::vue::ScriptView, embed::syntax::NativeSyntax};
+/// use vize_l1::{container::vue::ScriptView, embed::syntax::EmbedSyntax};
 /// use vize_l2::{file::FileArtifact, lang::js::VueSetup};
 /// fn discard<'d, 'a>(file: &FileArtifact<'a>, script: ScriptView<'d, 'a>,
-///     syntax: NativeSyntax<'a>) {
+///     syntax: EmbedSyntax<'a>) {
 ///     let setup = VueSetup::checked(file, script, syntax.admitted_program().unwrap()).unwrap();
 ///     drop(syntax);
 ///     let _ = setup.source();

@@ -11,7 +11,8 @@ use tower_lsp::lsp_types::TextEdit;
 
 use crate::server::ServerState;
 
-use super::{RenameTarget, offset_range};
+use super::super::alias::Importer;
+use super::{RenameTarget, ScanFiles, offset_range};
 
 struct SpecifierOccurrence {
     start: usize,
@@ -20,8 +21,8 @@ struct SpecifierOccurrence {
 }
 
 struct ScriptEditContext<'a> {
-    state: &'a ServerState,
-    current_path: &'a Path,
+    files: ScanFiles<'a>,
+    importer: &'a Importer<'a>,
     future_path: &'a Path,
     full_source: &'a str,
     rename_targets: &'a [RenameTarget],
@@ -117,19 +118,21 @@ impl<'a> Visit<'a> for ModuleSpecifierCollector {
 
 pub(super) fn collect_vue_edits(
     state: &ServerState,
-    path: &Path,
+    files: ScanFiles<'_>,
+    importer: &Importer<'_>,
     future_path: &Path,
     source: &str,
     rename_targets: &[RenameTarget],
 ) -> Vec<TextEdit> {
+    let path = importer.path();
     let Some(descriptor) = state.component_descriptor(path, source) else {
         return Vec::new();
     };
 
     let mut edits = Vec::new();
     let edit_context = ScriptEditContext {
-        state,
-        current_path: path,
+        files,
+        importer,
         future_path,
         full_source: source,
         rename_targets,
@@ -154,6 +157,7 @@ pub(super) fn collect_vue_edits(
     }
     edits.extend(super::super::resources::collect_vue_resource_edits(
         state,
+        files,
         path,
         future_path,
         source,
@@ -164,19 +168,19 @@ pub(super) fn collect_vue_edits(
 }
 
 pub(super) fn collect_script_file_edits(
-    state: &ServerState,
-    path: &Path,
+    files: ScanFiles<'_>,
+    importer: &Importer<'_>,
     future_path: &Path,
     source: &str,
     rename_targets: &[RenameTarget],
 ) -> Vec<TextEdit> {
-    let Some(source_type) = SourceType::from_path(path).ok() else {
+    let Some(source_type) = SourceType::from_path(importer.path()).ok() else {
         return Vec::new();
     };
 
     let edit_context = ScriptEditContext {
-        state,
-        current_path: path,
+        files,
+        importer,
         future_path,
         full_source: source,
         rename_targets,
@@ -206,8 +210,8 @@ fn collect_script_content_edits(
         .into_iter()
         .filter_map(|specifier| {
             let new_text = super::super::alias::rewrite_specifier(
-                context.state,
-                context.current_path,
+                context.files,
+                context.importer,
                 future_dir,
                 &specifier.specifier,
                 context.rename_targets,

@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-unused-components-plain-template-is-4233",
+    history: "863a2d71b3d7b9cde17f87ac445cc7f3288e81c8",
+    source: "<script setup lang=\"ts\">\nimport Child from './DynamicChild.vue'\n</script>\n\n<template>\n  <component :is=\"`SomethingElse`\" />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-components",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unused-components",
+                severity: Warning,
+                message: "Component 'Child' is registered but never used in template",
+                start: 32,
+                end: 37,
+                help: Some(
+                    "Remove the unused import or use the component in your template",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-components",
+                    severity: Warning,
+                    message: "Component 'Child' is registered but never used in template",
+                    start: 32,
+                    end: 37,
+                    help: Some(
+                        "Remove the unused import or use the component in your template",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

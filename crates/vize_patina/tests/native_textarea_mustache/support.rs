@@ -8,9 +8,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{
-        NativeChildren, NativeTemplateComponent, SurfaceParseOptions, check_fidelity, render,
-    },
+    markup::{ChildrenView, NativeTemplateComponent, SurfaceParseOptions, check_fidelity, render},
 };
 use vize_patina::{
     LintResult, Linter, RuleRegistry,
@@ -114,7 +112,7 @@ pub fn parser(severity: &str, message: &str, range: Span) -> Value {
 // reads SDK tables and performs no second body walk or source parse.
 pub fn collect<'a>(
     lint: &NativeSyntaxLint<'_, 'a>,
-    children: NativeChildren<'_, 'a>,
+    children: ChildrenView<'_, 'a>,
     messages: &impl MessageLookup,
     output: &mut Vec<NativeLintFinding>,
 ) -> Result<(), NativeHeaderFactError> {
@@ -127,7 +125,7 @@ pub fn collect<'a>(
 }
 fn collect_element<'a>(
     lint: &NativeSyntaxLint<'_, 'a>,
-    element: &vize_l1::markup::NativeElement<'_, 'a>,
+    element: &vize_l1::markup::ElementView<'_, 'a>,
     messages: &impl MessageLookup,
     output: &mut Vec<NativeLintFinding>,
 ) -> Result<(), NativeHeaderFactError> {

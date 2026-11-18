@@ -217,7 +217,8 @@ impl<'v> Walk<'_, '_, 'v> {
         if matches!(kind(returned), "ArrayExpression" | "ObjectExpression") {
             return;
         }
-        let function = if kind(listener) == "ArrowFunctionExpression" {
+        let arrow = kind(listener) == "ArrowFunctionExpression";
+        let function = if arrow {
             Some(listener)
         } else {
             ancestors.iter().rev().find_map(|(node, _)| {
@@ -231,8 +232,10 @@ impl<'v> Walk<'_, '_, 'v> {
                 .then_some(*node)
             })
         };
+        // A concise arrow reports its body (`checkReturn(node.body, node.body)`).
+        let report = if arrow { returned } else { listener };
         let (Some(function), Some(target_key), Some(target_span)) =
-            (function, key(listener), span(listener))
+            (function, key(listener), span(report))
         else {
             return;
         };
@@ -367,6 +370,7 @@ impl<'v> Walk<'_, '_, 'v> {
                 node: node_span,
                 expression: expression_span,
                 spread,
+                literal: matches!(kind(argument), "ArrayExpression" | "ObjectExpression"),
                 safe_operands,
             });
             targets.push(EnumTarget::new(target_key, report_span, ARGUMENT));

@@ -59,14 +59,20 @@ impl<'a> scope::Frame<'a> for Frame<'a> {
     }
 }
 
-pub(crate) fn build<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>(
+pub(crate) fn build<
+    'a,
+    const RAW: bool,
+    const TAG_FACTS: bool,
+    const STRUCTURAL_DIAGNOSTICS: bool,
+>(
     allocator: &'a Allocator,
     src: &'a str,
     events: &[Event],
     errors: &mut Vec<'a, crate::markup::SurfaceError>,
     repair_interactive: bool,
+    fosters: bool,
 ) -> (SurfaceTree<'a>, bool) {
-    let mut b = Builder::<RAW, LINT, STRUCTURAL_DIAGNOSTICS> {
+    let mut b = Builder::<RAW, TAG_FACTS, STRUCTURAL_DIAGNOSTICS> {
         src,
         allocator,
         events,
@@ -77,6 +83,7 @@ pub(crate) fn build<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAG
         stack: Vec::new_in(&allocator),
         recovery: scope::Recovery::new(allocator, repair_interactive),
         repaired: false,
+        fosters,
     };
     b.run();
     // EOF: bytes the tokenizer consumed without reporting structure
@@ -115,7 +122,7 @@ pub(crate) fn build<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAG
     )
 }
 
-struct Builder<'a, 'e, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool> {
+struct Builder<'a, 'e, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_DIAGNOSTICS: bool> {
     src: &'a str,
     allocator: &'a Allocator,
     events: &'e [Event],
@@ -126,10 +133,12 @@ struct Builder<'a, 'e, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGN
     stack: Vec<'a, Frame<'a>>,
     recovery: scope::Recovery<'a>,
     repaired: bool,
+    /// Report foster parenting: only for an in-DOM template.
+    fosters: bool,
 }
 
-impl<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>
-    Builder<'a, '_, RAW, LINT, STRUCTURAL_DIAGNOSTICS>
+impl<'a, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_DIAGNOSTICS: bool>
+    Builder<'a, '_, RAW, TAG_FACTS, STRUCTURAL_DIAGNOSTICS>
 {
     fn run(&mut self) {
         while let Some(ev) = self.events.get(self.i).copied() {
@@ -305,10 +314,15 @@ impl<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>
         let tail = crate::slice::from(self.src, e.min(self.src.len()));
         let closer = match kind {
             RawKind::Comment => {
+                // `-->`; `--!>` (WHATWG closes there with an error; the lexer's
+                // content already holds its first `-`, leaving `-!>`); the
+                // abrupt empty forms `<!--->` (`->`) and `<!-->` (`>`).
                 if tail.starts_with("-->") {
                     3
                 } else if tail.starts_with("--!>") {
                     4
+                } else if tail.starts_with("-!>") || tail.starts_with("->") {
+                    tail.find('>').map_or(0, |at| at + 1)
                 } else if tail.starts_with('>') {
                     1
                 } else {

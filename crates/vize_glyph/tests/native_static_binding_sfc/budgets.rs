@@ -13,7 +13,7 @@ use vize_glyph::native_doc::{
 };
 use vize_l0::{Allocator, Span};
 use vize_l1::embed::{Grammar, Lang, Shape, syntax::EmbedHole};
-use vize_l1::markup::NativeAttributeBindingExpression;
+use vize_l1::markup::AttributeBindingExpression;
 
 fn current(owner: &NativeSfcObservation<'_>, source: &str, raw: &str, value: Span) {
     let operand = &owner.binding_operands()[1];
@@ -42,7 +42,7 @@ fn current(owner: &NativeSfcObservation<'_>, source: &str, raw: &str, value: Spa
     assert!(owner.binding_failure().is_none());
 }
 
-fn original_unary_leaf(operand: &NativeAttributeBindingExpression<'_>, depth: u32) {
+fn original_unary_leaf(operand: &AttributeBindingExpression<'_>, depth: u32) {
     let syntax = operand.syntax();
     let root = syntax.expression().unwrap();
     assert_eq!(syntax.hole(), None);

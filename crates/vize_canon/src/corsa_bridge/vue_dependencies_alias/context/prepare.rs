@@ -205,13 +205,7 @@ impl AliasContext {
         ModuleSpecifierFactsCache::assert_no_live_preparation_facts();
         let mut cache = environment.editor_session.cache();
         if cache.generation() != cache_generation {
-            return Err(
-                super::super::super::types::CorsaBridgeError::CommunicationError(
-                    vize_carton::cstr!(
-                        "project inputs changed while the editor mirror was being prepared"
-                    ),
-                ),
-            );
+            return Err(super::super::super::types::CorsaBridgeError::superseded_editor_mirror());
         }
         if let Some(context) = cache.get(source_path, &fingerprint) {
             return Ok(PreparedAliasContext {

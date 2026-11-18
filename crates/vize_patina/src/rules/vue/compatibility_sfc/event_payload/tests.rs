@@ -168,3 +168,9 @@ function local(emit: (...args: unknown[]) => void) { emit('x', 1, 2) }
 </script>"#;
     assert_eq!(ranges(source), Vec::<&str>::new());
 }
+
+#[test]
+fn parenthesized_payloads_are_ranged_inside_their_parentheses() {
+    let source = "<script setup>\nconst emit = defineEmits(['toggled'])\nemit('toggled', reaction, (count - 1))\nemit('toggled', (reaction), count, ((total)))\n</script>";
+    assert_eq!(ranges(source), ["count - 1", "count, ((total"]);
+}

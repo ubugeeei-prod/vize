@@ -1,0 +1,71 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-id-duplication-after-v-if-chain-2206",
+    history: "c638c6d53bdcb1884ae22615dce0c1f9efe59c44",
+    source: "<div v-if=\"show\"><input id=\"radio1\"></div><div v-else><input id=\"other\"></div><p id=\"radio1\"></p>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "html/id-duplication",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "html/id-duplication",
+                severity: Error,
+                message: "Duplicate id=\"radio1\" found in template",
+                start: 81,
+                end: 92,
+                help: Some(
+                    "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById().",
+                ),
+                labels: [
+                    Label {
+                        message: "first defined here",
+                        start: 24,
+                        end: 35,
+                    },
+                ],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "html/id-duplication",
+                    severity: Error,
+                    message: "Duplicate id=\"radio1\" found in template",
+                    start: 81,
+                    end: 92,
+                    help: Some(
+                        "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById().",
+                    ),
+                    labels: [
+                        Label {
+                            message: "first defined here",
+                            start: 24,
+                            end: 35,
+                        },
+                    ],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

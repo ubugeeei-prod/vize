@@ -3,7 +3,7 @@ use oxc_span::GetSpan;
 use vize_l0::{Allocator, Span};
 
 use super::super::{Embed, EmbedHole, EmbedSource, Grammar, Lang, Shape, parse_once};
-use super::{ForHeadHole, ForHeadPart, ForKeyword, NativeForHead, parse_vue_for_head_once};
+use super::{ForHead, ForHeadHole, ForHeadPart, ForKeyword, parse_vue_for_head_once};
 use crate::embed::prepare_attribute_value;
 
 mod authority;
@@ -18,7 +18,7 @@ fn embed(text: &str, lang: Lang) -> Embed<'_> {
     }
 }
 
-fn parse<'a>(allocator: &'a Allocator, text: &'a str, lang: Lang) -> NativeForHead<'a> {
+fn parse<'a>(allocator: &'a Allocator, text: &'a str, lang: Lang) -> ForHead<'a> {
     parse_vue_for_head_once(allocator, embed(text, lang))
 }
 

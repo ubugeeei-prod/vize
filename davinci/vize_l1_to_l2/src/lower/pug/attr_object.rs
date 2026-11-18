@@ -264,6 +264,7 @@ impl<'t> Emitter<'t> {
                 key_span: None,
                 value,
                 body: None,
+                quote: None,
                 escaped: false,
                 span: *span,
             });

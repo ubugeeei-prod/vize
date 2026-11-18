@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h8-v-for-key-destructured-tuple-alias",
+    history: "a30ae13559eebbd68275e21310f8f6bf0a577936",
+    source: "<ul>\n            <li v-for=\"({ color }, index) of colors\" :key=\"color\">{{ index }}</li>\n            <li v-for=\"([name, count], index) of entries\" :key=\"name\">{{ count }}</li>\n        </ul>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-for",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 use vize_l0::{Allocator, SourceRoot, String};
 
-use super::{DocumentHtmlRefusal as Refusal, NativeDocument};
+use super::{DocumentHtmlRefusal as Refusal, ParsedDocument};
 use crate::markup::htmlish::document::DocumentLexicalRefusal;
 
 const CORPUS: &str = include_str!("../../../../../tests/fixtures/document/html-structure.tsv");
@@ -27,7 +27,7 @@ fn original_element_ancestry_matches_the_real_browser_census() {
         let original = columns.get(1).expect("original source");
         let census = columns.get(2).expect("original browser census");
         let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(original));
+        let owner = ParsedDocument::lex_in(&allocator, root(original));
         let tree = owner.html_structure().expect(label);
         let elements: Vec<_> = tree.elements().collect();
         let actual: Vec<_> = elements
@@ -64,7 +64,7 @@ fn original_element_ancestry_matches_the_real_browser_census() {
 fn nonvoid_slash_really_keeps_the_original_html_parent_open() {
     let source = source("<DIV/><SPAN></span></dIv   ><br/><span></span>");
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(&source));
+    let owner = ParsedDocument::lex_in(&allocator, root(&source));
     let tree = owner.html_structure().expect("explicit complete HTML");
     let elements: Vec<_> = tree.elements().collect();
     let div = elements.get(3).expect("original div");
@@ -98,7 +98,7 @@ fn nonvoid_slash_really_keeps_the_original_html_parent_open() {
 fn moving_the_original_owner_keeps_source_and_arena_custody() {
     let source = source("<div><span></span></div>");
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(&source));
+    let owner = ParsedDocument::lex_in(&allocator, root(&source));
     let moved = owner;
     let tree = moved.html_structure().expect("original moved owner");
     assert!(core::ptr::eq(tree.owner(), &moved));
@@ -127,7 +127,7 @@ fn implicit_envelopes_and_text_insertion_modes_refuse_completion() {
         "<!DOCTYPE html><html><head></head><body></body></html>\u{a0}",
     ] {
         let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(source));
+        let owner = ParsedDocument::lex_in(&allocator, root(source));
         assert_eq!(
             owner.html_structure().unwrap_err(),
             Refusal::ExplicitEnvelope,
@@ -149,7 +149,7 @@ fn decoded_nonspace_entities_cannot_hide_implicit_envelope_changes() {
         "&Tab;x<!DOCTYPE html><html><head></head><body></body></html>",
     ] {
         let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(source));
+        let owner = ParsedDocument::lex_in(&allocator, root(source));
         assert!(owner.normal_completion().is_ok(), "{source}");
         assert_eq!(
             owner.html_structure().unwrap_err(),
@@ -172,7 +172,7 @@ fn vue_flavored_callbacks_cannot_hide_real_html_structure() {
     ] {
         let source = source(body);
         let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(&source));
+        let owner = ParsedDocument::lex_in(&allocator, root(&source));
         assert_eq!(owner.html_structure().unwrap_err(), refusal, "{body}");
     }
 }
@@ -182,7 +182,7 @@ fn template_content_remains_explicit() {
     let body = "<template></template>";
     let source = source(body);
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(&source));
+    let owner = ParsedDocument::lex_in(&allocator, root(&source));
     assert!(matches!(
         owner.html_structure(),
         Err(Refusal::UnsupportedElement(_))
@@ -194,7 +194,7 @@ fn original_mismatched_ends_and_non_html_close_frames_cannot_mint_a_tree() {
     for body in ["<div><span></div></span>", "<div/>", "<br></br>"] {
         let source = source(body);
         let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(&source));
+        let owner = ParsedDocument::lex_in(&allocator, root(&source));
         assert!(
             matches!(owner.html_structure(), Err(Refusal::ImpliedEnd(_))),
             "{body}"
@@ -203,7 +203,7 @@ fn original_mismatched_ends_and_non_html_close_frames_cannot_mint_a_tree() {
     for body in ["<div></ div>", "<div/ ></div>"] {
         let source = source(body);
         let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(&source));
+        let owner = ParsedDocument::lex_in(&allocator, root(&source));
         assert!(
             matches!(owner.html_structure(), Err(Refusal::InvalidFrame(_))),
             "{body}"
@@ -215,14 +215,14 @@ fn original_mismatched_ends_and_non_html_close_frames_cannot_mint_a_tree() {
 fn lexical_recovery_and_pending_structure_never_become_html_completion() {
     for source in ["<!>", "<div a=\"", "{{"] {
         let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(source));
+        let owner = ParsedDocument::lex_in(&allocator, root(source));
         assert!(
             matches!(owner.html_structure(), Err(Refusal::Lexical(_))),
             "{source}"
         );
     }
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(
+    let owner = ParsedDocument::lex_in(
         &allocator,
         root("<!DOCTYPE html><html><head></head><body><div>"),
     );
@@ -240,7 +240,7 @@ fn lexical_recovery_and_pending_structure_never_become_html_completion() {
 fn the_original_pinned_petite_vue_document_still_refuses_its_implicit_envelope() {
     let source = include_str!("../../../../../tests/fixtures/document/petite-vue-svg.html");
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(source));
+    let owner = ParsedDocument::lex_in(&allocator, root(source));
     assert!(owner.normal_completion().is_ok());
     assert_eq!(
         owner.html_structure().unwrap_err(),

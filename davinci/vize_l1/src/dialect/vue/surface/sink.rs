@@ -6,7 +6,7 @@ use super::{HeaderPolicy, LexicalScope, SurfacePolicy};
 use crate::markup::entity::DecodedEntity;
 use crate::markup::htmlish::build::scope::{Frame, Recovery, authored_close, namespace};
 use crate::markup::htmlish::event::{EventKind, Recorder};
-use crate::markup::htmlish::surface::LintHeaderFact;
+use crate::markup::htmlish::surface::HeaderFacts;
 use crate::markup::token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
 use core::marker::PhantomData;
 
@@ -83,14 +83,14 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
         }
     }
 
-    fn finish_tag(&mut self, self_closing: bool) -> (bool, LintHeaderFact) {
+    fn finish_tag(&mut self, self_closing: bool) -> (bool, HeaderFacts) {
         let Some(tag) = self.tag.take() else {
-            return (false, LintHeaderFact::default());
+            return (false, HeaderFacts::default());
         };
         // The lexer read the dialect's mode while consuming the actual
         // header, before HTML recovery changes structural ancestry.
-        let header_literal = P::LINT_TAGS && self.mode() == LexMode::Verbatim;
-        let entry_recovery = P::LINT_TAGS
+        let header_literal = P::RECORD_TAG_FACTS && self.mode() == LexMode::Verbatim;
+        let entry_recovery = P::RECORD_TAG_FACTS
             && (self.stack.len() >= 4096
                 || self
                     .stack
@@ -103,10 +103,10 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
         // Inherit from the dialect's lexical owner.
         let inherited = self.mode() == LexMode::Verbatim;
         let inherited_exact =
-            P::LINT_TAGS && self.lexical_parent().is_some_and(|frame| frame.exact_pre);
+            P::RECORD_TAG_FACTS && self.lexical_parent().is_some_and(|frame| frame.exact_pre);
         let table_context =
-            P::LINT_TAGS && self.stack.last().is_some_and(|frame| frame.table_context);
-        let inherited_recovery = P::LINT_TAGS
+            P::RECORD_TAG_FACTS && self.stack.last().is_some_and(|frame| frame.table_context);
+        let inherited_recovery = P::RECORD_TAG_FACTS
             && self
                 .stack
                 .last()
@@ -119,8 +119,8 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
         };
         let verbatim = inherited || heads.pre;
         let exact_pre = inherited_exact || exact_head;
-        let lint_tag = if P::LINT_TAGS {
-            P::lint_tag(
+        let tag_facts = if P::RECORD_TAG_FACTS {
+            P::tag_facts(
                 tag,
                 heads.structural_template,
                 verbatim,
@@ -140,7 +140,7 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
                     exact_pre,
                 });
             }
-            let frame_recovery = P::LINT_TAGS
+            let frame_recovery = P::RECORD_TAG_FACTS
                 && (inherited_recovery || recovery_spelling(tag) || self.stack.len() >= 4096);
             self.stack.push(RecoveredFrame {
                 scope: LexicalFrame {
@@ -149,14 +149,15 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
                     verbatim,
                     exact_pre,
                 },
-                table_context: P::LINT_TAGS && (table_context || tag.eq_ignore_ascii_case("table")),
+                table_context: P::RECORD_TAG_FACTS
+                    && (table_context || tag.eq_ignore_ascii_case("table")),
                 recovery_context: frame_recovery,
             });
         }
         (
             verbatim,
-            LintHeaderFact {
-                kind: lint_tag,
+            HeaderFacts {
+                kind: tag_facts,
                 literal: header_literal,
                 table_context,
                 recovery_context,
@@ -180,8 +181,8 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
                     if let Some(start) = name_start.take()
                         && let Some(raw) = self.source.get(start as usize..event.start as usize)
                     {
-                        let header = if P::LINT_TAGS {
-                            P::lint_header(raw, start, self.source)
+                        let header = if P::RECORD_TAG_FACTS {
+                            P::header_facts(raw, start, self.source)
                         } else {
                             P::pre(raw, start, self.source).map(|pre| HeaderPolicy {
                                 pre,
@@ -192,7 +193,7 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
                             Ok(header) => {
                                 policy.pre |= header.pre;
                                 policy.structural_template |= header.structural_template;
-                                exact_pre |= P::LINT_TAGS && raw == "v-pre";
+                                exact_pre |= P::RECORD_TAG_FACTS && raw == "v-pre";
                             }
                             Err(boundary) => self.unsupported.push(boundary),
                         }
@@ -276,9 +277,9 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
 
     fn on_open_tag_end(&mut self, end: usize) {
         let (verbatim, facts) = self.finish_tag(false);
-        if P::LINT_TAGS {
+        if P::RECORD_TAG_FACTS {
             self.recorder
-                .opening_end_with_lint(EventKind::OpenTagEnd, end, verbatim, facts);
+                .opening_end_with_tag_facts(EventKind::OpenTagEnd, end, verbatim, facts);
         } else {
             self.recorder
                 .opening_end(EventKind::OpenTagEnd, end, verbatim);
@@ -287,9 +288,13 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
 
     fn on_self_closing_tag(&mut self, end: usize) {
         let (verbatim, facts) = self.finish_tag(true);
-        if P::LINT_TAGS {
-            self.recorder
-                .opening_end_with_lint(EventKind::SelfClosingTag, end, verbatim, facts);
+        if P::RECORD_TAG_FACTS {
+            self.recorder.opening_end_with_tag_facts(
+                EventKind::SelfClosingTag,
+                end,
+                verbatim,
+                facts,
+            );
         } else {
             self.recorder
                 .opening_end(EventKind::SelfClosingTag, end, verbatim);

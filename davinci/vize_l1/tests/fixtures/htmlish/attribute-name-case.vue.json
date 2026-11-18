@@ -1,0 +1,32 @@
+{
+  "row": "attribute-name-case",
+  "dialect": "vue",
+  "source": "<div :fooBar=\"x\" DATA-Id=\"a\" @update:modelValue=\"y\"></div>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "div",
+      null,
+      [
+        [
+          ":fooBar",
+          "x"
+        ],
+        [
+          "DATA-Id",
+          "a"
+        ],
+        [
+          "@update:modelValue",
+          "y"
+        ]
+      ]
+    ]
+  ],
+  "texts": [],
+  "comments": [],
+  "errors": []
+}

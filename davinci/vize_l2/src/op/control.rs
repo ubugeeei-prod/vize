@@ -1,4 +1,4 @@
-//! Structured control flow: `ui.if` and `ui.for`.
+//! Structured control flow: `ui.if`, `ui.and` and `ui.for`.
 //!
 //! Control flow is regions, not directive attributes: `v-if`, JSX
 //! `<Show>`-style patterns and pug conditionals normalize to the same two
@@ -33,6 +33,24 @@ pub struct IfBranch<'a> {
     /// The content this branch renders.
     pub region: Region<'a>,
     /// The branch's source range.
+    pub span: Span,
+}
+
+/// `ui.and` - a child `left && <region>` whose `left` is not known to be a
+/// boolean.
+///
+/// `left` is evaluated once. A truthy value renders the region; a falsy one
+/// is the child's value, rendered as a renderer-normalized child value
+/// (`0`, `NaN` and `''` as text; `false`, `null` and `undefined` as
+/// nothing), which a `ui.if` cannot express. A provably boolean `left`
+/// lowers to a one-branch `ui.if` instead.
+#[derive(Debug)]
+pub struct AndOp<'a> {
+    /// The value tested and, when falsy, rendered.
+    pub left: ExprRef<'a>,
+    /// The content a truthy `left` renders.
+    pub region: Region<'a>,
+    /// The whole `left && right` source range.
     pub span: Span,
 }
 
@@ -110,6 +128,7 @@ pub struct ForBinding<'a> {
 #[cfg(target_pointer_width = "64")]
 const _: () = {
     assert!(core::mem::size_of::<IfOp<'_>>() == 32);
+    assert!(core::mem::size_of::<AndOp<'_>>() == 48);
     assert!(core::mem::size_of::<IfBranch<'_>>() == 48);
     assert!(core::mem::size_of::<ForOp<'_>>() == 104);
     assert!(core::mem::size_of::<ForBinding<'_>>() == 64);

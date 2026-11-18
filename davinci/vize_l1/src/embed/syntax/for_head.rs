@@ -4,17 +4,14 @@ use alloc::boxed::Box;
 use vize_l0::{Allocator, Span, expression_guard::expression_is_safe_to_parse};
 
 use super::{
-    CommentView, DiagnosticView, Embed, EmbedHole, EmbedSource, Grammar, NativeSyntax,
+    CommentView, DiagnosticView, Embed, EmbedHole, EmbedSource, EmbedSyntax, Grammar,
     RetainedExpression, RetainedSlotParams, Shape, SourceError, admission,
     coordinates::Coordinates, parse_once,
 };
 pub use crate::dialect::vue3::for_head::ForKeyword;
 use crate::dialect::vue3::for_head::{SplitError, split};
 mod validation;
-pub use parse::{
-    AdmittedDenseForHead, NativeForInput, NativeForInputError, NativeForRefusal,
-    RejectedNativeForInput,
-};
+pub use parse::{AdmittedDenseForHead, ForInput, ForInputError, ForRefusal, RejectedForInput};
 mod view;
 use validation::refused;
 pub use view::DenseForHeadView;
@@ -43,8 +40,8 @@ pub enum ForHeadHole {
     TrailingAliasSyntax,
 }
 
-type AliasOwner<'a> = Result<RetainedSlotParams<'a>, Box<NativeSyntax<'a>>>;
-type CollectionOwner<'a> = Result<RetainedExpression<'a>, Box<NativeSyntax<'a>>>;
+type AliasOwner<'a> = Result<RetainedSlotParams<'a>, Box<EmbedSyntax<'a>>>;
+type CollectionOwner<'a> = Result<RetainedExpression<'a>, Box<EmbedSyntax<'a>>>;
 
 /// One whole checked head plus two real, independently owned observations.
 ///
@@ -52,7 +49,7 @@ type CollectionOwner<'a> = Result<RetainedExpression<'a>, Box<NativeSyntax<'a>>>
 /// no combined Program, reparse or synthetic missing binding. Refused heads
 /// retain their whole source and every available part/observation, including an
 /// intact boxed artifact if a defensive consuming handoff rejects its shape.
-pub struct NativeForHead<'a> {
+pub struct ForHead<'a> {
     grammar: Grammar,
     source: EmbedSource<'a>,
     separator: Option<(ForKeyword, Span)>,
@@ -60,12 +57,12 @@ pub struct NativeForHead<'a> {
     collection: Option<CollectionOwner<'a>>,
     hole: Option<ForHeadHole>,
     origin: Option<parse::ForOrigin<'a>>,
-    native_refusal: Option<NativeForRefusal>,
+    for_refusal: Option<ForRefusal>,
 }
 
-impl core::fmt::Debug for NativeForHead<'_> {
+impl core::fmt::Debug for ForHead<'_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_struct("NativeForHead")
+        f.debug_struct("ForHead")
             .field("grammar", &self.grammar)
             .field("source", &self.source)
             .field("hole", &self.hole)
@@ -73,7 +70,7 @@ impl core::fmt::Debug for NativeForHead<'_> {
     }
 }
 
-impl<'a> NativeForHead<'a> {
+impl<'a> ForHead<'a> {
     #[must_use]
     pub const fn grammar(&self) -> Grammar {
         self.grammar
@@ -92,12 +89,12 @@ impl<'a> NativeForHead<'a> {
         self.separator
     }
 
-    pub fn aliases(&self) -> Option<Result<&RetainedSlotParams<'a>, &NativeSyntax<'a>>> {
+    pub fn aliases(&self) -> Option<Result<&RetainedSlotParams<'a>, &EmbedSyntax<'a>>> {
         self.aliases
             .as_ref()
             .map(|owner| owner.as_ref().map_err(|syntax| &**syntax))
     }
-    pub fn collection(&self) -> Option<Result<&RetainedExpression<'a>, &NativeSyntax<'a>>> {
+    pub fn collection(&self) -> Option<Result<&RetainedExpression<'a>, &EmbedSyntax<'a>>> {
         self.collection
             .as_ref()
             .map(|owner| owner.as_ref().map_err(|syntax| &**syntax))
@@ -211,11 +208,8 @@ impl<'a> NativeForHead<'a> {
 /// extra and rest positions remain typed refusals with the whole source kept.
 /// This explicit dialect entry point does not select file languages, replace
 /// single-program `parse_once`, or route any product onto native lowering.
-pub fn parse_vue_for_head_once<'a>(
-    allocator: &'a Allocator,
-    embed: Embed<'a>,
-) -> NativeForHead<'a> {
-    let mut head = NativeForHead {
+pub fn parse_vue_for_head_once<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> ForHead<'a> {
+    let mut head = ForHead {
         grammar: embed.grammar,
         source: embed.source,
         separator: None,
@@ -223,7 +217,7 @@ pub fn parse_vue_for_head_once<'a>(
         collection: None,
         hole: None,
         origin: None,
-        native_refusal: None,
+        for_refusal: None,
     };
     if embed.grammar.shape != Shape::ForHead {
         head.hole = Some(ForHeadHole::WrongShape);

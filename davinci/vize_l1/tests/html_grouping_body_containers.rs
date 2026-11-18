@@ -2,7 +2,7 @@
 
 use serde_json::{Value, json};
 use vize_l0::{Allocator, SourceRoot, String, cstr};
-use vize_l1::markup::htmlish::document::{DocumentHtmlNode, DocumentHtmlRefusal, NativeDocument};
+use vize_l1::markup::htmlish::document::{DocumentHtmlNode, DocumentHtmlRefusal, ParsedDocument};
 
 const CORPUS: &str = include_str!("fixtures/document/html-grouping-body-containers.json");
 const TAGS: [&str; 6] = [
@@ -22,7 +22,7 @@ fn original_grouping_containers_match_complete_browser_packets() {
         let label = case["name"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
         let tree = owner.html_structure().expect(label);
         let elements: Vec<_> = tree.elements().collect();
         let actual: Vec<_> = elements
@@ -129,7 +129,7 @@ fn grouping_names_keep_wrong_mode_implied_end_and_vue_refusals() {
             ),
         ] {
             let arena = Allocator::default();
-            let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+            let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
             let refusal = owner.html_structure().unwrap_err();
             assert!(
                 matches!(
@@ -152,7 +152,7 @@ fn grouping_names_keep_wrong_mode_implied_end_and_vue_refusals() {
     ] {
         let source = cstr!("<!DOCTYPE html><html><head></head><body>{body}</body></html>");
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert!(matches!(
             (expected, owner.html_structure()),
             ("implied", Err(DocumentHtmlRefusal::ImpliedEnd(_)))

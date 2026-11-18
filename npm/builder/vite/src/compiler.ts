@@ -26,6 +26,33 @@ import type { CompileJsxFn } from "./types.ts";
 const { compileSfc, compileSfcBatchWithResults } = native;
 const compileJsx = (native as { compileJsx: CompileJsxFn }).compileJsx;
 
+const registeredPluginPlans = new WeakMap<object, string>();
+
+/**
+ * Register the `vue.plugins` plan a resolved config projects (#13074) with the
+ * native compiler once, and return the digest compile requests name it by.
+ * The plan is re-verified natively; a config without plugins has none.
+ */
+export function registerPluginPlan(config: unknown): string | undefined {
+  const projected =
+    config !== null && typeof config === "object"
+      ? (config as { __vizePluginPlan?: unknown }).__vizePluginPlan
+      : undefined;
+  if (projected === null || typeof projected !== "object") return undefined;
+  const known = registeredPluginPlans.get(projected);
+  if (known !== undefined) return known;
+  const register = (native as { registerPluginPlan?: (projected: string) => string })
+    .registerPluginPlan;
+  if (typeof register !== "function") {
+    throw new Error(
+      "[plugin/host-unsupported] @vizejs/native: this native binding cannot host vue.plugins; upgrade @vizejs/native",
+    );
+  }
+  const digest = register(JSON.stringify(projected));
+  registeredPluginPlans.set(projected, digest);
+  return digest;
+}
+
 export class VizeSfcCompileError extends Error {
   readonly filePath: string;
   readonly diagnostics: readonly string[];

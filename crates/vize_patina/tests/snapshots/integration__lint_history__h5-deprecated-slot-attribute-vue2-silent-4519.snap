@@ -1,0 +1,35 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-deprecated-slot-attribute-vue2-silent-4519",
+    history: "e088c94a0b0ee197c2fa7b3963b0ab7383fd6f0b",
+    source: "<Foo><span slot=\"header\">header</span></Foo>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-deprecated-slot-attribute",
+    vue_version: Some(
+        "2",
+    ),
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

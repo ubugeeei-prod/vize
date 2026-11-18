@@ -11,7 +11,7 @@ pub use directive::{DirectiveKind, VueDirectives};
 /// Uppercase tags include the core built-ins. The lowercase dynamic component
 /// is Vue syntax only while its header is active; exact or inherited `v-pre`
 /// leaves it literal. Configured native/custom element resolution is separate.
-pub fn is_lint_component(tag: &str, dynamic_component: bool) -> bool {
+pub fn is_component_tag(tag: &str, dynamic_component: bool) -> bool {
     (dynamic_component && tag == "component") || tag.chars().next().is_some_and(char::is_uppercase)
 }
 

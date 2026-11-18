@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-unused-prop-vize-expected-block-comment-3520",
+    history: "6707962c0d57b37109814d206c374c843ac3f389",
+    source: "<script setup lang=\"ts\">\n/* @vize:expected */\ndefineProps<{ msg: string }>();\n</script>\n\n<template><div>hi</div></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-properties",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

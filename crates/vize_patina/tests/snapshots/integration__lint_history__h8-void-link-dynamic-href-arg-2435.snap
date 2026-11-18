@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h8-void-link-dynamic-href-arg-2435",
+    history: "25de9546c221a885dc347ca8409ba420220db16e",
+    source: "<script setup>\nimport { Link } from \"@void/vue\";\n</script>\n<template><Link :[href]=\"url\">Settings</Link></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "ecosystem/void-link-require-href",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "ecosystem/void-link-require-href",
+                severity: Error,
+                message: "Void Vue Link components must declare an `href` target",
+                start: 69,
+                end: 89,
+                help: Some(
+                    "Add `href` or `:href` so Void can type-check the page route and render the correct navigation element.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "ecosystem/void-link-require-href",
+                    severity: Error,
+                    message: "Void Vue Link components must declare an `href` target",
+                    start: 69,
+                    end: 89,
+                    help: Some(
+                        "Add `href` or `:href` so Void can type-check the page route and render the correct navigation element.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

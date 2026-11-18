@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import type { RootEmits } from 'reka-ui'
+
+type GroupEmits = Omit<RootEmits, 'update:modelValue'> & {
+  change: [event: Event]
+}
+
+const emits = defineEmits<GroupEmits>()
+
+function toggle(reaction: string, count: number) {
+  emits('change', reaction, (count - 1))
+}
+</script>

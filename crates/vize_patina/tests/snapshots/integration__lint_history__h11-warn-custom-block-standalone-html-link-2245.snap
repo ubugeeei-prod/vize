@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-warn-custom-block-standalone-html-link-2245",
+    history: "1b95785805fcd21cd310211b4349c03d80526554",
+    source: "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css?family=Roboto\" />\n",
+    filename: ".storybook/preview-head.html",
+    entry: "sfc",
+    rule: "vue/warn-custom-block",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: ".storybook/preview-head.html",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: ".storybook/preview-head.html",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

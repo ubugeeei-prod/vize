@@ -1,5 +1,5 @@
 use super::support::{
-    LOCALES, NeverLookup, collect, complete, error, expected, parser, registered, selected, span,
+    LOCALES, NeverLookup, collect, complete, error, expected, registered, selected, span,
 };
 use vize_l0::{Allocator, cstr};
 use vize_patina::native::{
@@ -14,12 +14,12 @@ fn table_refused(source: &str, depth: usize) {
     let mut first_context = None;
     for _ in 1..depth {
         element = element.children().next().unwrap().into_element().unwrap();
-        let original = element.lint_tag().unwrap();
+        let original = element.tag_facts().unwrap();
         if original.in_table_context() {
             first_context.get_or_insert(original.span());
         }
     }
-    let receipt = element.lint_tag().unwrap();
+    let receipt = element.tag_facts().unwrap();
     assert_eq!(receipt.in_table_context(), true);
     let lint = NativeSyntaxLint::new(&owner).unwrap();
     assert_eq!(
@@ -44,20 +44,13 @@ fn table_refused(source: &str, depth: usize) {
 }
 
 #[test]
-fn original_foster_parenting_control_keeps_both_complete_errors() {
+fn original_table_context_control_keeps_the_complete_error() {
     let source = "<template><table><textarea>{{x}}</textarea></table></template>";
     table_refused(source, 2);
     for locale in LOCALES {
         assert_eq!(
             complete(&registered(source, locale)),
-            expected(vec![
-                parser(
-                    "error",
-                    "Foster parenting moved this element before the nearest open table.",
-                    span(source, "<textarea>")
-                ),
-                error(locale, span(source, "{{x}}")),
-            ])
+            expected(vec![error(locale, span(source, "{{x}}"))])
         );
     }
 }
@@ -81,7 +74,7 @@ fn genuine_pre_recovery_context_is_refused_without_fabricating_children() {
     let owner = selected(&arena, source);
     let parent = owner.children().next().unwrap().into_element().unwrap();
     let element = parent.children().nth(1).unwrap().into_element().unwrap();
-    let receipt = element.lint_tag().unwrap();
+    let receipt = element.tag_facts().unwrap();
     assert_eq!(receipt.in_recovery_context(), true);
     let lint = NativeSyntaxLint::new(&owner).unwrap();
     assert_eq!(

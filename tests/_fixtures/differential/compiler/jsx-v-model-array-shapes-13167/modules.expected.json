@@ -1,0 +1,42 @@
+[
+  {
+    "target": "vdom",
+    "code": "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  const _component_B = _resolveComponent(\"B\")\n  \n  return (_openBlock(), _createBlock(_component_B))\n})(undefined, [])\n})();\nconst C = () => (() => {\nreturn ((_ctx, _cache) => {\n  const _component_B = _resolveComponent(\"B\")\n  \n  return (_openBlock(), _createBlock(_component_B))\n})(undefined, [])\n})();\n",
+    "errors": [
+      "v-model array element `\"y\"` is not used; the array form is `[value, argument?, modifiers?]`.",
+      "v-model modifier `1` must be a string literal."
+    ],
+    "warnings": [],
+    "scopedStyles": []
+  },
+  {
+    "target": "vapor",
+    "code": "",
+    "errors": [
+      "v-model array element `\"y\"` is not used; the array form is `[value, argument?, modifiers?]`.",
+      "v-model modifier `1` must be a string literal."
+    ],
+    "warnings": [],
+    "scopedStyles": []
+  },
+  {
+    "target": "vdom-ssr",
+    "code": "",
+    "errors": [
+      "v-model array element `\"y\"` is not used; the array form is `[value, argument?, modifiers?]`.",
+      "v-model modifier `1` must be a string literal."
+    ],
+    "warnings": [],
+    "scopedStyles": []
+  },
+  {
+    "target": "vapor-ssr",
+    "code": "",
+    "errors": [
+      "v-model array element `\"y\"` is not used; the array form is `[value, argument?, modifiers?]`.",
+      "v-model modifier `1` must be a string literal."
+    ],
+    "warnings": [],
+    "scopedStyles": []
+  }
+]

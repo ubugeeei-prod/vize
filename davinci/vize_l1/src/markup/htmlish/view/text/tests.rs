@@ -1,4 +1,4 @@
-use super::{NativeRootTextError as Kind, NativeRootTextProfile};
+use super::{RootTextError as Kind, RootTextProfile};
 use crate::{
     container::{Vue, vue::DescriptorOptions},
     markup::{NativeTemplateComponent, SurfaceChild, SurfaceParseOptions},
@@ -48,7 +48,7 @@ fn original_unicode_mixed_text_changes_only_derived_value_and_retains_full_span(
     let receipt = owner
         .prepare_condensed_root_text(child)
         .map_err(|_| "original preparation")?;
-    assert_eq!(receipt.profile(), NativeRootTextProfile::Vue3Condense);
+    assert_eq!(receipt.profile(), RootTextProfile::Vue3Condense);
     assert_eq!(receipt.content(), Some(" 雪🌸 A B "));
     assert_eq!(receipt.raw_text(), raw);
     assert!(core::ptr::eq(receipt.raw_text(), raw));

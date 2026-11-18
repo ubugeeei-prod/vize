@@ -200,8 +200,9 @@ pub(super) fn addition_has_string_and_non_string(binary: &BinaryExpression<'_>) 
     has_string && has_other
 }
 
+/// ESTree keeps TypeScript wrappers, so only parentheses are transparent.
 pub(super) fn is_negated(expression: &Expression<'_>) -> bool {
-    match expression.get_inner_expression() {
+    match expression.without_parentheses() {
         Expression::UnaryExpression(unary) => unary.operator == UnaryOperator::LogicalNot,
         Expression::BinaryExpression(binary) => matches!(
             binary.operator,

@@ -1,4 +1,4 @@
-use super::{NativeComponent, NativeElement};
+use super::{ElementView, NativeComponent};
 use crate::markup::{Element, SurfaceChild};
 
 #[derive(Clone, Copy)]
@@ -8,13 +8,13 @@ pub(super) enum Parent<'o, 'a> {
 }
 
 /// Original direct-child iteration. No arbitrary membership constructor.
-pub struct NativeChildren<'o, 'a> {
+pub struct ChildrenView<'o, 'a> {
     component: &'o NativeComponent<'a>,
     parent: Parent<'o, 'a>,
     children: core::iter::Enumerate<core::slice::Iter<'o, SurfaceChild<'a>>>,
 }
 
-impl<'o, 'a> NativeChildren<'o, 'a> {
+impl<'o, 'a> ChildrenView<'o, 'a> {
     pub(super) fn root(component: &'o NativeComponent<'a>) -> Self {
         Self {
             component,
@@ -31,11 +31,11 @@ impl<'o, 'a> NativeChildren<'o, 'a> {
     }
 }
 
-impl<'o, 'a> Iterator for NativeChildren<'o, 'a> {
-    type Item = NativeChild<'o, 'a>;
+impl<'o, 'a> Iterator for ChildrenView<'o, 'a> {
+    type Item = ChildView<'o, 'a>;
     fn next(&mut self) -> Option<Self::Item> {
         let (ordinal, child) = self.children.next()?;
-        Some(NativeChild {
+        Some(ChildView {
             component: self.component,
             parent: self.parent,
             ordinal,
@@ -46,21 +46,21 @@ impl<'o, 'a> Iterator for NativeChildren<'o, 'a> {
         self.children.size_hint()
     }
 }
-impl ExactSizeIterator for NativeChildren<'_, '_> {}
+impl ExactSizeIterator for ChildrenView<'_, '_> {}
 
 /// Actual child, direct parent and ordinal; not a whole-body certificate.
-pub struct NativeChild<'o, 'a> {
+pub struct ChildView<'o, 'a> {
     component: &'o NativeComponent<'a>,
     parent: Parent<'o, 'a>,
     ordinal: usize,
     child: &'o SurfaceChild<'a>,
 }
-impl<'o, 'a> NativeChild<'o, 'a> {
+impl<'o, 'a> ChildView<'o, 'a> {
     /// Borrow this exact original child before its consuming body operation.
     /// No new iteration, parent selection or membership construction occurs.
     #[must_use]
-    pub fn reborrow(&self) -> NativeChild<'_, 'a> {
-        NativeChild {
+    pub fn reborrow(&self) -> ChildView<'_, 'a> {
+        ChildView {
             component: self.component,
             parent: self.parent,
             ordinal: self.ordinal,
@@ -88,11 +88,11 @@ impl<'o, 'a> NativeChild<'o, 'a> {
     }
     /// Consume the child projection without losing original element membership.
     #[must_use]
-    pub fn into_element(self) -> Option<NativeElement<'o, 'a>> {
+    pub fn into_element(self) -> Option<ElementView<'o, 'a>> {
         let SurfaceChild::Element(element) = self.child else {
             return None;
         };
-        Some(NativeElement::from_child(
+        Some(ElementView::from_child(
             self.component,
             self.parent,
             self.ordinal,

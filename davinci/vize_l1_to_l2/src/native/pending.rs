@@ -5,7 +5,7 @@ use super::construction::Diagnostic as DiagnosticFactory;
 use super::{NativeComponent, NativeEmbed, NativeHole, NativeProduced, RejectedNativeComponent};
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::diag::Diagnostic;
-use vize_l1::embed::{Lang, syntax::NativeSyntax};
+use vize_l1::embed::{Lang, syntax::EmbedSyntax};
 use vize_l2::artifact::ComponentFactory;
 
 mod vue;
@@ -18,7 +18,7 @@ pub(crate) struct NativeObservations<'a> {
     pub(super) holes: Vec<NativeHole>,
     pub(super) diagnostics: Vec<Diagnostic>,
     pub(super) embeds: Vec<NativeEmbed<'a>>,
-    pub(super) rejected_syntax: Vec<NativeSyntax<'a>>,
+    pub(super) rejected_syntax: Vec<EmbedSyntax<'a>>,
 }
 
 impl core::fmt::Debug for NativeObservations<'_> {
@@ -54,7 +54,7 @@ impl<'a> NativeObservations<'a> {
         &self.embeds
     }
 
-    pub(crate) fn rejected_syntax(&self) -> &[NativeSyntax<'a>] {
+    pub(crate) fn rejected_syntax(&self) -> &[EmbedSyntax<'a>] {
         &self.rejected_syntax
     }
 }

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-unused-components-computed-key-registration-4233",
+    history: "863a2d71b3d7b9cde17f87ac445cc7f3288e81c8",
+    source: "<template>\n  <div class=\"el-result\">\n    <div class=\"el-result__icon\">\n      <component :is=\"iconElement\" :class=\"iconElement\" />\n    </div>\n  </div>\n</template>\n\n<script>\nimport IconSuccess from './icon-success.vue';\nimport IconError from './icon-error.vue';\n\nconst IconMap = { success: 'icon-success', error: 'icon-error' };\n\nexport default {\n  name: 'ElResult',\n  components: {\n    [IconSuccess.name]: IconSuccess,\n    [IconError.name]: IconError\n  },\n  props: { icon: { type: String, default: 'info' } },\n  computed: {\n    iconElement() {\n      return IconMap[this.icon] || 'icon-info';\n    }\n  }\n};\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-components",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

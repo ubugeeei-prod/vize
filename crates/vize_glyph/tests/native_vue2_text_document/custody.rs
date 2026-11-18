@@ -2,7 +2,7 @@
 
 use super::*;
 use vize_l0::{SourceRoot, Span};
-use vize_l1::embed::{Grammar, Lang, Shape, syntax::NativeSyntax};
+use vize_l1::embed::{Grammar, Lang, Shape, syntax::EmbedSyntax};
 use vize_l1::markup::SurfaceChild;
 
 #[derive(Debug, PartialEq)]
@@ -25,7 +25,7 @@ struct Facts {
     comments: std::vec::Vec<(Span, *const u8, usize)>,
     diagnostics: std::vec::Vec<(*const u8, usize)>,
 }
-fn facts(original: &NativeSyntax<'_>) -> Facts {
+fn facts(original: &EmbedSyntax<'_>) -> Facts {
     let view = original.borrow_expression().unwrap();
     let source = view.source();
     Facts {

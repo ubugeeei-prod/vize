@@ -9,7 +9,7 @@ use vize_l1::{
 use vize_patina::native::{NativeLintRefusal, NativeSyntaxLint};
 
 #[test]
-fn authored_table_context_refuses_and_retains_complete_original_foster_output() {
+fn authored_table_context_refuses_and_retains_the_registered_warning() {
     let opening = "<center title='x'>";
     let source = cstr!("<template><table>{opening}</center></table></template>");
     let arena = Allocator::default();
@@ -18,7 +18,7 @@ fn authored_table_context_refuses_and_retains_complete_original_foster_output() 
     let lint = NativeSyntaxLint::new(&owner).unwrap();
     let table = owner.children().next().unwrap().into_element().unwrap();
     let element = table.children().next().unwrap().into_element().unwrap();
-    let receipt = element.lint_tag().unwrap();
+    let receipt = element.tag_facts().unwrap();
     assert!(receipt.in_table_context());
     assert_eq!(
         lint.deprecated_element(&element, &NeverLookup).err(),
@@ -29,14 +29,7 @@ fn authored_table_context_refuses_and_retains_complete_original_foster_output() 
     for locale in LOCALES {
         assert_eq!(
             complete(&registered(&source, locale)),
-            expected(vec![
-                parser(
-                    "error",
-                    "Foster parenting moved this element before the nearest open table.",
-                    span(&source, opening)
-                ),
-                warning(locale, span(&source, opening), "center"),
-            ])
+            expected(vec![warning(locale, span(&source, opening), "center")])
         );
     }
     assert_eq!(cstr!("{:?}", owner.component().carrier()), before);
@@ -56,7 +49,7 @@ fn valid_cells_keep_conservative_table_refusal_and_the_original_product_warning(
     assert_eq!(
         lint.deprecated_element(&element, &NeverLookup).err(),
         Some(NativeLintRefusal::TableContext {
-            span: element.lint_tag().unwrap().span()
+            span: element.tag_facts().unwrap().span()
         })
     );
     for locale in LOCALES {
@@ -76,7 +69,7 @@ fn actual_pre_recovery_context_refuses_without_granting_whole_file_completion() 
     // `<div>` closes the `<p>`, but its header was lexed under `v-pre`.
     let element = owner.children().nth(1).unwrap().into_element().unwrap();
     assert_eq!(element.surface().tag(), "div");
-    let receipt = element.lint_tag().unwrap();
+    let receipt = element.tag_facts().unwrap();
     assert!(receipt.header_is_literal());
     assert!(receipt.in_recovery_context());
     assert_eq!(

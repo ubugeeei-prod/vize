@@ -5,7 +5,7 @@ use oxc_parser::{EmbeddingGoal, EmbeddingHole, EmbeddingInput, EmbeddingInputErr
 use vize_l0::{Allocator, expression_guard::expression_is_safe_to_parse};
 
 use super::{
-    Embed, EmbedHole, NativeSyntax, ProgramOptions, Shape, admission, coordinates::Coordinates,
+    Embed, EmbedHole, EmbedSyntax, ProgramOptions, Shape, admission, coordinates::Coordinates,
 };
 
 pub(super) const fn hole(hole: EmbeddingHole) -> EmbedHole {
@@ -19,7 +19,7 @@ pub(super) const fn hole(hole: EmbeddingHole) -> EmbedHole {
     }
 }
 
-pub(super) fn parse<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> NativeSyntax<'a> {
+pub(super) fn parse<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> EmbedSyntax<'a> {
     let source_type = ProgramOptions::module(embed.grammar.lang).source_type();
     let goal = match embed.grammar.shape {
         Shape::Expr => Some(EmbeddingGoal::Expr),
@@ -27,7 +27,7 @@ pub(super) fn parse<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> NativeSyn
         Shape::SlotParams => Some(EmbeddingGoal::Parameters),
         _ => None,
     };
-    let mut result = NativeSyntax {
+    let mut result = EmbedSyntax {
         grammar: embed.grammar,
         source_type,
         coordinates: Coordinates {

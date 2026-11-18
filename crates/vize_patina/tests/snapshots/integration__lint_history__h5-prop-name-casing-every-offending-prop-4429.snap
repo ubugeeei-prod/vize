@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-prop-name-casing-every-offending-prop-4429",
+    history: "80bbc1007488009374a829428df4c10064a5f56e",
+    source: "<script setup>\ndefineProps({ my_prop: String, ok: Number, 'other-prop': Boolean })\n</script>\n\n<template><p /></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/prop-name-casing",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/prop-name-casing",
+                severity: Warning,
+                message: "Prop \"my_prop\" is not in camelCase",
+                start: 29,
+                end: 44,
+                help: Some(
+                    "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/prop-name-casing",
+                severity: Warning,
+                message: "Prop \"other-prop\" is not in camelCase",
+                start: 58,
+                end: 79,
+                help: Some(
+                    "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 2,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/prop-name-casing",
+                    severity: Warning,
+                    message: "Prop \"my_prop\" is not in camelCase",
+                    start: 29,
+                    end: 44,
+                    help: Some(
+                        "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/prop-name-casing",
+                    severity: Warning,
+                    message: "Prop \"other-prop\" is not in camelCase",
+                    start: 58,
+                    end: 79,
+                    help: Some(
+                        "Declare props in camelCase; a template may still write them in kebab-case:\n```vue\n<!-- Bad -->\ndefineProps({ 'my-prop': String })\n\n<!-- Good -->\ndefineProps({ myProp: String })\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 2,
+        },
+    ),
+}

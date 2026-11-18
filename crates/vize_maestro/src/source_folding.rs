@@ -7,7 +7,7 @@
 use oxc_ast::ast::CommentKind;
 use tower_lsp::lsp_types::{FoldingRange, FoldingRangeKind};
 use vize_l0::line_index::LineBreaks;
-use vize_l1::embed::syntax::NativeSyntax;
+use vize_l1::embed::syntax::EmbedSyntax;
 
 /// A refusal preserves the caller's original observation for diagnostics.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -25,7 +25,7 @@ pub enum SourceFoldingRefusal {
 /// Ranges hide the comment's interior and retain its closing delimiter line;
 /// adjacent-line and single-line comments therefore produce no range.
 pub fn program_comment_ranges(
-    syntax: &NativeSyntax<'_>,
+    syntax: &EmbedSyntax<'_>,
 ) -> Result<Vec<FoldingRange>, SourceFoldingRefusal> {
     if syntax.admitted_program().is_none() {
         return Err(SourceFoldingRefusal::UnadmittedProgram);

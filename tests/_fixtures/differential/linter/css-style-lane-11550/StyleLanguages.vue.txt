@@ -1,0 +1,37 @@
+<template>
+  <div id="main" class="card"><slot /></div>
+</template>
+
+<style>
+/* Deliberate change (#13222): a function before the flag is consumed whole. */
+.card { opacity: min(10%, 90%)!important; }
+#main { color: red; }
+.quoted { content: "!important"; }
+</style>
+
+<style lang="scss">
+// Deliberate change (#13222): preprocessor blocks are linted as written.
+$gap: 8px !default;
+.card {
+  margin: $gap !important; // a trailing !important comment is not a flag
+  #title { color: red; }
+  &#{$suffix} { color: blue; }
+}
+</style>
+
+<style lang="less">
+@gap: 4px;
+#ns { .mixin() { color: red; } }
+.card { .mixin() !important; padding: @gap !important; }
+</style>
+
+<style lang="sass">
+#panel
+  color: red !important
+  // margin: 0 !important
+</style>
+
+<style lang="stylus">
+.card
+  color red !important
+</style>

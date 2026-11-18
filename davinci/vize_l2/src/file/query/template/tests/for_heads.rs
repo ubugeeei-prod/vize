@@ -121,7 +121,7 @@ fn original_for_unicode_sites_and_entity_refusals_keep_actual_source_namespaces(
     };
     assert_eq!(
         original.kind,
-        vize_l1::embed::syntax::NativeForRefusal::EntityOutput
+        vize_l1::embed::syntax::ForRefusal::EntityOutput
     );
     assert_eq!(original.operand().raw_value(), "caf&#233; in it&#101;ms");
     assert!(original.operand().syntax().source().decode_map().is_some());

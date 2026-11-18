@@ -6,7 +6,7 @@ use vize_l0::Span;
 use vize_l1::{
     container::vue::{AdmittedDescriptor, DescriptorObservation},
     css::{EmptyClassStyle, StyleIssue, StyleSyntax},
-    markup::{NativeTemplateGrammar, SurfaceParseOptions},
+    markup::{SurfaceParseOptions, TemplateGrammar},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -155,7 +155,7 @@ impl<'arena> NativeTemplateFile<'arena> {
             .ok_or_else(|| reject(Kind::Template))?;
         let block = selected.component().block();
         if !selected.has_styles()
-            || selected.grammar() != NativeTemplateGrammar::JavaScriptModule
+            || selected.grammar() != TemplateGrammar::JavaScriptModule
             || selected.template_index() != original_template.container_index()
             || block.span() != original_template.block().span()
             || !core::ptr::eq(block.source(), original_template.block().source())

@@ -3,6 +3,7 @@
 use super::shared::static_argument;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode};
 
@@ -31,9 +32,21 @@ impl Rule for NoRestrictedVBind {
         if directive.name == "bind"
             && static_argument(directive).is_some_and(|argument| argument.starts_with("v-"))
         {
-            ctx.warn_with_help(
+            // eslint-plugin-vue reports the directive key (`:v-bind`), not the
+            // whole attribute.
+            let start = directive.loc.span.start;
+            let end = directive.loc.span.end;
+            let key_end = ctx
+                .source
+                .get(start as usize..end as usize)
+                .and_then(|attribute| {
+                    attribute
+                        .find(|character: char| character == '=' || character.is_ascii_whitespace())
+                })
+                .map_or(end, |length| start + length as u32);
+            ctx.warn_at_with_help(
                 "Using `:v-*` is not allowed",
-                &directive.loc,
+                ByteRange::new(start, key_end),
                 "Remove `:` and use the attribute as a directive",
             );
         }

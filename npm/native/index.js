@@ -103,6 +103,7 @@ module.exports.analyzeSfc = nativeBinding.analyzeSfc;
 module.exports.parseSfc = nativeBinding.parseSfc;
 module.exports.parseTemplate = nativeBinding.parseTemplate;
 module.exports.printCssAst = nativeBinding.printCssAst;
+module.exports.registerPluginPlan = nativeBinding.registerPluginPlan;
 module.exports.resolveDesignTokenReferences = nativeBinding.resolveDesignTokenReferences;
 module.exports.resolveViteAliasRequest = nativeBinding.resolveViteAliasRequest;
 module.exports.resolveViteCssImports = nativeBinding.resolveViteCssImports;

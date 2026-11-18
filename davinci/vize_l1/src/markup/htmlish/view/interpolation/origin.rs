@@ -1,6 +1,4 @@
-use super::{
-    NativeChild, NativeInterpolationError, NativeTemplateComponent, NativeTemplateGrammar,
-};
+use super::{ChildView, InterpolationError, NativeTemplateComponent, TemplateGrammar};
 use crate::markup::{Element, Interpolation, SurfaceChild};
 use vize_l0::{SourceBlock, Span};
 
@@ -9,7 +7,7 @@ use vize_l0::{SourceBlock, Span};
 pub(super) struct Origin<'a> {
     pub(super) block: SourceBlock<'a>,
     template_index: usize,
-    grammar: NativeTemplateGrammar,
+    grammar: TemplateGrammar,
     interpolation: *const Interpolation<'a>,
     parent: Option<*const Element<'a>>,
     ordinal: usize,
@@ -20,9 +18,9 @@ pub(super) struct Origin<'a> {
 impl<'a> Origin<'a> {
     pub(super) fn from_child(
         selected: &NativeTemplateComponent<'a>,
-        child: &NativeChild<'_, 'a>,
+        child: &ChildView<'_, 'a>,
         interpolation: &Interpolation<'a>,
-    ) -> Result<Self, NativeInterpolationError> {
+    ) -> Result<Self, InterpolationError> {
         if interpolation.open.is_missing()
             || interpolation.content.is_missing()
             || interpolation.close.is_missing()
@@ -30,11 +28,11 @@ impl<'a> Origin<'a> {
             || interpolation.close.text != "}}"
             || interpolation.is_raw_html()
         {
-            return Err(NativeInterpolationError::IncompleteInterpolation);
+            return Err(InterpolationError::IncompleteInterpolation);
         }
         let block = selected.component().block();
         let span = |text| {
-            block.span_of(text).ok_or(NativeInterpolationError::Source(
+            block.span_of(text).ok_or(InterpolationError::Source(
                 crate::embed::SourceError::InvalidAuthoredSpan,
             ))
         };
@@ -42,7 +40,7 @@ impl<'a> Origin<'a> {
         let content_span = span(interpolation.content.text)?;
         let close = span(interpolation.close.text)?;
         if open.end != content_span.start || content_span.end != close.start {
-            return Err(NativeInterpolationError::IncompleteInterpolation);
+            return Err(InterpolationError::IncompleteInterpolation);
         }
         Ok(Self {
             block,
@@ -59,7 +57,7 @@ impl<'a> Origin<'a> {
     pub(super) fn matches(
         &self,
         selected: &NativeTemplateComponent<'a>,
-        child: &NativeChild<'_, 'a>,
+        child: &ChildView<'_, 'a>,
     ) -> bool {
         let SurfaceChild::Interpolation(interpolation) = child.surface() else {
             return false;

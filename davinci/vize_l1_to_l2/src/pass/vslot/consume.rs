@@ -287,6 +287,11 @@ fn visit<'a>(
                 },
             }
         }
+        Op::And(and) => {
+            // Either the region or the falsy value renders: default content.
+            let _ = region(walk, channels, &and.region.ops);
+            implicit_default_content(id, and.span)
+        }
         Op::For(for_op) => {
             let mut views = region(walk, channels, &for_op.region.ops);
             // A host loop's `@empty` region follows its body in page order.

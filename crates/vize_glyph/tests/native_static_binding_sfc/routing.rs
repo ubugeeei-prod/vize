@@ -8,7 +8,7 @@ use vize_glyph::native_doc::{
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, Span};
 use vize_l1::container::vue::{DescriptorIssue, DescriptorIssueCode, ScriptRole};
-use vize_l1::markup::NativeInterpolationError;
+use vize_l1::markup::InterpolationError;
 
 #[test]
 fn v_pre_and_bare_template_opaque_routes_keep_original_values_without_minting_bindings() {
@@ -91,7 +91,7 @@ fn recovered_original_headers_preserve_valued_and_interpolation_refusal_order_ac
         let refusal = NativeSfcRefusal::Template(ObservedNativeTemplateRefusal::Interpolation {
             offset: 10,
             index: 0,
-            kind: NativeInterpolationError::RecoveredComponent,
+            kind: InterpolationError::RecoveredComponent,
         });
         assert_eq!(owner.source(), source);
         assert_eq!(owner.options(), policy);
@@ -104,7 +104,7 @@ fn recovered_original_headers_preserve_valued_and_interpolation_refusal_order_ac
         assert!(owner.binding_failure().is_none());
         assert!(owner.attribute_failure().is_none());
         let failure = owner.interpolation_failure().unwrap();
-        assert_eq!(failure.kind(), NativeInterpolationError::RecoveredComponent);
+        assert_eq!(failure.kind(), InterpolationError::RecoveredComponent);
         assert!(failure.syntax().is_none());
     }
 }

@@ -3,7 +3,8 @@
 // (JSX, TSX, TSRX, SFC, Pug) in a module path, a file name or a Rust identifier,
 // and they have no `lang/` module. L1 follows the target layout: one sibling per
 // markup grammar and per style language, and one Vue owner. No level module is
-// named by migration status (`native`: `status:` entries), L1 code
+// named by migration status (`native`: `status:` modules, `ident:` files declaring a
+// type or function so named), L1 code
 // names no product (`lint:` entries), and every htmlish ledger row has its
 // fixtures (`fixture:` entries).
 // Present differences are listed in docs/davinci/plan/input-placement-owed.json,
@@ -150,6 +151,24 @@ function statusOffenders(root: string): string[] {
   return [...found];
 }
 
+/** `ident:<file>` for non-test level code declaring a type or function named `native`. */
+function statusIdentifierOffenders(root: string): string[] {
+  const declaration =
+    /\b(?:struct|enum|union|trait|type|fn|const|static)\s+([A-Za-z_][A-Za-z0-9_]*)/gu;
+  return levelCrates
+    .flatMap((crate) => rustFiles(path.join(root, crate, "src")))
+    .map((file) => path.relative(repoRoot, file).split(path.sep).join("/"))
+    .filter((relative) => !isTestFile(relative))
+    .filter((relative) =>
+      [
+        ...maskRustSource(fs.readFileSync(path.join(repoRoot, relative), "utf8")).matchAll(
+          declaration,
+        ),
+      ].some((match) => identifierWords(match[1]).includes("native")),
+    )
+    .map((relative) => "ident:" + relative);
+}
+
 /** `lint:<file>` for L1 code that names a product (lint). */
 function productOffenders(root: string): string[] {
   return rustFiles(path.join(root, "vize_l1", "src"))
@@ -186,6 +205,7 @@ export function offenders(): string[] {
     ...neutralOffenders(root),
     ...l1Offenders(root),
     ...statusOffenders(root),
+    ...statusIdentifierOffenders(root),
     ...productOffenders(root),
     ...fixtureOffenders(),
   ].sort();

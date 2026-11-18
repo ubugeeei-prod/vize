@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-v-slot-style-component-bare-v-slot-4429",
+    history: "80bbc1007488009374a829428df4c10064a5f56e",
+    source: "<MyComponent v-slot=\"{ item }\"><p /></MyComponent>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/v-slot-style",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

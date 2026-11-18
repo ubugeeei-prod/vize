@@ -155,7 +155,7 @@ pub(super) fn resolve_specifier(current_uri: &Url, specifier: &str) -> Option<Pa
     resolve_specifier_with(current_uri, specifier, &mut PackageRouteResolver::default())
 }
 
-fn resolve_specifier_with(
+pub(super) fn resolve_specifier_with(
     current_uri: &Url,
     specifier: &str,
     package_routes: &mut PackageRouteResolver,

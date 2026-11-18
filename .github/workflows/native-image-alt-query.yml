@@ -38,7 +38,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version-file: "package.json", package-manager-cache: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
-        with: { toolchain: "1.100.0" }
+        with: { toolchain: "1.100.0", components: clippy }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
@@ -59,11 +59,17 @@ jobs:
           git worktree add --detach "$baseline" "$BASE_SHA"
           observer=crates/vize_patina/examples/native_image_alt_original.rs
           support=crates/vize_patina/examples/image_alt_measurement/mod.rs
-          mkdir -p "$baseline/$(dirname "$support")"
-          cp "$observer" "$baseline/$observer"
-          cp "$support" "$baseline/$support"
-          cmp "$observer" "$baseline/$observer"
-          cmp "$support" "$baseline/$support"
+          # The base builds its own observer against its own Patina, so a head
+          # that renames an API the observer uses cannot break the base build.
+          # Only a base that predates the observer borrows the head's copy.
+          if [[ -f "$baseline/$observer" && -f "$baseline/$support" ]]; then
+            echo base > "$capture/base-observer-origin.txt"
+          else
+            mkdir -p "$baseline/$(dirname "$support")"
+            cp "$observer" "$baseline/$observer"
+            cp "$support" "$baseline/$support"
+            echo head > "$capture/base-observer-origin.txt"
+          fi
           git -C "$baseline" diff --exit-code -- crates/vize_patina/src Cargo.lock
           git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- Cargo.lock
           (cd "$baseline" && rustc -Vv) > "$capture/base-rustc.txt"
@@ -141,6 +147,7 @@ jobs:
           });
           const receipt = { base: process.env.BASE_SHA, head: process.env.HEAD_SHA,
             originalPacketEquality: true, baseCaptureSha256: hash('base.json'),
+            baseObserverOrigin: readFileSync(`${directory}/base-observer-origin.txt`, 'utf8').trim(),
             headCaptureSha256: hash('head.json'), canonicalCaptureSha256: hash('canonical.json'),
             originalOwner: head.representation, canonicalOwners: canonical.map(row => row.representation),
             isolatedCompiledTargets: targets, compiledLibraries: compiled,

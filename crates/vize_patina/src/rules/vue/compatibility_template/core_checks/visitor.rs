@@ -197,23 +197,22 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
         {
             self.report(key.span());
         }
+        // eslint-plugin-vue reports the `console` object of the member.
         if self.kind == CoreKind::NoConsole
-            && matches!(member.object.get_inner_expression(),
-                Expression::Identifier(identifier) if identifier.name == "console")
+            && let Expression::Identifier(identifier) = member.object.get_inner_expression()
+            && identifier.name == "console"
         {
-            self.report(member.span);
+            self.report(identifier.span);
         }
         walk::walk_computed_member_expression(self, member);
     }
 
     fn visit_static_member_expression(&mut self, member: &StaticMemberExpression<'a>) {
         if self.kind == CoreKind::NoConsole
-            && matches!(
-                member.object.get_inner_expression(),
-                Expression::Identifier(identifier) if identifier.name == "console"
-            )
+            && let Expression::Identifier(identifier) = member.object.get_inner_expression()
+            && identifier.name == "console"
         {
-            self.report(member.span);
+            self.report(identifier.span);
         }
         walk::walk_static_member_expression(self, member);
     }
@@ -299,8 +298,9 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
             CoreKind::NoConstantCondition if is_constant(&conditional.test, true) => {
                 self.report(conditional.test.without_parentheses().span());
             }
+            // ESLint's core rule reports the whole conditional or `if` node.
             CoreKind::NoNegatedCondition if is_negated(&conditional.test) => {
-                self.report(conditional.test.span());
+                self.report(conditional.span);
             }
             _ => {}
         }
@@ -319,7 +319,7 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
                     .is_some_and(|alternate| !matches!(alternate, Statement::IfStatement(_)))
                     && is_negated(&statement.test) =>
             {
-                self.report(statement.test.span());
+                self.report(statement.span);
             }
             _ => {}
         }

@@ -137,11 +137,13 @@ fn conditionals_over_nested_regions_fold_them_into_branches() {
 \t\t{a ? (b ? <i /> : null) : <b>{n}</b>}
 \t\t{n > 0 && <>x</>}
 \t\t{n && <s />}
+\t\t{f(<u />)}
 \t</p>
 }
 ";
     let regions = dumps(source);
-    // `{n && <s />}` may render `0`: it stays a value, its region standalone.
+    // `{n && <s />}` may render `0`: a `ui.and`. `{f(<u />)}` stays a value,
+    // its region standalone.
     let [
         (RegionSite::FunctionBody, outer),
         (RegionSite::Expression, value),
@@ -152,10 +154,10 @@ fn conditionals_over_nested_regions_fold_them_into_branches() {
     assert_eq!(
         outer,
         r#"[l2-dump-v2]
-ops=9
+ops=11
 
 [l2-dump-v2.ops]
-ui.element p @28:112
+ui.element p @28:125
   ui.if @34:71
     branch js("a" @35:36) @35:57
       ui.if @39:57
@@ -167,7 +169,9 @@ ui.element p @28:112
   ui.if @74:91
     branch js("n > 0" @75:80) @75:90
       ui.text "x" @86:87
-  ui.jsx-child js("n && <s />" @95:105) @94:106
+  ui.and js("n" @95:96) @94:106
+    ui.element s @100:105
+  ui.jsx-child js("f(<u />)" @110:118) @109:119
 
 "#
     );
@@ -177,7 +181,7 @@ ui.element p @28:112
 ops=1
 
 [l2-dump-v2.ops]
-ui.element s @100:105
+ui.element u @112:117
 
 "#
     );

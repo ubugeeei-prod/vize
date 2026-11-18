@@ -7,8 +7,8 @@ expression: result.diagnostics
         rule_name: "vapor/prefer-static-class",
         severity: Warning,
         message: "Prefer static class attribute over dynamic :class binding for constant values",
-        start: 6,
-        end: 28,
+        start: 13,
+        end: 27,
         help: None,
         labels: [],
         fix: Some(

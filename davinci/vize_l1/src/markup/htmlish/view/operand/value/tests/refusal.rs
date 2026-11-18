@@ -1,4 +1,4 @@
-use super::{Allocator, NativeAttributeOperandError, selected};
+use super::{Allocator, AttributeOperandError, selected};
 
 #[test]
 fn sibling_element_ordinal_equal_source_and_foreign_selection_cannot_join() {
@@ -34,10 +34,7 @@ fn sibling_element_ordinal_equal_source_and_foreign_selection_cannot_join() {
         .observe_attribute_value(other_attribute)
         .err()
         .unwrap();
-    assert_eq!(
-        failure.kind(),
-        NativeAttributeOperandError::ForeignComponent
-    );
+    assert_eq!(failure.kind(), AttributeOperandError::ForeignComponent);
     assert_eq!(failure.raw_name(), "title");
     assert_eq!(failure.raw_value(), Some("same&amp;"));
     assert_eq!(failure.value_span().unwrap().slice(source), "same&amp;");
@@ -50,27 +47,27 @@ fn recovered_verbatim_boolean_and_missing_values_keep_exact_origin_failure() {
     for (source, expected) in [
         (
             "<template><div v-pre title='a&amp;'/></template>",
-            NativeAttributeOperandError::Verbatim,
+            AttributeOperandError::Verbatim,
         ),
         (
             "<template><div title='a&amp;'></template>",
-            NativeAttributeOperandError::RecoveredComponent,
+            AttributeOperandError::RecoveredComponent,
         ),
         (
             "<template><div title/></template>",
-            NativeAttributeOperandError::IncompleteValue,
+            AttributeOperandError::IncompleteValue,
         ),
         (
             "<template><div title= /></template>",
-            NativeAttributeOperandError::RecoveredComponent,
+            AttributeOperandError::RecoveredComponent,
         ),
         (
             "<template><div title= ></div></template>",
-            NativeAttributeOperandError::RecoveredComponent,
+            AttributeOperandError::RecoveredComponent,
         ),
         (
             "<template><div title='a&amp;</template>",
-            NativeAttributeOperandError::RecoveredComponent,
+            AttributeOperandError::RecoveredComponent,
         ),
     ] {
         let selected = selected(&arena, source);

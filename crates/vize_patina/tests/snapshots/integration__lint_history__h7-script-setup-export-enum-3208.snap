@@ -1,0 +1,71 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-script-setup-export-enum-3208",
+    history: "e8b173840bda57cafb27efc5fe56f17893c29bce",
+    source: "<script setup lang=\"ts\">\ndefineProps<{ count: number }>()\nexport enum Color { Red, Green }\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "script/no-export-in-script-setup",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/no-export-in-script-setup",
+                severity: Error,
+                message: "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                start: 58,
+                end: 90,
+                help: Some(
+                    "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                ),
+                labels: [
+                    Label {
+                        message: "named export",
+                        start: 58,
+                        end: 90,
+                    },
+                ],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/no-export-in-script-setup",
+                    severity: Error,
+                    message: "Unexpected `export` in `<script setup>`: it is compiled into setup() and the export is meaningless",
+                    start: 58,
+                    end: 90,
+                    help: Some(
+                        "Remove the `export`. `<script setup>` exposes top-level bindings to the template automatically; use `defineExpose()` to expose bindings to a parent.",
+                    ),
+                    labels: [
+                        Label {
+                            message: "named export",
+                            start: 58,
+                            end: 90,
+                        },
+                    ],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

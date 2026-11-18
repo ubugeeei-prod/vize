@@ -1,0 +1,107 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h8-dotted-data-table-slots-duplicate-2541",
+    history: "193f4dfa825786bb989d276dc9c9b3736e565d64",
+    source: "<v-data-table>\n            <template v-slot:item.memo=\"{ item }\">{{ item.memo }}</template>\n            <template v-slot:item.memo=\"{ item }\">{{ item.memo }}</template>\n        </v-data-table>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-slot",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 3,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/valid-v-slot",
+                severity: Error,
+                message: "v-slot can only be used on components or template elements",
+                start: 114,
+                end: 141,
+                help: Some(
+                    "Use v-slot on a component or a template element inside a component",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/valid-v-slot",
+                severity: Error,
+                message: "v-slot with a slot argument does not support modifiers by default",
+                start: 49,
+                end: 53,
+                help: Some(
+                    "Remove the modifiers or enable allowModifiers",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/valid-v-slot",
+                severity: Error,
+                message: "v-slot with a slot argument does not support modifiers by default",
+                start: 126,
+                end: 130,
+                help: Some(
+                    "Remove the modifiers or enable allowModifiers",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 3,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/valid-v-slot",
+                    severity: Error,
+                    message: "v-slot can only be used on components or template elements",
+                    start: 114,
+                    end: 141,
+                    help: Some(
+                        "Use v-slot on a component or a template element inside a component",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/valid-v-slot",
+                    severity: Error,
+                    message: "v-slot with a slot argument does not support modifiers by default",
+                    start: 49,
+                    end: 53,
+                    help: Some(
+                        "Remove the modifiers or enable allowModifiers",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/valid-v-slot",
+                    severity: Error,
+                    message: "v-slot with a slot argument does not support modifiers by default",
+                    start: 126,
+                    end: 130,
+                    help: Some(
+                        "Remove the modifiers or enable allowModifiers",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 3,
+            warning_count: 0,
+        },
+    ),
+}

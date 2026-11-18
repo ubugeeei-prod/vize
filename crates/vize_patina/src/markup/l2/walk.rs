@@ -81,6 +81,10 @@ fn walk_region<'a>(
                     walk_step(doc, step, enter, exit);
                 }
             }
+            Op::And(and) => {
+                let step = scope_region(doc, and.span, &and.region.ops);
+                walk_step(doc, step, enter, exit);
+            }
             Op::For(for_op) => {
                 let step = scope_region(doc, for_op.span, &for_op.region.ops);
                 walk_step(doc, step, enter, exit);

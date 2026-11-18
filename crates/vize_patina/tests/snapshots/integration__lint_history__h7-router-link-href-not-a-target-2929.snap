@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-router-link-href-not-a-target-2929",
+    history: "000f75dd9a574e58686c8010d17d9589ded64873",
+    source: "<RouterLink href=\"/docs\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "ecosystem/router-link-require-to",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "ecosystem/router-link-require-to",
+                severity: Error,
+                message: "RouterLink components must declare a navigation target",
+                start: 0,
+                end: 27,
+                help: Some(
+                    "Add `to` or `:to` (`href` or `:href` is also valid on NuxtLink) so navigation is explicit and typed-route tooling can infer the target.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "ecosystem/router-link-require-to",
+                    severity: Error,
+                    message: "RouterLink components must declare a navigation target",
+                    start: 0,
+                    end: 27,
+                    help: Some(
+                        "Add `to` or `:to` (`href` or `:href` is also valid on NuxtLink) so navigation is explicit and typed-route tooling can infer the target.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

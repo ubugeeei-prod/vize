@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-mutating-props-inline-member-assignment-3451",
+    history: "28d6ecece001dfd932f3ae6b6b430372dfd6da70",
+    source: "<script setup lang=\"ts\">\nconst props = defineProps<{ msg: string }>();\n</script>\n\n<template>\n  <button @click=\"props.msg = 'x'\">{{ props.msg }}</button>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-mutating-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-mutating-props",
+                severity: Error,
+                message: "Unexpected mutation of prop 'props.msg' in an inline handler",
+                start: 111,
+                end: 126,
+                help: Some(
+                    "Use a local ref or emit an event instead of mutating props directly",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-mutating-props",
+                    severity: Error,
+                    message: "Unexpected mutation of prop 'props.msg' in an inline handler",
+                    start: 111,
+                    end: 126,
+                    help: Some(
+                        "Use a local ref or emit an event instead of mutating props directly",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

@@ -28,6 +28,8 @@ pub struct MarkupDocumentVisitor<'rule, 'ctx, 'mc, 'a, R: ?Sized> {
     /// The rule's name, read once: every hook re-stamps it on the context.
     name: &'static str,
     traversal: MarkupTraversal,
+    /// Match each visited L2 element's opening tag once for every rule.
+    shares_element_reads: bool,
     ctx: &'ctx mut MarkupContext<'mc, 'a>,
 }
 
@@ -37,6 +39,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             rule,
             name: rule.name(),
             traversal: rule.traversal(),
+            shares_element_reads: rule.shares_element_reads(),
             ctx,
         }
     }
@@ -141,16 +144,21 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     fn visit_l2_region(&mut self, doc: &'a L2Markup<'a>, ops: &'a [Op<'a>]) {
         for op in ops {
             match op {
-                Op::Element(element) => {
-                    self.visit_element(MarkupElement::from_l2(L2ElementOp::Element(element), doc))
-                }
-                Op::Component(component) => self.visit_element(MarkupElement::from_l2(
+                Op::Element(element) => self.visit_element(MarkupElement::from_l2_matching(
+                    L2ElementOp::Element(element),
+                    doc,
+                    self.shares_element_reads,
+                )),
+                Op::Component(component) => self.visit_element(MarkupElement::from_l2_matching(
                     L2ElementOp::Component(component),
                     doc,
+                    self.shares_element_reads,
                 )),
-                Op::Slot(slot) => {
-                    self.visit_element(MarkupElement::from_l2(L2ElementOp::Slot(slot), doc))
-                }
+                Op::Slot(slot) => self.visit_element(MarkupElement::from_l2_matching(
+                    L2ElementOp::Slot(slot),
+                    doc,
+                    self.shares_element_reads,
+                )),
                 Op::Text(text) => {
                     if self.traversal.keeps_text_and_exits() {
                         self.text(children::text_node(doc, text));
@@ -174,6 +182,10 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                         self.visit_l2_step(doc, scope_region(doc, branch.span, &branch.region.ops));
                     }
                     children::walk_kept_gaps(doc, if_op, &mut |text| self.text(text));
+                }
+                Op::And(and) => {
+                    self.conditional(MarkupConditional::from_l2_and(and, doc));
+                    self.visit_l2_step(doc, scope_region(doc, and.span, &and.region.ops));
                 }
                 Op::For(for_op) => {
                     self.list(MarkupList::from_l2(for_op, doc));
