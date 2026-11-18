@@ -1,0 +1,83 @@
+=== <form @submit="a"><form @submit="b"><button>x</button></form></form>
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<form${_ssrRenderAttrs(_attrs)}><form><button>x</button></form></form>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main=== <a href="/x"><a href="/y">y</a></a>
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<a${_ssrRenderAttrs(_mergeProps({ href: "/x" }, _attrs))}><a href="/y">y</a></a>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main=== <button @click="a"><button @click="b">x</button></button>
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<button${_ssrRenderAttrs(_attrs)}><button>x</button></button>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main=== <p><ul><li>a</li></ul></p>
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<p${_ssrRenderAttrs(_attrs)}><ul><li>a</li></ul></p>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main=== <p><div>x</div></p>
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<p${_ssrRenderAttrs(_attrs)}><div>x</div></p>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main=== <p>one<p>two</p></p>
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<p${_ssrRenderAttrs(_attrs)}>one<p>two</p></p>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main=== <table><div>x</div></table>
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<table${_ssrRenderAttrs(_attrs)}><div>x</div></table>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main=== <table>text<tr><td>c</td></tr></table>
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<table${_ssrRenderAttrs(_attrs)}>text<tr><td>c</td></tr></table>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main=== <p v-pre><div><Child>{{ x }}</Child></div></p>
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<p${_ssrRenderAttrs(_attrs)}><div><Child>{{ x }}</Child></div></p>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

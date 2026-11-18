@@ -42,6 +42,15 @@ fn code(source: &str, ssr: bool, vapor: bool) -> String {
     result.code.as_str().to_owned()
 }
 
+/// The SSR module's `_push` calls, trimmed.
+fn pushed(ssr: &str) -> Vec<String> {
+    ssr.lines()
+        .map(str::trim)
+        .filter(|line| line.get(..6) == Some("_push("))
+        .map(String::from)
+        .collect()
+}
+
 fn template(body: &str) -> String {
     format!("<template>\n  {body}\n</template>\n")
 }
@@ -105,13 +114,15 @@ fn nested_and_block_content_stay_authored_like_vue() {
         "{dom}"
     );
     // Both forms and both buttons keep their own handlers.
-    for handler in ["_ctx.save", "_ctx.search", "_ctx.outer", "_ctx.inner"] {
-        assert!(dom.contains(handler), "{handler}: {dom}");
-    }
+    assert_eq!(
+        dom.as_str(),
+        include_str!("fixtures/sfc_authored_structure/dom.expected.txt")
+    );
 }
 
 #[test]
 fn each_shape_matches_vue_markup_and_tree() {
+    let mut modules = String::new();
     for (body, markup, vue_tree) in [
         (
             r#"<form @submit="a"><form @submit="b"><button>x</button></form></form>"#,
@@ -161,16 +172,26 @@ fn each_shape_matches_vue_markup_and_tree() {
     ] {
         let source = template(body);
         let ssr = code(&source, true, false);
-        assert!(ssr.contains(&format!("_push(`{markup}`)")), "{body}: {ssr}");
+        assert_eq!(
+            pushed(&ssr),
+            [format!("_push(`{markup}`)")],
+            "{body}: {ssr}"
+        );
+        modules.push_str(&format!("=== {body}\n{ssr}"));
         let dom = code(&source, false, false);
         assert_eq!(tree(&dom), vue_tree, "{body}: {dom}");
     }
+    assert_eq!(
+        modules.as_str(),
+        include_str!("fixtures/sfc_authored_structure/shapes.ssr.expected.txt")
+    );
 }
 
 /// Vue builds the same tree and also reports "Element is missing end tag.";
 /// Vize accepts it, and `vue/html-end-tags` reports the omission instead.
 #[test]
 fn omitted_optional_end_tags_nest_like_vue_without_its_error() {
+    let mut modules = String::new();
     for (body, markup, vue_tree) in [
         (
             "<ul><li>a<li>b</ul>",
@@ -200,21 +221,34 @@ fn omitted_optional_end_tags_nest_like_vue_without_its_error() {
     ] {
         let source = template(body);
         let ssr = code(&source, true, false);
-        assert!(ssr.contains(&format!("_push(`{markup}`)")), "{body}: {ssr}");
+        assert_eq!(
+            pushed(&ssr),
+            [format!("_push(`{markup}`)")],
+            "{body}: {ssr}"
+        );
+        modules.push_str(&format!("=== {body}\n{ssr}"));
         let dom = code(&source, false, false);
         assert_eq!(tree(&dom), vue_tree, "{body}: {dom}");
     }
+    assert_eq!(
+        modules.as_str(),
+        include_str!("fixtures/sfc_authored_structure/omitted.ssr.expected.txt")
+    );
 }
 
 #[test]
 fn misnested_formatting_end_tags_fail_with_vues_errors() {
     let source = template("<b><i>x</b>y</i>");
+    let mut messages = String::new();
     for ssr in [false, true] {
         let error = compile(&source, ssr, false).expect_err("Vue rejects it too");
-        assert!(error.message.contains("MissingEndTag"), "{error:?}");
-        assert!(error.message.contains("InvalidEndTag"), "{error:?}");
-        assert!(!error.message.contains("adoption agency"), "{error:?}");
+        messages.push_str(&format!("ssr={ssr}: {}\n", error.message));
     }
+    // Vue's two errors, never the adoption agency's repair.
+    assert_eq!(
+        messages.as_str(),
+        include_str!("fixtures/sfc_authored_structure/misnested.errors.expected.txt")
+    );
 }
 
 /// Vapor still applies the browser's repairs, as before; Vue 3.6 Vapor splits
@@ -226,16 +260,15 @@ fn vapor_keeps_the_browsers_repairs() {
         result.code.as_str().to_owned()
     };
     let anchors = vapor(r#"<a href="/x"><a href="/y">y</a></a>"#);
-    assert!(
-        anchors.contains(r#"_template("<a href=\"/x\"></a>")"#),
-        "{anchors}"
-    );
-    assert!(
-        anchors.contains(r#"_template("<a href=\"/y\">y</a>")"#),
-        "{anchors}"
+    assert_eq!(
+        anchors.as_str(),
+        include_str!("fixtures/sfc_authored_structure/anchors.vapor.expected.txt")
     );
     let items = vapor("<ul><li>a<li>b</ul>");
-    assert!(items.contains("<ul><li>a</li><li>b</li></ul>"), "{items}");
+    assert_eq!(
+        items.as_str(),
+        include_str!("fixtures/sfc_authored_structure/items.vapor.expected.txt")
+    );
     for body in [
         r#"<form @submit="a"><form @submit="b"><button>x</button></form></form>"#,
         "<p><ul><li>a</li></ul></p>",
