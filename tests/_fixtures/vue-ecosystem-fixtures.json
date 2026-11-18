@@ -180,9 +180,11 @@
           "tsconfig": "packages/hoppscotch-common/tsconfig.json",
           "prepare": [
             ["pnpm", "--filter", "@hoppscotch/codemirror-lang-graphql", "prepare"],
-            ["pnpm", "--filter", "@hoppscotch/data", "build"],
+            ["pnpm", "--filter", "@hoppscotch/data", "run", "build:code"],
+            ["pnpm", "--filter", "@hoppscotch/data", "run", "build:decl"],
             ["pnpm", "--filter", "@hoppscotch/js-sandbox", "build"],
-            ["pnpm", "--filter", "@hoppscotch/kernel", "build"]
+            ["pnpm", "--filter", "@hoppscotch/kernel", "run", "build:code"],
+            ["pnpm", "--filter", "@hoppscotch/kernel", "run", "build:decl"]
           ],
           "excludedInputs": [
             {

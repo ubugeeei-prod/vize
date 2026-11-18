@@ -127,6 +127,21 @@ test("release typechecker baselines have enough runner budget", () => {
   }
 });
 
+test("Hoppscotch baseline keeps nested builds on the pinned package manager", () => {
+  const registry = readRegistry();
+  const prepare = registry.projects.find((project) => project.id === "hoppscotch")
+    ?.typecheckPerformance?.baseline?.prepare;
+
+  assert.deepEqual(prepare, [
+    ["pnpm", "--filter", "@hoppscotch/codemirror-lang-graphql", "prepare"],
+    ["pnpm", "--filter", "@hoppscotch/data", "run", "build:code"],
+    ["pnpm", "--filter", "@hoppscotch/data", "run", "build:decl"],
+    ["pnpm", "--filter", "@hoppscotch/js-sandbox", "build"],
+    ["pnpm", "--filter", "@hoppscotch/kernel", "run", "build:code"],
+    ["pnpm", "--filter", "@hoppscotch/kernel", "run", "build:decl"],
+  ]);
+});
+
 test("PrimeVue Volt is measured under the app tsconfig, sharing the PrimeVue fixture", () => {
   const registry = readRegistry();
   const library = registry.projects.find((project) => project.id === "primevue");
