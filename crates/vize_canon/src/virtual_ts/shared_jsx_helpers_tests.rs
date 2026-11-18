@@ -1,13 +1,13 @@
 use super::{JSX_COMPONENT_HELPER, helpers};
 
 #[test]
-fn shared_preambles_publish_the_jsx_component_and_context_contracts() {
+fn batch_preambles_leave_the_current_jsx_contracts_per_file() {
     const CONTEXT: &str = "type Ctx<Emits = {}, Slots = {}> = { emit: __EmitFn<Emits>; slots: Slots; attrs: Record<string, unknown>; };";
     for preamble in [
         helpers::SHARED_PREAMBLE_DTS,
         helpers::SHARED_PREAMBLE_STRICT_DTS,
     ] {
-        assert_eq!(preamble.matches(JSX_COMPONENT_HELPER).count(), 1);
-        assert_eq!(preamble.matches(CONTEXT).count(), 1);
+        assert_eq!(preamble.matches(JSX_COMPONENT_HELPER).count(), 0);
+        assert_eq!(preamble.matches(CONTEXT).count(), 0);
     }
 }

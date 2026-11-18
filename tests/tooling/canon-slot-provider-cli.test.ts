@@ -91,10 +91,6 @@ import {
   applyGenericSlotPayloadIn,
   beforeGenericSlotPayloadIn,
 } from "../../tools/support/compat/content-mapper/generic-slot-payload-transition.ts";
-import {
-  applyJsxSharedHelpersIn,
-  beforeJsxSharedHelpersIn,
-} from "../../tools/support/compat/content-mapper/jsx-shared-helpers-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -246,9 +242,6 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   const genericSlotSourcePreamble = applyGenericSlotPayloadIn(defaultsSourcePreamble);
   assert.equal(beforeGenericSlotPayloadIn(genericSlotSourcePreamble), defaultsSourcePreamble);
   assert.throws(() => applyGenericSlotPayloadIn(genericSlotSourcePreamble), /predecessor/u);
-  const currentSourcePreamble = applyJsxSharedHelpersIn(genericSlotSourcePreamble);
-  assert.equal(beforeJsxSharedHelpersIn(currentSourcePreamble), genericSlotSourcePreamble);
-  assert.throws(() => applyJsxSharedHelpersIn(currentSourcePreamble), /not yet shared/u);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);
@@ -259,9 +252,12 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
     beforeDiscriminatedJsxUnionIn(discriminatedSourcePreamble),
     integratedSourcePreamble,
   );
-  assert.equal(currentSourcePreamble.split(currentAlias).length, 2);
-  assert.equal(currentSourcePreamble.includes("declare var __vizeTemplateChecker: true;"), false);
-  assert.ok(currentSourcePreamble.includes("type $ComponentInstanceFor<"));
+  assert.equal(genericSlotSourcePreamble.split(currentAlias).length, 2);
+  assert.equal(
+    genericSlotSourcePreamble.includes("declare var __vizeTemplateChecker: true;"),
+    false,
+  );
+  assert.ok(genericSlotSourcePreamble.includes("type $ComponentInstanceFor<"));
   for (const changed of [
     genericEventRecordPath,
     "crates/vize_canon/src/virtual_ts/helpers/declarations/emit-inference.d.ts.txt",
@@ -280,14 +276,14 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
     }
   }
   const stderr = Buffer.from(
-    `\n=== __vize_helpers.d.ts ===\n${currentSourcePreamble}\n\n=== ${path.join(project, "src/Tiny.vue")} ===\n${virtualTs}\n`,
+    `\n=== __vize_helpers.d.ts ===\n${genericSlotSourcePreamble}\n\n=== ${path.join(project, "src/Tiny.vue")} ===\n${virtualTs}\n`,
   );
   assert.deepEqual(slotCliPacket({ stdout, stderr, status: 0 }, project).diagnostics, []);
   for (const altered of [
-    Buffer.from(stderr.toString("utf8").replace(currentSourcePreamble, currentPreamble)),
-    Buffer.from(stderr.toString("utf8").replace(currentSourcePreamble, successorPreamble)),
-    Buffer.from(stderr.toString("utf8").replace(currentSourcePreamble, historical)),
-    Buffer.from(stderr.toString("utf8").replace(currentSourcePreamble, previousPreamble)),
+    Buffer.from(stderr.toString("utf8").replace(genericSlotSourcePreamble, currentPreamble)),
+    Buffer.from(stderr.toString("utf8").replace(genericSlotSourcePreamble, successorPreamble)),
+    Buffer.from(stderr.toString("utf8").replace(genericSlotSourcePreamble, historical)),
+    Buffer.from(stderr.toString("utf8").replace(genericSlotSourcePreamble, previousPreamble)),
     Buffer.concat([Buffer.from("unknown warning\n"), stderr]),
     Buffer.concat([stderr, Buffer.from("unknown error\n")]),
     stderr.subarray(1),

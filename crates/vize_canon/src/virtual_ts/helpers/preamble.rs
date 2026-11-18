@@ -118,8 +118,6 @@ macro_rules! shared_preamble_text {
             include_str!("declarations/shared-emit-inference.d.ts.txt"),
             include_str!("declarations/shared-listener-args.d.ts.txt"),
             include_str!("declarations/component-checks.d.ts.txt"),
-            include_str!("declarations/jsx-context.d.ts.txt"),
-            include_str!("declarations/jsx-components.d.ts.txt"),
             include_str!("declarations/shared-macros.d.ts.txt"),
             include_str!("pattern_matching.d.ts")
         )

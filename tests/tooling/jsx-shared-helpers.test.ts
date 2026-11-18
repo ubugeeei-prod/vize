@@ -51,9 +51,9 @@ test("older source custody sees the exact pre-publication sources", () => {
   const relative = "crates/vize_canon/src/virtual_ts/helpers/preamble.rs";
   const current = fs.readFileSync(path.join(root, relative), "utf8");
   const previous = beforeJsxSharedHelpersSource(relative, current);
-  assert.notEqual(previous, current);
-  assert.ok(!previous.includes("declarations/jsx-context.d.ts.txt"));
-  assert.ok(!previous.includes("declarations/jsx-components.d.ts.txt"));
+  assert.equal(previous, current);
+  assert.ok(!current.includes("declarations/jsx-context.d.ts.txt"));
+  assert.ok(!current.includes("declarations/jsx-components.d.ts.txt"));
   assert.equal(beforeJsxSharedHelpersSource("unrelated.ts", current), current);
   const globals = fs.readFileSync(globalsPath, "utf8");
   const previousGlobals = beforeJsxSharedHelpersSource("npm/cli/virtual-ts-globals.d.ts", globals);
