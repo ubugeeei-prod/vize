@@ -13,7 +13,7 @@ project in the fixtures work completely, and keep performance/edge-case regressi
 | Issue | Reporter | Fix | State |
 |---|---|---|---|
 | #13237 #13238 #13239 #13121 | IlyaSemenov | #13254 #13255 #13256 | Shipped in v0.778.0 (14:50Z), "Fixed in" posted |
-| #13284 | IlyaSemenov | #13288 (merged c92bb47db0) | **Not released yet.** v0.779.0 runs 44211756428 and 44226484613 failed in the new glibc-floor package smoke (#13242). #13316 (missing @vizejs/unplugin) merged; #13320 (install every `npm/native/npm/*` platform package, Yarn resolves all optional natives) is armed and jumped to the queue front. `scripts/release-after-13320.sh` was left running on the old machine. |
+| #13284 | IlyaSemenov | #13288 | **Shipped in v0.779.0** (04:13Z, run 44231489354 at 6030db68fe) after #13316 and #13320 fixed the new glibc-floor smoke; "Fixed in" posted. v0.779.0 also carries #13272 (partial note posted on #12994) and #13302. |
 | #13295 (Pug escaped attribute mapping, found by us) | — | #13302 | In merge queue |
 | #12994 / #13070 | FLPPPPPP | #13272 (fixes a regression live since v0.777.0: 15 extra reports) → #13274 (stacked) | #13272 in queue; #13274 needs rebase onto main after #13272, a `benchmark.yml patina_project_batch` run, then `merge-async` |
 | #13002 | FLPPPPPP | branch `fix/patina-declared-type-argument-defaults-13002` @ d1889f16a1 (stacked on #13274) | No PR yet; needs benchmark (adds checker requests). The "blocked-upstream" label no longer applies. |
