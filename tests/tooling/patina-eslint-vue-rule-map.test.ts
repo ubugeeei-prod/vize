@@ -28,5 +28,17 @@ test("the Patina scorecard exhaustively maps the pinned eslint-plugin-vue rule s
     patinaRule: "vue/v-on-handler-style",
     patinaSeverity: "warning",
     patinaPresets: ["nuxt", "opinionated"],
+    matrixRuleOptions: {
+      options: ["method", "inline-function"],
+      reason:
+        'Patina\'s default policy reports every inline function and statement; eslint-plugin-vue\'s default ["method", "inline-function"] accepts one that a method reference cannot express, such as a handler that reads a v-for or slot variable.',
+      documentation: {
+        path: "crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs",
+        line: 6,
+        text: "and inline statements are reported by the default method-handler policy.",
+        upstreamOptions: '["method", "inline-function"]',
+      },
+      defaultGuard: "reports_handler_that_closes_over_v_for_variables",
+    },
   });
 });
