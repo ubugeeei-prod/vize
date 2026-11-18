@@ -407,7 +407,6 @@
         "lsp"
       ],
       "diff": "curator-compare",
-      "lspRequestTimeoutMs": 240000,
       "lspAuthoredOracle": {
         "templateBinding": {
           "file": "components/comment/demo/editor.vue",
@@ -720,6 +719,7 @@
         "lsp"
       ],
       "diff": "curator-compare",
+      "lspRequestTimeoutMs": 240000,
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",
@@ -1058,6 +1058,7 @@
         "lsp"
       ],
       "diff": "curator-compare",
+      "lspRequestTimeoutMs": 240000,
       "lspAuthoredOracle": {
         "templateBinding": {
           "file": "src/switch/demos/enUS/event.demo.vue",
