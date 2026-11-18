@@ -65,7 +65,8 @@ pub fn split_blocks<'a>(
     let mut pos = 0;
     let mut line = 1;
     let mut column = 1;
-    let comment_end_finder = Finder::new(b"-->");
+    // Built at the first top-level comment: most SFCs have none.
+    let mut comment_end_finder: Option<Finder<'static>> = None;
 
     while pos < len {
         while pos < len
@@ -104,6 +105,7 @@ pub fn split_blocks<'a>(
         if bytes.get(pos..).unwrap_or_default().starts_with(b"<!--") {
             let comment_body = bytes.get(pos + 4..).unwrap_or_default();
             let end = comment_end_finder
+                .get_or_insert_with(|| Finder::new(b"-->"))
                 .find(comment_body)
                 .map_or(len, |offset| pos + 4 + offset + 3);
             advance_line_column(

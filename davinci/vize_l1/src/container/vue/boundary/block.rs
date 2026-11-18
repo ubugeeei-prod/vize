@@ -233,22 +233,8 @@ pub fn parse_block_fast<'a>(
         start_column,
     );
 
-    if is_void_block(tag_name) {
-        return Ok(Some((
-            tag_name,
-            attrs,
-            Cow::Borrowed(""),
-            content_start,
-            content_start,
-            pos,
-            content_start_line,
-            content_start_column,
-        )));
-    }
-
-    // Find closing tag based on tag type
-
-    // Handle known tags with static closing tags
+    // The root blocks are never void, so they are dispatched before the void
+    // lookup, which validates and hashes the name. Only custom blocks pay it.
     if tag_name.eq_ignore_ascii_case(TAG_TEMPLATE) {
         return super::template_boundary::find_template_block_end(BlockEndSearch {
             bytes,
@@ -277,9 +263,8 @@ pub fn parse_block_fast<'a>(
         });
     }
 
-    // Custom block: need to find closing tag dynamically
-    if !tag_name.eq_ignore_ascii_case(TAG_SCRIPT) {
-        return find_block_end(BlockEndSearch {
+    if tag_name.eq_ignore_ascii_case(TAG_SCRIPT) {
+        return find_script_block_end(BlockEndSearch {
             bytes,
             source,
             tag_name,
@@ -292,7 +277,21 @@ pub fn parse_block_fast<'a>(
         });
     }
 
-    find_script_block_end(BlockEndSearch {
+    if is_void_block(tag_name) {
+        return Ok(Some((
+            tag_name,
+            attrs,
+            Cow::Borrowed(""),
+            content_start,
+            content_start,
+            pos,
+            content_start_line,
+            content_start_column,
+        )));
+    }
+
+    // Custom block: need to find closing tag dynamically
+    find_block_end(BlockEndSearch {
         bytes,
         source,
         tag_name,
