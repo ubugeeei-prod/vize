@@ -18209,6 +18209,42 @@
       }
     },
     {
+      "id": "linter/no-restricted-v-bind-key-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-restricted-v-bind-key-12336",
+        "files": [
+          {
+            "path": "RecipeList.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "ce7b455a92c14f42493c8e650a6244eed87ba2db06411ee0956e076a4b861608"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "45a4c39ce4d1928e4174576d5e669d17f1484cd23d62f92f237e143b955f955b"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unnecessary-type-assertion-12992",
       "state": "active",
       "targets": [
