@@ -110,6 +110,28 @@ pub(super) fn collect_component_prop_expression_ranges(
                     }
                 }
             }
+            // The mapped props call owns the name and value of a
+            // `v-bind:[name]` binding, as it owns a spread (#13269).
+            for prop in &usage.props {
+                if !crate::virtual_ts::expressions::is_dynamic_name_binding(source.template, prop) {
+                    continue;
+                }
+                let value = prop.value.as_deref().unwrap_or_default().trim();
+                for expr in &summary.template_expressions {
+                    let owned = match expr.kind {
+                        TemplateExpressionKind::VBind => value,
+                        TemplateExpressionKind::DynamicDirectiveArgument => prop.name.trim(),
+                        _ => continue,
+                    };
+                    if expr.scope_id == usage.scope_id
+                        && expr.start >= prop.start
+                        && expr.end <= prop.end
+                        && expr.content.as_str().trim() == owned
+                    {
+                        plan.skipped.insert((expr.start, expr.end));
+                    }
+                }
+            }
             for prop in &usage.props {
                 if has_checkable_binding
                     && !legacy_external

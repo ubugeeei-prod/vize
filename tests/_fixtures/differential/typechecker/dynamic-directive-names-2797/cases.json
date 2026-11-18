@@ -115,6 +115,114 @@
           "message": "Property 'eventNam' does not exist on the component instance."
         }
       ]
+    },
+    {
+      "id": "runtime-prop-name-may-satisfy-required-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "runtime-name.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "runtime-name.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "runtime-prop-name-value-checked-against-its-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "runtime-name-wrong-value.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "runtime-name.Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ someMessage: number; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nType '{ someMessage: number; }' is not assignable to type '{ readonly someMessage: string; }'.\nTypes of property 'someMessage' are incompatible.\nType 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "string-prop-name-supplies-no-required-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "runtime-name-string.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "runtime-name.Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ [x: string]: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'someMessage' is missing in type '{ [x: string]: string; }' but required in type '{ readonly someMessage: string; }'."
+        }
+      ]
+    },
+    {
+      "id": "runtime-prop-name-beside-static-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "runtime-name-beside-static.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "runtime-name-beside-static.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "v-for-runtime-prop-name",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "runtime-name-v-for.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "runtime-name.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
     }
   ]
 }

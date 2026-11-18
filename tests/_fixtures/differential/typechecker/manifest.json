@@ -10955,7 +10955,7 @@
       "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
       "packReference": {
         "path": "dynamic-directive-names-2797/cases.json",
-        "sha256": "015498fc6d66d3d0f549bd18c7090959b8b1de887270e30d5ff470b676f1d73f"
+        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
       },
       "inputs": [
         {
@@ -11007,7 +11007,7 @@
       "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
       "packReference": {
         "path": "dynamic-directive-names-2797/cases.json",
-        "sha256": "015498fc6d66d3d0f549bd18c7090959b8b1de887270e30d5ff470b676f1d73f"
+        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
       },
       "inputs": [
         {
@@ -11059,7 +11059,7 @@
       "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
       "packReference": {
         "path": "dynamic-directive-names-2797/cases.json",
-        "sha256": "015498fc6d66d3d0f549bd18c7090959b8b1de887270e30d5ff470b676f1d73f"
+        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
       },
       "inputs": [
         {
@@ -11111,7 +11111,7 @@
       "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
       "packReference": {
         "path": "dynamic-directive-names-2797/cases.json",
-        "sha256": "015498fc6d66d3d0f549bd18c7090959b8b1de887270e30d5ff470b676f1d73f"
+        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
       },
       "inputs": [
         {
@@ -11128,6 +11128,266 @@
           "file": "src/Child.vue",
           "path": "dynamic-directive-names-2797/Child.vue.txt",
           "sha256": "0b2b998fca47e65160fab475ea55945010abd70dfe0f7c69c135cc4a60779003"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-directive-names-2797/runtime-prop-name-may-satisfy-required-prop",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-directive-names-2797",
+      "case": "runtime-prop-name-may-satisfy-required-prop",
+      "test": "fix_history_cases::dynamic_directive_names_2797::dynamic_directive_names_stay_expressions_not_contract_keys",
+      "regressionCommit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "packReference": {
+        "path": "dynamic-directive-names-2797/cases.json",
+        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-directive-names-2797/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-directive-names-2797/runtime-name.App.vue.txt",
+          "sha256": "4dae9d95dc0c9cd8d9d05b5773582df6f12d11eb65e385d5abcdee31c146ad46"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "dynamic-directive-names-2797/runtime-name.Child.vue.txt",
+          "sha256": "55160b3732f16d4bece8fd92e792d08b8f640d12a1dcb84058f24f41cbaa0f98"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-directive-names-2797/runtime-prop-name-value-checked-against-its-prop",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-directive-names-2797",
+      "case": "runtime-prop-name-value-checked-against-its-prop",
+      "test": "fix_history_cases::dynamic_directive_names_2797::dynamic_directive_names_stay_expressions_not_contract_keys",
+      "regressionCommit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "packReference": {
+        "path": "dynamic-directive-names-2797/cases.json",
+        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-directive-names-2797/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-directive-names-2797/runtime-name-wrong-value.App.vue.txt",
+          "sha256": "aa36c31e87b5b800da51e4ea291d2bf40a84e4e66f77fc746bf954ebe9ed0aef"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "dynamic-directive-names-2797/runtime-name.Child.vue.txt",
+          "sha256": "55160b3732f16d4bece8fd92e792d08b8f640d12a1dcb84058f24f41cbaa0f98"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-directive-names-2797/string-prop-name-supplies-no-required-prop",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-directive-names-2797",
+      "case": "string-prop-name-supplies-no-required-prop",
+      "test": "fix_history_cases::dynamic_directive_names_2797::dynamic_directive_names_stay_expressions_not_contract_keys",
+      "regressionCommit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "packReference": {
+        "path": "dynamic-directive-names-2797/cases.json",
+        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-directive-names-2797/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-directive-names-2797/runtime-name-string.App.vue.txt",
+          "sha256": "faf37813c887e99c00396c68e440283a7a1adf3f74a2d675f44fdbebcb522e75"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "dynamic-directive-names-2797/runtime-name.Child.vue.txt",
+          "sha256": "55160b3732f16d4bece8fd92e792d08b8f640d12a1dcb84058f24f41cbaa0f98"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-directive-names-2797/runtime-prop-name-beside-static-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-directive-names-2797",
+      "case": "runtime-prop-name-beside-static-props",
+      "test": "fix_history_cases::dynamic_directive_names_2797::dynamic_directive_names_stay_expressions_not_contract_keys",
+      "regressionCommit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "packReference": {
+        "path": "dynamic-directive-names-2797/cases.json",
+        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-directive-names-2797/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-directive-names-2797/runtime-name-beside-static.App.vue.txt",
+          "sha256": "5d2f92bfa8f32fb7ed7591968639704bdb4e494e9fb85bfb3dab2040e6a43402"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "dynamic-directive-names-2797/runtime-name-beside-static.Child.vue.txt",
+          "sha256": "f81c44a54de2dc2872cf5d977721bad4bfe97f7219e41876fb9be90bfb9edd54"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/dynamic-directive-names-2797/v-for-runtime-prop-name",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "dynamic-directive-names-2797",
+      "case": "v-for-runtime-prop-name",
+      "test": "fix_history_cases::dynamic_directive_names_2797::dynamic_directive_names_stay_expressions_not_contract_keys",
+      "regressionCommit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "packReference": {
+        "path": "dynamic-directive-names-2797/cases.json",
+        "sha256": "21262951cdb8404b74cf6afc600f5394b7f25c7b78e41fdd84ea3e7212d2da63"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "dynamic-directive-names-2797/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "dynamic-directive-names-2797/runtime-name-v-for.App.vue.txt",
+          "sha256": "270252946879763ad7f45f8d09bd96fea34439bd6ce28ee9e9c8b1f42e57c952"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "dynamic-directive-names-2797/runtime-name.Child.vue.txt",
+          "sha256": "55160b3732f16d4bece8fd92e792d08b8f640d12a1dcb84058f24f41cbaa0f98"
         }
       ],
       "dialectCoverage": {
@@ -11642,7 +11902,7 @@
       "sourceRevision": "9a2ff60327e092636a4a13443694c032266622d5",
       "packReference": {
         "path": "empty-usage-required-props-3567/cases.json",
-        "sha256": "31ae2339188bcb5b97fb834af299d25242a5509dd559a07231129647febba569"
+        "sha256": "1df0a3929d668b994cf1c103e430276436c56a205de6828b7b071f358b86848f"
       },
       "inputs": [
         {
@@ -11714,7 +11974,7 @@
       "sourceRevision": "9a2ff60327e092636a4a13443694c032266622d5",
       "packReference": {
         "path": "empty-usage-required-props-3567/cases.json",
-        "sha256": "31ae2339188bcb5b97fb834af299d25242a5509dd559a07231129647febba569"
+        "sha256": "1df0a3929d668b994cf1c103e430276436c56a205de6828b7b071f358b86848f"
       },
       "inputs": [
         {
@@ -33294,7 +33554,7 @@
       "regressionCommit": "f3a26b0e30c98b135a9e897c3584526eb0a2b96d",
       "packReference": {
         "path": "required-props-edges/cases.json",
-        "sha256": "d018f21b657a11d81dd4e53be169fddd484f965b88ce475d9a20828ec22c852b"
+        "sha256": "b53ed665bd086e10d76cb99af50ab3038d7ccee83af6672e09795160eda9c70c"
       },
       "inputs": [
         {
@@ -58423,7 +58683,7 @@
       "sourceRevision": "08297d4ffd2d00cf0dc8e729665dfc430e8cdf01",
       "packReference": {
         "path": "whole-props-checker-bounds-3634/cases.json",
-        "sha256": "9a30ee2996da1376bbfb643f756ff7b4ecb6bfc15b505f516fd46883db7f7eec"
+        "sha256": "6264ee1a16c75d708b643795d79689c5b14b238484cb77686a8201905164b8e6"
       },
       "inputs": [
         {
@@ -58475,7 +58735,7 @@
       "sourceRevision": "08297d4ffd2d00cf0dc8e729665dfc430e8cdf01",
       "packReference": {
         "path": "whole-props-checker-bounds-3634/cases.json",
-        "sha256": "9a30ee2996da1376bbfb643f756ff7b4ecb6bfc15b505f516fd46883db7f7eec"
+        "sha256": "6264ee1a16c75d708b643795d79689c5b14b238484cb77686a8201905164b8e6"
       },
       "inputs": [
         {
@@ -58527,7 +58787,7 @@
       "sourceRevision": "08297d4ffd2d00cf0dc8e729665dfc430e8cdf01",
       "packReference": {
         "path": "whole-props-checker-bounds-3634/cases.json",
-        "sha256": "9a30ee2996da1376bbfb643f756ff7b4ecb6bfc15b505f516fd46883db7f7eec"
+        "sha256": "6264ee1a16c75d708b643795d79689c5b14b238484cb77686a8201905164b8e6"
       },
       "inputs": [
         {
@@ -58579,7 +58839,7 @@
       "sourceRevision": "08297d4ffd2d00cf0dc8e729665dfc430e8cdf01",
       "packReference": {
         "path": "whole-props-checker-bounds-3634/cases.json",
-        "sha256": "9a30ee2996da1376bbfb643f756ff7b4ecb6bfc15b505f516fd46883db7f7eec"
+        "sha256": "6264ee1a16c75d708b643795d79689c5b14b238484cb77686a8201905164b8e6"
       },
       "inputs": [
         {
@@ -58631,7 +58891,7 @@
       "sourceRevision": "08297d4ffd2d00cf0dc8e729665dfc430e8cdf01",
       "packReference": {
         "path": "whole-props-checker-bounds-3634/cases.json",
-        "sha256": "9a30ee2996da1376bbfb643f756ff7b4ecb6bfc15b505f516fd46883db7f7eec"
+        "sha256": "6264ee1a16c75d708b643795d79689c5b14b238484cb77686a8201905164b8e6"
       },
       "inputs": [
         {
@@ -58708,7 +58968,7 @@
       "sourceRevision": "08297d4ffd2d00cf0dc8e729665dfc430e8cdf01",
       "packReference": {
         "path": "whole-props-checker-bounds-3634/cases.json",
-        "sha256": "9a30ee2996da1376bbfb643f756ff7b4ecb6bfc15b505f516fd46883db7f7eec"
+        "sha256": "6264ee1a16c75d708b643795d79689c5b14b238484cb77686a8201905164b8e6"
       },
       "inputs": [
         {
@@ -58760,7 +59020,7 @@
       "sourceRevision": "08297d4ffd2d00cf0dc8e729665dfc430e8cdf01",
       "packReference": {
         "path": "whole-props-checker-bounds-3634/cases.json",
-        "sha256": "9a30ee2996da1376bbfb643f756ff7b4ecb6bfc15b505f516fd46883db7f7eec"
+        "sha256": "6264ee1a16c75d708b643795d79689c5b14b238484cb77686a8201905164b8e6"
       },
       "inputs": [
         {

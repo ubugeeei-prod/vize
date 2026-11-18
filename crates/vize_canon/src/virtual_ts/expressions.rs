@@ -31,6 +31,7 @@ mod native_props_tests;
 mod prop_name_casing_tests;
 mod prop_sources;
 mod props_literal;
+pub(crate) use props_literal::is_dynamic_name_binding;
 #[cfg(feature = "native")]
 pub(crate) use props_literal::key_sub_spans;
 pub(crate) use props_literal::{
