@@ -341,6 +341,7 @@ fn write_project_artifact(
         "baseline": {
             "command": display_command(&args.vue_tsc_bin, &baseline_args),
             "version": vue_tsc_version,
+            "excludedInputs": baseline_config.excluded_inputs.clone(),
             "exitCode": captured_exit_code(&baseline),
             "runError": baseline.run_error,
             "stdout": baseline.run.stdout,
@@ -584,6 +585,7 @@ fn write_project_artifact(
             "coverageCommand": display_command(&args.vue_tsc_bin, &coverage_args),
             "configSha256": sha256(&baseline_config.source),
             "sourceConfigSha256": sha256(&source_config),
+            "excludedInputs": baseline_config.excluded_inputs.clone(),
             "version": vue_tsc_version,
             "durationMs": baseline.run.duration_ms,
             "coverageDurationMs": coverage_baseline.run.duration_ms,
@@ -762,6 +764,7 @@ fn quarantine_previous_typecheck_artifacts(
 struct BaselineConfig {
     path: PathBuf,
     source: String,
+    excluded_inputs: Vec<Value>,
 }
 
 struct VizeRun {
@@ -1087,16 +1090,42 @@ fn materialize_baseline_project(
         &config_dir,
         &compiler_paths,
     )?;
-    let files = baseline_files(&config_dir, fixture_root, vize_report, &ambient_roots)?;
+    let excluded_inputs = baseline_excluded_inputs(fixture_root, project)?;
+    let excluded_paths = excluded_inputs
+        .iter()
+        .filter_map(|entry| entry.get("path").and_then(Value::as_str))
+        .map(|path| fixture_root.join(path))
+        .collect::<Vec<_>>();
+    let files = baseline_files(
+        &config_dir,
+        fixture_root,
+        vize_report,
+        &ambient_roots,
+        &excluded_paths,
+    )?;
+    let mut excludes = ambient_roots
+        .iter()
+        .flat_map(|root_path| {
+            let root = config_relative_path(&config_dir, root_path);
+            [
+                format!("{root}/**/node_modules/**"),
+                format!("{root}/**/dist/**"),
+            ]
+        })
+        .collect::<Vec<_>>();
+    excludes.extend(
+        excluded_paths
+            .iter()
+            .map(|path| config_relative_path(&config_dir, path)),
+    );
+    excludes.sort_by(|left, right| compare_bytes(left, right));
+    excludes.dedup();
     let mut config = json!({
         "extends": config_relative_path(&config_dir, &source_path),
         "compilerOptions": Value::Object(compiler_options),
         "files": files,
         "include": include_globs(&config_dir, &ambient_roots, &include_roots, &dot_vue_roots),
-        "exclude": ambient_roots.iter().flat_map(|root_path| {
-            let root = config_relative_path(&config_dir, root_path);
-            vec![format!("{root}/**/node_modules/**"), format!("{root}/**/dist/**")]
-        }).collect::<Vec<_>>(),
+        "exclude": excludes,
         "references": [],
     });
     if let Some(options) = vue_compiler_options {
@@ -1112,6 +1141,7 @@ fn materialize_baseline_project(
     Ok(BaselineConfig {
         path: output_path,
         source,
+        excluded_inputs,
     })
 }
 
@@ -4600,6 +4630,7 @@ fn baseline_files(
     fixture_root: &Path,
     vize_report: &Value,
     ambient_roots: &[PathBuf],
+    excluded_inputs: &[PathBuf],
 ) -> Result<Vec<String>, String> {
     let mut files = vize_report
         .get("files")
@@ -4615,12 +4646,30 @@ fn baseline_files(
         .filter_map(|entry| entry.get("file").and_then(Value::as_str))
         .map(|file| config_relative_path(config_dir, &fixture_root.join(file)))
         .collect::<Vec<_>>();
+    for excluded in excluded_inputs {
+        let relative = config_relative_path(config_dir, excluded);
+        if files.contains(&relative) {
+            return Err(format!(
+                "baseline excluded input is an authored Vize program input: {}",
+                excluded.display()
+            ));
+        }
+    }
     let mut declarations = Vec::new();
     for root in ambient_roots {
         collect_ambient_declaration_files(root, &mut declarations)?;
     }
     declarations.sort();
     declarations.dedup();
+    for excluded in excluded_inputs {
+        if !declarations.contains(excluded) {
+            return Err(format!(
+                "baseline excluded input is stale or outside the ambient roots: {}",
+                excluded.display()
+            ));
+        }
+    }
+    declarations.retain(|path| !excluded_inputs.contains(path));
     files.extend(
         declarations
             .iter()
@@ -4629,6 +4678,66 @@ fn baseline_files(
     files.sort_by(|left, right| compare_bytes(left, right));
     files.dedup();
     Ok(files)
+}
+
+fn baseline_excluded_inputs(fixture_root: &Path, project: &Value) -> Result<Vec<Value>, String> {
+    let Some(value) = project.pointer("/typecheckPerformance/baseline/excludedInputs") else {
+        return Ok(Vec::new());
+    };
+    let entries = value
+        .as_array()
+        .filter(|entries| !entries.is_empty())
+        .ok_or_else(|| {
+            "typecheckPerformance.baseline.excludedInputs must be a non-empty array when present"
+                .to_string()
+        })?;
+    let mut seen = BTreeSet::new();
+    let mut result = Vec::new();
+    for (index, entry) in entries.iter().enumerate() {
+        let label = format!("typecheckPerformance.baseline.excludedInputs[{index}]");
+        require_exact_keys(
+            entry,
+            &["path", "reason", "sha256"],
+            &format!("{label} must contain exactly path, reason, and sha256"),
+        )?;
+        let path = entry
+            .get("path")
+            .and_then(Value::as_str)
+            .ok_or_else(|| format!("{label}.path must be a normalized relative path"))?;
+        require_relative_path(path, &format!("{label}.path"))?;
+        if !is_declaration_file(Path::new(path)) {
+            return Err(format!("{label}.path must be a declaration file"));
+        }
+        if !seen.insert(path.to_string()) {
+            return Err(format!("duplicate baseline excluded input: {path}"));
+        }
+        if entry
+            .get("reason")
+            .and_then(Value::as_str)
+            .is_none_or(|reason| reason.trim().is_empty())
+        {
+            return Err(format!("{label}.reason must be a non-empty string"));
+        }
+        let expected = entry
+            .get("sha256")
+            .and_then(Value::as_str)
+            .filter(|digest| {
+                digest.len() == 64
+                    && digest
+                        .bytes()
+                        .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+            })
+            .ok_or_else(|| format!("{label}.sha256 must be a lowercase SHA-256 digest"))?;
+        let source_path = fixture_root.join(path);
+        let bytes = fs::read(&source_path)
+            .map_err(|error| format!("cannot read {}: {error}", source_path.display()))?;
+        let actual = sha256_bytes(&bytes);
+        if actual != expected {
+            return Err(format!("{label}.sha256 does not match {path}"));
+        }
+        result.push(entry.clone());
+    }
+    Ok(result)
 }
 
 fn collect_ambient_declaration_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<(), String> {
@@ -5778,12 +5887,71 @@ mod baseline_materialization_tests {
             &fixture,
             &json!({"fileCount": 1, "files": [{"file": "packages/lib/src/App.vue"}]}),
             &ambient_roots,
+            &[],
         )
         .unwrap();
         assert!(files.iter().any(|file| file.ends_with("/src/App.vue")));
         assert!(files.iter().any(|file| file.ends_with("/ambient.d.ts")));
         assert!(files.iter().all(|file| !file.contains("packages/docs")));
         assert!(files.iter().all(|file| !file.contains("/.vize/")));
+        fs::remove_dir_all(fixture).unwrap();
+    }
+
+    #[test]
+    fn reviewed_ambient_exclusions_are_source_pinned_and_cannot_hide_authored_inputs() {
+        let fixture = test_directory("ambient-exclusions");
+        let config_dir = fixture.join("packages/lib/.vize-baseline");
+        let lib = fixture.join("packages/lib");
+        let bad = lib.join("src/editor-types.d.ts");
+        fs::create_dir_all(bad.parent().unwrap()).unwrap();
+        fs::create_dir_all(&config_dir).unwrap();
+        fs::write(lib.join("src/App.vue"), "<template />\n").unwrap();
+        fs::write(&bad, "declare namespace Broken {\n}}\n").unwrap();
+        fs::write(lib.join("src/globals.d.ts"), "declare const globalName: string;\n").unwrap();
+        let digest = sha256_bytes(&fs::read(&bad).unwrap());
+        let project = json!({
+            "typecheckPerformance": {
+                "baseline": {
+                    "excludedInputs": [{
+                        "path": "packages/lib/src/editor-types.d.ts",
+                        "reason": "loaded as editor text rather than a TypeScript program input",
+                        "sha256": digest,
+                    }]
+                }
+            }
+        });
+        let records = baseline_excluded_inputs(&fixture, &project).unwrap();
+        let excluded = [bad.clone()];
+        let files = baseline_files(
+            &config_dir,
+            &fixture,
+            &json!({"fileCount": 1, "files": [{"file": "packages/lib/src/App.vue"}]}),
+            std::slice::from_ref(&lib),
+            &excluded,
+        )
+        .unwrap();
+        assert_eq!(records[0]["sha256"], json!(digest));
+        assert!(files.iter().all(|file| !file.ends_with("/editor-types.d.ts")));
+        assert!(files.iter().any(|file| file.ends_with("/globals.d.ts")));
+
+        let authored = baseline_files(
+            &config_dir,
+            &fixture,
+            &json!({"fileCount": 1, "files": [{"file": "packages/lib/src/editor-types.d.ts"}]}),
+            std::slice::from_ref(&lib),
+            &excluded,
+        )
+        .unwrap_err();
+        assert!(authored.contains("authored Vize program input"));
+
+        let mut stale = project;
+        stale["typecheckPerformance"]["baseline"]["excludedInputs"][0]["sha256"] =
+            json!("0".repeat(64));
+        assert!(
+            baseline_excluded_inputs(&fixture, &stale)
+                .unwrap_err()
+                .contains("does not match")
+        );
         fs::remove_dir_all(fixture).unwrap();
     }
 

@@ -20,7 +20,11 @@ interface TypecheckPerformance {
   packageManager: "npm" | "pnpm" | "yarn";
   packageManagerVersion: string;
   lockfile: "pnpm-lock.yaml" | "yarn.lock";
-  baseline?: { tsconfig: string; prepare?: string[] };
+  baseline?: {
+    tsconfig: string;
+    prepare?: string[];
+    excludedInputs?: Array<{ path: string; reason: string; sha256: string }>;
+  };
   hangTimeoutMs: number;
   corpusGlobs?: string[];
   maxFalsePositiveRatio: number;

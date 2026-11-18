@@ -176,6 +176,16 @@
         "packageManager": "pnpm",
         "packageManagerVersion": "10.33.4",
         "lockfile": "pnpm-lock.yaml",
+        "baseline": {
+          "tsconfig": "packages/hoppscotch-common/tsconfig.json",
+          "excludedInputs": [
+            {
+              "path": "packages/hoppscotch-common/src/types/post-request.d.ts",
+              "reason": "Imported with ?raw as Monaco editor text; the pinned upstream bytes contain an unmatched namespace close and are not a Vize-requested program input.",
+              "sha256": "fdb91805ae8d684329e03af828f49d2b1d29f88ac3c906a33016fdc4d000d9ab"
+            }
+          ]
+        },
         "hangTimeoutMs": 2400000,
         "corpusGlobs": ["packages/hoppscotch-common/src/**/*.vue"],
         "maxFalsePositiveRatio": 0.05,
