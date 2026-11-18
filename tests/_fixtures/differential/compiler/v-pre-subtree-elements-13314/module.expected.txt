@@ -1,0 +1,24 @@
+import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<!--[--><div><div><Child>{{ x }}</Child></div></div><Child>{{ x }}</Child><div><component is="x"></component><my-comp></my-comp><slot></slot><template v-if="a">x</template></div><div>`)
+  _push(_ssrRenderComponent($setup.Child, null, null, _parent))
+  _push(`</div><!--]-->`)
+}
+import Child from './Child.vue'
+
+
+export default {
+  __name: 'Layout',
+  ssrRender: ssrRender,
+  setup(__props, { expose: __expose }) {
+  __expose();
+
+
+const __returned__ = { Child }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+}

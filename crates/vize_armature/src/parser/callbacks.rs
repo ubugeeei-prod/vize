@@ -168,6 +168,6 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
     }
 
     fn directive_heads_in_verbatim(&self) -> bool {
-        self.parser.frozen_elements.is_some()
+        self.parser.holds_frozen_heads()
     }
 }

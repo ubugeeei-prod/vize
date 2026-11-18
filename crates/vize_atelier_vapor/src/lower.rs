@@ -43,7 +43,7 @@ pub(crate) fn transform_to_ir_with_scope_id<'a>(
     scope_id: Option<&str>,
 ) -> (RootIRNode<'a>, std::vec::Vec<String>) {
     let (ir, diagnostics, _, _) =
-        transform_to_ir_with_spans(allocator, root, source, scope_id, false);
+        transform_to_ir_with_spans(allocator, root, source, scope_id, false, &[]);
     (ir, diagnostics)
 }
 
@@ -55,13 +55,16 @@ pub(crate) fn transform_to_ir_with_spans<'a>(
     source: &'a str,
     scope_id: Option<&str>,
     spans: bool,
+    frozen_elements: &'a [vize_l0::Span],
 ) -> (
     RootIRNode<'a>,
     std::vec::Vec<String>,
     std::vec::Vec<String>,
     Option<TemplateSpans>,
 ) {
-    transform_to_ir_with_host_context(allocator, root, source, scope_id, spans, false, false)
+    let mut ctx = TransformContext::new(allocator, source);
+    ctx.frozen_elements = frozen_elements;
+    lower_root(ctx, root, scope_id, spans)
 }
 
 pub(crate) fn transform_to_ir_with_host_context<'a>(
@@ -79,9 +82,25 @@ pub(crate) fn transform_to_ir_with_host_context<'a>(
     Option<TemplateSpans>,
 ) {
     let mut ctx = TransformContext::new(allocator, source);
-    ctx.scope_id = scope_id.map(String::from);
     ctx.jsx_closure = jsx_closure;
     ctx.jsx_children = jsx_children;
+    lower_root(ctx, root, scope_id, spans)
+}
+
+fn lower_root<'a>(
+    mut ctx: TransformContext<'a>,
+    root: &RootNode<'a>,
+    scope_id: Option<&str>,
+    spans: bool,
+) -> (
+    RootIRNode<'a>,
+    std::vec::Vec<String>,
+    std::vec::Vec<String>,
+    Option<TemplateSpans>,
+) {
+    let allocator = ctx.allocator;
+    let source = ctx.source;
+    ctx.scope_id = scope_id.map(String::from);
     ctx.template_spans = spans.then(TemplateSpans::default);
 
     vize_atelier_core::walk_probe::record_walk(

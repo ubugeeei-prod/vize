@@ -185,7 +185,7 @@ pub(super) fn hoist_element_props<'a>(
             .scope_id
             .as_deref()
             .map(|id| allocator.alloc_str(id)),
-        skip_is_on_dynamic_component(el),
+        skip_is_on_dynamic_component(el) && !ctx.element_is_frozen(el.loc.span),
     ) else {
         return;
     };
@@ -197,6 +197,7 @@ pub(super) fn hoist_element_props<'a>(
 
 /// Vue's `buildProps` drops `is` / `:is` on `<component>` / `<Component>`
 /// before `hoistStatic` runs, so the hoisted object must not keep it.
+/// A literal v-pre element keeps it, as its unhoisted props and SSR do.
 fn skip_is_on_dynamic_component(el: &ElementNode<'_>) -> bool {
     el.tag == "component" || (el.tag == "Component" && el.props.iter().any(is_is_prop))
 }

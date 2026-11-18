@@ -17,7 +17,7 @@ use vize_l0::ErrorCode;
 use vize_l1::markup::Namespace;
 use vize_relief::{ElementNode, ElementType, SourceLocation, errors::CompilerError};
 
-use super::{ImplicitlyClosedTag, Parser};
+use super::{ImplicitlyClosedTag, Parser, ParserStackEntry};
 
 impl<'a> Parser<'a> {
     fn report_tree_construction_recovery(&mut self, loc: &SourceLocation, message: &str) {
@@ -36,7 +36,7 @@ impl<'a> Parser<'a> {
 
     pub(super) fn note_implicitly_closed_stack_entries_from(&mut self, index: usize) {
         for (depth, entry) in self.stack.iter().enumerate().skip(index) {
-            if !entry.implicit && is_html_tree_element(&entry.element) {
+            if !entry.implicit && entry.html_tree {
                 self.implicitly_closed_tags.push(ImplicitlyClosedTag {
                     tag: entry.element.tag,
                     depth,
@@ -88,10 +88,11 @@ pub(super) fn is_html_tree_element(element: &ElementNode<'_>) -> bool {
     element.ns == Namespace::Html && element.tag_type == ElementType::Element
 }
 
-pub(super) fn note_html_tree_element_open(parser: &mut Parser<'_>, element: &ElementNode<'_>) {
-    if !is_html_tree_element(element) {
+pub(super) fn note_html_tree_element_open(parser: &mut Parser<'_>, entry: &ParserStackEntry<'_>) {
+    if !entry.html_tree {
         return;
     }
+    let element = &entry.element;
 
     match element.tag.len() {
         1 if element.tag.eq_ignore_ascii_case("p") => parser.open_p_count += 1,
@@ -103,10 +104,11 @@ pub(super) fn note_html_tree_element_open(parser: &mut Parser<'_>, element: &Ele
     }
 }
 
-pub(super) fn note_html_tree_element_close(parser: &mut Parser<'_>, element: &ElementNode<'_>) {
-    if !is_html_tree_element(element) {
+pub(super) fn note_html_tree_element_close(parser: &mut Parser<'_>, entry: &ParserStackEntry<'_>) {
+    if !entry.html_tree {
         return;
     }
+    let element = &entry.element;
 
     match element.tag.len() {
         1 if element.tag.eq_ignore_ascii_case("p") => {

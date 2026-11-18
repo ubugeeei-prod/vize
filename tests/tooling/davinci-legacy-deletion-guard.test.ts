@@ -69,10 +69,9 @@ void test("retiring a retained compiler route witness triggers the guard", () =>
     [buildStats]:
       "compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options(",
     [dom]: "generate_with_sections_and_experimental_options_slot_scope_and_environment(",
-    [vapor]: [
-      "transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(",
-      "vapor_lower::transform_to_ir_with_spans(",
-    ].join("\n"),
+    [vapor]: ["transform_with_frozen_elements(", "vapor_lower::transform_to_ir_with_spans("].join(
+      "\n",
+    ),
   };
 
   assert.deepEqual(retiredLegacyRouteWitnesses(base, base), []);

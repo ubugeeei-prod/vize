@@ -1,0 +1,10 @@
+<script setup>
+import Child from './Child.vue'
+</script>
+
+<template>
+  <div v-pre><div><Child>{{ x }}</Child></div></div>
+  <Child v-pre>{{ x }}</Child>
+  <div v-pre><component is="x"/><my-comp/><slot/><template v-if="a">x</template></div>
+  <div><Child/></div>
+</template>

@@ -2,11 +2,11 @@
 
 use super::{
     Allocator, CaptureOutcome, CaptureSink, CompilerError, CustomElementMatcher, Level, NoCapture,
-    String, TemplateSyntaxMode, TransformOptions, VaporCompileResult,
+    Parser, String, TemplateSyntaxMode, TransformOptions, VaporCompileResult,
     VaporCompilerExperimentalOptions, VaporCompilerOptions, VaporL3BridgeOptions,
     VaporL3BridgeStatus, VaporSourceSpans, cstr, l3, native,
     parse_with_options_custom_elements_and_template_syntax, parser_options,
-    transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id, vapor_lower,
+    transform_with_frozen_elements, vapor_lower,
 };
 
 pub(super) fn compile_vapor_inner<'a>(
@@ -227,13 +227,18 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
         return (result, diagnostics);
     }
 
-    let (mut root, errors) = parse_with_options_custom_elements_and_template_syntax(
-        allocator,
-        source,
-        parser_options(&options),
-        custom_elements.clone(),
-        template_syntax,
-    );
+    let (mut root, errors, frozen_elements) =
+        Parser::with_options_custom_elements_and_template_syntax(
+            allocator,
+            source,
+            parser_options(&options),
+            custom_elements.clone(),
+            template_syntax,
+        )
+        .parse_with_frozen_element_spans();
+    let frozen_spans = frozen_elements
+        .spans_for(root.source, source)
+        .unwrap_or_default();
     let parser_diagnostics = errors.to_vec();
 
     let fatal: std::vec::Vec<_> = errors.iter().filter(|e| !e.is_recoverable()).collect();
@@ -299,16 +304,17 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
         directive_contracts: experimental_options.directive_contracts.clone(),
         ..Default::default()
     };
-    let transform_errors =
-        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
-            allocator,
-            &mut root,
-            transform_opts,
-            None,
-            custom_elements,
-            template_syntax.is_quirks(),
-            None,
-        );
+    let transform_errors = transform_with_frozen_elements(
+        allocator,
+        source,
+        &mut root,
+        transform_opts,
+        None,
+        custom_elements,
+        template_syntax.is_quirks(),
+        None,
+        frozen_elements,
+    );
     let fatal: Vec<_> = transform_errors
         .iter()
         .filter(|error| !error.is_recoverable())
@@ -332,7 +338,14 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
 
     // Lower to Vapor IR.
     let (ir, transform_diagnostics, transform_warnings, template_spans) =
-        vapor_lower::transform_to_ir_with_spans(allocator, &root, source, scope_id, source_map);
+        vapor_lower::transform_to_ir_with_spans(
+            allocator,
+            &root,
+            source,
+            scope_id,
+            source_map,
+            frozen_spans,
+        );
     let spans = template_spans.map(|templates| VaporSourceSpans::collect(&root, templates));
     let mut result = emit(&ir, transform_diagnostics, spans.as_ref());
     result.warning_messages = transform_warnings;

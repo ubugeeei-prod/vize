@@ -33,8 +33,9 @@ fn refused(source: &str, depth: usize) {
     assert_eq!(cstr!("{:?}", owner.component().carrier()), before);
 }
 
+/// #13314: a `<slot v-pre>` is a literal element, so its textarea text stays literal too.
 #[test]
-fn original_slot_pre_can_expose_a_registered_marker_that_selected_l1_freezes() {
+fn a_slot_pre_keeps_its_textarea_text_literal_in_both_lanes() {
     for (source, depth) in [
         (
             "<template><slot v-pre><textarea>{{x}}</textarea></slot></template>",
@@ -47,10 +48,7 @@ fn original_slot_pre_can_expose_a_registered_marker_that_selected_l1_freezes() {
     ] {
         refused(source, depth);
         for locale in LOCALES {
-            assert_eq!(
-                complete(&registered(source, locale)),
-                expected(vec![error(locale, span(source, "{{x}}"))])
-            );
+            assert_eq!(complete(&registered(source, locale)), expected(vec![]));
         }
     }
 }

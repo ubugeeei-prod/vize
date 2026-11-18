@@ -15,10 +15,7 @@ impl<'a> Parser<'a> {
             && element.tag_type == ElementType::Element
             && (!self.options.custom_renderer || vize_l0::is_html_tag(element.tag))
             && !(self.options.is_void_tag)(element.tag)
-            && !(self.frozen_elements.is_some()
-                && frozen
-                && !vize_l0::is_native_tag(element.tag)
-                && self.is_component(element))
+            && !(frozen && !vize_l0::is_native_tag(element.tag) && self.is_component(element))
     }
 
     /// Determine element type (element, component, slot, template)
@@ -26,17 +23,25 @@ impl<'a> Parser<'a> {
         &self,
         element: &ElementNode<'a>,
     ) -> ElementType {
-        let tag = element.tag;
-        if self.frozen_elements.is_some()
-            && (self.in_v_pre
-                || element
-                    .props
-                    .iter()
-                    .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre")))
+        // Vue refines a tag type only outside v-pre, for its opener and every descendant.
+        if self.in_v_pre
+            || element
+                .props
+                .iter()
+                .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre"))
         {
-            return ElementType::Element;
+            ElementType::Element
+        } else {
+            self.authored_element_type(element)
         }
+    }
 
+    /// The type outside v-pre; HTML tree construction keeps reading it under v-pre.
+    pub(in crate::parser) fn authored_element_type(
+        &self,
+        element: &ElementNode<'a>,
+    ) -> ElementType {
+        let tag = element.tag;
         // Check for slot
         if tag == "slot" {
             return ElementType::Slot;

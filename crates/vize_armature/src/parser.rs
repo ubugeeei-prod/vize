@@ -42,6 +42,8 @@ mod tokenizer_empty_value_witness;
 #[cfg(all(test, feature = "legacy"))]
 mod tokenizer_first_newline_witness;
 #[cfg(test)]
+mod v_pre_subtree_tests;
+#[cfg(test)]
 mod v_pre_tests;
 mod whitespace;
 mod whitespace_context;
@@ -132,6 +134,8 @@ pub struct Parser<'a> {
     in_v_pre: bool,
     /// Compiler opt-in custody; backing storage is reserved only for frozen tags.
     frozen_elements: Option<Vec<'a, vize_l0::Span>>,
+    /// Custody of frozen spans only; directive heads keep the default names.
+    frozen_spans_only: bool,
     /// Demand-only syntax custody; native owners contain normally dropped diagnostics.
     template_syntax_facts: Option<template_syntax::TemplateSyntaxCapture<'a>>,
     open_table_count: usize,
@@ -152,6 +156,8 @@ pub(super) struct ParserStackEntry<'a> {
     pub(super) element: ElementNode<'a>,
     pub(super) in_pre: bool,
     pub(super) in_v_pre: bool,
+    /// Whether HTML tree construction reads this entry, from its type outside v-pre.
+    pub(super) html_tree: bool,
     pub(super) insertion: StackInsertion,
     pub(super) implicit: bool,
     pub(super) fostered_before: Vec<'a, TemplateChildNode<'a>>,
@@ -306,13 +312,13 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn push_stack_entry(&mut self, entry: ParserStackEntry<'a>) {
-        note_html_tree_element_open(self, &entry.element);
+        note_html_tree_element_open(self, &entry);
         self.stack.push(entry);
     }
 
     pub(super) fn pop_stack_entry(&mut self) -> Option<ParserStackEntry<'a>> {
         let entry = self.stack.pop()?;
-        note_html_tree_element_close(self, &entry.element);
+        note_html_tree_element_close(self, &entry);
         Some(entry)
     }
 

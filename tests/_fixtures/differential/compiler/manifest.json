@@ -5659,6 +5659,63 @@
       }
     },
     {
+      "id": "compiler/sfc/v-pre-subtree-elements-13314",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "v-pre-subtree-elements-13314",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "30584ad12cd344344c71eec09ed43948899c7ee55ec7f2be0c69f6c2c22d60f9",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "v-pre-subtree-elements-13314/module.expected.txt",
+        "sha256": "31ecb5f1f5539ee72c89c4c8b06a7521a01bd72730968a4afefe41d8a93a2729",
+        "source": "https://github.com/ubugeeei-prod/vize/issues/13314; crates/vize_atelier_sfc/tests/v_pre_subtree_elements.rs:every_target_keeps_the_v_pre_subtree_plain; SSR source coverage only"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native SFC and Vue markup paths are unavailable (#6835, #6842); Croquis descriptor and armature tokenizer remain legacy-backed."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/13314",
+        "reporter": "ubugeeei"
+      }
+    },
+    {
       "id": "compiler/sfc/vapor-invalid-expression-control-11622",
       "state": "active",
       "targets": [

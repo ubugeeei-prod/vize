@@ -318,6 +318,31 @@ fn v_pre_freezes_its_subtree_and_leaves_no_diagnostic() {
 }
 
 #[test]
+fn a_v_pre_subtree_lowers_component_like_tags_as_elements() {
+    // #13314: Vue refines a tag type only outside `v-pre`, so its opener and
+    // every descendant stay `ui.element`, `<slot>` and `<component>` included.
+    let art = artifact(
+        "<Child v-pre><div><Other>{{ x }}</Other><slot/><component is=\"x\"/></div></Child>",
+    );
+    assert_eq!(
+        art.folio,
+        "[l2-dump-v2]\n\
+         ops=6\n\
+         \n\
+         [l2-dump-v2.ops]\n\
+         ui.element Child @0:80\n\
+         \x20 ui.element div @13:72\n\
+         \x20   ui.element Other @18:40\n\
+         \x20     ui.text \"{{ x }}\" @25:32\n\
+         \x20   ui.element slot @40:47\n\
+         \x20   ui.element component @47:66\n\
+         \x20     attr is=\"x\" @58:64\n\
+         \n"
+    );
+    assert_eq!(art.diagnostics, vec![]);
+}
+
+#[test]
 fn a_missing_end_tag_hole_becomes_a_surface_diagnostic() {
     // The tokenizer never reports a missing end tag (end-tag matching is
     // tree construction, not lexing), so the `ElementClose::Missing`

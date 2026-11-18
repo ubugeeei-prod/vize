@@ -182,17 +182,15 @@ fn compact_slot_fallback_keeps_conditional_sibling_boundaries() {
 }
 
 #[test]
-fn v_pre_fallback_interp_keeps_the_old_default_child_boundary() {
+fn v_pre_slot_stays_a_literal_element_with_its_text_verbatim() {
+    // @vue/compiler-sfc 3.5.35 renders the same element with the same text (#13314).
     assert_eq!(
         assembled("<slot v-pre>{{ not }} an interpolation</slot>"),
         "\
-const { toDisplayString: _toDisplayString, renderSlot: _renderSlot, createTextVNode: _createTextVNode } = Vue
+const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return _renderSlot(_ctx.$slots, \"default\", {}, () => [
-    _toDisplayString(not),
-    _createTextVNode(\" an interpolation\")
-  ])
+  return (_openBlock(), _createElementBlock(\"slot\", null, \"{{ not }} an interpolation\"))
 }"
     );
 }

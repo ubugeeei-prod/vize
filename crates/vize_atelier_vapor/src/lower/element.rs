@@ -124,8 +124,11 @@ pub(super) fn transform_classified_element<'a>(
     }
 
     // Components handle their own ID allocation (slots consume IDs before the component)
-    // Also handle <component :is="..."> (dynamic component) which the parser classifies as Element
-    if el.tag_type == ElementType::Component || el.tag == "component" {
+    // Also handle <component :is="..."> (dynamic component) which the parser classifies as Element,
+    // except under v-pre, where it stays a literal element.
+    if el.tag_type == ElementType::Component
+        || (el.tag == "component" && !ctx.element_is_frozen(el))
+    {
         transform_component(ctx, el, block, None, None, None, true);
         if entered_non_reactive {
             ctx.exit_non_reactive_scope();

@@ -161,11 +161,8 @@ impl<'a> MarkupElement<'a> {
     pub fn kind(&self) -> MarkupElementKind {
         match self.inner {
             MarkupElementInner::Authored {
-                element,
-                frozen,
-                opens_v_pre,
-                ..
-            } => super::authored::kind(element, frozen, opens_v_pre),
+                element, frozen, ..
+            } => super::authored::kind(element, frozen),
             MarkupElementInner::Relief(node) => match node.tag_type {
                 ElementType::Element => MarkupElementKind::Element,
                 ElementType::Component => MarkupElementKind::Component,
@@ -176,16 +173,14 @@ impl<'a> MarkupElement<'a> {
                 jsx_element_kind(&jsx_element_ref(node).opening_element.name)
             }
             MarkupElementInner::JsxFragment { .. } => MarkupElementKind::Template,
+            // Vue refines a tag type only outside v-pre, for its opener and every descendant.
+            MarkupElementInner::L2 { frozen: true, .. } => MarkupElementKind::Element,
             MarkupElementInner::L2 {
                 op: L2ElementOp::Slot(_),
                 ..
             } => MarkupElementKind::Slot,
             MarkupElementInner::L2 {
-                op,
-                surface,
-                doc,
-                frozen,
-                ..
+                op, surface, doc, ..
             } => {
                 let tag = match surface {
                     Some(element) => element.tag(),
@@ -202,7 +197,7 @@ impl<'a> MarkupElement<'a> {
                     // which the lint lane's rules and snapshots are not written
                     // against.
                     _ if surface.is_some() => {
-                        if is_component_tag(tag, !frozen) {
+                        if is_component_tag(tag, true) {
                             MarkupElementKind::Component
                         } else {
                             MarkupElementKind::Element

@@ -21,7 +21,7 @@ fn assert_original_parser_kinds(source: &str, actual: &[Observation]) {
 }
 
 #[test]
-fn exact_and_inherited_pre_keep_real_registered_output_and_component_exemptions() {
+fn exact_and_inherited_pre_keep_real_registered_output_and_literal_elements() {
     let source = "<template><section v-pre autofocus><template v-if='ok' autofocus><slot autofocus></slot><Foo autofocus/></template><input :autofocus='ignored' autofocus /></section><input :autofocus='enabled' /></template>";
     let arena = Allocator::default();
     let owner = selected(&arena, source);
@@ -42,14 +42,15 @@ fn exact_and_inherited_pre_keep_real_registered_output_and_component_exemptions(
             [
                 ("section", MarkupElementKind::Element),
                 ("template", MarkupElementKind::Element),
-                ("slot", MarkupElementKind::Slot),
-                ("Foo", MarkupElementKind::Component),
+                ("slot", MarkupElementKind::Element),
+                ("Foo", MarkupElementKind::Element),
                 ("input", MarkupElementKind::Element),
                 ("input", MarkupElementKind::Element),
             ]
         );
         assert_eq!(result.error_count, 0);
-        assert_eq!(result.warning_count, 5);
+        // The literal `<Foo>` under v-pre is no longer exempt as a component (#13314).
+        assert_eq!(result.warning_count, 6);
     }
     for attributes in [
         "v-pre.foo v-pre",
@@ -62,10 +63,10 @@ fn exact_and_inherited_pre_keep_real_registered_output_and_component_exemptions(
         );
         let (output, result) = parity(&source, Locale::En);
         assert_original_parser_kinds(&source, &output);
-        assert_eq!(output[0].kind, MarkupElementKind::Template);
-        assert_eq!(output[1].kind, MarkupElementKind::Component);
+        assert_eq!(output[0].kind, MarkupElementKind::Element);
+        assert_eq!(output[1].kind, MarkupElementKind::Element);
         assert_eq!(result.error_count, 0);
-        assert_eq!(result.warning_count, 2);
+        assert_eq!(result.warning_count, 3);
     }
 }
 
@@ -100,7 +101,7 @@ fn modified_pre_refusals_preserve_the_unfiltered_registered_oracle_control() {
                     .map(|item| (item.tag.as_str(), item.kind))
                     .collect::<Vec<_>>(),
                 [
-                    ("template", MarkupElementKind::Template),
+                    ("template", MarkupElementKind::Element),
                     ("input", MarkupElementKind::Element),
                     ("input", MarkupElementKind::Element),
                 ]

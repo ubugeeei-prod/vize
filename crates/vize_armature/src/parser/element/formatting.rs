@@ -78,6 +78,7 @@ impl<'a> Parser<'a> {
         reopened.ns = element.ns;
         reopened.tag_type = element.tag_type;
         ParserStackEntry {
+            html_tree: super::is_html_tree_element(&reopened),
             element: reopened,
             in_pre,
             in_v_pre,

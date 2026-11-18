@@ -160,7 +160,9 @@ mod tests {
         let source = "<slot v-pre></slot>";
         let (tree, errors) = vize_l1::markup::parse(&arena, source);
         let original = lower(&arena, &tree, &errors);
-        assert!(matches!(&original.artifact.root.ops[0], Op::Slot(_)));
+        assert!(
+            matches!(&original.artifact.root.ops[0], Op::Element(element) if element.tag == "slot" && element.children.ops.is_empty())
+        );
         let block = SourceRoot::new(source).unwrap().whole_block();
         assert_eq!(
             lower_with_frozen_element_spans(&arena, &tree, &errors, block, &[]).err(),
@@ -175,7 +177,7 @@ mod tests {
     }
 
     #[test]
-    fn complete_opening_membership_changes_only_the_explicit_owner() {
+    fn complete_opening_membership_keeps_the_ordinary_literal_owner() {
         let arena = Allocator::new();
         let source = "<slot v-pre></slot>";
         let (tree, errors) = vize_l1::markup::parse(&arena, source);
@@ -186,10 +188,9 @@ mod tests {
         assert!(
             matches!(&explicit.artifact.root.ops[0], Op::Element(element) if element.tag == "slot" && element.children.ops.is_empty())
         );
-        assert!(matches!(
-            &lower(&arena, &tree, &errors).artifact.root.ops[0],
-            Op::Slot(_)
-        ));
+        assert!(
+            matches!(&lower(&arena, &tree, &errors).artifact.root.ops[0], Op::Element(element) if element.tag == "slot" && element.children.ops.is_empty())
+        );
     }
 
     #[test]

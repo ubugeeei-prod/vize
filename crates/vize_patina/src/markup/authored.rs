@@ -88,19 +88,21 @@ fn walk_elements<'a>(
     }
 }
 
-pub(super) fn kind(element: &Element<'_>, frozen: bool, opens_v_pre: bool) -> MarkupElementKind {
+pub(super) fn kind(element: &Element<'_>, frozen: bool) -> MarkupElementKind {
     let tag = element.tag();
-    if tag == "slot" {
+    // Vue refines a tag type only outside v-pre, for its opener and every descendant.
+    if frozen {
+        MarkupElementKind::Element
+    } else if tag == "slot" {
         MarkupElementKind::Slot
     } else if tag == "template"
-        && (!frozen || opens_v_pre)
         && element.open.attrs.iter().any(|attr| {
             SurfaceDirective::parse(attr.name.text)
                 .is_some_and(|directive| directive.is_structural() || directive.name == "slot")
         })
     {
         MarkupElementKind::Template
-    } else if is_component_tag(tag, !frozen) {
+    } else if is_component_tag(tag, true) {
         MarkupElementKind::Component
     } else {
         MarkupElementKind::Element

@@ -89,14 +89,14 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn find_last_open_element_index(&self, tags: &[&str]) -> Option<usize> {
-        self.stack.iter().rposition(|entry| {
-            is_html_tree_element(&entry.element) && Self::tag_in(entry.element.tag, tags)
-        })
+        self.stack
+            .iter()
+            .rposition(|entry| entry.html_tree && Self::tag_in(entry.element.tag, tags))
     }
 
     fn find_open_li_element_in_list_item_scope(&self) -> Option<usize> {
         for (i, entry) in self.stack.iter().enumerate().rev() {
-            if !is_html_tree_element(&entry.element) {
+            if !entry.html_tree {
                 return None;
             }
 
@@ -114,7 +114,7 @@ impl<'a> Parser<'a> {
 
     fn find_open_p_element_in_button_scope(&self) -> Option<usize> {
         for (i, entry) in self.stack.iter().enumerate().rev() {
-            if !is_html_tree_element(&entry.element) {
+            if !entry.html_tree {
                 return None;
             }
 

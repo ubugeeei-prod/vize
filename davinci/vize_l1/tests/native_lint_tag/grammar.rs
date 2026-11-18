@@ -113,17 +113,19 @@ fn complete_template_heads_and_slot_spellings_keep_exact_categories() {
     }
 }
 
+/// #13314: Vue refines a tag type only outside v-pre, so the exact opener and
+/// its descendants are plain elements; an inherited template still refuses.
 #[test]
-fn exact_pre_keeps_registered_template_kind_and_inherited_templates_refuse() {
+fn exact_pre_keeps_its_subtree_plain_and_inherited_templates_refuse() {
     let source = "<template><template v-pre v-if='ok'><slot/><Foo/><div><template v-for='item in items'></template></div></template><template v-if='ok'></template></template>";
     let arena = Allocator::default();
     let owner = selected(&arena, source);
     assert_eq!(
         tags(&owner),
         [
-            ("template", Ok(Kind::Template)),
-            ("slot", Ok(Kind::Slot)),
-            ("Foo", Ok(Kind::Component)),
+            ("template", Ok(Kind::Element)),
+            ("slot", Ok(Kind::Element)),
+            ("Foo", Ok(Kind::Element)),
             ("div", Ok(Kind::Element)),
             ("template", Err(Refusal::InheritedTemplate)),
             ("template", Ok(Kind::Template)),
@@ -169,9 +171,9 @@ fn exact_pre_on_the_same_complete_header_removes_ambiguity_in_both_orders() {
             assert_eq!(
                 tags(&owner),
                 [
-                    ("template", Ok(Kind::Template)),
-                    ("Foo", Ok(Kind::Component)),
-                    ("slot", Ok(Kind::Slot)),
+                    ("template", Ok(Kind::Element)),
+                    ("Foo", Ok(Kind::Element)),
+                    ("slot", Ok(Kind::Element)),
                 ],
                 "{attributes}"
             );

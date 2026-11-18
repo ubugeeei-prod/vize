@@ -41,7 +41,7 @@ const legacyRouteWitnesses: readonly LegacyRouteWitness[] = [
   {
     route: "Vapor compatibility transform",
     path: "crates/vize_atelier_vapor/src/compile/inner.rs",
-    marker: "transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(",
+    marker: "transform_with_frozen_elements(",
   },
   {
     route: "Vapor compatibility emitter",

@@ -71,11 +71,14 @@ impl<const TAG_FACTS: bool> SurfacePolicy for Vue3Policy<TAG_FACTS> {
             // The registered facade may expose a synthetic L2 Template carrier
             // here. Its category cannot be proved by a literal original header.
             TagKindFact::InheritedTemplate
+        } else if verbatim {
+            // Vue refines a tag type only outside v-pre, for its opener and every descendant.
+            TagKindFact::Element
         } else if tag == "slot" {
             TagKindFact::Slot
         } else if tag == "template" && structural_template {
             TagKindFact::Template
-        } else if is_component_tag(tag, !verbatim) {
+        } else if is_component_tag(tag, true) {
             TagKindFact::Component
         } else {
             TagKindFact::Element

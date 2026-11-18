@@ -12,9 +12,9 @@ impl<'a> Parser<'a> {
             return None;
         }
 
-        self.stack.iter().rposition(|entry| {
-            is_html_tree_element(&entry.element) && entry.element.tag.eq_ignore_ascii_case("table")
-        })
+        self.stack
+            .iter()
+            .rposition(|entry| entry.html_tree && entry.element.tag.eq_ignore_ascii_case("table"))
     }
 
     pub(super) fn should_foster_text(&self, content: &str) -> bool {
@@ -40,7 +40,7 @@ impl<'a> Parser<'a> {
         };
 
         for entry in self.stack.iter().skip(table_index + 1) {
-            if !is_html_tree_element(&entry.element) {
+            if !entry.html_tree {
                 return false;
             }
 
@@ -153,6 +153,7 @@ impl<'a> Parser<'a> {
         let mut element = ElementNode::new(self.allocator, tag, loc);
         element.tag_type = self.determine_element_type(&element);
         self.push_stack_entry(ParserStackEntry {
+            html_tree: is_html_tree_element(&element),
             element,
             in_pre: self.in_pre,
             in_v_pre: self.in_v_pre,

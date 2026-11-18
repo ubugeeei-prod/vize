@@ -93,7 +93,7 @@ impl<'a> Parser<'a> {
         dir: &CurrentDirective<'a>,
         loc: &SourceLocation,
     ) -> Option<&'a str> {
-        if self.frozen_elements.is_some() {
+        if self.holds_frozen_heads() {
             self.retain_completed_directive_head(dir, loc)
         } else {
             Some(dir.raw_name)
@@ -105,7 +105,7 @@ impl<'a> Parser<'a> {
         dir: &DirectiveNode<'a>,
         before_pre: bool,
     ) -> Option<(&'a str, SourceLocation)> {
-        if self.frozen_elements.is_none() {
+        if !self.holds_frozen_heads() {
             return Some((self.compatible_directive_name(dir), dir.loc.clone()));
         }
         let Some((_, authored, end)) = self.completed_node_head(dir) else {
@@ -127,7 +127,7 @@ impl<'a> Parser<'a> {
         element: &mut ElementNode<'a>,
         ordinal: Option<usize>,
     ) -> bool {
-        if self.frozen_elements.is_none() {
+        if !self.holds_frozen_heads() {
             return true;
         }
         if ordinal.is_some() {
@@ -179,7 +179,7 @@ impl<'a> Parser<'a> {
 
     /// Process the end of a full attribute or directive head.
     pub(in crate::parser) fn on_attrib_name_end_impl(&mut self, end: usize) {
-        if self.frozen_elements.is_some()
+        if self.holds_frozen_heads()
             && self.in_v_pre
             && let Some(attr) = self.current_attr.as_ref()
         {

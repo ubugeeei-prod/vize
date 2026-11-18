@@ -43,6 +43,24 @@ impl<'a> Parser<'a> {
         (root, errors, frozen)
     }
 
+    /// Collect the same frozen spans while directive heads keep their default names.
+    #[doc(hidden)]
+    pub fn parse_with_frozen_element_spans(
+        mut self,
+    ) -> (
+        RootNode<'a>,
+        std::vec::Vec<CompilerError>,
+        FrozenElements<'a>,
+    ) {
+        self.frozen_spans_only = true;
+        self.parse_with_frozen_elements()
+    }
+
+    /// Whether completed directive heads are under frozen custody.
+    pub(in crate::parser) fn holds_frozen_heads(&self) -> bool {
+        self.frozen_elements.is_some() && !self.frozen_spans_only
+    }
+
     pub(in crate::parser) fn record_frozen_element(&mut self, span: Span, frozen: bool) {
         if frozen && let Some(spans) = &mut self.frozen_elements {
             spans.push(span);
@@ -78,13 +96,13 @@ mod tests {
     use vize_l0::Allocator;
 
     #[test]
-    fn opted_in_spans_bind_source_and_literal_classification_is_compiler_only() {
+    fn opted_in_spans_bind_source_and_every_parse_keeps_v_pre_elements_literal() {
         let source =
             "<div v-pre><span><Child is=\"vue:Child\"></Child></span></div><Child></Child>";
         let arena = Allocator::new();
         let (root, errors, frozen) = Parser::new(&arena, source).parse_with_frozen_elements();
         let (control, control_errors) = Parser::new(&arena, source).parse();
-        assert_ne!(vize_l0::cstr!("{root:?}"), vize_l0::cstr!("{control:?}"));
+        assert_eq!(vize_l0::cstr!("{root:?}"), vize_l0::cstr!("{control:?}"));
         let vize_relief::TemplateChildNode::Element(owner) = &root.children[0] else {
             panic!("owner")
         };
@@ -104,7 +122,11 @@ mod tests {
         let vize_relief::TemplateChildNode::Element(child) = &span.children[0] else {
             panic!("Child")
         };
-        assert_eq!(child.tag_type, vize_relief::ElementType::Component);
+        assert_eq!(child.tag_type, vize_relief::ElementType::Element);
+        let vize_relief::TemplateChildNode::Element(outside) = &control.children[1] else {
+            panic!("outside Child")
+        };
+        assert_eq!(outside.tag_type, vize_relief::ElementType::Component);
         assert_eq!(
             vize_l0::cstr!("{errors:?}"),
             vize_l0::cstr!("{control_errors:?}")

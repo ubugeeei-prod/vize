@@ -190,40 +190,109 @@ fn implied_end_tags_keep_the_vue_v_pre_scope() {
     }
 }
 
-/// Two shapes where **both** vize lanes differ from Vue, recorded so the
-/// gap is a known one rather than a surprise. Neither is this fix's to
-/// close — the fix is about the L2 lane matching the shipped lane — and
-/// the two lanes do agree with each other on the first.
-///
-/// - `<MyComp v-pre :x="1">c</MyComp>`: Vue emits
-///   `_createElementVNode("MyComp", { ":x": "1" }, "c")` — under `v-pre`
-///   a component tag is not resolved, it stays a plain element. Both
-///   vize lanes resolve it, which is what the pin below states.
-/// - `<MyComp><template v-pre #head>c</template></MyComp>`: Vue keeps the
-///   wrapper, `_createElementVNode("template", { "#head": "" }, […])`.
-///   Both vize lanes unwrap it into the default slot, and there they also
-///   disagree with each other on hoisting the content, so this one is not
-///   in [`CASES`].
-#[test]
-fn the_component_tag_under_v_pre_is_a_known_gap() {
-    let source = r#"<MyComp v-pre :x="1">c</MyComp>"#;
+/// Compile on both lanes, require identical whole results, and return the
+/// shared render body and `_hoisted_1` line.
+fn both_lanes(source: &str) -> (String, String) {
     let allocator = Allocator::new();
-    let (_, _, s2) = compile_template(&allocator, source);
+    let (_, errors, s2) = compile_template(&allocator, source);
+    assert!(errors.is_empty(), "{source:?}: {errors:?}");
     let legacy_allocator = Allocator::new();
-    let (_, _, legacy) = compile_template_legacy_with_options(
+    let (_, legacy_errors, legacy) = compile_template_legacy_with_options(
         &legacy_allocator,
         source,
         DomCompilerOptions::default(),
     );
+    assert!(legacy_errors.is_empty(), "{source:?}: {legacy_errors:?}");
+    assert_eq!(s2.code, legacy.code, "whole code: {source:?}");
+    assert_eq!(s2.preamble, legacy.preamble, "whole preamble: {source:?}");
+    let hoisted = s2
+        .preamble
+        .lines()
+        .find(|line| line.starts_with("const _hoisted_1"))
+        .unwrap_or("<no hoisted props>")
+        .to_owned();
+    (render_body(&s2.code), hoisted)
+}
 
-    // The two lanes agree, which is this fix's contract.
-    assert_eq!(render_body(&s2.code), render_body(&legacy.code));
-    // And both resolve the component, where Vue would not. If that ever
-    // changes, this pin is the place that says so out loud.
+/// Vue refines a tag type only outside `v-pre` (#13314): the element that
+/// opens the subtree and every descendant stay plain elements, a component,
+/// `<component>`, `<slot>` or `<template>` tag included. Each body is
+/// `@vue/compiler-sfc` 3.5.35 `compileTemplate` output without the static
+/// caching this entry point leaves off, except two kept spellings: the
+/// literal `<component>` keeps its `is` (Vue drops it here, SSR keeps it),
+/// and a literal `<template>` passes its text as a string.
+#[test]
+fn a_v_pre_subtree_keeps_every_element_plain() {
+    let cases: &[(&str, &str, &str)] = &[
+        (
+            "<div v-pre><div><Child>{{ x }}</Child></div></div>",
+            r#"return (_openBlock(), _createElementBlock("div", null, [ _createElementVNode("div", null, [ _createElementVNode("Child", null, "{{ x }}") ]) ])) }"#,
+            "<no hoisted props>",
+        ),
+        (
+            "<Child v-pre>{{ x }}</Child>",
+            r#"return (_openBlock(), _createElementBlock("Child", null, "{{ x }}")) }"#,
+            "<no hoisted props>",
+        ),
+        (
+            r#"<div v-pre><component is="x"/></div>"#,
+            r#"return (_openBlock(), _createElementBlock("div", null, [ _createElementVNode("component", { is: "x" }) ])) }"#,
+            "<no hoisted props>",
+        ),
+        (
+            "<div v-pre><my-comp/></div>",
+            r#"return (_openBlock(), _createElementBlock("div", null, [ _createElementVNode("my-comp") ])) }"#,
+            "<no hoisted props>",
+        ),
+        (
+            "<div v-pre><slot/></div>",
+            r#"return (_openBlock(), _createElementBlock("div", null, [ _createElementVNode("slot") ])) }"#,
+            "<no hoisted props>",
+        ),
+        (
+            r#"<div v-pre><template v-if="a">x</template></div>"#,
+            r#"return (_openBlock(), _createElementBlock("div", null, [ _createElementVNode("template", { "v-if": "a" }, "x") ])) }"#,
+            "<no hoisted props>",
+        ),
+        (
+            r#"<MyComp v-pre :x="1">c</MyComp>"#,
+            r#"return (_openBlock(), _createElementBlock("MyComp", _hoisted_1, "c")) }"#,
+            r#"const _hoisted_1 = { ":x": "1" }"#,
+        ),
+        (
+            r#"<component v-pre is="x"/>"#,
+            r#"return (_openBlock(), _createElementBlock("component", _hoisted_1)) }"#,
+            r#"const _hoisted_1 = { is: "x" }"#,
+        ),
+        // The control outside `v-pre` still resolves its component.
+        (
+            "<div><Child/></div>",
+            r#"return (_openBlock(), _createElementBlock("div", null, [ _createVNode(_component_Child) ])) }"#,
+            "<no hoisted props>",
+        ),
+    ];
+    for (source, body, hoisted) in cases {
+        assert_eq!(
+            both_lanes(source),
+            ((*body).to_owned(), (*hoisted).to_owned()),
+            "{source:?}"
+        );
+    }
+}
+
+/// A `<template v-pre #head>` under a component is a plain element in the
+/// default slot, as Vue keeps it. Both lanes now agree on hoisting it.
+#[test]
+fn a_v_pre_template_under_a_component_stays_a_default_slot_element() {
     assert_eq!(
-        render_body(&s2.code),
-        "return (_openBlock(), _createBlock(_component_MyComp, _hoisted_1, { \
-default: _withCtx(() => [ _createTextVNode(\"c\") ]), _: 1 /* STABLE */ })) }",
+        both_lanes("<MyComp><template v-pre #head>c</template></MyComp>"),
+        (
+            "return (_openBlock(), _createBlock(_component_MyComp, null, { \
+default: _withCtx(() => [ _hoisted_1 ]), _: 1 /* STABLE */ })) }"
+                .to_owned(),
+            r##"const _hoisted_1 = /*#__PURE__*/ _createElementVNode("template", { "#head": "" }, "c")"##
+                .to_owned(),
+        )
     );
 }
 

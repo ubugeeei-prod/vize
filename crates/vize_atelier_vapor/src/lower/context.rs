@@ -42,6 +42,8 @@ pub(crate) struct TransformContext<'a> {
     pub(crate) merged_props_of: Option<(usize, bool)>,
     /// `Some` when a source map is requested.
     pub(crate) template_spans: Option<TemplateSpans>,
+    /// Ordered openings the parser froze under own or inherited v-pre.
+    pub(crate) frozen_elements: &'a [vize_l0::Span],
 }
 
 impl<'a> TransformContext<'a> {
@@ -67,7 +69,15 @@ impl<'a> TransformContext<'a> {
             warnings: std::vec::Vec::new(),
             merged_props_of: None,
             template_spans: None,
+            frozen_elements: &[],
         }
+    }
+
+    pub(crate) fn element_is_frozen(&self, el: &ElementNode<'_>) -> bool {
+        let span = el.loc.span;
+        self.frozen_elements
+            .binary_search_by_key(&span.start, |candidate| candidate.start)
+            .is_ok_and(|index| self.frozen_elements.get(index) == Some(&span))
     }
 
     pub(crate) fn next_id(&mut self) -> usize {

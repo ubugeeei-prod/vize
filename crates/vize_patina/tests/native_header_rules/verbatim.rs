@@ -21,12 +21,23 @@ fn plain_exact_and_inherited_pre_freeze_bindings_without_exempting_native_tags()
             }
         }
     }
+    // #13314: a component tag under v-pre is a literal element, as Vue keeps it.
     for source in [
         "<template><Foo v-pre autofocus accesskey /></template>",
         "<template><div v-pre><Foo autofocus accesskey /></div></template>",
     ] {
         for rule in HeaderRule::ALL {
-            assert_eq!(parity(source, Locale::En, rule), expected(vec![]));
+            let diagnostics = if matches!(rule, HeaderRule::Distracting) {
+                vec![]
+            } else {
+                vec![warning(
+                    rule,
+                    Locale::En,
+                    span(source, rule.attribute()),
+                    "Foo",
+                )]
+            };
+            assert_eq!(parity(source, Locale::En, rule), expected(diagnostics));
         }
     }
 }

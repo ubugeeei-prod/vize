@@ -3,12 +3,11 @@
 use vize_l0::{Box, ErrorCode, Vec};
 use vize_l1::markup::Namespace;
 use vize_relief::{
-    AttributeNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode, TextNode,
+    AttributeNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode, TextNode,
     errors::CompilerError, options::TemplateSyntaxMode,
 };
 
 use super::super::{CurrentElement, Parser, ParserStackEntry, StackInsertion};
-use super::is_html_tree_element;
 use super::nesting::MAX_ELEMENT_NESTING_DEPTH;
 
 impl<'a> Parser<'a> {
@@ -56,8 +55,17 @@ impl<'a> Parser<'a> {
             element.is_self_closing = current.is_self_closing;
             element.props = current.props;
 
-            // Determine element type
-            element.tag_type = self.determine_element_type(&element);
+            let v_pre_ordinal = element
+                .props
+                .iter()
+                .position(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre"));
+            // Vue refines a tag type only outside v-pre, for its opener and every descendant.
+            let authored_type = self.authored_element_type(&element);
+            element.tag_type = if inherited_v_pre || v_pre_ordinal.is_some() {
+                ElementType::Element
+            } else {
+                authored_type
+            };
 
             if self.should_ignore_start_tag(&element) {
                 self.report_tree_construction_recovery(
@@ -67,15 +75,12 @@ impl<'a> Parser<'a> {
                 return;
             }
 
-            let v_pre_ordinal = element
-                .props
-                .iter()
-                .position(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre"));
             if !self.finalize_directive_heads(&mut element, v_pre_ordinal) {
                 return;
             }
 
-            let is_html_tree_element = is_html_tree_element(&element);
+            let is_html_tree_element =
+                element.ns == Namespace::Html && authored_type == ElementType::Element;
             if is_html_tree_element {
                 self.handle_in_body_start_tag(element.tag, tag_start);
                 self.handle_in_table_start_tag(element.tag, tag_start);
@@ -209,6 +214,7 @@ impl<'a> Parser<'a> {
                     element,
                     in_pre: self.in_pre,
                     in_v_pre: self.in_v_pre,
+                    html_tree: is_html_tree_element,
                     insertion,
                     implicit: false,
                     fostered_before: Vec::new_in(&self.allocator),
