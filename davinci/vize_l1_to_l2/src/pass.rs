@@ -33,6 +33,7 @@ mod dom;
 pub mod hoist;
 pub mod legacy;
 mod plan;
+mod sink;
 pub mod vfor;
 pub mod vif;
 pub mod vmodel;
@@ -43,6 +44,7 @@ pub use cfg::{ComplexityFacts, Contribution, DecisionKind};
 pub use dom::run_dom_transform_with_profile;
 pub use hoist::{StaticFacts, StaticLevel};
 pub use plan::TransformProfile;
+pub use sink::PassSink;
 pub use vfor::{ForFacts, ForName};
 pub use vif::{BranchKey, BranchKeyKind, IfFacts};
 pub use vmodel::{ModelFacts, ModelFault};
@@ -135,11 +137,11 @@ where
     let outcome = run_pipeline_remarked(&pipeline, observer, |event, remarks| {
         let name = event.desc().name;
         if name == legacy::DESC.name {
-            facts.filters = legacy::run(lowered);
+            facts.filters = PassSink::legacy(lowered);
         } else if name == vslot::DESC.name {
-            facts.slot_facts = vslot::run(lowered);
+            facts.slot_facts = PassSink::slots(lowered);
         } else if name == vmodel::DESC.name {
-            facts.model_faults = vmodel::run(lowered);
+            facts.model_faults = PassSink::models(lowered);
         } else if name == hoist::DESC.name {
             facts.static_facts = hoist::run_remarked(lowered, remarks);
         } else if name == cfg::DESC.name {

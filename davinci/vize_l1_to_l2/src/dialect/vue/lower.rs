@@ -10,7 +10,7 @@ use vize_l1::markup::{SurfaceError, SurfaceTree};
 
 use vize_l2::artifact::ArtifactParts;
 use vize_l2::op::Region;
-use vize_l2::provenance::{ProvenanceRecord, ProvenanceSink};
+use vize_l2::provenance::{NoProvenance, ProvenanceRecord, ProvenanceSink};
 
 #[cfg(any())]
 mod caps;
@@ -214,8 +214,58 @@ pub fn lower_with_directives<'a>(
     )
 }
 
+/// Lowering under an explicit dialect, policy and custom-element table,
+/// keeping every provenance decision.
+///
+/// Not generic, like [`lower_with_caps_and_comment_policy_without_provenance`]:
+/// every consumer crate calls this crate's one copy of the lowering instead
+/// of instantiating its own.
 #[doc(hidden)]
-pub fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default>(
+#[must_use]
+pub fn lower_with_caps_and_comment_policy<'a>(
+    allocator: &'a Allocator,
+    tree: &SurfaceTree<'a>,
+    errors: &[SurfaceError],
+    caps: LegacyCaps,
+    policy: LowerPolicy,
+    custom_element_patterns: &[String],
+    custom_element_predicate: Option<fn(&str) -> bool>,
+) -> Lowered<'a> {
+    lower_with_caps_policy_into(
+        allocator,
+        tree,
+        errors,
+        caps,
+        policy,
+        custom_element_patterns,
+        custom_element_predicate,
+    )
+}
+
+/// [`lower_with_caps_and_comment_policy`] without recording provenance.
+#[doc(hidden)]
+#[must_use]
+pub fn lower_with_caps_and_comment_policy_without_provenance<'a>(
+    allocator: &'a Allocator,
+    tree: &SurfaceTree<'a>,
+    errors: &[SurfaceError],
+    caps: LegacyCaps,
+    policy: LowerPolicy,
+    custom_element_patterns: &[String],
+    custom_element_predicate: Option<fn(&str) -> bool>,
+) -> Lowered<'a, NoProvenance> {
+    lower_with_caps_policy_into(
+        allocator,
+        tree,
+        errors,
+        caps,
+        policy,
+        custom_element_patterns,
+        custom_element_predicate,
+    )
+}
+
+fn lower_with_caps_policy_into<'a, P: ProvenanceSink + Default>(
     allocator: &'a Allocator,
     tree: &SurfaceTree<'a>,
     errors: &[SurfaceError],

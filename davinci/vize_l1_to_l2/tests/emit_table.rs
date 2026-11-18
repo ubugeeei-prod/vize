@@ -64,7 +64,7 @@ fn tags<'a>(ops: &[Op<'a>], out: &mut Vec<&'a str>) {
 fn implied_tags(source: &str) -> Vec<String> {
     let allocator = Allocator::new();
     let (tree, errors) = vize_l1::markup::parse(&allocator, source);
-    let lowered = lower_with_caps_and_comment_policy::<Vec<vize_l2::provenance::ProvenanceRecord>>(
+    let lowered = lower_with_caps_and_comment_policy(
         &allocator,
         &tree,
         &errors,

@@ -6,11 +6,10 @@
 use vize_l0::pass::{PassDesc, PassFailure, PassObserver, Pipeline, run_pipeline};
 
 use crate::lower::Lowered;
-use vize_l2::provenance::ProvenanceSink;
 
 use vize_l2::analysis::pass_facts::L2Facts;
 
-use super::{L2_STAGE, TransformProfile, hoist, legacy, vmodel, vslot};
+use super::{L2_STAGE, PassSink, TransformProfile, legacy};
 
 const DOM_LEGACY_PASSES: &[PassDesc] = &[legacy::DESC];
 const DOM_LEGACY_TRANSFORM: Pipeline = Pipeline::new(L2_STAGE, DOM_LEGACY_PASSES);
@@ -25,7 +24,7 @@ const DOM_LEGACY_TRANSFORM: Pipeline = Pipeline::new(L2_STAGE, DOM_LEGACY_PASSES
 /// runs through the pass manager so the observer records that compatibility
 /// walk.
 pub fn run_dom_transform_with_profile<'a, O: PassObserver>(
-    lowered: &mut Lowered<'a, impl ProvenanceSink>,
+    lowered: &mut Lowered<'a, impl PassSink>,
     observer: &mut O,
     profile: TransformProfile,
 ) -> L2Facts {
@@ -36,20 +35,20 @@ pub fn run_dom_transform_with_profile<'a, O: PassObserver>(
     }
 
     if lowered.artifact.features.has_slot_carriers() {
-        facts.slot_facts = vslot::run(lowered);
+        facts.slot_facts = PassSink::slots(lowered);
     }
     if lowered.artifact.features.has_model_bindings() {
-        facts.model_faults = vmodel::run(lowered);
+        facts.model_faults = PassSink::models(lowered);
     }
     if profile.includes_static_analysis() {
-        facts.static_facts = hoist::run(lowered);
+        facts.static_facts = PassSink::statics(lowered);
     }
 
     facts
 }
 
 fn run_dom_legacy_transform<'a, O: PassObserver>(
-    lowered: &mut Lowered<'a, impl ProvenanceSink>,
+    lowered: &mut Lowered<'a, impl PassSink>,
     observer: &mut O,
     facts: &mut L2Facts,
 ) {
@@ -60,7 +59,7 @@ fn run_dom_legacy_transform<'a, O: PassObserver>(
         if event.desc().name != legacy::DESC.name {
             return Err(PassFailure::new("pipeline pass has no registered body"));
         }
-        facts.filters = legacy::run(lowered);
+        facts.filters = PassSink::legacy(lowered);
 
         #[cfg(debug_assertions)]
         {
