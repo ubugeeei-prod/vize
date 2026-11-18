@@ -25,7 +25,18 @@ export const runtimeArt = `<script setup lang="ts">
 import RuntimeProbe from "./RuntimeProbe.vue";
 defineArtMeta({ title: "Runtime Controls" });
 </script>
-<art><variant name="Default" default args='{"label":"Variant","count":0,"enabled":false,"items":[],"data":null}'><RuntimeProbe label="Variant" :count="9" /></variant></art>`;
+<art>
+  <variant name="Default" default>
+    <RuntimeProbe
+      label="Variant"
+      code="007"
+      :count="0"
+      :enabled="false"
+      :items="[]"
+      :data="null"
+    />
+  </variant>
+</art>`;
 
 export const expectedRuntimeDefaults = {
   label: "true",
