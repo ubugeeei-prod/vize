@@ -7,7 +7,7 @@
 
 use vize_l1::css::StyleSheet;
 
-use crate::diagnostic::Severity;
+use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::style_rule::{declaration_values, important_flags};
 use super::{CssLintResult, CssRuleMeta, StyleRule};
@@ -33,12 +33,14 @@ impl StyleRule for NoImportant {
         }
         for value in declaration_values(sheet) {
             for flag in important_flags(sheet, value) {
-                result.warn(
-                    META.name,
-                    "Avoid using !important as it makes styles harder to override",
-                    "Use more specific selectors or reorganize CSS specificity instead",
-                    flag.start,
-                    flag.end,
+                result.add_diagnostic(
+                    LintDiagnostic::warn(
+                        META.name,
+                        "Avoid using !important as it makes styles harder to override",
+                        flag.start,
+                        flag.end,
+                    )
+                    .with_help("Use more specific selectors or reorganize CSS specificity instead"),
                 );
             }
         }

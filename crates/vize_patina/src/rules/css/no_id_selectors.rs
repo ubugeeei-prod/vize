@@ -7,7 +7,7 @@
 
 use vize_l1::css::StyleSheet;
 
-use crate::diagnostic::Severity;
+use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::style_rule::{key_compound_ids, rule_preludes};
 use super::{CssLintResult, CssRuleMeta, StyleRule};
@@ -33,12 +33,14 @@ impl StyleRule for NoIdSelectors {
         }
         for prelude in rule_preludes(sheet) {
             for id in key_compound_ids(sheet, prelude) {
-                result.warn(
-                    META.name,
-                    "Avoid ID selectors - use class selectors for better reusability",
-                    "Replace with a class selector for lower specificity",
-                    id.start,
-                    id.end,
+                result.add_diagnostic(
+                    LintDiagnostic::warn(
+                        META.name,
+                        "Avoid ID selectors - use class selectors for better reusability",
+                        id.start,
+                        id.end,
+                    )
+                    .with_help("Replace with a class selector for lower specificity"),
                 );
             }
         }
