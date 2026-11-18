@@ -458,6 +458,90 @@
       },
       "issue": 3358,
       "reason": "Same suggestion cap as the TabsRouteQueryExample row: TypeScript stops offering spelling suggestions once a program has produced maximumSuggestionCount = 10 unresolved-name errors, counting names its generated virtual code never surfaces. The widened probe adds more unresolved Nuxt auto-imports, so vue-tsc reaches the cap before this file and drops the hint; Corsa has no such cap and vize keeps it. The symbol tables agree."
+    },
+    {
+      "project": "misskey",
+      "file": "packages/frontend/src/pages/instance-info.vue",
+      "severity": "error",
+      "line": 116,
+      "column": 24,
+      "vize": null,
+      "baseline": {
+        "code": 2322,
+        "message": "Type '{ id: string; firstRetrievedAt: string; host: string; usersCount: number; notesCount: number; followingCount: number; followersCount: number; isNotResponding: boolean; isSuspended: boolean; ... 16 more ...; moderationNote?: string | ... 1 more ... | undefined; } | null' is not assignable to type 'Record<string, unknown>'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc rejects Misskey's nullable instance value at the MkObjectView component boundary while Vize accepts the pinned source; the exact baseline-only component-prop row remains tracked under the typecheck parity issue."
+    },
+    {
+      "project": "misskey",
+      "file": "packages/frontend/src/pages/settings/notifications.vue",
+      "severity": "error",
+      "line": 92,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 7022,
+        "message": "'allowButton' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer."
+      },
+      "issue": 9516,
+      "reason": "vue-tsc's generated template-ref exposure creates a circular inference path back into the authored useTemplateRef initializer; Vize keeps the authored initializer acyclic, so this exact baseline-only row is retained for generated-code follow-up."
+    },
+    {
+      "project": "misskey",
+      "file": "packages/frontend/src/pages/settings/notifications.vue",
+      "severity": "error",
+      "line": 93,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 7022,
+        "message": "'pushRegistrationInServer' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer."
+      },
+      "issue": 9516,
+      "reason": "vue-tsc's generated template-ref exposure feeds the computed value back through the exposed component surface and reports a circular initializer; Vize has no authored cycle, so the exact provider-only row is tracked explicitly."
+    },
+    {
+      "project": "misskey",
+      "file": "packages/frontend/src/pages/settings/notifications.vue",
+      "severity": "error",
+      "line": 93,
+      "column": 43,
+      "vize": null,
+      "baseline": {
+        "code": 7024,
+        "message": "Function implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions."
+      },
+      "issue": 9516,
+      "reason": "This callback diagnostic is the third position of the same vue-tsc-generated template-ref inference cycle; the authored computed callback is not recursive, and the exact baseline-only row remains visible in the reviewed ledger."
+    },
+    {
+      "project": "vuestic-admin",
+      "file": "src/pages/auth/Signup.vue",
+      "severity": "error",
+      "line": 38,
+      "column": 12,
+      "vize": {
+        "code": 7006,
+        "message": "Parameter 'v' implicitly has an 'any' type. (source: (v) => !!v || 'Repeat Password field is required',)"
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize currently loses the VaValue scoped-slot context before typing the nested validation-rule callback, while vue-tsc supplies the callback parameter type; the exact Vize-only row is tracked until slot-context propagation is unified."
+    },
+    {
+      "project": "vuestic-admin",
+      "file": "src/pages/auth/Signup.vue",
+      "severity": "error",
+      "line": 39,
+      "column": 12,
+      "vize": {
+        "code": 7006,
+        "message": "Parameter 'v' implicitly has an 'any' type. (source: (v) => v === formData.password || 'Passwords don\\'t match',)"
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "This adjacent validation rule has the same VaValue scoped-slot contextual-typing gap as the preceding callback; the exact Vize-only diagnostic remains separately accounted for until the shared propagation fix lands."
     }
   ]
 }

@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { isAbsolute } from "node:path";
 
 import {
@@ -43,7 +44,12 @@ export function compareTypecheckDiagnostics({
   const comparableVueFiles = comparableVueFileSet(vizeReport, cwd);
   const baselineInput = collectVueTscDiagnostics(vueTscOutput, cwd, { comparableVueFiles });
   const vize = vizeInput.diagnostics;
-  const baseline = baselineInput.diagnostics;
+  const baselineGeneratedArtifacts = baselineInput.diagnostics
+    .filter((diagnostic) => isSyntheticTemplateValueDiagnostic(cwd, diagnostic))
+    .sort(compareRecords);
+  const baseline = baselineInput.diagnostics.filter(
+    (diagnostic) => !baselineGeneratedArtifacts.includes(diagnostic),
+  );
   const vizeGroups = groupByIdentity(vize);
   const baselineGroups = groupByIdentity(baseline);
   const identities = [...new Set([...vizeGroups.keys(), ...baselineGroups.keys()])].sort(byteOrder);
@@ -90,6 +96,7 @@ export function compareTypecheckDiagnostics({
     falsePositives,
     falseNegatives,
     documentedDifferences: documented,
+    baselineGeneratedArtifacts,
   };
   const vizeHintCount = vize.filter((diagnostic) => diagnostic.severity === "hint").length;
   const summary = {
@@ -107,11 +114,12 @@ export function compareTypecheckDiagnostics({
     baselineExcludedProjectCount: baselineInput.excludedProjectCount,
     baselineExcludedExternalCount: baselineInput.excludedExternalCount,
     baselineExcludedSupportVueCount: baselineInput.excludedSupportVueCount,
+    baselineGeneratedArtifactCount: baselineGeneratedArtifacts.length,
     ...(vizeHintCount > 0 ? { vizeHintCount } : {}),
   };
   return {
     schema: "vize.fixtureTypecheckDivergence",
-    version: 4,
+    version: 5,
     project: projectId,
     summary,
     ...classified,
@@ -119,6 +127,55 @@ export function compareTypecheckDiagnostics({
       .update(JSON.stringify({ summary, ...classified }))
       .digest("hex"),
   };
+}
+
+function isSyntheticTemplateValueDiagnostic(cwd, diagnostic) {
+  if (
+    diagnostic.code !== 2339 ||
+    !diagnostic.message.startsWith("Property 'value' does not exist on type '")
+  ) {
+    return false;
+  }
+  let source;
+  try {
+    source = readFileSync(`${cwd}/${diagnostic.file}`, "utf8");
+  } catch {
+    return false;
+  }
+  const lines = source.split("\n");
+  const rawLine = lines[diagnostic.line - 1];
+  if (rawLine == null) return false;
+  const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
+  const column = utf16ColumnToIndex(line, diagnostic.column);
+  if (column == null) return false;
+  const tail = line.slice(column);
+  const token = /^[$A-Z_a-z][$\w]*/u.exec(tail)?.[0];
+  if (token == null || token === "value") return false;
+  const authoredTail = tail.slice(token.length).trimStart();
+  if (authoredTail.startsWith(".value") || authoredTail.startsWith("?.value")) return false;
+  const lineStart = lines
+    .slice(0, diagnostic.line - 1)
+    .reduce((length, previous) => length + previous.length + 1, 0);
+  const offset = lineStart + column;
+  const openStart = source.indexOf("<template");
+  if (openStart < 0) return false;
+  const openEnd = source.indexOf(">", openStart);
+  const closeStart = source.lastIndexOf("</template>");
+  return openEnd >= 0 && openEnd < offset && closeStart > offset;
+}
+
+function utf16ColumnToIndex(line, column) {
+  const target = column - 1;
+  if (!Number.isSafeInteger(target) || target < 0) return null;
+  let units = 0;
+  let index = 0;
+  for (const character of line) {
+    if (units === target) return index;
+    units += character.length;
+    index += character.length;
+    if (units > target) return null;
+  }
+  return units === target ? line.length : null;
 }
 
 function comparableVueFileSet(vizeReport, cwd) {

@@ -255,7 +255,9 @@ async function runBaselinePrepare(project, fixtureRoot, timeoutMs, managerRunner
       throw new Error(`${label} failed to run: ${errorMessage(prepared.error)}`);
     }
     if (prepared.status !== 0) {
-      throw new Error(`${label} exited with status ${prepared.status}`);
+      throw new Error(
+        `${label} exited with status ${prepared.status}${commandDiagnostic(prepared)}`,
+      );
     }
     stdout += prepared.stdout ?? "";
     stderr += prepared.stderr ?? "";

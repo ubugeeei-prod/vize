@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { Buffer } from "node:buffer";
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
@@ -34,10 +36,11 @@ test("typecheck divergence classifies exact diagnostics deterministically", () =
     "falsePositives",
     "falseNegatives",
     "documentedDifferences",
+    "baselineGeneratedArtifacts",
     "sha256",
   ]);
   assert.equal(result.schema, "vize.fixtureTypecheckDivergence");
-  assert.equal(result.version, 4);
+  assert.equal(result.version, 5);
   assert.deepEqual(result.summary, {
     vizeDiagnosticCount: 2,
     baselineDiagnosticCount: 2,
@@ -53,6 +56,7 @@ test("typecheck divergence classifies exact diagnostics deterministically", () =
     baselineExcludedProjectCount: 0,
     baselineExcludedExternalCount: 0,
     baselineExcludedSupportVueCount: 0,
+    baselineGeneratedArtifactCount: 0,
   });
   assert.deepEqual(
     result.shared.map((diagnostic: { file: string }) => diagnostic.file),
@@ -98,6 +102,7 @@ test("typecheck divergence separates false positives and false negatives", () =>
     baselineExcludedProjectCount: 0,
     baselineExcludedExternalCount: 0,
     baselineExcludedSupportVueCount: 0,
+    baselineGeneratedArtifactCount: 0,
   });
   assert.deepEqual(
     result.falsePositives.map((entry: { code: number }) => entry.code),
@@ -107,6 +112,46 @@ test("typecheck divergence separates false positives and false negatives", () =>
     result.falseNegatives.map((entry: { code: number }) => entry.code),
     [2345, 6133],
   );
+});
+
+test("typecheck divergence retains synthetic template value probes outside authored scoring", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-generated-value-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(root, "src"));
+  const source = [
+    "<template>",
+    "  <div>😀{{ i18n.ts }}</div>",
+    "  <div>{{ model.value }}</div>",
+    "</template>",
+    "<script setup>const i18n = {}; const model = {}</script>",
+    "",
+  ].join("\r\n");
+  fs.writeFileSync(path.join(root, "src/App.vue"), source);
+  const i18nColumn = source.split("\r\n")[1].indexOf("i18n") + 1;
+  const modelColumn = source.split("\r\n")[2].indexOf("model") + 1;
+  const result = compareTypecheckDiagnostics({
+    projectId: "fixture",
+    cwd: root,
+    vizeReport: { fileCount: 1, files: [{ file: "src/App.vue", diagnostics: [] }] },
+    vueTscOutput: [
+      `src/App.vue(2,${i18nColumn}): error TS2339: Property 'value' does not exist on type 'Raw<I18n>'.`,
+      `src/App.vue(3,${modelColumn}): error TS2339: Property 'value' does not exist on type '{}'.`,
+    ].join("\n"),
+  });
+
+  assert.equal(result.summary.baselineDiagnosticCount, 1);
+  assert.equal(result.summary.baselineGeneratedArtifactCount, 1);
+  assert.equal(result.summary.falseNegativeCount, 1);
+  assert.deepEqual(result.baselineGeneratedArtifacts, [
+    {
+      code: 2339,
+      column: i18nColumn,
+      file: "src/App.vue",
+      line: 2,
+      message: "Property 'value' does not exist on type 'Raw<I18n>'.",
+      severity: "error",
+    },
+  ]);
 });
 
 test("typecheck divergence retains duplicate diagnostics as a multiset", () => {
