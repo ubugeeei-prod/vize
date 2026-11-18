@@ -84,9 +84,17 @@ void test(
         const response = await openProps();
         const palette = await response.json();
         observed.palette = palette;
+        const authoredDefaults: Record<string, string> = {
+          label: "Seed",
+          constructor: "Seed constructor",
+          hasOwnProperty: "Seed method",
+        };
         const controls = vector.names.map((name) => ({
           name,
           control: "text",
+          ...(Object.hasOwn(authoredDefaults, name)
+            ? { default_value: authoredDefaults[name] }
+            : {}),
           required: false,
           options: [],
         }));

@@ -31,7 +31,10 @@ export function toPostMessagePayload<T>(value: T, seen = new WeakMap<object, unk
 
   const clone: Record<string, unknown> = Object.create(prototype);
   seen.set(raw, clone);
-  for (const [key, entry] of Object.entries(raw)) {
+  for (const key of Object.keys(raw)) {
+    const descriptor = Object.getOwnPropertyDescriptor(raw, key);
+    if (!descriptor) continue;
+    const entry = "value" in descriptor ? descriptor.value : Reflect.get(raw, key);
     Object.defineProperty(clone, key, {
       configurable: true,
       enumerable: true,
