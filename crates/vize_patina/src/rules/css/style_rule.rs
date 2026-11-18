@@ -59,6 +59,7 @@ const STYLE_SCOPES: [&str; 13] = [
 /// Whether `node` is in the scope the rule lane checks: under style rules and
 /// the [`STYLE_SCOPES`] at-rules only, not in `@keyframes`, `@font-face`,
 /// `@page`, `@container` or another at-rule the lightningcss lane skipped.
+#[inline(never)]
 pub(super) fn in_style_scope(sheet: &StyleSheet<'_>, node: &StyleNode) -> bool {
     let nodes = sheet.nodes();
     let mut parent = node.parent();
