@@ -40,6 +40,11 @@ jobs:
         with: { toolchain: "1.100.0" }
       - uses: ./driver/.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
+      - name: Install Callgrind and generate the bench-1000 corpus
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
+          node --input-type=module -e "import('./driver/tools/benchmarks/scripts/generate.mjs').then((m) => m.generateCorpus({ fileCount: 1000, benchDir: process.argv[1], log: () => {} }))" "$RUNNER_TEMP/bench"
       - name: Build each source with the observation recipe
         env:
           SHAS: ${{ inputs.shas }}
@@ -59,10 +64,16 @@ jobs:
             done
             echo "$sha $(stat -c %s out/vize-symbols)" | tee -a out/bytes.txt
             nm --print-size --size-sort -C --defined-only out/vize-none > "out/syms-$sha.txt"
+            for preset in default opinionated nuxt; do
+              (cd "$RUNNER_TEMP/bench" && RAYON_NUM_THREADS=1 valgrind --tool=callgrind --cache-sim=no                 --callgrind-out-file="$GITHUB_WORKSPACE/out/cg-$sha-$preset.out" "$GITHUB_WORKSPACE/out/vize-none"                 lint . --no-config --preset "$preset" --format json > /dev/null 2> "$GITHUB_WORKSPACE/out/cg-$sha-$preset.err" || true)
+              echo "$sha $preset $(grep -o 'Collected : [0-9]*' "out/cg-$sha-$preset.err" | awk '{print $3}')" | tee -a out/ir.txt
+              callgrind_annotate --threshold=99.5 "out/cg-$sha-$preset.out" > "out/annot-$sha-$preset.txt" 2>/dev/null || true
+              rm -f "out/cg-$sha-$preset.out"
+            done
             size -A out/vize-none > "out/sections-$sha.txt"
             rm out/vize-none out/vize-symbols
           done
-          { echo '### CLI bytes'; echo; sed 's/^/    /' out/bytes.txt; } >> "$GITHUB_STEP_SUMMARY"
+          { echo '### CLI bytes'; echo; sed 's/^/    /' out/bytes.txt; echo; echo '### Ir bench-1000'; echo; sed 's/^/    /' out/ir.txt; } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
