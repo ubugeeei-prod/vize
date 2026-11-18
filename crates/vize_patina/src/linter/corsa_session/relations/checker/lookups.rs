@@ -171,6 +171,15 @@ impl Checker<'_> {
 
     /// `checker.isTupleType`: a reference whose target is a tuple type.
     pub(in super::super) async fn is_tuple(&mut self, ty: &TypeResponse) -> bool {
+        self.tuple(ty).await.0
+    }
+
+    /// `checker.isTupleType`, and the tuple target type (which carries the
+    /// element flags) when `ty` is a reference to one.
+    pub(in super::super) async fn tuple(
+        &mut self,
+        ty: &TypeResponse,
+    ) -> (bool, Option<TypeResponse>) {
         const REFERENCE: u32 = 1 << 2;
         const TUPLE: u32 = 1 << 3;
         if ty.object_flags.unwrap_or(0) & REFERENCE != 0 && ty.target.is_some() {
@@ -185,11 +194,14 @@ impl Checker<'_> {
                 .await
                 .ok()
                 .flatten();
-            if target.is_some_and(|target| target.object_flags.unwrap_or(0) & TUPLE != 0) {
-                return true;
+            if let Some(target) =
+                target.filter(|target| target.object_flags.unwrap_or(0) & TUPLE != 0)
+            {
+                return (true, Some(target));
             }
         }
-        self.session
+        let tuple = self
+            .session
             .client()
             .is_tuple_type(
                 self.session.snapshot().handle.clone(),
@@ -197,7 +209,8 @@ impl Checker<'_> {
                 ty.id.clone(),
             )
             .await
-            .unwrap_or(false)
+            .unwrap_or(false);
+        (tuple, None)
     }
 
     pub(in super::super) async fn has_number_index(&mut self, ty: &TypeResponse) -> bool {

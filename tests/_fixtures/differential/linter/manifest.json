@@ -21811,6 +21811,37 @@
       }
     },
     {
+      "id": "linter/typescript-eslint-872-enum-assignment-12994",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "typescript-eslint-872-enum-assignment-12994",
+        "files": [
+          {
+            "path": "cases.json",
+            "role": "upstream-selected-corpus",
+            "sha256": "182cde3f2becb723f1016c05f6b85735ea15c40034db33a1ccb75be86dfd4f58"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "js"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/typescript-eslint-conformance-b-12988",
       "state": "active",
       "targets": [

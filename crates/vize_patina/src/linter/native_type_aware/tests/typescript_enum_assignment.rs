@@ -3,6 +3,7 @@
 use super::{corsa_available, lint_sfc_with_corsa};
 use crate::diagnostic::Severity;
 use crate::{LintPreset, Linter};
+use std::path::Path;
 
 const RULE: &str = "type/no-unsafe-enum-assignment";
 const SOURCE: &str = include_str!(
@@ -78,6 +79,10 @@ fn qualified_enum_flows_have_exact_packets_and_safe_controls() {
         packet((66, 3), (66, 14), RETURN),
         packet((70, 7), (70, 69), ASSIGNMENT),
         packet((73, 3), (73, 22), ASSIGNMENT),
+        // Arguments after a variadic tuple spread take the rest parameter
+        // (typescript-eslint `invalid[5]` and `invalid[121]`).
+        packet((77, 29), (77, 30), ARGUMENT),
+        packet((79, 30), (79, 31), ARGUMENT),
         packet((81, 13), (81, 25), ARGUMENT),
         packet((85, 10), (85, 11), ARGUMENT),
         packet((86, 11), (86, 12), ARGUMENT),
@@ -147,6 +152,152 @@ void [combined, arrow, described, plain, Holder, Derived];
                 (40, 12),
                 "The computed key used here does not have a shared enum type with the expected enum 'Fruit'.",
             ),
+        ]
+    );
+}
+
+/// The #12994 comment's component: a form object handed to a typed service,
+/// and numbers given to `(() => Chip) | Chip` and `Chip | Chip[]`. Each flow
+/// is reported once, where typescript-eslint reports it: an object literal
+/// argument by its member, not as a whole.
+#[test]
+fn reported_form_flows_match_upstream_packets() {
+    if !corsa_available() {
+        return;
+    }
+    let chips = r#"export enum Chip {
+  None,
+  Small,
+  Large,
+}
+
+export interface Info {
+  chip: Chip;
+  dna: string;
+}
+
+export declare function submit(info: Info): void;
+export declare function useChip(source: (() => Chip) | Chip): void;
+export declare function pick(source: Chip | Chip[]): void;
+"#;
+    let form = r#"<script setup lang="ts">
+import { type Chip, pick, submit, useChip } from "./chips";
+
+const form = { chip: 0, dna: "" };
+submit(form);
+submit({ chip: 1, dna: "" });
+useChip(0);
+pick(2);
+const direct: Chip = 0;
+</script>
+
+<template>
+  <p>{{ direct }}</p>
+</template>
+"#;
+    let workspace = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target/vize-tests");
+    std::fs::create_dir_all(&workspace).expect("test workspace");
+    let project = tempfile::Builder::new()
+        .prefix("enum-form-12994-")
+        .tempdir_in(workspace)
+        .expect("temporary project");
+    let source_dir = project.path().join("src");
+    std::fs::create_dir(&source_dir).expect("source directory");
+    std::fs::write(
+        project.path().join("tsconfig.json"),
+        r#"{"compilerOptions":{"module":"ESNext","moduleResolution":"Bundler","strict":true,"target":"ES2022","noEmit":true},"include":["src/**/*.ts","src/**/*.vue"]}"#,
+    )
+    .expect("tsconfig");
+    std::fs::write(source_dir.join("chips.ts"), chips).expect("chips module");
+    let path = source_dir.join("Form.vue");
+    std::fs::write(&path, form).expect("form component");
+    let linter =
+        Linter::with_preset(LintPreset::Opinionated).with_enabled_rules(Some(vec![RULE.into()]));
+    let result = lint_sfc_with_corsa(&linter, form, path.to_str().expect("UTF-8 path"));
+    let mut actual = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == RULE)
+        .map(|diagnostic| {
+            let (line, column) = line_column(form, diagnostic.start);
+            let (end_line, end_column) = line_column(form, diagnostic.end);
+            (
+                line,
+                column,
+                end_line,
+                end_column,
+                diagnostic.message.to_string(),
+            )
+        })
+        .collect::<Vec<_>>();
+    actual.sort();
+    let chip = |message: &str| message.replace("'Fruit'", "'Chip'");
+    assert_eq!(
+        actual,
+        vec![
+            (5, 8, 5, 12, chip(ARGUMENT)),
+            (6, 10, 6, 17, chip(ASSIGNMENT)),
+            (7, 9, 7, 10, chip(ARGUMENT)),
+            (8, 6, 8, 7, chip(ARGUMENT)),
+            (9, 7, 9, 23, chip(ASSIGNMENT)),
+        ]
+    );
+}
+
+/// `implements Basket` is a type node to this rule and a symbol to
+/// `type/no-deprecated`; with both on, each still reads its own node.
+#[test]
+fn implemented_interfaces_type_as_type_nodes_beside_deprecation() {
+    if !corsa_available() {
+        return;
+    }
+    let source = r#"<script setup lang="ts">
+enum Fruit {
+  Apple,
+}
+/** @deprecated */
+interface Basket {
+  fruit: Fruit;
+}
+class Plain implements Basket {
+  fruit = 1;
+}
+type Alias = { fruit: Fruit };
+class Aliased implements Alias {
+  accessor fruit = 1;
+}
+interface Defaulted<T = Fruit> {
+  fruit: T;
+}
+class Fallback implements Defaulted {
+  fruit = 1;
+}
+class Safe implements Basket {
+  fruit = Fruit.Apple;
+}
+void [Plain, Aliased, Fallback, Safe];
+</script>
+"#;
+    let linter = Linter::with_preset(LintPreset::Opinionated)
+        .with_enabled_rules(Some(vec![RULE.into(), "type/no-deprecated".into()]));
+    let result = lint_sfc_with_corsa(&linter, source, "Heritage.vue");
+    let mut actual = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| {
+            let (line, column) = line_column(source, diagnostic.start);
+            (line, column, diagnostic.rule_name.to_string())
+        })
+        .collect::<Vec<_>>();
+    actual.sort();
+    assert_eq!(
+        actual,
+        vec![
+            (9, 24, "type/no-deprecated".to_string()),
+            (10, 3, RULE.to_string()),
+            (14, 3, RULE.to_string()),
+            (20, 3, RULE.to_string()),
+            (22, 23, "type/no-deprecated".to_string()),
         ]
     );
 }

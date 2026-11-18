@@ -95,7 +95,13 @@ pub(super) async fn check(
             let sender = located.ty(translate(*sender))?.clone();
             let mut receivers = Vec::new();
             for source in sources {
-                let Some(ty) = located.ty(translate(source.span)).cloned() else {
+                let span = translate(source.span);
+                let ty = if source.base_types {
+                    located.ty(span)
+                } else {
+                    located.type_node(span)
+                };
+                let Some(ty) = ty.cloned() else {
                     continue;
                 };
                 let types = if source.base_types {
@@ -169,6 +175,10 @@ pub(super) async fn call(
     let mut position = usize::from(ask.tagged_template);
     let mut remaining = false;
     for (index, argument) in ask.arguments.iter().enumerate() {
+        if argument.literal {
+            position = position.saturating_add(1);
+            continue;
+        }
         if !argument.spread {
             let Some(sender) = located.ty(translate(argument.expression)).cloned() else {
                 position = position.saturating_add(1);
@@ -197,7 +207,8 @@ pub(super) async fn call(
         let Some(spread) = located.ty(translate(argument.expression)).cloned() else {
             continue;
         };
-        if checker.is_tuple(&spread).await {
+        let (tuple, target) = checker.tuple(&spread).await;
+        if tuple {
             let elements = reference_arguments(checker, &spread).await;
             let mut receivers = Vec::new();
             for element in &elements {
@@ -215,8 +226,11 @@ pub(super) async fn call(
                     *reply = answer;
                 }
             }
-            if spread
-                .element_flags
+            // `spreadType.target.combinedFlags & ElementFlags.Variable`: a
+            // rest or variadic element takes every remaining argument.
+            if target
+                .as_ref()
+                .map_or(&spread.element_flags, |target| &target.element_flags)
                 .iter()
                 .any(|flag| flag & ((1 << 2) | (1 << 3)) != 0)
             {
