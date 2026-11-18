@@ -6,6 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
+import { beforeJsxSharedHelpersSource } from "../../tools/support/compat/content-mapper/jsx-shared-helpers-transition.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const globalsPath = path.join(root, "npm/cli/virtual-ts-globals.d.ts");
@@ -44,6 +45,16 @@ test("the published ambient set declares every JSX shared helper once", () => {
   const components = fs.readFileSync(path.join(declarations, "jsx-components.d.ts.txt"), "utf8");
   assert.match(context, /type Ctx</);
   for (const helper of helperNames.slice(1)) assert.ok(components.includes(helper), helper);
+});
+
+test("older source custody sees the exact pre-publication preamble", () => {
+  const relative = "crates/vize_canon/src/virtual_ts/helpers/preamble.rs";
+  const current = fs.readFileSync(path.join(root, relative), "utf8");
+  const previous = beforeJsxSharedHelpersSource(relative, current);
+  assert.notEqual(previous, current);
+  assert.ok(!previous.includes("declarations/jsx-context.d.ts.txt"));
+  assert.ok(!previous.includes("declarations/jsx-components.d.ts.txt"));
+  assert.equal(beforeJsxSharedHelpersSource("unrelated.ts", current), current);
 });
 
 test("the ambient helpers preserve component, emit, and slot diagnostics", () => {

@@ -65,6 +65,8 @@ mod scope;
 mod script_facts;
 mod semantic_links;
 #[cfg(test)]
+mod shared_jsx_helpers_tests;
+#[cfg(test)]
 mod strict_template_global_enum_tests;
 #[cfg(test)]
 mod strict_template_global_fallback_tests;
