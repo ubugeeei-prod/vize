@@ -139,7 +139,10 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
             check_options: VirtualTsCheckOptions::default(),
             typed_router: None,
             preserve_unused_diagnostics: false,
-            configured_global_template_ref: document_options.configured_global_template_ref,
+            configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership {
+                global: document_options.configured_global_template_ref,
+                imports_alias: false,
+            },
             options_api: document_options.options_api,
             preserve_authored_component: false,
             preserve_script_on_template_error: true,

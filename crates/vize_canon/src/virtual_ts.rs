@@ -111,7 +111,7 @@ pub use semantic_links::{VizeSemanticLink, VizeSemanticLinkKind};
 pub(crate) use types::RESOLVED_RUNTIME_DEFAULT;
 #[cfg(feature = "native")]
 pub(crate) use types::{CSS_MODULE_GLOBAL_MARKER, TYPED_ROUTE_GLOBAL_MARKER};
-pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput};
+pub use types::{TemplateGlobal, TemplateRefOwnership, VirtualTsOptions, VirtualTsOutput};
 
 /// Shared type-only component contract for plain-TS JSX lowering in batch and
 /// editor paths. Keep one declaration source so the two consumers cannot drift.

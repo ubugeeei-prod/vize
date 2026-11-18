@@ -285,6 +285,9 @@ mod diagnostic_selector_tests;
 mod project_tests;
 
 #[cfg(test)]
+mod imports_alias_template_ref_tests;
+
+#[cfg(test)]
 mod shared_helper_tests;
 
 #[cfg(test)]

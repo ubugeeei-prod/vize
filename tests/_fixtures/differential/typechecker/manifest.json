@@ -47817,6 +47817,48 @@
       }
     },
     {
+      "id": "typechecker/imports-alias-template-ref-13319",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "file": "src/FromImports.vue",
+          "path": "imports-alias-template-ref-13319/FromImports.vue.txt",
+          "sha256": "925c6eb77bf2b84fe131cee3b694b5a64c69042cfc0c3d97a814052f89285821",
+          "role": "regression-reproduction"
+        },
+        {
+          "file": "imports.d.ts",
+          "path": "imports-alias-template-ref-13319/imports.d.ts.txt",
+          "sha256": "8eb0b3eab13cfaca21b6c734f90b31641de0afbe8767c3fef9ddd71852895a48",
+          "role": "regression-reproduction"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "imports-alias-template-ref-13319/tsconfig.json.txt",
+          "sha256": "a4f7eb6a27ba64b61bab883d7c99247b8f0d811e2904b8be766d4d66e1d549a1",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/jsx-child-expression-control-6890",
       "state": "active",
       "targets": [

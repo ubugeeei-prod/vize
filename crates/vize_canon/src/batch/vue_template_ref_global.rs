@@ -61,7 +61,7 @@ fn vue_export_type(after_name: &str) -> bool {
 }
 
 /// `vue`, or a resolved path whose last segment is the `vue` package.
-fn is_vue_package(specifier: &str) -> bool {
+pub(super) fn is_vue_package(specifier: &str) -> bool {
     let specifier = specifier.trim_end_matches('/');
     specifier == "vue" || specifier.ends_with("/node_modules/vue")
 }
