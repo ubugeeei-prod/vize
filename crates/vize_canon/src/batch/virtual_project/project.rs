@@ -131,7 +131,12 @@ impl VirtualProject {
         std::mem::forget(self);
     }
 
-    pub(crate) fn configured_global_template_ref(&self) -> crate::virtual_ts::TemplateRefOwnership {
+    pub(crate) fn configured_global_template_ref(&self) -> bool {
+        self.global_template_ref.enabled()
+    }
+
+    /// Which `useTemplateRef` callees besides a `vue` import are Vue's own.
+    pub(crate) fn template_ref_ownership(&self) -> crate::virtual_ts::TemplateRefOwnership {
         crate::virtual_ts::TemplateRefOwnership {
             global: self.global_template_ref.enabled(),
             imports_alias: self.global_template_ref.imports_alias,
@@ -260,7 +265,7 @@ impl VirtualProject {
             virtual_ts_check_options: self.virtual_ts_check_options,
             typed_router: self.typed_router.config(),
             preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
-            configured_global_template_ref: self.configured_global_template_ref(),
+            configured_global_template_ref: self.template_ref_ownership(),
             options_api: self.options_api,
             legacy_vue2: self.legacy_vue2,
             jsx_typecheck: self.jsx_typecheck,
@@ -359,7 +364,7 @@ impl VirtualProject {
             virtual_ts_check_options: self.virtual_ts_check_options,
             typed_router: self.typed_router.config(),
             preserve_unused_diagnostics,
-            configured_global_template_ref: self.configured_global_template_ref(),
+            configured_global_template_ref: self.template_ref_ownership(),
             options_api: self.options_api,
             legacy_vue2: self.legacy_vue2,
             jsx_typecheck: self.jsx_typecheck,
@@ -423,7 +428,7 @@ impl VirtualProject {
                 virtual_ts_check_options: self.virtual_ts_check_options,
                 typed_router: self.typed_router.config(),
                 preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
-                configured_global_template_ref: self.configured_global_template_ref(),
+                configured_global_template_ref: self.template_ref_ownership(),
                 options_api: self.options_api,
                 legacy_vue2: self.legacy_vue2,
                 jsx_typecheck: self.jsx_typecheck,

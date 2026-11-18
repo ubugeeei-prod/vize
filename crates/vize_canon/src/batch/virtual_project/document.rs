@@ -37,7 +37,7 @@ pub struct VueDocumentVirtualTsOptions {
     pub legacy_vue2: bool,
     pub experimental_patterned_template: bool,
     pub preserve_event_navigation: bool,
-    pub configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership,
+    pub configured_global_template_ref: bool,
     pub dialect: vize_carton::config::VueVersion,
     pub preserve_missing_vue_diagnostics: bool,
 }
@@ -49,10 +49,7 @@ impl Default for VueDocumentVirtualTsOptions {
             legacy_vue2: false,
             experimental_patterned_template: false,
             preserve_event_navigation: false,
-            configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership {
-                global: false,
-                imports_alias: false,
-            },
+            configured_global_template_ref: false,
             dialect: vize_carton::config::VueVersion::default(),
             preserve_missing_vue_diagnostics: true,
         }
@@ -142,7 +139,10 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
             check_options: VirtualTsCheckOptions::default(),
             typed_router: None,
             preserve_unused_diagnostics: false,
-            configured_global_template_ref: document_options.configured_global_template_ref,
+            configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership {
+                global: document_options.configured_global_template_ref,
+                imports_alias: false,
+            },
             options_api: document_options.options_api,
             preserve_authored_component: false,
             preserve_script_on_template_error: true,
@@ -231,10 +231,7 @@ mod tests {
                 &ImportRewriter::new(),
                 false,
                 VueDocumentVirtualTsOptions {
-                    configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership {
-                        global: configured,
-                        imports_alias: false,
-                    },
+                    configured_global_template_ref: configured,
                     ..Default::default()
                 },
             )
