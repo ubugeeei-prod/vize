@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   keepsBytes,
+  knownPaths,
   levelHits,
   plannedMoves,
   renamePath,
@@ -62,24 +63,32 @@ void test("rewrites keep the docs directory, pinned links and links that resolve
   );
 });
 
-void test("kept Markdown prose keeps the program name; links to moved paths follow them", () => {
-  const source = `${Name} keeps its prose; [l0](../../${name}/vize_l0/src/lib.rs), tests/tooling/${name}-x.test.ts`;
+void test("kept docs keep prose and names; references to moved tracked paths follow them", () => {
+  const known = knownPaths([`${name}/vize_l0/src/lib.rs`, `tests/tooling/${name}-x.test.ts`]);
+  const source = `${Name} keeps its prose; [l0](../../${name}/vize_l0/src/lib.rs), tests/tooling/${name}-x.test.ts, tests/${name}_gone.rs`;
   assert.equal(
-    rewriteText(`docs/${name}/README.md`, source),
-    `${Name} keeps its prose; [l0](../../levels/vize_l0/src/lib.rs), tests/tooling/level-x.test.ts`,
+    rewriteText(`docs/${name}/README.md`, source, undefined, known),
+    `${Name} keeps its prose; [l0](../../levels/vize_l0/src/lib.rs), tests/tooling/level-x.test.ts, tests/${name}_gone.rs`,
   );
+  // A replay after the move still finds the moved path through its new name.
+  const moved = knownPaths(["levels/vize_l0/src/lib.rs"]);
+  assert.equal(
+    rewriteText(`docs/${name}/plan/x.md`, `see ${name}/vize_l0/src/lib.rs.`, undefined, moved),
+    "see levels/vize_l0/src/lib.rs.",
+  );
+  assert.equal(rewriteText(`docs/${name}/README.md`, source), source);
 });
 
-void test("kept Markdown changes code spans and paths, kept data files change fully", () => {
+void test("kept Markdown keeps code spans; kept plan data changes fully, records keep bytes", () => {
   const page = `${Name} prose \`${name}_harness\`\n\`\`\`sh\ncargo test --test ${name}_ts31\n\`\`\`\n`;
-  assert.equal(
-    rewriteText(`docs/${name}/plan/test-suites.md`, page),
-    `${Name} prose \`level_harness\`\n\`\`\`sh\ncargo test --test level_ts31\n\`\`\`\n`,
-  );
+  assert.equal(rewriteText(`docs/${name}/plan/test-suites.md`, page, undefined, new Set()), page);
   assert.equal(
     rewriteText(`docs/${name}/plan/budgets.toml`, `${name}_bench = 1`),
     "level_bench = 1",
   );
+  const history = `x\t${name}_bench\n`;
+  assert.equal(rewriteText(`docs/${name}/plan/compiler-fix-history.tsv`, history), history);
+  assert.equal(rewriteText(`docs/${name}/decisions/x.profile.json`, history), history);
 });
 
 void test("escaped docs paths and ANSI colour prefixes keep their boundaries", () => {
@@ -151,9 +160,18 @@ void test("docs data follows the level names; docs Markdown keeps them but follo
     rewriteText(
       `docs/${name}/plan/remarks-format.md`,
       `${title(l3)} remarks, \`tests/_fixtures/${name}-remarks-baseline.${dump}\`, ${title(dump)}.${dump}s`,
+      undefined,
+      knownPaths([`tests/_fixtures/level-remarks-baseline.dump`]),
     ),
     `${title(l3)} remarks, \`tests/_fixtures/level-remarks-baseline.dump\`, ${title(dump)}.${dump}s`,
   );
+});
+
+void test("fixed words rename to what they name", () => {
+  assert.equal(renameWord(`${name}-differential`), "legacy-differential");
+  assert.equal(renameWord(`${name}-dom-differential`), "legacy-dom-differential");
+  assert.equal(renameWord(`vize_${name}`), "vize_l0");
+  assert.equal(renameWord(`vize_${name}_derive`), "vize_l0_derive");
 });
 
 void test("captured output keeps its bytes unless a live test parses it", () => {
