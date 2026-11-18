@@ -52,7 +52,7 @@ enum ImporterKind {
 
 struct OpenDocumentSnapshot {
     uri: Url,
-    source: std::string::String,
+    source: Arc<std::string::String>,
 }
 
 type OpenDocumentSnapshots = HashMap<PathBuf, OpenDocumentSnapshot>;
@@ -336,7 +336,7 @@ fn snapshot_open_documents(state: &ServerState) -> OpenDocumentSnapshots {
             normalize_path_buf(&path),
             OpenDocumentSnapshot {
                 uri: document.key().clone(),
-                source: document.value().text(),
+                source: document.value().text_snapshot(),
             },
         );
     }

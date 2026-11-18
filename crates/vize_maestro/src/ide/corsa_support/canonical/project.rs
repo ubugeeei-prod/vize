@@ -180,7 +180,7 @@ async fn open_canonical_virtual_project_document_with_scope(
     let cached_overlays = ctx.state.corsa_overlays();
     let overlays = cached_overlays
         .iter()
-        .map(|(path, content)| (path.clone(), &**content))
+        .map(|(path, content)| (path.clone(), content.as_str()))
         .collect::<Vec<_>>();
     if include_workspace {
         let sources = same_typescript_project(

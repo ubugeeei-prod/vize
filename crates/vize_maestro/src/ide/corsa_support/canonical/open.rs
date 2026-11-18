@@ -29,7 +29,7 @@ pub(crate) async fn open_canonical_virtual_document_strict(
     let cached_overlays = ctx.state.corsa_overlays();
     let overlays = cached_overlays
         .iter()
-        .map(|(path, content)| (path.clone(), &**content))
+        .map(|(path, content)| (path.clone(), content.as_str()))
         .collect::<Vec<_>>();
     open_canonical_virtual_document_with_overlays_strict(ctx, bridge, &overlays).await
 }
@@ -51,7 +51,7 @@ pub(crate) async fn open_canonical_hover_document_strict(
     let cached_overlays = ctx.state.corsa_overlays();
     let overlays = cached_overlays
         .iter()
-        .map(|(path, content)| (path.clone(), &**content))
+        .map(|(path, content)| (path.clone(), content.as_str()))
         .collect::<Vec<_>>();
     let virtual_ts_options = ctx.state.editor_virtual_ts_options().await;
     let opened = bridge
@@ -79,7 +79,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
     ctx: &IdeContext<'_>,
     bridge: &CorsaBridge,
     overlays: &[(PathBuf, &str)],
-    requested_sources: &[(PathBuf, Arc<str>)],
+    requested_sources: &[(PathBuf, Arc<String>)],
 ) -> Result<Option<CanonicalVirtualDocument>, CorsaBridgeError> {
     if !ctx.uri.path().ends_with(".vue") || ctx.uri.path().ends_with(".art.vue") {
         return Ok(None);
@@ -91,7 +91,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
     };
     let requested_source_refs = requested_sources
         .iter()
-        .map(|(path, content)| (path.clone(), content.as_ref()))
+        .map(|(path, content)| (path.clone(), content.as_str()))
         .collect::<Vec<_>>();
     let virtual_ts_options = ctx.state.editor_virtual_ts_options().await;
     let options = ctx.state.canonical_vue_document_options();
@@ -119,7 +119,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
             virtual_ts_options: virtual_ts_options.clone(),
             requested_sources: requested_sources
                 .iter()
-                .map(|(path, content)| (path.clone(), Arc::clone(content)))
+                .map(|(path, content)| (path.clone(), Arc::from(content.as_str())))
                 .collect(),
         });
         ctx.state
