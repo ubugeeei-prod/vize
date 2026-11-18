@@ -391,7 +391,6 @@ crates/vize_maestro/src/server/state/project_contexts/reference_tests.rs	1
 crates/vize_maestro/src/server/state/project_contexts/reference_tests/reference_reload_tests.rs	2
 crates/vize_maestro/src/server/state/tests.rs	1
 crates/vize_maestro/src/server/state/tests/virtual_docs.rs	18
-crates/vize_maestro/src/server/state/workspace_project_files/symbols/filtered_tests.rs	1
 crates/vize_maestro/src/server/workspace_files/config_watchers/tests.rs	2
 crates/vize_maestro/src/server/workspace_files/config_watchers/tests/protocol.rs	1
 crates/vize_maestro/src/server/workspace_files/tests.rs	1
