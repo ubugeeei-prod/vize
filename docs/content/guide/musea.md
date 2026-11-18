@@ -297,6 +297,7 @@ Musea can surface:
 Musea supports fully typed inline `play` functions, a fast browser runner, rich traces, and
 Vitest registration. See [Musea interaction testing](./musea-testing.md) for the complete API,
 CLI workflow, execution model, and component-input contract.
+
 ## Props Palette
 
 ![Musea Props Panel](/musea-props.png)
