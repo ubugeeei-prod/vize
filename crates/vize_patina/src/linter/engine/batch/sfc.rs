@@ -1,21 +1,20 @@
 use super::{PreparedLint, SfcWork, Work};
 use crate::linter::engine::sfc::{
     empty_lint_result,
-    pug::{self, PugRoute},
+    pug::{self, PugRoute, PugView},
 };
 use crate::{
     context::SfcSuppression,
     linter::{LintResult, Linter, native_type_aware},
 };
 use vize_l0::ToCompactString;
-use vize_l1_to_l2::lower::pug::PugBlockView;
 
 pub(super) struct SfcTail {
     level: LintResult,
     musea: LintResult,
     art: LintResult,
     suppressions: Option<SfcSuppression>,
-    pug: Option<PugBlockView>,
+    pug: Option<PugView>,
 }
 
 impl SfcTail {
@@ -68,7 +67,7 @@ impl Linter {
                 PreparedLint::complete(self.apply_diagnostic_policy(result))
             }
             Some(PugRoute::View(view)) => self
-                .prepare_sfc_view(&view.source, filename, true)
+                .prepare_sfc_view(&view.view.source, filename, true)
                 .with_pug(view),
             None => self.prepare_sfc_view(source, filename, false),
         }
@@ -134,7 +133,7 @@ impl Linter {
 }
 
 impl PreparedLint {
-    fn with_pug(mut self, view: PugBlockView) -> Self {
+    fn with_pug(mut self, view: PugView) -> Self {
         match &mut self.work {
             Work::Sfc(work) => work.tail.pug = Some(view),
             Work::Complete(result) => {

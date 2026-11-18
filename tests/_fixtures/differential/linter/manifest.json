@@ -16262,17 +16262,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "5cee67503a4f680956e9738b654b74d2a932e4e55ae7203affc7cef1dc651e8f"
+            "sha256": "97949ee1e1027d8408d5c6dde114d35277f8279f7c849f372d30d5d3b462a480"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "83e6bc3a26f97cb56e96bc374c8e9ef57b8a95259e7a5da950b852fc5e2df01c"
+            "sha256": "0e4dd769843a2fabc9d0de85b8a95ca86863eb788a57a751caabb827af8e5fa5"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "e2e4f2a29899e64dfcfb1d8ce4e6e317df9f30c9af0c9c6613da5e7a8a4600a7"
+            "sha256": "1a6152d78f7cf2631fba46b2801dab43492969bfdcf6798c36a83a89063a8b4b"
           }
         ]
       },
@@ -16284,6 +16284,7 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
+              "pug-template",
               "html-template",
               "scss-style",
               "js",
