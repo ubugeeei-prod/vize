@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
 import { offsetToPosition } from "./support/lsp/assertions.ts";
+import { LspRequestError } from "./support/lsp/errors.ts";
 import type { LspRange, PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import {
   assertOrderedEvents,
@@ -44,6 +45,9 @@ test("eventual-null lifecycle requests retry transient request deadlines", async
     async request(method: string, _params: unknown, timeoutMs?: number) {
       timeouts.push(timeoutMs ?? 0);
       if (timeouts.length === 1) throw new Error(`Timed out waiting for ${method}`);
+      if (timeouts.length === 2) {
+        throw new LspRequestError(2, method, { code: -32801, message: "Content modified" });
+      }
       return null;
     },
   };
@@ -58,7 +62,7 @@ test("eventual-null lifecycle requests retry transient request deadlines", async
     ),
     null,
   );
-  assert.equal(timeouts.length, 2);
+  assert.equal(timeouts.length, 3);
   assert.ok(timeouts.every((timeout) => timeout > 0 && timeout <= 1_000));
   await assert.rejects(
     () =>

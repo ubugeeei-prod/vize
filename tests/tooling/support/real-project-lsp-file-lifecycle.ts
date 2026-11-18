@@ -4,6 +4,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 import { pathToFileURL } from "node:url";
 
 import { offsetToPosition } from "./lsp/assertions.ts";
+import { LspRequestError } from "./lsp/errors.ts";
 import type { LspRange, PublishDiagnosticsParams, WorkspaceEdit } from "./lsp/protocol.ts";
 import {
   assertMissingModuleDiagnostic,
@@ -303,7 +304,7 @@ export async function expectNullResponse(
     try {
       response = await session.request(method, params, Math.min(remainingMs, 5000));
     } catch (error) {
-      if (!isRequestTimeout(error, method) || Date.now() >= deadline) throw error;
+      if (!isTransientRequestFailure(error, method) || Date.now() >= deadline) throw error;
       await sleep(Math.min(100, Math.max(1, deadline - Date.now())));
       continue;
     }
@@ -314,8 +315,11 @@ export async function expectNullResponse(
   return null;
 }
 
-function isRequestTimeout(error: unknown, method: string): boolean {
-  return error instanceof Error && error.message.startsWith(`Timed out waiting for ${method}`);
+function isTransientRequestFailure(error: unknown, method: string): boolean {
+  return (
+    (error instanceof Error && error.message.startsWith(`Timed out waiting for ${method}`)) ||
+    (error instanceof LspRequestError && error.method === method && error.code === -32801)
+  );
 }
 
 function assertRenameEdit(
