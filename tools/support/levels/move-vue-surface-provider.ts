@@ -31,7 +31,10 @@ function check(root: string): void {
   if (!shim.includes("pub use crate::dialect::vue3::surface::{") || isOwner(path.join(root, old))) {
     throw new Error("generic markup module must retain only the compatibility export");
   }
-  const dialect = fs.readFileSync(path.join(root, "davinci/vize_l1/src/framework/vue/version/v3.rs"), "utf8");
+  const dialect = fs.readFileSync(
+    path.join(root, "davinci/vize_l1/src/framework/vue/version/v3.rs"),
+    "utf8",
+  );
   if (!dialect.includes("pub mod surface;"))
     throw new Error("Vue component module is not registered");
 }
