@@ -488,7 +488,8 @@ const gitBlob = (bytes: Buffer) =>
  * body custody, frozen predecessors); re-pinning those breaks them, so a holder is listed here
  * only when its test reads the current file.
  */
-const currentPins = /^docs\/davinci\/plan\/compiler-fix-history-index\.json$/u;
+const currentPins =
+  /^(?:docs\/davinci\/plan\/compiler-fix-history-index\.json|tools\/benchmarks\/scripts\/typechecker-native-source-recipe-fixture\.mjs|tests\/_fixtures\/tooling\/native-source-recipe-436\.md)$/u;
 
 /**
  * Re-records the whole-file digests (SHA-256 and git blob ids) that name a file the rewrite
