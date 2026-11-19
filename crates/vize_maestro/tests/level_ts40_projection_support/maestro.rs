@@ -11,7 +11,7 @@ pub(super) fn capture_maestro(fixture: &Fixture, source: &str) -> LaneRecord {
     let descriptor = match parse_sfc(
         source,
         SfcParseOptions {
-            filename: fixture.file.as_str().into(),
+            filename: fixture.recorded_file().as_str().into(),
             ..Default::default()
         },
     ) {
@@ -19,7 +19,8 @@ pub(super) fn capture_maestro(fixture: &Fixture, source: &str) -> LaneRecord {
         Err(error) => return LaneRecord::error(error.message),
     };
     let mut generator = VirtualCodeGenerator::new();
-    let documents = generator.generate(&descriptor, fixture.file.as_str());
+    let recorded_file = fixture.recorded_file();
+    let documents = generator.generate(&descriptor, recorded_file.as_str());
     let mut text = SmallVec::<[String; 8]>::new();
     let mut text_bytes = 0;
     let mut mappings = SmallVec::<[String; 8]>::new();

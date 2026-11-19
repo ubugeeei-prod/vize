@@ -12,7 +12,7 @@ use super::record::LaneRecord;
 
 pub(super) fn capture_canon(fixture: &Fixture, source: &str, mapper: &LaneRecord) -> LaneRecord {
     let result = generate_vue_document_virtual_ts_with_options(
-        fixture_path(fixture),
+        &fixture_path(fixture),
         source,
         &VirtualTsOptions::default(),
         &ImportRewriter::new(),
@@ -130,8 +130,11 @@ pub(super) fn capture_canon(fixture: &Fixture, source: &str, mapper: &LaneRecord
 
 pub(super) fn capture_content_mapper(fixture: &Fixture, source: &str) -> LaneRecord {
     let options = ContentMapperTransformOptions::default().with_options_api(fixture.options_api);
-    match generate_vue_content_mapper_transform_with_options(fixture_path(fixture), source, options)
-    {
+    match generate_vue_content_mapper_transform_with_options(
+        &fixture_path(fixture),
+        source,
+        options,
+    ) {
         Ok(transform) => {
             let mappings = ordered_lines(
                 transform

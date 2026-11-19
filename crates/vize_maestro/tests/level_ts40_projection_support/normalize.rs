@@ -27,8 +27,8 @@ pub(super) fn ordered_lines(lines: Lines) -> String {
     output
 }
 
-pub(super) fn fixture_path(fixture: &Fixture) -> &std::path::Path {
-    std::path::Path::new(fixture.file.as_str())
+pub(super) fn fixture_path(fixture: &Fixture) -> std::path::PathBuf {
+    std::path::PathBuf::from(fixture.recorded_file())
 }
 
 pub(super) fn normalized_error(error: impl core::fmt::Display) -> String {

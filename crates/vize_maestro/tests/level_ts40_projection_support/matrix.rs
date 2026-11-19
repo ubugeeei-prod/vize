@@ -35,7 +35,24 @@ pub enum LineEnding {
     Crlf,
 }
 
+/// Where the fixtures lived when the projection records and receipts were taken, before the level
+/// rename moved them; spelled in parts so the rename keeps it.
+const RECORDED_ROOT: &str = concat!("tests/_fixtures/", "da", "vinci-ts40-projection/");
+const CURRENT_ROOT: &str = "tests/_fixtures/level-ts40-projection/";
+
 impl Fixture {
+    /// The fixture's file name as every projection record and receipt names it.
+    pub fn recorded_file(&self) -> String {
+        match self.file.strip_prefix(CURRENT_ROOT) {
+            Some(rest) => {
+                let mut recorded = String::from(RECORDED_ROOT);
+                recorded.push_str(rest);
+                recorded
+            }
+            None => self.file.clone(),
+        }
+    }
+
     pub fn source(&self) -> String {
         let source = std::fs::read_to_string(workspace_root().join(self.file.as_str()))
             .unwrap_or_else(|error| panic!("failed to read {}: {error}", self.file));
