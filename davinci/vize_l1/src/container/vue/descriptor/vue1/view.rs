@@ -1,6 +1,6 @@
 use super::super::{TemplateNamePair, TemplateSelection};
 use super::Vue1DescriptorObservation;
-use crate::dialect::vue1::surface::ComponentParse;
+use crate::framework::vue::version::v1::surface::ComponentParse;
 use crate::markup::htmlish::parse::SurfaceParseOptions;
 use vize_l0::{SourceBlock, Span};
 

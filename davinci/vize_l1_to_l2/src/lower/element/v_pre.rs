@@ -67,4 +67,4 @@ pub fn frozen_attribute_name<'a>(allocator: &'a Allocator, authored: &'a str) ->
 }
 
 /// Correct compiler-only head projection; default/public callers keep compatibility.
-pub(super) use vize_l1::markup::directive::frozen_attribute_name as literal_attribute_name;
+pub(super) use vize_l1::framework::vue::directive::frozen_attribute_name as literal_attribute_name;

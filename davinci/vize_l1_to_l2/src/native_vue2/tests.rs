@@ -1,6 +1,6 @@
 use super::{Vue2HoleKind, lower_vue2_component};
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l1::dialect::vue2::surface::{parse_component, parse_component_block};
+use vize_l1::framework::vue::version::v2::surface::{parse_component, parse_component_block};
 use vize_l2::{expr::ExprRef, op::Op};
 
 #[test]

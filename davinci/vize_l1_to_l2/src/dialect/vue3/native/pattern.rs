@@ -3,7 +3,7 @@
 use super::{Context, NativeHoleKind};
 use crate::native::ConstructionFactory;
 use vize_l0::Span;
-use vize_l1::markup::directive::DirectiveName;
+use vize_l1::framework::vue::directive::DirectiveName;
 
 #[derive(Clone, Copy)]
 pub(super) struct Directive {

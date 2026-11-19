@@ -1,5 +1,5 @@
 use super::*;
-use vize_l1::dialect::vue2::text::TextBoundaryKind;
+use vize_l1::framework::vue::version::v2::text::TextBoundaryKind;
 use vize_l1::embed::syntax::EmbedHole;
 
 #[test]

@@ -5,7 +5,7 @@ use vize_l0::Span;
 
 use super::super::{AttributeView, NativeTemplateComponent, TemplateGrammar};
 use super::{AttributeOperandError, origin::Origin};
-use crate::dialect::vue3::operand::for_head;
+use crate::framework::vue::version::v3::operand::for_head;
 use crate::embed::syntax::{
     AdmittedDenseForHead, ForHead, ForInput, ForInputError, RejectedForInput,
 };

@@ -4,7 +4,7 @@ use super::refusals::{refused, span};
 use super::*;
 use oxc_ast::ast::Expression;
 use vize_glyph::native_doc::NativeVue2SfcRefusal as Refusal;
-use vize_l1::dialect::vue2::surface::TextRefusal;
+use vize_l1::framework::vue::version::v2::surface::TextRefusal;
 use vize_l1::embed::syntax::EmbedHole;
 
 #[test]

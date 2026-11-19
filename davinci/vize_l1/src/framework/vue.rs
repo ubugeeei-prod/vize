@@ -3,5 +3,10 @@
 
 pub mod profile;
 pub mod style_bind;
+pub mod directive;
+pub mod version;
+pub(crate) mod feature;
+pub(crate) mod quirks;
+pub(crate) mod surface;
 
 pub use profile::VueTemplate;

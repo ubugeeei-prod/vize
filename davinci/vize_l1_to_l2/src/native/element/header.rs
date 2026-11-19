@@ -1,7 +1,7 @@
 use super::{Context, Directive, NativeHoleKind, PreparedAttribute};
 use crate::native::ConstructionFactory;
 use vize_l0::Span;
-use vize_l1::markup::directive::DirectivePrefix;
+use vize_l1::framework::vue::directive::DirectivePrefix;
 use vize_l1::markup::{Element, ElementClose};
 use vize_l2::op::{Attribute, Namespace};
 

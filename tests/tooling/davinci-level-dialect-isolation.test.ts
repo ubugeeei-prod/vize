@@ -178,7 +178,7 @@ test("each level has one registry and policy consumers do not rematch variants",
     );
   }
 
-  const featureRoot = path.join(repoRoot, "davinci/vize_l1/src/dialect/vue/feature");
+  const featureRoot = path.join(repoRoot, "davinci/vize_l1/src/framework/vue/quirks/feature");
   const featureModule = fs.readFileSync(path.join(featureRoot, "mod.rs"), "utf8");
   for (const feature of [
     "attribute",

@@ -10,7 +10,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::vue::DescriptorIssueCode as Code,
-    dialect::vue2::{surface::TextRefusal, text::TextBoundaryKind},
+    framework::vue::version::v2::{surface::TextRefusal, text::TextBoundaryKind},
     embed::syntax::EmbedHole,
     markup::SurfaceParseOptions,
 };

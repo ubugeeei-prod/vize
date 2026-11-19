@@ -5,7 +5,7 @@ use vize_glyph::native_doc::{
 };
 use vize_l0::{Allocator, String};
 use vize_l1::{
-    dialect::vue3::surface::parse_component,
+    framework::vue::version::v3::surface::parse_component,
     markup::{SurfaceChild, check_fidelity},
 };
 

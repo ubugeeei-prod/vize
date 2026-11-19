@@ -57,10 +57,10 @@ pub const fn legacy_version(version: VueVersion) -> Option<LegacyVueVersion> {
 #[must_use]
 pub const fn legacy_capabilities(version: LegacyVueVersion) -> LegacyDialectCapabilities {
     match version {
-        LegacyVueVersion::V0_10 => crate::dialect::vue0::V0_10,
-        LegacyVueVersion::V0_11 => crate::dialect::vue0::V0_11,
-        LegacyVueVersion::V1 => crate::dialect::vue1::CAPABILITIES,
-        LegacyVueVersion::V2 => crate::dialect::vue2::CAPABILITIES,
+        LegacyVueVersion::V0_10 => crate::framework::vue::version::v0::V0_10,
+        LegacyVueVersion::V0_11 => crate::framework::vue::version::v0::V0_11,
+        LegacyVueVersion::V1 => crate::framework::vue::version::v1::CAPABILITIES,
+        LegacyVueVersion::V2 => crate::framework::vue::version::v2::CAPABILITIES,
     }
 }
 
@@ -68,7 +68,7 @@ pub const fn legacy_capabilities(version: LegacyVueVersion) -> LegacyDialectCapa
 #[must_use]
 pub const fn capabilities(version: VueVersion) -> LegacyDialectCapabilities {
     match legacy_version(version) {
-        None => crate::dialect::vue3::CAPABILITIES,
+        None => crate::framework::vue::version::v3::CAPABILITIES,
         Some(version) => legacy_capabilities(version),
     }
 }
@@ -102,29 +102,29 @@ mod tests {
             (
                 VueVersion::V0_10,
                 Some(LegacyVueVersion::V0_10),
-                crate::dialect::vue0::V0_10,
+                crate::framework::vue::version::v0::V0_10,
             ),
             (
                 VueVersion::V0_11,
                 Some(LegacyVueVersion::V0_11),
-                crate::dialect::vue0::V0_11,
+                crate::framework::vue::version::v0::V0_11,
             ),
             (
                 VueVersion::V1,
                 Some(LegacyVueVersion::V1),
-                crate::dialect::vue1::CAPABILITIES,
+                crate::framework::vue::version::v1::CAPABILITIES,
             ),
             (
                 VueVersion::V2,
                 Some(LegacyVueVersion::V2),
-                crate::dialect::vue2::CAPABILITIES,
+                crate::framework::vue::version::v2::CAPABILITIES,
             ),
             (
                 VueVersion::V2_7,
                 Some(LegacyVueVersion::V2),
-                crate::dialect::vue2::CAPABILITIES,
+                crate::framework::vue::version::v2::CAPABILITIES,
             ),
-            (VueVersion::V3, None, crate::dialect::vue3::CAPABILITIES),
+            (VueVersion::V3, None, crate::framework::vue::version::v3::CAPABILITIES),
         ];
         for (version, expected_legacy, expected_capabilities) in cases {
             assert_eq!(legacy_version(version), expected_legacy, "{version:?}");

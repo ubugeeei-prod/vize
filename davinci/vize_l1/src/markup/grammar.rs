@@ -1,7 +1,7 @@
 //! Markup grammars. Vue is the only grammar today; Svelte, Angular and
 //! others join as further implementors without touching the shared lexer.
 
-use super::directive::{DirectiveSyntax, VueDirectives};
+use crate::framework::vue::directive::{DirectiveSyntax, VueDirectives};
 
 /// A markup grammar: the syntax family a template is written in.
 pub trait MarkupGrammar {

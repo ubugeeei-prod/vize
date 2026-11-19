@@ -4,7 +4,7 @@ use super::{
     AttributeExpression, AttributeExpressionFailure, AttributeOperandError, AttributeView,
     ConditionKind, NativeTemplateComponent, Origin, observe_conditional,
 };
-use crate::dialect::vue3::operand::conditional_parts;
+use crate::framework::vue::version::v3::operand::conditional_parts;
 use crate::embed::SourceError;
 use crate::markup::{DirectiveName, DirectiveSyntax, VueDirectives};
 use vize_l0::{SourceBlock, SourceRoot};

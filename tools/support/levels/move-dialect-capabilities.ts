@@ -6,7 +6,7 @@ import { parseArgs } from "node:util";
 import { fileURLToPath } from "node:url";
 
 const moves = [
-  ["crates/vize_armature/src/legacy.rs", "davinci/vize_l1/src/dialect/vue.rs"],
+  ["crates/vize_armature/src/legacy.rs", "davinci/vize_l1/src/framework/vue/quirks.rs"],
   ["davinci/vize_l1_to_l2/src/lower/caps.rs", "davinci/vize_l1/src/dialect/template.rs"],
 ] as const;
 
@@ -34,12 +34,12 @@ function move(root: string): void {
 }
 
 function check(root: string): void {
-  const owner = path.join(root, "davinci/vize_l1/src/dialect/vue.rs");
+  const owner = path.join(root, "davinci/vize_l1/src/framework/vue/quirks.rs");
   if (
     !fs.existsSync(owner) ||
     !fs.readFileSync(owner, "utf8").includes("pub struct LegacyDialectCapabilities")
   ) {
-    throw new Error("missing shared capability owner: davinci/vize_l1/src/dialect/vue.rs");
+    throw new Error("missing shared capability owner: davinci/vize_l1/src/framework/vue/quirks.rs");
   }
   for (const bridgePath of [
     "crates/vize_armature/src/legacy.rs",
