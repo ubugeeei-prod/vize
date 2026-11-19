@@ -243,6 +243,34 @@ pub fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default>(
     )
 }
 
+/// [`lower_with_caps_and_comment_policy`] keeping every decision, compiled
+/// once in this crate.
+///
+/// For cold consumers such as stage capture. Calling the generic entry from
+/// code that is itself generic compiles a copy of the whole lowering in each
+/// crate that instantiates that code.
+#[doc(hidden)]
+#[must_use]
+pub fn lower_recorded_with_caps_and_comment_policy<'a>(
+    allocator: &'a Allocator,
+    tree: &SurfaceTree<'a>,
+    errors: &[SurfaceError],
+    caps: LegacyCaps,
+    policy: LowerPolicy,
+    custom_element_patterns: &[String],
+    custom_element_predicate: Option<fn(&str) -> bool>,
+) -> Lowered<'a> {
+    lower_with_caps_and_comment_policy(
+        allocator,
+        tree,
+        errors,
+        caps,
+        policy,
+        custom_element_patterns,
+        custom_element_predicate,
+    )
+}
+
 /// Lower a parsed L1 source block while preserving file-absolute L0 spans.
 #[must_use]
 pub fn lower_source_block<'a>(
