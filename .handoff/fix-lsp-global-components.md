@@ -33,3 +33,8 @@ The editor publishes the authored `component-required-props` diagnostic for the 
 ## Ledger rows
 
 `docs/davinci/plan/lsp-fix-history.tsv` still has 3 `regression-held` rows once #13413 merges: 22a49aca2f, 37d5c18c2a and a0e0efd776 (all #13384). After a fix, register the specs with `lsp-fix-history-case.ts register`, which flips the rows. Then close #6883 once all rows are covered.
+
+## Related in-flight runs (#13413, not this branch)
+
+- Base 44517750227 (`bench/lsp-13383-base`, main 8b09dea8b1) and head 44517582455 for #13413. See `.handoff/fix-lsp-art-imported-hover.md` on that branch.
+- This branch has no dispatches. Its next step is the #13384 fix described above.
