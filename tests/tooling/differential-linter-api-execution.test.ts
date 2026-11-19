@@ -106,6 +106,11 @@ void test("shared linter corpus retains every complete actual public observation
             "linter/current-api/h1-definition-name-initialism-filename-6698",
             "linter/current-api/h1-definition-name-single-letter-filename-6698",
             "linter/current-api/h1-definition-name-underscored-uppercase-filename-6698",
+            "linter/current-api/h11-name-casing-camel-filename-control-939",
+            "linter/current-api/h11-name-casing-components-kebab-control-939",
+            "linter/current-api/h11-name-casing-nuxt-app-pages-route-939",
+            "linter/current-api/h11-name-casing-nuxt-pages-route-939",
+            "linter/current-api/h11-name-casing-nuxt-src-pages-route-939",
           ].includes(fixture.id),
       )
       .map((fixture: any) => fixture.id)
