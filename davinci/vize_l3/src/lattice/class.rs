@@ -6,9 +6,13 @@ use creusot_std::prelude::{Clone, DeepModel, Int, PartialEq, ensures, logic};
 /// Under `cfg(creusot)` the derives that are not part of the lattice laws
 /// (`Debug`, `Hash` and the declaration-order `PartialOrd`/`Ord`) are left
 /// out of the proof crate; `tests/lattice.rs` checks the order against
-/// `join` exhaustively.
-#[derive(Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(not(creusot), derive(Debug, PartialOrd, Ord, Hash))]
+/// `join` exhaustively. The product build keeps the original derive list, so
+/// it expands to exactly the code it did before the proofs.
+#[cfg_attr(
+    not(creusot),
+    derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)
+)]
+#[cfg_attr(creusot, derive(Clone, Copy, PartialEq, Eq))]
 #[repr(u8)]
 pub enum ReactivityClass {
     /// The binding is independent of runtime inputs.
@@ -81,7 +85,17 @@ impl ReactivityClass {
         }
     }
 
-    #[cfg_attr(creusot, ensures(result@ == self.position()))]
+    #[cfg(not(creusot))]
+    const fn rank(self) -> u8 {
+        self as u8
+    }
+
+    /// The proof crate's `rank`. Creusot 0.14 leaves an enum-to-discriminant
+    /// cast unconstrained, so it reads the same numbers (the explicit
+    /// `repr(u8)` discriminants above) through a match. `tests/lattice.rs`
+    /// pins those discriminants to the chain positions.
+    #[cfg(creusot)]
+    #[ensures(result@ == self.position())]
     const fn rank(self) -> u8 {
         match self {
             Self::Static => 0,
