@@ -160,7 +160,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             owned_constructor,
             jsx_witness_successor,
             integrated_successor,
-            "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__vue2-native-event__mixed-vue2__legacy-generators-enabled.snap.new",
+            "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__vue2-native-event__mixed-vue2__legacy-generators-enabled.snap.new",
             "ce519376b1c12c5a51cb8952061ffdd3e581745f883ef50d049609552af56281",
         );
         let discriminated_jsx_union_successor = include_str!(
