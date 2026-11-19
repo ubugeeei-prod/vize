@@ -73,7 +73,7 @@ pub(super) struct SlotAnchor {
 
 /// A `<template v-slot>` payload normalized before slot function emission.
 pub(super) struct ComponentTemplateSlot<'node, 'a> {
-    name: String,
+    name: slot_fn::SlotName<'node>,
     anchor: SlotAnchor,
     props_pattern: Option<String>,
     params: FxHashSet<String>,
