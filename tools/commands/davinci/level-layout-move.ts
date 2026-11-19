@@ -299,7 +299,8 @@ export const steps: Readonly<Record<string, Step>> = {
     identifiers: {
       NATIVE_ELEMENT_PROP: "ELEMENT_PROP",
       SfcRender: "ComponentRender",
-      emit_dom_source_sfc_observed_with_options: "emit_dom_source_strict_slots_observed_with_options",
+      emit_dom_source_sfc_observed_with_options:
+        "emit_dom_source_strict_slots_observed_with_options",
       emit_dom_source_sfc_with_options: "emit_dom_source_strict_slots_with_options",
       NativeTemplateDomOutput: "TemplateDomOutput",
       NativeTemplateDomOutputError: "TemplateDomOutputError",
