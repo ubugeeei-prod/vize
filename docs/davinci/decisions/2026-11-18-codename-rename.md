@@ -5,6 +5,15 @@ everywhere except `docs/davinci/` by one scripted, replayable rename") and the t
 decided on 2026-11-09 ([#6832](https://github.com/ubugeeei-prod/vize/issues/6832)). It replaces
 the 2026-11-09 dry run, which was never merged.
 
+## Decisions (maintainer, 2026-11-19)
+
+- **Hard rename, no deprecated aliases.** Every public name listed under "What changes for
+  users" changes in one release: no cargo feature, CLI flag, environment variable, file
+  extension, counter, remark, dump header or playground id keeps its old spelling. The PR lists
+  each under "Breaking changes" so the release notes carry them.
+- **The refined gate measure is accepted** (see "Measurement"): `levels.codenames` counts what
+  the rename script would still change, not every substring.
+
 ## Replay
 
 `tools/support/levels/rename-codenames.ts` is the whole rename. On any branch:
@@ -55,12 +64,15 @@ not codenames).
 
 `levels.codenames` measures with the script's own rules: a line counts when the rename would
 still change it, so references into the kept docs and pinned links do not count, and a level
-codename counts at word-part starts only. On main before the rename the gate read 3157 paths and
-9075 lines; after it, 0 and 0.
+codename counts at word-part starts only. The gate imports those rules from
+`tools/support/levels/rename-codenames.ts`, so the script stays in the tree after the rename, and
+the gate itself moves to `tools/commands/levels/completion-gates.ts`. On main before the rename
+(4a0fb417ed) the old substring measure read 3157 paths and 9082 lines; after it the gate reads 0
+and 0.
 
 ## What changes for users
 
-- Cargo features deleted: `davinci-differential` (12 crates), `davinci-dom-differential`; use
+- Cargo features deleted: `davinci-differential` (11 crates), `davinci-dom-differential`; use
   `legacy-differential` / `legacy-dom-differential`. Renamed: `davinci-production-bench` and
   `-profile` → `level-production-*` (vize_atelier_sfc), `davinci-benchmark` and `-profile` →
   `level-benchmark*` (vize_atelier_vapor, vize_l1_to_l2).
@@ -71,7 +83,8 @@ codename counts at word-part starts only. On main before the rename the gate rea
   `UPDATE_FOLIO_FIXTURES` → `UPDATE_DUMP_FIXTURES`, `CROQUIS_FOLIO` → `CROQUIS_DUMP`.
 - Serialized: profile counters and remark ids `davinci.*` → `levels.*`; dump page headers
   `[s3-*-folio]` and `[fusion-plan-folio]` → `…-dump`; playground stage kinds `disegno` /
-  `impeto` → `l2` / `l3`. Dump formats may break until contracts GA (2026-11-09).
+  `impeto` → `l2` / `l3`; playground tab id `davinci` → `levels`. Dump formats may break until
+  contracts GA (2026-11-09).
 - Unpublished crates: `davinci_harness` → `level_harness`, `davinci_test_support` →
   `level_test_support`.
 
