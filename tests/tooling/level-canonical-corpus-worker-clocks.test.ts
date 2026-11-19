@@ -17,7 +17,9 @@ import {
   reversedJobBase64,
   reversedProvenance,
 } from "./fixtures/canonical-worker-clocks/c1fa-dom.ts";
+import { rewriteText } from "../../tools/support/levels/rename-codenames.ts";
 
+const fixtureFile = "tests/tooling/fixtures/canonical-worker-clocks/c1fa-dom.ts";
 const decode = (value: string): unknown =>
   JSON.parse(Buffer.from(value, "base64").toString("utf8"));
 const digest = (value: string) =>
@@ -70,8 +72,9 @@ type Artifact = {
 const retainedCheck = decode(checkBase64) as Check;
 const job: Job = { ...(decode(jobBase64) as Job), canonicalCheck: retainedCheck };
 const artifact = decode(artifactBase64) as Artifact;
+// Captured jobs predate the level rename; their step names match through it.
 const stepOf = (value: Job, name: string) => {
-  const step = value.steps.find((entry) => entry.name === name);
+  const step = value.steps.find((entry) => rewriteText(fixtureFile, entry.name) === name);
   assert.ok(step, "Missing fixture step: " + name);
   return step;
 };

@@ -52,9 +52,9 @@ const groups = [
   },
   {
     id: "07",
-    title: "Level, Canon, and Level",
+    title: "Levels, Canon, and Cross-file",
     description:
-      "Level migration, Canon ownership, Level lowering, and cross-file graph contracts.",
+      "Level-crate migration, Canon ownership, level lowering, and cross-file graph contracts.",
   },
   {
     id: "08",
@@ -133,7 +133,7 @@ export function workflowGroupId(file: string): WorkflowGroupId {
   ) {
     return "06";
   }
-  if (/^(canon-|cross-file|level-|level-|compact-collections)/.test(file)) return "07";
+  if (/^(canon-|cross-file|level-|compact-collections)/.test(file)) return "07";
   if (
     /^(babel-|nuxt|parcel-|rspack-|turbopack-|vite|vitest-|plain-script-import-ref|js-install-closure|void-build|vuefes-)/.test(
       file,
