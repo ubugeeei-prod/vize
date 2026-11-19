@@ -352,11 +352,17 @@ test("the PR planner requires the setup lane and its chained selected-SFC captur
       cargoMetadata,
     });
     const outputs = prCheckOutputs(plan);
-    assert(plan.native.run, eventName);
-    assert.deepEqual(JSON.parse(outputs["native-runtime-matrix"]), {
-      lane: ["setup", "selected-template"],
-    });
-    if (eventName === "pull_request") assert.equal(outputs.heavy, "false");
+    // #6830: fast PRs defer native runtime lanes; the queue runs the same lanes.
+    const lanes = ["setup", "selected-template"];
+    if (eventName === "pull_request") {
+      assert.equal(outputs.heavy, "false");
+      assert(!plan.native.run, eventName);
+      assert.deepEqual(plan.native.deferred, lanes);
+      assert.deepEqual(JSON.parse(outputs["native-runtime-matrix"]), { lane: ["none"] });
+    } else {
+      assert(plan.native.run, eventName);
+      assert.deepEqual(JSON.parse(outputs["native-runtime-matrix"]), { lane: lanes });
+    }
   }
   const workflow = parse(
     fs.readFileSync(
