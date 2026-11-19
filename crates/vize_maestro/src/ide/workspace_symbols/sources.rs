@@ -2,7 +2,9 @@
 
 use tower_lsp::lsp_types::{SymbolInformation, Url};
 
-use super::{WorkspaceSymbolsService, rank, script};
+#[cfg(all(test, feature = "native"))]
+use super::rank;
+use super::{WorkspaceSymbolsService, script};
 
 impl WorkspaceSymbolsService {
     #[cfg(all(test, feature = "native"))]
@@ -34,13 +36,5 @@ impl WorkspaceSymbolsService {
         } else {
             script::collect(uri, source, query_lower, symbols);
         }
-    }
-
-    #[cfg(feature = "native")]
-    pub(crate) fn rank_sources(
-        symbols: Vec<SymbolInformation>,
-        query_lower: &str,
-    ) -> Vec<SymbolInformation> {
-        rank::sort(symbols, query_lower)
     }
 }

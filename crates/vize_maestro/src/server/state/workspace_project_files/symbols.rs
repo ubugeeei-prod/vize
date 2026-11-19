@@ -6,6 +6,7 @@ use std::sync::atomic::Ordering;
 use std::task::Poll;
 
 use crate::ide::WorkspaceSymbolsService;
+use crate::ide::workspace_symbols::rank::SymbolSelection;
 use tower_lsp::lsp_types::{SymbolInformation, Url};
 
 use super::{ServerState, is_project_source};
@@ -143,7 +144,7 @@ fn collect_sources_filtered<Text: AsRef<str>>(
     filter: impl Fn(&Url) -> bool,
     symbol_cache: Option<SymbolCacheSnapshot<'_>>,
 ) -> Vec<SymbolInformation> {
-    let mut symbols = Vec::new();
+    let mut selection = SymbolSelection::new(query_lower);
     let mut disk_index = 0;
     let mut open_index = 0;
     while disk_index < uris.len() || open_index < open.len() {
@@ -164,7 +165,7 @@ fn collect_sources_filtered<Text: AsRef<str>>(
                             &mut read,
                             &filter,
                             symbol_cache,
-                            &mut symbols,
+                            &mut selection,
                         );
                         disk_index += 1;
                     }
@@ -175,7 +176,7 @@ fn collect_sources_filtered<Text: AsRef<str>>(
                             query_lower,
                             &filter,
                             symbol_cache,
-                            &mut symbols,
+                            &mut selection,
                         );
                         disk_index += 1;
                         open_index += 1;
@@ -187,7 +188,7 @@ fn collect_sources_filtered<Text: AsRef<str>>(
                             query_lower,
                             &filter,
                             symbol_cache,
-                            &mut symbols,
+                            &mut selection,
                         );
                         open_index += 1;
                     }
@@ -201,7 +202,7 @@ fn collect_sources_filtered<Text: AsRef<str>>(
                     &mut read,
                     &filter,
                     symbol_cache,
-                    &mut symbols,
+                    &mut selection,
                 );
                 disk_index += 1;
             }
@@ -212,14 +213,14 @@ fn collect_sources_filtered<Text: AsRef<str>>(
                     query_lower,
                     &filter,
                     symbol_cache,
-                    &mut symbols,
+                    &mut selection,
                 );
                 open_index += 1;
             }
             (None, None) => break,
         }
     }
-    WorkspaceSymbolsService::rank_sources(symbols, query_lower)
+    selection.finish()
 }
 
 fn collect_open_source(
@@ -228,22 +229,22 @@ fn collect_open_source(
     query_lower: &str,
     filter: &impl Fn(&Url) -> bool,
     symbol_cache: Option<SymbolCacheSnapshot<'_>>,
-    symbols: &mut Vec<SymbolInformation>,
+    selection: &mut SymbolSelection<'_>,
 ) {
-    let before = symbols.len();
     if let Some(cache) = symbol_cache {
-        WorkspaceSymbolsService::collect_cached_open_source(
+        WorkspaceSymbolsService::select_cached_open_source(
             cache.documents,
             uri,
             source,
-            query_lower,
-            symbols,
+            || filter(uri),
+            selection,
         );
     } else {
-        WorkspaceSymbolsService::collect_source(uri, source.as_ref(), query_lower, symbols);
-    }
-    if symbols.len() > before && !filter(uri) {
-        symbols.truncate(before);
+        let mut symbols = Vec::new();
+        WorkspaceSymbolsService::collect_source(uri, source.as_ref(), query_lower, &mut symbols);
+        if !symbols.is_empty() && filter(uri) {
+            selection.extend_owned(symbols);
+        }
     }
 }
 
@@ -254,7 +255,7 @@ fn collect_disk_source<Text: AsRef<str>>(
     read: &mut impl FnMut(&Path) -> Option<Text>,
     filter: &impl Fn(&Url) -> bool,
     symbol_cache: Option<SymbolCacheSnapshot<'_>>,
-    symbols: &mut Vec<SymbolInformation>,
+    selection: &mut SymbolSelection<'_>,
 ) {
     let Ok(path) = uri.to_file_path() else {
         return;
@@ -262,23 +263,19 @@ fn collect_disk_source<Text: AsRef<str>>(
     if retired.iter().any(|prefix| path.starts_with(prefix)) {
         return;
     }
-    let before = symbols.len();
     if let Some(SymbolCacheSnapshot {
         documents: cache,
         disk_generation: Some(generation),
     }) = symbol_cache
-        && WorkspaceSymbolsService::collect_cached_disk_source(
+        && WorkspaceSymbolsService::select_cached_disk_source(
             cache,
             uri,
             None,
             generation,
-            query_lower,
-            symbols,
+            || filter(uri),
+            selection,
         )
     {
-        if symbols.len() > before && !filter(uri) {
-            symbols.truncate(before);
-        }
         return;
     }
     let Some(source) = read(&path) else { return };
@@ -287,19 +284,20 @@ fn collect_disk_source<Text: AsRef<str>>(
         disk_generation: Some(generation),
     }) = symbol_cache
     {
-        WorkspaceSymbolsService::collect_cached_disk_source(
+        WorkspaceSymbolsService::select_cached_disk_source(
             cache,
             uri,
             Some(source.as_ref()),
             generation,
-            query_lower,
-            symbols,
+            || filter(uri),
+            selection,
         );
     } else {
-        WorkspaceSymbolsService::collect_source(uri, source.as_ref(), query_lower, symbols);
-    }
-    if symbols.len() > before && !filter(uri) {
-        symbols.truncate(before);
+        let mut symbols = Vec::new();
+        WorkspaceSymbolsService::collect_source(uri, source.as_ref(), query_lower, &mut symbols);
+        if !symbols.is_empty() && filter(uri) {
+            selection.extend_owned(symbols);
+        }
     }
     // No closed-file buffer survives into the next file read. Sorting and
     // truncation happen once over the complete result, never per source.

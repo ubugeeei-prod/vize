@@ -1,6 +1,7 @@
 //! Deterministic open and watched-disk allocation carriers.
 
 use super::{ServerState, Url};
+use crate::ide::WorkspaceSymbolsService;
 use crate::runtime::block_on;
 use vize_l0::profiler::{
     allocation_snapshot, reset_allocation_counters, set_allocation_tracking_enabled,
@@ -75,6 +76,74 @@ fn native_workspace_symbol_cache_allocation_law() {
                     "requestedBytes": warm_allocations.requested_bytes(),
                 },
                 "law": "native project-wide worker shares open buffers and reuses their query-independent symbol indexes",
+            })
+        );
+
+        reset_allocation_counters();
+        set_allocation_tracking_enabled(true);
+        let legacy_hits =
+            WorkspaceSymbolsService::search_cached_open_sources_legacy(&state, "symbol_");
+        std::hint::black_box(&legacy_hits);
+        let legacy_hit_allocations = allocation_snapshot();
+        set_allocation_tracking_enabled(false);
+
+        reset_allocation_counters();
+        set_allocation_tracking_enabled(true);
+        let bounded_hits = WorkspaceSymbolsService::search(&state, "symbol_");
+        std::hint::black_box(&bounded_hits);
+        let bounded_hit_allocations = allocation_snapshot();
+        set_allocation_tracking_enabled(false);
+
+        reset_allocation_counters();
+        set_allocation_tracking_enabled(true);
+        let native_bounded_hits = state.search_workspace_project_symbols("symbol_").await;
+        std::hint::black_box(&native_bounded_hits);
+        let native_bounded_hit_allocations = allocation_snapshot();
+        set_allocation_tracking_enabled(false);
+
+        assert_eq!(legacy_hits, bounded_hits);
+        assert_eq!(legacy_hits, native_bounded_hits);
+        assert_eq!(bounded_hits.len(), 100);
+        assert!(
+            bounded_hit_allocations.requested_bytes()
+                < legacy_hit_allocations.requested_bytes() / 4,
+            "bounded cached selection must allocate far less than cloning every match"
+        );
+        assert!(
+            bounded_hit_allocations.allocation_calls()
+                < legacy_hit_allocations.allocation_calls() / 4,
+            "bounded cached selection must make far fewer allocations than cloning every match"
+        );
+        assert!(
+            native_bounded_hit_allocations.requested_bytes()
+                < legacy_hit_allocations.requested_bytes() / 2,
+            "the native worker must retain the bounded cached-selection advantage"
+        );
+        assert!(
+            native_bounded_hit_allocations.allocation_calls()
+                < legacy_hit_allocations.allocation_calls() / 2,
+            "the native worker must retain the bounded allocation-count advantage"
+        );
+        println!(
+            "workspace_symbol_hit_selection_allocation={}",
+            serde_json::json!({
+                "documents": DOCUMENTS,
+                "declarationsPerDocument": DECLARATIONS,
+                "matchingCandidates": DOCUMENTS * DECLARATIONS,
+                "returnedSymbols": bounded_hits.len(),
+                "legacyCloneAndSortAll": {
+                    "allocationCalls": legacy_hit_allocations.allocation_calls(),
+                    "requestedBytes": legacy_hit_allocations.requested_bytes(),
+                },
+                "boundedDirect": {
+                    "allocationCalls": bounded_hit_allocations.allocation_calls(),
+                    "requestedBytes": bounded_hit_allocations.requested_bytes(),
+                },
+                "boundedNativeWorker": {
+                    "allocationCalls": native_bounded_hit_allocations.allocation_calls(),
+                    "requestedBytes": native_bounded_hit_allocations.requested_bytes(),
+                },
+                "law": "cached matches are ranked as owner/index candidates and only the final wire-limited symbols are cloned",
             })
         );
 
