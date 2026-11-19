@@ -9,10 +9,30 @@ on:
         description: 'JSON array of "name=sha" strings; the first is the base'
         required: true
         type: string
+      size:
+        description: 'Build the ci-opt CLI size probe (true/false)'
+        required: false
+        default: 'true'
+        type: string
       release:
         description: 'Also build the shipped release profile (true/false)'
         required: false
         default: 'false'
+        type: string
+      dumps:
+        description: 'Suite prefix (pkg-bench) whose run-1 Callgrind dumps to upload, e.g. vize_atelier_vapor-davinci'
+        required: false
+        default: ''
+        type: string
+      suites:
+        description: 'Instruction suites: all, or sfc (SFC parsing only)'
+        required: false
+        default: 'all'
+        type: string
+      ic_profile:
+        description: 'ci-opt (default) or release (fat LTO, 1 CGU via CARGO_PROFILE_CI_OPT_* overrides)'
+        required: false
+        default: 'ci-opt'
         type: string
       instructions:
         description: 'Also collect instruction counts (true/false)'
@@ -57,6 +77,7 @@ jobs:
       - uses: ./driver/.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - name: Build
+        if: inputs.size != 'false'
         env: { NAME: "${{ steps.role.outputs.name }}" }
         run: |
           set -euo pipefail
@@ -88,13 +109,28 @@ jobs:
         working-directory: src
         run: |
           set -euo pipefail
+          mkdir -p ../out
+          if [ "${{ inputs.ic_profile }}" = release ]; then
+            export CARGO_PROFILE_CI_OPT_LTO=fat CARGO_PROFILE_CI_OPT_CODEGEN_UNITS=1
+          fi
+          if [ "${{ inputs.suites }}" = sfc ]; then
+            mkdir -p "$RUNNER_TEMP/sfc"
+            node tools/benchmarks/scripts/instruction-counts.mjs --sfc-parsing --collect --out "$RUNNER_TEMP/sfc/sic"
+            cp "$RUNNER_TEMP/sfc/sic/run-1.json" ../out/$NAME.sic.json
+            cp "$RUNNER_TEMP/sfc/sic/binaries.json" ../out/$NAME.sic-binaries.json
+            exit 0
+          fi
           node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "$RUNNER_TEMP/ic"
           cp "$RUNNER_TEMP/ic/run-1.json" ../out/$NAME.ic.json
+          if [ -n "${{ inputs.dumps }}" ]; then
+            tar -C "$RUNNER_TEMP/ic/run-1" -czf ../out/$NAME.dumps.tgz $(cd "$RUNNER_TEMP/ic/run-1" && ls | grep "^${{ inputs.dumps }}\.callgrind" | grep -v -E '\.(stderr|stdout)$')
+          fi
           node tools/benchmarks/scripts/instruction-counts.mjs --formatter --collect --out "$RUNNER_TEMP/fic"
           cp "$RUNNER_TEMP/fic/run-1.json" ../out/$NAME.fic.json
           mkdir -p "$RUNNER_TEMP/sfc"
           node tools/benchmarks/scripts/instruction-counts.mjs --sfc-parsing --collect --out "$RUNNER_TEMP/sfc/sic"
           cp "$RUNNER_TEMP/sfc/sic/run-1.json" ../out/$NAME.sic.json
+          cp "$RUNNER_TEMP/sfc/sic/binaries.json" ../out/$NAME.sic-binaries.json
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with: { name: "size-${{ steps.role.outputs.name }}", path: out, retention-days: 3 }
