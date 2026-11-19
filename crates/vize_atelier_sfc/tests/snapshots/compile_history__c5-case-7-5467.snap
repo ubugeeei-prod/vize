@@ -1,0 +1,46 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-case-7-5467",
+    history: "86f4b794f4ffb5b1045fb7aa14bcf907b93299a4",
+    source: "<a href=\"/\">outer<a href=\"/foo\">inner</a></a></a>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: InvalidEndTag,
+            message: "Invalid end tag.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 45,
+                        end: 49,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "",
+    code: "",
+    map: None,
+}

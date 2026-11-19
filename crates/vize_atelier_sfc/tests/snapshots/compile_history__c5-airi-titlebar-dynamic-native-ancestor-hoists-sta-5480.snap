@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-airi-titlebar-dynamic-native-ancestor-hoists-sta-5480",
+    history: "deb960cdbc90fc987e9ec9564121a226eb3def32",
+    source: "<div :class=\"root\"><div flex drag-region><button @click=\"run\"><span>{{ title }}</span></button><div w-full drag-region></div></div></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass(root)\n  }, [\n    _createElementVNode(\"div\", {\n      flex: \"\",\n      \"drag-region\": \"\"\n    }, [\n      _createElementVNode(\"button\", { onClick: run }, [\n        _createElementVNode(\"span\", null, _toDisplayString(title), 1 /* TEXT */)\n      ], 8 /* PROPS */, [\"onClick\"]),\n      _createElementVNode(\"div\", {\n        \"w-full\": \"\",\n        \"drag-region\": \"\"\n      })\n    ])\n  ], 2 /* CLASS */))\n}",
+    map: None,
+}

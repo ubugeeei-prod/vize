@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-slot-fallback-component-resolves-before-owner-co-5493",
+    history: "6f8fc0abf99a3006b11e3dd44afc55270c8800e4",
+    source: "<DropdownMenuTrigger><slot name=\"trigger\"><span>{{ label }}</span><Icon icon=\"x\" /></slot></DropdownMenuTrigger><DropdownMenuItem><span>Item</span></DropdownMenuItem>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, renderSlot as _renderSlot, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Icon = _resolveComponent(\"Icon\")\n  const _component_DropdownMenuTrigger = _resolveComponent(\"DropdownMenuTrigger\")\n  const _component_DropdownMenuItem = _resolveComponent(\"DropdownMenuItem\")\n  \n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createVNode(_component_DropdownMenuTrigger, null, {\n      default: _withCtx(() => [\n        _renderSlot(_ctx.$slots, \"trigger\", {}, () => [\n          _createElementVNode(\"span\", null, _toDisplayString(label), 1 /* TEXT */),\n          _createVNode(_component_Icon, { icon: \"x\" })\n        ])\n      ]),\n      _: 3 /* FORWARDED */\n    }),\n    _createVNode(_component_DropdownMenuItem, null, {\n      default: _withCtx(() => [\n        _createElementVNode(\"span\", null, \"Item\")\n      ]),\n      _: 1 /* STABLE */\n    })\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    map: None,
+}

@@ -6118,5 +6118,4835 @@
     "entry": "sfc",
     "target": "vapor",
     "errors": 1
+  },
+  {
+    "id": "c5-filter-text-child-4919",
+    "history": "59b76d9a0b6be0e98ab033d1315a809c958c2bbc",
+    "source": "<template><div>{{ 1 | double }}</div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "vueVersion": "2"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-filter-bind-prop-4919",
+    "history": "59b76d9a0b6be0e98ab033d1315a809c958c2bbc",
+    "source": "<template><div :id=\"1 | formatId\"></div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "vueVersion": "2"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-filter-component-prop-4919",
+    "history": "59b76d9a0b6be0e98ab033d1315a809c958c2bbc",
+    "source": "<template><Foo :value=\"1 | formatId\" /></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "vueVersion": "2"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-filter-default-slot-4919",
+    "history": "59b76d9a0b6be0e98ab033d1315a809c958c2bbc",
+    "source": "<template><Foo>{{ 1 | cap }}</Foo></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "vueVersion": "2"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-bare-name-attr-4921",
+    "history": "891e631710c5c007ebb615c22693c3bb9ac4b627",
+    "source": "<slot name></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-bracket-literal-name-4921",
+    "history": "891e631710c5c007ebb615c22693c3bb9ac4b627",
+    "source": "<slot name=\"[header]\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-dynamic-member-name-4921",
+    "history": "891e631710c5c007ebb615c22693c3bb9ac4b627",
+    "source": "<slot :name=\"tabs[index]\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-same-name-shorthand-4921",
+    "history": "891e631710c5c007ebb615c22693c3bb9ac4b627",
+    "source": "<slot :name></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-same-name-longhand-4921",
+    "history": "891e631710c5c007ebb615c22693c3bb9ac4b627",
+    "source": "<slot v-bind:name></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-blank-dynamic-name-4921",
+    "history": "891e631710c5c007ebb615c22693c3bb9ac4b627",
+    "source": "<slot :name=\"\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-comp-dynamic-arg-4933",
+    "history": "f9a56d1fc0c96b7c399913788df164a5aaede676",
+    "source": "<Foo v-model:[field]=\"msg\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-comp-dynamic-arg-mod-4933",
+    "history": "f9a56d1fc0c96b7c399913788df164a5aaede676",
+    "source": "<Foo v-model:[field].trim=\"msg\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-css-number-fold-artifact-4981",
+    "history": "33b089ce4eb7fcd28041e59c654a54535bdebf2e",
+    "source": "<template><div /></template>\n<style>\nlosrasinable-p {\n t>px`5;  text-size-adjust:asin(5\f)\u0000\u0000\u0000\u0000\u0000\u0000\u0000UUUrath\n</style>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-css-percentage-asin-4981",
+    "history": "33b089ce4eb7fcd28041e59c654a54535bdebf2e",
+    "source": "<template><div /></template>\n<style>\na{text-size-adjust:asin(5)}\na{text-size-adjust:calc(1 + 1)}\na{font-stretch:calc(5)}\n</style>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-css-percentage-control-4981",
+    "history": "33b089ce4eb7fcd28041e59c654a54535bdebf2e",
+    "source": "<template><div /></template>\n<style>\na{text-size-adjust:50%}\na{text-size-adjust:calc(50% + 10%)}\n</style>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-1-4997",
+    "history": "88bf3df02f022d8d24eac03fcfbfd0e764966fe2",
+    "source": "<div v-if=\"show\" v-bind=\"attrs\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-1-prefixed-4997",
+    "history": "88bf3df02f022d8d24eac03fcfbfd0e764966fe2",
+    "source": "<div v-if=\"show\" v-bind=\"attrs\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-bare-template-default-5011",
+    "history": "3565326fe0bc86587a56d771ede54cbe8837972e",
+    "source": "<Foo><template>x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-named-header-v-once-2299a21",
+    "history": "2299a2114a370278f2b7bf90cafd3d20fe6b3367",
+    "source": "<Foo><template #header v-once>x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-named-header-v-memo-2299a21",
+    "history": "2299a2114a370278f2b7bf90cafd3d20fe6b3367",
+    "source": "<Foo><template #header v-memo=\"[ok]\">x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-v-slot-empty-params-2299a21",
+    "history": "2299a2114a370278f2b7bf90cafd3d20fe6b3367",
+    "source": "<Foo v-slot=\"\">title</Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-named-slot-empty-params-2299a21",
+    "history": "2299a2114a370278f2b7bf90cafd3d20fe6b3367",
+    "source": "<Foo><template #header=\"\">x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-create-slots-if-v-once-2299a21",
+    "history": "2299a2114a370278f2b7bf90cafd3d20fe6b3367",
+    "source": "<Foo><template #header v-if=\"ok\" v-once>x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-create-slots-if-v-memo-2299a21",
+    "history": "2299a2114a370278f2b7bf90cafd3d20fe6b3367",
+    "source": "<Foo><template #header v-if=\"ok\" v-memo=\"[ok]\">x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-create-slots-empty-params-2299a21",
+    "history": "2299a2114a370278f2b7bf90cafd3d20fe6b3367",
+    "source": "<Foo><template #header=\"\" v-if=\"ok\">x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-create-slots-for-v-once-2299a21",
+    "history": "2299a2114a370278f2b7bf90cafd3d20fe6b3367",
+    "source": "<Foo><template v-for=\"i in n\" #header v-once>x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-create-slots-for-v-memo-2299a21",
+    "history": "2299a2114a370278f2b7bf90cafd3d20fe6b3367",
+    "source": "<Foo><template v-for=\"i in n\" #header v-memo=\"[i]\">x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-create-slots-nested-template-5183",
+    "history": "f5aa60553eb391a03f1849bd9fa6c015c4e25506",
+    "source": "<Foo><template #header v-if=\"ok\"><template #inner>x</template></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-create-slots-nested-template-interp-5183",
+    "history": "f5aa60553eb391a03f1849bd9fa6c015c4e25506",
+    "source": "<Foo><template v-for=\"i in n\" #header><template #inner>{{ i }}</template></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-named-slot-template-5183",
+    "history": "f5aa60553eb391a03f1849bd9fa6c015c4e25506",
+    "source": "<Foo><template #header><template #inner>x</template></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-named-slot-template-interp-5183",
+    "history": "f5aa60553eb391a03f1849bd9fa6c015c4e25506",
+    "source": "<Foo><template #header><template #inner>{{ msg }}</template></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-named-slot-template-multiple-5183",
+    "history": "f5aa60553eb391a03f1849bd9fa6c015c4e25506",
+    "source": "<Foo><template #header><template #inner><b></b><i></i></template></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-named-slot-template-empty-5183",
+    "history": "f5aa60553eb391a03f1849bd9fa6c015c4e25506",
+    "source": "<Foo><template #header><template #inner></template></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-stray-named-slot-template-inside-native-5183",
+    "history": "f5aa60553eb391a03f1849bd9fa6c015c4e25506",
+    "source": "<div><template #inner>x</template></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-stray-named-slot-template-interp-5183",
+    "history": "f5aa60553eb391a03f1849bd9fa6c015c4e25506",
+    "source": "<div><template #inner>{{ msg }}</template></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-stray-named-slot-template-multiple-5183",
+    "history": "f5aa60553eb391a03f1849bd9fa6c015c4e25506",
+    "source": "<div><template #inner><b></b><i></i></template></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-stray-named-slot-template-empty-5183",
+    "history": "f5aa60553eb391a03f1849bd9fa6c015c4e25506",
+    "source": "<div><template #inner></template></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-outlet-fallback-stray-template-5183",
+    "history": "f5aa60553eb391a03f1849bd9fa6c015c4e25506",
+    "source": "<slot><template #inner>{{ msg }}</template></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-dynamic-slot-name-hole-5183",
+    "history": "f5aa60553eb391a03f1849bd9fa6c015c4e25506",
+    "source": "<Foo><template #[]>x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-dynamic-stop-5190",
+    "history": "2f9f6bc656b1a380f7a4e85aa7643544877a9a4a",
+    "source": "<button @[event].stop=\"handler\"></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-dynamic-enter-stop-5190",
+    "history": "2f9f6bc656b1a380f7a4e85aa7643544877a9a4a",
+    "source": "<button @[event].enter.stop=\"handler\"></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-dynamic-option-modifiers-5190",
+    "history": "2f9f6bc656b1a380f7a4e85aa7643544877a9a4a",
+    "source": "<button @[event].once.capture.passive=\"handler\"></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-dynamic-template-literal-5192",
+    "history": "1090e7e4d8c2bfb52025751b34c9485d1bab271a",
+    "source": "<div :[`data-${id}`]=\"value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-dynamic-template-literal-binary-5192",
+    "history": "1090e7e4d8c2bfb52025751b34c9485d1bab271a",
+    "source": "<div :[`data-${prefix+suffix}`]=\"value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-dynamic-template-literal-global-5192",
+    "history": "1090e7e4d8c2bfb52025751b34c9485d1bab271a",
+    "source": "<div :[`data-${Math.random()}`]=\"value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-for-dynamic-template-literal-local-5192",
+    "history": "1090e7e4d8c2bfb52025751b34c9485d1bab271a",
+    "source": "<div v-for=\"item in items\" :[`data-${item.id}`]=\"item.value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-for-dynamic-runtime-key-5192",
+    "history": "1090e7e4d8c2bfb52025751b34c9485d1bab271a",
+    "source": "<div v-for=\"item in items\" :[name]=\"item.value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-v-for-dynamic-runtime-key-5192",
+    "history": "1090e7e4d8c2bfb52025751b34c9485d1bab271a",
+    "source": "<Foo v-for=\"item in items\" :[name]=\"item.value\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-v-for-dynamic-template-literal-local-5192",
+    "history": "1090e7e4d8c2bfb52025751b34c9485d1bab271a",
+    "source": "<Foo v-for=\"item in items\" :[`data-${item.id}`]=\"item.value\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-dynamic-binary-expression-5192",
+    "history": "1090e7e4d8c2bfb52025751b34c9485d1bab271a",
+    "source": "<button @[prefix+suffix]=\"handler\"></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-dynamic-template-literal-5192-2",
+    "history": "1090e7e4d8c2bfb52025751b34c9485d1bab271a",
+    "source": "<button @[`save:${id}`]=\"handler\"></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-text-5194",
+    "history": "66532c37f63d961790d924715154ccf9ab3502b5",
+    "source": "<div v-memo=\"[id]\">x</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-interpolation-5194",
+    "history": "66532c37f63d961790d924715154ccf9ab3502b5",
+    "source": "<div v-memo=\"[id]\">{{ msg }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-dynamic-prop-5194",
+    "history": "66532c37f63d961790d924715154ccf9ab3502b5",
+    "source": "<div v-memo=\"[id]\" :id=\"id\">{{ msg }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-native-5194",
+    "history": "66532c37f63d961790d924715154ccf9ab3502b5",
+    "source": "<div><span v-memo=\"[id]\">{{ msg }}</span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-root-5194",
+    "history": "66532c37f63d961790d924715154ccf9ab3502b5",
+    "source": "<Foo v-memo=\"[prop]\" :prop=\"prop\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-component-5194",
+    "history": "66532c37f63d961790d924715154ccf9ab3502b5",
+    "source": "<div><Foo v-memo=\"[prop]\" :prop=\"prop\" /></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-v-if-5194",
+    "history": "66532c37f63d961790d924715154ccf9ab3502b5",
+    "source": "<div v-if=\"ok\" v-memo=\"[id]\">x</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-v-if-5194",
+    "history": "66532c37f63d961790d924715154ccf9ab3502b5",
+    "source": "<Foo v-if=\"ok\" v-memo=\"[prop]\" :prop=\"prop\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-v-for-5194",
+    "history": "66532c37f63d961790d924715154ccf9ab3502b5",
+    "source": "<div v-for=\"item in items\" :key=\"item.id\" v-memo=\"[item.selected]\">{{ item.name }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-v-for-5194",
+    "history": "66532c37f63d961790d924715154ccf9ab3502b5",
+    "source": "<Foo v-for=\"item in items\" :key=\"item.id\" v-memo=\"[item.selected]\" :prop=\"item.prop\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-unkeyed-v-for-5194",
+    "history": "66532c37f63d961790d924715154ccf9ab3502b5",
+    "source": "<div v-for=\"item in items\" v-memo=\"[item.selected]\">{{ item.name }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-numeric-v-for-5194",
+    "history": "66532c37f63d961790d924715154ccf9ab3502b5",
+    "source": "<div v-for=\"n in 3\" v-memo=\"[n]\">{{ n }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-unwrapped-if-nested-slot-keeps-siblings-5181",
+    "history": "b37e8177824dc3a8fd8c8633446b6400f7f59cdf",
+    "source": "<Foo><template v-if=\"ok\"><span>x</span><template #header>y</template></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-unwrapped-for-nested-slot-keeps-siblings-5181",
+    "history": "b37e8177824dc3a8fd8c8633446b6400f7f59cdf",
+    "source": "<Foo><template v-for=\"i in n\"><span>x</span><template #header>y</template></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-outlet-dynamic-event-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @[event]=\"handler\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-outlet-dynamic-event-name-not-js-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @[event.]=\"handler\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-outlet-event-handler-not-js-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @pick=\"handler.\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-static-event-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @pick=\"choose\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-inline-event-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @pick=\"choose(row)\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-event-modifier-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @pick.stop=\"choose\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-event-key-modifier-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @keyup.enter.stop=\"choose\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-event-option-modifiers-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @click.once.capture=\"choose\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-colon-and-custom-casing-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @update:modelValue=\"sync\" @customEvent=\"custom\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-dynamic-event-modifier-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @[event].enter.stop=\"handler\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-dynamic-event-option-modifiers-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @[event].once.capture.passive=\"handler\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-dynamic-prop-and-dynamic-event-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot :[propKey]=\"value\" @[event]=\"handler\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-duplicate-events-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @click=\"a\" @click.stop=\"b\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-event-with-name-and-props-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot name=\"cell\" tone=\"brisk\" :item=\"row\" @pick=\"choose(row)\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-event-and-fallback-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @click=\"handler\">fb</slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-object-on-modifier-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot v-on.once=\"listeners\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-event-then-bind-spread-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @pick=\"choose\" v-bind=\"slotProps\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-bind-spread-then-event-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot v-bind=\"slotProps\" @pick=\"choose\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-event-with-object-on-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @pick=\"choose\" v-on=\"listeners\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-on-then-bind-then-event-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot v-on=\"listeners\" v-bind=\"slotProps\" @pick=\"choose\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-repeated-bind-spreads-keep-first-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot v-bind=\"first\" v-bind=\"second\" @pick=\"choose\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-repeated-on-spreads-keep-first-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot v-on=\"first\" v-on=\"second\" @pick=\"choose\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-vfor-dynamic-event-local-name-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot v-for=\"item in items\" @[item.event]=\"item.handler\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-scoped-forwarded-dynamic-event-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<Bar v-slot=\"{ row }\"><Foo><slot @[row.event]=\"row.handler\"></slot></Foo></Bar>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-vue2-native-modifier-5207",
+    "history": "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    "source": "<slot @click.native=\"handler\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-object-prop-5208",
+    "history": "1f64c4164362e0a24239469c836d6da0b8b05807",
+    "source": "<div v-bind.prop=\"bag\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-object-attr-5208",
+    "history": "1f64c4164362e0a24239469c836d6da0b8b05807",
+    "source": "<div v-bind.attr=\"bag\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-object-camel-5208",
+    "history": "1f64c4164362e0a24239469c836d6da0b8b05807",
+    "source": "<div v-bind.camel=\"bag\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-merge-object-prop-5208",
+    "history": "1f64c4164362e0a24239469c836d6da0b8b05807",
+    "source": "<div id=\"x\" v-bind.prop=\"bag\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-object-on-once-5210",
+    "history": "5f55dc16afa28134d5c16f143602789b5619662e",
+    "source": "<div v-on.once=\"handlers\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-attr-then-object-on-modifiers-5210",
+    "history": "5f55dc16afa28134d5c16f143602789b5619662e",
+    "source": "<div id=\"x\" v-on.capture.passive=\"handlers\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-object-on-modifiers-5210",
+    "history": "5f55dc16afa28134d5c16f143602789b5619662e",
+    "source": "<Foo v-on.once.capture=\"handlers\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-unwrapped-if-two-nested-slots-keeps-both-5232",
+    "history": "51f33120ef565542498a188bf7aa883617be73f5",
+    "source": "<Foo><template v-if=\"ok\"><template #header>h</template><template #footer>f</template></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-unwrapped-for-two-nested-slots-keeps-both-5232",
+    "history": "51f33120ef565542498a188bf7aa883617be73f5",
+    "source": "<Foo><template v-for=\"i in n\"><template #header>h</template><template #footer>f</template></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-1-4862",
+    "history": "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    "source": "<div :[prefix+suffix]=\"value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-1-prefixed-4862",
+    "history": "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    "source": "<div :[prefix+suffix]=\"value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-case-2-4862",
+    "history": "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    "source": "<div :[foo.bar]=\"value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-2-prefixed-4862",
+    "history": "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    "source": "<div :[foo.bar]=\"value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-case-3-4862",
+    "history": "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    "source": "<div :[keyOf(item)]=\"value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-3-prefixed-4862",
+    "history": "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    "source": "<div :[keyOf(item)]=\"value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-case-4-4862",
+    "history": "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    "source": "<button @[prefix+suffix]=\"handler\"></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-4-prefixed-4862",
+    "history": "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    "source": "<button @[prefix+suffix]=\"handler\"></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-case-5-4862",
+    "history": "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    "source": "<div :[attr]=\"value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-5-prefixed-4862",
+    "history": "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    "source": "<div :[attr]=\"value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-case-6-4862",
+    "history": "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    "source": "<div v-for=\"item in items\" :[item.id]=\"item.value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-6-prefixed-4862",
+    "history": "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    "source": "<div v-for=\"item in items\" :[item.id]=\"item.value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-case-7-4862",
+    "history": "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    "source": "<div v-for=\"item in items\" :[item.id+suffix]=\"item.value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-7-prefixed-4862",
+    "history": "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    "source": "<div v-for=\"item in items\" :[item.id+suffix]=\"item.value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-unwrapped-if-single-nested-slot-stays-default-5363",
+    "history": "1a717a95949be4f59b0ad43d4b00241b905fcd7c",
+    "source": "<Foo><template v-if=\"ok\"><template #header>y</template></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-unwrapped-for-single-nested-slot-stays-default-5363",
+    "history": "1a717a95949be4f59b0ad43d4b00241b905fcd7c",
+    "source": "<Foo><template v-for=\"i in n\"><template #header>y</template></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-multi-statement-5373",
+    "history": "ee8f222cbc429bdc0eaa0bcd69fbf84a7ac93ca9",
+    "source": "<div @click=\"open = false; save();\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-comp-kebab-arg-5373",
+    "history": "ee8f222cbc429bdc0eaa0bcd69fbf84a7ac93ca9",
+    "source": "<Foo v-model:auto-send=\"autoSendEnabled\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-implicit-default-svg-5373",
+    "history": "ee8f222cbc429bdc0eaa0bcd69fbf84a7ac93ca9",
+    "source": "<Foo><svg><path d=\"M0 0\" /></svg></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-1-493508d",
+    "history": "493508d535b1c7d09c881b9d758e5d6c211ab345",
+    "source": "<div :[prefix+suffix]=\"value\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-case-2-493508d",
+    "history": "493508d535b1c7d09c881b9d758e5d6c211ab345",
+    "source": "<button @[prefix+suffix]=\"handler\"></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-case-3-493508d",
+    "history": "493508d535b1c7d09c881b9d758e5d6c211ab345",
+    "source": "\n<template>\n  <div :[prefix+suffix]=\"value\" @[prefix+suffix]=\"handler\"></div>\n</template>\n\n<script>\nexport default {\n  data() {\n    return { prefix: 'data-', suffix: 'id', value: 42 }\n  },\n  methods: {\n    handler() {}\n  }\n}\n</script>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-implicit-default-mathml-5379",
+    "history": "481df679f494c40051ee15cb3107d52d1dd9668d",
+    "source": "<Foo><math><mi>x</mi></math></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-string-5380",
+    "history": "b67020bde3706512704d843e73389794f81af0aa",
+    "source": "<div :class=\"'card'\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-array-5380",
+    "history": "b67020bde3706512704d843e73389794f81af0aa",
+    "source": "<div :class=\"['card', `quiet`]\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-object-5380",
+    "history": "b67020bde3706512704d843e73389794f81af0aa",
+    "source": "<div :class=\"{ card: true, quiet: false }\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-text-and-array-5380",
+    "history": "b67020bde3706512704d843e73389794f81af0aa",
+    "source": "<p :class=\"['copy']\">{{ message }}</p>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-unkeyed-5376",
+    "history": "eef9f20647cad815739cc7b531b8a83b2a46104b",
+    "source": "<div v-if=\"ok\" v-for=\"i in n\">{{ i }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-keyed-5376",
+    "history": "eef9f20647cad815739cc7b531b8a83b2a46104b",
+    "source": "<div v-if=\"ok\" v-for=\"i in n\" :key=\"i\">{{ i }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-keyed-5376",
+    "history": "eef9f20647cad815739cc7b531b8a83b2a46104b",
+    "source": "<Foo v-if=\"ok\" v-for=\"item in list\" :key=\"item\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-5386",
+    "history": "2c5465d94764e6688c7ab9090d78856539158ada",
+    "source": "<Foo v-once />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-with-props-and-slot-5386",
+    "history": "2c5465d94764e6688c7ab9090d78856539158ada",
+    "source": "<Foo v-once :title=\"title\"><span>x</span></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-reserved-bind-value-5390",
+    "history": "16a3fc9701c9b2114c6983c3d13b206142f53918",
+    "source": "<div :class=\"class\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-trailing-comment-bind-value-5390",
+    "history": "16a3fc9701c9b2114c6983c3d13b206142f53918",
+    "source": "<div :child=\"processDateItem(child)/* deprecated, use date instead */\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-empty-root-interpolation-5390",
+    "history": "16a3fc9701c9b2114c6983c3d13b206142f53918",
+    "source": "{{  }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-empty-slot-interpolation-5390",
+    "history": "16a3fc9701c9b2114c6983c3d13b206142f53918",
+    "source": "<Foo><template #more-actions>{{  }}</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-1-5391",
+    "history": "e741ff65d18a19929157a17516773863b2e87bfb",
+    "source": "<circle v-if=\"i % 3 === 0 /* perf optimization */\"></circle>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-svg-sparkline-pulse-trail-condition-5391",
+    "history": "e741ff65d18a19929157a17516773863b2e87bfb",
+    "source": "<svg><g v-if=\"canRender\"><template v-for=\"(_, i) in TRAIL_LENGTH\"><circle v-if=\"i % 3 === 0 /* perf optimization */\" :key=\"`sparkline_dot_${i}_${pulsePathId}`\" :r=\"getRadius(i)\"></circle></template></g></svg>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-create-slots-for-keyed-dynamic-forwarded-outlet-5381",
+    "history": "b408b67c893cc8e02c38bdfaa6b9fec2a218b847",
+    "source": "<Foo><template v-for=\"(_, name) in $slots\" :key=\"name\" #[name]=\"slotData\"><slot :name=\"name\" v-bind=\"slotData || {}\" /></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-element-compound-with-static-tail-5396",
+    "history": "f80bbb5d3786f5014b73da0899102a9f1f1a8826",
+    "source": "<Foo><strong>{{ points }} points</strong></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-once-static-slot-sibling-before-compound-text-5396",
+    "history": "f80bbb5d3786f5014b73da0899102a9f1f1a8826",
+    "source": "<Foo v-once><i>x</i><span>{{ points }} points</span></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-conditional-slot-template-compound-text-5396",
+    "history": "f80bbb5d3786f5014b73da0899102a9f1f1a8826",
+    "source": "<Foo><template v-if=\"layout === 'grid' || position === 'inside'\" #files-top=\"{ files }\"><div v-if=\"files?.length\"><p>Files ({{ files?.length }})</p></div></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-element-compound-with-quoted-interp-5396",
+    "history": "f80bbb5d3786f5014b73da0899102a9f1f1a8826",
+    "source": "<Foo><div v-if=\"searchValue.length\"><span>Add \"{{ searchValue }}\" as a new Client</span></div></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-slot-root-compound-text-5396",
+    "history": "f80bbb5d3786f5014b73da0899102a9f1f1a8826",
+    "source": "<VbCard><va-hover #default=\"{ hover }\"><div>slot - {{ hover }}</div></va-hover></VbCard>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-line-comment-bind-value-5399",
+    "history": "4c8a27cae54c54780e1fcc945954388ee3b07908",
+    "source": "<div :id=\"ok // comment\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-line-comment-if-condition-5399",
+    "history": "4c8a27cae54c54780e1fcc945954388ee3b07908",
+    "source": "<div v-if=\"ok // comment\">yes</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-line-comment-element-interpolation-5399",
+    "history": "4c8a27cae54c54780e1fcc945954388ee3b07908",
+    "source": "<div>{{ ok // comment }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-line-comment-slot-interpolation-5399",
+    "history": "4c8a27cae54c54780e1fcc945954388ee3b07908",
+    "source": "<Foo><template #default>{{ ok // comment }}</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-line-comment-slot-fallback-interpolation-5399",
+    "history": "4c8a27cae54c54780e1fcc945954388ee3b07908",
+    "source": "<slot>{{ ok // comment }}</slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-text-then-if-span-5415",
+    "history": "83e38d6a82d2b0c60cfef532c78dc09ca071ed39",
+    "source": "<Foo>hello<span v-if=\"ok\">x</span></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-if-span-then-text-5415",
+    "history": "83e38d6a82d2b0c60cfef532c78dc09ca071ed39",
+    "source": "<Foo><span v-if=\"ok\">x</span>hello</Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-template-if-text-then-text-5415",
+    "history": "83e38d6a82d2b0c60cfef532c78dc09ca071ed39",
+    "source": "<Foo><template v-if=\"ok\">x</template>hello</Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-text-then-template-if-text-5415",
+    "history": "83e38d6a82d2b0c60cfef532c78dc09ca071ed39",
+    "source": "<Foo>hello<template v-if=\"ok\">x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-text-then-conditional-named-slot-5415",
+    "history": "83e38d6a82d2b0c60cfef532c78dc09ca071ed39",
+    "source": "<Foo>hello<template #header v-if=\"ok\">x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-conditional-named-slot-then-text-5415",
+    "history": "83e38d6a82d2b0c60cfef532c78dc09ca071ed39",
+    "source": "<Foo><template #header v-if=\"ok\">x</template>hello</Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-nested-text-then-if-component-5415",
+    "history": "83e38d6a82d2b0c60cfef532c78dc09ca071ed39",
+    "source": "<Foo>hello<Bar v-if=\"ok\">x</Bar></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-if-component-then-text-5415",
+    "history": "83e38d6a82d2b0c60cfef532c78dc09ca071ed39",
+    "source": "<Foo><Bar v-if=\"ok\">x</Bar>hello</Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-static-child-fe834c0",
+    "history": "fe834c02d65360e1657ec9901fded9afddd9de3c",
+    "source": "<div v-example><span id=\"\">content</span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-select-static-then-for-fe834c0",
+    "history": "fe834c02d65360e1657ec9901fded9afddd9de3c",
+    "source": "<select v-model=\"msg\"><option value=\"\">Select</option><option v-for=\"(item, index) of items\" :key=\"index\" :value=\"item.value\">{{ item.label }}</option></select>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-static-child-fe834c0-2",
+    "history": "fe834c02d65360e1657ec9901fded9afddd9de3c",
+    "source": "<div v-show=\"visible\"><span id=\"\">content</span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-static-literal-prop-c1ac3be",
+    "history": "c1ac3be5abf4cfcd99c0ff837763bd8b49aa99bc",
+    "source": "<div :id=\"'fixed'\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-static-literal-prop-c1ac3be",
+    "history": "c1ac3be5abf4cfcd99c0ff837763bd8b49aa99bc",
+    "source": "<Foo :side-offset=\"4\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-static-class-array-c1ac3be",
+    "history": "c1ac3be5abf4cfcd99c0ff837763bd8b49aa99bc",
+    "source": "<Foo :class=\"['card']\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-root-static-props-with-component-child-5419",
+    "history": "efb4f9bfcfe062e6725ca288d151507d801295e5",
+    "source": "<div class=\"wrapper\"><Foo /></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-root-static-props-with-static-nested-dynamic-tex-5419",
+    "history": "efb4f9bfcfe062e6725ca288d151507d801295e5",
+    "source": "<div class=\"wrapper\"><span>{{ msg }}</span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-static-props-with-component-slot-5419",
+    "history": "efb4f9bfcfe062e6725ca288d151507d801295e5",
+    "source": "<Foo class=\"panel\"><Bar /></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-root-static-props-with-slotted-component-child-5419",
+    "history": "efb4f9bfcfe062e6725ca288d151507d801295e5",
+    "source": "<div id=\"root\"><Foo id=\"x\">hello</Foo></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-select-static-option-before-for-5419",
+    "history": "efb4f9bfcfe062e6725ca288d151507d801295e5",
+    "source": "<div><select v-model=\"msg\"><option value=\"\"> Select </option><option v-for=\"item in items\" :value=\"item\">{{ item }}</option></select></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-if-static-child-and-text-5419",
+    "history": "efb4f9bfcfe062e6725ca288d151507d801295e5",
+    "source": "<div v-if=\"ok\"><span></span> x</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-if-static-child-with-attrs-5419",
+    "history": "efb4f9bfcfe062e6725ca288d151507d801295e5",
+    "source": "<div v-if=\"ok\"><span class=\"x\">hello</span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-v-show-static-child-5419",
+    "history": "efb4f9bfcfe062e6725ca288d151507d801295e5",
+    "source": "<div><span v-show=\"ok\"><b>Downloading update</b></span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-audio-dynamic-source-inside-for-5436",
+    "history": "438e6da7140c5bf28e2808805be21a898d1400e1",
+    "source": "<audio v-for=\"(url, index) in recordedUrls\" :key=\"index\" controls><source :src=\"url\" type=\"audio/wav\"></audio>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-audio-dynamic-source-inside-for-after-static-con-5436",
+    "history": "438e6da7140c5bf28e2808805be21a898d1400e1",
+    "source": "\n<div>\n  <div>\n    <select v-model=\"constraintId\">\n      <option value=\"\">\n        Select\n      </option>\n      <option v-for=\"(item, index) of audioInputs\" :key=\"index\" :value=\"item.deviceId\">\n        {{ item.label }}\n      </option>\n    </select>\n  </div>\n  <div space-x-2>\n    <button @click=\"handleStart\">\n      Start\n    </button>\n    <button @click=\"handleCancel\">\n      Cancel\n    </button>\n    <button @click=\"handleStop\">\n      Stop\n    </button>\n  </div>\n  <div>\n    <audio v-for=\"(url, index) in recordedUrls\" :key=\"index\" controls>\n      <source :src=\"url\" type=\"audio/wav\">\n    </audio>\n  </div>\n</div>\n",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-if-static-svg-child-5440",
+    "history": "70cc825c3481f61aec18d6ced4f30740a2c206c5",
+    "source": "<div v-if=\"ok\"><svg><path d=\"M0 0h1v1z\"/></svg></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-if-static-svg-foreign-object-child-5440",
+    "history": "70cc825c3481f61aec18d6ced4f30740a2c206c5",
+    "source": "<div v-if=\"ok\"><svg><foreignObject><div>label</div></foreignObject><path d=\"M0 0h1v1z\"/></svg></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-svg-foreign-object-dynamic-html-before-static-sv-5440",
+    "history": "70cc825c3481f61aec18d6ced4f30740a2c206c5",
+    "source": "<svg><foreignObject><div v-if=\"ok\"><span></span></div></foreignObject><rect></rect></svg>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-show-static-svg-child-5440",
+    "history": "70cc825c3481f61aec18d6ced4f30740a2c206c5",
+    "source": "<div v-show=\"ok\"><svg><path d=\"M0 0h1v1z\"/></svg></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-slot-static-svg-child-5440",
+    "history": "70cc825c3481f61aec18d6ced4f30740a2c206c5",
+    "source": "<Foo><svg><path d=\"M0 0h1v1z\"/></svg></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-if-static-mathml-child-5440",
+    "history": "70cc825c3481f61aec18d6ced4f30740a2c206c5",
+    "source": "<div v-if=\"ok\"><math><mi>x</mi></math></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-bare-object-literal-5457",
+    "history": "891062a68b801fdfe4aaad6a352927299e3d7c42",
+    "source": "<div :style=\"{ color: textColor }\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-bare-object-static-value-5457",
+    "history": "891062a68b801fdfe4aaad6a352927299e3d7c42",
+    "source": "<div :style=\"{ color: 'red' }\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-bare-object-spread-5457",
+    "history": "891062a68b801fdfe4aaad6a352927299e3d7c42",
+    "source": "<div :style=\"{ ...styles }\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-bare-object-computed-key-5457",
+    "history": "891062a68b801fdfe4aaad6a352927299e3d7c42",
+    "source": "<div :style=\"{ [prop]: 'red' }\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-hoisted-root-caches-static-children-array-5462",
+    "history": "5b0e26c75146404a703d68f9eeabb94d9616b56c",
+    "source": "<div class=\"root\"><span>a</span><span>b</span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-untyped-arrow-component-handler-stays-direct-5464",
+    "history": "f4af66730ec52d6754e7c57d5f3b2e6a68d00af4",
+    "source": "<FieldKeyValues @add=\"(key, value) => addKeyValue(headers, key, value)\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-typed-arrow-component-handler-5464",
+    "history": "f4af66730ec52d6754e7c57d5f3b2e6a68d00af4",
+    "source": "<FieldKeyValues @add=\"(key: string, value: string) => addKeyValue(headers, key, value)\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-typed-arrow-component-handler-with-static-props-5464",
+    "history": "f4af66730ec52d6754e7c57d5f3b2e6a68d00af4",
+    "source": "<FieldKeyValues label=\"Headers\" @remove=\"(index: number) => removeKeyValue(index, headers)\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-hoisted-root-caches-static-children-array-5465",
+    "history": "0a3a17180a2c22ec9dc6e98cc03d8db006c63a90",
+    "source": "<div class=\"root\"><span>a</span><span>b</span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-cached-static-child-keeps-nested-element-array-s-5465",
+    "history": "0a3a17180a2c22ec9dc6e98cc03d8db006c63a90",
+    "source": "<div class=\"root\"><button><span>x</span></button></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-cached-static-child-before-dynamic-sibling-5465",
+    "history": "0a3a17180a2c22ec9dc6e98cc03d8db006c63a90",
+    "source": "<div class=\"root\"><button><span>x</span></button><i :id=\"foo\"></i></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-airi-loading-component-formats-nested-static-pro-5480",
+    "history": "deb960cdbc90fc987e9ec9564121a226eb3def32",
+    "source": "<div flex flex-col gap-2><div v-for=\"file in files\" :key=\"file.filename\" max-w-full flex flex-col gap=\"1 sm:2\"><div grid=\"~ cols-[85%_15%]\" justify-between text=\"xs sm:sm neutral-600 dark:neutral-400\"><div flex items-center gap-1>{{ file.filename }}</div></div></div></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-airi-loading-modules-formats-static-slot-child-p-5480",
+    "history": "deb960cdbc90fc987e9ec9564121a226eb3def32",
+    "source": "<ul><li v-for=\"[moduleName, module] in resources\" :key=\"moduleName\"><WindowRouterLink :to=\"`/settings/modules/${moduleName}`\" label=\"settings\"><div flex items-center gap-1><div flex items-center gap-1><span>{{ moduleName }}</span></div></div></WindowRouterLink></li></ul>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-airi-titlebar-dynamic-native-ancestor-hoists-sta-5480",
+    "history": "deb960cdbc90fc987e9ec9564121a226eb3def32",
+    "source": "<div :class=\"root\"><div flex drag-region><button @click=\"run\"><span>{{ title }}</span></button><div w-full drag-region></div></div></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-airi-screen-capture-component-slot-hoists-static-5480",
+    "history": "deb960cdbc90fc987e9ec9564121a226eb3def32",
+    "source": "<DialogDescription>{{ summary }}<ol><li>{{ step }}<br><span>{{ note }}</span></li></ol></DialogDescription>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-for-item-root-hoists-static-child-vnodes-5480",
+    "history": "deb960cdbc90fc987e9ec9564121a226eb3def32",
+    "source": "<div v-for=\"item in items\" :key=\"item.id\"><span class=\"icon\"></span>{{ item.name }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-slot-static-props-keep-source-order-5483",
+    "history": "e68650b99a89e51482dadc61f526683d43e2fdc8",
+    "source": "<div class=\"not-prose\">\n  <TooltipRoot v-for=\"{ name, avatar } of contributors\" :key=\"name\">\n    <TooltipTrigger as-child>\n      <AvatarRoot as-child>\n        <a :href=\"`https://github.com/${name}`\">\n          <div class=\"h-12 w-12\">\n            <AvatarImage :src=\"avatar\" />\n            <AvatarFallback class=\"text-center text-sm font-semibold uppercase\" :delay-ms=\"1000\">\n              {{ name }}\n            </AvatarFallback>\n          </div>\n        </a>\n      </AvatarRoot>\n    </TooltipTrigger>\n    <TooltipContent class=\"border border-muted rounded bg-card px-2 py-1 text-xs font-semibold\" side=\"bottom\">\n      {{ name }}\n    </TooltipContent>\n  </TooltipRoot>\n</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-conditional-table-static-vnodes-keep-transform-o-5483",
+    "history": "e68650b99a89e51482dadc61f526683d43e2fdc8",
+    "source": "<div>\n  <div v-if=\"loading\"><span text-sm>Loading model...</span></div>\n  <template v-else>\n    <label><span text-sm>Auto process on upload</span></label>\n    <table>\n      <thead bg=\"neutral-100 dark:neutral-800\">\n        <tr><th px-4 py-3 font-medium>Original</th></tr>\n      </thead>\n      <tbody>\n        <tr v-if=\"imageItems.length === 0\">\n          <td colspan=\"5\" px-4 py-8 text-center text-neutral-400>No images uploaded yet</td>\n        </tr>\n        <tr v-for=\"item in imageItems\" :key=\"item.file.name\">\n          <td>{{ item.file.name }}</td>\n        </tr>\n      </tbody>\n    </table>\n  </template>\n</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-text-slot-before-v-if-fallback-5484",
+    "history": "c3439135411fda3223971ead60a531f384626ead",
+    "source": "<Foo>hello<template v-if=\"ok\"><span>x</span></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-show-sibling-before-v-for-5484",
+    "history": "c3439135411fda3223971ead60a531f384626ead",
+    "source": "<section><div v-show=\"visible\"></div><p v-for=\"item in items\">{{ item }}</p></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-show-component-slot-5484",
+    "history": "c3439135411fda3223971ead60a531f384626ead",
+    "source": "<Dialog v-show=\"open\"><span>Body</span></Dialog>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-trigger-icon-resolves-in-child-before-par-5484",
+    "history": "c3439135411fda3223971ead60a531f384626ead",
+    "source": "<DropdownMenu><DropdownMenuTrigger><Icon /></DropdownMenuTrigger></DropdownMenu>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-transition-article-dynamic-key-5488",
+    "history": "ac4d82f56c9a66ac27c9831e558d4df37ce69cf8",
+    "source": "<Transition :name=\"transitionName\" mode=\"out-in\"><article :key=\"path\" class=\"docs-article\"><h1>{{ pageTitle }}</h1><Content /></article></Transition>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-object-bind-static-literal-prop-5489",
+    "history": "efb5b1ba14f7e97e79479802173d91b765145b23",
+    "source": "<Foo v-bind=\"obj\" :props-loading=\"true\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-object-literal-5491",
+    "history": "0c2395e68c5183b7ecad6bae4e067ccd095cdef5",
+    "source": "<WindowRoot :style=\"{ left: '50%', top: '72px' }\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-base-transition-article-dynamic-key-5492",
+    "history": "eca05a96f7f50e4ceba7a22f1fb8c461e7027bf8",
+    "source": "<BaseTransition mode=\"out-in\"><article :key=\"path\" class=\"docs-article\"><h1>{{ pageTitle }}</h1><Content /></article></BaseTransition>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-kebab-transition-article-dynamic-key-5492",
+    "history": "eca05a96f7f50e4ceba7a22f1fb8c461e7027bf8",
+    "source": "<transition mode=\"out-in\"><article :key=\"path\" class=\"docs-article\"><h1>{{ pageTitle }}</h1><Content /></article></transition>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-transition-article-static-key-5492",
+    "history": "eca05a96f7f50e4ceba7a22f1fb8c461e7027bf8",
+    "source": "<Transition><article key=\"docs\" class=\"docs-article\"><h1>{{ pageTitle }}</h1></article></Transition>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-transition-article-without-key-5492",
+    "history": "eca05a96f7f50e4ceba7a22f1fb8c461e7027bf8",
+    "source": "<Transition><article class=\"docs-article\"><h1>{{ pageTitle }}</h1></article></Transition>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-transition-article-dynamic-key-once-5492",
+    "history": "eca05a96f7f50e4ceba7a22f1fb8c461e7027bf8",
+    "source": "<Transition><article v-once :key=\"path\" class=\"docs-article\"><h1>{{ pageTitle }}</h1></article></Transition>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-transition-article-dynamic-key-memo-5492",
+    "history": "eca05a96f7f50e4ceba7a22f1fb8c461e7027bf8",
+    "source": "<Transition><article v-memo=\"[path]\" :key=\"path\" class=\"docs-article\"><h1>{{ pageTitle }}</h1></article></Transition>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-conditional-component-text-slot-imports-text-bef-5493",
+    "history": "6f8fc0abf99a3006b11e3dd44afc55270c8800e4",
+    "source": "<Button v-if=\"primaryActionLabel\">{{ primaryActionLabel }}</Button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-outlet-before-conditional-component-text-sl-5493",
+    "history": "6f8fc0abf99a3006b11e3dd44afc55270c8800e4",
+    "source": "<div><slot /><Button v-if=\"primaryActionLabel\">{{ primaryActionLabel }}</Button><Button v-if=\"secondaryActionLabel\">{{ secondaryActionLabel }}</Button></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-element-if-before-conditional-component-text-slo-5493",
+    "history": "6f8fc0abf99a3006b11e3dd44afc55270c8800e4",
+    "source": "<section><p v-if=\"detail\">{{ detail }}</p><div v-if=\"primaryActionLabel || secondaryActionLabel || $slots.default\"><slot /><Button v-if=\"primaryActionLabel\">{{ primaryActionLabel }}</Button><Button v-if=\"secondaryActionLabel\">{{ secondaryActionLabel }}</Button></div></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-static-text-before-if-imports-text-before-commen-5493",
+    "history": "6f8fc0abf99a3006b11e3dd44afc55270c8800e4",
+    "source": "<section><p>AIRI account</p><p v-if=\"detail\">{{ detail }}</p><div v-if=\"primaryActionLabel || secondaryActionLabel || $slots.default\"><slot /><Button v-if=\"primaryActionLabel\">{{ primaryActionLabel }}</Button><Button v-if=\"secondaryActionLabel\">{{ secondaryActionLabel }}</Button></div></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-compound-text-before-if-imports-text-before-comm-5493",
+    "history": "6f8fc0abf99a3006b11e3dd44afc55270c8800e4",
+    "source": "<div><span>{{ branch }}@{{ commit }}</span><Button v-if=\"ok\">{{ label }}</Button></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-fallback-component-resolves-before-owner-co-5493",
+    "history": "6f8fc0abf99a3006b11e3dd44afc55270c8800e4",
+    "source": "<DropdownMenuTrigger><slot name=\"trigger\"><span>{{ label }}</span><Icon icon=\"x\" /></slot></DropdownMenuTrigger><DropdownMenuItem><span>Item</span></DropdownMenuItem>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-input-ts-cast-5494",
+    "history": "d6d3f23dccaddd7424368f96cc336182d8a5914d",
+    "source": "<input v-model=\"voice as any\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-comp-arg-ts-cast-5494",
+    "history": "d6d3f23dccaddd7424368f96cc336182d8a5914d",
+    "source": "<Foo v-model:voice=\"voice as any\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-object-bind-dynamic-style-5496",
+    "history": "29c6d6505ec78c018b871e12a2cd6d9ea0d3334d",
+    "source": "<Foo v-bind=\"obj\" :style=\"style\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-object-bind-dynamic-class-5496",
+    "history": "29c6d6505ec78c018b871e12a2cd6d9ea0d3334d",
+    "source": "<Foo v-bind=\"obj\" :class=\"klass\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-1-5487",
+    "history": "cd93f9fba56a8c067691a96f06f15eff2285bd10",
+    "source": "<template #[`item.name`]=\"{ item }\">{{ item.name }}</template>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-2-5487",
+    "history": "cd93f9fba56a8c067691a96f06f15eff2285bd10",
+    "source": "<template #[`item.${suffix}`]=\"{ row }\">{{ row }}</template>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-3-5487",
+    "history": "cd93f9fba56a8c067691a96f06f15eff2285bd10",
+    "source": "<template #[`item.\\${name}`]=\"{ escaped }\">{{ escaped }}</template>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-4-5487",
+    "history": "cd93f9fba56a8c067691a96f06f15eff2285bd10",
+    "source": "<template #[`item.\\`name\\``]=\"{ quoted }\">{{ quoted }}</template>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-input-ts-cast-comment-5498",
+    "history": "707b5b26cd261cdfdbaaaebb2aaa2b0ffca95728",
+    "source": "<input v-model=\"voice/*x*/as any\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-input-ts-non-null-5498",
+    "history": "707b5b26cd261cdfdbaaaebb2aaa2b0ffca95728",
+    "source": "<input v-model=\"voice!\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-input-string-as-5498",
+    "history": "707b5b26cd261cdfdbaaaebb2aaa2b0ffca95728",
+    "source": "<input v-model=\"form[' as ']\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-comp-arg-ts-non-null-5498",
+    "history": "707b5b26cd261cdfdbaaaebb2aaa2b0ffca95728",
+    "source": "<Foo v-model:voice=\"voice!\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-native-static-object-style-5497",
+    "history": "5af7f434f4b72e48dbb0d6814ba621f75a4d8d11",
+    "source": "<section><div :style=\"{ color: 'red' }\"></div></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-branch-native-static-object-style-5497",
+    "history": "5af7f434f4b72e48dbb0d6814ba621f75a4d8d11",
+    "source": "<section><div v-if=\"ok\" :style=\"{ color: 'red' }\"></div></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-dynamic-identifier-style-5497",
+    "history": "5af7f434f4b72e48dbb0d6814ba621f75a4d8d11",
+    "source": "<section><div :style=\"s\"></div></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-static-and-dynamic-style-merge-5497",
+    "history": "5af7f434f4b72e48dbb0d6814ba621f75a4d8d11",
+    "source": "<section><div style=\"color: red\" :style=\"s\"></div></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-computed-key-style-5497",
+    "history": "5af7f434f4b72e48dbb0d6814ba621f75a4d8d11",
+    "source": "<section><div :style=\"{ [prop]: 'red' }\"></div></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-static-object-style-5497",
+    "history": "5af7f434f4b72e48dbb0d6814ba621f75a4d8d11",
+    "source": "<section><Foo :style=\"{ color: 'red' }\" /></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-dynamic-identifier-style-5497",
+    "history": "5af7f434f4b72e48dbb0d6814ba621f75a4d8d11",
+    "source": "<section><Foo :style=\"s\" /></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-computed-key-style-5497",
+    "history": "5af7f434f4b72e48dbb0d6814ba621f75a4d8d11",
+    "source": "<section><Foo :style=\"{ [prop]: 'red' }\" /></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-static-and-dynamic-style-merge-5497",
+    "history": "5af7f434f4b72e48dbb0d6814ba621f75a4d8d11",
+    "source": "<section><Foo style=\"color: red\" :style=\"s\" /></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-static-and-static-object-style-merge-5497",
+    "history": "5af7f434f4b72e48dbb0d6814ba621f75a4d8d11",
+    "source": "<section><Foo style=\"color: red\" :style=\"{ top: '1px' }\" /></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-nested-keyed-component-5499",
+    "history": "59ae5bcdbb730cabc071d99e7343a3bd860c0a18",
+    "source": "<Story><template #controls><div p-4><RippleGrid :key=\"renderKey\" /></div></template></Story>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-block-arrow-handler-preserves-line-comment-5501",
+    "history": "d6beb151dccc4fe2225048e153d8b4170150f303",
+    "source": "<button @click=\"() => {\nif (active) {\n  // keep active click note\n  next();\n}\nelse {\n  // keep inactive click note\n  select();\n}\n}\"></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-computed-key-style-6282096",
+    "history": "62820963dff969ce1ced571fee2c378e97a93c6b",
+    "source": "<div :style=\"{ [prop]: 'red' }\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-computed-key-class-6282096",
+    "history": "62820963dff969ce1ced571fee2c378e97a93c6b",
+    "source": "<div :class=\"{ [prop]: true }\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-id-and-computed-key-style-6282096",
+    "history": "62820963dff969ce1ced571fee2c378e97a93c6b",
+    "source": "<div :id=\"id\" :style=\"{ [prop]: 'red' }\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-computed-key-style-6282096",
+    "history": "62820963dff969ce1ced571fee2c378e97a93c6b",
+    "source": "<Foo :style=\"{ [prop]: 'red' }\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-computed-key-data-6282096",
+    "history": "62820963dff969ce1ced571fee2c378e97a93c6b",
+    "source": "<div :data=\"{ [k]: 1 }\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-static-object-style-stays-patchless-6282096",
+    "history": "62820963dff969ce1ced571fee2c378e97a93c6b",
+    "source": "<div :style=\"{ color: 'red' }\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-static-slot-hoist-keeps-inline-space-text-child-5505",
+    "history": "4baf124dc4eb994d2c8dde958e96c87e93a4ff72",
+    "source": "<Variant><div><span>Project</span> <span>AIRI</span></div></Variant>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-outlet-and-static-child-keeps-root-element-5504",
+    "history": "6faca978381d1465fcaeeefa1b5f655082df21ea",
+    "source": "<div><slot /><span>{{ label }}</span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-template-slot-carrier-imports-slot-before-elemen-5504",
+    "history": "6faca978381d1465fcaeeefa1b5f655082df21ea",
+    "source": "<Collapsible :default=\"expand\"><template #trigger=\"slotProps\"><button :class=\"['w-full']\"><slot name=\"title\"><div>{{ title }}</div></slot></button></template><div :class=\"innerClass\"><slot /></div></Collapsible>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-template-slot-carrier-before-later-slot-o-5504",
+    "history": "6faca978381d1465fcaeeefa1b5f655082df21ea",
+    "source": "<Section><FieldRange><template #label><div>{{ label }}</div></template></FieldRange><label><div><slot name=\"label\">{{ fallback }}</slot></div><SelectTab /></label></Section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-default-element-wraps-slot-outlet-5504",
+    "history": "6faca978381d1465fcaeeefa1b5f655082df21ea",
+    "source": "<Section><label><div><slot name=\"label\">{{ fallback }}</slot></div><SelectTab /></label></Section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-earlier-root-component-template-slot-before-late-5504",
+    "history": "6faca978381d1465fcaeeefa1b5f655082df21ea",
+    "source": "<Section><FieldRange><template #label><div>{{ label }}</div></template></FieldRange></Section><Section><label><div><slot name=\"label\">{{ fallback }}</slot></div><SelectTab /></label></Section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-slot-dynamic-text-parent-keeps-icon-in-5506",
+    "history": "78232a56f504fe4bf203b945e357baf432269722",
+    "source": "<Panel><label :class=\"['flex', 'items-center', 'gap-2']\"><div i-solar:magic-stick-bold-duotone></div>{{ t('settings.pages.modules.artistry.autonomous.title') }}</label><Checkbox></Checkbox></Panel>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-branch-child-dynamic-text-parent-keeps-icon-inli-5506",
+    "history": "78232a56f504fe4bf203b945e357baf432269722",
+    "source": "<div v-if=\"isCorsError\"><div class=\"flex items-center gap-2\"><div i-solar:shield-warning-bold-duotone></div>{{ t('settings.pages.providers.provider.comfyui.settings.cors.title') }}</div></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-template-if-slot-keeps-upload-icon-hoist-after-p-5506",
+    "history": "78232a56f504fe4bf203b945e357baf432269722",
+    "source": "<InputFileCard><template #default=\"{ isDragging }\"><template v-if=\"!isDragging\"><div flex flex-col items-center><div i-solar:upload-square-line-duotone mb-4 text-5xl text=\"neutral-400 dark:neutral-500\"></div><p font-medium text=\"neutral-600 dark:neutral-300\">{{ t('settings.pages.card.upload') }}</p><p text=\"neutral-500 dark:neutral-400\" mt-2 text-sm>{{ t('settings.pages.card.upload_desc') }}</p></div></template><template v-else><div flex flex-col items-center><div i-solar:upload-minimalistic-bold class=\"mb-2 text-5xl text-primary-500 dark:text-primary-400\"></div><p font-medium text=\"primary-600 dark:primary-300\">{{ t('settings.pages.card.drop_here') }}</p></div></template></template></InputFileCard>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-multiline-conditional-bind-value-5508",
+    "history": "ab891936a9e777bbbd9123e38cbf31fca77726f6",
+    "source": "<Foo size=\"sm\" :title=\"\n          step.status === 'valid' ? t('valid')\n          : step.status === 'invalid' ? t('invalid')\n          : t('pending')\n        \" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-root-dynamic-element-before-for-element-5514",
+    "history": "cec8d6139b9dcf89a8d32dd574d6a95eaa8e3abc",
+    "source": "<feImage :href=\"parts.top\" /><feComposite v-for=\"part in parts\" :key=\"part\" :in=\"part\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-1-5515",
+    "history": "85fe7bf1519c23aa5a70f132164bd7241ea4bec3",
+    "source": "<div><a href=\"/\"><div><a href=\"/foo\">inner</a></div></a></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-2-5515",
+    "history": "85fe7bf1519c23aa5a70f132164bd7241ea4bec3",
+    "source": "<div><button><div><button>bbb</button></div></button></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-mathml-same-namespace-dynamic-descendants-cd306b1",
+    "history": "cd306b1281ebe0c6e6a4b97855bf8e5b30eb28d5",
+    "source": "<div><math><mrow><msub :data-depth=\"depth\"><mi>x</mi></msub></mrow></math></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-mathml-annotation-xml-html-boundary-cd306b1",
+    "history": "cd306b1281ebe0c6e6a4b97855bf8e5b30eb28d5",
+    "source": "<math><annotation-xml><div v-if=\"ok\"><span>label</span></div></annotation-xml><mn>1</mn></math>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-slot-static-mathml-child-cd306b1",
+    "history": "cd306b1281ebe0c6e6a4b97855bf8e5b30eb28d5",
+    "source": "<Foo><math><mrow><mi>x</mi><mo>+</mo><mi>y</mi></mrow></math></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-expression-arrow-handler-is-wrapped-5519",
+    "history": "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    "source": "<span @click=\"() => deleteResource(cell?.data as Node)\">delete</span>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-param-arrow-handler-stays-direct-5519",
+    "history": "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    "source": "<button @contextmenu=\"event => openContextMenu(event, image)\">open</button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-multiline-component-update-handler-keeps-authore-5519",
+    "history": "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    "source": "<AppCheck @update:model-value=\"\n  value => {\n    p(opt.key).value = {\n      ...p(opt.key).value,\n      [key]: value,\n    };\n  }\n\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-select-patchless-bound-options-hoist-5519",
+    "history": "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    "source": "<div><select v-model=\"user.role\"><option :value=\"1\">User</option><option :value=\"2\">Admin</option></select></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-inline-element-space-uses-empty-create-text-call-5519",
+    "history": "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    "source": "<p><sup>text</sup> <code>^text^</code></p>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-inline-element-space-before-br-uses-empty-create-5519",
+    "history": "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    "source": "<p><em>does this help the user think better?</em> <br><br></p>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-keyboard-shortcut-space-uses-empty-create-text-c-5519",
+    "history": "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    "source": "<p><kbd>Ctrl</kbd> <kbd>K</kbd></p>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-hoisted-static-child-space-keeps-shipped-explici-5519",
+    "history": "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    "source": "<div :id=\"id\"><span><sup>text</sup> <code>^text^</code></span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-cached-static-child-space-uses-empty-create-text-5519",
+    "history": "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    "source": "<div class=\"root\">{{ msg }}<span><kbd>Ctrl</kbd> <kbd>K</kbd></span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-conditional-component-space-before-icon-matches-5519",
+    "history": "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    "source": "<div><Icon v-if=\"item.enabled\" :name=\"item.enabledIcon\" /> <Icon :name=\"item.icon\" />{{ item.label }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-implicit-slot-element-if-space-before-component-5519",
+    "history": "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    "source": "<NuxtLink><span v-if=\"mark.hasMark(item.newId)\" class=\"bubble\"></span> <Icon :name=\"item.icon\" />{{ item.label }}</NuxtLink>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-named-slot-element-if-space-before-component-mat-5519",
+    "history": "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    "source": "<Foo><template #default><span v-if=\"ok\" class=\"bubble\"></span> <Icon :name=\"item.icon\" />{{ item.label }}</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-no-param-arrow-handler-stays-direct-5531",
+    "history": "589daf80111aea8957a7cc6932334840c6a83906",
+    "source": "<button @click=\"() => toggleDark()\">toggle</button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-null-handler-stays-direct-5531",
+    "history": "589daf80111aea8957a7cc6932334840c6a83906",
+    "source": "<Select @change=\"null\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-scoped-slot-static-component-prop-hoists-86889f7",
+    "history": "86889f7487bca8f5eb398a96b8ceb6dbd8f4168d",
+    "source": "<Tree><template #title=\"{ key, title }\"><Dropdown><template #overlay><Menu><MenuItem key=\"1\">one</MenuItem><MenuItem key=\"2\">two</MenuItem></Menu></template></Dropdown></template></Tree>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-template-for-component-static-bind-prop-hoists-86889f7",
+    "history": "86889f7487bca8f5eb398a96b8ceb6dbd8f4168d",
+    "source": "<Row><template v-for=\"component in group.children\" :key=\"component.title\"><Col :xs=\"24\" :sm=\"12\" :lg=\"8\" :xl=\"6\"><Card /></Col></template></Row>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-template-for-if-component-uses-branch-key-withou-86889f7",
+    "history": "86889f7487bca8f5eb398a96b8ceb6dbd8f4168d",
+    "source": "<Menu><template v-for=\"m in menus\"><template v-if=\"m.children\"><MenuGroup :key=\"m.order\" :title=\"m.title\" /></template><template v-else><MenuItem :key=\"m.path\" /></template></template></Menu>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-scoped-slot-dynamic-param-prop-stays-inline-86889f7",
+    "history": "86889f7487bca8f5eb398a96b8ceb6dbd8f4168d",
+    "source": "<Tree><template #title=\"{ title }\"><MenuItem :title=\"title\" /></template></Tree>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-dynamic-component-custom-directive-keeps-need-pa-5536",
+    "history": "7a98d785bd0b30f6e57ae5c04308c302318e524b",
+    "source": "<component :is=\"view\" v-example />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-dynamic-component-custom-directive-static-props-5536",
+    "history": "7a98d785bd0b30f6e57ae5c04308c302318e524b",
+    "source": "<component :is=\"copied ? 'CheckOutlined' : 'SnippetsOutlined'\" key=\"copy\" class=\"code-action\" v-clipboard:copy=\"sourceCode\" v-clipboard:success=\"handleCodeCopied\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-static-class-array-props-stay-inline-1f3dcea",
+    "history": "1f3dcea8d6b549e00a01239c371c54c983f4bc65",
+    "source": "<section><Menu><Content align=\"end\" side=\"top\" :side-offset=\"8\" :class=\"['z-50', 'bg-white']\"><Item /></Content></Menu><button><div class=\"i-stop\"></div></button><button><div class=\"i-trash\"></div></button></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-dialog-content-static-props-stay-inline-before-s-d2238c9",
+    "history": "d2238c988dcf45826eb744040f634c93e3d37afe",
+    "source": "<slot v-bind=\"{ hasPermissions }\" /><DialogRoot :open=\"showDialog\"><DialogPortal><DialogOverlay class=\"fixed inset-0\" /><DialogContent flex=\"~ col items-start gap-4\" class=\"fixed left-1/2 top-1/2\"><DialogTitle class=\"m-0 text-lg font-semibold\">{{ title }}</DialogTitle><DialogDescription>{{ body }}<ol mt-4 list-decimal pl-5 text-sm><li>one</li></ol></DialogDescription></DialogContent></DialogPortal></DialogRoot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-for-component-child-hoists-keep-avatar-props-ord-0a0dbb7",
+    "history": "0a0dbb737fc930a6dcded59a85fe721fb470b967",
+    "source": "<div v-for=\"(author, index) of authors\" :key=\"index\"><AvatarRoot class=\"size-10 inline-flex select-none items-center justify-center overflow-hidden rounded-full bg-neutral-100 align-middle dark:bg-neutral-800\"><AvatarImage class=\"h-full w-full rounded-[inherit] object-cover\" :src=\"author.avatar || author.avatarFallback\" :alt=\"`${author.displayName}'s avatar`\" /><AvatarFallback class=\"h-full w-full flex items-center justify-center bg-white text-sm text-primary font-medium leading-1 dark:bg-neutral-800 dark:text-neutral-300\" :delay-ms=\"600\" as-child>{{ [author.displayName.charAt(0).toUpperCase(), author.displayName.charAt(1).toUpperCase()].join('') }}</AvatarFallback></AvatarRoot></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-scoped-slot-component-child-hoists-keep-parent-p-b79e518",
+    "history": "b79e518f6956bda75d4157cc04d352ba73d4fb89",
+    "source": "<CursorMomentum v-slot=\"{ currentValue }\"><Volumed :perspective=\"800\" transform=\"rotateX(45deg) translateY(3px)\"><TestDummyMarkerFlat :style=\"{ transform: `rotate(${currentValue}deg)` }\" /></Volumed></CursorMomentum>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-if-branch-static-vnodes-keep-shipped-order-ddddadd",
+    "history": "ddddadd520ea734d68db0851a7fed2f32b8debc3",
+    "source": "<a-auto-complete><template #option=\"item\"><template v-if=\"item.options\"><span>{{ item.value }}<a style=\"float: right\" href=\"https://www.google.com/search?q=antd\" target=\"_blank\" rel=\"noopener noreferrer\">more</a></span></template><template v-else-if=\"item.value === 'all'\"><a href=\"https://www.google.com/search?q=ant-design-vue\" target=\"_blank\" rel=\"noopener noreferrer\">View all results</a></template></template></a-auto-complete>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-template-for-component-bind-props-keep-shipped-o-30c574d",
+    "history": "30c574d5e46004a3a32d625071e3da1847661658",
+    "source": "<a-form><a-row :gutter=\"24\"><template v-for=\"i in 10\" :key=\"i\"><a-col v-show=\"expand || i <= 6\" :span=\"8\"><a-form-item><a-input /></a-form-item></a-col></template></a-row><a-row><a-col :span=\"24\" style=\"text-align: right\"><a-button type=\"primary\" html-type=\"submit\">Search</a-button></a-col></a-row></a-form>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-scoped-slot-component-static-bind-props-wait-for-7a50327",
+    "history": "7a5032784bdce8e806f1cd8171179acf87bb8c71",
+    "source": "<a-tree><template #title=\"{ key }\"><a-dropdown :trigger=\"['contextmenu']\"><template #overlay><a-menu><a-menu-item key=\"1\">one</a-menu-item><a-menu-item key=\"2\">two</a-menu-item></a-menu></template><span>{{ key }}</span></a-dropdown></template></a-tree>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-transition-forwarded-slot-static-props-wait-for-5d71123",
+    "history": "5d711236917debc459cda09056c76461ac119b77",
+    "source": "<div class=\"container\"><svg><path d=\"M0 0z\" /></svg><Transition name=\"fade\"><div v-if=\"open\" class=\"content\"><slot /></div></Transition></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-component-responsive-props-wait-before-pa-5564",
+    "history": "eada2aa7dd9660258fc515dc418af338ae280c77",
+    "source": "<section class=\"markdown\"><template v-for=\"group in menuItems\" :key=\"group.title\"><div class=\"components-overview\"><h2 class=\"ant-typography components-overview-group-title\"><a-space align=\"center\">{{ isZhCN ? group.title : group.enTitle }}<a-tag style=\"display: block\">{{ group.children.length }}</a-tag></a-space></h2><a-row :gutter=\"[24, 24]\"><template v-for=\"component in group.children\" :key=\"component.title\"><a-col :xs=\"24\" :sm=\"12\" :lg=\"8\" :xl=\"6\"><component :is=\"component.target ? 'a' : 'router-link'\" v-bind=\"component.target ? { href: component.path, target: component.target } : { to: getLocalizedPathname(component.path, isZhCN) }\"><a-card size=\"small\" class=\"components-overview-card\"><template #title><div class=\"components-overview-title\">{{ component.title }}{{ isZhCN ? component.subtitle : '' }}</div></template><div class=\"components-overview-img\"><img :src=\"isDark && component.coverDark ? component.coverDark : component.cover\" :alt=\"component.title\" /></div></a-card></component></a-col></template></a-row></div></template></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-component-static-attrs-stay-inline-after-pr-5565",
+    "history": "07ac91d6024c4b9ca584d718ac06e2772bcae7c8",
+    "source": "<a-menu><a-menu-item-group v-if=\"isZhCN\" key=\"advanced\" title=\"advanced\"><a-menu-item key=\"surely-table\"><a href=\"https://www.surelyvue.com\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"position: relative\">Surely Table</a></a-menu-item></a-menu-item-group><template v-for=\"m in menus\"><template v-if=\"m.children\"><a-menu-item-group :key=\"m.order\" :title=\"m.title\"><template v-for=\"n in m.children\"><a-menu-item v-if=\"n.path\" :key=\"n.path\"><router-link :to=\"n.path\"><span>{{ n.title }}</span><span v-if=\"isZhCN\" class=\"chinese\">{{ n.subtitle }}</span></router-link><a-tag v-if=\"n.tag\" color=\"green\" style=\"margin-left: auto\">{{ n.tag }}</a-tag></a-menu-item></template></a-menu-item-group></template></template></a-menu>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-component-static-bind-props-stay-inline-aft-5565",
+    "history": "07ac91d6024c4b9ca584d718ac06e2772bcae7c8",
+    "source": "<a-row class=\"list-row\" :gutter=\"24\"><a-col v-for=\"item in renderData\" :key=\"item.id\" class=\"list-col\" :xs=\"12\" :sm=\"12\" :md=\"12\" :lg=\"6\" :xl=\"6\" :xxl=\"6\"><CardWrap :loading=\"loading\" :title=\"item.title\" :description=\"item.description\"><template #skeleton><a-skeleton :animation=\"true\"><a-skeleton-line :widths=\"['50%', '100%']\" :rows=\"4\" /></a-skeleton></template></CardWrap></a-col></a-row>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-table-column-static-props-stay-inline-after-stat-5565",
+    "history": "07ac91d6024c4b9ca584d718ac06e2772bcae7c8",
+    "source": "<b-table :data=\"data\" :loading=\"loading\" paginated backend-pagination :total=\"total\" :per-page=\"perPage\" @page-change=\"onPageChange\" backend-sorting :default-sort=\"[sortField, sortOrder]\" @sort=\"onSort\"><b-table-column field=\"original_title\" label=\"Title\" sortable v-slot=\"props\">{{ props.row.original_title }}</b-table-column><b-table-column field=\"vote_average\" label=\"Vote Average\" numeric sortable v-slot=\"props\"><span class=\"tag\" :class=\"type(props.row.vote_average)\">{{ props.row.vote_average }}</span></b-table-column><b-table-column field=\"vote_count\" label=\"Vote Count\" numeric sortable v-slot=\"props\">{{ props.row.vote_count }}</b-table-column></b-table>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-for-component-root-slot-static-props-stay-inline-5565",
+    "history": "07ac91d6024c4b9ca584d718ac06e2772bcae7c8",
+    "source": "<ListItem v-for=\"entry in entries\" label=\"fixed\" v-slot=\"{ value }\">{{ value }}</ListItem>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-if-branch-component-root-slot-static-props-stay-5565",
+    "history": "07ac91d6024c4b9ca584d718ac06e2772bcae7c8",
+    "source": "<Panel v-if=\"open\" label=\"fixed\" v-slot=\"{ value }\"><span class=\"value\">{{ value }}</span></Panel>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-style-before-class-still-destructures-class-befo-5566",
+    "history": "6f21c0432e32a51ae4f09a5d8df6f9ffcfb9a485",
+    "source": "<div :style=\"{ opacity: disabled ? 0.5 : 1 }\"></div><div :class=\"{ active: ok }\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-directive-and-key-event-modifiers-keep-vue-helpe-5566",
+    "history": "6f21c0432e32a51ae4f09a5d8df6f9ffcfb9a485",
+    "source": "<input v-focus @keyup.enter.stop=\"handler\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-class-before-block-helpers-in-conditional-list-5566",
+    "history": "6f21c0432e32a51ae4f09a5d8df6f9ffcfb9a485",
+    "source": "<div><button :class=\"buttonClass\" v-if=\"ok\">Play</button><span v-for=\"item in items\">{{ item }}</span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-array-template-literal-class-still-normalizes-5566",
+    "history": "6f21c0432e32a51ae4f09a5d8df6f9ffcfb9a485",
+    "source": "<span :class=\"[`text-${msg[0]}`, 'text-monospace', 'small', 'd-block']\" style=\"white-space: pre-wrap;\">{{ msg[1] }}</span>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-transition-group-component-list-keeps-dynamic-cl-5566",
+    "history": "6f21c0432e32a51ae4f09a5d8df6f9ffcfb9a485",
+    "source": "<transition-group tag=\"ul\" name=\"flip-list\"><b-list-group-item v-for=\"msg in messages\" :key=\"`console-${msg[2]}`\"><span :class=\"[`text-${msg[0]}`, 'text-monospace', 'small', 'd-block']\" style=\"white-space: pre-wrap;\">{{ msg[1] }}</span></b-list-group-item></transition-group>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-hoisted-style-helper-precedes-body-class-helper-5566",
+    "history": "6f21c0432e32a51ae4f09a5d8df6f9ffcfb9a485",
+    "source": "<div><Foo :style=\"{ color: tone }\"></Foo><span :class=\"classes\"></span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-alias-shaped-expression-text-does-not-reorder-he-5566",
+    "history": "6f21c0432e32a51ae4f09a5d8df6f9ffcfb9a485",
+    "source": "<div :class=\"classes\" :style=\"value === '_normalizeStyle()' ? styles : fallback\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-unicode-identifier-suffix-does-not-reorder-helpe-5566",
+    "history": "6f21c0432e32a51ae4f09a5d8df6f9ffcfb9a485",
+    "source": "<div :class=\"classes\" :style=\"é_normalizeStyle() ? styles : fallback\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-directus-image-editor-slots-before-show-helper-5576",
+    "history": "185d49ba9f16b87fd65e23e59cb232011b28a010",
+    "source": "\n<VDrawer v-model=\"internalActive\" class=\"modal\">\n  <template #activator=\"activatorBinding\">\n    <slot name=\"activator\" v-bind=\"activatorBinding\" />\n  </template>\n  <template #title-outer:append>\n    <VIcon v-tooltip.bottom=\"$t('changes_are_permanent')\" name=\"error\" />\n  </template>\n  <VMenu>\n    <template #activator=\"{ toggle }\">\n      <VIcon :name=\"aspectRatioIcon\" clickable @click=\"toggle\" />\n    </template>\n    <VList>\n      <template v-if=\"customAspectRatios\">\n        <VListItem\n          v-for=\"customAspectRatio in customAspectRatios\"\n          :key=\"customAspectRatio.text\"\n          clickable\n          :active=\"aspectRatio === customAspectRatio.value\"\n        >\n          {{ customAspectRatio.text }}\n        </VListItem>\n      </template>\n    </VList>\n  </VMenu>\n  <button v-show=\"cropping\" type=\"button\" @click=\"cropping = false\">\n    {{ localDragMode === 'focal_point' ? $t('cancel_selection') : $t('cancel_crop') }}\n  </button>\n  <template #actions:primary>\n    <PrivateViewHeaderBarActionButton :loading=\"saving\">\n      <template v-if=\"props.createAllowed\" #split-menu>\n        <VList>\n          <VListItem clickable @click=\"saveAsNew\" />\n        </VList>\n      </template>\n    </PrivateViewHeaderBarActionButton>\n  </template>\n</VDrawer>\n",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-static-attr-props-precede-direct-stati-5576",
+    "history": "185d49ba9f16b87fd65e23e59cb232011b28a010",
+    "source": "<Head title=\"Test Head Component\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" /><meta name=\"undefined\" :content=\"undefined\" /><meta name=\"number\" :content=\"0\" /></Head><h1 :style=\"{ fontSize: '40px' }\">Head Component</h1>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-static-bind-props-precede-direct-stati-5576",
+    "history": "185d49ba9f16b87fd65e23e59cb232011b28a010",
+    "source": "<div><AspectRatio :ratio=\"16 / 9\"><img class=\"Image\" src=\"x\" alt=\"y\"></AspectRatio></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-mixed-props-precede-direct-static-slot-5576",
+    "history": "185d49ba9f16b87fd65e23e59cb232011b28a010",
+    "source": "<DocSectionText v-bind=\"$attrs\"><p>Intro</p><p>More <a href=\"x\">link</a></p></DocSectionText><div class=\"card\"><Panel header=\"Header\" toggleable unstyled :pt=\"{ root: 'x', header: (options) => ({ id: 'myPanelHeader' }) }\"><p class=\"m-0\">Lorem ipsum</p></Panel></div><DocSectionCode :code=\"code\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-branch-component-static-props-stay-inline-before-5576",
+    "history": "185d49ba9f16b87fd65e23e59cb232011b28a010",
+    "source": "<Form v-if=\"show\" action=\"/dump/post\" method=\"post\"><input type=\"text\" name=\"name\" id=\"name\" value=\"John\" /></Form>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-branch-child-component-static-props-follow-shipp-5576",
+    "history": "185d49ba9f16b87fd65e23e59cb232011b28a010",
+    "source": "<div v-if=\"show\"><BranchRatio :ratio=\"16 / 9\"><img class=\"Image\" src=\"x\" alt=\"y\"></BranchRatio></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-keyed-v-for-with-conditional-native-models-has-n-5582",
+    "history": "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    "source": "\n<section>\n  <div v-for=\"colorName in Object.keys(customColors)\" :key=\"colorName\">\n    <input\n      v-if=\"isColor(colorName)\"\n      :id=\"`color-input-${colorName}`\"\n      type=\"color\"\n      :value=\"customColors[colorName]\"\n      @input=\"customColors[colorName] = $event.target.value\"\n    />\n    <input\n      v-else\n      :id=\"`color-input-${colorName}`\"\n      v-model=\"customColors[colorName]\"\n      @input=\"setVariable(colorName, customColors[colorName])\"\n    />\n  </div> <!-- End of color list -->\n</section>\n",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-filler-component-before-looped-component-slots-k-5582",
+    "history": "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    "source": "\n<TransitionGroup tag=\"ul\">\n  <Item v-if=\"empty\" key=\"empty\">&nbsp;</Item>\n  <Item v-for=\"msg in messages\" :key=\"msg.id\" class=\"py-2\">\n    <Badge :variant=\"msg.kind\">{{ msg.kind }}</Badge>\n    <span :class=\"[`text-${msg.kind}`]\">{{ msg.text }}</span>\n  </Item>\n</TransitionGroup>\n",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-for-native-dynamic-text-props-keep-legacy-hoist-5582",
+    "history": "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    "source": "<div v-for=\"project in projects\" :key=\"project.name\" class=\"card\"><div class=\"card-content\"><div class=\"content\"><p>{{ project.name }}</p><p>{{ project.status }}</p>{{ project.description }}</div></div><footer class=\"card-footer\"><a class=\"card-footer-item\">Open</a></footer></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-for-direct-dynamic-text-props-keep-legacy-hoist-5582",
+    "history": "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    "source": "<div v-for=\"exchange in exchangeRates\" :key=\"exchange.currency\" v-tooltip=\"tooltip(exchange)\" class=\"exchange-rate-row\"><p class=\"value\"><span class=\"input-currency\">{{ inputCurrency }} =</span>{{ exchange.value }}</p></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-for-component-sibling-dynamic-text-props-keep-le-5582",
+    "history": "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    "source": "<div v-for=\"disk in disks\" :key=\"disk.id\" class=\"disk-row\"><PercentageChart :title=\"disk.name\" /><p class=\"info\"><b>{{ label }}</b>: {{ disk.free }} out of {{ disk.size }}</p><p class=\"info\"><b>{{ mountLabel }}</b>: {{ disk.mount }}</p></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-conditional-for-static-text-sibling-stays-inline-5582",
+    "history": "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    "source": "<section><p v-if=\"loading\">loading</p><div v-for=\"group in groups\" v-else :key=\"group.id\" class=\"card\"><p><strong>Leader: </strong><a v-if=\"group.leader\">{{ group.leader }}</a></p></div></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-conditional-for-branch-static-child-and-componen-5582",
+    "history": "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    "source": "<div><div v-for=\"block in blocks\" v-if=\"block.enabled\" :key=\"block.key\"><div v-if=\"selected === block.key\"><div class=\"selected-corner\"></div><div v-html=\"icons.check\"></div></div><strike class=\"gray-200\">$60</strike></div></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-conditional-for-static-tail-child-stays-inline-5582",
+    "history": "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    "source": "<div><div v-for=\"category in categories\" v-if=\"category.visible\" :key=\"category.identifier\"><Row :category=\"category\" /><div class=\"fill-height\"></div></div></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-conditional-for-slot-carrier-props-stay-i-5582",
+    "history": "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    "source": "<div><div v-for=\"row in rows\" v-if=\"row.show\" :key=\"row.id\"><div v-for=\"item in row.items\" :key=\"item.id\"><Mount><span slot=\"popoverContent\"><h4>{{ item.name }}</h4></span></Mount></div></div></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-custom-directive-is-resolved-but-not-wrapped-5582",
+    "history": "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    "source": "<h3 v-once v-example=\"heading\">{{ question }}</h3>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-custom-directive-is-resolved-but-not-w-5582",
+    "history": "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    "source": "<Foo v-once v-example=\"heading\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-template-if-static-svg-keeps-parent-vnode-5583",
+    "history": "e65a078d379e3e5d30d5e7afb3bc61bb3ee3f5b0",
+    "source": "<button :class=\"x\"><div><template v-if=\"ok\"><svg><path /></svg></template></div></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-template-if-directive-button-static-svg-keeps-pa-5583",
+    "history": "e65a078d379e3e5d30d5e7afb3bc61bb3ee3f5b0",
+    "source": "<div v-if=\"root\"><div><template v-if=\"ok\"><button v-tip @click=\"go\"><svg><path /></svg></button></template></div></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-normalize-props-guard-precedes-later-merge-props-5583",
+    "history": "e65a078d379e3e5d30d5e7afb3bc61bb3ee3f5b0",
+    "source": "<Foo v-bind=\"props\"><template #default=\"{ item }\"><Bar v-bind=\"item.props\" :class=\"item.class\" /></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-dynamic-style-prop-normalizes-5583",
+    "history": "e65a078d379e3e5d30d5e7afb3bc61bb3ee3f5b0",
+    "source": "<slot :style=\"{ color }\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-template-if-component-slot-resets-branch-root-be-5583",
+    "history": "e65a078d379e3e5d30d5e7afb3bc61bb3ee3f5b0",
+    "source": "<Foo><template v-if=\"show\"><ClientOnly><template #fallback><span class=\"subtle\">(-)</span></template><span v-if=\"pending\">(<span class=\"spinner\"></span>)</span><span v-else-if=\"total !== null\"><span class=\"subtle\">(</span>{{ total }}<span class=\"subtle\">)</span></span><span v-else class=\"subtle\">(-)</span></ClientOnly></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-document-global-key-for-item-registers-unused-ho-5583",
+    "history": "e65a078d379e3e5d30d5e7afb3bc61bb3ee3f5b0",
+    "source": "<div><div v-for=\"document in docs\" :key=\"document.id\" class=\"pill\"><img v-if=\"document.logoUrl\" :src=\"document.logoUrl\" />{{ document.title }}</div></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-interpolation-renders-as-static-text-5583",
+    "history": "e65a078d379e3e5d30d5e7afb3bc61bb3ee3f5b0",
+    "source": "<div v-pre class=\"code\">{{ variable }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-multiline-interpolation-condenses-as-static-text-5583",
+    "history": "e65a078d379e3e5d30d5e7afb3bc61bb3ee3f5b0",
+    "source": "<code v-pre class=\"font-code\">\n  {{ variable }}\n</code>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-foreign-svg-static-bind-root-splits-props-and-ch-5585",
+    "history": "7fad0210b5aa9c8e9341c43954cf79cc1e841c76",
+    "source": "<Handle><svg viewBox=\"0 0 16 16\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" :width=\"10\" :height=\"10\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"hotpink\" /></svg></Handle>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-slot-static-global-constant-prop-is-pa-5585",
+    "history": "7fad0210b5aa9c8e9341c43954cf79cc1e841c76",
+    "source": "<md-tabs><md-tab :id=\"NaN\" md-label=\"Tab id=NaN\">NaN</md-tab></md-tabs>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-transition-slot-props-fallback-keeps-static-prop-5585",
+    "history": "7fad0210b5aa9c8e9341c43954cf79cc1e841c76",
+    "source": "<transition name=\"sw-update-popup\"><slot :reload=\"reload\"><br /></slot></transition>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-else-with-value-uses-legacy-else-if-condition-5585",
+    "history": "7fad0210b5aa9c8e9341c43954cf79cc1e841c76",
+    "source": "<div v-if=\"disabled\">disabled</div><span v-else=\"enabled\">enabled</span>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-transition-named-slot-fallback-hoists-static-pro-5586",
+    "history": "c17902442d98f8b7e4b0c87df223f89e2ba65375",
+    "source": "<transition name=\"multiselect__loading\"><slot name=\"loading\"><div v-show=\"loading\" class=\"multiselect__spinner\"></div></slot></transition>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-foreign-defs-with-static-bound-gradient-caches-a-5586",
+    "history": "c17902442d98f8b7e4b0c87df223f89e2ba65375",
+    "source": "<svg class=\"va-icon-vuestic\"><defs><linearGradient :id=\"'ORIGINAL'\" x1=\"0%\" y1=\"50%\" y2=\"50%\"><stop offset=\"0%\" stop-color=\"#4AE387\" /><stop offset=\"100%\" stop-color=\"#C8EA13\" /></linearGradient></defs><path :fill=\"textColor\" /></svg>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-1-5647",
+    "history": "8791f566bb01c6d9fc1534e043aeef6aa30af087",
+    "source": "<span v-for=\"i in 1\" :title=\"`➕ ${n}`\"></span>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-1-5578",
+    "history": "cf8e68687fdd730656c96adb2b00c03a2e96b071",
+    "source": "<div :title=\"'Hello, ' + name + '!'\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-2-5578",
+    "history": "cf8e68687fdd730656c96adb2b00c03a2e96b071",
+    "source": "<div :id=\"`item-` + id + `!`\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-3-5578",
+    "history": "cf8e68687fdd730656c96adb2b00c03a2e96b071",
+    "source": "<div :class=\"'card ' + variant\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-4-5578",
+    "history": "cf8e68687fdd730656c96adb2b00c03a2e96b071",
+    "source": "<div :title=\"'hello'\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-consul-key-browser-v-for-item-in-conditional-cla-089ed0d",
+    "history": "089ed0dba272681640b17c6f4ed3fc2cad69560c",
+    "source": "<div v-for=\"row in rows\" :key=\"row.key\" class=\"row\" :class=\"'session' in row && row.session ? 'locked' : ''\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-template-else-if-static-keyed-v-for-item-keeps-u-60b794f",
+    "history": "60b794f9730f9d6391643ba178f23ed05d48d72e",
+    "source": "<article v-if=\"kind === 'story'\" key=\"story\"><h1>{{ title }}</h1></article><template v-else-if=\"kind === 'gallery'\"><img v-for=\"src in images\" key=\"img\"></template><aside v-else key=\"fallback\">none</aside>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-static-key-60b794f",
+    "history": "60b794f9730f9d6391643ba178f23ed05d48d72e",
+    "source": "<div v-for=\"item in list\" key=\"row\">{{ item }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-v-for-static-key-60b794f",
+    "history": "60b794f9730f9d6391643ba178f23ed05d48d72e",
+    "source": "<div v-for=\"item in items\" key=\"row\" v-memo=\"[item.selected]\">{{ item.name }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-model-text-trim-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<input v-model.trim=\"msg\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-model-text-trim-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<input v-model.trim=\"msg\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-model-checkbox-handler-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<input type=\"checkbox\" v-model=\"checked\" @change=\"track(checked)\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-model-checkbox-handler-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<input type=\"checkbox\" v-model=\"checked\" @change=\"track(checked)\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-model-select-vfor-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<select v-model=\"choice\"><option v-for=\"item in items\" :key=\"item.id\" :value=\"item.value\">{{ item.label }}</option></select>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-model-select-vfor-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<select v-model=\"choice\"><option v-for=\"item in items\" :key=\"item.id\" :value=\"item.value\">{{ item.label }}</option></select>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-model-component-named-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp v-model:title=\"title\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-model-component-named-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp v-model:title=\"title\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-model-component-dynamic-modifier-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp v-model:[field].trim=\"msg\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-model-component-dynamic-modifier-script-setup-op-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp v-model:[field].trim=\"msg\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-model-component-spread-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp v-bind=\"modelProps\" v-model=\"msg\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-model-component-spread-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp v-bind=\"modelProps\" v-model=\"msg\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-model-listener-order-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp @update:modelValue=\"track\" v-model=\"msg\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-model-listener-order-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp @update:modelValue=\"track\" v-model=\"msg\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-model-component-vfor-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp v-for=\"item in items\" v-model=\"item.value\" :key=\"item.id\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-model-component-vfor-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp v-for=\"item in items\" v-model=\"item.value\" :key=\"item.id\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-outlet-dynamic-name-props-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<slot :name=\"slotName\" foo=\"bar\" :item=\"row\">fallback {{ msg }}</slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-outlet-dynamic-name-props-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<slot :name=\"slotName\" foo=\"bar\" :item=\"row\">fallback {{ msg }}</slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-outlet-dynamic-event-modifier-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<slot @[event].once.capture=\"handler\" :[propKey]=\"value\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-outlet-dynamic-event-modifier-script-setup-optio-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<slot @[event].once.capture=\"handler\" :[propKey]=\"value\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-outlet-spread-mixed-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<slot v-bind=\"slotProps\" @pick=\"choose(row)\" v-on=\"listeners\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-outlet-spread-mixed-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<slot v-bind=\"slotProps\" @pick=\"choose(row)\" v-on=\"listeners\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-outlet-forwarded-scoped-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<Bar v-slot=\"{ row }\"><Foo><slot @[row.event]=\"row.handler\"></slot></Foo></Bar>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-outlet-forwarded-scoped-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<Bar v-slot=\"{ row }\"><Foo><slot @[row.event]=\"row.handler\"></slot></Foo></Bar>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-outlet-vfor-dynamic-event-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<slot v-for=\"item in items\" @[item.event]=\"item.handler\">x</slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-outlet-vfor-dynamic-event-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<slot v-for=\"item in items\" @[item.event]=\"item.handler\">x</slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-outlet-style-prop-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<slot :style=\"{ color }\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-outlet-style-prop-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<slot :style=\"{ color }\"></slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-handler-only-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div @click=\"count++\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-handler-only-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div @click=\"count++\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-handler-and-static-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div class=\"a\" @click=\"count++\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-handler-and-static-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div class=\"a\" @click=\"count++\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-handler-and-bind-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div :id=\"x\" @click=\"count++\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-handler-and-bind-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div :id=\"x\" @click=\"count++\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-reference-handler-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div @click=\"onTap\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-reference-handler-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div @click=\"onTap\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-let-handler-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div @click=\"tapLet\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-let-handler-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div @click=\"tapLet\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-handler-with-modifier-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div @click.stop=\"count++\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-handler-with-modifier-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div @click.stop=\"count++\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-key-modifier-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<input @keyup.enter=\"submit\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-key-modifier-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<input @keyup.enter=\"submit\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-two-handlers-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div @click=\"a++\" @input=\"b++\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-two-handlers-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div @click=\"a++\" @input=\"b++\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-handler-and-class-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div :class=\"cls\" @click=\"count++\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-handler-and-class-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div :class=\"cls\" @click=\"count++\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-handler-and-spread-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div v-bind=\"obj\" @click=\"count++\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-handler-and-spread-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div v-bind=\"obj\" @click=\"count++\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-spread-only-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div v-bind=\"obj\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-spread-only-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div v-bind=\"obj\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-spread-and-static-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div class=\"a\" v-bind=\"obj\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-spread-and-static-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div class=\"a\" v-bind=\"obj\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-on-spread-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div v-on=\"handlers\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-on-spread-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div v-on=\"handlers\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-static-only-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div class=\"a\">x</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-static-only-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div class=\"a\">x</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-static-tree-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div><b>a</b><i>c</i></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-static-tree-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div><b>a</b><i>c</i></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-empty-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-empty-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-interpolation-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div>{{ msg }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-interpolation-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div>{{ msg }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-v-if-handler-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div v-if=\"ok\" @click=\"count++\">x</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-if-handler-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div v-if=\"ok\" @click=\"count++\">x</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-v-for-handler-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<li v-for=\"i in items\" :key=\"i\" @click=\"a++\">{{ i }}</li>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-for-handler-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<li v-for=\"i in items\" :key=\"i\" @click=\"a++\">{{ i }}</li>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-v-for-static-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<li v-for=\"i in items\" :key=\"i\"><b>x</b></li>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-for-static-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<li v-for=\"i in items\" :key=\"i\"><b>x</b></li>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-v-once-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div v-once>x</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-once-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div v-once>x</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-v-once-then-handler-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div><i v-once>x</i><a @click=\"a++\"></a></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-once-then-handler-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div><i v-once>x</i><a @click=\"a++\"></a></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-v-model-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<input v-model=\"v\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-model-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<input v-model=\"v\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-v-model-and-handler-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<input v-model=\"v\" @focus=\"a++\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-model-and-handler-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<input v-model=\"v\" @focus=\"a++\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-component-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-component-handler-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp @click=\"count++\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-handler-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp @click=\"count++\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-component-static-prop-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp a=\"1\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-static-prop-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp a=\"1\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-component-slot-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp><a @click=\"a++\">x</a></MyComp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-slot-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp><a @click=\"a++\">x</a></MyComp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-scoped-slot-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp v-slot=\"{ row }\"><a @click=\"go(row)\">{{ row }}</a></MyComp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-scoped-slot-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<MyComp v-slot=\"{ row }\"><a @click=\"go(row)\">{{ row }}</a></MyComp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-outlet-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<slot :item=\"x\">fallback</slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-slot-outlet-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<slot :item=\"x\">fallback</slot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-svg-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<svg><path d=\"M0 0\" @click=\"a++\"/></svg>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-svg-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<svg><path d=\"M0 0\" @click=\"a++\"/></svg>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-teleport-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<Teleport to=\"#a\"><div @click=\"a++\">x</div></Teleport>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-teleport-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<Teleport to=\"#a\"><div @click=\"a++\">x</div></Teleport>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-cached-static-scoped-child-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<section><Comp :format=\"fmt\"/><span class=\"badge\">ok</span></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-cached-static-scoped-child-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<section><Comp :format=\"fmt\"/><span class=\"badge\">ok</span></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-cached-static-and-dynamic-scoped-child-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<section><Comp :format=\"fmt\"/><span class=\"badge\" :title=\"label\">ok</span></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-cached-static-and-dynamic-scoped-child-script-se-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<section><Comp :format=\"fmt\"/><span class=\"badge\" :title=\"label\">ok</span></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-cached-style-object-scoped-child-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<section><Comp :format=\"fmt\"/><span :style=\"{ marginLeft: 8 }\">ok</span></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-cached-style-object-scoped-child-script-setup-op-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<section><Comp :format=\"fmt\"/><span :style=\"{ marginLeft: 8 }\">ok</span></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-cached-static-style-scoped-child-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<section><Comp :format=\"fmt\"/><span style=\"margin-left: 8px\">ok</span></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-cached-static-style-scoped-child-script-setup-op-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<section><Comp :format=\"fmt\"/><span style=\"margin-left: 8px\">ok</span></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-empty-v-for-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div v-for=\"item in items\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-empty-v-for-script-setup-options-5695",
+    "history": "725b3313bcff8bb4679af5f455fdec9c75126439",
+    "source": "<div v-for=\"item in items\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true,
+      "cacheHandlers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c5-named-header-extra-attr-4931",
+    "history": "d90622c5d92adcffc2d961be6d3cb7850d486a32",
+    "source": "<Foo><template #header id=\"x\">x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-create-slots-if-extra-attr-4931",
+    "history": "d90622c5d92adcffc2d961be6d3cb7850d486a32",
+    "source": "<Foo><template #header id=\"x\" v-if=\"ok\">x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-create-slots-for-extra-attr-4931",
+    "history": "d90622c5d92adcffc2d961be6d3cb7850d486a32",
+    "source": "<Foo><template v-for=\"i in n\" #header id=\"x\">x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-mixed-component-root-and-named-template-4931",
+    "history": "d90622c5d92adcffc2d961be6d3cb7850d486a32",
+    "source": "<Foo v-slot><template #header>x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c5-svg-parent-g-keeps-plain-vnode-when-child-handle-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<svg><g><foreignObject><div>hi</div></foreignObject></g></svg>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-svg-foreign-object-with-only-slot-child-stays-pl-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<svg><foreignObject><slot /></foreignObject><rect /></svg>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-interp-component-drops-root-edge-white-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<Foo />\n{{ msg }}\n<Bar />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-zero-param-arrow-handler-stays-direct-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<button @click=\"() => toggleDark()\">toggle</button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-param-arrow-with-ts-body-is-wrapped-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<button @input=\"(e) => updateColor(key, (e.target as HTMLInputElement).value)\"></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-v-for-dynamic-class-and-inline-handler-keeps-com-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<button v-for=\"item in items\" :class=\"['button', { active: item.active }]\" @click=\"select(item)\">{{ item.label }}</button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-null-handler-stays-raw-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<VueMultiselect @change=\"null\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-multiline-native-inline-handler-keeps-authored-p-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<button @click=\"\n  themeMode.changeCompactTheme(\n    themeMode.compactTheme.value === 'compact' ? '' : 'compact',\n  )\n\">compact</button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-typed-block-arrow-handler-is-wrapped-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<input @change=\"(e: Event) => { const v = (e.target as HTMLInputElement).value; }\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-native-block-arrow-with-ts-body-is-wrapped-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<button @pointerdown=\"(event) => { const target = event.target as HTMLElement; target.focus(); }\"></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-arrow-with-non-null-body-is-wrapped-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<VButton @click=\"() => runManualFlow(link.flow!)\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-typed-block-arrow-keeps-line-comment-spelling-wh-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<button @touchstart=\"(event: TouchEvent) => {\n  // keep touch branch note\n  start(event)\n}\"></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-explicit-slot-template-nested-slot-prefers-rende-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<Carousel><template #slides><SwiperSlide v-for=\"item in items\"><div :class=\"cls\"></div><p class=\"x\"><slot name=\"referenceText\" /></p></SwiperSlide></template></Carousel>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-v-slot-direct-slot-prefers-render-slot-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<MenuItem v-slot=\"{ active }\" v-bind=\"$attrs\"><a :class=\"[active ? 'on' : 'off']\"><slot :active=\"active\" /></a></MenuItem>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-v-slot-nested-slot-prefers-render-slot-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<Listbox v-slot=\"{ open }\"><ScalarFloating><ListboxButton><slot :open=\"open\" /></ListboxButton><template #floating=\"{ width }\"><div v-if=\"open\" :style=\"{ width }\"><Item v-for=\"option in options\" :key=\"option.id\" /></div></template></ScalarFloating></Listbox>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-component-v-slot-carrier-before-later-slot-outle-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<DefineMonthTemplate v-slot=\"{ date }\"><div>{{ date }}</div></DefineMonthTemplate><CalendarRoot v-slot=\"{ grid }\"><CalendarPrevButton><slot name=\"calendar-prev-icon\" /></CalendarPrevButton></CalendarRoot>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-dynamic-bind-key-prefers-normalize-props-before-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<component :is=\"self ? 'MkA' : 'a'\" :[attr]=\"maybeRelativeUrl\" :class=\"$style.root\"><slot /></component>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-implicit-slot-outlet-before-named-slot-vnode-pre-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<CommonTooltip><VDropdown><slot /><template #popper><div ref=\"el\"></div></template></VDropdown></CommonTooltip>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-dynamic-component-before-directive-component-doe-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<div><component :is=\"icon\" /><Foo v-tippy=\"tip\" /></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-conditional-named-slot-direct-v-for-prefers-rend-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<ChatPrompt><template v-if=\"attachments.length\" #header><Button v-for=\"(file, index) in attachments\" :key=\"index\" :label=\"file.name\" /></template><template #body><Editor /></template></ChatPrompt>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-source-order-default-before-named-slot-keeps-hel-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<Page><Button><template #right><Icon v-if=\"ok\" /></template>{{ label }}</Button><template #notice><Icon /> {{ notice }}</template></Page>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-source-order-default-if-before-late-named-slot-k-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<PublicView><form><Notice v-if=\"done\">{{ ok }}</Notice><Notice v-if=\"error\">{{ error }}</Notice></form><template #notice><Icon /> {{ msg }}</template></PublicView>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-footer-transition-prefers-builtin-before-default-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<PageWithHeader><div><TransitionGroup><template v-for=\"item in timeline\" :key=\"item.id\"><Message :message=\"item\" /></template></TransitionGroup></div><template #footer><Transition name=\"fade\"><div v-show=\"showIndicator\"></div></Transition></template></PageWithHeader>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-multiline-value-keeps-authored-padding-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<div v-html=\"\n  formatHtml(\n    value,\n  )\n\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-value-decodes-attribute-entities-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<em class=\"weui-form-preview__value\" v-html=\"headerValue || '&nbsp;'\"></em>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-comp-binary-model-target-keeps-legacy-nested-cal-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<Dialog v-model:open=\"confirmDeleteKey !== null\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-static-attr-interpolation-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<div v-once class=\"dialog-header title\">{{ $t('earnedAchievement') }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-compound-static-tail-splits-inside-cache-initial-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<strong v-once>{{ $t(\"createdBy\") }}:</strong>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-html-binding-is-omitted-from-cache-initializer-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<div v-once class=\"opt-out-description\" v-html=\"$t('optOutOfClassesText', optOutLinks)\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-event-and-html-bindings-are-omitted-from-cache-i-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<span v-once class=\"close-icon svg-icon inline icon-10\" @click=\"close()\" v-html=\"icons.close\"></span>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-static-dynamic-class-and-html-omits-empty-patch-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<span v-once class=\"svg-icon inline icon-16 mr-1\" :class=\"{ 'w-0': currencyClass === 'unlock'}\" v-html=\"icons[currencyClass]\"></span>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-html-only-cache-initializer-keeps-empty-multilin-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<div v-once v-html=\"raw\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-event-binding-is-omitted-from-cache-initializer-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<button v-once class=\"btn\" @click=\"closeWithAction()\">{{ $t(\"viewAchievements\") }}</button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-html-inside-once-parent-still-emits-html-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<div v-once><span v-html=\"icons.sparkles\"></span><span class=\"text\">{{ $t(\"yourRewards\") }}</span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-multiline-expr-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<div v-show=\"\n  visible ||\n  forced\n\">content</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-mixed-component-root-and-named-template-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<Foo v-slot><template #header>x</template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c5-svg-static-bind-child-cache-formats-props-like-t-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<svg viewBox=\"0 0 400 400\"><circle :r=\"150\" cx=\"200\" cy=\"200\" :stroke=\"'darkgrey'\" :stroke-width=\"40\" fill=\"none\" /><circle :stroke-dasharray=\"progress\" /></svg>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-template-if-dynamic-text-branch-keeps-static-lin-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<Foo><template #option=\"item\"><template v-if=\"item.options\"><span>{{ item.value }}<a style=\"float: right\" href=\"https://www.google.com/search?q=antd\" target=\"_blank\" rel=\"noopener noreferrer\">more</a></span></template><template v-else-if=\"item.value === 'all'\"><a href=\"https://www.google.com/search?q=ant-design-vue\" target=\"_blank\" rel=\"noopener noreferrer\">View all results</a></template></template></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-pure-static-vnode-hoist-drops-descendant-patchle-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<Foo><button :style=\"{ transform: 'none' }\"><span class=\"x\" :style=\"{ color: 'red' }\"></span></button></Foo>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-multiline-dynamic-then-static-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<div\n  :style=\"\n    open\n      ? { height: '240px' }\n      : undefined\n  \"\n  style=\"height: 200px\"\n></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-comment-padding-between-interpolations-condenses-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<p>{{ a }}\n<!--c-->\n{{ b }}</p>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-vfor-unwrap-custom-directive-root-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<template v-for=\"item in blocks\"><div :key=\"item.id\" v-masonry-tile :class=\"item.class\" class=\"grid\"><span></span></div></template>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-vfor-unwrap-v-show-root-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<template v-for=\"[fullPath, Comp] in compList\" :key=\"fullPath\"><div v-show=\"fullPath === currRoute.fullPath\" class=\"size-full\"><slot :fullPath=\"fullPath\" :Comp=\"Comp\" /></div></template>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-vfor-unwrap-native-model-root-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<template v-for=\"item in items\"><input v-model=\"item.name\" :key=\"item.id\" /></template>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-vfor-nested-if-keeps-v-show-root-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<template v-for=\"item in items\"><div v-if=\"item.ok\" v-show=\"item.ok\" :key=\"item.id\"></div></template>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-vfor-unwrap-child-keeps-runtime-directives-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<template v-for=\"item in items\"><div><span v-show=\"item.ok\"></span><span v-ripple></span></div></template>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-implicit-component-nbsp-default-slot-drops-like-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<Text>&nbsp;</Text>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-implicit-component-numeric-nbsp-default-slot-dro-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<Text>&#160;</Text>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-commented-element-gap-newline-drops-pre-comment-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<ul>\n  <li>{{ a }} {{ b }}</li> <!--c-->\n  <li>{{ c }} {{ d }}</li>\n</ul>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-once-compound-keeps-trailing-space-in-one-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<div v-once><p>{{ a }} <span v-html=\"b\"></span></p></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-noscript-mixed-children-condense-like-the-shippe-5552",
+    "history": "af800fd3996e05a0df0e0566267a7099d982963a",
+    "source": "<div><noscript class=\"banner\">\n  {{ a }}\n  <br />\n  <a href=\"x\">{{ b }}</a>\n</noscript></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-1-5467",
+    "history": "86f4b794f4ffb5b1045fb7aa14bcf907b93299a4",
+    "source": "<a href=\"/\">outer<a href=\"/foo\">inner</a></a>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-button-5467",
+    "history": "86f4b794f4ffb5b1045fb7aa14bcf907b93299a4",
+    "source": "<button>aaa<button>bbb</button></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-anchor-descendant-5467",
+    "history": "86f4b794f4ffb5b1045fb7aa14bcf907b93299a4",
+    "source": "<a href=\"/\"><div><a href=\"/foo\">inner</a></div></a>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-4-5467",
+    "history": "86f4b794f4ffb5b1045fb7aa14bcf907b93299a4",
+    "source": "<button><div><button>bbb</button></div></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-case-5-5467",
+    "history": "86f4b794f4ffb5b1045fb7aa14bcf907b93299a4",
+    "source": "<a href=\"/\"><div><a href=\"/foo\">inner</a></div></a></a>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c5-case-6-5467",
+    "history": "86f4b794f4ffb5b1045fb7aa14bcf907b93299a4",
+    "source": "<a href=\"/\"><div><a href=\"/foo\">inner</a></a></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 2
+  },
+  {
+    "id": "c5-case-7-5467",
+    "history": "86f4b794f4ffb5b1045fb7aa14bcf907b93299a4",
+    "source": "<a href=\"/\">outer<a href=\"/foo\">inner</a></a></a>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c5-case-1-5520",
+    "history": "526f400efe11b89dfcc034365e00489f98ada04a",
+    "source": "<a><a>x</a></a>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c5-nested-button-5520",
+    "history": "526f400efe11b89dfcc034365e00489f98ada04a",
+    "source": "<button><button>x</button></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
   }
 ]

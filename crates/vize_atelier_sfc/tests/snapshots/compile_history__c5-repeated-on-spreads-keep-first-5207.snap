@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-repeated-on-spreads-keep-first-5207",
+    history: "712a1dc140bd140ded0d1ff40f87f80438d2509e",
+    source: "<slot v-on=\"first\" v-on=\"second\" @pick=\"choose\"></slot>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { renderSlot as _renderSlot, mergeProps as _mergeProps, toHandlers as _toHandlers } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return _renderSlot(_ctx.$slots, \"default\", _mergeProps(_toHandlers(first, true), { onPick: choose }))\n}",
+    map: None,
+}

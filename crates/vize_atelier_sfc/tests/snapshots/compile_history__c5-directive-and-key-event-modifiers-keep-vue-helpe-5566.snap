@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-directive-and-key-event-modifiers-keep-vue-helpe-5566",
+    history: "6f21c0432e32a51ae4f09a5d8df6f9ffcfb9a485",
+    source: "<input v-focus @keyup.enter.stop=\"handler\">",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, withKeys as _withKeys, withModifiers as _withModifiers, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _directive_focus = _resolveDirective(\"focus\")\n  \n  return _withDirectives((_openBlock(), _createElementBlock(\"input\", {\n    onKeyup: _withKeys(_withModifiers(handler, [\"stop\"]), [\"enter\"])\n  }, null, 40 /* PROPS, NEED_HYDRATION */, [\"onKeyup\"])), [\n    [_directive_focus]\n  ])\n}",
+    map: None,
+}

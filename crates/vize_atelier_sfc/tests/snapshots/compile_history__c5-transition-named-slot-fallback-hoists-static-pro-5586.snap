@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-transition-named-slot-fallback-hoists-static-pro-5586",
+    history: "c17902442d98f8b7e4b0c87df223f89e2ba65375",
+    source: "<transition name=\"multiselect__loading\"><slot name=\"loading\"><div v-show=\"loading\" class=\"multiselect__spinner\"></div></slot></transition>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { withDirectives as _withDirectives, renderSlot as _renderSlot, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, Transition as _Transition, withCtx as _withCtx, vShow as _vShow } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createBlock(_Transition, { name: \"multiselect__loading\" }, {\n    default: _withCtx(() => [\n      _renderSlot(_ctx.$slots, \"loading\", {}, () => [\n        _withDirectives(_createElementVNode(\"div\", { class: \"multiselect__spinner\" }, null, 512 /* NEED_PATCH */), [\n          [_vShow, loading]\n        ])\n      ])\n    ]),\n    _: 3 /* FORWARDED */\n  }))\n}",
+    map: None,
+}

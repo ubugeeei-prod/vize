@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-native-keyed-5376",
+    history: "eef9f20647cad815739cc7b531b8a83b2a46104b",
+    source: "<div v-if=\"ok\" v-for=\"i in n\" :key=\"i\">{{ i }}</div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (ok)\n    ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList(n, (i) => {\n      return (_openBlock(), _createElementBlock(\"div\", { key: i }, _toDisplayString(i), 1 /* TEXT */))\n    }), 128 /* KEYED_FRAGMENT */))\n    : _createCommentVNode(\"v-if\", true)\n}",
+    map: None,
+}

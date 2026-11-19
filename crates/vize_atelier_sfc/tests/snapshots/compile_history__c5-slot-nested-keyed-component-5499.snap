@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-slot-nested-keyed-component-5499",
+    history: "59ae5bcdbb730cabc071d99e7343a3bd860c0a18",
+    source: "<Story><template #controls><div p-4><RippleGrid :key=\"renderKey\" /></div></template></Story>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_RippleGrid = _resolveComponent(\"RippleGrid\")\n  const _component_Story = _resolveComponent(\"Story\")\n  \n  return (_openBlock(), _createBlock(_component_Story, null, {\n    controls: _withCtx(() => [\n      _createElementVNode(\"div\", { \"p-4\": \"\" }, [\n        (_openBlock(), _createBlock(_component_RippleGrid, { key: renderKey }))\n      ])\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

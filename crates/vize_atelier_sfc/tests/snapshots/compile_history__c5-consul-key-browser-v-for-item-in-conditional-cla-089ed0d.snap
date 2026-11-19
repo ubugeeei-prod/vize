@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-consul-key-browser-v-for-item-in-conditional-cla-089ed0d",
+    history: "089ed0dba272681640b17c6f4ed3fc2cad69560c",
+    source: "<div v-for=\"row in rows\" :key=\"row.key\" class=\"row\" :class=\"'session' in row && row.session ? 'locked' : ''\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(rows, (row) => {\n    return (_openBlock(), _createElementBlock(\"div\", {\n      key: row.key,\n      class: _normalizeClass([\"row\", 'session' in row && row.session ? 'locked' : ''])\n    }, null, 2 /* CLASS */))\n  }), 128 /* KEYED_FRAGMENT */))\n}",
+    map: None,
+}

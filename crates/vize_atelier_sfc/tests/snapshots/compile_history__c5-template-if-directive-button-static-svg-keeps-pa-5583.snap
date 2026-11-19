@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-template-if-directive-button-static-svg-keeps-pa-5583",
+    history: "e65a078d379e3e5d30d5e7afb3bc61bb3ee3f5b0",
+    source: "<div v-if=\"root\"><div><template v-if=\"ok\"><button v-tip @click=\"go\"><svg><path /></svg></button></template></div></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _directive_tip = _resolveDirective(\"tip\")\n  \n  return (root)\n    ? (_openBlock(), _createElementBlock(\"div\", { key: 0 }, [\n      _createElementVNode(\"div\", null, [\n        (ok)\n          ? _withDirectives((_openBlock(), _createElementBlock(\"button\", {\n            key: 0,\n            onClick: go\n          }, [\n            (_openBlock(), _createElementBlock(\"svg\", null, [\n              _createElementVNode(\"path\")\n            ]))\n          ], 8 /* PROPS */, [\"onClick\"])), [\n            [_directive_tip]\n          ])\n          : _createCommentVNode(\"v-if\", true)\n      ])\n    ]))\n    : _createCommentVNode(\"v-if\", true)\n}",
+    map: None,
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-vfor-unwrap-child-keeps-runtime-directives-5552",
+    history: "af800fd3996e05a0df0e0566267a7099d982963a",
+    source: "<template v-for=\"item in items\"><div><span v-show=\"item.ok\"></span><span v-ripple></span></div></template>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList, vShow as _vShow } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _directive_ripple = _resolveDirective(\"ripple\")\n  \n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => {\n    return (_openBlock(), _createElementBlock(\"div\", null, [\n      _withDirectives(_createElementVNode(\"span\", null, null, 512 /* NEED_PATCH */), [\n        [_vShow, item.ok]\n      ]),\n      _withDirectives(_createElementVNode(\"span\", null, null, 512 /* NEED_PATCH */), [\n        [_directive_ripple]\n      ])\n    ]))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+    map: None,
+}

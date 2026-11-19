@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-directus-image-editor-slots-before-show-helper-5576",
+    history: "185d49ba9f16b87fd65e23e59cb232011b28a010",
+    source: "\n<VDrawer v-model=\"internalActive\" class=\"modal\">\n  <template #activator=\"activatorBinding\">\n    <slot name=\"activator\" v-bind=\"activatorBinding\" />\n  </template>\n  <template #title-outer:append>\n    <VIcon v-tooltip.bottom=\"$t('changes_are_permanent')\" name=\"error\" />\n  </template>\n  <VMenu>\n    <template #activator=\"{ toggle }\">\n      <VIcon :name=\"aspectRatioIcon\" clickable @click=\"toggle\" />\n    </template>\n    <VList>\n      <template v-if=\"customAspectRatios\">\n        <VListItem\n          v-for=\"customAspectRatio in customAspectRatios\"\n          :key=\"customAspectRatio.text\"\n          clickable\n          :active=\"aspectRatio === customAspectRatio.value\"\n        >\n          {{ customAspectRatio.text }}\n        </VListItem>\n      </template>\n    </VList>\n  </VMenu>\n  <button v-show=\"cropping\" type=\"button\" @click=\"cropping = false\">\n    {{ localDragMode === 'focal_point' ? $t('cancel_selection') : $t('cancel_crop') }}\n  </button>\n  <template #actions:primary>\n    <PrivateViewHeaderBarActionButton :loading=\"saving\">\n      <template v-if=\"props.createAllowed\" #split-menu>\n        <VList>\n          <VListItem clickable @click=\"saveAsNew\" />\n        </VList>\n      </template>\n    </PrivateViewHeaderBarActionButton>\n  </template>\n</VDrawer>\n",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, toDisplayString as _toDisplayString, renderSlot as _renderSlot, createElementVNode as _createElementVNode, createVNode as _createVNode, normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, renderList as _renderList, withCtx as _withCtx, createSlots as _createSlots, vShow as _vShow } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_VIcon = _resolveComponent(\"VIcon\")\n  const _component_VListItem = _resolveComponent(\"VListItem\")\n  const _component_VList = _resolveComponent(\"VList\")\n  const _component_VMenu = _resolveComponent(\"VMenu\")\n  const _component_PrivateViewHeaderBarActionButton = _resolveComponent(\"PrivateViewHeaderBarActionButton\")\n  const _component_VDrawer = _resolveComponent(\"VDrawer\")\n  const _directive_tooltip = _resolveDirective(\"tooltip\")\n  \n  return (_openBlock(), _createBlock(_component_VDrawer, {\n    modelValue: internalActive,\n    \"onUpdate:modelValue\": $event => ((internalActive) = $event),\n    class: \"modal\"\n  }, {\n    activator: _withCtx((activatorBinding) => [\n      _renderSlot(_ctx.$slots, \"activator\", _normalizeProps(_guardReactiveProps(activatorBinding)))\n    ]),\n    \"title-outer:append\": _withCtx(() => [\n      _withDirectives(_createVNode(_component_VIcon, { name: \"error\" }, null, 512 /* NEED_PATCH */), [\n        [_directive_tooltip, $t('changes_are_permanent'), void 0, { bottom: true }]\n      ])\n    ]),\n    \"actions:primary\": _withCtx(() => [\n      _createVNode(_component_PrivateViewHeaderBarActionButton, { loading: saving }, _createSlots({ _: 2 /* DYNAMIC */ }, [\n        (props.createAllowed)\n          ? {\n            name: \"split-menu\",\n            fn: _withCtx(() => [\n              _createVNode(_component_VList, null, {\n                default: _withCtx(() => [\n                  _createVNode(_component_VListItem, {\n                    clickable: \"\",\n                    onClick: saveAsNew\n                  }, null, 8 /* PROPS */, [\"onClick\"])\n                ]),\n                _: 1 /* STABLE */\n              })\n            ]),\n            key: \"0\"\n          }\n        : undefined\n      ]), 1032 /* PROPS, DYNAMIC_SLOTS */, [\"loading\"])\n    ]),\n    default: _withCtx(() => [\n      _createVNode(_component_VMenu, null, {\n        activator: _withCtx(({ toggle }) => [\n          _createVNode(_component_VIcon, {\n            name: aspectRatioIcon,\n            clickable: \"\",\n            onClick: toggle\n          }, null, 8 /* PROPS */, [\"name\", \"onClick\"])\n        ]),\n        default: _withCtx(() => [\n          _createVNode(_component_VList, null, {\n            default: _withCtx(() => [\n              (customAspectRatios)\n                ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList(customAspectRatios, (customAspectRatio) => {\n                  return (_openBlock(), _createBlock(_component_VListItem, {\n                    key: customAspectRatio.text,\n                    clickable: \"\",\n                    active: aspectRatio === customAspectRatio.value\n                  }, {\n                    default: _withCtx(() => [\n                      _createTextVNode(_toDisplayString(customAspectRatio.text), 1 /* TEXT */)\n                    ]),\n                    _: 2 /* DYNAMIC */\n                  }, 1032 /* PROPS, DYNAMIC_SLOTS */, [\"active\"]))\n                }), 128 /* KEYED_FRAGMENT */))\n                : _createCommentVNode(\"v-if\", true)\n            ]),\n            _: 1 /* STABLE */\n          })\n        ]),\n        _: 1 /* STABLE */\n      }),\n      _withDirectives(_createElementVNode(\"button\", {\n        type: \"button\",\n        onClick: $event => (cropping = false)\n      }, _toDisplayString(localDragMode === 'focal_point' ? $t('cancel_selection') : $t('cancel_crop')), 9 /* TEXT, PROPS */, [\"onClick\"]), [\n        [_vShow, cropping]\n      ])\n    ]),\n    _: 3 /* FORWARDED */\n  }, 8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\"]))\n}",
+    map: None,
+}

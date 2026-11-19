@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-component-v-slot-nested-slot-prefers-render-slot-5552",
+    history: "af800fd3996e05a0df0e0566267a7099d982963a",
+    source: "<Listbox v-slot=\"{ open }\"><ScalarFloating><ListboxButton><slot :open=\"open\" /></ListboxButton><template #floating=\"{ width }\"><div v-if=\"open\" :style=\"{ width }\"><Item v-for=\"option in options\" :key=\"option.id\" /></div></template></ScalarFloating></Listbox>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, renderSlot as _renderSlot, createVNode as _createVNode, normalizeStyle as _normalizeStyle, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, renderList as _renderList, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_ListboxButton = _resolveComponent(\"ListboxButton\")\n  const _component_Item = _resolveComponent(\"Item\")\n  const _component_ScalarFloating = _resolveComponent(\"ScalarFloating\")\n  const _component_Listbox = _resolveComponent(\"Listbox\")\n  \n  return (_openBlock(), _createBlock(_component_Listbox, null, {\n    default: _withCtx(({ open }) => [\n      _createVNode(_component_ScalarFloating, null, {\n        floating: _withCtx(({ width }) => [\n          (open)\n            ? (_openBlock(), _createElementBlock(\"div\", {\n              key: 0,\n              style: _normalizeStyle({ width })\n            }, [\n              (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(options, (option) => {\n                return (_openBlock(), _createBlock(_component_Item, { key: option.id }))\n              }), 128 /* KEYED_FRAGMENT */))\n            ], 4 /* STYLE */))\n            : _createCommentVNode(\"v-if\", true)\n        ]),\n        default: _withCtx(() => [\n          _createVNode(_component_ListboxButton, null, {\n            default: _withCtx(() => [\n              _renderSlot(_ctx.$slots, \"default\", { open: open })\n            ]),\n            _: 2 /* DYNAMIC */\n          }, 1024 /* DYNAMIC_SLOTS */)\n        ]),\n        _: 2 /* DYNAMIC */\n      }, 1024 /* DYNAMIC_SLOTS */)\n    ]),\n    _: 3 /* FORWARDED */\n  }))\n}",
+    map: None,
+}

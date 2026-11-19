@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-airi-loading-modules-formats-static-slot-child-p-5480",
+    history: "deb960cdbc90fc987e9ec9564121a226eb3def32",
+    source: "<ul><li v-for=\"[moduleName, module] in resources\" :key=\"moduleName\"><WindowRouterLink :to=\"`/settings/modules/${moduleName}`\" label=\"settings\"><div flex items-center gap-1><div flex items-center gap-1><span>{{ moduleName }}</span></div></div></WindowRouterLink></li></ul>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_WindowRouterLink = _resolveComponent(\"WindowRouterLink\")\n  \n  return (_openBlock(), _createElementBlock(\"ul\", null, [\n    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(resources, ([moduleName, module]) => {\n      return (_openBlock(), _createElementBlock(\"li\", { key: moduleName }, [\n        _createVNode(_component_WindowRouterLink, {\n          to: `/settings/modules/${moduleName}`,\n          label: \"settings\"\n        }, {\n          default: _withCtx(() => [\n            _createElementVNode(\"div\", {\n              flex: \"\",\n              \"items-center\": \"\",\n              \"gap-1\": \"\"\n            }, [\n              _createElementVNode(\"div\", {\n                flex: \"\",\n                \"items-center\": \"\",\n                \"gap-1\": \"\"\n              }, [\n                _createElementVNode(\"span\", null, _toDisplayString(moduleName), 1 /* TEXT */)\n              ])\n            ])\n          ]),\n          _: 2 /* DYNAMIC */\n        }, 1032 /* PROPS, DYNAMIC_SLOTS */, [\"to\"])\n      ]))\n    }), 128 /* KEYED_FRAGMENT */))\n  ]))\n}",
+    map: None,
+}

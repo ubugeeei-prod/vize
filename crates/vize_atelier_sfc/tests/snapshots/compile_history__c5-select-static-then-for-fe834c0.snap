@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-select-static-then-for-fe834c0",
+    history: "fe834c02d65360e1657ec9901fded9afddd9de3c",
+    source: "<select v-model=\"msg\"><option value=\"\">Select</option><option v-for=\"(item, index) of items\" :key=\"index\" :value=\"item.value\">{{ item.label }}</option></select>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { vModelSelect as _vModelSelect, withDirectives as _withDirectives, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return _withDirectives((_openBlock(), _createElementBlock(\"select\", {\n    \"onUpdate:modelValue\": $event => ((msg) = $event)\n  }, [\n    _createElementVNode(\"option\", { value: \"\" }, \"Select\"),\n    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item, index) => {\n      return (_openBlock(), _createElementBlock(\"option\", {\n        key: index,\n        value: item.value\n      }, _toDisplayString(item.label), 9 /* TEXT, PROPS */, [\"value\"]))\n    }), 128 /* KEYED_FRAGMENT */))\n  ], 8 /* PROPS */, [\"onUpdate:modelValue\"])), [\n    [_vModelSelect, msg]\n  ])\n}",
+    map: None,
+}

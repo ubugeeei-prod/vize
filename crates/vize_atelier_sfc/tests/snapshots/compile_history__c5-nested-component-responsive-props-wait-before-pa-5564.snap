@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-nested-component-responsive-props-wait-before-pa-5564",
+    history: "eada2aa7dd9660258fc515dc418af338ae280c77",
+    source: "<section class=\"markdown\"><template v-for=\"group in menuItems\" :key=\"group.title\"><div class=\"components-overview\"><h2 class=\"ant-typography components-overview-group-title\"><a-space align=\"center\">{{ isZhCN ? group.title : group.enTitle }}<a-tag style=\"display: block\">{{ group.children.length }}</a-tag></a-space></h2><a-row :gutter=\"[24, 24]\"><template v-for=\"component in group.children\" :key=\"component.title\"><a-col :xs=\"24\" :sm=\"12\" :lg=\"8\" :xl=\"6\"><component :is=\"component.target ? 'a' : 'router-link'\" v-bind=\"component.target ? { href: component.path, target: component.target } : { to: getLocalizedPathname(component.path, isZhCN) }\"><a-card size=\"small\" class=\"components-overview-card\"><template #title><div class=\"components-overview-title\">{{ component.title }}{{ isZhCN ? component.subtitle : '' }}</div></template><div class=\"components-overview-img\"><img :src=\"isDark && component.coverDark ? component.coverDark : component.cover\" :alt=\"component.title\" /></div></a-card></component></a-col></template></a-row></div></template></section>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, resolveDynamicComponent as _resolveDynamicComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, renderList as _renderList, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_a_tag = _resolveComponent(\"a-tag\")\n  const _component_a_space = _resolveComponent(\"a-space\")\n  const _component_a_card = _resolveComponent(\"a-card\")\n  const _component_a_col = _resolveComponent(\"a-col\")\n  const _component_a_row = _resolveComponent(\"a-row\")\n  \n  return (_openBlock(), _createElementBlock(\"section\", { class: \"markdown\" }, [\n    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(menuItems, (group) => {\n      return (_openBlock(), _createElementBlock(\"div\", {\n        key: group.title,\n        class: \"components-overview\"\n      }, [\n        _createElementVNode(\"h2\", { class: \"ant-typography components-overview-group-title\" }, [\n          _createVNode(_component_a_space, { align: \"center\" }, {\n            default: _withCtx(() => [\n              _createTextVNode(_toDisplayString(isZhCN ? group.title : group.enTitle), 1 /* TEXT */),\n              _createVNode(_component_a_tag, { style: \"display: block\" }, {\n                default: _withCtx(() => [\n                  _createTextVNode(_toDisplayString(group.children.length), 1 /* TEXT */)\n                ]),\n                _: 2 /* DYNAMIC */\n              }, 1024 /* DYNAMIC_SLOTS */)\n            ]),\n            _: 2 /* DYNAMIC */\n          }, 1024 /* DYNAMIC_SLOTS */)\n        ]),\n        _createVNode(_component_a_row, { gutter: [24, 24] }, {\n          default: _withCtx(() => [\n            (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(group.children, (component) => {\n              return (_openBlock(), _createBlock(_component_a_col, {\n                key: component.title,\n                xs: 24,\n                sm: 12,\n                lg: 8,\n                xl: 6\n              }, {\n                default: _withCtx(() => [\n                  (_openBlock(), _createBlock(_resolveDynamicComponent(component.target ? 'a' : 'router-link'), _normalizeProps(_guardReactiveProps(component.target ? { href: component.path, target: component.target } : { to: getLocalizedPathname(component.path, isZhCN) })), {\n                    default: _withCtx(() => [\n                      _createVNode(_component_a_card, {\n                        size: \"small\",\n                        class: \"components-overview-card\"\n                      }, {\n                        title: _withCtx(() => [\n                          _createElementVNode(\"div\", { class: \"components-overview-title\" }, _toDisplayString(component.title) + _toDisplayString(isZhCN ? component.subtitle : ''), 1 /* TEXT */)\n                        ]),\n                        default: _withCtx(() => [\n                          _createElementVNode(\"div\", { class: \"components-overview-img\" }, [\n                            _createElementVNode(\"img\", {\n                              src: isDark && component.coverDark ? component.coverDark : component.cover,\n                              alt: component.title\n                            }, null, 8 /* PROPS */, [\"src\", \"alt\"])\n                          ])\n                        ]),\n                        _: 2 /* DYNAMIC */\n                      }, 1024 /* DYNAMIC_SLOTS */)\n                    ]),\n                    _: 2 /* DYNAMIC */\n                  }, 1040 /* FULL_PROPS, DYNAMIC_SLOTS */))\n                ]),\n                _: 2 /* DYNAMIC */\n              }, 1024 /* DYNAMIC_SLOTS */))\n            }), 128 /* KEYED_FRAGMENT */))\n          ]),\n          _: 2 /* DYNAMIC */\n        }, 1024 /* DYNAMIC_SLOTS */)\n      ]))\n    }), 128 /* KEYED_FRAGMENT */))\n  ]))\n}",
+    map: None,
+}

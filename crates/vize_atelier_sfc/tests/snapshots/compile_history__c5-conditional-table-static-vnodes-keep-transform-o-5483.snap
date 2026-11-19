@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-conditional-table-static-vnodes-keep-transform-o-5483",
+    history: "e68650b99a89e51482dadc61f526683d43e2fdc8",
+    source: "<div>\n  <div v-if=\"loading\"><span text-sm>Loading model...</span></div>\n  <template v-else>\n    <label><span text-sm>Auto process on upload</span></label>\n    <table>\n      <thead bg=\"neutral-100 dark:neutral-800\">\n        <tr><th px-4 py-3 font-medium>Original</th></tr>\n      </thead>\n      <tbody>\n        <tr v-if=\"imageItems.length === 0\">\n          <td colspan=\"5\" px-4 py-8 text-center text-neutral-400>No images uploaded yet</td>\n        </tr>\n        <tr v-for=\"item in imageItems\" :key=\"item.file.name\">\n          <td>{{ item.file.name }}</td>\n        </tr>\n      </tbody>\n    </table>\n  </template>\n</div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (loading)\n      ? (_openBlock(), _createElementBlock(\"div\", { key: 0 }, [\n        _createElementVNode(\"span\", { \"text-sm\": \"\" }, \"Loading model...\")\n      ]))\n      : (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [\n        _createElementVNode(\"label\", null, [\n          _createElementVNode(\"span\", { \"text-sm\": \"\" }, \"Auto process on upload\")\n        ]),\n        _createElementVNode(\"table\", null, [\n          _createElementVNode(\"thead\", { bg: \"neutral-100 dark:neutral-800\" }, [\n            _createElementVNode(\"tr\", null, [\n              _createElementVNode(\"th\", {\n                \"px-4\": \"\",\n                \"py-3\": \"\",\n                \"font-medium\": \"\"\n              }, \"Original\")\n            ])\n          ]),\n          _createElementVNode(\"tbody\", null, [\n            (imageItems.length === 0)\n              ? (_openBlock(), _createElementBlock(\"tr\", { key: 0 }, [\n                _createElementVNode(\"td\", {\n                  colspan: \"5\",\n                  \"px-4\": \"\",\n                  \"py-8\": \"\",\n                  \"text-center\": \"\",\n                  \"text-neutral-400\": \"\"\n                }, \"No images uploaded yet\")\n              ]))\n              : _createCommentVNode(\"v-if\", true),\n            (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(imageItems, (item) => {\n              return (_openBlock(), _createElementBlock(\"tr\", { key: item.file.name }, [\n                _createElementVNode(\"td\", null, _toDisplayString(item.file.name), 1 /* TEXT */)\n              ]))\n            }), 128 /* KEYED_FRAGMENT */))\n          ])\n        ])\n      ], 64 /* STABLE_FRAGMENT */))\n  ]))\n}",
+    map: None,
+}

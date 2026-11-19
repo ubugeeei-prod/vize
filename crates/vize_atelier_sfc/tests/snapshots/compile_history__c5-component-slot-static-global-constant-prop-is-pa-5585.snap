@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-component-slot-static-global-constant-prop-is-pa-5585",
+    history: "7fad0210b5aa9c8e9341c43954cf79cc1e841c76",
+    source: "<md-tabs><md-tab :id=\"NaN\" md-label=\"Tab id=NaN\">NaN</md-tab></md-tabs>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_md_tab = _resolveComponent(\"md-tab\")\n  const _component_md_tabs = _resolveComponent(\"md-tabs\")\n  \n  return (_openBlock(), _createBlock(_component_md_tabs, null, {\n    default: _withCtx(() => [\n      _createVNode(_component_md_tab, {\n        id: NaN,\n        \"md-label\": \"Tab id=NaN\"\n      }, {\n        default: _withCtx(() => [\n          _createTextVNode(\"NaN\")\n        ]),\n        _: 1 /* STABLE */\n      }, 8 /* PROPS */, [\"id\"])\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

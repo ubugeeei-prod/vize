@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-table-column-static-props-stay-inline-after-stat-5565",
+    history: "07ac91d6024c4b9ca584d718ac06e2772bcae7c8",
+    source: "<b-table :data=\"data\" :loading=\"loading\" paginated backend-pagination :total=\"total\" :per-page=\"perPage\" @page-change=\"onPageChange\" backend-sorting :default-sort=\"[sortField, sortOrder]\" @sort=\"onSort\"><b-table-column field=\"original_title\" label=\"Title\" sortable v-slot=\"props\">{{ props.row.original_title }}</b-table-column><b-table-column field=\"vote_average\" label=\"Vote Average\" numeric sortable v-slot=\"props\"><span class=\"tag\" :class=\"type(props.row.vote_average)\">{{ props.row.vote_average }}</span></b-table-column><b-table-column field=\"vote_count\" label=\"Vote Count\" numeric sortable v-slot=\"props\">{{ props.row.vote_count }}</b-table-column></b-table>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_b_table_column = _resolveComponent(\"b-table-column\")\n  const _component_b_table = _resolveComponent(\"b-table\")\n  \n  return (_openBlock(), _createBlock(_component_b_table, {\n    data: data,\n    loading: loading,\n    paginated: \"\",\n    \"backend-pagination\": \"\",\n    total: total,\n    \"per-page\": perPage,\n    onPageChange: onPageChange,\n    \"backend-sorting\": \"\",\n    \"default-sort\": [sortField, sortOrder],\n    onSort: onSort\n  }, {\n    default: _withCtx(() => [\n      _createVNode(_component_b_table_column, {\n        field: \"original_title\",\n        label: \"Title\",\n        sortable: \"\"\n      }, {\n        default: _withCtx((props) => [\n          _createTextVNode(_toDisplayString(props.row.original_title), 1 /* TEXT */)\n        ]),\n        _: 1 /* STABLE */\n      }),\n      _createVNode(_component_b_table_column, {\n        field: \"vote_average\",\n        label: \"Vote Average\",\n        numeric: \"\",\n        sortable: \"\"\n      }, {\n        default: _withCtx((props) => [\n          _createElementVNode(\"span\", {\n            class: _normalizeClass([\"tag\", type(props.row.vote_average)])\n          }, _toDisplayString(props.row.vote_average), 3 /* TEXT, CLASS */)\n        ]),\n        _: 1 /* STABLE */\n      }),\n      _createVNode(_component_b_table_column, {\n        field: \"vote_count\",\n        label: \"Vote Count\",\n        numeric: \"\",\n        sortable: \"\"\n      }, {\n        default: _withCtx((props) => [\n          _createTextVNode(_toDisplayString(props.row.vote_count), 1 /* TEXT */)\n        ]),\n        _: 1 /* STABLE */\n      })\n    ]),\n    _: 1 /* STABLE */\n  }, 8 /* PROPS */, [\"data\", \"loading\", \"total\", \"per-page\", \"onPageChange\", \"default-sort\", \"onSort\"]))\n}",
+    map: None,
+}
