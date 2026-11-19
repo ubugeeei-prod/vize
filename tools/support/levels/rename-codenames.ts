@@ -44,9 +44,10 @@ const parsedCapture =
  * ledgers, which list the paths each past commit touched.
  * The lint preset audit keeps the nextest.toml it reviewed and its baseline scope as written.
  * Archived instruction budgets and reports are evidence of past toolchain re-baselines.
+ * The retained template-emit projection manifest is regenerated only from immutable past artifacts.
  */
 const pinnedTrees =
-  /^(?:editors\/vscode\/test\/css-hover-source-custody\.json|tests\/performance\/support\/warm-type-backed-(?:(?:path|timing)-host(?:-manifest\.json|\.ts)|git-reader-harness\.ts)|tests\/tooling\/warm-type-backed-(?:path|timing)-host\.test\.ts|levels\/vize_l2\/tests\/dump_(?:protocol|owner_names)\.rs|tools\/support\/compat\/github\/(?:empty-vue-star-listing-(?:source|part-\d+)|misskey-registry-part-\d+|javascript-sfc-source-context(?:-\d+)?)\.json|tests\/_fixtures\/ci\/javascript-sfc-source-callers\.json|tests\/fixtures\/typechecker\/undeclared-instance-globals-10617\/source-packets-[^/]+-provenance\.json|docs\/davinci\/plan\/[a-z-]+-fix-history[a-z-]*\.tsv|tests\/_fixtures\/lint-preset-default-warnings\/(?:cases\.json|reviewed-nextest\.toml)|tests\/_fixtures\/tooling\/instruction-methodology-transition\/[^/]+)$/u;
+  /^(?:editors\/vscode\/test\/css-hover-source-custody\.json|tests\/performance\/support\/warm-type-backed-(?:(?:path|timing)-host(?:-manifest\.json|\.ts)|git-reader-harness\.ts)|tests\/tooling\/warm-type-backed-(?:path|timing)-host\.test\.ts|levels\/vize_l2\/tests\/dump_(?:protocol|owner_names)\.rs|tools\/support\/compat\/github\/(?:empty-vue-star-listing-(?:source|part-\d+)|misskey-registry-part-\d+|javascript-sfc-source-context(?:-\d+)?)\.json|tests\/_fixtures\/ci\/javascript-sfc-source-callers\.json|tests\/fixtures\/typechecker\/undeclared-instance-globals-10617\/source-packets-[^/]+-provenance\.json|docs\/davinci\/plan\/[a-z-]+-fix-history[a-z-]*\.tsv|tests\/_fixtures\/lint-preset-default-warnings\/(?:cases\.json|reviewed-nextest\.toml)|tests\/_fixtures\/tooling\/instruction-methodology-transition\/[^/]+|tests\/_fixtures\/differential\/typechecker\/template-dollar-emit\/projection-retained-[^/]+\.manifest\.json)$/u;
 /**
  * Frozen copies of past files are captures too: a source or config file saved as `.txt` or
  * `.fixture`, and the frozen-source and source-custody trees that pin such copies.
