@@ -94,6 +94,13 @@ doc = false
 bench = false
 
 [[bin]]
+name = "text_rebuild"
+path = "fuzz_targets/text_rebuild.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
 name = "folio_parse"
 path = "fuzz_targets/folio_parse.rs"
 test = false
