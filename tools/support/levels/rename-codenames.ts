@@ -491,7 +491,7 @@ const gitBlob = (bytes: Buffer) =>
  * only when its test reads the current file.
  */
 const currentPins =
-  /^(?:docs\/davinci\/plan\/compiler-fix-history-index\.json|tools\/benchmarks\/scripts\/typechecker-native-source-recipe-fixture\.mjs|tests\/_fixtures\/tooling\/native-source-recipe-436\.md)$/u;
+  /^(?:docs\/davinci\/plan\/compiler-fix-history-index\.json|tools\/benchmarks\/scripts\/typechecker-native-source-recipe-fixture\.mjs|tests\/_fixtures\/tooling\/native-source-recipe-436\.md|tests\/_fixtures\/differential\/compiler\/manifest\.json|tools\/support\/compat\/github\/vapor-style-api-fixtures\.ts)$/u;
 
 /**
  * Re-records the whole-file digests (SHA-256 and git blob ids) that name a file the rewrite
