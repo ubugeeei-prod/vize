@@ -12,7 +12,41 @@ export const archiveOutputUrl7502 = new URL("reviewed_output.json", fixtureUrl75
 export const previousOutputUrl7502 = new URL("reviewed_output_v2.json", fixtureUrl7502);
 export const previousOutputSha7502 =
   "4802cc3a776f7711cbe32893858bf770407123a2745c34be9f35e9ed3b880428";
-export const outputUrl7502 = new URL("reviewed_output_v3.json", fixtureUrl7502);
+export const outputUrl7502 = new URL("reviewed_output_v4.json", fixtureUrl7502);
+export const v3OutputUrl7502 = new URL("reviewed_output_v3.json", fixtureUrl7502);
+export const renameUrl7502 = new URL("rename_v4.json", fixtureUrl7502);
+export const v3OutputSha7502 = "1e313a90dbfc89003e63f8fed5aadc17dc686d5b73275b5f8ae3dabed83e93fd";
+export const outputSha7502 = "a298e1c14da44fa7f893a73793a7c0e7fa1b6250140e51633f3fd7bfe2a977c4";
+export const renameSha7502 = "0a275499386391d1bbfee25077c7bb3516b3c817c1f630348afc90684761132f";
+/** `[old, new]` names of the L1 component owners V4 renamed (`rename_v4.json`). */
+export function renames7502(): [string, string][] {
+  const bytes = readFileSync(renameUrl7502);
+  assert.equal(hash7502(bytes), renameSha7502, "rename record drift");
+  const record = JSON.parse(bytes.toString("utf8"));
+  exactKeys7502(record, ["schema", "from", "to", "names"]);
+  assert.equal(record.schema, "vize.native-attribute-values-7502.rename");
+  assert.equal(record.from, 3);
+  assert.equal(record.to, 4);
+  return Object.entries(record.names as Record<string, string>);
+}
+/** The capture spelled with the names V1–V3 recorded. */
+export function previousSpelling7502(value: any, pairs = renames7502()): any {
+  if (typeof value === "string")
+    return pairs.reduce(
+      (text, [old, renamed]) =>
+        text.replace(new RegExp(`(?<![A-Za-z0-9_])${renamed}(?![A-Za-z0-9_])`, "gu"), old),
+      value,
+    );
+  if (Array.isArray(value)) return value.map((item) => previousSpelling7502(item, pairs));
+  if (value && typeof value === "object")
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [
+        previousSpelling7502(key, pairs),
+        previousSpelling7502(item, pairs),
+      ]),
+    );
+  return value;
+}
 export const archiveOutputSha7502 =
   "d32b8138113cbae60ea28b82c5653fa9b5fdb40a8b9f8a90ebd7e67a88b9a2cb";
 export const baseline7502 = {
@@ -58,7 +92,9 @@ export function previousCapture7502() {
   assert.equal(output.state, "reviewed");
   return output.capture;
 }
-export function unchangedRows7502(packet: any) {
+export function unchangedRows7502(current: any) {
+  // V1 and V2 spell the L1 component owners by their earlier names.
+  const packet = previousSpelling7502(current);
   const archive = archivedCapture7502();
   assert.equal(packet.rows.length, archive.rows.length);
   for (const [index, row] of packet.rows.entries()) {
@@ -149,7 +185,7 @@ export function loadInputs7502(bytes = readFileSync(fixtureUrl7502)) {
 export function requireReviewed7502(actual: any, frozen: any) {
   exactKeys7502(frozen, ["schema", "version", "state", "capture"]);
   assert.equal(frozen.schema, "vize.native-attribute-values-7502.reviewed-output");
-  assert.equal(frozen.version, 3);
+  assert.equal(frozen.version, 4);
   assert.equal(frozen.state, "reviewed", "whole native code/maps remain unfrozen");
   assert(
     frozen.capture && typeof frozen.capture === "object",

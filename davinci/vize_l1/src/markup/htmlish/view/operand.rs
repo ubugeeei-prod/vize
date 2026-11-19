@@ -9,7 +9,7 @@ use alloc::boxed::Box;
 use oxc_parser::AdmittedExpression;
 use vize_l0::{SourceBlock, Span};
 
-use super::{AttributeView, NativeTemplateComponent, TemplateGrammar};
+use super::{AttributeView, SelectedTemplateComponent, TemplateGrammar};
 pub use crate::dialect::vue3::operand::ConditionKind;
 use crate::dialect::vue3::operand::conditional_head;
 use crate::embed::syntax::{EmbedSyntax, RetainedExpression, parse_once};
@@ -83,7 +83,7 @@ pub struct AttributeExpression<'a> {
     syntax: RetainedExpression<'a>,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> SelectedTemplateComponent<'a> {
     /// Replace the current header visit's source preparation and expression parse.
     /// This operation calls each once, deriving Module JS/TS from this selection.
     /// Syntax holes retain complete source/comments/diagnostics in the result.
@@ -113,7 +113,7 @@ impl<'a> NativeTemplateComponent<'a> {
 // Both routes have checked the actual original header and dialect selection.
 // Only this shared tail prepares and parses the complete original value.
 fn observe_conditional<'a>(
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     attribute: AttributeView<'_, 'a>,
     kind: ConditionKind,
 ) -> Result<AttributeExpression<'a>, AttributeExpressionFailure<'a>> {
@@ -128,7 +128,7 @@ fn observe_conditional<'a>(
 // The genuine head selection has already checked the original event. Both
 // expression families use this complete value preparation and stock parse once.
 fn observe_expression_value<'a>(
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     attribute: AttributeView<'_, 'a>,
 ) -> Result<(Origin<'a>, RetainedExpression<'a>), AttributeExpressionFailure<'a>> {
     let origin = Origin::from_attribute(selected, &attribute)?;
@@ -187,7 +187,7 @@ impl<'a> AttributeExpression<'a> {
     /// Foreign/sibling/copied parses cannot confer the original event's origin.
     pub fn admitted_for<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s SelectedTemplateComponent<'a>,
         attribute: AttributeView<'s, 'a>,
     ) -> Option<AttributeExpressionView<'s, 'a>> {
         if !self.origin.matches(selected, &attribute) {
@@ -210,12 +210,12 @@ impl<'a> AttributeExpression<'a> {
 /// A short actual header/operand join, not a native body completion certificate.
 pub struct AttributeExpressionView<'s, 'a> {
     owner: &'s AttributeExpression<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
+    selected: &'s SelectedTemplateComponent<'a>,
     attribute: AttributeView<'s, 'a>,
 }
 impl<'s, 'a> AttributeExpressionView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s SelectedTemplateComponent<'a> {
         self.selected
     }
     #[must_use]

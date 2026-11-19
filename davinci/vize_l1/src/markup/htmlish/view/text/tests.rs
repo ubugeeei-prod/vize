@@ -1,7 +1,7 @@
 use super::{RootTextError as Kind, RootTextProfile};
 use crate::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceChild, SurfaceParseOptions},
+    markup::{SelectedTemplateComponent, SurfaceChild, SurfaceParseOptions},
 };
 use vize_l0::{
     Allocator,
@@ -14,7 +14,7 @@ mod ownership;
 fn selected<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateComponent<'a>, &'static str> {
+) -> Result<SelectedTemplateComponent<'a>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -24,7 +24,7 @@ fn selected<'a>(
             template: SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(
+    SelectedTemplateComponent::parse_in(
         arena,
         descriptor.admitted().map_err(|_| "original descriptor")?,
     )

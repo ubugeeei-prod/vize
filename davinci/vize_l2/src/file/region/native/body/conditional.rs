@@ -9,11 +9,11 @@ use crate::lang::js::NativeTemplateIssueKind as Kind;
 use crate::op::Namespace;
 use core::ops::DerefMut;
 use vize_l0::{Span, id::NodeId};
-use vize_l1::markup::{ElementView, NativeTemplateComponent, SurfaceChild};
+use vize_l1::markup::{ElementView, SelectedTemplateComponent, SurfaceChild};
 
 pub(super) fn construct<'a: 'b, 'b, R>(
     original: ElementView<'_, 'a>,
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     span: Span,
     header: header::Header<'a>,
     observed: ObservedConditional,
@@ -79,7 +79,7 @@ where
 
 struct ConditionalBody<'selected, 'owner, 'result, 'a> {
     original: ElementView<'owner, 'a>,
-    selected: &'selected NativeTemplateComponent<'a>,
+    selected: &'selected SelectedTemplateComponent<'a>,
     result: &'result mut Result<(), Kind>,
 }
 

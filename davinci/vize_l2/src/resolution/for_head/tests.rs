@@ -4,9 +4,9 @@ use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, Span};
 use vize_l1::container::{Vue, vue::DescriptorOptions};
 use vize_l1::embed::Lang;
-use vize_l1::markup::NativeTemplateComponent;
+use vize_l1::markup::SelectedTemplateComponent;
 
-fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+fn selected<'a>(arena: &'a Allocator, source: &'a str) -> SelectedTemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -16,12 +16,12 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
             template: vize_l1::markup::SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    SelectedTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap()
 }
 
-fn input<'a>(selected: &NativeTemplateComponent<'a>) -> NativeForInput<'a> {
+fn input<'a>(selected: &SelectedTemplateComponent<'a>) -> NativeForInput<'a> {
     let element = selected.children().next().unwrap().into_element().unwrap();
     let attribute = element.attributes().next().unwrap();
     NativeForInput::new(selected.observe_attribute_for_head(attribute).unwrap()).unwrap()

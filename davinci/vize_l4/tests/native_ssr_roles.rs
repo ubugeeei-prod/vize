@@ -5,7 +5,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
     lang::js::NativeTemplateOwner,
@@ -44,7 +44,7 @@ fn original_selected_search_elements_keep_neutral_structure_but_refuse_vue_ssr_r
                 template: SurfaceParseOptions::default(),
             },
         );
-        let component = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
+        let component = SelectedTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
             .unwrap()
             .unwrap();
         let mut owner =

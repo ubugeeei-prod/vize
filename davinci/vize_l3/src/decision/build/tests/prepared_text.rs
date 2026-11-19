@@ -6,7 +6,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
 type Test = Result<(), &'static str>;
@@ -31,10 +31,12 @@ fn completed<'a>(
             template: SurfaceParseOptions::default(),
         },
     );
-    let selected =
-        NativeTemplateComponent::parse_in(arena, descriptor.admitted().map_err(|_| "Descriptor")?)
-            .map_err(|_| "original parse")?
-            .ok_or("template")?;
+    let selected = SelectedTemplateComponent::parse_in(
+        arena,
+        descriptor.admitted().map_err(|_| "Descriptor")?,
+    )
+    .map_err(|_| "original parse")?
+    .ok_or("template")?;
     let mut original = NativeTemplateOwner::new(selected).map_err(|_| "owner")?;
     {
         let mut walk = original.begin().map_err(|_| "begin")?;

@@ -3,7 +3,7 @@
 use alloc::boxed::Box;
 use vize_l0::Span;
 
-use super::super::{AttributeView, NativeTemplateComponent, TemplateGrammar};
+use super::super::{AttributeView, SelectedTemplateComponent, TemplateGrammar};
 use super::{AttributeOperandError, origin::Origin};
 use crate::dialect::vue3::operand::for_head;
 use crate::embed::syntax::{
@@ -54,7 +54,7 @@ pub struct AttributeForHead<'a> {
     syntax: ForHead<'a>,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> SelectedTemplateComponent<'a> {
     /// Replace this actual header visit's value preparation and For parses.
     /// Full original value and Module JS/TS come from the same selected owner.
     /// Local refusal keeps the whole head and every available stock observation.
@@ -125,7 +125,7 @@ impl<'a> AttributeForHead<'a> {
     /// Rejoin the complete original Attribute after owner movement/storage growth.
     pub fn admitted_for<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s SelectedTemplateComponent<'a>,
         attribute: AttributeView<'s, 'a>,
     ) -> Option<AttributeForHeadView<'s, 'a>> {
         if !self.origin.matches(selected, &attribute) {
@@ -149,9 +149,9 @@ impl<'a> AttributeForHead<'a> {
 ///
 /// ```compile_fail,E0515
 /// use vize_l1::markup::{AttributeView, AttributeForHead,
-///     AttributeForHeadView, NativeTemplateComponent};
+///     AttributeForHeadView, SelectedTemplateComponent};
 /// fn escape<'s, 'a>(owner: AttributeForHead<'a>,
-///     selected: &'s NativeTemplateComponent<'a>, attribute: AttributeView<'s, 'a>)
+///     selected: &'s SelectedTemplateComponent<'a>, attribute: AttributeView<'s, 'a>)
 ///     -> AttributeForHeadView<'s, 'a> {
 ///     owner.admitted_for(selected, attribute).unwrap()
 /// }
@@ -159,21 +159,21 @@ impl<'a> AttributeForHead<'a> {
 ///
 /// ```compile_fail,E0515
 /// use vize_l1::markup::{AttributeView, AttributeForHead,
-///     AttributeForHeadView, NativeTemplateComponent};
+///     AttributeForHeadView, SelectedTemplateComponent};
 /// fn escape_selected<'s, 'a>(owner: &'s AttributeForHead<'a>,
-///     selected: NativeTemplateComponent<'a>, attribute: AttributeView<'s, 'a>)
+///     selected: SelectedTemplateComponent<'a>, attribute: AttributeView<'s, 'a>)
 ///     -> AttributeForHeadView<'s, 'a> {
 ///     owner.admitted_for(&selected, attribute).unwrap()
 /// }
 /// ```
 pub struct AttributeForHeadView<'s, 'a> {
     owner: &'s AttributeForHead<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
+    selected: &'s SelectedTemplateComponent<'a>,
     attribute: AttributeView<'s, 'a>,
 }
 impl<'s, 'a> AttributeForHeadView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s SelectedTemplateComponent<'a> {
         self.selected
     }
     #[must_use]

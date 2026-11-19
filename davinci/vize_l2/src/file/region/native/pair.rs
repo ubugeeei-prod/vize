@@ -11,7 +11,7 @@ use crate::op::{Attribute, Namespace};
 use core::ops::DerefMut;
 use vize_l0::{Span, Vec, id::NodeId};
 use vize_l1::markup::{
-    ChildView, ChildrenView, ElementView, NativeTemplateComponent, SurfaceChild,
+    ChildView, ChildrenView, ElementView, SelectedTemplateComponent, SurfaceChild,
 };
 
 #[cfg(test)]
@@ -22,7 +22,7 @@ mod tests;
 mod text_tests;
 
 pub(super) fn construct<'o, 'a: 'b, 'b, R>(
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     child: ChildView<'o, 'a>,
     tail: &mut ChildrenView<'o, 'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
@@ -130,7 +130,7 @@ where
 }
 
 fn observe_else<'a: 'b, 'b, R>(
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     original: &ElementView<'_, 'a>,
     index: usize,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
@@ -178,7 +178,7 @@ where
 
 fn branch_body<'a: 'b, 'b, R>(
     original: ElementView<'_, 'a>,
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     span: Span,
     attributes: Vec<'a, Attribute<'a>>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
@@ -207,7 +207,7 @@ where
 /// Original empty/singleton body, or one Text and one checked interpolation.
 struct BranchBody<'selected, 'owner, 'result, 'a> {
     original: ElementView<'owner, 'a>,
-    selected: &'selected NativeTemplateComponent<'a>,
+    selected: &'selected SelectedTemplateComponent<'a>,
     result: &'result mut Result<(), Kind>,
 }
 impl<'a> TemplateBody<'a, NativeVisibility> for BranchBody<'_, '_, '_, 'a> {

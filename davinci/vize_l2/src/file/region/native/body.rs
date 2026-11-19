@@ -9,7 +9,7 @@ use crate::op::Namespace;
 use core::ops::DerefMut;
 use vize_l0::{Span, ensure_sufficient_stack, id::NodeId};
 use vize_l1::markup::{
-    ChildView, ElementClose, ElementView, NativeTemplateComponent, SurfaceChild,
+    ChildView, ElementClose, ElementView, SelectedTemplateComponent, SurfaceChild,
 };
 
 mod conditional;
@@ -17,7 +17,7 @@ pub(super) mod header;
 mod model;
 
 pub(super) fn construct<'a: 'b, 'b, R>(
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     child: ChildView<'_, 'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
@@ -28,7 +28,7 @@ where
 }
 
 fn construct_guarded<'a: 'b, 'b, R>(
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     child: ChildView<'_, 'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
@@ -74,7 +74,7 @@ where
 }
 
 fn element<'a: 'b, 'b, R>(
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     original: ElementView<'_, 'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
@@ -129,7 +129,7 @@ pub(super) fn element_span(original: &ElementView<'_, '_>) -> Result<Span, Kind>
 
 pub(super) fn element_prepared<'a: 'b, 'b, R>(
     original: ElementView<'_, 'a>,
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     span: Span,
     mut header: header::Header<'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
@@ -152,7 +152,7 @@ where
 
 pub(super) fn element_ready<'a: 'b, 'b, R>(
     original: ElementView<'_, 'a>,
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     span: Span,
     header: header::ReadyHeader<'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
@@ -190,7 +190,7 @@ where
 
 struct OriginalBody<'selected, 'owner, 'result, 'a> {
     original: ElementView<'owner, 'a>,
-    selected: &'selected NativeTemplateComponent<'a>,
+    selected: &'selected SelectedTemplateComponent<'a>,
     handlers: alloc::vec::Vec<ObservedHandler<'a>>,
     result: &'result mut Result<(), Kind>,
 }

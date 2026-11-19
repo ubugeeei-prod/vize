@@ -9,7 +9,7 @@ use crate::lang::js::{NativeHandlerInput, file::native::NativeTemplateIssueKind 
 use crate::resolution::{ResolutionErrorKind, resolve_handler_facts};
 use core::ops::DerefMut;
 use vize_l0::Span;
-use vize_l1::markup::{AttributeView, NativeTemplateComponent};
+use vize_l1::markup::{AttributeView, SelectedTemplateComponent};
 
 pub(super) struct ObservedHandler<'a> {
     pub(super) index: usize,
@@ -26,7 +26,7 @@ where
 {
     pub(super) fn observe_handler(
         &mut self,
-        selected: &NativeTemplateComponent<'a>,
+        selected: &SelectedTemplateComponent<'a>,
         attribute: AttributeView<'_, 'a>,
     ) -> Result<ObservedHandler<'a>, Kind> {
         let block = selected.component().block();

@@ -1,5 +1,5 @@
 use super::child::Parent;
-use super::{ChildrenView, NativeComponent};
+use super::{ChildrenView, OwnedComponent};
 use crate::markup::{Attribute, Element};
 
 mod names;
@@ -7,14 +7,14 @@ pub use names::{ElementClosingName, ElementNameRefusal, ElementNames};
 
 /// Original element derived only from an authenticated child projection.
 pub struct ElementView<'o, 'a> {
-    component: &'o NativeComponent<'a>,
+    component: &'o OwnedComponent<'a>,
     parent: Parent<'o, 'a>,
     ordinal: usize,
     element: &'o Element<'a>,
 }
 impl<'o, 'a> ElementView<'o, 'a> {
     pub(super) fn from_child(
-        component: &'o NativeComponent<'a>,
+        component: &'o OwnedComponent<'a>,
         parent: Parent<'o, 'a>,
         ordinal: usize,
         element: &'o Element<'a>,
@@ -27,7 +27,7 @@ impl<'o, 'a> ElementView<'o, 'a> {
         }
     }
     #[must_use]
-    pub fn component(&self) -> &'o NativeComponent<'a> {
+    pub fn component(&self) -> &'o OwnedComponent<'a> {
         self.component
     }
     #[must_use]
@@ -61,7 +61,7 @@ impl<'o, 'a> ElementView<'o, 'a> {
 
 /// Actual opening-header iteration with a short original-owner borrow.
 pub struct AttributesView<'o, 'a> {
-    component: &'o NativeComponent<'a>,
+    component: &'o OwnedComponent<'a>,
     element: &'o Element<'a>,
     attributes: core::iter::Enumerate<core::slice::Iter<'o, Attribute<'a>>>,
 }
@@ -84,7 +84,7 @@ impl ExactSizeIterator for AttributesView<'_, '_> {}
 
 /// Full immutable original Attribute, not an arbitrary same-span carrier.
 pub struct AttributeView<'o, 'a> {
-    component: &'o NativeComponent<'a>,
+    component: &'o OwnedComponent<'a>,
     element: &'o Element<'a>,
     ordinal: usize,
     attribute: &'o Attribute<'a>,
@@ -102,7 +102,7 @@ impl<'o, 'a> AttributeView<'o, 'a> {
         }
     }
     #[must_use]
-    pub fn component(&self) -> &'o NativeComponent<'a> {
+    pub fn component(&self) -> &'o OwnedComponent<'a> {
         self.component
     }
     #[must_use]

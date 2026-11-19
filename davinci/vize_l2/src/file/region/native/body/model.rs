@@ -9,11 +9,11 @@ use crate::lang::js::NativeTemplateIssueKind as Kind;
 use crate::op::Namespace;
 use core::ops::DerefMut;
 use vize_l0::{Span, id::NodeId};
-use vize_l1::markup::{ElementClose, ElementView, NativeTemplateComponent};
+use vize_l1::markup::{ElementClose, ElementView, SelectedTemplateComponent};
 
 pub(super) fn construct<'a: 'b, 'b, R>(
     original: ElementView<'_, 'a>,
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     span: Span,
     header: header::Header<'a>,
     observed: ObservedModel,

@@ -6,7 +6,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
     lang::js::{NativeTemplateFile, NativeTemplateOwner},
@@ -39,10 +39,12 @@ fn owner<'a>(
             template: SurfaceParseOptions::default(),
         },
     );
-    let selected =
-        NativeTemplateComponent::parse_in(arena, descriptor.admitted().map_err(|_| "descriptor")?)
-            .map_err(|_| "original template")?
-            .ok_or("missing template")?;
+    let selected = SelectedTemplateComponent::parse_in(
+        arena,
+        descriptor.admitted().map_err(|_| "descriptor")?,
+    )
+    .map_err(|_| "original template")?
+    .ok_or("missing template")?;
     NativeTemplateOwner::new(selected).map_err(|_| "original owner")
 }
 fn completed<'a>(

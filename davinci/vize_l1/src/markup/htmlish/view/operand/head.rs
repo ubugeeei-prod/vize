@@ -2,7 +2,7 @@
 
 use super::{
     AttributeExpression, AttributeExpressionFailure, AttributeOperandError, AttributeView,
-    ConditionKind, NativeTemplateComponent, Origin, observe_conditional,
+    ConditionKind, Origin, SelectedTemplateComponent, observe_conditional,
 };
 use crate::dialect::vue3::operand::conditional_parts;
 use crate::embed::SourceError;
@@ -22,8 +22,8 @@ use vize_l0::{SourceBlock, SourceRoot};
 /// ```compile_fail
 /// use vize_l0::SourceBlock;
 /// use vize_l1::markup::{AttributeHead, AttributeView,
-///     NativeTemplateComponent, DirectiveName, ConditionKind};
-/// fn forge<'o, 'a>(selected: &'o NativeTemplateComponent<'a>,
+///     SelectedTemplateComponent, DirectiveName, ConditionKind};
+/// fn forge<'o, 'a>(selected: &'o SelectedTemplateComponent<'a>,
 ///     attribute: AttributeView<'o, 'a>, name: SourceBlock<'a>,
 ///     directive: Option<DirectiveName>, condition: Option<ConditionKind>
 /// ) -> AttributeHead<'o, 'a> {
@@ -32,21 +32,21 @@ use vize_l0::{SourceBlock, SourceRoot};
 /// ```
 ///
 /// ```compile_fail
-/// use vize_l1::markup::{AttributeHead, NativeTemplateComponent};
-/// fn escape<'a>(selected: NativeTemplateComponent<'a>) -> AttributeHead<'a, 'a> {
+/// use vize_l1::markup::{AttributeHead, SelectedTemplateComponent};
+/// fn escape<'a>(selected: SelectedTemplateComponent<'a>) -> AttributeHead<'a, 'a> {
 ///     let element = selected.children().next().unwrap().into_element().unwrap();
 ///     selected.observe_attribute_head(element.attributes().next().unwrap()).unwrap()
 /// }
 /// ```
 pub struct AttributeHead<'o, 'a> {
-    selected: &'o NativeTemplateComponent<'a>,
+    selected: &'o SelectedTemplateComponent<'a>,
     attribute: AttributeView<'o, 'a>,
     name: SourceBlock<'a>,
     directive: Option<DirectiveName>,
     condition: Option<ConditionKind>,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> SelectedTemplateComponent<'a> {
     /// Select the actual current attribute once, without preparing its value.
     /// Original membership/recovery/verbatim errors precede dialect selection.
     pub fn observe_attribute_head<'o>(
@@ -80,7 +80,7 @@ impl<'a> NativeTemplateComponent<'a> {
 
 impl<'o, 'a> AttributeHead<'o, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'o NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'o SelectedTemplateComponent<'a> {
         self.selected
     }
     #[must_use]

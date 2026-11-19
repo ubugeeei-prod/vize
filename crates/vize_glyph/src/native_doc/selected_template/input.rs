@@ -7,7 +7,7 @@ use vize_l1::markup::{
     StaticBindingHead,
 };
 use vize_l1::markup::{
-    ChildView, InterpolationFailure, InterpolationOperand, NativeTemplateComponent,
+    ChildView, InterpolationFailure, InterpolationOperand, SelectedTemplateComponent,
 };
 
 use super::NativeTemplateRefusal;
@@ -15,7 +15,7 @@ use super::NativeTemplateRefusal;
 pub(super) trait Input<'p, 'a> {
     fn operand(
         &mut self,
-        selected: &'p NativeTemplateComponent<'a>,
+        selected: &'p SelectedTemplateComponent<'a>,
         child: &ChildView<'p, 'a>,
         index: usize,
         offset: usize,
@@ -39,7 +39,7 @@ pub(super) struct Borrowed<'p, 'a>(pub(super) &'p [&'p InterpolationOperand<'a>]
 impl<'p, 'a> Input<'p, 'a> for Borrowed<'p, 'a> {
     fn operand(
         &mut self,
-        _selected: &'p NativeTemplateComponent<'a>,
+        _selected: &'p SelectedTemplateComponent<'a>,
         _child: &ChildView<'p, 'a>,
         index: usize,
         offset: usize,
@@ -94,7 +94,7 @@ impl<'a> Observed<'a> {
 impl<'p, 'a> Input<'p, 'a> for Observed<'a> {
     fn operand(
         &mut self,
-        selected: &'p NativeTemplateComponent<'a>,
+        selected: &'p SelectedTemplateComponent<'a>,
         child: &ChildView<'p, 'a>,
         index: usize,
         offset: usize,

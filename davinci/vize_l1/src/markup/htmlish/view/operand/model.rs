@@ -1,6 +1,6 @@
 //! Distinct original model operand and same-event short admission.
 
-use super::{AttributeHead, AttributeView, NativeTemplateComponent, Origin};
+use super::{AttributeHead, AttributeView, Origin, SelectedTemplateComponent};
 use crate::dialect::vue3::operand::ModelModifier;
 use crate::embed::syntax::RetainedExpression;
 use oxc_parser::AdmittedExpression;
@@ -78,7 +78,7 @@ impl<'a> AttributeModelExpression<'a> {
     /// Equal-byte copies and independently parsed siblings confer no authority.
     pub fn admitted_for<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s SelectedTemplateComponent<'a>,
         attribute: AttributeView<'s, 'a>,
     ) -> Option<AttributeModelExpressionView<'s, 'a>> {
         if !self.origin.matches(selected, &attribute) {
@@ -102,9 +102,9 @@ impl<'a> AttributeModelExpression<'a> {
 ///
 /// ```compile_fail
 /// use vize_l1::markup::{AttributeView, AttributeModelExpression,
-///     AttributeModelExpressionView, NativeTemplateComponent};
+///     AttributeModelExpressionView, SelectedTemplateComponent};
 /// fn forge<'s, 'a>(owner: &'s AttributeModelExpression<'a>,
-///     selected: &'s NativeTemplateComponent<'a>, attribute: AttributeView<'s, 'a>
+///     selected: &'s SelectedTemplateComponent<'a>, attribute: AttributeView<'s, 'a>
 /// ) -> AttributeModelExpressionView<'s, 'a> {
 ///     AttributeModelExpressionView { owner, selected, attribute }
 /// }
@@ -112,22 +112,22 @@ impl<'a> AttributeModelExpression<'a> {
 ///
 /// ```compile_fail
 /// use vize_l1::markup::{AttributeView, AttributeModelExpression,
-///     AttributeModelExpressionView, NativeTemplateComponent};
+///     AttributeModelExpressionView, SelectedTemplateComponent};
 /// fn escape<'s, 'a>(owner: AttributeModelExpression<'a>,
-///     selected: &'s NativeTemplateComponent<'a>, attribute: AttributeView<'s, 'a>
+///     selected: &'s SelectedTemplateComponent<'a>, attribute: AttributeView<'s, 'a>
 /// ) -> AttributeModelExpressionView<'s, 'a> {
 ///     owner.admitted_for(selected, attribute).unwrap()
 /// }
 /// ```
 pub struct AttributeModelExpressionView<'s, 'a> {
     owner: &'s AttributeModelExpression<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
+    selected: &'s SelectedTemplateComponent<'a>,
     attribute: AttributeView<'s, 'a>,
 }
 
 impl<'s, 'a> AttributeModelExpressionView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s SelectedTemplateComponent<'a> {
         self.selected
     }
     #[must_use]

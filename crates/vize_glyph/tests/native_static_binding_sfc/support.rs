@@ -6,7 +6,7 @@ use vize_glyph::native_doc::{
 };
 use vize_l0::Allocator;
 use vize_l1::embed::{Grammar, Lang, Shape, syntax::RetainedExpression};
-use vize_l1::markup::{ChildrenView, NativeTemplateComponent};
+use vize_l1::markup::{ChildrenView, SelectedTemplateComponent};
 use vize_l1::{container::Vue, markup::SurfaceChild};
 
 pub(super) fn options(width: usize, indent: usize, ending: LineEnding) -> NativeSfcOptions {
@@ -19,11 +19,11 @@ pub(super) fn selected<'a>(
     arena: &'a Allocator,
     source: &'a str,
     options: NativeSfcOptions,
-) -> NativeTemplateComponent<'a> {
+) -> SelectedTemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(arena, source, options.descriptor);
     assert_eq!(descriptor.issues(), []);
     assert_eq!(descriptor.container().errors.as_slice(), []);
-    NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    SelectedTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap()
 }

@@ -1,4 +1,4 @@
-use super::{ChildView, InterpolationError, NativeTemplateComponent, TemplateGrammar};
+use super::{ChildView, InterpolationError, SelectedTemplateComponent, TemplateGrammar};
 use crate::markup::{Element, Interpolation, SurfaceChild};
 use vize_l0::{SourceBlock, Span};
 
@@ -17,7 +17,7 @@ pub(super) struct Origin<'a> {
 }
 impl<'a> Origin<'a> {
     pub(super) fn from_child(
-        selected: &NativeTemplateComponent<'a>,
+        selected: &SelectedTemplateComponent<'a>,
         child: &ChildView<'_, 'a>,
         interpolation: &Interpolation<'a>,
     ) -> Result<Self, InterpolationError> {
@@ -56,7 +56,7 @@ impl<'a> Origin<'a> {
     }
     pub(super) fn matches(
         &self,
-        selected: &NativeTemplateComponent<'a>,
+        selected: &SelectedTemplateComponent<'a>,
         child: &ChildView<'_, 'a>,
     ) -> bool {
         let SurfaceChild::Interpolation(interpolation) = child.surface() else {

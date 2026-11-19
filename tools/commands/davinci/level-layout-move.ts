@@ -77,8 +77,6 @@ export const steps: Readonly<Record<string, Step>> = {
   },
   // Step 2c: L1 records neutral tag facts (it does not know about lint), and
   // its types and functions are named by concept, not by migration status.
-  // NativeComponent and NativeTemplateComponent keep their names for now: the
-  // reviewed #7502 attribute-value outputs pin their `Debug` text.
   "l1-tag-facts": {
     crate: "davinci/vize_l1",
     name: "vize_l1",
@@ -192,6 +190,20 @@ export const steps: Readonly<Record<string, Step>> = {
     ],
     items: [],
     parents: {},
+  },
+  // The parsed-component owners, named by what they own. Their `Debug` text is
+  // pinned by the reviewed #7502 attribute-value outputs; V4 of that evidence
+  // equals V3 once these names are spelled back (`rename_v4.json`).
+  "l1-components": {
+    crate: "davinci/vize_l1",
+    name: "vize_l1",
+    moves: [],
+    items: [],
+    parents: {},
+    identifiers: {
+      NativeComponent: "OwnedComponent",
+      NativeTemplateComponent: "SelectedTemplateComponent",
+    },
   },
 };
 

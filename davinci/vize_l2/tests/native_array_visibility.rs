@@ -10,7 +10,7 @@ mod cases {
             Vue,
             vue::{DescriptorObservation, DescriptorOptions},
         },
-        markup::{NativeTemplateComponent, SurfaceParseOptions},
+        markup::{SelectedTemplateComponent, SurfaceParseOptions},
     };
     use vize_l2::file::FileIssueKind;
     use vize_l2::file::NativeFileInterpolationState;
@@ -44,7 +44,7 @@ mod cases {
             );
             let descriptor = descriptor(&arena, &source);
             let selected =
-                NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
+                SelectedTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
                     .unwrap()
                     .unwrap();
             let template_span = selected.component().block().span();

@@ -1,6 +1,6 @@
 //! Distinct original binding expression and same-event short admission.
 
-use super::{AttributeHead, AttributeView, NativeTemplateComponent, Origin};
+use super::{AttributeHead, AttributeView, Origin, SelectedTemplateComponent};
 use crate::embed::syntax::RetainedExpression;
 use oxc_parser::AdmittedExpression;
 use vize_l0::Span;
@@ -57,7 +57,7 @@ impl<'a> AttributeBindingExpression<'a> {
     /// Equal-byte copies and independently parsed siblings confer no authority.
     pub fn admitted_for<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s SelectedTemplateComponent<'a>,
         attribute: AttributeView<'s, 'a>,
     ) -> Option<AttributeBindingExpressionView<'s, 'a>> {
         if !self.origin.matches(selected, &attribute) {
@@ -81,9 +81,9 @@ impl<'a> AttributeBindingExpression<'a> {
 ///
 /// ```compile_fail
 /// use vize_l1::markup::{AttributeView, AttributeBindingExpression,
-///     AttributeBindingExpressionView, NativeTemplateComponent};
+///     AttributeBindingExpressionView, SelectedTemplateComponent};
 /// fn forge<'s, 'a>(owner: &'s AttributeBindingExpression<'a>,
-///     selected: &'s NativeTemplateComponent<'a>, attribute: AttributeView<'s, 'a>
+///     selected: &'s SelectedTemplateComponent<'a>, attribute: AttributeView<'s, 'a>
 /// ) -> AttributeBindingExpressionView<'s, 'a> {
 ///     AttributeBindingExpressionView { owner, selected, attribute }
 /// }
@@ -91,22 +91,22 @@ impl<'a> AttributeBindingExpression<'a> {
 ///
 /// ```compile_fail
 /// use vize_l1::markup::{AttributeView, AttributeBindingExpression,
-///     AttributeBindingExpressionView, NativeTemplateComponent};
+///     AttributeBindingExpressionView, SelectedTemplateComponent};
 /// fn escape<'s, 'a>(owner: AttributeBindingExpression<'a>,
-///     selected: &'s NativeTemplateComponent<'a>, attribute: AttributeView<'s, 'a>
+///     selected: &'s SelectedTemplateComponent<'a>, attribute: AttributeView<'s, 'a>
 /// ) -> AttributeBindingExpressionView<'s, 'a> {
 ///     owner.admitted_for(selected, attribute).unwrap()
 /// }
 /// ```
 pub struct AttributeBindingExpressionView<'s, 'a> {
     owner: &'s AttributeBindingExpression<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
+    selected: &'s SelectedTemplateComponent<'a>,
     attribute: AttributeView<'s, 'a>,
 }
 
 impl<'s, 'a> AttributeBindingExpressionView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s SelectedTemplateComponent<'a> {
         self.selected
     }
     #[must_use]

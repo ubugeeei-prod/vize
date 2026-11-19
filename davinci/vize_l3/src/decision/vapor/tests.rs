@@ -146,12 +146,12 @@ fn interrupted_file_fails_before_the_shared_walk() {
 #[test]
 fn original_selected_completion_is_the_sole_target_capability() {
     use super::build_native_vapor_file_decisions;
-    use vize_l1::{container::Vue, markup::NativeTemplateComponent};
+    use vize_l1::{container::Vue, markup::SelectedTemplateComponent};
     use vize_l2::lang::js::NativeTemplateOwner;
     let arena = Allocator::default();
     let source = "<template><!--original--><div><span>雪🌸</span><br></div></template>";
     let descriptor = Vue.observe_descriptor(&arena, source, options());
-    let selected = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
+    let selected = SelectedTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
     let mut owner = NativeTemplateOwner::new(selected)

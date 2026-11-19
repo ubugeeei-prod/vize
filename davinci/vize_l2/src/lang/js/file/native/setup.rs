@@ -42,14 +42,14 @@ impl<'a> NativeTemplateOwner<'a> {
     /// The original parser arena remains borrowed by its normal owner:
     /// ```compile_fail
     /// use vize_l0::{Allocator, config::{VueDialect, VueVersion}};
-    /// use vize_l1::{container::{Vue, vue::DescriptorOptions}, markup::{SurfaceParseOptions, NativeTemplateComponent}};
+    /// use vize_l1::{container::{Vue, vue::DescriptorOptions}, markup::{SurfaceParseOptions, SelectedTemplateComponent}};
     /// use vize_l2::lang::js::NativeTemplateOwner;
     /// let arena = Allocator::default();
     /// let source = "<template></template><script setup>const x=1</script>";
     /// let descriptor = Vue.observe_descriptor(&arena, source, DescriptorOptions {
     ///     version: VueVersion::V3, dialect: VueDialect::Vue, template: SurfaceParseOptions::default(),
     /// });
-    /// let selected = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap()).unwrap().unwrap();
+    /// let selected = SelectedTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap()).unwrap().unwrap();
     /// let mut owner = NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));
     /// owner.parse_setup_program().unwrap();
     /// drop(arena);

@@ -11,7 +11,7 @@ use vize_l1::{
         EmbedSource,
         syntax::{ProgramOptions, parse_program_once},
     },
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
     file::{DeclarationKind, Namespace, vue::ExposureIssueKind},
@@ -87,7 +87,7 @@ fn the_original_named_export_setup_cursor_refuses_before_consuming_any_template_
     let arena = Allocator::default();
     let source = "<template>{{ primitive }}</template><script setup lang=ts>/* original */export function f(value:number):number{return value;}const primitive=1;</script>";
     let observation = descriptor(&arena, source);
-    let selected = NativeTemplateComponent::parse_in(&arena, observation.admitted().unwrap())
+    let selected = SelectedTemplateComponent::parse_in(&arena, observation.admitted().unwrap())
         .unwrap()
         .unwrap();
     let mut owner =

@@ -4,7 +4,7 @@
 mod native_lint_component {
     use vize_l0::{Allocator, ErrorCode, SourceRoot, Span, cstr};
     use vize_l1::markup::{
-        ComponentTagFacts, ElementClose, NativeComponent, SurfaceChild, TagFactsKind,
+        ComponentTagFacts, ElementClose, OwnedComponent, SurfaceChild, TagFactsKind,
         TagFactsRefusal, check_fidelity, render,
     };
 
@@ -79,12 +79,12 @@ mod native_lint_component {
         let arena = Allocator::default();
         let block = SourceRoot::new("<MyComponent />").unwrap().whole_block();
         let bare = ComponentTagFacts::parse_in(&arena, block).unwrap();
-        let ordinary = NativeComponent::parse_in(&arena, block).unwrap();
+        let ordinary = OwnedComponent::parse_in(&arena, block).unwrap();
         let before = ordinary.children().next().unwrap().into_element().unwrap();
         assert_eq!(before.tag_facts().err(), Some(TagFactsRefusal::Unavailable));
         let lint = bare.children().next().unwrap().into_element().unwrap();
         assert_eq!(lint.tag_facts().unwrap().kind(), TagFactsKind::Component);
-        let ordinary_again = NativeComponent::parse_in(&arena, block).unwrap();
+        let ordinary_again = OwnedComponent::parse_in(&arena, block).unwrap();
         let after = ordinary_again
             .children()
             .next()
@@ -166,8 +166,8 @@ mod native_lint_component {
         let source = "<div";
         let block = SourceRoot::new(source).unwrap().whole_block();
         let bare = ComponentTagFacts::parse_in(&arena, block).unwrap();
-        let ordinary = NativeComponent::parse_in(&arena, block).unwrap();
-        let observations = |component: &NativeComponent<'_>| {
+        let ordinary = OwnedComponent::parse_in(&arena, block).unwrap();
+        let observations = |component: &OwnedComponent<'_>| {
             component
                 .carrier()
                 .errors
@@ -204,7 +204,7 @@ mod native_lint_component {
         let source = cstr!("<div {head}>original</div>");
         let block = SourceRoot::new(&source).unwrap().whole_block();
         let bare = ComponentTagFacts::parse_in(&arena, block).unwrap();
-        let ordinary = NativeComponent::parse_in(&arena, block).unwrap();
+        let ordinary = OwnedComponent::parse_in(&arena, block).unwrap();
         let unsupported = &bare.component().carrier().unsupported;
         assert!(unsupported.is_empty());
         let element = bare.children().next().unwrap().into_element().unwrap();

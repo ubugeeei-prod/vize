@@ -10,7 +10,7 @@ use vize_l0::{
     Span,
     diag::{Diagnostic, MessageLookup},
 };
-use vize_l1::markup::{ElementView, NativeTemplateComponent, TagFactsRefusal};
+use vize_l1::markup::{ElementView, SelectedTemplateComponent, TagFactsRefusal};
 
 mod admission;
 mod aria_unsupported_elements;
@@ -152,12 +152,12 @@ impl NativeLintFinding {
 /// }
 /// ```
 pub struct NativeSyntaxLint<'o, 'a> {
-    owner: &'o NativeTemplateComponent<'a>,
+    owner: &'o SelectedTemplateComponent<'a>,
 }
 
 impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
     /// Admits an original selected template when its source is complete and supported.
-    pub fn new(owner: &'o NativeTemplateComponent<'a>) -> Result<Self, NativeLintRefusal> {
+    pub fn new(owner: &'o SelectedTemplateComponent<'a>) -> Result<Self, NativeLintRefusal> {
         let component = owner.component();
         let carrier = component.carrier();
         if let Some(error) = carrier.errors.first() {
@@ -179,7 +179,7 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
 
     /// Returns the original selected template that granted native lint admission.
     #[must_use]
-    pub fn owner(&self) -> &'o NativeTemplateComponent<'a> {
+    pub fn owner(&self) -> &'o SelectedTemplateComponent<'a> {
         self.owner
     }
 

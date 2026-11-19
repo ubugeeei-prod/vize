@@ -6,7 +6,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
 use vize_l3::decision::native::build_native_dom_file_decisions;
@@ -51,7 +51,7 @@ fn owner<'a>(
             template: SurfaceParseOptions::default(),
         },
     );
-    let selected = NativeTemplateComponent::parse_in(
+    let selected = SelectedTemplateComponent::parse_in(
         arena,
         descriptor.admitted().map_err(|_| "descriptor admission")?,
     )

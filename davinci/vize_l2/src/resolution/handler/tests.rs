@@ -8,7 +8,7 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::container::{Vue, vue::DescriptorOptions};
-use vize_l1::markup::NativeTemplateComponent;
+use vize_l1::markup::SelectedTemplateComponent;
 
 struct Outer(&'static [(&'static str, u32)]);
 impl BindingLookup for Outer {
@@ -33,7 +33,7 @@ fn input<'a>(allocator: &'a Allocator, text: &str) -> NativeHandlerInput<'a> {
             template: vize_l1::markup::SurfaceParseOptions::default(),
         },
     );
-    let selected = NativeTemplateComponent::parse_in(allocator, descriptor.admitted().unwrap())
+    let selected = SelectedTemplateComponent::parse_in(allocator, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
     let element = selected.children().next().unwrap().into_element().unwrap();
