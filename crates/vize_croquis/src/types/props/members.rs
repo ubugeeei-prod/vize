@@ -164,8 +164,11 @@ pub(super) fn parse(resolver: &TypeResolver, content: &str) -> Vec<TypeProperty>
             ',' | ';' | '\n' if depth == 0 => {
                 // A leading `|` / `&` on the next line continues this property.
                 // Flushing at the newline stored `inputmode?:` as an empty type
-                // and dropped the union members.
-                if character == '\n' && union_continues(&chars) {
+                // and dropped the union members. A trailing one does too:
+                // `} &\n  Options` made `Options` a prop.
+                if character == '\n'
+                    && (union_continues(&chars) || current.trim_end().ends_with(['|', '&']))
+                {
                     if !current.ends_with(|ch: char| ch.is_whitespace()) {
                         current.push(' ');
                     }

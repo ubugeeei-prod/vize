@@ -57,6 +57,10 @@ impl Rule for ContentDirectives {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         if element.props.iter().any(|prop| {
             matches!(prop, PropNode::Directive(dir) if self.names.iter().any(|name| name.as_str() == dir.name))
@@ -70,6 +74,10 @@ impl Rule for ContentDirectives {
 impl Rule for NoEmptyPalpableContent {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

@@ -121,6 +121,10 @@ impl Rule for PropNameCasing {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE
+    }
+
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
         if ctx
             .sfc_descriptor()

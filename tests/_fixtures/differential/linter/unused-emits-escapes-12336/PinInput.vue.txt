@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import type { PinInputRootEmits, PinInputRootProps } from '..'
+import { getCurrentInstance } from 'vue'
+
+const props = defineProps<PinInputRootProps>()
+const emits = defineEmits<PinInputRootEmits>()
+const instance = getCurrentInstance()
+</script>
+
+<template>
+  <PinInputRoot v-bind="{ ...props, ...useEmitAsProps(emits) }" />
+  <button @click="emits">Done</button>
+</template>

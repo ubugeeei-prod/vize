@@ -141,7 +141,7 @@ pub(super) fn build_with_import_facts(
     let mut package_routes = FxHashMap::default();
     let mut package_reachability = FxHashMap::default();
     let mut package_bindings = Vec::new();
-    let mut route_inputs = Vec::new();
+    let mut route_inputs = FxHashSet::default();
 
     let register_phase = crate::corsa_bridge::preparation_trace::Phase::start(
         "alias_register_inputs",
@@ -335,8 +335,8 @@ pub(super) fn build_with_import_facts(
         })
         .map_err(bridge_error)?;
     routes_phase.finish();
+    let mut route_inputs = route_inputs.into_iter().collect::<Vec<_>>();
     route_inputs.sort();
-    route_inputs.dedup();
     // A host must retain one session-private identity as dependencies appear
     // and disappear. Switching back to the authored path would leave live
     // native overlays in the previous project after a rename or deletion.

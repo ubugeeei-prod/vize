@@ -1,6 +1,6 @@
 //! Specialize editor bookkeeping outside the ordinary per-rule hot loop.
 
-use super::LintVisitor;
+use super::{IndexedHookMask, LintVisitor, RuleSelection};
 use crate::context::{CallbackSite, LintContext};
 use crate::rule::Rule;
 
@@ -10,15 +10,16 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         ctx: &mut LintContext<'a>,
         rules: &[Box<dyn Rule>],
         names: &[&'static str],
-        keep: Option<&[bool]>,
+        selection: RuleSelection<'_>,
+        indexed_mask: &IndexedHookMask,
         site: CallbackSite,
         visit: impl FnMut(usize, &dyn Rule, &mut LintContext<'a>),
     ) {
         if ctx.callback_order_enabled() {
             ctx.record_callback_site(site);
-            Self::callback_rules_inner::<true>(ctx, rules, names, keep, visit);
+            Self::callback_rules_inner::<true>(ctx, rules, names, selection, indexed_mask, visit);
         } else {
-            Self::callback_rules_inner::<false>(ctx, rules, names, keep, visit);
+            Self::callback_rules_inner::<false>(ctx, rules, names, selection, indexed_mask, visit);
         }
     }
 
@@ -27,18 +28,52 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         ctx: &mut LintContext<'a>,
         rules: &[Box<dyn Rule>],
         names: &[&'static str],
-        keep: Option<&[bool]>,
+        selection: RuleSelection<'_>,
+        indexed_mask: &IndexedHookMask,
         mut visit: impl FnMut(usize, &dyn Rule, &mut LintContext<'a>),
     ) {
-        for (index, (rule, name)) in rules.iter().zip(names.iter().copied()).enumerate() {
-            if !Self::rule_active(keep, index) {
-                continue;
+        match selection {
+            RuleSelection::All => {
+                for (index, (rule, name)) in rules.iter().zip(names.iter().copied()).enumerate() {
+                    if ORDERED {
+                        ctx.set_callback_rule(index);
+                    }
+                    ctx.current_rule = name;
+                    visit(index, rule.as_ref(), ctx);
+                }
             }
-            if ORDERED {
-                ctx.set_callback_rule(index);
+            RuleSelection::Mask(mask) => {
+                for (index, (rule, name)) in rules.iter().zip(names.iter().copied()).enumerate() {
+                    if !mask.get(index).copied().unwrap_or(false) {
+                        continue;
+                    }
+                    if ORDERED {
+                        ctx.set_callback_rule(index);
+                    }
+                    ctx.current_rule = name;
+                    visit(index, rule.as_ref(), ctx);
+                }
             }
-            ctx.current_rule = name;
-            visit(index, rule.as_ref(), ctx);
+            RuleSelection::Indices(_) => {
+                for (word_index, &word) in indexed_mask.words.iter().enumerate() {
+                    let mut remaining = word;
+                    while remaining != 0 {
+                        let bit = remaining.trailing_zeros() as usize;
+                        remaining &= remaining - 1;
+                        let index = word_index * u64::BITS as usize + bit;
+                        let Some((rule, name)) = rules.get(index).zip(names.get(index).copied())
+                        else {
+                            continue;
+                        };
+
+                        if ORDERED {
+                            ctx.set_callback_rule(index);
+                        }
+                        ctx.current_rule = name;
+                        visit(index, rule.as_ref(), ctx);
+                    }
+                }
+            }
         }
     }
 }

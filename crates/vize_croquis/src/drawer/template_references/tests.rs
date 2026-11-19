@@ -69,6 +69,7 @@ fn l1_l2_syntax_packet_matches_armature_packet() {
         "<Child v-slot=\"{ value = $listeners }\" :value=\"value\">{{ $listeners }}</Child>",
         "<Child v-slot:[$listeners]=\"{ value }\" />",
         "<div :data-value=\"$listeners &amp;&amp; ready\" />",
+        "<input v-on=\"\n  Object.assign({}, { input: handleInput }, $listeners)\n\" />",
         "<div v-pre @click=\"$listeners\">{{ $listeners }}</div>{{ $listeners }}",
         "<X :same-name />",
     ] {

@@ -63,7 +63,7 @@ test("typechecker coverage partitions requested and transitive authored sources"
 });
 
 test("typechecker coverage accepts the closed authored source extension set", () => {
-  const requested = ["src/App.vue"];
+  const requested = ["src/App.vue", "src/ambient.d.ts"];
   const checked = [
     "src/App.vue",
     "src/ambient.d.ts",
@@ -79,6 +79,7 @@ test("typechecker coverage accepts the closed authored source extension set", ()
   const coverage = validateTypecheckerOutput(project, output(checked), 0, requested, checked);
   assert.equal(coverage.transitiveAuthored.fileCount, checked.length - requested.length);
   assert.equal(coverage.transitiveDependencies.fileCount, 0);
+  assert.deepEqual(summarizeTypecheckerCoverage(coverage).requestedFileCount, requested.length);
 });
 
 test("typechecker coverage separates package runtime dependencies from authored sources", () => {

@@ -107,6 +107,10 @@ impl Rule for HtmlSelfClosing {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         check_element(ctx, element, self.options, false);
     }
@@ -139,6 +143,10 @@ impl Default for HtmlSelfClosingNuxt {
 impl Rule for HtmlSelfClosingNuxt {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

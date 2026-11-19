@@ -126,6 +126,24 @@ fn options_object<'a>(
         ExportDefaultDeclarationKind::Identifier(identifier) => {
             bindings.get(identifier.name.as_str()).copied()
         }
+        // `@Component({ ... })` / `@Options({ ... })` on a class component.
+        ExportDefaultDeclarationKind::ClassDeclaration(class) => {
+            class.decorators.iter().find_map(|decorator| {
+                let Expression::CallExpression(call) = &decorator.expression else {
+                    return None;
+                };
+                let Expression::Identifier(callee) = &call.callee else {
+                    return None;
+                };
+                if !matches!(callee.name.as_str(), "Component" | "Options") {
+                    return None;
+                }
+                call.arguments.iter().find_map(|argument| match argument {
+                    Argument::ObjectExpression(object) => Some(object.as_ref()),
+                    _ => None,
+                })
+            })
+        }
         _ => None,
     }
 }

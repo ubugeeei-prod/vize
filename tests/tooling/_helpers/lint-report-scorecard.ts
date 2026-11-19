@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import type { Result } from "./lint-report-rust-parity.ts";
 import type { Divergence, Fields, ProjectReport } from "./lint-report-schema.ts";
+import { reviewedScorecardTransitions } from "./lint-report-scorecard-transitions.ts";
 
 interface ScorecardHelpers {
   assertDigest(divergence: Divergence): void;
@@ -9,31 +10,6 @@ interface ScorecardHelpers {
   object(value: unknown): Fields;
   runtimeVersions(provider: string): Record<string, string>;
 }
-
-const reviewedScorecardTransitions: Readonly<
-  Record<
-    string,
-    {
-      readonly ruleId: string;
-      readonly sourceSha256: string;
-      readonly packetSha256: string;
-      readonly nativePacketSha256: string;
-    }
-  >
-> = {
-  "bare-slot-shorthand": {
-    ruleId: "vue/v-slot-style",
-    sourceSha256: "4b7c77d382e1d3e46eeb6765eb6ab6cfaebb7c1d2b7a2a65a06871289b734c6e",
-    packetSha256: "c9ecb9b4792dd220f61315e47a3ea407d0a13e0ca8fe48c933d00a562bee55c1",
-    nativePacketSha256: "d61b27a83593bdd6f5ed078f954af6e908ed2ceecf81ae11fa268e37ae270dd9",
-  },
-  "class-decorator-prop": {
-    ruleId: "vue/no-mutating-props",
-    sourceSha256: "0e8ca44978bf438cf9ff9df7bb2adf315af226efc32b511d12a10c75dc22f6e1",
-    packetSha256: "2f957e4d7659b623802a5e518ff5cf6b004f90f58759e7cf02981d9f56b9e083",
-    nativePacketSha256: "208dbdcd5ae68be6b45d5eda85c39ff0e77b9e528dd50274659f50237094c3a0",
-  },
-};
 
 function without(fields: Fields, keys: readonly string[]): Fields {
   return Object.fromEntries(Object.entries(fields).filter(([key]) => !keys.includes(key)));
@@ -205,7 +181,10 @@ function normalizeReviewedCoverageIdentity(
     assert.equal(coverage.sourceSha256, transition.sourceSha256);
     assert.equal(coverage.packetSha256, transition.packetSha256);
     assert.equal(coverage.nativePacketSha256, transition.nativePacketSha256);
-    assert.equal(helpers.object(coverage.runtimeVersions)["eslint-plugin-vue"], "10.9.2");
+    assert.equal(
+      helpers.object(coverage.runtimeVersions)["eslint-plugin-vue"],
+      transition.runtimeVersion,
+    );
     assert.equal(finding.ruleId, transition.ruleId);
     return finding;
   });

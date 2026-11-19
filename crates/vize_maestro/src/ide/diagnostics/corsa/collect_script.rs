@@ -23,7 +23,7 @@ impl DiagnosticService {
         let Some((revision, content)) = state
             .documents
             .get(uri)
-            .map(|document| (document.revision(), document.text()))
+            .map(|document| (document.revision(), document.text_snapshot()))
         else {
             return Ok(vec![]);
         };
@@ -39,7 +39,7 @@ impl DiagnosticService {
         let cached_overlays = state.corsa_overlays();
         let overlays = cached_overlays
             .iter()
-            .map(|(path, text)| (path.clone(), &**text))
+            .map(|(path, text)| (path.clone(), text.as_str()))
             .collect::<Vec<_>>();
         let virtual_ts_options = state.virtual_ts_options();
         let opened = bridge

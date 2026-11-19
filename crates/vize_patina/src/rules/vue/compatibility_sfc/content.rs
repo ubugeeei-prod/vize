@@ -73,9 +73,12 @@ impl Rule for NoContentOutsideBlock {
     }
 }
 
-/// Each text run between comments, trimmed the way JavaScript trims: like
+/// Each top-level text node, trimmed the way JavaScript trims: like
 /// eslint-plugin-vue, one report per text node, and a byte order mark is
-/// whitespace (ESLint also strips a leading one before parsing).
+/// whitespace (ESLint also strips a leading one before parsing). Comments and
+/// elements end a text node and are never reported: the rule covers text
+/// content only, even an element compiler-sfc drops (an empty custom block
+/// or a void `<link>`).
 fn visible_text_ranges(source: &str, start: usize, end: usize) -> Vec<ByteRange> {
     let mut ranges = Vec::new();
     let Some(slice) = source.get(start..end) else {
@@ -86,7 +89,7 @@ fn visible_text_ranges(source: &str, start: usize, end: usize) -> Vec<ByteRange>
         let Some(tail) = slice.get(cursor..) else {
             break;
         };
-        let text_len = tail.find("<!--").unwrap_or(tail.len());
+        let text_len = markup_start(tail).unwrap_or(tail.len());
         let text = tail.get(..text_len).unwrap_or_default();
         let trimmed = text.trim_start_matches(is_javascript_whitespace);
         let leading = text.len() - trimmed.len();
@@ -99,15 +102,102 @@ fn visible_text_ranges(source: &str, start: usize, end: usize) -> Vec<ByteRange>
             });
         }
         cursor += text_len;
-        if cursor < slice.len() {
-            cursor += slice
-                .get(cursor + 4..)
-                .and_then(|tail| tail.find("-->"))
-                .map_or(slice.len() - cursor, |length| length + 7);
+        if let Some(markup) = slice.get(cursor..).filter(|markup| !markup.is_empty()) {
+            cursor += markup_len(markup).max(1);
         }
     }
     ranges
 }
+
+/// The offset of the first comment, start tag or end tag in `text`.
+fn markup_start(text: &str) -> Option<usize> {
+    let bytes = text.as_bytes();
+    memchr::memchr_iter(b'<', bytes).find(|&index| {
+        let next = bytes.get(index + 1).copied();
+        text.get(index..)
+            .is_some_and(|rest| rest.starts_with("<!--"))
+            || next.is_some_and(|byte| byte.is_ascii_alphabetic())
+            || (next == Some(b'/') && bytes.get(index + 2).is_some_and(u8::is_ascii_alphabetic))
+    })
+}
+
+/// The length of the comment or element that starts `markup`. An element
+/// without its end tag runs to the end, as vue-eslint-parser reads it.
+fn markup_len(markup: &str) -> usize {
+    if let Some(body) = markup.strip_prefix("<!--") {
+        return body.find("-->").map_or(markup.len(), |length| length + 7);
+    }
+    let closing = markup.starts_with("</");
+    let name_start = if closing { 2 } else { 1 };
+    let name_len = markup
+        .get(name_start..)
+        .and_then(|rest| {
+            rest.find(|character: char| {
+                character.is_ascii_whitespace() || matches!(character, '/' | '>')
+            })
+        })
+        .unwrap_or(markup.len().saturating_sub(name_start));
+    let name = markup
+        .get(name_start..name_start + name_len)
+        .unwrap_or_default();
+    let tag_end = start_tag_end(markup).unwrap_or(markup.len());
+    let self_closing = markup.get(..tag_end).is_some_and(|tag| tag.ends_with("/>"));
+    if closing
+        || self_closing
+        || VOID_ELEMENTS
+            .iter()
+            .any(|void| void.eq_ignore_ascii_case(name))
+    {
+        return tag_end;
+    }
+    let content = markup.get(tag_end..).unwrap_or_default();
+    end_tag(content, name).map_or(markup.len(), |end| tag_end + end)
+}
+
+/// The offset just past the `>` that closes the tag at the start of `markup`.
+fn start_tag_end(markup: &str) -> Option<usize> {
+    let mut quote = None;
+    for (index, character) in markup.char_indices() {
+        match (quote, character) {
+            (Some(delimiter), _) if character == delimiter => quote = None,
+            (Some(_), _) => {}
+            (None, '"' | '\'') => quote = Some(character),
+            (None, '>') => return Some(index + 1),
+            _ => {}
+        }
+    }
+    None
+}
+
+/// The offset just past `</name ... >` in raw block content.
+fn end_tag(content: &str, name: &str) -> Option<usize> {
+    let mut from = 0;
+    while let Some(found) = content.get(from..)?.find("</") {
+        let at = from + found;
+        let after = at + 2 + name.len();
+        if content
+            .get(at + 2..after)
+            .is_some_and(|candidate| candidate.eq_ignore_ascii_case(name))
+            && content
+                .get(after..)
+                .and_then(|rest| rest.chars().next())
+                .is_some_and(|character| character.is_ascii_whitespace() || character == '>')
+        {
+            return content
+                .get(after..)?
+                .find('>')
+                .map(|close| after + close + 1);
+        }
+        from = at + 2;
+    }
+    None
+}
+
+/// HTML void elements, which never take an end tag.
+const VOID_ELEMENTS: [&str; 14] = [
+    "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source",
+    "track", "wbr",
+];
 
 fn is_javascript_whitespace(character: char) -> bool {
     matches!(

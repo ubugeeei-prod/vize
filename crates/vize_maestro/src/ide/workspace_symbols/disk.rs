@@ -1,11 +1,9 @@
 //! Workspace-symbol contributions from closed files created mid-session.
 
-use tower_lsp::lsp_types::SymbolInformation;
-
-use super::WorkspaceSymbolsService;
+use super::{WorkspaceSymbolsService, rank::SymbolSelection};
 use crate::server::ServerState;
 
-pub(super) fn collect(state: &ServerState, query: &str, symbols: &mut Vec<SymbolInformation>) {
+pub(super) fn collect(state: &ServerState, query: &str, selection: &mut SymbolSelection<'_>) {
     for uri in state.workspace_vue_file_uris() {
         // Open buffers remain authoritative when their unsaved text differs
         // from the corresponding file on disk.
@@ -18,6 +16,8 @@ pub(super) fn collect(state: &ServerState, query: &str, symbols: &mut Vec<Symbol
         let Ok(content) = std::fs::read_to_string(path) else {
             continue;
         };
-        WorkspaceSymbolsService::collect_symbols_from_document(&uri, &content, query, symbols);
+        let mut symbols = Vec::new();
+        WorkspaceSymbolsService::collect_symbols_from_document(&uri, &content, query, &mut symbols);
+        selection.extend_owned(symbols);
     }
 }

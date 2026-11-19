@@ -85,6 +85,10 @@ impl Rule for ScopedEventNames {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::DIRECTIVE
+    }
+
     fn check_directive<'a>(
         &self,
         ctx: &mut LintContext<'a>,

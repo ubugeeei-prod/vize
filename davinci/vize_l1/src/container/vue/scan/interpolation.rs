@@ -2,7 +2,30 @@
 
 use super::find_bytes;
 
+/// Bytes the interpolation scanner gives a meaning outside a string: every
+/// other byte only moves it forward.
+fn is_interpolation_delimiter(byte: u8) -> bool {
+    matches!(byte, b'\'' | b'"' | b'`' | b'/' | b'{' | b'}')
+}
+
 pub(super) fn skip_interpolation(bytes: &[u8], from: usize) -> Option<usize> {
+    // Up to the first delimiter the scanner is outside any string, brace or
+    // comment, so a `}` there is the depth-zero close and answers at once.
+    let offset = bytes
+        .get(from..)?
+        .iter()
+        .position(|&byte| is_interpolation_delimiter(byte))?;
+    let pos = from + offset;
+    match bytes.get(pos) {
+        Some(b'}') => (bytes.get(pos + 1) == Some(&b'}')).then_some(pos + 2),
+        // A slash reads the operand before it to tell a regex from division.
+        Some(b'/') => skip_interpolation_body(bytes, from),
+        // A string or brace sets the regex state itself before it is read.
+        _ => skip_interpolation_body(bytes, pos),
+    }
+}
+
+fn skip_interpolation_body(bytes: &[u8], from: usize) -> Option<usize> {
     let (mut pos, mut quote, mut braces) = (from, None, 0usize);
     let mut can_start_regex = true;
     while pos + 1 < bytes.len() {
@@ -127,4 +150,42 @@ fn skip_regex(bytes: &[u8], from: usize) -> Option<usize> {
         }
     }
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{skip_interpolation, skip_interpolation_body};
+
+    #[test]
+    fn delimiter_fast_path_matches_the_full_scan_from_the_start() {
+        for body in [
+            "",
+            "}",
+            "}}",
+            " title }}",
+            " title } }}",
+            " a.b ?? c }}x",
+            " ok }",
+            " x++ }}",
+            " !done }}",
+            " 'a}}' }}",
+            " \"q\" + y }}",
+            " `t${x}` }}",
+            " { a: 1 }.a }}",
+            " a / b }}",
+            " return /}}/.test(x) }}",
+            " typeof /x/ }}",
+            " a // c\n }}",
+            " a /* }} */ }}",
+            " 雪 }}",
+            " x ",
+        ] {
+            let source = ["{{", body].concat();
+            assert_eq!(
+                skip_interpolation(source.as_bytes(), 2),
+                skip_interpolation_body(source.as_bytes(), 2),
+                "{source:?}"
+            );
+        }
+    }
 }

@@ -60,7 +60,7 @@ void test("authored type errors qualify after configuration is prepared", () => 
   assert.deepEqual(mixed.files[0], packet.files[0]);
 });
 
-void test("project inputs and generated dependencies block qualification with exact codes", () => {
+void test("program construction failures block qualification with exact codes", () => {
   for (const [file, diagnostic, expected] of [
     [
       "configs/build.jsonc",
@@ -72,7 +72,8 @@ void test("project inputs and generated dependencies block qualification with ex
       "error:1:1 [TS2688] Cannot find type definition file for 'vue'.",
       "configuration",
     ],
-    ["src/App.vue", "error:1:1 [TS2307] Cannot find module '#imports'.", "configuration"],
+    ["src/App.vue", "error:1:1 [TS2307] Cannot find module '#imports'.", "findings"],
+    ["src/App.vue", "error:1:1 [TS2792] Cannot find module '#imports'.", "findings"],
     [
       "src/App.vue",
       "error:1:1 [TS6305] Output file has not been built from source file.",
@@ -107,9 +108,9 @@ void test("deprecated and removed compiler options do not block qualification", 
       "findings",
     );
   }
-  // Only those notices: every other unavailable-input code still blocks it,
+  // Only those notices: every program-construction code still blocks it,
   // as does any other diagnostic on a config file.
-  for (const code of [2307, 2318, 2688, 2792, 5083, 6053, 6059, 6305, 6307, 18002, 18003]) {
+  for (const code of [2318, 2688, 5083, 6053, 6059, 6305, 6307, 18002, 18003]) {
     const missing = `error:1:1 [TS${code}] Unavailable input.`;
     assert.equal(
       typecheckerRunStatus(1, parsed([{ file: "src/App.vue", diagnostics: [missing] }])),

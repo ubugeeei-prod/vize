@@ -309,9 +309,8 @@ impl Visitor<'_, '_> {
     }
 
     pub(super) fn record_import(&mut self, import: &ImportDeclaration<'_>) {
-        let vue = matches!(
+        let vue = crate::rules::script::composition_api::is_composition_api_module(
             import.source.value.as_str(),
-            "vue" | "@vue/composition-api" | "#imports"
         );
         let Some(specifiers) = &import.specifiers else {
             return;

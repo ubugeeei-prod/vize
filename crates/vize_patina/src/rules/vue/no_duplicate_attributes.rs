@@ -58,6 +58,10 @@ impl Rule for NoDuplicateAttributes {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         let mut seen_attrs = Seen::default();
         let mut seen_directives = Seen::default();

@@ -52,6 +52,10 @@ impl Rule for ComponentDefinitionNameCasing {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE
+    }
+
     fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
         Some(self)
     }

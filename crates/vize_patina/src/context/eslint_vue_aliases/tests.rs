@@ -149,3 +149,32 @@ fn script_directive_forms_resolve_renamed_ids() {
         [("script/require-typed-ref".into(), "line 9".into())]
     );
 }
+
+/// eslint-plugin-vue's `comment-directive` also reads JavaScript comments in
+/// directive values and interpolations (airi callout.vue).
+#[test]
+fn expression_comment_pragmas_suppress_like_template_comments() {
+    let source = concat!(
+        "<template>\n",
+        "  <div\n",
+        "    :class=\"[\n",
+        "      ...extra,\n",
+        "      // eslint-disable-next-line vue/prefer-separate-static-class\n",
+        "      'a b',\n",
+        "      'c',\n",
+        "    ]\"\n",
+        "  />\n",
+        "  <div :class=\"/* eslint-disable-line vue/prefer-separate-static-class */ 'd'\" />\n",
+        "  <div :class=\"['// eslint-disable-next-line vue/prefer-separate-static-class', 'e']\" />\n",
+        "  <p>{{ // eslint-disable-line vue/other-rule\n value }}</p>\n",
+        "</template>\n",
+    );
+    assert_eq!(
+        reported(&["vapor/prefer-static-class"], source),
+        [
+            ("vapor/prefer-static-class".into(), "line 7".into()),
+            ("vapor/prefer-static-class".into(), "line 11".into()),
+            ("vapor/prefer-static-class".into(), "line 11".into()),
+        ]
+    );
+}

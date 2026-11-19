@@ -180,6 +180,17 @@ pub struct Croquis {
 
     /// Template expressions for type checking (interpolations, v-bind, etc.)
     pub template_expressions: Vec<TemplateExpression>,
+    /// Root identifier reads from the complete template-expression walk.
+    ///
+    /// `None` means that the analysis mode did not demand expression reads, so
+    /// consumers must retain their existing fallback. This optimization fact
+    /// is excluded from semantic snapshots and serialized Croquis surfaces.
+    /// The expression-keyed cache is moved here when the drawer is consumed, so
+    /// analysis does not clone identifiers or build a second collection.
+    /// Consumers flatten and deduplicate the cached values at their existing set
+    /// boundary.
+    #[doc(hidden)]
+    pub template_expression_reads: Option<FxHashMap<CompactString, Vec<CompactString>>>,
     /// Structural and pattern syntax diagnostics, in template-relative bytes.
     pub pattern_diagnostics: Vec<crate::patterns::PatternDiagnostic>,
 

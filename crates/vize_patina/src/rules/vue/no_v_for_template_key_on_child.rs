@@ -82,6 +82,10 @@ impl Rule for NoVForTemplateKeyOnChild {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Only `<template v-for>` carries its key on itself; everything else is
         // free to key its children however it likes.

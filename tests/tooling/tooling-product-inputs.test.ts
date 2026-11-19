@@ -65,6 +65,19 @@ function fixture(t: TestContext) {
   };
 }
 
+test("local import scanning does not recurse into directory-shaped fixture text", (t) => {
+  const cwd = mkdtempSync(path.join(tmpdir(), "vize-directory-import-plan-"));
+  t.after(() => rmSync(cwd, { recursive: true, force: true }));
+  const testFile = "tests/tooling/fixture-text.test.ts";
+  mkdirSync(path.join(cwd, "tests/tooling"), { recursive: true });
+  writeFileSync(path.join(cwd, testFile), "const source = `import type { Props } from '..'`;\n");
+
+  assert.deepEqual(localImportInputs(testFile, cwd), {
+    files: [testFile],
+    complete: false,
+  });
+});
+
 test("the original seven paths honor the exact audit and retain the Glyph checks", (t) => {
   const f = fixture(t);
   const source = readFileSync(path.join(root, campaign), "utf8");

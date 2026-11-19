@@ -272,6 +272,67 @@ test("fixture tool matrix records linter schema failures", () => {
   }
 });
 
+test("fixture tool matrix isolates linter dependency resolution from repository ancestors", () => {
+  const ownerDir = fs.mkdtempSync(
+    path.join(root, "tests", "_fixtures", "tool-matrix-linter-isolation-"),
+  );
+  const fixtureDir = path.join(ownerDir, "project");
+  const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-linter-isolation-"));
+  const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-linter-isolation-report-"));
+  const executable = path.join(fakeDir, "fake-vize.mjs");
+  fs.mkdirSync(path.join(ownerDir, "node_modules", "ancestor-only"), { recursive: true });
+  fs.writeFileSync(
+    path.join(ownerDir, "node_modules", "ancestor-only", "package.json"),
+    '{"name":"ancestor-only"}\n',
+  );
+  fs.mkdirSync(path.join(fixtureDir, "src"), { recursive: true });
+  fs.writeFileSync(path.join(fixtureDir, "src", "App.vue"), "<template />\n");
+  fs.writeFileSync(
+    executable,
+    `#!/usr/bin/env node
+import fs from "node:fs";
+import path from "node:path";
+let directory = process.cwd();
+let leaked = false;
+for (;;) {
+  if (fs.existsSync(path.join(directory, "node_modules", "ancestor-only", "package.json"))) {
+    leaked = true;
+    break;
+  }
+  const parent = path.dirname(directory);
+  if (parent === directory) break;
+  directory = parent;
+}
+const messages = leaked ? [${JSON.stringify(diagnostic(1))}] : [];
+process.stdout.write(JSON.stringify([{ file: "src/App.vue", messages, errorCount: 0, warningCount: messages.length }]));
+process.exit(leaked ? 1 : 0);
+`,
+  );
+  fs.chmodSync(executable, 0o755);
+
+  try {
+    const run = runTool(
+      {
+        id: "linter-isolation-fixture",
+        fixturePath: path.relative(root, fixtureDir),
+        vueGlobs: ["**/*.vue"],
+      },
+      "linter",
+      { dryRun: false, timeoutMs: 5_000 },
+      { command: executable, prefix: [], label: executable },
+      reportDir,
+    );
+    assert.equal(run.status, "ok");
+    assert.equal(run.cwd, path.relative(root, fixtureDir));
+    const raw = JSON.parse(fs.readFileSync(path.resolve(root, run.outputPath as string), "utf8"));
+    assert.deepEqual(raw.parsed[0].messages, []);
+  } finally {
+    fs.rmSync(ownerDir, { recursive: true, force: true });
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+    fs.rmSync(reportDir, { recursive: true, force: true });
+  }
+});
+
 test("fixture tool matrix preserves the zero-file linter contract", () => {
   const fixtureDir = fs.mkdtempSync(path.join(root, "tests", "_fixtures", "tool-matrix-zero-"));
   const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-linter-zero-"));

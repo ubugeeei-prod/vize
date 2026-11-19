@@ -38,6 +38,11 @@ fn same_actual_revision_reuses_one_original_buffer_even_with_equal_content_updat
     let reused = cache.capture(&documents, &uri).unwrap();
     assert!(Arc::ptr_eq(&original, &reused));
     assert_eq!(original.source().as_ptr(), reused.source().as_ptr());
+    assert_eq!(
+        original.source().as_ptr(),
+        documents.text_snapshot(&uri).unwrap().as_ptr(),
+        "source navigation must share the resident document buffer"
+    );
     assert!(documents.apply_changes(&uri, vec![replace(original.source())], 8));
     let updated = cache.capture(&documents, &uri).unwrap();
     assert_ne!(original.revision(), updated.revision());

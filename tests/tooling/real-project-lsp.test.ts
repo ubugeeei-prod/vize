@@ -8,6 +8,7 @@ import { test } from "node:test";
 import type { LspDiagnostic, PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import {
   exerciseLspLifecycle,
+  projectLspRequestTimeoutMs,
   runRealProjectLspAudit,
   selectProjects,
 } from "./support/real-project-lsp-audit.ts";
@@ -171,6 +172,23 @@ test("real-project LSP shards are strict, balanced, and fail closed", () => {
         FIXTURE_SHARD_INDEX: "7",
       }),
     /selected no projects/,
+  );
+});
+
+test("real-project LSP request timeouts are project-scoped and shard-bounded", () => {
+  const project = fixtureProject("fixture");
+  assert.equal(projectLspRequestTimeoutMs(project, 600_000), 120_000);
+  assert.equal(
+    projectLspRequestTimeoutMs({ ...project, lspRequestTimeoutMs: 240_000 }, 600_000),
+    240_000,
+  );
+  assert.throws(
+    () => projectLspRequestTimeoutMs({ ...project, lspRequestTimeoutMs: 0 }, 600_000),
+    /fixture\.lspRequestTimeoutMs must be positive/,
+  );
+  assert.throws(
+    () => projectLspRequestTimeoutMs({ ...project, lspRequestTimeoutMs: 600_001 }, 600_000),
+    /fixture\.lspRequestTimeoutMs must not exceed the shard timeout/,
   );
 });
 

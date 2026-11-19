@@ -341,6 +341,7 @@ fn write_project_artifact(
         "baseline": {
             "command": display_command(&args.vue_tsc_bin, &baseline_args),
             "version": vue_tsc_version,
+            "excludedInputs": baseline_config.excluded_inputs.clone(),
             "exitCode": captured_exit_code(&baseline),
             "runError": baseline.run_error,
             "stdout": baseline.run.stdout,
@@ -370,7 +371,7 @@ fn write_project_artifact(
         project_id.clone(),
         &fixture_root,
         &vize_run.payload["parsed"],
-        &baseline.run.output,
+        vue_tsc_diagnostic_output(&baseline.run),
         &typecheck_source_roots,
         &documented_differences,
     )?;
@@ -382,9 +383,10 @@ fn write_project_artifact(
     {
         unavailable_vue_program_coverage(&vize_run.payload["parsed"], &fixture_root, reason)?
     } else {
+        let coverage_output = combined_tool_output(&coverage_baseline.run);
         evaluate_vue_program_coverage(
             &vize_run.payload["parsed"],
-            &coverage_baseline.run.output,
+            &coverage_output,
             &fixture_root,
             &typecheck_source_roots,
         )?
@@ -393,13 +395,16 @@ fn write_project_artifact(
     let configuration = if let Some(reason) = baseline.run_error.as_deref() {
         unavailable_baseline_configuration(reason)
     } else {
-        evaluate_baseline_configuration(&baseline.run.output)?
+        evaluate_baseline_configuration(vue_tsc_diagnostic_output(&baseline.run))?
     };
     context.phase("baseline ambient interpretation")?;
     let ambient = if let Some(reason) = coverage_baseline.run_error.as_deref() {
         unavailable_baseline_ambient_environment(reason)
     } else {
-        evaluate_baseline_ambient_environment(&coverage_baseline.run.output, &fixture_root)?
+        evaluate_baseline_ambient_environment(
+            vue_tsc_diagnostic_output(&coverage_baseline.run),
+            &fixture_root,
+        )?
     };
     // A diagnostic exit alone is not an unusable baseline: semantic findings are
     // the comparison's input. Ask the same official provider for diagnostics
@@ -427,7 +432,7 @@ fn write_project_artifact(
                 "Typecheck divergence baseline is unusable for {project_id} — {INSTRUMENT_FAILURE_CLASSIFICATION}: {reason}"
             ))
         };
-        match baseline_usability::parse_diagnostics(&baseline.run.output) {
+        match baseline_usability::parse_diagnostics(vue_tsc_diagnostic_output(&baseline.run)) {
             Ok(diagnostics) if !diagnostics.is_empty() => {}
             Ok(_) => {
                 return reject(
@@ -455,8 +460,7 @@ fn write_project_artifact(
                 Vec::new(),
             );
         }
-        let mut probe_args = baseline_args.clone();
-        probe_args.push("--noCheck".to_string());
+        let probe_args = pre_semantic_probe_args(&baseline_args);
         let probe = match context.capture(
             &args.vue_tsc_bin,
             &probe_args,
@@ -504,8 +508,7 @@ fn write_project_artifact(
                 Vec::new(),
             );
         }
-        let parsed =
-            baseline_usability::parse_diagnostics(&format!("{}\n{}", probe.stdout, probe.stderr));
+        let parsed = baseline_usability::parse_diagnostics(&probe.stdout);
         if !probe.status.success() || !matches!(&parsed, Ok(diagnostics) if diagnostics.is_empty())
         {
             let (kind, reason) = if !matches!(probe.status.code(), Some(0 | 1 | 2)) {
@@ -584,6 +587,7 @@ fn write_project_artifact(
             "coverageCommand": display_command(&args.vue_tsc_bin, &coverage_args),
             "configSha256": sha256(&baseline_config.source),
             "sourceConfigSha256": sha256(&source_config),
+            "excludedInputs": baseline_config.excluded_inputs.clone(),
             "version": vue_tsc_version,
             "durationMs": baseline.run.duration_ms,
             "coverageDurationMs": coverage_baseline.run.duration_ms,
@@ -762,6 +766,7 @@ fn quarantine_previous_typecheck_artifacts(
 struct BaselineConfig {
     path: PathBuf,
     source: String,
+    excluded_inputs: Vec<Value>,
 }
 
 struct VizeRun {
@@ -1081,18 +1086,54 @@ fn materialize_baseline_project(
             compiler_options.insert("baseUrl".to_string(), json!("."));
         }
     }
-    let files = baseline_files(&config_dir, fixture_root, vize_report)?;
-    let config = json!({
+    if let Some(types) = rewritten_compiler_types(fixture_root, &source_path, &config_dir)? {
+        compiler_options.insert("types".to_string(), Value::Array(types));
+    }
+    let vue_compiler_options = rewritten_vue_compiler_options(
+        fixture_root,
+        &source_path,
+        &config_dir,
+        &compiler_paths,
+    )?;
+    let excluded_inputs = baseline_excluded_inputs(fixture_root, project)?;
+    let excluded_paths = excluded_inputs
+        .iter()
+        .filter_map(|entry| entry.get("path").and_then(Value::as_str))
+        .map(|path| fixture_root.join(path))
+        .collect::<Vec<_>>();
+    let files = baseline_files(
+        &config_dir,
+        fixture_root,
+        vize_report,
+        &ambient_roots,
+        &excluded_paths,
+    )?;
+    let mut excludes = ambient_roots
+        .iter()
+        .flat_map(|root_path| {
+            let root = config_relative_path(&config_dir, root_path);
+            [
+                format!("{root}/**/node_modules/**"),
+                format!("{root}/**/dist/**"),
+            ]
+        })
+        .collect::<Vec<_>>();
+    excludes.extend(
+        excluded_paths
+            .iter()
+            .map(|path| config_relative_path(&config_dir, path)),
+    );
+    let mut config = json!({
         "extends": config_relative_path(&config_dir, &source_path),
         "compilerOptions": Value::Object(compiler_options),
         "files": files,
         "include": include_globs(&config_dir, &ambient_roots, &include_roots, &dot_vue_roots),
-        "exclude": ambient_roots.iter().flat_map(|root_path| {
-            let root = config_relative_path(&config_dir, root_path);
-            vec![format!("{root}/**/node_modules/**"), format!("{root}/**/dist/**")]
-        }).collect::<Vec<_>>(),
+        "exclude": excludes,
         "references": [],
     });
+    if let Some(options) = vue_compiler_options {
+        config["vueCompilerOptions"] = Value::Object(options);
+    }
     let source = format!(
         "{}\n",
         serde_json::to_string_pretty(&config).map_err(|error| error.to_string())?
@@ -1103,6 +1144,7 @@ fn materialize_baseline_project(
     Ok(BaselineConfig {
         path: output_path,
         source,
+        excluded_inputs,
     })
 }
 
@@ -1148,6 +1190,7 @@ struct DocumentedDifference {
 
 struct DiagnosticInput {
     diagnostics: Vec<Diagnostic>,
+    generated_vue_artifacts: Vec<Diagnostic>,
     excluded_non_vue_count: usize,
     excluded_project_count: usize,
     excluded_external_count: usize,
@@ -1159,7 +1202,6 @@ struct ToolRun {
     status: i32,
     stdout: String,
     stderr: String,
-    output: String,
     duration_ms: u128,
     parsed: Option<Value>,
 }
@@ -1302,6 +1344,7 @@ fn compare_typecheck_diagnostics(
         "baselineExcludedProjectCount": baseline_input.excluded_project_count,
         "baselineExcludedExternalCount": baseline_input.excluded_external_count,
         "baselineExcludedSupportVueCount": baseline_input.excluded_support_vue_count,
+        "baselineGeneratedArtifactCount": baseline_input.generated_vue_artifacts.len(),
     });
     if vize_hint_count > 0 {
         summary["vizeHintCount"] = json!(vize_hint_count);
@@ -1327,10 +1370,11 @@ fn compare_typecheck_diagnostics(
         "falsePositives": false_positive_values,
         "falseNegatives": false_negative_values,
         "documentedDifferences": documented_values,
+        "baselineGeneratedArtifacts": baseline_input.generated_vue_artifacts.iter().map(diagnostic_json).collect::<Vec<_>>(),
     });
     Ok(json!({
         "schema": "vize.fixtureTypecheckDivergence",
-        "version": 4,
+        "version": 5,
         "project": project_id,
         "summary": digest_payload["summary"],
         "shared": digest_payload["shared"],
@@ -1338,6 +1382,7 @@ fn compare_typecheck_diagnostics(
         "falsePositives": digest_payload["falsePositives"],
         "falseNegatives": digest_payload["falseNegatives"],
         "documentedDifferences": digest_payload["documentedDifferences"],
+        "baselineGeneratedArtifacts": digest_payload["baselineGeneratedArtifacts"],
         "sha256": sha256(&serde_json::to_string(&digest_payload).map_err(|error| error.to_string())?),
     }))
 }
@@ -1393,6 +1438,7 @@ fn collect_vize_diagnostics(report: &Value, cwd: &Path) -> Result<DiagnosticInpu
     Ok(DiagnosticInput {
         excluded_non_vue_count: diagnostics.len() - included.len(),
         diagnostics: included,
+        generated_vue_artifacts: Vec::new(),
         excluded_project_count: 0,
         excluded_external_count: 0,
         excluded_support_vue_count: 0,
@@ -1409,6 +1455,7 @@ fn collect_vue_tsc_diagnostics(
     let project = Regex::new(r"^(error|warning) TS(\d+): (.+)$").unwrap();
     let diagnostic_marker = Regex::new(r"\b(?:error|warning) TS\d+:").unwrap();
     let mut diagnostics = Vec::new();
+    let mut generated_vue_artifacts = Vec::new();
     let mut excluded_non_vue_count = 0;
     let mut excluded_project_count = 0;
     let mut excluded_external_count = 0;
@@ -1425,14 +1472,21 @@ fn collect_vue_tsc_diagnostics(
                 {
                     excluded_support_vue_count += 1
                 }
-                Some(file) => diagnostics.push(record(
-                    file,
-                    captures[4].to_string(),
-                    &captures[2],
-                    &captures[3],
-                    &captures[5],
-                    &captures[6],
-                )?),
+                Some(file) => {
+                    let diagnostic = record(
+                        file,
+                        captures[4].to_string(),
+                        &captures[2],
+                        &captures[3],
+                        &captures[5],
+                        &captures[6],
+                    )?;
+                    if is_synthetic_template_value_diagnostic(cwd, &diagnostic) {
+                        generated_vue_artifacts.push(diagnostic);
+                    } else {
+                        diagnostics.push(diagnostic);
+                    }
+                }
             }
             continue;
         }
@@ -1452,13 +1506,98 @@ fn collect_vue_tsc_diagnostics(
             invalid_divergence(&format!("unparseable vue-tsc diagnostic: {line}"))?;
         }
     }
+    generated_vue_artifacts.sort_by(compare_diagnostics);
     Ok(DiagnosticInput {
         diagnostics,
+        generated_vue_artifacts,
         excluded_non_vue_count,
         excluded_project_count,
         excluded_external_count,
         excluded_support_vue_count,
     })
+}
+
+/// vue-tsc occasionally maps a generated ref-unwrapping probe such as
+/// `binding.value` back to the authored `binding` token. When `value` is not
+/// present in the template at that mapped position, the diagnostic is a claim
+/// about provider-generated code rather than the SFC. Keep it in the artifact,
+/// but do not score it as an authored Vize false negative.
+fn is_synthetic_template_value_diagnostic(cwd: &Path, diagnostic: &Diagnostic) -> bool {
+    if diagnostic.code != 2339
+        || !diagnostic
+            .message
+            .starts_with("Property 'value' does not exist on type '")
+    {
+        return false;
+    }
+    let Ok(source) = fs::read_to_string(cwd.join(&diagnostic.file)) else {
+        return false;
+    };
+    let Some((line_start, line)) = source_line(&source, diagnostic.line) else {
+        return false;
+    };
+    let Some(column) = utf16_column_to_byte(line, diagnostic.column) else {
+        return false;
+    };
+    let Some(tail) = line.get(column..) else {
+        return false;
+    };
+    let token_len = tail
+        .bytes()
+        .take_while(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$'))
+        .count();
+    let Some(first) = tail.as_bytes().first() else {
+        return false;
+    };
+    if token_len == 0
+        || !(first.is_ascii_alphabetic() || matches!(first, b'_' | b'$'))
+        || &tail[..token_len] == "value"
+    {
+        return false;
+    }
+    let authored_tail = tail[token_len..].trim_start();
+    if authored_tail.starts_with(".value") || authored_tail.starts_with("?.value") {
+        return false;
+    }
+    let offset = line_start + column;
+    let Some(open_start) = source.find("<template") else {
+        return false;
+    };
+    let Some(open_end) = source[open_start..].find('>').map(|index| open_start + index) else {
+        return false;
+    };
+    let Some(close_start) = source.rfind("</template>") else {
+        return false;
+    };
+    open_end < offset && offset < close_start
+}
+
+fn source_line(source: &str, line: u64) -> Option<(usize, &str)> {
+    let target = usize::try_from(line.checked_sub(1)?).ok()?;
+    let mut start = 0usize;
+    for (index, current) in source.split_inclusive('\n').enumerate() {
+        let text = current.trim_end_matches(['\r', '\n']);
+        if index == target {
+            return Some((start, text));
+        }
+        start += current.len();
+    }
+    None
+}
+
+fn utf16_column_to_byte(line: &str, column: u64) -> Option<usize> {
+    let target = usize::try_from(column.checked_sub(1)?).ok()?;
+    let mut units = 0usize;
+    for (index, character) in line.char_indices() {
+        if units == target {
+            return Some(index);
+        }
+        units += character.len_utf16();
+        if units > target {
+            return None;
+        }
+    }
+    (units == target).then_some(line.len())
 }
 
 fn evaluate_vue_program_coverage(
@@ -1978,7 +2117,7 @@ fn observe_mutation_state(
         project_string(ctx.project, "id")?,
         ctx.fixture_root,
         parsed,
-        &baseline.output,
+        vue_tsc_diagnostic_output(&baseline),
         &source_roots,
         ctx.documented_differences,
     )?;
@@ -2618,8 +2757,12 @@ fn parse_documented_difference(
     let severity = value
         .get("severity")
         .and_then(Value::as_str)
-        .filter(|value| *value == "error" || *value == "warning")
-        .ok_or_else(|| divergence_error(&format!("{label}.severity must be error or warning")))?
+        .filter(|value| *value == "error" || *value == "warning" || *value == "hint")
+        .ok_or_else(|| {
+            divergence_error(&format!(
+                "{label}.severity must be error, warning, or hint"
+            ))
+        })?
         .to_string();
     let line = positive_json_integer(value.get("line"), &format!("{label}.line"))?;
     let column = positive_json_integer(value.get("column"), &format!("{label}.column"))?;
@@ -3352,7 +3495,6 @@ fn failed_tool_run(command: &Path, args: &[String], duration_ms: u128, reason: &
         status: -1,
         stdout: String::new(),
         stderr: reason.to_string(),
-        output: format!("\n{reason}"),
         duration_ms,
         parsed: None,
     }
@@ -3383,12 +3525,23 @@ fn run_capture_limited(
     Ok(ToolRun {
         command: display_command(command, args),
         status,
-        output: format!("{}\n{}", run.stdout, run.stderr),
         stdout: run.stdout,
         stderr: run.stderr,
         duration_ms: run.duration_ms,
         parsed: None,
     })
+}
+
+fn vue_tsc_diagnostic_output(run: &ToolRun) -> &str {
+    // vue-tsc writes TypeScript's diagnostic protocol to stdout. Vue plugin
+    // resolution notices can appear on stderr even when a generated child
+    // config overrides the parent plugin successfully; they are evidence, not
+    // diagnostics to compare or parse.
+    &run.stdout
+}
+
+fn combined_tool_output(run: &ToolRun) -> String {
+    format!("{}\n{}", run.stdout, run.stderr)
 }
 fn timeout_error(label: &str, timeout_ms: u64) -> String {
     format!("{label} failed to run: spawn timed out after {timeout_ms}ms")
@@ -3583,7 +3736,11 @@ fn validate_typechecker_output(
     let mut transitive_authored_files = Vec::new();
     let mut transitive_dependency_files = Vec::new();
     if let Some(expected_files) = expected_files {
-        validate_manifest_input(expected_files, "requested fixture inputs", is_vue_sfc)?;
+        validate_manifest_input(
+            expected_files,
+            "requested fixture inputs",
+            is_typecheck_source,
+        )?;
         let authored_files = authored_files.unwrap_or(expected_files);
         validate_manifest_input(
             authored_files,
@@ -3764,9 +3921,14 @@ fn collect_sources(
             collect_sources(cwd, &path, extensions, files)?;
         } else if path.is_file()
             && path
-                .extension()
+                .file_name()
                 .and_then(|value| value.to_str())
-                .is_some_and(|extension| extensions.contains(&extension))
+                .is_some_and(|name| {
+                    extensions.iter().any(|extension| {
+                        name.strip_suffix(extension)
+                            .is_some_and(|prefix| prefix.ends_with('.'))
+                    })
+                })
         {
             files.push(common::normalize_path(
                 path.strip_prefix(cwd).unwrap_or(&path),
@@ -3839,10 +4001,6 @@ fn require_exact_keys(value: &Value, expected: &[&str], message: &str) -> Result
         return Err(message.to_string());
     }
     Ok(())
-}
-
-fn is_vue_sfc(file: &str) -> bool {
-    file.ends_with(".vue")
 }
 
 fn is_typecheck_source(file: &str) -> bool {
@@ -3993,6 +4151,10 @@ fn render_markdown(artifact: &Value) -> String {
         format!(
             "vue-tsc excluded support Vue: {}",
             number(summary, "baselineExcludedSupportVueCount")
+        ),
+        format!(
+            "vue-tsc generated Vue artifacts: {}",
+            number(summary, "baselineGeneratedArtifactCount")
         ),
         format!(
             "vue-tsc excluded project-level: {}",
@@ -4488,6 +4650,8 @@ fn baseline_files(
     config_dir: &Path,
     fixture_root: &Path,
     vize_report: &Value,
+    ambient_roots: &[PathBuf],
+    excluded_inputs: &[PathBuf],
 ) -> Result<Vec<String>, String> {
     let mut files = vize_report
         .get("files")
@@ -4503,10 +4667,30 @@ fn baseline_files(
         .filter_map(|entry| entry.get("file").and_then(Value::as_str))
         .map(|file| config_relative_path(config_dir, &fixture_root.join(file)))
         .collect::<Vec<_>>();
+    for excluded in excluded_inputs {
+        let relative = config_relative_path(config_dir, excluded);
+        if files.contains(&relative) {
+            return Err(format!(
+                "baseline excluded input is an authored Vize program input: {}",
+                excluded.display()
+            ));
+        }
+    }
     let mut declarations = Vec::new();
-    collect_ambient_declaration_files(fixture_root, &mut declarations)?;
+    for root in ambient_roots {
+        collect_ambient_declaration_files(root, &mut declarations)?;
+    }
     declarations.sort();
     declarations.dedup();
+    for excluded in excluded_inputs {
+        if !declarations.contains(excluded) {
+            return Err(format!(
+                "baseline excluded input is stale or outside the ambient roots: {}",
+                excluded.display()
+            ));
+        }
+    }
+    declarations.retain(|path| !excluded_inputs.contains(path));
     files.extend(
         declarations
             .iter()
@@ -4517,8 +4701,76 @@ fn baseline_files(
     Ok(files)
 }
 
+fn baseline_excluded_inputs(fixture_root: &Path, project: &Value) -> Result<Vec<Value>, String> {
+    let Some(value) = project.pointer("/typecheckPerformance/baseline/excludedInputs") else {
+        return Ok(Vec::new());
+    };
+    let entries = value
+        .as_array()
+        .filter(|entries| !entries.is_empty())
+        .ok_or_else(|| {
+            "typecheckPerformance.baseline.excludedInputs must be a non-empty array when present"
+                .to_string()
+        })?;
+    let mut seen = BTreeSet::new();
+    let mut result = Vec::new();
+    for (index, entry) in entries.iter().enumerate() {
+        let label = format!("typecheckPerformance.baseline.excludedInputs[{index}]");
+        require_exact_keys(
+            entry,
+            &["path", "reason", "sha256"],
+            &format!("{label} must contain exactly path, reason, and sha256"),
+        )?;
+        let path = entry
+            .get("path")
+            .and_then(Value::as_str)
+            .ok_or_else(|| format!("{label}.path must be a normalized relative path"))?;
+        require_relative_path(path, &format!("{label}.path"))?;
+        if !is_declaration_file(Path::new(path)) {
+            return Err(format!("{label}.path must be a declaration file"));
+        }
+        if !seen.insert(path.to_string()) {
+            return Err(format!("duplicate baseline excluded input: {path}"));
+        }
+        if entry
+            .get("reason")
+            .and_then(Value::as_str)
+            .is_none_or(|reason| reason.trim().is_empty())
+        {
+            return Err(format!("{label}.reason must be a non-empty string"));
+        }
+        let expected = entry
+            .get("sha256")
+            .and_then(Value::as_str)
+            .filter(|digest| {
+                digest.len() == 64
+                    && digest
+                        .bytes()
+                        .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+            })
+            .ok_or_else(|| format!("{label}.sha256 must be a lowercase SHA-256 digest"))?;
+        let source_path = fixture_root.join(path);
+        let bytes = fs::read(&source_path)
+            .map_err(|error| format!("cannot read {}: {error}", source_path.display()))?;
+        let actual = sha256_bytes(&bytes);
+        if actual != expected {
+            return Err(format!("{label}.sha256 does not match {path}"));
+        }
+        result.push(entry.clone());
+    }
+    Ok(result)
+}
+
 fn collect_ambient_declaration_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<(), String> {
     if !dir.exists() {
+        return Ok(());
+    }
+    if dir.file_name().and_then(|name| name.to_str()).is_some_and(|name| {
+        matches!(
+            name,
+            "node_modules" | ".yarn" | "dist" | ".vize" | ".vize-baseline"
+        )
+    }) {
         return Ok(());
     }
     for entry in
@@ -4729,6 +4981,11 @@ struct DeclaredBaseUrl {
     value: String,
 }
 
+struct DeclaredTypes {
+    dir: PathBuf,
+    value: Vec<Value>,
+}
+
 fn winning_compiler_paths(
     fixture_root: &Path,
     source_path: &Path,
@@ -4762,6 +5019,239 @@ fn winning_compiler_paths(
         }
     }
     Ok(CompilerPaths { paths, base_url })
+}
+
+fn rewritten_compiler_types(
+    fixture_root: &Path,
+    source_path: &Path,
+    config_dir: &Path,
+) -> Result<Option<Vec<Value>>, String> {
+    let mut chain = Vec::new();
+    collect_tsconfig_extends_chain(fixture_root, source_path, &mut BTreeSet::new(), &mut chain)?;
+    let mut declared = None;
+    for (path, document) in chain {
+        let Some(value) = document
+            .pointer("/compilerOptions/types")
+            .and_then(Value::as_array)
+        else {
+            continue;
+        };
+        declared = Some(DeclaredTypes {
+            dir: path
+                .parent()
+                .ok_or_else(|| format!("tsconfig has no parent: {}", path.display()))?
+                .to_path_buf(),
+            value: value.clone(),
+        });
+    }
+    let Some(declared) = declared else {
+        return Ok(None);
+    };
+    let mut changed = false;
+    let value = declared
+        .value
+        .into_iter()
+        .map(|entry| {
+            let Some(path) = entry.as_str().filter(|path| path.starts_with('.')) else {
+                return entry;
+            };
+            changed = true;
+            json!(config_relative_path(config_dir, &declared.dir.join(path)))
+        })
+        .collect::<Vec<_>>();
+    Ok(changed.then_some(value))
+}
+
+fn rewritten_vue_compiler_options(
+    fixture_root: &Path,
+    source_path: &Path,
+    config_dir: &Path,
+    compiler_paths: &CompilerPaths,
+) -> Result<Option<serde_json::Map<String, Value>>, String> {
+    let mut chain = Vec::new();
+    collect_tsconfig_extends_chain(
+        fixture_root,
+        source_path,
+        &mut BTreeSet::new(),
+        &mut chain,
+    )?;
+    let mut options = serde_json::Map::new();
+    let mut plugins = Vec::new();
+    let mut changed = false;
+    for (_, document) in chain {
+        let Some(current) = document
+            .get("vueCompilerOptions")
+            .and_then(Value::as_object)
+        else {
+            continue;
+        };
+        for (key, value) in current {
+            if key != "plugins" {
+                options.insert(key.clone(), value.clone());
+            }
+        }
+        if let Some(current_plugins) = current.get("plugins").and_then(Value::as_array) {
+            for plugin in current_plugins {
+                let (rewritten, plugin_changed) = rewrite_vue_plugin_entry(
+                    fixture_root,
+                    config_dir,
+                    compiler_paths,
+                    plugin,
+                )?;
+                changed |= plugin_changed;
+                plugins.push(rewritten);
+            }
+        }
+    }
+    if !plugins.is_empty() {
+        options.insert("plugins".to_string(), Value::Array(plugins));
+    }
+    Ok(changed.then_some(options))
+}
+
+fn rewrite_vue_plugin_entry(
+    fixture_root: &Path,
+    config_dir: &Path,
+    compiler_paths: &CompilerPaths,
+    plugin: &Value,
+) -> Result<(Value, bool), String> {
+    if let Some(name) = plugin.as_str() {
+        return rewrite_vue_plugin_name(
+            fixture_root,
+            config_dir,
+            compiler_paths,
+            name,
+        )
+        .map(|name| match name {
+            Some(name) => (json!(name), true),
+            None => (plugin.clone(), false),
+        });
+    }
+    if let Some(tuple) = plugin.as_array()
+        && let Some(name) = tuple.first().and_then(Value::as_str)
+        && let Some(name) = rewrite_vue_plugin_name(
+            fixture_root,
+            config_dir,
+            compiler_paths,
+            name,
+        )?
+    {
+        let mut rewritten = tuple.clone();
+        rewritten[0] = json!(name);
+        return Ok((Value::Array(rewritten), true));
+    }
+    if let Some(object) = plugin.as_object()
+        && let Some(name) = object.get("name").and_then(Value::as_str)
+        && let Some(name) = rewrite_vue_plugin_name(
+            fixture_root,
+            config_dir,
+            compiler_paths,
+            name,
+        )?
+    {
+        let mut rewritten = object.clone();
+        rewritten.insert("name".to_string(), json!(name));
+        return Ok((Value::Object(rewritten), true));
+    }
+    Ok((plugin.clone(), false))
+}
+
+fn rewrite_vue_plugin_name(
+    fixture_root: &Path,
+    config_dir: &Path,
+    compiler_paths: &CompilerPaths,
+    name: &str,
+) -> Result<Option<String>, String> {
+    let Some((package, subpath)) = plugin_package_name(name) else {
+        return Ok(None);
+    };
+    let package_root = match declared_package_mapping_root(compiler_paths, package)
+        .filter(|root| root.join("package.json").exists())
+    {
+        Some(root) => Some(root),
+        None => local_package_root(fixture_root, package)?,
+    };
+    let Some(package_root) = package_root else {
+        return Ok(None);
+    };
+    let target = if subpath.is_empty() {
+        Some(package_root.clone())
+    } else {
+        let direct = package_root.join(subpath);
+        if direct.exists() {
+            Some(direct)
+        } else {
+            package_export_target(&package_root, &format!("./{subpath}"))?
+        }
+    };
+    let canonical_config_dir = config_dir
+        .canonicalize()
+        .unwrap_or_else(|_| config_dir.to_path_buf());
+    Ok(target.map(|target| config_relative_path(&canonical_config_dir, &target)))
+}
+
+fn plugin_package_name(name: &str) -> Option<(&str, &str)> {
+    if name.starts_with('.') || name.starts_with('/') || name.contains("/node_modules/") {
+        return None;
+    }
+    if let Some(scoped) = name.strip_prefix('@') {
+        let slash = scoped.find('/')? + 1;
+        let rest = &name[slash + 1..];
+        let next = rest.find('/').unwrap_or(rest.len());
+        let package_end = slash + 1 + next;
+        let subpath = name.get(package_end + 1..).unwrap_or("");
+        Some((&name[..package_end], subpath))
+    } else {
+        let package_end = name.find('/').unwrap_or(name.len());
+        let subpath = name.get(package_end + 1..).unwrap_or("");
+        Some((&name[..package_end], subpath))
+    }
+}
+
+fn declared_package_mapping_root(
+    compiler_paths: &CompilerPaths,
+    package: &str,
+) -> Option<PathBuf> {
+    let declared = compiler_paths.paths.as_ref()?;
+    let target = declared
+        .value
+        .get(package)?
+        .as_array()?
+        .iter()
+        .filter_map(Value::as_str)
+        .find(|target| !target.contains('*'))?;
+    let root = compiler_paths
+        .base_url
+        .as_ref()
+        .map(|base_url| base_url.dir.join(&base_url.value))
+        .unwrap_or_else(|| declared.dir.clone());
+    let target = root.join(target);
+    Some(target.canonicalize().unwrap_or(target))
+}
+
+fn package_export_target(package_root: &Path, key: &str) -> Result<Option<PathBuf>, String> {
+    let manifest = read_tsconfig_jsonc(&package_root.join("package.json"))?;
+    let Some(value) = manifest.get("exports").and_then(|exports| exports.get(key)) else {
+        return Ok(None);
+    };
+    let Some(relative) = package_export_path(value) else {
+        return Ok(None);
+    };
+    if !relative.starts_with("./") {
+        return Ok(None);
+    }
+    let target = package_root.join(relative);
+    Ok((path_stays_inside(package_root, &target) && target.exists()).then_some(target))
+}
+
+fn package_export_path(value: &Value) -> Option<&str> {
+    if let Some(path) = value.as_str() {
+        return Some(path);
+    }
+    let conditions = value.as_object()?;
+    ["default", "require", "import", "node", "types"]
+        .into_iter()
+        .find_map(|key| conditions.get(key).and_then(package_export_path))
 }
 
 fn collect_tsconfig_extends_chain(
@@ -5068,6 +5558,28 @@ fn file_list_hash(files: &[String]) -> String {
     )
 }
 
+fn pre_semantic_probe_args(baseline_args: &[String]) -> Vec<String> {
+    let mut args = baseline_args.to_vec();
+    args.extend(
+        [
+            "--noCheck",
+            // `composite` implies declaration emit. TypeScript otherwise runs
+            // declaration portability checks after `--noCheck` and mistakes
+            // those semantic findings for pre-semantic instrument failures.
+            "--composite",
+            "false",
+            "--declaration",
+            "false",
+            "--declarationMap",
+            "false",
+            "--emitDeclarationOnly",
+            "false",
+        ]
+        .map(str::to_string),
+    );
+    args
+}
+
 fn parse_budget_mode(value: &str) -> Result<String, String> {
     if value == "enforce" || value == "record-only" {
         Ok(value.to_string())
@@ -5194,6 +5706,39 @@ mod native_hint_contract_tests {
     }
 
     #[test]
+    fn documented_vize_hints_cancel_the_exact_divergence() {
+        let cwd = env::current_dir().unwrap();
+        let report = output("hint:77:22 [TS6385] 'typescript' is deprecated.");
+        let difference = parse_documented_difference(
+            &json!({
+                "project": "hints",
+                "file": "src/App.vue",
+                "severity": "hint",
+                "line": 77,
+                "column": 22,
+                "vize": { "code": 6385, "message": "'typescript' is deprecated." },
+                "baseline": null,
+                "issue": 13298,
+                "reason": "Vize preserves this language-service deprecation hint while the batch baseline omits it."
+            }),
+            0,
+        )
+        .unwrap();
+        let comparison = compare_typecheck_diagnostics(
+            "hints".to_string(),
+            &cwd,
+            &report,
+            "",
+            &[],
+            &[difference],
+        )
+        .unwrap();
+        assert_eq!(comparison["summary"]["documentedDifferenceCount"], 1);
+        assert_eq!(comparison["summary"]["falsePositiveCount"], 0);
+        assert_eq!(comparison["summary"]["falseNegativeCount"], 0);
+    }
+
+    #[test]
     fn hints_keep_original_count_exit_and_coverage_validation() {
         let report = output("hint:77:22 [TS6385] 'typescript' is deprecated.");
         let original = report.clone();
@@ -5206,6 +5751,42 @@ mod native_hint_contract_tests {
             assert!(validate_typechecker_output(&project, &corrupted, 0, None, None).is_err());
         }
         assert!(validate_typechecker_output(&project, &report, 1, None, None).is_err());
+    }
+
+    #[test]
+    fn synthetic_template_value_probes_are_retained_but_not_scored() {
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let cwd = env::temp_dir().join(format!(
+            "vize-generated-value-{}-{nonce}",
+            std::process::id()
+        ));
+        fs::create_dir_all(cwd.join("src")).unwrap();
+        let source = "<template>\r\n  <div>😀{{ i18n.ts }}</div>\r\n  <div>{{ model.value }}</div>\r\n</template>\r\n<script setup>const i18n = {}; const model = {}</script>\r\n";
+        fs::write(cwd.join("src/App.vue"), source).unwrap();
+        let lines = source.split("\r\n").collect::<Vec<_>>();
+        let column = |line: &str, token: &str| {
+            line[..line.find(token).unwrap()].encode_utf16().count() as u64 + 1
+        };
+        let synthetic = Diagnostic {
+            file: "src/App.vue".into(),
+            severity: "error".into(),
+            line: 2,
+            column: column(lines[1], "i18n"),
+            code: 2339,
+            message: "Property 'value' does not exist on type 'Raw<I18n>'.".into(),
+        };
+        let authored = Diagnostic {
+            line: 3,
+            column: column(lines[2], "model"),
+            message: "Property 'value' does not exist on type '{}'.".into(),
+            ..synthetic.clone()
+        };
+        assert!(is_synthetic_template_value_diagnostic(&cwd, &synthetic));
+        assert!(!is_synthetic_template_value_diagnostic(&cwd, &authored));
+        fs::remove_dir_all(cwd).unwrap();
     }
 
     #[test]
@@ -5236,6 +5817,43 @@ mod native_hint_contract_tests {
 #[cfg(test)]
 mod native_baseline_contract_tests {
     use super::*;
+
+    #[test]
+    fn pre_semantic_probe_disables_declaration_diagnostics() {
+        assert_eq!(
+            pre_semantic_probe_args(&["--noEmit".to_string()]),
+            [
+                "--noEmit",
+                "--noCheck",
+                "--composite",
+                "false",
+                "--declaration",
+                "false",
+                "--declarationMap",
+                "false",
+                "--emitDeclarationOnly",
+                "false",
+            ]
+            .map(str::to_string),
+        );
+    }
+
+    #[test]
+    fn vue_tsc_stderr_is_not_part_of_the_diagnostic_protocol() {
+        let run = ToolRun {
+            command: "vue-tsc".to_string(),
+            status: 2,
+            stdout: "src/App.vue(1,2): error TS2322: Type 'number' is not assignable to type 'string'.\n".to_string(),
+            stderr: "[Vue] Resolve plugin path failed: vue-router/volar/sfc-route-blocks\n"
+                .to_string(),
+            duration_ms: 1,
+            parsed: None,
+        };
+        let diagnostics =
+            baseline_usability::parse_diagnostics(vue_tsc_diagnostic_output(&run)).unwrap();
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0]["code"], 2322);
+    }
 
     #[test]
     fn large_baseline_continuations_preserve_whole_diagnostics_and_exclusions() {
@@ -5327,6 +5945,19 @@ mod native_baseline_contract_tests {
 mod typecheck_target_tests {
     use super::*;
 
+    fn test_directory(name: &str) -> PathBuf {
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let directory = env::temp_dir().join(format!(
+            "vize-typecheck-target-{name}-{}-{nonce}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&directory).unwrap();
+        directory
+    }
+
     #[test]
     fn targets_become_units_that_keep_the_first_id_and_share_the_install() {
         let project = json!({
@@ -5388,5 +6019,232 @@ mod typecheck_target_tests {
             ),
             None
         );
+    }
+
+    #[test]
+    fn corpus_globs_preserve_multi_suffix_declarations() {
+        let fixture = test_directory("declaration-glob");
+        let source = fixture.join("src/types");
+        fs::create_dir_all(&source).unwrap();
+        fs::write(source.join("ambient.d.ts"), "export {};\n").unwrap();
+        fs::write(source.join("implementation.ts"), "export {};\n").unwrap();
+
+        let files = collect_vue_input_paths(&fixture, &["src/**/*.d.ts".to_string()]).unwrap();
+
+        assert_eq!(files, vec!["src/types/ambient.d.ts"]);
+        fs::remove_dir_all(fixture).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod baseline_materialization_tests {
+    use super::*;
+
+    fn test_directory(name: &str) -> PathBuf {
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let directory = env::temp_dir().join(format!(
+            "vize-typecheck-baseline-{name}-{}-{nonce}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&directory).unwrap();
+        directory
+    }
+
+    #[test]
+    fn ambient_declarations_stay_inside_the_selected_corpus_roots() {
+        let fixture = test_directory("ambient-roots");
+        let config_dir = fixture.join("packages/lib/.vize-baseline");
+        let lib = fixture.join("packages/lib");
+        let docs = fixture.join("packages/docs");
+        fs::create_dir_all(lib.join("src")).unwrap();
+        fs::create_dir_all(&docs).unwrap();
+        fs::create_dir_all(&config_dir).unwrap();
+        fs::write(lib.join("src/App.vue"), "<template />\n").unwrap();
+        fs::write(lib.join("ambient.d.ts"), "export {};\n").unwrap();
+        fs::create_dir_all(lib.join(".vize")).unwrap();
+        fs::write(lib.join(".vize/generated.d.ts"), "export {};\n").unwrap();
+        fs::write(docs.join("leak.d.ts"), "export {};\n").unwrap();
+        let ambient_roots = [lib.clone(), lib.join(".vize")];
+        let files = baseline_files(
+            &config_dir,
+            &fixture,
+            &json!({"fileCount": 1, "files": [{"file": "packages/lib/src/App.vue"}]}),
+            &ambient_roots,
+            &[],
+        )
+        .unwrap();
+        assert!(files.iter().any(|file| file.ends_with("/src/App.vue")));
+        assert!(files.iter().any(|file| file.ends_with("/ambient.d.ts")));
+        assert!(files.iter().all(|file| !file.contains("packages/docs")));
+        assert!(files.iter().all(|file| !file.contains("/.vize/")));
+        fs::remove_dir_all(fixture).unwrap();
+    }
+
+    #[test]
+    fn reviewed_ambient_exclusions_are_source_pinned_and_cannot_hide_authored_inputs() {
+        let fixture = test_directory("ambient-exclusions");
+        let config_dir = fixture.join("packages/lib/.vize-baseline");
+        let lib = fixture.join("packages/lib");
+        let bad = lib.join("src/editor-types.d.ts");
+        fs::create_dir_all(bad.parent().unwrap()).unwrap();
+        fs::create_dir_all(&config_dir).unwrap();
+        fs::write(lib.join("src/App.vue"), "<template />\n").unwrap();
+        fs::write(&bad, "declare namespace Broken {\n}}\n").unwrap();
+        fs::write(lib.join("src/globals.d.ts"), "declare const globalName: string;\n").unwrap();
+        let digest = sha256_bytes(&fs::read(&bad).unwrap());
+        let project = json!({
+            "typecheckPerformance": {
+                "baseline": {
+                    "excludedInputs": [{
+                        "path": "packages/lib/src/editor-types.d.ts",
+                        "reason": "loaded as editor text rather than a TypeScript program input",
+                        "sha256": digest,
+                    }]
+                }
+            }
+        });
+        let records = baseline_excluded_inputs(&fixture, &project).unwrap();
+        let excluded = [bad.clone()];
+        let files = baseline_files(
+            &config_dir,
+            &fixture,
+            &json!({"fileCount": 1, "files": [{"file": "packages/lib/src/App.vue"}]}),
+            std::slice::from_ref(&lib),
+            &excluded,
+        )
+        .unwrap();
+        assert_eq!(records[0]["sha256"], json!(digest));
+        assert!(files.iter().all(|file| !file.ends_with("/editor-types.d.ts")));
+        assert!(files.iter().any(|file| file.ends_with("/globals.d.ts")));
+
+        let authored = baseline_files(
+            &config_dir,
+            &fixture,
+            &json!({"fileCount": 1, "files": [{"file": "packages/lib/src/editor-types.d.ts"}]}),
+            std::slice::from_ref(&lib),
+            &excluded,
+        )
+        .unwrap_err();
+        assert!(authored.contains("authored Vize program input"));
+
+        let mut stale = project;
+        stale["typecheckPerformance"]["baseline"]["excludedInputs"][0]["sha256"] =
+            json!("0".repeat(64));
+        assert!(
+            baseline_excluded_inputs(&fixture, &stale)
+                .unwrap_err()
+                .contains("does not match")
+        );
+        fs::remove_dir_all(fixture).unwrap();
+    }
+
+    #[test]
+    fn vue_plugin_export_subpaths_are_pinned_to_fixture_files() {
+        let fixture = test_directory("vue-plugin");
+        let source_dir = fixture.join(".nuxt");
+        let config_dir = source_dir.join(".vize-baseline");
+        let router = fixture.join("node_modules/vue-router");
+        fs::create_dir_all(router.join("dist/volar")).unwrap();
+        fs::create_dir_all(&config_dir).unwrap();
+        fs::write(
+            router.join("dist/volar/sfc-route-blocks.cjs"),
+            "module.exports = {};\n",
+        )
+        .unwrap();
+        fs::write(
+            router.join("package.json"),
+            serde_json::to_string(&json!({
+                "name": "vue-router",
+                "exports": {
+                    "./volar/sfc-route-blocks": {
+                        "types": "./dist/volar/sfc-route-blocks.d.cts",
+                        "default": "./dist/volar/sfc-route-blocks.cjs"
+                    }
+                }
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+        let source = source_dir.join("tsconfig.json");
+        fs::write(
+            &source,
+            serde_json::to_string(&json!({
+                "compilerOptions": {"paths": {"vue-router": ["../node_modules/vue-router"]}},
+                "vueCompilerOptions": {
+                    "target": 3.5,
+                    "plugins": ["missing/plugin", "vue-router/volar/sfc-route-blocks"]
+                }
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+        let compiler_paths = winning_compiler_paths(&fixture, &source).unwrap();
+        let options = rewritten_vue_compiler_options(
+            &fixture,
+            &source,
+            &config_dir,
+            &compiler_paths,
+        )
+        .unwrap()
+        .unwrap();
+        assert_eq!(options["target"], json!(3.5));
+        assert_eq!(
+            options["plugins"],
+            json!([
+                "missing/plugin",
+                "../../node_modules/vue-router/dist/volar/sfc-route-blocks.cjs"
+            ])
+        );
+        fs::remove_dir_all(fixture).unwrap();
+    }
+
+    #[test]
+    fn relative_compiler_types_follow_their_declaring_config() {
+        let fixture = test_directory("relative-types").canonicalize().unwrap();
+        let config = fixture.join("config");
+        let package = fixture.join("packages/app");
+        let config_dir = package.join(".vize-baseline");
+        fs::create_dir_all(&config).unwrap();
+        fs::create_dir_all(&config_dir).unwrap();
+        fs::write(
+            config.join("kernel.d.ts"),
+            "declare const kernel: string;\n",
+        )
+        .unwrap();
+        fs::write(
+            config.join("base.json"),
+            serde_json::to_string(&json!({
+                "compilerOptions": {"types": ["./kernel.d.ts", "vite/client"]}
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+        let source = package.join("tsconfig.json");
+        fs::write(&source, "{\"extends\":\"../../config/base.json\"}\n").unwrap();
+
+        assert_eq!(
+            rewritten_compiler_types(&fixture, &source, &config_dir).unwrap(),
+            Some(vec![
+                json!("../../../config/kernel.d.ts"),
+                json!("vite/client")
+            ])
+        );
+        fs::remove_dir_all(fixture).unwrap();
+    }
+
+    #[test]
+    fn plugin_package_parser_keeps_scopes_and_subpaths_separate() {
+        assert_eq!(
+            plugin_package_name("@vue-macros/nuxt/volar"),
+            Some(("@vue-macros/nuxt", "volar"))
+        );
+        assert_eq!(
+            plugin_package_name("vue-router/volar/sfc-route-blocks"),
+            Some(("vue-router", "volar/sfc-route-blocks"))
+        );
+        assert_eq!(plugin_package_name("./plugin.cjs"), None);
     }
 }

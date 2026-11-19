@@ -3,6 +3,19 @@
 //! Disallow duplicate statically spelled class names across `class` and
 //! dynamic `:class` bindings.
 //!
+//! Findings are reported where `vue/no-duplicate-class-names` reports them,
+//! one finding per node listing every duplicated name:
+//! - a static `class` value with repeated names, on the value;
+//! - a string, object key or template quasi of a `:class` binding with
+//!   repeated names, on that node;
+//! - a `:class` name the static `class` also lists, on the start tag;
+//! - a name two `:class` parts can both render, on the node that holds the
+//!   first part (the binding value, array, conditional, property or
+//!   template literal).
+//!
+//! A template quasi contributes only the names bounded by whitespace or the
+//! literal's ends, so `badge--` in `` `badge--${variant}` `` is not a class.
+//!
 //! ## Examples
 //!
 //! ### Invalid
@@ -19,14 +32,14 @@
 //! </template>
 //! ```
 
+mod report_nodes;
+
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::ir::ByteRange;
 use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::rules::opinionated::class_values::possible_static_parts;
-use oxc_span::Span;
-use vize_l0::{FxHashMap, FxHashSet, String};
+use vize_l0::{FxHashSet, String};
 use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
@@ -41,168 +54,93 @@ static META: RuleMeta = RuleMeta {
 pub struct NoDuplicateClass;
 
 impl NoDuplicateClass {
-    fn check_static_class_value(ctx: &mut LintContext<'_>, class_value: &str, range: ByteRange) {
-        let mut classes = class_value.split_ascii_whitespace();
-        let Some(first) = classes.next() else { return };
-        let Some(second) = classes.next() else { return };
-        let mut seen = FxHashSet::default();
-        let mut reported = FxHashSet::default();
-        seen.insert(first);
-
-        for class_name in std::iter::once(second).chain(classes) {
-            if !seen.insert(class_name) && reported.insert(class_name) {
-                let message = ctx.t_fmt("html/no-duplicate-class.message", &[("name", class_name)]);
-                let help = ctx.t("html/no-duplicate-class.help");
-                ctx.warn_at_with_help(message, range, help);
-            }
-        }
-    }
-
-    fn has_dynamic_class_binding(element: &MarkupElement<'_>) -> bool {
-        let mut found = false;
-        element.walk_bindings(&mut |binding| {
-            found |= binding.kind() == MarkupBindingKind::Bind
-                && binding.is_unqualified_arg_exact("class");
-        });
-        found
-    }
-
-    fn check_static_class_bindings(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
-        element.walk_bindings(&mut |binding| {
-            if binding.kind() == MarkupBindingKind::Attribute
-                && binding.is_unqualified_arg_exact("class")
-                && let Some(value) = binding.static_value()
-            {
-                Self::check_static_class_value(ctx, value, binding.range());
-            }
-        });
-    }
-
-    fn report_duplicates(
-        ctx: &mut LintContext<'_>,
-        candidates: impl IntoIterator<Item = (String, crate::ir::ByteRange)>,
-        mut seen: FxHashSet<String>,
-    ) {
-        let mut reported = FxHashSet::default();
-        for (class_name, range) in candidates {
-            if !seen.insert(class_name.clone()) && reported.insert(class_name.clone()) {
-                let message =
-                    ctx.t_fmt("html/no-duplicate-class.message", &[("name", &class_name)]);
-                let help = ctx.t("html/no-duplicate-class.help");
-                ctx.warn_at_with_help(message, range, help);
-            }
-        }
-    }
-
-    fn report_dynamic_duplicates(
-        ctx: &mut LintContext<'_>,
-        candidates: impl IntoIterator<Item = (String, crate::ir::ByteRange, bool, Option<Span>)>,
-        static_classes: &FxHashSet<String>,
-    ) {
-        let mut collected = FxHashMap::<String, (bool, Option<Span>)>::default();
-        let mut reported = FxHashSet::default();
-        let mut current_part = None;
-        let mut within_part = FxHashSet::default();
-        for (class_name, range, unconditional, shared_group) in candidates {
-            let part = (range, unconditional, shared_group);
-            if current_part != Some(part) {
-                current_part = Some(part);
-                within_part.clear();
-            }
-            let duplicate_within_part = !within_part.insert(class_name.clone());
-            let duplicate_with_static = static_classes.contains(&class_name);
-            let duplicate_across_parts = collected.get(&class_name).is_some_and(
-                |(existing_unconditional, existing_group)| {
-                    unconditional
-                        || *existing_unconditional
-                        || shared_group.is_some_and(|group| Some(group) == *existing_group)
-                },
-            );
-            collected
-                .entry(class_name.clone())
-                .or_insert((unconditional, shared_group));
-            if (duplicate_within_part || duplicate_with_static || duplicate_across_parts)
-                && reported.insert(class_name.clone())
-            {
-                let message =
-                    ctx.t_fmt("html/no-duplicate-class.message", &[("name", &class_name)]);
-                let help = ctx.t("html/no-duplicate-class.help");
-                ctx.warn_at_with_help(message, range, help);
-            }
-        }
-    }
-
     fn check_element(
         ctx: &mut LintContext<'_>,
         element: &MarkupElement<'_>,
         inspect_dynamic: bool,
     ) {
-        if !inspect_dynamic || !Self::has_dynamic_class_binding(element) {
-            Self::check_static_class_bindings(ctx, element);
-            return;
-        }
-
-        let mut static_baseline = None;
-        let mut static_groups = Vec::new();
-        let mut dynamic_groups = Vec::new();
+        let vue = ctx.filename.ends_with(".vue");
+        let mut static_classes = None::<&str>;
         element.walk_bindings(&mut |binding| {
-            if !binding.is_unqualified_arg_exact("class") {
+            if binding.kind() != MarkupBindingKind::Attribute
+                || !binding.is_unqualified_arg_exact("class")
+            {
                 return;
             }
-            match binding.kind() {
-                MarkupBindingKind::Attribute => {
-                    if let Some(value) = binding.static_value() {
-                        let candidates = value
-                            .split_ascii_whitespace()
-                            .map(|name| (String::from(name), binding.range()))
-                            .collect::<Vec<_>>();
-                        if static_baseline.is_none() {
-                            static_baseline = Some(
-                                candidates
-                                    .iter()
-                                    .map(|(name, _)| name.clone())
-                                    .collect::<FxHashSet<_>>(),
-                            );
-                        }
-                        static_groups.push(candidates);
-                    }
+            let Some(value) = binding.static_value() else {
+                return;
+            };
+            // A Vue file reports once on the value, as eslint-plugin-vue does;
+            // JSX and HTML keep one finding per name on the whole attribute.
+            if vue {
+                let range = report_nodes::attribute_value_range(ctx.source, binding.range())
+                    .unwrap_or(binding.range());
+                report(ctx, range, &repeated_names(value));
+            } else {
+                for name in repeated_names(value) {
+                    report(ctx, binding.range(), &[name]);
                 }
-                MarkupBindingKind::Bind if inspect_dynamic => {
-                    let Some(expression) = binding.retained_expression() else {
-                        return;
-                    };
-                    let mut parts = Vec::new();
-                    possible_static_parts(expression.ast, &mut parts);
-                    let mut candidates = Vec::new();
-                    for part in parts {
-                        let range = expression
-                            .authored_range(part.span)
-                            .unwrap_or(binding.range());
-                        candidates.extend(part.text.split_ascii_whitespace().map(|name| {
-                            (
-                                String::from(name),
-                                range,
-                                part.unconditional,
-                                part.shared_group,
-                            )
-                        }));
-                    }
-                    dynamic_groups.push(candidates);
-                }
-                _ => {}
+            }
+            static_classes.get_or_insert(value);
+        });
+        if !inspect_dynamic {
+            return;
+        }
+        let static_classes = static_classes.unwrap_or_default();
+        let source = ctx.source;
+        let mut open_tag = None;
+        element.walk_bindings(&mut |binding| {
+            if binding.kind() == MarkupBindingKind::Bind
+                && binding.is_unqualified_arg_exact("class")
+            {
+                let open_tag = *open_tag.get_or_insert_with(|| element.open_tag_range(source));
+                report_nodes::check_binding(ctx, &binding, open_tag, static_classes);
             }
         });
+    }
+}
 
-        for candidates in static_groups {
-            Self::report_duplicates(ctx, candidates, FxHashSet::default());
-        }
-        if inspect_dynamic {
-            let static_classes = static_baseline.unwrap_or_default();
-            for candidates in dynamic_groups {
-                Self::report_dynamic_duplicates(ctx, candidates, &static_classes);
-            }
+/// The names that occur more than once, in the order they repeat. A value
+/// with fewer than two names allocates nothing.
+fn repeated_names(text: &str) -> Vec<&str> {
+    let mut repeated = Vec::new();
+    let mut names = text.split_ascii_whitespace();
+    let (Some(first), Some(second)) = (names.next(), names.next()) else {
+        return repeated;
+    };
+    let mut seen = FxHashSet::default();
+    seen.insert(first);
+    for name in std::iter::once(second).chain(names) {
+        if !seen.insert(name) && !repeated.contains(&name) {
+            repeated.push(name);
         }
     }
+    repeated
+}
+
+/// One finding listing `names`; nothing when the list is empty.
+fn report(ctx: &mut LintContext<'_>, range: ByteRange, names: &[&str]) {
+    let message = match names {
+        [] => return,
+        [name] => ctx.t_fmt("html/no-duplicate-class.message", &[("name", name)]),
+        names => {
+            let mut quoted = String::default();
+            for (index, name) in names.iter().enumerate() {
+                if index > 0 {
+                    quoted.push_str(", ");
+                }
+                quoted.push('\'');
+                quoted.push_str(name);
+                quoted.push('\'');
+            }
+            ctx.t_fmt(
+                "html/no-duplicate-class.message_many",
+                &[("names", &quoted)],
+            )
+        }
+    };
+    let help = ctx.t("html/no-duplicate-class.help");
+    ctx.warn_at_with_help(message, range, help);
 }
 
 impl MarkupRule for NoDuplicateClass {
@@ -233,97 +171,6 @@ impl Rule for NoDuplicateClass {
         Self::check_element(ctx, &MarkupElement::new(element), true);
     }
 }
+
 #[cfg(test)]
-mod tests {
-    use super::NoDuplicateClass;
-    use crate::linter::Linter;
-    use crate::rule::RuleRegistry;
-
-    fn create_linter() -> Linter {
-        let mut registry = RuleRegistry::new();
-        registry.register(Box::new(NoDuplicateClass));
-        Linter::with_registry(registry)
-    }
-
-    #[test]
-    fn test_valid_unique_classes() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div class="btn primary">x</div>"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_valid_single_class() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div class="btn">x</div>"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_valid_no_class() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div>x</div>"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-
-    #[test]
-    fn test_invalid_dynamic_and_cross_binding_duplicates() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<div class="a" :class="active ? 'a' : 'b'" />
-<div :class="['c c', { 'd d': active }]" />
-<div :class="`e e ${active ? 'f' : ''}`" />"#,
-            "test.vue",
-        );
-        assert_eq!(result.warning_count, 4, "{:?}", result.diagnostics);
-    }
-
-    #[test]
-    fn test_conditional_object_and_ternary_branches_do_not_collide() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<div :class="{ 'same': top, 'same': bottom }" />
-<div :class="side ? 'same' : 'same'" />"#,
-            "test.vue",
-        );
-        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
-    }
-
-    #[test]
-    fn test_dynamic_template_prefixes_are_not_complete_classes() {
-        let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<div :class="[`badge--${variant}`, `badge--${size}`]" />"#,
-            "test.vue",
-        );
-        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
-    }
-
-    #[test]
-    fn test_invalid_duplicate_class() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div class="btn btn primary">x</div>"#, "test.vue");
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_invalid_two_distinct_duplicates() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div class="a a b b">x</div>"#, "test.vue");
-        assert_eq!(result.warning_count, 2);
-    }
-
-    #[test]
-    fn test_invalid_triple_duplicate_reports_once() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div class="x x x">y</div>"#, "test.vue");
-        assert_eq!(result.warning_count, 1);
-    }
-
-    #[test]
-    fn test_valid_extra_whitespace() {
-        let linter = create_linter();
-        let result = linter.lint_template(r#"<div class="  btn   primary  ">x</div>"#, "test.vue");
-        assert_eq!(result.warning_count, 0);
-    }
-}
+mod tests;

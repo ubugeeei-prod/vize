@@ -2,9 +2,11 @@
 //!
 //! `props_source` keeps the runtime object and array forms. This module reads
 //! only the type argument, including a `withDefaults` wrapper, a local
-//! interface or alias, an intersection, and a method signature. A type imported
-//! from another file stays unresolved: eslint-plugin-vue reports that form
-//! only when `parserOptions.project` supplies the other file.
+//! interface or alias, an intersection, and a method signature. A local type
+//! may live in the SFC's sibling `<script>` block, which eslint-plugin-vue
+//! reads as part of the same program. A type imported from another file stays
+//! unresolved: eslint-plugin-vue reports that form only when
+//! `parserOptions.project` supplies the other file.
 
 use oxc_ast::ast::{
     CallExpression, Declaration, Expression, Program, Statement, TSSignature, TSType, TSTypeName,
@@ -16,6 +18,16 @@ use super::compiler_macro_is_shadowed;
 use super::props_source::property_key_name;
 
 pub(crate) fn same_file_type_prop_names(program: &Program<'_>) -> Vec<(CompactString, Span)> {
+    same_sfc_type_prop_names(program, None)
+}
+
+/// [`same_file_type_prop_names`], also resolving local types declared in the
+/// SFC's sibling `<script>` block. Spans of names found there address that
+/// block, so callers that report spans keep using the setup-only form.
+pub(crate) fn same_sfc_type_prop_names(
+    program: &Program<'_>,
+    sibling: Option<&Program<'_>>,
+) -> Vec<(CompactString, Span)> {
     if compiler_macro_is_shadowed(program, "defineProps") {
         return Vec::new();
     }
@@ -32,7 +44,8 @@ pub(crate) fn same_file_type_prop_names(program: &Program<'_>) -> Vec<(CompactSt
             else {
                 continue;
             };
-            collect_type(ty, program, 0, &mut FxHashSet::default(), &mut names);
+            let scope = Scope { program, sibling };
+            collect_type(ty, scope, 0, &mut FxHashSet::default(), &mut names);
         }
     }
     names
@@ -88,9 +101,22 @@ fn call_is_named(call: &CallExpression<'_>, name: &str) -> bool {
     matches!(&call.callee, Expression::Identifier(identifier) if identifier.name == name)
 }
 
+/// The setup program and, when present, its sibling `<script>` program.
+#[derive(Clone, Copy)]
+struct Scope<'p, 'a> {
+    program: &'p Program<'a>,
+    sibling: Option<&'p Program<'a>>,
+}
+
+impl<'p, 'a> Scope<'p, 'a> {
+    fn programs(self) -> impl Iterator<Item = &'p Program<'a>> {
+        std::iter::once(self.program).chain(self.sibling)
+    }
+}
+
 fn collect_type(
     ty: &TSType<'_>,
-    program: &Program<'_>,
+    program: Scope<'_, '_>,
     depth: usize,
     seen: &mut FxHashSet<CompactString>,
     names: &mut Vec<(CompactString, Span)>,
@@ -131,19 +157,22 @@ fn collect_type(
 
 fn collect_named(
     name: &str,
-    program: &Program<'_>,
+    program: Scope<'_, '_>,
     depth: usize,
     seen: &mut FxHashSet<CompactString>,
     names: &mut Vec<(CompactString, Span)>,
 ) {
-    if depth >= 16 || imported(program, name) {
+    if depth >= 16 || program.programs().any(|program| imported(program, name)) {
         return;
     }
     let owned = CompactString::new(name);
     if !seen.insert(owned.clone()) {
         return;
     }
-    for declaration in program.body.iter().filter_map(statement_declaration) {
+    for declaration in program
+        .programs()
+        .flat_map(|program| program.body.iter().filter_map(statement_declaration))
+    {
         match declaration {
             Declaration::TSTypeAliasDeclaration(alias) if alias.id.name == name => {
                 collect_type(&alias.type_annotation, program, depth + 1, seen, names);

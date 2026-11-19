@@ -6,12 +6,38 @@
 
 use crate::diagnostic::LintDiagnostic;
 use crate::ir::ByteRange;
+use memchr::memchr_iter;
 use vize_l0::CompactString;
 use vize_relief::{BindingType, SourceLocation};
 
 use super::{LintContext, state::ElementContext};
 
 impl<'a> LintContext<'a> {
+    /// Compute line offsets for fast line number lookup.
+    ///
+    /// Diagnostics ask for byte-offset-to-line conversion repeatedly during one
+    /// lint pass. Building this table once with `memchr` turns those lookups
+    /// into binary searches instead of rescanning the source for every report.
+    fn compute_line_offsets(source: &str) -> Vec<u32> {
+        let mut offsets = vec![0];
+        for offset in memchr_iter(b'\n', source.as_bytes()) {
+            offsets.push((offset + 1) as u32);
+        }
+        offsets
+    }
+
+    /// Get line number (1-indexed) from byte offset.
+    #[inline]
+    pub fn offset_to_line(&self, offset: u32) -> u32 {
+        let line_offsets = self
+            .line_offsets
+            .get_or_init(|| Self::compute_line_offsets(self.source));
+        match line_offsets.binary_search(&offset) {
+            Ok(line) => (line + 1) as u32,
+            Err(line) => line as u32,
+        }
+    }
+
     /// Report an error at a location.
     #[inline]
     pub fn error(&mut self, message: impl Into<CompactString>, loc: &SourceLocation) {
@@ -167,7 +193,7 @@ impl<'a> LintContext<'a> {
     pub fn push_element(&mut self, ctx: ElementContext) {
         // Add v-for vars to scope
         for var in &ctx.v_for_vars {
-            self.scope_variables.insert(var.clone());
+            *self.scope_variables.entry(var.clone()).or_default() += 1;
         }
         self.element_stack.push(ctx);
     }
@@ -178,7 +204,13 @@ impl<'a> LintContext<'a> {
         if let Some(ctx) = self.element_stack.pop() {
             // Remove v-for vars from scope
             for var in &ctx.v_for_vars {
-                self.scope_variables.remove(var);
+                let remove = self.scope_variables.get_mut(var).is_some_and(|count| {
+                    *count -= 1;
+                    *count == 0
+                });
+                if remove {
+                    self.scope_variables.remove(var);
+                }
             }
             Some(ctx)
         } else {
@@ -203,7 +235,7 @@ impl<'a> LintContext<'a> {
     /// Check if a variable is defined by a parent v-for.
     #[inline]
     pub fn is_v_for_var(&self, name: &str) -> bool {
-        self.scope_variables.contains(name)
+        self.scope_variables.contains_key(name)
     }
 
     /// Check if a variable is defined by a PARENT v-for (excluding current element).
@@ -360,5 +392,24 @@ impl<'a> LintContext<'a> {
         self.analysis
             .map(|a| a.macros.emits().iter().map(|e| e.name.as_str()).collect())
             .unwrap_or_default()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::LintContext;
+    use vize_l0::Allocator;
+
+    #[test]
+    fn line_offsets_stay_lazy_until_a_line_is_requested() {
+        let allocator = Allocator::default();
+        let context = LintContext::new(&allocator, "first\nsecond\nthird", "Lazy.vue");
+
+        assert!(context.line_offsets.get().is_none());
+        assert_eq!(context.offset_to_line(8), 2);
+        assert_eq!(
+            context.line_offsets.get().map(Vec::as_slice),
+            Some(&[0, 6, 13][..])
+        );
     }
 }

@@ -30,6 +30,10 @@ impl Rule for NoSrcAttribute {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::NONE
+    }
+
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
         // Reuse the engine's parsed descriptor so that only top-level SFC
         // blocks are inspected. Parse lazily for callers without one.

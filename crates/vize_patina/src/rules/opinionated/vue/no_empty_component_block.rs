@@ -63,6 +63,10 @@ impl Rule for NoEmptyComponentBlock {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::NONE
+    }
+
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
         // Prefer the descriptor prepared by the engine; only parse the SFC
         // ourselves when one was not shared. `run_on_sfc` never runs for plain

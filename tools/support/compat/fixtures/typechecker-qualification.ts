@@ -1,9 +1,7 @@
 /** Coverage is transport evidence; unavailable project inputs prevent semantic qualification. */
 
 const diagnosticPattern = /^error:[1-9]\d*:[1-9]\d* \[TS(\d+)\] /u;
-const unavailableInputCodes = new Set([
-  2307, 2318, 2688, 2792, 5083, 6053, 6059, 6305, 6307, 18002, 18003,
-]);
+const unavailableInputCodes = new Set([2318, 2688, 5083, 6053, 6059, 6305, 6307, 18002, 18003]);
 // Deprecated and removed compiler options (TS5101, TS5102, TS5107, TS5108)
 // introduce no `any`. They stay in the compared set; both checkers must agree.
 const optionNoticeCodes = new Set([5101, 5102, 5107, 5108]);
@@ -70,8 +68,9 @@ export function typecheckerRunStatus(
       const match = diagnosticPattern.exec(diagnostic);
       if (match == null) continue;
       if (optionNoticeCodes.has(Number(match[1]))) continue;
-      // Missing modules/generated declarations can introduce `any` into later
-      // checks. An authored error elsewhere cannot qualify this partial run.
+      // Program inputs that TypeScript could not construct make the run partial.
+      // Positioned module-resolution diagnostics (TS2307/TS2792) are ordinary
+      // semantic findings that vue-tsc can compare at the same authored import.
       if (
         path.endsWith(".json") ||
         path.endsWith(".jsonc") ||

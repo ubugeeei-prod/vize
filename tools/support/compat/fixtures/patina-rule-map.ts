@@ -10,6 +10,7 @@ export type RuleMapEntry =
       readonly patinaRule: string;
       readonly patinaSeverity: string;
       readonly patinaPresets: readonly string[];
+      readonly matrixRuleOptions?: unknown;
     }
   | { readonly status: "unimplemented"; readonly issue: number }
   | { readonly status: "intentional-divergence"; readonly reason: string };
@@ -247,6 +248,7 @@ export function validateRuleMap(ruleMap: RuleMap = readRuleMap()): RuleMap {
     if (entry.status === "mapped") {
       assert.match(entry.patinaRule, /^(?:html|parser|script|vapor|vue)\/[a-z0-9-]+$/u);
       assert.deepEqual(Object.keys(entry).sort(), [
+        ...(entry.matrixRuleOptions === undefined ? [] : ["matrixRuleOptions"]),
         "patinaPresets",
         "patinaRule",
         "patinaSeverity",

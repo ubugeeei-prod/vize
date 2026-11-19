@@ -29,6 +29,7 @@ export class FakeAuthoredLspSession {
    * the repaired version: `partial` once, `terminal` in every publication.
    */
   staleDependencyRepair: "none" | "partial" | "terminal" = "none";
+  unrelatedDependencyRepairDiagnostic = false;
   private staleDependencyRepairUri: string | null = null;
   private readonly documents = new Map<string, { text: string; version: number }>();
   private readonly lifecycle: FakeAuthoredLspLifecycle;
@@ -249,6 +250,27 @@ export class FakeAuthoredLspSession {
         return stalePayload;
       }
       this.events.push(`${event}:stale-dependency-repair-skipped`);
+    }
+    if (this.unrelatedDependencyRepairDiagnostic) {
+      this.unrelatedDependencyRepairDiagnostic = false;
+      const repaired = notifications.find(
+        ({ document, uri }) =>
+          document.version >= 4 && fileName(uri) !== this.lifecycle.importerFile,
+      );
+      if (repaired != null) {
+        repaired.payload = {
+          ...repaired.payload,
+          diagnostics: [
+            {
+              code: "vue/no-undefined-refs",
+              message: "Variable 'existingBinding' is not defined",
+              range: range(0, 0, 1),
+              severity: 1,
+              source: "vize/lint",
+            },
+          ],
+        };
+      }
     }
     const notification = notifications.find(({ payload }) => predicate(payload));
     assert.ok(notification, "fake session must have a matching diagnostic notification");

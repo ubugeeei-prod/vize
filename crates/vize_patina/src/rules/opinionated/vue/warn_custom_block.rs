@@ -64,6 +64,10 @@ impl Rule for WarnCustomBlock {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::NONE
+    }
+
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
         // Custom blocks are an SFC concept (`<i18n>`, `<docs>`, etc.).
         // Standalone HTML files (e.g. `index.html`, `.storybook/preview-head.html`)

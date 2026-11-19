@@ -190,7 +190,33 @@ function outsideCompilerOptions(
   if (rootDirs != null) options.rootDirs = rootDirs;
   const plugins = rewriteOutsideCompilerPlugins(fixtureRoot, sourcePath, configDir);
   if (plugins != null) options.plugins = plugins;
+  const types = rewriteRelativeCompilerTypes(fixtureRoot, sourcePath, configDir);
+  if (types != null) options.types = types;
   return options;
+}
+
+function rewriteRelativeCompilerTypes(
+  fixtureRoot: string,
+  sourcePath: string,
+  configDir: string,
+): unknown[] | null {
+  let declared: { values: readonly unknown[]; dir: string } | null = null;
+  for (const entry of [
+    ...loadTsconfigExtendsChain(sourcePath, (fromConfig, specifier) =>
+      resolveTsconfigExtends(fromConfig, specifier, fixtureRoot),
+    ),
+  ].reverse()) {
+    const types = entry.config.compilerOptions?.types;
+    if (Array.isArray(types)) declared = { values: types, dir: entry.dir };
+  }
+  if (declared == null) return null;
+  let changed = false;
+  const values = declared.values.map((entry) => {
+    if (typeof entry !== "string" || !entry.startsWith(".")) return entry;
+    changed = true;
+    return configRelativePath(configDir, resolve(declared.dir, entry));
+  });
+  return changed ? values : null;
 }
 
 function configRelativePath(from: string, to: string): string {

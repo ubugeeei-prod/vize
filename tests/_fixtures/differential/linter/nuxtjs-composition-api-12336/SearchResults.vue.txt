@@ -1,0 +1,15 @@
+<script>
+import { ref, watch, computed } from '@nuxtjs/composition-api';
+
+export default {
+  setup(props, { emit }) {
+    const wishlist = ref([]);
+    const removeProductFromWishlist = (productItem) => {
+      const productsInWhishlist = computed(() => wishlist.value);
+      const product = productsInWhishlist.value.find(item => item.sku === productItem.sku);
+      emit('remove', { product });
+    };
+    return { removeProductFromWishlist };
+  }
+};
+</script>

@@ -33,6 +33,8 @@ impl Rule for NoFloatingPromises {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
+
+    metadata_only_type_rule!();
 }
 
 #[cfg(test)]

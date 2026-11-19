@@ -4,6 +4,7 @@ import path from "node:path";
 import { before, test } from "node:test";
 import {
   cleanup,
+  preSemanticCommand,
   readJson,
   run,
   script,
@@ -88,7 +89,10 @@ test(
       assert.equal(artifact.baseline.stdoutSha256, sha256(sharedBaselineOutput));
       assert.equal(observations.preSemantic.stdout, "");
       assert.equal(observations.preSemantic.exitCode, 0);
-      assert.equal(observations.preSemantic.command, `${observations.baseline.command} --noCheck`);
+      assert.equal(
+        observations.preSemantic.command,
+        preSemanticCommand(observations.baseline.command),
+      );
       assert.doesNotMatch(artifact.baseline.command, /--noCheck/u);
       assert.equal(
         fs.existsSync(path.join(fixture.reportDir, "fixture-baseline-unusable.json")),
@@ -141,7 +145,10 @@ test(
       assert.equal(observations.baseline.stderr, "");
       assert.equal(observations.preSemantic.stdout, diagnostic);
       assert.equal(observations.preSemantic.stderr, "");
-      assert.equal(observations.preSemantic.command, `${observations.baseline.command} --noCheck`);
+      assert.equal(
+        observations.preSemantic.command,
+        preSemanticCommand(observations.baseline.command),
+      );
       assert.deepEqual(commandLabels(fixture), [
         "vue-tsc",
         "vue-tsc baseline",
