@@ -29,15 +29,15 @@ fn actual_client_jsx_mint_owns_the_child_role_without_changing_analysis_or_vapor
         let root = &lowered.roots[0];
         assert_eq!(root.vdom_value_children, expected);
         let l2 = root.l2.as_ref().expect("lossless native projection");
-        assert_eq!(l2.features.has_jsx_child_values(), expected);
+        assert_eq!(l2.features.has_child_values(), expected);
         let Op::Element(element) = &l2.root.ops[0] else {
             panic!("intrinsic element")
         };
         assert_eq!(
-            matches!(&element.children.ops[0], Op::JsxChildValue(_)),
+            matches!(&element.children.ops[0], Op::ChildValue(_)),
             expected
         );
-        if let Op::JsxChildValue(child) = &element.children.ops[0] {
+        if let Op::ChildValue(child) = &element.children.ops[0] {
             assert_eq!(child.expression.source(), "state.value");
             assert_eq!(
                 child.expression.span().start,
@@ -124,7 +124,7 @@ fn babel_configurations_retain_unmarked_roles_without_a_native_scope_fact() {
             };
             assert_eq!(expression.content, "state.value");
             let l2 = root.l2.as_ref().expect("generic interpolation projection");
-            assert!(!l2.features.has_jsx_child_values());
+            assert!(!l2.features.has_child_values());
             let Op::Element(element) = &l2.root.ops[0] else {
                 panic!("original projected element")
             };

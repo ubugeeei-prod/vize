@@ -29,7 +29,7 @@ pub(super) fn has_interpolation_descendant(element: &ElementOp<'_>) -> bool {
 fn op_has_interpolation_descendant(op: &Op<'_>) -> bool {
     match op {
         // A falsy `left` renders as a child value.
-        Op::Interpolation(_) | Op::JsxChildValue(_) | Op::And(_) => true,
+        Op::Interpolation(_) | Op::ChildValue(_) | Op::And(_) => true,
         Op::Element(element) => has_interpolation_descendant(element),
         Op::Component(component) => region_has_interpolation_descendant(&component.children.ops),
         Op::If(if_op) => if_op

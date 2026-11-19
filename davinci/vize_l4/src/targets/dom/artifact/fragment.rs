@@ -86,9 +86,9 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), Em
 
 fn emit_unique(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     match op {
-        Op::JsxChildValue(child) => {
+        Op::ChildValue(child) => {
             let _id = cx.walk.mint();
-            super::children::emit_jsx_child(cx, child)
+            super::children::emit_child_value(cx, child)
         }
         Op::Text(_) => emit_create_text_vnode(cx, core::slice::from_ref(op)),
         Op::Interpolation(interp) => {
@@ -236,10 +236,10 @@ fn emit_units(cx: &mut EmitCx<'_>, op: &Op<'_>, first: &mut bool) -> Result<(), 
             emit_create_text_vnode(cx, core::slice::from_ref(op))
         }
         Op::Interpolation(interp) => emit_interp(cx, interp, first),
-        Op::JsxChildValue(child) => {
+        Op::ChildValue(child) => {
             start_item(cx, first);
             let _id = cx.walk.mint();
-            super::children::emit_jsx_child(cx, child)
+            super::children::emit_child_value(cx, child)
         }
         Op::Comment(comment) => {
             start_item(cx, first);

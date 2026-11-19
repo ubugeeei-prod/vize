@@ -113,7 +113,7 @@ fn census(ops: &[DumpOp], out: &mut Vec<Owner>) {
             DumpOp::Slot(slot) => census(&slot.fallback, out),
             DumpOp::Text(_)
             | DumpOp::Interpolation(_)
-            | DumpOp::JsxChildValue(_)
+            | DumpOp::ChildValue(_)
             | DumpOp::Comment(_) => {}
         }
     }

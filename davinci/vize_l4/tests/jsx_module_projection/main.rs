@@ -213,7 +213,7 @@ fn child_value<'m, 'a>(module: &'m mut support::Module<'a>) -> &'m mut ExprRef<'
     let Some(Op::Element(element)) = module.roots[0].body.root.ops.first_mut() else {
         panic!("element root")
     };
-    let Some(Op::JsxChildValue(child)) = element.children.ops.first_mut() else {
+    let Some(Op::ChildValue(child)) = element.children.ops.first_mut() else {
         panic!("child value")
     };
     &mut child.expression

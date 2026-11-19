@@ -213,8 +213,8 @@ fn lower_child<'a>(
             };
             let expression =
                 ExprRef::parse_js_in(allocator, expression.content, expression.loc.span);
-            cx.observe(OpFamily::JsxChild);
-            Ok(Op::JsxChildValue(Box::new_in(
+            cx.observe(OpFamily::ChildValue);
+            Ok(Op::ChildValue(Box::new_in(
                 InterpolationOp {
                     expression,
                     raw_html: false,
@@ -287,7 +287,7 @@ fn lower_binding<'a>(
             if matches!(&binding, BindingOp::Bind(bind)
                 if matches!(bind.name, Some(DynamicName::Static("class"))))
             {
-                cx.observe(OpFamily::JsxClass);
+                cx.observe(OpFamily::RuntimeClass);
             }
             Ok(binding)
         }

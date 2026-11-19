@@ -88,7 +88,7 @@ fn walk_region(ops: &mut [DumpOp]) {
             }
             DumpOp::Text(_)
             | DumpOp::Interpolation(_)
-            | DumpOp::JsxChildValue(_)
+            | DumpOp::ChildValue(_)
             | DumpOp::Comment(_) => {}
         }
     }
