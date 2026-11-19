@@ -33,7 +33,10 @@ void test("a whole word becomes levels, an embedded one level, case and separato
 
 void test("the capitalized name in prose becomes a level modifier, a plan item the plan", () => {
   assert.equal(
-    rewriteText("crates/a/src/lib.rs", `// ${Name} lane, the ${Name} lane (${Name} P1-7); by ${Name} P2`),
+    rewriteText(
+      "crates/a/src/lib.rs",
+      `// ${Name} lane, the ${Name} lane (${Name} P1-7); by ${Name} P2`,
+    ),
     "// Level lane, the level lane (plan P1-7); by plan P2",
   );
   assert.equal(rewriteText(".github/workflows/x.yml", `name: ${Name} Kani`), "name: Level Kani");
@@ -71,6 +74,14 @@ void test("rewrites keep the docs directory, pinned links and links that resolve
   );
 });
 
+void test("recorded commit subjects keep their bytes; the fields around them follow", () => {
+  const record = `{"commit":"${"b".repeat(40)}","subject":"feat(${name}): land \\"${Name}\\"","path":"tests/${name}.rs"}`;
+  assert.equal(
+    rewriteText("tests/_fixtures/history/audit.json", record),
+    `{"commit":"${"b".repeat(40)}","subject":"feat(${name}): land \\"${Name}\\"","path":"tests/levels.rs"}`,
+  );
+});
+
 void test("kept docs keep prose and names; references to moved tracked paths follow them", () => {
   const known = knownPaths([`${name}/vize_l0/src/lib.rs`, `tests/tooling/${name}-x.test.ts`]);
   const source = `${Name} keeps its prose; [l0](../../${name}/vize_l0/src/lib.rs), tests/tooling/${name}-x.test.ts, tests/${name}_gone.rs`;
@@ -88,7 +99,12 @@ void test("kept docs keep prose and names; references to moved tracked paths fol
   // A sibling file name follows its file; a name that is not a tracked sibling stays.
   const siblings = knownPaths([`docs/${name}/plan/${l3}-ops.md`, `docs/${name}/plan/l3-ops.md`]);
   assert.equal(
-    rewriteText(`docs/${name}/plan/a.md`, `[\`${l3}-ops.md\`](./${l3}-ops.md) ${l3}-gone.md`, undefined, siblings),
+    rewriteText(
+      `docs/${name}/plan/a.md`,
+      `[\`${l3}-ops.md\`](./${l3}-ops.md) ${l3}-gone.md`,
+      undefined,
+      siblings,
+    ),
     `[\`l3-ops.md\`](./l3-ops.md) ${l3}-gone.md`,
   );
 });

@@ -85,6 +85,8 @@ const protectedSpans = new RegExp(
     String.raw`docs\\\/${NAME}(?![A-Za-z0-9_-])`,
     // Links pinned to a commit or branch other than main show that tree as it was.
     String.raw`https?://github\.com/ubugeeei-prod/vize/(?:blob|tree|raw|commit|compare)/(?!main/)[^\s)"'\x60\]>]+`,
+    // A recorded Git commit subject is history: audits pin the subjects as they were written.
+    String.raw`"subject": ?"(?:[^"\\\n]|\\.)*"`,
   ].join("|"),
   "gu",
 );
