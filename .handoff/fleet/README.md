@@ -138,3 +138,14 @@ rows), #13403 (Vue L1 relocation), #13405 (L0 renames), #13410 (IR identity).
 2. Priority 0 first. Then make the release-measure workflow pass A/A and land it, because every PR needs it.
 3. Restart the lanes from their handoffs with `fleet-brief.md` as the common brief; keep ≤ ~8 agents (CI is
    the bottleneck).
+
+### Late addition: failing tooling tests in the daily full Check (scan of daily runs since 11-08)
+Raw data: `main-health-tooling-histfails.txt`. First failures are 11-09 or earlier for most rows; the 11-08 run
+doesn't list test names, so bisecting needs late-October/early-November runs.
+- Stale baselines (docs path moved to `docs/content/rules/reference/...`): `css-engine-boundary`, `lint-ssr-script-setup`.
+- Stale pin (imports from `vue` now bind as `setup-const`, which matches Vue): `differential-compiler-api-execution`.
+- Real/likely regressions: `lsp-completion-resolve` and `lsp-script-completion-boundary` (generated `__vize*`
+  helpers offered as completions), `lsp-call-hierarchy-vue-exports` (range shrank to the name).
+- Undecided: `lsp-template-completion` (extra `script/define-props-destructuring` diagnostic).
+- Test bug: `differential-formatter-api-execution` (#12976 plus #12863: the Rust snapshot and the differential
+  reference share one file).
