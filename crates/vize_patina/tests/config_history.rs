@@ -144,8 +144,8 @@ fn read(path: &Path) -> std::string::String {
 
 #[test]
 fn configured_current_results_and_independent_fix_applications() {
-    let cases: Vec<Case> = serde_json::from_str(&read(&root().join("cases.json")))
-        .expect("strict fixture schema");
+    let cases: Vec<Case> =
+        serde_json::from_str(&read(&root().join("cases.json"))).expect("strict fixture schema");
     assert_eq!(
         cases.len(),
         56,
