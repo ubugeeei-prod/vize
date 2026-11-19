@@ -231,6 +231,11 @@ test("the style and Vue steps move the most specific module first", () => {
     "event",
   ]);
   assert.deepEqual(relocate(vue, ["dialect", "vue"]), ["framework", "vue", "quirks"]);
+  // A path that ends at a moved directory follows that directory's own move.
+  assert.equal(
+    rewritePaths('"davinci/vize_l1/src/dialect/vue/feature" src/dialect/vue2x', steps["l1-vue"]!),
+    '"davinci/vize_l1/src/framework/vue/feature" src/dialect/vue2x',
+  );
   assert.deepEqual(relocate(vue, ["dialect", "vue2", "text"]), [
     "framework",
     "vue",
@@ -247,10 +252,7 @@ test("group members that leave their group are named from the root", () => {
     "use vize_l1::{markup::{token::Token}, framework::vue::directive::DirectiveName};",
   );
   assert.equal(
-    rewriteRust("use super::{directive::DirectiveName, token::Token};", vue, [
-      "markup",
-      "grammar",
-    ]),
+    rewriteRust("use super::{directive::DirectiveName, token::Token};", vue, ["markup", "grammar"]),
     "use crate::{markup::{token::Token}, framework::vue::directive::DirectiveName};",
   );
   assert.equal(

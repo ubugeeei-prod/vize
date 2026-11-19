@@ -780,7 +780,7 @@ export function rewritePaths(source: string, step: Step): string {
   for (const { from, to } of step.moves) {
     const old = moduleFiles(step.crate, from).dir;
     const next = moduleFiles(step.crate, to).dir;
-    out = out.replace(new RegExp(`${escape(old)}(?=\\.rs\\b|/)`, "gu"), next);
+    out = out.replace(new RegExp(`${escape(old)}(?=\\.rs\\b|/|(?![\\w.-]))`, "gu"), next);
     // The same path inside a regular expression literal (`a\/b`).
     const slashed = (text: string) => text.replaceAll("/", "\\/");
     out = out.replace(
