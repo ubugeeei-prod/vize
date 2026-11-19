@@ -20,12 +20,12 @@ as the [generated-ledgers record](./2026-09-27-generated-ledgers.md) requires.
 The counts are a run artifact: `--summary` emits `lint-substrate.md` into the
 `davinci-generated-ledgers` bundle.
 
-| Column      | Meaning                                                                                                                                                                                                    |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `substrate` | The level the rule belongs on: `L1 syntax`, `L2 semantic`, `L1 script` or `L1 css`.                                                                                                                        |
-| `engine`    | What runs the rule on the default SFC path today, `+`-joined when it has several entries (for example `relief-visitor+sfc-descriptor`).                                                                    |
+| Column      | Meaning                                                                                                                                                                                                     |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `substrate` | The level the rule belongs on: `L1 syntax`, `L2 semantic`, `L1 script` or `L1 css`.                                                                                                                         |
+| `engine`    | What runs the rule on the default SFC path today, `+`-joined when it has several entries (for example `relief-visitor+sfc-descriptor`).                                                                     |
 | `status`    | `native` when every engine is a target engine for the substrate and the rule code reads no legacy crate; `legacy-engine` when only the engine is legacy; `legacy-rule` when the rule code reads one itself. |
-| `legacy`    | Legacy crates named in the rule file or its private submodule directory (`relief`, `croquis`, `armature`, `atelier_sfc`, `atelier_jsx`, ...).                                                              |
+| `legacy`    | Legacy crates named in the rule file or its private submodule directory (`relief`, `croquis`, `armature`, `atelier_sfc`, `atelier_jsx`, ...).                                                               |
 
 ## Classification
 

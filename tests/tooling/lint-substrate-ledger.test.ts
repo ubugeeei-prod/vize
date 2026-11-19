@@ -80,7 +80,10 @@ void test("every rule has one substrate, known engines and a consistent status",
 
 void test("the summary counts every row once per substrate", () => {
   const summary = renderSummary(rows());
-  const total = new RegExp(`\\| total +\\|(?: +\\d+ \\|){${STATUSES.length}} +${rows().length} \\|`, "u");
+  const total = new RegExp(
+    `\\| total +\\|(?: +\\d+ \\|){${STATUSES.length}} +${rows().length} \\|`,
+    "u",
+  );
   assert.match(summary, total);
   assert.equal(renderLedger(rows()).split("\n").length, rows().length + 3);
 });
