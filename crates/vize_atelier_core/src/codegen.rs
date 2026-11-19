@@ -5,7 +5,6 @@
 mod children;
 mod component_binding;
 mod context;
-pub mod document;
 mod element;
 pub(crate) use element::helpers::is_dynamic_component;
 mod emit;
@@ -16,7 +15,6 @@ mod helpers;
 mod node;
 mod patch_flag;
 mod props;
-pub mod rewrite_spans;
 mod root;
 mod slots;
 pub mod source_map;

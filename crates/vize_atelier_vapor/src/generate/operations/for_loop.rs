@@ -1,6 +1,6 @@
 use crate::ir::ForIRNode;
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{FxHashMap, String, ToCompactString, cstr};
+use vize_l4::write::EmitDocument;
 
 use super::{
     super::{context::GenerateContext, destructure::needs_parsed_reads, generate_block},

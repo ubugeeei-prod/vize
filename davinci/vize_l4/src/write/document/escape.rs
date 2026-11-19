@@ -15,11 +15,18 @@ impl EmitDocument {
         // (input start, input end, cumulative signed length change)
         let mut growth: Vec<(usize, usize, isize)> = Vec::new();
         let (mut start, mut index) = (0, 0);
-        while let Some(rest) = bytes.get(index..).filter(|rest| !rest.is_empty()) {
-            let Some((from, to)) = escapes
-                .iter()
-                .find(|(from, _)| !from.is_empty() && rest.starts_with(from.as_bytes()))
-            else {
+        while index < bytes.len() {
+            let rest = bytes.split_at(index).1;
+            let Some((from, to)) = escapes.iter().find(|(from, _)| {
+                let pattern = from.as_bytes();
+                // Single-byte patterns (quotes, backslashes, line breaks) are
+                // the common case; compare the byte instead of a prefix.
+                if pattern.len() == 1 {
+                    rest.first() == pattern.first()
+                } else {
+                    !pattern.is_empty() && rest.starts_with(pattern)
+                }
+            }) else {
                 index += 1;
                 continue;
             };

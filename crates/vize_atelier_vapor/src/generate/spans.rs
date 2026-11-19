@@ -10,11 +10,9 @@
 //! their own anchors from lowering. When no map is requested none of this is
 //! built and every write is a plain append (TS-11).
 
-use vize_atelier_core::{
-    ElementNode, PropNode, RootNode, SimpleExpressionNode, TemplateChildNode,
-    codegen::document::{EmitDocument, SpanLink},
-};
+use vize_atelier_core::{ElementNode, PropNode, RootNode, SimpleExpressionNode, TemplateChildNode};
 use vize_carton::{FxHashMap, String};
+use vize_l4::write::{EmitDocument, SpanLink};
 
 use super::context::GenerateContext;
 

@@ -13,8 +13,9 @@ use super::rewrite::Edit;
 use crate::CompileResult;
 use oxc_sourcemap::SourceMap;
 use serde_json::Value;
-use vize_atelier_core::codegen::document::{EmitDocument, SpanLink};
+use vize_atelier_core::codegen::source_map::document_source_map;
 use vize_l0::{Span, String as CompactString};
+use vize_l4::write::{EmitDocument, SpanLink};
 
 pub(super) fn rebase(
     compiled: &CompileResult,
@@ -74,7 +75,7 @@ pub(super) fn rebase(
         });
     }
     let document = EmitDocument::from_parts(CompactString::new(code), links);
-    let rebuilt = document.source_map(filename, source);
+    let rebuilt = document_source_map(&document, filename, source);
     let mut rebuilt: Value = serde_json::from_str(&rebuilt).map_err(|e| e.to_string())?;
     // Preserve map metadata; only generated positions and their name indices change.
     if let (Some(original), Some(target)) = (map.as_object(), rebuilt.as_object_mut()) {

@@ -1,5 +1,6 @@
-use vize_atelier_core::{RuntimeHelper, codegen::document::EmitDocument};
+use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, camelize, capitalize};
+use vize_l4::write::EmitDocument;
 
 use super::SsrCodegenContext;
 

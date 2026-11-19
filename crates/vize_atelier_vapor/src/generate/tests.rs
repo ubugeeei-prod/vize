@@ -9,9 +9,9 @@
 mod vapor_generate_tests {
     use super::super::{generate_vapor, spans::TEMPLATE_ESCAPES};
     use crate::lower::transform_to_ir;
-    use vize_atelier_core::codegen::document::EmitDocument;
     use vize_atelier_core::parser::parse;
     use vize_carton::Allocator;
+    use vize_l4::write::EmitDocument;
 
     #[test]
     fn test_generate_simple() {

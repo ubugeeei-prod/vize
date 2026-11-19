@@ -1,7 +1,8 @@
 //! Native L3 consumes the same literal evaluator without reconstructing an AST.
 
-use vize_atelier_core::{codegen::document::EmitDocument, literal_object_style};
+use vize_atelier_core::literal_object_style;
 use vize_carton::{Span, String};
+use vize_l4::write::EmitDocument;
 
 use super::super::{AuthoredSpan, BindingKind, Content, Node};
 use super::{Emitter, escaped, spans::argument_offset};

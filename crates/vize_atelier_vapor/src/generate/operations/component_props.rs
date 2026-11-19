@@ -1,9 +1,9 @@
 use crate::ir::{ComponentKind, CreateComponentIRNode, IRProp, PropValueKind};
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_atelier_core::steps::{
     expression::is_typescript_function_expression_node, is_event_handler_reference_node,
 };
 use vize_carton::{String, ToCompactString, cstr};
+use vize_l4::write::EmitDocument;
 
 use super::{
     super::{context::GenerateContext, escape_js_string_literal},

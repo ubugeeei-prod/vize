@@ -1,10 +1,10 @@
 use vize_l0::{FxHashMap, String, ToCompactString};
 
-use crate::codegen::document::EmitDocument;
 use crate::codegen::helpers::default_helper_alias;
 use crate::options::{CodegenExperimentalOptions, CodegenOptions};
 use crate::runtime_helpers::RuntimeHelpers;
 use crate::{Namespace, RuntimeHelper};
+use vize_l4::write::EmitDocument;
 
 use super::CodegenContext;
 

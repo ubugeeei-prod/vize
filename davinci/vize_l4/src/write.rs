@@ -15,8 +15,8 @@
 //! copy of each part. Nothing is ever `insert_str`-ed mid-text.
 //!
 //! [`EmitDocument`] and [`SpanLink`] are the finished form of a recording
-//! writer. The production compiler retains its independent document until
-//! its fix-history gate closes (#6880).
+//! writer, and the one emission document every backend writes, the legacy
+//! template backends included.
 
 use alloc::vec::Vec;
 

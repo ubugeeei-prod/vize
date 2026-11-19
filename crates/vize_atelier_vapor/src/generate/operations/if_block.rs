@@ -1,6 +1,6 @@
 use crate::ir::{IfIRNode, NegativeBranch};
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{FxHashMap, ToCompactString};
+use vize_l4::write::EmitDocument;
 
 use super::{
     super::{context::GenerateContext, generate_block},

@@ -11,8 +11,8 @@
 
 use std::ops::Range;
 
-use vize_atelier_core::codegen::document::{EmitDocument, SpanLink};
 use vize_l0::Span;
+use vize_l4::write::{EmitDocument, SpanLink};
 
 use super::{ProjectionMapping, VizeMapping, VizeSubSpan};
 
@@ -109,8 +109,8 @@ impl ProjectionMapping {
 #[cfg(test)]
 mod tests {
     use super::{ProjectionMapping, VizeMapping, VizeSubSpan, virtual_ts_document};
-    use vize_atelier_core::codegen::document::EmitDocument;
     use vize_l0::Span;
+    use vize_l4::write::EmitDocument;
 
     #[test]
     fn virtual_ts_document_keeps_the_code_and_the_rows() {

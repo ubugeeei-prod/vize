@@ -2,8 +2,8 @@
 
 use super::{super::context::GenerateContext, component_slots::generate_slot_fn};
 use crate::ir::{ComponentKind, CreateComponentIRNode, IRSlot, IRSlotControl, IRSlotLoop};
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{FxHashMap, String, cstr};
+use vize_l4::write::EmitDocument;
 
 fn cache_name(component: usize, slot: usize, branch: usize) -> String {
     if branch == 0 {

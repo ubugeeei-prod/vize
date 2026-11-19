@@ -1,9 +1,9 @@
 use crate::ir::SetEventIRNode;
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_atelier_core::steps::{
     expression::is_typescript_function_expression_node, is_event_handler_reference_node,
 };
 use vize_carton::cstr;
+use vize_l4::write::EmitDocument;
 
 pub(super) use super::super::expression_retained::resolve_inline_handler_node as resolve_inline_handler;
 use super::super::{context::GenerateContext, expression::is_simple_path_expression};

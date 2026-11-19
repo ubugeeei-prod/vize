@@ -7,10 +7,9 @@
 //! exactly as [`component_props_object`](super::props::component_props_object)
 //! does while keeping those anchors.
 
-use vize_atelier_core::{
-    AttributeNode, DirectiveNode, ExpressionNode, codegen::document::EmitDocument,
-};
+use vize_atelier_core::{AttributeNode, DirectiveNode, ExpressionNode};
 use vize_l0::{Span, String};
+use vize_l4::write::EmitDocument;
 
 use super::props::{component_prop_entry, push_component_prop_entry, push_js_object_key};
 use super::{SsrCodegenContext, VNodePropEntry};

@@ -1,8 +1,8 @@
 //! Keyed fragments use the runtime-owned replacement and disposal scope.
 
 use crate::ir::KeyIRNode;
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{FxHashMap, cstr};
+use vize_l4::write::EmitDocument;
 
 use super::{
     super::{context::GenerateContext, generate_block},

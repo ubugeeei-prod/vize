@@ -4,9 +4,9 @@ use super::{
     BlockIRNode, Box, ElementNode, ElementType, ExpressionNode, OperationNode, PropNode,
     SetTemplateRefIRNode, SimpleExpressionNode, String, TemplateChildNode, TransformContext,
 };
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::Span;
 use vize_carton::ensure_sufficient_stack;
+use vize_l4::write::EmitDocument;
 
 mod attributes;
 pub(in crate::lower) use attributes::RootAttributes;

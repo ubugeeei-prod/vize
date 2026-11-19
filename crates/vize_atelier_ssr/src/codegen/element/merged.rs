@@ -19,8 +19,8 @@ use super::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
     TemplateChildNode, ToCompactString, VNodePropEntry, cstr,
 };
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l0::{camelize, is_builtin_directive};
+use vize_l4::write::EmitDocument;
 
 /// The merged attributes of one element and the content a temp owns.
 pub(super) struct MergedAttrs {

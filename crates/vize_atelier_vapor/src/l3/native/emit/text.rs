@@ -2,8 +2,9 @@
 //! one run with one DOM address. At a block root, a mixed run becomes one
 //! standalone text node; a lone part is its own node.
 
-use vize_atelier_core::{SimpleExpressionNode, codegen::document::EmitDocument};
+use vize_atelier_core::SimpleExpressionNode;
 use vize_carton::{Box, Vec};
+use vize_l4::write::EmitDocument;
 
 use super::super::{AuthoredSpan, Content, TextPart};
 use super::{Emitter, escaped};

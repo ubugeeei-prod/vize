@@ -3,8 +3,8 @@
 use crate::generate::context::GenerateContext;
 use crate::ir::{IRProp, PropValueKind};
 use vize_atelier_core::SimpleExpressionNode;
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{String, cstr};
+use vize_l4::write::EmitDocument;
 
 pub(super) fn plain_source(text: String) -> EmitDocument {
     EmitDocument::from(text)

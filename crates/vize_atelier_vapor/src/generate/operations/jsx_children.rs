@@ -1,8 +1,8 @@
 //! JSX child values own DOM blocks rather than template stringification.
 
 use crate::ir::SetJsxChildrenIRNode;
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::cstr;
+use vize_l4::write::EmitDocument;
 
 use super::super::{context::GenerateContext, setup::escape_js_string_literal};
 

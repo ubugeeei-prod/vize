@@ -23,7 +23,6 @@ native = [
   "dep:tempfile",
   "dep:futures",
   "dep:vize_l2",
-  "dep:vize_l4",
 ]
 # Opt-in legacy Vue (v0.10 / v0.11 / v1 / v2) type-checking surface. Not enabled by the
 # default Vue 3 build; turns on the parser-side legacy feature too.
@@ -49,7 +48,7 @@ vize_l1.workspace = true
 vize_l2 = { workspace = true, optional = true }
 # The same Pug/Jade frontend is used by native and portable checking.
 vize_l1_to_l2.workspace = true
-vize_l4 = { workspace = true, optional = true }
+vize_l4 = { workspace = true }
 
 # OXC for parsing and AST manipulation (import rewriting)
 oxc_parser.workspace = true

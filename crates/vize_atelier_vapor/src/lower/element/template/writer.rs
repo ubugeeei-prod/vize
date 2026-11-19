@@ -1,7 +1,7 @@
 //! Static template sinks share serialization without recording plain output.
 
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{Span, String};
+use vize_l4::write::EmitDocument;
 
 pub(super) trait TemplateWriter {
     fn push_str(&mut self, text: &str);
