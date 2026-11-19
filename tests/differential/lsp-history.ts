@@ -112,8 +112,7 @@ export function validateHistoryCase(value: HistoryCase): HistoryCase {
   assert(
     value.steps.some(
       (step) => "request" in step || "diagnostics" in step || "serverRequests" in step,
-    ) ||
-      value.recordInitialize,
+    ) || value.recordInitialize,
     `${value.id}: at least one recorded response`,
   );
   return value;
@@ -222,7 +221,9 @@ export async function runHistoryCase(
     }
     for (const name of data.packages ?? []) {
       const resolved = path.dirname(
-        createRequire(path.join(repositoryRoot, "tests/package.json")).resolve(`${name}/package.json`),
+        createRequire(path.join(repositoryRoot, "tests/package.json")).resolve(
+          `${name}/package.json`,
+        ),
       );
       const linkType = process.platform === "win32" ? "junction" : "dir";
       fs.mkdirSync(path.join(workspace, "node_modules"), { recursive: true });
@@ -368,7 +369,9 @@ export async function runHistoryCase(
               : { step: index, result: normalize(result ?? null, workspace) }
           ) as HistoryRecord;
           if (!step.retry) break;
-          if (mode.capture ? isDeepStrictEqual(record, previous) : isDeepStrictEqual(record, expected))
+          if (
+            mode.capture ? isDeepStrictEqual(record, previous) : isDeepStrictEqual(record, expected)
+          )
             break;
           if (Date.now() > deadline) break;
           previous = record;
@@ -413,7 +416,11 @@ export async function runHistoryPack(binaryPath: string, concurrency = 4, root =
             capture: false,
             expected,
           });
-          results.push({ id: data.id, equal: isDeepStrictEqual(records, expected), actual: records });
+          results.push({
+            id: data.id,
+            equal: isDeepStrictEqual(records, expected),
+            actual: records,
+          });
         } catch (error) {
           results.push({ id: data.id, equal: false, error: String(error) });
         }

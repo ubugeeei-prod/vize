@@ -47,7 +47,9 @@ export function materialize(value: unknown, workspace: string): unknown {
       return item.replaceAll("${workspace}", uri).replaceAll("${workspacePath}", workspace);
     if (Array.isArray(item)) return item.map(walk);
     if (item && typeof item === "object")
-      return Object.fromEntries(Object.entries(item).map(([key, inner]) => [walk(key), walk(inner)]));
+      return Object.fromEntries(
+        Object.entries(item).map(([key, inner]) => [walk(key), walk(inner)]),
+      );
     return item;
   };
   return walk(value);

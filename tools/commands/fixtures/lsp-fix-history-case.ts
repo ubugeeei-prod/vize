@@ -127,7 +127,9 @@ async function main() {
     if (spec.noResponse) {
       row[2] = "no-response-behavior";
       row[3] = "-";
-      row[4] = clean(`${spec.noResponse.reason} Covered by: ${spec.noResponse.coveredBy.join(", ")}.`);
+      row[4] = clean(
+        `${spec.noResponse.reason} Covered by: ${spec.noResponse.coveredBy.join(", ")}.`,
+      );
       continue;
     }
     const ids: string[] = [];
@@ -160,7 +162,8 @@ async function main() {
       for (const id of spec.existing.cases) assert(known.has(id), `unknown fixture ${id}`);
       ids.push(...spec.existing.cases);
     }
-    const previousIds = row[3] === "-" || row[2] !== "response-fixture-covered" ? [] : row[3].split(",");
+    const previousIds =
+      row[3] === "-" || row[2] !== "response-fixture-covered" ? [] : row[3].split(",");
     row[2] = "response-fixture-covered";
     row[3] = [...new Set([...previousIds, ...ids])].join(",");
     row[4] = spec.existing ? clean(spec.existing.note) : "-";
