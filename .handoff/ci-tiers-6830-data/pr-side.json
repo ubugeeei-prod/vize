@@ -1,0 +1,383 @@
+{
+ "total": 1000,
+ "list": [
+  {
+   "workflow": "check.yml",
+   "runs": 66,
+   "branches": 33,
+   "wallMin": 1294
+  },
+  {
+   "workflow": "zizmor.yml",
+   "runs": 66,
+   "branches": 33,
+   "wallMin": 359
+  },
+  {
+   "workflow": "pr-performance-observation.yml",
+   "runs": 66,
+   "branches": 33,
+   "wallMin": 704
+  },
+  {
+   "workflow": "musea-browser.yml",
+   "runs": 66,
+   "branches": 33,
+   "wallMin": 618
+  },
+  {
+   "workflow": "nuxt-style-build.yml",
+   "runs": 65,
+   "branches": 33,
+   "wallMin": 294
+  },
+  {
+   "workflow": "content-mapper-instance-globals.yml",
+   "runs": 56,
+   "branches": 28,
+   "wallMin": 1311
+  },
+  {
+   "workflow": "v1-supported-matrix.yml",
+   "runs": 52,
+   "branches": 25,
+   "wallMin": 236
+  },
+  {
+   "workflow": "parcel-transformer.yml",
+   "runs": 51,
+   "branches": 25,
+   "wallMin": 447
+  },
+  {
+   "workflow": "volar-plugin.yml",
+   "runs": 51,
+   "branches": 25,
+   "wallMin": 314
+  },
+  {
+   "workflow": "canon-ecosystem-producer.yml",
+   "runs": 50,
+   "branches": 24,
+   "wallMin": 287
+  },
+  {
+   "workflow": "nuxt3-module-build.yml",
+   "runs": 50,
+   "branches": 25,
+   "wallMin": 368
+  },
+  {
+   "workflow": "jsx-authored-native-modules.yml",
+   "runs": 39,
+   "branches": 18,
+   "wallMin": 401
+  },
+  {
+   "workflow": "ci-walltime-benchmark.yml",
+   "runs": 30,
+   "branches": 29,
+   "wallMin": 2
+  },
+  {
+   "workflow": "davinci-unused-bindings.yml",
+   "runs": 23,
+   "branches": 9,
+   "wallMin": 168
+  },
+  {
+   "workflow": "lint-reference-coverage-contracts.yml",
+   "runs": 19,
+   "branches": 7,
+   "wallMin": 86
+  },
+  {
+   "workflow": "typescript-plugin.yml",
+   "runs": 15,
+   "branches": 7,
+   "wallMin": 112
+  },
+  {
+   "workflow": "corsa-package-refresh.yml",
+   "runs": 12,
+   "branches": 4,
+   "wallMin": 97
+  },
+  {
+   "workflow": "babel-plugin-hosts.yml",
+   "runs": 9,
+   "branches": 8,
+   "wallMin": 102
+  },
+  {
+   "workflow": "davinci-plugin-sdk.yml",
+   "runs": 9,
+   "branches": 4,
+   "wallMin": 36
+  },
+  {
+   "workflow": "l1-document-special-text.yml",
+   "runs": 9,
+   "branches": 5,
+   "wallMin": 56
+  },
+  {
+   "workflow": "musea-glyph-feature-boundary.yml",
+   "runs": 9,
+   "branches": 5,
+   "wallMin": 23
+  },
+  {
+   "workflow": "language-project-fixtures.yml",
+   "runs": 9,
+   "branches": 4,
+   "wallMin": 5
+  },
+  {
+   "workflow": "async-component-ancestry.yml",
+   "runs": 8,
+   "branches": 3,
+   "wallMin": 55
+  },
+  {
+   "workflow": "cross-file-script-offset.yml",
+   "runs": 8,
+   "branches": 3,
+   "wallMin": 69
+  },
+  {
+   "workflow": "lsp-scheduler-cost-carrier.yml",
+   "runs": 8,
+   "branches": 5,
+   "wallMin": 65
+  },
+  {
+   "workflow": "turbopack-consumers.yml",
+   "runs": 7,
+   "branches": 6,
+   "wallMin": 55
+  },
+  {
+   "workflow": "native-sfc-runtime-options.yml",
+   "runs": 7,
+   "branches": 6,
+   "wallMin": 98
+  },
+  {
+   "workflow": "jsx-backend-origins.yml",
+   "runs": 7,
+   "branches": 6,
+   "wallMin": 50
+  },
+  {
+   "workflow": "vapor-literal-object-styles.yml",
+   "runs": 7,
+   "branches": 6,
+   "wallMin": 61
+  },
+  {
+   "workflow": "partition-weight-work.yml",
+   "runs": 7,
+   "branches": 2,
+   "wallMin": 84
+  },
+  {
+   "workflow": "lsp-overlay-custody.yml",
+   "runs": 6,
+   "branches": 4,
+   "wallMin": 43
+  },
+  {
+   "workflow": "native-beta-diagnostic-dto.yml",
+   "runs": 6,
+   "branches": 4,
+   "wallMin": 37
+  },
+  {
+   "workflow": "release-contracts.yml",
+   "runs": 6,
+   "branches": 2,
+   "wallMin": 10
+  },
+  {
+   "workflow": "plain-script-import-ref.yml",
+   "runs": 5,
+   "branches": 4,
+   "wallMin": 76
+  },
+  {
+   "workflow": "rspack-hmr.yml",
+   "runs": 5,
+   "branches": 4,
+   "wallMin": 29
+  },
+  {
+   "workflow": "published-ambient-template-ref.yml",
+   "runs": 5,
+   "branches": 2,
+   "wallMin": 4
+  },
+  {
+   "workflow": "document-snapshot-source-profile.yml",
+   "runs": 5,
+   "branches": 2,
+   "wallMin": 31
+  },
+  {
+   "workflow": "lsp-native-diagnostic-warmup.yml",
+   "runs": 5,
+   "branches": 2,
+   "wallMin": 47
+  },
+  {
+   "workflow": "css-engine-vendor-candidate.yml",
+   "runs": 4,
+   "branches": 3,
+   "wallMin": 23
+  },
+  {
+   "workflow": "css-compile-source-maps.yml",
+   "runs": 4,
+   "branches": 3,
+   "wallMin": 23
+  },
+  {
+   "workflow": "release-glibc-floor.yml",
+   "runs": 4,
+   "branches": 3,
+   "wallMin": 83
+  },
+  {
+   "workflow": "vue2-ir-template.yml",
+   "runs": 4,
+   "branches": 3,
+   "wallMin": 41
+  },
+  {
+   "workflow": "canon-slot-provider-any.yml",
+   "runs": 4,
+   "branches": 2,
+   "wallMin": 24
+  },
+  {
+   "workflow": "canon-slot-constructor.yml",
+   "runs": 4,
+   "branches": 2,
+   "wallMin": 37
+  },
+  {
+   "workflow": "full-worker-contracts.yml",
+   "runs": 4,
+   "branches": 1,
+   "wallMin": 2
+  },
+  {
+   "workflow": "pre-textarea-first-newline.yml",
+   "runs": 3,
+   "branches": 3,
+   "wallMin": 34
+  },
+  {
+   "workflow": "css-hover-visual.yml",
+   "runs": 3,
+   "branches": 1,
+   "wallMin": 23
+  },
+  {
+   "workflow": "component-input-diagnostic-ownership.yml",
+   "runs": 3,
+   "branches": 1,
+   "wallMin": 57
+  },
+  {
+   "workflow": "defaulted-inject.yml",
+   "runs": 3,
+   "branches": 1,
+   "wallMin": 14
+  },
+  {
+   "workflow": "jsr-package.yml",
+   "runs": 3,
+   "branches": 1,
+   "wallMin": 5
+  },
+  {
+   "workflow": "nuxt2-module-build.yml",
+   "runs": 3,
+   "branches": 1,
+   "wallMin": 9
+  },
+  {
+   "workflow": "nuxt2-bridge-module-build.yml",
+   "runs": 3,
+   "branches": 1,
+   "wallMin": 12
+  },
+  {
+   "workflow": "viteplus-config-consumers.yml",
+   "runs": 3,
+   "branches": 1,
+   "wallMin": 12
+  },
+  {
+   "workflow": "viteplus-task-cache.yml",
+   "runs": 3,
+   "branches": 1,
+   "wallMin": 8
+  },
+  {
+   "workflow": "published-fresh-project.yml",
+   "runs": 3,
+   "branches": 1,
+   "wallMin": 12
+  },
+  {
+   "workflow": "viteplus-lint-consumers.yml",
+   "runs": 3,
+   "branches": 1,
+   "wallMin": 14
+  },
+  {
+   "workflow": "windows-config-consumer.yml",
+   "runs": 3,
+   "branches": 1,
+   "wallMin": 60
+  },
+  {
+   "workflow": "for-bindings.yml",
+   "runs": 2,
+   "branches": 2,
+   "wallMin": 0
+  },
+  {
+   "workflow": "vscode-workspace-server.yml",
+   "runs": 2,
+   "branches": 1,
+   "wallMin": 41
+  },
+  {
+   "workflow": "lsp-jsx-intrinsic-hover.yml",
+   "runs": 2,
+   "branches": 1,
+   "wallMin": 16
+  },
+  {
+   "workflow": "davinci-kani.yml",
+   "runs": 2,
+   "branches": 1,
+   "wallMin": 7
+  },
+  {
+   "workflow": "davinci-creusot.yml",
+   "runs": 2,
+   "branches": 1,
+   "wallMin": 15
+  },
+  {
+   "workflow": "release-smoke-contracts.yml",
+   "runs": 2,
+   "branches": 1,
+   "wallMin": 9
+  }
+ ]
+}

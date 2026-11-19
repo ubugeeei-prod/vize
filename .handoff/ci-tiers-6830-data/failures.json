@@ -1,0 +1,1130 @@
+[
+ {
+  "id": "44444417128",
+  "created": "2026-11-19T02:27:12Z",
+  "branch": "fix/windows-js-config-crlf",
+  "failed": [
+   "PR source checks / Affected tooling (focus-history-native-comparison + 43 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44435343556",
+  "created": "2026-11-19T01:14:11Z",
+  "branch": "ubugeeei/linter-perf-4",
+  "failed": [
+   "PR source checks / Affected tooling (davinci-fact-spec-corpus + 33 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44424504957",
+  "created": "2026-11-18T23:53:19Z",
+  "branch": "ubugeeei/linter-perf-3",
+  "failed": [
+   "PR source checks / Affected tooling (focus-history-current-oracle + 31 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44424425593",
+  "created": "2026-11-18T23:52:44Z",
+  "branch": "ubugeeei/typecheck-perf-2",
+  "failed": [
+   "PR source checks / PR JS packages / PR package conformance (ui)",
+   "PR source checks / Affected tooling (focus-history-current-oracle + 28 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44398820874",
+  "created": "2026-11-18T21:11:15Z",
+  "branch": "ubugeeei/fixture-integration",
+  "failed": [
+   "PR source checks / Affected tooling (tooling-test-selection + 34 files)",
+   "PR source checks / Affected tooling (rust-cache-docs-wasm-consumers + 36 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44385933647",
+  "created": "2026-11-18T19:57:47Z",
+  "branch": "ubugeeei/fixture-integration",
+  "failed": [
+   "PR source checks / Affected tooling (tooling-test-selection + 34 files)",
+   "PR source checks / Affected tooling (rust-cache-docs-wasm-consumers + 36 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44355971375",
+  "created": "2026-11-18T17:12:09Z",
+  "branch": "ubugeeei/fixture-integration",
+  "failed": [
+   "PR source checks / Affected tooling (content-mapper-source-node22-workflow + 35 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44334302517",
+  "created": "2026-11-18T15:19:29Z",
+  "branch": "perf/maestro-editor-hot-paths",
+  "failed": [
+   "PR source checks / Affected tooling (publish-npm-package-tarball + 55 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44316692517",
+  "created": "2026-11-18T13:43:56Z",
+  "branch": "feat/canon-l4-jsx-helpers-13149",
+  "failed": [
+   "PR source checks / Native runtime (canon)",
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44315798506",
+  "created": "2026-11-18T13:38:40Z",
+  "branch": "ubugeeei/linter-perf",
+  "failed": [
+   "PR source checks / Affected tooling (davinci-complexity-corpus + 32 files)",
+   "PR source checks / Affected tooling (davinci-fact-spec-corpus + 32 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44313136443",
+  "created": "2026-11-18T13:22:58Z",
+  "branch": "feat/canon-l4-jsx-helpers-13149",
+  "failed": [
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Clippy, doctests and feature lanes (contracts)",
+   "PR source checks / Native runtime (canon)",
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / Affected tooling (davinci-v-on-corpus-selection + 31 files)",
+   "PR source checks / Affected tooling (tooling-heavy-inputs + 31 files)",
+   "PR source checks / Affected tooling (content-mapper-source-node22-workflow + 31 files)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Rust source report",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44301493919",
+  "created": "2026-11-18T12:11:04Z",
+  "branch": "perf/atelier-vapor-lower-stress-wide",
+  "failed": [
+   "check-js",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44292008033",
+  "created": "2026-11-18T11:08:58Z",
+  "branch": "davinci/creusot-record",
+  "failed": [
+   "check-js",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44287277738",
+  "created": "2026-11-18T10:38:15Z",
+  "branch": "musea-test",
+  "failed": [
+   "check-vize-apps",
+   "PR source checks / PR Rust workspace products / Rust tests (Compiler)",
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / Affected tooling (lsp-vs-volar-scale + 73 files)",
+   "PR source checks / Affected tooling (davinci-canonical-corpus-worker-clocks + 35 files)",
+   "PR source checks / Affected tooling (publish-npm-package-tarball + 38 files)",
+   "PR source checks / Affected tooling (focus-history-native-comparison + 38 files)",
+   "PR source checks / Affected tooling (content-mapper-source-node22-workflow + 37 files)",
+   "PR source checks / Affected tooling (davinci-dom-production-boundary + 38 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44285390363",
+  "created": "2026-11-18T10:26:13Z",
+  "branch": "musea-test",
+  "failed": [
+   "check-vize-apps",
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / PR Rust workspace products / Rust tests (Compiler)",
+   "PR source checks / Affected tooling (reuse-rust-target + 36 files)",
+   "PR source checks / Affected tooling (diagnostic-digest-bench + 35 files)",
+   "PR source checks / Affected tooling (davinci-generated-ledgers + 36 files)",
+   "PR source checks / Affected tooling (vite-plus-fast-path + 36 files)",
+   "PR source checks / Affected tooling (davinci-fact-spec-corpus + 36 files)",
+   "PR source checks / Affected tooling (tooling-heavy-inputs + 38 files)",
+   "PR source checks / Affected tooling (davinci-complexity-corpus + 37 files)",
+   "PR source checks / Affected tooling (focus-history-native-comparison + 38 files)",
+   "PR source checks / Affected tooling (content-mapper-source-node22-workflow + 37 files)",
+   "PR source checks / Affected tooling (lsp-bind-style-code-actions + 38 files)",
+   "PR source checks / Affected tooling (focus-history-current-oracle + 38 files)",
+   "PR source checks / Affected tooling (ecosystem-producer-qualification + 37 files)",
+   "PR source checks / Affected tooling (lint-props-deep-destructure + 38 files)",
+   "PR source checks / Affected tooling (typechecker-native-canon-lib-scope + 38 files)",
+   "PR source checks / Affected tooling (cli-build-error-oracles + 38 files)",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44283060531",
+  "created": "2026-11-18T10:11:47Z",
+  "branch": "musea-test",
+  "failed": [
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / Affected tooling (tooling-test-selection + 36 files)",
+   "PR source checks / Affected tooling (publish-npm-package-tarball + 38 files)",
+   "PR source checks / Affected tooling (public-typechecker-11339 + 61 files)",
+   "PR source checks / Affected tooling (davinci-metamorphic-corpus + 38 files)",
+   "PR source checks / Affected tooling (cli-build-error-oracles + 38 files)",
+   "PR source checks / Affected tooling (davinci-generated-ledgers + 38 files)",
+   "PR source checks / Affected tooling (typechecker-native-canon-lib-scope + 38 files)",
+   "PR source checks / Affected tooling (davinci-canonical-corpus-worker-clocks + 35 files)",
+   "PR source checks / Affected tooling (focus-history-native-comparison + 38 files)",
+   "PR source checks / Affected tooling (reuse-rust-target + 37 files)",
+   "PR source checks / Affected tooling (ecosystem-producer-qualification + 38 files)",
+   "PR source checks / Affected tooling (davinci-dom-production-boundary + 38 files)",
+   "PR source checks / Affected tooling (davinci-fact-spec-corpus + 37 files)",
+   "PR source checks / Affected tooling (lsp-bind-style-code-actions + 38 files)",
+   "PR source checks / Affected tooling (davinci-complexity-corpus + 37 files)",
+   "PR source checks / Affected tooling (tooling-product-observer-inputs + 38 files)",
+   "PR source checks / Affected tooling (content-mapper-source-node22-workflow + 37 files)",
+   "PR source checks / Affected tooling (focus-history-current-oracle + 38 files)",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44278310437",
+  "created": "2026-11-18T09:41:37Z",
+  "branch": "musea-test",
+  "failed": [
+   "PR source checks / PR JS packages / PR JS package tests (builders)",
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / Affected tooling (tooling-product-observer-inputs + 38 files)",
+   "PR source checks / Affected tooling (reuse-rust-target + 37 files)",
+   "PR source checks / Affected tooling (public-typechecker-11339 + 61 files)",
+   "PR source checks / Affected tooling (davinci-metamorphic-corpus + 38 files)",
+   "PR source checks / Affected tooling (cli-build-error-oracles + 38 files)",
+   "PR source checks / Affected tooling (content-mapper-source-node22-workflow + 37 files)",
+   "PR source checks / Affected tooling (tooling-test-selection + 36 files)",
+   "PR source checks / Affected tooling (davinci-generated-ledgers + 38 files)",
+   "PR source checks / Affected tooling (davinci-fact-spec-corpus + 37 files)",
+   "PR source checks / Affected tooling (focus-history-current-oracle + 38 files)",
+   "PR source checks / Affected tooling (davinci-dom-production-boundary + 38 files)",
+   "PR source checks / Affected tooling (publish-npm-package-tarball + 38 files)",
+   "PR source checks / Affected tooling (lsp-bind-style-code-actions + 38 files)",
+   "PR source checks / Affected tooling (ecosystem-producer-qualification + 38 files)",
+   "PR source checks / Affected tooling (typechecker-native-canon-lib-scope + 38 files)",
+   "PR source checks / Affected tooling (focus-history-native-comparison + 38 files)",
+   "PR source checks / Affected tooling (davinci-canonical-corpus-worker-clocks + 35 files)",
+   "PR source checks / Affected tooling (davinci-complexity-corpus + 37 files)",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44277879864",
+  "created": "2026-11-18T09:38:51Z",
+  "branch": "fix/vfor-destructure-vmodel",
+  "failed": [
+   "check-js",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44264858388",
+  "created": "2026-11-18T08:11:25Z",
+  "branch": "fix/canon-fix-history-regressions",
+  "failed": [
+   "PR source checks / Affected tooling (davinci-fact-spec-corpus + 24 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44263133070",
+  "created": "2026-11-18T07:59:07Z",
+  "branch": "fix/compiler-history-regressions",
+  "failed": [
+   "PR source checks / Affected tooling (ecosystem-producer-qualification + 19 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44255369003",
+  "created": "2026-11-18T06:59:13Z",
+  "branch": "musea-test",
+  "failed": [
+   "security-audit",
+   "check-vize-apps",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Clippy, doctests and feature lanes (clippy)",
+   "PR source checks / PR JS packages / PR JS package tests (ui)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Clippy, doctests and feature lanes (contracts)",
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / PR Rust workspace products / Rust tests (Language server)",
+   "PR source checks / PR Rust workspace products / Rust tests (Compiler)",
+   "PR source checks / PR Rust workspace products / Rust tests (CLI and integrations)",
+   "PR source checks / Affected tooling (compiler-jsx-entry + 21 files)",
+   "PR source checks / Affected tooling (davinci-dom-production-boundary + 22 files)",
+   "PR source checks / Affected tooling (tooling-heavy-inputs + 22 files)",
+   "PR source checks / Affected tooling (content-mapper-source-node22-workflow + 21 files)",
+   "PR source checks / Affected tooling (async-component-ancestry-workflow + 22 files)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Rust source report",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44252735654",
+  "created": "2026-11-18T06:37:43Z",
+  "branch": "feat/npm-entry-packages",
+  "failed": [
+   "security-audit",
+   "PR source checks / Native runtime (canon)",
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / Affected tooling (content-mapper-source-node22-workflow + 54 files)",
+   "PR source checks / Affected tooling (rust-cache-docs-example-post + 54 files)",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44252147064",
+  "created": "2026-11-18T06:32:56Z",
+  "branch": "refactor/l1-lang-registry",
+  "failed": [
+   "security-audit",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44250963581",
+  "created": "2026-11-18T06:23:22Z",
+  "branch": "davinci-foundation-compiler-2",
+  "failed": [
+   "PR source checks / Affected tooling (tooling-product-observer-inputs + 22 files)",
+   "PR source checks / Affected tooling (davinci-complexity-corpus + 23 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44250552733",
+  "created": "2026-11-18T06:20:02Z",
+  "branch": "build/parallel-frontend",
+  "failed": [
+   "PR source checks / Affected tooling (davinci-generated-ledgers + 53 files)",
+   "PR source checks / Affected tooling (content-mapper-instance-globals-template-global-packets + 57 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44245970978",
+  "created": "2026-11-18T05:41:18Z",
+  "branch": "fix/security-picomatch-extglob-redos",
+  "failed": [
+   "PR source checks / Native runtime (canon)",
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44240819546",
+  "created": "2026-11-18T04:57:06Z",
+  "branch": "refactor/l1-lang-registry",
+  "failed": [
+   "security-audit",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44238934277",
+  "created": "2026-11-18T04:40:22Z",
+  "branch": "ci/cut-queue-latency",
+  "failed": [
+   "security-audit",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44235357318",
+  "created": "2026-11-18T04:09:29Z",
+  "branch": "fix/imports-alias-template-ref",
+  "failed": [
+   "PR source checks / Affected tooling (davinci-dom-production-boundary + 23 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44234388618",
+  "created": "2026-11-18T04:01:11Z",
+  "branch": "fix/imports-alias-template-ref",
+  "failed": [
+   "PR source checks / Plan PR source checks",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44223263075",
+  "created": "2026-11-18T02:26:27Z",
+  "branch": "fix/canon-dynamic-vbind-required-props",
+  "failed": [
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44218104385",
+  "created": "2026-11-18T01:44:31Z",
+  "branch": "fix/typecheck-per-target-qualification",
+  "failed": [
+   "PR source checks / Affected tooling (rust-cache-docs-wasm-consumers + 22 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44187720083",
+  "created": "2026-11-17T22:12:28Z",
+  "branch": "fix/lsp-union-alias-conflict",
+  "failed": [
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Clippy, doctests and feature lanes (contracts)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Rust source report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44141197169",
+  "created": "2026-11-17T17:49:31Z",
+  "branch": "fix/lsp-keep-session-on-superseded-mirror",
+  "failed": [
+   "PR source checks / Plan PR source checks",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44131275488",
+  "created": "2026-11-17T16:55:36Z",
+  "branch": "fix/jsx-v-model-array-shapes",
+  "failed": [
+   "PR source checks / Plan PR source checks",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44121271887",
+  "created": "2026-11-17T16:02:57Z",
+  "branch": "feat/pug-jade-profile",
+  "failed": [
+   "PR source checks / Affected tooling (content-mapper-source-node22-workflow + 21 files)",
+   "PR source checks / Affected tooling (canon-component-casing-source-sdk + 22 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44102394905",
+  "created": "2026-11-17T14:22:28Z",
+  "branch": "fix/patina-mapped-enum-keys-13070",
+  "failed": [
+   "PR source checks / Plan PR source checks",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44080104575",
+  "created": "2026-11-17T12:06:52Z",
+  "branch": "feat/pug-jade-profile",
+  "failed": [
+   "PR source checks / Affected tooling (cold-typechecker-scale-candidate-source + 37 files)",
+   "PR source checks / Affected tooling (public-typechecker-q16-f78 + 27 files)",
+   "PR source checks / Affected tooling (block-language-registry + 22 files)",
+   "PR source checks / Affected tooling (tooling-prose-selection + 22 files)",
+   "PR source checks / Affected tooling (davinci-v-on-corpus-selection + 22 files)",
+   "PR source checks / Affected tooling (aria-source-package + 22 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44058814278",
+  "created": "2026-11-17T09:47:35Z",
+  "branch": "davinci-levels-tag-facts",
+  "failed": [
+   "check-vize-apps",
+   "PR source checks / Native runtime (lsp)",
+   "PR source checks / PR JS packages / PR package conformance (ui)",
+   "PR source checks / Native runtime (attributes)",
+   "PR source checks / Native runtime (canon)",
+   "PR source checks / PR Rust workspace products / Rust tests (Language server)",
+   "PR source checks / PR Rust workspace products / Rust tests (SFC compiler)",
+   "PR source checks / PR Rust workspace products / Rust tests (Language server CLI)",
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / Affected tooling (ecosystem-producer-qualification + 23 files)",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44058485932",
+  "created": "2026-11-17T09:45:27Z",
+  "branch": "davinci-foundation-4",
+  "failed": [
+   "PR source checks / Affected tooling (typechecker-native-canon-lib-scope + 25 files)",
+   "PR source checks / Affected tooling (art-lint-public-boundaries + 36 files)",
+   "PR source checks / Affected tooling (focus-history-current-oracle + 24 files)",
+   "PR source checks / Affected tooling (tooling-heavy-inputs + 24 files)",
+   "PR source checks / Affected tooling (rust-cache-docs-wasm-consumers + 26 files)",
+   "PR source checks / Affected tooling (publish-npm-package-tarball + 24 files)",
+   "PR source checks / Affected tooling (davinci-generated-ledgers + 25 files)",
+   "PR source checks / Affected tooling (tooling-test-selection + 22 files)",
+   "PR source checks / Affected tooling (davinci-dom-production-boundary + 25 files)",
+   "PR source checks / Affected tooling (focus-history-capture-contract)",
+   "PR source checks / Affected tooling (davinci-metamorphic-corpus + 25 files)",
+   "PR source checks / Affected tooling (lsp-bind-style-code-actions + 25 files)",
+   "PR source checks / Affected tooling (content-mapper-source-node22-workflow + 24 files)",
+   "PR source checks / Affected tooling (focus-history-native-comparison + 25 files)",
+   "PR source checks / Affected tooling (davinci-fact-spec-corpus + 25 files)",
+   "PR source checks / Affected tooling (tooling-prose-selection + 25 files)",
+   "PR source checks / Affected tooling (tooling-product-observer-inputs + 25 files)",
+   "PR source checks / Affected tooling (davinci-complexity-corpus + 24 files)",
+   "PR source checks / Affected tooling (ecosystem-producer-qualification + 24 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44056973706",
+  "created": "2026-11-17T09:35:35Z",
+  "branch": "perf-patina-json-parallel",
+  "failed": [
+   "PR source checks / Affected tooling (davinci-metamorphic-corpus + 17 files)",
+   "PR source checks / Affected tooling (art-lint-public-boundaries + 21 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44054716551",
+  "created": "2026-11-17T09:20:43Z",
+  "branch": "refactor/generated-name-sigil",
+  "failed": [
+   "check-js",
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / PR Rust workspace products / Rust tests (Language server CLI)",
+   "PR source checks / Affected tooling (davinci-generated-ledgers + 26 files)",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44051804371",
+  "created": "2026-11-17T09:01:48Z",
+  "branch": "fix/release-glibc-floor",
+  "failed": [
+   "check-js",
+   "PR source checks / Affected tooling (patina-v-on-autofix + 9 files)",
+   "PR source checks / Affected tooling (tooling-prose-selection + 27 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44051368366",
+  "created": "2026-11-17T08:58:55Z",
+  "branch": "fix/canon-13044-self-package-link",
+  "failed": [
+   "PR source checks / Affected tooling (davinci-dom-production-boundary + 24 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44048476399",
+  "created": "2026-11-17T08:38:31Z",
+  "branch": "davinci-inputs-style-ids",
+  "failed": [
+   "PR source checks / Affected tooling (tooling-prose-selection + 24 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44044037599",
+  "created": "2026-11-17T08:07:21Z",
+  "branch": "plugins-13074-directive-compiler",
+  "failed": [
+   "PR source checks / Affected tooling (davinci-complexity-corpus + 22 files)",
+   "PR source checks / Affected tooling (davinci-dom-production-boundary + 22 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44043964985",
+  "created": "2026-11-17T08:06:51Z",
+  "branch": "refactor/l1-lang-registry",
+  "failed": [
+   "fmt-rust",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Clippy, doctests and feature lanes (clippy)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Clippy, doctests and feature lanes (navigation)",
+   "PR source checks / PR Rust workspace products / Rust tests (CLI and integrations)",
+   "PR source checks / Affected tooling (rust-cache-docs-wasm-consumers + 23 files)",
+   "PR source checks / Affected tooling (davinci-metamorphic-corpus + 23 files)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Rust source report",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44042184755",
+  "created": "2026-11-17T07:53:28Z",
+  "branch": "refactor/generated-name-sigil",
+  "failed": [
+   "check-js",
+   "node-engine-compat (24)",
+   "node-engine-compat (22)",
+   "PR source checks / Native runtime (canon)",
+   "PR source checks / PR JS packages / PR package conformance (fresco)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Clippy, doctests and feature lanes (clippy)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Clippy, doctests and feature lanes (navigation)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Clippy, doctests and feature lanes (contracts)",
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / PR Rust workspace products / Rust tests (Language server CLI)",
+   "PR source checks / PR Rust workspace products / Rust tests (Lint and format)",
+   "PR source checks / PR Rust workspace products / Rust tests (Compiler)",
+   "PR source checks / PR Rust workspace products / Rust tests (Vapor compiler)",
+   "PR source checks / PR Rust workspace products / Rust tests (Language server)",
+   "PR source checks / Affected tooling (typechecker-native-canon-lib-scope + 22 files)",
+   "PR source checks / Affected tooling (ecosystem-producer-qualification + 21 files)",
+   "PR source checks / Affected tooling (davinci-consumer-migration-surfaces + 22 files)",
+   "PR source checks / Affected tooling (davinci-fact-spec-corpus + 21 files)",
+   "PR source checks / Affected tooling (canon-emit-props-gate-equivalence + 22 files)",
+   "PR source checks / Affected tooling (canon-emit-props-gate-guarded + 22 files)",
+   "PR source checks / Affected tooling (lsp-bind-style-code-actions + 22 files)",
+   "PR source checks / Affected tooling (davinci-v-on-corpus-selection + 22 files)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Rust source report",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44040723229",
+  "created": "2026-11-17T07:42:07Z",
+  "branch": "davinci-foundation-patina-1",
+  "failed": [
+   "PR source checks / PR Rust workspace products / Rust tests (Lint and format)",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44035427212",
+  "created": "2026-11-17T07:00:49Z",
+  "branch": "davinci-inputs-style-lane",
+  "failed": [
+   "check-js",
+   "PR source checks / PR Rust workspace products / Rust tests (CLI and integrations)",
+   "PR source checks / PR Rust workspace products / Rust tests (Lint and format)",
+   "PR source checks / Affected tooling (davinci-complexity-corpus + 24 files)",
+   "PR source checks / Affected tooling (typechecker-native-canon-lib-scope + 25 files)",
+   "PR source checks / Affected tooling (davinci-dom-production-boundary + 24 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44034494394",
+  "created": "2026-11-17T06:52:59Z",
+  "branch": "perf-linter-substrings",
+  "failed": [
+   "PR source checks / Affected tooling (art-lint-public-boundaries + 21 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44034218434",
+  "created": "2026-11-17T06:50:41Z",
+  "branch": "perf/mapper-runtime",
+  "failed": [
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Clippy, doctests and feature lanes (clippy)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Rust source report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44032520317",
+  "created": "2026-11-17T06:36:55Z",
+  "branch": "plugins-13074-directive-compiler",
+  "failed": [
+   "PR source checks / WASM release build check",
+   "PR source checks / PR JS packages / PR JS package tests (ui)",
+   "PR source checks / PR JS packages / PR JS package tests (oxlint)",
+   "PR source checks / PR JS packages / PR package conformance (ui)",
+   "PR source checks / PR JS packages / PR JS package tests (builders)",
+   "PR source checks / Affected tooling (art-lint-public-boundaries + 5 files)",
+   "PR source checks / Affected tooling (public-typechecker-q16-declaration + 9 files)",
+   "PR source checks / Affected tooling (davinci-dom-production-boundary + 23 files)",
+   "PR source checks / Affected tooling (public-typechecker-q16 + 43 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44031165281",
+  "created": "2026-11-17T06:25:58Z",
+  "branch": "plugins-13074-directive-compiler",
+  "failed": [
+   "PR source checks / WASM release build check",
+   "PR source checks / PR JS packages / PR JS package tests (oxlint)",
+   "PR source checks / PR JS packages / PR JS package tests (builders)",
+   "PR source checks / PR JS packages / PR package conformance (ui)",
+   "PR source checks / PR JS packages / PR JS package tests (ui)",
+   "PR source checks / Affected tooling (public-typechecker-q16 + 43 files)",
+   "PR source checks / Affected tooling (davinci-dom-production-boundary + 23 files)",
+   "PR source checks / Affected tooling (art-lint-public-boundaries + 5 files)",
+   "PR source checks / Affected tooling (public-typechecker-q16-declaration + 9 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44029848674",
+  "created": "2026-11-17T06:15:19Z",
+  "branch": "fix/p0-13044",
+  "failed": [
+   "PR source checks / Affected tooling (tooling-prose-selection + 23 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44029526843",
+  "created": "2026-11-17T06:12:39Z",
+  "branch": "davinci-foundation-2",
+  "failed": [
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44027638883",
+  "created": "2026-11-17T05:56:59Z",
+  "branch": "davinci-inputs-tsrx-generic-tags",
+  "failed": [
+   "PR source checks / Affected tooling (content-mapper-instance-globals-slot-replay-packets + 58 files)",
+   "PR source checks / Affected tooling (javascript-sfc-star-source + 55 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44027327406",
+  "created": "2026-11-17T05:54:18Z",
+  "branch": "davinci-foundation-2",
+  "failed": [
+   "PR source checks / Affected tooling (davinci-generated-ledgers + 25 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44024400239",
+  "created": "2026-11-17T05:28:51Z",
+  "branch": "fix/canon-slot-outlet-loose-key",
+  "failed": [
+   "PR source checks / Plan PR source checks",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44023717155",
+  "created": "2026-11-17T05:23:00Z",
+  "branch": "fix/p0-13044",
+  "failed": [
+   "PR source checks / Plan PR source checks",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44023653934",
+  "created": "2026-11-17T05:22:29Z",
+  "branch": "fix/13179-undefined-default",
+  "failed": [
+   "PR source checks / Plan PR source checks",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44019124483",
+  "created": "2026-11-17T04:43:23Z",
+  "branch": "fix/13179-undefined-default",
+  "failed": [
+   "fmt-rust",
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / Affected tooling (focus-history-native-comparison + 21 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44014380893",
+  "created": "2026-11-17T04:02:40Z",
+  "branch": "davinci-inputs-tsrx",
+  "failed": [
+   "PR source checks / Affected tooling (compiler-project-source-workflow + 21 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44014299705",
+  "created": "2026-11-17T04:01:59Z",
+  "branch": "chore/rust-1.100",
+  "failed": [
+   "PR source checks / Affected tooling (content-mapper-instance-globals-template-global-packets + 56 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44014083464",
+  "created": "2026-11-17T04:00:14Z",
+  "branch": "fix/patina-unsafe-enum-assignment-12994",
+  "failed": [
+   "fmt-rust",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44011293799",
+  "created": "2026-11-17T03:35:33Z",
+  "branch": "fix/13179-undefined-default",
+  "failed": [
+   "PR source checks / Native runtime (canon)",
+   "PR source checks / Native runtime (lsp)",
+   "PR source checks / PR Rust workspace products / Rust tests (Type checker)",
+   "PR source checks / PR Rust workspace products / Rust tests (Language server)",
+   "PR source checks / Affected tooling (tooling-heavy-inputs + 19 files)",
+   "PR source checks / Affected tooling (canon-static-loose-listener-props + 18 files)",
+   "PR source checks / Affected tooling (davinci-consumer-migration-surfaces + 20 files)",
+   "PR source checks / Affected tooling (tooling-prose-selection + 20 files)",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44010781989",
+  "created": "2026-11-17T03:31:11Z",
+  "branch": "fix/patina-unsafe-enum-assignment-12994",
+  "failed": [
+   "fmt-rust",
+   "PR source checks / PR Rust workspace products / Rust tests (Lint and format)",
+   "PR source checks / Affected tooling (art-lint-public-boundaries + 34 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "44010288503",
+  "created": "2026-11-17T03:27:01Z",
+  "branch": "chore/rust-1.100",
+  "failed": [
+   "check-js",
+   "PR source checks / Affected tooling (content-mapper-instance-globals-template-global-packets + 56 files)",
+   "PR source checks / Affected tooling (native-jsx-original-expression-reference + 54 files)",
+   "PR source checks / Affected tooling (reuse-rust-target + 54 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "43985321899",
+  "created": "2026-11-17T00:09:31Z",
+  "branch": "tsrx/map-callbacks",
+  "failed": [
+   "PR source checks / PR Rust workspace products / Rust tests (Lint and format)",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "43982639597",
+  "created": "2026-11-16T23:50:00Z",
+  "branch": "tsrx/map-callbacks",
+  "failed": [
+   "PR source checks / PR Rust workspace products / Rust tests (Lint and format)",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "43978896005",
+  "created": "2026-11-16T23:23:41Z",
+  "branch": "feat/lsp-plugin-fixes",
+  "failed": [
+   "PR source checks / Affected tooling (tooling-product-observer-inputs + 22 files)",
+   "PR source checks / Affected tooling (tooling-test-selection + 19 files)",
+   "PR source checks / Affected tooling (content-mapper-source-node22-workflow + 21 files)",
+   "PR source checks / Affected tooling (ecosystem-producer-qualification + 22 files)",
+   "PR source checks / Affected tooling (davinci-metamorphic-corpus + 22 files)",
+   "PR source checks / Affected tooling (davinci-dom-production-boundary + 23 files)",
+   "PR source checks / Affected tooling (art-lint-public-boundaries + 34 files)",
+   "PR source checks / Affected tooling (davinci-fact-spec-corpus + 21 files)",
+   "PR source checks / Affected tooling (lsp-bind-style-code-actions + 23 files)",
+   "PR source checks / Affected tooling (tooling-heavy-inputs + 22 files)",
+   "PR source checks / Affected tooling (cli-build-enum-bindings-7893 + 22 files)",
+   "PR source checks / Affected tooling (focus-history-current-oracle + 22 files)",
+   "PR source checks / Affected tooling (davinci-v-on-corpus-selection + 22 files)",
+   "PR source checks / Affected tooling (davinci-complexity-corpus + 22 files)",
+   "PR source checks / Affected tooling (rust-cache-docs-wasm-consumers + 22 files)",
+   "PR source checks / Affected tooling (ci-node-ratchets + 21 files)",
+   "PR source checks / Affected tooling (focus-history-capture-contract)",
+   "PR source checks / Affected tooling (typechecker-native-canon-lib-scope + 23 files)",
+   "PR source checks / Affected tooling (focus-history-native-comparison + 22 files)",
+   "PR source checks / Affected tooling (publish-npm-package-tarball + 21 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "43978052655",
+  "created": "2026-11-16T23:17:56Z",
+  "branch": "feat/lsp-plugin-lint",
+  "failed": [
+   "PR source checks / Affected tooling (ci-node-ratchets + 21 files)",
+   "PR source checks / Affected tooling (focus-history-capture-contract)",
+   "PR source checks / Affected tooling (art-lint-public-boundaries + 34 files)",
+   "PR source checks / Affected tooling (tooling-heavy-inputs + 22 files)",
+   "PR source checks / Affected tooling (focus-history-current-oracle + 22 files)",
+   "PR source checks / Affected tooling (davinci-fact-spec-corpus + 21 files)",
+   "PR source checks / Affected tooling (tooling-test-selection + 19 files)",
+   "PR source checks / Affected tooling (davinci-complexity-corpus + 22 files)",
+   "PR source checks / Affected tooling (ecosystem-producer-qualification + 22 files)",
+   "PR source checks / Affected tooling (focus-history-native-comparison + 22 files)",
+   "PR source checks / Affected tooling (lsp-bind-style-code-actions + 23 files)",
+   "PR source checks / Affected tooling (content-mapper-source-node22-workflow + 21 files)",
+   "PR source checks / Affected tooling (tooling-product-observer-inputs + 22 files)",
+   "PR source checks / Affected tooling (davinci-metamorphic-corpus + 22 files)",
+   "PR source checks / Affected tooling (davinci-v-on-corpus-selection + 22 files)",
+   "PR source checks / Affected tooling (typechecker-native-canon-lib-scope + 23 files)",
+   "PR source checks / Affected tooling (cli-build-enum-bindings-7893 + 22 files)",
+   "PR source checks / Affected tooling (rust-cache-docs-wasm-consumers + 22 files)",
+   "PR source checks / Affected tooling (publish-npm-package-tarball + 21 files)",
+   "PR source checks / Affected tooling (davinci-dom-production-boundary + 23 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "43965550959",
+  "created": "2026-11-16T21:59:17Z",
+  "branch": "fix/config-loader-live-timer",
+  "failed": [
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Clippy, doctests and feature lanes (contracts)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Rust source report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "43951390810",
+  "created": "2026-11-16T20:35:37Z",
+  "branch": "perf/inferred-emit-args-alias",
+  "failed": [
+   "fmt-rust",
+   "PR source checks / PR Rust workspace products / Rust tests (Language server)",
+   "PR source checks / PR Rust workspace products / Rust product report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "43939022722",
+  "created": "2026-11-16T19:24:33Z",
+  "branch": "perf/patina-ssr-global-scan",
+  "failed": [
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Clippy, doctests and feature lanes (contracts)",
+   "PR source checks / Affected tooling (art-lint-public-boundaries + 21 files)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Rust source report",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "43932964159",
+  "created": "2026-11-16T18:50:00Z",
+  "branch": "perf/tsrs-check-trivia",
+  "failed": [
+   "PR source checks / Affected tooling (content-mapper-source-node22-workflow + 24 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "43931212612",
+  "created": "2026-11-16T18:40:00Z",
+  "branch": "feat/plugin-lint-rules",
+  "failed": [
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Clippy, doctests and feature lanes (clippy)",
+   "PR source checks / Affected tooling (focus-history-current-oracle + 23 files)",
+   "PR source checks / Affected tooling (davinci-v-on-corpus-selection + 24 files)",
+   "PR source checks / Affected tooling (content-mapper-source-node22-workflow + 23 files)",
+   "PR source checks / Affected tooling (rust-cache-backend-policy + 24 files)",
+   "PR source checks / Affected tooling (vite-plus-fast-path + 23 files)",
+   "PR source checks / Affected tooling (publish-npm-package-tarball + 23 files)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Rust source report",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "43925813554",
+  "created": "2026-11-16T18:09:13Z",
+  "branch": "perf/tsrs-check-trivia",
+  "failed": [
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Clippy, doctests and feature lanes (contracts)",
+   "PR source checks / Affected tooling (davinci-consumer-migration-surfaces + 21 files)",
+   "PR source checks / PR Rust Clippy, tests, and fixtures / Rust source report",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "43922874427",
+  "created": "2026-11-16T17:52:14Z",
+  "branch": "feat/config-vue-plugins",
+  "failed": [
+   "PR source checks / Affected tooling (compiler-project-source-workflow + 21 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ },
+ {
+  "id": "43919554618",
+  "created": "2026-11-16T17:33:08Z",
+  "branch": "refactor/patina-plugin-batches",
+  "failed": [
+   "level-dependency-direction / Level dependency direction",
+   "PR source checks / Affected tooling (davinci-metamorphic-corpus + 18 files)",
+   "PR source checks / Affected tooling report",
+   "PR source checks / PR source report",
+   "test-report"
+  ]
+ }
+]
