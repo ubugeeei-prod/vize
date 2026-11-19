@@ -45,8 +45,16 @@ fn branch_region_is_supported(region: &Region<'_>) -> bool {
         [Op::Component(component)] => component_is_supported(component),
         [Op::For(for_op)] => for_is_supported(for_op),
         [Op::OriginalFor(_)] => false,
-        _ => false,
+        other => value_arm_is_supported(other),
     }
+}
+
+/// A value arm: the keyed text fragment `<template v-if>` renders. Kept out
+/// of line so the element arms' dispatch stays as it was.
+#[cold]
+#[inline(never)]
+fn value_arm_is_supported(ops: &[Op<'_>]) -> bool {
+    matches!(ops, [Op::Interpolation(text)] if expr_is_js_or_raw_emittable(&text.expression))
 }
 
 fn expr_is_js_or_raw_emittable(expr: &ExprRef<'_>) -> bool {

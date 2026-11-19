@@ -5,11 +5,13 @@
 )]
 
 use serde_json::Value;
+use vize_atelier_core::lane::ScriptTables;
 use vize_l0::Allocator;
 
 use super::try_lower_root;
 use crate::lower::BabelLoweringOptions;
-use crate::{JsxCompatMode, JsxLang, JsxOutputMode, lower_source_with_compat};
+use crate::vdom::{VdomCompatOptions, VdomCompileOptions, compile_root_to_vdom};
+use crate::{JsxCompatMode, JsxLang, JsxOutputMode, LoweredRoot, lower_source_with_compat};
 
 const VAPOR_CORPUS: &str = include_str!("../../tests/vue_jsx_vapor_compat/fixtures/corpus.json");
 const BABEL_CORPUS: &str = include_str!("../../tests/babel_compat/fixtures/corpus.json");
@@ -42,6 +44,11 @@ const SHAPES: &[&str] = &[
     "const on = a > 1;\nconst A = () => <div>{on && <i />}{!x && <b>{y}</b>}</div>;",
     "const A = () => <p>{a ? <i /> : (b) ? <b /> : <s />}</p>;",
     "const A = () => <p>{a ? (b ? <i /> : <b />) : <s />}</p>;",
+    "const A = () => <p>{busy ? \"Loading\" : <i class=\"idle\" />}</p>;",
+    "const A = () => <p><i />{busy ? label : (b) ? <b /> : null}</p>;",
+    "const A = () => <p>{a ? (x, y) : <i />}{a ? `t${n}` : <b />}</p>;",
+    "const A = () => <ul>{rows.map((r) => r.ok ? r.label : <li>{r.id}</li>)}</ul>;",
+    "import Card from './c';\nconst A = () => <Card>{n ? 'none' : <i />}</Card>;",
     "const A = () => <ul>{xs.map((x, i) => <li key={i}>{x}</li>)}</ul>;",
     "const A = () => <ul>{xs.map(function ({ id }) { return <li id={id} />; })}</ul>;",
     "const A = () => <ul>{rows.map(() => ok ? <i /> : <b />)}</ul>;",
@@ -153,4 +160,82 @@ fn level_lowering_matches_the_relief_projection() {
         "level-lowered {native} of {roots} roots, {} of {} oracle corpus roots",
         corpus.0, corpus.1
     );
+}
+
+/// One root through the VDOM backend.
+fn vdom_code<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    lang: JsxLang,
+    root: LoweredRoot<'a>,
+    tables: &ScriptTables,
+) -> (vize_l0::String, vize_l0::String) {
+    let mut diagnostics = Vec::new();
+    let component = compile_root_to_vdom(
+        allocator,
+        root,
+        tables,
+        lang.is_typescript(),
+        &VdomCompileOptions::default(),
+        VdomCompatOptions::default(),
+        &mut diagnostics,
+        source,
+    );
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+    (component.preamble, component.code)
+}
+
+/// The module as the VDOM compile lowers it.
+fn lower_vdom_lane<'a>(
+    allocator: &'a Allocator,
+    source: &str,
+    lang: JsxLang,
+) -> (&'a str, crate::LowerOutput<'a>) {
+    let source: &'a str = allocator.alloc_str(source);
+    let (lowered, _) = lower_source_with_compat(
+        allocator,
+        allocator.as_oxc(),
+        source,
+        lang,
+        JsxCompatMode::Native,
+        JsxOutputMode::Vdom,
+        BabelLoweringOptions {
+            vdom_lane: true,
+            ..Default::default()
+        },
+    );
+    (source, lowered)
+}
+
+/// Every root the level lowering admits emits what it emitted when the Relief
+/// projection was its L2 (or, where the projection refuses, the Relief route).
+#[test]
+fn level_lowered_roots_emit_what_the_projection_emitted() {
+    for (source, lang, _) in sources() {
+        let (level, relief) = (Allocator::new(), Allocator::new());
+        let (level_source, level_lowered) = lower_vdom_lane(&level, &source, lang);
+        let (relief_source, mut relief_lowered) = lower_vdom_lane(&relief, &source, lang);
+        let relief: &Allocator = &relief;
+        if level_lowered.has_errors() {
+            continue;
+        }
+        let level_tables: &ScriptTables =
+            level.alloc_owned(ScriptTables::from_croquis(&level_lowered.analysis));
+        let relief_tables: &ScriptTables =
+            relief.alloc_owned(ScriptTables::from_croquis(&relief_lowered.analysis));
+        for root in &mut relief_lowered.roots {
+            root.l2 = try_lower_root(relief, relief_source, &root.root);
+        }
+        for (level_root, relief_root) in level_lowered.roots.into_iter().zip(relief_lowered.roots)
+        {
+            if !level_root.l2.as_ref().is_ok_and(|l2| l2.native) {
+                continue;
+            }
+            assert_eq!(
+                vdom_code(&level, level_source, lang, level_root, level_tables),
+                vdom_code(relief, relief_source, lang, relief_root, relief_tables),
+                "{source}"
+            );
+        }
+    }
 }

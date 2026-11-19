@@ -38,6 +38,36 @@ fn l2_vdom_admitted_cases_match_relief_codegen() {
             JsxLang::Jsx,
         ),
         (
+            "ternary string arm",
+            "const A = () => <p>{busy ? \"Loading\" : <i class=\"idle\" />}</p>;",
+            JsxLang::Jsx,
+        ),
+        (
+            "ternary value arm after a sibling",
+            "const A = () => <p><i />{busy ? label : <i class=\"idle\" />}</p>;",
+            JsxLang::Jsx,
+        ),
+        (
+            "ternary chain with value arms",
+            "const A = () => <p>{a ? x : (b) ? <b /> : null}</p>;",
+            JsxLang::Jsx,
+        ),
+        (
+            "ternary template and sequence arms",
+            "const A = () => <p>{a ? (x, y) : <i />}{a ? `t${n}` : <b />}</p>;",
+            JsxLang::Jsx,
+        ),
+        (
+            "component ternary value arm",
+            "const A = () => <Card>{n ? 'none' : <i />}</Card>;",
+            JsxLang::Jsx,
+        ),
+        (
+            "tsx ternary value arm",
+            "const A = () => <p>{(ok as boolean) ? (n as number) : <i />}</p>;",
+            JsxLang::Tsx,
+        ),
+        (
             "fragment root",
             "const A = () => <><i/><b/></>;",
             JsxLang::Jsx,

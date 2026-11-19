@@ -91,6 +91,10 @@ fn describe(op: &Op<'_>, out: &mut vize_l0::String) {
             write!(out, "{{{}}} ", child.expression.source()).unwrap();
             return;
         }
+        Op::Interpolation(text) => {
+            write!(out, "{{{{{}}}}} ", text.expression.source()).unwrap();
+            return;
+        }
         Op::If(if_op) => {
             out.push_str("if[ ");
             for branch in &if_op.branches {
@@ -254,8 +258,9 @@ fn unlanded_constructs_refuse_the_whole_root() {
         "const A = <div vSlots={slots} />;",
         "const A = <B vSlots:default={slots} />;",
         "const A = <div>a {b}</div>;",
+        "const A = <div>{ok ? <i /> : <b>{x}</b> || <s />}</div>;",
         "const A = <div>{ok && <i />}</div>;",
-        "const A = <div>{ok ? <i /> : null}</div>;",
+        "const A = <p>{a ? n && <i /> : <b />}</p>;",
         "const A = <div>{ok ? <><i /></> : <b />}</div>;",
         "const A = <div>{(a > b) && <></>}</div>;",
         "const A = <ul>{xs.map(x => { const y = x; return <li>{y}</li>; })}</ul>;",
@@ -314,6 +319,18 @@ fn boolean_and_and_ternary_chains_become_ui_if() {
         )
         .as_deref(),
         Ok("ops=6 <p> if[ a? if[ b? <i> else: <b> ] else: <s> ] ")
+    );
+}
+
+#[test]
+fn value_ternary_arms_render_as_text() {
+    assert_eq!(
+        lower(
+            "const A = <p>{busy ? \"Loading\" : (b) ? <b /> : label}</p>;",
+            Exec::ReRender
+        )
+        .as_deref(),
+        Ok("ops=5 <p> if[ busy? {{\"Loading\"}} (b)? <b> else: {{label}} ] ")
     );
 }
 
