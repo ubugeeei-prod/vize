@@ -399,11 +399,13 @@ function removeEmptyParents(cwd: string, file: string): void {
 
 const textFile = (bytes: Buffer) => !bytes.subarray(0, 8000).includes(0);
 
+/** A ledger generator may replace a tracked file under a new name; the old one is gone. */
 function contentTargets(cwd: string): string[] {
   return tracked(cwd)
     .filter(({ mode }) => mode === "100644" || mode === "100755")
     .map(({ path: file }) => file)
-    .filter((file) => file !== self && !gate.test(file) && !keepsBytes(file));
+    .filter((file) => file !== self && !gate.test(file) && !keepsBytes(file))
+    .filter((file) => fs.existsSync(path.join(cwd, file)));
 }
 
 export function run(mode: string, cwd = root): string[] {
