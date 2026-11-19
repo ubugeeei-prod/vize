@@ -61,6 +61,9 @@ impl IndexedRulePlans {
                 continue;
             };
             let hooks = rule.template_hooks();
+            if hooks == RuleHooks::NONE {
+                continue;
+            }
             for (hook, mask) in [
                 (RuleHooks::TEMPLATE, &mut plans.template),
                 (RuleHooks::ELEMENT, &mut plans.element),

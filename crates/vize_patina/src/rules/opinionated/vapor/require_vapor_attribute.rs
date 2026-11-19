@@ -41,6 +41,10 @@ impl Rule for RequireVaporAttribute {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE
+    }
+
     fn run_on_template<'a>(&self, _ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
         // This rule needs access to the full SFC, not just the template.
         // It's a placeholder for SFC-level linting.

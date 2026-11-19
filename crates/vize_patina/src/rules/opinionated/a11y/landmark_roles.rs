@@ -268,6 +268,10 @@ impl Rule for LandmarkRoles {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE
+    }
+
     fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
         Some(self)
     }

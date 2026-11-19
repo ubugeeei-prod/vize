@@ -44,6 +44,10 @@ impl Rule for NoInlineTemplate {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         for prop in element.props.iter() {
             if let PropNode::Attribute(attr) = prop

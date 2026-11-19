@@ -95,6 +95,10 @@ impl Rule for ComponentNameInTemplateCasing {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         check_element(ctx, element, self, false);
     }
@@ -134,6 +138,10 @@ impl Default for ComponentNameInTemplateCasingNuxt {
 impl Rule for ComponentNameInTemplateCasingNuxt {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
