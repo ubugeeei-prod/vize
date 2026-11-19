@@ -9,6 +9,8 @@
 use tower_lsp::lsp_types::{Location, PrepareRenameResponse, Range, Url};
 mod art_script;
 pub(crate) use art_script::open_art_script_query;
+mod art_template;
+pub(crate) use art_template::open_art_template_query;
 #[cfg(test)]
 mod art_variant_fallback_tests;
 mod authored_uri;

@@ -17,6 +17,13 @@
       "expectedSha256": "d765ef3b17fe74da176ff52bc9107509f2005ea594a6e966e8606610eef4e6e6"
     },
     {
+      "id": "lsp/fix-history/art-variant-imported-callables-13383",
+      "commit": "0fd57ff91558f72568c34f401edd634de3fceced",
+      "case": "art-variant-imported-callables-13383/case.json",
+      "sha256": "7ca49a73e0289590a24265607c6693139a43e09264e8717ca15e4daded688733",
+      "expectedSha256": "b789fbb9e0fa52ba5125203d40f6c711dbd7d584fb4d57844c1001c92c4d8771"
+    },
+    {
       "id": "lsp/fix-history/art-variant-typed-documents-4249",
       "commit": "b1cfcd4c1ff8beee810a1e4879a456fbb74df09d",
       "case": "art-variant-typed-documents-4249/case.json",

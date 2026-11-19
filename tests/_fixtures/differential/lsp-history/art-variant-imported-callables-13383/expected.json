@@ -1,0 +1,78 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst simpleLabel: string\n```"
+      },
+      "range": {
+        "end": {
+          "character": 27,
+          "line": 9
+        },
+        "start": {
+          "character": 16,
+          "line": 9
+        }
+      }
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nfunction format(value: string, precision: number): string\n```"
+      },
+      "range": {
+        "end": {
+          "character": 46,
+          "line": 9
+        },
+        "start": {
+          "character": 40,
+          "line": 9
+        }
+      }
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nvar imported: (value: number, radix: number) => string\n```"
+      },
+      "range": {
+        "end": {
+          "character": 71,
+          "line": 9
+        },
+        "start": {
+          "character": 63,
+          "line": 9
+        }
+      }
+    }
+  },
+  {
+    "step": 4,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nvar importedAlias: (value: number, radix: number) => string\n```"
+      },
+      "range": {
+        "end": {
+          "character": 99,
+          "line": 9
+        },
+        "start": {
+          "character": 86,
+          "line": 9
+        }
+      }
+    }
+  }
+]
