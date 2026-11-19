@@ -133,7 +133,7 @@
       "reference": {
         "path": "vue0-10-repeat/module.expected.txt",
         "sha256": "66ce3130ab756a9bc170a5c2f7e5328b6d5dfdbe27a466064ecf5bc10035a959",
-        "source": "davinci/vize_l1/src/framework/vue/quirks.rs:Templates iterate with v-repeat"
+        "source": "davinci/vize_l1/src/dialect/vue.rs:Templates iterate with v-repeat"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-template-v1",
@@ -187,7 +187,7 @@
       "reference": {
         "path": "vue0-11-repeat/module.expected.txt",
         "sha256": "66ce3130ab756a9bc170a5c2f7e5328b6d5dfdbe27a466064ecf5bc10035a959",
-        "source": "davinci/vize_l1/src/framework/vue/quirks.rs:Shares the clause-style directive surface with 0.10"
+        "source": "davinci/vize_l1/src/dialect/vue.rs:Shares the clause-style directive surface with 0.10"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-template-v1",
@@ -241,7 +241,7 @@
       "reference": {
         "path": "vue1-attribute-interpolation/module.expected.txt",
         "sha256": "c46d260a96e22e58f83f323f6e00c21250e63417fab8ad0bee159cd3eaf659ea",
-        "source": "davinci/vize_l1/src/framework/vue/quirks.rs:interpolation still works inside plain attribute values"
+        "source": "davinci/vize_l1/src/dialect/vue.rs:interpolation still works inside plain attribute values"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-template-v1-legacy",
@@ -296,7 +296,7 @@
       "reference": {
         "path": "vue1-list/module.expected.txt",
         "sha256": "93aab1f82c97d98773630b5aa70a7f56873dd7a579b5f3ae0513421f94f14a0f",
-        "source": "davinci/vize_l1/src/framework/vue/quirks.rs:The 1.0 migration replaced v-repeat with v-for"
+        "source": "davinci/vize_l1/src/dialect/vue.rs:The 1.0 migration replaced v-repeat with v-for"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-template-v1-legacy",
