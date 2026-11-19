@@ -126,10 +126,6 @@ fn nondefault_parse_policies_keep_complete_shipped_diagnostics() {
             ignore_empty: true,
             ..Default::default()
         },
-        SfcParseOptions {
-            template_parse_options: Some(Default::default()),
-            ..Default::default()
-        },
     ] {
         assert_oracle(source, options).unwrap();
     }

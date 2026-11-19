@@ -12,11 +12,7 @@ fn parse(options: &SfcParseOptions) -> Result<Value, &'static str> {
         source_map,
         pad,
         ignore_empty,
-        template_parse_options,
     } = options;
-    if template_parse_options.is_some() {
-        return Err("custom template parser is not supported");
-    }
     Ok(json!({ "filename": filename, "source_map": source_map,
         "pad": match pad { PadOption::None => "None", PadOption::Line => "Line", PadOption::Space => "Space" },
         "ignore_empty": ignore_empty, "template_parse_options": null }))

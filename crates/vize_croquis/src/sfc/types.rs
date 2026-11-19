@@ -296,8 +296,6 @@ pub struct SfcParseOptions {
     pub pad: PadOption,
     /// Whether empty blocks should be ignored.
     pub ignore_empty: bool,
-    /// Template parser options.
-    pub template_parse_options: Option<vize_relief::options::ParserOptions>,
 }
 
 /// Padding option for source-map alignment.

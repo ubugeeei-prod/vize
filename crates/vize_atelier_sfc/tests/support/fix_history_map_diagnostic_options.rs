@@ -5,9 +5,6 @@ use vize_atelier_core::{CodegenOptions, options::CustomElementMatcher};
 use vize_atelier_sfc::{PadOption, PropsDestructure, SfcCompileOptions, SfcParseOptions};
 
 fn parse(options: &SfcParseOptions) -> Result<Value, &'static str> {
-    if options.template_parse_options.is_some() {
-        return Err("profile does not support a custom template parser");
-    }
     Ok(json!({
         "filename": options.filename,
         "source_map": options.source_map,

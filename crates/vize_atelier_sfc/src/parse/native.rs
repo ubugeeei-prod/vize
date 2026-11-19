@@ -46,10 +46,7 @@ fn template_only_projection<'a>(
     source: &'a str,
     options: &SfcParseOptions,
 ) -> Option<NativeTemplateProjection<'a>> {
-    if options.pad != PadOption::None
-        || options.ignore_empty
-        || options.template_parse_options.is_some()
-    {
+    if options.pad != PadOption::None || options.ignore_empty {
         return None;
     }
     let observed = Vue.observe_template_only(source)?;
