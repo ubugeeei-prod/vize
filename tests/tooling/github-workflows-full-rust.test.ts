@@ -270,7 +270,7 @@ void test("full-only extraction preserves all seventeen complete original job ob
   const producerAttempt = "${{ needs.full-rust-workspace.outputs.producer-attempt }}";
   assert.deepEqual(original["differential-acceptance"], {
     name: "differential-acceptance",
-    "runs-on": "ubuntu-24.04",
+    "runs-on": "blacksmith-32vcpu-ubuntu-2404",
     "timeout-minutes": 10,
     if: "${{ always() && !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
     needs: ["full-rust-workspace", "test-scripts"],
