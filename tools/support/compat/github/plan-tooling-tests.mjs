@@ -228,9 +228,9 @@ export function readsProse(path, sources) {
 // a widely shared helper says nothing about what any one test exercises; the
 // same reference in a test or a narrow helper still selects it.
 export const SHARED_HELPER_IMPORTERS = 10;
-// These source-built campaigns have their own path-scoped PR workflows. Keep
-// their selector audits available without duplicating the campaign in the
-// general affected-tooling critical path.
+// These source-built campaigns run in nightly Full qualification (merge tier)
+// and in their own dispatchable workflows (#6830), not on the PR critical path.
+// Their selector audits stay available through `includeDedicated`.
 export const dedicatedPrToolingTests = [
   "tests/tooling/content-mapper-instance-globals-10617.test.ts",
 ];
@@ -405,7 +405,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     );
   }
   const shards = toolingShards(plan).map(({ testMs }) => Math.round(testMs / 1000));
-  const message = `Tooling tests: ${plan.tests.length}/${plan.totalTests}; ${plan.deferredTests} deferred to T1; ${plan.dedicatedTests} delegated to path-scoped PR workflows; ${plan.reason}; ${shards.length} shard(s), estimated test seconds ${shards.join("/")}.\n`;
+  const message = `Tooling tests: ${plan.tests.length}/${plan.totalTests}; ${plan.deferredTests} deferred to T1; ${plan.dedicatedTests} run nightly in Full qualification; ${plan.reason}; ${shards.length} shard(s), estimated test seconds ${shards.join("/")}.\n`;
   process.stdout.write(message);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, message);
 }
