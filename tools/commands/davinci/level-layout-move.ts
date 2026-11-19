@@ -193,6 +193,59 @@ export const steps: Readonly<Record<string, Step>> = {
     items: [],
     parents: {},
   },
+  // Step 3: one sibling per style language under `style/`, the shared readers
+  // beside them, and Vue's CSS `v-bind()` in the Vue owner. The language
+  // dispatch (`css::lang`) and the CSS lexis join their parents, and the
+  // indented reader is split per language, by hand afterwards.
+  "l1-style": {
+    crate: "davinci/vize_l1",
+    name: "vize_l1",
+    moves: [
+      move("css::lang::nested", "style::nesting"),
+      move("css::lang::indented", "style::sass"),
+      move("css::lang::css", "style::css::lexis"),
+      move("css::lang", "style::language"),
+      move("css::bind", "framework::vue::style_bind"),
+      move("css::structure", "style::structure"),
+      move("css::classes", "style::classes"),
+      move("css", "style::css"),
+    ],
+    items: [],
+    parents: {
+      style:
+        "//! Style languages: one sibling per `<style lang>` over shared readers.\n" +
+        "//!\n" +
+        "//! Preprocessors themselves stay upstream. `structure` reads where rules,\n" +
+        "//! declarations and comments are in any language, `classes` reads selector\n" +
+        "//! preludes, and `nesting` resolves nested selectors. Each language module\n" +
+        "//! supplies its lexis; `css` also owns the one production cssparser parse.\n",
+    },
+  },
+  // Step 4: one Vue owner. The per-version tables become `version::v0..v3`,
+  // the shared capability model `quirks`, its composable features `feature`,
+  // the shared scope recovery `surface`, and directive decomposition
+  // `directive`. `dialect`'s re-exports join `framework::vue` by hand.
+  "l1-vue": {
+    crate: "davinci/vize_l1",
+    name: "vize_l1",
+    moves: [
+      move("dialect::vue::feature", "framework::vue::feature"),
+      move("dialect::vue::surface", "framework::vue::surface"),
+      move("dialect::vue", "framework::vue::quirks"),
+      move("dialect::vue0", "framework::vue::version::v0"),
+      move("dialect::vue1", "framework::vue::version::v1"),
+      move("dialect::vue2", "framework::vue::version::v2"),
+      move("dialect::vue3", "framework::vue::version::v3"),
+      move("markup::directive", "framework::vue::directive"),
+    ],
+    items: [],
+    parents: {
+      "framework::vue::version":
+        "//! Vue's per-version template syntax: one module per major version, each\n" +
+        "//! composing its capability table from [`super::feature`] and owning the\n" +
+        "//! surfaces only that version reads.\n",
+    },
+  },
 };
 
 const ident = "[A-Za-z_][A-Za-z0-9_]*";
@@ -288,13 +341,18 @@ export function rewriteRust(
         const close = matchingBrace(out, open);
         if (close < 0) continue;
         const body = out.slice(open + 1, close);
-        const rewritten = rewriteGroupBody(body, base, step);
+        const leaving: string[] = [];
+        const rewritten = rewriteGroupBody(body, base, step, leaving);
         const newHere = relocate(step.moves, here);
         const reached = newHere.slice(0, newHere.length - depth);
         const newBase = relocate(step.moves, base);
-        if (rewritten === body && reached.join("::") === newBase.join("::")) continue;
+        if (rewritten === body && !leaving.length && reached.join("::") === newBase.join("::"))
+          continue;
         result +=
-          out.slice(last, match.index) + ["crate", ...newBase].join("::") + "::{" + rewritten + "}";
+          out.slice(last, match.index) +
+          (leaving.length
+            ? regroup("crate", newBase, rewritten, leaving)
+            : ["crate", ...newBase].join("::") + "::{" + rewritten + "}");
         last = close + 1;
         opener.lastIndex = close + 1;
       }
@@ -359,17 +417,44 @@ function rewriteGroups(source: string, root: string, step: Step): string {
     const open = match.index + match[0].length - 1;
     const close = matchingBrace(source, open);
     if (close < 0) continue;
-    result +=
-      source.slice(last, open + 1) +
-      rewriteGroupBody(source.slice(open + 1, close), prefix, step) +
-      "}";
+    const leaving: string[] = [];
+    const body = rewriteGroupBody(source.slice(open + 1, close), prefix, step, leaving);
+    result += leaving.length
+      ? source.slice(last, match.index) + regroup(root, prefix, body, leaving)
+      : source.slice(last, open + 1) + body + "}";
     last = close + 1;
     opener.lastIndex = close + 1;
   }
   return result + source.slice(last);
 }
 
-function rewriteGroupBody(inner: string, prefix: readonly string[], step: Step): string {
+/**
+ * `root::{prefix::{body}, leaving…}`: a group whose members moved out of its
+ * prefix keeps the members that stayed under it and names the others from the
+ * root.
+ */
+function regroup(
+  root: string,
+  prefix: readonly string[],
+  body: string,
+  leaving: readonly string[],
+): string {
+  const stayed = body.trim().replace(/,$/u, "");
+  const kept = !stayed ? [] : prefix.length ? [`${prefix.join("::")}::{${stayed}}`] : [stayed];
+  return `${root}::{${[...kept, ...leaving].join(", ")}}`;
+}
+
+/**
+ * Relocate each member of a group against its prefix. A member that moves out
+ * of the group's (relocated) prefix is removed and, root-relative, pushed onto
+ * `leaving`; without a `leaving` list that is an error.
+ */
+function rewriteGroupBody(
+  inner: string,
+  prefix: readonly string[],
+  step: Step,
+  leaving?: string[],
+): string {
   const members: string[] = [];
   let depth = 0;
   let start = 0;
@@ -383,8 +468,9 @@ function rewriteGroupBody(inner: string, prefix: readonly string[], step: Step):
     }
   }
   members.push(inner.slice(start));
+  const left = new Set<number>();
   return members
-    .map((member) => {
+    .map((member, index) => {
       const lead = /^\s*/u.exec(member)![0];
       const body = member.slice(lead.length);
       const head = new RegExp(`^((?:${ident}::)+)`, "u").exec(body);
@@ -400,16 +486,21 @@ function rewriteGroupBody(inner: string, prefix: readonly string[], step: Step):
           lead +
           head[1] +
           "{" +
-          rewriteGroupBody(rest.slice(1, close), original, step) +
+          rewriteGroupBody(rest.slice(1, close), original, step, leaving) +
           rest.slice(close)
         );
       }
       // A moved group prefix carries its members; only their own move shows.
       const newPrefix = relocate(step.moves, prefix);
-      if (!startsWith(relocated, newPrefix))
-        throw new Error(`a group member leaves its group: ${original.join("::")}`);
+      if (!startsWith(relocated, newPrefix)) {
+        if (!leaving) throw new Error(`a group member leaves its group: ${original.join("::")}`);
+        leaving.push(relocated.join("::") + "::" + rest.trim());
+        left.add(index);
+        return "";
+      }
       return lead + relocated.slice(newPrefix.length).join("::") + "::" + rest;
     })
+    .filter((_member, index) => !left.has(index))
     .join(",");
 }
 
@@ -689,7 +780,7 @@ export function rewritePaths(source: string, step: Step): string {
   for (const { from, to } of step.moves) {
     const old = moduleFiles(step.crate, from).dir;
     const next = moduleFiles(step.crate, to).dir;
-    out = out.replace(new RegExp(`${escape(old)}(?=\\.rs\\b|/)`, "gu"), next);
+    out = out.replace(new RegExp(`${escape(old)}(?=\\.rs\\b|/|(?![\\w.-]))`, "gu"), next);
     // The same path inside a regular expression literal (`a\/b`).
     const slashed = (text: string) => text.replaceAll("/", "\\/");
     out = out.replace(
@@ -741,10 +832,16 @@ function moveDeclarations(
 ) {
   // A parent that moves in the same step is edited where it is now.
   const current = (file: string) => [...renames].find(([, moved]) => moved === file)?.[0] ?? file;
-  const parentFile = (module: readonly string[]) =>
-    module.length === 1
-      ? path.posix.join(step.crate, "src/lib.rs")
-      : moduleFiles(step.crate, module.slice(0, -1)).file;
+  // A parent is `name.rs`, or `name/mod.rs` when only that exists.
+  const parentFile = (module: readonly string[]) => {
+    if (module.length === 1) return path.posix.join(step.crate, "src/lib.rs");
+    const parent = moduleFiles(step.crate, module.slice(0, -1));
+    const nested = path.posix.join(parent.dir, "mod.rs");
+    return !fs.existsSync(path.join(repoRoot, parent.file)) &&
+      fs.existsSync(path.join(repoRoot, nested))
+      ? nested
+      : parent.file;
+  };
   const added = new Map<string, string[]>();
   for (const { from, to } of step.moves) {
     const oldParent = parentFile(from);
