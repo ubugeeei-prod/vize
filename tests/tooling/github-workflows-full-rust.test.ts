@@ -351,7 +351,8 @@ void test("full-only extraction preserves all seventeen complete original job ob
   }
   assert.equal(
     createHash("sha256").update(JSON.stringify(original)).digest("hex"),
-    "f9791086ebe654f600908fdef213a710d68778e8f93d19935ce115af0e32cbd9",
+    // #6832: re-pinned to the reviewed original as the codename rename spells it.
+    "489cbc990370bedccbdd1555ba472702bbc6307731d3935d56997702523df356",
   );
 });
 

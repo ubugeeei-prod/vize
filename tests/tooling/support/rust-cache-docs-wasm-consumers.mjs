@@ -168,7 +168,8 @@ function verifyRecipes(root, docs, e2e) {
   // generated-WASM cache. Do not freeze the other Docs job or product libraries.
   assert.equal(
     hash(JSON.stringify(docs.jobs["build-playground"])),
-    "8039a8eba4e5a56c1a668ada91829b33f27c9a94450b34cc4a608a6762a330f0",
+    // #6832: re-pinned to the reviewed original as the codename rename spells it.
+    "8dae55fc6f83ba541d550785cb6efcd124dc0b5172e74d81902d77ce94a5f0c6",
     "reviewed whole Docs WASM producer changed",
   );
   for (const [file, expected] of Object.entries(producerHashes))
@@ -186,7 +187,8 @@ function verifyRecipes(root, docs, e2e) {
     anchor + "  - '.github/actions/setup-moonbit/**'\n",
   );
   for (const [job, expected] of [
-    ["app-readiness-plan", "4abaa0c77a49d4f6a979ffde47f45f78723c2f4fc2320f800c3cfca7a3b02463"],
+    // #6832: re-pinned to the reviewed original as the codename rename spells it.
+    ["app-readiness-plan", "58838250d37e92d7e4e833e2c8fe9128ff4c0edf146f0f56ba993234a6420a52"],
     ["app-e2e-plan", "563ab69d3f9c62305dbe54074c7edda29a924244a31b22a41665267b24cbb226"],
   ])
     assert.equal(

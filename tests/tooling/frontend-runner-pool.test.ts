@@ -16,6 +16,7 @@ import {
 import { restorePlaygroundCaseReporting } from "./support/frontend-playground-reporting.ts";
 import { helperAbiStep, restoreContentMapperHelperAbi } from "./support/frontend-helper-abi.ts";
 import { restorePinnedWildAction, restoreRustToolchainPin } from "./support/github-workflows.ts";
+import { rewriteText } from "../../tools/support/levels/rename-codenames.ts";
 
 type Step = { name?: string; uses?: string; if?: string; with?: Record<string, unknown> } & Record<
   string,
@@ -50,7 +51,9 @@ const workflows = selectors.map((specification) => {
   );
   assert.equal(createHash("sha256").update(before).digest("hex"), specification.original);
   const after = fs.readFileSync(new URL("../../" + specification.file, import.meta.url), "utf8");
-  return { specification, before: parse(before) as Workflow, after: parse(after) as Workflow };
+  // The frozen copies predate the level rename; compare them through it.
+  const renamed = rewriteText(specification.file, before);
+  return { specification, before: parse(renamed) as Workflow, after: parse(after) as Workflow };
 });
 function expression(value: string) {
   return value

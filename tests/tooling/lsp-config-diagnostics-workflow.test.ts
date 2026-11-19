@@ -171,7 +171,8 @@ test("startup diagnostics retain the production producer and unchanged scale-one
     createHash("sha256")
       .update(JSON.stringify(custodyNames.slice(0, 130).map(previousSourcePath)))
       .digest("hex"),
-    "2b650a1f0e301d4de6c808646d18dbccf116882c49717e5537d91dee8b965598",
+    // #6832: re-pinned to the reviewed original as the codename rename spells it.
+    "307ed87ab4e7474f4f1a1bbcb6f6c69bb1c4eb492fc395efb563c82319e4c104",
   );
   assert.match(
     carrier,

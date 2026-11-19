@@ -348,7 +348,8 @@ function requireSplitRustRecipes(
   assert.equal(legacySteps[legacyIndex + 1]?.name, "Test L1 feature-enabled surface corpus");
   const oldHashes = {
     "merge-rust-differential": "13c78bc5c1872dffc8af00f380e4b65177e524cf516b5914d808aa0bdea1194e",
-    "pr-rust-build": "86f6f06586d5cf26e5d6c38d361816467053d003f4fb1d7b069f26cd54fb5b13",
+    // #6832: re-pinned to the reviewed original as the codename rename spells it.
+    "pr-rust-build": "c9af15c8e564d45cbac979fa2c5250b23b6550e6baca4547d25b22d5c4909eb4",
   };
   for (const [id, expected] of Object.entries(oldHashes)) {
     const job = structuredClone(source[id]);
