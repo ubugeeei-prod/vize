@@ -1,4 +1,4 @@
-name: PR performance observation (scratch CLI size and Callgrind screen, not for merge)
+name: PR performance observation (scratch release CLI size and Callgrind screen, not for merge)
 
 # Scratch measurement for #13338: builds each named source with the exact
 # pr-performance-build.ts recipe (ci-opt, thin LTO, 16 CGUs, Wild), records
@@ -24,7 +24,7 @@ jobs:
   size:
     name: CLI size and Ir
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 150
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -56,11 +56,8 @@ jobs:
             [[ "$sha" =~ ^[0-9a-f]{40}$ ]]
             git -C base fetch -q --no-tags origin "$sha"
             git -C base checkout -q --detach "$sha"
-            (cd base && cargo build --locked --profile ci-opt -p vize \
-              --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' \
-              --config 'profile.ci-opt.codegen-units=16' \
-              --config 'profile.ci-opt.package.vize.strip="symbols"' 2>&1 | tail -1)
-            cp base/target/ci-opt/vize out/vize
+            (cd base && cargo build --locked --release -p vize 2>&1 | tail -1)
+            cp base/target/release/vize out/vize
             line="$sha $(stat -c %s out/vize)"
             for corpus in "bench=$RUNNER_TEMP/bench" "reka-ui=$GITHUB_WORKSPACE/driver/tests/_fixtures/_git/reka-ui"; do
               for preset in default opinionated nuxt; do
