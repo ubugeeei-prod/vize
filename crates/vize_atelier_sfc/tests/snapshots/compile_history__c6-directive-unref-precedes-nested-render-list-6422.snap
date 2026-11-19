@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-directive-unref-precedes-nested-render-list-6422",
+    history: "032162ce2225c187f43f589d515bae057cda768b",
+    source: "<div v-my-dir=\"[items, { ...msg }]\"><span v-for=\"item in items\">{{ item }}</span></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _directive_my_dir = _resolveDirective(\"my-dir\")\n  \n  return _withDirectives((_openBlock(), _createElementBlock(\"div\", null, [\n    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => {\n      return (_openBlock(), _createElementBlock(\"span\", null, _toDisplayString(item), 1 /* TEXT */))\n    }), 256 /* UNKEYED_FRAGMENT */))\n  ], 512 /* NEED_PATCH */)), [\n    [_directive_my_dir, [items, { ...msg }]]\n  ])\n}",
+    map: None,
+}

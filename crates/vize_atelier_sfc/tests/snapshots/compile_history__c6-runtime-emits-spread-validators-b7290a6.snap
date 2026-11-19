@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-runtime-emits-spread-validators-b7290a6",
+    history: "b7290a6d4e02fa6053d86eafd86a8dff0189bab9",
+    source: "<script setup lang=\"ts\">\nconst unused = { save: <T>(value: T) => false }; const events = { save: <T>(value: T): boolean => true }; const copied = { ...events }; defineEmits({ ...copied });\n</script>\n<template><div /></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "`defineEmits()` in <script setup> cannot reference locally declared variable `copied` because its arguments are hoisted outside setup(). Move the initialization to a normal <script> block or import it from another module.",
+            code: Some(
+                "SCRIPT_SETUP_MACRO_SCOPE",
+            ),
+            loc: Some(
+                BlockLocation {
+                    start: 178,
+                    end: 184,
+                    tag_start: 178,
+                    tag_end: 184,
+                    start_line: 2,
+                    start_column: 154,
+                    end_line: 2,
+                    end_column: 160,
+                },
+            ),
+        },
+    ),
+)

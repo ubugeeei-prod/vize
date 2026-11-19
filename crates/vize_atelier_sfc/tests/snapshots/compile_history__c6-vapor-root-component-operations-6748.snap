@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-vapor-root-component-operations-6748",
+    history: "0a7aaf21fbda36deea6de82ba90d7059aade1fc8",
+    source: "<template><Comp /><div>{{ msg }}</div><Other :x=\"x\" /></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div> </div>\")\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const _component_Comp = _resolveComponent(\"Comp\")\n  const n0 = _createComponentWithFallback(_component_Comp, null, null, false)\n  const n1 = t0()\n  const _component_Other = _resolveComponent(\"Other\")\n  const n2 = _createComponentWithFallback(_component_Other, { x: () => (_ctx.x) }, null, false)\n  const x1 = _txt(n1)\n  _renderEffect(() => _setText(x1, _toDisplayString(_ctx.msg)))\n  return [n0, n1, n2]\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

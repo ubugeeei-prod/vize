@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-4-9e10e24",
+    history: "9e10e2496e2d0df4bb22915e90d8308e13811346",
+    source: "<template><Child><Nested v-if=\"enabled\" v-slot=\"p\"><b>{{p.x}}</b></Nested></Child></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, extend as _extend, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';\nconst t0 = _template(\"<b> </b>\")\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const _component_Nested = _resolveComponent(\"Nested\")\n  const _component_Child = _resolveComponent(\"Child\")\n  const n4 = _createComponentWithFallback(_component_Child, null, {\n    \"default\": _extend(() => {\n      const n0 = _createIf(() => (_ctx.enabled), () => {\n        const n3 = _createComponentWithFallback(_component_Nested, null, {\n          \"default\": (p) => {\n            const n2 = t0()\n            const x2 = _txt(n2)\n            _renderEffect(() => _setText(x2, _toDisplayString(p.x)))\n            return n2\n          }\n        }, false)\n        return n3\n      })\n      return n0\n    }, { _: 1 })\n  }, true)\n  return n4\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

@@ -1,0 +1,58 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-3-3859",
+    history: "4010fbbe1bd570a9ac2a628feb21a6cd9b4b54d0",
+    source: "\n        import { ref } from \"vue\";\n\n        type TsxCounterProps = {\n          label?: string;\n        };\n\n        const TsxCounter = ({ label = \"TSX\" }: TsxCounterProps, _ctx: Ctx) => {\n          const count = ref(0);\n          const increment = () => count.value++;\n          return (\n            <button type=\"button\" class=\"tsx-counter\" onClick={increment}>\n              {label}: {count.value}\n            </button>\n          );\n        };\n\n        export default TsxCounter;\n        ",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\n\n        import { ref } from \"vue\";\n\n        type TsxCounterProps = {\n          label?: string;\n        };\n\n        const TsxCounter = _defineComponent({\nname: \"TsxCounter\",\nprops: [\"label\"],\nsetup({ label = \"TSX\" }: TsxCounterProps, _ctx: Ctx) {\n\n          const count = ref(0);\n          const increment = () => count.value++;\n          return (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    type: \"button\",\n    class: \"tsx-counter\",\n    onClick: increment\n  }, _toDisplayString(label) + \": \" + _toDisplayString(count.value), 9 /* TEXT, PROPS */, [\"onClick\"]))\n})\n})()\n}\n});\n\n        export default TsxCounter;\n        ",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "TsxCounter",
+            ),
+            mode: Vdom,
+            setup: Some(
+                ComponentSetupSpan {
+                    declaration_start: 116,
+                    declaration_end: 445,
+                    params_start: 136,
+                    params_end: 181,
+                    type_params_start: 0,
+                    type_params_end: 0,
+                    is_async: false,
+                    destructured_props: [
+                        "label",
+                    ],
+                    setup_start: 187,
+                    setup_end: 279,
+                    render_start: 300,
+                    render_end: 421,
+                },
+            ),
+            preamble: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    type: \"button\",\n    class: \"tsx-counter\",\n    onClick: increment\n  }, _toDisplayString(label) + \": \" + _toDisplayString(count.value), 9 /* TEXT, PROPS */, [\"onClick\"]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

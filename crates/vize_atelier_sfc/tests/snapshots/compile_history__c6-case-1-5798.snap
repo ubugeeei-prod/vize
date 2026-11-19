@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-5798",
+    history: "99ee05a1b1136b17652d5239d639ff91b312ef2e",
+    source: "<section id=\"app\">{{ msg }}<span :title=\"title\">ok</span></section>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"section\", { id: \"app\" }, [\n    _createTextVNode(_toDisplayString(msg), 1 /* TEXT */),\n    _createElementVNode(\"span\", { title: title }, \"ok\", 8 /* PROPS */, [\"title\"])\n  ]))\n}",
+    map: Some(
+        "{\"file\":\"template.vue\",\"mappings\":\"AAAA;SAAA,oCAAC,YAAQA,KAAI;sCAAQ;yBAAO,SAAMC,OAAO,UAAO\",\"names\":[\"id\",\"title\"],\"sources\":[\"template.vue\"],\"sourcesContent\":[\"<section id=\\\"app\\\">{{ msg }}<span :title=\\\"title\\\">ok</span></section>\"],\"version\":3}",
+    ),
+}

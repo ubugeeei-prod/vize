@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-vapor-6208-2",
+    history: "60656df799a4c879268eb9a25d2a086ec8c96cdd",
+    source: "<script setup>import Child from './Child.vue'; import { state } from './fixture';</script>\n<template><section><Child v-if=\"state.ready\"><b>{{ state.label }}</b><i>slot-tail</i></Child><p>after</p></section></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { createComponentWithFallback as _createComponentWithFallback, child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';\n\nconst t0 = _template(\"<b> </b>\")\nconst t1 = _template(\"<i>slot-tail</i>\")\nconst t2 = _template(\"<section><!----><p>after</p></section>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const _component_Child = _ctx.Child\n  const n0 = t2()\n  const n1 = _child(n0)\n  _setInsertionState(n0, n1)\n  const n2 = _createIf(() => (_ctx.state.ready), () => {\n    const n6 = _createComponentWithFallback(_component_Child, null, {\n      \"default\": () => {\n        const n4 = t0()\n        const n5 = t1()\n        const x4 = _txt(n4)\n        _renderEffect(() => _setText(x4, _toDisplayString(_ctx.state.label)))\n        return [n4, n5]\n      }\n    }, false)\n    return n6\n  })\n  return n0\n}\nconst __vaporRender = render\n\nimport Child from './Child.vue'\nimport { state } from './fixture'\n\n\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'History',\n  render: __vaporRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = { Child, state }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "Child": SetupConst,
+                        "state": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

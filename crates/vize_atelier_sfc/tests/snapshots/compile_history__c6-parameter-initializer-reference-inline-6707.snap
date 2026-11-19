@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-parameter-initializer-reference-inline-6707",
+    history: "efd7f5ac8d111f8db655a0dc9b6ed70c1457c504",
+    source: "<script setup>\nimport { fallback, options } from './state'\n</script>\n<template><button @click=\"(value = fallback) => value\">a</button><button @click=\"function ({ value } = options) { return value }\">b</button></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, unref as _unref } from \"vue\"\n\nimport { fallback, options } from './state'\n\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"button\", {\n      onClick: _cache[0] || (_cache[0] = (value = _unref(fallback)) => value)\n    }, \"a\"),\n    _createElementVNode(\"button\", {\n      onClick: _cache[1] || (_cache[1] = function ({ value } = _unref(options)) { return value })\n    }, \"b\")\n  ], 64 /* STABLE_FRAGMENT */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "options": SetupMaybeRef,
+                        "fallback": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

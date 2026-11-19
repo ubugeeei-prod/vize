@@ -1,0 +1,60 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-imports-read-by-directives-5965",
+    history: "c0dae2112cf5ddf351946882af19b5ede2f76407",
+    source: "<script setup>\nimport { msg, classes, handleClick, value, obj, items, show, vFocus, myRef } from './state'\n</script>\n<template><div :class=\"classes\" @click=\"handleClick\">{{ msg }}<input v-model=\"value\" /><input v-model=\"obj.value\" /><p v-for=\"item in items\">{{ item }}</p><p v-if=\"show\" v-focus ref=\"myRef\">{{ myRef }}</p></div></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        script_output: Some(
+            "separate",
+        ),
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { vModelText as _vModelText, withDirectives as _withDirectives, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, renderList as _renderList } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _directive_focus = $setup[\"vFocus\"]\n  \n  return (_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass($setup.classes),\n    onClick: $setup.handleClick\n  }, [\n    _createTextVNode(_toDisplayString($setup.msg), 1 /* TEXT */),\n    _withDirectives(_createElementVNode(\"input\", {\n      \"onUpdate:modelValue\": $event => (($setup.value) = $event)\n    }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"]), [\n      [_vModelText, $setup.value]\n    ]),\n    _withDirectives(_createElementVNode(\"input\", {\n      \"onUpdate:modelValue\": $event => (($setup.obj.value) = $event)\n    }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"]), [\n      [_vModelText, $setup.obj.value]\n    ]),\n    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.items, (item) => {\n      return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString(item), 1 /* TEXT */))\n    }), 256 /* UNKEYED_FRAGMENT */)),\n    ($setup.show)\n      ? _withDirectives((_openBlock(), _createElementBlock(\"p\", {\n        key: 0,\n        ref: \"myRef\"\n      }, _toDisplayString($setup.myRef), 513 /* TEXT, NEED_PATCH */)), [\n        [_directive_focus]\n      ])\n      : _createCommentVNode(\"v-if\", true)\n  ], 10 /* CLASS, PROPS */, [\"onClick\"]))\n}\nimport { msg, classes, handleClick, value, obj, items, show, vFocus, myRef } from './state'\n\n\nexport default {\n  __name: 'History',\n  render: _sfc_render,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = { value, vFocus, classes, msg, myRef, show, items, obj, handleClick }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "value": SetupMaybeRef,
+                        "vFocus": SetupMaybeRef,
+                        "classes": SetupMaybeRef,
+                        "msg": SetupMaybeRef,
+                        "myRef": SetupMaybeRef,
+                        "show": SetupMaybeRef,
+                        "items": SetupMaybeRef,
+                        "obj": SetupMaybeRef,
+                        "handleClick": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

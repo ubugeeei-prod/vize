@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-5-3465",
+    history: "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    source: "const A = () => <B v-models={[[foo], [bar, 'bar', ['trim']]]}/>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  const _component_B = _resolveComponent(\"B\")\n  \n  return (_openBlock(), _createBlock(_component_B, {\n    modelValue: foo,\n    \"onUpdate:modelValue\": $event => ((foo) = $event),\n    bar: bar,\n    \"onUpdate:bar\": $event => ((bar) = $event),\n    barModifiers: { trim: true }\n  }, null, 8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\", \"bar\", \"onUpdate:bar\"]))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "A",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  const _component_B = _resolveComponent(\"B\")\n  \n  return (_openBlock(), _createBlock(_component_B, {\n    modelValue: foo,\n    \"onUpdate:modelValue\": $event => ((foo) = $event),\n    bar: bar,\n    \"onUpdate:bar\": $event => ((bar) = $event),\n    barModifiers: { trim: true }\n  }, null, 8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\", \"bar\", \"onUpdate:bar\"]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

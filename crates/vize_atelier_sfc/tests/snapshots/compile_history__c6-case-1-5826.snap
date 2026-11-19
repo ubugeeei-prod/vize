@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-5826",
+    history: "263cb45bf2d7ce6ef8f26a3ef683e55db8c28ccd",
+    source: "<svg><foreignObject><div>label</DIV></foreignObject><path :d=\"path\" /></svg>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"svg\", null, [\n    (_openBlock(), _createElementBlock(\"foreignObject\", null, [\n      _createElementVNode(\"div\", null, \"label\")\n    ])),\n    _createElementVNode(\"path\", { d: path }, null, 8 /* PROPS */, [\"d\"])\n  ]))\n}",
+    map: None,
+}

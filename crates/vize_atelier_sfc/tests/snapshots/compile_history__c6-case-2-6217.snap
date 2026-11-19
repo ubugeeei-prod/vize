@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-2-6217",
+    history: "21c1b961cce05bbc2bbd7c0a488fd42154b3796f",
+    source: "<script setup>import Child from './Child.vue'; import { state } from './fixture';</script><template><section><Child v-for=\"item in state.items\" :key=\"item.id\" :data-id=\"item.id\" v-model:[state.field].trim=\"item[state.target]\"/><output>{{ JSON.stringify(state.items) }}</output></section></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { createComponentWithFallback as _createComponentWithFallback, child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, toHandlerKey as _toHandlerKey, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';\n\nconst t0 = _template(\"<section><!----><output> </output></section>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const _component_Child = _ctx.Child\n  const n1 = t0()\n  const n2 = _child(n1)\n  const n0 = _next(_child(n1))\n  const x0 = _txt(n0)\n  _setInsertionState(n1, n2)\n  const n3 = _createFor(() => (_ctx.state.items), (_for_item0) => {\n    const n5 = _createComponentWithFallback(_component_Child, { $: [\n    { \"data-id\": () => (_for_item0.value.id) },\n    () => ({ [(_ctx.state.field)]: _for_item0.value[_ctx.state.target] }),\n    () => ({ [(_toHandlerKey(\"update:\" + (_ctx.state.field)))]: $event => ((_for_item0.value[_ctx.state.target]) = $event) }),\n    () => ({ [((_ctx.state.field) + \"Modifiers\")]: { \"trim\": true } })\n  ] }, null, false)\n    return n5\n  }, (item) => (item.id), 2 /* IS_COMPONENT */)\n  _renderEffect(() => _setText(x0, _toDisplayString(JSON.stringify(_ctx.state.items))))\n  return n1\n}\nconst __vaporRender = render\n\nimport Child from './Child.vue'\nimport { state } from './fixture'\n\n\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'History',\n  render: __vaporRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = { Child, state }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "Child": SetupConst,
+                        "state": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

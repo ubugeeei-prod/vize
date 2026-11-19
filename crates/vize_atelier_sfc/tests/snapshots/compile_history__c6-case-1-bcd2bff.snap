@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-bcd2bff",
+    history: "bcd2bffed2dc59644052e8b55f212f73927610d9",
+    source: "<template><Child><template #one v-if=\"enabled\">A</template><template #two v-else>B</template></Child></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, template as _template } from 'vue';\nconst t0 = _template(\"A\")\nconst t1 = _template(\"B\")\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const _component_Child = _resolveComponent(\"Child\")\n  let _slot4_0\n  let _slot4_0_1\n  const n4 = _createComponentWithFallback(_component_Child, null, {\n    $: [\n      () => (_ctx.enabled ? {\n        name: \"one\",\n        fn: _slot4_0 || (_slot4_0 = () => {\n          const n0 = t0()\n          return n0\n        })\n      } : {\n        name: \"two\",\n        fn: _slot4_0_1 || (_slot4_0_1 = () => {\n          const n2 = t1()\n          return n2\n        })\n      })\n    ]\n  }, true)\n  return n4\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

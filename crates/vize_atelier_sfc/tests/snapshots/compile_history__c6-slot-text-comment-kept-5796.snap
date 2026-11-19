@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-slot-text-comment-kept-5796",
+    history: "a7ab8b2a5c2ff30160eb613fd8ae87db08d08353",
+    source: "<Foo><!-- a -->{{ msg }}<!-- b --></Foo>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: Some(
+            true,
+        ),
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Foo = _resolveComponent(\"Foo\")\n  \n  return (_openBlock(), _createBlock(_component_Foo, null, {\n    default: _withCtx(() => [\n      _createCommentVNode(\" a \"),\n      _createTextVNode(_toDisplayString(msg), 1 /* TEXT */),\n      _createCommentVNode(\" b \")\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-split-script-plain-import-component-5995",
+    history: "a865d26c4d60b8f4c3e6389e8e8775939273e991",
+    source: "<script lang=\"ts\">\nimport PlainCard from './PlainCard.vue'\nexport const helper = () => 1\n</script>\n<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst items = ref([1])\n</script>\n<template><PlainCard v-for=\"item in items\" :key=\"item\" @click=\"$event\" /></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n\nimport PlainCard from './PlainCard.vue'\nimport { ref } from 'vue'\n\nexport const helper = () => 1;\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nconst items = ref([1]);\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items.value, (item) => {\n    return (_openBlock(), _createBlock(PlainCard, {\n      key: item,\n      onClick: _ctx.$event\n    }, null, 8 /* PROPS */, [\"onClick\"]))\n  }), 128 /* KEYED_FRAGMENT */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "PlainCard": SetupConst,
+                        "ref": SetupConst,
+                        "helper": SetupConst,
+                        "items": SetupRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

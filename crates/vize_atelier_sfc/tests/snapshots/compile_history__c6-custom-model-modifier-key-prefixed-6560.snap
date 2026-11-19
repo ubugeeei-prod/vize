@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-custom-model-modifier-key-prefixed-6560",
+    history: "524b77f34dad509304dd81230cf9ddfc0757be50",
+    source: "<input v-model.trim.foo-bar=\"field\">",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return _withDirectives((_openBlock(), _createElementBlock(\"input\", {\n    \"onUpdate:modelValue\": $event => ((_ctx.field) = $event)\n  }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"])), [\n    [\n      _vModelText,\n      _ctx.field,\n      void 0,\n      { trim: true }\n    ]\n  ])\n}",
+    map: None,
+}

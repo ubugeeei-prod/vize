@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-default-facts-after-getter-spread-225755f",
+    history: "225755faadb2db5bbc4d7638d116bb2cd81ced91",
+    source: "<script setup lang=\"ts\">\nconst defaults = { get count() { return 41 } }; const next = { ...defaults }; withDefaults(defineProps<{ count?: number }>(), next)\n</script>\n<template><div /></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "`withDefaults()` in <script setup> cannot reference locally declared variable `next` because its arguments are hoisted outside setup(). Move the initialization to a normal <script> block or import it from another module.",
+            code: Some(
+                "SCRIPT_SETUP_MACRO_SCOPE",
+            ),
+            loc: Some(
+                BlockLocation {
+                    start: 151,
+                    end: 155,
+                    tag_start: 151,
+                    tag_end: 155,
+                    start_line: 2,
+                    start_column: 127,
+                    end_line: 2,
+                    end_column: 131,
+                },
+            ),
+        },
+    ),
+)

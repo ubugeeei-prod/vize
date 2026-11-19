@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-10-3436",
+    history: "693a253e51100661b2bb30b6d7b14bfe48b4e4af",
+    source: "const A = () => <input v-model={(val)}/>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  return _withDirectives((_openBlock(), _createElementBlock(\"input\", {\n    \"onUpdate:modelValue\": $event => (((val)) = $event)\n  }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"])), [\n    [_vModelText, (val)]\n  ])\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "A",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return _withDirectives((_openBlock(), _createElementBlock(\"input\", {\n    \"onUpdate:modelValue\": $event => (((val)) = $event)\n  }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"])), [\n    [_vModelText, (val)]\n  ])\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

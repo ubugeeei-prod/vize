@@ -1,0 +1,38 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-6267",
+    history: "91c0b74b33c8c3a8eb2b3678c6c8b04c329fe296",
+    source: "<div v-for=\"x in outer\"><i v-for=\"x in inner\" :[x]=\"x\"></i><b :[x]=\"x\"></b></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, normalizeProps as _normalizeProps, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.outer, (x) => {\n    return (_openBlock(), _createElementBlock(\"div\", null, [\n      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.inner, (x) => {\n        return (_openBlock(), _createElementBlock(\"i\", { [x || \"\"]: x }, null, 16 /* FULL_PROPS */))\n      }), 256 /* UNKEYED_FRAGMENT */)),\n      _createElementVNode(\"b\", _normalizeProps({ [x || \"\"]: x }), null, 16 /* FULL_PROPS */)\n    ]))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+    map: None,
+}

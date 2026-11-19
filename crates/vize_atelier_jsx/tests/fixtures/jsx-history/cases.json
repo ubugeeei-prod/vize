@@ -1,0 +1,1980 @@
+[
+  {
+    "id": "c7-case-1-1525",
+    "history": "f2bc83fc5baa1ed096dd28ef5aaa7a7fe7cfe1ce",
+    "source": "const A = () => <input v-model={[val]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-babel-1525",
+    "history": "f2bc83fc5baa1ed096dd28ef5aaa7a7fe7cfe1ce",
+    "source": "const A = () => <input v-model={[val]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-1525",
+    "history": "f2bc83fc5baa1ed096dd28ef5aaa7a7fe7cfe1ce",
+    "source": "const A = () => <Comp v-model={[val, 'foo', ['trim']]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-babel-1525",
+    "history": "f2bc83fc5baa1ed096dd28ef5aaa7a7fe7cfe1ce",
+    "source": "const A = () => <Comp v-model={[val, 'foo', ['trim']]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-1525",
+    "history": "f2bc83fc5baa1ed096dd28ef5aaa7a7fe7cfe1ce",
+    "source": "const A = () => <input v-model_number_lazy={val}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-babel-1525",
+    "history": "f2bc83fc5baa1ed096dd28ef5aaa7a7fe7cfe1ce",
+    "source": "const A = () => <input v-model_number_lazy={val}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-2215",
+    "history": "c2e8e29813137ec235e78b6e9d5573b27c7a0d82",
+    "source": "const a = <Stepper onUpdate:current-step-index={updateStepIndex}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-2215",
+    "history": "c2e8e29813137ec235e78b6e9d5573b27c7a0d82",
+    "source": "const a = <Stepper v-model:current-step-index={value}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-8ba5ae5",
+    "history": "8ba5ae5e00b01abb5a8670ee7f05e65c8adbbbef",
+    "source": "\n        export const InspectTable = () => <table>{rows}</table>;\n        const LabelContent = () => <span>{label}</span>;\n        export const InspectTableRow = () => <tr>{row}</tr>;\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-2447",
+    "history": "3dbb66240393de7a2073cd0a68270091b556b9c3",
+    "source": "\n        import { computed, ref } from \"vue\";\n\n        export const App = () => {\n          const count = ref(0);\n          const doubled = computed(() => count.value * 2);\n          const increment = () => {\n            count.value += 1;\n          };\n\n          return (\n            <section>\n              <button onClick={increment}>Increment</button>\n              <p>{count.value}</p>\n              <p>{doubled.value}</p>\n            </section>\n          );\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3436",
+    "history": "693a253e51100661b2bb30b6d7b14bfe48b4e4af",
+    "source": "const A = () => <input v-model={{a:1}}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-2-3436",
+    "history": "693a253e51100661b2bb30b6d7b14bfe48b4e4af",
+    "source": "const A = () => <input v-model={get()}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-3-3436",
+    "history": "693a253e51100661b2bb30b6d7b14bfe48b4e4af",
+    "source": "const A = () => <input v-model={\"str\"}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-4-3436",
+    "history": "693a253e51100661b2bb30b6d7b14bfe48b4e4af",
+    "source": "const A = () => <input v-model={[val, ['trim']]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-5-3436",
+    "history": "693a253e51100661b2bb30b6d7b14bfe48b4e4af",
+    "source": "const A = () => <input v-model={[{a:1}, ['trim']]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-6-3436",
+    "history": "693a253e51100661b2bb30b6d7b14bfe48b4e4af",
+    "source": "const A = () => <input v-model={val}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-3436",
+    "history": "693a253e51100661b2bb30b6d7b14bfe48b4e4af",
+    "source": "const A = () => <input v-model={state.val}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-8-3436",
+    "history": "693a253e51100661b2bb30b6d7b14bfe48b4e4af",
+    "source": "const A = () => <input v-model={state[key]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-10-3436",
+    "history": "693a253e51100661b2bb30b6d7b14bfe48b4e4af",
+    "source": "const A = () => <input v-model={(val)}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-11-3436",
+    "history": "693a253e51100661b2bb30b6d7b14bfe48b4e4af",
+    "source": "const A = () => <B v-model={[val, 'arg', ['trim']]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-12-3436",
+    "history": "693a253e51100661b2bb30b6d7b14bfe48b4e4af",
+    "source": "const A = () => <input v-model_lazy={val}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-13-3436",
+    "history": "693a253e51100661b2bb30b6d7b14bfe48b4e4af",
+    "source": "const A = () => <input v-model/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-1-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <B v-models={[[foo]]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <B v-models={[[foo], [bar, 'bar']]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <B v-models={[[foo, ['m']], [bar, 'bar', ['m']]]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-4-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <B v-models={[[a.b, 'x', ['trim', 'lazy']]]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-5-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <B v-models={[[foo], [bar, 'bar', ['trim']]]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-trim-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <B v-models={foo}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-7-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <B v-models/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-8-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <B v-models={[]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-9-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <B v-models={[foo]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-10-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <B v-models={[...pairs]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-11-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <B v-models={[[]]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-12-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <B v-models={[[get()], [ok]]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-13-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <B v-models:x={[[foo]]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-14-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <B v-models_lazy={[[foo]]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-15-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <input v-models={[[foo]]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-16-3465",
+    "history": "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    "source": "const A = () => <my-el v-models={[[foo]]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots={{default: () => <i/>}}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots={{default: () => <i/>, bar: () => <b/>}}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots={{header: (p) => <i>{p.x}</i>}}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-4-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots={{foo: () => <b/>}}><div>A</div></B>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-5-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots={{default: () => <i/>}}><div>A</div></B>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-6-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots={{'my-slot': () => <i/>}}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots={{}}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-8-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B class=\"c\" v-slots={{foo: () => <b/>}}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-10-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots={slots}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-11-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots={slots}><div>A</div></B>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-12-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots={1}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-14-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots=\"str\"/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-16-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-18-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots:x={{foo: () => <i/>}}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-20-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <div v-slots={{foo: () => <i/>}}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-21-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots={{a: () => <i/>}} v-slots={{b: () => <i/>}}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-22-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots={{...rest}}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-23-3468",
+    "history": "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    "source": "const A = () => <B v-slots={{[n]: () => <i/>}}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3501",
+    "history": "f889f8067ba87273012299dec7d503d8b581c6de",
+    "source": "const a = <B>{() => 'foo'}</B>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-foo-3501",
+    "history": "f889f8067ba87273012299dec7d503d8b581c6de",
+    "source": "const a = <B>{() => label}</B>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-3501",
+    "history": "f889f8067ba87273012299dec7d503d8b581c6de",
+    "source": "const a = <div><><i/></></div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-4-3501",
+    "history": "f889f8067ba87273012299dec7d503d8b581c6de",
+    "source": "<><i/></>",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-5-3501",
+    "history": "f889f8067ba87273012299dec7d503d8b581c6de",
+    "source": "const a = <><i/><b/></>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-6-3501",
+    "history": "f889f8067ba87273012299dec7d503d8b581c6de",
+    "source": "const a = <div>{...items}</div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-3501",
+    "history": "f889f8067ba87273012299dec7d503d8b581c6de",
+    "source": "const a = <div><><p/></></div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3522",
+    "history": "eacf5734a384cfdf4a6d2d8029aeae94d080d1a6",
+    "source": "const a = <a v-custom={[val, 'arg', ['a','b']]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-b-3522",
+    "history": "eacf5734a384cfdf4a6d2d8029aeae94d080d1a6",
+    "source": "const a = <a v-custom={[val]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-val-3522",
+    "history": "eacf5734a384cfdf4a6d2d8029aeae94d080d1a6",
+    "source": "const a = <a v-custom={[val, ['a']]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-a-3522",
+    "history": "eacf5734a384cfdf4a6d2d8029aeae94d080d1a6",
+    "source": "const a = <a v-custom={[val, 'arg']}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-arg-3522",
+    "history": "eacf5734a384cfdf4a6d2d8029aeae94d080d1a6",
+    "source": "const a = <a v-custom={someArray}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-6-3522",
+    "history": "eacf5734a384cfdf4a6d2d8029aeae94d080d1a6",
+    "source": "const a = <a v-custom={[val, other]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-3522",
+    "history": "eacf5734a384cfdf4a6d2d8029aeae94d080d1a6",
+    "source": "const a = <a v-custom={[val, 'arg', ['a'], extra]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-8-3522",
+    "history": "eacf5734a384cfdf4a6d2d8029aeae94d080d1a6",
+    "source": "const a = <a v-custom={[val, 'arg', [notAString]]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-9-3522",
+    "history": "eacf5734a384cfdf4a6d2d8029aeae94d080d1a6",
+    "source": "const a = <a v-custom={[...spread]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-10-3522",
+    "history": "eacf5734a384cfdf4a6d2d8029aeae94d080d1a6",
+    "source": "const a = <a v-custom:arg={[val, ['a']]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-11-3522",
+    "history": "eacf5734a384cfdf4a6d2d8029aeae94d080d1a6",
+    "source": "const a = <div v-show={[visible, ['a']]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3559",
+    "history": "6b9eac98c18f56468bac337fc61d1478133a230a",
+    "source": "const A = () => <B v-model={[foo, bar]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-2-3559",
+    "history": "6b9eac98c18f56468bac337fc61d1478133a230a",
+    "source": "const A = () => <B v-models={[[ok], [foo, bar]]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-1-3594",
+    "history": "db36c4700f917d524cbf3dd4be45a02270753f47",
+    "source": "const a = <a:b foo={1}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-2-3594",
+    "history": "db36c4700f917d524cbf3dd4be45a02270753f47",
+    "source": "const a = <svg:circle/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-3594",
+    "history": "db36c4700f917d524cbf3dd4be45a02270753f47",
+    "source": "const a = <math:mi/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-4-3594",
+    "history": "db36c4700f917d524cbf3dd4be45a02270753f47",
+    "source": "const a = <div><svg:circle/></div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-5-3594",
+    "history": "db36c4700f917d524cbf3dd4be45a02270753f47",
+    "source": "const a = <><i/><b/></>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-6-3594",
+    "history": "db36c4700f917d524cbf3dd4be45a02270753f47",
+    "source": "const a = <div><><i/></></div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-3594",
+    "history": "db36c4700f917d524cbf3dd4be45a02270753f47",
+    "source": "const a = <B>{() => <><i/></>}</B>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-8-3594",
+    "history": "db36c4700f917d524cbf3dd4be45a02270753f47",
+    "source": "const a = <div>{cond ? <><i/></> : <b/>}</div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-9-3594",
+    "history": "db36c4700f917d524cbf3dd4be45a02270753f47",
+    "source": "const A = () => <a.b.c foo={1}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-10-3594",
+    "history": "db36c4700f917d524cbf3dd4be45a02270753f47",
+    "source": "const A = () => <a.b.c foo={1}>hi</a.b.c>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-11-3594",
+    "history": "db36c4700f917d524cbf3dd4be45a02270753f47",
+    "source": "const a = <div>{lead}<><p/><i/></>{tail}</div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-i-3594",
+    "history": "db36c4700f917d524cbf3dd4be45a02270753f47",
+    "source": "const a = <div><><><i/></></></div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-i-3594-2",
+    "history": "db36c4700f917d524cbf3dd4be45a02270753f47",
+    "source": "const A = () => <div><><i/><b/></></div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-15-3594",
+    "history": "db36c4700f917d524cbf3dd4be45a02270753f47",
+    "source": "const A = () => <div>{cond ? <><i/><b/></> : <c/>}</div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-3641",
+    "history": "25b3be78ad51e00ecb3d28a91f8ef1e3ad3fa8da",
+    "source": "<use xlinkHref=\"#a\"/>",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-3641",
+    "history": "25b3be78ad51e00ecb3d28a91f8ef1e3ad3fa8da",
+    "source": "<use xlinkHref={href}/>",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-4-3641",
+    "history": "25b3be78ad51e00ecb3d28a91f8ef1e3ad3fa8da",
+    "source": "<use xlink:href=\"#b\"/>",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-5-3641",
+    "history": "25b3be78ad51e00ecb3d28a91f8ef1e3ad3fa8da",
+    "source": "const C = () => <Comp xlinkHref=\"#c\"/>;\n",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-babel-xlink-svg-module-3641",
+    "history": "25b3be78ad51e00ecb3d28a91f8ef1e3ad3fa8da",
+    "source": "const A = () => <svg><use xlinkHref=\"#a\"/><use xlinkHref={href}/><use xlink:href=\"#b\"/></svg>;\nconst C = () => <Comp xlinkHref=\"#c\"/>;\n",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3660",
+    "history": "b696fb23723b5a282209f6a03834f00011756844",
+    "source": "const A = () => <div v-text={value}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-foo-3662",
+    "history": "53409b969b33c682b839376777e8d00a24eda47d",
+    "source": "const A = () => <foo/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-foo-babel-3662",
+    "history": "53409b969b33c682b839376777e8d00a24eda47d",
+    "source": "const A = () => <foo/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-mi-3662",
+    "history": "53409b969b33c682b839376777e8d00a24eda47d",
+    "source": "const A = () => <mi/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-mi-babel-3662",
+    "history": "53409b969b33c682b839376777e8d00a24eda47d",
+    "source": "const A = () => <mi/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-3662",
+    "history": "53409b969b33c682b839376777e8d00a24eda47d",
+    "source": "const A = () => <my-el>{{ default: () => <span/> }}</my-el>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-babel-3662",
+    "history": "53409b969b33c682b839376777e8d00a24eda47d",
+    "source": "const A = () => <my-el>{{ default: () => <span/> }}</my-el>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-div-3662",
+    "history": "53409b969b33c682b839376777e8d00a24eda47d",
+    "source": "const A = () => <div/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-div-babel-3662",
+    "history": "53409b969b33c682b839376777e8d00a24eda47d",
+    "source": "const A = () => <div/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-circle-3662",
+    "history": "53409b969b33c682b839376777e8d00a24eda47d",
+    "source": "const A = () => <circle/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-circle-babel-3662",
+    "history": "53409b969b33c682b839376777e8d00a24eda47d",
+    "source": "const A = () => <circle/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-6-3662",
+    "history": "53409b969b33c682b839376777e8d00a24eda47d",
+    "source": "const A = () => <svg:circle/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-6-babel-3662",
+    "history": "53409b969b33c682b839376777e8d00a24eda47d",
+    "source": "const A = () => <svg:circle/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-3662",
+    "history": "53409b969b33c682b839376777e8d00a24eda47d",
+    "source": "const A = () => <math:mi/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-babel-3662",
+    "history": "53409b969b33c682b839376777e8d00a24eda47d",
+    "source": "const A = () => <math:mi/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3665",
+    "history": "0c04ddcaa29a5a04adc23b89738fd6731d331748",
+    "source": "const A = () => <div>{t}</div>;\n",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-3665",
+    "history": "0c04ddcaa29a5a04adc23b89738fd6731d331748",
+    "source": "const B = () => <div class={c} id={i}>{t}</div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3664",
+    "history": "a8baf7bfaceb3a9ba4680a07b6a63b40b2386138",
+    "source": "const A = () => <div>{ok ? <i/> : <b/>}</div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "pragma": "Vue.h"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-pragma-call-3664",
+    "history": "a8baf7bfaceb3a9ba4680a07b6a63b40b2386138",
+    "source": "const A = () => <div>{ok ? <i/> : <b/>}</div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "pragma": "getH()"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3667",
+    "history": "5aa332a8063f4e26d64abb64295ec60112b899cc",
+    "source": "const A = () => <div>{...items}</div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-3667",
+    "history": "5aa332a8063f4e26d64abb64295ec60112b899cc",
+    "source": "const A = () => <div><i/>{...items}<b/></div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-3667",
+    "history": "5aa332a8063f4e26d64abb64295ec60112b899cc",
+    "source": "const A = () => <B>{...items}</B>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3716",
+    "history": "3347d31a1d5955d5d3ce9bb5689daa1c2ae99bc8",
+    "source": "const A = () => <input v-model:foo={val}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-1-babel-3716",
+    "history": "3347d31a1d5955d5d3ce9bb5689daa1c2ae99bc8",
+    "source": "const A = () => <input v-model:foo={val}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-3716",
+    "history": "3347d31a1d5955d5d3ce9bb5689daa1c2ae99bc8",
+    "source": "const A = () => <input v-model:foo_trim={val}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-2-babel-3716",
+    "history": "3347d31a1d5955d5d3ce9bb5689daa1c2ae99bc8",
+    "source": "const A = () => <input v-model:foo_trim={val}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-3716",
+    "history": "3347d31a1d5955d5d3ce9bb5689daa1c2ae99bc8",
+    "source": "const A = () => <B v-model:foo_trim={val}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-babel-3716",
+    "history": "3347d31a1d5955d5d3ce9bb5689daa1c2ae99bc8",
+    "source": "const A = () => <B v-model:foo_trim={val}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3718",
+    "history": "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    "source": "const A = () => <MyEl foo={1}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "customElementPrefix": "My"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-3718",
+    "history": "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    "source": "import MyEl from 'my-el'; const A = () => <MyEl foo={1}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "customElementPrefix": "My"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-3718",
+    "history": "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    "source": "const MyEl = Other; const A = () => <MyEl foo={1}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "customElementPrefix": "My"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-4-3718",
+    "history": "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    "source": "let MyEl = Other; const A = () => <MyEl foo={1}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "customElementPrefix": "My"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-5-3718",
+    "history": "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    "source": "var MyEl = Other; const A = () => <MyEl foo={1}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "customElementPrefix": "My"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-6-3718",
+    "history": "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    "source": "const A = (MyEl) => <MyEl foo={1}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "customElementPrefix": "My"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-3718",
+    "history": "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    "source": "const A = () => <MyEl>x</MyEl>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "customElementPrefix": "My"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-8-3718",
+    "history": "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    "source": "const A = () => <my-el v-model={value}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "customElementPrefix": "My"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-9-3718",
+    "history": "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    "source": "const A = () => <div/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "customElementPrefix": "My"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-10-3718",
+    "history": "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    "source": "const B = () => <Ns.Item/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "customElementPrefix": "My"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-11-3718",
+    "history": "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    "source": "const C = () => <svg:circle/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "customElementPrefix": "My"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-12-3718",
+    "history": "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    "source": "const D = () => <Fragment/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "customElementPrefix": "My"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-13-3718",
+    "history": "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    "source": "const A = () => <MyEl class=\"a\" {...p} class={c} on={{ click: h }}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "customElementPrefix": "My"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3720",
+    "history": "f49c94e03ad957b1f6f51276a328acb533c21343",
+    "source": "const A = () => <MyEl/>; const B = (MyEl) => <MyEl/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel",
+      "customElementPrefix": "My"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3728",
+    "history": "de4329271a6153359b3dc2ade26dfb736f5b2567",
+    "source": "const A = () => <B>{slots}</B>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-5-3728",
+    "history": "de4329271a6153359b3dc2ade26dfb736f5b2567",
+    "source": "const A = () => <B>{getSlots()}</B>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-8-3728",
+    "history": "de4329271a6153359b3dc2ade26dfb736f5b2567",
+    "source": "const A = () => <B>{slots}</B>;\n",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-9-3728",
+    "history": "de4329271a6153359b3dc2ade26dfb736f5b2567",
+    "source": "const C = () => <B>{otherSlots}</B>;\n",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-10-3728",
+    "history": "de4329271a6153359b3dc2ade26dfb736f5b2567",
+    "source": "const D = () => <B v-slots={forwarded}>{value}</B>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-16-3728",
+    "history": "de4329271a6153359b3dc2ade26dfb736f5b2567",
+    "source": "const A = () => <B>{slots as Slots}</B>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-5-3729",
+    "history": "8b31c9f2c574578a46de71f0937427bd9c1f2466",
+    "source": "const A = () => <B v-slots={1}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-6-3729",
+    "history": "8b31c9f2c574578a46de71f0937427bd9c1f2466",
+    "source": "<i/>",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-3729",
+    "history": "8b31c9f2c574578a46de71f0937427bd9c1f2466",
+    "source": "() => <i/>",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-9-3729",
+    "history": "8b31c9f2c574578a46de71f0937427bd9c1f2466",
+    "source": "const A = () => <B v-slots=\"str\"/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 1
+  },
+  {
+    "id": "c7-case-3-3731",
+    "history": "7302f72156089f035aa6197deec7dff85c37556e",
+    "source": "const A = () => <B v-model={[foo, bar, ['trim']]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-3-babel-3731",
+    "history": "7302f72156089f035aa6197deec7dff85c37556e",
+    "source": "const A = () => <B v-model={[foo, bar, ['trim']]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-4-3731",
+    "history": "7302f72156089f035aa6197deec7dff85c37556e",
+    "source": "const A = () => <B v-model={[foo, a.b]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-4-babel-3731",
+    "history": "7302f72156089f035aa6197deec7dff85c37556e",
+    "source": "const A = () => <B v-model={[foo, a.b]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-3731",
+    "history": "7302f72156089f035aa6197deec7dff85c37556e",
+    "source": "const A = () => <input v-model={[foo, bar]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-7-babel-3731",
+    "history": "7302f72156089f035aa6197deec7dff85c37556e",
+    "source": "const A = () => <input v-model={[foo, bar]}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 1
+  },
+  {
+    "id": "c7-case-2-3734",
+    "history": "8e9c10e189c1a576fe034ebcd8561be87a4a15c9",
+    "source": "const A = () => <B/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "options": {
+      "compat": "babel"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3859",
+    "history": "4010fbbe1bd570a9ac2a628feb21a6cd9b4b54d0",
+    "source": "\n        export const InspectTable = () => <table>{rows}</table>;\n        const LabelContent = () => <span>{label}</span>;\n        export const InspectTableRow = () => <tr>{row}</tr>;\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-3859",
+    "history": "4010fbbe1bd570a9ac2a628feb21a6cd9b4b54d0",
+    "source": "\n        import { computed, ref } from \"vue\";\n\n        export const App = () => {\n          const count = ref(0);\n          const doubled = computed(() => count.value * 2);\n          const increment = () => {\n            count.value += 1;\n          };\n\n          return (\n            <section>\n              <button onClick={increment}>Increment</button>\n              <p>{count.value}</p>\n              <p>{doubled.value}</p>\n            </section>\n          );\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-3859",
+    "history": "4010fbbe1bd570a9ac2a628feb21a6cd9b4b54d0",
+    "source": "\n        import { ref } from \"vue\";\n\n        type TsxCounterProps = {\n          label?: string;\n        };\n\n        const TsxCounter = ({ label = \"TSX\" }: TsxCounterProps, _ctx: Ctx) => {\n          const count = ref(0);\n          const increment = () => count.value++;\n          return (\n            <button type=\"button\" class=\"tsx-counter\" onClick={increment}>\n              {label}: {count.value}\n            </button>\n          );\n        };\n\n        export default TsxCounter;\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-4-3859",
+    "history": "4010fbbe1bd570a9ac2a628feb21a6cd9b4b54d0",
+    "source": "\n        const GenericList = <T extends string,>({ items }: { items: Array<T> }) => {\n          const first = items[0];\n          return <ul>{first}</ul>;\n        };\n\n        export default GenericList;\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-6-3859",
+    "history": "4010fbbe1bd570a9ac2a628feb21a6cd9b4b54d0",
+    "source": "\n        const Greeting = (props, { emit }) => {\n          const shout = () => emit(\"shout\");\n          return <button onClick={shout}>{props.label}</button>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-3859",
+    "history": "4010fbbe1bd570a9ac2a628feb21a6cd9b4b54d0",
+    "source": "\n        const Spread = (props, ...rest) => {\n          const first = rest[0];\n          return <div>{first}</div>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-8-3859",
+    "history": "4010fbbe1bd570a9ac2a628feb21a6cd9b4b54d0",
+    "source": "\n        const Standalone = () => {\n          const label = \"hi\";\n          return <div>{label}</div>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-9-3859",
+    "history": "4010fbbe1bd570a9ac2a628feb21a6cd9b4b54d0",
+    "source": "\n        const First = ({ a }) => {\n          const one = a;\n          return <p>{one}</p>;\n        };\n        const Second = ({ b }) => {\n          const two = b;\n          return <p>{two}</p>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-10-3859",
+    "history": "4010fbbe1bd570a9ac2a628feb21a6cd9b4b54d0",
+    "source": "\n        const Fallback = () => <i/>;\n        const App = ({ slot = <Fallback /> }) => {\n          const node = slot;\n          return <div>{node}</div>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3862",
+    "history": "3348e55132f670916eae7b71c5285f9fdac87f0f",
+    "source": "\n        const AsyncPanel = async ({ id }) => {\n          const data = await load(id);\n          return <div>{data}</div>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-3862",
+    "history": "3348e55132f670916eae7b71c5285f9fdac87f0f",
+    "source": "\n        const SyncApp = () => {\n          const data = load();\n          return <div>{data}</div>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-3866",
+    "history": "d05141f8c89a38098acaaeb0b590a7553f66a3fb",
+    "source": "\n        const Counter = ({ label = \"TSX\", step }) => {\n          const next = step;\n          return <button>{label}{next}</button>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-3866",
+    "history": "d05141f8c89a38098acaaeb0b590a7553f66a3fb",
+    "source": "\n        const Renamed = ({ label: text }) => {\n          const shown = text;\n          return <span>{shown}</span>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-3-3866",
+    "history": "d05141f8c89a38098acaaeb0b590a7553f66a3fb",
+    "source": "\n        const Spread = ({ label, ...rest }) => {\n          const extra = rest;\n          return <div>{label}{extra}</div>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-4-3866",
+    "history": "d05141f8c89a38098acaaeb0b590a7553f66a3fb",
+    "source": "\n        const Computed = ({ label, [dynamic]: value }) => {\n          const shown = value;\n          return <div>{label}{shown}</div>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-5-3866",
+    "history": "d05141f8c89a38098acaaeb0b590a7553f66a3fb",
+    "source": "\n        const Plain = (props) => {\n          const shown = props.label;\n          return <div>{shown}</div>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-6-3866",
+    "history": "d05141f8c89a38098acaaeb0b590a7553f66a3fb",
+    "source": "\n        const Standalone = () => {\n          const label = \"hi\";\n          return <div>{label}</div>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-3866",
+    "history": "d05141f8c89a38098acaaeb0b590a7553f66a3fb",
+    "source": "\n        const WithContext = ({ label }, { emit }) => {\n          const shout = () => emit(\"shout\");\n          return <button onClick={shout}>{label}</button>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-8-3866",
+    "history": "d05141f8c89a38098acaaeb0b590a7553f66a3fb",
+    "source": "\n        type Props = { label?: string };\n\n        const Typed = ({ label = \"TSX\" }: Props) => {\n          const shown = label;\n          return <div>{shown}</div>;\n        };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-5721",
+    "history": "3d5b5f21b659a1467e72c9b5b69a5f5f9df56df3",
+    "source": "const π = n; const A = () => <B v-slots={{[π]: () => <i/>}}/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-leaf-components-vdom-6d41be4",
+    "history": "6d41be4a703c3e8c91a4c436918935b88e9eddda",
+    "source": "const A = () => <div><Foo /><Bar title=\"x\" /></div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-leaf-component-root-vdom-6d41be4",
+    "history": "6d41be4a703c3e8c91a4c436918935b88e9eddda",
+    "source": "const A = () => <Foo id={id} />;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-component-spread-vdom-5875",
+    "history": "8355c59869d5fe68122e01cbf9edcea8b2f984be",
+    "source": "const A = () => <Foo {...props} />;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-component-spread-and-attrs-vdom-5875",
+    "history": "8355c59869d5fe68122e01cbf9edcea8b2f984be",
+    "source": "const A = () => <Foo id=\"x\" {...props} onClick={go} />;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-5886",
+    "history": "bd9412f75c523e90548dea3b72f0b428d6688dd3",
+    "source": "const App = () => <div id=\"x\">hello {name}<span hidden /></div>",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-name-5886",
+    "history": "bd9412f75c523e90548dea3b72f0b428d6688dd3",
+    "source": "const App = () => <Panel title=\"x\" />",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-title-5886",
+    "history": "bd9412f75c523e90548dea3b72f0b428d6688dd3",
+    "source": "const App = () => <div v-show={visible} />",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-4-5886",
+    "history": "bd9412f75c523e90548dea3b72f0b428d6688dd3",
+    "source": "const App = () => <div v-show />",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-5-5886",
+    "history": "bd9412f75c523e90548dea3b72f0b428d6688dd3",
+    "source": "const App = () => <div v-show:display={visible} />",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-6-5886",
+    "history": "bd9412f75c523e90548dea3b72f0b428d6688dd3",
+    "source": "const A = () => <div>{count}</div>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-5886",
+    "history": "bd9412f75c523e90548dea3b72f0b428d6688dd3",
+    "source": "const A = () => <Card><h1>Title</h1></Card>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-8-5886",
+    "history": "bd9412f75c523e90548dea3b72f0b428d6688dd3",
+    "source": "const A = () => <B foo={f} title=\"ok\" />",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-9-5886",
+    "history": "bd9412f75c523e90548dea3b72f0b428d6688dd3",
+    "source": "const A = () => <B {...attrs} foo={f} title=\"ok\" />",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-10-5886",
+    "history": "bd9412f75c523e90548dea3b72f0b428d6688dd3",
+    "source": "const A = () => <Widget.Panel active />",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-11-5886",
+    "history": "bd9412f75c523e90548dea3b72f0b428d6688dd3",
+    "source": "const A = () => <div v-show={visible} />",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-12-5886",
+    "history": "bd9412f75c523e90548dea3b72f0b428d6688dd3",
+    "source": "const A = () => <B v-slots={slots} />",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-5904",
+    "history": "4f8a5eafcba1fb6168f543e05333f27488cf39f3",
+    "source": "const A = () => <B onClickCapture={h} />;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-expression-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "\n            import Child from \"./Child\";\n            export const suffix = \"!\";\n            export function Card(props: { label: string }) {\n                const label = props.label + suffix;\n                return <Child label={label}/>;\n            }\n            export default <T extends string,>(props: { label: T }) => <Card label={props.label}/>;\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-mixed-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "\n            import { ref } from \"vue\";\n            export const Stateful = () => {\n                const count = ref(0);\n                const increment = () => count.value++;\n                return <button onClick={increment}>{count.value}</button>;\n            };\n            export const Pure = (props: {label:string}) => <i>{props.label}</i>;\n            export default Stateful;\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-default-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "\n            export const App = ({ slot = <i data-kind=\"fallback\"/> }: {slot?: any}) => {\n                const kind = slot.type;\n                return <div>{kind}</div>;\n            };\n            export default App;\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-typed-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "\n            export default function marker() { return \"retained\"; }\n            export const Typed = (props: { label: string; amount?: number }) => {\n                const read = () => props.label;\n                return <p>{read()}</p>;\n            };\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-5-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "// 😀 日本語\r\nexport const marker = '保全';\r\nexport default (props: {label:string}) => <p title=\"😀\">{props.label}</p>;\r\nexport const Other = () => <i>{marker}</i>;\r\n",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-6-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "import Child from './Child'; export const App = (Child: any) => <Child/>; export const Global = () => <Unknown/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "const _openBlock = 1; export const App = () => <p/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-8-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "export default (_openBlock: number) => <p/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-9-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "// _openBlock\nconst metadata = { _openBlock: 'safe' }; export default () => <p>{metadata._openBlock}</p>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-10-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "import { ref } from 'vue'; const App = () => <p/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-11-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "export default () => <p/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-12-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "const App = (props: {label:string}) => <p>{props.label}</p>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-13-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "const App = () => { const label = 'value'; return <p>{label}</p>; };",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-14-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "const App = () => <p>static</p>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-15-1a2c5f7",
+    "history": "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    "source": "export const App = (props: any, _ctx: any) => <p>{_ctx.attrs.title}</p>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-1-936e203",
+    "history": "936e2032c70c9a7f5364555e495d18fc8553a70c",
+    "source": "import Child from './Child'; export const App = (Child: any) => <Child/>; export const Global = () => <Unknown/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-936e203",
+    "history": "936e2032c70c9a7f5364555e495d18fc8553a70c",
+    "source": "const _openBlock = 1; export const App = () => <p/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-3-936e203",
+    "history": "936e2032c70c9a7f5364555e495d18fc8553a70c",
+    "source": "export default (_openBlock: number) => <p/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-4-936e203",
+    "history": "936e2032c70c9a7f5364555e495d18fc8553a70c",
+    "source": "// _openBlock\nconst metadata = { _openBlock: 'safe' }; export default () => <p>{metadata._openBlock}</p>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-5-936e203",
+    "history": "936e2032c70c9a7f5364555e495d18fc8553a70c",
+    "source": "import { ref } from 'vue'; const App = () => <p/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-6-936e203",
+    "history": "936e2032c70c9a7f5364555e495d18fc8553a70c",
+    "source": "export default () => <p/>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-7-936e203",
+    "history": "936e2032c70c9a7f5364555e495d18fc8553a70c",
+    "source": "const App = (props: {label:string}) => <p>{props.label}</p>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-8-936e203",
+    "history": "936e2032c70c9a7f5364555e495d18fc8553a70c",
+    "source": "const App = () => { const label = 'value'; return <p>{label}</p>; };",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-9-936e203",
+    "history": "936e2032c70c9a7f5364555e495d18fc8553a70c",
+    "source": "const App = () => <p>static</p>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-10-936e203",
+    "history": "936e2032c70c9a7f5364555e495d18fc8553a70c",
+    "source": "export const App = (props: any, _ctx: any) => <p>{_ctx.attrs.title}</p>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-argument-936e203",
+    "history": "936e2032c70c9a7f5364555e495d18fc8553a70c",
+    "source": "export const App = () => { return <p>{this.label}</p>; };",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-12-936e203",
+    "history": "936e2032c70c9a7f5364555e495d18fc8553a70c",
+    "source": "function outer() { const App = () => { return <p>{arguments[0]}</p>; }; return App; }",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-factory-a6139c0",
+    "history": "a6139c03d61653fe6c0dd0eb7c010d6871fb8351",
+    "source": "\n            export const make = function (label: string) {\n                return () => { return <p>{label}</p>; };\n            };\n            export default make(\"retained-factory\");\n        ",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-1-00d602b",
+    "history": "00d602b4e5adad10b96c1d6e19c243ec779f89fd",
+    "source": "export const App = () => { function factory() { const Inner = () => { return <p>{this.label}</p>; }; return Inner; } return <p/>; };",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-2-00d602b",
+    "history": "00d602b4e5adad10b96c1d6e19c243ec779f89fd",
+    "source": "export const App = () => { class Model { [this.label] = 1; } return <p/>; };",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-1-6051328",
+    "history": "605132848597fe69ba4ddd95038b2eaf39dba979",
+    "source": "function Outer() { const App = () => { return <p>{new.target}</p>; }; return App; }",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-1-0642abb",
+    "history": "0642abbf95ea6e7410ecea098270916241a67927",
+    "source": "// 😀 保全\r\nimport type { Ref } from 'vue';\r\nexport interface Props { label: Ref<string> }\r\nexport const label: string = 'retained';\r\nexport default label;\r\n",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 0
+  },
+  {
+    "id": "c7-case-2-2336283",
+    "history": "233628381370fca31854f9784ead32b6f6037abd",
+    "source": "export const App = (props: any, _ctx: any) => <p>{_ctx.attrs.title}</p>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  },
+  {
+    "id": "c7-case-3-2336283",
+    "history": "233628381370fca31854f9784ead32b6f6037abd",
+    "source": "export default () => <p>{_ctx.attrs.title}</p>;",
+    "filename": "History.tsx",
+    "lang": "tsx",
+    "errors": 1
+  }
+]

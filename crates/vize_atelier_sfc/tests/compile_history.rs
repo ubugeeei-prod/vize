@@ -9,32 +9,46 @@
     reason = "tests panic on invalid fixtures and snapshot the complete actual Debug bytes"
 )]
 
+use std::collections::BTreeMap;
+use std::path::Path;
+
 use serde::Deserialize;
-use vize_atelier_core::{CodegenMode, CompilerError, TemplateSyntaxMode};
+use vize_atelier_core::options::CustomElementMatcher;
+use vize_atelier_core::{CodegenMode, CodegenOptions, CompilerError, TemplateSyntaxMode};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
+use vize_atelier_sfc::vite_plugin::scope_css_for_pipeline;
 use vize_atelier_sfc::{
-    ScriptCompileOptions, SfcCompileOptions, SfcCompileResult, SfcError, SfcParseOptions,
-    StyleCompileOptions, TemplateCompileOptions, compile_sfc_with_template_syntax, parse_sfc,
+    CssCompileOptions, CssCompileResult, ScriptCompileOptions, SfcCompileOptions, SfcCompileResult,
+    SfcError, SfcParseOptions, SfcScriptOutputMode, StyleCompileOptions, TemplateCompileOptions,
+    compile_css, compile_sfc_for_adapter, compile_sfc_with_template_syntax, parse_css_ast,
+    parse_sfc, print_css_ast,
 };
 use vize_l0::{Allocator, String, config::VueVersion};
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Case {
     id: String,
     history: String,
     source: String,
     filename: String,
-    /// `sfc` compiles a whole `.vue` file; `template` compiles bare markup.
+    /// `sfc` compiles a whole `.vue` file; `template` compiles bare markup;
+    /// `css` runs the standalone CSS compiler and its AST round trip;
+    /// `vite-css` runs the Vite pipeline scoper with `data-v-history`.
     entry: String,
     /// `dom`, `ssr` or `vapor`; a `template` entry supports `dom` only.
     target: String,
     #[serde(default)]
     options: Options,
+    /// SFC: project files written beside `filename` (relative path -> text),
+    /// for fixes that resolve imported types, re-exports or packages. The
+    /// project root's absolute path is replaced by `$PROJECT` in the oracle.
+    #[serde(default)]
+    files: BTreeMap<String, String>,
     errors: usize,
 }
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Default, Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 struct Options {
     /// SFC: production output.
@@ -63,6 +77,86 @@ struct Options {
     custom_renderer: Option<bool>,
     /// SFC: Vue dialect, `3` (default), `2.7` or `2`.
     vue_version: Option<String>,
+    /// SFC: `inline` (default) or `separate`, the adapter output that emits a
+    /// render function beside the setup-state return object.
+    script_output: Option<String>,
+    /// SFC: custom-element tag globs (`ion-*`) through the adapter entry.
+    custom_elements: Option<Vec<String>>,
+    /// Compile `v-match`/`v-when` patterned templates.
+    patterned_template: Option<bool>,
+    /// Accept `//` comments between attributes inside a tag.
+    in_tag_comments: Option<bool>,
+    /// CSS: scope selectors with `data-v-history`.
+    scoped: Option<bool>,
+    /// CSS: minify the output.
+    minify: Option<bool>,
+}
+
+// The oracle prints every field the original cohort had; fields added for
+// later cases print only when set, so earlier snapshots keep their bytes.
+impl core::fmt::Debug for Case {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut out = f.debug_struct("Case");
+        out.field("id", &self.id)
+            .field("history", &self.history)
+            .field("source", &self.source)
+            .field("filename", &self.filename)
+            .field("entry", &self.entry)
+            .field("target", &self.target)
+            .field("options", &self.options);
+        if !self.files.is_empty() {
+            out.field("files", &self.files);
+        }
+        out.field("errors", &self.errors).finish()
+    }
+}
+
+impl core::fmt::Debug for Options {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut out = f.debug_struct("Options");
+        out.field("prod", &self.prod)
+            .field("preserve_ts", &self.preserve_ts)
+            .field("standalone", &self.standalone)
+            .field("mode", &self.mode)
+            .field("prefix_identifiers", &self.prefix_identifiers)
+            .field("hoist_static", &self.hoist_static)
+            .field("cache_handlers", &self.cache_handlers)
+            .field("comments", &self.comments)
+            .field("source_map", &self.source_map)
+            .field("template_syntax", &self.template_syntax)
+            .field("custom_renderer", &self.custom_renderer)
+            .field("vue_version", &self.vue_version);
+        let later: [(&str, &dyn core::fmt::Debug, bool); 6] = [
+            (
+                "script_output",
+                &self.script_output,
+                self.script_output.is_some(),
+            ),
+            (
+                "custom_elements",
+                &self.custom_elements,
+                self.custom_elements.is_some(),
+            ),
+            (
+                "patterned_template",
+                &self.patterned_template,
+                self.patterned_template.is_some(),
+            ),
+            (
+                "in_tag_comments",
+                &self.in_tag_comments,
+                self.in_tag_comments.is_some(),
+            ),
+            ("scoped", &self.scoped, self.scoped.is_some()),
+            ("minify", &self.minify, self.minify.is_some()),
+        ];
+        for (name, value, set) in later {
+            if set {
+                out.field(name, value);
+            }
+        }
+        out.finish()
+    }
 }
 
 fn template_syntax(case: &Case) -> TemplateSyntaxMode {
@@ -93,6 +187,12 @@ enum Observation {
         code: String,
         map: Option<String>,
     },
+    Css {
+        compiled: CssCompileResult,
+        ast_errors: Vec<String>,
+        printed: Option<CssCompileResult>,
+    },
+    PipelineCss(String),
 }
 
 impl Observation {
@@ -101,14 +201,32 @@ impl Observation {
             Self::Sfc(Ok(result)) => result.errors.len(),
             Self::Sfc(Err(_)) | Self::ParseError(_) => 1,
             Self::Template { errors, .. } => errors.len(),
+            Self::Css {
+                compiled,
+                ast_errors,
+                printed,
+            } => {
+                compiled.errors.len()
+                    + ast_errors.len()
+                    + printed.as_ref().map_or(0, |printed| printed.errors.len())
+            }
+            Self::PipelineCss(_) => 0,
         }
     }
 }
 
-fn compile_whole_sfc(case: &Case) -> Observation {
+fn compile_whole_sfc(case: &Case, project: Option<&Path>) -> Observation {
     let source_map = case.options.source_map.unwrap_or(false);
+    let filename: String = match project {
+        Some(root) => root
+            .join(case.filename.as_str())
+            .to_string_lossy()
+            .as_ref()
+            .into(),
+        None => case.filename.clone(),
+    };
     let parse = SfcParseOptions {
-        filename: case.filename.as_str().into(),
+        filename: filename.as_str().into(),
         source_map,
         ..SfcParseOptions::default()
     };
@@ -128,13 +246,13 @@ fn compile_whole_sfc(case: &Case) -> Observation {
     let options = SfcCompileOptions {
         parse,
         script: ScriptCompileOptions {
-            id: Some(case.filename.as_str().into()),
+            id: Some(filename.as_str().into()),
             inline_template: case.options.standalone.unwrap_or(false),
             is_ts,
             ..ScriptCompileOptions::default()
         },
         template: TemplateCompileOptions {
-            id: Some(case.filename.as_str().into()),
+            id: Some(filename.as_str().into()),
             scoped,
             ssr,
             vapor,
@@ -147,6 +265,13 @@ fn compile_whole_sfc(case: &Case) -> Observation {
                 "2" => VueVersion::V2,
                 version => panic!("unknown fixture Vue version: {version}"),
             },
+            compiler_options: (case.options.patterned_template.is_some()
+                || case.options.in_tag_comments.is_some())
+            .then(|| DomCompilerOptions {
+                experimental_patterned_template: case.options.patterned_template.unwrap_or(false),
+                experimental_in_tag_comments: case.options.in_tag_comments.unwrap_or(false),
+                ..DomCompilerOptions::default()
+            }),
             ..TemplateCompileOptions::default()
         },
         style: StyleCompileOptions {
@@ -158,10 +283,35 @@ fn compile_whole_sfc(case: &Case) -> Observation {
         vapor,
         scope_id: None,
     };
-    Observation::Sfc(compile_sfc_with_template_syntax(
+    let script_output = match case.options.script_output.as_deref().unwrap_or("inline") {
+        "inline" => SfcScriptOutputMode::InlineTemplate,
+        "separate" => SfcScriptOutputMode::SeparateTemplate,
+        mode => panic!("unknown fixture script output: {mode}"),
+    };
+    if script_output == SfcScriptOutputMode::InlineTemplate
+        && case.options.custom_elements.is_none()
+    {
+        return Observation::Sfc(compile_sfc_with_template_syntax(
+            &descriptor,
+            options,
+            template_syntax(case),
+        ));
+    }
+    let custom_elements = CustomElementMatcher::from_patterns(
+        case.options
+            .custom_elements
+            .iter()
+            .flatten()
+            .cloned()
+            .collect(),
+    );
+    Observation::Sfc(compile_sfc_for_adapter(
         &descriptor,
         options,
         template_syntax(case),
+        custom_elements,
+        CodegenOptions::default(),
+        script_output,
     ))
 }
 
@@ -189,6 +339,8 @@ fn compile_bare_template(case: &Case) -> Observation {
             comments: options.comments.unwrap_or(false),
             source_map: options.source_map.unwrap_or(false),
             custom_renderer: options.custom_renderer.unwrap_or(false),
+            experimental_patterned_template: options.patterned_template.unwrap_or(false),
+            experimental_in_tag_comments: options.in_tag_comments.unwrap_or(false),
             ..DomCompilerOptions::default()
         },
         template_syntax(case),
@@ -201,12 +353,73 @@ fn compile_bare_template(case: &Case) -> Observation {
     }
 }
 
-fn observe(case: &Case) -> Observation {
+fn compile_standalone_css(case: &Case) -> Observation {
+    let scoped = case.options.scoped.unwrap_or(false);
+    let options = CssCompileOptions {
+        scope_id: scoped.then(|| "data-v-history".into()),
+        scoped,
+        minify: case.options.minify.unwrap_or(false),
+        source_map: case.options.source_map.unwrap_or(false),
+        ..CssCompileOptions::default()
+    };
+    let ast = parse_css_ast(&case.source, &options);
+    Observation::Css {
+        compiled: compile_css(&case.source, &options),
+        ast_errors: ast.errors,
+        printed: ast.ast.map(|ast| print_css_ast(ast, &options)),
+    }
+}
+
+fn observe(case: &Case, project: Option<&Path>) -> Observation {
     match case.entry.as_str() {
-        "sfc" => compile_whole_sfc(case),
+        "sfc" => compile_whole_sfc(case, project),
         "template" => compile_bare_template(case),
+        "css" => compile_standalone_css(case),
+        "vite-css" => Observation::PipelineCss(
+            scope_css_for_pipeline(&case.source, "data-v-history")
+                .as_str()
+                .into(),
+        ),
         entry => panic!("unknown fixture entry: {entry}"),
     }
+}
+
+/// Write the case's project files and its own source into a fresh directory.
+/// A project without its own `tsconfig.json` gets an empty one, so config
+/// discovery stops at the project root instead of probing the machine's
+/// temporary-directory ancestors.
+fn write_project(case: &Case) -> tempfile::TempDir {
+    let project = tempfile::tempdir().expect("project directory");
+    let tsconfig: (String, String) = ("tsconfig.json".into(), "{}\n".into());
+    let default_config =
+        (!case.files.contains_key("tsconfig.json")).then_some((&tsconfig.0, &tsconfig.1));
+    let files = case
+        .files
+        .iter()
+        .chain(default_config)
+        .chain([(&case.filename, &case.source)]);
+    for (relative, text) in files {
+        let path = project.path().join(relative.as_str());
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent).expect("project directory tree");
+        }
+        std::fs::write(&path, text.as_bytes()).expect("project file");
+    }
+    project
+}
+
+/// Replace the temporary project root, in both its given and canonical
+/// spellings, with `$PROJECT`.
+fn relocate(bytes: std::string::String, root: Option<&Path>) -> std::string::String {
+    let Some(root) = root else {
+        return bytes;
+    };
+    let canonical = root.canonicalize().expect("canonical project root");
+    let mut bytes = bytes;
+    for spelling in [canonical.as_path(), root] {
+        bytes = bytes.replace(spelling.to_string_lossy().as_ref(), "$PROJECT");
+    }
+    bytes
 }
 
 #[test]
@@ -216,7 +429,7 @@ fn full_current_compile_results() {
             .expect("strict fixture schema");
     assert_eq!(
         cases.len(),
-        1092,
+        1501,
         "every reviewed case must remain registered"
     );
     // Every case runs before the error counts are judged, so one run reports
@@ -224,13 +437,16 @@ fn full_current_compile_results() {
     let mut mismatched = serde_json::Map::new();
     for case in cases {
         assert_eq!(case.history.len(), 40, "full historical commit identity");
-        // Snapshot all public fields via Debug; no filtering or normalization.
-        let first = observe(&case);
-        let first_bytes = format!("{case:#?}\n{first:#?}");
-        let repeat = observe(&case);
+        // Snapshot all public fields via Debug; the only rewrite is the
+        // temporary project root of a multi-file case.
+        let project = (!case.files.is_empty()).then(|| write_project(&case));
+        let root = project.as_ref().map(tempfile::TempDir::path);
+        let first = observe(&case, root);
+        let first_bytes = relocate(format!("{case:#?}\n{first:#?}"), root);
+        let repeat = observe(&case, root);
         assert_eq!(
             first_bytes,
-            format!("{case:#?}\n{repeat:#?}"),
+            relocate(format!("{case:#?}\n{repeat:#?}"), root),
             "{}",
             case.id
         );

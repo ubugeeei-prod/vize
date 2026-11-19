@@ -1,0 +1,48 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-9-3465",
+    history: "bb9af53ab9a8e2ed34d4f53a26c4e3aa9746a032",
+    source: "const A = () => <B v-models={[foo]}/>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 1,
+}
+Observation {
+    module: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  const _component_B = _resolveComponent(\"B\")\n  \n  return (_openBlock(), _createBlock(_component_B))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "A",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  const _component_B = _resolveComponent(\"B\")\n  \n  return (_openBlock(), _createBlock(_component_B))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [
+        JsxDiagnostic {
+            severity: Error,
+            message: "v-models entry `foo` is not an array; each entry must be `[value, arg?, modifiers?]`.",
+            start: 30,
+            end: 33,
+        },
+    ],
+}

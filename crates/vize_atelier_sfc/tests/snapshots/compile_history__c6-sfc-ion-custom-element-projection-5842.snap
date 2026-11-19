@@ -1,0 +1,46 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-sfc-ion-custom-element-projection-5842",
+    history: "6e47205896906fe8e0c3e0a4ea3c6e02b6e08122",
+    source: "<template><div><ion-button @click=\"go\">{{ label }}</ion-button><ion-icon name=\"x\" /></div></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        custom_elements: Some(
+            [
+                "ion-*",
+            ],
+        ),
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"ion-button\", { onClick: _ctx.go }, _toDisplayString(_ctx.label), 9 /* TEXT, PROPS */, [\"onClick\"]),\n    _createElementVNode(\"ion-icon\", { name: \"x\" })\n  ]))\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

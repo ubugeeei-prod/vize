@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-emits-const-assertion-shared-c57a04e",
+    history: "c57a04e5559c3f7026671ec1869d2514ae0a91c2",
+    source: "<script setup lang=\"ts\">\ntype Public = { id: string }; const shared = ({ save: (value: Public) => true }) as const; defineEmits({ ...shared });\n</script>\n<template><div /></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "`defineEmits()` in <script setup> cannot reference locally declared variable `shared` because its arguments are hoisted outside setup(). Move the initialization to a normal <script> block or import it from another module.",
+            code: Some(
+                "SCRIPT_SETUP_MACRO_SCOPE",
+            ),
+            loc: Some(
+                BlockLocation {
+                    start: 133,
+                    end: 139,
+                    tag_start: 133,
+                    tag_end: 139,
+                    start_line: 2,
+                    start_column: 109,
+                    end_line: 2,
+                    end_column: 115,
+                },
+            ),
+        },
+    ),
+)

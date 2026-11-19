@@ -1,0 +1,36 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-patterned-arm-binding-scope-6207",
+    history: "8fd82f7e75d5eea334e767303fe762948b77c067",
+    source: "<template v-match=\"subject\"><p v-when=\"{ const value }\">{{ value }}</p><p v-when=\"_\">{{ other }}</p></template>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (() => { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (__vize_match_0_0 == null) break a0; if (!(\"value\" in Object(__vize_match_0_0))) break a0; const __vize_match_0_1 = __vize_match_0_0[\"value\"]; { const value = __vize_match_0_1; return [0, value]; } } return [1]; })(subject); return (__vize_match_0[0] === 0)\n    ? (() => { const [, value] = __vize_match_0; return (_openBlock(), _createElementBlock(\"p\", { key: 0 }, _toDisplayString(value), 1 /* TEXT */)) })()\n    : (__vize_match_0[0] === 1)\n      ? (_openBlock(), _createElementBlock(\"p\", { key: 1 }, _toDisplayString(other), 1 /* TEXT */))\n    : _createCommentVNode(\"v-if\", true) })()\n}",
+    map: None,
+}

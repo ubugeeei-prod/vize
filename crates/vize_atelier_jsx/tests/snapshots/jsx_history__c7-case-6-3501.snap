@@ -1,0 +1,39 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-6-3501",
+    history: "f889f8067ba87273012299dec7d503d8b581c6de",
+    source: "const a = <div>{...items}</div>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock, Fragment as _Fragment } from \"vue\"\n\nconst a = (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (_openBlock(), _createBlock(_Fragment, null, [...items], -2 /* BAIL */))\n  ]))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: None,
+            mode: Vdom,
+            setup: None,
+            preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nimport { createBlock as _createBlock, Fragment as _Fragment } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (_openBlock(), _createBlock(_Fragment, null, [...items], -2 /* BAIL */))\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

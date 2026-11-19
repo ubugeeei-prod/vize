@@ -1,0 +1,36 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-2-6225",
+    history: "5628b75a43444e4e7a2ae9d99ec88ca964ddf4f6",
+    source: "<template v-match=\"items\"><p v-when=\"[const first, ...const rest] as tuple\">{{ tuple.length }}:{{ first }}:{{ rest.length }}</p></template>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (() => { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (!Array.isArray(__vize_match_0_0) || __vize_match_0_0.length < 1) break a0; const __vize_match_0_1 = __vize_match_0_0[0]; const __vize_match_0_2 = Array.from({ length: __vize_match_0_0.length - 1 }, (_, i) => __vize_match_0_0[i + 1]); { const first = __vize_match_0_1; const rest = __vize_match_0_2; const tuple = __vize_match_0_0; return [0, first, rest, tuple]; } } return [-1]; })(items); return (__vize_match_0[0] === 0)\n    ? (() => { const [, first, rest, tuple] = __vize_match_0; return (_openBlock(), _createElementBlock(\"p\", { key: 0 }, _toDisplayString(tuple.length) + \":\" + _toDisplayString(first) + \":\" + _toDisplayString(rest.length), 1 /* TEXT */)) })()\n    : _createCommentVNode(\"v-if\", true) })()\n}",
+    map: None,
+}

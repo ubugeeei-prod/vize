@@ -1,0 +1,58 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-7-3866",
+    history: "d05141f8c89a38098acaaeb0b590a7553f66a3fb",
+    source: "\n        const WithContext = ({ label }, { emit }) => {\n          const shout = () => emit(\"shout\");\n          return <button onClick={shout}>{label}</button>;\n        };\n        ",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { createElementVNode as _createElementVNode } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\n\n        const WithContext = _defineComponent({\nname: \"WithContext\",\nprops: [\"label\"],\nsetup({ label }, { emit }) {\n\n          const shout = () => emit(\"shout\");\n          return (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"button\", { onClick: shout }, [\n    label\n  ], 8 /* PROPS */, [\"onClick\"]))\n})\n})()\n}\n});\n        ",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "WithContext",
+            ),
+            mode: Vdom,
+            setup: Some(
+                ComponentSetupSpan {
+                    declaration_start: 9,
+                    declaration_end: 170,
+                    params_start: 30,
+                    params_end: 49,
+                    type_params_start: 0,
+                    type_params_end: 0,
+                    is_async: false,
+                    destructured_props: [
+                        "label",
+                    ],
+                    setup_start: 55,
+                    setup_end: 111,
+                    render_start: 118,
+                    render_end: 158,
+                },
+            ),
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"button\", { onClick: shout }, [\n    label\n  ], 8 /* PROPS */, [\"onClick\"]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

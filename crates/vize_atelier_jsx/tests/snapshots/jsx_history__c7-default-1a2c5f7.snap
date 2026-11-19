@@ -1,0 +1,68 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-default-1a2c5f7",
+    history: "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    source: "\n            export const App = ({ slot = <i data-kind=\"fallback\"/> }: {slot?: any}) => {\n                const kind = slot.type;\n                return <div>{kind}</div>;\n            };\n            export default App;\n        ",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\n\n            export const App = _defineComponent({\nname: \"App\",\nprops: [\"slot\"],\nsetup({ slot = (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"i\", { \"data-kind\": \"fallback\" }))\n})(undefined, [])\n})() }: {slot?: any}) {\n\n                const kind = slot.type;\n                return (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"div\", null, [\n    kind\n  ]))\n})\n})()\n}\n});\n            export default App;\n        ",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "App",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"i\", { \"data-kind\": \"fallback\" }))\n}",
+            map: None,
+        },
+        Component {
+            name: Some(
+                "App",
+            ),
+            mode: Vdom,
+            setup: Some(
+                ComponentSetupSpan {
+                    declaration_start: 20,
+                    declaration_end: 186,
+                    params_start: 33,
+                    params_end: 83,
+                    type_params_start: 0,
+                    type_params_end: 0,
+                    is_async: false,
+                    destructured_props: [
+                        "slot",
+                    ],
+                    setup_start: 89,
+                    setup_end: 146,
+                    render_start: 153,
+                    render_end: 170,
+                },
+            ),
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"div\", null, [\n    kind\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

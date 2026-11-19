@@ -1,0 +1,46 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-mathml-html-reentry-5778",
+    history: "8f3d843c1aff1f1d034946ab7a244ae8a655ce07",
+    source: "<math><annotation-xml><div /></annotation-xml></math>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: ExtendPoint,
+            message: "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 22,
+                        end: 29,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"math\", null, [\n    (_openBlock(), _createElementBlock(\"annotation-xml\", null, [\n      _createElementVNode(\"div\")\n    ]))\n  ]))\n}",
+    map: None,
+}

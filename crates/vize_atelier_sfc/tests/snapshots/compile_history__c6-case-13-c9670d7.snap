@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-13-c9670d7",
+    history: "c9670d7f380fe2b4a9121d57280ac178f6e9eb7e",
+    source: "<template><KeepAlive :unknown=\"value\"><MyComp /></KeepAlive></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, createComponent as _createComponent, VaporKeepAlive as _VaporKeepAlive, extend as _extend } from 'vue';\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const _component_MyComp = _resolveComponent(\"MyComp\")\n  const n1 = _createComponent(_VaporKeepAlive, { unknown: () => (_ctx.value) }, {\n    \"default\": _extend(() => {\n      const n0 = _createComponentWithFallback(_component_MyComp, null, null, true)\n      return n0\n    }, { _: 1 })\n  }, true)\n  return n1\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

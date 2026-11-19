@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-root-match-script-setup-6184",
+    history: "1649cd0a40ec22aa887f15b1509a27de007ccf88",
+    source: "<script setup>const result = { kind: 'ok', data: 'ready' }</script><template v-match=\"result\"><p v-when=\"{ kind: 'ok', const data }\">{{ data }}</p><i v-when=\"_\">other</i></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nconst result = { kind: 'ok', data: 'ready' }\n\nreturn (_ctx, _cache) => {\n  return (() => { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (__vize_match_0_0 == null) break a0; if (!(\"kind\" in Object(__vize_match_0_0))) break a0; const __vize_match_0_1 = __vize_match_0_0[\"kind\"]; if (__vize_match_0_1 !== 'ok') break a0; if (!(\"data\" in Object(__vize_match_0_0))) break a0; const __vize_match_0_2 = __vize_match_0_0[\"data\"]; { const data = __vize_match_0_2; return [0, data]; } } return [1]; })(result); return (__vize_match_0[0] === 0)\n    ? (() => { const [, data] = __vize_match_0; return (_openBlock(), _createElementBlock(\"p\", { key: 0 }, _toDisplayString(data), 1 /* TEXT */)) })()\n    : (__vize_match_0[0] === 1)\n      ? (_openBlock(), _createElementBlock(\"i\", { key: 1 }, \"other\"))\n    : _createCommentVNode(\"v-if\", true) })()\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "result": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

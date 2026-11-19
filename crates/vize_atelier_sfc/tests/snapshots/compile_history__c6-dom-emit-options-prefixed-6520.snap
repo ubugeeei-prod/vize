@@ -1,0 +1,39 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-dom-emit-options-prefixed-6520",
+    history: "a92994b993eeb6ccdedd9ed5c62e6e2bf3d0ccd2",
+    source: "<div :class=\"c\" @click=\"go\"><Foo v-slot=\"{ item }\">{{ item }}</Foo></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: Some(
+            true,
+        ),
+        cache_handlers: Some(
+            true,
+        ),
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createVNode as _createVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Foo = _resolveComponent(\"Foo\")\n  \n  return (_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass(_ctx.c),\n    onClick: _cache[0] || (_cache[0] = (...args) => (_ctx.go && _ctx.go(...args)))\n  }, [\n    _createVNode(_component_Foo, null, {\n      default: _withCtx(({ item }) => [\n        _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n      ]),\n      _: 1 /* STABLE */\n    })\n  ], 2 /* CLASS */))\n}",
+    map: None,
+}

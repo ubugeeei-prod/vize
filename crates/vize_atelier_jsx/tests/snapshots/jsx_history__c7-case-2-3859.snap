@@ -1,0 +1,56 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-2-3859",
+    history: "4010fbbe1bd570a9ac2a628feb21a6cd9b4b54d0",
+    source: "\n        import { computed, ref } from \"vue\";\n\n        export const App = () => {\n          const count = ref(0);\n          const doubled = computed(() => count.value * 2);\n          const increment = () => {\n            count.value += 1;\n          };\n\n          return (\n            <section>\n              <button onClick={increment}>Increment</button>\n              <p>{count.value}</p>\n              <p>{doubled.value}</p>\n            </section>\n          );\n        };\n        ",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { createElementVNode as _createElementVNode } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\n\n        import { computed, ref } from \"vue\";\n\n        export const App = _defineComponent({\nname: \"App\",\nsetup() {\n\n          const count = ref(0);\n          const doubled = computed(() => count.value * 2);\n          const increment = () => {\n            count.value += 1;\n          };\n\n          return (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"section\", null, [\n    _createElementVNode(\"button\", { onClick: increment }, \"Increment\", 8 /* PROPS */, [\"onClick\"]),\n    _createElementVNode(\"p\", null, [\n      count.value\n    ]),\n    _createElementVNode(\"p\", null, [\n      doubled.value\n    ])\n  ]))\n})\n})()\n}\n});\n        ",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "App",
+            ),
+            mode: Vdom,
+            setup: Some(
+                ComponentSetupSpan {
+                    declaration_start: 62,
+                    declaration_end: 473,
+                    params_start: 0,
+                    params_end: 0,
+                    type_params_start: 0,
+                    type_params_end: 0,
+                    is_async: false,
+                    destructured_props: [],
+                    setup_start: 81,
+                    setup_end: 263,
+                    render_start: 284,
+                    render_end: 449,
+                },
+            ),
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"section\", null, [\n    _createElementVNode(\"button\", { onClick: increment }, \"Increment\", 8 /* PROPS */, [\"onClick\"]),\n    _createElementVNode(\"p\", null, [\n      count.value\n    ]),\n    _createElementVNode(\"p\", null, [\n      doubled.value\n    ])\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}
