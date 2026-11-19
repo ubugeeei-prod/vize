@@ -2,9 +2,9 @@
 //! the client: `_createElementVNode` / `_createVNode` / `_createTextVNode`
 //! trees built from the same plan ranges as the push form.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op as l2;
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::{TransformContent, decode_ssr_static_text};
 
 use super::slots::Ranges;
@@ -68,7 +68,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         if children.run.is_empty() {
             return;
         }
-        self.ctx.use_core_helper(RuntimeHelper::CreateText);
+        self.ctx.use_helper(server_renderer::CREATE_TEXT_VNODE);
         let run = children.run.join(" + ");
         children.run.clear();
         children.expressions.push(cstr!("_createTextVNode({run})"));
@@ -163,7 +163,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
             (Kind::Comment, Source::Comment(comment)) => {
                 self.pos += 1;
-                self.ctx.use_core_helper(RuntimeHelper::CreateComment);
+                self.ctx.use_helper(server_renderer::CREATE_COMMENT_VNODE);
                 let quoted = quoted_js_string(comment.content);
                 self.push_child(children, cstr!("_createCommentVNode({quoted})"));
             }
@@ -181,7 +181,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
     /// A text run part: `_toDisplayString(exp)`.
     fn vnode_display(&mut self, exp: &str) -> String {
-        self.ctx.use_core_helper(RuntimeHelper::ToDisplayString);
+        self.ctx.use_helper(server_renderer::TO_DISPLAY_STRING);
         cstr!("_toDisplayString({exp})")
     }
 
@@ -196,7 +196,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.pos += 1;
         let attached = self.take_attached(element.attributes.len() + element.bindings.len())?;
         let attached = attached.as_slice();
-        self.ctx.use_core_helper(RuntimeHelper::CreateElementVNode);
+        self.ctx.use_helper(server_renderer::CREATE_ELEMENT_VNODE);
         let props = self.vnode_element_props(attached, key)?;
         let (children, dynamic_text) = match self.direct_children(self.pos)?.as_slice() {
             [] => ("null".to_compact_string(), false),
@@ -245,7 +245,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.pos += 1;
         let attached = self.take_attached(component.attributes.len() + component.bindings.len())?;
         let attached = attached.as_slice();
-        self.ctx.use_core_helper(RuntimeHelper::CreateVNode);
+        self.ctx.use_helper(server_renderer::CREATE_VNODE);
         let dynamic = matches!(name, "component" | "Component")
             && super::component::has_dynamic_tag_source(component, self.ctx.source);
         let callee = if dynamic {
@@ -287,7 +287,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             self.pos = self.region_end(start)?;
             return Ok(out);
         }
-        self.ctx.use_core_helper(RuntimeHelper::WithCtx);
+        self.ctx.use_helper(server_renderer::WITH_CTX);
         let mut out = String::from("{ ");
         if let Some(own) = &slots.own {
             out.push_str(&self.vnode_slot_entry(own)?);

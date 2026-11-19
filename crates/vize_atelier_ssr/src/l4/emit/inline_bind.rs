@@ -3,8 +3,8 @@
 //! attributes, and `_ssrRenderAttr` with the name anchored at the authored
 //! argument.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, cstr};
+use vize_l4::runtime::server_renderer;
 use vize_l4::write::EmitDocument;
 
 use super::attrs::{Attached, Bind, BindName, static_value};
@@ -22,7 +22,7 @@ pub(super) fn emit(
     match name {
         Some(name) if vize_l0::is_reserved_prop(name) => {}
         Some("class") => {
-            em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderClass);
+            em.ctx.use_helper(server_renderer::SSR_RENDER_CLASS);
             em.ctx.push_string_part_static(" class=\"");
             let class_exp = match static_value(attached, "class") {
                 Some(static_class) => {
@@ -35,7 +35,7 @@ pub(super) fn emit(
             em.ctx.push_string_part_static("\"");
         }
         Some("style") => {
-            em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderStyle);
+            em.ctx.use_helper(server_renderer::SSR_RENDER_STYLE);
             em.ctx.push_string_part_static(" style=\"");
             let mut values = std::vec::Vec::new();
             if let Some(static_style) = static_value(attached, "style") {
@@ -51,13 +51,13 @@ pub(super) fn emit(
             em.ctx.push_string_part_static("\"");
         }
         Some(name) if vize_l0::is_boolean_attr(name) => {
-            em.ctx.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
+            em.ctx.use_helper(server_renderer::SSR_INCLUDE_BOOLEAN_ATTR);
             em.ctx.push_string_part_dynamic(&cstr!(
                 "(_ssrIncludeBooleanAttr({exp})) ? \" {name}\" : \"\""
             ));
         }
         Some(name) => {
-            em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderAttr);
+            em.ctx.use_helper(server_renderer::SSR_RENDER_ATTR);
             // The name maps to the authored argument and the value to its
             // expression, as the AST walker writes `_ssrRenderAttr`.
             let mut piece = EmitDocument::plain("_ssrRenderAttr(\"");
@@ -77,7 +77,7 @@ pub(super) fn emit(
             em.ctx.push_string_part_dynamic_spanned(piece);
         }
         None => {
-            em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderAttrs);
+            em.ctx.use_helper(server_renderer::SSR_RENDER_ATTRS);
             em.ctx
                 .push_string_part_dynamic(&cstr!("_ssrRenderAttrs({exp})"));
         }

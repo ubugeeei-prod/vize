@@ -1,8 +1,8 @@
 //! `<slot>` outlets: `_ssrRenderSlot(_ctx.$slots, name, props, fallback, ...)`.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
 use super::attrs::{Attached, admit_value};
@@ -79,7 +79,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let name = self.outlet_name(slot)?;
         let props = self.slot_props(attached)?;
         self.ctx.flush_push();
-        self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderSlot);
+        self.ctx.use_helper(server_renderer::SSR_RENDER_SLOT);
         self.ctx.push_indent();
         self.ctx.push("_ssrRenderSlot(_ctx.$slots, ");
         self.ctx.push(&name);
@@ -165,7 +165,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         if spreads.is_empty() {
             return Ok(object);
         }
-        self.ctx.use_core_helper(RuntimeHelper::MergeProps);
+        self.ctx.use_helper(server_renderer::MERGE_PROPS);
         if !entries.is_empty() {
             spreads.push(object);
         }

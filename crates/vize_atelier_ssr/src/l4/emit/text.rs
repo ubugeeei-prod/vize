@@ -1,13 +1,13 @@
 //! Static text and `{{ }}` output. L2 merges adjacent text/interpolation runs
 //! into one compound op; the SSR lane renders each recorded part in place.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::Span;
 use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l2::analysis::text_facts::{TextPart, TextParts, rebuild_source};
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op as l2;
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::{TransformContent, decode_ssr_static_text};
 
 use super::{Emitter, Result, spans};
@@ -96,7 +96,7 @@ pub(super) fn decode_interpolation_js(text: vize_l0::String) -> vize_l0::String 
 /// `_ssrInterpolate(exp)`, anchored at the authored content `span` as the AST
 /// walker anchors an interpolation.
 fn push_interpolate(em: &mut Emitter<'_, '_, '_, '_, '_, '_>, text: vize_l0::String, span: Span) {
-    em.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
+    em.ctx.use_helper(server_renderer::SSR_INTERPOLATE);
     em.ctx
         .push_wrapped_expression_part("_ssrInterpolate(", &text, ")", span);
 }

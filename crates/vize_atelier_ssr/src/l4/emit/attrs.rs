@@ -1,10 +1,10 @@
 //! Attached-segment admission and the inline `name="value"` attribute shape
 //! of non-root elements.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
 use super::{Emitter, Result, model, plan_source, require_dynamic};
@@ -247,7 +247,7 @@ pub(super) fn emit_inline(
                         .map(|value| quoted_js_string(&decode_template_entities(value)))
                         .unwrap_or_else(|| "\"\"".to_compact_string());
                     let style_exp = merge_prop_values(std::vec![value, show]);
-                    em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderStyle);
+                    em.ctx.use_helper(server_renderer::SSR_RENDER_STYLE);
                     em.ctx.push_string_part_static(" style=\"");
                     em.ctx
                         .push_string_part_dynamic(&cstr!("_ssrRenderStyle({style_exp})"));

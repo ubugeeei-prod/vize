@@ -1,12 +1,12 @@
 //! VNode fallback control flow: conditional chains and `_renderList`
 //! blocks.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::id::NodeId;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::analysis::fragment_facts::FragmentKey;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
 use super::vnode::array;
@@ -40,7 +40,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .map(|wrappers| wrappers.fragment.clone())
             .unwrap_or_default();
         self.pos += 1;
-        self.ctx.use_core_helper(RuntimeHelper::CreateComment);
+        self.ctx.use_helper(server_renderer::CREATE_COMMENT_VNODE);
         let mut out = String::default();
         for (index, branch) in if_op.branches.iter().enumerate() {
             self.close(
@@ -64,8 +64,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             let expressions = expressions?;
             let template = from_template.get(index).copied().unwrap_or(false);
             if fragment {
-                self.ctx.use_core_helper(RuntimeHelper::CreateVNode);
-                self.ctx.use_core_helper(RuntimeHelper::Fragment);
+                self.ctx.use_helper(server_renderer::CREATE_VNODE);
+                self.ctx.use_helper(server_renderer::FRAGMENT);
                 out.push_str(&cstr!(
                     "_createVNode(_Fragment, null, {})",
                     array(&expressions)
@@ -112,8 +112,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         if let [only] = expressions.as_slice() {
             return only.clone();
         }
-        self.ctx.use_core_helper(RuntimeHelper::CreateVNode);
-        self.ctx.use_core_helper(RuntimeHelper::Fragment);
+        self.ctx.use_helper(server_renderer::CREATE_VNODE);
+        self.ctx.use_helper(server_renderer::FRAGMENT);
         cstr!("_createVNode(_Fragment, null, {})", array(&expressions))
     }
 
@@ -123,12 +123,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let fact = self.segment(self.pos)?.fact;
         self.pos += 1;
         for helper in [
-            RuntimeHelper::RenderList,
-            RuntimeHelper::OpenBlock,
-            RuntimeHelper::CreateBlock,
-            RuntimeHelper::Fragment,
+            server_renderer::RENDER_LIST,
+            server_renderer::OPEN_BLOCK,
+            server_renderer::CREATE_BLOCK,
+            server_renderer::FRAGMENT,
         ] {
-            self.ctx.use_core_helper(helper);
+            self.ctx.use_helper(helper);
         }
         let binding = &for_op.binding;
         let source = self.expr(&binding.source, TransformContent::Decoded)?;

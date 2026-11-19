@@ -1,7 +1,7 @@
 //! Builtin writers over the original SSR string-plan regions.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::TransformContent;
 
 use crate::codegen::element::props::{is_simple_identifier, quoted_js_string};
@@ -25,7 +25,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let mut implicit = std::vec::Vec::new();
         let mut dynamic = false;
         self.ctx.flush_push();
-        self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderSuspense);
+        self.ctx.use_helper(server_renderer::SSR_RENDER_SUSPENSE);
         self.ctx.push_indent();
         self.ctx.push("_ssrRenderSuspense(_push, {\n");
         self.ctx.indent_level += 1;
@@ -129,7 +129,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `_ssrRenderSuspense(_push, { default: () => { ... }, _: 1 })`.
     fn suspense_default(&mut self, flags: Flags) -> Result<()> {
         self.ctx.flush_push();
-        self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderSuspense);
+        self.ctx.use_helper(server_renderer::SSR_RENDER_SUSPENSE);
         self.ctx.push_indent();
         self.ctx.push("_ssrRenderSuspense(_push, {\n");
         self.ctx.indent_level += 1;

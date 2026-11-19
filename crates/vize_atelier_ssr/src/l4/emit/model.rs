@@ -1,9 +1,9 @@
 //! Native `v-model` realizations: `checked` / `value` attributes on inputs,
 //! the dynamic-type helper, and `selected` on options of a modelled select.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
 use super::attrs::{Attached, admit_value, bound_value, static_value};
@@ -75,8 +75,8 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
 
     fn checkbox_model_checked(&mut self, attached: &Attached<'_, '_>, exp: &str) -> Result<String> {
         if let Some(value) = self.model_attr_value(attached, "true-value")? {
-            self.ctx.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
-            self.ctx.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+            self.ctx.use_helper(server_renderer::SSR_LOOSE_EQUAL);
+            self.ctx.use_helper(server_renderer::SSR_LOOSE_CONTAIN);
             let input_value = self
                 .model_attr_value(attached, "value")?
                 .unwrap_or_else(|| "null".to_compact_string());
@@ -84,7 +84,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                 "Array.isArray({exp}) ? _ssrLooseContain({exp}, {input_value}) : _ssrLooseEqual({exp}, {value})"
             ))
         } else {
-            self.ctx.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+            self.ctx.use_helper(server_renderer::SSR_LOOSE_CONTAIN);
             let value = self
                 .model_attr_value(attached, "value")?
                 .unwrap_or_else(|| "null".to_compact_string());
@@ -109,7 +109,7 @@ pub(super) fn emit_inline(
     match tag {
         "input" => {
             if let Some(type_exp) = em.dynamic_type(attached)? {
-                em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderDynamicModel);
+                em.ctx.use_helper(server_renderer::SSR_RENDER_DYNAMIC_MODEL);
                 let value = em
                     .model_attr_value(attached, "value")?
                     .unwrap_or_else(|| "null".to_compact_string());
@@ -120,15 +120,15 @@ pub(super) fn emit_inline(
             }
             match static_value(attached, "type").as_deref() {
                 Some("checkbox") => {
-                    em.ctx.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
+                    em.ctx.use_helper(server_renderer::SSR_INCLUDE_BOOLEAN_ATTR);
                     let checked = em.checkbox_model_checked(attached, &exp)?;
                     em.ctx.push_string_part_dynamic(&cstr!(
                         "(_ssrIncludeBooleanAttr({checked})) ? \" checked\" : \"\""
                     ));
                 }
                 Some("radio") => {
-                    em.ctx.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
-                    em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
+                    em.ctx.use_helper(server_renderer::SSR_INCLUDE_BOOLEAN_ATTR);
+                    em.ctx.use_helper(server_renderer::SSR_LOOSE_EQUAL);
                     let value = em
                         .model_attr_value(attached, "value")?
                         .unwrap_or_else(|| "null".to_compact_string());
@@ -137,13 +137,13 @@ pub(super) fn emit_inline(
                     ));
                 }
                 _ => {
-                    em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderAttr);
+                    em.ctx.use_helper(server_renderer::SSR_RENDER_ATTR);
                     em.ctx
                         .push_string_part_dynamic(&cstr!("_ssrRenderAttr(\"value\", {exp})"));
                 }
             }
         }
-        "textarea" => em.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate),
+        "textarea" => em.ctx.use_helper(server_renderer::SSR_INTERPOLATE),
         _ => {}
     }
     Ok(())
@@ -180,7 +180,7 @@ pub(super) fn collect_root(
             ));
         }
         Some("radio") => {
-            em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
+            em.ctx.use_helper(server_renderer::SSR_LOOSE_EQUAL);
             let value = em
                 .model_attr_value(attached, "value")?
                 .unwrap_or_else(|| "null".to_compact_string());
@@ -203,9 +203,9 @@ pub(super) fn emit_option_selected(
     let Some(model) = em.select_models.last().cloned() else {
         return Ok(());
     };
-    em.ctx.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
-    em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseContain);
-    em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
+    em.ctx.use_helper(server_renderer::SSR_INCLUDE_BOOLEAN_ATTR);
+    em.ctx.use_helper(server_renderer::SSR_LOOSE_CONTAIN);
+    em.ctx.use_helper(server_renderer::SSR_LOOSE_EQUAL);
     let value = em
         .model_attr_value(attached, "value")?
         .unwrap_or_else(|| "null".to_compact_string());

@@ -5,6 +5,11 @@
 use super::SsrCodegenContext;
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, cstr};
+use vize_l4::runtime::{Helper, VUE_SERVER_RENDERER, server_renderer};
+
+/// The server-rendering vocabulary module imported as itself; every other
+/// module is the host's Vue runtime.
+const SERVER_RENDERER_MODULE: &str = "@vue/server-renderer";
 
 impl SsrCodegenContext<'_> {
     /// A fresh `_tempN` binding, declared at the top of `ssrRender`.
@@ -34,45 +39,68 @@ impl SsrCodegenContext<'_> {
         self.out.insert_str(self.body_start, &declaration);
     }
 
-    /// Build the preamble with imports
+    /// The import preamble: one `import { … }` per vocabulary module the body
+    /// used, `@vue/server-renderer` before the Vue runtime, each listing its
+    /// helpers in vocabulary order.
     pub(super) fn build_preamble(&self) -> String {
         let mut preamble = String::default();
-
-        // SSR helpers from @vue/server-renderer
-        if !self.ssr_helpers.is_empty() {
-            preamble.push_str("import { ");
-            let mut ssr_helpers: Vec<_> = self.ssr_helpers.iter().copied().collect();
-            ssr_helpers.sort();
-            push_helper_imports(&mut preamble, &ssr_helpers);
-            preamble.push_str(" } from \"@vue/server-renderer\"\n");
+        let mut open: Option<&str> = None;
+        for helper in self.helpers.in_index_order() {
+            let Some((module, name)) = VUE_SERVER_RENDERER.export(helper) else {
+                continue;
+            };
+            if open == Some(module) {
+                preamble.push_str(", ");
+            } else {
+                if let Some(previous) = open {
+                    self.close_import(&mut preamble, previous);
+                }
+                preamble.push_str("import { ");
+                open = Some(module);
+            }
+            preamble.push_str(name);
+            preamble.push_str(" as _");
+            preamble.push_str(name);
         }
-
-        // Core helpers from vue
-        if !self.core_helpers.is_empty() {
-            preamble.push_str("import { ");
-            let mut core_helpers: Vec<_> = self.core_helpers.iter().copied().collect();
-            core_helpers.sort();
-            push_helper_imports(&mut preamble, &core_helpers);
-            preamble.push_str(" } from ");
-            vize_l0::js_string::push_js_string_literal(
-                &mut preamble,
-                self.runtime_module_name.as_str(),
-            );
-            preamble.push('\n');
+        if let Some(module) = open {
+            self.close_import(&mut preamble, module);
         }
-
         preamble
     }
-}
 
-fn push_helper_imports(out: &mut String, helpers: &[RuntimeHelper]) {
-    for (index, helper) in helpers.iter().enumerate() {
-        if index > 0 {
-            out.push_str(", ");
+    /// End the import list from `module`; the Vue runtime import names the
+    /// host's runtime module.
+    fn close_import(&self, preamble: &mut String, module: &str) {
+        if module == SERVER_RENDERER_MODULE {
+            preamble.push_str(" } from \"@vue/server-renderer\"\n");
+        } else {
+            preamble.push_str(" } from ");
+            vize_l0::js_string::push_js_string_literal(preamble, self.runtime_module_name.as_str());
+            preamble.push('\n');
         }
-        let name = helper.name();
-        out.push_str(name);
-        out.push_str(" as _");
-        out.push_str(name);
     }
 }
+
+/// The legacy walker's `helper` in the server-rendering vocabulary. Both
+/// tables list Vue's exports in the same order, so the index is arithmetic on
+/// the discriminant. `resolveFilter`, which Vue 3 does not export, has none;
+/// SSR never requests it.
+pub(crate) fn legacy_helper(helper: RuntimeHelper) -> Option<Helper> {
+    let id = helper as u8;
+    let ssr = RuntimeHelper::SsrInterpolate as u8;
+    let filter = RuntimeHelper::ResolveFilter as u8;
+    let vue = server_renderer::FRAGMENT.index();
+    let index = if id >= ssr {
+        id - ssr
+    } else if id < filter {
+        vue + id
+    } else if id > filter {
+        vue + id - 1
+    } else {
+        return None;
+    };
+    Helper::from_index(index)
+}
+
+#[cfg(test)]
+mod tests;
