@@ -1,0 +1,38 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-nested-object-destructuring-props-3097",
+    history: "b6888302743503d92fef6e2edaa79b9180c583c2",
+    source: "<script setup lang=\"ts\">\nconst { a: { b: { c } } = { b: { c: 1 } } } = defineProps<{ a?: { b: { c: number } } }>()\n</script>\n<template><p>{{ c }}</p></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "<script setup> analysis refused: unsupported defineProps destructure `{ a: { b: { c } } = { b: { c: 1 } } }`",
+            code: Some(
+                "SCRIPT_SETUP_ANALYSIS",
+            ),
+            loc: None,
+        },
+    ),
+)

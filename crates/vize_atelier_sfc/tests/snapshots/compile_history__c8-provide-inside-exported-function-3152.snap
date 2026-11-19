@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-provide-inside-exported-function-3152",
+    history: "cfe96d1a3f162807597691b7e4e45dc128e4b557",
+    source: "<script lang=\"ts\">\nimport { provide, ref } from 'vue'\n\nconst shared = ref(0)\n\nexport function installState() {\n    provide(\"state\", shared)\n}\n</script>\n<template><div /></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { provide, ref } from \"vue\";\nconst shared = ref(0);\nexport function installState() {\n  provide(\"state\", shared);\n}\nconst _sfc_main = {};\n\nimport { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nfunction _sfc_render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\"))\n}\n_sfc_main.render = _sfc_render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

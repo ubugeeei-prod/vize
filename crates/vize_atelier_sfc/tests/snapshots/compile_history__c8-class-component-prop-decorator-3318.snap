@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-class-component-prop-decorator-3318",
+    history: "519cec5990d37434620c3ac38e3750a0eefa195b",
+    source: "<script lang=\"ts\">\nimport { Vue, Prop } from 'vue-property-decorator'\n\nexport default class HelloDecorator extends Vue {\n  @Prop({ type: String, required: true }) readonly name!: string;\n\n  count = 0;\n\n  get greeting(): string {\n    return `Hello, ${this.name}! (${this.count})`;\n  }\n}\n\n</script>\n<template><button>{{ greeting }}</button></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { Vue, Prop } from \"vue-property-decorator\";\nclass HelloDecorator extends Vue {\n  @Prop({\n    type: String,\n    required: true\n  }) name;\n  count = 0;\n  get greeting() {\n    return `Hello, ${this.name}! (${this.count})`;\n  }\n}\nconst _sfc_main = HelloDecorator;\n\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", null, _toDisplayString($options.greeting), 1 /* TEXT */))\n}\n_sfc_main.render = _sfc_render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

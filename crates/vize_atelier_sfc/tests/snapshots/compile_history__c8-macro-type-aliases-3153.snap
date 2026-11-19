@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-macro-type-aliases-3153",
+    history: "8de5e5c10113a9bcbdee73e01af610fb71121dea",
+    source: "<script setup lang=\"ts\">\n\nconst props = defineProps<Record<string, { value: string }>>()\nconst emit = defineEmits<{ save: [value: string] }>()\ndefineExpose<{ focus(): void }>()\ndefineSlots<{ default(props: { value: string }): unknown }>()\n\n</script>\n<template><div /></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "Cannot resolve macro type `string`.",
+            code: Some(
+                "V_SFC_TYPE_RESOLUTION",
+            ),
+            loc: Some(
+                BlockLocation {
+                    start: 24,
+                    end: 240,
+                    tag_start: 0,
+                    tag_end: 249,
+                    start_line: 1,
+                    start_column: 25,
+                    end_line: 8,
+                    end_column: 1,
+                },
+            ),
+        },
+    ),
+)

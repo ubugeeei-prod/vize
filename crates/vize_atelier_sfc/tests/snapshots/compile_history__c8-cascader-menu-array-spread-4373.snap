@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-cascader-menu-array-spread-4373",
+    history: "33e2b3b328a9d762c4853324f129579bccbb905a",
+    source: "<template>\n  <el-cascader-menu v-for=\"(menu, index) in menus\" :key=\"index\" :nodes=\"[...menu]\" />\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  const _component_el_cascader_menu = _resolveComponent(\"el-cascader-menu\")\n  \n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.menus, (menu, index) => {\n    return (_openBlock(), _createBlock(_component_el_cascader_menu, {\n      key: index,\n      nodes: [...menu]\n    }, null, 8 /* PROPS */, [\"nodes\"]))\n  }), 128 /* KEYED_FRAGMENT */))\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

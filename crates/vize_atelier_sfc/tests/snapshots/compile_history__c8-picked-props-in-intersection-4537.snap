@@ -1,0 +1,63 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-picked-props-in-intersection-4537",
+    history: "63c2154fc7aecddd4d6596da820df6d1a7d1f5e5",
+    source: "<script lang=\"ts\" setup>\nimport { computed } from 'vue'\nimport { CASCADER_PANEL_HEIGHT, CASCADER_PANEL_ITEM_SIZE } from './config'\nimport type { CascaderCommonProps } from './config'\n\nconst props = withDefaults(\n  defineProps<\n    {\n      nodes: { uid: number }[]\n      index: number\n    } & Pick<CascaderCommonProps, 'virtualScroll' | 'itemSize' | 'height'>\n  >(),\n  {\n    virtualScroll: false,\n    itemSize: CASCADER_PANEL_ITEM_SIZE,\n    height: CASCADER_PANEL_HEIGHT,\n  }\n)\n\nconst virtualScroll = computed(() => props.virtualScroll)\n</script>\n\n<template>\n  <FixedSizeList v-if=\"virtualScroll\" />\n  <Node v-else v-for=\"node in nodes\" :key=\"node.uid\" />\n</template>",
+    filename: "Menu.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    files: {
+        "config.ts": "export interface CascaderCommonProps {\n  virtualScroll?: boolean\n  itemSize?: number\n  height?: number\n}\n\nexport const CASCADER_PANEL_ITEM_SIZE = 34\nexport const CASCADER_PANEL_HEIGHT = 204\n",
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n\nimport { computed } from 'vue'\nimport { CASCADER_PANEL_HEIGHT, CASCADER_PANEL_ITEM_SIZE } from './config'\n\n\nexport default {\n  __name: 'Menu',\n  props: {\n    nodes: { type: Array, required: true },\n    index: { type: Number, required: true },\n    virtualScroll: { type: Boolean, required: false, default: false },\n    itemSize: { type: Number, required: false, default: CASCADER_PANEL_ITEM_SIZE },\n    height: { type: Number, required: false, default: CASCADER_PANEL_HEIGHT }\n  },\n  setup(__props) {\n\nconst props = __props\nconst virtualScroll = computed(() => props.virtualScroll);\n\nreturn (_ctx, _cache) => {\n  const _component_FixedSizeList = _resolveComponent(\"FixedSizeList\")\n  const _component_Node = _resolveComponent(\"Node\")\n\n  return (virtualScroll.value)\n    ? (_openBlock(), _createBlock(_component_FixedSizeList, { key: 0 }))\n    : (_openBlock(true), _createElementBlock(_Fragment, { key: 1 }, _renderList(__props.nodes, (node) => {\n      return (_openBlock(), _createBlock(_component_Node, { key: node.uid }))\n    }), 128 /* KEYED_FRAGMENT */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "nodes": Props,
+                        "height": Props,
+                        "props": SetupConst,
+                        "itemSize": Props,
+                        "computed": SetupConst,
+                        "CASCADER_PANEL_HEIGHT": SetupMaybeRef,
+                        "CASCADER_PANEL_ITEM_SIZE": SetupMaybeRef,
+                        "virtualScroll": SetupRef,
+                        "index": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [
+                "$PROJECT/config.ts",
+                "$PROJECT/tsconfig.json",
+            ],
+        },
+    ),
+)
