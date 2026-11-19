@@ -22,14 +22,17 @@ const memory = (files: Record<string, string>): Repo => ({
 });
 
 void test("the document and the tool define the same gates in the same order", () => {
-  const rows = [...doc.matchAll(/^\| `([a-z]+\.[a-z0-9-]+)` +\|.*\| (measured|issue) +\|/gm)];
+  const rows = [
+    ...doc.matchAll(/^\| `([a-z]+\.[a-z0-9-]+)` +\|.*\| (measured|issue|both) +\|/gm),
+  ];
   assert.deepEqual(
     rows.map((row) => row[1]),
     gates.map((gate) => gate.id),
   );
   for (const [, id, kind] of rows) {
     const gate = gates.find((entry) => entry.id === id);
-    assert.equal(kind === "measured", gate?.measure !== undefined, id);
+    assert.equal(kind !== "issue", gate?.measure !== undefined, id);
+    assert.equal(kind === "both", gate?.requiresIssues === true, id);
   }
 });
 
@@ -128,6 +131,24 @@ void test("the Rust-only gate matches Lean workflow tokens without substring fal
   );
   assert.equal(lean.pass, false);
   assert.equal(lean.detail, "3 Lean files or workflows");
+});
+
+void test("a both gate needs its empty allowlist and its closed issues", () => {
+  const query = gates.filter((gate) => gate.id === "levels.query");
+  const repo = (entries: string[]) =>
+    memory({
+      "docs/davinci/plan/query-import-allowlist.json": JSON.stringify({ entries }),
+    });
+  const closed = new Map<number, "OPEN" | "CLOSED">([[6871, "CLOSED"]]);
+  const open = new Map<number, "OPEN" | "CLOSED">([[6871, "OPEN"]]);
+  const status = (entries: string[], states: typeof closed | null) =>
+    evaluate(repo(entries), states, query)[0];
+  assert.equal(status(["crates/vize_patina/src/a.rs op"], closed).status, "fail");
+  assert.equal(status([], open).status, "fail");
+  assert.equal(status([], null).status, "unknown");
+  const pass = status([], closed);
+  assert.equal(pass.status, "pass");
+  assert.equal(pass.detail, "0 allowlisted product imports of L2 internals; issues closed");
 });
 
 void test("issue gates are unknown offline and fail while an issue is open", () => {

@@ -1,0 +1,30 @@
+{
+  "schema": "vize.query-import-allowlist",
+  "entries": [
+    "crates/vize_canon/src/projection/expr.rs op",
+    "crates/vize_canon/src/projection/expr/bindings.rs op",
+    "crates/vize_maestro/src/source_project/navigation/retained/intrinsic.rs file::records",
+    "crates/vize_patina/src/linter/engine/parse_diagnostics/compatibility.rs op",
+    "crates/vize_patina/src/markup/attribute.rs op",
+    "crates/vize_patina/src/markup/binding.rs op",
+    "crates/vize_patina/src/markup/branches.rs op",
+    "crates/vize_patina/src/markup/element.rs op",
+    "crates/vize_patina/src/markup/element/queries.rs op",
+    "crates/vize_patina/src/markup/element/rendered.rs op",
+    "crates/vize_patina/src/markup/l2.rs artifact",
+    "crates/vize_patina/src/markup/l2.rs op",
+    "crates/vize_patina/src/markup/l2.rs walk",
+    "crates/vize_patina/src/markup/l2/binding.rs op",
+    "crates/vize_patina/src/markup/l2/bound.rs op",
+    "crates/vize_patina/src/markup/l2/children.rs op",
+    "crates/vize_patina/src/markup/l2/walk.rs op",
+    "crates/vize_patina/src/markup/scope.rs op",
+    "crates/vize_patina/src/markup/visitor.rs op",
+    "crates/vize_patina/src/native/canonical.rs op",
+    "crates/vize_patina/src/native/canonical.rs walk",
+    "crates/vize_patina/src/native/canonical/img_alt.rs op",
+    "crates/vize_patina/src/native/canonical/img_alt.rs walk",
+    "crates/vize_patina/src/native/sfc.rs artifact",
+    "crates/vize_patina/src/plugin_batch/document.rs op"
+  ]
+}

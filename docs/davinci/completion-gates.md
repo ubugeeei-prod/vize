@@ -14,8 +14,9 @@ node tools/commands/davinci/completion-gates.ts --issues   # plus issue state vi
 ```
 
 A **measured** gate is computed from the repository by the tool. An **issue** gate passes
-when all of its issues are closed; each issue's body is its acceptance criterion. Counts
-are not committed here; the tool prints them.
+when all of its issues are closed; each issue's body is its acceptance criterion. A **both**
+gate needs both: its measurement and its closed issues. Counts are not committed here; the
+tool prints them.
 
 ## Rules
 
@@ -53,12 +54,12 @@ are not committed here; the tool prints them.
 
 ## T2: IR contracts
 
-| Gate            | Passes when                                                             | Kind  | Issues |
-| --------------- | ----------------------------------------------------------------------- | ----- | ------ |
-| `levels.l2`     | L2 has one canonical artifact and owns the former S2 passes.            | issue | #6838  |
-| `levels.query`  | Products read semantics through one L2 query API.                       | issue | #6871  |
-| `levels.script` | Native script analysis replaces Croquis.                                | issue | #6844  |
-| `levels.jsx`    | Vue JSX lowers to the same L2 semantics as babel TSX and vue-jsx-vapor. | issue | #6885  |
+| Gate            | Passes when                                                                                                                                                                                                                                                                           | Kind  | Issues |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | ------ |
+| `levels.l2`     | L2 has one canonical artifact and owns the former S2 passes.                                                                                                                                                                                                                          | issue | #6838  |
+| `levels.query`  | Products read semantics through one L2 query API: the `vize_l2::query` API is complete (#6871 closed), and Patina, Maestro and Canon library code imports no L2 internal (`op`, `artifact`, `walk`, `file` record rows), so `docs/davinci/plan/query-import-allowlist.json` is empty. | both  | #6871  |
+| `levels.script` | Native script analysis replaces Croquis.                                                                                                                                                                                                                                              | issue | #6844  |
+| `levels.jsx`    | Vue JSX lowers to the same L2 semantics as babel TSX and vue-jsx-vapor.                                                                                                                                                                                                               | issue | #6885  |
 
 ## T3: backends
 
@@ -138,3 +139,12 @@ are not committed here; the tool prints them.
    incremental update machine (#11631): its trees recurse through `Vec`, which Creusot accepts
    only with a trusted `Vec` declaration, and an arena rewrite is not worth it now. Kani is not
    removed. See the [Creusot record](./decisions/2026-11-17-creusot.md).
+
+## Maintainer decisions (2026-11-19)
+
+1. **Query API** (`levels.query`, now kind `both`): the gate needs a complete `vize_l2::query`
+   API (#6871) and the import rule of the
+   [query model record](./decisions/2026-11-19-6871-query-model.md):
+   `tests/tooling/davinci-query-imports.test.ts` forbids Patina, Maestro and Canon library code
+   from naming `vize_l2::{op, artifact, walk}` or a `file` record row, and its allowlist only
+   shrinks. Demand declarations and an undeclared-access detector are not required.

@@ -25,6 +25,8 @@ export interface Gate {
   readonly tier: Tier;
   readonly issues: readonly number[];
   readonly measure?: (repo: Repo) => Measured;
+  // A measured gate that also needs its issues closed (kind `both` in the doc).
+  readonly requiresIssues?: true;
 }
 
 export const levelCrates = [
@@ -204,6 +206,11 @@ const measureInputPlacement = (repo: Repo): Measured => {
   return { pass: count === 0, detail: `${count} owed input placements` };
 };
 
+const measureQueryImports = (repo: Repo): Measured => {
+  const count = allowlistEntries(repo, "docs/davinci/plan/query-import-allowlist.json");
+  return { pass: count === 0, detail: `${count} allowlisted product imports of L2 internals` };
+};
+
 const productAllowlistDir = "docs/davinci/plan/product-dependency-allowlists/";
 
 const measureProductDependencies = (repo: Repo): Measured => {
@@ -252,7 +259,13 @@ export const gates: readonly Gate[] = [
   { id: "levels.container", tier: 1, issues: [6837] },
   { id: "levels.dialects", tier: 1, issues: [6841, 6842] },
   { id: "levels.l2", tier: 2, issues: [6838] },
-  { id: "levels.query", tier: 2, issues: [6871] },
+  {
+    id: "levels.query",
+    tier: 2,
+    issues: [6871],
+    measure: measureQueryImports,
+    requiresIssues: true,
+  },
   { id: "levels.script", tier: 2, issues: [6844] },
   { id: "levels.jsx", tier: 2, issues: [6885] },
   { id: "levels.l3", tier: 3, issues: [6839] },
@@ -311,27 +324,32 @@ export const evaluate = (
           return state === "OPEN";
         })
       : null;
-    // A measured gate passes on its measurement; an issue gate when its issues are closed.
-    const status: Status = measured
-      ? measured.pass
-        ? "pass"
-        : "fail"
-      : openIssues === null
-        ? "unknown"
+    // A measured gate passes on its measurement; an issue gate when its issues are closed;
+    // a `both` gate needs its measurement and its issues.
+    const issueStatus: Status =
+      openIssues === null ? "unknown" : openIssues.length === 0 ? "pass" : "fail";
+    const issueDetail =
+      openIssues === null
+        ? "issues " + issueList(gate.issues)
         : openIssues.length === 0
-          ? "pass"
-          : "fail";
+          ? "issues closed"
+          : "open " + issueList(openIssues);
+    const status: Status = measured
+      ? !measured.pass
+        ? "fail"
+        : gate.requiresIssues
+          ? issueStatus
+          : "pass"
+      : issueStatus;
     return {
       id: gate.id,
       tier: gate.tier,
       status,
-      detail:
-        measured?.detail ??
-        (openIssues === null
-          ? "issues " + issueList(gate.issues)
-          : openIssues.length === 0
-            ? "issues closed"
-            : "open " + issueList(openIssues)),
+      detail: measured
+        ? gate.requiresIssues
+          ? `${measured.detail}; ${issueDetail}`
+          : measured.detail
+        : issueDetail,
       openIssues,
     };
   });

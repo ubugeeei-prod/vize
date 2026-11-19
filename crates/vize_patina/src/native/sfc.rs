@@ -10,8 +10,8 @@ use vize_l1::{
 };
 use vize_l2::{
     artifact::ArtifactError,
-    file::FileIssue,
     lang::js::{ProgramInputError, SetupIssue},
+    query::FileIssue,
 };
 
 mod context;
