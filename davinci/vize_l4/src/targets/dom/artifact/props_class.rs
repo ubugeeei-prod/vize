@@ -10,8 +10,8 @@ use super::{EmitCx, EmitError};
 
 /// A lone JSX `class` is emitted as authored: `createVNode` normalizes only
 /// truthy non-strings, so falsy values must reach `patchClass` unchanged.
-pub(super) fn is_runtime_jsx_class(cx: &EmitCx<'_>, pieces: &[Piece<'_>]) -> bool {
-    cx.jsx_class
+pub(super) fn is_runtime_class(cx: &EmitCx<'_>, pieces: &[Piece<'_>]) -> bool {
+    cx.runtime_class
         && !super::props_object::pieces_have_static_attr(pieces, "class")
         && pieces.iter().any(|piece| match piece {
             Piece::Bind(bind) => matches!(bind.name, Some(DynamicName::Static("class"))),

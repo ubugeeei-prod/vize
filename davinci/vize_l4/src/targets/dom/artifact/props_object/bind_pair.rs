@@ -46,7 +46,7 @@ pub(super) fn emit_bind_pair(
     push_ident_key(cx, key.as_str());
     cx.buf.push(": ");
     match raw_name {
-        "class" if crate::targets::dom::artifact::props_class::is_runtime_jsx_class(cx, pieces) => {
+        "class" if crate::targets::dom::artifact::props_class::is_runtime_class(cx, pieces) => {
             value.emit_authored(cx, bind)?;
         }
         "class" => match value.js() {

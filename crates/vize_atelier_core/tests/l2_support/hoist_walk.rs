@@ -85,10 +85,7 @@ pub fn walk_level(
         // Leaf ops between structural positions still consume ids.
         if matches!(
             op,
-            DumpOp::Text(_)
-                | DumpOp::Interpolation(_)
-                | DumpOp::JsxChildValue(_)
-                | DumpOp::Comment(_)
+            DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::ChildValue(_) | DumpOp::Comment(_)
         ) {
             *next += 1;
             continue;
@@ -281,10 +278,7 @@ fn walk_branch_roots(
     for op in ops {
         if matches!(
             op,
-            DumpOp::Text(_)
-                | DumpOp::Interpolation(_)
-                | DumpOp::JsxChildValue(_)
-                | DumpOp::Comment(_)
+            DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::ChildValue(_) | DumpOp::Comment(_)
         ) {
             *next += 1;
             continue;

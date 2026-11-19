@@ -24,7 +24,7 @@ impl<'s, 'a> NodeRef<'s, 'a> {
                 Op::Element(it) => it.span,
                 Op::Component(it) => it.span,
                 Op::Text(it) => it.span,
-                Op::Interpolation(it) | Op::JsxChildValue(it) => it.span,
+                Op::Interpolation(it) | Op::ChildValue(it) => it.span,
                 Op::Comment(it) => it.span,
                 Op::If(it) => it.span,
                 Op::And(it) => it.span,
@@ -63,7 +63,7 @@ impl<'s, 'a> NodeRef<'s, 'a> {
             Self::Op(
                 Op::Text(_)
                 | Op::Interpolation(_)
-                | Op::JsxChildValue(_)
+                | Op::ChildValue(_)
                 | Op::Comment(_)
                 | Op::If(_)
                 | Op::And(_)
@@ -99,7 +99,7 @@ impl<'s, 'a> NodeRef<'s, 'a> {
         match self {
             Self::Op(op) => match op {
                 Op::Element(_) | Op::Component(_) | Op::Text(_) | Op::Comment(_) => {}
-                Op::Interpolation(it) | Op::JsxChildValue(it) => visit(it.expression),
+                Op::Interpolation(it) | Op::ChildValue(it) => visit(it.expression),
                 Op::If(it) => {
                     for branch in &it.branches {
                         optional(branch.condition, visit);

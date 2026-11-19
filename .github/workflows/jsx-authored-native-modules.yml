@@ -158,8 +158,11 @@ jobs:
           cp "$observer" "$baseline/$observer"
           cmp "$observer" "$baseline/$observer"
           ir_observer=davinci/vize_l4/tests/jsx_child_values.rs
-          cp "$ir_observer" "$baseline/$ir_observer"
-          cmp "$ir_observer" "$baseline/$ir_observer"
+          # The baseline predates the neutral `Op::ChildValue` name (`ui.jsx-child`);
+          # its copy of the observer spells the variant as the baseline does, and
+          # nothing else may differ.
+          sed 's/\bOp::ChildValue\b/Op::JsxChildValue/g' "$ir_observer" > "$baseline/$ir_observer"
+          diff <(sed 's/\bOp::JsxChildValue\b/Op::ChildValue/g' "$baseline/$ir_observer") "$ir_observer"
           git -C "$baseline" diff --exit-code -- crates/*/src davinci/*/src
           git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$directory/base-source.txt"
           sha256sum "$observer" "$baseline/$observer" "$ir_observer" "$baseline/$ir_observer" tests/tooling/jsx-vapor-oracle/{vdom-child-review.ts,vdom-child-review-browser.ts,vdom-child-ir.ts,runtime.ts} tests/_fixtures/differential/compiler/jsx-child-values-6890/original.json > "$directory/observer.sha256"

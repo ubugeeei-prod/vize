@@ -237,7 +237,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
                 Op::Element(element) => self.element(id, element, fact, None),
                 Op::If(owner) => self.conditional(id, owner),
                 Op::OriginalFor(original) => self.original_for(id, original, fact),
-                Op::JsxChildValue(child) => {
+                Op::ChildValue(child) => {
                     let grouped = matches!(child.expression, ExprRef::Js(js)
                         if js.ast.get_inner_expression().precedence() == Precedence::Comma);
                     if grouped {

@@ -37,7 +37,7 @@ pub(super) fn collect_region<'a>(
                 collect_bindings(&component.bindings, expressions);
                 collect_region(&component.children, expressions, elements);
             }
-            Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
+            Op::Interpolation(interpolation) | Op::ChildValue(interpolation) => {
                 expressions.push(interpolation.expression);
             }
             Op::If(if_op) => {

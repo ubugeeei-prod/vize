@@ -59,7 +59,7 @@ fn typed_sequence_child_preserves_the_real_expression_and_complete_emission_pack
         unreachable!()
     };
     assert!(children.next().is_none());
-    element.children.ops = Vec::from_iter_in([Op::JsxChildValue(child)], &arena);
+    element.children.ops = Vec::from_iter_in([Op::ChildValue(child)], &arena);
     parts.root.ops = Vec::from_iter_in([Op::Element(element)], &arena);
     let artifact = Artifact::try_new(parts).unwrap();
     let tables = [resolve_expression(js, &State).unwrap()];
