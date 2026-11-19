@@ -67,3 +67,13 @@ rebased PR (onto main 9c7d4cba55) plus two perf commits:
     `/private/tmp/claude-501/-Users-nishimura-Source-github-com-ubugeeei-prod-vize/90a0aa1d-5403-4093-b702-6ace0f463fd6/scratchpad/pb/style/cgdiff.py`
     (it expects `<role>-<lane>.txt` names; adapt for `<role>.cg.<n>.txt`).
 - Remaining temp branches: `bench/sd2-{cB1,cB2,cg,cgb,p1,p5,p6}`.
+
+## Per-site results (screen 44510858938, driver 44510865349): all fail
+| cand | release | lint lanes vs main (bd/bo/bn/rd/ro/rn, M Ir) | markup rows |
+| --- | ---: | --- | --- |
+| p1 | -2,176 | +2.80/+4.10/+4.22/-1.60/-4.38/-4.21 | jsx +130 (+0.31%), s2 -1,403 |
+| p5 | -2,176 | +3.02/-0.03/+0.52/+0.72/-2.43/-1.82 | jsx -59, s2 +502 (+0.11%) |
+| p6 | -2,688 | ≈ p1 | ≈ p1 |
+Also `sfc_parse_template_only` +5 in all three (it reads 3320/3325 across rebuilds of identical
+source, so it is probably noise, but it counts). Per-site inlining does not reproduce the
+global-hint lane win on the bench-1000 lanes. Untried: the markup-bench callgrind diff (bench/sd2-cgb, guest env fixed).
