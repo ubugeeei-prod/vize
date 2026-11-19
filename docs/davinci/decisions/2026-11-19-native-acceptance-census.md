@@ -72,6 +72,7 @@ and the stability history.
 - T2: `Real Project Matrix differential` publishes the census after writing
   the per-product T2 results, inside the existing `real-project-differential`
   artifact. A `workflow_dispatch` with `matrix_run_id` republishes an earlier
-  full matrix run on main.
+  full matrix run on main. The census tool and policy are checked out at the
+  workflow revision, so matrix runs that predate the tool still publish.
 
 No product source or binary changes. The rates are measured, not improved.

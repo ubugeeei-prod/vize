@@ -78,9 +78,21 @@ jobs:
         run: >-
           node tests/differential/real-project.ts
           real-project-shards real-project-differential dom-corpus ssr-corpus
+      # The census tool and policy come from this workflow's revision, so a
+      # matrix run that predates the tool can still be published.
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.sha }}
+          path: census-tool
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /tests/differential/
+            /docs/davinci/plan/deletion-readiness-policy.json
       - name: Publish native-only acceptance and zero-fallback census
         run: >-
-          node tests/differential/native-acceptance.ts
+          node census-tool/tests/differential/native-acceptance.ts
           --out real-project-differential/acceptance real-project-differential
       - name: Upload per-product results
         if: ${{ always() }}
