@@ -81,6 +81,24 @@ export function expectedNativePackage(
   throw new Error(`unsupported public smoke platform: ${platform}`);
 }
 
+/** Historical public controls whose Windows binary embeds the broken CRLF runtime. */
+export function isKnownWindowsConfigRegression(
+  version: string,
+  failure: string,
+  platform = process.platform,
+): boolean {
+  if (platform !== "win32") return false;
+  const match = /^0\.(\d+)\.0$/u.exec(version);
+  if (match === null) return false;
+  const minor = Number(match[1]);
+  return (
+    minor >= 773 &&
+    minor <= 781 &&
+    failure.includes("generated clean check exited 2") &&
+    failure.includes("vite.config.ts: unterminated import in the product runtime")
+  );
+}
+
 async function nativeIdentity(project: string, version: string): Promise<Record<string, string>> {
   const expected = expectedNativePackage();
   const probe = await command(
@@ -233,7 +251,38 @@ export async function verifyPublishedFreshProject(
       ).stdout.trim(),
       `vize ${version}`,
     );
-    const clean = await npmCommand("generated clean check", ["run", "vize:check"], project);
+    let clean: CollectedOutput;
+    try {
+      clean = await npmCommand("generated clean check", ["run", "vize:check"], project);
+    } catch (error) {
+      const failure = error instanceof Error ? (error.stack ?? error.message) : String(error);
+      if (!isKnownWindowsConfigRegression(version, failure)) throw error;
+      const native = await nativeIdentity(project, version);
+      const packages = registryPackages(project, version);
+      assertCheckoutIsolation(checkout, project);
+      mkdirSync(dirname(resolve(evidence)), { recursive: true });
+      writeJson(resolve(evidence), {
+        schema: "vize.publishedFreshProject",
+        schemaVersion: 1,
+        version,
+        host: { platform: process.platform, arch: process.arch },
+        native,
+        plannedDependencies: plan,
+        registryPackages: packages,
+        init: {
+          dryRunSha256: sha256(dryRun.stdout),
+          applySha256: sha256(applied.stdout),
+          idempotentSha256: sha256(idempotent.stdout),
+        },
+        knownRegression: {
+          issue: 13357,
+          affected: "0.773.0 through 0.781.0 on Windows",
+          failure,
+        },
+        checkoutIsolated: true,
+      });
+      return;
+    }
     writeFileSync(join(project, "src", "App.vue"), BROKEN_APP);
     const broken = await collectOutput(
       process.execPath,

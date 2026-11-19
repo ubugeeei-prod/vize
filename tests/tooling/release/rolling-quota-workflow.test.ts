@@ -119,6 +119,7 @@ test("live dry-run is read-only and cannot enter npm verification or JSR publica
     "verify-config",
     "verify-musea-vrt",
     "verify-oxlint-windows-json-config",
+    "verify-windows-js-config",
     "publish-jsr",
   ]) {
     assert.deepEqual([verification.jobs[id]!.needs ?? []].flat(), ["verify-npm"]);
