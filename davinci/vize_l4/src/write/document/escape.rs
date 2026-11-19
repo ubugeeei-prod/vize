@@ -8,7 +8,6 @@ impl EmitDocument {
     /// pattern replaced, rebasing its links onto the escaped output. Patterns
     /// are ASCII and tried in order at each byte; a link boundary at an
     /// escaped byte lands before its replacement.
-    #[inline(always)]
     pub fn push_escaped(&mut self, other: &EmitDocument, escapes: &[(&str, &str)]) {
         let base = self.text.len();
         let bytes = other.text.as_bytes();
