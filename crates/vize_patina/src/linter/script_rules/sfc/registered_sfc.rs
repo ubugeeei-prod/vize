@@ -16,14 +16,10 @@ fn active(linter: &Linter) -> impl Iterator<Item = &dyn ScriptRule> + '_ {
     })
 }
 
-// Kept out of line, as the caller compiled them before: inlining both
-// into the caller moved the per-rule enabled checks out of line instead.
-#[inline(never)]
 pub(super) fn has_active(linter: &Linter) -> bool {
     active(linter).next().is_some()
 }
 
-#[inline(never)]
 pub(super) fn run(
     linter: &Linter,
     source: &str,
