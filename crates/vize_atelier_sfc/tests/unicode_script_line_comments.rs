@@ -29,7 +29,7 @@ fn check_packet(code: &str, ssr: bool) -> Result<(), String> {
         "cssVars": [], "slotted": false, "shouldForceReload": false,
         "script": {
             "content": code, "lang": null, "src": null, "setup": false,
-            "attrs": {}, "bindings": null,
+            "attrs": {},
             "loc": { "start": 8, "end": 8 + code.len(), "tag_start": 0,
                 "tag_end": source.len(), "start_line": 1, "start_column": 9,
                 "end_line": end_line, "end_column": end_column }
