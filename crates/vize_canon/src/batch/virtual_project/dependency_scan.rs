@@ -52,6 +52,7 @@ pub(crate) use resolution::{
     probe_candidates, resolve_dependency, resolve_dependency_with_inputs,
     resolve_generated_dependency, resolve_generated_dependency_with_inputs,
 };
+use source_resolution::canonical_importer;
 use specifier_iter::DependencySpecifierIter;
 
 type PackageResolver<'a> = &'a mut dyn FnMut(&Path, &str, crate::PackageResolutionMode) -> bool;
@@ -138,6 +139,11 @@ impl VirtualProject {
         // Importers share targets; each one costs a `realpath` and a `stat`.
         let mut canonical_keys: FxHashMap<PathBuf, Option<PathBuf>> = FxHashMap::default();
         let mut package_roots = None;
+        // Most projects have no authored `.vue.ts` literal that collides with
+        // generated Vue mirror spelling. Avoid hashing the importer path for
+        // every dependency in that common case. Reachable registrations can
+        // turn the flag on, but it stays safely monotonic for this walk.
+        let mut may_have_authored_vue_ts = self.may_have_authored_vue_ts_specifiers();
 
         while let Some(importer) = queue.pop() {
             vize_carton::micro_count!("canon.dependency_scan.importers.popped", 1);
@@ -345,6 +351,7 @@ impl VirtualProject {
                         specifier,
                         &aliases,
                         probes,
+                        may_have_authored_vue_ts,
                     )
                 };
                 let Some(target) = native_target else {
@@ -419,6 +426,7 @@ impl VirtualProject {
                     },
                 };
                 if registered.is_ok() {
+                    may_have_authored_vue_ts |= self.source_has_authored_vue_ts_specifiers(&key);
                     queue.push(key);
                 }
             }
@@ -482,13 +490,6 @@ impl VirtualProject {
         }
         aliases
     }
-}
-
-fn canonical_importer(known: &FxHashMap<PathBuf, PathBuf>, importer: &Path) -> PathBuf {
-    known
-        .get(importer)
-        .cloned()
-        .unwrap_or_else(|| vize_carton::path::canonicalize_non_verbatim(importer))
 }
 
 #[cfg(test)]

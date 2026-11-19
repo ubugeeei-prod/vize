@@ -103,7 +103,8 @@ impl VirtualProject {
             .map(|(file, context)| {
                 let source = self.module_source(file)?;
                 let resolver = |specifier: &str, mode| {
-                    let path = self.resolve_file_dependency(file, specifier, &aliases);
+                    let path =
+                        self.resolve_file_dependency(file, specifier, &aliases, authored_vue_ts);
                     let target = path.as_ref().and_then(|path| {
                         self.find_by_original(&vize_carton::path::canonicalize_non_verbatim(path))
                     });
