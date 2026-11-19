@@ -7,7 +7,7 @@ Delete this file before merging.
 | Slice | Branch | PR | State |
 | ----- | ------ | -- | ----- |
 | L3-1 record | `davinci/l3-shared-decisions` | #13398 | merged |
-| L4-1 one `EmitDocument` | `davinci/l4-one-emit-document` | #13390 | code final candidate (v7); instruction evidence incomplete |
+| L4-1 one `EmitDocument` | `davinci/l4-one-emit-document` | #13390 | head = v6 (`8567dd13a1`); needs instruction ruling |
 | L4-2 SSR helpers in `vize_l4::runtime` | `davinci/l4-ssr-runtime-helpers` (this branch, stacked on L4-1) | none yet | code done; parity and suites done; ci-opt vs its v5 parent (run 44494869586 vs 44490444478): 12 `atelier_ssr_*` rows fall (up to −3.2%), 89 identical, 0 regress; twins and re-measure on the final L4-1 still owed |
 
 ## L4-1 measurement state
@@ -48,7 +48,7 @@ Tools (scratchpad of the 2026-11-19 session; recreate if gone):
    `/private/tmp/claude-501/vize-release-build.lock`.
 2. The residual ci-opt shifts in untouched stages need a maintainer ruling. Size already has the
    release-profile rule; instructions do not. If the ruling is "release-shaped decides, as for size",
-   v7 (or v6) is mergeable.
+   v6 is mergeable.
 3. L4-2: rebase on the final L4-1, then measure the instructions against the L4-1 head
    (`measure/laneb-l42-head` was grafted onto v5). The PR body draft is in the session scratchpad
    (`laneb-l42-body.md`). Expected: `atelier_ssr_*` rows fall (bit mask instead of two
