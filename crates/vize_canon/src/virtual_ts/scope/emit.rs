@@ -13,18 +13,69 @@ use crate::virtual_ts::expressions::{
 };
 use crate::virtual_ts::types::VizeMapping;
 
-/// Split a `v-slot` props expression that carries its own TypeScript
-/// annotation (`#item="{ element }: { element: Tag }"`) into the binding
-/// pattern and the annotation. Vue allows the annotation, so emitting the
-/// inferred slot type after the full expression would produce `pattern: A: B`
-/// — a syntax error that aborts Corsa's semantic pass for the whole project.
-/// A `:` separates the annotation only at the top nesting level.
-pub(super) fn split_slot_pattern_annotation(pattern: &str) -> Option<(&str, &str)> {
+#[derive(Clone, Copy)]
+pub(super) struct SlotParameterPart<'a> {
+    pub(super) text: &'a str,
+    pub(super) start: usize,
+}
+
+#[derive(Clone, Copy)]
+pub(super) struct SlotParameter<'a> {
+    pub(super) pattern: SlotParameterPart<'a>,
+    pub(super) annotation: Option<SlotParameterPart<'a>>,
+    pub(super) default: Option<SlotParameterPart<'a>>,
+}
+
+fn trimmed_part(source: &str, start: usize, end: usize) -> SlotParameterPart<'_> {
+    let part = source.get(start..end).unwrap_or_default();
+    let leading = part.len() - part.trim_start().len();
+    let text = part.trim();
+    SlotParameterPart {
+        text,
+        start: start + leading,
+    }
+}
+
+fn is_parameter_default_equals(source: &str, at: usize) -> bool {
+    let before = source.get(..at).and_then(|text| text.chars().next_back());
+    let after = source.get(at + 1..).and_then(|text| text.chars().next());
+    after != Some('>')
+        && after != Some('=')
+        && !matches!(
+            before,
+            Some('=' | '!' | '<' | '>' | '+' | '-' | '*' | '/' | '%' | '&' | '|' | '^' | '?')
+        )
+}
+
+/// Split a slot function parameter into its authored binding pattern, optional
+/// annotation and optional whole-parameter default. The inferred payload type
+/// belongs before that default: `({ editor }: Payload = {})`, not the invalid
+/// `({ editor } = {}: Payload)`.
+pub(super) fn slot_parameter(pattern: &str) -> SlotParameter<'_> {
     let mut depth = 0i32;
     let mut quote: Option<char> = None;
     let mut escaped = false;
+    let mut line_comment = false;
+    let mut block_comment = false;
+    let mut annotation_at = None;
+    let mut default_at = None;
+    let mut chars = pattern.char_indices().peekable();
 
-    for (at, ch) in pattern.char_indices() {
+    while let Some((at, ch)) = chars.next() {
+        let next = chars.peek().map(|(_, next)| *next);
+        if line_comment {
+            if matches!(ch, '\n' | '\r') {
+                line_comment = false;
+            }
+            continue;
+        }
+        if block_comment {
+            if ch == '*' && next == Some('/') {
+                block_comment = false;
+                chars.next();
+            }
+            continue;
+        }
         if let Some(open) = quote {
             if escaped {
                 escaped = false;
@@ -35,22 +86,50 @@ pub(super) fn split_slot_pattern_annotation(pattern: &str) -> Option<(&str, &str
             }
             continue;
         }
+        if ch == '/' && next == Some('/') {
+            line_comment = true;
+            chars.next();
+            continue;
+        }
+        if ch == '/' && next == Some('*') {
+            block_comment = true;
+            chars.next();
+            continue;
+        }
         match ch {
             '\'' | '"' | '`' => quote = Some(ch),
             '{' | '[' | '(' | '<' => depth += 1,
-            '}' | ']' | ')' | '>' => depth -= 1,
-            ':' if depth == 0 => {
-                let (binding, annotation) = pattern.split_at_checked(at)?;
-                let annotation = annotation.get(1..)?.trim();
-                if annotation.is_empty() {
-                    return None;
-                }
-                return Some((binding.trim_end(), annotation));
+            '}' | ']' | ')' | '>' if depth > 0 => depth -= 1,
+            ':' if depth == 0 && annotation_at.is_none() => annotation_at = Some(at),
+            '=' if depth == 0 && is_parameter_default_equals(pattern, at) => {
+                default_at = Some(at);
+                break;
             }
             _ => {}
         }
     }
-    None
+
+    let pattern_end = annotation_at.or(default_at).unwrap_or(pattern.len());
+    let annotation =
+        annotation_at.map(|at| trimmed_part(pattern, at + 1, default_at.unwrap_or(pattern.len())));
+    let default = default_at.map(|at| trimmed_part(pattern, at + 1, pattern.len()));
+    SlotParameter {
+        pattern: trimmed_part(pattern, 0, pattern_end),
+        annotation,
+        default,
+    }
+}
+
+/// Split a `v-slot` props expression that carries its own TypeScript
+/// annotation (`#item="{ element }: { element: Tag }"`) into the binding
+/// pattern and the annotation. Vue allows the annotation, so emitting the
+/// inferred slot type after the full expression would produce `pattern: A: B`
+/// — a syntax error that aborts Corsa's semantic pass for the whole project.
+/// A `:` separates the annotation only at the top nesting level.
+pub(super) fn split_slot_pattern_annotation(pattern: &str) -> Option<(&str, &str)> {
+    let parameter = slot_parameter(pattern);
+    let annotation = parameter.annotation?.text;
+    (!annotation.is_empty()).then_some((parameter.pattern.text, annotation))
 }
 
 /// Emit the opening of a v-slot scope function. The parameter is annotated
@@ -70,11 +149,15 @@ pub(super) fn emit_slot_function_open(
     } else {
         cstr!("void function {function_name}")
     };
-    let params = if let Some((pattern, annotation)) = split_slot_pattern_annotation(props_pattern) {
-        cstr!("{pattern}: {annotation}")
-    } else {
-        cstr!("{props_pattern}: {props_type}")
-    };
+    let parameter = slot_parameter(props_pattern);
+    let pattern = parameter.pattern.text;
+    let annotation = parameter
+        .annotation
+        .map_or(props_type.as_str(), |annotation| annotation.text);
+    let params = parameter.default.map_or_else(
+        || cstr!("{pattern}: {annotation}"),
+        |default| cstr!("{pattern}: {annotation} = {}", default.text),
+    );
     append!(*ts, "{indent}{declaration}({params})");
     // The `{` and `};` are one tight group, so the closer cannot drift.
     ts! { &mut *ts =>
@@ -356,6 +439,37 @@ fn map_alias(
 
 #[cfg(test)]
 mod tests {
+    use super::slot_parameter;
+
+    #[test]
+    fn slot_parameters_separate_annotations_and_whole_parameter_defaults() {
+        for (source, pattern, annotation, default) in [
+            ("{ editor } = {}", "{ editor }", None, Some("{}")),
+            (
+                "{ editor }: { editor: string } = {}",
+                "{ editor }",
+                Some("{ editor: string }"),
+                Some("{}"),
+            ),
+            (
+                "slot: () => { editor: string } = fallback",
+                "slot",
+                Some("() => { editor: string }"),
+                Some("fallback"),
+            ),
+            ("{ editor = fallback }", "{ editor = fallback }", None, None),
+        ] {
+            let parameter = slot_parameter(source);
+            assert_eq!(parameter.pattern.text, pattern, "{source}");
+            assert_eq!(
+                parameter.annotation.map(|part| part.text),
+                annotation,
+                "{source}"
+            );
+            assert_eq!(parameter.default.map(|part| part.text), default, "{source}");
+        }
+    }
+
     #[test]
     fn pattern_identifier_offsets_respect_word_boundaries() {
         assert_eq!(super::pattern_identifier_offset("it", "it"), Some(0));
