@@ -4,7 +4,7 @@ use alloc::vec::Vec as OwnedVec;
 use vize_l0::{Allocator, SourceBlock, SourceFrameError, SourceRoot, Vec};
 
 use super::text::{self, TextBinding, TextBoundary, TextBoundaryKind};
-use crate::dialect::LegacyVueVersion;
+use crate::framework::vue::LegacyVueVersion;
 use crate::framework::vue::surface::{SurfacePolicy, sink::VueSink};
 use crate::markup::entity::DecodedEntity;
 use crate::markup::htmlish::event::Recorder;

@@ -32,9 +32,9 @@ pub mod token;
 pub mod tsrx;
 
 pub use crate::framework::vue::directive::{
-    ArgSyntax, DirectiveName, DirectiveNameError, DirectivePrefix, DirectiveSyntax, VueDirectives,
+    ArgSyntax, DirectiveName, DirectiveNameError, DirectivePrefix, VueDirectives,
 };
-pub use grammar::{MarkupGrammar, Vue};
+pub use grammar::{DirectiveSyntax, MarkupGrammar, Vue};
 pub use htmlish::lex::{Delimiters, LexOptions, Lexer};
 pub use htmlish::parse::{
     ComponentParse, ComponentSourceError, DirectiveAdmission, SurfaceError, SurfaceParseOptions,

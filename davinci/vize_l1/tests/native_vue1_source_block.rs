@@ -1,7 +1,7 @@
 //! Complete-file custody laws for the original Vue 1 component construction.
 
 use vize_l0::{Allocator, ErrorCode, SourceFrameError, SourceRoot, Span, cstr};
-use vize_l1::dialect::LegacyVueVersion;
+use vize_l1::framework::vue::LegacyVueVersion;
 use vize_l1::framework::vue::version::v1::surface::{self, SyntaxBoundary, SyntaxBoundaryKind};
 use vize_l1::markup::{SurfaceChild, check_fidelity};
 

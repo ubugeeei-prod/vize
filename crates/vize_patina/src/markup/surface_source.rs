@@ -2,7 +2,9 @@
 
 use oxc_span::Span as OxcSpan;
 use vize_l0::{Span, String};
-use vize_l1::framework::vue::directive::{ArgSyntax, DirectivePrefix, DirectiveSyntax, VueDirectives};
+use vize_l1::framework::vue::directive::{
+    ArgSyntax, DirectivePrefix, DirectiveSyntax, VueDirectives,
+};
 use vize_l1::markup::entity::{DecodedEntity, EntityContext, decode_one};
 use vize_l1::markup::{AttrValue, Attribute, Element, ElementClose, SurfaceTree, Token};
 

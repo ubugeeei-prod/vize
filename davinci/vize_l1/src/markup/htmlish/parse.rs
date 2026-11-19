@@ -11,7 +11,7 @@ use namespace::NamespaceSink;
 use vize_l0::{Allocator, Vec};
 use vize_l0::{ErrorCode, TemplateSyntaxMode};
 
-use crate::dialect::LegacyCaps;
+use crate::framework::vue::LegacyCaps;
 use crate::markup::htmlish::build::build;
 use crate::markup::htmlish::event::{Event, Recorder};
 use crate::markup::htmlish::render::check_fidelity;

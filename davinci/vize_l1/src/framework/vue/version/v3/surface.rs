@@ -8,8 +8,8 @@ use crate::markup::htmlish::surface::{SurfaceTree, TagKindFact};
 use crate::markup::{Component, DirectiveNameError, LexOptions, Lexer};
 
 use super::{DirectiveKind, VueDirectives, is_component_tag};
-use crate::framework::vue::surface::{HeaderPolicy, LexicalScope, SurfacePolicy, sink::VueSink};
 use crate::framework::vue::directive::DirectiveSyntax;
+use crate::framework::vue::surface::{HeaderPolicy, LexicalScope, SurfacePolicy, sink::VueSink};
 
 struct Vue3Policy<const TAG_FACTS: bool>;
 

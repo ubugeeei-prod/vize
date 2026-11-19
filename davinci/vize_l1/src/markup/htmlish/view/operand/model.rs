@@ -1,8 +1,8 @@
 //! Distinct original model operand and same-event short admission.
 
 use super::{AttributeHead, AttributeView, NativeTemplateComponent, Origin};
-use crate::framework::vue::version::v3::operand::ModelModifier;
 use crate::embed::syntax::RetainedExpression;
+use crate::framework::vue::version::v3::operand::ModelModifier;
 use oxc_parser::AdmittedExpression;
 use vize_l0::Span;
 

@@ -7,7 +7,9 @@
 
 use vize_carton::FxHashMap;
 use vize_l0::{Allocator, Box, Span, Vec};
-use vize_l1::framework::vue::directive::{ArgSyntax, DirectivePrefix, DirectiveSyntax, VueDirectives};
+use vize_l1::framework::vue::directive::{
+    ArgSyntax, DirectivePrefix, DirectiveSyntax, VueDirectives,
+};
 use vize_l1::markup::{Attribute, Element, SurfaceChild, SurfaceTree};
 use vize_l2::{expr::ExprRef, op::Region};
 use vize_relief::{

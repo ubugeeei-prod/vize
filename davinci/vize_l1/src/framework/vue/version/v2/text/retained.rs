@@ -198,7 +198,11 @@ impl<'a> RetainedTextBinding<'a> {
     pub const fn source(&self) -> EmbedSource<'a> {
         self.source
     }
-    pub(in crate::framework::vue::version::v2) fn matches(&self, block: SourceBlock<'a>, raw: &str) -> bool {
+    pub(in crate::framework::vue::version::v2) fn matches(
+        &self,
+        block: SourceBlock<'a>,
+        raw: &str,
+    ) -> bool {
         core::ptr::eq(self.raw_content, raw)
             && core::ptr::eq(self.source.authored_root(), block.root_source())
             && block.span_of(raw).map(|content| {

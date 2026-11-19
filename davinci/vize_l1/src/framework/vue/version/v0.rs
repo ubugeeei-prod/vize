@@ -1,6 +1,6 @@
 //! Vue 0 template capability table.
 
-use crate::framework::vue::quirks::{LegacyDialectCapabilities, feature};
+use crate::framework::vue::{LegacyDialectCapabilities, feature};
 
 /// Existing V0_10 template syntax, resolved once per file.
 pub const V0_10: LegacyDialectCapabilities = feature::computed::dollar_get_set(V0_11);

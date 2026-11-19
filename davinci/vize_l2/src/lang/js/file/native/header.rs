@@ -11,10 +11,11 @@ use crate::lang::js::file::native::NativeTemplateIssueKind as Kind;
 use crate::op::Attribute;
 use core::ops::DerefMut;
 use vize_l0::Vec;
-use vize_l1::{framework::vue::version::v3::VueDirectives,
-    markup::{
-        AttributeView, ConditionKind, ElementView, NativeTemplateComponent,
-    }, framework::vue::directive::{DirectivePrefix, DirectiveSyntax}};
+use vize_l1::{
+    framework::vue::directive::{DirectivePrefix, DirectiveSyntax},
+    framework::vue::version::v3::VueDirectives,
+    markup::{AttributeView, ConditionKind, ElementView, NativeTemplateComponent},
+};
 
 pub(in crate::file::region::native) struct Header<'a> {
     pub(in crate::file::region::native) attributes: Vec<'a, Attribute<'a>>,

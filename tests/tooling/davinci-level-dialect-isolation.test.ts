@@ -202,9 +202,9 @@ test("each level has one registry and policy consumers do not rematch variants",
     );
   }
 
-  for (const version of ["vue0.rs", "vue1.rs", "vue2.rs", "vue3.rs"])
+  for (const version of ["v0.rs", "v1.rs", "v2.rs", "v3.rs"])
     assert.ok(
-      fs.existsSync(path.join(repoRoot, "davinci/vize_l1/src/dialect", version)),
+      fs.existsSync(path.join(repoRoot, "davinci/vize_l1/src/framework/vue/version", version)),
       `missing Vue version table ${version}`,
     );
 });

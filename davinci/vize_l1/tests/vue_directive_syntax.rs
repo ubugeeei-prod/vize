@@ -1,8 +1,8 @@
 //! Independent source-coordinate goldens for the ordinary native library build.
 
 use vize_l0::{Span, String, cstr};
-use vize_l1::framework::vue::version::v3::directive::MAX_DIRECTIVE_DELIMITER_RUNS;
 use vize_l1::framework::vue::directive::DirectiveNameError;
+use vize_l1::framework::vue::version::v3::directive::MAX_DIRECTIVE_DELIMITER_RUNS;
 use vize_l1::markup::{ArgSyntax, DirectiveName, DirectivePrefix, DirectiveSyntax, VueDirectives};
 
 fn shifted(span: Span, offset: u32) -> Span {

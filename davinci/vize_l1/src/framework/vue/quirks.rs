@@ -211,7 +211,7 @@ impl LegacyDialectCapabilities {
     /// Compatibility spelling used by L1→L2 callers.
     ///
     /// This resolves the same shared descriptor as [`Self::for_dialect`]; it
-    /// exists so the historical [`LegacyCaps`](crate::dialect::LegacyCaps) API does not
+    /// exists so the historical [`LegacyCaps`](crate::framework::vue::LegacyCaps) API does not
     /// require a separate projection type.
     #[must_use]
     pub const fn for_version(version: VueVersion) -> Self {
