@@ -1,11 +1,6 @@
 {
   "schema": "vize.level-input-placement-owed",
   "entries": [
-    "davinci/vize_l1/src/css",
-    "davinci/vize_l1/src/dialect",
-    "davinci/vize_l1/src/markup/directive",
-    "davinci/vize_l1/src/markup/htmlish",
-    "davinci/vize_l1/src/moved",
     "davinci/vize_l2_to_l3/src/lib.rs",
     "davinci/vize_l2_to_l3/src/lower.rs",
     "davinci/vize_l2_to_l3/src/lower/classify.rs",

@@ -1,6 +1,6 @@
 use vize_l0::config::VueVersion;
 use vize_l0::{Allocator, ErrorCode, TemplateSyntaxMode};
-use vize_l1::dialect::LegacyCaps;
+use vize_l1::framework::vue::LegacyCaps;
 use vize_l1::markup::{SurfaceChild, SurfaceParseOptions, parse_with_options_and_caps};
 
 #[test]

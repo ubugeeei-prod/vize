@@ -1,7 +1,7 @@
 //! One original Vue 2 interpolation, with authored filter gaps kept verbatim.
 
 use vize_l0::{Allocator, SourceBlock, Span, Vec};
-use vize_l1::{framework::vue::version::v2::surface::TextView, embed::syntax::EmbedSyntax};
+use vize_l1::{embed::syntax::EmbedSyntax, framework::vue::version::v2::surface::TextView};
 
 use super::{Doc, ExpressionRefusal, expression::borrowed_document};
 

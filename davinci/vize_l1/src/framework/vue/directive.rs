@@ -1,9 +1,10 @@
-//! Generic contracts for dialect-provided directive attribute-name syntax.
+//! Vue directive attribute names, decomposed by the [`DirectiveSyntax`] hook.
 //!
 //! Results borrow source coordinates rather than copying attribute text;
 //! decomposition allocates nothing.
-//! Concrete syntax policy belongs to the dialect modules.
+//! The concrete syntax policy belongs to each version's table.
 
+pub use crate::markup::grammar::DirectiveSyntax;
 use vize_l0::Span;
 
 /// How the directive was spelled.
@@ -49,18 +50,6 @@ pub enum DirectiveNameError {
     OffsetOverflow,
     /// The syntax provider's allocation-free nesting capacity was exceeded.
     NestingLimit,
-}
-
-/// A dialect hook recognizing and decomposing a complete raw attribute head.
-pub trait DirectiveSyntax {
-    /// `Ok(None)` means a plain attribute. Recognized malformed syntax retains
-    /// its source evidence in `Ok(Some(_))`; lexical diagnostics are separate.
-    /// Admission errors never silently turn a directive into a plain attribute.
-    fn decompose(
-        &self,
-        name: &str,
-        offset: u32,
-    ) -> Result<Option<DirectiveName>, DirectiveNameError>;
 }
 
 /// Transitional public path; the implementation is owned by the Vue dialect.

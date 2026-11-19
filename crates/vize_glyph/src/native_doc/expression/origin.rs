@@ -82,9 +82,9 @@ mod tests {
     use super::Origin;
     use crate::native_doc::{PrintOptions, expression_document, print};
     use vize_l0::{Allocator, SourceRoot, Span};
-    use vize_l1::framework::vue::version::v2::surface;
     use vize_l1::embed::syntax::parse_once;
     use vize_l1::embed::{Embed, Grammar, Lang, Shape, SourceError, prepare_attribute_value};
+    use vize_l1::framework::vue::version::v2::surface;
 
     #[test]
     fn genuine_private_borrowed_comments_and_entity_projection_keep_stock_authority() {

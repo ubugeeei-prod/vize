@@ -4,8 +4,8 @@ use super::refusals::{refused, span};
 use super::*;
 use oxc_ast::ast::Expression;
 use vize_glyph::native_doc::NativeVue2SfcRefusal as Refusal;
-use vize_l1::framework::vue::version::v2::surface::TextRefusal;
 use vize_l1::embed::syntax::EmbedHole;
+use vize_l1::framework::vue::version::v2::surface::TextRefusal;
 
 #[test]
 fn original_wrapped_source_units_thirty_one_and_thirty_two_keep_actual_admission() {

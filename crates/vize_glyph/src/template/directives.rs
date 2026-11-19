@@ -6,11 +6,11 @@
 use crate::{options::FormatOptions, script};
 use vize_l0::{Allocator, Span, String, ToCompactString, is_simple_identifier};
 use vize_l1::{
-    framework::vue::version::v3::DirectiveKind,
     embed::{
         Embed, EmbedSource, Grammar, Lang, Shape,
         syntax::{ForKeyword, parse_vue_for_head_once},
     },
+    framework::vue::version::v3::DirectiveKind,
     markup::{ArgSyntax, DirectiveName, DirectiveSyntax, VueDirectives},
 };
 

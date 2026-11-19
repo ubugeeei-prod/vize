@@ -15,7 +15,7 @@ pub fn is_component_tag(tag: &str, dynamic_component: bool) -> bool {
     (dynamic_component && tag == "component") || tag.chars().next().is_some_and(char::is_uppercase)
 }
 
-use crate::framework::vue::quirks::{LegacyDialectCapabilities, feature};
+use crate::framework::vue::{LegacyDialectCapabilities, feature};
 
 /// No legacy syntax; colon-style directive arguments.
 pub const CAPABILITIES: LegacyDialectCapabilities = feature::BASE;

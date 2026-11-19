@@ -5,8 +5,10 @@
 use super::l2_range;
 use crate::ir::ByteRange;
 use memchr::memchr;
+use vize_l1::framework::vue::directive::{
+    ArgSyntax, DirectiveName, DirectiveSyntax, VueDirectives,
+};
 use vize_l1::markup::Attribute;
-use vize_l1::framework::vue::directive::{ArgSyntax, DirectiveName, DirectiveSyntax, VueDirectives};
 use vize_l1::markup::entity::{EntityContext, decode_one};
 
 /// Decompose `attr`'s name, whose first byte sits at absolute `offset`.

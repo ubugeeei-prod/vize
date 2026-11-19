@@ -5,7 +5,7 @@ use vize_l0::{SourceBlock, Vec};
 
 use super::super::text::{RetainedTextBinding, TextBoundary};
 use super::ComponentParse;
-use crate::dialect::LegacyVueVersion;
+use crate::framework::vue::LegacyVueVersion;
 use crate::markup::htmlish::parse::SurfaceError;
 use crate::markup::htmlish::surface::SurfaceTree;
 

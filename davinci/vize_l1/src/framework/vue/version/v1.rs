@@ -3,7 +3,7 @@
 pub mod surface;
 pub mod text;
 
-use crate::framework::vue::quirks::{LegacyDialectCapabilities, feature};
+use crate::framework::vue::{LegacyDialectCapabilities, feature};
 
 /// Existing V1 template syntax, resolved once per file.
 pub const CAPABILITIES: LegacyDialectCapabilities =

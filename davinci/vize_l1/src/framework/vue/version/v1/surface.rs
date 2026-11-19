@@ -14,7 +14,7 @@ pub use body::{TextChild, TextChildren, TextRefusal, TextView};
 
 pub use vize_l0::SourceFrameError as SourceError;
 
-use crate::dialect::LegacyVueVersion;
+use crate::framework::vue::LegacyVueVersion;
 use crate::framework::vue::surface::{SurfacePolicy, sink::VueSink};
 use crate::markup::htmlish::event::Recorder;
 use crate::markup::htmlish::parse::{SurfaceError, construct};

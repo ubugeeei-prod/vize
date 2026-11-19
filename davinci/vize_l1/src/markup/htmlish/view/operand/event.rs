@@ -11,9 +11,9 @@ use vize_l0::Span;
 
 use super::super::{AttributeView, NativeTemplateComponent, TemplateGrammar};
 use super::AttributeOperandError;
-use crate::framework::vue::version::v3::operand::static_event_head;
 use crate::embed::syntax::{EmbedSyntax, RetainedHandlerBody, parse_once};
 use crate::embed::{Embed, Grammar, Lang, Shape, SourceError, prepare_attribute_value};
+use crate::framework::vue::version::v3::operand::static_event_head;
 
 use super::origin::Origin;
 

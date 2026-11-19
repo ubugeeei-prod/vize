@@ -1,5 +1,5 @@
 use super::*;
-use crate::dialect::LegacyCaps;
+use crate::framework::vue::LegacyCaps;
 
 #[test]
 fn as_str_round_trips_all_variants_through_config_parsing() {

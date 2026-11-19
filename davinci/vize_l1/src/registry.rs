@@ -6,7 +6,7 @@
 
 use vize_l0::{FileDialect, TemplateSyntaxMode, config::VueVersion, dialect::VueDialect};
 
-use crate::dialect::{LegacyDialectCapabilities, LegacyVueVersion};
+use crate::framework::vue::{LegacyDialectCapabilities, LegacyVueVersion};
 
 /// A component profile accepted by one version-owned L1 provider.
 #[derive(Debug, Clone, Copy)]
@@ -124,7 +124,11 @@ mod tests {
                 Some(LegacyVueVersion::V2),
                 crate::framework::vue::version::v2::CAPABILITIES,
             ),
-            (VueVersion::V3, None, crate::framework::vue::version::v3::CAPABILITIES),
+            (
+                VueVersion::V3,
+                None,
+                crate::framework::vue::version::v3::CAPABILITIES,
+            ),
         ];
         for (version, expected_legacy, expected_capabilities) in cases {
             assert_eq!(legacy_version(version), expected_legacy, "{version:?}");
