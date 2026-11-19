@@ -16,7 +16,7 @@ use super::vapor::build::VaporBuilder;
 use levels::Levels;
 
 use super::{
-    ControlRegion, NativeAnalysis, NodeDecision,
+    ControlRegion, DecisionAnalysis, NodeDecision,
     policy::{BindingOwner, TargetPolicy},
 };
 use vize_l0::{id::NodeId, side_table::SideTable};
@@ -31,7 +31,7 @@ use vize_l2::{artifact::Artifact, file::FileArtifact, lang::js::NativeSelectedSe
 pub fn build_decisions<'owner, 'arena>(
     artifact: &'owner Artifact<'arena>,
     policy: TargetPolicy,
-) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
     build_with(artifact, policy, &LiteralExpressions, None, &NoReads)
 }
 
@@ -39,7 +39,7 @@ pub fn build_decisions<'owner, 'arena>(
 pub fn build_dom_decisions<'owner, 'arena>(
     artifact: &'owner Artifact<'arena>,
     expressions: &impl DomExpressionFacts,
-) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
     build_with(artifact, TargetPolicy::Dom, expressions, None, &NoReads)
 }
 
@@ -49,7 +49,7 @@ pub(in crate::decision) fn build_with<'owner, 'arena>(
     expressions: &impl DomExpressionFacts,
     file: Option<&'owner FileArtifact<'arena>>,
     reads: &impl FileReads<'owner, 'arena>,
-) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
     build_with_context(
         artifact,
         policy,
@@ -65,7 +65,7 @@ pub(in crate::decision) fn build_with_original<'owner, 'arena>(
     policy: TargetPolicy,
     expressions: &impl DomExpressionFacts,
     reads: &impl FileReads<'owner, 'arena>,
-) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
     build_with_context(
         file.artifact(),
         policy,
@@ -82,7 +82,7 @@ pub(in crate::decision) fn build_with_original<'owner, 'arena>(
 
 pub(in crate::decision) fn build_with_ssr_setup<'owner, 'arena>(
     setup: &NativeSelectedSetup<'owner, 'arena>,
-) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
     let file = setup.file();
     if !file.is_complete() {
         return Err(DecisionBuildError::IncompleteFile);
@@ -103,7 +103,7 @@ pub(in crate::decision) fn build_with_ssr_setup<'owner, 'arena>(
 
 pub(in crate::decision) fn build_with_vapor_setup<'owner, 'arena>(
     setup: &NativeSelectedSetup<'owner, 'arena>,
-) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
     let file = setup.file();
     build_with_context(
         file.artifact(),
@@ -126,7 +126,7 @@ fn build_with_context<'owner, 'arena>(
     file: Option<&'owner FileArtifact<'arena>>,
     reads: &impl FileReads<'owner, 'arena>,
     context: BuildContext<'_, 'owner, 'arena>,
-) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<DecisionAnalysis<'owner, 'arena>, DecisionBuildError> {
     if context
         .original_file
         .is_some_and(|file| !file.native_text_values().is_empty())
@@ -170,7 +170,7 @@ fn build_with_context<'owner, 'arena>(
     let dom = builder.dom.take().map(DomBuilder::finish);
     let ssr = builder.ssr.take().map(SsrBuilder::finish);
     let vapor = builder.vapor.take().map(VaporBuilder::finish);
-    Ok(NativeAnalysis {
+    Ok(DecisionAnalysis {
         artifact,
         tables: builder.finish()?,
         original_attributes,

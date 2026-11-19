@@ -9,9 +9,9 @@ use vize_l2::{
     resolution::Usage,
 };
 use vize_l3::decision::{
-    native::build_native_selected_setup_dom_decisions,
-    ssr::build_native_selected_setup_ssr_decisions,
-    vapor::{VaporPart, build_native_selected_setup_vapor_decisions},
+    ssr::build_selected_setup_ssr_decisions,
+    template::build_selected_setup_dom_decisions,
+    vapor::{VaporPart, build_selected_setup_vapor_decisions},
 };
 
 pub(super) fn capture(
@@ -134,8 +134,8 @@ pub(super) fn capture(
     }
     let target_resolution = match target {
         "dom" => {
-            let analysis = build_native_selected_setup_dom_decisions(setup)
-                .map_err(|error| format!("{error:?}"))?;
+            let analysis =
+                build_selected_setup_dom_decisions(setup).map_err(|error| format!("{error:?}"))?;
             let facts = analysis.dom().ok_or("DOM facts")?;
             if !facts.unsupported().is_empty() {
                 return Err(format!("{:?}", facts.unsupported()));
@@ -147,8 +147,8 @@ pub(super) fn capture(
             row.resolution()
         }
         "ssr" => {
-            let analysis = build_native_selected_setup_ssr_decisions(setup)
-                .map_err(|error| format!("{error:?}"))?;
+            let analysis =
+                build_selected_setup_ssr_decisions(setup).map_err(|error| format!("{error:?}"))?;
             if !analysis.ssr().ok_or("SSR facts")?.unsupported().is_empty() {
                 return Err("SSR unsupported".into());
             }
@@ -168,7 +168,7 @@ pub(super) fn capture(
             row.resolution()
         }
         "vapor" => {
-            let analysis = build_native_selected_setup_vapor_decisions(setup)
+            let analysis = build_selected_setup_vapor_decisions(setup)
                 .map_err(|error| format!("{error:?}"))?;
             let facts = analysis.vapor().ok_or("Vapor facts")?;
             if !facts.unsupported().is_empty() {

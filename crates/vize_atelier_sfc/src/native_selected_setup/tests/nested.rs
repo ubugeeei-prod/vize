@@ -90,7 +90,7 @@ fn exact_original_nested_case_retains_element_operand_file_scope_and_setup_read(
             .expression()
             .expect("stock root")
     ));
-    let analysis = build_native_selected_setup_dom_decisions(setup).expect("sole DOM Enter");
+    let analysis = build_selected_setup_dom_decisions(setup).expect("sole DOM Enter");
     let row = analysis
         .expression(node)
         .expect("actual original scoped row");

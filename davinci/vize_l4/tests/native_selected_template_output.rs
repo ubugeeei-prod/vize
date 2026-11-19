@@ -3,11 +3,11 @@
 use vize_l0::Allocator;
 use vize_l2::file::NativeFileInterpolationState;
 use vize_l2::op::Op;
-use vize_l3::decision::native::build_native_dom_file_decisions;
+use vize_l3::decision::template::build_template_dom_decisions;
 use vize_l4::{
     module::assemble_template,
     runtime::{Runtime, vocabulary},
-    targets::dom::{NativeTemplateDomOutputError, emit_template, emit_template_output},
+    targets::dom::{TemplateDomOutputError, emit_template, emit_template_output},
     write::Recorded,
 };
 
@@ -25,7 +25,7 @@ fn original_output_keeps_whole_source_frame_and_five_line_terminators() -> Resul
         check(!core::ptr::eq(source.as_str(), foreign.as_str()))?;
         let arena = Allocator::default();
         let original = completed(&arena, &source)?;
-        let analysis = build_native_dom_file_decisions(original.view().map_err(|_| "view")?)
+        let analysis = build_template_dom_decisions(original.view().map_err(|_| "view")?)
             .map_err(|_| "sole L3 visit")?;
         let baseline = assemble_template(
             emit_template::<Recorded>(&analysis).map_err(|_| "existing encoder")?,
@@ -115,12 +115,12 @@ fn byte_equal_foreign_originals_keep_distinct_output_owners() -> Result<(), &'st
     let left = completed(&left_arena, &left_source)?;
     let right = completed(&right_arena, &right_source)?;
     let left_output = emit_template_output(
-        build_native_dom_file_decisions(left.view().map_err(|_| "left view")?)
+        build_template_dom_decisions(left.view().map_err(|_| "left view")?)
             .map_err(|_| "left L3")?,
     )
     .map_err(|_| "left output")?;
     let right_output = emit_template_output(
-        build_native_dom_file_decisions(right.view().map_err(|_| "right view")?)
+        build_template_dom_decisions(right.view().map_err(|_| "right view")?)
             .map_err(|_| "right L3")?,
     )
     .map_err(|_| "right output")?;
@@ -158,7 +158,7 @@ fn empty_original_keeps_a_valid_empty_map_without_fabricated_links() -> Result<(
     let arena = Allocator::default();
     let original = completed(&arena, source)?;
     let output = emit_template_output(
-        build_native_dom_file_decisions(original.view().map_err(|_| "empty completed view")?)
+        build_template_dom_decisions(original.view().map_err(|_| "empty completed view")?)
             .map_err(|_| "empty L3")?,
     )
     .map_err(|_| "empty output")?;
@@ -183,7 +183,7 @@ fn refused_output_retains_original_analysis_file_and_whole_input() -> Result<(),
     ] {
         let arena = Allocator::default();
         let original = completed(&arena, source)?;
-        let analysis = build_native_dom_file_decisions(original.view().map_err(|_| "view")?)
+        let analysis = build_template_dom_decisions(original.view().map_err(|_| "view")?)
             .map_err(|_| "refused L3 facts")?;
         let expected = emit_template::<Recorded>(&analysis)
             .err()
@@ -191,7 +191,7 @@ fn refused_output_retains_original_analysis_file_and_whole_input() -> Result<(),
         let Err(failure) = emit_template_output(analysis) else {
             return Err("no partial native output");
         };
-        equal(failure.error(), NativeTemplateDomOutputError::Dom(expected))?;
+        equal(failure.error(), TemplateDomOutputError::Dom(expected))?;
         check(core::ptr::eq(failure.analysis().owner(), &original))?;
         let file = original.file().ok_or("retained complete File")?;
         check(file.is_complete() && core::ptr::eq(failure.analysis().file(), file))?;

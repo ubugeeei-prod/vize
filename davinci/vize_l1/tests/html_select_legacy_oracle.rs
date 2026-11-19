@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use vize_armature::{
     ElementNode, ParserOptions, TemplateChildNode, WhitespaceStrategy, parse_document_with_options,
 };
-use vize_l0::{Allocator, is_native_tag};
+use vize_l0::{Allocator, is_platform_tag};
 
 const CORPUS: &str = include_str!("fixtures/document/html-select.json");
 
@@ -64,7 +64,7 @@ fn admitted_select_packets_match_the_shipped_document_parser() {
         let source = case["source"].as_str().unwrap();
         let allocator = Allocator::default();
         let options = ParserOptions {
-            is_native_tag: Some(is_native_tag),
+            is_native_tag: Some(is_platform_tag),
             whitespace: WhitespaceStrategy::Preserve,
             ..ParserOptions::default()
         };

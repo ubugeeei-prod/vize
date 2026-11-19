@@ -22,7 +22,7 @@ pub mod vue;
 
 pub use context::ContextOnly;
 pub use dependencies::DomDependency;
-pub use file::{DomFileExpression, NativeFileAnalysis, build_dom_file_decisions};
+pub use file::{DomFileExpression, FileAnalysis, build_dom_file_decisions};
 pub use for_head::DomFileForHead;
 pub use handler::DomFileHandler;
 pub use model::DomFileModel;

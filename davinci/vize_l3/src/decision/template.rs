@@ -1,10 +1,10 @@
 //! Preserve the original selected template custody through the existing L3 walk.
 
 mod setup;
-pub use setup::{NativeSelectedSetupDomAnalysis, build_native_selected_setup_dom_decisions};
+pub use setup::{SelectedSetupDomAnalysis, build_selected_setup_dom_decisions};
 
 use super::{
-    DecisionBuildError, DecisionTables, NativeFileAnalysis,
+    DecisionBuildError, DecisionTables, FileAnalysis,
     dom::{DomFacts, DomFileExpression, DomFileForHead, DomFileHandler},
     policy::TargetPolicy,
 };
@@ -26,43 +26,43 @@ use vize_l2::{
 ///
 /// A neutral analysis or an externally paired File cannot construct it:
 /// ```compile_fail
-/// use vize_l3::decision::{NativeFileAnalysis, native::NativeTemplateDomAnalysis};
-/// fn forge<'f, 'a>(analysis: NativeFileAnalysis<'f, 'a>) {
-///     let _ = NativeTemplateDomAnalysis { analysis };
+/// use vize_l3::decision::{FileAnalysis, template::TemplateDomAnalysis};
+/// fn forge<'f, 'a>(analysis: FileAnalysis<'f, 'a>) {
+///     let _ = TemplateDomAnalysis { analysis };
 /// }
 /// ```
 /// The actual lower owner cannot be discarded while its analysis is live:
 /// ```compile_fail
 /// use vize_l2::lang::js::NativeTemplateFile;
-/// use vize_l3::decision::native::build_native_dom_file_decisions;
+/// use vize_l3::decision::template::build_template_dom_decisions;
 /// fn discard(owner: NativeTemplateFile<'_>) {
-///     let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
+///     let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
 ///     drop(owner);
 ///     let _ = analysis.file();
 /// }
 /// ```
 /// The completion view cannot be extracted as a neutral analysis or cloned:
 /// ```compile_fail
-/// use vize_l3::decision::{NativeFileAnalysis, native::NativeTemplateDomAnalysis};
-/// fn neutral<'f, 'a>(result: NativeTemplateDomAnalysis<'f, 'a>)
-///     -> NativeFileAnalysis<'f, 'a> { result.analysis }
+/// use vize_l3::decision::{FileAnalysis, template::TemplateDomAnalysis};
+/// fn neutral<'f, 'a>(result: TemplateDomAnalysis<'f, 'a>)
+///     -> FileAnalysis<'f, 'a> { result.analysis }
 /// ```
 /// ```compile_fail
-/// use vize_l3::decision::native::NativeTemplateDomAnalysis;
-/// fn clone(result: NativeTemplateDomAnalysis<'_, '_>) { let _ = result.clone(); }
+/// use vize_l3::decision::template::TemplateDomAnalysis;
+/// fn clone(result: TemplateDomAnalysis<'_, '_>) { let _ = result.clone(); }
 /// ```
 /// A complete neutral File is not a template completion capability:
 /// ```compile_fail
 /// use vize_l2::file::FileArtifact;
-/// use vize_l3::decision::native::build_native_dom_file_decisions;
-/// fn promote(file: &FileArtifact<'_>) { let _ = build_native_dom_file_decisions(file); }
+/// use vize_l3::decision::template::build_template_dom_decisions;
+/// fn promote(file: &FileArtifact<'_>) { let _ = build_template_dom_decisions(file); }
 /// ```
-pub struct NativeTemplateDomAnalysis<'owner, 'arena> {
+pub struct TemplateDomAnalysis<'owner, 'arena> {
     view: NativeTemplateView<'owner, 'arena>,
-    analysis: NativeFileAnalysis<'owner, 'arena>,
+    analysis: FileAnalysis<'owner, 'arena>,
 }
 
-impl<'owner, 'arena> NativeTemplateDomAnalysis<'owner, 'arena> {
+impl<'owner, 'arena> TemplateDomAnalysis<'owner, 'arena> {
     /// Original selected Component and File retained by the sole lower owner.
     #[must_use]
     pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
@@ -130,10 +130,10 @@ impl<'owner, 'arena> NativeTemplateDomAnalysis<'owner, 'arena> {
 /// Genuine L1 root text receipts permit selected-root condensation at the
 /// original cursor. Direct-child and nested-body whitespace/entity refusals
 /// remain unchanged. Omitted source events confer no node or target decision.
-pub fn build_native_dom_file_decisions<'owner, 'arena>(
+pub fn build_template_dom_decisions<'owner, 'arena>(
     view: NativeTemplateView<'owner, 'arena>,
-) -> Result<NativeTemplateDomAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<TemplateDomAnalysis<'owner, 'arena>, DecisionBuildError> {
     let file = view.file().ok_or(DecisionBuildError::IncompleteFile)?;
     let analysis = super::dom::file::build_original_file_decisions(file)?;
-    Ok(NativeTemplateDomAnalysis { view, analysis })
+    Ok(TemplateDomAnalysis { view, analysis })
 }

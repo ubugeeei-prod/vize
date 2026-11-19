@@ -165,7 +165,7 @@ fn fourteen_whole_original_root_if_else_composite_components_and_raw_maps_are_ca
                         && declaration.boolean_initializer() == Some(initial_branch == 0),
                     "{id}: original direct BooleanLiteral declaration/binding"
                 );
-                let analysis = build_native_selected_setup_dom_decisions(setup)
+                let analysis = build_selected_setup_dom_decisions(setup)
                     .map_err(|error| cstr!("{id}: {error:?}"))?;
                 let dom = analysis.dom().ok_or("DOM")?;
                 require!(

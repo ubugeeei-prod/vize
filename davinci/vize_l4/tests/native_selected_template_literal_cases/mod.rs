@@ -6,13 +6,13 @@ use vize_l1::markup::SurfaceChild;
 use vize_l2::{
     expr::ExprRef, file::NativeFileInterpolationState, lang::js::NativeTemplateFile, op::Op,
 };
-use vize_l3::decision::native::NativeTemplateDomAnalysis;
+use vize_l3::decision::template::TemplateDomAnalysis;
 use vize_l4::write::EmitDocument;
 
 pub(super) fn inspect<'owner, 'a>(
     id: &str,
     original: &'owner NativeTemplateFile<'a>,
-    analysis: &NativeTemplateDomAnalysis<'owner, 'a>,
+    analysis: &TemplateDomAnalysis<'owner, 'a>,
     document: &EmitDocument,
     nodes: u32,
 ) -> Result<(), &'static str> {

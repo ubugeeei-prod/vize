@@ -28,7 +28,7 @@ use crate::diagnostic::Severity;
 use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use dynamic_component::{dynamic_component_may_render_component, is_dynamic_component};
-use vize_l0::is_native_tag;
+use vize_l0::is_platform_tag;
 use vize_relief::{DirectiveNode, ElementNode};
 
 static META: RuleMeta = RuleMeta {
@@ -133,7 +133,7 @@ fn is_component_like_tag(ctx: &LintContext<'_>, element: &MarkupElement<'_>) -> 
     // runtime; it still compiles to an element, never a component lookup.
     // Unknown lowercase tags remain components, as do the explicit component
     // substitutions already classified above.
-    !is_native_tag(element.tag())
+    !is_platform_tag(element.tag())
 }
 
 #[cfg(test)]

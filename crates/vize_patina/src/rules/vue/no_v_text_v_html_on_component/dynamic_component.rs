@@ -1,6 +1,6 @@
 use crate::context::LintContext;
 use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupElement};
-use vize_l0::is_native_tag;
+use vize_l0::is_platform_tag;
 
 /// Whether the element compiles through `resolveDynamicComponent`.
 ///
@@ -41,7 +41,7 @@ pub(super) fn dynamic_component_may_render_component(
     if let Some(binding) = dynamic_is {
         return bind_is_may_render_component(ctx, &binding);
     }
-    !static_is.is_some_and(is_native_tag)
+    !static_is.is_some_and(is_platform_tag)
 }
 
 fn bind_is_may_render_component(ctx: &LintContext<'_>, binding: &MarkupBinding<'_>) -> bool {
@@ -54,7 +54,7 @@ fn bind_is_may_render_component(ctx: &LintContext<'_>, binding: &MarkupBinding<'
     }
 
     if let Some(value) = string_literal_value(content) {
-        return !is_native_tag(value);
+        return !is_platform_tag(value);
     }
 
     if is_identifier(content) {

@@ -40,11 +40,11 @@ fn genuine_js_ts_setup_for_alias_and_original_handler_scopes_survive_value_consu
             .handler_for(on)
             .ok_or("same original handler allocation")?;
         let resolution = handler.resolution().ok_or("whole HandlerBody resolution")?;
-        let dom = native::build_native_selected_setup_dom_decisions(&setup)
+        let dom = template::build_selected_setup_dom_decisions(&setup)
             .map_err(|_| "sole genuine DOM cursor")?;
-        let ssr = ssr::build_native_selected_setup_ssr_decisions(&setup)
+        let ssr = ssr::build_selected_setup_ssr_decisions(&setup)
             .map_err(|_| "sole genuine SSR cursor")?;
-        let vapor = vapor::build_native_selected_setup_vapor_decisions(&setup)
+        let vapor = vapor::build_selected_setup_vapor_decisions(&setup)
             .map_err(|_| "sole genuine Vapor cursor")?;
         for facts in [
             dom.original_attributes(),
