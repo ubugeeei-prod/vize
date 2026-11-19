@@ -38,10 +38,12 @@ const parsedCapture =
  * Records that pin git trees at past revisions name the paths those trees had, and so do the
  * verifiers that read those revisions (the warm type-backed path and timing host moves and the
  * raw git-reader harness, whose body digests are of past bytes), and the L2 dump tests that pin
- * the historical v1 wire headers byte for byte.
+ * the historical v1 wire headers byte for byte; and the literal listing sources (empty-vue-star,
+ * misskey registry, javascript-sfc source context and its callers) that list trees of past revisions,
+ * and the instance-globals source-packet provenance captured from past runs.
  */
 const pinnedTrees =
-  /^(?:editors\/vscode\/test\/css-hover-source-custody\.json|tests\/performance\/support\/warm-type-backed-(?:(?:path|timing)-host(?:-manifest\.json|\.ts)|git-reader-harness\.ts)|tests\/tooling\/warm-type-backed-(?:path|timing)-host\.test\.ts|levels\/vize_l2\/tests\/dump_(?:protocol|owner_names)\.rs)$/u;
+  /^(?:editors\/vscode\/test\/css-hover-source-custody\.json|tests\/performance\/support\/warm-type-backed-(?:(?:path|timing)-host(?:-manifest\.json|\.ts)|git-reader-harness\.ts)|tests\/tooling\/warm-type-backed-(?:path|timing)-host\.test\.ts|levels\/vize_l2\/tests\/dump_(?:protocol|owner_names)\.rs|tools\/support\/compat\/github\/(?:empty-vue-star-listing-(?:source|part-\d+)|misskey-registry-part-\d+|javascript-sfc-source-context(?:-\d+)?)\.json|tests\/_fixtures\/ci\/javascript-sfc-source-callers\.json|tests\/fixtures\/typechecker\/undeclared-instance-globals-10617\/source-packets-[^/]+-provenance\.json)$/u;
 /**
  * Frozen copies of past files are captures too: a source or config file saved as `.txt` or
  * `.fixture`, and the frozen-source and source-custody trees that pin such copies.
@@ -91,6 +93,8 @@ const protectedSpans = new RegExp(
     String.raw`docs\\\/${NAME}(?![A-Za-z0-9_-])`,
     // Links pinned to a commit or branch other than main show that tree as it was.
     String.raw`https?://github\.com/ubugeeei-prod/vize/(?:blob|tree|raw|commit|compare)/(?!main/)[^\s)"'\x60\]>]+`,
+    // A temporary-directory path is a past run's machine path, never a tracked file.
+    String.raw`(?<![\w.-])(?:/private)?/tmp/[^\s"'\x60)\]]+`,
     // A recorded Git commit subject is history: audits pin the subjects as they were written.
     String.raw`"subject": ?"(?:[^"\\\n]|\\.)*"`,
   ].join("|"),
