@@ -485,25 +485,47 @@ const gitBlob = (bytes: Buffer) =>
   createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
 
 /**
- * Holders whose digests pin the current bytes of a file the rewrite changes. Most digests in the
- * tree pin bytes of a past revision that only happen to equal main's (qualification records,
- * body custody, frozen predecessors); re-pinning those breaks them, so a holder is listed here
- * only when its test reads the current file.
+ * Holders whose digests pin bytes of a past revision that only happen to equal main's: the
+ * provider-qualification records and their loaders, the TS-40 projection receipts and the JSX
+ * child-value historical source admission (which embeds the bytes it pins). Re-pinning
+ * them would rewrite history, so they keep every digest.
  */
-const currentPins =
-  /^(?:docs\/davinci\/plan\/compiler-fix-history-index\.json|tools\/benchmarks\/scripts\/typechecker-native-source-recipe-fixture\.mjs|tests\/_fixtures\/tooling\/native-source-recipe-436\.md|tests\/_fixtures\/differential\/compiler\/manifest\.json|tools\/support\/compat\/github\/vapor-style-api-fixtures\.ts)$/u;
+const historicalPins =
+  /^(?:tests\/_fixtures\/differential\/typechecker\/empty-vue-star-exports\/malformed-membership\/|crates\/vize_canon\/tests\/empty_vue_star_exports\/|crates\/vize_maestro\/tests\/level_ts40_projection_support\/|tests\/_fixtures\/differential\/compiler\/jsx-child-values-6890\/historical-source-admission\.json$)/u;
+
+/**
+ * Holders that pin the current bytes of only some files and the bytes of past revisions of
+ * others, with the files whose pins they re-record: the compiler manifest and the Vapor style API
+ * fixtures pin the current JSX, Vapor and SSR inputs and witnesses, and historical source pairs.
+ */
+const scopedPins: readonly (readonly [holder: RegExp, pins: RegExp])[] = [
+  [
+    /^(?:tests\/_fixtures\/differential\/compiler\/manifest\.json|tools\/support\/compat\/github\/vapor-style-api-fixtures\.ts)$/u,
+    /^crates\/vize_atelier_(?:jsx\/|vapor\/tests\/|ssr\/tests\/)/u,
+  ],
+];
+
+/** The kept docs re-pin only the compiler history receipt, which pins current fixtures. */
+const keptPins = /^docs\/davinci\/plan\/compiler-fix-history-index\.json$/u;
 
 /**
  * Re-records the whole-file digests (SHA-256 and git blob ids) that name a file the rewrite
- * changed, in the holders listed in `currentPins`. A record whose pins change changes its own
- * digest, so this repeats until nothing moves.
+ * changed, in every file that still follows the rename, except the historical holders and outside
+ * a scoped holder's files. A record whose pins change changes its own digest, so this repeats until
+ * nothing moves.
  */
 function repin(cwd: string): string[] {
   const pinned = new Set<string>();
-  const holders = contentTargets(cwd).filter((file) => currentPins.test(file));
+  const everyFile = /(?:)/u;
+  const holders = contentTargets(cwd).flatMap((file) => {
+    if (historicalPins.test(file)) return [];
+    if (keptHistory(file) && !keptPins.test(file)) return [];
+    const scope = scopedPins.find(([holder]) => holder.test(file))?.[1] ?? everyFile;
+    return [[file, scope] as const];
+  });
   const last = new Map<string, readonly string[]>();
   for (let round = 0; round < 8; round++) {
-    const replacements = new Map<string, string>();
+    const replacements = new Map<string, Map<string, string>>();
     const changed = execFileSync("git", ["diff", "--name-only", "-z"], {
       cwd,
       encoding: "utf8",
@@ -521,23 +543,30 @@ function repin(cwd: string): string[] {
         );
       const bytes = fs.readFileSync(full);
       const current = [sha256(bytes), gitBlob(bytes)];
+      const moved = new Map<string, string>();
       current.forEach((to, index) => {
-        if (recorded[index] !== to) replacements.set(recorded[index], to);
+        if (recorded[index] !== to) moved.set(recorded[index], to);
       });
+      if (moved.size > 0) replacements.set(file, moved);
       last.set(file, current);
     }
     if (replacements.size === 0) break;
-    const digest = new RegExp([...replacements.keys()].join("|"), "gu");
-    for (const file of holders) {
+    for (const [file, scope] of holders) {
+      const own = new Map<string, string>();
+      for (const [pinnedFile, moved] of replacements) {
+        if (scope.test(pinnedFile)) for (const [from, to] of moved) own.set(from, to);
+      }
+      if (own.size === 0) continue;
       const full = path.join(cwd, file);
       const bytes = fs.readFileSync(full);
       if (!textFile(bytes)) continue;
       const text = bytes.toString("utf8");
-      digest.lastIndex = 0;
+      const digest = new RegExp([...own.keys()].join("|"), "gu");
       if (!digest.test(text)) continue;
+      digest.lastIndex = 0;
       fs.writeFileSync(
         full,
-        text.replace(digest, (from) => replacements.get(from) ?? from),
+        text.replace(digest, (from) => own.get(from) ?? from),
       );
       pinned.add(file);
     }
