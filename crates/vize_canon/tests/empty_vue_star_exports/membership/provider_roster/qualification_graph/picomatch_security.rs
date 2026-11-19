@@ -4,7 +4,7 @@ use serde_json::json;
 pub(super) const UPDATE: &str =
     "malformed-membership/provider-picomatch-security-update-13323.json";
 pub(super) const UPDATE_HASH: &str =
-    "d6acf0198dd41189d3e43d1dd3703dbc1e5114bfaa825eb2ad86508fd4090926";
+    "b145d7d4150ae527e0a33096d281e8711b6e053e99783a042a44515afcad60f2";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-runtime-security-update-12959.json";
 
 const PATCHES: [(&str, &str); 2] = [

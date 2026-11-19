@@ -115,7 +115,7 @@ fn compile(backend: &str, source: &str, experimental_patterned_template: bool) -
         VaporCompilerOptions {
             prefix_identifiers: true,
             experimental_patterned_template,
-            davinci_retained_lane: backend == "vapor-legacy",
+            level_retained_lane: backend == "vapor-legacy",
             ..Default::default()
         },
     );
@@ -135,7 +135,7 @@ fn run(backend: &str, code: String, mut input: Value) -> Value {
         backend
     };
     let runner = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/tooling/support/davinci-mounted-trace.mjs");
+        .join("../../tests/tooling/support/level-mounted-trace.mjs");
     let mut child = Command::new("node")
         .arg(runner)
         .stdin(Stdio::piped())

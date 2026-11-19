@@ -6,7 +6,7 @@ import { createHash } from "node:crypto";
 import * as nodeModule from "node:module";
 import { watcherSuccessor, postAckDependencies } from "./native-beta-dto-current-custody.ts";
 const currentAuthorityPath = "tools/support/compat/github/native-beta-dto-current-custody.ts";
-const currentAuthoritySha256 = "f6458f16081d6e883a585d2866223a82b8ec3049324f7c6a75a970f999405333";
+const currentAuthoritySha256 = "716ba184df69a136fa6a74a8a6a765ca5e0675431f749713ef645bfc2b8148e2";
 
 type ReadFile = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_BETA_DTO_PROTOCOL_ID = "typechecker/protocol/native-beta-diagnostic-dto-10731";

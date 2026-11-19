@@ -1,6 +1,6 @@
 {
   "schema": "vize.native-sfc.original-input-model-number-complete-goldens",
-  "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+  "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
   "inputPack": {
     "filename": "OriginalInputModelNumber.vue",
     "fixtures": [
@@ -41,8 +41,8 @@
           "historicalCompleteNativePacket": false,
           "kind": "previous-inline-refusal",
           "paths": [
-            "davinci/vize_l3/tests/native_model_trim.rs",
-            "davinci/vize_l3/tests/native_model_lazy.rs"
+            "levels/vize_l3/tests/native_model_trim.rs",
+            "levels/vize_l3/tests/native_model_lazy.rs"
           ]
         },
         "template": "<input v-model.number='draft'/>"
@@ -342592,7 +342592,7 @@
           "compile_native_vapor_setup_sfc"
         ],
         "failures": [],
-        "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+        "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
         "inputPack": {
           "filename": "OriginalInputModelNumber.vue",
           "fixtures": [
@@ -342633,8 +342633,8 @@
                 "historicalCompleteNativePacket": false,
                 "kind": "previous-inline-refusal",
                 "paths": [
-                  "davinci/vize_l3/tests/native_model_trim.rs",
-                  "davinci/vize_l3/tests/native_model_lazy.rs"
+                  "levels/vize_l3/tests/native_model_trim.rs",
+                  "levels/vize_l3/tests/native_model_lazy.rs"
                 ]
               },
               "template": "<input v-model.number='draft'/>"
@@ -342861,7 +342861,7 @@
         "target": "dom",
         "mode": "development",
         "sourceRevision": "0b105d34dbe9755e3101a5d268c59e15f8a9c90e",
-        "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+        "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-number-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -342931,8 +342931,8 @@
                 "kind": "previous-inline-refusal",
                 "base": "7603cccc1cdcf41241310ae5ed1e60f2eac32c4b",
                 "paths": [
-                  "davinci/vize_l3/tests/native_model_trim.rs",
-                  "davinci/vize_l3/tests/native_model_lazy.rs"
+                  "levels/vize_l3/tests/native_model_trim.rs",
+                  "levels/vize_l3/tests/native_model_lazy.rs"
                 ],
                 "historicalCompleteNativePacket": false
               }
@@ -345282,7 +345282,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+          "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
           "inputPack": {
             "filename": "OriginalInputModelNumber.vue",
             "fixtures": [
@@ -345323,8 +345323,8 @@
                   "historicalCompleteNativePacket": false,
                   "kind": "previous-inline-refusal",
                   "paths": [
-                    "davinci/vize_l3/tests/native_model_trim.rs",
-                    "davinci/vize_l3/tests/native_model_lazy.rs"
+                    "levels/vize_l3/tests/native_model_trim.rs",
+                    "levels/vize_l3/tests/native_model_lazy.rs"
                   ]
                 },
                 "template": "<input v-model.number='draft'/>"
@@ -345866,7 +345866,7 @@
         "target": "dom",
         "mode": "development",
         "sourceRevision": "0b105d34dbe9755e3101a5d268c59e15f8a9c90e",
-        "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+        "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-number-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -345936,8 +345936,8 @@
                 "kind": "previous-inline-refusal",
                 "base": "7603cccc1cdcf41241310ae5ed1e60f2eac32c4b",
                 "paths": [
-                  "davinci/vize_l3/tests/native_model_trim.rs",
-                  "davinci/vize_l3/tests/native_model_lazy.rs"
+                  "levels/vize_l3/tests/native_model_trim.rs",
+                  "levels/vize_l3/tests/native_model_lazy.rs"
                 ],
                 "historicalCompleteNativePacket": false
               }
@@ -348287,7 +348287,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+          "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
           "inputPack": {
             "filename": "OriginalInputModelNumber.vue",
             "fixtures": [
@@ -348328,8 +348328,8 @@
                   "historicalCompleteNativePacket": false,
                   "kind": "previous-inline-refusal",
                   "paths": [
-                    "davinci/vize_l3/tests/native_model_trim.rs",
-                    "davinci/vize_l3/tests/native_model_lazy.rs"
+                    "levels/vize_l3/tests/native_model_trim.rs",
+                    "levels/vize_l3/tests/native_model_lazy.rs"
                   ]
                 },
                 "template": "<input v-model.number='draft'/>"
@@ -348871,7 +348871,7 @@
         "target": "dom",
         "mode": "production",
         "sourceRevision": "0b105d34dbe9755e3101a5d268c59e15f8a9c90e",
-        "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+        "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-number-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -348941,8 +348941,8 @@
                 "kind": "previous-inline-refusal",
                 "base": "7603cccc1cdcf41241310ae5ed1e60f2eac32c4b",
                 "paths": [
-                  "davinci/vize_l3/tests/native_model_trim.rs",
-                  "davinci/vize_l3/tests/native_model_lazy.rs"
+                  "levels/vize_l3/tests/native_model_trim.rs",
+                  "levels/vize_l3/tests/native_model_lazy.rs"
                 ],
                 "historicalCompleteNativePacket": false
               }
@@ -351292,7 +351292,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+          "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
           "inputPack": {
             "filename": "OriginalInputModelNumber.vue",
             "fixtures": [
@@ -351333,8 +351333,8 @@
                   "historicalCompleteNativePacket": false,
                   "kind": "previous-inline-refusal",
                   "paths": [
-                    "davinci/vize_l3/tests/native_model_trim.rs",
-                    "davinci/vize_l3/tests/native_model_lazy.rs"
+                    "levels/vize_l3/tests/native_model_trim.rs",
+                    "levels/vize_l3/tests/native_model_lazy.rs"
                   ]
                 },
                 "template": "<input v-model.number='draft'/>"
@@ -351876,7 +351876,7 @@
         "target": "dom",
         "mode": "production",
         "sourceRevision": "0b105d34dbe9755e3101a5d268c59e15f8a9c90e",
-        "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+        "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-number-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -351946,8 +351946,8 @@
                 "kind": "previous-inline-refusal",
                 "base": "7603cccc1cdcf41241310ae5ed1e60f2eac32c4b",
                 "paths": [
-                  "davinci/vize_l3/tests/native_model_trim.rs",
-                  "davinci/vize_l3/tests/native_model_lazy.rs"
+                  "levels/vize_l3/tests/native_model_trim.rs",
+                  "levels/vize_l3/tests/native_model_lazy.rs"
                 ],
                 "historicalCompleteNativePacket": false
               }
@@ -354297,7 +354297,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+          "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
           "inputPack": {
             "filename": "OriginalInputModelNumber.vue",
             "fixtures": [
@@ -354338,8 +354338,8 @@
                   "historicalCompleteNativePacket": false,
                   "kind": "previous-inline-refusal",
                   "paths": [
-                    "davinci/vize_l3/tests/native_model_trim.rs",
-                    "davinci/vize_l3/tests/native_model_lazy.rs"
+                    "levels/vize_l3/tests/native_model_trim.rs",
+                    "levels/vize_l3/tests/native_model_lazy.rs"
                   ]
                 },
                 "template": "<input v-model.number='draft'/>"
@@ -354881,7 +354881,7 @@
         "target": "ssr",
         "mode": "development",
         "sourceRevision": "0b105d34dbe9755e3101a5d268c59e15f8a9c90e",
-        "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+        "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-number-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -354951,8 +354951,8 @@
                 "kind": "previous-inline-refusal",
                 "base": "7603cccc1cdcf41241310ae5ed1e60f2eac32c4b",
                 "paths": [
-                  "davinci/vize_l3/tests/native_model_trim.rs",
-                  "davinci/vize_l3/tests/native_model_lazy.rs"
+                  "levels/vize_l3/tests/native_model_trim.rs",
+                  "levels/vize_l3/tests/native_model_lazy.rs"
                 ],
                 "historicalCompleteNativePacket": false
               }
@@ -357302,7 +357302,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+          "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
           "inputPack": {
             "filename": "OriginalInputModelNumber.vue",
             "fixtures": [
@@ -357343,8 +357343,8 @@
                   "historicalCompleteNativePacket": false,
                   "kind": "previous-inline-refusal",
                   "paths": [
-                    "davinci/vize_l3/tests/native_model_trim.rs",
-                    "davinci/vize_l3/tests/native_model_lazy.rs"
+                    "levels/vize_l3/tests/native_model_trim.rs",
+                    "levels/vize_l3/tests/native_model_lazy.rs"
                   ]
                 },
                 "template": "<input v-model.number='draft'/>"
@@ -357886,7 +357886,7 @@
         "target": "ssr",
         "mode": "development",
         "sourceRevision": "0b105d34dbe9755e3101a5d268c59e15f8a9c90e",
-        "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+        "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-number-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -357956,8 +357956,8 @@
                 "kind": "previous-inline-refusal",
                 "base": "7603cccc1cdcf41241310ae5ed1e60f2eac32c4b",
                 "paths": [
-                  "davinci/vize_l3/tests/native_model_trim.rs",
-                  "davinci/vize_l3/tests/native_model_lazy.rs"
+                  "levels/vize_l3/tests/native_model_trim.rs",
+                  "levels/vize_l3/tests/native_model_lazy.rs"
                 ],
                 "historicalCompleteNativePacket": false
               }
@@ -360307,7 +360307,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+          "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
           "inputPack": {
             "filename": "OriginalInputModelNumber.vue",
             "fixtures": [
@@ -360348,8 +360348,8 @@
                   "historicalCompleteNativePacket": false,
                   "kind": "previous-inline-refusal",
                   "paths": [
-                    "davinci/vize_l3/tests/native_model_trim.rs",
-                    "davinci/vize_l3/tests/native_model_lazy.rs"
+                    "levels/vize_l3/tests/native_model_trim.rs",
+                    "levels/vize_l3/tests/native_model_lazy.rs"
                   ]
                 },
                 "template": "<input v-model.number='draft'/>"
@@ -360891,7 +360891,7 @@
         "target": "ssr",
         "mode": "production",
         "sourceRevision": "0b105d34dbe9755e3101a5d268c59e15f8a9c90e",
-        "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+        "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-number-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -360961,8 +360961,8 @@
                 "kind": "previous-inline-refusal",
                 "base": "7603cccc1cdcf41241310ae5ed1e60f2eac32c4b",
                 "paths": [
-                  "davinci/vize_l3/tests/native_model_trim.rs",
-                  "davinci/vize_l3/tests/native_model_lazy.rs"
+                  "levels/vize_l3/tests/native_model_trim.rs",
+                  "levels/vize_l3/tests/native_model_lazy.rs"
                 ],
                 "historicalCompleteNativePacket": false
               }
@@ -363312,7 +363312,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+          "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
           "inputPack": {
             "filename": "OriginalInputModelNumber.vue",
             "fixtures": [
@@ -363353,8 +363353,8 @@
                   "historicalCompleteNativePacket": false,
                   "kind": "previous-inline-refusal",
                   "paths": [
-                    "davinci/vize_l3/tests/native_model_trim.rs",
-                    "davinci/vize_l3/tests/native_model_lazy.rs"
+                    "levels/vize_l3/tests/native_model_trim.rs",
+                    "levels/vize_l3/tests/native_model_lazy.rs"
                   ]
                 },
                 "template": "<input v-model.number='draft'/>"
@@ -363896,7 +363896,7 @@
         "target": "ssr",
         "mode": "production",
         "sourceRevision": "0b105d34dbe9755e3101a5d268c59e15f8a9c90e",
-        "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+        "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-number-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -363966,8 +363966,8 @@
                 "kind": "previous-inline-refusal",
                 "base": "7603cccc1cdcf41241310ae5ed1e60f2eac32c4b",
                 "paths": [
-                  "davinci/vize_l3/tests/native_model_trim.rs",
-                  "davinci/vize_l3/tests/native_model_lazy.rs"
+                  "levels/vize_l3/tests/native_model_trim.rs",
+                  "levels/vize_l3/tests/native_model_lazy.rs"
                 ],
                 "historicalCompleteNativePacket": false
               }
@@ -366317,7 +366317,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+          "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
           "inputPack": {
             "filename": "OriginalInputModelNumber.vue",
             "fixtures": [
@@ -366358,8 +366358,8 @@
                   "historicalCompleteNativePacket": false,
                   "kind": "previous-inline-refusal",
                   "paths": [
-                    "davinci/vize_l3/tests/native_model_trim.rs",
-                    "davinci/vize_l3/tests/native_model_lazy.rs"
+                    "levels/vize_l3/tests/native_model_trim.rs",
+                    "levels/vize_l3/tests/native_model_lazy.rs"
                   ]
                 },
                 "template": "<input v-model.number='draft'/>"
@@ -366901,7 +366901,7 @@
         "target": "vapor",
         "mode": "development",
         "sourceRevision": "0b105d34dbe9755e3101a5d268c59e15f8a9c90e",
-        "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+        "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-number-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -366971,8 +366971,8 @@
                 "kind": "previous-inline-refusal",
                 "base": "7603cccc1cdcf41241310ae5ed1e60f2eac32c4b",
                 "paths": [
-                  "davinci/vize_l3/tests/native_model_trim.rs",
-                  "davinci/vize_l3/tests/native_model_lazy.rs"
+                  "levels/vize_l3/tests/native_model_trim.rs",
+                  "levels/vize_l3/tests/native_model_lazy.rs"
                 ],
                 "historicalCompleteNativePacket": false
               }
@@ -369322,7 +369322,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+          "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
           "inputPack": {
             "filename": "OriginalInputModelNumber.vue",
             "fixtures": [
@@ -369363,8 +369363,8 @@
                   "historicalCompleteNativePacket": false,
                   "kind": "previous-inline-refusal",
                   "paths": [
-                    "davinci/vize_l3/tests/native_model_trim.rs",
-                    "davinci/vize_l3/tests/native_model_lazy.rs"
+                    "levels/vize_l3/tests/native_model_trim.rs",
+                    "levels/vize_l3/tests/native_model_lazy.rs"
                   ]
                 },
                 "template": "<input v-model.number='draft'/>"
@@ -369906,7 +369906,7 @@
         "target": "vapor",
         "mode": "development",
         "sourceRevision": "0b105d34dbe9755e3101a5d268c59e15f8a9c90e",
-        "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+        "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-number-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -369976,8 +369976,8 @@
                 "kind": "previous-inline-refusal",
                 "base": "7603cccc1cdcf41241310ae5ed1e60f2eac32c4b",
                 "paths": [
-                  "davinci/vize_l3/tests/native_model_trim.rs",
-                  "davinci/vize_l3/tests/native_model_lazy.rs"
+                  "levels/vize_l3/tests/native_model_trim.rs",
+                  "levels/vize_l3/tests/native_model_lazy.rs"
                 ],
                 "historicalCompleteNativePacket": false
               }
@@ -372327,7 +372327,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+          "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
           "inputPack": {
             "filename": "OriginalInputModelNumber.vue",
             "fixtures": [
@@ -372368,8 +372368,8 @@
                   "historicalCompleteNativePacket": false,
                   "kind": "previous-inline-refusal",
                   "paths": [
-                    "davinci/vize_l3/tests/native_model_trim.rs",
-                    "davinci/vize_l3/tests/native_model_lazy.rs"
+                    "levels/vize_l3/tests/native_model_trim.rs",
+                    "levels/vize_l3/tests/native_model_lazy.rs"
                   ]
                 },
                 "template": "<input v-model.number='draft'/>"
@@ -372911,7 +372911,7 @@
         "target": "vapor",
         "mode": "production",
         "sourceRevision": "0b105d34dbe9755e3101a5d268c59e15f8a9c90e",
-        "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+        "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-number-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -372981,8 +372981,8 @@
                 "kind": "previous-inline-refusal",
                 "base": "7603cccc1cdcf41241310ae5ed1e60f2eac32c4b",
                 "paths": [
-                  "davinci/vize_l3/tests/native_model_trim.rs",
-                  "davinci/vize_l3/tests/native_model_lazy.rs"
+                  "levels/vize_l3/tests/native_model_trim.rs",
+                  "levels/vize_l3/tests/native_model_lazy.rs"
                 ],
                 "historicalCompleteNativePacket": false
               }
@@ -375332,7 +375332,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+          "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
           "inputPack": {
             "filename": "OriginalInputModelNumber.vue",
             "fixtures": [
@@ -375373,8 +375373,8 @@
                   "historicalCompleteNativePacket": false,
                   "kind": "previous-inline-refusal",
                   "paths": [
-                    "davinci/vize_l3/tests/native_model_trim.rs",
-                    "davinci/vize_l3/tests/native_model_lazy.rs"
+                    "levels/vize_l3/tests/native_model_trim.rs",
+                    "levels/vize_l3/tests/native_model_lazy.rs"
                   ]
                 },
                 "template": "<input v-model.number='draft'/>"
@@ -375916,7 +375916,7 @@
         "target": "vapor",
         "mode": "production",
         "sourceRevision": "0b105d34dbe9755e3101a5d268c59e15f8a9c90e",
-        "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+        "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-number-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -375986,8 +375986,8 @@
                 "kind": "previous-inline-refusal",
                 "base": "7603cccc1cdcf41241310ae5ed1e60f2eac32c4b",
                 "paths": [
-                  "davinci/vize_l3/tests/native_model_trim.rs",
-                  "davinci/vize_l3/tests/native_model_lazy.rs"
+                  "levels/vize_l3/tests/native_model_trim.rs",
+                  "levels/vize_l3/tests/native_model_lazy.rs"
                 ],
                 "historicalCompleteNativePacket": false
               }
@@ -378337,7 +378337,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "f6ebc89d4f337cd80e45cf986385f4aa9ceec15b4578f8422c6ca36671ab7bb2",
+          "inputHash": "dbb86a42b9a1a0d3909433dfd8f0222736b36a53f37fabd8616c053eee1b4764",
           "inputPack": {
             "filename": "OriginalInputModelNumber.vue",
             "fixtures": [
@@ -378378,8 +378378,8 @@
                   "historicalCompleteNativePacket": false,
                   "kind": "previous-inline-refusal",
                   "paths": [
-                    "davinci/vize_l3/tests/native_model_trim.rs",
-                    "davinci/vize_l3/tests/native_model_lazy.rs"
+                    "levels/vize_l3/tests/native_model_trim.rs",
+                    "levels/vize_l3/tests/native_model_lazy.rs"
                   ]
                 },
                 "template": "<input v-model.number='draft'/>"

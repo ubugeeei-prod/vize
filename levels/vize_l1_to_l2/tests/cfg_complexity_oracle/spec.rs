@@ -1,8 +1,8 @@
 //! The naive evaluator: `complexity-metrics.md` read a second time, over a
 //! different representation, with different algorithms.
 //!
-//! - Input is the **owned folio** (`L2Page`), not the arena tree, and
-//!   every expression is **re-parsed** from its folio text into a fresh
+//! - Input is the **owned dump** (`L2Page`), not the arena tree, and
+//!   every expression is **re-parsed** from its dump text into a fresh
 //!   arena, not read from the retained AST.
 //! - Cyclomatic complexity is `E − N + 2` of an **explicit control-flow
 //!   graph** (a decision node per condition, a header with a back edge per
@@ -56,8 +56,8 @@ struct Eval {
     max_nesting: u32,
 }
 
-/// Evaluate the metric over one template's folio.
-pub fn evaluate(folio: &L2Page) -> Naive {
+/// Evaluate the metric over one template's dump.
+pub fn evaluate(dump: &L2Page) -> Naive {
     let mut eval = Eval {
         graph: Graph::default(),
         frames: Vec::new(),
@@ -66,7 +66,7 @@ pub fn evaluate(folio: &L2Page) -> Naive {
         max_nesting: 0,
     };
     let entry = eval.graph.node();
-    let end = eval.region(&folio.ops, entry);
+    let end = eval.region(&dump.ops, entry);
     let exit = eval.graph.node();
     eval.graph.edge(end, exit);
     let cyclomatic = eval.graph.mccabe(entry, exit);

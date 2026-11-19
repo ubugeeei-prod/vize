@@ -24,7 +24,7 @@ interface FixtureCase {
 
 const root = new URL("../../", import.meta.url);
 const fixture = new URL(
-  "davinci/vize_l1/tests/fixtures/document/html-disclosure-elements.json",
+  "levels/vize_l1/tests/fixtures/document/html-disclosure-elements.json",
   root,
 );
 const cases = JSON.parse(readFileSync(fixture, "utf8")) as readonly FixtureCase[];

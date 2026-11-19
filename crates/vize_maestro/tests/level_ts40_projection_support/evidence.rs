@@ -34,7 +34,7 @@ fn public_instance_slot_packets_remain_authenticated() {
     );
     authenticate_successor_receipt(
         historical_receipt,
-        "e8916bf8eff167bc482fa64de01be67f384284d400ef69e1f8d854694108127c",
+        "466b14fde3af6e68fa2131c9c0e474b548bbe1e1cf4004c3b71da1ca2da6629a",
         11064,
         predecessor,
         historical_successor,
@@ -46,7 +46,7 @@ fn public_instance_slot_packets_remain_authenticated() {
     );
     authenticate_successor_receipt(
         previous_receipt,
-        "afc2f211f4b841b1385f09924a3593dadad1fb280b694d233250639a7020be7f",
+        "e70a0df8738650436f8492f8a9b94cd1f498ddd6f1e21aacea0b63d35643fed2",
         11069,
         historical_successor,
         previous_successor,
@@ -58,7 +58,7 @@ fn public_instance_slot_packets_remain_authenticated() {
     );
     authenticate_successor_receipt(
         current_receipt,
-        "d3eae1337abcc6904773256c46069a9745ffc2e533a79b2c8ad186d433e412e7",
+        "a59917f2d91969c7085eaaa550a055fdb2084ec0106a8db87f6671725764eeb1",
         11142,
         previous_successor,
         current_successor,
@@ -70,7 +70,7 @@ fn public_instance_slot_packets_remain_authenticated() {
     );
     authenticate_successor_receipt(
         latest_receipt,
-        "682ce848022ce787fbc10c787fef3d23e3f1ee384ce185c50e4889e7488910b1",
+        "ddc538fbfa8bdb52dc5269f145487edce7db8030429e6f312ff2b4532bf5cae6",
         11142,
         current_successor,
         latest_successor,
@@ -82,7 +82,7 @@ fn public_instance_slot_packets_remain_authenticated() {
     );
     authenticate_successor_receipt(
         exact_receipt,
-        "62f509940ffb70ccb90868f53c74a3a8e69fe4452d4b8072967e4b1bb5c2c51d",
+        "f17f60f00ceff278d19e0e29c01b774903c376588765975ebc58759f6c7e6b76",
         11142,
         latest_successor,
         exact_successor,
@@ -94,7 +94,7 @@ fn public_instance_slot_packets_remain_authenticated() {
     );
     authenticate_successor_receipt(
         external_receipt,
-        "e2a6dd88ae954c9ff77bb969fa8ebc4ce562850972a2a29b10b1c42d943e7555",
+        "0ef87961d1b384269fdd2670c41092a58bb6d460831d321fc8980735cab8e546",
         11148,
         exact_successor,
         external_successor,
@@ -196,11 +196,11 @@ fn public_instance_slot_packets_remain_authenticated() {
         include_str!(
             "fixtures/public-instance-options-api-slots/successor-integrated-11964/receipt.json"
         ),
-        "65b6114fdac3d69eae77f696bde48d9dd17fa33aac894e2326526c6f62eae013",
+        "6f0161e35773a36403ad3e78835828adb0c03183d08041977d234d12738461c3",
         owned_constructor,
         jsx_witness_successor,
         integrated_successor,
-        "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
+        "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__options-api-slots__default.snap.new",
         "fb29a6ea745462c954eb0e7b0b4c008b4c1d5ec8379ec99400ddacaf075e779f",
     );
     let discriminated_jsx_union_successor = include_str!(
@@ -210,7 +210,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         include_str!(
             "fixtures/public-instance-options-api-slots/successor-discriminated-jsx-union-20261106/receipt.json"
         ),
-        "c9558a5ca5294fd7f59b87ed4264bb64b4ba958f0794910575a132c6174dae0d",
+        "cd87038c80f50f21ef62dd90bdc543fcc9236c2ebd128a9c7906c893cf8b0f28",
         11964,
         integrated_successor,
         discriminated_jsx_union_successor,
@@ -222,7 +222,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         include_str!(
             "fixtures/public-instance-options-api-slots/successor-strict-extra-keys-11497/receipt.json"
         ),
-        "93a7c7fd34766aca63743b965daf0c8071a97da23bc83e63fa79f13e4e7e86d6",
+        "438edec886bb89765617eda8e91ff10b9c8da08bbb2568396fd0da2b12e2553f",
         12025,
         discriminated_jsx_union_successor,
         strict_extra_keys_successor,
@@ -234,7 +234,7 @@ fn public_instance_slot_packets_remain_authenticated() {
         include_str!(
             "fixtures/public-instance-options-api-slots/successor-canon-leftovers-11499/receipt.json"
         ),
-        "3cdf5d0871e663d701a1b7977cd42c000e31a935558b6f67af05417cca040873",
+        "7c511bcec1bc789a76d62c6ce3dad496f623e4efd1f54cd578098f8ecef19275",
         12162,
         strict_extra_keys_successor,
         canon_leftovers_successor,

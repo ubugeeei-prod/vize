@@ -64,7 +64,7 @@ function count(text: string, label: string): number {
 
 export function parseDomDivergences(log: string): Divergences<DomSample> {
   const counters = [
-    ...stripAnsi(log).matchAll(/davinci DOM corpus sweep: [^\r\n]* divergences=(\d+)/g),
+    ...stripAnsi(log).matchAll(/levels DOM corpus sweep: [^\r\n]* divergences=(\d+)/g),
   ];
   assert.equal(counters.length, 1, "Expected one canonical DOM corpus counter");
   const divergenceCount = count(counters[0][1], "canonical DOM");
@@ -96,9 +96,9 @@ export function parseDomDivergences(log: string): Divergences<DomSample> {
 }
 
 const ssrShardHeader =
-  /^canonical observer process: test=davinci_ssr_corpus role=shard index=(\d+) count=(\d+) /;
-const ssrShardExit = /^canonical observer process exit: test=davinci_ssr_corpus role=shard /;
-const ssrCounter = /^davinci SSR production sweep: scope=\S+ [^\r\n]* divergences=(\d+)$/;
+  /^canonical observer process: test=level_ssr_corpus role=shard index=(\d+) count=(\d+) /;
+const ssrShardExit = /^canonical observer process exit: test=level_ssr_corpus role=shard /;
+const ssrCounter = /^levels SSR production sweep: scope=\S+ [^\r\n]* divergences=(\d+)$/;
 // `{name} {verdicts:?}` from the production sweep: the corpus path under any
 // root spelling, then the lane labels of that SFC's production compiles.
 const ssrSample =
@@ -165,12 +165,11 @@ export function parseSsrDivergences(log: string): Divergences<SsrSample> {
 }
 
 const reachShardHeader =
-  /^canonical observer process: test=davinci_production_reach role=shard index=(\d+) count=(\d+) /;
-const reachShardExit =
-  /^canonical observer process exit: test=davinci_production_reach role=shard /;
-const reachCanonical = /^davinci production reach: scope=canonical /;
+  /^canonical observer process: test=level_production_reach role=shard index=(\d+) count=(\d+) /;
+const reachShardExit = /^canonical observer process exit: test=level_production_reach role=shard /;
+const reachCanonical = /^levels production reach: scope=canonical /;
 const reachCounter =
-  /^davinci production reach: shape=(dom_inline|dom_module) [^\r\n]* divergences=(\d+)$/;
+  /^levels production reach: shape=(dom_inline|dom_module) [^\r\n]* divergences=(\d+)$/;
 // `{name} [{shape}]: {divergence}`, the name relative to the corpus root;
 // only the first line of each divergence, never its code windows, is read.
 const reachSample =
@@ -271,11 +270,11 @@ const dom: DivergenceObserver = {
   evidenceArtifact: "canonical-corpus-dom",
   parse: parseDomDivergences,
   describe: (sample: DomSample) =>
-    `- ${code(sample.sourcePath)}: old=${sample.oldLength} bytes, Davinci=${sample.newLength} bytes, first difference=${sample.firstDifference}; old window=${code(sample.oldWindow)}; Davinci window=${code(sample.newWindow)}`,
+    `- ${code(sample.sourcePath)}: old=${sample.oldLength} bytes, level=${sample.newLength} bytes, first difference=${sample.firstDifference}; old window=${code(sample.oldWindow)}; Level window=${code(sample.newWindow)}`,
   oracle: () => ({}),
   reducerArguments: () => ["--dom-divergence"],
   fixtureRoot: "tests/_fixtures/differential/compiler/real-project-dom-reductions",
-  promotedTest: "davinci_dom_corpus::promoted_real_project_dom_fixtures_agree",
+  promotedTest: "level_dom_corpus::promoted_real_project_dom_fixtures_agree",
 };
 
 const ssr: DivergenceObserver = {
@@ -294,7 +293,7 @@ const ssr: DivergenceObserver = {
     `${shellQuote(join(dirname(vizeBin), "examples", "ssr_lane_divergence"))} --name ${shellQuote(sourcePath)}`,
   ],
   fixtureRoot: "tests/_fixtures/differential/compiler/real-project-ssr-reductions",
-  promotedTest: "davinci_ssr_corpus::promoted_real_project_ssr_fixtures_agree",
+  promotedTest: "level_ssr_corpus::promoted_real_project_ssr_fixtures_agree",
 };
 
 const reach: DivergenceObserver = {
@@ -316,7 +315,7 @@ const reach: DivergenceObserver = {
     ];
   },
   fixtureRoot: "tests/_fixtures/differential/compiler/real-project-reach-reductions",
-  promotedTest: "davinci_production_reach::fixtures::promoted_real_project_reach_fixtures_agree",
+  promotedTest: "level_production_reach::fixtures::promoted_real_project_reach_fixtures_agree",
 };
 
 export const divergenceObservers: Readonly<Record<DivergenceObserver["id"], DivergenceObserver>> =

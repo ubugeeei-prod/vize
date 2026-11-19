@@ -2,8 +2,8 @@
 //!
 //! L1 checks lossless Vue-template source, including recoverable holes.
 //! L2/L3 check canonical Full dump bytes, not semantic IR validity.
-//! L0 is the folio Dump substrate, not a stage page. L4 emission is not a
-//! folio and has no parse/print byte-identity law. Neither is a roundtrip level.
+//! L0 is the dump Dump substrate, not a stage page. L4 emission is not a
+//! dump and has no parse/print byte-identity law. Neither is a roundtrip level.
 //! The all-level feed observes the selected product backend's executed levels.
 
 mod all_levels;
@@ -115,8 +115,8 @@ fn reject_level(cmd: &Command, arg: Option<&Arg>, raw: &str) -> Error {
 
 fn level_without_roundtrip(raw: &str) -> Option<&'static str> {
     match raw {
-        "l0" => Some("L0 is the folio Dump substrate, not a stage page, so it has no roundtrip"),
-        "l4" => Some("L4 emission is not a folio and has no parse/print byte-identity law"),
+        "l0" => Some("L0 is the dump Dump substrate, not a stage page, so it has no roundtrip"),
+        "l4" => Some("L4 emission is not a dump and has no parse/print byte-identity law"),
         _ => None,
     }
 }

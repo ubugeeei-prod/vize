@@ -117,9 +117,9 @@ first note
 
 second note
 ";
-    let folio = SamplePage::parse(scrambled).expect("non-canonical text parses");
-    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
-    assert_eq!(folio, sample());
+    let dump = SamplePage::parse(scrambled).expect("non-canonical text parses");
+    assert_eq!(dump.print_to_string(DumpMode::Full).as_str(), CANONICAL);
+    assert_eq!(dump, sample());
 }
 
 #[test]
@@ -131,9 +131,9 @@ enabled=false
 count=0
 
 ";
-    let folio = SamplePage::parse(text).expect("header-only text parses");
-    assert_eq!(folio, SamplePage::default());
-    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), text);
+    let dump = SamplePage::parse(text).expect("header-only text parses");
+    assert_eq!(dump, SamplePage::default());
+    assert_eq!(dump.print_to_string(DumpMode::Full).as_str(), text);
 }
 
 #[test]

@@ -24,7 +24,7 @@ const bytes = fs.readFileSync(
     import.meta.url,
   ),
 );
-assert.equal(hash(bytes), "f04d2714a136ca7882a6709bc32ff0ec2f3b296c3a5783b4b5709c5265a75ab3");
+assert.equal(hash(bytes), "013ba2f203d0236ec455ec0635dd66d10b2b677ad7a30a109b5d22084459653e");
 export const contract = JSON.parse(bytes.toString()) as {
   schema: number;
   qualification: unknown;

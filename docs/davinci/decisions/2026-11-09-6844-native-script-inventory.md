@@ -9,7 +9,7 @@ L2 script facts, and anything unfinished is reported as unfinished. This record
 inventories every Croquis output that a consumer reads, says which native piece
 already exists for it, and fixes the order in which consumers move. The counts
 are the symbol-resolved sites printed by
-`node tools/support/compat/davinci/croquis-consumers.ts --summary` at
+`node tools/support/compat/levels/croquis-consumers.ts --summary` at
 `cdec750761`; re-run it for current numbers.
 
 ## Decisions

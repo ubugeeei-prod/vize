@@ -1,5 +1,5 @@
 // Natural modified-v-on corpus inventory (evidence for the two-entry inline
-// v-on buckets; tests/tooling/davinci-v-on-storage.test.ts).
+// v-on buckets; tests/tooling/level-v-on-storage.test.ts).
 //
 // Writes one TSV per source area under docs/davinci/plan/v-on-corpus/ with
 // every natural `@event.modifier` / `v-on:event.modifier` spelling in the
@@ -9,8 +9,8 @@
 // inventory (an intentional update, reviewed per spelling).
 //
 // Usage:
-//   node tools/support/compat/davinci/v-on-corpus.ts --write   # regenerate
-//   node tools/support/compat/davinci/v-on-corpus.ts --check   # diff committed
+//   node tools/support/compat/levels/v-on-corpus.ts --write   # regenerate
+//   node tools/support/compat/levels/v-on-corpus.ts --check   # diff committed
 
 import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.ts";
 import {
@@ -23,7 +23,7 @@ import {
 function main() {
   const mode = process.argv[2];
   if (mode !== "--write" && mode !== "--check") {
-    console.error("usage: node tools/support/compat/davinci/v-on-corpus.ts --write | --check");
+    console.error("usage: node tools/support/compat/levels/v-on-corpus.ts --write | --check");
     process.exit(2);
   }
   const set = {

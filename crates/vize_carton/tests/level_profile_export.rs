@@ -23,7 +23,7 @@ use std::alloc::System;
 use std::fs;
 use std::path::PathBuf;
 
-use davinci_test_support::schema as schema_check;
+use level_test_support::schema as schema_check;
 use vize_carton::profile;
 use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};
 use vize_l0::profiler::{
@@ -49,9 +49,9 @@ fn per_span_allocation_counts_and_schema_validation() {
     profiler.clear();
     profiler.enable();
 
-    let outer_buffer = profile!("davinci.p0_11.outer", {
+    let outer_buffer = profile!("levels.p0_11.outer", {
         let inner_buffer = profile!(
-            "davinci.p0_11.inner",
+            "levels.p0_11.inner",
             attr: INNER_ATTRIBUTION,
             std::hint::black_box(Vec::<u8>::with_capacity(4096))
         );
@@ -74,7 +74,7 @@ fn per_span_allocation_counts_and_schema_validation() {
     assert_eq!(export.spans.len(), 2);
 
     let outer = &export.spans[0];
-    assert_eq!(outer.key, "davinci.p0_11.outer");
+    assert_eq!(outer.key, "levels.p0_11.outer");
     assert_eq!(outer.count, 1);
     assert_eq!(outer.attribution, None);
     let outer_alloc = outer.alloc.unwrap();
@@ -84,7 +84,7 @@ fn per_span_allocation_counts_and_schema_validation() {
     assert_eq!(outer_alloc.self_bytes, 1024);
 
     let inner = &export.spans[1];
-    assert_eq!(inner.key, "davinci.p0_11.inner");
+    assert_eq!(inner.key, "levels.p0_11.inner");
     assert_eq!(inner.count, 1);
     let inner_attribution = inner.attribution.unwrap();
     assert_eq!(inner_attribution.stage, Some("s1"));
@@ -101,8 +101,8 @@ fn per_span_allocation_counts_and_schema_validation() {
     assert_eq!(inner_alloc.self_bytes, 4096);
 
     // The plain-key space never absorbs the attributed bucket.
-    assert!(profiler.get("davinci.p0_11.inner").is_none());
-    assert_eq!(profiler.get("davinci.p0_11.outer").unwrap().count, 1);
+    assert!(profiler.get("levels.p0_11.inner").is_none());
+    assert_eq!(profiler.get("levels.p0_11.outer").unwrap().count, 1);
 
     // The serialized report satisfies the committed schema.
     let json: serde_json::Value =
@@ -208,7 +208,7 @@ fn minimal_valid_export() -> serde_json::Value {
         "truncation": { "dropped_spans": 0, "dropped_counters": 0 },
         "spans": [
             {
-                "key": "davinci.p0_11.demo",
+                "key": "levels.p0_11.demo",
                 "count": 1,
                 "wall_ns": {
                     "total": 1000, "self": 1000, "min": 1000, "max": 1000,

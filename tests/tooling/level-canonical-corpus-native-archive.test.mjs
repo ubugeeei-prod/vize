@@ -25,7 +25,7 @@ await test("native archive source/head/toolchain/binary and entire raw-vector cu
     attempt: 1,
   };
   try {
-    const source = readFileSync("tests/davinci_test_support/src/corpus.rs");
+    const source = readFileSync("tests/level_test_support/src/corpus.rs");
     const { body, harness } = collectorHarness(source);
     writeFileSync(join(temporary, "native-collector-source.rs"), source);
     writeFileSync(join(temporary, "native-collector.rs"), harness);

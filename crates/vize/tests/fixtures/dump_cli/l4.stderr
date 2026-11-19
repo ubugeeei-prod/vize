@@ -1,6 +1,6 @@
 error: invalid value 'l4' for '--level <LEVEL>'
   [possible values: l1, l2, l3]
 
-  tip: L4 emission is not a folio and has no parse/print byte-identity law
+  tip: L4 emission is not a dump and has no parse/print byte-identity law
 
 For more information, try '--help'.

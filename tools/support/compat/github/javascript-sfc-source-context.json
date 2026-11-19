@@ -28,9 +28,9 @@
     "crates/vize_canon/src/virtual_ts/scope/component_prop_navigation.rs",
     "crates/vize_canon/src/virtual_ts/scope/component_slots.rs",
     "crates/vize_canon/tests/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__define-model__default.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__parent-local-import__default.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__static-slot-name__default.snap"
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__define-model__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__parent-local-import__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__static-slot-name__default.snap"
   ],
   "historicalLexicalAfter": ["crates/vize_canon/src/batch/type_checker/tests/recent_issues.rs"],
   "parts": [
@@ -44,7 +44,7 @@
     ],
     [
       "javascript-sfc-source-context-02.json",
-      "bd53eebafd66cc1150e609c86539dfc235d2c5e03010543491315d382c9ae4e2"
+      "9ee3c5bd2cdc9228129327692f33e738c3b3b1b50f0b89c86066f45ff944d242"
     ],
     [
       "javascript-sfc-source-context-03.json",
@@ -97,9 +97,9 @@
     "crates/vize_canon/src/virtual_ts/scope/globals/instance/tests.rs",
     "crates/vize_canon/src/virtual_ts/scope/globals/instance/tests/lexical_scope.rs",
     "crates/vize_canon/tests/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__define-model__default.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__parent-local-import__default.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__static-slot-name__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__define-model__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__parent-local-import__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__static-slot-name__default.snap",
     "docs/davinci/plan/consumer-migration-surfaces/typechecker/vize_canon.tsv",
     "docs/davinci/plan/croquis-consumption/vize_canon.md",
     "tests/_fixtures/ci/native-phase-membership-original.json",
@@ -151,9 +151,9 @@
   "beforeTree": "5ff35375c2c2e24654139227e53ee0cbb357116c",
   "capturedTree": "9b3fab0b9625577c145457f85c9df492a92f6b89",
   "callerContext": "tests/_fixtures/ci/javascript-sfc-source-callers.json",
-  "callerContextSHA256": "83ec275f5c2e6c829c7bd1647e512143db5992a4ec98a31fb060ff79ed7d4f6d",
+  "callerContextSHA256": "e593d408abc84d5e458c38d5a1ed1786f30686e2e24a45ca6610a22aa16633e5",
   "callerPaths": [
-    ".github/workflows/davinci-canon-scaling.yml",
+    ".github/workflows/level-canon-scaling.yml",
     "tests/performance/support/warm-type-backed-host-qualifications.ts",
     "tests/tooling/support/native-lexical-dollar-fixture.mjs",
     "tests/tooling/warm-type-backed-lexical-dollar-host.test.ts",

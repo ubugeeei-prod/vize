@@ -1,8 +1,8 @@
 //! Bench-report JSON export.
 //!
 //! Every bench run is exported as one JSON file under
-//! `tools/benchmarks/results/davinci/<bench_id>.json` (workspace-relative), shaped by
-//! `schema/davinci-bench.schema.json`. In debug builds the exporter validates
+//! `tools/benchmarks/results/levels/<bench_id>.json` (workspace-relative), shaped by
+//! `schema/level-bench.schema.json`. In debug builds the exporter validates
 //! each report against the committed schema before writing; the validator is
 //! strict - a schema keyword it does not implement is an error, never a
 //! silently skipped check.
@@ -11,18 +11,18 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
-use davinci_test_support::schema::{SchemaError, validate};
+use level_test_support::schema::{SchemaError, validate};
 use serde::Serialize;
 
 /// Version stamped into every report as `harness_version`.
 pub const HARNESS_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Report directory relative to the workspace root.
-pub const RESULTS_SUBDIR: &str = "tools/benchmarks/results/davinci";
+pub const RESULTS_SUBDIR: &str = "tools/benchmarks/results/levels";
 
 /// Schema location relative to the workspace root.
 pub const SCHEMA_SUBPATH: &str =
-    "tools/benchmarks/crates/davinci_harness/schema/davinci-bench.schema.json";
+    "tools/benchmarks/crates/level_harness/schema/level-bench.schema.json";
 
 /// Wall-clock percentiles in nanoseconds over the criterion measurement samples.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -33,7 +33,7 @@ pub struct WallNs {
     pub p95: u64,
 }
 
-/// One bench run, as exported to `tools/benchmarks/results/davinci/<bench_id>.json`.
+/// One bench run, as exported to `tools/benchmarks/results/levels/<bench_id>.json`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub struct BenchReport<'a> {
     /// Stable bench identity; doubles as the report file name.
@@ -84,7 +84,7 @@ pub enum ReportError {
     #[error("schema pattern `{pattern}` at `{path}` does not compile")]
     SchemaBadPattern { path: Box<str>, pattern: Box<str> },
     #[error(
-        "schema keyword `{keyword}` at `{path}` is not implemented by the davinci_harness validator"
+        "schema keyword `{keyword}` at `{path}` is not implemented by the level_harness validator"
     )]
     SchemaUnimplementedKeyword { path: Box<str>, keyword: Box<str> },
     #[error("schema at `{path}` must be a JSON object")]
@@ -188,7 +188,7 @@ pub fn workspace_root() -> Result<PathBuf, ReportError> {
     }
 }
 
-/// Write `report` to `tools/benchmarks/results/davinci/<bench_id>.json` under the
+/// Write `report` to `tools/benchmarks/results/levels/<bench_id>.json` under the
 /// workspace root, returning the written path.
 pub fn write(report: &BenchReport<'_>) -> Result<PathBuf, ReportError> {
     let dir = workspace_root()?.join(RESULTS_SUBDIR);
@@ -360,7 +360,7 @@ mod tests {
             serde_json::from_str("{\"type\": \"object\", \"maxProperties\": 3}")
                 .expect("literal schema parses");
         let instance = serde_json::json!({});
-        let error = davinci_test_support::schema::validate(&schema, &instance, "$")
+        let error = level_test_support::schema::validate(&schema, &instance, "$")
             .expect_err("unknown keyword must fail");
         assert_eq!(
             error.to_string(),

@@ -286,7 +286,7 @@ fn ordinary_and_demand_semantics_keep_complete_outputs_and_observed_parse_receip
     }
     let evidence = json!({
         "schema": 1,
-        "limits": "Existing probes only: davinci.expr.parses counts the original Armature Expr attempt; named classifier span counts invocations, not its TS/TSX retries. Native L1 goals have no parse census. Complete Debug, semantic facade and editor packet are retained unfiltered; Debug itself intentionally hides some private runtime fields.",
+        "limits": "Existing probes only: levels.expr.parses counts the original Armature Expr attempt; named classifier span counts invocations, not its TS/TSX retries. Native L1 goals have no parse census. Complete Debug, semantic facade and editor packet are retained unfiltered; Debug itself intentionally hides some private runtime fields.",
         "records": receipts,
     });
     let directory = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))

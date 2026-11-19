@@ -4,7 +4,7 @@
 // versioned v1 break. A correction of the template tree a plugin sees, which
 // aligns the parse with Vue, may regenerate the golden when the change is
 // recorded under "v1 freeze scope" in docs/release/integrated-plugin-incubation.md:
-//   VIZE_PLUGIN_API_V1_FREEZE=write node --test tests/tooling/davinci-plugin-api-v1-freeze.test.ts
+//   VIZE_PLUGIN_API_V1_FREEZE=write node --test tests/tooling/level-plugin-api-v1-freeze.test.ts
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -16,13 +16,13 @@ import {
   definePlugin,
   defineTransformPlugin,
 } from "../../npm/plugin-sdk/index.js";
-import booleanAttributes from "./fixtures/davinci-plugin-sdk/boolean-attributes.mjs";
-import { TODO_LIST } from "./fixtures/davinci-plugin-sdk/sources.mjs";
-import team from "./fixtures/davinci-plugin-sdk/team-conventions.mjs";
-import design from "./fixtures/davinci-plugin-sdk/transforms/design-system.mjs";
+import booleanAttributes from "./fixtures/level-plugin-sdk/boolean-attributes.mjs";
+import { TODO_LIST } from "./fixtures/level-plugin-sdk/sources.mjs";
+import team from "./fixtures/level-plugin-sdk/team-conventions.mjs";
+import design from "./fixtures/level-plugin-sdk/transforms/design-system.mjs";
 
 const native = createRequire(import.meta.url)("../../npm/native/index.js");
-const golden = new URL("./fixtures/davinci-plugin-sdk/api-v1-packets.json", import.meta.url);
+const golden = new URL("./fixtures/level-plugin-sdk/api-v1-packets.json", import.meta.url);
 
 const BOOLEAN_FORM = `<template>\r\n  <form>\r\n    <input :disabled="true" :required="true" />\r\n    <!-- 日本語🎨 -->\r\n    <select :multiple="true"><option :selected="true">é</option></select>\r\n  </form>\r\n</template>\r\n`;
 const BINDINGS = `<script setup lang="ts">\nimport { ref } from "vue";\nconst count = ref(0);\nconst unused = 1;\n</script>\n<template>\n  <button @click="count++">{{ count }} 🦀</button>\n</template>\n`;

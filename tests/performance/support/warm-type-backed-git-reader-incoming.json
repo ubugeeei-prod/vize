@@ -23,13 +23,13 @@
     ],
     [
       "tests/performance/support/warm-type-backed-path-host-manifest.json",
-      "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805",
-      "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805"
+      "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95",
+      "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95"
     ],
     [
       "tests/tooling/warm-type-backed-path-host.test.ts",
-      "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48",
-      "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48"
+      "b8fe4cb9cc0098898a60201579745e6784f44849cf1e6b36223b99e3cf5f77cf",
+      "b8fe4cb9cc0098898a60201579745e6784f44849cf1e6b36223b99e3cf5f77cf"
     ],
     [
       "tests/tooling/warm-type-backed-default-migration-host.test.ts",

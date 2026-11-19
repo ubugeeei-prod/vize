@@ -44,7 +44,7 @@ a set of paths no other lane edits, so independent tasks can run in parallel.
 A gated task is not picked up until the named task lands; the phase still
 cannot exit before its predecessor does, and a gate may name any earlier
 phase's task. Phases 4, 5 and 6 are in this shape (all re-cut 2026-09-21),
-checked by one shared checker (`tests/tooling/support/davinci-recut.ts`).
+checked by one shared checker (`tests/tooling/support/level-recut.ts`).
 
 **File split:** a re-cut phase carries the full contract for every one of its
 tasks, and those contracts alone can exceed the repository's 350-line

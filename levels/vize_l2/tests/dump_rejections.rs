@@ -1,4 +1,4 @@
-//! Exact-oracle rejection suite for the disegno folio parser (TS-13:
+//! Exact-oracle rejection suite for the l2 dump parser (TS-13:
 //! whole-message equality, no partial matching).
 //!
 //! Every message here is part of the format contract. The common prefix

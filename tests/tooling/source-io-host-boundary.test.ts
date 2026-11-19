@@ -1,11 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
-import {
-  sourceIoAliasReads,
-  sourceIoDirectReads,
-} from "./support/davinci-source-io-host-imports.ts";
+import { withoutHostRuntimeReferences } from "./support/level-host-imports.ts";
+import { sourceIoAliasReads, sourceIoDirectReads } from "./support/level-source-io-host-imports.ts";
 
 const read = (file: string) => readFileSync(new URL("../../" + file, import.meta.url), "utf8");
 const forbidden = /\bvize_carton::|use vize_carton\b/u;
@@ -20,7 +17,7 @@ test("only actual filesystem callers receive the exact host ownership exception"
       assert.doesNotMatch(withoutHostRuntimeReferences(source, path), forbidden, file);
     }
     assert.match(
-      withoutHostRuntimeReferences(source, "davinci/vize_l0/src/source_io.rs"),
+      withoutHostRuntimeReferences(source, "levels/vize_l0/src/source_io.rs"),
       forbidden,
       file,
     );
@@ -64,14 +61,14 @@ test("extra reads, storage imports and alternate source APIs remain forbidden", 
 });
 
 test("L0 retains the borrowed decoder and all filesystem declarations belong to Carton", () => {
-  const level = read("davinci/vize_l0/src/source_io.rs");
+  const level = read("levels/vize_l0/src/source_io.rs");
   const host = read("crates/vize_carton/src/source_io.rs");
   assert.doesNotMatch(level, /\b(?:FileString|read_to_string|vize_carton)\b|std::fs/u);
   assert.match(level, /pub fn decode_utf8\(bytes: &\[u8\]\) -> Result<&str, Utf8Error>/u);
   assert.match(host, /^pub use vize_l0::source_io::decode_utf8;$/mu);
   assert.match(host, /#\[cfg\(not\(target_arch = "wasm32"\)\)\]\npub fn read_to_string/u);
   assert.doesNotMatch(host, /pub fn decode_utf8/u);
-  assert.doesNotMatch(read("davinci/vize_l0/src/source_io.rs"), /std::fs|read_to_string/u);
+  assert.doesNotMatch(read("levels/vize_l0/src/source_io.rs"), /std::fs|read_to_string/u);
   assert.match(
     read("crates/vize_carton/src/source_io.rs"),
     /fn file_reader_preserves_contents_and_standard_error_contracts/u,

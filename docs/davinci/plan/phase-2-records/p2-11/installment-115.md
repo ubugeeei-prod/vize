@@ -25,8 +25,8 @@ The executable evidence is:
   S2 production selector case.
 - `crates/vize_atelier_dom/tests/davinci_s2_source_map.rs` covers source-map
   requests on the same surface.
-- `tests/tooling/davinci-dom-production-boundary.test.ts` and
-  `tests/tooling/davinci-storage-policy.test.ts` keep the production-boundary
+- `tests/tooling/level-dom-production-boundary.test.ts` and
+  `tests/tooling/level-storage-policy.test.ts` keep the production-boundary
   and storage-policy ledgers aligned with the shipped surface.
 
 This installment does not tick P2-11. The full production-lane switch remains

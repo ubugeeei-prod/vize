@@ -6,7 +6,7 @@
 use libfuzzer_sys::fuzz_target;
 use vize_atelier_sfc::{CssCompileOptions, parse_css_ast};
 
-use davinci_test_support::css_fuzz_boundary as boundary;
+use level_test_support::css_fuzz_boundary as boundary;
 
 /// Color-entry functions recognized by the unparsed-value fallback. When one
 /// of these opens a parenthesis group that never closes, the recovering parser

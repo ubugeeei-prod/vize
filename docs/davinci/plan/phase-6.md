@@ -15,7 +15,7 @@
 > [!NOTE]
 > **Early re-cut 2026-09-21, while phases 3–5 are still live**, under the plan README's [early re-cut rule](./README.md#task-format), in the same shape as [phase 4](./phase-4.md) and [phase 5](./phase-5.md). The maintainer's completion target (**2026-09-23**) and the public presentation at Vue Fes Japan 2026 (**2026-10-24**) make the contract work that needs no later substrate worth starting now: the input-dialect WIT world, the versioning policy, the wasmtime lane, the MoonBit hosting spike and the communications decision. Every task states its **start gate**: _startable now_ or _gated on_ a named earlier-phase task. The exit gate is unchanged and still follows the phase-5 exit (P6-13 depends on P5-14). Tasks whose acceptance needs people outside the repository (the Volt maintainer, a third-party dialect author, the maintainer's own decisions) say so as **review points**, never as green checks.
 
-**The per-task contracts live in [phase-6-tasks.md](./phase-6-tasks.md) (P6-1a…P6-6) and [phase-6-tasks-later.md](./phase-6-tasks-later.md) (P6-7…P6-13)** — Start gate / Lane / Deliverable / Steps / Acceptance / Deps / Non-goals for all 16 tasks. [`davinci-phase6-contract-status.test.ts`](../../../tests/tooling/davinci-phase6-contract-status.test.ts) enforces the structure through the shared re-cut checker.
+**The per-task contracts live in [phase-6-tasks.md](./phase-6-tasks.md) (P6-1a…P6-6) and [phase-6-tasks-later.md](./phase-6-tasks-later.md) (P6-7…P6-13)** — Start gate / Lane / Deliverable / Steps / Acceptance / Deps / Non-goals for all 16 tasks. [`davinci-phase6-contract-status.test.ts`](../../../tests/tooling/level-phase6-contract-status.test.ts) enforces the structure through the shared re-cut checker.
 
 ## What the re-cut changed
 

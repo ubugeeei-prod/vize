@@ -13,7 +13,7 @@ mod refusal;
 mod stock;
 pub use refusal::assert_original_js_refusal;
 
-use crate::davinci_dom_corpus_support::Report;
+use crate::level_dom_corpus_support::Report;
 use serde_json::{Value, json};
 use vize_atelier_core::{CodegenResult, CompilerError};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_legacy_with_options};

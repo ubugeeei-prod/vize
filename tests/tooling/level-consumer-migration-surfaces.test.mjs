@@ -6,9 +6,9 @@ import {
   SURFACES,
   scanConsumerMigrationSurfaces,
   surfaceNameKind,
-} from "../../tools/support/compat/davinci/lib/consumer-migration-scan.ts";
+} from "../../tools/support/compat/levels/lib/consumer-migration-scan.ts";
 import { lexicalView } from "../../tools/support/levels/move-host-runtime.ts";
-import { renderConsumerMigrationSurfaceRows } from "../../tools/support/compat/davinci/lib/consumer-migration-render.ts";
+import { renderConsumerMigrationSurfaceRows } from "../../tools/support/compat/levels/lib/consumer-migration-render.ts";
 
 import {
   hostPathLayoutForOriginalLaw,
@@ -111,7 +111,8 @@ void test("consumer migration TSV exposes matched names and name kind", () => {
     assert.equal(row.surface_group, "stage");
     assert.equal(row.surface, physicalLabels.get(row.surface_id));
   }
-  for (const legacyLabel of ["L0/carton", "L1/sinopia", "L2/disegno", "L1->L2/ricalco"]) { // codename: published package name
+  for (const legacyLabel of ["L0/carton", "L1/sinopia", "L2/disegno", "L1->L2/ricalco"]) {
+    // codename: published package name
     assert.ok(!rows.some((row) => row.surface === legacyLabel), legacyLabel);
   }
 });
@@ -389,9 +390,9 @@ const readSurfaceSource = (relPath) =>
 function assertContentMapperHostPath(
   contentMapper,
   read = readSurfaceSource,
-  foundation = read("davinci/vize_l0/src/lib.rs"),
+  foundation = read("levels/vize_l0/src/lib.rs"),
   host = read("crates/vize_carton/src/path.rs"),
-  lowerPathExists = existsSync(new URL("../../davinci/vize_l0/src/path.rs", import.meta.url)),
+  lowerPathExists = existsSync(new URL("../../levels/vize_l0/src/path.rs", import.meta.url)),
 ) {
   const nonStage = contentMapper.sites.filter((site) => site.group !== "stage");
   assert.ok(nonStage.length > 0, "the host adapter must remain visible in the inventory");
@@ -409,7 +410,7 @@ function assertContentMapperHostPath(
     foundation,
     host,
     lowerPathExists,
-    ...(lowerPathExists ? { lower: read("davinci/vize_l0/src/path.rs") } : {}),
+    ...(lowerPathExists ? { lower: read("levels/vize_l0/src/path.rs") } : {}),
   }));
   assert.match(lexicalView(host), /\bpub\s+fn\s+canonicalize_non_verbatim\s*\(/u);
   assert.doesNotMatch(lexicalView(foundation), /\bpub\s+mod\s+path\s*;/u);
@@ -450,7 +451,7 @@ void test("content mapper records the exact host path role without admitting leg
       }),
     { name: "AssertionError" },
   );
-  const foundation = readSurfaceSource("davinci/vize_l0/src/lib.rs");
+  const foundation = readSurfaceSource("levels/vize_l0/src/lib.rs");
   assert.throws(() =>
     assertContentMapperHostPath(mapper, readSurfaceSource, `${foundation}\npub mod path;\n`),
   );

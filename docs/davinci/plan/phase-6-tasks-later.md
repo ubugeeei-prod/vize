@@ -95,7 +95,7 @@ remain open; this input does not mark acceptance.
 
 ## P6-11 — v1 go-no-go input package
 
-Review input: [the evidence package](../../release/davinci-v1-evidence.md) maps
+Review input: [the evidence package](../../release/level-v1-evidence.md) maps
 every release checklist item to evidence or a blocker. P6-10 and maintainer
 acceptance remain open; no go/no-go decision is recorded.
 

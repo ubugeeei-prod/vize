@@ -28,7 +28,7 @@ const approvedSources = [
   {
     path: "crates/vize_atelier_core/src/lane/element/tests.rs",
     beforeSha256: "a8931514fe8d5f03eb6c1f64b12625c4eacda13d305968eca42aa0f22aa81b50",
-    afterSha256: "def579c7aa2e4d420c979bd235d28e674f023a113fe4db34a0ca32275e15598e",
+    afterSha256: "90f3ce374f7840f85f7971fcdc4d5e585fbf2d505a168cf4d6ee748e18dacc74",
   },
   {
     path: "crates/vize_atelier_core/src/lane/element/vapor_static_style.rs",
@@ -68,7 +68,7 @@ const approvedSources = [
   {
     path: "crates/vize_atelier_vapor/src/l3/native/emit.rs",
     beforeSha256: "605b868befbffa307e0b639470c386a1558ccf7ee431f0454391ce7fc6683262",
-    afterSha256: "7a298ea85bb68cb0055258e37952170b4581d2a221c094c18bf011002164c84d",
+    afterSha256: "5c82d1f7121c14beec560c2ba23dfbcd18497ac84ebb0ab2f4d4e34df3ecc25a",
   },
   {
     path: "crates/vize_atelier_vapor/src/l3/native/emit/element.rs",
@@ -83,7 +83,7 @@ const approvedSources = [
   {
     path: "crates/vize_atelier_vapor/src/lower/element/template.rs",
     beforeSha256: "b87d0b198c77e96246573ee20388d047f126be4cf05c1b8ada2355bd63118ac8",
-    afterSha256: "3ae079172829feeb555ec8db43aeb4a09f57935d652440e4988992314fdfa482",
+    afterSha256: "028c5b2f057ef287f2624a737d09176ad61e329d010abf48e157719592f085b6",
   },
   {
     path: "crates/vize_atelier_vapor/src/lower/element/template/attributes.rs",
@@ -113,7 +113,7 @@ const approvedInputs = [
   },
   {
     path: "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/admission-source-pairs.json",
-    sha256: "12725a1c38d5050762348679167dde5ff4c71a1e510cdde966510f86c6126765",
+    sha256: "4db30c6660279a0c41e03caedc3865b464cffa6c0484155bbb8573d65454c593",
   },
   {
     path: "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/attribute-case-inputs.json",
@@ -121,7 +121,7 @@ const approvedInputs = [
   },
   {
     path: "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/authority.json",
-    sha256: "e113463a40ba2d54d8c8a82e81f9b5a42e5f88900e1850a1c4ccd791ab0aa01b",
+    sha256: "91f3bc51fd86dd268673d34a9a0e40d2d11fb0e8f8f5fcbfd267c3fa430fc270",
   },
   {
     path: "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/inputs.json",
@@ -156,7 +156,7 @@ const approvedWitnesses = [
   {
     path: "crates/vize_atelier_jsx/tests/literal_style_source.rs",
     symbol: "complete_literal_style_source_observations",
-    sha256: "09a903698328436c8de15218365b2df2008f2e42af325e1663a5f8008641fe2f",
+    sha256: "27ea943e8b7125ee5d36c1ee70f0ed52e882b3a153875ff17cdb93c6da34f678",
   },
   {
     path: "crates/vize_atelier_jsx/tests/literal_object_styles.rs",
@@ -166,7 +166,7 @@ const approvedWitnesses = [
   {
     path: "crates/vize_atelier_jsx/tests/literal_style_maps.rs",
     symbol: "folded_css_has_real_complete_utf16_origins_and_rejects_mutations",
-    sha256: "badda2c866e4bf68b7ee8e11f09a1c6bbd2dae805c2f25157f39263e96fdf693",
+    sha256: "998579fef67b04cbb4777c371d7e5cc529befd59334d98151dc8886c924f30de",
   },
   {
     path: "crates/vize_atelier_jsx/tests/literal_style_sfc.rs",
@@ -176,7 +176,7 @@ const approvedWitnesses = [
   {
     path: "crates/vize_atelier_jsx/tests/literal_style_source.rs",
     symbol: "priority_tokens_keep_original_runtime_semantics",
-    sha256: "09a903698328436c8de15218365b2df2008f2e42af325e1663a5f8008641fe2f",
+    sha256: "27ea943e8b7125ee5d36c1ee70f0ed52e882b3a153875ff17cdb93c6da34f678",
   },
 ] as const;
 const digest = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");

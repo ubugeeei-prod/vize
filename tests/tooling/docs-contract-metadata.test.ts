@@ -16,7 +16,7 @@ void test("the published docs contract covers every required product surface", (
   assert.equal(metadata.endpoint, "/vize-docs-metadata.json");
   assert.deepEqual(
     metadata.surfaces.map(({ id }) => id),
-    ["compose", "ui", "fresco", "patina", "glyph", "davinci", "devtools", "plugins"],
+    ["compose", "ui", "fresco", "patina", "glyph", "levels", "devtools", "plugins"],
   );
 
   for (const surface of metadata.surfaces) {

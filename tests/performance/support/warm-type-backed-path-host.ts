@@ -21,19 +21,14 @@ assert.equal(manifestSHA256, "50274f0ff7b1def1ab1d25e401bb2ad1cd823e4a6adae3ed70
 assert.equal(manifest.version, 1);
 for (const source of [manifest.originalSource, manifest.transformedSource])
   assert.match(source, /^[a-f0-9]{40}$/u);
-const oldPath = "davinci/vize_l0/src/path.rs";
+const oldPath = "levels/vize_l0/src/path.rs";
 const newPath = "crates/vize_carton/src/path.rs";
 // The pinned manifest is the reviewed move. The live caller registry keeps
 // changing as callers move, so it no longer defines this historical audit.
 const expectedFiles = manifest.files.map(([file]) => file);
 assert.equal(expectedFiles.length, 60);
 assert.deepEqual(expectedFiles, expectedFiles.toSorted());
-for (const file of [
-  oldPath,
-  newPath,
-  "davinci/vize_l0/src/lib.rs",
-  "crates/vize_carton/src/lib.rs",
-])
+for (const file of [oldPath, newPath, "levels/vize_l0/src/lib.rs", "crates/vize_carton/src/lib.rs"])
   assert.ok(expectedFiles.includes(file), file);
 assert.equal(manifest.files.find(([file]) => file === oldPath)![1], manifest.originalPathSHA256);
 assert.equal(

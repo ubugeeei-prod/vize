@@ -24,7 +24,7 @@
     {
       "path": "crates/vize_atelier_core/src/lane/element/tests.rs",
       "beforeSha256": "a8931514fe8d5f03eb6c1f64b12625c4eacda13d305968eca42aa0f22aa81b50",
-      "afterSha256": "def579c7aa2e4d420c979bd235d28e674f023a113fe4db34a0ca32275e15598e"
+      "afterSha256": "90f3ce374f7840f85f7971fcdc4d5e585fbf2d505a168cf4d6ee748e18dacc74"
     },
     {
       "path": "crates/vize_atelier_core/src/lane/element/vapor_static_style.rs",
@@ -64,7 +64,7 @@
     {
       "path": "crates/vize_atelier_vapor/src/l3/native/emit.rs",
       "beforeSha256": "605b868befbffa307e0b639470c386a1558ccf7ee431f0454391ce7fc6683262",
-      "afterSha256": "7a298ea85bb68cb0055258e37952170b4581d2a221c094c18bf011002164c84d"
+      "afterSha256": "5c82d1f7121c14beec560c2ba23dfbcd18497ac84ebb0ab2f4d4e34df3ecc25a"
     },
     {
       "path": "crates/vize_atelier_vapor/src/l3/native/emit/element.rs",
@@ -79,7 +79,7 @@
     {
       "path": "crates/vize_atelier_vapor/src/lower/element/template.rs",
       "beforeSha256": "b87d0b198c77e96246573ee20388d047f126be4cf05c1b8ada2355bd63118ac8",
-      "afterSha256": "3ae079172829feeb555ec8db43aeb4a09f57935d652440e4988992314fdfa482"
+      "afterSha256": "028c5b2f057ef287f2624a737d09176ad61e329d010abf48e157719592f085b6"
     },
     {
       "path": "crates/vize_atelier_vapor/src/lower/element/template/attributes.rs",

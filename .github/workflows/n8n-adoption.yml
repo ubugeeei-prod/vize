@@ -171,10 +171,10 @@ jobs:
           VIZE_N8N_CONTROL_PACKET_DIR: ${{ github.workspace }}/target/n8n-compiler-custody/${{ github.run_id }}-${{ github.run_attempt }}/authored
         run: |
           cargo test --locked --profile ci --no-fail-fast -p vize_l1_to_l2 --features legacy-differential \
-            --test davinci_dom_n8n_diagnosed \
-            --test davinci_dom_n8n_default_loops \
-            --test davinci_dom_n8n_helper_props \
-            --test davinci_dom_n8n_if_key_modes -- --nocapture
+            --test level_dom_n8n_diagnosed \
+            --test level_dom_n8n_default_loops \
+            --test level_dom_n8n_helper_props \
+            --test level_dom_n8n_if_key_modes -- --nocapture
       - name: Upload complete source, official modules, maps and diagnostic vectors
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

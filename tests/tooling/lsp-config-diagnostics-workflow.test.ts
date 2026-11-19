@@ -231,7 +231,7 @@ test("startup diagnostics retain the production producer and unchanged scale-one
     "tests/tooling/native-config-preload-observations.test.ts",
     "tests/tooling/native-config-compile-cache.test.ts",
     "tests/tooling/config-host-boundary.test.ts",
-    "tests/tooling/support/davinci-host-imports.ts",
+    "tests/tooling/support/level-host-imports.ts",
     "crates/vize_maestro/src/server/initial_diagnostics/open_importer_tests.rs",
     "crates/vize_maestro/src/server/initial_diagnostics/tests.rs",
     "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/compiler_snapshot.rs",

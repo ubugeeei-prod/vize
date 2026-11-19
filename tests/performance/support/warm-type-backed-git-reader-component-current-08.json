@@ -48,19 +48,19 @@
   {
     "file": "tests/performance/support/warm-type-backed-git-reader-nodeep.json",
     "originalBeforeSHA256": null,
-    "originalAfterSHA256": "bcecdd3cbc3fa8dbaafb7c7f4dc48f491d1a0a82e861ef034e69bdaa83c52adb",
+    "originalAfterSHA256": "eff9ab086d8c7685e61d9d46675a89a7afea960ca3b1ce079f7541dfb0b0a84e",
     "before": null,
     "retainedAfter": {
       "mode": "100644",
-      "blob": "856eb7245c052cb45e1c41aa544d6873f00e373f",
+      "blob": "1a00180db159138d6266e92d2f6e80832290f2b3",
       "bytes": 2843,
-      "sha256": "bcecdd3cbc3fa8dbaafb7c7f4dc48f491d1a0a82e861ef034e69bdaa83c52adb"
+      "sha256": "eff9ab086d8c7685e61d9d46675a89a7afea960ca3b1ce079f7541dfb0b0a84e"
     },
     "currentAfter": {
       "mode": "100644",
-      "blob": "856eb7245c052cb45e1c41aa544d6873f00e373f",
+      "blob": "1a00180db159138d6266e92d2f6e80832290f2b3",
       "bytes": 2843,
-      "sha256": "bcecdd3cbc3fa8dbaafb7c7f4dc48f491d1a0a82e861ef034e69bdaa83c52adb"
+      "sha256": "eff9ab086d8c7685e61d9d46675a89a7afea960ca3b1ce079f7541dfb0b0a84e"
     }
   },
   {
@@ -143,55 +143,55 @@
   {
     "file": "tests/tooling/support/ascii-symbol-original-callers.ts",
     "originalBeforeSHA256": null,
-    "originalAfterSHA256": "26247a3b96d3ec476aa591a83d19c0667c5545323f1ac11ff8aadda354369de2",
+    "originalAfterSHA256": "0f2d089d3cb7548842398995fade44ddc3594a430ea025f3bb6957fb7b8784e4",
     "before": null,
     "retainedAfter": {
       "mode": "100644",
-      "blob": "525dc1a4e14329459b06d29cb167bd988ef7201a",
+      "blob": "18a123d1ce82ffc6c949bd74ba215098e6bbebb2",
       "bytes": 5625,
-      "sha256": "26247a3b96d3ec476aa591a83d19c0667c5545323f1ac11ff8aadda354369de2"
+      "sha256": "0f2d089d3cb7548842398995fade44ddc3594a430ea025f3bb6957fb7b8784e4"
     },
     "currentAfter": {
       "mode": "100644",
-      "blob": "525dc1a4e14329459b06d29cb167bd988ef7201a",
+      "blob": "18a123d1ce82ffc6c949bd74ba215098e6bbebb2",
       "bytes": 5625,
-      "sha256": "26247a3b96d3ec476aa591a83d19c0667c5545323f1ac11ff8aadda354369de2"
+      "sha256": "0f2d089d3cb7548842398995fade44ddc3594a430ea025f3bb6957fb7b8784e4"
     }
   },
   {
     "file": "tests/tooling/support/ascii-symbol-original-callers.json",
     "originalBeforeSHA256": null,
-    "originalAfterSHA256": "0dc0852abe918f17f378a708e70d61b42f0630fe94865db96f8c7201d43ffbd3",
+    "originalAfterSHA256": "25bede2b463f505ea99419f46c13671d92a54d622509f69690173c69a649e336",
     "before": null,
     "retainedAfter": {
       "mode": "100644",
-      "blob": "91f3b1bc4e56f5fea621c3d3594bb0468ed9cd4c",
+      "blob": "6c19b06ab2779b79d42e9c267988458b80bbf817",
       "bytes": 112709,
-      "sha256": "0dc0852abe918f17f378a708e70d61b42f0630fe94865db96f8c7201d43ffbd3"
+      "sha256": "25bede2b463f505ea99419f46c13671d92a54d622509f69690173c69a649e336"
     },
     "currentAfter": {
       "mode": "100644",
-      "blob": "91f3b1bc4e56f5fea621c3d3594bb0468ed9cd4c",
+      "blob": "6c19b06ab2779b79d42e9c267988458b80bbf817",
       "bytes": 112709,
-      "sha256": "0dc0852abe918f17f378a708e70d61b42f0630fe94865db96f8c7201d43ffbd3"
+      "sha256": "25bede2b463f505ea99419f46c13671d92a54d622509f69690173c69a649e336"
     }
   },
   {
     "file": "tests/tooling/support/ascii-symbol-caller-frames.json",
     "originalBeforeSHA256": null,
-    "originalAfterSHA256": "ae9cbab52a1ba62f3e31b8e4f92f80e3c973de3510d219ee940a6b89cfc716d6",
+    "originalAfterSHA256": "46441771f76308e3c6606550c95a3524bf2a7db83d820676b16faf18f1d6c815",
     "before": null,
     "retainedAfter": {
       "mode": "100644",
-      "blob": "3e2cd37656232ea2bf1e8847ec4799cb789b8221",
+      "blob": "879d8b931624e45a4ce72f19dc6725198e840488",
       "bytes": 69364,
-      "sha256": "ae9cbab52a1ba62f3e31b8e4f92f80e3c973de3510d219ee940a6b89cfc716d6"
+      "sha256": "46441771f76308e3c6606550c95a3524bf2a7db83d820676b16faf18f1d6c815"
     },
     "currentAfter": {
       "mode": "100644",
-      "blob": "3e2cd37656232ea2bf1e8847ec4799cb789b8221",
+      "blob": "879d8b931624e45a4ce72f19dc6725198e840488",
       "bytes": 69364,
-      "sha256": "ae9cbab52a1ba62f3e31b8e4f92f80e3c973de3510d219ee940a6b89cfc716d6"
+      "sha256": "46441771f76308e3c6606550c95a3524bf2a7db83d820676b16faf18f1d6c815"
     }
   },
   {

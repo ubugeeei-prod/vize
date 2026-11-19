@@ -166,7 +166,7 @@
   "nativeRawSha256": "25a9f91e4b952dbe2fbdaf7e530e54de41aeb3aff13d3d43e4557f9b40d87ac9",
   "observerCustody": {
     "receiptPath": "/tmp/vize-n8n-next-semantic-gap-20261008/research-47c6/receipt.json",
-    "receiptSha256": "8ca276d3cad3383f8061b85e1a7a8b44cfddc307928dfb6d71865d7d4cea74eb",
+    "receiptSha256": "c916a60834f60d9ded6958bfc3bbf77ee7b30a3d737cac4d740e867308318d56",
     "sourceRevision": "47c6f998d49cd6c7b790550098b3378639b949f7",
     "sourceTree": "6140f34b3e3479b6ab02be574b36078467ce5af7",
     "checkedFiles": [

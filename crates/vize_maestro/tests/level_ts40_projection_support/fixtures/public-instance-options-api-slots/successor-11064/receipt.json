@@ -15,7 +15,7 @@
   "predecessor": {
     "path": "after/projection-record.txt",
     "bytes": 2234,
-    "sha256": "7f53c3ac733d2e64a753846d1b56baa189dd81754264df86a3e11115eccc58e7"
+    "sha256": "dbffd88accb7bddd82ca2ab32b2e3500c4e48933e06028bbd048d684646186ab"
   },
   "successor": {
     "path": "successor-11064/projection-record.txt",

@@ -1,6 +1,6 @@
 //! Real ordinary-owner destruction, with no concurrent libtest measurement.
 
-use davinci_harness::alloc::{CountingAllocator, mark_installed, stats};
+use level_harness::alloc::{CountingAllocator, mark_installed, stats};
 use oxc_parser::{EmbeddingGoal, EmbeddingInput};
 use oxc_span::SourceType;
 use vize_l0::Allocator;

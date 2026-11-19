@@ -1,5 +1,5 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 #[test]
 fn adjacent_ambient_declarations_match_authored_native_diagnostics() {

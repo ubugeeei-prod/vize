@@ -4,7 +4,7 @@
 //! annotated callback must be assignable to the declared slot member.
 use std::path::Path;
 
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 const PARENT: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),

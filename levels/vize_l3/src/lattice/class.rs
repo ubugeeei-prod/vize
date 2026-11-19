@@ -13,7 +13,7 @@ pub enum ReactivityClass {
 }
 
 impl ReactivityClass {
-    /// Stable folio spelling.
+    /// Stable dump spelling.
     #[must_use]
     pub const fn as_str(self) -> &'static str {
         match self {
@@ -24,7 +24,7 @@ impl ReactivityClass {
         }
     }
 
-    /// Parse the stable folio spelling.
+    /// Parse the stable dump spelling.
     #[must_use]
     pub const fn from_str(value: &str) -> Option<Self> {
         match value.as_bytes() {

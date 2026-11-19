@@ -26,7 +26,7 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
     "lint_baseline_reference_mode",
     "lsp_mode",
     "typecheck_divergence_mode",
-    "davinci_dom_corpus_mode",
+    "level_dom_corpus_mode",
   ]);
   assert.deepEqual(dispatch.inputs?.project, {
     description: "Optional exact fixture ID for a scoped diagnostic; empty runs the full matrix",
@@ -82,8 +82,8 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
     type: "choice",
     options: ["enforce", "record-only", "skip"],
   });
-  assert.deepEqual(dispatch.inputs?.davinci_dom_corpus_mode, {
-    description: "Davinci L2 DOM corpus gate handling",
+  assert.deepEqual(dispatch.inputs?.level_dom_corpus_mode, {
+    description: "Level L2 DOM corpus gate handling",
     required: false,
     default: "enforce",
     type: "choice",
@@ -116,7 +116,7 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
     FIXTURE_SHARD_INDEX: "${{ matrix.shard }}",
     FIXTURE_REPORT_DIR: "real-project-results/shard-${{ matrix.shard }}",
   });
-  const corpus = readCanonicalCorpusWorkflow().jobs?.["davinci-dom-corpus"];
+  const corpus = readCanonicalCorpusWorkflow().jobs?.["level-dom-corpus"];
   assert.ok(corpus);
   for (const [observer, evidence] of [
     ["dom", "canonical-corpus-dom"],
@@ -129,7 +129,7 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
       caller.if,
       "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
     );
-    assert.equal(caller.needs, "davinci-dom-corpus");
+    assert.equal(caller.needs, "level-dom-corpus");
     assert.equal(caller.uses, "./.github/workflows/canonical-corpus-divergence.yml");
     assert.deepEqual(caller.with, { observer, evidence });
   }

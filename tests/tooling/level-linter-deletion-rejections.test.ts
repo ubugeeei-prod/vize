@@ -10,7 +10,7 @@ import {
   type LintProjectReport,
   validateLinterDeletionArtifact,
 } from "../differential/linter-deletion-verifier.ts";
-import { control } from "./_helpers/davinci-linter-deletion-fixture.ts";
+import { control } from "./_helpers/level-linter-deletion-fixture.ts";
 
 void test("linter preflight rejects reduced, stale, stitched and forged evidence", () => {
   const missing = control();

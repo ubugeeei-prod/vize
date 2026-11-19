@@ -6,7 +6,7 @@ import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { transformSync } from "@babel/core";
 import { Window } from "happy-dom";
-import { loadRuntime, observeChildren } from "./davinci-mounted-trace.mjs";
+import { loadRuntime, observeChildren } from "./level-mounted-trace.mjs";
 import { vueVaporVersion } from "./vue-vapor-release.mjs";
 
 const fixtureRoot = new URL("../../_fixtures/differential/compiler/", import.meta.url);

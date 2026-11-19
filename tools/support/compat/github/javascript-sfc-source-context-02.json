@@ -135,7 +135,7 @@
     }
   },
   {
-    "path": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__define-model__default.snap",
+    "path": "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__define-model__default.snap",
     "before": {
       "byteLength": 2432,
       "sha256": "2184b1cb41dd231829752ca78e2fff93c894c0d03cafdb2e6f6e960a4d82f632",
@@ -150,7 +150,7 @@
     }
   },
   {
-    "path": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__parent-local-import__default.snap",
+    "path": "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__parent-local-import__default.snap",
     "before": {
       "byteLength": 2371,
       "sha256": "04903b9caeff18c666f359339ee87d26e00177ec652d2685ba69c5c907714dad",
@@ -165,7 +165,7 @@
     }
   },
   {
-    "path": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__static-slot-name__default.snap",
+    "path": "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__static-slot-name__default.snap",
     "before": {
       "byteLength": 2394,
       "sha256": "e75772a1c6a1457c148d2e23d2a175948ffb7c1b9bb054d03f80a87379469209",

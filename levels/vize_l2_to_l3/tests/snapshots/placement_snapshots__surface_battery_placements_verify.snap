@@ -1,138 +1,138 @@
 ---
-source: davinci/vize_l2_to_l3/tests/placement_snapshots.rs
+source: levels/vize_l2_to_l3/tests/placement_snapshots.rs
 expression: output
 ---
 # kitchen_sink
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-placement-folio.placements]
+[s3-placement-dump.placements]
 op=3 alternatives=inline,cache leader=- chosen=inline
 
 # entities_raw
-[s3-placement-folio]
+[s3-placement-dump]
 
 # void_and_self_closing
-[s3-placement-folio]
+[s3-placement-dump]
 
 # quote_forms
-[s3-placement-folio]
+[s3-placement-dump]
 
 # dynamic_directives
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-placement-folio.placements]
+[s3-placement-dump.placements]
 op=1 alternatives=inline,cache leader=- chosen=inline
 
 # comments
-[s3-placement-folio]
+[s3-placement-dump]
 
 # interpolation_spacing
-[s3-placement-folio]
+[s3-placement-dump]
 
 # multi_root
-[s3-placement-folio]
+[s3-placement-dump]
 
 # crlf
-[s3-placement-folio]
+[s3-placement-dump]
 
 # unicode
-[s3-placement-folio]
+[s3-placement-dump]
 
 # svg_self_closing
-[s3-placement-folio]
+[s3-placement-dump]
 
 # pre_whitespace
-[s3-placement-folio]
+[s3-placement-dump]
 
 # rcdata_textarea_title
-[s3-placement-folio]
+[s3-placement-dump]
 
 # rcdata_script_style
-[s3-placement-folio]
+[s3-placement-dump]
 
 # nested_template
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-placement-folio.placements]
+[s3-placement-dump.placements]
 op=2 alternatives=inline,hoist leader=- chosen=inline
 
 # close_tag_whitespace
-[s3-placement-folio]
+[s3-placement-dump]
 
 # eof_in_tag
-[s3-placement-folio]
+[s3-placement-dump]
 
 # eof_in_tag_ws
-[s3-placement-folio]
+[s3-placement-dump]
 
 # eof_in_attr_name
-[s3-placement-folio]
+[s3-placement-dump]
 
 # eof_in_quoted_value
-[s3-placement-folio]
+[s3-placement-dump]
 
 # eof_in_empty_quoted_value
-[s3-placement-folio]
+[s3-placement-dump]
 
 # unclosed_child
-[s3-placement-folio]
+[s3-placement-dump]
 
 # stray_close
-[s3-placement-folio]
+[s3-placement-dump]
 
 # extra_close
-[s3-placement-folio]
+[s3-placement-dump]
 
 # empty_close
-[s3-placement-folio]
+[s3-placement-dump]
 
 # eof_in_close
-[s3-placement-folio]
+[s3-placement-dump]
 
 # eof_after_close_slash
-[s3-placement-folio]
+[s3-placement-dump]
 
 # missing_attr_value
-[s3-placement-folio]
+[s3-placement-dump]
 
 # solidus_junk
-[s3-placement-folio]
+[s3-placement-dump]
 
 # attr_quote_no_eq
-[s3-placement-folio]
+[s3-placement-dump]
 
 # missing_attr_whitespace
-[s3-placement-folio]
+[s3-placement-dump]
 
 # close_tag_junk
-[s3-placement-folio]
+[s3-placement-dump]
 
 # unclosed_interpolation
-[s3-placement-folio]
+[s3-placement-dump]
 
 # unclosed_comment
-[s3-placement-folio]
+[s3-placement-dump]
 
 # abrupt_empty_comment
-[s3-placement-folio]
+[s3-placement-dump]
 
 # bogus_doctype
-[s3-placement-folio]
+[s3-placement-dump]
 
 # bogus_one_dash
-[s3-placement-folio]
+[s3-placement-dump]
 
 # processing_instruction
-[s3-placement-folio]
+[s3-placement-dump]
 
 # cdata_in_svg
-[s3-placement-folio]
+[s3-placement-dump]
 
 # unquoted_slash_value
-[s3-placement-folio]
+[s3-placement-dump]
 
 # case_insensitive_close
-[s3-placement-folio]
+[s3-placement-dump]
 
 # sibling_li_closes
-[s3-placement-folio]
+[s3-placement-dump]

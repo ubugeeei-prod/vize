@@ -8,7 +8,7 @@ const read = (file: string) => fs.readFileSync(new URL(file, import.meta.url), "
 const originalBytes = read("./fixtures/real-project-matrix-original-67e3.yml");
 assert.equal(
   createHash("sha256").update(originalBytes).digest("hex"),
-  "3f5650d943dfbb73d9cea41782499c6225938d7ce4330549d4c27f7f90ea267c",
+  "bea70904c81df38a869bb32a223a107f24176241135d58ce2545e4d0d9b56377",
 );
 const prefix =
   "node tests/differential/build-receipt.ts\n" +
@@ -244,7 +244,7 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   ]) {
     assert.deepEqual(current.jobs[`${observer}-divergence`], {
       if: "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
-      needs: "davinci-dom-corpus",
+      needs: "level-dom-corpus",
       permissions: {
         contents: "write",
         actions: "read",
@@ -258,13 +258,13 @@ test("passive native LSP capture retains the complete original Matrix workflow",
   }
   assert.deepEqual(current.permissions, { contents: "read" });
   current.permissions = original.permissions;
-  const corpus = current.jobs["davinci-dom-corpus"];
+  const corpus = current.jobs["level-dom-corpus"];
   assert.deepEqual(corpus.permissions, {
     contents: "read",
     actions: "read",
     checks: "read",
   });
-  corpus.permissions = original.jobs["davinci-dom-corpus"].permissions;
+  corpus.permissions = original.jobs["level-dom-corpus"].permissions;
   // The release-gated title also names the exact
   // release dispatch beside the original enforced and observational titles.
   assert.match(

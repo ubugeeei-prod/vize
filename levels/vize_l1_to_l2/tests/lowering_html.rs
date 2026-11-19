@@ -10,7 +10,7 @@ use vize_l0::{Span, cstr};
 fn v_html_lowers_to_the_raw_html_dialect_op() {
     let art = artifact(r#"<p v-html="raw">x</p>"#);
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=3\n\
          \n\
@@ -31,7 +31,7 @@ fn value_less_v_html_still_lowers_so_dom_emit_can_match_undefined() {
     ] {
         let art = artifact(src);
         assert_eq!(
-            art.folio,
+            art.dump,
             cstr!(
                 "[l2-dump-v2]\n\
                  ops=3\n\
@@ -56,7 +56,7 @@ fn v_html_with_argument_or_modifier_still_defers() {
     ] {
         let art = artifact(src);
         assert_eq!(
-            art.folio,
+            art.dump,
             "[l2-dump-v2]\n\
              ops=2\n\
              \n\
@@ -81,7 +81,7 @@ fn v_html_with_argument_or_modifier_still_defers() {
 fn v_html_on_a_slot_outlet_lowers_as_a_slot_prop_binding() {
     let art = artifact(r#"<slot v-html="raw"></slot>"#);
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\

@@ -40,7 +40,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         authenticate_successor_receipt(
             include_str!("../fixtures/public-instance-mixed-vue2/successor-11069/receipt.json"),
-            "3c486d9b75a1a25cc6e1815fb478f00a89334c48627621ab552e47e0e05d6330",
+            "b6b3f280c8a72d6ac3d3fd7da1817205c4a3c765b89242b23fd8ea24133b0bb4",
             11069,
             predecessor,
             successor,
@@ -50,7 +50,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         authenticate_successor_receipt(
             include_str!("../fixtures/public-instance-mixed-vue2/successor-11142/receipt.json"),
-            "ac91a6f06d1d22359daf89c5ccea8076a60bd9ab637951ccfd76f0fb45cbf253",
+            "fde7ec860b157d382a9d46a370a82d4e82cad4a4221735bcec0e34dfb5eccd06",
             11142,
             successor,
             latest_successor,
@@ -156,11 +156,11 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             include_str!(
                 "../fixtures/public-instance-mixed-vue2/successor-integrated-11964/receipt.json"
             ),
-            "fb360f0ff44b0c2086dc2844ed368b231dfc2e499a82c056f2f4f074fd075795",
+            "1fde47ce0051a86d0fa6b3922d5dd60eb599acbbe7a88889bb69eeb6091472b6",
             owned_constructor,
             jsx_witness_successor,
             integrated_successor,
-            "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__vue2-native-event__mixed-vue2__legacy-generators-enabled.snap.new",
+            "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__vue2-native-event__mixed-vue2__legacy-generators-enabled.snap.new",
             "ce519376b1c12c5a51cb8952061ffdd3e581745f883ef50d049609552af56281",
         );
         let discriminated_jsx_union_successor = include_str!(
@@ -170,7 +170,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             include_str!(
                 "../fixtures/public-instance-mixed-vue2/successor-discriminated-jsx-union-20261106/receipt.json"
             ),
-            "f350590d07f4f46c9089001257916e011619b02d9aa75d018ea481d883b22319",
+            "a0c01b84782fdcf0624444b8058cd71801afe46cd2d758143c63ccffedaa0847",
             11964,
             integrated_successor,
             discriminated_jsx_union_successor,
@@ -182,7 +182,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             include_str!(
                 "../fixtures/public-instance-mixed-vue2/successor-strict-extra-keys-11497/receipt.json"
             ),
-            "d0abf13f2c818c9ff6f907fb7469446159f9608fb6900911ef75095ac899fffa",
+            "7d2ca44332864a602d937e63cf62e2748258f3ac010ce7785cbf71092b9b017c",
             12025,
             discriminated_jsx_union_successor,
             strict_extra_keys_successor,
@@ -194,7 +194,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             include_str!(
                 "../fixtures/public-instance-mixed-vue2/successor-canon-leftovers-11499/receipt.json"
             ),
-            "f485163bf0dcc8bc395fa97edf179375369f1c9c44c6b5f0285709b5d05c6e94",
+            "392909457656fd47992ed753fa8c87742bd3a71fb6ad97887c6856f067aaa34f",
             12162,
             strict_extra_keys_successor,
             canon_leftovers_successor,

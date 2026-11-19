@@ -3,7 +3,7 @@ use serde::Deserialize;
 use vize_glyph::{FormatOptions, format_sfc};
 use vize_l0::String;
 
-use davinci_test_support::css_multi_value_reference as reference;
+use level_test_support::css_multi_value_reference as reference;
 
 #[derive(Deserialize)]
 struct Corpus {

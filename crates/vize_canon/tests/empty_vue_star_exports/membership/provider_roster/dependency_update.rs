@@ -4,7 +4,7 @@ use std::fs;
 
 pub(super) const UPDATE: &str = "malformed-membership/provider-dependency-update-12212.json";
 pub(super) const UPDATE_HASH: &str =
-    "94361b7ab53073c77800589b5ff1bf00b7d65b85826dee8fbe3f263e53336c78";
+    "d740d87c137d3ac3e37cb432c2b8d89e85b6dc5b9107a60b42adaa19b79d412f";
 const PREVIOUS: &str = "malformed-membership/provider-peer-update-20261031.json";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-peer-update-20261031.json";
 const QUALIFICATION: &str =

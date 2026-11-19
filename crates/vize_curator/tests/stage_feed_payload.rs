@@ -7,7 +7,7 @@
 
 use std::path::Path;
 
-use davinci_test_support::schema as schema_check;
+use level_test_support::schema as schema_check;
 use vize_curator::inspector::{
     InspectorOptions, InspectorSourceFile, InspectorTarget, InspectorTemplateSyntax, build_payload,
     serialize_payload,

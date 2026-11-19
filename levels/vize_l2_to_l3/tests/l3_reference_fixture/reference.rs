@@ -3,10 +3,10 @@
 //! C-23 graph checker. The matrix observations are checked beside their
 //! producers in `matrix.rs`, `models.rs` and `slots.rs`.
 
-use davinci_test_support::l3_reference::behavior::{check, run};
-use davinci_test_support::l3_reference::checker_corpus::check_folios;
-use davinci_test_support::l3_reference::matrix::check_ladder;
-use davinci_test_support::l3_reference::{fixtures, witness};
+use level_test_support::l3_reference::behavior::{check, run};
+use level_test_support::l3_reference::checker_corpus::check_dumps;
+use level_test_support::l3_reference::matrix::check_ladder;
+use level_test_support::l3_reference::{fixtures, witness};
 
 #[test]
 fn ladder_pages_execute_to_their_committed_traces() {
@@ -45,5 +45,5 @@ fn model_and_supplied_slot_witnesses() {
 /// independent checker, and its damage witnesses report the expected codes.
 #[test]
 fn committed_graphs_pass_the_independent_checker() {
-    assert!(check_folios(&fixtures()).unwrap() >= 50);
+    assert!(check_dumps(&fixtures()).unwrap() >= 50);
 }

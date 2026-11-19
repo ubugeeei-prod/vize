@@ -17,7 +17,7 @@ use support::with_transformed;
 use vize_l4::targets::dom::artifact::emit_dom;
 
 fn assembled(source: &str) -> String {
-    with_transformed(source, |lowered, _folio, facts, _budget| {
+    with_transformed(source, |lowered, _dump, facts, _budget| {
         emit_dom(lowered, facts)
             .unwrap_or_else(|error| panic!("emit refused {source:?}: {error:?}"))
             .assembled()

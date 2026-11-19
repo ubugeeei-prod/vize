@@ -2,7 +2,7 @@
 // pipeline. Each row mounts one component of a module under
 // tests/_fixtures/tsrx/mount/ in both pipelines and compares the normalized
 // DOM, element identities and runtime warnings after every step. The Vize side
-// is the committed `<module>.dom.ts`, which `davinci/vize_l4/tests/tsrx_dom.rs`
+// is the committed `<module>.dom.ts`, which `levels/vize_l4/tests/tsrx_dom.rs`
 // pins to the compiler's output. A row with `expected` is a known difference
 // recorded by that decision record or issue: it must still differ, so reaching
 // parity fails until the row is updated.

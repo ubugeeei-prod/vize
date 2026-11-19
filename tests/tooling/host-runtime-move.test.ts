@@ -178,8 +178,8 @@ vize_l0::corsa_api_mode
 `;
   temporary((root) => {
     movedFiles(root);
-    write(root, "davinci/vize_l0/src/lib.rs", "");
-    write(root, "davinci/vize_l0/Cargo.toml", "[dependencies]\n");
+    write(root, "levels/vize_l0/src/lib.rs", "");
+    write(root, "levels/vize_l0/Cargo.toml", "[dependencies]\n");
     write(root, "crates/vize_carton/src/lib.rs", "");
     write(root, "crates/vize_carton/Cargo.toml", "[features]\n");
     for (const consumer of ["vize", "vize_canon", "vize_maestro", "vize_patina"]) {

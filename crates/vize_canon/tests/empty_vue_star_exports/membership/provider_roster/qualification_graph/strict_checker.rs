@@ -3,7 +3,7 @@ use serde_json::json;
 
 pub(super) const UPDATE: &str = "malformed-membership/provider-strict-checker-update-11628.json";
 pub(super) const UPDATE_HASH: &str =
-    "24019bc545fbecb6d92ef7729ea99248f1fb514e3e0266e321331aec844f8313";
+    "952a0d8fc2fc5dc7a537fa9c6cdc5b18e154385899e70b2bfe883187e6b9f205";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-root-dependency-ownership-update-12123.json";
 pub(super) const MANIFEST: &str = "npm/cli/package.json";
 pub(super) const CHECKER_DECLARATION: &str = "npm/cli/virtual-ts-checker.d.ts";

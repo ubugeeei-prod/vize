@@ -21,13 +21,13 @@
   ],
   [
     "tests/performance/support/warm-type-backed-timing-host-manifest.json",
-    "6d62c20da03b0b7fb69c5a6745b6e061665380475e09d94b5bb07d52887459f7",
-    "6d62c20da03b0b7fb69c5a6745b6e061665380475e09d94b5bb07d52887459f7"
+    "c0560091228776ddfa76ebd338fbccf0334f7f6c03b45ab5c7d1f99d55f1aa4b",
+    "c0560091228776ddfa76ebd338fbccf0334f7f6c03b45ab5c7d1f99d55f1aa4b"
   ],
   [
     "tests/performance/support/warm-type-backed-timing-host.ts",
-    "bb76c9ab417dd2ed3f856e9cb93e5e9668c7680268624124497914beff82348f",
-    "bb76c9ab417dd2ed3f856e9cb93e5e9668c7680268624124497914beff82348f"
+    "3203b3a4bda8b730ba28b0fb1ead6e11f02e33d5e5f7a53b1dc1aabb0ffc7af3",
+    "3203b3a4bda8b730ba28b0fb1ead6e11f02e33d5e5f7a53b1dc1aabb0ffc7af3"
   ],
   [
     "tests/performance/support/warm-type-backed-work.ts",

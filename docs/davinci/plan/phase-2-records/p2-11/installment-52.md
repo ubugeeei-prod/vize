@@ -16,7 +16,7 @@ The durable witnesses are:
 - [`props_value.rs`](../../../../../davinci/vize_l1_to_l2/src/emit/props_value.rs)
   and [`children.rs`](../../../../../davinci/vize_l1_to_l2/src/emit/children.rs)
   - own the prop and text realization paths.
-- [`emit_unsupported_census.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_unsupported_census.rs)
+- [`emit_unsupported_census.rs`](../../../../../levels/vize_l1_to_l2/tests/emit_unsupported_census.rs)
   - keeps unsupported expression classes explicitly counted.
 
 This installment does not tick P2-11. It narrows expression residuals; the

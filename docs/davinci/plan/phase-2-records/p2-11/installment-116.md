@@ -25,7 +25,7 @@ counter. The same file pins the callback-predicate case as compatibility-only.
 
 `crates/vize_s1_to_s2/tests/emit_comp/basic_and_control_flow.rs` covers a
 matching `ion-*` tag emitted as an element rather than a component, and
-`tests/tooling/davinci-dom-production-boundary.test.ts` records
+`tests/tooling/level-dom-production-boundary.test.ts` records
 `custom_element_patterns` as part of the S2 DOM emit option surface.
 
 This installment does not tick P2-11. The full production-lane switch remains

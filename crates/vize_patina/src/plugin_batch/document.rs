@@ -3,7 +3,7 @@
 //!
 //! Every op line of the L2 page — ops and attached bindings — becomes one
 //! [`PluginNode`] whose `id` is its L2 `NodeId` (dense page order,
-//! `folio-format.md` "Node numbering"), so a JS report names a node the way
+//! `dump-format.md` "Node numbering"), so a JS report names a node the way
 //! the L2 side tables key it. The records are owned: the document outlives
 //! the lowering arena, which both crossing shapes the spike measures need
 //! (a serialized batch and a proxy handle).

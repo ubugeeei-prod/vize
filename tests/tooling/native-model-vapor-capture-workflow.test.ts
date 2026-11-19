@@ -5,11 +5,11 @@ import { nativeVaporCaptureRequired } from "../../tools/support/compat/github/na
 
 test("original Model and all Vapor consumers select the actual native lane", () => {
   for (const path of [
-    "davinci/vize_l3/src/decision/model.rs",
-    "davinci/vize_l3/src/decision/vapor/model.rs",
-    "davinci/vize_l3/src/decision/vapor/build/model.rs",
-    "davinci/vize_l3/tests/native_model_vapor.rs",
-    "davinci/vize_l4/src/targets/vapor/model.rs",
+    "levels/vize_l3/src/decision/model.rs",
+    "levels/vize_l3/src/decision/vapor/model.rs",
+    "levels/vize_l3/src/decision/vapor/build/model.rs",
+    "levels/vize_l3/tests/native_model_vapor.rs",
+    "levels/vize_l4/src/targets/vapor/model.rs",
     "crates/vize_atelier_sfc/src/native_vapor_setup/tests/original_input_model.rs",
     "crates/vize_atelier_sfc/src/native_vapor_setup/tests/original_input_model/custody.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_inputs_vue_3_5_35.json",
@@ -23,7 +23,7 @@ test("original Model and all Vapor consumers select the actual native lane", () 
   ])
     assert(nativeVaporCaptureRequired([path]), path);
   for (const path of [
-    "davinci/vize_l3/tests/native_model_vapor_unrelated.rs",
+    "levels/vize_l3/tests/native_model_vapor_unrelated.rs",
     "tests/tooling/support/native-original-input-model-vapor-unrelated.ts",
     "tests/tooling/native-original-input-model-vapor-reference.test.ts.old",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_inputs_vue_3_5_35.json.old",

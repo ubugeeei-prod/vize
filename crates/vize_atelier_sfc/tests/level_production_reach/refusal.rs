@@ -16,7 +16,7 @@ pub const DIAGNOSTICS: &str = "diagnostics";
 /// The SFC selector kept the compatibility lane without running L2.
 pub const SELECTOR: &str = "selector";
 
-/// Files kept per bucket unless `VIZE_DAVINCI_REACH_REFUSAL_SAMPLES` raises it.
+/// Files kept per bucket unless `VIZE_LEVEL_REACH_REFUSAL_SAMPLES` raises it.
 const DEFAULT_SAMPLES: usize = 3;
 
 /// The stable bucket of one refusal and the refused template byte offset.
@@ -41,7 +41,7 @@ pub struct RefusalCensus {
 impl Default for RefusalCensus {
     fn default() -> Self {
         Self::with_sample_limit(
-            std::env::var("VIZE_DAVINCI_REACH_REFUSAL_SAMPLES")
+            std::env::var("VIZE_LEVEL_REACH_REFUSAL_SAMPLES")
                 .ok()
                 .and_then(|value| value.parse().ok())
                 .unwrap_or(DEFAULT_SAMPLES),
@@ -99,12 +99,12 @@ impl RefusalCensus {
             .collect();
         buckets.sort_by(|left, right| right.1.cmp(&left.1).then(left.0.cmp(right.0)));
         let mut lines = vec![format!(
-            "davinci production reach refusals: scope={scope} shape={shape} total={} reasons={buckets:?}",
+            "levels production reach refusals: scope={scope} shape={shape} total={} reasons={buckets:?}",
             self.total()
         )];
         for (code, _) in buckets {
             lines.push(format!(
-                "davinci production reach refusal samples: scope={scope} shape={shape} reason={code} files={:?}",
+                "levels production reach refusal samples: scope={scope} shape={shape} reason={code} files={:?}",
                 self.samples.get(code).map(Vec::as_slice).unwrap_or(&[])
             ));
         }

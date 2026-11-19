@@ -64,11 +64,11 @@ export interface StageLadder {
 
 const PAGE_KINDS: Record<string, { rung: RungId; kind: PageKind; label: string }> = {
   l1: { rung: "l1", kind: "surface", label: "Surface" },
-  l2: { rung: "l2", kind: "disegno", label: "" },
+  l2: { rung: "l2", kind: "l2", label: "" },
   "l2-plan": { rung: "l2", kind: "plan", label: "Plan" },
   "l2-provenance": { rung: "l2", kind: "provenance", label: "Provenance" },
   "l2-facts": { rung: "l2", kind: "facts", label: "Facts" },
-  l3: { rung: "l3", kind: "impeto", label: "Graph" },
+  l3: { rung: "l3", kind: "l3", label: "Graph" },
   "l3-partition": { rung: "l3", kind: "partition", label: "Partition" },
   "l3-values": { rung: "l3", kind: "values", label: "Values" },
 };
@@ -101,15 +101,15 @@ function rungFacts(id: RungId, pages: LadderPage[]): string[] {
       return [plural(lines, "line")];
     }
     case "l2": {
-      const trees = pages.filter((page) => page.kind === "disegno");
+      const trees = pages.filter((page) => page.kind === "l2");
       const ops = /^ops=(\d+)$/m.exec(trees[0]?.text ?? "");
       const passes = Math.max(trees.length - 1, 0);
       return [plural(Number(ops?.[1] ?? 0), "op"), plural(passes, "pass")];
     }
     case "l3": {
-      const graph = byKind("impeto")?.text ?? "";
+      const graph = byKind("l3")?.text ?? "";
       const partition = byKind("partition")?.text ?? "";
-      const kinds = sectionLines(partition, "s3-partition-folio.ops");
+      const kinds = sectionLines(partition, "s3-partition-dump.ops");
       const dynamic = kinds.filter((line) => /\bkind=dynamic\b/.test(line)).length;
       return [plural(sectionLines(graph, "l3-dump-v2.ops").length, "op"), `${dynamic} dynamic`];
     }

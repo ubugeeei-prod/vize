@@ -109,9 +109,7 @@ void test("Core PR and merge gates use the recovery adapter", () => {
     Object.keys(js.jobs).filter((name) => name !== "pr-oxlint-windows-json-config"),
   );
   assert.deepEqual(jobsUsingAction(js.jobs, upstream), []);
-  const canonical = parse(
-    fs.readFileSync(".github/workflows/davinci-canonical-corpus.yml", "utf8"),
-  );
+  const canonical = parse(fs.readFileSync(".github/workflows/level-canonical-corpus.yml", "utf8"));
   const steps = canonical.jobs["canonical-observers"].steps;
   assert.deepEqual(
     steps.find((s) => s.uses === local),
@@ -165,8 +163,8 @@ void test("Release-blocking observers and Fresco use the recovery adapter", () =
       ["attribution", "import-literal-geometry", "projection-import-geometry"],
     ],
     [".github/workflows/cross-file-script-offset.yml", local, ["coordinates"]],
-    [".github/workflows/davinci-plugin-sdk.yml", local, ["plugin-contracts"]],
-    [".github/workflows/davinci-unused-bindings.yml", local, ["unused-bindings"]],
+    [".github/workflows/level-plugin-sdk.yml", local, ["plugin-contracts"]],
+    [".github/workflows/level-unused-bindings.yml", local, ["unused-bindings"]],
     [".github/workflows/jsx-authored-native-modules.yml", local, ["authored-modules"]],
     [".github/workflows/patina-native-boolean-protocol.yml", local, ["live-native"]],
     [

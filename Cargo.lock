@@ -998,45 +998,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "davinci_harness"
-version = "0.474.0"
-dependencies = [
- "criterion",
- "davinci_test_support",
- "libc",
- "mimalloc",
- "serde",
- "serde_json",
- "stacker",
- "tempfile",
- "thiserror 2.0.21",
- "valgrind-requests",
- "vize_l0",
- "vize_l1",
- "vize_l1_to_l2",
- "vize_l2",
-]
-
-[[package]]
-name = "davinci_test_support"
-version = "0.474.0"
-dependencies = [
- "regex-lite",
- "serde_json",
- "sha2",
- "tempfile",
- "thiserror 2.0.21",
- "vize_atelier_core",
- "vize_atelier_ssr",
- "vize_canon",
- "vize_carton",
- "vize_l0",
- "vize_l1",
- "vize_l1_to_l2",
- "vize_l2",
-]
-
-[[package]]
 name = "derive_more"
 version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1902,6 +1863,45 @@ name = "lazy_static"
 version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "20870f649af7073d53e38067b2a84312175d56ea15217e1b15bc83506ec50afb"
+
+[[package]]
+name = "level_harness"
+version = "0.474.0"
+dependencies = [
+ "criterion",
+ "level_test_support",
+ "libc",
+ "mimalloc",
+ "serde",
+ "serde_json",
+ "stacker",
+ "tempfile",
+ "thiserror 2.0.21",
+ "valgrind-requests",
+ "vize_l0",
+ "vize_l1",
+ "vize_l1_to_l2",
+ "vize_l2",
+]
+
+[[package]]
+name = "level_test_support"
+version = "0.474.0"
+dependencies = [
+ "regex-lite",
+ "serde_json",
+ "sha2",
+ "tempfile",
+ "thiserror 2.0.21",
+ "vize_atelier_core",
+ "vize_atelier_ssr",
+ "vize_canon",
+ "vize_carton",
+ "vize_l0",
+ "vize_l1",
+ "vize_l1_to_l2",
+ "vize_l2",
+]
 
 [[package]]
 name = "libc"
@@ -4519,7 +4519,6 @@ dependencies = [
  "clap",
  "corsa",
  "corsa_lsp",
- "davinci_test_support",
  "dirs",
  "flate2",
  "futures",
@@ -4528,6 +4527,7 @@ dependencies = [
  "ignore",
  "insta",
  "junction",
+ "level_test_support",
  "libc",
  "lsp-types 0.97.0",
  "memchr",
@@ -4582,10 +4582,10 @@ version = "0.474.0"
 dependencies = [
  "compact_str",
  "criterion",
- "davinci_harness",
- "davinci_test_support",
  "htmlize",
  "insta",
+ "level_harness",
+ "level_test_support",
  "oxc_allocator",
  "oxc_ast",
  "oxc_span",
@@ -4604,9 +4604,9 @@ version = "0.474.0"
 dependencies = [
  "compact_str",
  "criterion",
- "davinci_harness",
- "davinci_test_support",
  "insta",
+ "level_harness",
+ "level_test_support",
  "memoffset",
  "oxc_allocator",
  "oxc_ast",
@@ -4635,8 +4635,8 @@ name = "vize_atelier_dom"
 version = "0.474.0"
 dependencies = [
  "criterion",
- "davinci_harness",
  "insta",
+ "level_harness",
  "oxc_allocator",
  "oxc_span",
  "phf 0.13.1",
@@ -4687,9 +4687,9 @@ name = "vize_atelier_sfc"
 version = "0.474.0"
 dependencies = [
  "criterion",
- "davinci_harness",
- "davinci_test_support",
  "insta",
+ "level_harness",
+ "level_test_support",
  "libc",
  "memchr",
  "mimalloc",
@@ -4734,9 +4734,9 @@ name = "vize_atelier_ssr"
 version = "0.474.0"
 dependencies = [
  "criterion",
- "davinci_harness",
- "davinci_test_support",
  "insta",
+ "level_harness",
+ "level_test_support",
  "serde",
  "serde_json",
  "vize_armature",
@@ -4758,8 +4758,8 @@ name = "vize_atelier_vapor"
 version = "0.474.0"
 dependencies = [
  "criterion",
- "davinci_harness",
  "insta",
+ "level_harness",
  "oxc_allocator",
  "oxc_ast",
  "oxc_ast_visit",
@@ -4806,12 +4806,12 @@ dependencies = [
  "corsa_lsp",
  "criterion",
  "dashmap 6.2.1",
- "davinci_test_support",
  "dirs",
  "futures",
  "glob",
  "insta",
  "junction",
+ "level_test_support",
  "libc",
  "lsp-types 0.97.0",
  "memchr",
@@ -4851,9 +4851,9 @@ dependencies = [
 name = "vize_carton"
 version = "0.474.0"
 dependencies = [
- "davinci_test_support",
  "globset",
  "insta",
+ "level_test_support",
  "once_cell",
  "oxc_allocator",
  "oxc_ast",
@@ -4874,10 +4874,10 @@ version = "0.474.0"
 dependencies = [
  "criterion",
  "dashmap 6.2.1",
- "davinci_harness",
- "davinci_test_support",
  "index_vec",
  "insta",
+ "level_harness",
+ "level_test_support",
  "memchr",
  "once_cell",
  "oxc_allocator",
@@ -4911,11 +4911,11 @@ name = "vize_croquis_cf"
 version = "0.474.0"
 dependencies = [
  "criterion",
- "davinci_harness",
  "ecow",
  "fixedbitset",
  "insta",
  "lasso",
+ "level_harness",
  "oxc_allocator",
  "oxc_ast",
  "oxc_ast_visit",
@@ -4937,8 +4937,8 @@ dependencies = [
 name = "vize_curator"
 version = "0.474.0"
 dependencies = [
- "davinci_test_support",
  "insta",
+ "level_test_support",
  "oxc_allocator",
  "oxc_ast",
  "oxc_ast_visit",
@@ -5001,9 +5001,9 @@ name = "vize_glyph"
 version = "0.474.0"
 dependencies = [
  "criterion",
- "davinci_harness",
- "davinci_test_support",
  "insta",
+ "level_harness",
+ "level_test_support",
  "memchr",
  "oxc_allocator",
  "oxc_ast",
@@ -5043,9 +5043,9 @@ dependencies = [
  "bitflags 2.13.2",
  "compact_str",
  "criterion",
- "davinci_harness",
- "davinci_test_support",
  "insta",
+ "level_harness",
+ "level_test_support",
  "memchr",
  "once_cell",
  "oxc_allocator",
@@ -5082,9 +5082,9 @@ name = "vize_l1"
 version = "0.474.0"
 dependencies = [
  "cssparser",
- "davinci_harness",
- "davinci_test_support",
  "htmlize",
+ "level_harness",
+ "level_test_support",
  "memchr",
  "oxc_allocator",
  "oxc_ast",
@@ -5102,9 +5102,9 @@ name = "vize_l1_to_l2"
 version = "0.474.0"
 dependencies = [
  "criterion",
- "davinci_harness",
- "davinci_test_support",
  "insta",
+ "level_harness",
+ "level_test_support",
  "oxc_ast",
  "oxc_ast_visit",
  "oxc_semantic",
@@ -5147,8 +5147,8 @@ dependencies = [
 name = "vize_l2_to_l3"
 version = "0.474.0"
 dependencies = [
- "davinci_test_support",
  "insta",
+ "level_test_support",
  "serde_json",
  "vize_atelier_sfc",
  "vize_l0",
@@ -5162,7 +5162,7 @@ dependencies = [
 name = "vize_l3"
 version = "0.474.0"
 dependencies = [
- "davinci_test_support",
+ "level_test_support",
  "oxc_ast",
  "oxc_span",
  "serde_json",
@@ -5178,8 +5178,8 @@ dependencies = [
 name = "vize_l4"
 version = "0.474.0"
 dependencies = [
- "davinci_test_support",
  "htmlize",
+ "level_test_support",
  "oxc_ast",
  "oxc_ast_visit",
  "oxc_codegen",
@@ -5241,13 +5241,13 @@ version = "0.474.0"
 dependencies = [
  "async-trait",
  "dashmap 6.2.1",
- "davinci_harness",
- "davinci_test_support",
  "dirs",
  "futures",
  "htmlize",
  "ignore",
  "insta",
+ "level_harness",
+ "level_test_support",
  "libc",
  "memchr",
  "oxc_allocator",
@@ -5303,8 +5303,8 @@ name = "vize_musea"
 version = "0.474.0"
 dependencies = [
  "criterion",
- "davinci_harness",
  "insta",
+ "level_harness",
  "serde",
  "serde_json",
  "thiserror 2.0.21",
@@ -5397,9 +5397,9 @@ dependencies = [
  "corsa",
  "criterion",
  "cssparser",
- "davinci_harness",
- "davinci_test_support",
  "insta",
+ "level_harness",
+ "level_test_support",
  "libc",
  "memchr",
  "oxc-miette 3.0.1",

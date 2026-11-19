@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { profiledLauncher } from "../../tools/support/compat/davinci/lib/lsp-profile-launch.ts";
+import { profiledLauncher } from "../../tools/support/compat/levels/lib/lsp-profile-launch.ts";
 
 await test(
   "profiling exec preserves literal paths and keeps version probes outside the profile",

@@ -6,7 +6,7 @@ on:
       - .github/**
       - .cargo/**
       - crates/**
-      - davinci/**
+      - levels/**
       - tests/fixtures/typechecker/undeclared-instance-globals-10617/**
       - tests/_helpers/realworld-patch.ts
       - tests/differential/build-receipt.ts

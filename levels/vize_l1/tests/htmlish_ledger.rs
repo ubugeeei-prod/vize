@@ -1,7 +1,7 @@
 //! The htmlish divergence ledger (`docs/davinci/plan/htmlish-divergences.json`)
 //! against its oracles: every packet under `fixtures/htmlish/` holds a source and
 //! the tree its dialect's oracle builds (parse5 for `document`, `@vue/compiler-dom`
-//! for `vue`; `tools/commands/davinci/htmlish-oracle.ts` writes them). L1 parses
+//! for `vue`; `tools/commands/levels/htmlish-oracle.ts` writes them). L1 parses
 //! the same source under the dialect's profile and must build the same tree, or
 //! the row must be listed below with the ledger divergence that decides it.
 

@@ -41,51 +41,51 @@
         "sha256": "3f0d76d0ded21ba750c120debca24061635b9b026491dd80926fcc80f17a4c4d"
       },
       {
-        "file": "davinci/vize_l2/examples/jsx_markup_profile.rs",
+        "file": "levels/vize_l2/examples/jsx_markup_profile.rs",
         "sha256": "52e61ac0d65ae9fa667d4767c68fa1967b090b737e08810f90e43b6def18565e"
       },
       {
-        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup.rs",
+        "file": "levels/vize_l2/src/lang/js/jsx_body/markup.rs",
         "sha256": "0ffcdba07565bdb92d12c27f47cd1959c95e8a7c89dc972ba3a0ad4ce45d4b63"
       },
       {
-        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup/emit.rs",
+        "file": "levels/vize_l2/src/lang/js/jsx_body/markup/emit.rs",
         "sha256": "b5a73483d1b325904a56f2a0e46c30886545ba226f988ee4f151bca5803f021f"
       },
       {
-        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup/prepare.rs",
+        "file": "levels/vize_l2/src/lang/js/jsx_body/markup/prepare.rs",
         "sha256": "a66f003e4d66da203e7bc3fa6f661c13859fb2261def0e90dee152b4bc310dfa"
       },
       {
-        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup/tests.rs",
+        "file": "levels/vize_l2/src/lang/js/jsx_body/markup/tests.rs",
         "sha256": "8f95b1573534ca18323068a7781d443afd185bffd16c6538a3f3122013fcc25c"
       },
       {
-        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup/tests/formatting.rs",
+        "file": "levels/vize_l2/src/lang/js/jsx_body/markup/tests/formatting.rs",
         "sha256": "87a9464d8687ffb5596c82385a2e677c8e615f3158e780eccdbe6dd00d2bf308"
       },
       {
-        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup/tests/fragments.rs",
+        "file": "levels/vize_l2/src/lang/js/jsx_body/markup/tests/fragments.rs",
         "sha256": "bcac6a77e3599c1cded575a9a3a0517c4a69ea82d048ddc59cc3176a7006d5a3"
       },
       {
-        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup/tests/fragments/coordinates.rs",
+        "file": "levels/vize_l2/src/lang/js/jsx_body/markup/tests/fragments/coordinates.rs",
         "sha256": "69dfb294aed7ef3d0d67d1e28dfe88d6791955f65f16952a42c93744bb0d5204"
       },
       {
-        "file": "davinci/vize_l2/src/lang/js/jsx_body/markup/tests/fragments/realize.rs",
+        "file": "levels/vize_l2/src/lang/js/jsx_body/markup/tests/fragments/realize.rs",
         "sha256": "284231cd3385500680be85be75b92dac7dd8812cd3dde86f061e7cb0be265638"
       },
       {
-        "file": "davinci/vize_l2/tests/fixtures/jsx-static-fragments/cases.json",
+        "file": "levels/vize_l2/tests/fixtures/jsx-static-fragments/cases.json",
         "sha256": "efcc44bdda2c2215f898c97f90cff185435eec9c2d5dbeab17d957596878330f"
       },
       {
-        "file": "davinci/vize_l2/tests/fixtures/jsx-static-fragments/oracle-dom-21.0.4.json",
+        "file": "levels/vize_l2/tests/fixtures/jsx-static-fragments/oracle-dom-21.0.4.json",
         "sha256": "7ef2eed29a896729987b5b31a1967e9bf66e0b55cd6e926f621d80671c5df22d"
       },
       {
-        "file": "davinci/vize_l2/tests/fixtures/jsx-static-fragments/oracle.json",
+        "file": "levels/vize_l2/tests/fixtures/jsx-static-fragments/oracle.json",
         "sha256": "98bcc3c9b1d05641e682608da02bcadd5739f97cc4b913686a91d401dea22fb5"
       },
       {

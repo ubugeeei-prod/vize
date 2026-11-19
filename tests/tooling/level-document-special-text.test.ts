@@ -21,7 +21,7 @@ interface FixtureCase {
 }
 
 const root = new URL("../../", import.meta.url);
-const fixture = new URL("davinci/vize_l1/tests/fixtures/document/html-special-text.json", root);
+const fixture = new URL("levels/vize_l1/tests/fixtures/document/html-special-text.json", root);
 const cases = JSON.parse(readFileSync(fixture, "utf8")) as readonly FixtureCase[];
 const fromTests = createRequire(new URL("tests/package.json", root));
 const { chromium } = fromTests("@playwright/test") as typeof import("@playwright/test");

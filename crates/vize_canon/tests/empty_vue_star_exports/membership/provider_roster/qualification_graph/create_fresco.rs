@@ -3,7 +3,7 @@ use serde_json::json;
 
 pub(super) const UPDATE: &str = "malformed-membership/provider-create-fresco-update-12233.json";
 pub(super) const UPDATE_HASH: &str =
-    "204af49ff268ee250bf328796c6e5abccc034cd116d94dac0439475568a536a6";
+    "ead939f89a1eb3b16d7603b8db8197f35cbc3f166751d17473e1344a88c18e4d";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-strict-checker-update-11628.json";
 pub(super) const MANIFEST: &str = "npm/create-fresco/package.json";
 

@@ -1,4 +1,4 @@
-// The block-language registry (`davinci/vize_l1/src/container/lang.rs`) is
+// The block-language registry (`levels/vize_l1/src/container/lang.rs`) is
 // the one place a `<template lang>` / `<style lang>` value or a markup file
 // extension is named. A product that spells a language itself drifts: before
 // the registry, the compiler matched `pug`/`jade` case-insensitively, the
@@ -12,7 +12,7 @@ import { test } from "node:test";
 
 import { repoRoot } from "./_helpers/tool-commands.ts";
 
-const REGISTRY = "davinci/vize_l1/src/container/lang.rs";
+const REGISTRY = "levels/vize_l1/src/container/lang.rs";
 
 /** Every spelling the registry resolves. */
 const SPELLINGS = [
@@ -301,7 +301,7 @@ void test("the gate leaves tag names, test modules and comments alone", () => {
 
 void test("only the block-language registry names a template or style language", () => {
   const files: string[] = [];
-  for (const root of ["crates", "davinci"]) rustSources(path.join(repoRoot, root), files);
+  for (const root of ["crates", "levels"]) rustSources(path.join(repoRoot, root), files);
   const found: string[] = [];
   for (const file of files) {
     const relative = path.relative(repoRoot, file).split(path.sep).join("/");

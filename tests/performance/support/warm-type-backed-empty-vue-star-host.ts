@@ -34,7 +34,7 @@ type Stored = {
 const prefix = "tests/performance/support/warm-type-backed-empty-vue-star-";
 const manifestFile = prefix + "manifest.json";
 export const emptyVueStarManifestSHA256 =
-  "bac92f00182be34b4a7000323f4dec7b7437839891515621c772ee57598c8ef7";
+  "353f06f4114c0f745461c87075efcc81834dd9d53f0b66662d8dac92ccd145dc";
 const hash = (kind: "sha256" | "sha1", body: Buffer | string) =>
   createHash(kind).update(body).digest("hex");
 const blob = (body: Buffer) =>

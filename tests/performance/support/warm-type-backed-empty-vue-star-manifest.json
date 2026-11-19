@@ -70,8 +70,8 @@
       "entries": 48,
       "mode": "100644",
       "bytes": 11177,
-      "sha256": "8bf1488d7ba14758f5f48a76a07cba5fd2a70010cca65fb2bc26589a42baec19",
-      "blob": "57016b62b4a65fd59f78ca334d9204aad0415be4"
+      "sha256": "b77ee59d7ced957fcb470ecdbf30a6bc78de02d44da488ca5289a409b39d7fd0",
+      "blob": "ac56cebd1e0ab45ea0521291ffc3ac76ff893b05"
     },
     {
       "file": "tests/performance/support/warm-type-backed-empty-vue-star-part-06.json",
@@ -80,8 +80,8 @@
       "entries": 8,
       "mode": "100644",
       "bytes": 1709,
-      "sha256": "0d7718ba30669d5c95d5a17de8f3b82a1414035931701bda2d637c3ba35deb54",
-      "blob": "8977f5e1dca68f11deb7eec874c95d9063daf3a1"
+      "sha256": "36c17f9ce07d99755c202fd33a8b1bab3ff1bb2a16f661dbf6159915ba415b16",
+      "blob": "78168a360cd55bd67711ead8e5bf704f7f1f1810"
     }
   ],
   "integrationSourceProofSHA256": "dfa6fbbf2eee04a1ab6556035d4429912799814214456833d3e3ab535f34c6b6",

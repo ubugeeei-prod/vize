@@ -50,7 +50,7 @@ export function canonicalWorkerLog(observer, fileCount, repositoryCount) {
       )
       .replaceAll('"VElseNoAdjacentIf": 1, ', "")
       .replace(
-        /(davinci native-only acceptance:[^\n]*unverified=)(\d+)/g,
+        /(levels native-only acceptance:[^\n]*unverified=)(\d+)/g,
         (_, prefix, count) => `${prefix}${Number(count) + fileCount - 42998}`,
       ),
   );

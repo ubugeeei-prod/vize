@@ -9,12 +9,12 @@ export type Lane = readonly (readonly string[])[];
 
 /** Node argv for each lane, in the order the action used to run them. */
 export const sourceInventoryLanes: readonly Lane[] = [
-  [["tools/support/compat/davinci/croquis-consumers.ts", "--check"]],
-  [["tools/support/compat/davinci/consumer-migration-surfaces.ts", "--check"]],
-  [["--test", "tests/tooling/davinci-storage-policy.test.ts"]],
+  [["tools/support/compat/levels/croquis-consumers.ts", "--check"]],
+  [["tools/support/compat/levels/consumer-migration-surfaces.ts", "--check"]],
+  [["--test", "tests/tooling/level-storage-policy.test.ts"]],
   [
-    ["tools/support/compat/davinci/generated-ledgers.ts", "--write"],
-    ["tools/support/compat/davinci/generated-ledgers.ts", "--check"],
+    ["tools/support/compat/levels/generated-ledgers.ts", "--write"],
+    ["tools/support/compat/levels/generated-ledgers.ts", "--check"],
   ],
 ];
 

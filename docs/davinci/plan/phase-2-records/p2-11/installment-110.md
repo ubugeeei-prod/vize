@@ -24,7 +24,7 @@ Focused gates:
 
 ```sh
 cargo test -p vize_atelier_dom --test davinci_s2_production_selector --test davinci_s2_profile_unsupported
-vp exec node --test tests/tooling/davinci-dom-production-boundary.test.ts
+vp exec node --test tests/tooling/level-dom-production-boundary.test.ts
 git diff --check
 ```
 

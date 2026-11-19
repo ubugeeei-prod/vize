@@ -23,7 +23,7 @@ use crate::options::DomCompilerOptions;
 /// `stage_options::l2_emit_supported` allows it (the P2-11 production
 /// switch), so a comparator built on them compares L2 against itself and
 /// cannot fail — measured: renaming a core helper alias in the L2 emitter
-/// left `davinci_dom_corpus` at `divergences=0`.
+/// left `level_dom_corpus` at `divergences=0`.
 ///
 /// Gated so no production build can reach it: the legacy lane is the thing
 /// being strangled, and an entry point that resurrects it would be a way

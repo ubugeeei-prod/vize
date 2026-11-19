@@ -21,7 +21,7 @@
 
 **Steps:**
 
-- [x] WIT package `vize:contracts@0.1.0` with the handshake interface and the input world; serialized payloads are the L1/L2 folio `Full` forms (schema-versioned per P2-17; the L1 page is new, [folio-format-s1.md](./folio-format-l1.md))
+- [x] WIT package `vize:contracts@0.1.0` with the handshake interface and the input world; serialized payloads are the L1/L2 folio `Full` forms (schema-versioned per P2-17; the L1 page is new, [folio-format-s1.md](./dump-format-l1.md))
 - [x] A host-side golden exchange: a guest stub echoing a committed L1/L2 payload
 - [x] Register the TS-48 command in [test-suites.md](./test-suites.md): `cargo test -p vize_extension_host --features extension-host --test wit_golden` (wasmtime stays behind the feature, charter #39)
 

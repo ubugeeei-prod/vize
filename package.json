@@ -7,7 +7,7 @@
     "provenance": true
   },
   "scripts": {
-    "bench:davinci": "cargo bench -p davinci_harness"
+    "bench:levels": "cargo bench -p level_harness"
   },
   "devDependencies": {
     "@types/node": "catalog:typescript",

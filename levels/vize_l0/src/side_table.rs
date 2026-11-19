@@ -45,8 +45,8 @@
 //!
 //! # Iteration order
 //!
-//! Hash-map iteration order is unspecified, and folio pages require sorted map
-//! iteration (`folio-format.md`). [`SideTable::iter`] is therefore **not** the
+//! Hash-map iteration order is unspecified, and dump pages require sorted map
+//! iteration (`dump-format.md`). [`SideTable::iter`] is therefore **not** the
 //! printing path: [`SideTable::sorted_entries`] is, and it says in its name
 //! that it allocates.
 
@@ -138,7 +138,7 @@ impl<T> SideTable<T> {
 
     /// Iterate the facts in **unspecified** order.
     ///
-    /// Correct for folds and counts. Never use it to print a folio page or to
+    /// Correct for folds and counts. Never use it to print a dump page or to
     /// build any other byte-stable artifact — see
     /// [`SideTable::sorted_entries`].
     pub fn iter(&self) -> impl Iterator<Item = (NodeId, &T)> {
@@ -152,7 +152,7 @@ impl<T> SideTable<T> {
 
     /// The facts in ascending [`NodeId`] order.
     ///
-    /// This is the folio-printing path (`folio-format.md`: sorted map
+    /// This is the dump-printing path (`dump-format.md`: sorted map
     /// iteration). It allocates a `Vec` of references, which is why it is a
     /// separate, differently-named method rather than the `Iterator` impl:
     /// the cost is visible at the call site.

@@ -7,17 +7,17 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const generator = "tools/support/compat/davinci/consumer-migration-surfaces.ts";
+const generator = "tools/support/compat/levels/consumer-migration-surfaces.ts";
 const legacyFiles = [
   generator,
-  "tools/support/compat/davinci/lib/artifact-set.ts",
-  "tools/support/compat/davinci/lib/consumer-migration-render.ts",
-  "tools/support/compat/davinci/lib/consumer-migration-scan.ts",
-  "tools/support/compat/davinci/lib/consumer-migration-summary.ts",
-  "tools/support/compat/davinci/lib/markdown.ts",
-  "tools/support/compat/davinci/lib/ordering.ts",
-  "tools/support/compat/davinci/lib/paths.ts",
-  "tools/support/compat/davinci/lib/rust-source.ts",
+  "tools/support/compat/levels/lib/artifact-set.ts",
+  "tools/support/compat/levels/lib/consumer-migration-render.ts",
+  "tools/support/compat/levels/lib/consumer-migration-scan.ts",
+  "tools/support/compat/levels/lib/consumer-migration-summary.ts",
+  "tools/support/compat/levels/lib/markdown.ts",
+  "tools/support/compat/levels/lib/ordering.ts",
+  "tools/support/compat/levels/lib/paths.ts",
+  "tools/support/compat/levels/lib/rust-source.ts",
 ];
 const scannedCrates = [
   "vize_atelier_core",
@@ -33,7 +33,7 @@ const scannedCrates = [
 ];
 const shardDir = "docs/davinci/plan/consumer-migration-surfaces";
 const runShard =
-  "artifacts/davinci-ledgers/consumer-migration-surfaces/compiler/vize_atelier_core.tsv";
+  "artifacts/level-ledgers/consumer-migration-surfaces/compiler/vize_atelier_core.tsv";
 const committedShard = `${shardDir}/compiler/vize_atelier_core.tsv`;
 
 function writeFile(root, relPath, content) {
@@ -99,7 +99,7 @@ void test("consumer migration surfaces are run artifacts and a committed shard i
     );
     assert.match(
       stale.stderr,
-      /Regenerate with: node tools\/support\/compat\/davinci\/consumer-migration-surfaces\.ts --write/,
+      /Regenerate with: node tools\/support\/compat\/levels\/consumer-migration-surfaces\.ts --write/,
     );
 
     // A shard committed under the plan directory is stale, and --write deletes it.

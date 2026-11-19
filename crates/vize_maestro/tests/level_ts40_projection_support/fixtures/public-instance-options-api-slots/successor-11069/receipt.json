@@ -7,7 +7,7 @@
     "run": 40878269645,
     "job": 123462630011,
     "artifact": 12899636072,
-    "pendingSnapshotPath": "pending-snapshots/davinci_ts40_projection__davinci_ts40__options-api-slots__default.snap.new",
+    "pendingSnapshotPath": "pending-snapshots/level_ts40_projection__level_ts40__options-api-slots__default.snap.new",
     "pendingSnapshotBytes": 2350,
     "pendingSnapshotSha256": "c4138a2747445ea8eabf2b4a0700862a7c83cca237161bf7eee925b4402bc182"
   },

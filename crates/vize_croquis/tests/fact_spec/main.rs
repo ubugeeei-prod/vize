@@ -9,13 +9,13 @@
 //!
 //! - the committed battery ([`battery`]) and the P0-2 fixture ladder, with
 //!   pinned counts — a move is a rule, extraction or production change;
-//! - the committed P2-15 construct matrix (`tests/fixtures/davinci-matrix`,
+//! - the committed P2-15 construct matrix (`tests/fixtures/level-matrix`,
 //!   90 template-only stubs: `Bindings` compares empty tables, and the
 //!   `UndefinedRefs` half covers every checked expression);
-//! - a corpus shard: `VIZE_DAVINCI_FACT_CORPUS=<dir>[,<dir>…]` sweeps every
+//! - a corpus shard: `VIZE_LEVEL_FACT_CORPUS=<dir>[,<dir>…]` sweeps every
 //!   `.vue` file below (the per-PR gate is
-//!   `tests/tooling/davinci-fact-spec-corpus.test.ts`). An optional
-//!   `VIZE_DAVINCI_FACT_CORPUS_WITNESS` adds pinned real-project roots with
+//!   `tests/tooling/level-fact-spec-corpus.test.ts`). An optional
+//!   `VIZE_LEVEL_FACT_CORPUS_WITNESS` adds pinned real-project roots with
 //!   positive unused rows; original and witness scopes are printed separately.
 //!
 //! The `UndefinedRefs` trace is recorded in debug builds only; a release
@@ -33,7 +33,7 @@ use runner::{Planes, collect_vue_files, run_source};
 use vize_croquis::facts::spec::reactivity;
 
 fn matrix_dir() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/davinci-matrix")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/level-matrix")
 }
 
 #[test]
@@ -66,7 +66,7 @@ fn the_committed_planes_agree_with_the_specs() {
     assert_census(&battery, (9, 9, 88 + added_binding), (9, 9, 11), "battery");
 
     let mut ladder = Planes::default();
-    for fixture in &davinci_harness::fixtures::LADDER {
+    for fixture in &level_harness::fixtures::LADDER {
         run_source(fixture.name, fixture.source, &mut ladder);
     }
     ladder.assert_verdicts("ladder");
@@ -264,7 +264,7 @@ fn collection_reads_preserve_independent_unused_setup_bindings() {
     run_source(
         "LoopSource.vue",
         include_str!(
-            "../../../../tests/_fixtures/davinci-fact-spec/unused-setup-bindings/LoopSource.vue.txt"
+            "../../../../tests/_fixtures/level-fact-spec/unused-setup-bindings/LoopSource.vue.txt"
         ),
         &mut planes,
     );
@@ -288,13 +288,13 @@ fn collection_reads_preserve_independent_unused_setup_bindings() {
 
 #[test]
 fn the_corpus_shard_agrees_with_the_specs() {
-    let Some(roots) = std::env::var_os("VIZE_DAVINCI_FACT_CORPUS") else {
-        eprintln!("VIZE_DAVINCI_FACT_CORPUS unset: committed planes only");
+    let Some(roots) = std::env::var_os("VIZE_LEVEL_FACT_CORPUS") else {
+        eprintln!("VIZE_LEVEL_FACT_CORPUS unset: committed planes only");
         return;
     };
     let mut shard = corpus_roots(&roots).expect("original corpus roots must be readable");
     eprintln!("{}", shard.scope_lines("corpus originals"));
-    if let Some(roots) = std::env::var_os("VIZE_DAVINCI_FACT_CORPUS_WITNESS") {
+    if let Some(roots) = std::env::var_os("VIZE_LEVEL_FACT_CORPUS_WITNESS") {
         let witness = corpus_roots(&roots).expect("witness corpus roots must be readable");
         eprintln!("{}", witness.scope_lines("corpus witnesses"));
         if cfg!(debug_assertions) {
@@ -344,7 +344,7 @@ fn corpus_roots(roots: &std::ffi::OsStr) -> std::io::Result<Planes> {
         };
         if !root.is_dir() {
             return Err(std::io::Error::other(vize_carton::cstr!(
-                "VIZE_DAVINCI_FACT_CORPUS must name directories: {}",
+                "VIZE_LEVEL_FACT_CORPUS must name directories: {}",
                 root.display()
             )));
         }

@@ -116,7 +116,7 @@ fn o2_has_budget_for_the_whole_run() {
 /// verifies, the partition stays current, and every decision is pinned.
 #[test]
 fn surface_battery_extracts_at_o3() {
-    use davinci_test_support::surface_fixture::{MALFORMED, WELL_FORMED};
+    use level_test_support::surface_fixture::{MALFORMED, WELL_FORMED};
     let mut output = String::default();
     for fixture in WELL_FORMED.iter().chain(MALFORMED) {
         output.push_str("# ");

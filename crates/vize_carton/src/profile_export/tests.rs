@@ -38,29 +38,29 @@ fn attributed_records_stay_out_of_the_plain_key_space() {
     let profiler = Profiler::enabled();
     let attribution = SpanAttribution::new().with_stage("s1").with_pass("demo");
 
-    profiler.record_attributed("davinci.attr.only", attribution, Duration::from_millis(3));
-    profiler.record("davinci.attr.plain", Duration::from_millis(2));
+    profiler.record_attributed("levels.attr.only", attribution, Duration::from_millis(3));
+    profiler.record("levels.attr.plain", Duration::from_millis(2));
 
     // Pre-attribution consumers observe exactly the historical key space.
-    assert!(profiler.get("davinci.attr.only").is_none());
-    assert_eq!(profiler.get("davinci.attr.plain").unwrap().count, 1);
+    assert!(profiler.get("levels.attr.only").is_none());
+    assert_eq!(profiler.get("levels.attr.plain").unwrap().count, 1);
     let all = profiler.all();
     assert_eq!(all.len(), 1);
     let summary = profiler.summary();
     assert_eq!(summary.entries.len(), 1);
-    assert_eq!(summary.entries[0].name, "davinci.attr.plain");
+    assert_eq!(summary.entries[0].name, "levels.attr.plain");
 
     // The export sees both buckets, ranked by total wall time.
     let export = export_report(&profiler, &export_options(ProfileExportBudget::default()));
     assert_eq!(export.spans.len(), 2);
-    assert_eq!(export.spans[0].key, "davinci.attr.only");
+    assert_eq!(export.spans[0].key, "levels.attr.only");
     assert_eq!(
         export.spans[0]
             .attribution
             .map(|attribution| attribution.stage),
         Some(Some("s1"))
     );
-    assert_eq!(export.spans[1].key, "davinci.attr.plain");
+    assert_eq!(export.spans[1].key, "levels.attr.plain");
     assert_eq!(export.spans[1].attribution, None);
 }
 
@@ -74,9 +74,9 @@ fn attributed_buckets_with_different_attribution_stay_distinct() {
         .with_pass("fold")
         .with_block("script");
 
-    profiler.record_attributed("davinci.attr.pass", template, Duration::from_millis(1));
-    profiler.record_attributed("davinci.attr.pass", template, Duration::from_millis(1));
-    profiler.record_attributed("davinci.attr.pass", script, Duration::from_millis(1));
+    profiler.record_attributed("levels.attr.pass", template, Duration::from_millis(1));
+    profiler.record_attributed("levels.attr.pass", template, Duration::from_millis(1));
+    profiler.record_attributed("levels.attr.pass", script, Duration::from_millis(1));
 
     let export = export_report(&profiler, &export_options(ProfileExportBudget::default()));
     assert_eq!(export.spans.len(), 2);
@@ -90,21 +90,21 @@ fn attributed_buckets_with_different_attribution_stay_distinct() {
 #[test]
 fn export_ranks_spans_deterministically_and_truncates_with_accounting() {
     let profiler = Profiler::enabled();
-    profiler.record("davinci.rank.b", Duration::from_millis(5));
-    profiler.record("davinci.rank.a", Duration::from_millis(5));
-    profiler.record("davinci.rank.c", Duration::from_millis(9));
-    profiler.record_counter("davinci.rank.counter.b", 2);
-    profiler.record_counter("davinci.rank.counter.a", 1);
+    profiler.record("levels.rank.b", Duration::from_millis(5));
+    profiler.record("levels.rank.a", Duration::from_millis(5));
+    profiler.record("levels.rank.c", Duration::from_millis(9));
+    profiler.record_counter("levels.rank.counter.b", 2);
+    profiler.record_counter("levels.rank.counter.a", 1);
 
     let full = export_report(&profiler, &export_options(ProfileExportBudget::default()));
     assert_eq!(full.spans.len(), 3);
-    assert_eq!(full.spans[0].key, "davinci.rank.c");
+    assert_eq!(full.spans[0].key, "levels.rank.c");
     // Equal totals tie-break by key ascending.
-    assert_eq!(full.spans[1].key, "davinci.rank.a");
-    assert_eq!(full.spans[2].key, "davinci.rank.b");
+    assert_eq!(full.spans[1].key, "levels.rank.a");
+    assert_eq!(full.spans[2].key, "levels.rank.b");
     assert_eq!(full.counters.len(), 2);
-    assert_eq!(full.counters[0].key, "davinci.rank.counter.a");
-    assert_eq!(full.counters[1].key, "davinci.rank.counter.b");
+    assert_eq!(full.counters[0].key, "levels.rank.counter.a");
+    assert_eq!(full.counters[1].key, "levels.rank.counter.b");
     assert_eq!(full.truncation.dropped_spans, 0);
     assert_eq!(full.truncation.dropped_counters, 0);
 
@@ -116,9 +116,9 @@ fn export_ranks_spans_deterministically_and_truncates_with_accounting() {
         }),
     );
     assert_eq!(truncated.spans.len(), 1);
-    assert_eq!(truncated.spans[0].key, "davinci.rank.c");
+    assert_eq!(truncated.spans[0].key, "levels.rank.c");
     assert_eq!(truncated.counters.len(), 1);
-    assert_eq!(truncated.counters[0].key, "davinci.rank.counter.a");
+    assert_eq!(truncated.counters[0].key, "levels.rank.counter.a");
     assert_eq!(truncated.truncation.dropped_spans, 2);
     assert_eq!(truncated.truncation.dropped_counters, 1);
 }
@@ -126,9 +126,9 @@ fn export_ranks_spans_deterministically_and_truncates_with_accounting() {
 #[test]
 fn export_json_bytes_are_exact() {
     let profiler = Profiler::enabled();
-    profiler.record("davinci.export.plain", Duration::from_millis(2));
+    profiler.record("levels.export.plain", Duration::from_millis(2));
     profiler.record_attributed(
-        "davinci.export.pass",
+        "levels.export.pass",
         SpanAttribution::new()
             .with_stage("s1")
             .with_pass("fold_constants")
@@ -137,7 +137,7 @@ fn export_json_bytes_are_exact() {
             .with_span(5, 9),
         Duration::from_millis(1),
     );
-    profiler.record_counter("davinci.export.bytes", 10);
+    profiler.record_counter("levels.export.bytes", 10);
 
     let export = export_report(&profiler, &export_options(ProfileExportBudget::default()));
     let expected = concat!(
@@ -158,7 +158,7 @@ fn export_json_bytes_are_exact() {
         "  },\n",
         "  \"spans\": [\n",
         "    {\n",
-        "      \"key\": \"davinci.export.plain\",\n",
+        "      \"key\": \"levels.export.plain\",\n",
         "      \"count\": 1,\n",
         "      \"wall_ns\": {\n",
         "        \"total\": 2000000,\n",
@@ -172,7 +172,7 @@ fn export_json_bytes_are_exact() {
         "      \"alloc\": null\n",
         "    },\n",
         "    {\n",
-        "      \"key\": \"davinci.export.pass\",\n",
+        "      \"key\": \"levels.export.pass\",\n",
         "      \"count\": 1,\n",
         "      \"wall_ns\": {\n",
         "        \"total\": 1000000,\n",
@@ -198,7 +198,7 @@ fn export_json_bytes_are_exact() {
         "  ],\n",
         "  \"counters\": [\n",
         "    {\n",
-        "      \"key\": \"davinci.export.bytes\",\n",
+        "      \"key\": \"levels.export.bytes\",\n",
         "      \"samples\": 1,\n",
         "      \"total\": 10,\n",
         "      \"min\": 10,\n",
@@ -216,7 +216,7 @@ fn export_maps_the_global_allocation_window() {
     use vize_l0::profiler::AllocationSnapshot;
 
     let profiler = Profiler::enabled();
-    profiler.record("davinci.alloc.window", Duration::from_millis(1));
+    profiler.record("levels.alloc.window", Duration::from_millis(1));
 
     let snapshot = AllocationSnapshot {
         alloc_calls: 3,

@@ -23,7 +23,7 @@ The existing `report-test-inventory` Actions action runs this same tool, so its 
 
 | Component                              | Test files | Static declarations |       Measured lines |     Measured regions |
 | -------------------------------------- | ---------: | ------------------: | -------------------: | -------------------: |
-| crates/davinci_harness                 |          0 |                   0 |     395/590 (66.95%) |     666/977 (68.17%) |
+| crates/level_harness                   |          0 |                   0 |     395/590 (66.95%) |     666/977 (68.17%) |
 | crates/vize                            |        463 |                1481 | 24617/28252 (87.13%) | 37088/42506 (87.25%) |
 | crates/vize_armature                   |         30 |                 190 |   3293/3468 (94.95%) |   5021/5296 (94.81%) |
 | crates/vize_atelier_core               |         85 |                 472 | 13677/16839 (81.22%) | 21958/27233 (80.63%) |
@@ -47,18 +47,18 @@ The existing `report-test-inventory` Actions action runs this same tool, so its 
 | crates/vize_patina                     |        614 |                3955 | 56148/61553 (91.22%) | 84690/93217 (90.85%) |
 | crates/vize_relief                     |          9 |                  70 |   1151/1261 (91.28%) |   1632/1819 (89.72%) |
 | crates/vize_vitrine                    |         38 |                 139 |   3539/4215 (83.96%) |   5615/6791 (82.68%) |
-| davinci/vize_dialect_moonbit           |          8 |                  34 |     811/960 (84.48%) |   1213/1445 (83.94%) |
-| davinci/vize_extension_contract        |          1 |                   1 |    990/1100 (90.00%) |   1695/1930 (87.82%) |
-| davinci/vize_extension_host            |         16 |                  59 |     196/492 (39.84%) |     348/777 (44.79%) |
-| davinci/vize_guest                     |          0 |                   0 |     195/213 (91.55%) |     360/373 (96.51%) |
-| davinci/vize_l0                        |         74 |                 402 |   7924/8568 (92.48%) | 12155/13200 (92.08%) |
-| davinci/vize_l0_derive                 |          2 |                   9 |     224/232 (96.55%) |     339/349 (97.13%) |
-| davinci/vize_l1                        |        134 |                 766 | 12210/12767 (95.64%) | 17672/18710 (94.45%) |
-| davinci/vize_l1_to_l2                  |        166 |                 937 | 24583/26995 (91.07%) | 38089/42421 (89.79%) |
-| davinci/vize_l2                        |        165 |                 578 | 11474/12243 (93.72%) | 16785/18713 (89.70%) |
-| davinci/vize_l2_to_l3                  |         24 |                  79 |     613/647 (94.74%) |   1004/1072 (93.66%) |
-| davinci/vize_l3                        |         49 |                 192 |   5367/5827 (92.11%) |   7682/8530 (90.06%) |
-| davinci/vize_l4                        |         57 |                 152 |   3593/4037 (89.00%) |   5918/6798 (87.06%) |
+| levels/vize_dialect_moonbit            |          8 |                  34 |     811/960 (84.48%) |   1213/1445 (83.94%) |
+| levels/vize_extension_contract         |          1 |                   1 |    990/1100 (90.00%) |   1695/1930 (87.82%) |
+| levels/vize_extension_host             |         16 |                  59 |     196/492 (39.84%) |     348/777 (44.79%) |
+| levels/vize_guest                      |          0 |                   0 |     195/213 (91.55%) |     360/373 (96.51%) |
+| levels/vize_l0                         |         74 |                 402 |   7924/8568 (92.48%) | 12155/13200 (92.08%) |
+| levels/vize_l0_derive                  |          2 |                   9 |     224/232 (96.55%) |     339/349 (97.13%) |
+| levels/vize_l1                         |        134 |                 766 | 12210/12767 (95.64%) | 17672/18710 (94.45%) |
+| levels/vize_l1_to_l2                   |        166 |                 937 | 24583/26995 (91.07%) | 38089/42421 (89.79%) |
+| levels/vize_l2                         |        165 |                 578 | 11474/12243 (93.72%) | 16785/18713 (89.70%) |
+| levels/vize_l2_to_l3                   |         24 |                  79 |     613/647 (94.74%) |   1004/1072 (93.66%) |
+| levels/vize_l3                         |         49 |                 192 |   5367/5827 (92.11%) |   7682/8530 (90.06%) |
+| levels/vize_l4                         |         57 |                 152 |   3593/4037 (89.00%) |   5918/6798 (87.06%) |
 | docs/theme                             |          3 |                  22 |           unmeasured |           unmeasured |
 | examples/vite-musea                    |          1 |                   4 |           unmeasured |           unmeasured |
 | npm/builder                            |        188 |                 723 |           unmeasured |           unmeasured |
@@ -81,7 +81,7 @@ The existing `report-test-inventory` Actions action runs this same tool, so its 
 | tests/_fixtures                        |         16 |                 161 |           unmeasured |           unmeasured |
 | tests/_helpers                         |          1 |                   1 |           unmeasured |           unmeasured |
 | tests/app                              |          9 |                  47 |           unmeasured |           unmeasured |
-| tests/davinci_test_support             |          4 |                  28 |           unmeasured |           unmeasured |
+| tests/level_test_support               |          4 |                  28 |           unmeasured |           unmeasured |
 | tests/external-consumers               |          1 |                   1 |           unmeasured |           unmeasured |
 | tests/fixtures                         |         46 |                1286 |           unmeasured |           unmeasured |
 | tests/performance                      |          3 |                   3 |           unmeasured |           unmeasured |

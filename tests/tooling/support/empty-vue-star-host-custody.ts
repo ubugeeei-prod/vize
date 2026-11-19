@@ -24,7 +24,7 @@ const beforeSource = "a93e78147b0990c813e965a7868b32dda341eb77";
 const helperPairs = [
   [
     "tests/performance/support/warm-type-backed-empty-vue-star-host.ts",
-    "4668a48d816279308c341ff3a7c839dc39ea129a2901b0484b65f4905e00386b",
+    "24ada83ae6f7e648f88502d627a798f66bd81a1f0e9ef6c3cf0ce7e7c909102f",
   ],
   [
     "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts",
@@ -36,12 +36,12 @@ const helperPairs = [
   ],
   [
     "tests/performance/support/warm-type-backed-empty-vue-star-listing-singleton.ts",
-    "ec0fc623eb66eab0df4015d6bfe70cf106d53d427f395c0c1e7d39d060f899f6",
+    "3adbd0a8321675fd27891a5c041c105c22ef5c276a5090ee484870020a69c63f",
   ],
 ] as const;
 const clauses = [
   'import { qualifyEmptyVueStarHost } from "./warm-type-backed-empty-vue-star-host.ts";\n\n',
-  '  const emptyVueStarHost =\n    enabled &&\n    digest("before", "tests/performance/support/warm-type-backed-empty-vue-star-host.ts") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-empty-vue-star-host.ts") ===\n      "4668a48d816279308c341ff3a7c839dc39ea129a2901b0484b65f4905e00386b" &&\n    digest("before", "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts") === null &&\n    digest("after", "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts") ===\n      "3dc6a16c6e9869302858df257d21e2e2b03acdc13606460bd7849d9d9ce28fc2"\n      ? qualifyEmptyVueStarHost(production, alreadyQualified, digest)\n      : null;\n',
+  '  const emptyVueStarHost =\n    enabled &&\n    digest("before", "tests/performance/support/warm-type-backed-empty-vue-star-host.ts") ===\n      null &&\n    digest("after", "tests/performance/support/warm-type-backed-empty-vue-star-host.ts") ===\n      "24ada83ae6f7e648f88502d627a798f66bd81a1f0e9ef6c3cf0ce7e7c909102f" &&\n    digest("before", "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts") === null &&\n    digest("after", "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts") ===\n      "3dc6a16c6e9869302858df257d21e2e2b03acdc13606460bd7849d9d9ce28fc2"\n      ? qualifyEmptyVueStarHost(production, alreadyQualified, digest)\n      : null;\n',
   "    ...(emptyVueStarHost ? { emptyVueStarHost } : {}),\n",
 ];
 const sha = (body: Buffer) => createHash("sha256").update(body).digest("hex");
@@ -141,7 +141,7 @@ export function retainedHostBeforeEmptyVueStars(read: Read): Buffer {
   assert.deepEqual(Buffer.from(inverse), actual);
   const singletonClauses = [
     'import { qualifyEmptyVueStarListingSingleton } from "./warm-type-backed-empty-vue-star-listing-singleton.ts";\n\n',
-    '  const emptyVueStarListingSingleton =\n    enabled &&\n    digest(\n      "before",\n      "tests/performance/support/warm-type-backed-empty-vue-star-listing-singleton.ts",\n    ) === null &&\n    digest(\n      "after",\n      "tests/performance/support/warm-type-backed-empty-vue-star-listing-singleton.ts",\n    ) === "ec0fc623eb66eab0df4015d6bfe70cf106d53d427f395c0c1e7d39d060f899f6"\n      ? qualifyEmptyVueStarListingSingleton(production, alreadyQualified, digest)\n      : null;\n',
+    '  const emptyVueStarListingSingleton =\n    enabled &&\n    digest(\n      "before",\n      "tests/performance/support/warm-type-backed-empty-vue-star-listing-singleton.ts",\n    ) === null &&\n    digest(\n      "after",\n      "tests/performance/support/warm-type-backed-empty-vue-star-listing-singleton.ts",\n    ) === "3adbd0a8321675fd27891a5c041c105c22ef5c276a5090ee484870020a69c63f"\n      ? qualifyEmptyVueStarListingSingleton(production, alreadyQualified, digest)\n      : null;\n',
     "    ...(emptyVueStarListingSingleton ? { emptyVueStarListingSingleton } : {}),\n",
   ];
   for (const clause of singletonClauses) {

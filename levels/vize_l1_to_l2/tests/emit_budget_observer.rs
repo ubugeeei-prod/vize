@@ -13,7 +13,7 @@
 
 use std::path::Path;
 
-use davinci_harness::fixtures::{LADDER, template_block};
+use level_harness::fixtures::{LADDER, template_block};
 use vize_l0::Allocator;
 use vize_l4::targets::dom::artifact::{
     DomEmitOptions, emit_dom_source, emit_dom_source_observed,

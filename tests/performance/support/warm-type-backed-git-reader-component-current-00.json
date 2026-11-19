@@ -60,48 +60,48 @@
   },
   {
     "file": "tests/performance/support/warm-type-backed-path-host-manifest.json",
-    "originalBeforeSHA256": "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805",
-    "originalAfterSHA256": "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805",
+    "originalBeforeSHA256": "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95",
+    "originalAfterSHA256": "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95",
     "before": {
       "mode": "100644",
-      "blob": "365eaa9ecfd9cb14fe30f6aa2235190796ae5ead",
+      "blob": "87aa5d18723246eebbc1deccbf46dffefeb8771e",
       "bytes": 13587,
-      "sha256": "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805"
+      "sha256": "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95"
     },
     "retainedAfter": {
       "mode": "100644",
-      "blob": "365eaa9ecfd9cb14fe30f6aa2235190796ae5ead",
+      "blob": "87aa5d18723246eebbc1deccbf46dffefeb8771e",
       "bytes": 13587,
-      "sha256": "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805"
+      "sha256": "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95"
     },
     "currentAfter": {
       "mode": "100644",
-      "blob": "365eaa9ecfd9cb14fe30f6aa2235190796ae5ead",
+      "blob": "87aa5d18723246eebbc1deccbf46dffefeb8771e",
       "bytes": 13587,
-      "sha256": "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805"
+      "sha256": "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95"
     }
   },
   {
     "file": "tests/tooling/warm-type-backed-path-host.test.ts",
-    "originalBeforeSHA256": "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48",
-    "originalAfterSHA256": "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48",
+    "originalBeforeSHA256": "b8fe4cb9cc0098898a60201579745e6784f44849cf1e6b36223b99e3cf5f77cf",
+    "originalAfterSHA256": "b8fe4cb9cc0098898a60201579745e6784f44849cf1e6b36223b99e3cf5f77cf",
     "before": {
       "mode": "100644",
-      "blob": "7582b6f37376281f97175c5b612e9a74438f2717",
+      "blob": "843d2d45b614c96ae474ec91f154b6e41612830f",
       "bytes": 2515,
-      "sha256": "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48"
+      "sha256": "b8fe4cb9cc0098898a60201579745e6784f44849cf1e6b36223b99e3cf5f77cf"
     },
     "retainedAfter": {
       "mode": "100644",
-      "blob": "7582b6f37376281f97175c5b612e9a74438f2717",
+      "blob": "843d2d45b614c96ae474ec91f154b6e41612830f",
       "bytes": 2515,
-      "sha256": "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48"
+      "sha256": "b8fe4cb9cc0098898a60201579745e6784f44849cf1e6b36223b99e3cf5f77cf"
     },
     "currentAfter": {
       "mode": "100644",
-      "blob": "7582b6f37376281f97175c5b612e9a74438f2717",
+      "blob": "843d2d45b614c96ae474ec91f154b6e41612830f",
       "bytes": 2515,
-      "sha256": "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48"
+      "sha256": "b8fe4cb9cc0098898a60201579745e6784f44849cf1e6b36223b99e3cf5f77cf"
     }
   },
   {
@@ -125,19 +125,19 @@
   {
     "file": "tests/performance/support/warm-type-backed-git-reader-incoming.json",
     "originalBeforeSHA256": null,
-    "originalAfterSHA256": "dd570005abfeb4627bd4a80ec8c8b708ea57add07a068722100b237ef7b92b80",
+    "originalAfterSHA256": "f010b97b007e36725a07228688f67a05a9e77ea14a2c81831efe4f4e7f2e8b7d",
     "before": null,
     "retainedAfter": {
       "mode": "100644",
-      "blob": "aafa4199c239c9ffd0ffa3905849265699564628",
+      "blob": "f047618230d6c36f7312c4ac2c39464c03d96609",
       "bytes": 1735,
-      "sha256": "dd570005abfeb4627bd4a80ec8c8b708ea57add07a068722100b237ef7b92b80"
+      "sha256": "f010b97b007e36725a07228688f67a05a9e77ea14a2c81831efe4f4e7f2e8b7d"
     },
     "currentAfter": {
       "mode": "100644",
-      "blob": "aafa4199c239c9ffd0ffa3905849265699564628",
+      "blob": "f047618230d6c36f7312c4ac2c39464c03d96609",
       "bytes": 1735,
-      "sha256": "dd570005abfeb4627bd4a80ec8c8b708ea57add07a068722100b237ef7b92b80"
+      "sha256": "f010b97b007e36725a07228688f67a05a9e77ea14a2c81831efe4f4e7f2e8b7d"
     }
   },
   {
@@ -179,19 +179,19 @@
   {
     "file": "tests/performance/support/warm-type-backed-git-reader-incoming.ts",
     "originalBeforeSHA256": null,
-    "originalAfterSHA256": "931d2770c0f1fafe5465fec409e720918bf8e71b0df5e759d61feec81baa0fba",
+    "originalAfterSHA256": "5faffb4ca83b2245235601af6ec32b161e85402707516bb264436f4e4b69d831",
     "before": null,
     "retainedAfter": {
       "mode": "100644",
-      "blob": "2e926d5600b14a5d3650066cb097c222eb6f0cc7",
+      "blob": "c2a4ef8abe23e8a856e75280720f1a487202d553",
       "bytes": 2691,
-      "sha256": "931d2770c0f1fafe5465fec409e720918bf8e71b0df5e759d61feec81baa0fba"
+      "sha256": "5faffb4ca83b2245235601af6ec32b161e85402707516bb264436f4e4b69d831"
     },
     "currentAfter": {
       "mode": "100644",
-      "blob": "2e926d5600b14a5d3650066cb097c222eb6f0cc7",
+      "blob": "c2a4ef8abe23e8a856e75280720f1a487202d553",
       "bytes": 2691,
-      "sha256": "931d2770c0f1fafe5465fec409e720918bf8e71b0df5e759d61feec81baa0fba"
+      "sha256": "5faffb4ca83b2245235601af6ec32b161e85402707516bb264436f4e4b69d831"
     }
   },
   {

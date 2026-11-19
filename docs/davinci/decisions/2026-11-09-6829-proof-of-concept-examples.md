@@ -41,7 +41,7 @@ installs no toolchain for these languages.
 
 ## Isolation and CI
 
-`tests/tooling/davinci-level-dialect-isolation.test.ts` checks that every `examples/` workspace
+`tests/tooling/level-dialect-isolation.test.ts` checks that every `examples/` workspace
 member depends only on level crates, oxc and `poc-support`, and that no level crate's code names
 a proof-of-concept input. A missing neutral extension point lands in its level crate as its own
 change with its own test, never as an example-specific branch.

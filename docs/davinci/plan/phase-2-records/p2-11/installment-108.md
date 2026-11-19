@@ -31,11 +31,11 @@ Focused gates:
 ```sh
 RUST_BACKTRACE=1 cargo test -p vize_atelier_dom -p vize_s1_to_s2 -p vize_s2 --tests
 cargo test -p vize_s2 --test folio_deep_stack -- --nocapture
-rust-script tools/commands/davinci/assertion-lint.rs
+rust-script tools/commands/levels/assertion-lint.rs
 node tools/commands/ci/source-file-lengths.ts --check --base-ref origin/main
 cargo fmt --all -- --check
 git diff --check
-node --test tests/tooling/davinci-traversal-budgets.test.ts tests/tooling/davinci-storage-policy.test.ts
+node --test tests/tooling/level-traversal-budgets.test.ts tests/tooling/level-storage-policy.test.ts
 ```
 
 This installment does not tick P2-11. The full production-lane switch remains

@@ -16,7 +16,7 @@ const scopes = [
   "rust-toolchain",
   "rust-toolchain.toml",
   "crates",
-  "davinci",
+  "levels",
   "vendor",
   "tests",
   "tools",

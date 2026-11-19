@@ -25,7 +25,7 @@ fn todo_list() -> Vec<u8> {
             "--input-type=module",
             "-e",
             "const { TODO_LIST } = await import(process.argv[1]); process.stdout.write(TODO_LIST);",
-            &repo("tests/tooling/fixtures/davinci-plugin-sdk/sources.mjs"),
+            &repo("tests/tooling/fixtures/level-plugin-sdk/sources.mjs"),
         ])
         .output()
         .unwrap();
@@ -71,7 +71,7 @@ fn vize(root: &Path, args: &[&str]) -> std::process::Output {
         .env("VIZE_TEST_PLUGIN_SDK", repo("npm/plugin-sdk/v2.js"))
         .env(
             "VIZE_TEST_TEAM_CONVENTIONS",
-            repo("tests/tooling/fixtures/davinci-plugin-sdk/team-conventions.mjs"),
+            repo("tests/tooling/fixtures/level-plugin-sdk/team-conventions.mjs"),
         )
         .env("VIZE_TEST_BATCH_LOG", root.join("batches.log"))
         .env("VIZE_CONFIG_CACHE", "0")
@@ -210,7 +210,7 @@ fn adapted_v1_plugins_receive_the_frozen_v1_batch_bytes() {
     );
     let frozen: Value = serde_json::from_slice(
         &fs::read(repo(
-            "tests/tooling/fixtures/davinci-plugin-sdk/api-v1-packets.json",
+            "tests/tooling/fixtures/level-plugin-sdk/api-v1-packets.json",
         ))
         .unwrap(),
     )

@@ -45,4 +45,4 @@ for direct rows, `v-for` rows, `<template v-for>` rows, a direct cell and
 authored sections; `crates/vize_atelier_sfc/tests/table_authored_rows.rs`
 compiles it through the public SFC API for DOM, SSR and Vapor. The parser and
 lowering pins are `vize_armature::parser::tests::table_rows` and
-`davinci/vize_l1_to_l2/tests/emit_table.rs`.
+`levels/vize_l1_to_l2/tests/emit_table.rs`.

@@ -3,7 +3,7 @@ import path from "node:path";
 
 export function moveFoundation(root: string, mode: string): void {
   const before = path.join(root, "crates/vize_carton");
-  const after = path.join(root, "davinci/vize_l0");
+  const after = path.join(root, "levels/vize_l0");
   if (mode === "--foundation-moves-only") {
     for (const entry of readdirSync(path.join(before, "src"))) {
       if (entry === "lib.rs") continue;

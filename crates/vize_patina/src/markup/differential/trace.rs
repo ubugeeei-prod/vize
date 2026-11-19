@@ -148,7 +148,7 @@ pub(super) fn directive(out: &mut String, directive: &MarkupDirective<'_>) {
 
 impl MarkupRule for TraceRecorder {
     fn name(&self) -> &'static str {
-        "davinci/markup-trace"
+        "levels/markup-trace"
     }
 
     fn enter_document(&self, _ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {

@@ -54,7 +54,7 @@ const manifest = JSON.parse(bytes);
 const retentionBytes = read(`${directory}/source-retention-successors.json`);
 assert.equal(
   sha(retentionBytes),
-  "3f9a60c0a76c5e6ed8cddf9aa42654f584fca734dcdad4b5780303abce378c74",
+  "b065ec34e54b4fef8ec06528d0f75d92796addf7ff41d7223cade235636b93c7",
 );
 const {
   retiredExtensionHost,

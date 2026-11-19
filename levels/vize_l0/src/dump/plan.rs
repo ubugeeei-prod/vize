@@ -9,11 +9,11 @@
 //! without guessing:
 //!
 //! ```text
-//! [fusion-plan-folio]
+//! [fusion-plan-dump]
 //! stage=s2
 //! walks=2
 //!
-//! [fusion-plan-folio.passes]
+//! [fusion-plan-dump.passes]
 //! walk=0 pass=v-slot kind=mandatory-lowering fusability=barrier
 //! walk=1 pass=hoist-static kind=optional fusability=fusable
 //!
@@ -32,9 +32,9 @@ use crate::dump::value::DumpValue;
 use crate::dump::{Dump, Error as DumpError};
 use crate::pass::{Fusability, PassKind, Pipeline};
 
-/// Owned folio page for a pipeline's fusion plan, `[fusion-plan-folio]`.
+/// Owned dump page for a pipeline's fusion plan, `[fusion-plan-dump]`.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
-#[dump(name = "fusion-plan-folio")]
+#[dump(name = "fusion-plan-dump")]
 pub struct Page {
     /// The stage the pipeline runs over, e.g. `s2`.
     pub stage: String,

@@ -23,9 +23,9 @@
   {
     "file": "tests/tooling/warm-type-backed-path-host.test.ts",
     "mode": "100644",
-    "blob": "7582b6f37376281f97175c5b612e9a74438f2717",
+    "blob": "843d2d45b614c96ae474ec91f154b6e41612830f",
     "bytes": 2515,
-    "sha256": "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48"
+    "sha256": "b8fe4cb9cc0098898a60201579745e6784f44849cf1e6b36223b99e3cf5f77cf"
   },
   {
     "file": "tools/support/compat/levels/path-host-callers.ts",

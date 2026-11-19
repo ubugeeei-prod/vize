@@ -244,6 +244,6 @@
         "sha256": "e386772551349461cbc6a4f601902b5f82d0d29bf728d5210c54bdee07fb5960"
       }
     ],
-    "scope": "Prechange source baseline only, not published0.461 acceptance. All crates/vendor/davinci/.cargo/toolchain Git trees match b17; rootCargo.toml/lock differ only exact release version literals.24 actual commands on the two frozen sources across four broad presets (default/off/repair) exit0/stderr0, retaining original input bytes. Preserve the existing empty-script warning in opinionated/Nuxt. Raw promoted warning descriptors are unchanged; CLI help follows the unchanged plain-text renderer. Full CLI order is authored explicitly, never sorted or filtered by this corpus."
+    "scope": "Prechange source baseline only, not published0.461 acceptance. All crates/vendor/levels/.cargo/toolchain Git trees match b17; rootCargo.toml/lock differ only exact release version literals.24 actual commands on the two frozen sources across four broad presets (default/off/repair) exit0/stderr0, retaining original input bytes. Preserve the existing empty-script warning in opinionated/Nuxt. Raw promoted warning descriptors are unchanged; CLI help follows the unchanged plain-text renderer. Full CLI order is authored explicitly, never sorted or filtered by this corpus."
   }
 }

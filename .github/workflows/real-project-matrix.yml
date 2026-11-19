@@ -1,12 +1,12 @@
 name: Real Project Matrix
 # "enforced" gates every surface. "release-gated" is the exact release dispatch:
-# tool surfaces and the Davinci corpus enforce, lint and LSP parity record their
+# tool surfaces and the level corpus enforce, lint and LSP parity record their
 # raw outcomes, and typecheck divergence is skipped. Every other combination is
 # "observational".
 run-name: >-
   Real Project Matrix ${{ inputs.project && 'scoped-diagnostic' || (inputs.core_tools_mode || 'enforce') == 'enforce' &&
   (inputs.typecheck_dependencies_mode || 'enforce') == 'enforce' &&
-  (inputs.davinci_dom_corpus_mode || 'enforce') == 'enforce' &&
+  (inputs.level_dom_corpus_mode || 'enforce') == 'enforce' &&
   ((inputs.lint_divergence_mode || 'enforce') == 'enforce' &&
   (inputs.lsp_mode || 'enforce') == 'enforce' &&
   (inputs.typecheck_divergence_mode || 'enforce') == 'enforce' &&
@@ -78,8 +78,8 @@ on:
           - enforce
           - record-only
           - skip
-      davinci_dom_corpus_mode:
-        description: "Davinci L2 DOM corpus gate handling"
+      level_dom_corpus_mode:
+        description: "Level L2 DOM corpus gate handling"
         required: false
         default: "enforce"
         type: choice
@@ -323,7 +323,7 @@ jobs:
             tests/tooling/sfc-equivalence.test.ts \
             tests/tooling/glyph-corpus-idempotence.test.ts \
             tests/tooling/glyph-corpus-parse-preservation.test.ts \
-            tests/tooling/glyph-pug-oracle.test.ts tests/tooling/davinci-pug-corpus-oracle.test.ts \
+            tests/tooling/glyph-pug-oracle.test.ts tests/tooling/level-pug-corpus-oracle.test.ts \
             tests/tooling/glyph-corpus-lint-agreement.test.ts || glyph_exit_code=$?
           for property in idempotence parse-preservation lint-agreement; do
             if [[ ! -s "$FIXTURE_REPORT_DIR/glyph-$property.json" ]]; then
@@ -408,29 +408,29 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-  davinci-dom-corpus:
+  level-dom-corpus:
     permissions: { contents: read, actions: read, checks: read }
-    uses: ./.github/workflows/davinci-canonical-corpus.yml
+    uses: ./.github/workflows/level-canonical-corpus.yml
     with:
-      davinci_dom_corpus_mode: ${{ inputs.davinci_dom_corpus_mode || 'enforce' }}
+      level_dom_corpus_mode: ${{ inputs.level_dom_corpus_mode || 'enforce' }}
 
   dom-divergence:
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
-    needs: davinci-dom-corpus
+    needs: level-dom-corpus
     permissions: { contents: write, actions: read, issues: write, pull-requests: write }
     uses: ./.github/workflows/canonical-corpus-divergence.yml
     with: { observer: dom, evidence: canonical-corpus-dom }
 
   ssr-divergence:
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
-    needs: davinci-dom-corpus
+    needs: level-dom-corpus
     permissions: { contents: write, actions: read, issues: write, pull-requests: write }
     uses: ./.github/workflows/canonical-corpus-divergence.yml
     with: { observer: ssr, evidence: canonical-corpus-ssr-pug }
 
   reach-divergence:
     if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
-    needs: davinci-dom-corpus
+    needs: level-dom-corpus
     permissions: { contents: write, actions: read, issues: write, pull-requests: write }
     uses: ./.github/workflows/canonical-corpus-divergence.yml
     with: { observer: reach, evidence: canonical-corpus-reach }

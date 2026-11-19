@@ -30,8 +30,8 @@
   "finalQualificationPackage": {
     "path": "package.json",
     "bytes": 1053,
-    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
-    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+    "sha256": "c50175fbdf751849f1b13c662c33cf8244c85091a0c4a529325c44da0c90184b",
+    "gitBlob": "e83c63e2218b955acd632fed7f20099306172955"
   },
   "workspaceManifest": {
     "path": "pnpm-workspace.yaml",

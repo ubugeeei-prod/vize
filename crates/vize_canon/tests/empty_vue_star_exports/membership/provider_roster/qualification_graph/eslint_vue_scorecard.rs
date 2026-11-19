@@ -4,7 +4,7 @@ use serde_json::json;
 pub(super) const UPDATE: &str =
     "malformed-membership/provider-eslint-vue-scorecard-update-12539.json";
 pub(super) const UPDATE_HASH: &str =
-    "a06cdc218872597a518bffb4d61bfc5aa2824ac2b4b50e7f6ab1d860899b2094";
+    "a15371df9371f67d4a8eea6b85673998304864901b3d81c5f705e5cd9ed283a5";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-js-tooling-refresh-update-12212.json";
 pub(super) const MANIFEST: &str = "tools/benchmarks/scripts/package.json";
 

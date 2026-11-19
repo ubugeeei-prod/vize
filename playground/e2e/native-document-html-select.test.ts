@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import corpus from "../../davinci/vize_l1/tests/fixtures/document/html-select.json";
+import corpus from "../../levels/vize_l1/tests/fixtures/document/html-select.json";
 
 describe("native Document select stack rules", () => {
   it("retains fourteen admitted and two refused complete browser packets", () => {

@@ -10,7 +10,7 @@ import type { Products } from "./croquis-products.ts";
 import { formatTable } from "./markdown.ts";
 import { byKey } from "./ordering.ts";
 
-export const SUMMARY_COMMAND = "node tools/support/compat/davinci/croquis-consumers.ts --summary";
+export const SUMMARY_COMMAND = "node tools/support/compat/levels/croquis-consumers.ts --summary";
 
 export interface ProductId {
   id: string;
@@ -96,7 +96,7 @@ export function methodLines(products: Products, analysis: Analysis): string[] {
   );
   lines.push("");
   lines.push(
-    "**Consumer resolution** — symbol-aware, per `crates/*/src/**/*.rs` and `davinci/*/src/**/*.rs`:",
+    "**Consumer resolution** — symbol-aware, per `crates/*/src/**/*.rs` and `levels/*/src/**/*.rs`:",
   );
   lines.push("");
   lines.push(
@@ -122,7 +122,7 @@ export function methodLines(products: Products, analysis: Analysis): string[] {
       " (`drawer.finish()`, `ctx.analysis()`), reads a workspace `pub` field" +
       " typed `Croquis` (`result.croquis`), or calls an associated function on" +
       " the `Croquis` type itself (`Croquis::default()`) — producer tables" +
-      " parsed from `crates/*/src` and `davinci/*/src`, matched by name. Inline chains through" +
+      " parsed from `crates/*/src` and `levels/*/src`, matched by name. Inline chains through" +
       " those producers" +
       " (`entry.analysis.race_conditions`, `ctx.croquis().bindings`) are counted" +
       " too.",
@@ -242,7 +242,7 @@ export function renderSummary(products: Products, analysis: Analysis): string {
   lines.push("");
   lines.push(
     "Cross-crate aggregates of the sharded matrix in" +
-      " `artifacts/davinci-ledgers/croquis-consumption/`. Printed by `" +
+      " `artifacts/level-ledgers/croquis-consumption/`. Printed by `" +
       SUMMARY_COMMAND +
       "`; resolved totals match the per-crate shards. Naive-grep counts are" +
       " recomputed from the current source files, including crates with no" +

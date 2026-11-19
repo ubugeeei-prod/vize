@@ -261,7 +261,7 @@ function pinnedMinimal(cwd, directory, collector) {
   assert.equal(link.toString("utf8"), cycleOwner.target);
   const workspace = join(directory, "minimal-workspace");
   const root = join(workspace, "tests/_fixtures/_git");
-  mkdirSync(join(workspace, "tests/davinci_test_support"), { recursive: true });
+  mkdirSync(join(workspace, "tests/level_test_support"), { recursive: true });
   mkdirSync(dirname(join(root, "jellyfin-vue", sourcePath)), { recursive: true });
   mkdirSync(join(root, "jellyfin-vue/packaging/deb"), { recursive: true });
   writeFileSync(join(root, "jellyfin-vue", sourcePath), source);
@@ -301,7 +301,7 @@ export function diagnosticReceipt(identity, summaries) {
 
 export function runCanonicalProbe(cwd, output, env = process.env) {
   assert.equal(process.platform, "linux", "Complete hosted qualification requires Linux");
-  const artifact = join(cwd, "real-project-davinci-dom-corpus");
+  const artifact = join(cwd, "real-project-level-dom-corpus");
   const identity = json(join(artifact, "identity.json"));
   const actual = checkoutIdentity(cwd, env);
   for (const key of ["sha", "tree", "runId", "attempt", "repository"])
@@ -327,14 +327,14 @@ export function runCanonicalProbe(cwd, output, env = process.env) {
   const { vector } = qualifyProbeVectors(artifact, identity, expected, parseNativeVector);
   const source = readFileSync(join(artifact, "native-collector-source.rs"));
   assert.equal(sha256(source), identity.nativeWalk.sourceSha256);
-  assert.deepEqual(source, readFileSync(join(cwd, "tests/davinci_test_support/src/corpus.rs")));
+  assert.deepEqual(source, readFileSync(join(cwd, "tests/level_test_support/src/corpus.rs")));
   const tools = compileProbe(source, join(output, "harness"));
   const minimal = pinnedMinimal(cwd, output, tools.collector);
   const cases = [
     { name: "full-short", root: resolve(cwd, "tests/_fixtures/_git"), vector, expected },
     {
       name: "full-manifest",
-      root: `${cwd}/tests/davinci_test_support/../../tests/_fixtures/_git`,
+      root: `${cwd}/tests/level_test_support/../../tests/_fixtures/_git`,
       vector,
       expected,
     },
@@ -346,7 +346,7 @@ export function runCanonicalProbe(cwd, output, env = process.env) {
     },
     {
       name: "minimal-manifest",
-      root: `${minimal.workspace}/tests/davinci_test_support/../../tests/_fixtures/_git`,
+      root: `${minimal.workspace}/tests/level_test_support/../../tests/_fixtures/_git`,
       vector: minimal.vector,
       expected: minimal.expected,
     },
@@ -377,7 +377,7 @@ export function runCanonicalProbe(cwd, output, env = process.env) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const cwd = process.cwd();
-  const output = join(cwd, "real-project-davinci-dom-corpus/io-diagnostic");
+  const output = join(cwd, "real-project-level-dom-corpus/io-diagnostic");
   mkdirSync(output, { recursive: true });
   try {
     if (!runCanonicalProbe(cwd, output).success) process.exitCode = 1;

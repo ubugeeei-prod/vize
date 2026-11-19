@@ -125,7 +125,7 @@ fn compile(src: &str, is_ts: bool, retained: bool) -> (Vec<String>, String) {
         VaporCompilerOptions {
             binding_metadata: Some(metadata()),
             is_ts,
-            davinci_retained_lane: retained,
+            level_retained_lane: retained,
             ..Default::default()
         },
         TemplateSyntaxMode::Standard,

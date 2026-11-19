@@ -29,8 +29,8 @@ const context = {
 
 function log(divergences, samples = []) {
   return [
-    "davinci-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=2",
-    `davinci DOM corpus sweep: files=2 unreadable=0 parsed=2 templates=2 compared=2 patch_fact_entries=9 old_error_skips=0 s2_refusals=0 divergences=${divergences}`,
+    "legacy-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=2",
+    `levels DOM corpus sweep: files=2 unreadable=0 parsed=2 templates=2 compared=2 patch_fact_entries=9 old_error_skips=0 s2_refusals=0 divergences=${divergences}`,
     `corpus divergences (${divergences}):`,
     ...samples,
     "",
@@ -50,7 +50,7 @@ await test("canonical differences become one normalized fixture-owned issue", ()
     `${fixtureB}/src/B.vue: old_len=20 new_len=18 first_diff=7 old_window=before new_window=after`,
   ]);
   const plan = createDivergenceIssue(dom, evidence, ledger, selected, context);
-  assert.match(plan.title, /^fix\(davinci\): triage canonical DOM divergence [a-f0-9]{12}$/);
+  assert.match(plan.title, /^fix\(levels\): triage canonical DOM divergence [a-f0-9]{12}$/);
   assert.equal(plan.divergenceCount, 2);
   assert.deepEqual(plan.fixtures, [fixtureA, fixtureB]);
   assert.deepEqual(
@@ -60,7 +60,7 @@ await test("canonical differences become one normalized fixture-owned issue", ()
   assert.match(plan.body, /canonical-corpus-dom-1234-2-/);
   assert.match(plan.body, /minimize it with `vize reduce`/);
   assert.doesNotMatch(plan.body, /\/home\/runner/);
-  assert.deepEqual(plan.labels, ["area:ci", "area:testing", "area:davinci"]);
+  assert.deepEqual(plan.labels, ["area:ci", "area:testing", "area:levels"]);
 });
 
 await test("a matching automatic reduction receipt is linked without copying source", () => {

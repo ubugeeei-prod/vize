@@ -98,7 +98,7 @@ use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;
 use vize_l2::artifact::ArtifactParts;
 
-/// The pass name in pipeline strings and folio pages.
+/// The pass name in pipeline strings and dump pages.
 pub const NAME: &str = "v-slot";
 
 /// The pass description — classification reasoning in the module docs.
@@ -113,7 +113,7 @@ pub const DESC: PassDesc = PassDesc::new(
 
 /// The four diagnostics, byte-identical to relief's `ErrorCode` texts
 /// (pinned against relief in the `vize_atelier_core` differential
-/// suite, which owns the relief edge — ricalco must not depend on the
+/// suite, which owns the relief edge — l1_to_l2 must not depend on the
 /// legacy AST crate).
 pub const MISPLACED_MESSAGE: &str = "v-slot can only be used on components or <template> tags.";
 /// See [`MISPLACED_MESSAGE`].

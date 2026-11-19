@@ -49,7 +49,7 @@ parse, verifier walk, ricalco pass matches) the canary in
 
 ## Folio
 
-Grammar in [`folio-format.md`](../folio-format.md):
+Grammar in [`folio-format.md`](../dump-format.md):
 
 ```text
 vue.once @s:e

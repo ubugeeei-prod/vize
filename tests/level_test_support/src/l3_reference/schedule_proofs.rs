@@ -1,5 +1,5 @@
 //! The laws of the scheduling contract, `schedule.rs`, over the trace
-//! semantics, `trace.rs`. They replace `Impeto.ScheduleLaws`. Bound:
+//! semantics, `trace.rs`. They replace `L3.ScheduleLaws`. Bound:
 //! `graphs::schedule_graph` (up to 3 ops, 2 region and 1 effect slots, 1 edge,
 //! ids below 3).
 

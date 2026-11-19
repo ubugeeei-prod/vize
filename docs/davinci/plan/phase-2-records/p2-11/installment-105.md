@@ -25,7 +25,7 @@ Focused gates:
 
 ```sh
 cargo test -p vize_atelier_dom --test davinci_s2_dom --test davinci_s2_option_matrix
-node --test tests/tooling/davinci-phase2-ledger.test.ts tests/tooling/source-file-lengths.test.ts
+node --test tests/tooling/level-phase2-ledger.test.ts tests/tooling/source-file-lengths.test.ts
 ```
 
 This installment does not tick P2-11. The production-lane switch remains open,

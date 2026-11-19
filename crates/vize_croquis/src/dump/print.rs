@@ -55,18 +55,18 @@ fn write_joined<W: Write>(w: &mut W, items: &[&str], sep: &str) -> Result {
     Ok(())
 }
 
-pub(super) fn print<W: Write>(folio: &Page, w: &mut W, mode: DumpMode) -> Result {
+pub(super) fn print<W: Write>(dump: &Page, w: &mut W, mode: DumpMode) -> Result {
     let full = mode == DumpMode::Full;
 
     writeln!(w, "[vir]")?;
-    writeln!(w, "script_setup={}", folio.script_setup)?;
-    writeln!(w, "scopes={}", folio.scope_count)?;
-    writeln!(w, "bindings={}", folio.binding_count)?;
+    writeln!(w, "script_setup={}", dump.script_setup)?;
+    writeln!(w, "scopes={}", dump.scope_count)?;
+    writeln!(w, "bindings={}", dump.binding_count)?;
     writeln!(w)?;
 
-    if !folio.props.is_empty() {
+    if !dump.props.is_empty() {
         writeln!(w, "[surface.props]")?;
-        for prop in &folio.props {
+        for prop in &dump.props {
             let req = if prop.required { '!' } else { '?' };
             write!(w, "{}{}", prop.name, req)?;
             if let Some(ty) = &prop.ty {
@@ -81,8 +81,8 @@ pub(super) fn print<W: Write>(folio: &Page, w: &mut W, mode: DumpMode) -> Result
     }
 
     for (header, lines) in [
-        ("[surface.emits]", &folio.emits),
-        ("[surface.models]", &folio.models),
+        ("[surface.emits]", &dump.emits),
+        ("[surface.models]", &dump.models),
     ] {
         if !lines.is_empty() {
             writeln!(w, "{header}")?;
@@ -94,8 +94,8 @@ pub(super) fn print<W: Write>(folio: &Page, w: &mut W, mode: DumpMode) -> Result
     }
 
     for (header, entries) in [
-        ("[surface.expose]", &folio.expose),
-        ("[surface.slots]", &folio.slots),
+        ("[surface.expose]", &dump.expose),
+        ("[surface.slots]", &dump.slots),
     ] {
         let printable = |entry: &&SurfaceEntry| full || matches!(entry, SurfaceEntry::Args(_));
         if entries.iter().any(|entry| printable(&entry)) {
@@ -110,9 +110,9 @@ pub(super) fn print<W: Write>(folio: &Page, w: &mut W, mode: DumpMode) -> Result
         }
     }
 
-    if !folio.macros.is_empty() {
+    if !dump.macros.is_empty() {
         writeln!(w, "[macros]")?;
-        for call in &folio.macros {
+        for call in &dump.macros {
             write!(w, "@{}", call.name)?;
             if let Some(ty) = &call.type_args {
                 write!(w, "<{ty}>")?;
@@ -125,17 +125,17 @@ pub(super) fn print<W: Write>(folio: &Page, w: &mut W, mode: DumpMode) -> Result
         writeln!(w)?;
     }
 
-    if !folio.reactivity.is_empty() {
+    if !dump.reactivity.is_empty() {
         writeln!(w, "[reactivity]")?;
-        for line in &folio.reactivity {
+        for line in &dump.reactivity {
             writeln!(w, "{line}")?;
         }
         writeln!(w)?;
     }
 
-    if !folio.externs.is_empty() {
+    if !dump.externs.is_empty() {
         writeln!(w, "[extern]")?;
-        for ext in &folio.externs {
+        for ext in &dump.externs {
             let type_only = if ext.type_only { "^" } else { "" };
             write!(w, "{}{}", ext.source, type_only)?;
             if !ext.bindings.is_empty() {
@@ -148,9 +148,9 @@ pub(super) fn print<W: Write>(folio: &Page, w: &mut W, mode: DumpMode) -> Result
         writeln!(w)?;
     }
 
-    if !folio.types.is_empty() {
+    if !dump.types.is_empty() {
         writeln!(w, "[types]")?;
-        for te in &folio.types {
+        for te in &dump.types {
             let hoist = if te.hoisted { "^" } else { "" };
             write!(w, "{}{}{}", te.name, hoist, te.kind.as_char())?;
             if full {
@@ -161,9 +161,9 @@ pub(super) fn print<W: Write>(folio: &Page, w: &mut W, mode: DumpMode) -> Result
         writeln!(w)?;
     }
 
-    if !folio.bindings.is_empty() {
+    if !dump.bindings.is_empty() {
         writeln!(w, "[bindings]")?;
-        for group in &folio.bindings {
+        for group in &dump.bindings {
             write!(w, "{}:", group.code)?;
             write_joined(w, &sorted(&group.names), ",")?;
             writeln!(w)?;
@@ -171,10 +171,10 @@ pub(super) fn print<W: Write>(folio: &Page, w: &mut W, mode: DumpMode) -> Result
         writeln!(w)?;
     }
 
-    if !folio.scopes.is_empty() {
-        let remap = scope_id_remap(&folio.scopes);
+    if !dump.scopes.is_empty() {
+        let remap = scope_id_remap(&dump.scopes);
         writeln!(w, "[scopes]")?;
-        for scope in &folio.scopes {
+        for scope in &dump.scopes {
             let id = remap_ref(&remap, scope.id);
             write!(w, "{}{} {}", id.prefix, id.index, scope.name)?;
             if full {
@@ -195,9 +195,9 @@ pub(super) fn print<W: Write>(folio: &Page, w: &mut W, mode: DumpMode) -> Result
         writeln!(w)?;
     }
 
-    if !folio.errors.is_empty() {
+    if !dump.errors.is_empty() {
         writeln!(w, "[errors]")?;
-        for err in &folio.errors {
+        for err in &dump.errors {
             write!(w, "{}={}", err.name, err.kind)?;
             if full {
                 write!(w, "@{}:{}", err.start, err.end)?;

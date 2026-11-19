@@ -10,15 +10,15 @@
   "parts": [
     [
       "tools/support/compat/github/empty-vue-star-listing-part-00.json",
-      "07e8afb95b2bc913596b844c68478bae4082bc48fc13f61bc3d7e0959563c92a"
+      "97281b92ea17a558d032869f689ea8a2bb06efd4c6002c80b2d1cb03157fb508"
     ],
     [
       "tools/support/compat/github/empty-vue-star-listing-part-01.json",
-      "f5e1a47a5727d5b8b8f305fcca5c1aed42147919e81e0be1011f8bfeed5d6b6a"
+      "c619694095f2de3b82c3532785d549423429208bcc64026496a0cf416b1d551a"
     ],
     [
       "tools/support/compat/github/empty-vue-star-listing-part-02.json",
-      "bc5db7800a7002b9b4b65eb2275d50d8b6da09b1147102ee8c23ac0f0cb5f75c"
+      "036ff8edf7ef7e4ae5fb8dd4b1be5ab183a98c9cd7a253faaf90f6b5b3d741a7"
     ],
     [
       "tools/support/compat/github/empty-vue-star-listing-part-03.json",
@@ -42,11 +42,11 @@
     ],
     [
       "tools/support/compat/github/empty-vue-star-listing-part-08.json",
-      "33c0fe32d7392407f6d1a66f01f42523be43fe6a297a28cfd7c2f586fb3e966f"
+      "c4af49e305f734a9866153253aea31d049b7586b1c11930c03bf80425bfe99cb"
     ],
     [
       "tools/support/compat/github/empty-vue-star-listing-part-09.json",
-      "60d4393ca6d55e9b1e32f2337a387b1695f4ea7dce0bb298454122f67b8e00fa"
+      "1a33c4160f574e4a33930637e61d7c9ae9bc29736f48359b5ef89926a75f6fb2"
     ],
     [
       "tools/support/compat/github/empty-vue-star-listing-part-10.json",
@@ -314,9 +314,9 @@
     "crates/vize_canon/src/virtual_ts/scope/globals/instance/tests.rs",
     "crates/vize_canon/src/virtual_ts/scope/globals/instance/tests/lexical_scope.rs",
     "crates/vize_canon/tests/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__define-model__default.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__parent-local-import__default.snap",
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__static-slot-name__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__define-model__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__parent-local-import__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__static-slot-name__default.snap",
     "docs/davinci/plan/consumer-migration-surfaces/typechecker/vize_canon.tsv",
     "docs/davinci/plan/croquis-consumption/vize_canon.md",
     "tests/_fixtures/ci/native-phase-membership-original.json",
@@ -364,7 +364,7 @@
     "tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs",
     "tools/support/compat/github/native-javascript-sfc-membership.sh",
     "tests/performance/support/warm-type-backed-lexical-dollar-manifest.json",
-    ".github/workflows/davinci-canon-scaling.yml",
+    ".github/workflows/level-canon-scaling.yml",
     "tests/performance/support/warm-type-backed-host-qualifications.ts",
     "tests/tooling/support/native-lexical-dollar-fixture.mjs",
     "tests/tooling/warm-type-backed-lexical-dollar-host.test.ts",
@@ -525,19 +525,19 @@
     ],
     [
       "tools/support/compat/github/misskey-registry-source.json",
-      "0aea60acd69112d59c06ab347f0ccce804c3fc202d999444fb7cb6569f631a2d"
+      "2c53b4a82d6ed4b880935d4b13b823a54c1a6f7866695b0799dc17f5963e4bbd"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-00.json",
-      "4b2d2d3cb5d970fb88a1ea6489a9e039d101bfbf57b904fe8055eacbd3cc939c"
+      "fa6c86667c10e72bb63c46abb1fa2860e17b2bf51b71dbe5a08a0734560529b7"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-01.json",
-      "4a5731af6d9a2c52c917b9f18d4dc7bc3b9543d9795edeec8137afc716459c8c"
+      "5eec040ff85ba37595cf0762519ca476abd00730ad2ff5489501cedcebcb24f1"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-02.json",
-      "bc5db7800a7002b9b4b65eb2275d50d8b6da09b1147102ee8c23ac0f0cb5f75c"
+      "036ff8edf7ef7e4ae5fb8dd4b1be5ab183a98c9cd7a253faaf90f6b5b3d741a7"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-03.json",
@@ -561,11 +561,11 @@
     ],
     [
       "tools/support/compat/github/misskey-registry-part-08.json",
-      "2aa96334a622695e61a3d943dd0f3e0969a9a1a34a28d6092e204da77ab7a90e"
+      "bb356579efcd14fd601c810d3e1d034b5999f87c343fcc07b3816b3af45ef6d2"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-09.json",
-      "b4b626cf99dbbe4a6dca3c78ae4e9429719a4e704e2c9de0da60712237e9dc83"
+      "b779c04e78d9a7a7d2a1bb806cecb20c2dc2070cc2b3bbcf29c4f9c57e037ea6"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-10.json",
@@ -573,7 +573,7 @@
     ],
     [
       "tools/support/compat/github/misskey-registry-source.mjs",
-      "a1d3b8607cd439fa9bd956777520633629f4061ceb55c585b1c88fdb50b2036a"
+      "5d8fe1667f6cb15dac3c9a0496ee35a454e4294456f615bd987eb876567ac57d"
     ],
     [
       "tests/tooling/misskey-registry-source.test.mjs",
@@ -1226,7 +1226,7 @@
       ]
     ],
     "frameInputs": [
-      ".github/workflows/davinci-canon-scaling.yml",
+      ".github/workflows/level-canon-scaling.yml",
       ".github/workflows/typechecker-native-phases.yml",
       "crates/vize/tests/support/event_completion_project.rs",
       "crates/vize/tests/support/event_completion_witness.rs",
@@ -1307,9 +1307,9 @@
       "crates/vize_croquis/src/script_parser/module_exports.rs",
       "crates/vize_croquis/src/script_parser/parse.rs",
       "crates/vize_croquis/src/setup_context/ssr.rs",
-      "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__define-model__default.snap",
-      "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__parent-local-import__default.snap",
-      "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__static-slot-name__default.snap",
+      "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__define-model__default.snap",
+      "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__parent-local-import__default.snap",
+      "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__static-slot-name__default.snap",
       "crates/vize_patina/src/linter/engine/rule_sets.rs",
       "docs/davinci/plan/consumer-migration-surfaces/typechecker/vize_canon.tsv",
       "docs/davinci/plan/croquis-consumption/vize_canon.md",
@@ -1739,19 +1739,19 @@
     ],
     [
       "tools/support/compat/github/misskey-registry-source.json",
-      "0aea60acd69112d59c06ab347f0ccce804c3fc202d999444fb7cb6569f631a2d"
+      "2c53b4a82d6ed4b880935d4b13b823a54c1a6f7866695b0799dc17f5963e4bbd"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-00.json",
-      "4b2d2d3cb5d970fb88a1ea6489a9e039d101bfbf57b904fe8055eacbd3cc939c"
+      "fa6c86667c10e72bb63c46abb1fa2860e17b2bf51b71dbe5a08a0734560529b7"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-01.json",
-      "4a5731af6d9a2c52c917b9f18d4dc7bc3b9543d9795edeec8137afc716459c8c"
+      "5eec040ff85ba37595cf0762519ca476abd00730ad2ff5489501cedcebcb24f1"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-02.json",
-      "bc5db7800a7002b9b4b65eb2275d50d8b6da09b1147102ee8c23ac0f0cb5f75c"
+      "036ff8edf7ef7e4ae5fb8dd4b1be5ab183a98c9cd7a253faaf90f6b5b3d741a7"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-03.json",
@@ -1775,11 +1775,11 @@
     ],
     [
       "tools/support/compat/github/misskey-registry-part-08.json",
-      "2aa96334a622695e61a3d943dd0f3e0969a9a1a34a28d6092e204da77ab7a90e"
+      "bb356579efcd14fd601c810d3e1d034b5999f87c343fcc07b3816b3af45ef6d2"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-09.json",
-      "b4b626cf99dbbe4a6dca3c78ae4e9429719a4e704e2c9de0da60712237e9dc83"
+      "b779c04e78d9a7a7d2a1bb806cecb20c2dc2070cc2b3bbcf29c4f9c57e037ea6"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-10.json",
@@ -1787,7 +1787,7 @@
     ],
     [
       "tools/support/compat/github/misskey-registry-source.mjs",
-      "a1d3b8607cd439fa9bd956777520633629f4061ceb55c585b1c88fdb50b2036a"
+      "5d8fe1667f6cb15dac3c9a0496ee35a454e4294456f615bd987eb876567ac57d"
     ],
     [
       "tests/tooling/misskey-registry-source.test.mjs",

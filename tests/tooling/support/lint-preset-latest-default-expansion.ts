@@ -191,7 +191,7 @@ function inverseFormatterCompatibility(name: string, body: Buffer): Buffer {
 export function currentPresetCases(body: Buffer, essentialCases: string[], manifest: any): any {
   identity(body, {
     bytes: 12915,
-    sha256: "d347790320c83bbfb0ae513de8781559312766f48ac5c07483ce753146d579ea",
+    sha256: "1908c4ad7c1cc1c5bfb15a6ca32886895a76614450ab2a5fceb1b68505b6a65d",
   });
   const value = JSON.parse(body.toString());
   assert.deepEqual(

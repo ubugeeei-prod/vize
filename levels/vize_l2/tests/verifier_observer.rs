@@ -7,7 +7,7 @@
 //! downcast to the panic payload's concrete type — `std::string::String`
 //! is what `panic!` formats into, so the house string-type lint is
 //! file-allowed here for exactly that downcast, the
-//! `davinci_profile_export.rs` precedent.
+//! `level_profile_export.rs` precedent.
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
@@ -116,14 +116,14 @@ fn a_holding_artifact_passes_every_check_without_panicking() {
         std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("tests")
             .join("fixtures")
-            .join("reference.folio"),
+            .join("reference.dump"),
     )
     .expect("committed reference page reads");
-    let folio = L2Page::parse(&text).expect("the reference page parses");
+    let dump = L2Page::parse(&text).expect("the reference page parses");
 
     let mut verifier = VerifyObserver::new();
     verifier.note(&event);
-    verifier.check(&event, &folio);
+    verifier.check(&event, &dump);
 
     let mut table = SideTable::new();
     for index in 0..9u32 {
@@ -132,7 +132,7 @@ fn a_holding_artifact_passes_every_check_without_panicking() {
             index,
         );
     }
-    verifier.check_table(&event, &folio, &table);
+    verifier.check_table(&event, &dump, &table);
 
     let allocator = Allocator::default();
     verifier.check_live(&event, &allocator, allocator.stamp());
@@ -143,11 +143,11 @@ fn a_holding_artifact_passes_every_check_without_panicking() {
 fn check_panics_with_the_exact_report_naming_the_pass() {
     let pipeline = Pipeline::new("s2", LOWER_ONLY);
     let event = event_for(&pipeline, 0);
-    let folio = empty_if_page();
+    let dump = empty_if_page();
     let mut verifier = VerifyObserver::new();
     verifier.note(&event);
 
-    let payload = catch_unwind(AssertUnwindSafe(|| verifier.check(&event, &folio)))
+    let payload = catch_unwind(AssertUnwindSafe(|| verifier.check(&event, &dump)))
         .expect_err("a canonically invalid page must fail the check");
     let message = payload
         .downcast::<String>()
@@ -164,10 +164,10 @@ fn check_panics_with_the_exact_report_naming_the_pass() {
 fn check_at_raw_rigor_accepts_what_canonical_rigor_rejects() {
     let pipeline = Pipeline::new("s2", WITHOUT_LOWERING);
     let event = event_for(&pipeline, 0);
-    let folio = empty_if_page();
+    let dump = empty_if_page();
     let verifier = VerifyObserver::new();
     // Raw rigor: the structural set holds, so the check returns.
-    verifier.check(&event, &folio);
+    verifier.check(&event, &dump);
 }
 
 #[cfg(debug_assertions)]
@@ -175,7 +175,7 @@ fn check_at_raw_rigor_accepts_what_canonical_rigor_rejects() {
 fn check_table_panics_with_the_exact_report_on_a_dangling_id() {
     let pipeline = Pipeline::new("s2", &[DIAGNOSE]);
     let event = event_for(&pipeline, 0);
-    let folio = L2Page::parse(
+    let dump = L2Page::parse(
         "[l2-dump-v2]\nops=2\n\n[l2-dump-v2.ops]\nui.element div @0:10\n  ui.text \"x\" @2:8\n\n",
     )
     .expect("the page is grammar-valid");
@@ -191,7 +191,7 @@ fn check_table_panics_with_the_exact_report_on_a_dangling_id() {
 
     let verifier = VerifyObserver::new();
     let payload = catch_unwind(AssertUnwindSafe(|| {
-        verifier.check_table(&event, &folio, &table)
+        verifier.check_table(&event, &dump, &table)
     }))
     .expect_err("a dangling reference must fail the check");
     let message = payload

@@ -80,7 +80,7 @@ impl NodeId {
         self.index() as usize
     }
 
-    /// The niche representation, for a folio page that serializes ids.
+    /// The niche representation, for a dump page that serializes ids.
     #[inline]
     #[must_use]
     pub const fn to_raw(self) -> NonZeroU32 {
@@ -105,7 +105,7 @@ impl NodeId {
     }
 }
 
-/// Prints the **index**, not the niche value, because the index is what folio
+/// Prints the **index**, not the niche value, because the index is what dump
 /// pages and diagnostics show: `NodeId(0)` is the first node.
 impl fmt::Debug for NodeId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

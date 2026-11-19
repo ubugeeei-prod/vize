@@ -11,7 +11,7 @@ import {
   divergenceObserver,
 } from "./canonical-corpus-divergence-observers.ts";
 
-const issueLabels = ["area:ci", "area:testing", "area:davinci"];
+const issueLabels = ["area:ci", "area:testing", "area:levels"];
 
 function fixturePaths(ledger) {
   assert.equal(ledger?.schema, "vize.fixtureCompatibilityLedger", "Foreign fixture ledger");
@@ -123,7 +123,7 @@ export function createDivergenceIssue(
     divergenceCount,
   );
   const promotion = validatePromotionReceipt(promotionReceipt, context, digest);
-  const title = `fix(davinci): triage canonical ${observer.label} divergence ${digest}`;
+  const title = `fix(levels): triage canonical ${observer.label} divergence ${digest}`;
   const fixtures = [...new Set(samples.map((sample) => sample.fixturePath))].sort(
     compareCodepoints,
   );
@@ -148,7 +148,7 @@ export function createDivergenceIssue(
       ? "Next action: inspect the reduced witness artifact and commit only the minimized in-repo fixture before fixing the product behavior."
       : "Next action: reproduce the exact comparison from the workflow artifact, minimize it with `vize reduce`, and commit only the minimized in-repo fixture before fixing the product behavior.";
   const body = [
-    `The canonical real-project corpus found ${divergenceCount} legacy-vs-Davinci ${observer.label} output divergence(s).`,
+    `The canonical real-project corpus found ${divergenceCount} legacy-vs-Level ${observer.label} output divergence(s).`,
     "",
     `<!-- vize-real-project-divergence:${observer.id}:${digest} -->`,
     "",

@@ -51,7 +51,7 @@ function regular(root, file) {
 }
 const moduleRoot = fs.realpathSync(new URL("../../../../", import.meta.url));
 const metadataBody = regular(moduleRoot, metadataPath);
-assert.equal(sha(metadataBody), "be19ac68eb39c8964a0faf91bd04a5ce1a8bb4159901025fcc430e631d1bc924");
+assert.equal(sha(metadataBody), "f996990e8927eb5fdd727a1b7975fa9da1a73f2713c675a00d907ea6c8a009b6");
 const metadata = JSON.parse(metadataBody);
 assert.equal(metadata.schema, "vize.empty-vue-star.literal-bd-listing-source");
 assert.equal(metadata.base, base);
@@ -121,7 +121,7 @@ function confirm(owned) {
 
 const setupWorkflows = new Set([".github/workflows/typechecker-native-phases.yml"]);
 /** Recorded by its historical bytes only; the current workflow may change freely. */
-const unpinnedWorkflows = new Set([".github/workflows/davinci-canon-scaling.yml"]);
+const unpinnedWorkflows = new Set([".github/workflows/level-canon-scaling.yml"]);
 /** Historical source stays literal; current CI may use the approved setup changes. */
 export function assertStarListingWorkflowSetup(file, before, after) {
   assert(setupWorkflows.has(file), "only the reviewed current workflow contract");

@@ -6,14 +6,14 @@
   "previousProviderDependencyRecord": {
     "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-dependency-update-12212.json",
     "bytes": 6278,
-    "sha256": "94361b7ab53073c77800589b5ff1bf00b7d65b85826dee8fbe3f263e53336c78",
-    "gitBlob": "9b159eaed38d7bd6cdfa916889f399fc2d5589a5"
+    "sha256": "d740d87c137d3ac3e37cb432c2b8d89e85b6dc5b9107a60b42adaa19b79d412f",
+    "gitBlob": "37b132e56ae6b594c1d09b64ceeb2b283166cafe"
   },
   "providerQualificationRecord": {
     "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-js-tooling-refresh-update-12212.json",
     "bytes": 2624,
-    "sha256": "33ae8c1b412b57b32ca5671758f08d10cfd4389df8164dd78a9d9edda8259b24",
-    "gitBlob": "4fac0dd0f9598354c3d476f97115a27853682792"
+    "sha256": "f2fcec9d83c0597dce0af6fdd477edbda10da5a949255c1ee703e62ddbd0399a",
+    "gitBlob": "9ec51c5068463a3fe40ecfa6ec03a2fd44009f63"
   },
   "wholeBeforeRosterSha256": "00fd44822530b1148837972f142fb41f351a441c0420ce3fe974c0004525e867",
   "changes": [

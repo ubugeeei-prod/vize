@@ -14,7 +14,7 @@ use vize_l1::embed::{
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 use vize_l4::targets::ts::{ProjectionError, project_program};
 
-use davinci_test_support::reference_path_project as project;
+use level_test_support::reference_path_project as project;
 
 #[test]
 fn typed_import_binding_native_file_coverage_remains_unfinished() {

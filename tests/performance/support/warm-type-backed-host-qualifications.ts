@@ -62,7 +62,7 @@ export function qualifyHostMoves(
     digest("before", "tests/performance/support/warm-type-backed-empty-vue-star-host.ts") ===
       null &&
     digest("after", "tests/performance/support/warm-type-backed-empty-vue-star-host.ts") ===
-      "4668a48d816279308c341ff3a7c839dc39ea129a2901b0484b65f4905e00386b" &&
+      "24ada83ae6f7e648f88502d627a798f66bd81a1f0e9ef6c3cf0ce7e7c909102f" &&
     digest("before", "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts") === null &&
     digest("after", "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts") ===
       "3dc6a16c6e9869302858df257d21e2e2b03acdc13606460bd7849d9d9ce28fc2" &&
@@ -86,7 +86,7 @@ export function qualifyHostMoves(
     digest(
       "after",
       "tests/performance/support/warm-type-backed-empty-vue-star-listing-singleton.ts",
-    ) === "ec0fc623eb66eab0df4015d6bfe70cf106d53d427f395c0c1e7d39d060f899f6"
+    ) === "3adbd0a8321675fd27891a5c041c105c22ef5c276a5090ee484870020a69c63f"
       ? qualifyEmptyVueStarListingSingleton(production, alreadyQualified, digest)
       : null;
   const emptyVueStarListingBD = enabled

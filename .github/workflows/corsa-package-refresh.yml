@@ -16,9 +16,9 @@ on:
       - crates/vize_canon/src/corsa_bridge/**
       - crates/vize_canon/src/lsp_client/**
       - crates/vize_canon/src/corsa_server/**
-      - crates/vize_maestro/tests/davinci_ts40_projection*
-      - crates/vize_maestro/tests/davinci_ts40_projection_support/**
-      - crates/vize_maestro/tests/snapshots/davinci_ts40_projection__*
+      - crates/vize_maestro/tests/level_ts40_projection*
+      - crates/vize_maestro/tests/level_ts40_projection_support/**
+      - crates/vize_maestro/tests/snapshots/level_ts40_projection__*
   workflow_dispatch:
     inputs:
       historical:
@@ -140,7 +140,7 @@ jobs:
           args=()
           if [[ "$FEATURE" == legacy ]]; then args+=(--features legacy); fi
           set -o pipefail
-          cargo test --locked --profile ci -p vize_maestro "${args[@]}" --test davinci_ts40_projection -- --nocapture 2>&1 | tee "$RUNNER_TEMP/projection-import-geometry/execution.log"
+          cargo test --locked --profile ci -p vize_maestro "${args[@]}" --test level_ts40_projection -- --nocapture 2>&1 | tee "$RUNNER_TEMP/projection-import-geometry/execution.log"
       - name: Retain pending snapshots for manual review
         if: always()
         run: |

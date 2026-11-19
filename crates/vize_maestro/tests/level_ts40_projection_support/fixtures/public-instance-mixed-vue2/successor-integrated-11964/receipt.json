@@ -39,7 +39,7 @@
     "artifact": {
       "id": 13444742138,
       "name": "component-input-packets-head-d5e55331c62d304e8bab2d5fcbe2097064512d0e-42089460359",
-      "snapshot": "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__vue2-native-event__mixed-vue2__legacy-generators-enabled.snap.new",
+      "snapshot": "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__vue2-native-event__mixed-vue2__legacy-generators-enabled.snap.new",
       "sha256": "ce519376b1c12c5a51cb8952061ffdd3e581745f883ef50d049609552af56281"
     }
   },

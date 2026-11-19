@@ -200,9 +200,9 @@ await test("source-owned comparison retains complete protocol, dependencies and 
     assert.match(result.stderr, reason);
   };
   for (const relative of [
-    "tools/benchmarks/crates/davinci_harness/src/alloc.rs",
-    "tools/benchmarks/crates/davinci_harness/src/report.rs",
-    "tests/davinci_test_support/src/lib.rs",
+    "tools/benchmarks/crates/level_harness/src/alloc.rs",
+    "tools/benchmarks/crates/level_harness/src/report.rs",
+    "tests/level_test_support/src/lib.rs",
     path.relative(f.arms.head.root, f.arms.head.binaries[1].source),
   ]) {
     const file = path.join(f.arms.head.root, relative),
@@ -217,7 +217,7 @@ await test("source-owned comparison retains complete protocol, dependencies and 
   }
   const removed = path.join(
       f.arms.head.root,
-      "tools/benchmarks/crates/davinci_harness/src/report.rs",
+      "tools/benchmarks/crates/level_harness/src/report.rs",
     ),
     removedBody = fs.readFileSync(removed);
   fs.unlinkSync(removed);
@@ -230,8 +230,8 @@ await test("source-owned comparison retains complete protocol, dependencies and 
   const workspace = path.join(f.arms.head.root, "Cargo.toml"),
     workspaceBody = fs.readFileSync(workspace);
   for (const [index, replacement] of [
-    'vize_l0 = { path = "davinci/vize_l0", version = "9.9.9" }',
-    'vize_l0 = { path = "davinci/vize_l0", version = "=0.442.0", features = ["foreign"] }',
+    'vize_l0 = { path = "levels/vize_l0", version = "9.9.9" }',
+    'vize_l0 = { path = "levels/vize_l0", version = "=0.442.0", features = ["foreign"] }',
   ].entries()) {
     fs.writeFileSync(workspace, workspaceBody.toString().replace(/^vize_l0 = .*$/m, replacement));
     f.refresh("head");

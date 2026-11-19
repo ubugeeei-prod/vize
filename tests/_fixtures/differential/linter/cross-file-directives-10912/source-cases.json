@@ -2109,7 +2109,7 @@
       "beforeEvidence": {
         "kind": "new source-only canonical control; exact authored combined baseline must verify the whole before packet",
         "baseline": "5803734f02597be28a52cc19c15014bc5816b413",
-        "syntaxSource": "davinci/vize_l0/src/directive.rs parse_vize_directive/parse_level_severity; docs/content/guide/comment-annotations.md"
+        "syntaxSource": "levels/vize_l0/src/directive.rs parse_vize_directive/parse_level_severity; docs/content/guide/comment-annotations.md"
       },
       "grammar": "existing parenthesized level form; no parser changes"
     },
@@ -2244,7 +2244,7 @@
       "beforeEvidence": {
         "kind": "new source-only canonical control; exact authored combined baseline must verify the whole before packet",
         "baseline": "5803734f02597be28a52cc19c15014bc5816b413",
-        "syntaxSource": "davinci/vize_l0/src/directive.rs parse_vize_directive/parse_level_severity; docs/content/guide/comment-annotations.md"
+        "syntaxSource": "levels/vize_l0/src/directive.rs parse_vize_directive/parse_level_severity; docs/content/guide/comment-annotations.md"
       },
       "grammar": "existing parenthesized level form; no parser changes"
     }

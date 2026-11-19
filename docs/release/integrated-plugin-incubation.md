@@ -34,8 +34,8 @@
 - Shared fixtures: `tests/_fixtures/plugin-plan/resolve` (JS resolves, Rust
   verifies the same digest) and `tests/_fixtures/plugin-plan/verify` (tampered
   plans that Rust must refuse).
-- v1 freeze: `tests/tooling/davinci-plugin-api-v1-freeze.test.ts` with
-  `tests/tooling/fixtures/davinci-plugin-sdk/api-v1-packets.json`.
+- v1 freeze: `tests/tooling/level-plugin-api-v1-freeze.test.ts` with
+  `tests/tooling/fixtures/level-plugin-sdk/api-v1-packets.json`.
 
 - Configuration: the shared projector (`loader/vite-runtime.mjs`) resolves
   `vue.plugins` once for Vite, Vite+, Nuxt, the CLI and the LSP. A non-empty plan

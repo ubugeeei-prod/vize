@@ -35,8 +35,8 @@ const families = [
   {
     name: "level",
     active: "instruction-budgets.toml",
-    rust1991Hash: "f9e6751308604dc6f99dc8d686169a4a83c3e7e75eeb17c81febdce46949ac13",
-    rust1100Hash: "4061584b8044b5c71b6b553e0e81e2161cccfc147774ed4c6018d448778f18bc",
+    rust1991Hash: "ee01be3ead20981a3118b8af33fbd2d143fb7cddf166332f7b3f4fe260a8362a",
+    rust1100Hash: "203e80d4988810c286f6c0f6fbe0170895964c2eac2ce1ed279483e3250a4dbc",
   },
   {
     name: "formatter",

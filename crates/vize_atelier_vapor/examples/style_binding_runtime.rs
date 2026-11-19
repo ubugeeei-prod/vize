@@ -20,7 +20,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 source,
                 VaporCompilerOptions {
                     prefix_identifiers: true,
-                    davinci_retained_lane: true,
+                    level_retained_lane: true,
                     ..Default::default()
                 },
             )

@@ -14,34 +14,31 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <nav class="davinci-rail" aria-label="Compiler stages">
+  <nav class="level-rail" aria-label="Compiler stages">
     <template v-for="rung in rungs" :key="rung.id">
       <button
         type="button"
-        :class="[
-          'davinci-station',
-          { active: selected === rung.id, empty: rung.pages.length === 0 },
-        ]"
+        :class="['level-station', { active: selected === rung.id, empty: rung.pages.length === 0 }]"
         :aria-pressed="selected === rung.id"
         :data-stage="rung.id"
         @click="() => emit('select', rung.id)"
       >
-        <span class="davinci-station-ordinal">{{ rung.ordinal }}</span>
-        <span class="davinci-station-name">{{ rung.name }}</span>
-        <span class="davinci-station-facts">{{ rung.facts.join(", ") || "no page" }}</span>
+        <span class="level-station-ordinal">{{ rung.ordinal }}</span>
+        <span class="level-station-name">{{ rung.name }}</span>
+        <span class="level-station-facts">{{ rung.facts.join(", ") || "no page" }}</span>
       </button>
-      <span class="davinci-pounce" aria-hidden="true"></span>
+      <span class="level-pounce" aria-hidden="true"></span>
     </template>
     <button
       type="button"
-      :class="['davinci-station', { active: selected === 'l4' }]"
+      :class="['level-station', { active: selected === 'l4' }]"
       :aria-pressed="selected === 'l4'"
       data-stage="l4"
       @click="() => emit('select', 'l4')"
     >
-      <span class="davinci-station-ordinal">L4</span>
-      <span class="davinci-station-name">Emit</span>
-      <span class="davinci-station-facts">Backend + SFC module</span>
+      <span class="level-station-ordinal">L4</span>
+      <span class="level-station-name">Emit</span>
+      <span class="level-station-facts">Backend + SFC module</span>
     </button>
   </nav>
 </template>

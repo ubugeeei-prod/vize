@@ -6,7 +6,7 @@ import { createRequire } from "node:module";
 import { captureVaporProcess } from "./support/native-vapor-process-capture.mjs";
 
 const fixture = new URL(
-  "../../davinci/vize_l4/tests/fixtures/native-vapor-static-class-controls.json",
+  "../../levels/vize_l4/tests/fixtures/native-vapor-static-class-controls.json",
   import.meta.url,
 );
 const source = JSON.parse(readFileSync(fixture, "utf8"));

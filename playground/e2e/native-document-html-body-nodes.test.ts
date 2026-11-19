@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import corpus from "../../davinci/vize_l1/tests/fixtures/document/html-body-nodes.json";
+import corpus from "../../levels/vize_l1/tests/fixtures/document/html-body-nodes.json";
 
 // Rust consumes these same whole original sources and body child-node arrays.
 // The last three characterize genuine browser insertion that native body nodes

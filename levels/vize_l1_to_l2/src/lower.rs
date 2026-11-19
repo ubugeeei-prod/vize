@@ -24,7 +24,7 @@
 //! [`L2Page`]: vize_l2::dump::Page
 //! [`SurfaceError`]: vize_l1::markup::SurfaceError
 
-#[cfg(feature = "davinci-benchmark-profile")]
+#[cfg(feature = "level-benchmark-profile")]
 mod benchmark;
 mod binding;
 mod bindop;

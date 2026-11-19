@@ -13,7 +13,7 @@ Follow the [relationship map](#project-relationship-map) from your entry pointâ€
 [Source Guide](./source-guide.md) to find files and the [Crate Reference](./crates.md) to identify APIs.
 
 The diagrams describe the existing product pipeline under `crates/`. The experimental level
-pipeline lives separately under `davinci/`; its roadmap and migration gates are recorded in the
+pipeline lives separately under `levels/`; its roadmap and migration gates are recorded in the
 [level restructure decision](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-09-27-level-restructure%2Emd).
 Internal architecture continues to change.
 

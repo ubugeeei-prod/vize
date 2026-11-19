@@ -185,7 +185,7 @@ fn forwarding_slot_roots_match_the_retained_lane_and_runtime_flags() {
             &allocator,
             source,
             crate::VaporCompilerOptions {
-                davinci_retained_lane: true,
+                level_retained_lane: true,
                 ..Default::default()
             },
         );

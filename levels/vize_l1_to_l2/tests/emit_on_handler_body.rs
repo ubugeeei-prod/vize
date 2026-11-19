@@ -25,7 +25,7 @@ fn assembled_with_options(source: &str, is_ts: bool) -> String {
 }
 
 fn assembled_prefixed(source: &str, prefix_identifiers: bool, is_ts: bool) -> String {
-    with_transformed(source, |lowered, _folio, facts, _budget| {
+    with_transformed(source, |lowered, _dump, facts, _budget| {
         emit_dom_with_options(
             lowered,
             facts,

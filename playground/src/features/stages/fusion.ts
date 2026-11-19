@@ -1,7 +1,7 @@
 import { layerId } from "../../wasm/types/stages";
 
 // The L2 transform plan's walks (C-3), read off the compiler's
-// `[fusion-plan-folio]` page: which passes share one traversal. The pass
+// `[fusion-plan-dump]` page: which passes share one traversal. The pass
 // manager fuses adjacent fusable passes into one walk and times the walk,
 // not its passes, so a timing view needs this page to read the profile
 // honestly - nothing here infers a walk from names or timings.
@@ -28,21 +28,21 @@ export interface TimelineWalk {
   passes: string[];
   /** Whether the walk is a fusable group rather than a lone barrier. */
   fusable: boolean;
-  /** Measured walk time (profile key `davinci.pass.walk`), when profiled. */
+  /** Measured walk time (profile key `levels.pass.walk`), when profiled. */
   nanos: number | null;
 }
 
 const PASS_LINE = /^walk=(\d+) pass=(\S+) kind=(\S+) fusability=(fusable|barrier)$/;
 
-/** Parse a `[fusion-plan-folio]` page, or `null` when the text is not one. */
+/** Parse a `[fusion-plan-dump]` page, or `null` when the text is not one. */
 export function parseFusionPlan(text: string): FusionPlan | null {
   const lines = text.split("\n");
-  if (lines[0] !== "[fusion-plan-folio]") return null;
+  if (lines[0] !== "[fusion-plan-dump]") return null;
   const stage = /^stage=(\S+)$/.exec(lines[1] ?? "")?.[1];
   const walks = /^walks=(\d+)$/.exec(lines[2] ?? "")?.[1];
   if (stage === undefined || walks === undefined) return null;
   const passes: PlanPass[] = [];
-  const start = lines.indexOf("[fusion-plan-folio.passes]");
+  const start = lines.indexOf("[fusion-plan-dump.passes]");
   for (const line of start === -1 ? [] : lines.slice(start + 1)) {
     if (line === "") break;
     const match = PASS_LINE.exec(line);

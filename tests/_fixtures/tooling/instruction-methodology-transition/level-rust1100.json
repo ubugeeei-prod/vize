@@ -24,542 +24,542 @@
         "window": "routine-return"
       },
       "armature_tokenize_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 3679,
         "window": "routine-return"
       },
       "armature_parse_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 31368,
         "window": "routine-return"
       },
       "armature_tokenize_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 43209,
         "window": "routine-return"
       },
       "armature_parse_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 244853,
         "window": "routine-return"
       },
       "armature_tokenize_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 196276,
         "window": "routine-return"
       },
       "armature_parse_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 883480,
         "window": "routine-return"
       },
       "armature_tokenize_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 215208,
         "window": "routine-return"
       },
       "armature_parse_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 630359,
         "window": "routine-return"
       },
       "armature_tokenize_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 110540,
         "window": "routine-return"
       },
       "armature_parse_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 1744886,
         "window": "routine-return"
       },
       "armature_tokenize_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 147230,
         "window": "routine-return"
       },
       "armature_parse_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 1483209,
         "window": "routine-return"
       },
       "croquis_analyze_full_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 150253,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 89618,
         "window": "routine-return"
       },
       "croquis_analyze_full_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 196239,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 154022,
         "window": "routine-return"
       },
       "croquis_analyze_full_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 2789255,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 2417796,
         "window": "routine-return"
       },
       "croquis_analyze_full_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 230116,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 185719,
         "window": "routine-return"
       },
       "croquis_analyze_full_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 576636,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 487322,
         "window": "routine-return"
       },
       "croquis_analyze_full_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 1082596,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 226884,
         "window": "routine-return"
       },
       "croquis_hoist_gate_off_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 92066,
         "window": "routine-return"
       },
       "croquis_hoist_gate_on_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 92176,
         "window": "routine-return"
       },
       "atelier_core_transform_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 29105,
         "window": "stage-return"
       },
       "atelier_core_transform_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 55945,
         "window": "stage-return"
       },
       "atelier_core_transform_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 85216,
         "window": "stage-return"
       },
       "atelier_core_transform_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 52294,
         "window": "stage-return"
       },
       "atelier_core_transform_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 13060,
         "window": "stage-return"
       },
       "atelier_core_transform_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 197223,
         "window": "stage-return"
       },
       "atelier_dom_transform_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 29642,
         "window": "stage-return"
       },
       "atelier_dom_codegen_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 31090,
         "window": "routine-return"
       },
       "atelier_dom_compile_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 101691,
         "window": "routine-return"
       },
       "atelier_dom_transform_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 89006,
         "window": "stage-return"
       },
       "atelier_dom_codegen_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 239909,
         "window": "routine-return"
       },
       "atelier_dom_compile_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 1018518,
         "window": "routine-return"
       },
       "atelier_dom_transform_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 109499,
         "window": "stage-return"
       },
       "atelier_dom_codegen_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 797156,
         "window": "routine-return"
       },
       "atelier_dom_compile_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 3447664,
         "window": "routine-return"
       },
       "atelier_dom_transform_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 81762,
         "window": "stage-return"
       },
       "atelier_dom_codegen_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 368452,
         "window": "routine-return"
       },
       "atelier_dom_compile_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 2034972,
         "window": "routine-return"
       },
       "atelier_dom_transform_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 17283,
         "window": "stage-return"
       },
       "atelier_dom_codegen_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 716701,
         "window": "routine-return"
       },
       "atelier_dom_compile_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 3192659,
         "window": "routine-return"
       },
       "atelier_dom_transform_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 214759,
         "window": "stage-return"
       },
       "atelier_dom_codegen_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 885278,
         "window": "routine-return"
       },
       "atelier_dom_compile_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 4045824,
         "window": "routine-return"
       },
       "atelier_vapor_transform_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 29357,
         "window": "stage-return"
       },
       "atelier_vapor_lower_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 10478,
         "window": "stage-return"
       },
       "atelier_vapor_generate_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 44229,
         "window": "routine-return"
       },
       "atelier_vapor_compile_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 128498,
         "window": "routine-return"
       },
       "atelier_vapor_transform_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 57360,
         "window": "stage-return"
       },
       "atelier_vapor_lower_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 64506,
         "window": "stage-return"
       },
       "atelier_vapor_generate_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 344130,
         "window": "routine-return"
       },
       "atelier_vapor_compile_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 1049199,
         "window": "routine-return"
       },
       "atelier_vapor_transform_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 91338,
         "window": "stage-return"
       },
       "atelier_vapor_lower_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 75856,
         "window": "stage-return"
       },
       "atelier_vapor_generate_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 884066,
         "window": "routine-return"
       },
       "atelier_vapor_compile_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 3306664,
         "window": "routine-return"
       },
       "atelier_vapor_transform_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 57695,
         "window": "stage-return"
       },
       "atelier_vapor_lower_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 175382,
         "window": "stage-return"
       },
       "atelier_vapor_generate_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 376018,
         "window": "routine-return"
       },
       "atelier_vapor_compile_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 1820573,
         "window": "routine-return"
       },
       "atelier_vapor_transform_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 13920,
         "window": "stage-return"
       },
       "atelier_vapor_lower_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 102053,
         "window": "stage-return"
       },
       "atelier_vapor_generate_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 578411,
         "window": "routine-return"
       },
       "atelier_vapor_compile_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 1956226,
         "window": "routine-return"
       },
       "atelier_vapor_transform_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 198688,
         "window": "stage-return"
       },
       "atelier_vapor_lower_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 370945,
         "window": "stage-return"
       },
       "atelier_vapor_generate_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 1697042,
         "window": "routine-return"
       },
       "atelier_vapor_compile_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 5277782,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 30020,
         "window": "stage-return"
       },
       "atelier_ssr_compile_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 147843,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 618780,
         "window": "stage-return"
       },
       "atelier_ssr_compile_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 1691883,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 801155,
         "window": "stage-return"
       },
       "atelier_ssr_compile_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 4009685,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 272671,
         "window": "stage-return"
       },
       "atelier_ssr_compile_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 2518883,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 310793,
         "window": "stage-return"
       },
       "atelier_ssr_compile_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 3086020,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 764804,
         "window": "stage-return"
       },
       "atelier_ssr_compile_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 9669360,
         "window": "routine-return"
       },
-      "davinci_pipeline_unobserved": {
-        "fixture": "davinci/vize_l0/benches/pass_runtime.rs",
-        "fixture_sha256": "de92f1a3da8d0ec2e85d94062bddfbcd9cdd1a8775f0b0ed12915ccf692651a1",
+      "level_pipeline_unobserved": {
+        "fixture": "levels/vize_l0/benches/pass_runtime.rs",
+        "fixture_sha256": "f1edfc3704cc77b650659c7acd501b91995ed7f70c87ad97c26d2d8356614e85",
         "instructions": 5,
         "window": "routine-return"
       },
-      "davinci_pipeline_no_observer": {
-        "fixture": "davinci/vize_l0/benches/pass_runtime.rs",
-        "fixture_sha256": "de92f1a3da8d0ec2e85d94062bddfbcd9cdd1a8775f0b0ed12915ccf692651a1",
+      "level_pipeline_no_observer": {
+        "fixture": "levels/vize_l0/benches/pass_runtime.rs",
+        "fixture_sha256": "f1edfc3704cc77b650659c7acd501b91995ed7f70c87ad97c26d2d8356614e85",
         "instructions": 5,
         "window": "routine-return"
       },
-      "davinci_fact_query_unobserved": {
-        "fixture": "davinci/vize_l0/benches/fact_runtime.rs",
-        "fixture_sha256": "c60dc63e4e974698c11052c32c4e147b58f0695e4a674aec49f47199408fceb4",
+      "level_fact_query_unobserved": {
+        "fixture": "levels/vize_l0/benches/fact_runtime.rs",
+        "fixture_sha256": "bd2f38a6f42932f08a5da509e691b457b42b1d53002d9287e8b4a814bf5c1836",
         "instructions": 6228,
         "window": "routine-return"
       },
-      "davinci_fact_query_observed": {
-        "fixture": "davinci/vize_l0/benches/fact_runtime.rs",
-        "fixture_sha256": "c60dc63e4e974698c11052c32c4e147b58f0695e4a674aec49f47199408fceb4",
+      "level_fact_query_observed": {
+        "fixture": "levels/vize_l0/benches/fact_runtime.rs",
+        "fixture_sha256": "bd2f38a6f42932f08a5da509e691b457b42b1d53002d9287e8b4a814bf5c1836",
         "instructions": 6079,
         "window": "routine-return"
       },
@@ -582,7 +582,7 @@
         "window": "stage-return"
       },
       "s1_to_s2_emit_helper_rich_large": {
-        "fixture": "fixture:davinci/vize_l1_to_l2/benches/fixtures/helper-rich-large.vue",
+        "fixture": "fixture:levels/vize_l1_to_l2/benches/fixtures/helper-rich-large.vue",
         "fixture_sha256": "58de8952218e12d99610f9eae29ef5e694562b792b3671c706e98d43d70d45a3",
         "instructions": 13287694,
         "window": "stage-return"
@@ -632,542 +632,542 @@
         "window": "routine-return"
       },
       "armature_tokenize_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 3679,
         "window": "routine-return"
       },
       "armature_parse_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 31368,
         "window": "routine-return"
       },
       "armature_tokenize_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 43209,
         "window": "routine-return"
       },
       "armature_parse_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 244853,
         "window": "routine-return"
       },
       "armature_tokenize_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 196276,
         "window": "routine-return"
       },
       "armature_parse_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 883480,
         "window": "routine-return"
       },
       "armature_tokenize_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 215208,
         "window": "routine-return"
       },
       "armature_parse_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 630359,
         "window": "routine-return"
       },
       "armature_tokenize_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 110540,
         "window": "routine-return"
       },
       "armature_parse_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 1744886,
         "window": "routine-return"
       },
       "armature_tokenize_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 147230,
         "window": "routine-return"
       },
       "armature_parse_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 1483209,
         "window": "routine-return"
       },
       "croquis_analyze_full_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 150253,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 89618,
         "window": "routine-return"
       },
       "croquis_analyze_full_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 196239,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 154022,
         "window": "routine-return"
       },
       "croquis_analyze_full_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 2789255,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 2417796,
         "window": "routine-return"
       },
       "croquis_analyze_full_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 230116,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 185719,
         "window": "routine-return"
       },
       "croquis_analyze_full_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 576636,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 487322,
         "window": "routine-return"
       },
       "croquis_analyze_full_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 1082596,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 226884,
         "window": "routine-return"
       },
       "croquis_hoist_gate_off_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 92066,
         "window": "routine-return"
       },
       "croquis_hoist_gate_on_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 92176,
         "window": "routine-return"
       },
       "atelier_core_transform_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 29105,
         "window": "stage-return"
       },
       "atelier_core_transform_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 55945,
         "window": "stage-return"
       },
       "atelier_core_transform_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 85216,
         "window": "stage-return"
       },
       "atelier_core_transform_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 52294,
         "window": "stage-return"
       },
       "atelier_core_transform_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 13060,
         "window": "stage-return"
       },
       "atelier_core_transform_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 197223,
         "window": "stage-return"
       },
       "atelier_dom_transform_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 29642,
         "window": "stage-return"
       },
       "atelier_dom_codegen_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 31090,
         "window": "routine-return"
       },
       "atelier_dom_compile_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 101691,
         "window": "routine-return"
       },
       "atelier_dom_transform_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 89006,
         "window": "stage-return"
       },
       "atelier_dom_codegen_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 239909,
         "window": "routine-return"
       },
       "atelier_dom_compile_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 1018518,
         "window": "routine-return"
       },
       "atelier_dom_transform_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 109499,
         "window": "stage-return"
       },
       "atelier_dom_codegen_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 797156,
         "window": "routine-return"
       },
       "atelier_dom_compile_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 3447664,
         "window": "routine-return"
       },
       "atelier_dom_transform_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 81762,
         "window": "stage-return"
       },
       "atelier_dom_codegen_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 368452,
         "window": "routine-return"
       },
       "atelier_dom_compile_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 2034972,
         "window": "routine-return"
       },
       "atelier_dom_transform_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 17283,
         "window": "stage-return"
       },
       "atelier_dom_codegen_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 716701,
         "window": "routine-return"
       },
       "atelier_dom_compile_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 3192659,
         "window": "routine-return"
       },
       "atelier_dom_transform_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 214759,
         "window": "stage-return"
       },
       "atelier_dom_codegen_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 885278,
         "window": "routine-return"
       },
       "atelier_dom_compile_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 4045824,
         "window": "routine-return"
       },
       "atelier_vapor_transform_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 29357,
         "window": "stage-return"
       },
       "atelier_vapor_lower_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 10478,
         "window": "stage-return"
       },
       "atelier_vapor_generate_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 44229,
         "window": "routine-return"
       },
       "atelier_vapor_compile_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 128498,
         "window": "routine-return"
       },
       "atelier_vapor_transform_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 57360,
         "window": "stage-return"
       },
       "atelier_vapor_lower_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 64506,
         "window": "stage-return"
       },
       "atelier_vapor_generate_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 344130,
         "window": "routine-return"
       },
       "atelier_vapor_compile_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 1049199,
         "window": "routine-return"
       },
       "atelier_vapor_transform_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 91338,
         "window": "stage-return"
       },
       "atelier_vapor_lower_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 75856,
         "window": "stage-return"
       },
       "atelier_vapor_generate_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 884066,
         "window": "routine-return"
       },
       "atelier_vapor_compile_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 3306664,
         "window": "routine-return"
       },
       "atelier_vapor_transform_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 57695,
         "window": "stage-return"
       },
       "atelier_vapor_lower_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 175382,
         "window": "stage-return"
       },
       "atelier_vapor_generate_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 376018,
         "window": "routine-return"
       },
       "atelier_vapor_compile_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 1820573,
         "window": "routine-return"
       },
       "atelier_vapor_transform_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 13920,
         "window": "stage-return"
       },
       "atelier_vapor_lower_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 102053,
         "window": "stage-return"
       },
       "atelier_vapor_generate_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 578411,
         "window": "routine-return"
       },
       "atelier_vapor_compile_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 1956226,
         "window": "routine-return"
       },
       "atelier_vapor_transform_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 198688,
         "window": "stage-return"
       },
       "atelier_vapor_lower_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 370945,
         "window": "stage-return"
       },
       "atelier_vapor_generate_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 1697042,
         "window": "routine-return"
       },
       "atelier_vapor_compile_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 5277782,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 30020,
         "window": "stage-return"
       },
       "atelier_ssr_compile_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 147843,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 618780,
         "window": "stage-return"
       },
       "atelier_ssr_compile_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 1691883,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 801155,
         "window": "stage-return"
       },
       "atelier_ssr_compile_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 4009685,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 272671,
         "window": "stage-return"
       },
       "atelier_ssr_compile_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 2518883,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 310793,
         "window": "stage-return"
       },
       "atelier_ssr_compile_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 3086020,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 764804,
         "window": "stage-return"
       },
       "atelier_ssr_compile_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 9669360,
         "window": "routine-return"
       },
-      "davinci_pipeline_unobserved": {
-        "fixture": "davinci/vize_l0/benches/pass_runtime.rs",
-        "fixture_sha256": "de92f1a3da8d0ec2e85d94062bddfbcd9cdd1a8775f0b0ed12915ccf692651a1",
+      "level_pipeline_unobserved": {
+        "fixture": "levels/vize_l0/benches/pass_runtime.rs",
+        "fixture_sha256": "f1edfc3704cc77b650659c7acd501b91995ed7f70c87ad97c26d2d8356614e85",
         "instructions": 5,
         "window": "routine-return"
       },
-      "davinci_pipeline_no_observer": {
-        "fixture": "davinci/vize_l0/benches/pass_runtime.rs",
-        "fixture_sha256": "de92f1a3da8d0ec2e85d94062bddfbcd9cdd1a8775f0b0ed12915ccf692651a1",
+      "level_pipeline_no_observer": {
+        "fixture": "levels/vize_l0/benches/pass_runtime.rs",
+        "fixture_sha256": "f1edfc3704cc77b650659c7acd501b91995ed7f70c87ad97c26d2d8356614e85",
         "instructions": 5,
         "window": "routine-return"
       },
-      "davinci_fact_query_unobserved": {
-        "fixture": "davinci/vize_l0/benches/fact_runtime.rs",
-        "fixture_sha256": "c60dc63e4e974698c11052c32c4e147b58f0695e4a674aec49f47199408fceb4",
+      "level_fact_query_unobserved": {
+        "fixture": "levels/vize_l0/benches/fact_runtime.rs",
+        "fixture_sha256": "bd2f38a6f42932f08a5da509e691b457b42b1d53002d9287e8b4a814bf5c1836",
         "instructions": 6228,
         "window": "routine-return"
       },
-      "davinci_fact_query_observed": {
-        "fixture": "davinci/vize_l0/benches/fact_runtime.rs",
-        "fixture_sha256": "c60dc63e4e974698c11052c32c4e147b58f0695e4a674aec49f47199408fceb4",
+      "level_fact_query_observed": {
+        "fixture": "levels/vize_l0/benches/fact_runtime.rs",
+        "fixture_sha256": "bd2f38a6f42932f08a5da509e691b457b42b1d53002d9287e8b4a814bf5c1836",
         "instructions": 6079,
         "window": "routine-return"
       },
@@ -1190,7 +1190,7 @@
         "window": "stage-return"
       },
       "s1_to_s2_emit_helper_rich_large": {
-        "fixture": "fixture:davinci/vize_l1_to_l2/benches/fixtures/helper-rich-large.vue",
+        "fixture": "fixture:levels/vize_l1_to_l2/benches/fixtures/helper-rich-large.vue",
         "fixture_sha256": "58de8952218e12d99610f9eae29ef5e694562b792b3671c706e98d43d70d45a3",
         "instructions": 13287694,
         "window": "stage-return"
@@ -1240,542 +1240,542 @@
         "window": "routine-return"
       },
       "armature_tokenize_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 3679,
         "window": "routine-return"
       },
       "armature_parse_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 31368,
         "window": "routine-return"
       },
       "armature_tokenize_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 43209,
         "window": "routine-return"
       },
       "armature_parse_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 244853,
         "window": "routine-return"
       },
       "armature_tokenize_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 196276,
         "window": "routine-return"
       },
       "armature_parse_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 883480,
         "window": "routine-return"
       },
       "armature_tokenize_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 215208,
         "window": "routine-return"
       },
       "armature_parse_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 630359,
         "window": "routine-return"
       },
       "armature_tokenize_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 110540,
         "window": "routine-return"
       },
       "armature_parse_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 1744886,
         "window": "routine-return"
       },
       "armature_tokenize_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 147230,
         "window": "routine-return"
       },
       "armature_parse_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 1483209,
         "window": "routine-return"
       },
       "croquis_analyze_full_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 150253,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 89618,
         "window": "routine-return"
       },
       "croquis_analyze_full_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 196239,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 154022,
         "window": "routine-return"
       },
       "croquis_analyze_full_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 2789255,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 2417796,
         "window": "routine-return"
       },
       "croquis_analyze_full_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 230116,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 185719,
         "window": "routine-return"
       },
       "croquis_analyze_full_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 576636,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 487322,
         "window": "routine-return"
       },
       "croquis_analyze_full_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 1082596,
         "window": "routine-return"
       },
       "croquis_analyze_for_compile_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 226884,
         "window": "routine-return"
       },
       "croquis_hoist_gate_off_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 92066,
         "window": "routine-return"
       },
       "croquis_hoist_gate_on_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 92176,
         "window": "routine-return"
       },
       "atelier_core_transform_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 29105,
         "window": "stage-return"
       },
       "atelier_core_transform_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 55945,
         "window": "stage-return"
       },
       "atelier_core_transform_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 85216,
         "window": "stage-return"
       },
       "atelier_core_transform_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 52294,
         "window": "stage-return"
       },
       "atelier_core_transform_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 13060,
         "window": "stage-return"
       },
       "atelier_core_transform_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 197223,
         "window": "stage-return"
       },
       "atelier_dom_transform_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 29642,
         "window": "stage-return"
       },
       "atelier_dom_codegen_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 31090,
         "window": "routine-return"
       },
       "atelier_dom_compile_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 101691,
         "window": "routine-return"
       },
       "atelier_dom_transform_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 89006,
         "window": "stage-return"
       },
       "atelier_dom_codegen_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 239909,
         "window": "routine-return"
       },
       "atelier_dom_compile_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 1018518,
         "window": "routine-return"
       },
       "atelier_dom_transform_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 109499,
         "window": "stage-return"
       },
       "atelier_dom_codegen_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 797156,
         "window": "routine-return"
       },
       "atelier_dom_compile_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 3447664,
         "window": "routine-return"
       },
       "atelier_dom_transform_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 81762,
         "window": "stage-return"
       },
       "atelier_dom_codegen_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 368452,
         "window": "routine-return"
       },
       "atelier_dom_compile_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 2034972,
         "window": "routine-return"
       },
       "atelier_dom_transform_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 17283,
         "window": "stage-return"
       },
       "atelier_dom_codegen_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 716701,
         "window": "routine-return"
       },
       "atelier_dom_compile_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 3192659,
         "window": "routine-return"
       },
       "atelier_dom_transform_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 214759,
         "window": "stage-return"
       },
       "atelier_dom_codegen_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 885278,
         "window": "routine-return"
       },
       "atelier_dom_compile_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 4045824,
         "window": "routine-return"
       },
       "atelier_vapor_transform_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 29357,
         "window": "stage-return"
       },
       "atelier_vapor_lower_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 10478,
         "window": "stage-return"
       },
       "atelier_vapor_generate_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 44229,
         "window": "routine-return"
       },
       "atelier_vapor_compile_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 128498,
         "window": "routine-return"
       },
       "atelier_vapor_transform_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 57360,
         "window": "stage-return"
       },
       "atelier_vapor_lower_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 64506,
         "window": "stage-return"
       },
       "atelier_vapor_generate_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 344130,
         "window": "routine-return"
       },
       "atelier_vapor_compile_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 1049199,
         "window": "routine-return"
       },
       "atelier_vapor_transform_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 91338,
         "window": "stage-return"
       },
       "atelier_vapor_lower_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 75856,
         "window": "stage-return"
       },
       "atelier_vapor_generate_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 884066,
         "window": "routine-return"
       },
       "atelier_vapor_compile_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 3306664,
         "window": "routine-return"
       },
       "atelier_vapor_transform_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 57695,
         "window": "stage-return"
       },
       "atelier_vapor_lower_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 175382,
         "window": "stage-return"
       },
       "atelier_vapor_generate_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 376018,
         "window": "routine-return"
       },
       "atelier_vapor_compile_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 1820573,
         "window": "routine-return"
       },
       "atelier_vapor_transform_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 13920,
         "window": "stage-return"
       },
       "atelier_vapor_lower_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 102053,
         "window": "stage-return"
       },
       "atelier_vapor_generate_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 578411,
         "window": "routine-return"
       },
       "atelier_vapor_compile_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 1956226,
         "window": "routine-return"
       },
       "atelier_vapor_transform_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 198688,
         "window": "stage-return"
       },
       "atelier_vapor_lower_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 370945,
         "window": "stage-return"
       },
       "atelier_vapor_generate_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 1697042,
         "window": "routine-return"
       },
       "atelier_vapor_compile_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 5277782,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 30020,
         "window": "stage-return"
       },
       "atelier_ssr_compile_small": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/small.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/small.vue",
         "fixture_sha256": "ef9085ae0ab29f6b78b63501bd59d8c082c0bd61a121ff40e184d1e451cee5c4",
         "instructions": 147843,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 618780,
         "window": "stage-return"
       },
       "atelier_ssr_compile_medium": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/medium.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/medium.vue",
         "fixture_sha256": "3441d40e72fe4389030fa0aa89928ad89c21fda4c582e40cdefc90ca2747b3bb",
         "instructions": 1691883,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 801155,
         "window": "stage-return"
       },
       "atelier_ssr_compile_large": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/large.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/large.vue",
         "fixture_sha256": "de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751",
         "instructions": 4009685,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 272671,
         "window": "stage-return"
       },
       "atelier_ssr_compile_stress-deep": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-deep.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-deep.vue",
         "fixture_sha256": "3998942a7f6d01c8c6c049c948f66536a39fde77a890cc02b2d51d62cb9da1e9",
         "instructions": 2518883,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 310793,
         "window": "stage-return"
       },
       "atelier_ssr_compile_stress-wide": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-wide.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-wide.vue",
         "fixture_sha256": "25634390c7046b6842046bdfcbbd7fe9f460b46ecba78e2f0d00ecf509f7e866",
         "instructions": 3086020,
         "window": "routine-return"
       },
       "atelier_ssr_codegen_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 764804,
         "window": "stage-return"
       },
       "atelier_ssr_compile_stress-interp": {
-        "fixture": "tools/benchmarks/crates/davinci_harness/fixtures/stress-interp.vue",
+        "fixture": "tools/benchmarks/crates/level_harness/fixtures/stress-interp.vue",
         "fixture_sha256": "d21d6b6944f6fb4f02b5c545e65e3ee87170ee386f5ac5792be37e40235a9f92",
         "instructions": 9669360,
         "window": "routine-return"
       },
-      "davinci_pipeline_unobserved": {
-        "fixture": "davinci/vize_l0/benches/pass_runtime.rs",
-        "fixture_sha256": "de92f1a3da8d0ec2e85d94062bddfbcd9cdd1a8775f0b0ed12915ccf692651a1",
+      "level_pipeline_unobserved": {
+        "fixture": "levels/vize_l0/benches/pass_runtime.rs",
+        "fixture_sha256": "f1edfc3704cc77b650659c7acd501b91995ed7f70c87ad97c26d2d8356614e85",
         "instructions": 5,
         "window": "routine-return"
       },
-      "davinci_pipeline_no_observer": {
-        "fixture": "davinci/vize_l0/benches/pass_runtime.rs",
-        "fixture_sha256": "de92f1a3da8d0ec2e85d94062bddfbcd9cdd1a8775f0b0ed12915ccf692651a1",
+      "level_pipeline_no_observer": {
+        "fixture": "levels/vize_l0/benches/pass_runtime.rs",
+        "fixture_sha256": "f1edfc3704cc77b650659c7acd501b91995ed7f70c87ad97c26d2d8356614e85",
         "instructions": 5,
         "window": "routine-return"
       },
-      "davinci_fact_query_unobserved": {
-        "fixture": "davinci/vize_l0/benches/fact_runtime.rs",
-        "fixture_sha256": "c60dc63e4e974698c11052c32c4e147b58f0695e4a674aec49f47199408fceb4",
+      "level_fact_query_unobserved": {
+        "fixture": "levels/vize_l0/benches/fact_runtime.rs",
+        "fixture_sha256": "bd2f38a6f42932f08a5da509e691b457b42b1d53002d9287e8b4a814bf5c1836",
         "instructions": 6228,
         "window": "routine-return"
       },
-      "davinci_fact_query_observed": {
-        "fixture": "davinci/vize_l0/benches/fact_runtime.rs",
-        "fixture_sha256": "c60dc63e4e974698c11052c32c4e147b58f0695e4a674aec49f47199408fceb4",
+      "level_fact_query_observed": {
+        "fixture": "levels/vize_l0/benches/fact_runtime.rs",
+        "fixture_sha256": "bd2f38a6f42932f08a5da509e691b457b42b1d53002d9287e8b4a814bf5c1836",
         "instructions": 6079,
         "window": "routine-return"
       },
@@ -1798,7 +1798,7 @@
         "window": "stage-return"
       },
       "s1_to_s2_emit_helper_rich_large": {
-        "fixture": "fixture:davinci/vize_l1_to_l2/benches/fixtures/helper-rich-large.vue",
+        "fixture": "fixture:levels/vize_l1_to_l2/benches/fixtures/helper-rich-large.vue",
         "fixture_sha256": "58de8952218e12d99610f9eae29ef5e694562b792b3671c706e98d43d70d45a3",
         "instructions": 13287694,
         "window": "stage-return"

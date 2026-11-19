@@ -27,7 +27,7 @@ type Fixture = {
 const pack = JSON.parse(
   readFileSync(
     new URL(
-      "../../davinci/vize_l1/tests/fixtures/native-root-text-vue-3.5.35.json",
+      "../../levels/vize_l1/tests/fixtures/native-root-text-vue-3.5.35.json",
       import.meta.url,
     ),
     "utf8",

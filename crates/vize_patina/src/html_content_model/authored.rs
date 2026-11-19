@@ -1,4 +1,4 @@
-//! Which parse the checker reads (Davinci P4-11a).
+//! Which parse the checker reads (plan P4-11a).
 //!
 //! The checker needs the template **as authored**. The linter's own
 //! (`Standard`) parse builds a Vue 3 template as written, but repairs tree

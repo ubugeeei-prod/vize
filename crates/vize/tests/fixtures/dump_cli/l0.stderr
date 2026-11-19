@@ -1,6 +1,6 @@
 error: invalid value 'l0' for '--level <LEVEL>'
   [possible values: l1, l2, l3]
 
-  tip: L0 is the folio Dump substrate, not a stage page, so it has no roundtrip
+  tip: L0 is the dump Dump substrate, not a stage page, so it has no roundtrip
 
 For more information, try '--help'.

@@ -1,4 +1,4 @@
-//! Line grammar of the disegno ops section: one op (or structural) line
+//! Line grammar of the l2 ops section: one op (or structural) line
 //! in, one parsed item out.
 //!
 //! Expression positions hold the payload tokens of

@@ -33,23 +33,23 @@ const context = {
 type Shard = { inline: number | null; module?: number; lines?: string[] };
 
 function counter(scope: string, shape: string, divergences: number): string {
-  return `davinci production reach: shape=${shape} stage="L2" templates=3 accepted=3 permille=1000 ready=0 legacy={} rejected=0 routed_vapor=0 unrecorded=0 sfc_errors={} compared=3 divergences=${divergences}${scope}`;
+  return `levels production reach: shape=${shape} stage="L2" templates=3 accepted=3 permille=1000 ready=0 legacy={} rejected=0 routed_vapor=0 unrecorded=0 sfc_errors={} compared=3 divergences=${divergences}${scope}`;
 }
 
 // One committed and one canonical block per shard, as the reach sweep prints.
 function reachLog(shards: Shard[]): string {
   return shards
     .flatMap((shard, index) => [
-      `canonical observer process: test=davinci_production_reach role=shard index=${index} count=${shards.length} vector=reach-${index}.nul`,
-      "davinci production reach: scope=committed files=2 unreadable=0 parse_errors=0 without_template=0",
+      `canonical observer process: test=level_production_reach role=shard index=${index} count=${shards.length} vector=reach-${index}.nul`,
+      "levels production reach: scope=committed files=2 unreadable=0 parse_errors=0 without_template=0",
       counter("", "dom_inline", 0),
       counter("", "dom_module", 0),
-      "davinci production reach: scope=canonical files=3 unreadable=0 parse_errors=0 without_template=0",
+      "levels production reach: scope=canonical files=3 unreadable=0 parse_errors=0 without_template=0",
       ...(shard.inline === null ? [] : [counter("", "dom_inline", shard.inline)]),
       counter("", "dom_module", shard.module ?? 0),
-      'davinci production reach: shape=ssr stage="L4 plan" templates=3 accepted=3 permille=1000 ready=0 legacy={} rejected=0 routed_vapor=0 unrecorded=0 sfc_errors={} compared=0 divergences=0',
+      'levels production reach: shape=ssr stage="L4 plan" templates=3 accepted=3 permille=1000 ready=0 legacy={} rejected=0 routed_vapor=0 unrecorded=0 sfc_errors={} compared=0 divergences=0',
       ...(shard.lines ?? []),
-      `canonical observer process exit: test=davinci_production_reach role=shard index=${index} status=0 signal=none elapsed_ms=1`,
+      `canonical observer process exit: test=level_production_reach role=shard index=${index} status=0 signal=none elapsed_ms=1`,
     ])
     .join("\n");
 }
@@ -109,7 +109,7 @@ void test("reach evidence fails closed on missing counters or samples", () => {
 void test("a reach difference is filed and reduced on its recorded shape and name", () => {
   const issue = createDivergenceIssue(reach, divergent, ledger, `${fixture}\n`, context);
   assert.ok(issue);
-  assert.match(issue.title, /^fix\(davinci\): triage canonical production DOM divergence /);
+  assert.match(issue.title, /^fix\(levels\): triage canonical production DOM divergence /);
   assert.match(issue.body, /canonical-corpus-reach-1234-2-/);
   assert.match(
     issue.body,
@@ -171,7 +171,7 @@ void test("a reduced reach witness keeps its shape and name in provenance", () =
     );
     const plan = createPromotionPlan(directory);
     assert.ok(plan);
-    assert.equal(plan.branch, "automation/davinci-reach-abc123abc123");
+    assert.equal(plan.branch, "automation/level-reach-abc123abc123");
     assert.match(plan.body, /promoted_real_project_reach_fixtures_agree/);
     const provenance = JSON.parse(plan.files[1].content);
     assert.equal(

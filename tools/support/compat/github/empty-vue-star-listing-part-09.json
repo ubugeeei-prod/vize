@@ -10,21 +10,21 @@
   ],
   [
     "tests/performance/support/warm-type-backed-timing-host-manifest.json",
-    "be36ac1c1cbd8a6a9d0009452dfa494371d1d5f1",
+    "463e9e1b22f0ad2c2dbf0897e63160937009915c",
     2593,
-    "6d62c20da03b0b7fb69c5a6745b6e061665380475e09d94b5bb07d52887459f7",
-    "be36ac1c1cbd8a6a9d0009452dfa494371d1d5f1",
+    "c0560091228776ddfa76ebd338fbccf0334f7f6c03b45ab5c7d1f99d55f1aa4b",
+    "463e9e1b22f0ad2c2dbf0897e63160937009915c",
     2593,
-    "6d62c20da03b0b7fb69c5a6745b6e061665380475e09d94b5bb07d52887459f7"
+    "c0560091228776ddfa76ebd338fbccf0334f7f6c03b45ab5c7d1f99d55f1aa4b"
   ],
   [
     "tests/performance/support/warm-type-backed-timing-host.ts",
-    "6b2f9677e11c1416f259890ae32c15693b545bc7",
+    "5058082a69fba1ce7cf7be57f6aa939ada85ffdd",
     3488,
-    "bb76c9ab417dd2ed3f856e9cb93e5e9668c7680268624124497914beff82348f",
-    "6b2f9677e11c1416f259890ae32c15693b545bc7",
+    "3203b3a4bda8b730ba28b0fb1ead6e11f02e33d5e5f7a53b1dc1aabb0ffc7af3",
+    "5058082a69fba1ce7cf7be57f6aa939ada85ffdd",
     3488,
-    "bb76c9ab417dd2ed3f856e9cb93e5e9668c7680268624124497914beff82348f"
+    "3203b3a4bda8b730ba28b0fb1ead6e11f02e33d5e5f7a53b1dc1aabb0ffc7af3"
   ],
   [
     "tests/performance/support/warm-type-backed-work.ts",
@@ -190,12 +190,12 @@
   ],
   [
     "tools/support/compat/github/empty-vue-star-javascript-aux-0.json",
-    "945800efed91e99b22272c5a41d5e3507460bbff",
+    "7783a56e7cf5132637b482b4e7bcb8e0d38bf564",
     4625,
-    "b278eada70e4902eda11186b2101ca3675bf59a690fcdef44cd894ee43ff7eab",
-    "945800efed91e99b22272c5a41d5e3507460bbff",
+    "26760bce802e410ee1905a1e051ada2f7e941f62adf043ad33bb0fe9f55d1f93",
+    "7783a56e7cf5132637b482b4e7bcb8e0d38bf564",
     4625,
-    "b278eada70e4902eda11186b2101ca3675bf59a690fcdef44cd894ee43ff7eab"
+    "26760bce802e410ee1905a1e051ada2f7e941f62adf043ad33bb0fe9f55d1f93"
   ],
   [
     "tools/support/compat/github/empty-vue-star-javascript-aux-1.json",
@@ -208,21 +208,21 @@
   ],
   [
     "tools/support/compat/github/empty-vue-star-javascript-source.json",
-    "12601442cc6ecd13787493036dc686f9b7c7e7f8",
+    "769341414c175eadabfb1d70c04699e8e73ed05a",
     2539,
-    "72b18a29a597a17a4977508e47785be9d090b44ed4466c4506d024bc90425762",
-    "12601442cc6ecd13787493036dc686f9b7c7e7f8",
+    "1ff1a5c9f55fd7dfbc0bc4e34a78f5990842f1fc0c344677bf9f12eb23b57c18",
+    "769341414c175eadabfb1d70c04699e8e73ed05a",
     2539,
-    "72b18a29a597a17a4977508e47785be9d090b44ed4466c4506d024bc90425762"
+    "1ff1a5c9f55fd7dfbc0bc4e34a78f5990842f1fc0c344677bf9f12eb23b57c18"
   ],
   [
     "tools/support/compat/github/empty-vue-star-javascript-source.mjs",
-    "e29b0048ce8d10ce5aca69857cada9d0278c60d8",
+    "a5d6de4359a7e0fb398259c19042a6cc6193502d",
     12325,
-    "1226e237d5b5bd01ef13d39e44f53ae7335a016a976e0df5b09560271ca0ae14",
-    "e29b0048ce8d10ce5aca69857cada9d0278c60d8",
+    "c5a5ef427fb8642ac888b137899574cd32746752f72df41bbc17727f67e7363f",
+    "a5d6de4359a7e0fb398259c19042a6cc6193502d",
     12325,
-    "1226e237d5b5bd01ef13d39e44f53ae7335a016a976e0df5b09560271ca0ae14"
+    "c5a5ef427fb8642ac888b137899574cd32746752f72df41bbc17727f67e7363f"
   ],
   [
     "tools/support/compat/github/javascript-sfc-assertion-source-cell.json",
@@ -271,12 +271,12 @@
   ],
   [
     "tools/support/compat/github/javascript-sfc-source-context-02.json",
-    "539d28b61322f651e791fa8f9d88066bfaa6e014",
+    "323598356dad0cfd1687634d7892eac12e3415c1",
     402136,
-    "bd53eebafd66cc1150e609c86539dfc235d2c5e03010543491315d382c9ae4e2",
-    "539d28b61322f651e791fa8f9d88066bfaa6e014",
+    "9ee3c5bd2cdc9228129327692f33e738c3b3b1b50f0b89c86066f45ff944d242",
+    "323598356dad0cfd1687634d7892eac12e3415c1",
     402136,
-    "bd53eebafd66cc1150e609c86539dfc235d2c5e03010543491315d382c9ae4e2"
+    "9ee3c5bd2cdc9228129327692f33e738c3b3b1b50f0b89c86066f45ff944d242"
   ],
   [
     "tools/support/compat/github/javascript-sfc-source-context-03.json",
@@ -316,12 +316,12 @@
   ],
   [
     "tools/support/compat/github/javascript-sfc-source-context.json",
-    "95bd9bf16005a463265e5a66625b928f29748d9a",
+    "e3211100cb74f4311bd608bcfadf709553e6cbd6",
     11773,
-    "c1013f07ab435417d46c10a83ea4b8e4ba816fe85e3a414af5bed6b90b6709ec",
-    "95bd9bf16005a463265e5a66625b928f29748d9a",
+    "5a699e54e178ddf915902bd047c67e6805882a9bba621f5ff9bb55232d546cc8",
+    "e3211100cb74f4311bd608bcfadf709553e6cbd6",
     11773,
-    "c1013f07ab435417d46c10a83ea4b8e4ba816fe85e3a414af5bed6b90b6709ec"
+    "5a699e54e178ddf915902bd047c67e6805882a9bba621f5ff9bb55232d546cc8"
   ],
   [
     "tools/support/compat/github/javascript-sfc-source-context.mjs",

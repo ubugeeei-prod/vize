@@ -78,7 +78,7 @@ fn ordinary_names_keep_the_existing_current_and_historical_bytes() {
     let printed = historical.print_to_string(Mode::Full);
     assert_eq!(
         printed.as_str(),
-        "[disegno]\nops=1\n\n[disegno.ops]\nui.component \"Quoted\" @0:99\n\n"
+        "[l2]\nops=1\n\n[l2.ops]\nui.component \"Quoted\" @0:99\n\n"
     );
     assert_eq!(
         vize_l2::dump::historical::v1::Page::parse(&printed).unwrap(),

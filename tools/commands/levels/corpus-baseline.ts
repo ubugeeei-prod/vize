@@ -6,25 +6,25 @@ import {
   expectedComparisonCount,
   renderArtifact,
   verifyScope,
-} from "../../support/compat/davinci/lib/corpus-baseline-artifact.ts";
+} from "../../support/compat/levels/lib/corpus-baseline-artifact.ts";
 import {
   BASELINE_PATH,
   BASELINE_REL,
   loadManifest,
   parseSurfaceFilter,
-} from "../../support/compat/davinci/lib/corpus-baseline-contract.ts";
+} from "../../support/compat/levels/lib/corpus-baseline-contract.ts";
 import {
   assertFixturesPristine,
   cleanFixtures,
-} from "../../support/compat/davinci/lib/corpus-fixture-state.ts";
+} from "../../support/compat/levels/lib/corpus-fixture-state.ts";
 import {
   cleanupScratch,
   reduceShards,
   resolveVizeBin,
   runMatrix,
   scratchRoot,
-} from "../../support/compat/davinci/lib/corpus-baseline-run.ts";
-import { repoRoot } from "../../support/compat/davinci/lib/paths.ts";
+} from "../../support/compat/levels/lib/corpus-baseline-run.ts";
+import { repoRoot } from "../../support/compat/levels/lib/paths.ts";
 
 interface Arguments {
   shards: number;
@@ -38,7 +38,7 @@ interface Arguments {
 }
 
 const USAGE =
-  "usage: node tools/commands/davinci/corpus-baseline.ts [--shards n] [--vize-bin path] [--out path] [--timeout-ms n] [--keep-raw] [--clean-fixtures] [--allow-dirty-fixtures]";
+  "usage: node tools/commands/levels/corpus-baseline.ts [--shards n] [--vize-bin path] [--out path] [--timeout-ms n] [--keep-raw] [--clean-fixtures] [--allow-dirty-fixtures]";
 
 async function main(argv: readonly string[]): Promise<void> {
   const args = parseArguments(argv);

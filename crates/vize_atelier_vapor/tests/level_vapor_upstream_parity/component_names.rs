@@ -76,14 +76,14 @@ fn computed_names_remove_old_handlers_and_restore_static_props() {
             "{source}: native L3"
         );
         let vize = trace(
-            "davinci-mounted-trace.mjs",
+            "level-mounted-trace.mjs",
             json!({
                 "backend": "vapor", "code": parent.code, "context": context, "steps": steps, "identities": true,
                 "components": {"Child": {"code": child_code.code, "props": ["primary", "alternate"], "emits": ["first", "second"]}},
             }),
         );
         let upstream = trace(
-            "davinci-upstream-vapor-trace.mjs",
+            "level-upstream-vapor-trace.mjs",
             json!({
                 "source": source, "context": context, "steps": steps,
                 "components": {"Child": {"source": child, "props": ["primary", "alternate"], "emits": ["first", "second"]}},

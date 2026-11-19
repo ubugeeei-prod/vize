@@ -4,8 +4,8 @@
   "previousProviderQualificationRecord": {
     "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-eslint-vue-scorecard-update-12539.json",
     "bytes": 3903,
-    "sha256": "a06cdc218872597a518bffb4d61bfc5aa2824ac2b4b50e7f6ab1d860899b2094",
-    "gitBlob": "913d7ca7048d7e803ae836655c7c4b374a454141"
+    "sha256": "a15371df9371f67d4a8eea6b85673998304864901b3d81c5f705e5cd9ed283a5",
+    "gitBlob": "038832c409ca600381cae03cbbc8f9d6cdf80aaf"
   },
   "previousQualificationLock": {
     "path": "pnpm-lock.yaml",
@@ -16,8 +16,8 @@
   "previousQualificationPackage": {
     "path": "package.json",
     "bytes": 1053,
-    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
-    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+    "sha256": "c50175fbdf751849f1b13c662c33cf8244c85091a0c4a529325c44da0c90184b",
+    "gitBlob": "e83c63e2218b955acd632fed7f20099306172955"
   },
   "previousWorkspaceManifest": {
     "path": "pnpm-workspace.yaml",
@@ -34,8 +34,8 @@
   "finalQualificationPackage": {
     "path": "package.json",
     "bytes": 1053,
-    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
-    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+    "sha256": "c50175fbdf751849f1b13c662c33cf8244c85091a0c4a529325c44da0c90184b",
+    "gitBlob": "e83c63e2218b955acd632fed7f20099306172955"
   },
   "workspaceManifest": {
     "path": "pnpm-workspace.yaml",

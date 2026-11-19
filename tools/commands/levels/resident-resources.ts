@@ -4,7 +4,7 @@ import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 
-import { parseTomlLite } from "../../support/compat/davinci/toml-lite.ts";
+import { parseTomlLite } from "../../support/compat/levels/toml-lite.ts";
 
 interface TreeSample {
   rssBytes: number;

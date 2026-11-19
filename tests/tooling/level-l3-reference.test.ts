@@ -3,12 +3,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { traceCompiledBackend } from "./support/davinci-runtime-trace.mjs";
+import { traceCompiledBackend } from "./support/level-runtime-trace.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixtureRoot = path.join(repoRoot, "tests", "fixtures", "l3-reference");
-const referenceRoot = path.join("tests", "davinci_test_support", "src", "l3_reference");
-const bridgeRoot = path.join("davinci", "vize_l2_to_l3", "tests");
+const referenceRoot = path.join("tests", "level_test_support", "src", "l3_reference");
+const bridgeRoot = path.join("levels", "vize_l2_to_l3", "tests");
 
 function readRepoFile(...segments: string[]): string {
   return fs.readFileSync(path.join(repoRoot, ...segments), "utf8");
@@ -17,18 +17,18 @@ function readRepoFile(...segments: string[]): string {
 test("TS-28 fixture ladder is declared and non-vacuous", () => {
   const ladder = readRepoFile(referenceRoot, "matrix.rs");
   const bridge = readRepoFile(bridgeRoot, "l3_reference_fixture", "reference.rs");
-  const folios = fs
+  const dumps = fs
     .readdirSync(fixtureRoot)
-    .filter((file) => file.endsWith(".s3.folio"))
+    .filter((file) => file.endsWith(".s3.dump"))
     .sort();
 
-  assert.ok(folios.length >= 3, "TS-28 must start with a non-vacuous fixture ladder");
+  assert.ok(dumps.length >= 3, "TS-28 must start with a non-vacuous fixture ladder");
   assert.ok(
-    folios.some((folio) => folio.startsWith("rust-lowered-")),
+    dumps.some((dump) => dump.startsWith("rust-lowered-")),
     "TS-28 must include at least one fixture emitted by the Rust L2->L3 lowering path",
   );
-  for (const folio of folios) {
-    const stem = folio.replace(/\.s3\.folio$/u, "");
+  for (const dump of dumps) {
+    const stem = dump.replace(/\.s3\.dump$/u, "");
     const traces = [`${stem}.trace`, `${stem}.vdom.trace`, `${stem}.vapor.trace`];
     for (const trace of traces) {
       assert.ok(fs.existsSync(path.join(fixtureRoot, trace)), `${trace} is missing`);
@@ -44,14 +44,14 @@ test("TS-28 fixture ladder is declared and non-vacuous", () => {
 test("TS-28 Rust lowering bridge is covered by an ordinary cargo test", () => {
   const bridge = readRepoFile(bridgeRoot, "l3_reference_fixture.rs");
   assert.match(bridge, /rust_lowered_fixtures_match_reference_inputs/u);
-  assert.match(bridge, /tests\/fixtures\/l3-reference\/rust-lowered-static-dynamic\.s3\.folio/u);
-  assert.match(bridge, /tests\/fixtures\/l3-reference\/rust-lowered-control-slots\.s3\.folio/u);
+  assert.match(bridge, /tests\/fixtures\/l3-reference\/rust-lowered-static-dynamic\.s3\.dump/u);
+  assert.match(bridge, /tests\/fixtures\/l3-reference\/rust-lowered-control-slots\.s3\.dump/u);
   assert.match(bridge, /L3Page::of\(&lowered\.program\)\.print_to_string\(DumpMode::Full\)/u);
   assert.match(bridge, /reference_trace_text\(&lowered\.program\)/u);
   assert.match(bridge, /backend_trace_text\(TraceBackend::Vdom, &lowered\.program\)/u);
   assert.match(bridge, /backend_trace_text\(TraceBackend::Vapor, &lowered\.program\)/u);
   assert.match(bridge, /ValuesPage::of\(&lowered\.program\)\.print_to_string\(DumpMode::Full\)/u);
-  assert.match(bridge, /rust-lowered-static-dynamic\.values\.folio/u);
+  assert.match(bridge, /rust-lowered-static-dynamic\.values\.dump/u);
 });
 
 test("TS-28 stateful reference and mounted backends share full observations and steps", () => {
@@ -89,7 +89,7 @@ test("TS-28 stateful reference and mounted backends share full observations and 
     "crates",
     "vize_atelier_vapor",
     "tests",
-    "davinci_mounted_behavior.rs",
+    "level_mounted_behavior.rs",
   );
   assert.match(mounted, /rust-lowered-static-dynamic\.scenario\.json/u);
   assert.match(mounted, /rust-lowered-static-dynamic\.behavior\.json/u);
@@ -144,17 +144,12 @@ test("TS-28 control and slot stateful observations share one authored template",
 });
 
 test("TS-28 compiled backend trace gate executes both emitted backends", async () => {
-  const gate = readRepoFile(
-    "crates",
-    "vize_atelier_vapor",
-    "tests",
-    "davinci_l3_compiled_trace.rs",
-  );
+  const gate = readRepoFile("crates", "vize_atelier_vapor", "tests", "level_l3_compiled_trace.rs");
   assert.match(gate, /compiled_backend_runtime_traces_match_l3_reference_ladder/u);
   assert.match(gate, /runtime_backend_trace/u);
   assert.match(gate, /compile_template_with_options/u);
   assert.match(gate, /compile_vapor/u);
-  assert.match(gate, /davinci-runtime-trace\.mjs/u);
+  assert.match(gate, /level-runtime-trace\.mjs/u);
 
   assert.deepEqual(
     await traceCompiledBackend({
@@ -225,7 +220,7 @@ test("TS-28 command in the suite registry names the executable runner", () => {
     [
       "TS-28",
       "Reference differential",
-      "`cargo test -p vize_l2_to_l3 --test l3_reference_fixture && cargo test -p vize_atelier_vapor --test davinci_l3_compiled_trace --test davinci_mounted_behavior`",
+      "`cargo test -p vize_l2_to_l3 --test l3_reference_fixture && cargo test -p vize_atelier_vapor --test level_l3_compiled_trace --test level_mounted_behavior`",
       "exact agreement on observable semantics; stateful subset and remaining operation-order gaps are explicit",
       "P3-4",
     ],

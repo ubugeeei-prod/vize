@@ -22,7 +22,7 @@
       },
       "runtime": {
         "rustTargets": [
-          "davinci/vize_l1/tests/native_svg_title.rs",
+          "levels/vize_l1/tests/native_svg_title.rs",
           "crates/vize_armature/src/parser/svg_title_tests.rs"
         ],
         "phase": "parser-source-controls",

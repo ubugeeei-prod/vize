@@ -19,7 +19,7 @@ test("the rename maps the member, identifiers, span key and prose", () => {
     rewrite("crates/a/src/lib.rs", rust),
     `// Stage feed in \`stage_feed_payload.rs\`\nlet stage_feed = &json["stageFeed"]; // the stage feed`,
   );
-  const ts = `{ ${old}: raw.${old}, ${old}Profile, key: "davinci.${old}.step" } // the ${Old} feed`;
+  const ts = `{ ${old}: raw.${old}, ${old}Profile, key: "levels.${old}.step" } // the ${Old} feed`;
   assert.equal(
     rewrite("playground/src/a.ts", ts),
     `{ stageFeed: raw.stageFeed, stageProfile, key: "stages.step" } // the stage feed`,

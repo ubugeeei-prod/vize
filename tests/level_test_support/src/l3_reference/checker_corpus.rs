@@ -8,7 +8,7 @@ use std::path::Path;
 use serde_json::Value;
 
 use super::checker::violations;
-use super::folio::parse_program;
+use super::dump::parse_program;
 use super::program::{EdgeKind, Op, Phase, Program, StateEdge};
 
 pub const GRAPH_FILES: [&str; 8] = [
@@ -110,10 +110,10 @@ fn read(path: &Path) -> Result<String, String> {
 }
 
 /// Check every committed graph and the damage witnesses; returns the count.
-pub fn check_folios(fixtures: &Path) -> Result<usize, String> {
+pub fn check_dumps(fixtures: &Path) -> Result<usize, String> {
     let mut programs: Vec<(String, String)> = Vec::new();
     for stem in GRAPH_FILES {
-        let text = read(&fixtures.join(format!("{stem}.s3.folio")))?;
+        let text = read(&fixtures.join(format!("{stem}.s3.dump")))?;
         programs.push((stem.into(), text));
     }
     for stem in LOWERED_FILES {
@@ -142,7 +142,7 @@ pub fn check_folios(fixtures: &Path) -> Result<usize, String> {
         }
     }
     if programs.len() < 50 {
-        return Err("folio checker corpus is too small".into());
+        return Err("dump checker corpus is too small".into());
     }
     Ok(programs.len())
 }

@@ -1,4 +1,4 @@
-// Davinci patch-facts table contract (plan/phase-3.md P3-7).
+// Level patch-facts table contract (plan/phase-3.md P3-7).
 //
 // P3-7 moves VDOM patch-flag decisions out of final call assembly. This keeps
 // the owner-keyed side table visible while the broad DOM parity suites pin the
@@ -11,10 +11,10 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const emitRoot = path.join(repoRoot, "davinci", "vize_l4", "src", "targets", "dom", "artifact.rs");
+const emitRoot = path.join(repoRoot, "levels", "vize_l4", "src", "targets", "dom", "artifact.rs");
 const runPath = path.join(
   repoRoot,
-  "davinci",
+  "levels",
   "vize_l4",
   "src",
   "targets",
@@ -24,7 +24,7 @@ const runPath = path.join(
 );
 const patchPath = path.join(
   repoRoot,
-  "davinci",
+  "levels",
   "vize_l4",
   "src",
   "targets",
@@ -34,7 +34,7 @@ const patchPath = path.join(
 );
 const patchStoragePath = path.join(
   repoRoot,
-  "davinci",
+  "levels",
   "vize_l4",
   "src",
   "targets",
@@ -45,7 +45,7 @@ const patchStoragePath = path.join(
 );
 const patchTestsPath = path.join(
   repoRoot,
-  "davinci",
+  "levels",
   "vize_l4",
   "src",
   "targets",
@@ -56,7 +56,7 @@ const patchTestsPath = path.join(
 );
 const vnodePath = path.join(
   repoRoot,
-  "davinci",
+  "levels",
   "vize_l4",
   "src",
   "targets",
@@ -66,7 +66,7 @@ const vnodePath = path.join(
 );
 const componentPath = path.join(
   repoRoot,
-  "davinci",
+  "levels",
   "vize_l4",
   "src",
   "targets",
@@ -76,7 +76,7 @@ const componentPath = path.join(
 );
 const dispatchPath = path.join(
   repoRoot,
-  "davinci",
+  "levels",
   "vize_l4",
   "src",
   "targets",

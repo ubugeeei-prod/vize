@@ -5,7 +5,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const corpusCoverage = path.join(root, "tools/commands/davinci/corpus-coverage.ts");
+const corpusCoverage = path.join(root, "tools/commands/levels/corpus-coverage.ts");
 
 test("corpus coverage maintenance uses the stable Node command", () => {
   const result = spawnSync(process.execPath, [corpusCoverage, "--check"], {
@@ -17,5 +17,5 @@ test("corpus coverage maintenance uses the stable Node command", () => {
 
   const usage = spawnSync(process.execPath, [corpusCoverage], { cwd: root, encoding: "utf8" });
   assert.equal(usage.status, 1);
-  assert.match(usage.stderr, /node tools\/commands\/davinci\/corpus-coverage\.ts/);
+  assert.match(usage.stderr, /node tools\/commands\/levels\/corpus-coverage\.ts/);
 });

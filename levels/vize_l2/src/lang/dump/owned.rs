@@ -5,7 +5,7 @@ use vize_l0::{Span, String};
 
 use crate::expr::{ExprRef, OpaqueReason};
 
-/// Mirror of [`ExprRef`]: one expression payload as the folio carries it.
+/// Mirror of [`ExprRef`]: one expression payload as the dump carries it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Expr {
     /// `js(...)` - re-parses into the arena on load.
@@ -16,7 +16,7 @@ pub enum Expr {
         span: Span,
     },
     /// `foreign(...)` - dialect id + source + span (the phase-6 dialect
-    /// contract owns the side tables' folio spelling; until then they do
+    /// contract owns the side tables' dump spelling; until then they do
     /// not serialize - see [`crate::expr::ForeignExpr::facts`]).
     Foreign {
         /// The dialect id.

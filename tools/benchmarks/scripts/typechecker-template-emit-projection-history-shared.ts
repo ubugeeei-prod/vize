@@ -64,7 +64,7 @@ export const retainedArtifactCustody: ArtifactCustody = {
 // Updated only after regenerating the fixture twice from the two immutable
 // artifacts and observing byte-identical output.
 export const retainedManifestSha256: string =
-  "559ea18dbbde55fac6eaf80f63a5e32959672c11d0698cff9f4579e95caee4cc";
+  "b65d0471618e7fc61cec9ddb2104d6372242c0b0cddbb098e55cbff70901fecf";
 
 export const sha256 = (bytes: ProjectionBytes): string =>
   createHash("sha256").update(bytes).digest("hex");

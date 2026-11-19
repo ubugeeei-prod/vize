@@ -2,7 +2,7 @@ name: Zizmor
 
 on:
   push:
-    branches: [main, davinci]
+    branches: [main, levels]
     paths:
       - ".github/**"
   pull_request: {}

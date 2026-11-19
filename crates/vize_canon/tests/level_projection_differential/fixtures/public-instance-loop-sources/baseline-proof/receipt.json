@@ -11,6 +11,6 @@
   "job": 122157096840,
   "prHead": "b119591e6c63d7b344d1877c5f4d5f8d29894932",
   "sourceIndexSha256": "934f0a24548cd31ef74f6b01370e482a123ce39fd5c2f58e78a717c5bb37de11",
-  "observerPatchSha256": "c2f6d5b7218473531f0d4a51a8ee63245d7c995c3747489e465fd1599330b94c",
+  "observerPatchSha256": "88a00aa765fe9f24aa12913e77527d7c7d9abfe6c08a4ae9a29240374412e323",
   "scope": "The immutable before producer compiled with only the retained capture observer; all64 complete observations equal original-comparisons.json. Fullsource index remains in the public Actions artifact; stdout, stderr and observer-only patch retained here."
 }

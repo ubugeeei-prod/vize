@@ -14,7 +14,7 @@ fn report_native_only(scope: &str, shape: Shape, sweep: &Sweep) -> String {
     );
     let attempted = sweep.files - unverified;
     format!(
-        "davinci native-only acceptance: scope={scope} product=compiler target={} planned={} native_only=0 legacy_backed={} unverified={} permille=0 contribution=sfc_parse:legacy:legacy",
+        "levels native-only acceptance: scope={scope} product=compiler target={} planned={} native_only=0 legacy_backed={} unverified={} permille=0 contribution=sfc_parse:legacy:legacy",
         shape.id(),
         sweep.files,
         attempted,
@@ -26,20 +26,20 @@ fn report_native_only(scope: &str, shape: Shape, sweep: &Sweep) -> String {
 /// shipping target over exactly the same planned corpus.
 pub fn report(scope: &str, sweep: &Sweep) {
     eprintln!(
-        "davinci production reach: scope={scope} files={} unreadable={} parse_errors={} without_template={}",
+        "levels production reach: scope={scope} files={} unreadable={} parse_errors={} without_template={}",
         sweep.files, sweep.unreadable, sweep.parse_errors, sweep.without_template
     );
     for (shape, tally) in sweep.tallies.values() {
         eprintln!("{}", tally.line(*shape));
         for (name, errors) in &tally.prebackend_rejections {
             eprintln!(
-                "davinci production reach prebackend rejection: scope={scope} shape={} file={name:?} errors={errors:?}",
+                "levels production reach prebackend rejection: scope={scope} shape={} file={name:?} errors={errors:?}",
                 shape.id()
             );
         }
         if tally.unrecorded != 0 {
             eprintln!(
-                "davinci production reach unrecorded inputs: scope={scope} shape={} files={:?}",
+                "levels production reach unrecorded inputs: scope={scope} shape={} files={:?}",
                 shape.id(),
                 tally.unrecorded_samples
             );

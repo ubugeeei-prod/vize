@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { Window } from "happy-dom";
-import { loadRuntime } from "./davinci-mounted-trace.mjs";
+import { loadRuntime } from "./level-mounted-trace.mjs";
 
 const root = new URL("../../_fixtures/differential/compiler/", import.meta.url);
 const manifest = JSON.parse(readFileSync(new URL("page-meta-runtime.manifest.json", root)));

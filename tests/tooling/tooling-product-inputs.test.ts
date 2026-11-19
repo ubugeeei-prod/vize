@@ -44,7 +44,7 @@ function fixture(t: TestContext) {
     mkdirSync(path.dirname(target), { recursive: true });
     copyFileSync(path.join(root, name), target);
   }
-  for (const directory of ["tests/tooling/davinci", "tests/tooling/release", "npm/native"])
+  for (const directory of ["tests/tooling/levels", "tests/tooling/release", "npm/native"])
     mkdirSync(path.join(cwd, directory), { recursive: true });
   writeFileSync(path.join(cwd, "npm/native/index.js"), "export const formatSfc = () => {};\n");
   // Preserve the real selector's shared-helper context without importing the
@@ -113,7 +113,7 @@ test("native build planning follows runtime imports without fixture source false
   assert.ok(planToolingTests([appHmr]).nativeBuildTests.includes(appHmr));
   const cwd = mkdtempSync(path.join(tmpdir(), "vize-native-build-plan-"));
   t.after(() => rmSync(cwd, { recursive: true, force: true }));
-  for (const directory of ["tests/tooling", "tests/tooling/davinci", "tests/tooling/release"])
+  for (const directory of ["tests/tooling", "tests/tooling/levels", "tests/tooling/release"])
     mkdirSync(path.join(cwd, directory), { recursive: true });
   const testFile = "tests/tooling/native.test.ts";
   const selected = () => planToolingTests([testFile], { cwd }).nativeBuildTests;
@@ -173,7 +173,7 @@ test("all CLI producers, copied declarations, fixtures and selector changes reta
     "crates/vize_canon/src/lib.rs",
     "crates/vize_corsa/src/lib.rs",
     "crates/new-cli-dependency/src/lib.rs",
-    "davinci/vize_l0/src/lib.rs",
+    "levels/vize_l0/src/lib.rs",
     "vendor/typechecker-runtime/src/lib.rs",
     ".cargo/config.toml",
     ".github/workflows/full-qualification.yml",

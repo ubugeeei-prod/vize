@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { eligible, rewrite, run } from "../../tools/support/levels/rename-l3-vapor-counters.ts";
 
-const oldPrefix = ["davinci", "s3_vapor", ""].join(".");
+const oldPrefix = ["levels", "s3_vapor", ""].join(".");
 
 test("live sources use only the l3.vapor counter namespace", () => {
   assert.deepEqual(run("--check"), []);

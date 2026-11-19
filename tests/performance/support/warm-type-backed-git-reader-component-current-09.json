@@ -2,37 +2,37 @@
   {
     "file": "tests/performance/support/warm-type-backed-git-reader-nodeep.ts",
     "originalBeforeSHA256": null,
-    "originalAfterSHA256": "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96",
+    "originalAfterSHA256": "92b8cfd0ed8dcbb23003887ba52ac903856664bd2bb4611320b1bfb8ee5384f4",
     "before": null,
     "retainedAfter": {
       "mode": "100644",
-      "blob": "d9e71bdcf154c8b4602ba38067a183c97731c4fd",
+      "blob": "08141062202de121a8848d952429ab85d966a750",
       "bytes": 6852,
-      "sha256": "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96"
+      "sha256": "92b8cfd0ed8dcbb23003887ba52ac903856664bd2bb4611320b1bfb8ee5384f4"
     },
     "currentAfter": {
       "mode": "100644",
-      "blob": "d9e71bdcf154c8b4602ba38067a183c97731c4fd",
+      "blob": "08141062202de121a8848d952429ab85d966a750",
       "bytes": 6852,
-      "sha256": "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96"
+      "sha256": "92b8cfd0ed8dcbb23003887ba52ac903856664bd2bb4611320b1bfb8ee5384f4"
     }
   },
   {
     "file": "tests/performance/support/warm-type-backed-git-reader-setup.json",
     "originalBeforeSHA256": null,
-    "originalAfterSHA256": "2a098a6c73610cf6b3ba31d8f37e22da0e57fc6dd748260b3ad7adbdcef93933",
+    "originalAfterSHA256": "3f935513ed7d1560689a345605060f3f96359dd20cc4bf8a8b1b00d7111be485",
     "before": null,
     "retainedAfter": {
       "mode": "100644",
-      "blob": "7b3452f8e4e224d46c822ac1a4186050d1e95765",
+      "blob": "ffb21c7ae9f1c608f3dc44a4708931f356db8367",
       "bytes": 2510,
-      "sha256": "2a098a6c73610cf6b3ba31d8f37e22da0e57fc6dd748260b3ad7adbdcef93933"
+      "sha256": "3f935513ed7d1560689a345605060f3f96359dd20cc4bf8a8b1b00d7111be485"
     },
     "currentAfter": {
       "mode": "100644",
-      "blob": "7b3452f8e4e224d46c822ac1a4186050d1e95765",
+      "blob": "ffb21c7ae9f1c608f3dc44a4708931f356db8367",
       "bytes": 2510,
-      "sha256": "2a098a6c73610cf6b3ba31d8f37e22da0e57fc6dd748260b3ad7adbdcef93933"
+      "sha256": "3f935513ed7d1560689a345605060f3f96359dd20cc4bf8a8b1b00d7111be485"
     }
   },
   {

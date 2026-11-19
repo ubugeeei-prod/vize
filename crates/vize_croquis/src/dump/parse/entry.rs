@@ -1,4 +1,4 @@
-//! Per-entry line parsers for the croquis folio sections.
+//! Per-entry line parsers for the croquis dump sections.
 
 use alloc::vec::Vec;
 
@@ -72,7 +72,7 @@ fn parse_name_list(s: &str, line: usize) -> Result<Vec<String>, DumpError> {
 pub(super) fn parse_header(
     line: &str,
     line_no: usize,
-    folio: &mut Page,
+    dump: &mut Page,
     header_seen: &mut u8,
 ) -> Result<(), DumpError> {
     let (key, value) = line
@@ -80,7 +80,7 @@ pub(super) fn parse_header(
         .ok_or_else(|| err(line_no, cstr!("expected key=value in [vir]")))?;
     let bit = match key {
         "script_setup" => {
-            folio.script_setup = match value {
+            dump.script_setup = match value {
                 "true" => true,
                 "false" => false,
                 _ => return Err(err(line_no, cstr!("script_setup must be true or false"))),
@@ -88,12 +88,12 @@ pub(super) fn parse_header(
             1
         }
         "scopes" => {
-            folio.scope_count =
+            dump.scope_count =
                 parse_u64(value).ok_or_else(|| err(line_no, cstr!("scopes must be an integer")))?;
             2
         }
         "bindings" => {
-            folio.binding_count = parse_u64(value)
+            dump.binding_count = parse_u64(value)
                 .ok_or_else(|| err(line_no, cstr!("bindings must be an integer")))?;
             4
         }

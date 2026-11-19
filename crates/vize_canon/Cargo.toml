@@ -90,7 +90,7 @@ libc.workspace = true
 junction = "2"
 
 [dev-dependencies]
-davinci_test_support = { workspace = true, features = [
+level_test_support = { workspace = true, features = [
   "canon-project",
   "native-process",
   "reference-path",
@@ -105,7 +105,7 @@ vize_croquis.workspace = true
 vize_l0.workspace = true
 
 [[test]]
-name = "davinci_projection_differential"
+name = "level_projection_differential"
 required-features = ["legacy-differential"]
 
 [[test]]

@@ -1,4 +1,4 @@
-//! The indentation frame stack of the folio parser: which containers
+//! The indentation frame stack of the dump parser: which containers
 //! are open, which grouped position each is in, and how a finished frame
 //! closes back into its owner. Split from [`parse`](super) when the slot
 //! outlet gained its props surface (a third phased frame) pushed the

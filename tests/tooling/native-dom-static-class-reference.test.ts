@@ -9,7 +9,7 @@ import { checkMap, contexts, hash } from "./support/native-sfc-ssr-reference.ts"
 const pack = JSON.parse(
   fs.readFileSync(
     new URL(
-      "../../davinci/vize_l4/tests/fixtures/native-dom-static-class-vue-3.5.35.json",
+      "../../levels/vize_l4/tests/fixtures/native-dom-static-class-vue-3.5.35.json",
       import.meta.url,
     ),
     "utf8",

@@ -4,7 +4,7 @@ use serde_json::json;
 pub(super) const UPDATE: &str =
     "malformed-membership/provider-node-forge-security-update-12789.json";
 pub(super) const UPDATE_HASH: &str =
-    "c62860c79cddfff2bd76b8528ef3b40c1e01fe40dbc86f1b0077130fc7ae5778";
+    "53895b0d5357ce0241d2d82002a77a84317ee9844f3a2c507a7ba83913636108";
 const PREVIOUS_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-eslint-vue-scorecard-update-12539.json";
 
 pub(super) fn update() -> Value {

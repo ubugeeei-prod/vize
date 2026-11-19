@@ -29,7 +29,7 @@ const historicalBytes = fs.readFileSync(
 );
 assert.equal(
   createHash("sha256").update(historicalBytes).digest("hex"),
-  "4b34d12f5695532a31f480c8dab666cf29af25bdfc59871789bc727891263830",
+  "99017eb8f782bce0e888a24f7874d4405502bb61816cbd75dde23c1f230bc9f2",
 );
 const historical = JSON.parse(historicalBytes.toString()) as {
   schema: number;

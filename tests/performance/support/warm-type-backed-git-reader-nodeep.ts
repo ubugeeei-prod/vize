@@ -10,7 +10,7 @@ type Pair = readonly [string, string | null, string | null];
 const manifests: ReadonlyArray<readonly [string, string]> = [
   [
     "warm-type-backed-git-reader-nodeep.json",
-    "bcecdd3cbc3fa8dbaafb7c7f4dc48f491d1a0a82e861ef034e69bdaa83c52adb",
+    "eff9ab086d8c7685e61d9d46675a89a7afea960ca3b1ce079f7541dfb0b0a84e",
   ],
   [
     "warm-type-backed-git-reader-nodeep-family-1.json",

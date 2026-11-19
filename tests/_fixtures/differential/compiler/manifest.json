@@ -133,7 +133,7 @@
       "reference": {
         "path": "vue0-10-repeat/module.expected.txt",
         "sha256": "66ce3130ab756a9bc170a5c2f7e5328b6d5dfdbe27a466064ecf5bc10035a959",
-        "source": "davinci/vize_l1/src/dialect/vue.rs:Templates iterate with v-repeat"
+        "source": "levels/vize_l1/src/dialect/vue.rs:Templates iterate with v-repeat"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-template-v1",
@@ -187,7 +187,7 @@
       "reference": {
         "path": "vue0-11-repeat/module.expected.txt",
         "sha256": "66ce3130ab756a9bc170a5c2f7e5328b6d5dfdbe27a466064ecf5bc10035a959",
-        "source": "davinci/vize_l1/src/dialect/vue.rs:Shares the clause-style directive surface with 0.10"
+        "source": "levels/vize_l1/src/dialect/vue.rs:Shares the clause-style directive surface with 0.10"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-template-v1",
@@ -241,7 +241,7 @@
       "reference": {
         "path": "vue1-attribute-interpolation/module.expected.txt",
         "sha256": "c46d260a96e22e58f83f323f6e00c21250e63417fab8ad0bee159cd3eaf659ea",
-        "source": "davinci/vize_l1/src/dialect/vue.rs:interpolation still works inside plain attribute values"
+        "source": "levels/vize_l1/src/dialect/vue.rs:interpolation still works inside plain attribute values"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-template-v1-legacy",
@@ -296,7 +296,7 @@
       "reference": {
         "path": "vue1-list/module.expected.txt",
         "sha256": "93aab1f82c97d98773630b5aa70a7f56873dd7a579b5f3ae0513421f94f14a0f",
-        "source": "davinci/vize_l1/src/dialect/vue.rs:The 1.0 migration replaced v-repeat with v-for"
+        "source": "levels/vize_l1/src/dialect/vue.rs:The 1.0 migration replaced v-repeat with v-for"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-template-v1-legacy",
@@ -1124,7 +1124,7 @@
       "reference": {
         "path": "component-event-modifiers-10894/module.expected.txt",
         "sha256": "5ecee0b71a3e25eaaf1b164f3f642cea382e618dd25dfa2802ea661c48839958",
-        "source": "Published @vizejs/native@0.587.0 compileSfc with filename Layout.vue and ssr true; unchanged SSR control only. Vapor event behavior is asserted independently in davinci_mounted_behavior/component_events.rs."
+        "source": "Published @vizejs/native@0.587.0 compileSfc with filename Layout.vue and ssr true; unchanged SSR control only. Vapor event behavior is asserted independently in level_mounted_behavior/component_events.rs."
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-v1",
@@ -1287,7 +1287,7 @@
       "reference": {
         "path": "computed-v-once-event-6839/module.expected.txt",
         "sha256": "f3e14c57641d690100d5f84a2ecd8cf6c6601108547474a5566acfd9682ead27",
-        "source": "crates/vize_atelier_vapor/tests/davinci_vapor_upstream_parity/once_events.rs:computed_event_names_freeze_while_handlers_stay_live; SSR source coverage only"
+        "source": "crates/vize_atelier_vapor/tests/level_vapor_upstream_parity/once_events.rs:computed_event_names_freeze_while_handlers_stay_live; SSR source coverage only"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-v1",
@@ -2216,7 +2216,7 @@
       "reference": {
         "path": "maybe-ref-model-parity-10044/module.expected.txt",
         "sha256": "d907caac9a5a86b41f85e042b1a3d5cff59647d7447ee3feaae370a8eb388754",
-        "source": "crates/vize_atelier_sfc/tests/davinci_production_reach/inline_parity_regressions.rs:maybe_ref_model_writes_match_shipped_compiler"
+        "source": "crates/vize_atelier_sfc/tests/level_production_reach/inline_parity_regressions.rs:maybe_ref_model_writes_match_shipped_compiler"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-v1",
@@ -3933,7 +3933,7 @@
       "reference": {
         "path": "slot-fallback-adjacent-text-10087/module.expected.txt",
         "sha256": "32e2297fa43035ab507b32efd978f6cd4bede8730c8730da460f194a781de882",
-        "source": "davinci/vize_l1_to_l2/tests/emit_outlets.rs:fallback_interp_keeps_the_compound_in_one_text_vnode"
+        "source": "levels/vize_l1_to_l2/tests/emit_outlets.rs:fallback_interp_keeps_the_compound_in_one_text_vnode"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-v1",
@@ -3986,7 +3986,7 @@
       "reference": {
         "path": "slot-fallback-compound-text-9889/module.expected.txt",
         "sha256": "100c2bf7d7098b14f4b25ec57b1d55dd43567440719ad0db2ead4c42d5fedf7a",
-        "source": "davinci/vize_l1_to_l2/tests/emit_outlets.rs:fallback_interp_keeps_trailing_condensed_space_in_the_same_text_vnode"
+        "source": "levels/vize_l1_to_l2/tests/emit_outlets.rs:fallback_interp_keeps_trailing_condensed_space_in_the_same_text_vnode"
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-v1",
@@ -5996,7 +5996,7 @@
     },
     {
       "path": "component-slot-text-7970.manifest.json",
-      "sha256": "d5b92bea8b64f88b27aaac9f215daa439e126b4f64c2cae7fe5166e6a4768957",
+      "sha256": "481bb19641a7c985fa80285e1e8c5fa43214960b50e3c717147f7f80612e1165",
       "adapter": "compiler-rust-whole-source-runtime-v1",
       "workflow": ".github/workflows/check.yml"
     },
@@ -6044,13 +6044,13 @@
     },
     {
       "path": "vapor-svg-title-8624.manifest.json",
-      "sha256": "58ffa04961106339bfdf1ac3f76a7cdf2b16623c682fdb26e4c2a0844a3a80c6",
+      "sha256": "1c66245c66b62a946a5bddfd82d2c52a5824310eccd5c3992a549494bedf2a37",
       "adapter": "compiler-rust-whole-source-parser-v1",
       "workflow": ".github/workflows/check.yml"
     },
     {
       "path": "vapor-svg-title-scope-8624.manifest.json",
-      "sha256": "59a85ffc56dab9b67a7e3f658d12e58531877401f2972dd2125efc2fc6bb5a08",
+      "sha256": "39e61cbfe48bc2671b273053619b368a567af4094fac72ce161f15928efd489b",
       "adapter": "compiler-rust-whole-source-parser-v1",
       "workflow": ".github/workflows/check.yml"
     }
@@ -6138,7 +6138,7 @@
           {
             "path": "source-before-observation.json",
             "role": "source-before-observation",
-            "sha256": "34b3db351b75e8e73d835e83e86aa29ad533d6691db94fdb75b718b453c335f0"
+            "sha256": "12d9332b7baff0111fef79f73792a0401e0ba7e7e3bcd474f6fd43c5a2e5ffb1"
           }
         ]
       },
@@ -6166,7 +6166,7 @@
         },
         {
           "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/admission-source-pairs.json",
-          "sha256": "12725a1c38d5050762348679167dde5ff4c71a1e510cdde966510f86c6126765"
+          "sha256": "4db30c6660279a0c41e03caedc3865b464cffa6c0484155bbb8573d65454c593"
         },
         {
           "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/attribute-case-inputs.json",
@@ -6174,7 +6174,7 @@
         },
         {
           "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/authority.json",
-          "sha256": "e113463a40ba2d54d8c8a82e81f9b5a42e5f88900e1850a1c4ccd791ab0aa01b"
+          "sha256": "91f3bc51fd86dd268673d34a9a0e40d2d11fb0e8f8f5fcbfd267c3fa430fc270"
         },
         {
           "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/inputs.json",
@@ -6209,7 +6209,7 @@
         {
           "path": "crates/vize_atelier_jsx/tests/literal_style_source.rs",
           "symbol": "complete_literal_style_source_observations",
-          "sha256": "09a903698328436c8de15218365b2df2008f2e42af325e1663a5f8008641fe2f"
+          "sha256": "27ea943e8b7125ee5d36c1ee70f0ed52e882b3a153875ff17cdb93c6da34f678"
         },
         {
           "path": "crates/vize_atelier_jsx/tests/literal_object_styles.rs",
@@ -6219,7 +6219,7 @@
         {
           "path": "crates/vize_atelier_jsx/tests/literal_style_maps.rs",
           "symbol": "folded_css_has_real_complete_utf16_origins_and_rejects_mutations",
-          "sha256": "badda2c866e4bf68b7ee8e11f09a1c6bbd2dae805c2f25157f39263e96fdf693"
+          "sha256": "998579fef67b04cbb4777c371d7e5cc529befd59334d98151dc8886c924f30de"
         },
         {
           "path": "crates/vize_atelier_jsx/tests/literal_style_sfc.rs",
@@ -6229,7 +6229,7 @@
         {
           "path": "crates/vize_atelier_jsx/tests/literal_style_source.rs",
           "symbol": "priority_tokens_keep_original_runtime_semantics",
-          "sha256": "09a903698328436c8de15218365b2df2008f2e42af325e1663a5f8008641fe2f"
+          "sha256": "27ea943e8b7125ee5d36c1ee70f0ed52e882b3a153875ff17cdb93c6da34f678"
         }
       ],
       "sources": [
@@ -6256,7 +6256,7 @@
         {
           "path": "crates/vize_atelier_core/src/lane/element/tests.rs",
           "beforeSha256": "a8931514fe8d5f03eb6c1f64b12625c4eacda13d305968eca42aa0f22aa81b50",
-          "afterSha256": "def579c7aa2e4d420c979bd235d28e674f023a113fe4db34a0ca32275e15598e"
+          "afterSha256": "90f3ce374f7840f85f7971fcdc4d5e585fbf2d505a168cf4d6ee748e18dacc74"
         },
         {
           "path": "crates/vize_atelier_core/src/lane/element/vapor_static_style.rs",
@@ -6296,7 +6296,7 @@
         {
           "path": "crates/vize_atelier_vapor/src/l3/native/emit.rs",
           "beforeSha256": "605b868befbffa307e0b639470c386a1558ccf7ee431f0454391ce7fc6683262",
-          "afterSha256": "7a298ea85bb68cb0055258e37952170b4581d2a221c094c18bf011002164c84d"
+          "afterSha256": "5c82d1f7121c14beec560c2ba23dfbcd18497ac84ebb0ab2f4d4e34df3ecc25a"
         },
         {
           "path": "crates/vize_atelier_vapor/src/l3/native/emit/element.rs",
@@ -6311,7 +6311,7 @@
         {
           "path": "crates/vize_atelier_vapor/src/lower/element/template.rs",
           "beforeSha256": "b87d0b198c77e96246573ee20388d047f126be4cf05c1b8ada2355bd63118ac8",
-          "afterSha256": "3ae079172829feeb555ec8db43aeb4a09f57935d652440e4988992314fdfa482"
+          "afterSha256": "028c5b2f057ef287f2624a737d09176ad61e329d010abf48e157719592f085b6"
         },
         {
           "path": "crates/vize_atelier_vapor/src/lower/element/template/attributes.rs",
@@ -6475,7 +6475,7 @@
         {
           "path": "crates/vize_atelier_vapor/src/lower.rs",
           "beforeSha256": "52143f26569be26ef447b4b14d2f09835cd6d071a719db32127e82fed51deb2a",
-          "afterSha256": "2ece62a4fcee7b675c856f8309090925ebf8742704d4d63fba58ff3c0cec81ac"
+          "afterSha256": "80530f1508cbfbab1f106ac95b9f1017bce2e1f8814f5073468f768193be1b63"
         },
         {
           "path": "crates/vize_atelier_vapor/src/lower/context.rs",

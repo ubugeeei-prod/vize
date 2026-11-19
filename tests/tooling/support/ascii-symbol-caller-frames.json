@@ -16,9 +16,9 @@
         {
           "file": "tests/performance/support/warm-type-backed-path-host-manifest.json",
           "mode": "100644",
-          "blob": "365eaa9ecfd9cb14fe30f6aa2235190796ae5ead",
+          "blob": "87aa5d18723246eebbc1deccbf46dffefeb8771e",
           "bytes": 13587,
-          "sha256": "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805"
+          "sha256": "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95"
         },
         {
           "file": "tests/performance/support/warm-type-backed-default-migration-host.ts",
@@ -93,9 +93,9 @@
         {
           "file": "tests/performance/support/warm-type-backed-path-host-manifest.json",
           "mode": "100644",
-          "blob": "365eaa9ecfd9cb14fe30f6aa2235190796ae5ead",
+          "blob": "87aa5d18723246eebbc1deccbf46dffefeb8771e",
           "bytes": 13587,
-          "sha256": "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805"
+          "sha256": "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95"
         },
         {
           "file": "tests/performance/support/warm-type-backed-default-migration-host.ts",
@@ -170,9 +170,9 @@
         {
           "file": "tests/performance/support/warm-type-backed-path-host-manifest.json",
           "mode": "100644",
-          "blob": "365eaa9ecfd9cb14fe30f6aa2235190796ae5ead",
+          "blob": "87aa5d18723246eebbc1deccbf46dffefeb8771e",
           "bytes": 13587,
-          "sha256": "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805"
+          "sha256": "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95"
         },
         {
           "file": "tests/performance/support/warm-type-backed-default-migration-host.ts",

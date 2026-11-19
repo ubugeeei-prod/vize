@@ -1,11 +1,11 @@
 // Oracle packets for the htmlish divergence ledger
 // (docs/davinci/plan/htmlish-divergences.json).
 //
-//   node tools/commands/davinci/htmlish-oracle.ts [--check]
+//   node tools/commands/levels/htmlish-oracle.ts [--check]
 //
-// Reads davinci/vize_l1/tests/fixtures/htmlish/sources.json ({ row: { document?, vue? } })
+// Reads levels/vize_l1/tests/fixtures/htmlish/sources.json ({ row: { document?, vue? } })
 // and writes one packet per row and dialect to
-// davinci/vize_l1/tests/fixtures/htmlish/<row>.<dialect>.json with the tree each
+// levels/vize_l1/tests/fixtures/htmlish/<row>.<dialect>.json with the tree each
 // dialect's oracle builds: parse5 (html5lib-tests conformant WHATWG parsing) for
 // `document`, `@vue/compiler-dom` `parse` for `vue`. `--check` regenerates in
 // memory and fails when a committed packet differs.
@@ -26,7 +26,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const fixtures = path.join(repoRoot, "davinci/vize_l1/tests/fixtures/htmlish");
+const fixtures = path.join(repoRoot, "levels/vize_l1/tests/fixtures/htmlish");
 const require = createRequire(import.meta.url);
 
 type Attribute = [string, string | null];

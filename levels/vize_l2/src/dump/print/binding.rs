@@ -1,7 +1,7 @@
 //! The attached-binding printers, split from [`print`](super) along the
 //! op-family boundary when `ui.bind`/`ui.on` grew the family past the
 //! source budget. The grammar per line mirrors the parse side
-//! (`folio/parse/binding_line.rs`): optional fields in fixed order, each
+//! (`dump/parse/binding_line.rs`): optional fields in fixed order, each
 //! separated by exactly one space.
 
 use core::fmt::{Result, Write};

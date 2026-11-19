@@ -2,7 +2,7 @@
 //!
 //! This module is part of the `l3_lattice.rs` Kani harness, which includes
 //! the production sources. It replaces the `classify_*` theorems of the Lean
-//! module `Impeto.LatticeLaws`.
+//! module `L3.LatticeLaws`.
 
 use super::ReactivityClass::{PropsStable, Reactive, Static, Unstable};
 use super::axis::classify;

@@ -8,7 +8,7 @@
 //!
 //! Values are line-atomic: a value containing `\n` would span physical
 //! lines and break the byte round-trip, so embedding one is outside the
-//! contract (`docs/davinci/plan/folio-format.md`, "Derived pages"). The
+//! contract (`docs/davinci/plan/dump-format.md`, "Derived pages"). The
 //! same goes for a map key containing `=`.
 
 use core::fmt;
@@ -17,7 +17,7 @@ use vize_l0::{String, cstr};
 
 use crate::dump::Error as DumpError;
 
-/// One field value on a derived folio page.
+/// One field value on a derived dump page.
 ///
 /// `print_value` must be canonical (same value, same bytes) and
 /// `parse_value(print_value(v)) == v` must hold; `parse_value` may be
@@ -64,7 +64,7 @@ impl DumpValue for String {
     }
 }
 
-macro_rules! impl_folio_value_for_int {
+macro_rules! impl_dump_value_for_int {
     ($($int:ty),* $(,)?) => {$(
         impl DumpValue for $int {
             fn print_value<W: fmt::Write>(&self, w: &mut W) -> fmt::Result {
@@ -79,6 +79,6 @@ macro_rules! impl_folio_value_for_int {
     )*};
 }
 
-impl_folio_value_for_int!(
+impl_dump_value_for_int!(
     u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize
 );

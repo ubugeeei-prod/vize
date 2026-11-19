@@ -4,8 +4,8 @@
   "previousProviderQualificationRecord": {
     "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-node-forge-security-update-12789.json",
     "bytes": 3149,
-    "sha256": "c62860c79cddfff2bd76b8528ef3b40c1e01fe40dbc86f1b0077130fc7ae5778",
-    "gitBlob": "b1df4a36b3ca8029231986a71690bd38bd24af06"
+    "sha256": "53895b0d5357ce0241d2d82002a77a84317ee9844f3a2c507a7ba83913636108",
+    "gitBlob": "cf5c9d3f1cc0d4b9a9227700f1da1dd21fe9f0e4"
   },
   "previousQualificationLock": {
     "path": "pnpm-lock.yaml",
@@ -16,8 +16,8 @@
   "previousQualificationPackage": {
     "path": "package.json",
     "bytes": 1053,
-    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
-    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+    "sha256": "c50175fbdf751849f1b13c662c33cf8244c85091a0c4a529325c44da0c90184b",
+    "gitBlob": "e83c63e2218b955acd632fed7f20099306172955"
   },
   "previousWorkspaceManifest": {
     "path": "pnpm-workspace.yaml",
@@ -34,8 +34,8 @@
   "finalQualificationPackage": {
     "path": "package.json",
     "bytes": 1053,
-    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
-    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+    "sha256": "c50175fbdf751849f1b13c662c33cf8244c85091a0c4a529325c44da0c90184b",
+    "gitBlob": "e83c63e2218b955acd632fed7f20099306172955"
   },
   "workspaceManifest": {
     "path": "pnpm-workspace.yaml",

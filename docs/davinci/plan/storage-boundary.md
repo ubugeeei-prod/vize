@@ -27,7 +27,7 @@ The executable ledger requires strict equality, so both growth and reduction
 must update the file row in the same change. The aggregates (retained
 `alloc::vec::Vec` totals, per category and per scope) are derived from those
 rows into the [storage summary run artifact](./storage-summary.md) by
-`node tools/support/compat/davinci/generated-ledgers.ts --write`, never copied
+`node tools/support/compat/levels/generated-ledgers.ts --write`, never copied
 by hand or committed; full CI and release publish the validated checkout’s totals.
 
 | Category | Reason                                                                                                                    |
@@ -70,10 +70,10 @@ The per-scope counts for every owned-storage type are part of the generated
 in particular, any production `alloc::string::String` path creates a new file
 or count and fails the gate instead of becoming a `no_std` escape from L0.
 
-`tests/tooling/davinci-storage-policy.test.ts` masks comments, literals, and
+`tests/tooling/level-storage-policy.test.ts` masks comments, literals, and
 `#[cfg(test)]` items; resolves root, self, group, module, and raw aliases; and
 checks every production file, category, scope, and owned-storage type for exact
-equality with the TSV; `tests/tooling/davinci-storage-summary.test.ts` checks
+equality with the TSV; `tests/tooling/level-storage-summary.test.ts` checks
 the generated summary for byte equality with the aggregates of the TSV rows.
 The artifact staleness test additionally rejects missing and edited output in
 an isolated directory.

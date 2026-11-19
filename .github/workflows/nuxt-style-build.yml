@@ -1,9 +1,9 @@
 name: Nuxt scoped style build
 on:
   pull_request:
-    branches: [main, davinci]
+    branches: [main, levels]
   push:
-    branches: [main, davinci]
+    branches: [main, levels]
   workflow_call:
   schedule:
     - cron: "29 3 * * *"

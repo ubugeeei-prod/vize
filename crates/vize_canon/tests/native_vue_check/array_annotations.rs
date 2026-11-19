@@ -8,7 +8,7 @@ use vize_l4::targets::ts::vue::VueProjectionError;
 fn original_array_vue_keeps_script_and_literal_checks_but_refuses_bound_templates() {
     let script = "/*😀*/ const items:{id:number}[]=[{id:\"bad\"}];items[0].id;";
     let primary: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../../davinci/vize_l4/tests/fixtures/array-program-checker.json"
+        "../../../../levels/vize_l4/tests/fixtures/array-program-checker.json"
     ))
     .unwrap();
     let primary = &primary["cases"][3]["diagnostics"][0];

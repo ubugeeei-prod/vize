@@ -5,8 +5,8 @@ on:
       - .github/workflows/fuzz-expression-10401-profile.yml
       - crates/vize_atelier_core/examples/fuzz_expression_10401_profile.rs
       - tests/fuzz/regressions/js_ts_expression/issue-10401.input
-      - davinci/vize_l0/src/expression_guard/**
-      - davinci/vize_l0/src/expression_guard.rs
+      - levels/vize_l0/src/expression_guard/**
+      - levels/vize_l0/src/expression_guard.rs
       - upstream/forks/oxc_parser/src/**
   workflow_dispatch: {}
 permissions:

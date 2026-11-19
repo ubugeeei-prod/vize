@@ -11,13 +11,13 @@ function readRepoFile(...segments: string[]): string {
 }
 
 function rustMnemonics(): string[] {
-  const rust = readRepoFile("davinci", "vize_l3", "src", "op", "kind.rs");
+  const rust = readRepoFile("levels", "vize_l3", "src", "op", "kind.rs");
   return [
     ...new Set([...rust.matchAll(/Self::[A-Za-z]+ => "(l3\.[^"]+)"/gu)].map((match) => match[1])),
   ];
 }
 
-const referenceRoot = ["tests", "davinci_test_support", "src", "l3_reference"] as const;
+const referenceRoot = ["tests", "level_test_support", "src", "l3_reference"] as const;
 
 function referenceParserMnemonics(): string[] {
   const syntax = readRepoFile(...referenceRoot, "program.rs");
@@ -25,7 +25,7 @@ function referenceParserMnemonics(): string[] {
 }
 
 function tableRows(): Map<string, { vapor: string; vdom: string }> {
-  const doc = readRepoFile("docs/davinci", "plan", "impeto-ops.md");
+  const doc = readRepoFile("docs/davinci", "plan", "l3-ops.md");
   const rows = new Map<string, { vapor: string; vdom: string }>();
 
   for (const line of doc.split("\n")) {
@@ -54,7 +54,7 @@ function referenceTraceLabels(functionName: "vdom" | "vapor"): string[] {
   return [...block.matchAll(/OpKind::[A-Za-z]+ => "([^"]+)"/gu)].map((match) => match[1]);
 }
 
-test("P3-5 Impeto op reference covers the Rust mnemonic set exactly once", () => {
+test("P3-5 L3 op reference covers the Rust mnemonic set exactly once", () => {
   const expected = rustMnemonics();
   const rows = tableRows();
 
@@ -62,7 +62,7 @@ test("P3-5 Impeto op reference covers the Rust mnemonic set exactly once", () =>
   assert.deepEqual(referenceParserMnemonics(), expected);
 });
 
-test("P3-5 Impeto op reference records the executable reference trace labels", () => {
+test("P3-5 L3 op reference records the executable reference trace labels", () => {
   const rows = [...tableRows().values()];
 
   assert.deepEqual(
@@ -75,13 +75,13 @@ test("P3-5 Impeto op reference records the executable reference trace labels", (
   );
 });
 
-test("P3-5 Impeto op reference is cross-linked from Folio docs and rustdoc", () => {
-  const folio = readRepoFile("docs/davinci", "plan", "folio-format-impeto.md");
-  const lib = readRepoFile("davinci", "vize_l3", "src", "lib.rs");
+test("P3-5 L3 op reference is cross-linked from Dump docs and rustdoc", () => {
+  const dump = readRepoFile("docs/davinci", "plan", "dump-format-l3.md");
+  const lib = readRepoFile("levels", "vize_l3", "src", "lib.rs");
   const phase = readRepoFile("docs/davinci", "plan", "phase-3.md");
 
-  assert.match(folio, /\[`impeto-ops\.md`\]\(\.\/impeto-ops\.md\)/u);
-  assert.match(lib, /\[`docs\/davinci\/plan\/impeto-ops\.md`\]/u);
+  assert.match(dump, /\[`l3-ops\.md`\]\(\.\/l3-ops\.md\)/u);
+  assert.match(lib, /\[`docs\/davinci\/plan\/l3-ops\.md`\]/u);
   assert.match(phase, /P3-5 Impeto op reference doc/u); // the plan keeps the codename alias
   assert.match(phase, /\[P3-5 record\]\(\.\/phase-3-records\/p3-5\.md\)/u);
 });

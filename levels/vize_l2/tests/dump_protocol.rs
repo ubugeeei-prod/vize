@@ -14,26 +14,26 @@ ops=6
 
 [l2-dump-v2.ops]
 ui.element div @0:120
-  attr title="[disegno]" @1:12
-  ui.text "[disegno.ops]" @12:27
+  attr title="[l2]" @1:12
+  ui.text "[l2.ops]" @12:27
   ui.interpolation js("[l2-dump-v2]" @27:42) @27:42
   ui.comment "[l2-dump-v2.ops]" @42:60
-  ui.interpolation foreign(md "[disegno]" @60:78) @60:78
-  ui.interpolation opaque(multi-statement "[s2-provenance-folio]" @78:100) @78:100
+  ui.interpolation foreign(md "[l2]" @60:78) @60:78
+  ui.interpolation opaque(multi-statement "[s2-provenance-dump]" @78:100) @78:100
 
 "#;
 
-const HISTORICAL: &str = r#"[disegno]
+const HISTORICAL: &str = r#"[l2]
 ops=6
 
-[disegno.ops]
+[l2.ops]
 ui.element div @0:120
-  attr title="[disegno]" @1:12
-  ui.text "[disegno.ops]" @12:27
+  attr title="[l2]" @1:12
+  ui.text "[l2.ops]" @12:27
   ui.interpolation js("[l2-dump-v2]" @27:42) @27:42
   ui.comment "[l2-dump-v2.ops]" @42:60
-  ui.interpolation foreign(md "[disegno]" @60:78) @60:78
-  ui.interpolation opaque(multi-statement "[s2-provenance-folio]" @78:100) @78:100
+  ui.interpolation foreign(md "[l2]" @60:78) @60:78
+  ui.interpolation opaque(multi-statement "[s2-provenance-dump]" @78:100) @78:100
 
 "#;
 
@@ -45,13 +45,13 @@ fn tree(base: u32) -> Page {
             namespace: Namespace::Html,
             attributes: vec![Attribute {
                 name: String::from("title"),
-                value: Some(String::from("[disegno]")),
+                value: Some(String::from("[l2]")),
                 span: span(1, 12),
             }],
             bindings: vec![],
             children: vec![
                 Op::Text(Text {
-                    content: String::from("[disegno.ops]"),
+                    content: String::from("[l2.ops]"),
                     span: span(12, 27),
                 }),
                 Op::Interpolation(Interpolation {
@@ -69,7 +69,7 @@ fn tree(base: u32) -> Page {
                 Op::Interpolation(Interpolation {
                     expression: Expr::Foreign {
                         dialect: String::from("md"),
-                        source: String::from("[disegno]"),
+                        source: String::from("[l2]"),
                         span: span(60, 78),
                     },
                     raw_html: false,
@@ -78,7 +78,7 @@ fn tree(base: u32) -> Page {
                 Op::Interpolation(Interpolation {
                     expression: Expr::Opaque {
                         reason: OpaqueReason::MultiStatement,
-                        source: String::from("[s2-provenance-folio]"),
+                        source: String::from("[s2-provenance-dump]"),
                         span: span(78, 100),
                     },
                     raw_html: false,
@@ -109,13 +109,13 @@ fn current_and_historical_headers_never_select_each_other() {
     );
     assert_eq!(
         HistoricalPage::parse(CURRENT),
-        Err(Error::new(1, cstr!("first section must be [disegno]")))
+        Err(Error::new(1, cstr!("first section must be [l2]")))
     );
     for (input, line, message) in [
         (
-            "[l2-dump-v2]\nops=0\n[disegno.ops]\n",
+            "[l2-dump-v2]\nops=0\n[l2.ops]\n",
             3,
-            "unknown section [disegno.ops]",
+            "unknown section [l2.ops]",
         ),
         (
             "[l2-dump-v2]\nops=0\n[l2-dump-v2]\n",
@@ -135,7 +135,7 @@ fn current_and_historical_headers_never_select_each_other() {
         );
     }
     assert_eq!(
-        HistoricalPage::parse("[disegno]\nops=0\n[l2-dump-v2.ops]\n"),
+        HistoricalPage::parse("[l2]\nops=0\n[l2-dump-v2.ops]\n"),
         Err(Error::new(3, cstr!("unknown section [l2-dump-v2.ops]")))
     );
 }
@@ -146,7 +146,7 @@ fn provenance_v2_preserves_quoted_headers_and_record_spans() {
         records: vec![Record {
             rule: String::from("lower.text"),
             node: Some(7),
-            before: String::from("[s2-provenance-folio]\n[disegno]"),
+            before: String::from("[s2-provenance-dump]\n[l2]"),
             after: String::from("[l2-provenance-dump-v2]"),
             span: Span::new(3, 42),
         }],
@@ -154,13 +154,13 @@ fn provenance_v2_preserves_quoted_headers_and_record_spans() {
     let expected = r#"[l2-provenance-dump-v2]
 
 [l2-provenance-dump-v2.records]
-rule=lower.text node=7 before="[s2-provenance-folio]\n[disegno]" after="[l2-provenance-dump-v2]" @3:42
+rule=lower.text node=7 before="[s2-provenance-dump]\n[l2]" after="[l2-provenance-dump-v2]" @3:42
 
 "#;
     assert_eq!(page.print_to_string(Mode::Full).as_str(), expected);
     assert_eq!(page.print_to_string(Mode::Display).as_str(), expected);
     assert_eq!(ProvenancePage::parse(expected), Ok(page));
-    assert!(ProvenancePage::parse("[s2-provenance-folio]\n").is_err());
+    assert!(ProvenancePage::parse("[s2-provenance-dump]\n").is_err());
 }
 
 fn text_page(value: &str, span: Span) -> Page {
@@ -221,10 +221,10 @@ fn typed_slots_project_only_to_the_identical_frozen_legacy_wire_record() {
         value: Some(value),
         span,
     }));
-    let old = r#"[disegno]
+    let old = r#"[l2]
 ops=2
 
-[disegno.ops]
+[l2.ops]
 ui.component B @0:32
   vue.directive "slots" value=js("pick(\"猫&\")" @9:21) @0:31
 

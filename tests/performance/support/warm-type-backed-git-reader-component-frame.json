@@ -10,7 +10,7 @@
     {
       "file": "warm-type-backed-git-reader-component-current-00.json",
       "entries": 12,
-      "sha256": "1068030ac25edc34878c816325db0794e08e86a4c0fdbe55d3e8c3620b93044a"
+      "sha256": "06836a885cf347d82000dd9346f27d5a4bea6dfc288612abf6e460bc30800392"
     },
     {
       "file": "warm-type-backed-git-reader-component-current-01.json",
@@ -50,12 +50,12 @@
     {
       "file": "warm-type-backed-git-reader-component-current-08.json",
       "entries": 12,
-      "sha256": "3153709298c98454114a7a804bbb97561e0a8f4198b574ad29a6a361039c6329"
+      "sha256": "1a1f8ed9ff7786b670aeeab3ed9c29867b8bcf2f408dca5b689062fdb709b935"
     },
     {
       "file": "warm-type-backed-git-reader-component-current-09.json",
       "entries": 3,
-      "sha256": "b9a46389a54250a1366d4baad02cb44d7f5a698f2f395aa0fec03f04466cfa0f"
+      "sha256": "76b6bb945eeabe4aba8bed5bdd632532eb8c425b83a80a750a37b07beea9f052"
     }
   ],
   "retainedBodyParts": [
@@ -97,17 +97,17 @@
     {
       "file": "warm-type-backed-git-reader-component-retained-07.json",
       "entries": 12,
-      "sha256": "1297820dffc9002204f26061fe2a1266795ea4a7f1655cdfa31ce46d9b960379"
+      "sha256": "89a34b18f6b33cc8a5e43539cc1793c94a76262cb0aedbd02319c7189e2c949a"
     },
     {
       "file": "warm-type-backed-git-reader-component-retained-08.json",
       "entries": 12,
-      "sha256": "ac0307165b42e3d0df0d1a2692fb7e981bcda03e85e8eae308db8ea0977c3d47"
+      "sha256": "586656cc2ecf6db96564a6c60e6fc5297cf43cccfa0fd0a2fc374e7a2c8f2803"
     },
     {
       "file": "warm-type-backed-git-reader-component-retained-09.json",
       "entries": 5,
-      "sha256": "ce8a2ebba1e24ec7e9c7b3309b4e5095509ea20d81405a0f2b62271b21df4e37"
+      "sha256": "d4589331982e142b93257799ea4803716f8f4d62eeb33e3457a5491ee5236533"
     }
   ],
   "exactCurrentAfterDeltas": [

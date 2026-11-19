@@ -1,6 +1,6 @@
 {
   "schema": "vize.native-sfc.original-input-model-modifiers-complete-goldens",
-  "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+  "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
   "inputPack": {
     "filename": "OriginalInputModelModifiers.vue",
     "fixtures": [
@@ -147,7 +147,7 @@
       },
       "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
       "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-      "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+      "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29"
     },
     "qualification": "new-current-inputs-not-native-execution-evidence",
     "schema": "vize.native-sfc.original-input-model-modifier-inputs",
@@ -170,7 +170,7 @@
   },
   "provenance": {
     "independentlyReviewedBeforeFreeze": true,
-    "peerFile": "/private/tmp/vize-overnight-20261031/davinci/native-model-lazy-20261101/independent-peer-clear-owner-record.json",
+    "peerFile": "/private/tmp/vize-overnight-20261031/levels/native-model-lazy-20261101/independent-peer-clear-owner-record.json",
     "peerSha256": "164bd99f125f20caf024c545ac06602ba8c8223d620c61c424789488c39a0f32",
     "peer": {
       "schema": "vize.native-model-lazy.independent-peer-message-owner-record",
@@ -186,7 +186,7 @@
       "archiveWholeReadByReviewer": false,
       "localMergeBlobAuthority": false,
       "whole47OldPacksIndependentlyHashed": true,
-      "finalMessage": "FINAL independent OFFLINE review: CLEAR for the held first-observation packet only; no source finding, no adoption or overall-green claim. Exact tuple H4eeefc35a681081f83a99e1f20825cb817a8abe1 / Check41301565222 / Vapor124833514234 / executionM3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066 treeaa1e06bb600028054981830c49626756bae05001. Held API repo/event/attempt/job/artifact and M parents [2f58513e,H] join PASS. Held run snapshot remains in_progress; completed Vapor job is FAILURE. I made no network, CI/build/native/provider execution, edits, or ZIP/image-body reads.\n\nCustody: archive-receipt.json full SHAbb7fd59365014e8e524608c989d3f7d875d8d148b80dd8fc3f7ca12ae7362034 verified. All14 extracted whole members independently SHA256/CRC32/length matched (29,260,209 B/max7,171,669); archive2,134,494/APIc79c020a…fad3a is joined through your retained receipt, not a new independent wholeZIP claim. All41 immutable H source bodies matched source-v3 manifest03aaeeab…c577. All47 old packs (53,030,887 B) independently hashed from Git and actual base/H blob IDs equal; golden16,097,711 B SHAa086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550 exact.\n\nWhole data: native36 code/raw maps/map objects + mapped/plain/default code, UTF8 authored declaration/read/write/modifier spans and custody fields pass. All old trim fixtures/custody/attempts AND all12 primary/runtime old3 subsets retain every field/property/array order. All77 nonmodifier outside rows whole/order equal. Exactly7 deliberate refusal→emission rows are ONE identical oldlazy source: main refusal indices3/15/27; compatibility DOM6/7, SSR3, Vapor3. These replace old error/state (Vapor also old stage) with full emitted code/map fields; they are not old-refusal successes.\n\nReal behavior: all36 primary +36 runtime pairs joined by exact actor code to primary.runtimeModule/native capture, raw primary maps72 checked, sourceCapture/input/context hashes+whole fields retained. All48 client actors +384 SSR cases whole official/native outcomes equal without pruning. Lazy DOM12 actors have original setup once,6 actual renders,5 actual dispatched/observed events, input/compositionend leave binding unchanged, real vnode setter updates model and render, change assigns untrimmed string. Document witness is actual HTMLDocument, window.Document false/exported Document true. Lazy Vapor12 actors forward ONE actual applyTextModel call with4 args/current owned instance; original getter/setter, no public proxy/render; diagnostic setter changes model while DOM remains typed value (no invented render), change assigns original full string. All cleanup/unmount/scope/global restoration pass. Vapor original/adapted code was reconstructed with exact UTF16 import-address edits only; observer forwards Reflect.apply(actual.applyTextModel,undefined,args). Runtime observed3.6.0-rc.9 devSHAf38a…2f7/prod017c…c0b2; HappyDOM21.0.4/ef245…b00; DOM/SSR3.5.35 and TS6.0.3 remain exact source/provider guards. SSR8 contexts×2 phases keep actual sixth setup argument, original initial values, explicit setter counts0/1, full outputs and restored wrappers.\n\nAll10 new statuses0 and all14 qualification boundaries remain observed-unqualified/nativeGoldenComparisonPerformed=false/wholePacketQualification=false. The old job failures remain genuine; source authority is retained M GitAPI+runtime sourceRevision, not H/M tree equality or protected-main/public acceptance. Safe to prepare the explicit whole current-outside successor while preserving old47 and all seven deliberate differences; fresh strict source/Actions adoption remains required under your existing plan."
+      "finalMessage": "FINAL independent OFFLINE review: CLEAR for the held first-observation packet only; no source finding, no adoption or overall-green claim. Exact tuple H4eeefc35a681081f83a99e1f20825cb817a8abe1 / Check41301565222 / Vapor124833514234 / executionM3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066 treeaa1e06bb600028054981830c49626756bae05001. Held API repo/event/attempt/job/artifact and M parents [2f58513e,H] join PASS. Held run snapshot remains in_progress; completed Vapor job is FAILURE. I made no network, CI/build/native/provider execution, edits, or ZIP/image-body reads.\n\nCustody: archive-receipt.json full SHAbb7fd59365014e8e524608c989d3f7d875d8d148b80dd8fc3f7ca12ae7362034 verified. All14 extracted whole members independently SHA256/CRC32/length matched (29,260,209 B/max7,171,669); archive2,134,494/APIc79c020a…fad3a is joined through your retained receipt, not a new independent wholeZIP claim. All41 immutable H source bodies matched source-v3 manifest03aaeeab…c577. All47 old packs (53,030,887 B) independently hashed from Git and actual base/H blob IDs equal; golden16,097,711 B SHA025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29 exact.\n\nWhole data: native36 code/raw maps/map objects + mapped/plain/default code, UTF8 authored declaration/read/write/modifier spans and custody fields pass. All old trim fixtures/custody/attempts AND all12 primary/runtime old3 subsets retain every field/property/array order. All77 nonmodifier outside rows whole/order equal. Exactly7 deliberate refusal→emission rows are ONE identical oldlazy source: main refusal indices3/15/27; compatibility DOM6/7, SSR3, Vapor3. These replace old error/state (Vapor also old stage) with full emitted code/map fields; they are not old-refusal successes.\n\nReal behavior: all36 primary +36 runtime pairs joined by exact actor code to primary.runtimeModule/native capture, raw primary maps72 checked, sourceCapture/input/context hashes+whole fields retained. All48 client actors +384 SSR cases whole official/native outcomes equal without pruning. Lazy DOM12 actors have original setup once,6 actual renders,5 actual dispatched/observed events, input/compositionend leave binding unchanged, real vnode setter updates model and render, change assigns untrimmed string. Document witness is actual HTMLDocument, window.Document false/exported Document true. Lazy Vapor12 actors forward ONE actual applyTextModel call with4 args/current owned instance; original getter/setter, no public proxy/render; diagnostic setter changes model while DOM remains typed value (no invented render), change assigns original full string. All cleanup/unmount/scope/global restoration pass. Vapor original/adapted code was reconstructed with exact UTF16 import-address edits only; observer forwards Reflect.apply(actual.applyTextModel,undefined,args). Runtime observed3.6.0-rc.9 devSHAf38a…2f7/prod017c…c0b2; HappyDOM21.0.4/ef245…b00; DOM/SSR3.5.35 and TS6.0.3 remain exact source/provider guards. SSR8 contexts×2 phases keep actual sixth setup argument, original initial values, explicit setter counts0/1, full outputs and restored wrappers.\n\nAll10 new statuses0 and all14 qualification boundaries remain observed-unqualified/nativeGoldenComparisonPerformed=false/wholePacketQualification=false. The old job failures remain genuine; source authority is retained M GitAPI+runtime sourceRevision, not H/M tree equality or protected-main/public acceptance. Safe to prepare the explicit whole current-outside successor while preserving old47 and all seven deliberate differences; fresh strict source/Actions adoption remains required under your existing plan."
     },
     "head": "4eeefc35a681081f83a99e1f20825cb817a8abe1",
     "tree": "4d0982fa70cbd2564be667375e7bc5ffa6205113",
@@ -308,7 +308,7 @@
     "all47OldPacksByteIdentical": true,
     "nativeGoldenComparisonPerformedAtCapture": false,
     "wholePacketQualificationAtCapture": false,
-    "scope": "single original lazy/trim, six original inputs and explicit current outside successors; no default/general/public Model or whole Davinci qualification"
+    "scope": "single original lazy/trim, six original inputs and explicit current outside successors; no default/general/public Model or whole level qualification"
   },
   "native": {
     "fixtures": [
@@ -666913,7 +666913,7 @@
           ]
         },
         "failures": [],
-        "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+        "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
         "inputPack": {
           "filename": "OriginalInputModelModifiers.vue",
           "fixtures": [
@@ -667060,7 +667060,7 @@
             },
             "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
             "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-            "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+            "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29"
           },
           "qualification": "new-current-inputs-not-native-execution-evidence",
           "schema": "vize.native-sfc.original-input-model-modifier-inputs",
@@ -667153,7 +667153,7 @@
         "target": "dom",
         "mode": "development",
         "sourceRevision": "3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066",
-        "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+        "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-modifier-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -667196,7 +667196,7 @@
           ],
           "history": {
             "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-            "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550",
+            "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29",
             "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
             "intentionalOutsideSuccessor": {
               "id": "modifier",
@@ -672048,7 +672048,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+          "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
           "inputPack": {
             "filename": "OriginalInputModelModifiers.vue",
             "fixtures": [
@@ -672195,7 +672195,7 @@
               },
               "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
               "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-              "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+              "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29"
             },
             "qualification": "new-current-inputs-not-native-execution-evidence",
             "schema": "vize.native-sfc.original-input-model-modifier-inputs",
@@ -672611,7 +672611,7 @@
         "target": "dom",
         "mode": "development",
         "sourceRevision": "3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066",
-        "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+        "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-modifier-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -672654,7 +672654,7 @@
           ],
           "history": {
             "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-            "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550",
+            "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29",
             "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
             "intentionalOutsideSuccessor": {
               "id": "modifier",
@@ -677506,7 +677506,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+          "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
           "inputPack": {
             "filename": "OriginalInputModelModifiers.vue",
             "fixtures": [
@@ -677653,7 +677653,7 @@
               },
               "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
               "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-              "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+              "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29"
             },
             "qualification": "new-current-inputs-not-native-execution-evidence",
             "schema": "vize.native-sfc.original-input-model-modifier-inputs",
@@ -678069,7 +678069,7 @@
         "target": "dom",
         "mode": "production",
         "sourceRevision": "3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066",
-        "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+        "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-modifier-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -678112,7 +678112,7 @@
           ],
           "history": {
             "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-            "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550",
+            "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29",
             "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
             "intentionalOutsideSuccessor": {
               "id": "modifier",
@@ -682964,7 +682964,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+          "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
           "inputPack": {
             "filename": "OriginalInputModelModifiers.vue",
             "fixtures": [
@@ -683111,7 +683111,7 @@
               },
               "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
               "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-              "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+              "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29"
             },
             "qualification": "new-current-inputs-not-native-execution-evidence",
             "schema": "vize.native-sfc.original-input-model-modifier-inputs",
@@ -683527,7 +683527,7 @@
         "target": "dom",
         "mode": "production",
         "sourceRevision": "3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066",
-        "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+        "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-modifier-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -683570,7 +683570,7 @@
           ],
           "history": {
             "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-            "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550",
+            "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29",
             "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
             "intentionalOutsideSuccessor": {
               "id": "modifier",
@@ -688422,7 +688422,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+          "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
           "inputPack": {
             "filename": "OriginalInputModelModifiers.vue",
             "fixtures": [
@@ -688569,7 +688569,7 @@
               },
               "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
               "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-              "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+              "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29"
             },
             "qualification": "new-current-inputs-not-native-execution-evidence",
             "schema": "vize.native-sfc.original-input-model-modifier-inputs",
@@ -688985,7 +688985,7 @@
         "target": "ssr",
         "mode": "development",
         "sourceRevision": "3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066",
-        "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+        "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-modifier-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -689028,7 +689028,7 @@
           ],
           "history": {
             "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-            "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550",
+            "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29",
             "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
             "intentionalOutsideSuccessor": {
               "id": "modifier",
@@ -693880,7 +693880,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+          "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
           "inputPack": {
             "filename": "OriginalInputModelModifiers.vue",
             "fixtures": [
@@ -694027,7 +694027,7 @@
               },
               "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
               "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-              "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+              "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29"
             },
             "qualification": "new-current-inputs-not-native-execution-evidence",
             "schema": "vize.native-sfc.original-input-model-modifier-inputs",
@@ -694443,7 +694443,7 @@
         "target": "ssr",
         "mode": "development",
         "sourceRevision": "3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066",
-        "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+        "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-modifier-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -694486,7 +694486,7 @@
           ],
           "history": {
             "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-            "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550",
+            "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29",
             "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
             "intentionalOutsideSuccessor": {
               "id": "modifier",
@@ -699338,7 +699338,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+          "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
           "inputPack": {
             "filename": "OriginalInputModelModifiers.vue",
             "fixtures": [
@@ -699485,7 +699485,7 @@
               },
               "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
               "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-              "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+              "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29"
             },
             "qualification": "new-current-inputs-not-native-execution-evidence",
             "schema": "vize.native-sfc.original-input-model-modifier-inputs",
@@ -699901,7 +699901,7 @@
         "target": "ssr",
         "mode": "production",
         "sourceRevision": "3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066",
-        "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+        "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-modifier-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -699944,7 +699944,7 @@
           ],
           "history": {
             "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-            "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550",
+            "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29",
             "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
             "intentionalOutsideSuccessor": {
               "id": "modifier",
@@ -704796,7 +704796,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+          "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
           "inputPack": {
             "filename": "OriginalInputModelModifiers.vue",
             "fixtures": [
@@ -704943,7 +704943,7 @@
               },
               "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
               "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-              "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+              "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29"
             },
             "qualification": "new-current-inputs-not-native-execution-evidence",
             "schema": "vize.native-sfc.original-input-model-modifier-inputs",
@@ -705359,7 +705359,7 @@
         "target": "ssr",
         "mode": "production",
         "sourceRevision": "3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066",
-        "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+        "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-modifier-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -705402,7 +705402,7 @@
           ],
           "history": {
             "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-            "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550",
+            "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29",
             "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
             "intentionalOutsideSuccessor": {
               "id": "modifier",
@@ -710254,7 +710254,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+          "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
           "inputPack": {
             "filename": "OriginalInputModelModifiers.vue",
             "fixtures": [
@@ -710401,7 +710401,7 @@
               },
               "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
               "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-              "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+              "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29"
             },
             "qualification": "new-current-inputs-not-native-execution-evidence",
             "schema": "vize.native-sfc.original-input-model-modifier-inputs",
@@ -710817,7 +710817,7 @@
         "target": "vapor",
         "mode": "development",
         "sourceRevision": "3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066",
-        "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+        "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-modifier-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -710860,7 +710860,7 @@
           ],
           "history": {
             "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-            "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550",
+            "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29",
             "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
             "intentionalOutsideSuccessor": {
               "id": "modifier",
@@ -715712,7 +715712,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+          "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
           "inputPack": {
             "filename": "OriginalInputModelModifiers.vue",
             "fixtures": [
@@ -715859,7 +715859,7 @@
               },
               "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
               "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-              "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+              "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29"
             },
             "qualification": "new-current-inputs-not-native-execution-evidence",
             "schema": "vize.native-sfc.original-input-model-modifier-inputs",
@@ -716275,7 +716275,7 @@
         "target": "vapor",
         "mode": "development",
         "sourceRevision": "3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066",
-        "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+        "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-modifier-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -716318,7 +716318,7 @@
           ],
           "history": {
             "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-            "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550",
+            "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29",
             "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
             "intentionalOutsideSuccessor": {
               "id": "modifier",
@@ -721170,7 +721170,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+          "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
           "inputPack": {
             "filename": "OriginalInputModelModifiers.vue",
             "fixtures": [
@@ -721317,7 +721317,7 @@
               },
               "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
               "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-              "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+              "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29"
             },
             "qualification": "new-current-inputs-not-native-execution-evidence",
             "schema": "vize.native-sfc.original-input-model-modifier-inputs",
@@ -721733,7 +721733,7 @@
         "target": "vapor",
         "mode": "production",
         "sourceRevision": "3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066",
-        "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+        "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-modifier-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -721776,7 +721776,7 @@
           ],
           "history": {
             "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-            "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550",
+            "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29",
             "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
             "intentionalOutsideSuccessor": {
               "id": "modifier",
@@ -726628,7 +726628,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+          "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
           "inputPack": {
             "filename": "OriginalInputModelModifiers.vue",
             "fixtures": [
@@ -726775,7 +726775,7 @@
               },
               "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
               "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-              "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+              "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29"
             },
             "qualification": "new-current-inputs-not-native-execution-evidence",
             "schema": "vize.native-sfc.original-input-model-modifier-inputs",
@@ -727191,7 +727191,7 @@
         "target": "vapor",
         "mode": "production",
         "sourceRevision": "3e3d9a2c0ce286e6dff067f8a61916aeb0b7d066",
-        "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+        "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
         "inputPack": {
           "schema": "vize.native-sfc.original-input-model-modifier-inputs",
           "qualification": "new-current-inputs-not-native-execution-evidence",
@@ -727234,7 +727234,7 @@
           ],
           "history": {
             "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-            "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550",
+            "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29",
             "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
             "intentionalOutsideSuccessor": {
               "id": "modifier",
@@ -732086,7 +732086,7 @@
               "target": "vapor"
             }
           ],
-          "inputHash": "4e125e84370ee4e9442067641f1670b402f5818d4a0e364544b42f6706715094",
+          "inputHash": "892688f572cc73fa2fe5a46b5786224f3875ede2e6c08d1dbab53ec728bc185c",
           "inputPack": {
             "filename": "OriginalInputModelModifiers.vue",
             "fixtures": [
@@ -732233,7 +732233,7 @@
               },
               "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
               "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-              "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550"
+              "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29"
             },
             "qualification": "new-current-inputs-not-native-execution-evidence",
             "schema": "vize.native-sfc.original-input-model-modifier-inputs",

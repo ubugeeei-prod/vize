@@ -9,15 +9,15 @@
   "parts": [
     [
       "tools/support/compat/github/misskey-registry-part-00.json",
-      "4b2d2d3cb5d970fb88a1ea6489a9e039d101bfbf57b904fe8055eacbd3cc939c"
+      "fa6c86667c10e72bb63c46abb1fa2860e17b2bf51b71dbe5a08a0734560529b7"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-01.json",
-      "4a5731af6d9a2c52c917b9f18d4dc7bc3b9543d9795edeec8137afc716459c8c"
+      "5eec040ff85ba37595cf0762519ca476abd00730ad2ff5489501cedcebcb24f1"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-02.json",
-      "bc5db7800a7002b9b4b65eb2275d50d8b6da09b1147102ee8c23ac0f0cb5f75c"
+      "036ff8edf7ef7e4ae5fb8dd4b1be5ab183a98c9cd7a253faaf90f6b5b3d741a7"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-03.json",
@@ -41,11 +41,11 @@
     ],
     [
       "tools/support/compat/github/misskey-registry-part-08.json",
-      "2aa96334a622695e61a3d943dd0f3e0969a9a1a34a28d6092e204da77ab7a90e"
+      "bb356579efcd14fd601c810d3e1d034b5999f87c343fcc07b3816b3af45ef6d2"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-09.json",
-      "b4b626cf99dbbe4a6dca3c78ae4e9429719a4e704e2c9de0da60712237e9dc83"
+      "b779c04e78d9a7a7d2a1bb806cecb20c2dc2070cc2b3bbcf29c4f9c57e037ea6"
     ],
     [
       "tools/support/compat/github/misskey-registry-part-10.json",

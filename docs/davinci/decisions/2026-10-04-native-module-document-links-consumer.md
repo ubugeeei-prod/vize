@@ -35,7 +35,7 @@ none of those proposed capabilities is granted here.
 | `server/module_target{,/unix}.rs`                     | Nonempty explicit `./` batches, pinned Unix nofollow/nonblocking component handles and regular-file identity; non-Unix typed refusal.             |
 | `server/native_navigation.rs`, `server.rs`            | Existing explicit opt-in native endpoints; standard document links remain legacy.                                                                 |
 
-L2 `davinci/vize_l2/src/lang/js/file/module_source{,/read}.rs` is actually merged
+L2 `levels/vize_l2/src/lang/js/file/module_source{,/read}.rs` is actually merged
 original Module source authority from #7711. There is no Maestro consumer call
 on this base. `FileArtifact::original_module_sources` owns a checked original
 ProgramInput and borrows its same completed File. `for_each` requires discarding

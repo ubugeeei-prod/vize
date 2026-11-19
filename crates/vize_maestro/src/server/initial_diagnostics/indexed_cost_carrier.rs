@@ -3,7 +3,7 @@
 
 use super::pending::{DiagnosticsJobCause, InitialDiagnosticsJob, PendingInitialDiagnostics};
 use crate::server::{diagnostic_publishing::SyncDiagnostics, state::ServerState};
-use davinci_harness::alloc::{
+use level_harness::alloc::{
     CountingAllocator, mark_installed, measure_returning, stats as allocation_stats,
 };
 use serde_json::{Value, json};

@@ -2,7 +2,7 @@
   "schema": "vize.n8n.authored-source-api-execution.v1",
   "sourceRevision": "47c6f998d49cd6c7b790550098b3378639b949f7",
   "observerReceipt": "/tmp/vize-n8n-next-semantic-gap-20261008/research-47c6/receipt.json",
-  "observerReceiptSha256": "8ca276d3cad3383f8061b85e1a7a8b44cfddc307928dfb6d71865d7d4cea74eb",
+  "observerReceiptSha256": "c916a60834f60d9ded6958bfc3bbf77ee7b30a3d737cac4d740e867308318d56",
   "binarySha256": "e78028b4c31709037f85edf1d053f7d69974b2be4117ec788836eca3c3a6fdc7",
   "command": [
     "/tmp/vize-n8n-next-semantic-gap-20261008/research-47c6/n8n_source_research_47c6",

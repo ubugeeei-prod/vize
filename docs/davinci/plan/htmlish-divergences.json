@@ -19,42 +19,42 @@
       "id": "error-recovery",
       "decidedBy": "docs/davinci/decisions/2026-11-17-input-neutral-levels.md#htmlish-oracles-and-divergences",
       "summary": "Parsing never stops at a structural error: malformed input becomes typed holes so the editor and linter keep working (the L1 hole policy). Oracles that stop at the first structural error are compared only on inputs they accept.",
-      "fixture": "davinci/vize_l1/tests/surface_fidelity.rs",
+      "fixture": "levels/vize_l1/tests/surface_fidelity.rs",
       "fuzzExempt": "inputs an oracle rejects are compared only for vize's own fidelity (render(tree) == source), not against the oracle tree"
     },
     {
       "id": "document-structure-refusal",
       "decidedBy": "docs/davinci/decisions/2026-11-17-input-neutral-levels.md#htmlish-oracles-and-divergences",
       "summary": "The Document structure builder refuses, with a typed `DocumentHtmlRefusal`, a source whose browser tree it does not build exactly: recovered syntax, ends the browser implies or ignores (`</br>`), `plaintext`, `xmp`/`iframe`, `template` contents and script-data escapes. It never returns an approximate tree; the surface stays lossless.",
-      "fixture": "davinci/vize_l1/tests/htmlish_ledger.rs",
+      "fixture": "levels/vize_l1/tests/htmlish_ledger.rs",
       "fuzzExempt": "document-dialect inputs vize refuses are compared only for fidelity (render(tree) == source), and each refusal is counted"
     },
     {
       "id": "vue-implied-end-tags",
       "decidedBy": "docs/davinci/decisions/2026-11-17-input-neutral-levels.md#htmlish-oracles-and-divergences",
       "summary": "In a Vue template vize closes `p`, `li`, `dt`/`dd`, `option`/`optgroup` and table parts at the start tags HTML's in-body rules name, without an error, as the shipped template parser does. The Vue oracle keeps authored nesting and reports the missing end tags. `IMPLIED_END_TAGS` governs the Document structure builder; the component surface applies these start-tag rules in every profile.",
-      "fixture": "davinci/vize_l1/tests/fixtures/htmlish/implied-end-tags.vue.json",
+      "fixture": "levels/vize_l1/tests/fixtures/htmlish/implied-end-tags.vue.json",
       "fuzzExempt": "vue-dialect inputs where an element HTML ends implicitly (`p`, `li`, `dt`, `dd`, `option`, `optgroup`, table parts) lacks its end tag"
     },
     {
       "id": "vue-void-end-tag-reported",
       "decidedBy": "docs/davinci/decisions/2026-11-17-input-neutral-levels.md#htmlish-oracles-and-divergences",
       "summary": "In the standard template syntax vize reports an end tag of a void element (`</br>`) as an invalid end tag; the Vue oracle drops it silently, and so does vize's quirks syntax. The tree is the same.",
-      "fixture": "davinci/vize_l1/tests/fixtures/htmlish/br-end-tag.vue.json",
+      "fixture": "levels/vize_l1/tests/fixtures/htmlish/br-end-tag.vue.json",
       "fuzzExempt": "vue-dialect inputs with an end tag of a void element are compared on the tree, not on diagnostics"
     },
     {
       "id": "vue-declaration-reported",
       "decidedBy": "docs/davinci/decisions/2026-11-17-input-neutral-levels.md#htmlish-oracles-and-divergences",
       "summary": "vize reports a markup declaration in a Vue template (`<!DOCTYPE html>`) as an incorrectly opened comment, as WHATWG makes a DOCTYPE after the document start a parse error. The Vue oracle drops it silently. The tree is the same.",
-      "fixture": "davinci/vize_l1/tests/fixtures/htmlish/declarations.vue.json",
+      "fixture": "levels/vize_l1/tests/fixtures/htmlish/declarations.vue.json",
       "fuzzExempt": "vue-dialect inputs with a markup declaration are compared on the tree, not on diagnostics"
     },
     {
       "id": "comment-bang-close",
       "decidedBy": "docs/davinci/decisions/2026-11-17-input-neutral-levels.md#htmlish-oracles-and-divergences",
       "summary": "vize closes a comment at `--!>` in both dialects, with an incorrectly-closed-comment error, as WHATWG does. The Vue oracle closes only at `-->`, so its comment swallows the markup after `--!>`.",
-      "fixture": "davinci/vize_l1/tests/fixtures/htmlish/comment-edges.vue.json",
+      "fixture": "levels/vize_l1/tests/fixtures/htmlish/comment-edges.vue.json",
       "fuzzExempt": "vue-dialect inputs with `--!>` inside a comment"
     }
   ],
@@ -64,8 +64,8 @@
       "row": "Declarations (`<!DOCTYPE>`)",
       "switch": "TOLERATE_DECLARATIONS",
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-structure.tsv",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/declarations.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/document/html-structure.tsv",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/declarations.vue.json"
       },
       "document": "a doctype token; no-quirks mode",
       "vue": "dropped without an error"
@@ -75,8 +75,8 @@
       "row": "Element-name case",
       "switch": "FOLD_NAME_CASE",
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-structure.tsv",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/element-name-case.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/document/html-structure.tsv",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/element-name-case.vue.json"
       },
       "document": "ASCII-folded (`<DIV>` is `div`)",
       "vue": "kept: `<MyComp>` is a component"
@@ -86,8 +86,8 @@
       "row": "Attribute-name case",
       "switch": "FOLD_NAME_CASE",
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-attributes.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/attribute-name-case.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/document/html-attributes.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/attribute-name-case.vue.json"
       },
       "document": "ASCII-folded",
       "vue": "kept (`:fooBar`, `@update:modelValue`)"
@@ -97,8 +97,8 @@
       "row": "End-tag case (`</DIV>`)",
       "switch": "FOLD_NAME_CASE",
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-structure.tsv",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/end-tag-case.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/document/html-structure.tsv",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/end-tag-case.vue.json"
       },
       "document": "folded like start tags",
       "vue": "must match the start tag exactly"
@@ -108,8 +108,8 @@
       "row": "SVG/MathML case adjustment",
       "switch": "FOLD_NAME_CASE",
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-foreign-content.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/foreign-case.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/document/html-foreign-content.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/foreign-case.vue.json"
       },
       "document": "`viewbox` becomes `viewBox`, `foreignobject` becomes `foreignObject`",
       "vue": "authored case kept"
@@ -119,8 +119,8 @@
       "row": "Self-closing (`<x />`)",
       "switch": "SELF_CLOSING_ANY_ELEMENT",
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-body-void-elements.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/self-closing.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/document/html-body-void-elements.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/self-closing.vue.json"
       },
       "document": "only void and foreign elements; a non-void slash is ignored",
       "vue": "closes any element"
@@ -130,7 +130,7 @@
       "row": "Attribute whitespace (`a=\"1\"b`)",
       "switch": "REQUIRE_ATTRIBUTE_WHITESPACE",
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/htmlish/attribute-whitespace.document.json",
+        "document": "levels/vize_l1/tests/fixtures/htmlish/attribute-whitespace.document.json",
         "vue": "tests/_fixtures/differential/compiler/recovered-attribute-boundary-11731"
       },
       "document": "parse error, then a new attribute",
@@ -141,8 +141,8 @@
       "row": "Implied end tags",
       "switch": "IMPLIED_END_TAGS",
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-implied-ends-and-tables.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/implied-end-tags.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/document/html-implied-ends-and-tables.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/implied-end-tags.vue.json"
       },
       "document": "`<p>` closed by a block, `<li>` by `<li>`",
       "vue": "authored nesting; a missing end tag is reported"
@@ -152,8 +152,8 @@
       "row": "`</br>`",
       "switch": "IMPLIED_END_TAGS",
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/htmlish/br-end-tag.document.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/br-end-tag.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/htmlish/br-end-tag.document.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/br-end-tag.vue.json"
       },
       "document": "`</br>` is a parse error and inserts a `br` element",
       "vue": "dropped without an error: Vue ignores end tags of void elements"
@@ -163,8 +163,8 @@
       "row": "`select` content model",
       "switch": "SELECT_CONTENT_MODEL",
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-select.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/select-content-model.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/document/html-select.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/select-content-model.vue.json"
       },
       "document": "select/option/optgroup stack rules (customizable select)",
       "vue": "authored nesting"
@@ -174,7 +174,7 @@
       "row": "Table content model",
       "switch": "TABLE_CONTENT_MODEL",
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-implied-ends-and-tables.json",
+        "document": "levels/vize_l1/tests/fixtures/document/html-implied-ends-and-tables.json",
         "vue": "tests/_fixtures/differential/compiler/table-section-cells-12307"
       },
       "document": "foster parenting, implied `tbody`",
@@ -185,8 +185,8 @@
       "row": "Raw text (`script`, `style`)",
       "switch": null,
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-special-text.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/raw-text.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/document/html-special-text.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/raw-text.vue.json"
       },
       "document": "raw text",
       "vue": "raw text"
@@ -196,8 +196,8 @@
       "row": "Raw text (`xmp`, `iframe`, `noembed`, `noframes`)",
       "switch": null,
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/htmlish/raw-text-legacy-elements.document.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/raw-text-legacy-elements.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/htmlish/raw-text-legacy-elements.document.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/raw-text-legacy-elements.vue.json"
       },
       "document": "raw text",
       "vue": "ordinary elements: Vue has no raw-text state for them"
@@ -207,8 +207,8 @@
       "row": "Script-data escapes (`<!--` … `<script>` inside `script`)",
       "switch": null,
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/htmlish/script-data-escapes.document.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/script-data-escapes.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/htmlish/script-data-escapes.document.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/script-data-escapes.vue.json"
       },
       "document": "the script-data escaped states",
       "vue": "no escape states: the first `</script>` ends the script"
@@ -218,7 +218,7 @@
       "row": "RCDATA (`textarea`, `title`)",
       "switch": null,
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-special-text.json",
+        "document": "levels/vize_l1/tests/fixtures/document/html-special-text.json",
         "vue": "tests/_fixtures/differential/compiler/pre-textarea-first-newline"
       },
       "document": "RCDATA: references decoded, no tags; the first newline of `textarea` dropped",
@@ -229,8 +229,8 @@
       "row": "SVG `title`",
       "switch": null,
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-foreign-content.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/svg-title.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/document/html-foreign-content.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/svg-title.vue.json"
       },
       "document": "an HTML integration point: its content is HTML",
       "vue": "to be decided from the Vue oracle"
@@ -240,8 +240,8 @@
       "row": "`foreignObject` integration point",
       "switch": null,
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-foreign-content.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/foreign-object.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/document/html-foreign-content.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/foreign-object.vue.json"
       },
       "document": "an HTML integration point",
       "vue": "to be decided from the Vue oracle"
@@ -251,8 +251,8 @@
       "row": "`plaintext`",
       "switch": null,
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/htmlish/plaintext.document.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/plaintext.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/htmlish/plaintext.document.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/plaintext.vue.json"
       },
       "document": "everything after the start tag is text",
       "vue": "an ordinary element"
@@ -262,8 +262,8 @@
       "row": "`noscript`",
       "switch": null,
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-embedded-fallback.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/noscript.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/document/html-embedded-fallback.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/noscript.vue.json"
       },
       "document": "elements (the scripting flag is off in `DOMParser`)",
       "vue": "to be decided from the Vue oracle"
@@ -273,8 +273,8 @@
       "row": "`template` contents",
       "switch": null,
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/htmlish/template-contents.document.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/template-contents.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/htmlish/template-contents.document.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/template-contents.vue.json"
       },
       "document": "an inert `DocumentFragment` (`template.content`)",
       "vue": "a structural wrapper (`v-if`, `v-for`, `v-slot`)"
@@ -284,8 +284,8 @@
       "row": "Bogus comments (`<?x>`, `</ div>`, `<!x>`)",
       "switch": "TOLERATE_DECLARATIONS",
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/htmlish/bogus-comments.document.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/bogus-comments.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/htmlish/bogus-comments.document.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/bogus-comments.vue.json"
       },
       "document": "a bogus comment",
       "vue": "`<?x>` is reported and builds no node, `<!x>` builds none, `</ div>` is reported"
@@ -295,8 +295,8 @@
       "row": "Comment edges (`<!-->`, `<!--->`, `--!>`)",
       "switch": null,
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/htmlish/comment-edges.document.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/comment-edges.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/htmlish/comment-edges.document.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/comment-edges.vue.json"
       },
       "document": "WHATWG comment states (abrupt closing, `--!>` closes)",
       "vue": "`<!-->` and `<!--->` are empty comments; `--!>` does not close, so the comment runs to `-->` or the end"
@@ -306,8 +306,8 @@
       "row": "CRLF",
       "switch": null,
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-body-nodes.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/crlf.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/document/html-body-nodes.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/crlf.vue.json"
       },
       "document": "CR and CRLF become LF before tokenizing",
       "vue": "to be decided from the Vue oracle; spans stay authored"
@@ -317,8 +317,8 @@
       "row": "NULL",
       "switch": null,
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-body-nodes.json",
-        "vue": "davinci/vize_l1/tests/fixtures/htmlish/null.vue.json"
+        "document": "levels/vize_l1/tests/fixtures/document/html-body-nodes.json",
+        "vue": "levels/vize_l1/tests/fixtures/htmlish/null.vue.json"
       },
       "document": "dropped in text, U+FFFD in comments and attributes",
       "vue": "to be decided from the Vue oracle"
@@ -328,7 +328,7 @@
       "row": "Character references",
       "switch": null,
       "fixtures": {
-        "document": "davinci/vize_l1/tests/fixtures/document/html-attributes.json",
+        "document": "levels/vize_l1/tests/fixtures/document/html-attributes.json",
         "vue": "tests/_fixtures/differential/compiler/slot-parameter-entities-8142"
       },
       "document": "full named table; the attribute rule for `&` followed by an alphanumeric or `=`",

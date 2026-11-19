@@ -93,7 +93,7 @@ fn cache_policy_reuses_or_evicts_the_same_components_as_official_vapor() {
             "{props}: native L3"
         );
         let vize = trace(
-            "davinci-mounted-trace.mjs",
+            "level-mounted-trace.mjs",
             json!({
                 "backend": "vapor", "code": parent.code, "context": context, "steps": steps, "identities": true,
                 "components": {"First": {"code": first_code.code, "props": ["label"], "emits": ["send"]}, "Second": {"code": second_code.code, "props": ["label"], "emits": ["send"]}},
@@ -104,7 +104,7 @@ fn cache_policy_reuses_or_evicts_the_same_components_as_official_vapor() {
             &source,
             VaporCompilerOptions {
                 prefix_identifiers: true,
-                davinci_retained_lane: true,
+                level_retained_lane: true,
                 ..Default::default()
             },
         );
@@ -113,14 +113,14 @@ fn cache_policy_reuses_or_evicts_the_same_components_as_official_vapor() {
             "{props}: retained compile"
         );
         let retained_trace = trace(
-            "davinci-mounted-trace.mjs",
+            "level-mounted-trace.mjs",
             json!({
                 "backend": "vapor", "code": retained.code, "context": context, "steps": steps, "identities": true,
                 "components": {"First": {"code": first_code.code, "props": ["label"], "emits": ["send"]}, "Second": {"code": second_code.code, "props": ["label"], "emits": ["send"]}},
             }),
         );
         let upstream = trace(
-            "davinci-upstream-vapor-trace.mjs",
+            "level-upstream-vapor-trace.mjs",
             json!({
                 "source": source, "context": context, "steps": steps,
                 "components": {"First": {"source": first, "props": ["label"], "emits": ["send"]}, "Second": {"source": second, "props": ["label"], "emits": ["send"]}},
@@ -222,7 +222,7 @@ fn computed_filter_key_removes_stale_policy_and_matches_official_vapor() {
         &allocator,
         SOURCE,
         VaporCompilerOptions {
-            davinci_retained_lane: true,
+            level_retained_lane: true,
             ..options
         },
     );
@@ -234,7 +234,7 @@ fn computed_filter_key_removes_stale_policy_and_matches_official_vapor() {
 
     for (lane, code) in [("native", native.code), ("retained", retained.code)] {
         let actual = trace(
-            "davinci-mounted-trace.mjs",
+            "level-mounted-trace.mjs",
             json!({
                 "backend": "vapor", "code": code, "context": context, "steps": steps, "identities": true,
                 "components": {"First": {"code": first.code, "props": ["label"], "emits": ["send"]}, "Second": {"code": second.code, "props": ["label"], "emits": ["send"]}},
@@ -243,7 +243,7 @@ fn computed_filter_key_removes_stale_policy_and_matches_official_vapor() {
         assert_eq!(actual, expected, "{lane} trace");
     }
     let official = trace(
-        "davinci-upstream-vapor-trace.mjs",
+        "level-upstream-vapor-trace.mjs",
         json!({
             "source": SOURCE, "context": context, "steps": steps,
             "components": {"First": {"source": FIRST, "props": ["label"], "emits": ["send"]}, "Second": {"source": SECOND, "props": ["label"], "emits": ["send"]}},

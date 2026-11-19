@@ -52,7 +52,7 @@
           "dialects": ["pug", "jade"]
         },
         {
-          "path": "davinci/vize_l1_to_l2/tests/pug_lowering.rs",
+          "path": "levels/vize_l1_to_l2/tests/pug_lowering.rs",
           "anchor": "fn every_matrix_fixture_derives_the_pinned_pug_html()",
           "dialects": ["pug", "jade"]
         }
@@ -210,7 +210,7 @@
         },
         {
           "path": ".github/workflows/real-project-matrix.yml",
-          "anchor": "tests/tooling/glyph-pug-oracle.test.ts tests/tooling/davinci-pug-corpus-oracle.test.ts"
+          "anchor": "tests/tooling/glyph-pug-oracle.test.ts tests/tooling/level-pug-corpus-oracle.test.ts"
         },
         {
           "path": "tests/_fixtures/pug-jade-surface-audit-8908/dho-current-balance-lint-parity.json",

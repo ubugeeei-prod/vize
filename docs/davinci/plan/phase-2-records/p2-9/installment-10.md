@@ -20,7 +20,7 @@ VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
   --test davinci_differential -- --nocapture
 ```
 
-The binary (`crates/vize_atelier_sfc/tests/davinci_differential.rs`)
+The binary (`crates/vize_atelier_sfc/tests/level_differential.rs`)
 prints, after the corpus sweep:
 
 ```text

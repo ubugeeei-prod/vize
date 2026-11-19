@@ -1,6 +1,6 @@
 ---
 source: crates/vize_l1_to_l2/tests/vfor_pass_snapshot.rs
-expression: "$crate :: folio :: Folio ::\nprint_to_string(& *folio, $crate :: folio :: FolioMode :: Full,)"
+expression: "$crate :: dump :: Dump ::\nprint_to_string(& *dump, $crate :: dump :: DumpMode :: Full,)"
 ---
 [l2-dump-v2]
 ops=5

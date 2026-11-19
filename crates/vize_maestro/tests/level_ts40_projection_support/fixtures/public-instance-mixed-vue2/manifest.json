@@ -30,7 +30,7 @@
       "prBaseGitObject": "981fb903201e4d9a3af401a625d9cf932cb31ff0"
     },
     {
-      "path": "tests/_fixtures/davinci-ts40-projection",
+      "path": "tests/_fixtures/level-ts40-projection",
       "beforeGitObject": "fb6e7b2def23d1a99a745b738054b1494dfd0b2d",
       "prBaseGitObject": "fb6e7b2def23d1a99a745b738054b1494dfd0b2d"
     },
@@ -42,12 +42,12 @@
   ],
   "unchangedGenerationRouting": [
     {
-      "path": "crates/vize_maestro/tests/davinci_ts40_projection_support/maestro.rs",
+      "path": "crates/vize_maestro/tests/level_ts40_projection_support/maestro.rs",
       "beforeGitObject": "fa202d0446dabd36537400ee7ac744c0eeedf4aa",
       "afterGitObject": "fa202d0446dabd36537400ee7ac744c0eeedf4aa"
     },
     {
-      "path": "crates/vize_maestro/tests/davinci_ts40_projection_support/canon.rs",
+      "path": "crates/vize_maestro/tests/level_ts40_projection_support/canon.rs",
       "beforeGitObject": "dc7772ff75918a37174c20d2ecda147b6d738373",
       "afterGitObject": "dc7772ff75918a37174c20d2ecda147b6d738373"
     },
@@ -1139,33 +1139,33 @@
       "path": "options-api-slots/maestro/authored-hits.txt",
       "before": {
         "bytes": 1618,
-        "sha256": "84b9d690dab0837f3d3370d3392538292c25087ceb1733a088d32873316cf171"
+        "sha256": "3f7ea7cd40476594114d67c219b7dddaa3635959e000a21c034fd44db9e96c88"
       },
       "after": {
         "bytes": 1890,
-        "sha256": "37bdfc5f1d842e45ec40568ced58c155dc539763b8342290371f1629a8e26841"
+        "sha256": "ed5cf12699cf8c81c67a4b19feb22693e99c8d11d5adf0e2c110dac614d5f6be"
       }
     },
     {
       "path": "options-api-slots/maestro/mappings.txt",
       "before": {
         "bytes": 1895,
-        "sha256": "20e2452ddab1b03294c1cf4b5b804966063895191dea491108c3b90937be0669"
+        "sha256": "cea94a1a1acb126632728130a65f5b113a3e32301b5aee2710bdb00ddda574b5"
       },
       "after": {
         "bytes": 2168,
-        "sha256": "72c2cb6f2a6392b1bf1c1efd4f5cf2345f06a1f99ed886b3345e824e0aef4a1a"
+        "sha256": "080a852ad6f8f3d82fc0c2d2ff60ad8c40de2c795b95807c164360756788940b"
       }
     },
     {
       "path": "options-api-slots/maestro/text.txt",
       "before": {
         "bytes": 305,
-        "sha256": "ebf89754f5531e37ff16e4fc4ccd10930af1de52feb69cef9e514fbe1caffc43"
+        "sha256": "1bfada88af3f3d8e9334f57bb439bc1e488291bc42b9d6efdb42d13e6b824712"
       },
       "after": {
         "bytes": 305,
-        "sha256": "02a39cf9269693c784f5d6cb2962a85acf09be1bb12d59078b42ec299460a2b6"
+        "sha256": "e06b8caca4b4e2acc516e7012cc8ada5774c00bd351620c6d951baf025466497"
       }
     },
     {
@@ -2261,33 +2261,33 @@
       "path": "vue2-native-event/maestro/authored-hits.txt",
       "before": {
         "bytes": 1617,
-        "sha256": "f62beed87c22ceaf927a05a3bc5adb4d7cfe041b9ca8d0304380de924e991287"
+        "sha256": "41b7a4d10e9ea4c427add1cf79f4499cc95f0f96b7b2b207e4dd4e1e166448db"
       },
       "after": {
         "bytes": 1889,
-        "sha256": "06727e6c871c0b88fe4173a9dc9a5fd1ac33c58e8faf6c4c0b5cd45deec4ab66"
+        "sha256": "235d82bafd0e63f45428422778395e448dc64d3ff39a84a5dca34143121cea90"
       }
     },
     {
       "path": "vue2-native-event/maestro/mappings.txt",
       "before": {
         "bytes": 2167,
-        "sha256": "e0f59f6210b8729dfae000796a69117939c99871eadfc9112dcc53c1fdb03530"
+        "sha256": "10977e7aa8703d2a0581830866fd899239357e2a21167a28345c5e2c30bef7dc"
       },
       "after": {
         "bytes": 2440,
-        "sha256": "d28d9722f6c5f09aec8c47f48a853e2b35381442578b0f8162f2c72fd1dcc5b7"
+        "sha256": "69c56ac11e0f2878d7c2a38e59de522fe2c2b86103097dc996358e31e0ba3dd9"
       }
     },
     {
       "path": "vue2-native-event/maestro/text.txt",
       "before": {
         "bytes": 305,
-        "sha256": "5eb8c0467f7cadc31dfa6410817ddc2b79cc3e7179010f7557d49663d0677287"
+        "sha256": "13d13cf38c185ee5f6946c47b23ee69831e87affb9eeb9cfb50b2c2ce039881a"
       },
       "after": {
         "bytes": 305,
-        "sha256": "d8a8e9027571c78cc9a3dc1aa0efcf033a631da8427ee4c04f05408c862618ee"
+        "sha256": "32f897458f69529751971803ab35ee75ca6c9cfa013bc34bd5756c3ba28f0772"
       }
     },
     {
@@ -2383,17 +2383,17 @@
     {
       "path": "before/maestro/authored-hits.txt",
       "bytes": 1617,
-      "sha256": "f62beed87c22ceaf927a05a3bc5adb4d7cfe041b9ca8d0304380de924e991287"
+      "sha256": "41b7a4d10e9ea4c427add1cf79f4499cc95f0f96b7b2b207e4dd4e1e166448db"
     },
     {
       "path": "before/maestro/mappings.txt",
       "bytes": 2167,
-      "sha256": "e0f59f6210b8729dfae000796a69117939c99871eadfc9112dcc53c1fdb03530"
+      "sha256": "10977e7aa8703d2a0581830866fd899239357e2a21167a28345c5e2c30bef7dc"
     },
     {
       "path": "before/maestro/text.txt",
       "bytes": 305,
-      "sha256": "5eb8c0467f7cadc31dfa6410817ddc2b79cc3e7179010f7557d49663d0677287"
+      "sha256": "13d13cf38c185ee5f6946c47b23ee69831e87affb9eeb9cfb50b2c2ce039881a"
     },
     {
       "path": "before/maestro-document-0/text.ts.txt",
@@ -2413,7 +2413,7 @@
     {
       "path": "before/projection-record.txt",
       "bytes": 2325,
-      "sha256": "57a580ff361ac4147ab5fb6983149b4f70ef7eb8b0518cb999aa262103bdb843"
+      "sha256": "7b517d6e6f4bd11ceeb1609358682176c752f2c6f7485a6fcf442241d3653c23"
     },
     {
       "path": "after/canon/import-map.txt",
@@ -2473,17 +2473,17 @@
     {
       "path": "after/maestro/authored-hits.txt",
       "bytes": 1889,
-      "sha256": "06727e6c871c0b88fe4173a9dc9a5fd1ac33c58e8faf6c4c0b5cd45deec4ab66"
+      "sha256": "235d82bafd0e63f45428422778395e448dc64d3ff39a84a5dca34143121cea90"
     },
     {
       "path": "after/maestro/mappings.txt",
       "bytes": 2440,
-      "sha256": "d28d9722f6c5f09aec8c47f48a853e2b35381442578b0f8162f2c72fd1dcc5b7"
+      "sha256": "69c56ac11e0f2878d7c2a38e59de522fe2c2b86103097dc996358e31e0ba3dd9"
     },
     {
       "path": "after/maestro/text.txt",
       "bytes": 305,
-      "sha256": "d8a8e9027571c78cc9a3dc1aa0efcf033a631da8427ee4c04f05408c862618ee"
+      "sha256": "32f897458f69529751971803ab35ee75ca6c9cfa013bc34bd5756c3ba28f0772"
     },
     {
       "path": "after/maestro-document-0/text.ts.txt",
@@ -2503,7 +2503,7 @@
     {
       "path": "after/projection-record.txt",
       "bytes": 2325,
-      "sha256": "ab6913fd891b081b103e26b075b3ed5aa4527893974666c41ad08957cfdd71f1"
+      "sha256": "e14bf0cf5ebd3db51e86d85abe0af27a9b4a1e9635d00d66d6055ff878eaf5e8"
     }
   ]
 }

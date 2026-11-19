@@ -115,7 +115,7 @@ for (const row of afterProfile.rows) {
       row.counters.filter(
         (counter) =>
           counter.name.startsWith("atelier.for_binding.") ||
-          counter.name === "davinci.for_binding.parses",
+          counter.name === "levels.for_binding.parses",
       ).length,
       0,
     );
@@ -124,7 +124,7 @@ for (const row of afterProfile.rows) {
       row.counters.some(
         (counter) =>
           (counter.name === "atelier.for_binding.parses" ||
-            counter.name === "davinci.for_binding.parses") &&
+            counter.name === "levels.for_binding.parses") &&
           counter.total > 0,
       ),
     );

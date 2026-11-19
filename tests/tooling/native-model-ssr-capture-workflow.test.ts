@@ -6,14 +6,14 @@ import { nativeSsrCaptureRequired } from "../../tools/support/compat/github/nati
 import { nativeSetupCaptureRequired } from "../../tools/support/compat/github/native-setup-capture.mjs";
 
 test("shared genuine Model identity always qualifies both actual target consumers", () => {
-  const shared = "davinci/vize_l3/src/decision/model.rs";
+  const shared = "levels/vize_l3/src/decision/model.rs";
   assert(nativeSsrCaptureRequired([shared]));
   assert(nativeSetupCaptureRequired([shared]));
   for (const path of [
-    "davinci/vize_l3/src/decision/ssr/model.rs",
-    "davinci/vize_l3/src/decision/ssr/build/model.rs",
-    "davinci/vize_l3/tests/native_model_ssr.rs",
-    "davinci/vize_l4/src/targets/ssr/model.rs",
+    "levels/vize_l3/src/decision/ssr/model.rs",
+    "levels/vize_l3/src/decision/ssr/build/model.rs",
+    "levels/vize_l3/tests/native_model_ssr.rs",
+    "levels/vize_l4/src/targets/ssr/model.rs",
     "crates/vize_atelier_sfc/src/native_ssr_setup/tests/original_input_model.rs",
     "crates/vize_atelier_sfc/src/native_ssr_setup/tests/original_input_model/custody.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_inputs_vue_3_5_35.json",
@@ -26,7 +26,7 @@ test("shared genuine Model identity always qualifies both actual target consumer
   ])
     assert(nativeSsrCaptureRequired([path]), path);
   for (const path of [
-    "davinci/vize_l3/tests/native_model_ssr_unrelated.rs",
+    "levels/vize_l3/tests/native_model_ssr_unrelated.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_ssr_contexts_vue_3_5_35.json.old",
     "tests/tooling/support/native-original-input-model-sfc-ssr-unrelated.ts",
     "docs/davinci/native-input-model-ssr.md",

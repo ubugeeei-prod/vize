@@ -1,13 +1,13 @@
 //! P3-14 — `vize reduce`, pinned end to end.
 //!
 //! The acceptance: a **seeded crash** repro (the committed
-//! `seeded-crash.repro.folio`, a real SFC with a crash seeded on one nested
+//! `seeded-crash.repro.dump`, a real SFC with a crash seeded on one nested
 //! element via `inject-when`) reduces to at most 20% of its size while the
 //! oracle holds — asserted as exact bytes and exact reduced artifact, and
 //! re-checked independently by `vize repro` on the output. The seed is shown
 //! load-bearing (without it the repro does not reproduce), so the reduction
 //! preserved a content-dependent oracle, not a vacuous one. The `.vue` checks
-//! (remark, folio, diagnostic, budget, script) and every refusal are pinned
+//! (remark, dump, diagnostic, budget, script) and every refusal are pinned
 //! with exact output too.
 #![cfg(test)]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
@@ -18,7 +18,7 @@ use std::process::{Command, Output};
 
 fn fixture(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/davinci_reduce")
+        .join("tests/fixtures/level_reduce")
         .join(name)
 }
 
@@ -34,17 +34,17 @@ fn text(bytes: &[u8]) -> &str {
 }
 
 fn temp_out(name: &str) -> PathBuf {
-    let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join("davinci-reduce");
+    let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join("level-reduce");
     std::fs::create_dir_all(&dir).expect("temp dir creates");
     dir.join(name)
 }
 
-const FAILURE: &str = "template.transform: injected davinci panic in pass `transform`";
+const FAILURE: &str = "template.transform: injected levels panic in pass `transform`";
 
 #[test]
 fn the_seeded_crash_reduces_below_a_fifth_and_still_reproduces() {
-    let input = fixture("seeded-crash.repro.folio");
-    let out = temp_out("seeded.reduced.repro.folio");
+    let input = fixture("seeded-crash.repro.dump");
+    let out = temp_out("seeded.reduced.repro.dump");
     let output = vize(&[
         "reduce",
         input.to_str().expect("UTF-8 path"),
@@ -63,7 +63,7 @@ fn the_seeded_crash_reduces_below_a_fifth_and_still_reproduces() {
     assert!(117 * 5 <= original.len(), "reduced to at most 20%");
 
     let reduced = std::fs::read_to_string(&out).expect("reduced repro reads");
-    let expected = std::fs::read_to_string(fixture("seeded-crash.reduced.repro.folio"))
+    let expected = std::fs::read_to_string(fixture("seeded-crash.reduced.repro.dump"))
         .expect("expected repro reads");
     assert_eq!(reduced, expected);
 
@@ -81,9 +81,9 @@ fn the_seeded_crash_reduces_below_a_fifth_and_still_reproduces() {
 fn the_seed_is_load_bearing() {
     // The same repro with the seeded element's tag renamed does not
     // reproduce: the crash depends on the content the reducer kept.
-    let seeded = std::fs::read_to_string(fixture("seeded-crash.repro.folio")).expect("reads");
+    let seeded = std::fs::read_to_string(fixture("seeded-crash.repro.dump")).expect("reads");
     let unseeded = seeded.replace("<seed-crash ", "<seed-calm ");
-    let path = temp_out("unseeded.repro.folio");
+    let path = temp_out("unseeded.repro.dump");
     std::fs::write(&path, unseeded).expect("writes");
     let replay = vize(&["repro", path.to_str().expect("UTF-8 path")]);
     assert_eq!(replay.status.code(), Some(1));
@@ -114,7 +114,7 @@ fn sorted_entries(dir: &Path) -> Vec<std::string::String> {
     names
 }
 
-/// Build one file under `--davinci-inject-panic seeded-crash:transform:seed-crash`.
+/// Build one file under `--level-inject-panic seeded-crash:transform:seed-crash`.
 fn seeded_build(test_name: &str, source: &str) -> (PathBuf, Output) {
     let root = temp_out(test_name);
     let _ = std::fs::remove_dir_all(&root);
@@ -127,7 +127,7 @@ fn seeded_build(test_name: &str, source: &str) -> (PathBuf, Output) {
             "src",
             "--output",
             "dist",
-            "--davinci-inject-panic",
+            "--level-inject-panic",
             "seeded-crash:transform:seed-crash",
         ])
         .output()
@@ -144,11 +144,11 @@ fn the_seeded_crash_is_what_a_seeded_build_writes() {
     assert_eq!(output.status.code(), Some(1));
     assert_eq!(
         sorted_entries(&root.join("dist")),
-        ["seeded-crash.repro.folio"]
+        ["seeded-crash.repro.dump"]
     );
     let written =
-        std::fs::read_to_string(root.join("dist/seeded-crash.repro.folio")).expect("repro reads");
-    let committed = std::fs::read_to_string(fixture("seeded-crash.repro.folio")).expect("reads");
+        std::fs::read_to_string(root.join("dist/seeded-crash.repro.dump")).expect("repro reads");
+    let committed = std::fs::read_to_string(fixture("seeded-crash.repro.dump")).expect("reads");
     assert_eq!(written, committed);
 
     // The same build over the same file without the seeded element compiles
@@ -183,7 +183,7 @@ fn each_vue_oracle_reduces_to_its_exact_witness() {
         ),
         (
             "seeded-crash.vue",
-            &["--folio-contains", "ui.for"],
+            &["--dump-contains", "ui.for"],
             "<template><section><Swiper><SwiperSlide v-for=\"slide in slides\"></SwiperSlide></Swiper></section></template>",
             "reduce: 3733 -> 108 bytes (2.8% of the input), 49 oracle run(s), 1-minimal\n",
         ),
@@ -225,7 +225,7 @@ fn refusals_are_exact() {
         (
             &[],
             2,
-            "reduce: a .vue input needs at least one check (--crash, --remark, --folio-contains, \
+            "reduce: a .vue input needs at least one check (--crash, --remark, --dump-contains, \
              --diagnostic, --walks-over, --dom-divergence, --script)\n",
         ),
         (

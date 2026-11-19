@@ -24,7 +24,7 @@ const regular = (file) => {
 };
 const dataName = "javascript-sfc-source-context.json";
 const dataBytes = regular(new URL(dataName, import.meta.url));
-assert.equal(sha(dataBytes), "c1013f07ab435417d46c10a83ea4b8e4ba816fe85e3a414af5bed6b90b6709ec");
+assert.equal(sha(dataBytes), "5a699e54e178ddf915902bd047c67e6805882a9bba621f5ff9bb55232d546cc8");
 const data = JSON.parse(dataBytes);
 assert.equal(data.version, 1);
 assert.equal(data.sourceOnly, true);

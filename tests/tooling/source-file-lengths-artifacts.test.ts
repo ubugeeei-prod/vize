@@ -22,7 +22,7 @@ test("retired contract artifacts have no source length exemption", () => {
     git(cwd, "add", "README.md");
     git(cwd, "-c", "user.name=Vize", "-c", "user.email=vize@example.com", "commit", "-qm", "base");
     const base = git(cwd, "rev-parse", "HEAD");
-    const artifact = "davinci/vize_guest/versions/vize-contracts@0.1.3.json";
+    const artifact = "levels/vize_guest/versions/vize-contracts@0.1.3.json";
     const text = `${Array.from({ length: 501 }, () => "line").join("\n")}\n`;
     const write = (relative: string) => {
       const file = path.join(cwd, relative);
@@ -40,9 +40,9 @@ test("retired contract artifacts have no source length exemption", () => {
 
     const controls = [
       "crates/other/versions/vize-contracts@0.1.3.json",
-      "davinci/vize_guest/versions/authored.rs",
-      "davinci/vize_guest/versions/other.json",
-      "davinci/vize_guest/versions/vize-contracts@nested/part.json",
+      "levels/vize_guest/versions/authored.rs",
+      "levels/vize_guest/versions/other.json",
+      "levels/vize_guest/versions/vize-contracts@nested/part.json",
     ];
     controls.forEach(write);
     const result = run();

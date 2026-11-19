@@ -84,7 +84,7 @@ const approvedSources = [
   {
     path: "crates/vize_atelier_vapor/src/lower.rs",
     beforeSha256: "52143f26569be26ef447b4b14d2f09835cd6d071a719db32127e82fed51deb2a",
-    afterSha256: "2ece62a4fcee7b675c856f8309090925ebf8742704d4d63fba58ff3c0cec81ac",
+    afterSha256: "80530f1508cbfbab1f106ac95b9f1017bce2e1f8814f5073468f768193be1b63",
   },
   {
     path: "crates/vize_atelier_vapor/src/lower/context.rs",

@@ -10,7 +10,7 @@ import { root7502 } from "./native-attribute-values-7502-source.ts";
 export const classBaseline7502 = {
   revision: "77ed369860b19a44f2716dfad9d537d968fba018",
   tree: "6e8e3874a828782f445510cbb3eea1f3d588064e",
-  testPath: "davinci/vize_l3/src/decision/attribute_value/tests/refusal.rs",
+  testPath: "levels/vize_l3/src/decision/attribute_value/tests/refusal.rs",
   testSourceSha256: "a1555407b8e2c5ae1e926048b249e3ca80d1a0b91def83db39f7019fa5beeb38",
 } as const;
 export const classLaw7502 =
@@ -100,7 +100,7 @@ export function hostedClassHistory7502(frame: any, directory: string, run: Colle
         "--others",
         "--exclude-standard",
         "--",
-        "davinci",
+        "levels",
         "crates",
         "vendor",
         "tests",

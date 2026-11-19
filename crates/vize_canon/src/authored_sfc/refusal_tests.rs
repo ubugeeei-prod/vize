@@ -12,7 +12,7 @@ use crate::{
 #[test]
 fn complete_refusal_corpus_agrees_across_single_file_batch_and_mapper() {
     let root =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/davinci-pug/refused");
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/level-pug/refused");
     let mut paths: Vec<_> = std::fs::read_dir(root)
         .unwrap()
         .map(|entry| entry.unwrap().path())

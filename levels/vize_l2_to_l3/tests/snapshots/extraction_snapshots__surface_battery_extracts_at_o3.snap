@@ -1,14 +1,14 @@
 ---
-source: davinci/vize_l2_to_l3/tests/extraction_snapshots.rs
+source: levels/vize_l2_to_l3/tests/extraction_snapshots.rs
 expression: output
 ---
 # kitchen_sink
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-placement-folio.placements]
+[s3-placement-dump.placements]
 op=3 alternatives=inline,cache leader=- chosen=inline
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=127
@@ -19,7 +19,7 @@ reactive_edges_after=7
 update_path_before=18
 update_path_after=18
 
-[s3-extraction-folio.decisions]
+[s3-extraction-dump.decisions]
 op=3 placement=cache kind=missed reason=regressed-emitted-size span=28:52 size=6 edges=-1 path=-1 budget=127
 
 [remarks]
@@ -28,9 +28,9 @@ op=3 placement=cache kind=missed reason=regressed-emitted-size span=28:52 size=6
 s3.extract-placements missed cache @28:52 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
 
 # entities_raw
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -44,9 +44,9 @@ update_path_after=0
 [remarks]
 
 # void_and_self_closing
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -60,9 +60,9 @@ update_path_after=0
 [remarks]
 
 # quote_forms
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -76,12 +76,12 @@ update_path_after=0
 [remarks]
 
 # dynamic_directives
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-placement-folio.placements]
+[s3-placement-dump.placements]
 op=1 alternatives=inline,cache leader=- chosen=inline
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=127
@@ -92,7 +92,7 @@ reactive_edges_after=3
 update_path_before=3
 update_path_after=3
 
-[s3-extraction-folio.decisions]
+[s3-extraction-dump.decisions]
 op=1 placement=cache kind=missed reason=regressed-emitted-size span=3:30 size=6 edges=-1 path=-1 budget=127
 
 [remarks]
@@ -101,9 +101,9 @@ op=1 placement=cache kind=missed reason=regressed-emitted-size span=3:30 size=6 
 s3.extract-placements missed cache @3:30 reason="regressed-emitted-size" emitted-size=6 reactive-edges=-1 update-path=-1 budget-left=127
 
 # comments
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -117,9 +117,9 @@ update_path_after=0
 [remarks]
 
 # interpolation_spacing
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -133,9 +133,9 @@ update_path_after=1
 [remarks]
 
 # multi_root
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -149,9 +149,9 @@ update_path_after=0
 [remarks]
 
 # crlf
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -165,9 +165,9 @@ update_path_after=0
 [remarks]
 
 # unicode
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -181,9 +181,9 @@ update_path_after=1
 [remarks]
 
 # svg_self_closing
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -197,9 +197,9 @@ update_path_after=0
 [remarks]
 
 # pre_whitespace
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -213,9 +213,9 @@ update_path_after=0
 [remarks]
 
 # rcdata_textarea_title
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -229,9 +229,9 @@ update_path_after=1
 [remarks]
 
 # rcdata_script_style
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -245,12 +245,12 @@ update_path_after=0
 [remarks]
 
 # nested_template
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-placement-folio.placements]
+[s3-placement-dump.placements]
 op=2 alternatives=inline,hoist leader=- chosen=hoist
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=127
@@ -261,7 +261,7 @@ reactive_edges_after=1
 update_path_before=4
 update_path_after=3
 
-[s3-extraction-folio.decisions]
+[s3-extraction-dump.decisions]
 op=2 placement=hoist kind=applied reason=committed span=34:48 size=-13 edges=0 path=-1 budget=127
 
 [remarks]
@@ -270,9 +270,9 @@ op=2 placement=hoist kind=applied reason=committed span=34:48 size=-13 edges=0 p
 s3.extract-placements applied hoist @34:48 reason="committed" emitted-size=-13 reactive-edges=0 update-path=-1 budget-left=127
 
 # close_tag_whitespace
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -286,9 +286,9 @@ update_path_after=0
 [remarks]
 
 # eof_in_tag
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -302,9 +302,9 @@ update_path_after=0
 [remarks]
 
 # eof_in_tag_ws
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -318,9 +318,9 @@ update_path_after=0
 [remarks]
 
 # eof_in_attr_name
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -334,9 +334,9 @@ update_path_after=0
 [remarks]
 
 # eof_in_quoted_value
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -350,9 +350,9 @@ update_path_after=0
 [remarks]
 
 # eof_in_empty_quoted_value
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -366,9 +366,9 @@ update_path_after=0
 [remarks]
 
 # unclosed_child
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -382,9 +382,9 @@ update_path_after=0
 [remarks]
 
 # stray_close
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -398,9 +398,9 @@ update_path_after=0
 [remarks]
 
 # extra_close
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -414,9 +414,9 @@ update_path_after=0
 [remarks]
 
 # empty_close
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -430,9 +430,9 @@ update_path_after=0
 [remarks]
 
 # eof_in_close
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -446,9 +446,9 @@ update_path_after=0
 [remarks]
 
 # eof_after_close_slash
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -462,9 +462,9 @@ update_path_after=0
 [remarks]
 
 # missing_attr_value
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -478,9 +478,9 @@ update_path_after=0
 [remarks]
 
 # solidus_junk
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -494,9 +494,9 @@ update_path_after=0
 [remarks]
 
 # attr_quote_no_eq
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -510,9 +510,9 @@ update_path_after=0
 [remarks]
 
 # missing_attr_whitespace
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -526,9 +526,9 @@ update_path_after=0
 [remarks]
 
 # close_tag_junk
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -542,9 +542,9 @@ update_path_after=0
 [remarks]
 
 # unclosed_interpolation
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -558,9 +558,9 @@ update_path_after=0
 [remarks]
 
 # unclosed_comment
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -574,9 +574,9 @@ update_path_after=0
 [remarks]
 
 # abrupt_empty_comment
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -590,9 +590,9 @@ update_path_after=0
 [remarks]
 
 # bogus_doctype
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -606,9 +606,9 @@ update_path_after=0
 [remarks]
 
 # bogus_one_dash
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -622,9 +622,9 @@ update_path_after=0
 [remarks]
 
 # processing_instruction
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -638,9 +638,9 @@ update_path_after=0
 [remarks]
 
 # cdata_in_svg
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -654,9 +654,9 @@ update_path_after=0
 [remarks]
 
 # unquoted_slash_value
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -670,9 +670,9 @@ update_path_after=0
 [remarks]
 
 # case_insensitive_close
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128
@@ -686,9 +686,9 @@ update_path_after=0
 [remarks]
 
 # sibling_li_closes
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O3
 candidate_budget=128
 budget_left=128

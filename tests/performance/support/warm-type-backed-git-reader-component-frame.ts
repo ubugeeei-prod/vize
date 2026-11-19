@@ -26,7 +26,7 @@ function metadata(file: string) {
   return fs.readFileSync(url);
 }
 const dataBytes = metadata(dataName);
-assert.equal(sha(dataBytes), "c4735cb8de7eac89940101251d2d41e1df1fdb48b992bf141bd9ca9ee3927fcd");
+assert.equal(sha(dataBytes), "1f4e4060e80b47c494141e3953994537b9cdcdb9d975327deda2e97821e5d2d1");
 const data = JSON.parse(dataBytes.toString());
 assert.equal(data.version, 1);
 assert.equal(data.originalSource, "eafe5bed4f602e0787ff9f2f48ec4155d115ab7f");

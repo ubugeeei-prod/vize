@@ -19,7 +19,7 @@ const object = (kind, body) =>
     .update(kind + " " + body.length + "\0")
     .update(body)
     .digest("hex");
-const ownData = "72b18a29a597a17a4977508e47785be9d090b44ed4466c4506d024bc90425762";
+const ownData = "1ff1a5c9f55fd7dfbc0bc4e34a78f5990842f1fc0c344677bf9f12eb23b57c18";
 function regular(file) {
   const stat = fs.lstatSync(file);
   assert(stat.isFile() && (stat.mode & 0o777) === 0o644, "regular source: " + file);

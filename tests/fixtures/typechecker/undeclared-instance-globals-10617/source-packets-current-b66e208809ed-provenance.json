@@ -9925,7 +9925,7 @@
             "result": {
               "configIdentity": "vize-content-mapper-v1:2d082d53e53bbb1dbec94d7645e1c3d73bb0e0786e2c020494d35e8a468bfb98",
               "watchedFiles": [
-                "/private/tmp/vize-overnight-20261031/davinci/d83-transform-equivalence-10617/physical-globals-controls/intentional-any/tsconfig.json"
+                "/private/tmp/vize-overnight-20261031/levels/d83-transform-equivalence-10617/physical-globals-controls/intentional-any/tsconfig.json"
               ]
             }
           }
@@ -9935,7 +9935,7 @@
             "/private/tmp/vize-overnight-20261031/typechecker/d83-cli-target/debug/vize",
             "content-mapper"
           ],
-          "cwd": "/private/tmp/vize-overnight-20261031/davinci/d83-transform-equivalence-10617/physical-globals-controls/intentional-any",
+          "cwd": "/private/tmp/vize-overnight-20261031/levels/d83-transform-equivalence-10617/physical-globals-controls/intentional-any",
           "status": 0,
           "signal": null,
           "error": null,
@@ -9975,7 +9975,7 @@
             "result": {
               "configIdentity": "vize-content-mapper-v1:6305ea89f8ad20534f9cb80f90010e313070f600df9ca8c5eec291cb2fd66a63",
               "watchedFiles": [
-                "/private/tmp/vize-overnight-20261031/davinci/d83-transform-equivalence-10617/physical-globals-controls/declared-unknown/tsconfig.json"
+                "/private/tmp/vize-overnight-20261031/levels/d83-transform-equivalence-10617/physical-globals-controls/declared-unknown/tsconfig.json"
               ]
             }
           }
@@ -9985,7 +9985,7 @@
             "/private/tmp/vize-overnight-20261031/typechecker/d83-cli-target/debug/vize",
             "content-mapper"
           ],
-          "cwd": "/private/tmp/vize-overnight-20261031/davinci/d83-transform-equivalence-10617/physical-globals-controls/declared-unknown",
+          "cwd": "/private/tmp/vize-overnight-20261031/levels/d83-transform-equivalence-10617/physical-globals-controls/declared-unknown",
           "status": 0,
           "signal": null,
           "error": null,
@@ -10025,7 +10025,7 @@
             "result": {
               "configIdentity": "vize-content-mapper-v1:5411f2d6922e86468e659482a4713408cfb71fb777f233c8757c0545d2614b65",
               "watchedFiles": [
-                "/private/tmp/vize-overnight-20261031/davinci/d83-transform-equivalence-10617/physical-globals-controls/plugin-valid/tsconfig.json"
+                "/private/tmp/vize-overnight-20261031/levels/d83-transform-equivalence-10617/physical-globals-controls/plugin-valid/tsconfig.json"
               ]
             }
           }
@@ -10035,7 +10035,7 @@
             "/private/tmp/vize-overnight-20261031/typechecker/d83-cli-target/debug/vize",
             "content-mapper"
           ],
-          "cwd": "/private/tmp/vize-overnight-20261031/davinci/d83-transform-equivalence-10617/physical-globals-controls/plugin-valid",
+          "cwd": "/private/tmp/vize-overnight-20261031/levels/d83-transform-equivalence-10617/physical-globals-controls/plugin-valid",
           "status": 0,
           "signal": null,
           "error": null,
@@ -10075,7 +10075,7 @@
             "result": {
               "configIdentity": "vize-content-mapper-v1:4a75dfc7fc88b00b315098249c17cdc82ddd60ee3fa33fd03cc15debbedc692e",
               "watchedFiles": [
-                "/private/tmp/vize-overnight-20261031/davinci/d83-transform-equivalence-10617/physical-globals-controls/plugin-invalid/tsconfig.json"
+                "/private/tmp/vize-overnight-20261031/levels/d83-transform-equivalence-10617/physical-globals-controls/plugin-invalid/tsconfig.json"
               ]
             }
           }
@@ -10085,7 +10085,7 @@
             "/private/tmp/vize-overnight-20261031/typechecker/d83-cli-target/debug/vize",
             "content-mapper"
           ],
-          "cwd": "/private/tmp/vize-overnight-20261031/davinci/d83-transform-equivalence-10617/physical-globals-controls/plugin-invalid",
+          "cwd": "/private/tmp/vize-overnight-20261031/levels/d83-transform-equivalence-10617/physical-globals-controls/plugin-invalid",
           "status": 0,
           "signal": null,
           "error": null,

@@ -6,8 +6,8 @@ import { parseArgs } from "node:util";
 import { fileURLToPath } from "node:url";
 
 const moves = [
-  ["crates/vize_armature/src/legacy.rs", "davinci/vize_l1/src/dialect/vue.rs"],
-  ["davinci/vize_l1_to_l2/src/lower/caps.rs", "davinci/vize_l1/src/dialect/template.rs"],
+  ["crates/vize_armature/src/legacy.rs", "levels/vize_l1/src/dialect/vue.rs"],
+  ["levels/vize_l1_to_l2/src/lower/caps.rs", "levels/vize_l1/src/dialect/template.rs"],
 ] as const;
 
 function move(root: string): void {
@@ -34,16 +34,16 @@ function move(root: string): void {
 }
 
 function check(root: string): void {
-  const owner = path.join(root, "davinci/vize_l1/src/dialect/vue.rs");
+  const owner = path.join(root, "levels/vize_l1/src/dialect/vue.rs");
   if (
     !fs.existsSync(owner) ||
     !fs.readFileSync(owner, "utf8").includes("pub struct LegacyDialectCapabilities")
   ) {
-    throw new Error("missing shared capability owner: davinci/vize_l1/src/dialect/vue.rs");
+    throw new Error("missing shared capability owner: levels/vize_l1/src/dialect/vue.rs");
   }
   for (const bridgePath of [
     "crates/vize_armature/src/legacy.rs",
-    "davinci/vize_l1_to_l2/src/lower/caps.rs",
+    "levels/vize_l1_to_l2/src/lower/caps.rs",
   ]) {
     const bridge = path.join(root, bridgePath);
     if (!fs.existsSync(bridge)) {
@@ -55,9 +55,9 @@ function check(root: string): void {
       includeTarget === undefined ? bridge : path.resolve(path.dirname(bridge), includeTarget);
     if (
       includeTarget !== undefined &&
-      (bridgePath !== "davinci/vize_l1_to_l2/src/lower/caps.rs" ||
+      (bridgePath !== "levels/vize_l1_to_l2/src/lower/caps.rs" ||
         path.relative(root, adapter).split(path.sep).join("/") !==
-          "davinci/vize_l1_to_l2/src/dialect/vue/lower/caps.rs")
+          "levels/vize_l1_to_l2/src/dialect/vue/lower/caps.rs")
     ) {
       throw new Error(`unreviewed capability compatibility bridge: ${bridgePath}`);
     }
@@ -70,12 +70,12 @@ function check(root: string): void {
       throw new Error(`duplicate capability owner: ${bridgePath}`);
     }
   }
-  const retiredProjection = path.join(root, "davinci/vize_l1/src/dialect/template.rs");
+  const retiredProjection = path.join(root, "levels/vize_l1/src/dialect/template.rs");
   if (fs.existsSync(retiredProjection)) {
     throw new Error("duplicate lowering capability projection remains");
   }
   const dialectModule = fs.readFileSync(
-    path.join(root, "davinci/vize_l1/src/dialect/mod.rs"),
+    path.join(root, "levels/vize_l1/src/dialect/mod.rs"),
     "utf8",
   );
   if (!dialectModule.includes("pub type LegacyCaps = LegacyDialectCapabilities;")) {
@@ -87,13 +87,13 @@ function check(root: string): void {
   }
   if (
     !fs
-      .readFileSync(path.join(root, "davinci/vize_l1/src/lib.rs"), "utf8")
+      .readFileSync(path.join(root, "levels/vize_l1/src/lib.rs"), "utf8")
       .includes("pub mod dialect;")
   ) {
     throw new Error("L1 dialect module is not registered");
   }
   for (const version of ["vue0", "vue1", "vue2", "vue3"]) {
-    if (!fs.existsSync(path.join(root, `davinci/vize_l1/src/dialect/${version}.rs`))) {
+    if (!fs.existsSync(path.join(root, `levels/vize_l1/src/dialect/${version}.rs`))) {
       throw new Error(`missing per-version module: ${version}`);
     }
   }

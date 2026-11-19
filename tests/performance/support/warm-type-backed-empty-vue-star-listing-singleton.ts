@@ -11,7 +11,7 @@ import {
 const retainedHelpers = [
   [
     "tests/performance/support/warm-type-backed-empty-vue-star-host.ts",
-    "4668a48d816279308c341ff3a7c839dc39ea129a2901b0484b65f4905e00386b",
+    "24ada83ae6f7e648f88502d627a798f66bd81a1f0e9ef6c3cf0ce7e7c909102f",
   ],
   [
     "tests/tooling/warm-type-backed-empty-vue-star-host.test.ts",

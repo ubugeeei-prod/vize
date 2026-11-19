@@ -145,21 +145,21 @@
   ],
   [
     "tests/performance/support/warm-type-backed-empty-vue-star-host.ts",
-    "57baf75563bc66643376b61dc7c3084c04bcb495",
+    "24faab47e90fe20f8244700057d849e8d4ce1321",
     10566,
-    "4668a48d816279308c341ff3a7c839dc39ea129a2901b0484b65f4905e00386b",
-    "57baf75563bc66643376b61dc7c3084c04bcb495",
+    "24ada83ae6f7e648f88502d627a798f66bd81a1f0e9ef6c3cf0ce7e7c909102f",
+    "24faab47e90fe20f8244700057d849e8d4ce1321",
     10566,
-    "4668a48d816279308c341ff3a7c839dc39ea129a2901b0484b65f4905e00386b"
+    "24ada83ae6f7e648f88502d627a798f66bd81a1f0e9ef6c3cf0ce7e7c909102f"
   ],
   [
     "tests/performance/support/warm-type-backed-empty-vue-star-manifest.json",
-    "ab3d534699b9ad68194798fd49a2adfd5df4e271",
+    "881972dfafc1165cf70802b88e7db7edaa86e304",
     3670,
-    "bac92f00182be34b4a7000323f4dec7b7437839891515621c772ee57598c8ef7",
-    "ab3d534699b9ad68194798fd49a2adfd5df4e271",
+    "353f06f4114c0f745461c87075efcc81834dd9d53f0b66662d8dac92ccd145dc",
+    "881972dfafc1165cf70802b88e7db7edaa86e304",
     3670,
-    "bac92f00182be34b4a7000323f4dec7b7437839891515621c772ee57598c8ef7"
+    "353f06f4114c0f745461c87075efcc81834dd9d53f0b66662d8dac92ccd145dc"
   ],
   [
     "tests/performance/support/warm-type-backed-empty-vue-star-part-00.json",
@@ -208,30 +208,30 @@
   ],
   [
     "tests/performance/support/warm-type-backed-empty-vue-star-part-05.json",
-    "57016b62b4a65fd59f78ca334d9204aad0415be4",
+    "ac56cebd1e0ab45ea0521291ffc3ac76ff893b05",
     11177,
-    "8bf1488d7ba14758f5f48a76a07cba5fd2a70010cca65fb2bc26589a42baec19",
-    "57016b62b4a65fd59f78ca334d9204aad0415be4",
+    "b77ee59d7ced957fcb470ecdbf30a6bc78de02d44da488ca5289a409b39d7fd0",
+    "ac56cebd1e0ab45ea0521291ffc3ac76ff893b05",
     11177,
-    "8bf1488d7ba14758f5f48a76a07cba5fd2a70010cca65fb2bc26589a42baec19"
+    "b77ee59d7ced957fcb470ecdbf30a6bc78de02d44da488ca5289a409b39d7fd0"
   ],
   [
     "tests/performance/support/warm-type-backed-empty-vue-star-part-06.json",
-    "8977f5e1dca68f11deb7eec874c95d9063daf3a1",
+    "78168a360cd55bd67711ead8e5bf704f7f1f1810",
     1709,
-    "0d7718ba30669d5c95d5a17de8f3b82a1414035931701bda2d637c3ba35deb54",
-    "8977f5e1dca68f11deb7eec874c95d9063daf3a1",
+    "36c17f9ce07d99755c202fd33a8b1bab3ff1bb2a16f661dbf6159915ba415b16",
+    "78168a360cd55bd67711ead8e5bf704f7f1f1810",
     1709,
-    "0d7718ba30669d5c95d5a17de8f3b82a1414035931701bda2d637c3ba35deb54"
+    "36c17f9ce07d99755c202fd33a8b1bab3ff1bb2a16f661dbf6159915ba415b16"
   ],
   [
     "tests/performance/support/warm-type-backed-host-qualifications.ts",
     "6ec974bcbc6c28ed5536084c3f09044430ca00d4",
     3465,
     "9d22006fc19d80e1ebb8051cba2dc753a5bbf7756d87e4e5216bdf4fa2a46be4",
-    "9e7c3bcbc84eac0c9b9ad46415428fede743cd8f",
+    "609bbb3df90416da317c33e4acf4d9fa6e02c884",
     7355,
-    "2d6a529861e6f5ca4c71cad655c844add89ca21157568289e4d37f6182eecf3d"
+    "10465121d705aa341f1c8a921761cf3251ef536cbd9d1b9e21bc49e6ee7477a1"
   ],
   [
     "tests/performance/support/warm-type-backed-html-hover-host.ts",
@@ -289,12 +289,12 @@
   ],
   [
     "tests/performance/support/warm-type-backed-path-host-manifest.json",
-    "365eaa9ecfd9cb14fe30f6aa2235190796ae5ead",
+    "87aa5d18723246eebbc1deccbf46dffefeb8771e",
     13587,
-    "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805",
-    "365eaa9ecfd9cb14fe30f6aa2235190796ae5ead",
+    "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95",
+    "87aa5d18723246eebbc1deccbf46dffefeb8771e",
     13587,
-    "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805"
+    "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95"
   ],
   [
     "tests/performance/support/warm-type-backed-path-host.ts",

@@ -1,4 +1,4 @@
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 #[test]
 fn native_spreads_require_objects_and_map_errors_to_the_operand() {

@@ -24,7 +24,7 @@ await test("the authored current target closure contains both active original li
     `corsa_bridge::outside_import_editor_tests::${canonLibFilters[0]}`,
     `corsa_bridge::vue_document_package_config_tests::${canonLibFilters[1]}`,
   ]);
-  assert.ok(packet.targets.some((target) => target.name === "davinci_projection_differential"));
+  assert.ok(packet.targets.some((target) => target.name === "level_projection_differential"));
   assert.ok(packet.cases.some((entry) => entry.name.includes("process_reuse::")));
   qualifyCanonLibCommands(workflow);
 });

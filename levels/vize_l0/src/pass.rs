@@ -74,7 +74,7 @@ pub use preserved::{AnalysisId, MAX_ANALYSES, Preserved};
 /// one-byte tags, one string. No allocation, no trait object, no registry.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PassDesc {
-    /// The pass's identity in pipeline strings and folio pages. Lowercase
+    /// The pass's identity in pipeline strings and dump pages. Lowercase
     /// kebab-case, because [`pipeline`]'s grammar accepts exactly that.
     pub name: &'static str,
     /// What the pass is for, and therefore when it runs.

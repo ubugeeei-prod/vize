@@ -2,7 +2,7 @@
 
 use super::CorsaProjectClient;
 use crate::{batch::virtual_project::MaterializedFileDelta, file_uri::path_to_file_uri};
-use davinci_test_support::original_diagnosing_process as control;
+use level_test_support::original_diagnosing_process as control;
 use std::{fs, io::Write, path::Path};
 use vize_l0::{FxHashMap, cstr};
 

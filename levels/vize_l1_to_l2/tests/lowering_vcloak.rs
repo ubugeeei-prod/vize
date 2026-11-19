@@ -8,7 +8,7 @@ use vize_l0::cstr;
 fn bare_v_cloak_lowers_to_the_cloak_dialect_op() {
     let art = artifact("<p v-cloak>x</p>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=3\n\
          \n\
@@ -33,7 +33,7 @@ fn v_cloak_with_value_argument_or_modifier_lowers_to_the_same_marker() {
         let element_end = text_start + 5;
         let text_end = text_start + 1;
         assert_eq!(
-            art.folio,
+            art.dump,
             cstr!(
                 "[l2-dump-v2]\n\
                  ops=3\n\
@@ -53,7 +53,7 @@ fn v_cloak_with_value_argument_or_modifier_lowers_to_the_same_marker() {
 fn v_cloak_on_a_slot_outlet_lowers_as_an_inert_slot_binding() {
     let art = artifact("<slot v-cloak></slot>");
     assert_eq!(
-        art.folio,
+        art.dump,
         "[l2-dump-v2]\n\
          ops=2\n\
          \n\

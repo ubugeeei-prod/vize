@@ -3,7 +3,7 @@
 > [!WARNING]
 > This document is a design draft, not a supported API. It does not change the
 > v1 scope. V2 incubates the first experimental surface; the stable guest ABI
-> and Davinci host remain v3 work tracked in [#13074](https://github.com/ubugeeei-prod/vize/issues/13074).
+> and level host remain v3 work tracked in [#13074](https://github.com/ubugeeei-prod/vize/issues/13074).
 
 Vize should let one plugin extend Vue runtime behavior and every tool that
 understands the same source. Authors should not need separate Vite, compiler,
@@ -237,7 +237,7 @@ that contract.
 - API v2 is this experimental integrated manifest. V1 plugins cannot claim new
   capabilities such as custom-block ownership.
 - API v3 is the eventual stable surface after v2 qualification and the complete
-  Davinci host. Promotion alone does not require changing an unchanged wire
+  Level host. Promotion alone does not require changing an unchanged wire
   schema.
 
 API generation, transport wire version, native ABI, WIT package version, and

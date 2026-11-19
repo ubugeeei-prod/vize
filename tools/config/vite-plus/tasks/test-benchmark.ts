@@ -46,8 +46,8 @@ const localTestCommand = runTasks(
 const toolingTestFiles = [
   "tests/tooling/*.test.ts",
   "tests/tooling/*.test.mjs",
-  "tests/tooling/davinci/*.test.ts",
-  "tests/tooling/davinci/*.test.mjs",
+  "tests/tooling/levels/*.test.ts",
+  "tests/tooling/levels/*.test.mjs",
   "tests/tooling/release/*.test.ts",
 ].join(" ");
 

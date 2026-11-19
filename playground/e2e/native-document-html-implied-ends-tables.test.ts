@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import corpus from "../../davinci/vize_l1/tests/fixtures/document/html-implied-ends-and-tables.json";
+import corpus from "../../levels/vize_l1/tests/fixtures/document/html-implied-ends-and-tables.json";
 
 describe("native Document implied end tags and table insertion modes", () => {
   it("retains twelve complete sources and whole ancestry, attribute and node packets", () => {

@@ -12,7 +12,7 @@ import {
   loadProjectionMatrix,
   validateProjectionMatrix,
   type ProjectionFixture,
-} from "./support/davinci-ts40-projection.ts";
+} from "./support/level-ts40-projection.ts";
 import {
   requireTypecheckDependency,
   resolveTypecheckRuntime,
@@ -39,7 +39,7 @@ test("vize lsp republishes TS-40 local-import prop diagnostics after child edits
   const changedChild = initialChild.replace("message: string", "message: number");
   assert.notEqual(changedChild, initialChild);
 
-  const testRootDir = path.join(testOutputRoot, "lsp-davinci-ts40-projection-diagnostics");
+  const testRootDir = path.join(testOutputRoot, "lsp-level-ts40-projection-diagnostics");
   fs.mkdirSync(testRootDir, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
   const session = new LspSession();

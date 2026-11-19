@@ -11,7 +11,7 @@ fn compiled(source: &str, retained: bool) -> std::string::String {
         &allocator,
         source,
         VaporCompilerOptions {
-            davinci_retained_lane: retained,
+            level_retained_lane: retained,
             ..Default::default()
         },
     );
@@ -130,14 +130,14 @@ export function render(_ctx) {
   const n1 = _createComponentWithFallback(_component_Component, { x: () => (_ctx.y) }, null, false)
   return n2
 }"#;
-    for davinci_retained_lane in [false, true] {
+    for level_retained_lane in [false, true] {
         let allocator = Allocator::new();
         let result = compile_vapor(
             &allocator,
             source,
             VaporCompilerOptions {
                 prefix_identifiers: true,
-                davinci_retained_lane,
+                level_retained_lane,
                 ..Default::default()
             },
         );

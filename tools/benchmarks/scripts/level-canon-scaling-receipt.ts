@@ -80,5 +80,5 @@ if (process.argv[1] != null && path.resolve(process.argv[1]) === scriptPath) {
   const command = process.argv[2];
   if (command === "methodology") writeMethodologyReceipt();
   else if (command === "attach") attachMethodologyReceipt();
-  else throw new Error("usage: davinci-canon-scaling-receipt.ts methodology|attach");
+  else throw new Error("usage: level-canon-scaling-receipt.ts methodology|attach");
 }

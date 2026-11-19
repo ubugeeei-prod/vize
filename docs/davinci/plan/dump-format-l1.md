@@ -2,7 +2,7 @@
 
 The L1 page is the lossless surface tree (`vize_l1::SurfaceTree`) as a folio
 page: `vize_extension_host::SurfacePage`, hand-written under the
-[folio contract](./folio-format.md) and carried by the input-dialect WIT world
+[folio contract](./dump-format.md) and carried by the input-dialect WIT world
 (`davinci/vize_guest/wit/input-dialect.wit`, P6-1a) as `lowered-block.surface` with
 `schema-version: 1`. `Display` prints the same text as `Full`: the page holds
 only offsets, so nothing is elidable.

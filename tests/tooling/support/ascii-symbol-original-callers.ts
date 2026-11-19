@@ -16,7 +16,7 @@ function load(name: string, digest: string) {
 }
 const original = load(
   "./ascii-symbol-original-callers.json",
-  "0dc0852abe918f17f378a708e70d61b42f0630fe94865db96f8c7201d43ffbd3",
+  "25bede2b463f505ea99419f46c13671d92a54d622509f69690173c69a649e336",
 ) as {
   version: number;
   source: string;
@@ -26,7 +26,7 @@ const original = load(
 };
 const frames = load(
   "./ascii-symbol-caller-frames.json",
-  "ae9cbab52a1ba62f3e31b8e4f92f80e3c973de3510d219ee940a6b89cfc716d6",
+  "46441771f76308e3c6606550c95a3524bf2a7db83d820676b16faf18f1d6c815",
 ) as {
   version: number;
   frames: Frame[];

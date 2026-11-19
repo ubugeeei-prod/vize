@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { test } from "node:test";
 import { applyFixes, defineOutputPlugin, definePlugin } from "../../npm/plugin-sdk/index.js";
-import design from "./fixtures/davinci-plugin-sdk/transforms/design-system.mjs";
-import booleans from "./fixtures/davinci-plugin-sdk/boolean-attributes.mjs";
-import team from "./fixtures/davinci-plugin-sdk/team-conventions.mjs";
+import design from "./fixtures/level-plugin-sdk/transforms/design-system.mjs";
+import booleans from "./fixtures/level-plugin-sdk/boolean-attributes.mjs";
+import team from "./fixtures/level-plugin-sdk/team-conventions.mjs";
 
 const native = createRequire(import.meta.url)("../../npm/native/index.js");
 const source = `<script setup>const items = [{ id: "a" }]</script>

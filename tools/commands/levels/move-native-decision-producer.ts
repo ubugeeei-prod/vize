@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = path.resolve(process.argv[2] ?? process.cwd());
-const source = path.join(root, "davinci/vize_l2_to_l3/src/decision.rs");
-const target = path.join(root, "davinci/vize_l3/src/decision/build.rs");
+const source = path.join(root, "levels/vize_l2_to_l3/src/decision.rs");
+const target = path.join(root, "levels/vize_l3/src/decision/build.rs");
 const facade =
   "//! Compatibility exports of the sole native decision producer owned by L3.\n\n" +
   "pub use vize_l3::decision::{DecisionBuildError, NativeAnalysis, build_decisions};\n";

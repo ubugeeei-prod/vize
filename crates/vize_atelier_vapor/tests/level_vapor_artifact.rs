@@ -108,7 +108,7 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
                 &allocator,
                 source,
                 VaporCompilerOptions {
-                    davinci_retained_lane: true,
+                    level_retained_lane: true,
                     ..options
                 },
             );
@@ -227,7 +227,7 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
                 VaporCompilerOptions {
                     prefix_identifiers,
                     binding_metadata: Some(metadata.clone()),
-                    davinci_retained_lane: true,
+                    level_retained_lane: true,
                     ..Default::default()
                 },
             );

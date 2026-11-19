@@ -30,7 +30,7 @@ export function exposeReadbacks(source: string): string {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-  const file = path.join(root, "davinci/vize_l0/src/profiler/snapshot.rs");
+  const file = path.join(root, "levels/vize_l0/src/profiler/snapshot.rs");
   const source = fs.readFileSync(file, "utf8");
   const next = exposeReadbacks(source);
   const mode = process.argv[2] ?? "integrate";

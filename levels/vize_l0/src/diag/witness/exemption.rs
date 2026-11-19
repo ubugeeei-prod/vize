@@ -2,7 +2,7 @@
 //! law by inventory.
 //!
 //! The inventory is `docs/davinci/plan/witness-exemptions.tsv` (`producer`,
-//! `code`, `exempt`), and `tests/tooling/davinci-witness-exemptions.test.ts`
+//! `code`, `exempt`), and `tests/tooling/level-witness-exemptions.test.ts`
 //! derives it mechanically from the source: every `Exemption::new` is a
 //! declaration, and `exempt` counts the construction sites that report under
 //! it. The checker fails when the committed file drifts from the source, and

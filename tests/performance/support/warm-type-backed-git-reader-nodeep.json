@@ -12,7 +12,7 @@
     ],
     [
       "tests/performance/support/warm-type-backed-git-reader-incoming.ts",
-      "931d2770c0f1fafe5465fec409e720918bf8e71b0df5e759d61feec81baa0fba"
+      "5faffb4ca83b2245235601af6ec32b161e85402707516bb264436f4e4b69d831"
     ],
     [
       "tools/support/compat/levels/path-host-callers.ts",
@@ -37,13 +37,13 @@
     ],
     [
       "tests/performance/support/warm-type-backed-path-host-manifest.json",
-      "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805",
-      "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805"
+      "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95",
+      "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95"
     ],
     [
       "tests/tooling/warm-type-backed-path-host.test.ts",
-      "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48",
-      "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48"
+      "b8fe4cb9cc0098898a60201579745e6784f44849cf1e6b36223b99e3cf5f77cf",
+      "b8fe4cb9cc0098898a60201579745e6784f44849cf1e6b36223b99e3cf5f77cf"
     ],
     [
       "tests/tooling/warm-type-backed-git-reader-incoming.test.ts",
@@ -53,7 +53,7 @@
     [
       "tests/performance/support/warm-type-backed-git-reader-incoming.json",
       null,
-      "dd570005abfeb4627bd4a80ec8c8b708ea57add07a068722100b237ef7b92b80"
+      "f010b97b007e36725a07228688f67a05a9e77ea14a2c81831efe4f4e7f2e8b7d"
     ],
     [
       "tests/performance/support/warm-type-backed-git-reader-family-1.json",
@@ -68,7 +68,7 @@
     [
       "tests/performance/support/warm-type-backed-git-reader-incoming.ts",
       null,
-      "931d2770c0f1fafe5465fec409e720918bf8e71b0df5e759d61feec81baa0fba"
+      "5faffb4ca83b2245235601af6ec32b161e85402707516bb264436f4e4b69d831"
     ],
     [
       "tests/tooling/warm-type-backed-git-reader-nodeep.test.ts",

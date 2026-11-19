@@ -6,7 +6,7 @@ Paired decisions: [#6841](https://github.com/ubugeeei-prod/vize/issues/6841#issu
 and [#6836](https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5929326936).
 
 The existing `VueDirectives::decompose` skeleton becomes an actual provider in
-`davinci/vize_l1/src/dialect/vue3/directive.rs`. The generic markup module keeps
+`levels/vize_l1/src/dialect/vue3/directive.rs`. The generic markup module keeps
 `DirectiveSyntax`, `DirectiveName`, argument/prefix types and a narrow public
 compatibility export. This slice adds no dialect references or policy wiring to
 the generic lexer and profile implementations. The current Vue grammars share this directive-head spelling;

@@ -187,7 +187,7 @@ fn check_lines(path: &Path, lines: &[Value]) {
 
 /// The committed observations the independent reference computes for `stem`.
 fn check_behavior(fixtures: &Path, stem: &str) {
-    let actual = davinci_test_support::l3_reference::matrix::behavior_of(fixtures, stem).unwrap();
+    let actual = level_test_support::l3_reference::matrix::behavior_of(fixtures, stem).unwrap();
     check_text(&fixtures.join(format!("{stem}.behavior.jsonl")), &actual);
 }
 
@@ -226,7 +226,7 @@ fn ivm_matrix_cases_are_rust_lowered() {
         }
     }
     assert_eq!(cases.len(), 32);
-    let fixtures = davinci_test_support::l3_reference::fixtures();
+    let fixtures = level_test_support::l3_reference::fixtures();
     check_lines(&fixtures.join("ivm-matrix.cases.jsonl"), &cases);
     check_lines(&fixtures.join("ivm-matrix.lowered.jsonl"), &graphs);
     check_behavior(&fixtures, "ivm-matrix");

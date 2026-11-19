@@ -4,10 +4,10 @@ import { appendFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { expectedComparisonCount } from "../davinci/lib/corpus-baseline-artifact.ts";
-import { loadManifest } from "../davinci/lib/corpus-baseline-contract.ts";
+import { expectedComparisonCount } from "../levels/lib/corpus-baseline-artifact.ts";
+import { loadManifest } from "../levels/lib/corpus-baseline-contract.ts";
 
-export const artifactDir = "real-project-davinci-dom-corpus";
+export const artifactDir = "real-project-level-dom-corpus";
 export const corpusRoot = "tests/_fixtures/_git";
 export const expectedGitlinks = 149;
 export const expectedDomOutputComparisons = 150;
@@ -99,7 +99,7 @@ export function corpusEvidenceLines(logText: string): string[] {
   return logText
     .split(/\r?\n/)
     .filter((line) =>
-      /davinci-differential corpus scope|davinci DOM corpus sweep|davinci DOM corpus old-lane error reasons/.test(
+      /legacy-differential corpus scope|levels DOM corpus sweep|levels DOM corpus old-lane error reasons/.test(
         stripAnsi(line),
       ),
     );
@@ -258,9 +258,7 @@ function hydrateFixtureSerially(fixturePath: string, runCommand: RunCommand): vo
     ]);
   } catch (error) {
     console.warn(
-      `::warning title=Davinci corpus hydrate full fallback::${fixturePath}: ${errorMessage(
-        error,
-      )}`,
+      `::warning title=level corpus hydrate full fallback::${fixturePath}: ${errorMessage(error)}`,
     );
     runCommand("git", [
       "submodule",
@@ -301,7 +299,7 @@ export function hydrateCorpus({
       ...fixturePaths,
     ]);
   } catch (error) {
-    console.warn(`::warning title=Davinci corpus hydrate serial fallback::${errorMessage(error)}`);
+    console.warn(`::warning title=level corpus hydrate serial fallback::${errorMessage(error)}`);
     for (const fixturePath of fixturePaths) {
       hydrateFixtureSerially(fixturePath, runCommand);
     }
@@ -349,14 +347,14 @@ export async function runCorpus(): Promise<number> {
       "--features",
       "legacy-differential",
       "--test",
-      "davinci_dom_corpus",
+      "level_dom_corpus",
       "--",
       "--nocapture",
     ],
     {
       env: {
         ...process.env,
-        VIZE_DAVINCI_DIFFERENTIAL_CORPUS: corpusRoot,
+        VIZE_LEVEL_DIFFERENTIAL_CORPUS: corpusRoot,
       },
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -386,8 +384,8 @@ export async function finalizeCorpus(
   environment: NodeJS.ProcessEnv = process.env,
 ): Promise<number> {
   mkdirSync(artifactDir, { recursive: true });
-  const mode = environment.VIZE_DAVINCI_DOM_CORPUS_MODE ?? "enforce";
-  const outcome = environment.VIZE_DAVINCI_DOM_CORPUS_OUTCOME ?? "failure";
+  const mode = environment.VIZE_LEVEL_DOM_CORPUS_MODE ?? "enforce";
+  const outcome = environment.VIZE_LEVEL_DOM_CORPUS_OUTCOME ?? "failure";
   let verdict = verdictFor(outcome, mode);
   const validation = validateCorpusEvidence();
   if (outcome === "success" && validation.failures.length > 0) {
@@ -400,9 +398,9 @@ export async function finalizeCorpus(
   await appendCorpusSummary(mode, outcome, verdict, environment.GITHUB_STEP_SUMMARY);
   if (verdict !== "success") {
     for (const failure of validation.failures) {
-      console.error(`::error title=Invalid Davinci L2 DOM corpus evidence::${failure}`);
+      console.error(`::error title=Invalid level L2 DOM corpus evidence::${failure}`);
     }
-    console.error(`::error title=Davinci L2 DOM corpus failed::mode=${mode} verdict=${verdict}`);
+    console.error(`::error title=level L2 DOM corpus failed::mode=${mode} verdict=${verdict}`);
     return 1;
   }
   return 0;
@@ -421,7 +419,7 @@ async function appendCorpusSummary(
   await appendFile(
     summaryPath,
     [
-      "## Davinci L2 DOM Corpus",
+      "## Level L2 DOM Corpus",
       "",
       `- mode: \`${mode}\``,
       `- outcome: \`${outcome}\``,
@@ -477,7 +475,7 @@ async function main(): Promise<number> {
   if (command === "finalize-and-dehydrate") return await finalizeAndDehydrateCorpus();
   if (command === "dehydrate") return dehydrateCorpus();
   console.error(
-    "usage: davinci-dom-corpus-workflow.ts hydrate|run|finalize|finalize-and-dehydrate|dehydrate",
+    "usage: level-dom-corpus-workflow.ts hydrate|run|finalize|finalize-and-dehydrate|dehydrate",
   );
   return 1;
 }

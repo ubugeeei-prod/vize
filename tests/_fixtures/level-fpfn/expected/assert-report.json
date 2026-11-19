@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "tool": "tools/commands/davinci/seed-defects.rs --assert",
+  "tool": "tools/commands/levels/seed-defects.rs --assert",
   "source": {
     "kind": "fixtures",
-    "label": "tests/_fixtures/davinci-fpfn"
+    "label": "tests/_fixtures/level-fpfn"
   },
   "scope": {
     "filesCopied": 4,

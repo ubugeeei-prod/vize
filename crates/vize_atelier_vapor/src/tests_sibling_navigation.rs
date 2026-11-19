@@ -172,7 +172,7 @@ fn input_between_interpolations_uses_element_sibling_navigation() {
             &allocator,
             source,
             super::VaporCompilerOptions {
-                davinci_retained_lane: retained,
+                level_retained_lane: retained,
                 ..Default::default()
             },
         );

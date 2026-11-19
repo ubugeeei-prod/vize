@@ -97,7 +97,7 @@ fn component_switches_preserve_model_updates_like_official_vapor() {
         );
         insta::assert_snapshot!(format!("dynamic_component_model_{case}"), compiled.code);
         let vize = trace(
-            "davinci-mounted-trace.mjs",
+            "level-mounted-trace.mjs",
             json!({
                 "backend":"vapor", "code":compiled.code, "context":context, "steps":steps, "identities":true,
                 "components":{
@@ -107,7 +107,7 @@ fn component_switches_preserve_model_updates_like_official_vapor() {
             }),
         );
         let upstream = trace(
-            "davinci-upstream-vapor-trace.mjs",
+            "level-upstream-vapor-trace.mjs",
             json!({
                 "source":source,"context":context,"steps":steps,
                 "components":{
@@ -212,7 +212,7 @@ fn l3_component_models_match_official_vapor_updates() {
         let context = json!({"value": "A"});
         let steps = json!([{"click": "child"}, {"patch": {"value": "P"}}]);
         let vize = trace(
-            "davinci-mounted-trace.mjs",
+            "level-mounted-trace.mjs",
             json!({
                 "backend": "vapor",
                 "code": compiled.code,
@@ -223,7 +223,7 @@ fn l3_component_models_match_official_vapor_updates() {
             }),
         );
         let upstream = trace(
-            "davinci-upstream-vapor-trace.mjs",
+            "level-upstream-vapor-trace.mjs",
             json!({
                 "source": source,
                 "context": context,

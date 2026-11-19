@@ -1,6 +1,6 @@
 [
   [
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__static-slot-name__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__static-slot-name__default.snap",
     "d9808d36d74203f14a36099ad3f8d3462537d380",
     2394,
     "f4cae5ad55fd97534265ef8b1cfdad6d707ee13ae5b52396bf4427f242f5e410",
@@ -28,12 +28,12 @@
   ],
   [
     "tests/_fixtures/ci/javascript-sfc-source-callers.json",
-    "a60ddc67100ebf56a217baaa2ca5109ab3eb7b1f",
+    "c00fb3df2e8f7452365cd3f9b20a8b67c27c274f",
     135721,
-    "83ec275f5c2e6c829c7bd1647e512143db5992a4ec98a31fb060ff79ed7d4f6d",
-    "a60ddc67100ebf56a217baaa2ca5109ab3eb7b1f",
+    "e593d408abc84d5e458c38d5a1ed1786f30686e2e24a45ca6610a22aa16633e5",
+    "c00fb3df2e8f7452365cd3f9b20a8b67c27c274f",
     135721,
-    "83ec275f5c2e6c829c7bd1647e512143db5992a4ec98a31fb060ff79ed7d4f6d"
+    "e593d408abc84d5e458c38d5a1ed1786f30686e2e24a45ca6610a22aa16633e5"
   ],
   [
     "tests/_fixtures/ci/native-phase-membership-original.json",

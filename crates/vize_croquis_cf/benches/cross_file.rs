@@ -24,8 +24,8 @@ use vize_croquis_cf::{CrossFileAnalyzer, CrossFileOptions};
 mod string_storage;
 
 #[global_allocator]
-static STRING_STORAGE_ALLOCATOR: davinci_harness::alloc::CountingAllocator =
-    davinci_harness::alloc::CountingAllocator::mimalloc();
+static STRING_STORAGE_ALLOCATOR: level_harness::alloc::CountingAllocator =
+    level_harness::alloc::CountingAllocator::mimalloc();
 
 #[derive(Clone)]
 struct FixtureFile {

@@ -15,7 +15,7 @@ type Delta = readonly [string, string | null, string | null, string | null];
 const sha = (body: Buffer) => createHash("sha256").update(body).digest("hex");
 const name = "warm-type-backed-git-reader-setup.json";
 const body = fs.readFileSync(new URL(name, import.meta.url));
-const manifestSHA = "2a098a6c73610cf6b3ba31d8f37e22da0e57fc6dd748260b3ad7adbdcef93933";
+const manifestSHA = "3f935513ed7d1560689a345605060f3f96359dd20cc4bf8a8b1b00d7111be485";
 assert.equal(sha(body), manifestSHA, "complete finite reader setup successor");
 const manifest = JSON.parse(body.toString("utf8")) as {
   originalSource: string;
@@ -35,7 +35,7 @@ assert.equal(
 );
 assert.equal(
   manifest.previousGuardSHA256,
-  "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96",
+  "92b8cfd0ed8dcbb23003887ba52ac903856664bd2bb4611320b1bfb8ee5384f4",
 );
 assert.equal(new Set(manifest.deltas.map(([file]) => file)).size, manifest.deltas.length);
 const previous = new Map(

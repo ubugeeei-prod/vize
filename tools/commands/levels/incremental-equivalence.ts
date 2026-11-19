@@ -3,8 +3,8 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 
 const CORPUS_SHARD = ["splitpanes", "layoutit-grid", "cssgridgenerator"] as const;
-const SCRIPTS = "tools/commands/davinci/incremental-equivalence/scripts";
-const USAGE = `usage: node tools/commands/davinci/incremental-equivalence.ts (--corpus-shard | --fixtures <dir>)... [--seeded] [--report <path>]`;
+const SCRIPTS = "tools/commands/levels/incremental-equivalence/scripts";
+const USAGE = `usage: node tools/commands/levels/incremental-equivalence.ts (--corpus-shard | --fixtures <dir>)... [--seeded] [--report <path>]`;
 
 interface FixtureRoot {
   label: string;

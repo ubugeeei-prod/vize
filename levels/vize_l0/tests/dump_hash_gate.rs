@@ -1,4 +1,4 @@
-//! `Collector` behavior: page naming, and the `--folio-after-change` hash
+//! `Collector` behavior: page naming, and the `--dump-after-change` hash
 //! gate (P2-13).
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
@@ -38,7 +38,7 @@ fn ungated_dumps_emit_a_page_per_pass_in_emission_order() {
     dump.after_pass(&event(0), "artifact v1\n");
     dump.after_pass(&event(1), "artifact v1\n");
     let names: Vec<&str> = dump.pages.iter().map(|page| page.name.as_str()).collect();
-    assert_eq!(names, ["000-s2.alpha.folio", "001-s2.beta.folio"]);
+    assert_eq!(names, ["000-s2.alpha.dump", "001-s2.beta.dump"]);
     assert_eq!(dump.pages[0].text.as_str(), "artifact v1\n");
     assert_eq!(dump.pages[1].text.as_str(), "artifact v1\n");
 }
@@ -59,7 +59,7 @@ fn the_gate_emits_exactly_the_changing_passes() {
     dump.after_pass(&event(0), "artifact v1\n");
     dump.after_pass(&event(1), "artifact v2\n");
     let names: Vec<&str> = dump.pages.iter().map(|page| page.name.as_str()).collect();
-    assert_eq!(names, ["000-s2.beta.folio"]);
+    assert_eq!(names, ["000-s2.beta.dump"]);
     assert_eq!(dump.pages[0].text.as_str(), "artifact v2\n");
 }
 
@@ -69,5 +69,5 @@ fn an_unseeded_gated_dump_emits_its_first_page_unconditionally() {
     dump.after_pass(&event(0), "artifact v1\n");
     dump.after_pass(&event(1), "artifact v1\n");
     let names: Vec<&str> = dump.pages.iter().map(|page| page.name.as_str()).collect();
-    assert_eq!(names, ["000-s2.alpha.folio"]);
+    assert_eq!(names, ["000-s2.alpha.dump"]);
 }

@@ -19,7 +19,7 @@ runtime prop publication per reactive effect. The old mixed-source output
 performed two independent object patches and one named prop patch; the fixed
 output performs one combined object patch, preserving every source.
 
-`davinci_mounted_behavior/retained_spreads.rs` checks the shared contract across
+`level_mounted_behavior/retained_spreads.rs` checks the shared contract across
 VDOM, native Vapor and retained Vapor template compilation. Existing native
 class/style coverage now requires the retained lane to produce the same complete
 mounted trace as well.

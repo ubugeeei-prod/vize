@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import { test } from "node:test";
-import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
-import { profileHostImports } from "./support/davinci-profile-host-imports.ts";
+import { withoutHostRuntimeReferences } from "./support/level-host-imports.ts";
+import { profileHostImports } from "./support/level-profile-host-imports.ts";
 
 // The profile-export host move is complete. These tests keep the host import
 // boundary; the move replay that pinned live caller bytes is retired.
@@ -23,10 +23,7 @@ test("actual JSON hosts retain L0 storage and admit only their exact export symb
       "use vize_carton::profile_export::unreviewed_function;",
     ])
       assert.match(withoutHostRuntimeReferences(source + "\n" + extra, file), forbidden);
-    assert.match(
-      withoutHostRuntimeReferences(declaration, "davinci/vize_l2/src/lib.rs"),
-      forbidden,
-    );
+    assert.match(withoutHostRuntimeReferences(declaration, "levels/vize_l2/src/lib.rs"), forbidden);
   }
 });
 
@@ -44,7 +41,7 @@ test("every tracked Rust caller retires the L0 wire API and inherent export meth
       /\.export_report\s*\(|vize_l0\s*::\s*profiler\s*::\s*(?:ProfileExport|PROFILE_EXPORT_SCHEMA_VERSION|\{[^}]*\bProfileExport)/u,
       file,
     );
-  assert.doesNotMatch(read("davinci/vize_l0/src/profiler.rs"), /ProfileExport|mod export;/u);
+  assert.doesNotMatch(read("levels/vize_l0/src/profiler.rs"), /ProfileExport|mod export;/u);
 });
 
 test("the retired Curator ladder profile host admits no export import", () => {

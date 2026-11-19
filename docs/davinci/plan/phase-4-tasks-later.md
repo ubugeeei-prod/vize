@@ -15,7 +15,7 @@
 
 - [x] `davinci/vize_davinci/src/diagnostic/tier.rs` and `diagnostic/witness.rs`; the existing `Diagnostic::new` stops accepting `Severity::Error`
 - [x] Two `compile_fail` doctests: a heuristic rule declaring error severity, and an error diagnostic built without a witness (the provisional "canary rule that tries error-on-unknown fails to compile")
-- [x] `docs/davinci/plan/witness-exemptions.tsv` (producer, code, exempt count) with `tests/tooling/davinci-witness-exemptions.test.ts`: counts may only fall against the base revision, proven by an injected increase
+- [x] `docs/davinci/plan/witness-exemptions.tsv` (producer, code, exempt count) with `tests/tooling/level-witness-exemptions.test.ts`: counts may only fall against the base revision, proven by an injected increase
 
 **Acceptance:** `cargo test -p vize_davinci` and `cargo test -p vize_davinci --doc` green with both `compile_fail` canaries; TS-24 builds; the exemption checker green and demonstrably failing on an injected increase; TS-1, TS-13.
 
@@ -60,7 +60,7 @@
 - [x] Error-default rules (99 today) without witnesses enter `witness-exemptions.tsv`; that list is the P4-8 waves' drain queue (98 rows: `script/no-potential-component-option-typo` is heuristic, so its contract declares warning — the one `DEMOTED` rule)
 - [x] Offsets canonicalized through the L0 frame — in `crates/vize_patina/src/output/frame.rs` (`ScriptFrame`) rather than `output/shared.rs`, because the formatters only ever see file-absolute offsets: the frame is applied where a range's frame is known (the rule path and the native type-aware warnings). FP-1 [fixed](./ledger-fp.md), 17 → 0 baseline-shift pairs
 
-**Acceptance:** [ledger-fp.md](./ledger-fp.md) FP-1 flipped to `fixed` with the layoutit-grid pairs re-measured at 0 of 17; `node tools/support/compat/davinci/rule-parity.ts --check` green with the tier column (TS-12); TS-9 snapshots unchanged except the FP-1 spans, each changed line listed in the PR; exemption inventory ≤ 99 rule entries; TS-13.
+**Acceptance:** [ledger-fp.md](./ledger-fp.md) FP-1 flipped to `fixed` with the layoutit-grid pairs re-measured at 0 of 17; `node tools/support/compat/levels/rule-parity.ts --check` green with the tier column (TS-12); TS-9 snapshots unchanged except the FP-1 spans, each changed line listed in the PR; exemption inventory ≤ 99 rule entries; TS-13.
 
 **Deps:** P4-6a.
 
@@ -181,7 +181,7 @@
 
 **Steps:**
 
-- [x] `davinci/vize_l1_to_l2/src/pass/cfg.rs`: `Optional`/`Fusable`, `Preserved::ALL`; per component **own cyclomatic** = 1 + decisions (each `ui.if` branch beyond the first, plus one for an `ui.if` without `v-else`; each `ui.for`; each `&&`, `||`, `??` and `?:` in a retained expression AST; an `Opaque` expression adds 0 and is counted as unknown) and **own cognitive** (+1 per structure, + nesting depth for nested `ui.if`/`ui.for`/scoped-slot regions, +1 per run of like logical operators)
+- [x] `levels/vize_l1_to_l2/src/pass/cfg.rs`: `Optional`/`Fusable`, `Preserved::ALL`; per component **own cyclomatic** = 1 + decisions (each `ui.if` branch beyond the first, plus one for an `ui.if` without `v-else`; each `ui.for`; each `&&`, `||`, `??` and `?:` in a retained expression AST; an `Opaque` expression adds 0 and is counted as unknown) and **own cognitive** (+1 per structure, + nesting depth for nested `ui.if`/`ui.for`/scoped-slot regions, +1 per run of like logical operators)
 - [x] TS-34 naive evaluator over the same definition
 - [x] Record the corpus distribution (p50/p90/p95/p99 of both metrics) with its command; pin the default thresholds at the recorded p95 (warn) in the spec
 

@@ -13,8 +13,8 @@ const { diff, before, after } = defineProps<{
 </script>
 
 <template>
-  <div class="davinci-diff">
-    <p class="davinci-diff-summary">
+  <div class="level-diff">
+    <p class="level-diff-summary">
       <template v-if="diff.stats.additions === 0 && diff.stats.removals === 0">
         {{ after }} left the page byte-for-byte identical to {{ before }}: its product is facts, not
         tree edits.
@@ -24,17 +24,17 @@ const { diff, before, after } = defineProps<{
         {{ diff.stats.removals }} removed, {{ diff.stats.unchanged }} unchanged
       </template>
     </p>
-    <div class="davinci-folio" aria-label="Page difference">
+    <div class="level-dump" aria-label="Page difference">
       <div
         v-for="line in diff.lines"
         :key="`${line.kind}:${line.leftLine}:${line.rightLine}`"
-        :class="['davinci-line', `diff-${line.kind}`]"
+        :class="['level-line', `diff-${line.kind}`]"
       >
-        <span class="davinci-ln">{{ line.rightLine ?? line.leftLine ?? "" }}</span>
-        <span class="davinci-diff-mark" aria-hidden="true">{{
+        <span class="level-ln">{{ line.rightLine ?? line.leftLine ?? "" }}</span>
+        <span class="level-diff-mark" aria-hidden="true">{{
           line.kind === "add" ? "+" : line.kind === "remove" ? "−" : " "
         }}</span>
-        <span class="davinci-code"
+        <span class="level-code"
           ><span
             v-for="token in withTokenOffsets(dumpTokens(line.text))"
             :key="token.offset"

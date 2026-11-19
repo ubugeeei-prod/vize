@@ -10,12 +10,12 @@ const read = (path: string) => readFileSync(new URL(`../../${path}`, import.meta
 
 void test("every new original scoped dependency selects both source proofs even without ordinary tooling files", () => {
   for (const path of [
-    "davinci/vize_l1/src/css.rs",
-    "davinci/vize_l1/src/css/empty.rs",
-    "davinci/vize_l1/src/css/parser.rs",
-    "davinci/vize_l1_to_l2/src/native_file/selected_scoped.rs",
-    "davinci/vize_l1_to_l2/src/dialect/vue3/native_file/selected_scoped.rs",
-    "davinci/vize_l4/src/module/scope.rs",
+    "levels/vize_l1/src/css.rs",
+    "levels/vize_l1/src/css/empty.rs",
+    "levels/vize_l1/src/css/parser.rs",
+    "levels/vize_l1_to_l2/src/native_file/selected_scoped.rs",
+    "levels/vize_l1_to_l2/src/dialect/vue3/native_file/selected_scoped.rs",
+    "levels/vize_l4/src/module/scope.rs",
     "crates/vize_atelier_sfc/src/native.rs",
     "crates/vize_atelier_sfc/src/native/styles/scoped.rs",
     "crates/vize_atelier_sfc/src/native/scope.rs",
@@ -39,10 +39,10 @@ void test("every new original scoped dependency selects both source proofs even 
 
 void test("SSR input classification stays precise and affected changes select both runtime proofs", () => {
   for (const path of [
-    "davinci/vize_l1_to_l2/src/native_file/selected.rs",
-    "davinci/vize_l2/src/lang/js/file/native/scoped.rs",
-    "davinci/vize_l3/src/decision/ssr/scoped.rs",
-    "davinci/vize_l4/src/targets/ssr.rs",
+    "levels/vize_l1_to_l2/src/native_file/selected.rs",
+    "levels/vize_l2/src/lang/js/file/native/scoped.rs",
+    "levels/vize_l3/src/decision/ssr/scoped.rs",
+    "levels/vize_l4/src/targets/ssr.rs",
     "crates/vize_atelier_sfc/src/native_ssr.rs",
   ]) {
     assert.equal(nativeSsrCaptureRequired([path]), true, path);
@@ -60,7 +60,7 @@ void test("SSR input classification stays precise and affected changes select bo
     "docs/davinci/plan/storage-inventory.tsv",
     "docs/davinci/plan/croquis-consumption/vize_atelier_sfc.md",
     "crates/vize_atelier_sfc/src/native_vapor.rs",
-    "davinci/vize_l4/src/targets/dom.rs",
+    "levels/vize_l4/src/targets/dom.rs",
   ]) {
     assert.equal(nativeScopedCaptureRequired([path]), false, path);
     assert.equal(nativeSsrCaptureRequired([path]), false, path);

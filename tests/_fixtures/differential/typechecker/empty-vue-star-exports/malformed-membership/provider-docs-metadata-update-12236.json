@@ -6,8 +6,8 @@
   "previousProviderQualificationRecord": {
     "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-create-fresco-update-12233.json",
     "bytes": 2354,
-    "sha256": "204af49ff268ee250bf328796c6e5abccc034cd116d94dac0439475568a536a6",
-    "gitBlob": "48104e3cc8f2359c658625fbf6751f6ff1c859b8"
+    "sha256": "ead939f89a1eb3b16d7603b8db8197f35cbc3f166751d17473e1344a88c18e4d",
+    "gitBlob": "9fae57f749cd4ff4d2061a9acc1beff5d1576b07"
   },
   "previousQualificationLock": {
     "path": "pnpm-lock.yaml",
@@ -18,8 +18,8 @@
   "previousQualificationPackage": {
     "path": "package.json",
     "bytes": 1053,
-    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
-    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+    "sha256": "c50175fbdf751849f1b13c662c33cf8244c85091a0c4a529325c44da0c90184b",
+    "gitBlob": "e83c63e2218b955acd632fed7f20099306172955"
   },
   "finalQualificationLock": {
     "path": "pnpm-lock.yaml",
@@ -30,8 +30,8 @@
   "finalQualificationPackage": {
     "path": "package.json",
     "bytes": 1053,
-    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
-    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+    "sha256": "c50175fbdf751849f1b13c662c33cf8244c85091a0c4a529325c44da0c90184b",
+    "gitBlob": "e83c63e2218b955acd632fed7f20099306172955"
   },
   "workspaceManifest": {
     "path": "pnpm-workspace.yaml",

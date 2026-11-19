@@ -22,7 +22,7 @@
   ],
   "history": {
     "trimInputsSha256": "c66522929a1656ed29135da4c8caf68015d81a96143829bf3a3168f0d94835a0",
-    "trimOracleSha256": "a086b703b95d9e6c335a87e82a96eee3afa19e8f85a9300e30196263568ea550",
+    "trimOracleSha256": "025d7e0ac31c96859aa2c3ca89a50cd1027c7e0f3f92efdeffe07b99ef320c29",
     "outsideInputsSha256": "bc611fb4bddbe8058a9fb38ac4d93e199298f5f9e9ce73957a64b98228bd9e89",
     "intentionalOutsideSuccessor": {
       "id": "modifier",

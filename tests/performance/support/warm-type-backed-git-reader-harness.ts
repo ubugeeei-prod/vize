@@ -33,13 +33,13 @@ export const gitReaderHarnessPairs: ReadonlyArray<readonly [string, string | nul
     ],
     [
       "tests/performance/support/warm-type-backed-path-host-manifest.json",
-      "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805",
-      "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805",
+      "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95",
+      "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95",
     ],
     [
       "tests/tooling/warm-type-backed-path-host.test.ts",
-      "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48",
-      "3dfad726a861009ea8b906752797f6be8654adbba5955dcb649cb0e48d455d48",
+      "b8fe4cb9cc0098898a60201579745e6784f44849cf1e6b36223b99e3cf5f77cf",
+      "b8fe4cb9cc0098898a60201579745e6784f44849cf1e6b36223b99e3cf5f77cf",
     ],
     [
       "tests/tooling/warm-type-backed-default-migration-host.test.ts",
@@ -93,7 +93,7 @@ export function gitReaderHarness(
     !qualified &&
     gitBodyDigest(root, before, gitReaderIncomingGuard) === null &&
     gitBodyDigest(root, after, gitReaderIncomingGuard) ===
-      "931d2770c0f1fafe5465fec409e720918bf8e71b0df5e759d61feec81baa0fba"
+      "5faffb4ca83b2245235601af6ec32b161e85402707516bb264436f4e4b69d831"
       ? qualifyGitReaderIncomingHarness(changed, inherited, (side, file) =>
           gitBodyDigest(root, side === "before" ? before : after, file),
         )
@@ -103,7 +103,7 @@ export function gitReaderHarness(
     !incoming &&
     gitBodyDigest(root, before, gitReaderNoDeepGuard) === null &&
     gitBodyDigest(root, after, gitReaderNoDeepGuard) ===
-      "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96"
+      "92b8cfd0ed8dcbb23003887ba52ac903856664bd2bb4611320b1bfb8ee5384f4"
       ? qualifyGitReaderNoDeepHarness(changed, inherited, (side, file) =>
           gitBodyDigest(root, side === "before" ? before : after, file),
         )
@@ -114,7 +114,7 @@ export function gitReaderHarness(
     !nodeep &&
     gitBodyDigest(root, before, gitReaderSetupGuard) === null &&
     gitBodyDigest(root, after, gitReaderSetupGuard) ===
-      "16fa61566684e0aa675186be50aa6405c3c88d223c7ad19a1d3747bf4cfad5e6"
+      "291f838d78ea693537d1ee147cf62221625f58d251eaab4c4a1940b2a0e3595a"
       ? qualifyGitReaderSetupHarness(changed, inherited, (side, file) =>
           gitBodyDigest(root, side === "before" ? before : after, file),
         )

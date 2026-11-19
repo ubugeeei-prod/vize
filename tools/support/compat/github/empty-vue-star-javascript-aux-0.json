@@ -3,15 +3,15 @@
     "path": "tests/performance/support/warm-type-backed-empty-vue-star-host.ts",
     "before": {
       "mode": "100644",
-      "blob": "57baf75563bc66643376b61dc7c3084c04bcb495",
+      "blob": "24faab47e90fe20f8244700057d849e8d4ce1321",
       "byteLength": 10566,
-      "sha256": "4668a48d816279308c341ff3a7c839dc39ea129a2901b0484b65f4905e00386b"
+      "sha256": "24ada83ae6f7e648f88502d627a798f66bd81a1f0e9ef6c3cf0ce7e7c909102f"
     },
     "after": {
       "mode": "100644",
-      "blob": "57baf75563bc66643376b61dc7c3084c04bcb495",
+      "blob": "24faab47e90fe20f8244700057d849e8d4ce1321",
       "byteLength": 10566,
-      "sha256": "4668a48d816279308c341ff3a7c839dc39ea129a2901b0484b65f4905e00386b"
+      "sha256": "24ada83ae6f7e648f88502d627a798f66bd81a1f0e9ef6c3cf0ce7e7c909102f"
     }
   },
   {

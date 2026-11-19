@@ -6,8 +6,8 @@ import { test } from "node:test";
 import {
   gateViolations,
   renderSummary,
-} from "../../tools/support/compat/davinci/lib/croquis-render.ts";
-import { renderCroquisArtifacts } from "../../tools/support/compat/davinci/lib/croquis-shards.ts";
+} from "../../tools/support/compat/levels/lib/croquis-render.ts";
+import { renderCroquisArtifacts } from "../../tools/support/compat/levels/lib/croquis-shards.ts";
 
 const products = {
   typeProducts: new Map([["Span", { module: "scope" }]]),
@@ -20,7 +20,7 @@ function analysis(grep, resolved = 0, nonProduct = 0) {
     crate: "vize_l2",
     product,
     sites,
-    files: new Set(["davinci/vize_l2/src/file.rs"]),
+    files: new Set(["levels/vize_l2/src/file.rs"]),
   });
   return {
     rows: new Map(resolved ? [["resolved", row("Span", resolved)]] : []),
@@ -61,7 +61,7 @@ void test("resolved consumption and non-product changes still change byte-compar
 
 void test("the actual check producer prints source-qualified per-crate diagnostics", () => {
   const generator = fileURLToPath(
-    new URL("../../tools/support/compat/davinci/croquis-consumers.ts", import.meta.url),
+    new URL("../../tools/support/compat/levels/croquis-consumers.ts", import.meta.url),
   );
   const result = spawnSync(process.execPath, [generator, "--check"], { encoding: "utf8" });
   assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);

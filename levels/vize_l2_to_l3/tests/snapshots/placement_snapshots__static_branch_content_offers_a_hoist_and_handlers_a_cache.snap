@@ -41,8 +41,8 @@ id=3 owner=4 region=4 span=28:30
 id=4 owner=5 region=3 span=34:39
 id=5 owner=7 region=1 span=51:64
 
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-placement-folio.placements]
+[s3-placement-dump.placements]
 op=2 alternatives=inline,hoist leader=- chosen=inline
 op=7 alternatives=inline,cache leader=- chosen=inline

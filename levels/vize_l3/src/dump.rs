@@ -1,4 +1,4 @@
-//! The Impeto folio page.
+//! The L3 dump page.
 //!
 //! Unlike L2, L3 is already flat: op ids, region ids, state edges, and effect
 //! scopes fit the derived-page grammar. The custom line values below keep the
@@ -15,7 +15,7 @@ use vize_l0::{Span, String, cstr};
 use crate::op::{EdgeKind, EffectId, OpId, OpKind, Program, RegionId};
 
 /// Flat L3 document model.
-#[doc(alias = "ImpetoFolio")]
+#[doc(alias = "L3Dump")]
 #[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
 #[dump(name = "l3-dump-v2")]
 pub struct Page {
@@ -329,13 +329,13 @@ id=0 kind=l3.missing region=0 effect=- span=0:1
 
     #[test]
     fn display_mode_has_the_derived_full_text_law() {
-        let folio = Page {
+        let dump = Page {
             phase: String::from("built"),
             ..Page::default()
         };
         assert_eq!(
-            folio.print_to_string(DumpMode::Display),
-            folio.print_to_string(DumpMode::Full)
+            dump.print_to_string(DumpMode::Display),
+            dump.print_to_string(DumpMode::Full)
         );
     }
 }

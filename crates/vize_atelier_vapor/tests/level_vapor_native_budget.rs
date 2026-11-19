@@ -16,7 +16,7 @@
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
-use davinci_harness::alloc::{CountingAllocator, diagnostics, mark_installed, measure};
+use level_harness::alloc::{CountingAllocator, diagnostics, mark_installed, measure};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
 
@@ -65,10 +65,10 @@ const FIXTURES: [(&str, &str, u64); 7] = [
     ),
 ];
 
-fn calls(source: &str, davinci_retained_lane: bool) -> u64 {
+fn calls(source: &str, level_retained_lane: bool) -> u64 {
     let options = VaporCompilerOptions {
         prefix_identifiers: true,
-        davinci_retained_lane,
+        level_retained_lane,
         ..Default::default()
     };
     // Warm lazily initialized statics outside the measured compile.

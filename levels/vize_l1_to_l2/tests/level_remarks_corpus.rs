@@ -5,7 +5,7 @@
 //! has its template lowered and run through the L2 transform pipeline under
 //! a remark collector. The resulting `[remarks-corpus]` page — swept files,
 //! every remark keyed by file with file-absolute spans — must equal the
-//! committed baseline `tests/_fixtures/davinci-remarks-baseline.folio`
+//! committed baseline `tests/_fixtures/level-remarks-baseline.dump`
 //! **exactly**. A difference fails with the remarks-diff classified
 //! (`regressed` = `applied → missed`, `improved`, `rekinded`, `reargued`,
 //! `added`, `removed`), so an optimization lost without any output diff is
@@ -23,14 +23,14 @@
 //!
 //! ```text
 //! cargo test -p vize_l1_to_l2 --features legacy-differential \
-//!     --test davinci_remarks_corpus -- --nocapture
+//!     --test level_remarks_corpus -- --nocapture
 //! ```
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-mod davinci_remarks_corpus_support;
+mod level_remarks_corpus_support;
 
-use davinci_remarks_corpus_support as support;
+use level_remarks_corpus_support as support;
 
 use std::path::{Path, PathBuf};
 
@@ -46,7 +46,7 @@ use vize_l1_to_l2::pass::run_transform;
 use vize_l1_to_l2::{LegacyCaps, lower_with_caps};
 
 const CORPUS_REL: &str = "tests/_fixtures";
-const BASELINE_REL: &str = "tests/_fixtures/davinci-remarks-baseline.folio";
+const BASELINE_REL: &str = "tests/_fixtures/level-remarks-baseline.dump";
 const UPDATE_ENV: &str = "UPDATE_REMARKS_BASELINE";
 
 fn repo_root() -> PathBuf {

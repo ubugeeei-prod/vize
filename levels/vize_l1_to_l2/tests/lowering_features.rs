@@ -187,7 +187,7 @@ fn a_family_free_template_sets_no_bit() {
 /// every user-visible channel, and the size of each fact table.
 #[derive(Debug, PartialEq, Eq)]
 struct Products {
-    folio: String,
+    dump: String,
     diagnostics: Vec<String>,
     provenance: usize,
     if_facts: usize,
@@ -200,14 +200,14 @@ struct Products {
 }
 
 fn products(
-    folio: &L2Page,
+    dump: &L2Page,
     diagnostics: &[Diagnostic],
     provenance: usize,
     artifact: &ArtifactParts<'_>,
     facts: &L2Facts,
 ) -> Products {
     Products {
-        folio: folio.print_to_string(DumpMode::Full).as_str().to_owned(),
+        dump: dump.print_to_string(DumpMode::Full).as_str().to_owned(),
         diagnostics: diagnostics
             .iter()
             .map(|diagnostic| format!("{diagnostic:?}"))
@@ -242,11 +242,11 @@ fn run(source: &str, force_every_pass: bool) -> (Products, u32) {
     }
     let mut budget = BudgetObserver::new();
     let facts = run_transform(&mut lowered, &mut budget);
-    let folio = L2Page::of(&lowered.artifact.root.ops);
+    let dump = L2Page::of(&lowered.artifact.root.ops);
     let provenance = lowered.artifact.provenance.len();
     (
         products(
-            &folio,
+            &dump,
             &lowered.diagnostics,
             provenance,
             &lowered.artifact,

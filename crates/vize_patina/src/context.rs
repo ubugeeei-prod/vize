@@ -122,7 +122,7 @@ pub struct LintContext<'a> {
     dialect: VueDialect,
     /// Container semantics for rules whose advice is unsafe in plain HTML.
     document_kind: TemplateDocumentKind,
-    /// Owner-bound Davinci meaning for an admitted standalone petite document.
+    /// Owner-bound level meaning for an admitted standalone petite document.
     petite_document: Option<&'a vize_l2::dialect::petite::PetiteDocument<'a, 'a>>,
     /// Help display level.
     pub(crate) help_level: HelpLevel,
@@ -343,7 +343,7 @@ impl<'a> LintContext<'a> {
         self.dialect.is_petite_vue()
     }
 
-    /// Attach the completed Davinci petite-vue view for this standalone document.
+    /// Attach the completed level petite-vue view for this standalone document.
     #[inline]
     pub(crate) fn set_petite_document(
         &mut self,
@@ -352,7 +352,7 @@ impl<'a> LintContext<'a> {
         self.petite_document = document;
     }
 
-    /// Find the Davinci meaning that owns one legacy traversal callback.
+    /// Find the level meaning that owns one legacy traversal callback.
     pub(crate) fn petite_directive(
         &self,
         kind: vize_l2::dialect::petite::PetiteDirectiveKind,

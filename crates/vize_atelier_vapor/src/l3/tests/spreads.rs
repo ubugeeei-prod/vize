@@ -10,11 +10,11 @@ use crate::l3::{
 use vize_carton::Allocator;
 use vize_l3::operand::OperandRole;
 
-fn compile(source: &str, davinci_retained_lane: bool) -> vize_carton::String {
+fn compile(source: &str, level_retained_lane: bool) -> vize_carton::String {
     let allocator = Allocator::new();
     let options = crate::VaporCompilerOptions {
         prefix_identifiers: true,
-        davinci_retained_lane,
+        level_retained_lane,
         ..Default::default()
     };
     crate::compile_vapor(&allocator, source, options).code
@@ -149,14 +149,14 @@ export function render(_ctx) {
   _renderEffect(() => _setDynamicProps(n0, [_ctx.obj, { title: _ctx.t, n: 1, onClick: _ctx.f, class: _ctx.c, id: "a" }], ["title","onClick"]))
   return n0
 }"#;
-    for davinci_retained_lane in [false, true] {
+    for level_retained_lane in [false, true] {
         let allocator = Allocator::new();
         let result = crate::compile_vapor(
             &allocator,
             source,
             crate::VaporCompilerOptions {
                 prefix_identifiers: true,
-                davinci_retained_lane,
+                level_retained_lane,
                 ..Default::default()
             },
         );

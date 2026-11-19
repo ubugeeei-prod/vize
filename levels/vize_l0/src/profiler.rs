@@ -41,9 +41,9 @@ pub use scope::{ProfilerScope, active_profiler_is_enabled, with_active_profiler}
 /// use vize_l0::profile;
 /// use vize_l0::profiler::SpanAttribution;
 ///
-/// let plain = profile!("davinci.demo.plain", 1 + 1);
+/// let plain = profile!("levels.demo.plain", 1 + 1);
 /// let attributed = profile!(
-///     "davinci.demo.pass",
+///     "levels.demo.pass",
 ///     attr: SpanAttribution::new().with_stage("s1").with_pass("demo"),
 ///     1 + 1
 /// );

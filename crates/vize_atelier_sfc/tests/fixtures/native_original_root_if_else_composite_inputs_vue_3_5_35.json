@@ -51,7 +51,7 @@
         }
       },
       "successorOf": {
-        "path": "davinci/vize_l2/src/file/region/native/pair/text_tests/refusal.rs",
+        "path": "levels/vize_l2/src/file/region/native/pair/text_tests/refusal.rs",
         "revision": "c0dc33d29c1c162ae5fe428a8e7c61381b94d0d3",
         "blob": "b80941545aefc95bc639429d05d2dc6439102ea0",
         "bytes": 8558,
@@ -100,7 +100,7 @@
         }
       },
       "successorOf": {
-        "path": "davinci/vize_l2/src/file/region/native/pair/text_tests/refusal.rs",
+        "path": "levels/vize_l2/src/file/region/native/pair/text_tests/refusal.rs",
         "revision": "c0dc33d29c1c162ae5fe428a8e7c61381b94d0d3",
         "blob": "b80941545aefc95bc639429d05d2dc6439102ea0",
         "bytes": 8558,
@@ -149,7 +149,7 @@
         }
       },
       "successorOf": {
-        "path": "davinci/vize_l2/src/file/region/native/pair/text_tests/refusal.rs",
+        "path": "levels/vize_l2/src/file/region/native/pair/text_tests/refusal.rs",
         "revision": "c0dc33d29c1c162ae5fe428a8e7c61381b94d0d3",
         "blob": "b80941545aefc95bc639429d05d2dc6439102ea0",
         "bytes": 8558,
@@ -198,7 +198,7 @@
         }
       },
       "successorOf": {
-        "path": "davinci/vize_l2/src/file/region/native/pair/text_tests/refusal.rs",
+        "path": "levels/vize_l2/src/file/region/native/pair/text_tests/refusal.rs",
         "revision": "c0dc33d29c1c162ae5fe428a8e7c61381b94d0d3",
         "blob": "b80941545aefc95bc639429d05d2dc6439102ea0",
         "bytes": 8558,

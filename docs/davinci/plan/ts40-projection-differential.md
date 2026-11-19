@@ -29,7 +29,7 @@ process ids are absent.
 ## Exact fixture scope
 
 The machine-readable matrix is
-`tests/_fixtures/davinci-ts40-projection/matrix.json`. It covers:
+`tests/_fixtures/level-ts40-projection/matrix.json`. It covers:
 
 - UTF-8 identifiers and materialized CRLF input;
 - malformed-SFC recovery as an explicit diagnostic/error outcome;

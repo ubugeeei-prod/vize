@@ -25,13 +25,13 @@ fn computed_dom_props_match_retained_ordered_sources() {
             "{source}: {status:?}"
         );
         for prefix_identifiers in [false, true] {
-            let compile = |davinci_retained_lane| {
+            let compile = |level_retained_lane| {
                 compile_vapor(
                     &allocator,
                     source,
                     VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane,
+                        level_retained_lane,
                         ..Default::default()
                     },
                 )
@@ -81,12 +81,12 @@ fn malformed_computed_dom_sources_preserve_parser_diagnostics() {
         r#"<div :[name]="value"></span>"#,
     ] {
         let allocator = Allocator::new();
-        let compile = |davinci_retained_lane| {
+        let compile = |level_retained_lane| {
             crate::compile::compile_vapor_with_diagnostics(
                 &allocator,
                 source,
                 VaporCompilerOptions {
-                    davinci_retained_lane,
+                    level_retained_lane,
                     ..Default::default()
                 },
             )

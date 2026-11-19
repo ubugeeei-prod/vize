@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import corpus from "../../davinci/vize_l1/tests/fixtures/document/html-structure.tsv?raw";
+import corpus from "../../levels/vize_l1/tests/fixtures/document/html-structure.tsv?raw";
 
 // The same original bytes and native ancestry census are checked by Rust.
 // DOMParser supplies independent, actual browser HTML tree construction.

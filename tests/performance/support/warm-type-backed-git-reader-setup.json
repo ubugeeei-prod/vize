@@ -3,7 +3,7 @@
   "version": 1,
   "originalSource": "eafe5bed4f602e0787ff9f2f48ec4155d115ab7f",
   "previousSource": "6354e9b92ef842816f8f8be0d104b067f4175e96",
-  "previousGuardSHA256": "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96",
+  "previousGuardSHA256": "92b8cfd0ed8dcbb23003887ba52ac903856664bd2bb4611320b1bfb8ee5384f4",
   "preservedPreviousPairs": 102,
   "acceptanceCredit": "none",
   "deltas": [
@@ -35,19 +35,19 @@
       "tests/tooling/support/ascii-symbol-original-callers.ts",
       null,
       null,
-      "26247a3b96d3ec476aa591a83d19c0667c5545323f1ac11ff8aadda354369de2"
+      "0f2d089d3cb7548842398995fade44ddc3594a430ea025f3bb6957fb7b8784e4"
     ],
     [
       "tests/tooling/support/ascii-symbol-original-callers.json",
       null,
       null,
-      "0dc0852abe918f17f378a708e70d61b42f0630fe94865db96f8c7201d43ffbd3"
+      "25bede2b463f505ea99419f46c13671d92a54d622509f69690173c69a649e336"
     ],
     [
       "tests/tooling/support/ascii-symbol-caller-frames.json",
       null,
       null,
-      "ae9cbab52a1ba62f3e31b8e4f92f80e3c973de3510d219ee940a6b89cfc716d6"
+      "46441771f76308e3c6606550c95a3524bf2a7db83d820676b16faf18f1d6c815"
     ],
     [
       "tests/tooling/ascii-symbol-original-callers.test.ts",
@@ -64,8 +64,8 @@
     [
       "tests/performance/support/warm-type-backed-git-reader-nodeep.ts",
       null,
-      "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96",
-      "ad25378cc7272fb2fde533d6a6796a9462dec3d3e157217abef13a5a69cf6a96"
+      "92b8cfd0ed8dcbb23003887ba52ac903856664bd2bb4611320b1bfb8ee5384f4",
+      "92b8cfd0ed8dcbb23003887ba52ac903856664bd2bb4611320b1bfb8ee5384f4"
     ]
   ]
 }

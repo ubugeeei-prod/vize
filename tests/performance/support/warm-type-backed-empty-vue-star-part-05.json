@@ -216,8 +216,8 @@
   ],
   [
     "tests/performance/support/warm-type-backed-path-host-manifest.json",
-    "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805",
-    "36256d2672412efe1681fab3137fab4f641622920360ea690a98a463a7325805"
+    "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95",
+    "7ddc40fe9d19acde1c9964c2207d3616e41c6f8281415fa04e1e8b8b93eeca95"
   ],
   [
     "tests/performance/support/warm-type-backed-path-host.ts",

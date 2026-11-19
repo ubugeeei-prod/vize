@@ -223,7 +223,7 @@ mod tests {
 }
 
 #[cfg(all(test, target_os = "linux"))]
-use davinci_test_support::original_diagnosing_process as native_process_control;
+use level_test_support::original_diagnosing_process as native_process_control;
 
 #[cfg(all(test, target_os = "linux"))]
 mod process_tests {

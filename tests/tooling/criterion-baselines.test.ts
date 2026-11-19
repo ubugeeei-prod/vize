@@ -133,7 +133,7 @@ test("Vapor Criterion driver filters to paired compile cases", () => {
   assert.deepEqual(
     cargoBenchArgs({
       pkg: "vize_atelier_vapor",
-      benches: ["davinci"],
+      benches: ["levels"],
       filter: "vapor_native_pair",
       baseline: "head",
       targetDir: "/work/target",
@@ -143,7 +143,7 @@ test("Vapor Criterion driver filters to paired compile cases", () => {
       "-p",
       "vize_atelier_vapor",
       "--bench",
-      "davinci",
+      "levels",
       "--target-dir",
       "/work/target",
       "--",

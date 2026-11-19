@@ -14,10 +14,10 @@ void test("the original full host source retains its original layout law", () =>
 void test("only the complete mechanical loader move reconstructs the original host law", () => {
   const read = (file: string) => readFileSync(new URL(`../../${file}`, import.meta.url), "utf8");
   const actual = {
-    foundation: read("davinci/vize_l0/src/lib.rs"),
+    foundation: read("levels/vize_l0/src/lib.rs"),
     host: read("crates/vize_carton/src/path.rs"),
     lowerPathExists: true,
-    lower: read("davinci/vize_l0/src/path.rs"),
+    lower: read("levels/vize_l0/src/path.rs"),
   };
   assert.deepEqual(actual, movedHostPathLayout);
   assert.equal(hostPathLayoutForOriginalLaw(actual), originalHostPathLayout);

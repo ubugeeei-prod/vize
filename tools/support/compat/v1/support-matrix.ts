@@ -794,7 +794,7 @@ export function buildV1SupportMatrix(root = process.cwd()) {
     scope: {
       included: ["compiler", "nuxt-vite", "native-linter", "content-mapper", "lsp-editors"],
       excluded: [
-        "davinci-v3",
+        "level-v3",
         "eslint",
         "prettier",
         "babel",

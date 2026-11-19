@@ -20,14 +20,14 @@ thiserror.workspace = true
 [dev-dependencies]
 insta.workspace = true
 criterion.workspace = true
-davinci_harness.workspace = true
+level_harness.workspace = true
 
 [[bench]]
 name = "art_parse"
 harness = false
 
 [[bench]]
-name = "davinci_art"
+name = "level_art"
 harness = false
 
 [lints]
