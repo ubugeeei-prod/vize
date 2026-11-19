@@ -48,7 +48,7 @@ fn test_codegen_component() {
 fn test_codegen_component_name_with_colon_uses_valid_identifier() {
     let allocator = vize_l0::Allocator::new();
     let parser_opts = crate::ParserOptions {
-        is_native_tag: Some(vize_l0::is_native_tag),
+        is_platform_tag: Some(vize_l0::is_platform_tag),
         ..Default::default()
     };
     let (mut root, errors) = crate::parse_with_options(

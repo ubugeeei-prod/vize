@@ -26,7 +26,7 @@ pub(super) use capture::{SlotEmitPolicy, emit_l2_captured, try_emit_l2_captured}
 pub(super) fn parser_options(options: &DomCompilerOptions) -> ParserOptions {
     ParserOptions {
         is_void_tag: vize_l0::is_void_tag,
-        is_native_tag: Some(vize_l0::is_native_tag),
+        is_platform_tag: Some(vize_l0::is_platform_tag),
         custom_renderer: options.custom_renderer,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,

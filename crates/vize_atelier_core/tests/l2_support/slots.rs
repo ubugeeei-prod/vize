@@ -5,7 +5,7 @@
 //! # The shared unit rule (applied to both trees)
 //!
 //! A **unit** is a node whose tag is not a native tag
-//! (`vize_l0::is_native_tag`, computed from the authored tag on
+//! (`vize_l0::is_platform_tag`, computed from the authored tag on
 //! both trees so the lanes' differing component classifiers never enter
 //! the projection) that is **slot-active**: it carries a `v-slot`
 //! itself or has a direct `<template v-slot>` child. Its groups follow

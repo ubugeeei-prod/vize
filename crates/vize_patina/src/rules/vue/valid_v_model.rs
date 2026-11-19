@@ -30,7 +30,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::Expression as OxcExpression;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_l0::is_native_tag;
+use vize_l0::is_platform_tag;
 use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -150,7 +150,7 @@ fn is_component_like_tag(element: &ElementNode<'_>) -> bool {
     }
 
     let tag = element.tag;
-    tag == "component" || !is_native_tag(tag)
+    tag == "component" || !is_platform_tag(tag)
 }
 
 fn is_static_file_input(element: &ElementNode<'_>) -> bool {

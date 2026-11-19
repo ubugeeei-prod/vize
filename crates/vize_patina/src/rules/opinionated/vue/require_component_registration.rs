@@ -47,7 +47,7 @@ use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::builtins::is_builtin_component;
-use vize_croquis::is_native_tag;
+use vize_croquis::is_platform_tag;
 use vize_croquis::naming::{camelize, capitalize, names_match, to_pascal_case};
 use vize_croquis::script_parser::parse_script_setup;
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind};
@@ -124,7 +124,7 @@ impl RequireComponentRegistration {
 
     /// Check if a tag name is a custom component
     fn is_custom_component(&self, tag: &str) -> bool {
-        !is_native_tag(tag)
+        !is_platform_tag(tag)
     }
 
     /// Check if a component is a Vue built-in

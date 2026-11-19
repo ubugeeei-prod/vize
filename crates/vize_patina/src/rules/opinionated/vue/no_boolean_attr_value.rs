@@ -32,7 +32,7 @@ use crate::markup::{
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::html::helpers::BOOLEAN_ATTRIBUTES;
-use vize_l0::is_native_tag;
+use vize_l0::is_platform_tag;
 use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
@@ -83,7 +83,7 @@ impl NoBooleanAttrValue {
 
     fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
         let tag = element.tag();
-        if element.is_component() || !element.is_unqualified_tag_exact(tag) || !is_native_tag(tag) {
+        if element.is_component() || !element.is_unqualified_tag_exact(tag) || !is_platform_tag(tag) {
             return;
         }
 

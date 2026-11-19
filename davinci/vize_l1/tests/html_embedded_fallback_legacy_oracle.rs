@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use vize_armature::{
     ElementNode, ParserOptions, TemplateChildNode, WhitespaceStrategy, parse_document_with_options,
 };
-use vize_l0::{Allocator, Namespace, is_native_tag};
+use vize_l0::{Allocator, Namespace, is_platform_tag};
 
 const CORPUS: &str = include_str!("fixtures/document/html-embedded-fallback.json");
 
@@ -97,7 +97,7 @@ fn embedded_fallback_packets_match_the_shipped_document_parser() {
         let source = case["source"].as_str().unwrap();
         let allocator = Allocator::default();
         let options = ParserOptions {
-            is_native_tag: Some(is_native_tag),
+            is_platform_tag: Some(is_platform_tag),
             whitespace: WhitespaceStrategy::Preserve,
             ..ParserOptions::default()
         };

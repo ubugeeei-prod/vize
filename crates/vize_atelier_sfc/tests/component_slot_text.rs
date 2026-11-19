@@ -56,7 +56,7 @@ fn retained(source: &str, comments: bool, map: bool) -> CodegenResult {
         source,
         ParserOptions {
             is_void_tag: vize_l0::is_void_tag,
-            is_native_tag: Some(vize_l0::is_native_tag),
+            is_platform_tag: Some(vize_l0::is_platform_tag),
             comments,
             ..Default::default()
         },

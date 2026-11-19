@@ -9,7 +9,7 @@ use vize_atelier_core::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
 use vize_carton::{
-    FxHashSet, String, ToCompactString, camelize, capitalize, is_builtin_directive, is_native_tag,
+    FxHashSet, String, ToCompactString, camelize, capitalize, is_builtin_directive, is_platform_tag,
     is_simple_identifier,
 };
 use vize_croquis::builtins::is_builtin_component;
@@ -161,7 +161,7 @@ fn walk_element(
     }
 
     // If not a native tag or built-in component, add to identifiers
-    if !is_native_tag(tag) && !is_builtin_component(tag) && collect_used_ids {
+    if !is_platform_tag(tag) && !is_builtin_component(tag) && collect_used_ids {
         // Add both camelCase and PascalCase versions
         let camelized = camelize(tag);
         let capitalized = capitalize(&camelized);
