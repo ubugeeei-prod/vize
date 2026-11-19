@@ -159,6 +159,39 @@ function collect(out, registry, formatter, sfc) {
       assert.equal(artifact.fresh, false, `${pkg}/${bench}: benchmark binary was reused`);
     return { pkg, bench, source, executable: artifact.executable, fresh: artifact.fresh };
   });
+  // Lane-B measurement branch only: disassemble selected functions.
+  {
+    const needles = [
+      "lower_children_guarded",
+      "element_core",
+      "SsrCodegenContext>::flush_push",
+      "decode_html_entities_inner",
+      "push_string_part_static",
+      "push_escaped",
+    ];
+    const dir = path.join(out, "disasm");
+    fs.mkdirSync(dir, { recursive: true });
+    for (const { pkg, bench, executable } of binaries) {
+      if (!["vize_atelier_dom", "vize_atelier_ssr"].includes(pkg)) continue;
+      const text = spawnSync("objdump", ["-d", "-C", "--no-show-raw-insn", executable], {
+        encoding: "utf8",
+        maxBuffer: 1024 * 1024 * 1024,
+      }).stdout;
+      const lines = [];
+      let keep = false;
+      for (const line of text.split("\n")) {
+        const head = /^[0-9a-f]+ <(.*)>:$/.exec(line);
+        if (head) {
+          keep = needles.some((needle) => head[1].includes(needle));
+          if (keep) lines.push("", head[1]);
+          continue;
+        }
+        if (keep && line.trim())
+          lines.push(line.replace(/[0-9a-f]{6,}/g, "ADDR").replace(/^\s*ADDR:\s*/, "").replace(/^\s*[0-9a-f]+:\s*/, ""));
+      }
+      fs.writeFileSync(path.join(dir, `${pkg}-${bench}.s`), lines.join("\n"));
+    }
+  }
   writeJson(
     path.join(out, "binaries.json"),
     binaries.map(({ pkg, bench, executable, fresh }) => ({
