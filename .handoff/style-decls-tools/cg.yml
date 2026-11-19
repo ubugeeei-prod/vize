@@ -1,0 +1,99 @@
+name: Level instruction counts
+
+# TEMPORARY scratch driver (style-decls fork): per-function Callgrind diff of
+# `vize lint` between source commits, ci-opt with symbols. Never merged.
+on:
+  workflow_dispatch:
+    inputs:
+      shas:
+        description: 'Space-separated name=sha; the first is the base'
+        required: true
+        type: string
+      lanes:
+        description: 'Space-separated corpus/preset lanes'
+        required: false
+        default: 'reka-ui/default bench/opinionated'
+        type: string
+
+permissions: { contents: read }
+
+env:
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "8"
+  RUSTUP_TOOLCHAIN: "1.100.0"
+
+jobs:
+  cg:
+    name: Callgrind function diff
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { path: driver, persist-credentials: false }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { path: src, ref: main, fetch-depth: 0, persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.100.0" }
+      - uses: ./driver/.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Prepare
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
+          git -C driver submodule update --init --depth 1 -- tests/_fixtures/_git/reka-ui
+          node --input-type=module -e "import('./driver/tools/benchmarks/scripts/generate.mjs').then((m) => m.generateCorpus({ fileCount: 1000, benchDir: process.argv[1], log: () => {} }))" "$RUNNER_TEMP/bench"
+      - name: Build and profile
+        env: { SHAS: "${{ inputs.shas }}", LANES: "${{ inputs.lanes }}" }
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          for pair in $SHAS; do
+            name=${pair%%=*}; sha=${pair#*=}
+            git -C src fetch -q --no-tags origin "$sha"
+            git -C src checkout -q --detach "$sha"
+            (cd src && cargo build --locked --profile ci-opt -p vize \
+              --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' \
+              --config 'profile.ci-opt.codegen-units=16' \
+              --config 'profile.ci-opt.package.vize.strip="none"' 2>&1 | tail -1)
+            cp src/target/ci-opt/vize out/vize-$name
+            for lane in $LANES; do
+              corpus=${lane%%/*}; preset=${lane#*/}
+              dir=$RUNNER_TEMP/bench; [ "$corpus" = reka-ui ] && dir=$GITHUB_WORKSPACE/driver/tests/_fixtures/_git/reka-ui
+              (cd "$dir" && RAYON_NUM_THREADS=1 valgrind --tool=callgrind --cache-sim=no \
+                --callgrind-out-file=$GITHUB_WORKSPACE/out/$name-$corpus-$preset.cg "$GITHUB_WORKSPACE/out/vize-$name" \
+                lint . --no-config --preset "$preset" --format json > /dev/null 2>&1 || true)
+              callgrind_annotate --inclusive=no --threshold=100 $GITHUB_WORKSPACE/out/$name-$corpus-$preset.cg \
+                | sed -n '/^-* *$/,$p' > out/$name-$corpus-$preset.txt || true
+              echo "$name $lane $(grep -m1 -oE '^ *[0-9,]+ +\(100' out/$name-$corpus-$preset.txt || true)"
+            done
+          done
+          rm -f out/vize-* out/*.cg
+      - name: Diff
+        env: { SHAS: "${{ inputs.shas }}", LANES: "${{ inputs.lanes }}" }
+        run: |
+          python3 - <<'PY'
+          import os, re, collections
+          names = [p.split('=')[0] for p in os.environ['SHAS'].split()]
+          lanes = os.environ['LANES'].split()
+          def load(p):
+              d = collections.Counter()
+              for line in open(p, errors='replace'):
+                  m = re.match(r'\s*([\d,]+)\s+\([^)]*\)\s+\S*?:?(.*)$', line)
+                  if m:
+                      fn = m.group(2).strip()
+                      fn = re.sub(r'^\S+:', '', fn, count=1) if fn.startswith('???:') or ':' in fn.split(' ')[0] else fn
+                      d[fn] += int(m.group(1).replace(',', ''))
+              return d
+          for lane in lanes:
+              c, p = lane.split('/')
+              a = load(f'out/{names[0]}-{c}-{p}.txt')
+              for n in names[1:]:
+                  b = load(f'out/{n}-{c}-{p}.txt')
+                  print(f'\n=== {lane}: {names[0]} -> {n}: {sum(a.values()):,} -> {sum(b.values()):,} ({sum(b.values()) - sum(a.values()):+,})')
+                  for k in sorted(set(a) | set(b), key=lambda k: -abs(b[k] - a[k]))[:40]:
+                      if a[k] != b[k]:
+                          print(f'{b[k]-a[k]:+12,} {a[k]:14,} {k[:160]}')
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with: { name: cg-diff, path: out, retention-days: 3 }

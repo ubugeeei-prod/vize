@@ -1,0 +1,79 @@
+name: PR performance observation (scratch release CLI size and Callgrind screen, not for merge)
+
+# Scratch measurement for #13338: builds each named source with the exact
+# pr-performance-build.ts recipe (ci-opt, thin LTO, 16 CGUs, Wild), records
+# the stripped CLI bytes and single-thread Callgrind Ir on bench-1000 and reka-ui.
+on:
+  workflow_dispatch:
+    inputs:
+      shas:
+        description: Space-separated source commits
+        required: true
+        type: string
+
+permissions: { contents: read }
+concurrency:
+  group: size-scratch-${{ github.run_id }}
+  cancel-in-progress: false
+env:
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "8"
+  RUSTUP_TOOLCHAIN: "1.100.0"
+
+jobs:
+  size:
+    name: CLI size and Ir
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: driver
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: base
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.100.0" }
+      - uses: ./driver/.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Install Callgrind and prepare corpora
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
+          git -C driver submodule update --init --depth 1 -- tests/_fixtures/_git/reka-ui
+          node --input-type=module -e "import('./driver/tools/benchmarks/scripts/generate.mjs').then((m) => m.generateCorpus({ fileCount: 1000, benchDir: process.argv[1], log: () => {} }))" "$RUNNER_TEMP/bench"
+      - name: Build and measure each source
+        env:
+          SHAS: ${{ inputs.shas }}
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          for sha in $SHAS; do
+            [[ "$sha" =~ ^[0-9a-f]{40}$ ]]
+            git -C base fetch -q --no-tags origin "$sha"
+            git -C base checkout -q --detach "$sha"
+            (cd base && cargo build --locked --release -p vize 2>&1 | tail -1)
+            cp base/target/release/vize out/vize
+            line="$sha $(stat -c %s out/vize)"
+            for corpus in "bench=$RUNNER_TEMP/bench" "reka-ui=$GITHUB_WORKSPACE/driver/tests/_fixtures/_git/reka-ui"; do
+              for preset in default opinionated nuxt; do
+                ir=$(cd "${corpus#*=}" && RAYON_NUM_THREADS=1 valgrind --tool=callgrind --cache-sim=no \
+                  --callgrind-out-file=/dev/null "$GITHUB_WORKSPACE/out/vize" \
+                  lint . --no-config --preset "$preset" --format json 2>&1 >/dev/null | grep -o 'Collected : [0-9]*' | awk '{print $3}' || true)
+                line="$line ${corpus%%=*}/$preset=$ir"
+              done
+            done
+            echo "$line" | tee -a out/results.txt
+          done
+          { echo '### CLI bytes and Ir'; echo; sed 's/^/    /' out/results.txt; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: cli-size-${{ github.run_id }}
+          path: out/results.txt
+          if-no-files-found: warn
+          retention-days: 14

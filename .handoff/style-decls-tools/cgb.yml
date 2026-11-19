@@ -1,0 +1,61 @@
+name: Level instruction counts
+
+# TEMPORARY scratch driver (style-decls fork): per-function Callgrind diff of
+# the patina davinci_markup instruction bench between commits. Never merged.
+on:
+  workflow_dispatch:
+    inputs:
+      shas:
+        description: 'Space-separated name=sha; the first is the base'
+        required: true
+        type: string
+
+permissions: { contents: read }
+
+env:
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "8"
+  RUSTUP_TOOLCHAIN: "1.100.0"
+
+jobs:
+  cg:
+    name: Callgrind markup bench diff
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { path: driver, persist-credentials: false }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { path: src, ref: main, fetch-depth: 0, persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.100.0" }
+      - uses: ./driver/.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Build and profile
+        env: { SHAS: "${{ inputs.shas }}" }
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
+          mkdir -p out
+          for pair in $SHAS; do
+            name=${pair%%=*}; sha=${pair#*=}
+            git -C src fetch -q --no-tags origin "$sha"
+            git -C src checkout -q --detach "$sha"
+            exe=$(cd src && RUSTFLAGS="-C target-cpu=x86-64" cargo bench --locked --no-run --profile ci-opt \
+              --features davinci_harness/instruction-counts -p vize_patina --bench davinci_markup \
+              --message-format=json 2>/dev/null | python3 -c "import sys, json
+          for l in sys.stdin:
+              r = json.loads(l)
+              if r.get('reason') == 'compiler-artifact' and r.get('executable') and 'bench' in r['target']['kind'] and r['target']['name'] == 'davinci_markup':
+                  print(r['executable'])" | tail -1)
+            echo "$name $exe"
+            (cd src && env -i PATH=/usr/bin:/bin LANG=C LC_ALL=C VIZE_INSTRUCTION_COUNTS=1 MIMALLOC_RESERVE_OS_MEMORY=128MiB MIMALLOC_PURGE_DELAY=-1 MIMALLOC_VERBOSE=1 GLIBC_TUNABLES='glibc.cpu.hwcaps=-AVX,-AVX2,-AVX512F,-AVX512VL,-AVX512BW,-AVX_Fast_Unaligned_Load,-ERMS,-FSRM,-Prefer_ERMS,-Prefer_FSRM,-SSSE3,-SSE4_1,-SSE4_2' valgrind --tool=callgrind --instr-atstart=no --cache-sim=no --branch-sim=no \
+              --callgrind-out-file=$GITHUB_WORKSPACE/out/$name.cg "$exe" > /dev/null 2> $GITHUB_WORKSPACE/out/$name.err || true)
+            for f in out/$name.cg*; do
+              callgrind_annotate --inclusive=no --threshold=100 "$f" | sed -n '/^-* *$/,$p' > "$f.txt" || true
+              echo "$f $(grep -m1 'PROGRAM TOTALS' "$f.txt" || true)"
+            done
+          done
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with: { name: cg-bench, path: "out/*.txt\nout/*.err", retention-days: 3 }

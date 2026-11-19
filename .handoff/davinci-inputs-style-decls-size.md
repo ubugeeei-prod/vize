@@ -77,3 +77,33 @@ rebased PR (onto main 9c7d4cba55) plus two perf commits:
 Also `sfc_parse_template_only` +5 in all three (it reads 3320/3325 across rebuilds of identical
 source, so it is probably noise, but it counts). Per-site inlining does not reproduce the
 global-hint lane win on the bench-1000 lanes. Untried: the markup-bench callgrind diff (bench/sd2-cgb, guest env fixed).
+
+## PAUSED 2026-11-19 ~12:25 UTC (machine switch). Current state and the NEW RULE
+- New maintainer rule: instruction counts and size are judged on the RELEASE profile (fat LTO,
+  1 CGU). ci-opt is informational only, so every ci-opt verdict above must be re-screened.
+  - Level rows and sizes: `shipped-profile-measure.yml` (A/A-validated in run 44510732532). Until
+    it merges, dispatch it with
+    `gh workflow run level-instruction-counts.yml --ref perf/pb-rm-validate -f base_sha=<40hex> -f head_sha=<40hex> -f twins=false`.
+  - Lint Ir lanes: use the release-CLI copy of the screen, branch `bench/sd2-lintrel`
+    (`gh workflow run pr-performance-observation.yml --ref bench/sd2-lintrel -f shas="..."`).
+- In flight: run 44517290382 (bench/sd2-lintrel, release CLI) with shas main 9c7d4cba55,
+  05631b398b (global hints), 4061e9b067 (cB1, no hints), 96148d57bc (p5), main again (A/A). Read
+  it with `gh run view 44517290382 --log | grep -oE '[0-9a-f]{40} [0-9]+ bench/default=.*' | sort -u`.
+  It also prints the release CLI bytes.
+- Not yet dispatched: the shipped-profile-measure runs. Do them in this order, one at a time:
+  1. head 05631b398bc95c52ebba9fc0101459e747967805 vs base 9c7d4cba558cf7f7dbab6d92b47f939ce1b664a3.
+  2. If needed, cB1 4061e9b0676d350efb8e82835eb29b2c703c1e60, then p5 96148d57bcb300b474319124e71d05e6f4ca0897.
+- Pick the first candidate with every release row ≤ main, release size ≤ main and all 6 release lint
+  lanes ≤ main (within the A/A twin). Then:
+  1. Reset `davinci-inputs-style-decls` to that tree, without `.handoff/`.
+  2. Rerun parity: `.handoff/style-decls-tools/lintparity.sh <name> <vize-binary>` on
+     misskey/n8n, then `cmp.py main <name>`.
+  3. Run the gates (fmt, CI clippy for vize_patina, assertion lint, source lengths, the storage and
+     docs tooling tests; `lint_history::full_current_results_and_independent_fix_applications`
+     fails on main too).
+  4. Push once, run the PR observation plus an A/A, write the tables in the #13340 format, and
+     arm auto-merge.
+- Scratch tools are copied to `.handoff/style-decls-tools/`. Driver workflows: `cg.yml` (lint
+  callgrind function diff), `cgb.yml` (markup bench callgrind with the harness guest env, untried)
+  and `lintir-release.yml`. Helpers: `sdiff.py`, `cgdiff.py`, `cmp.py`, `lintparity.sh`, `plumb.sh`.
+- Temp branches: `bench/sd2-{cB1,cB2,cg,cgb,p1,p5,p6,lintrel}`.
