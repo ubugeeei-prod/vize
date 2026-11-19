@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { renamePath } from "../../../tools/support/levels/rename-codenames.ts";
 
 import {
   assertExactCssTree,
@@ -226,7 +227,11 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
   assert.equal(contract.version, 1);
   assert.equal(contract.historicalBaselineRevision, historicalBaselineRevision);
   assert.equal(contract.historicalCapture.sourceRevision, captureRevision);
-  assert.deepEqual(contract.buildPaths, reviewedBuildPaths);
+  // The contract pins trees of revisions before the level rename, under their paths then.
+  assert.deepEqual(
+    contract.buildPaths.map((name) => renamePath(name)),
+    reviewedBuildPaths,
+  );
   assert.deepEqual(
     contract.layers.map(({ name, baseRevision, reviewedRevision }) => ({
       name,
