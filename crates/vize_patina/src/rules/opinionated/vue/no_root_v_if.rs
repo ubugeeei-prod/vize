@@ -106,6 +106,10 @@ impl Rule for NoRootVIf {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE
+    }
+
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
         let Some(template) = ctx.sfc_descriptor().and_then(|sfc| sfc.template.as_ref()) else {
             return;
