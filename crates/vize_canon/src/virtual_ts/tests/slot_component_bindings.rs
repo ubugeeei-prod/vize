@@ -2,6 +2,7 @@ use super::generate_virtual_ts_with_offsets;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 mod hoisted_owner;
+mod parameter_defaults;
 mod providers;
 mod unbound_slots;
 
