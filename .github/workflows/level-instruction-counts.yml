@@ -9,6 +9,11 @@ on:
         description: 'JSON array of "name=sha" strings; the first is the base'
         required: true
         type: string
+      release:
+        description: 'Also build the shipped release profile (true/false)'
+        required: false
+        default: 'false'
+        type: string
       instructions:
         description: 'Also collect instruction counts (true/false)'
         required: false
@@ -66,6 +71,17 @@ jobs:
           size -A $RUNNER_TEMP/t/ci-opt/vize | awk '{print $1, $2}' > out/$NAME.sections
           nm -S --size-sort -C $RUNNER_TEMP/t/ci-opt/vize | awk '{print $2, $3, substr($0, index($0,$4))}' | sort -k3 | gzip > out/$NAME.syms.gz
           echo "$NAME $(cat out/$NAME.size)"
+      - name: Release size
+        if: inputs.release == 'true'
+        env: { NAME: "${{ steps.role.outputs.name }}" }
+        run: |
+          set -euo pipefail
+          cd src
+          CARGO_TARGET_DIR=$RUNNER_TEMP/r cargo build --locked --release -p vize 2>&1 | tail -1
+          stat -c %s $RUNNER_TEMP/r/release/vize > ../out/$NAME.rsize
+          sha256sum $RUNNER_TEMP/r/release/vize | cut -c1-64 > ../out/$NAME.rsha256
+          size -A $RUNNER_TEMP/r/release/vize | awk '{print $1, $2}' > ../out/$NAME.rsections || true
+          echo "$NAME release $(cat ../out/$NAME.rsize)"
       - name: Instruction counts
         if: inputs.instructions == 'true'
         env: { NAME: "${{ steps.role.outputs.name }}" }
