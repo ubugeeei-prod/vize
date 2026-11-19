@@ -1,0 +1,191 @@
+name: Level instruction counts
+
+# TEMPORARY scratch driver (perf-backlog agent): ci-opt CLI size of several
+# source commits, built exactly like pr-performance-observation. Never merged.
+on:
+  workflow_dispatch:
+    inputs:
+      roles:
+        description: 'JSON array of "name=sha" strings; the first is the base'
+        required: true
+        type: string
+      size:
+        description: 'Build the ci-opt CLI size probe (true/false)'
+        required: false
+        default: 'true'
+        type: string
+      release:
+        description: 'Also build the shipped release profile (true/false)'
+        required: false
+        default: 'false'
+        type: string
+      dumps:
+        description: 'Suite prefix (pkg-bench) whose run-1 Callgrind dumps to upload, e.g. vize_atelier_vapor-davinci'
+        required: false
+        default: ''
+        type: string
+      suites:
+        description: 'Instruction suites: all, or sfc (SFC parsing only)'
+        required: false
+        default: 'all'
+        type: string
+      ic_profile:
+        description: 'ci-opt (default) or release (fat LTO, 1 CGU via CARGO_PROFILE_CI_OPT_* overrides)'
+        required: false
+        default: 'ci-opt'
+        type: string
+      instructions:
+        description: 'Also collect instruction counts (true/false)'
+        required: false
+        default: 'true'
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  RUSTUP_TOOLCHAIN: "1.100.0"
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "8"
+
+jobs:
+  build:
+    name: Size ${{ matrix.role }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        role: ${{ fromJSON(inputs.roles) }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { path: driver, persist-credentials: false }
+      - name: Resolve role
+        id: role
+        env: { ROLE: "${{ matrix.role }}" }
+        run: |
+          echo "name=${ROLE%%=*}" >> "$GITHUB_OUTPUT"
+          echo "sha=${ROLE#*=}" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { path: src, ref: "${{ steps.role.outputs.sha }}", persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: driver/package.json, run-install: false }
+      - name: Install Rust and Callgrind
+        run: |
+          rustup toolchain install 1.100.0 --profile minimal
+          sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
+      - uses: ./driver/.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Build
+        if: inputs.size != 'false'
+        env: { NAME: "${{ steps.role.outputs.name }}" }
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          cd src
+          flags=(--locked --profile ci-opt -p vize --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16')
+          CARGO_TARGET_DIR=$RUNNER_TEMP/t cargo build "${flags[@]}" --config 'profile.ci-opt.package.vize.strip="symbols"' 2>&1 | tail -1
+          stat -c %s $RUNNER_TEMP/t/ci-opt/vize > ../out/$NAME.size
+          sha256sum $RUNNER_TEMP/t/ci-opt/vize | cut -c1-64 > ../out/$NAME.sha256
+          CARGO_TARGET_DIR=$RUNNER_TEMP/t cargo build "${flags[@]}" --config 'profile.ci-opt.package.vize.strip="none"' 2>&1 | tail -1
+          cd ..
+          size -A $RUNNER_TEMP/t/ci-opt/vize | awk '{print $1, $2}' > out/$NAME.sections
+          nm -S --size-sort -C $RUNNER_TEMP/t/ci-opt/vize | awk '{print $2, $3, substr($0, index($0,$4))}' | sort -k3 | gzip > out/$NAME.syms.gz
+          echo "$NAME $(cat out/$NAME.size)"
+      - name: Release size
+        if: inputs.release == 'true'
+        env: { NAME: "${{ steps.role.outputs.name }}" }
+        run: |
+          set -euo pipefail
+          cd src
+          CARGO_TARGET_DIR=$RUNNER_TEMP/r cargo build --locked --release -p vize 2>&1 | tail -1
+          stat -c %s $RUNNER_TEMP/r/release/vize > ../out/$NAME.rsize
+          sha256sum $RUNNER_TEMP/r/release/vize | cut -c1-64 > ../out/$NAME.rsha256
+          size -A $RUNNER_TEMP/r/release/vize | awk '{print $1, $2}' > ../out/$NAME.rsections || true
+          echo "$NAME release $(cat ../out/$NAME.rsize)"
+      - name: Instruction counts
+        if: inputs.instructions == 'true'
+        env: { NAME: "${{ steps.role.outputs.name }}" }
+        working-directory: src
+        run: |
+          set -euo pipefail
+          mkdir -p ../out
+          if [ "${{ inputs.ic_profile }}" = release ]; then
+            export CARGO_PROFILE_CI_OPT_LTO=fat CARGO_PROFILE_CI_OPT_CODEGEN_UNITS=1
+          fi
+          if [ "${{ inputs.suites }}" = sfc ]; then
+            mkdir -p "$RUNNER_TEMP/sfc"
+            node tools/benchmarks/scripts/instruction-counts.mjs --sfc-parsing --collect --out "$RUNNER_TEMP/sfc/sic"
+            cp "$RUNNER_TEMP/sfc/sic/run-1.json" ../out/$NAME.sic.json
+            cp "$RUNNER_TEMP/sfc/sic/binaries.json" ../out/$NAME.sic-binaries.json
+            tar -C "$RUNNER_TEMP/sfc/sic/run-1" -czf ../out/$NAME.sicdumps.tgz .
+            exit 0
+          fi
+          node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "$RUNNER_TEMP/ic"
+          cp "$RUNNER_TEMP/ic/run-1.json" ../out/$NAME.ic.json
+          if [ -n "${{ inputs.dumps }}" ]; then
+            tar -C "$RUNNER_TEMP/ic/run-1" -czf ../out/$NAME.dumps.tgz $(cd "$RUNNER_TEMP/ic/run-1" && ls | grep "^${{ inputs.dumps }}\.callgrind" | grep -v -E '\.(stderr|stdout)$')
+          fi
+          node tools/benchmarks/scripts/instruction-counts.mjs --formatter --collect --out "$RUNNER_TEMP/fic"
+          cp "$RUNNER_TEMP/fic/run-1.json" ../out/$NAME.fic.json
+          mkdir -p "$RUNNER_TEMP/sfc"
+          node tools/benchmarks/scripts/instruction-counts.mjs --sfc-parsing --collect --out "$RUNNER_TEMP/sfc/sic"
+          cp "$RUNNER_TEMP/sfc/sic/run-1.json" ../out/$NAME.sic.json
+          cp "$RUNNER_TEMP/sfc/sic/binaries.json" ../out/$NAME.sic-binaries.json
+            tar -C "$RUNNER_TEMP/sfc/sic/run-1" -czf ../out/$NAME.sicdumps.tgz .
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with: { name: "size-${{ steps.role.outputs.name }}", path: out, retention-days: 3 }
+
+  diff:
+    name: Size diff
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { path: in, merge-multiple: true }
+      - name: Diff against the base
+        env: { ROLES: "${{ inputs.roles }}" }
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, gzip, collections
+          roles = [r.split('=')[0] for r in json.loads(os.environ['ROLES'])]
+          base = roles[0]
+          def syms(n):
+              d = collections.Counter()
+              for line in gzip.open(f'in/{n}.syms.gz', 'rt'):
+                  p = line.rstrip('\n').split(' ', 2)
+                  if len(p) == 3 and p[1] in 'tTwW':
+                      d[p[2]] += int(p[0], 16)
+              return d
+          out = []
+          bs = int(open(f'in/{base}.size').read())
+          a = syms(base)
+          for r in roles:
+              s = int(open(f'in/{r}.size').read())
+              out.append(f'| {r} | {s:,} | {s - bs:+,} | {open(f"in/{r}.sha256").read().strip()[:16]} |')
+          print('| role | ci-opt stripped bytes | vs base | sha256 |\n| --- | ---: | ---: | --- |\n' + '\n'.join(out))
+          for kind in ('ic', 'fic', 'sic'):
+              if not os.path.exists(f'in/{base}.{kind}.json'):
+                  continue
+              ba = json.load(open(f'in/{base}.{kind}.json'))
+              for r in roles[1:]:
+                  p = f'in/{r}.{kind}.json'
+                  if not os.path.exists(p):
+                      print(f'{kind} {r}: missing'); continue
+                  hb = json.load(open(p))
+                  moved = [(k, ba[k]['instructions'], hb.get(k, {}).get('instructions')) for k in sorted(ba) if ba[k]['instructions'] != hb.get(k, {}).get('instructions')]
+                  up = [m for m in moved if m[2] is None or m[2] > m[1]]
+                  print(f'\n=== {kind} {base} -> {r}: {len(moved)} moved, {len(up)} up, {len(ba) - len(moved)} identical')
+                  for k, x, y in moved:
+                      d = (y - x) if y is not None else 0
+                      print(f'| {k} | {x:,} | {y:,} | {d:+,} | {100.0 * d / x:+.3f}% |')
+          for r in roles[1:]:
+              b = syms(r)
+              print(f'\n=== {base} -> {r}: total text {sum(a.values())} -> {sum(b.values())} ({sum(b.values()) - sum(a.values()):+d})')
+              for k in sorted(set(a) | set(b), key=lambda k: -abs(b[k] - a[k]))[:30]:
+                  if a[k] != b[k]:
+                      print(f'{b[k]-a[k]:+7d} {a[k]:7d} -> {b[k]:7d} {k[:170]}')
+          PY

@@ -29,6 +29,17 @@ Remove this file before merging. No PR has been opened yet.
   3. Revalidate A/A (0 moved on every pair), then open the PR with that table and arm auto-merge once green.
 - The renderer's A/A line should print the per-pair move counts as it does now. It currently says "differs from the primary pair" when the base side is the noisy one.
 
+## Scratch tools (copied from the paused session)
+
+`.handoff/ci-shipped-profile-measure-tools/` holds the following. They contain absolute scratchpad paths, so edit them before reuse.
+
+- `size-matrix.yml`: the old `perf/pb-driver` screening workflow.
+- `sdiff.py`, `cmp.sh`, `offdiff.py`: artifact and official-run diffs.
+- `plumb.sh`: commit files onto a parent without a checkout.
+- `xmono.sh`, `cgu.py`, `cgu2.py`: x86 CGU partition probe. It uses `-Zprint-mono-items` with a downloaded rust-std 1.100.0 x86_64-linux sysroot and `/usr/bin/true` as the linker.
+- `cgdiff.py`: Callgrind per-function self-cost diff.
+- `parity.sh`, `renorm.sh`: DOM/SSR/Vapor byte-parity harness over all `.vue`/`.vue.txt` files.
+
 ## Delete after merge
 
 `perf/pb-rm-validate`, `perf/pb-driver` (old screening driver; `perf/pb-va5`, `perf/pb-va11`, `perf/pb-ssr-s2m`, `perf/pb-ssr-s14`, `perf/pb-ssr-s15` are referenced by handoffs).
