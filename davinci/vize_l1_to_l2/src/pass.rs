@@ -33,6 +33,7 @@ mod dom;
 pub mod hoist;
 pub mod legacy;
 mod plan;
+mod recorded;
 pub mod vfor;
 pub mod vif;
 pub mod vmodel;
@@ -135,11 +136,11 @@ where
     let outcome = run_pipeline_remarked(&pipeline, observer, |event, remarks| {
         let name = event.desc().name;
         if name == legacy::DESC.name {
-            facts.filters = legacy::run(lowered);
+            facts.filters = recorded::legacy(lowered);
         } else if name == vslot::DESC.name {
-            facts.slot_facts = vslot::run(lowered);
+            facts.slot_facts = recorded::slots(lowered);
         } else if name == vmodel::DESC.name {
-            facts.model_faults = vmodel::run(lowered);
+            facts.model_faults = recorded::models(lowered);
         } else if name == hoist::DESC.name {
             facts.static_facts = hoist::run_remarked(lowered, remarks);
         } else if name == cfg::DESC.name {
