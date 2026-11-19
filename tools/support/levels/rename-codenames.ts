@@ -42,9 +42,10 @@ const parsedCapture =
  * misskey registry, javascript-sfc source context and its callers) that list trees of past revisions,
  * the instance-globals source-packet provenance captured from past runs, and the product fix-history
  * ledgers, which list the paths each past commit touched.
+ * The lint preset audit keeps the nextest.toml it reviewed and its baseline scope as written.
  */
 const pinnedTrees =
-  /^(?:editors\/vscode\/test\/css-hover-source-custody\.json|tests\/performance\/support\/warm-type-backed-(?:(?:path|timing)-host(?:-manifest\.json|\.ts)|git-reader-harness\.ts)|tests\/tooling\/warm-type-backed-(?:path|timing)-host\.test\.ts|levels\/vize_l2\/tests\/dump_(?:protocol|owner_names)\.rs|tools\/support\/compat\/github\/(?:empty-vue-star-listing-(?:source|part-\d+)|misskey-registry-part-\d+|javascript-sfc-source-context(?:-\d+)?)\.json|tests\/_fixtures\/ci\/javascript-sfc-source-callers\.json|tests\/fixtures\/typechecker\/undeclared-instance-globals-10617\/source-packets-[^/]+-provenance\.json|docs\/davinci\/plan\/[a-z-]+-fix-history[a-z-]*\.(?:tsv|json))$/u;
+  /^(?:editors\/vscode\/test\/css-hover-source-custody\.json|tests\/performance\/support\/warm-type-backed-(?:(?:path|timing)-host(?:-manifest\.json|\.ts)|git-reader-harness\.ts)|tests\/tooling\/warm-type-backed-(?:path|timing)-host\.test\.ts|levels\/vize_l2\/tests\/dump_(?:protocol|owner_names)\.rs|tools\/support\/compat\/github\/(?:empty-vue-star-listing-(?:source|part-\d+)|misskey-registry-part-\d+|javascript-sfc-source-context(?:-\d+)?)\.json|tests\/_fixtures\/ci\/javascript-sfc-source-callers\.json|tests\/fixtures\/typechecker\/undeclared-instance-globals-10617\/source-packets-[^/]+-provenance\.json|docs\/davinci\/plan\/[a-z-]+-fix-history[a-z-]*\.tsv|tests\/_fixtures\/lint-preset-default-warnings\/(?:cases\.json|reviewed-nextest\.toml))$/u;
 /**
  * Frozen copies of past files are captures too: a source or config file saved as `.txt` or
  * `.fixture`, and the frozen-source and source-custody trees that pin such copies.
