@@ -11,6 +11,7 @@ export type Lane = readonly (readonly string[])[];
 export const sourceInventoryLanes: readonly Lane[] = [
   [["tools/support/compat/davinci/croquis-consumers.ts", "--check"]],
   [["tools/support/compat/davinci/consumer-migration-surfaces.ts", "--check"]],
+  [["tools/support/compat/davinci/lint-substrate.ts", "--check"]],
   [["--test", "tests/tooling/davinci-storage-policy.test.ts"]],
   [
     ["tools/support/compat/davinci/generated-ledgers.ts", "--write"],
