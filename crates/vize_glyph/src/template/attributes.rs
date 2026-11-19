@@ -8,7 +8,7 @@ use vize_l0::String;
 #[cfg(test)]
 use super::directives::directive_head;
 use super::directives::{should_format_expression, static_directive_argument};
-use vize_l1::dialect::vue3::DirectiveKind;
+use vize_l1::framework::vue::version::v3::DirectiveKind;
 use vize_l1::markup::{DirectiveName, DirectivePrefix};
 mod render;
 #[cfg(test)]

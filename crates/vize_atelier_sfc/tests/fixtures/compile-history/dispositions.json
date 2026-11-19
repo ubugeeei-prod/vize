@@ -329,7 +329,7 @@
       "state": "no-compile-behavior",
       "reason": "Marks LegacyDialectCapabilities #[non_exhaustive] and bumps workspace/npm versions to 0.205.0. An API-compatibility attribute and version strings cannot change compiled output.",
       "coveredBy": [
-        "davinci/vize_l1/src/dialect/vue/tests.rs::composed_tables_match_the_pre_registry_capability_matrix"
+        "davinci/vize_l1/src/framework/vue/quirks/tests.rs::composed_tables_match_the_pre_registry_capability_matrix"
       ]
     },
     {
@@ -685,9 +685,9 @@
       "coveredBy": [
         "crates/vize/tests/check_cli.rs::check_can_emit_declarations",
         "crates/vize/tests/check_cli.rs::check_declaration_emit_uses_tsconfig_options",
-        "davinci/vize_l1/src/dialect/vue/tests.rs::as_str_round_trips_all_variants_through_config_parsing",
-        "davinci/vize_l1/src/dialect/vue/tests.rs::v2_and_v2_7_share_the_template_dialect",
-        "davinci/vize_l1/src/dialect/vue/tests.rs::default_dialect_resolves_to_the_all_off_vue3_set"
+        "davinci/vize_l1/src/framework/vue/quirks/tests.rs::as_str_round_trips_all_variants_through_config_parsing",
+        "davinci/vize_l1/src/framework/vue/quirks/tests.rs::v2_and_v2_7_share_the_template_dialect",
+        "davinci/vize_l1/src/framework/vue/quirks/tests.rs::default_dialect_resolves_to_the_all_off_vue3_set"
       ]
     },
     {

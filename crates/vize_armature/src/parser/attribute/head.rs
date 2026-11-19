@@ -2,7 +2,7 @@
 
 use super::super::{CurrentDirective, Parser};
 use vize_l0::ErrorCode;
-use vize_l1::markup::directive::frozen_attribute_name;
+use vize_l1::framework::vue::directive::frozen_attribute_name;
 use vize_relief::{DirectiveNode, ElementNode, PropNode, SourceLocation, errors::CompilerError};
 
 impl<'a> Parser<'a> {

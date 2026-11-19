@@ -2,7 +2,7 @@
 
 use super::{Context, Vue2HoleKind};
 use vize_l0::{Span, Vec};
-use vize_l1::dialect::vue2::surface::RetainedTextChildren;
+use vize_l1::framework::vue::version::v2::surface::RetainedTextChildren;
 use vize_l1::embed::prepare_attribute_value;
 use vize_l1::markup::{Element, ElementClose};
 use vize_l2::{

@@ -18,7 +18,7 @@ use crate::markup::htmlish::render::check_fidelity;
 use crate::markup::htmlish::surface::{SurfaceChild, SurfaceTree, Token};
 
 // The dialect-owned component surface provider.
-pub use crate::dialect::vue3::surface::{
+pub use crate::framework::vue::version::v3::surface::{
     ComponentParse, ComponentSourceError, DirectiveAdmission, parse_component,
     parse_component_with_authored, parse_component_with_options,
 };

@@ -3,9 +3,9 @@ use super::pattern::Directive;
 use super::{ConstructionBody, ConstructionFactory};
 use super::{Context, NativeHoleKind};
 use vize_l0::Span;
-use vize_l1::dialect::vue3::VueDirectives;
+use vize_l1::framework::vue::version::v3::VueDirectives;
 use vize_l1::embed::prepare_attribute_value;
-use vize_l1::markup::directive::DirectiveSyntax;
+use vize_l1::framework::vue::directive::DirectiveSyntax;
 use vize_l1::markup::{Attribute as SurfaceAttribute, Element};
 use vize_l2::op::{Attribute, Namespace};
 

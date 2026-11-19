@@ -9,7 +9,7 @@ use crate::markup::l2::surface::{SurfaceDirective, attr_span};
 use crate::markup::l2::{L2ElementOp, L2Markup};
 use crate::markup::node::MarkupNode;
 use vize_l0::String;
-pub(in crate::markup) use vize_l1::dialect::vue3::is_component_tag;
+pub(in crate::markup) use vize_l1::framework::vue::version::v3::is_component_tag;
 use vize_relief::ElementNode;
 
 impl<'a> MarkupElement<'a> {

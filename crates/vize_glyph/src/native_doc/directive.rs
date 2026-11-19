@@ -128,7 +128,7 @@ mod tests {
     use crate::native_doc::document::Kind;
     use vize_l0::{Allocator, SourceRoot, Span};
     use vize_l1::{
-        dialect::vue3::VueDirectives,
+        framework::vue::version::v3::VueDirectives,
         markup::{ArgSyntax, DirectiveName, DirectivePrefix, DirectiveSyntax},
     };
 

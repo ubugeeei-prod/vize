@@ -138,7 +138,7 @@ fn recovered_template_refuses_and_bare_api_keeps_interpolation_refusal() {
             TemplateRefusal::Recovered { .. }
         ))
     ));
-    let bare = vize_l1::dialect::vue3::surface::parse_component(&arena, "<p>{{ a }}</p>").unwrap();
+    let bare = vize_l1::framework::vue::version::v3::surface::parse_component(&arena, "<p>{{ a }}</p>").unwrap();
     assert!(matches!(
         template_document(&bare, &arena),
         Err(TemplateRefusal::Unsupported {

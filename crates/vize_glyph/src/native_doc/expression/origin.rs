@@ -82,7 +82,7 @@ mod tests {
     use super::Origin;
     use crate::native_doc::{PrintOptions, expression_document, print};
     use vize_l0::{Allocator, SourceRoot, Span};
-    use vize_l1::dialect::vue2::surface;
+    use vize_l1::framework::vue::version::v2::surface;
     use vize_l1::embed::syntax::parse_once;
     use vize_l1::embed::{Embed, Grammar, Lang, Shape, SourceError, prepare_attribute_value};
 
@@ -203,7 +203,7 @@ mod tests {
                 .text_for(owner.children().next().unwrap())
                 .unwrap_err(),
             surface::TextRefusal::Boundary(
-                vize_l1::dialect::vue2::text::TextBoundaryKind::CommentSyntax
+                vize_l1::framework::vue::version::v2::text::TextBoundaryKind::CommentSyntax
             )
         );
     }

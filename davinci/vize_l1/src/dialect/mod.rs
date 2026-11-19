@@ -5,13 +5,7 @@
 //! Consolidating petite, quirks, markup/language descriptors and residual
 //! dialect operations remains tracked in #6841.
 
-mod vue;
-pub mod vue0;
-pub mod vue1;
-pub mod vue2;
-pub mod vue3;
-
-pub use vue::{DirectiveArgStyle, LegacyDialectCapabilities, LegacyVueVersion};
+pub use crate::framework::vue::quirks::{DirectiveArgStyle, LegacyDialectCapabilities, LegacyVueVersion};
 
 /// Backwards-compatible name for the shared Vue template capability set.
 ///

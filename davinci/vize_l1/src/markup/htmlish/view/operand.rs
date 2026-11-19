@@ -10,8 +10,8 @@ use oxc_parser::AdmittedExpression;
 use vize_l0::{SourceBlock, Span};
 
 use super::{AttributeView, NativeTemplateComponent, TemplateGrammar};
-pub use crate::dialect::vue3::operand::ConditionKind;
-use crate::dialect::vue3::operand::conditional_head;
+pub use crate::framework::vue::version::v3::operand::ConditionKind;
+use crate::framework::vue::version::v3::operand::conditional_head;
 use crate::embed::syntax::{EmbedSyntax, RetainedExpression, parse_once};
 use crate::embed::{Embed, Grammar, Lang, Shape, SourceError, prepare_attribute_value};
 use crate::markup::DirectiveNameError;

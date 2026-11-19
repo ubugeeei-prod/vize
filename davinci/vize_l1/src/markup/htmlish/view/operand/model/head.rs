@@ -2,7 +2,7 @@
 
 use super::super::{AttributeExpressionFailure, AttributeOperandError, observe_expression_value};
 use super::{AttributeHead, AttributeModelExpression};
-use crate::dialect::vue3::operand::{ModelModifier, model_parts};
+use crate::framework::vue::version::v3::operand::{ModelModifier, model_parts};
 
 /// A short original model selection, never a caller-assembled expression.
 /// Its value is prepared and parsed once when this selection is consumed.

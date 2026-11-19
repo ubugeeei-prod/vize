@@ -3,12 +3,12 @@
 use super::*;
 use vize_glyph::native_doc::{ExpressionRefusal, Vue2TextDocumentRefusal};
 use vize_l0::Span;
-use vize_l1::dialect::vue2::{surface::TextRefusal, text::TextBoundaryKind};
+use vize_l1::framework::vue::version::v2::{surface::TextRefusal, text::TextBoundaryKind};
 use vize_l1::embed::syntax::EmbedHole;
 use vize_l1::markup::SurfaceChild;
 
 fn raw_observations(
-    binding: &vize_l1::dialect::vue2::text::TextBinding<'_>,
+    binding: &vize_l1::framework::vue::version::v2::text::TextBinding<'_>,
 ) -> Option<std::vec::Vec<std::string::String>> {
     binding.chain().map(|chain| {
         core::iter::once(chain.base())

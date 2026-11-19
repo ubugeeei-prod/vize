@@ -10,7 +10,7 @@
 //! One shared state machine, [`lex::Lexer`], is generic over the profile
 //! and its event [`token::Sink`], so every per-profile branch is resolved at
 //! compile time. Directive-name decomposition is not part of the lexer: it
-//! is a dialect syntax hook ([`directive::DirectiveSyntax`]), like an MLIR
+//! is a dialect syntax hook ([`crate::framework::vue::directive::DirectiveSyntax`]), like an MLIR
 //! custom assembly format.
 //!
 //! The profile-generic lexer, entity decoder and compatibility callback
@@ -23,8 +23,6 @@
 //! The Vue dialect provides allocation-free directive decomposition with checked
 //! source admission; typed Shape dispatch remains unfinished.
 //! Design: <https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929>.
-
-pub mod directive;
 pub mod entity;
 pub mod grammar;
 pub mod htmlish;
@@ -33,7 +31,7 @@ pub mod pug;
 pub mod token;
 pub mod tsrx;
 
-pub use directive::{
+pub use crate::framework::vue::directive::{
     ArgSyntax, DirectiveName, DirectiveNameError, DirectivePrefix, DirectiveSyntax, VueDirectives,
 };
 pub use grammar::{MarkupGrammar, Vue};

@@ -4,7 +4,7 @@ use vize_glyph::native_doc::{
     LineEnding, PrintOptions, TemplateRefusal, UnsupportedSyntax, print, template_document,
 };
 use vize_l0::{Allocator, String};
-use vize_l1::dialect::vue3::surface::parse_component;
+use vize_l1::framework::vue::version::v3::surface::parse_component;
 
 fn format(source: &str, width: usize) -> String {
     let allocator = Allocator::default();
