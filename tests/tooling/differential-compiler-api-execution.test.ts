@@ -11,6 +11,7 @@ import {
 } from "../differential/compiler-api.ts";
 import { buildProductObserver } from "../differential/observer-build.ts";
 import { compilerFailure, type CompilerBuildReceipt } from "../differential/compiler-api-types.ts";
+import { writeBundleEntry } from "../differential/bundle.ts";
 import {
   renderNativeAcceptanceMarkdown,
   summarizeNativeAcceptance,
@@ -60,6 +61,22 @@ for (const [target, contract] of Object.entries(COMPILER_TARGET_CONTRACTS)) {
       evidenceDir,
     });
     t.diagnostic(`Compiler public API evidence: ${evidenceDir}`);
+    // Publish the measured rows before the pinned expectations, so drift or a
+    // failed build is still counted in the census instead of going unmeasured.
+    const loaded = loadCompilerApiManifest(manifestPath, root);
+    const acceptance = summarizeNativeAcceptance(loaded, report, {
+      sourceRevision: report.sourceRevision,
+    });
+    const bundleEntry = writeBundleEntry({
+      repoRoot: root,
+      tier: "T1",
+      pack: `api-${contract.name}`,
+      manifestPath,
+      loaded,
+      report,
+      acceptance,
+    });
+    t.diagnostic(`Differential bundle entry: ${bundleEntry}`);
     assert.equal(buildFailure, null, buildFailure ?? "observer build failed");
     assert.deepEqual(
       report.summary,
@@ -75,10 +92,6 @@ for (const [target, contract] of Object.entries(COMPILER_TARGET_CONTRACTS)) {
       },
       JSON.stringify(report.rows, null, 2),
     );
-    const loaded = loadCompilerApiManifest(manifestPath, root);
-    const acceptance = summarizeNativeAcceptance(loaded, report, {
-      sourceRevision: report.sourceRevision,
-    });
     assert.deepEqual(acceptance.total, {
       planned: plannedCases,
       nativeHandled: 0,

@@ -9,6 +9,7 @@ import {
   summarizeNativeAcceptance,
 } from "../differential/acceptance-rates.mjs";
 import { loadLspManifest, lspFixtureInventory, runLspPack } from "../differential/lsp.ts";
+import { writeBundleEntry } from "../differential/bundle.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -30,6 +31,16 @@ void test("source-built LSP registers complete fix-history response sessions wit
   const acceptance = summarizeNativeAcceptance(loaded, report, {
     sourceRevision: revision.stdout.trim(),
   });
+  const bundleEntry = writeBundleEntry({
+    repoRoot: root,
+    tier: "T1",
+    pack: "cli",
+    manifestPath,
+    loaded,
+    report,
+    acceptance,
+  });
+  t.diagnostic(`Differential bundle entry: ${bundleEntry}`);
   const count = lspFixtureInventory(loaded).length;
   assert.deepEqual(acceptance.total, {
     planned: count,

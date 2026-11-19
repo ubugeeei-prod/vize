@@ -12,6 +12,7 @@ import {
 } from "../differential/linter-api.ts";
 import { expectedNativeReason } from "../differential/linter-native.ts";
 import { renderNativeAcceptanceMarkdown } from "../differential/acceptance-rates.mjs";
+import { writeBundleEntry } from "../differential/bundle.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -28,8 +29,9 @@ void test("shared linter corpus retains every complete actual public observation
     profile: process.env.CI ? "ci" : "dev",
     offline: !process.env.CI,
   });
+  const manifestPath = path.join(root, "tests/_fixtures/differential/linter/manifest.json");
   const report = runLinterApiPack({
-    manifestPath: path.join(root, "tests/_fixtures/differential/linter/manifest.json"),
+    manifestPath,
     repoRoot: root,
     ...built,
   });
@@ -38,6 +40,18 @@ void test("shared linter corpus retains every complete actual public observation
   t.diagnostic(
     `Complete raw public observations, Cargo artifact and build receipt: ${evidenceDir}`,
   );
+  const loaded = loadLinterManifest(manifestPath, root);
+  const acceptance = summarizeLinterAcceptance(loaded, report, built.receipt);
+  const bundleEntry = writeBundleEntry({
+    repoRoot: root,
+    tier: "T1",
+    pack: "api",
+    manifestPath,
+    loaded,
+    report,
+    acceptance,
+  });
+  t.diagnostic(`Differential bundle entry: ${bundleEntry}`);
   assert.deepEqual(
     report.summary,
     {
@@ -53,11 +67,6 @@ void test("shared linter corpus retains every complete actual public observation
     },
     JSON.stringify(report.rows, null, 2),
   );
-  const loaded = loadLinterManifest(
-    path.join(root, "tests/_fixtures/differential/linter/manifest.json"),
-    root,
-  );
-  const acceptance = summarizeLinterAcceptance(loaded, report, built.receipt);
   const acceptanceArtifact = path.join(evidenceDir, "acceptance.json");
   const markdown = renderNativeAcceptanceMarkdown([acceptance]);
   fs.writeFileSync(acceptanceArtifact, `${JSON.stringify(acceptance, null, 2)}\n`);

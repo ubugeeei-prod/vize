@@ -266,6 +266,63 @@ void test("full-only extraction preserves all seventeen complete original job ob
     uses: "./.github/workflows/nuxt-vite-release-products.yml",
   });
   delete original["nuxt-module-qualification"];
+  // #6853/#6854 add a record-only census over the runners' bundle entries.
+  const producerAttempt = "${{ needs.full-rust-workspace.outputs.producer-attempt }}";
+  assert.deepEqual(original["differential-acceptance"], {
+    name: "differential-acceptance",
+    "runs-on": "blacksmith-32vcpu-ubuntu-2404",
+    "timeout-minutes": 10,
+    if: "${{ always() && !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}",
+    needs: ["full-rust-workspace", "test-scripts"],
+    steps: [
+      { uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" },
+      {
+        uses: "actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38",
+        with: { "node-version-file": "package.json", "package-manager-cache": false },
+      },
+      {
+        name: "Download product runner evidence",
+        "continue-on-error": true,
+        uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+        with: {
+          pattern: "formatter-api-corpus-${{ github.run_id }}-${{ github.run_attempt }}-*",
+          path: ".artifacts/differential-t1",
+        },
+      },
+      {
+        name: "Download the full workspace typechecker observation",
+        id: "workspace",
+        "continue-on-error": true,
+        uses: "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+        with: {
+          name: `rust-full-workspace-\${{ github.sha }}-${producerAttempt}`,
+          path: ".artifacts/rust-full-workspace",
+        },
+      },
+      {
+        name: "Record the verified typechecker bundle entry",
+        if: "${{ steps.workspace.outcome == 'success' }}",
+        "continue-on-error": true,
+        env: { SOURCE_SHA: "${{ github.sha }}", PRODUCER_ATTEMPT: producerAttempt },
+        run: 'node tests/differential/typechecker-bundle.ts "$SOURCE_SHA" .artifacts/rust-full-workspace "$GITHUB_RUN_ID" "$PRODUCER_ATTEMPT" .artifacts/differential-t1/typechecker/bundle',
+      },
+      {
+        name: "Publish native-only acceptance and zero-fallback census",
+        run: "node tests/differential/native-acceptance.ts --out .artifacts/differential-acceptance --bundle-out .artifacts/differential-acceptance/bundle .artifacts/differential-t1",
+      },
+      {
+        uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+        if: "${{ always() }}",
+        with: {
+          name: "differential-acceptance-t1-${{ github.sha }}-${{ github.run_attempt }}",
+          path: ".artifacts/differential-acceptance",
+          "if-no-files-found": "error",
+          "retention-days": 30,
+        },
+      },
+    ],
+  });
+  delete original["differential-acceptance"];
   const workspace = original["full-rust-workspace"];
   // The explicit checkout provider extends both full profiles; verify its
   // complete object and exact position before checking the immutable baseline.
