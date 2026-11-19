@@ -137,6 +137,40 @@ fn does_not_follow_bare_specifiers_from_inside_node_modules() {
 }
 
 #[test]
+fn renamed_type_imports_resolve_through_the_imported_name() {
+    let project = temp_project_dir("renamed-type-import");
+    std::fs::create_dir_all(project.join("src")).unwrap();
+    std::fs::write(
+        project.join("src/types.ts"),
+        "export type Public = { value: string }\nexport interface Shape { size: number }\n",
+    )
+    .unwrap();
+    let current = project.join("src/App.vue");
+    let source = r#"
+import type { Public as Alias } from './types'
+import { type Shape as Local } from './types'
+type Combined = Alias & Local
+defineProps<Combined>()
+"#;
+
+    let mut ctx = super::ScriptCompileContext::new(source);
+    ctx.collect_imported_types_from_path(source, current.to_string_lossy().as_ref(), true);
+    ctx.analyze();
+
+    assert_eq!(ctx.type_aliases.get("Alias").map(|body| body.as_str()), Some("Public"));
+    assert_eq!(ctx.type_aliases.get("Local").map(|body| body.as_str()), Some("Shape"));
+    for prop in ["value", "size"] {
+        assert_eq!(
+            ctx.bindings.bindings.get(prop),
+            Some(&crate::types::BindingType::Props),
+            "{prop}"
+        );
+    }
+
+    let _ = std::fs::remove_dir_all(project);
+}
+
+#[test]
 fn collects_props_from_node_modules_package_types() {
     let project = temp_project_dir("bare-props-collection");
     let package = project.join("node_modules/some-ui");

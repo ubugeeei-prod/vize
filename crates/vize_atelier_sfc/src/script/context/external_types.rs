@@ -41,6 +41,8 @@ pub(super) struct FileTypeSummary {
     dependencies: Vec<TypeDependency>,
     /// Local type names and their module requests, for checked macro imports.
     imports: Vec<(String, String)>,
+    /// `import { Imported as Local }` pairs, as `(local, imported)`.
+    renamed: Vec<(String, String)>,
 }
 
 /// Metadata hints for configuration discovery. Imported module summaries below
@@ -218,6 +220,11 @@ fn extract_script_summary(
                             }
                         };
                         if let Some(imported) = imported {
+                            if local.name.as_str() != imported.as_str() {
+                                summary
+                                    .renamed
+                                    .push((local.name.to_compact_string(), imported.clone()));
+                            }
                             requested.push(imported);
                         }
                         summary.imports.push((
@@ -367,6 +374,17 @@ impl ScriptCompileContext {
                     base_file,
                     &mut walk,
                 );
+            }
+        }
+        // A renamed import (`import type { Public as Alias }`) names the
+        // imported declaration through its local binding (#13386).
+        for (local, imported) in root.renamed {
+            if self.interfaces.contains_key(&local) || self.type_aliases.contains_key(&local) {
+                continue;
+            }
+            if self.interfaces.contains_key(&imported) || self.type_aliases.contains_key(&imported)
+            {
+                self.type_aliases.insert(local, imported);
             }
         }
         let mut dependencies: Vec<String> = visited.into_iter().collect();

@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import type { Public as Alias } from "./src/types";
+import { type Shape as Local } from "./src/types";
+const props = defineProps<Alias & Local>();
+</script>
+<template><p>{{ props.value }} {{ props.size }}</p></template>
