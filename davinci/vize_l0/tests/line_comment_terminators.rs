@@ -1,6 +1,8 @@
 //! ECMAScript line-comment boundaries shared by expression and SFC scanners.
 
-use vize_l0::expression_guard::scan::{line_comment_terminator, skip_line_comment};
+use vize_l0::expression_guard::scan::{
+    contains_double_slash, line_comment_terminator, skip_line_comment,
+};
 
 #[test]
 fn every_terminator_has_its_complete_byte_range() {
@@ -41,4 +43,31 @@ fn caller_offsets_and_eof_are_preserved() {
     }
     let source = [vec![b'x'; 32_768], b"\xe2\x80\xa8next".to_vec()].concat();
     assert_eq!(line_comment_terminator(&source, 0), 32_768..32_771);
+}
+
+#[test]
+fn double_slash_search_matches_the_substring_search() {
+    let long = [vec![b'/'; 1], vec![b'x'; 70], b"/ //".to_vec()].concat();
+    let long = std::str::from_utf8(&long).expect("ASCII");
+    for source in [
+        "",
+        "/",
+        "//",
+        "a/b",
+        "a//b",
+        "/ /",
+        "x / y // z",
+        "'//'",
+        "///",
+        "a/",
+        "/a",
+        "é//",
+        long,
+    ] {
+        assert_eq!(
+            contains_double_slash(source.as_bytes()),
+            source.contains("//"),
+            "{source:?}"
+        );
+    }
 }

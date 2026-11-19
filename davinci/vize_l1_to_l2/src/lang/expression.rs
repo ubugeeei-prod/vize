@@ -5,7 +5,7 @@ use oxc_ast::ast::Statement;
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
-use vize_l0::expression_guard::scan::line_comment_terminator;
+use vize_l0::expression_guard::scan::{contains_double_slash, line_comment_terminator};
 use vize_l0::{Allocator, Span, String, cstr};
 use vize_l2::expr::{ExprRef, ForeignExpr, OpaqueExpr, OpaqueReason, VueFilterExpr};
 use vize_l2::provenance::ProvenanceSink;
@@ -32,7 +32,7 @@ fn trimmed_attribute<'a>(cx: &Cx<'a, impl ProvenanceSink>, text: &'a str) -> (&'
 fn trimmed_attribute_expression_text<'t>(allocator: &Allocator, text: &'t str) -> &'t str {
     let text = text.trim_start();
     let trimmed = text.trim_end();
-    if !trimmed.contains("//") {
+    if !contains_double_slash(trimmed.as_bytes()) {
         return trimmed;
     }
     let suffix = text.get(trimmed.len()..).unwrap_or_default();

@@ -286,6 +286,14 @@ pub fn line_comment_terminator(bytes: &[u8], start: usize) -> core::ops::Range<u
     end..end
 }
 
+/// Whether `bytes` holds `//` anywhere, found with a vectorized `/` search.
+/// Its cost does not depend on whether a caller inlines the generic substring
+/// searcher behind `str::contains("//")`.
+#[must_use]
+pub fn contains_double_slash(bytes: &[u8]) -> bool {
+    memchr::memchr_iter(b'/', bytes).any(|at| bytes.get(at + 1) == Some(&b'/'))
+}
+
 pub fn skip_line_comment(bytes: &[u8], start: usize) -> usize {
     line_comment_terminator(bytes, start).start
 }
