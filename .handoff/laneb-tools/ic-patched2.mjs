@@ -1,0 +1,409 @@
+#!/usr/bin/env node
+import { measurementToolchain } from "./measurement-toolchain.ts";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { reportOverBudgetHotspots } from "./instruction-hotspots.ts";
+import {
+  verifyRepositoryInstructionBudgets,
+  verifyRepositoryInstructionSource,
+} from "./instruction-methodology-transition.mjs";
+import {
+  levelInstructionSuites,
+  formatterInstructionSuites,
+  instructionSuiteSource,
+} from "./instruction-counts-suites.mjs";
+import {
+  baselineToml,
+  checkMeasurement,
+  fixtureDigest,
+  loadBudgets,
+  loadRegistry,
+  parseCallgrind,
+  parseIdentities,
+  ratchetBudgets,
+  reconcile,
+  validateMeasurement,
+  validateAllocatorSetup,
+  ALLOCATOR_PROTOCOL,
+  LIBC_DISPATCH,
+  GUEST_ENVIRONMENT,
+} from "./instruction-counts-lib.mjs";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const suites = levelInstructionSuites(root);
+
+function command(executable, args, options = {}) {
+  const child = spawnSync(executable, args, {
+    cwd: root,
+    encoding: "utf8",
+    maxBuffer: 128 * 1024 * 1024,
+    env: process.env,
+    ...options,
+  });
+  if (child.status !== 0) {
+    throw new Error(
+      `${executable} failed (${child.status ?? child.error}):\n${child.stderr ?? ""}`,
+    );
+  }
+  return child.stdout.trim();
+}
+
+function flag(args, name, fallback) {
+  const index = args.indexOf(name);
+  if (index < 0) return fallback;
+  assert.ok(args[index + 1] && !args[index + 1].startsWith("--"), `${name} requires a value`);
+  return path.resolve(args[index + 1]);
+}
+
+function readJson(file) {
+  return JSON.parse(fs.readFileSync(file, "utf8"));
+}
+function writeJson(file, value) {
+  fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function collect(out, registry, formatter, sfc) {
+  const selectedSuites = sfc
+    ? [["vize_atelier_sfc", "sfc_parse_instructions"]]
+    : formatter
+      ? formatterInstructionSuites()
+      : suites;
+  assert.equal(process.platform, "linux", "instruction collection requires Linux");
+  assert.equal(process.arch, "x64", "instruction collection requires x86_64");
+  assert.equal(process.env.GITHUB_ACTIONS, "true", "baseline collection requires GitHub Actions");
+  assert.ok(!fs.existsSync(out), `refusing to reuse measurement output directory ${out}`);
+  fs.mkdirSync(out, { recursive: true });
+  const toolchain = measurementToolchain(root);
+  assert.ok(
+    /^\d+\.\d+\.\d+$/.test(toolchain),
+    "repository Rust toolchain must be an exact version",
+  );
+  const rustc = command("rustc", [`+${toolchain}`, "--version"]);
+  assert.ok(
+    rustc.startsWith(`rustc ${toolchain} `),
+    "measurement must use the repository's pinned Rust",
+  );
+  verifyRepositoryInstructionBudgets({ methodology: { rustc } }, root);
+  const valgrind = command("valgrind", ["--version"]);
+  assert.equal(valgrind, "valgrind-3.22.0", "use the pinned Ubuntu 24.04 Valgrind version");
+  const report = {
+    schema_version: 1,
+    source_commit: command("git", ["rev-parse", "HEAD"]),
+    recorded_run: `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+    methodology: {
+      allocator: ALLOCATOR_PROTOCOL,
+      flags: "target-cpu=x86-64;instr-atstart=no;cache-sim=no;branch-sim=no",
+      fixture_digest: "input-identity-v2",
+      guest_context: "fixed-env-fixed-argv0-v1",
+      libc: command("getconf", ["GNU_LIBC_VERSION"]),
+      libc_dispatch: LIBC_DISPATCH,
+      profile: "ci-opt",
+      rustc,
+      target: "x86_64-unknown-linux-gnu",
+      valgrind,
+      window_protocol: "callgrind-client-call-boundary-v1",
+    },
+    runs: [],
+  };
+  writeJson(path.join(out, "environment.json"), {
+    run_attempt: Number(process.env.GITHUB_RUN_ATTEMPT),
+    workflow: process.env.GITHUB_WORKFLOW,
+    job: process.env.GITHUB_JOB,
+    guest_environment: GUEST_ENVIRONMENT,
+    uname: command("uname", ["-a"]),
+    cpu: fs.readFileSync("/proc/cpuinfo", "utf8"),
+    dpkg: command("dpkg-query", ["-W", "valgrind", "libc6"]),
+  });
+  // One optimized Cargo build, then three fresh executions of every suite.
+  // Never run Cargo or Criterion sampling inside Valgrind.
+  const cargoArgs = [
+    `+${toolchain}`,
+    "bench",
+    "--locked",
+    "--no-run",
+    "--profile",
+    "ci-opt",
+    "--features",
+    "davinci_harness/instruction-counts",
+    "--message-format=json",
+  ];
+  for (const pkg of new Set(selectedSuites.map(([pkg]) => pkg))) cargoArgs.push("-p", pkg);
+  for (const bench of new Set(selectedSuites.map(([, bench]) => bench)))
+    cargoArgs.push("--bench", bench);
+  const buildEnv = { ...process.env, RUSTFLAGS: "-C target-cpu=x86-64" };
+  const freshBuild = process.env.VIZE_INSTRUCTION_REBUILD === "1";
+  if (freshBuild) {
+    // Bootstrap cross-job proof must not reuse the same benchmark binaries.
+    // Clear only the harness package; Cargo rebuilds its benchmark dependents
+    // while retaining unrelated optimized dependencies in the sticky cache.
+    command("cargo", [`+${toolchain}`, "clean", "--profile", "ci-opt", "-p", "davinci_harness"]);
+  }
+  const build = command("cargo", cargoArgs, { env: buildEnv });
+  const artifacts = build
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => JSON.parse(line))
+    .filter(
+      (row) =>
+        row.reason === "compiler-artifact" && row.executable && row.target.kind.includes("bench"),
+    );
+  const binaries = selectedSuites.map(([pkg, bench]) => {
+    const source = instructionSuiteSource(root, [pkg, bench]);
+    const matches = artifacts.filter((row) => path.resolve(row.target.src_path) === source);
+    assert.equal(matches.length, 1, `missing or duplicate build artifact ${pkg}/${bench}`);
+    const artifact = matches[0];
+    if (freshBuild)
+      assert.equal(artifact.fresh, false, `${pkg}/${bench}: benchmark binary was reused`);
+    return { pkg, bench, source, executable: artifact.executable, fresh: artifact.fresh };
+  });
+  // Lane-B measurement branch only: disassemble selected functions.
+  {
+    const needles = [
+      "lower_children_guarded",
+      "element_core",
+      "SsrCodegenContext>::flush_push",
+      "decode_html_entities_inner",
+      "push_string_part_static",
+      "push_escaped",
+    ];
+    const dir = path.join(out, "disasm");
+    fs.mkdirSync(dir, { recursive: true });
+    for (const { pkg, bench, executable } of binaries) {
+      if (!["vize_atelier_dom", "vize_atelier_ssr"].includes(pkg)) continue;
+      const text = spawnSync("objdump", ["-d", "-C", "--no-show-raw-insn", executable], {
+        encoding: "utf8",
+        maxBuffer: 1024 * 1024 * 1024,
+      }).stdout;
+      const lines = [];
+      let keep = false;
+      for (const line of text.split("\n")) {
+        const head = /^[0-9a-f]+ <(.*)>:$/.exec(line);
+        if (head) {
+          keep = needles.some((needle) => head[1].includes(needle));
+          if (keep) lines.push("", head[1]);
+          continue;
+        }
+        if (keep && line.trim())
+          lines.push(line.replace(/[0-9a-f]{6,}/g, "ADDR").replace(/^\s*ADDR:\s*/, "").replace(/^\s*[0-9a-f]+:\s*/, ""));
+      }
+      fs.writeFileSync(path.join(dir, `${pkg}-${bench}.s`), lines.join("\n"));
+      // Where each ladder fixture's bytes sit in the file (file offset mod 64
+      // equals the virtual address mod 64 for a page-aligned segment).
+      const image = fs.readFileSync(executable);
+      const fixtureDir = path.join(root, "tools/benchmarks/crates/davinci_harness/fixtures");
+      const offsets = {};
+      for (const name of ["small", "medium", "large", "stress-deep", "stress-wide", "stress-interp"]) {
+        const bytes = fs.readFileSync(path.join(fixtureDir, `${name}.vue`));
+        const at = image.indexOf(bytes);
+        offsets[name] = at < 0 ? null : { offset: at, mod64: at % 64 };
+      }
+      fs.writeFileSync(path.join(dir, `${pkg}-${bench}.fixtures.json`), JSON.stringify(offsets, null, 2));
+    }
+  }
+  writeJson(
+    path.join(out, "binaries.json"),
+    binaries.map(({ pkg, bench, executable, fresh }) => ({
+      pkg,
+      bench,
+      fresh,
+      sha256: command("sha256sum", [executable]).split(" ")[0],
+    })),
+  );
+  // Variable CI environment lengths change guest stack addresses. libc copy
+  // routines branch on address aliasing even with the same binary and bytes.
+  // Keep both environment and argv0 fixed, including across target renames.
+  // Links stay outside the uploaded artifact so binaries do not bloat it.
+  const probeDir = path.join(
+    path.dirname(out),
+    formatter ? "formatter-instruction-probes" : "instruction-probes",
+  );
+  assert.ok(!fs.existsSync(probeDir), `refusing to reuse guest executable directory ${probeDir}`);
+  fs.mkdirSync(probeDir);
+  const probes = binaries.map((suite, index) => {
+    const executable = path.join(probeDir, `probe-${String(index).padStart(2, "0")}`);
+    fs.symlinkSync(suite.executable, executable);
+    return { ...suite, executable };
+  });
+  for (let run = 1; run <= 3; run += 1) {
+    const rows = {};
+    const runDir = path.join(out, `run-${run}`);
+    fs.mkdirSync(runDir);
+    for (const suite of probes) {
+      const prefix = path.join(runDir, `${suite.pkg}-${suite.bench}.callgrind`);
+      const measured = spawnSync(
+        "valgrind",
+        [
+          "--tool=callgrind",
+          "--instr-atstart=no",
+          "--cache-sim=no",
+          "--branch-sim=no",
+          `--callgrind-out-file=${prefix}`,
+          "--error-exitcode=97",
+          suite.executable,
+        ],
+        {
+          cwd: root,
+          encoding: "utf8",
+          maxBuffer: 64 * 1024 * 1024,
+          env: GUEST_ENVIRONMENT,
+        },
+      );
+      fs.writeFileSync(`${prefix}.stderr`, measured.stderr ?? "");
+      fs.writeFileSync(`${prefix}.stdout`, measured.stdout ?? "");
+      assert.equal(
+        measured.status,
+        0,
+        `Valgrind failed ${suite.pkg}/${suite.bench}: ${measured.stderr}`,
+      );
+      validateAllocatorSetup(measured.stderr);
+      const identities = parseIdentities(measured.stderr);
+      const dumps = new Map();
+      for (const file of fs
+        .readdirSync(runDir)
+        .filter(
+          (file) =>
+            file === path.basename(prefix) ||
+            (file.startsWith(`${path.basename(prefix)}.`) && /\.\d+$/.test(file)),
+        )) {
+        const dump = parseCallgrind(fs.readFileSync(path.join(runDir, file), "utf8"));
+        if (!dump) continue;
+        assert.ok(!dumps.has(dump.bench_id), `duplicate dump ${dump.bench_id}`);
+        dumps.set(dump.bench_id, dump.instructions);
+      }
+      reconcile(
+        new Set(dumps.keys()),
+        new Set(identities.keys()),
+        `${suite.pkg}/${suite.bench} dumps`,
+      );
+      for (const [id, identity] of identities) {
+        assert.ok(!Object.hasOwn(rows, id), `duplicate benchmark ${id}`);
+        rows[id] = {
+          fixture: identity.fixture,
+          fixture_sha256: fixtureDigest(root, identity.fixture, suite.source),
+          instructions: dumps.get(id),
+          window: identity.window,
+        };
+      }
+      console.log(
+        `instruction-counts: run=${run} suite=${suite.pkg}/${suite.bench} measured=${dumps.size}`,
+      );
+    }
+    reconcile(new Set(Object.keys(rows)), registry, `run ${run}`);
+    report.runs.push(rows);
+    writeJson(path.join(out, `run-${run}.json`), rows);
+  }
+  // Publish evidence even when deterministic equality fails, for diagnosis.
+  writeJson(path.join(out, "measurement.json"), report);
+  validateMeasurement(report, registry);
+  fs.writeFileSync(path.join(out, "measured-budgets.toml"), baselineToml(report));
+  console.log(`instruction-counts: ${registry.size} benchmarks identical across three executions`);
+}
+
+try {
+  const args = process.argv.slice(2);
+  const modes = args.filter((arg) =>
+    ["--collect", "--check", "--baseline", "--verify-budgets"].includes(arg),
+  );
+  assert.equal(modes.length, 1, "select exactly one --collect/--check/--baseline/--verify-budgets");
+  const allowed = new Set([
+    "--collect",
+    "--check",
+    "--baseline",
+    "--verify-budgets",
+    "--out",
+    "--measurement",
+    "--budgets",
+    "--base-budgets",
+    "--registry",
+    "--formatter",
+    "--sfc-parsing",
+  ]);
+  for (let index = 0; index < args.length; index += 1) {
+    assert.ok(allowed.has(args[index]), `unknown option ${args[index]}`);
+    if (
+      ![
+        "--collect",
+        "--check",
+        "--baseline",
+        "--verify-budgets",
+        "--formatter",
+        "--sfc-parsing",
+      ].includes(args[index])
+    )
+      index += 1;
+  }
+  const formatter = args.includes("--formatter");
+  const sfc = args.includes("--sfc-parsing");
+  assert.ok(
+    !sfc || (!formatter && modes[0] === "--collect"),
+    "--sfc-parsing requires --collect without --formatter",
+  );
+  const plan = path.join(root, "docs/davinci/plan");
+  const budgetFile = path.join(
+    plan,
+    formatter ? "formatter-instruction-budgets.toml" : "instruction-budgets.toml",
+  );
+  const output = path.join(
+    root,
+    sfc
+      ? "target/sfc-instruction-counts"
+      : formatter
+        ? "target/formatter-instruction-counts"
+        : "target/instruction-counts",
+  );
+  const registry = loadRegistry(
+    flag(
+      args,
+      "--registry",
+      path.join(
+        plan,
+        sfc
+          ? "sfc-instruction-registry.toml"
+          : formatter
+            ? "formatter-instruction-registry.toml"
+            : "budgets.toml",
+      ),
+    ),
+  );
+  if (modes[0] === "--collect") {
+    collect(flag(args, "--out", output), registry, formatter, sfc);
+  } else if (modes[0] === "--verify-budgets") {
+    const budgets = loadBudgets(flag(args, "--budgets", budgetFile), registry);
+    verifyRepositoryInstructionBudgets(budgets, root);
+    const base = flag(args, "--base-budgets");
+    if (base) ratchetBudgets(budgets, loadBudgets(base));
+    console.log(`instruction-counts: ${registry.size} pinned ceilings and ratchet verified`);
+  } else {
+    const report = validateMeasurement(
+      readJson(flag(args, "--measurement", path.join(output, "measurement.json"))),
+      registry,
+    );
+    if (modes[0] === "--baseline") {
+      verifyRepositoryInstructionSource(report, root);
+      fs.writeFileSync(flag(args, "--out", budgetFile), baselineToml(report));
+    } else {
+      const budgets = loadBudgets(flag(args, "--budgets", budgetFile), registry);
+      verifyRepositoryInstructionSource(report, root);
+      const base = flag(args, "--base-budgets");
+      // The base can have fewer rows when a new benchmark is introduced.
+      if (base) ratchetBudgets(budgets, loadBudgets(base));
+      try {
+        reportOverBudgetHotspots(
+          flag(args, "--measurement", path.join(output, "measurement.json")),
+          report,
+          budgets,
+        );
+      } catch (diagnostic) {
+        console.error(`instruction-hotspots: unavailable: ${diagnostic.message}`);
+      }
+      checkMeasurement(report, budgets);
+      console.log(`instruction-counts: ${registry.size} ceilings hold`);
+    }
+  }
+} catch (error) {
+  console.error(`instruction-counts: ${error.message}`);
+  process.exitCode = 1;
+}
