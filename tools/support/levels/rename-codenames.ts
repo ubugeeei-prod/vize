@@ -40,10 +40,11 @@ const parsedCapture =
  * raw git-reader harness, whose body digests are of past bytes), and the L2 dump tests that pin
  * the historical v1 wire headers byte for byte; and the literal listing sources (empty-vue-star,
  * misskey registry, javascript-sfc source context and its callers) that list trees of past revisions,
- * and the instance-globals source-packet provenance captured from past runs.
+ * the instance-globals source-packet provenance captured from past runs, and the product fix-history
+ * ledgers, which list the paths each past commit touched.
  */
 const pinnedTrees =
-  /^(?:editors\/vscode\/test\/css-hover-source-custody\.json|tests\/performance\/support\/warm-type-backed-(?:(?:path|timing)-host(?:-manifest\.json|\.ts)|git-reader-harness\.ts)|tests\/tooling\/warm-type-backed-(?:path|timing)-host\.test\.ts|levels\/vize_l2\/tests\/dump_(?:protocol|owner_names)\.rs|tools\/support\/compat\/github\/(?:empty-vue-star-listing-(?:source|part-\d+)|misskey-registry-part-\d+|javascript-sfc-source-context(?:-\d+)?)\.json|tests\/_fixtures\/ci\/javascript-sfc-source-callers\.json|tests\/fixtures\/typechecker\/undeclared-instance-globals-10617\/source-packets-[^/]+-provenance\.json)$/u;
+  /^(?:editors\/vscode\/test\/css-hover-source-custody\.json|tests\/performance\/support\/warm-type-backed-(?:(?:path|timing)-host(?:-manifest\.json|\.ts)|git-reader-harness\.ts)|tests\/tooling\/warm-type-backed-(?:path|timing)-host\.test\.ts|levels\/vize_l2\/tests\/dump_(?:protocol|owner_names)\.rs|tools\/support\/compat\/github\/(?:empty-vue-star-listing-(?:source|part-\d+)|misskey-registry-part-\d+|javascript-sfc-source-context(?:-\d+)?)\.json|tests\/_fixtures\/ci\/javascript-sfc-source-callers\.json|tests\/fixtures\/typechecker\/undeclared-instance-globals-10617\/source-packets-[^/]+-provenance\.json|docs\/davinci\/plan\/[a-z-]+-fix-history[a-z-]*\.(?:tsv|json))$/u;
 /**
  * Frozen copies of past files are captures too: a source or config file saved as `.txt` or
  * `.fixture`, and the frozen-source and source-custody trees that pin such copies.
@@ -485,7 +486,7 @@ const gitBlob = (bytes: Buffer) =>
  * body custody, frozen predecessors); re-pinning those breaks them, so a holder is listed here
  * only when its test reads the current file.
  */
-const currentPins: RegExp = /(?!)/u;
+const currentPins = /^docs\/davinci\/plan\/compiler-fix-history-index\.json$/u;
 
 /**
  * Re-records the whole-file digests (SHA-256 and git blob ids) that name a file the rewrite
@@ -494,9 +495,7 @@ const currentPins: RegExp = /(?!)/u;
  */
 function repin(cwd: string): string[] {
   const pinned = new Set<string>();
-  const holders = contentTargets(cwd).filter(
-    (file) => !keptHistory(file) && currentPins.test(file),
-  );
+  const holders = contentTargets(cwd).filter((file) => currentPins.test(file));
   const last = new Map<string, readonly string[]>();
   for (let round = 0; round < 8; round++) {
     const replacements = new Map<string, string>();
