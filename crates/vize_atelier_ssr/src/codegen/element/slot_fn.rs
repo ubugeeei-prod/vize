@@ -12,7 +12,7 @@ use super::{
     extract_destructure_params,
 };
 
-use vize_atelier_core::ForNode;
+use vize_atelier_core::{DirectiveNode, ExpressionNode, ForNode};
 
 impl<'a> SsrCodegenContext<'a> {
     pub(super) fn process_component_slot_property<'node>(
@@ -401,4 +401,32 @@ pub(super) fn static_slot_name(dir: &vize_atelier_core::DirectiveNode<'_>) -> Op
         name.push_str(modifier.content);
     }
     Some(name)
+}
+
+impl<'a> SsrCodegenContext<'a> {
+    /// The slot-name expression for a `createSlots` entry: a quoted literal for
+    /// static names, or the raw bound expression for dynamic `#[name]` slots.
+    pub(super) fn slot_entry_name(&mut self, dir: &DirectiveNode<'a>) -> String {
+        // A static name without `.segment`s, nearly every slot, is quoted
+        // straight from the argument instead of from a joined copy.
+        if let Some(ExpressionNode::Simple(arg)) = &dir.arg
+            && arg.is_static
+            && dir.modifiers.is_empty()
+        {
+            return quoted_js_string(arg.content);
+        }
+        if let Some(name) = static_slot_name(dir) {
+            return quoted_js_string(&name);
+        }
+        match &dir.arg {
+            Some(arg) => {
+                // The dynamic slot name often references a `v-for` callback alias
+                // (`#[name]`), which is a local binding rather than a `_ctx.`
+                // member, so strip the prefix for any in-scope scoped param.
+                let raw = self.dynamic_arg_to_string(arg);
+                self.strip_ctx_for_scoped_params(&raw)
+            }
+            None => quoted_js_string("default"),
+        }
+    }
 }
