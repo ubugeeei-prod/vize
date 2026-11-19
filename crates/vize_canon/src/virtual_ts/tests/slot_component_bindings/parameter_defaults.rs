@@ -81,6 +81,11 @@ fn property_default_syntax_stays_inside_the_binding_pattern() {
             Some("{}"),
         ),
         (
+            "{ index = ++ /[}]/.lastIndex, editor = fallback } = {}",
+            "{ index = ++ /[}]/.lastIndex, editor = fallback }",
+            Some("{}"),
+        ),
+        (
             "{ flag = count < 1 } = {}",
             "{ flag = count < 1 }",
             Some("{}"),

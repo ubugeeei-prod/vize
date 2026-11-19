@@ -29,7 +29,10 @@ fn can_start_regex(source: &str, at: usize) -> bool {
         return true;
     };
     if prefix.ends_with("++") || prefix.ends_with("--") {
-        return false;
+        let update_at = prefix.len() - 2;
+        if !can_start_regex(prefix, update_at) {
+            return false;
+        }
     }
     if matches!(
         last,
@@ -247,6 +250,12 @@ mod tests {
             (
                 "{ ratio = count++ / divisor } = {}",
                 "{ ratio = count++ / divisor }",
+                None,
+                Some("{}"),
+            ),
+            (
+                "{ index = ++ /[}]/.lastIndex, editor = fallback } = {}",
+                "{ index = ++ /[}]/.lastIndex, editor = fallback }",
                 None,
                 Some("{}"),
             ),

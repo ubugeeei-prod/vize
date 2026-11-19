@@ -278,8 +278,13 @@ pub(super) fn generate_v_slot_scope(
                 );
             }
             if data.prop_names.is_empty() {
-                // Simple identifier (no destructuring)
-                vize_l0::emit_ts!(ts, "{inner_indent}void {binding_pattern};\n");
+                // A retained complex pattern can have no extracted names when
+                // its defaults exceed the binding extractor. Re-emitting that
+                // pattern as an expression would turn destructuring defaults
+                // into an invalid object literal.
+                if oxc_syntax::identifier::is_identifier_name(binding_pattern) {
+                    vize_l0::emit_ts!(ts, "{inner_indent}void {binding_pattern};\n");
+                }
             } else {
                 // Destructured: void each extracted prop name
                 for prop_name in data.prop_names.iter() {
@@ -393,7 +398,9 @@ pub(super) fn generate_v_slot_props_scope(
         |ts, _| {
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {
-                vize_l0::emit_ts!(ts, "{inner_indent}void {binding_pattern};\n");
+                if oxc_syntax::identifier::is_identifier_name(binding_pattern) {
+                    vize_l0::emit_ts!(ts, "{inner_indent}void {binding_pattern};\n");
+                }
             } else {
                 for prop_name in data.prop_names.iter() {
                     vize_l0::emit_ts!(ts, "{inner_indent}void {prop_name};\n");
