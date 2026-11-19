@@ -253,6 +253,26 @@ const nativeBuildExemptTests = new Set([
   "tests/tooling/vscode-typescript-vue-plugin-types.test.ts",
 ]);
 const topLevelOnly = (reference) => !reference.replace(/\/[*/]*$/, "").includes("/");
+const globReference = (reference) => /[*?{}[\]]/u.test(reference);
+const namesFile = (reference) => /\.[A-Za-z0-9]+$/u.test(reference.split("/").at(-1) ?? "");
+// Third-party sources reached through a relative import (a vendored compiler,
+// a package entry) never encode which repository paths a test reads.
+const thirdPartySource = (member) => member.split("/").includes("node_modules");
+// Task configuration modules are data: their globs and directories describe
+// task inputs and commands, not files their importers read. Exact file names
+// in them still select.
+const configurationData = (member) => member.startsWith("tools/config/");
+
+/** Repository path references that can show what a closure member reads (#6830). */
+export function memberReferences(member, source, importers) {
+  if (thirdPartySource(member)) return [];
+  const found = proseReferences(source);
+  if (configurationData(member))
+    return found.filter((reference) => !globReference(reference) && namesFile(reference));
+  return importers > SHARED_HELPER_IMPORTERS
+    ? found.filter((reference) => !topLevelOnly(reference) && !globReference(reference))
+    : found;
+}
 
 export function planToolingTests(
   paths,
@@ -277,13 +297,8 @@ export function planToolingTests(
   const referenceCache = new Map();
   const references = (member) => {
     if (!referenceCache.has(member)) {
-      const found = proseReferences(readFileSync(join(cwd, member), "utf8"));
-      referenceCache.set(
-        member,
-        (importers.get(member) ?? 0) > SHARED_HELPER_IMPORTERS
-          ? found.filter((reference) => !topLevelOnly(reference))
-          : found,
-      );
+      const source = thirdPartySource(member) ? "" : readFileSync(join(cwd, member), "utf8");
+      referenceCache.set(member, memberReferences(member, source, importers.get(member) ?? 0));
     }
     return referenceCache.get(member);
   };
