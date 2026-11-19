@@ -28,6 +28,9 @@ fn can_start_regex(source: &str, at: usize) -> bool {
     let Some(last) = prefix.chars().next_back() else {
         return true;
     };
+    if prefix.ends_with("++") || prefix.ends_with("--") {
+        return false;
+    }
     if matches!(
         last,
         '(' | '['
@@ -240,6 +243,12 @@ mod tests {
                 "{ ratio = total / count, editor = fallback }",
                 None,
                 None,
+            ),
+            (
+                "{ ratio = count++ / divisor } = {}",
+                "{ ratio = count++ / divisor }",
+                None,
+                Some("{}"),
             ),
             (
                 "{ flag = count > 0, editor = fallback }",

@@ -76,6 +76,11 @@ fn property_default_syntax_stays_inside_the_binding_pattern() {
             None,
         ),
         (
+            "{ ratio = count++ / divisor } = {}",
+            "{ ratio = count++ / divisor }",
+            Some("{}"),
+        ),
+        (
             "{ flag = count < 1 } = {}",
             "{ flag = count < 1 }",
             Some("{}"),
