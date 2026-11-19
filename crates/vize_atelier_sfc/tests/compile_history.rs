@@ -385,9 +385,19 @@ fn observe(case: &Case, project: Option<&Path>) -> Observation {
 }
 
 /// Write the case's project files and its own source into a fresh directory.
+/// A project without its own `tsconfig.json` gets an empty one, so config
+/// discovery stops at the project root instead of probing the machine's
+/// temporary-directory ancestors.
 fn write_project(case: &Case) -> tempfile::TempDir {
     let project = tempfile::tempdir().expect("project directory");
-    let files = case.files.iter().chain([(&case.filename, &case.source)]);
+    let tsconfig: (String, String) = ("tsconfig.json".into(), "{}\n".into());
+    let default_config =
+        (!case.files.contains_key("tsconfig.json")).then_some((&tsconfig.0, &tsconfig.1));
+    let files = case
+        .files
+        .iter()
+        .chain(default_config)
+        .chain([(&case.filename, &case.source)]);
     for (relative, text) in files {
         let path = project.path().join(relative.as_str());
         if let Some(parent) = path.parent() {

@@ -14242,51 +14242,6 @@
     "errors": 0
   },
   {
-    "id": "c6-scoped-local-type-model-and-props-a8abdd4",
-    "history": "a8abdd41a35ac63c38f875a9787923e966fc4a1c",
-    "source": "<script setup lang=\"ts\">\ntype Bound = string; type Flags = 'trim'; type T = 'private'; const model = defineModel<string, Flags>(); defineProps<{ value: T }>();\n</script>\n<template><div /></template>\n",
-    "filename": "History.vue",
-    "entry": "sfc",
-    "target": "dom",
-    "errors": 0
-  },
-  {
-    "id": "c6-aliased-imported-type-props-a8abdd4",
-    "history": "a8abdd41a35ac63c38f875a9787923e966fc4a1c",
-    "source": "<script setup lang=\"ts\">\nimport type { Public } from './types'; type Helper = boolean; defineProps<{ value: Public; sibling: boolean; literal: 'Public' }>(); const item: Public = null as Public; defineExpose({ item });\n</script>\n<template><div /></template>\n",
-    "filename": "History.vue",
-    "entry": "sfc",
-    "target": "dom",
-    "files": {
-      "types.ts": "export type Public = { value: string }\n"
-    },
-    "errors": 0
-  },
-  {
-    "id": "c6-inline-import-type-props-a8abdd4",
-    "history": "a8abdd41a35ac63c38f875a9787923e966fc4a1c",
-    "source": "<script setup lang=\"ts\">\ndefineProps<{ value: import('./types').Public; sibling: boolean }>();\n</script>\n<template><div /></template>\n",
-    "filename": "History.vue",
-    "entry": "sfc",
-    "target": "dom",
-    "files": {
-      "types.ts": "export type Public = { value: string }\n"
-    },
-    "errors": 0
-  },
-  {
-    "id": "c6-aliased-imported-whole-props-a8abdd4",
-    "history": "a8abdd41a35ac63c38f875a9787923e966fc4a1c",
-    "source": "<script setup lang=\"ts\">\nimport type { Public } from './types'; defineProps<Public>();\n</script>\n<template><div /></template>\n",
-    "filename": "History.vue",
-    "entry": "sfc",
-    "target": "dom",
-    "files": {
-      "types.ts": "export type Public = { value: string }\n"
-    },
-    "errors": 0
-  },
-  {
     "id": "c6-merged-local-interface-props-64a1655",
     "history": "64a1655088ef22e00e60189088eb602769915c6d",
     "source": "<script setup lang=\"ts\">\ninterface Public<T = string> { first: T }\ninterface Public<T = string> { second: number }\ndefineProps<Public>()\n</script>\n<template><div /></template>\n",
@@ -14881,6 +14836,51 @@
     "filename": "History.vue",
     "entry": "template",
     "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c6-scoped-local-type-model-and-props-a8abdd4",
+    "history": "a8abdd41a35ac63c38f875a9787923e966fc4a1c",
+    "source": "<script setup lang=\"ts\">\ntype Bound = string; type Flags = 'trim'; type T = 'private'; const model = defineModel<string, Flags>(); defineProps<{ value: T }>();\n</script>\n<template><div /></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c6-imported-type-props-a8abdd4",
+    "history": "a8abdd41a35ac63c38f875a9787923e966fc4a1c",
+    "source": "<script setup lang=\"ts\">\nimport type { Public } from './types'; type Helper = boolean; defineProps<{ value: Public; sibling: boolean; literal: 'Public' }>(); const item: Public = null as Public; defineExpose({ item });\n</script>\n<template><div /></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "files": {
+      "types.ts": "export type Public = { value: string }\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c6-inline-import-type-props-a8abdd4",
+    "history": "a8abdd41a35ac63c38f875a9787923e966fc4a1c",
+    "source": "<script setup lang=\"ts\">\ndefineProps<{ value: import('./types').Public; sibling: boolean }>();\n</script>\n<template><div /></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "files": {
+      "types.ts": "export type Public = { value: string }\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c6-imported-whole-props-a8abdd4",
+    "history": "a8abdd41a35ac63c38f875a9787923e966fc4a1c",
+    "source": "<script setup lang=\"ts\">\nimport type { Public } from './types'; defineProps<Public>();\n</script>\n<template><div /></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "files": {
+      "types.ts": "export type Public = { value: string }\n"
+    },
     "errors": 0
   }
 ]

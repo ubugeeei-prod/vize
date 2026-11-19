@@ -3,7 +3,7 @@ source: crates/vize_atelier_sfc/tests/compile_history.rs
 expression: first_bytes
 ---
 Case {
-    id: "c6-aliased-imported-whole-props-a8abdd4",
+    id: "c6-imported-whole-props-a8abdd4",
     history: "a8abdd41a35ac63c38f875a9787923e966fc4a1c",
     source: "<script setup lang=\"ts\">\nimport type { Public } from './types'; defineProps<Public>();\n</script>\n<template><div /></template>\n",
     filename: "History.vue",
@@ -49,10 +49,6 @@ Sfc(
             dependencies: [
                 "$PROJECT/tsconfig.json",
                 "$PROJECT/types.ts",
-                "/private/tmp/nix-shell.1INRuc/tsconfig.json",
-                "/private/tmp/tsconfig.json",
-                "/private/tsconfig.json",
-                "/tsconfig.json",
             ],
         },
     ),

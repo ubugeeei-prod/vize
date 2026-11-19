@@ -50,10 +50,6 @@ Sfc(
             dependencies: [
                 "$PROJECT/api.ts",
                 "$PROJECT/tsconfig.json",
-                "/private/tmp/nix-shell.1INRuc/tsconfig.json",
-                "/private/tmp/tsconfig.json",
-                "/private/tsconfig.json",
-                "/tsconfig.json",
             ],
         },
     ),
