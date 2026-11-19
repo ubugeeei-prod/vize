@@ -389,24 +389,6 @@ impl<'a> SsrCodegenContext<'a> {
         self.push("}");
     }
 
-    /// The slot-name expression for a `createSlots` entry: a quoted literal for
-    /// static names, or the raw bound expression for dynamic `#[name]` slots.
-    pub(super) fn slot_entry_name(&mut self, dir: &DirectiveNode<'a>) -> String {
-        if let Some(name) = super::slot_fn::static_slot_name(dir) {
-            return quoted_js_string(&name);
-        }
-        match &dir.arg {
-            Some(arg) => {
-                // The dynamic slot name often references a `v-for` callback alias
-                // (`#[name]`), which is a local binding rather than a `_ctx.`
-                // member, so strip the prefix for any in-scope scoped param.
-                let raw = self.dynamic_arg_to_string(arg);
-                self.strip_ctx_for_scoped_params(&raw)
-            }
-            None => quoted_js_string("default"),
-        }
-    }
-
     pub(super) fn process_component_slot_children<'node>(
         &mut self,
         children: &ComponentSlotChildren<'node, 'a>,

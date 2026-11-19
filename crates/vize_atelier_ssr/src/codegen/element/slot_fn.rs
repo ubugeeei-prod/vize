@@ -12,7 +12,7 @@ use super::{
     extract_destructure_params,
 };
 
-use vize_atelier_core::ForNode;
+use vize_atelier_core::{DirectiveNode, ExpressionNode, ForNode};
 
 impl<'a> SsrCodegenContext<'a> {
     pub(super) fn process_component_slot_property<'node>(
@@ -395,10 +395,42 @@ pub(super) fn static_slot_name(dir: &vize_atelier_core::DirectiveNode<'_>) -> Op
     if !arg.is_static {
         return None;
     }
-    let mut name = String::new(arg.content);
+    Some(joined_slot_name(arg.content, dir))
+}
+
+/// `head` joined with every `.segment` the parser stored as a modifier.
+#[inline(never)]
+fn joined_slot_name(head: &str, dir: &DirectiveNode<'_>) -> String {
+    let mut name = String::new(head);
     for modifier in dir.modifiers.iter() {
         name.push('.');
         name.push_str(modifier.content);
     }
-    Some(name)
+    name
+}
+
+impl<'a> SsrCodegenContext<'a> {
+    /// The slot-name expression for a `createSlots` entry: a quoted literal for
+    /// static names, or the raw bound expression for dynamic `#[name]` slots.
+    pub(super) fn slot_entry_name(&mut self, dir: &DirectiveNode<'a>) -> String {
+        match &dir.arg {
+            // A name without `.segment`s, nearly every slot, is quoted straight
+            // from the argument instead of from a joined copy.
+            Some(ExpressionNode::Simple(arg)) if arg.is_static => {
+                if dir.modifiers.is_empty() {
+                    quoted_js_string(arg.content)
+                } else {
+                    quoted_js_string(&joined_slot_name(arg.content, dir))
+                }
+            }
+            Some(arg) => {
+                // The dynamic slot name often references a `v-for` callback alias
+                // (`#[name]`), which is a local binding rather than a `_ctx.`
+                // member, so strip the prefix for any in-scope scoped param.
+                let raw = self.dynamic_arg_to_string(arg);
+                self.strip_ctx_for_scoped_params(&raw)
+            }
+            None => quoted_js_string("default"),
+        }
+    }
 }
