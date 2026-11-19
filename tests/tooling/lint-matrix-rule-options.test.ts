@@ -10,6 +10,7 @@ import {
   matrixVueVersion,
   writeMatrixConfig,
 } from "../../tools/support/fixtures/lint_divergence/matrix_rule_options.ts";
+import { toolArgs } from "../../tools/support/compat/fixtures/tool-matrix-command.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const ruleMap = JSON.parse(
@@ -30,6 +31,24 @@ test("every matrix override is documented and keeps Patina's default tested", ()
   );
   fs.rmSync(path.dirname(config), { recursive: true, force: true });
   assert.equal(writeMatrixConfig([], null), null);
+});
+
+test("the core-tool linter accepts the same generated matrix config", () => {
+  assert.deepEqual(
+    toolArgs({ vueGlobs: ["src/**/*.vue"] }, "linter", "unused", {
+      linterConfigPath: "/tmp/vize-lint-matrix.config.mjs",
+    }),
+    [
+      "lint",
+      "src/**/*.vue",
+      "--format",
+      "json",
+      "--preset",
+      "all",
+      "--config",
+      "/tmp/vize-lint-matrix.config.mjs",
+    ],
+  );
 });
 
 test("a Vue 2 or 2.7 project is linted with the dialect its packages pin", () => {

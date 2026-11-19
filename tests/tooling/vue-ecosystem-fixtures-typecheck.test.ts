@@ -20,7 +20,11 @@ interface TypecheckPerformance {
   packageManager: "npm" | "pnpm" | "yarn";
   packageManagerVersion: string;
   lockfile: "pnpm-lock.yaml" | "yarn.lock";
-  baseline?: { tsconfig: string; prepare?: string[] };
+  baseline?: {
+    tsconfig: string;
+    prepare?: string[];
+    excludedInputs?: Array<{ path: string; reason: string; sha256: string }>;
+  };
   hangTimeoutMs: number;
   corpusGlobs?: string[];
   maxFalsePositiveRatio: number;
@@ -121,6 +125,21 @@ test("release typechecker baselines have enough runner budget", () => {
     assert.equal(project?.typecheckPerformance?.enabled, true, `${id} should be enabled`);
     assert.equal(project?.typecheckPerformance?.hangTimeoutMs, timeoutMs, `${id} timeout`);
   }
+});
+
+test("Hoppscotch baseline keeps nested builds on the pinned package manager", () => {
+  const registry = readRegistry();
+  const prepare = registry.projects.find((project) => project.id === "hoppscotch")
+    ?.typecheckPerformance?.baseline?.prepare;
+
+  assert.deepEqual(prepare, [
+    ["pnpm", "--filter", "@hoppscotch/codemirror-lang-graphql", "prepare"],
+    ["pnpm", "--filter", "@hoppscotch/data", "run", "build:code"],
+    ["pnpm", "--filter", "@hoppscotch/data", "run", "build:decl"],
+    ["pnpm", "--filter", "@hoppscotch/js-sandbox", "build"],
+    ["pnpm", "--filter", "@hoppscotch/kernel", "run", "build:code"],
+    ["pnpm", "--filter", "@hoppscotch/kernel", "run", "build:decl"],
+  ]);
 });
 
 test("PrimeVue Volt is measured under the app tsconfig, sharing the PrimeVue fixture", () => {

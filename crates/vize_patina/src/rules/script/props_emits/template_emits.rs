@@ -15,8 +15,9 @@
 //! hide a report. Recognized call forms mirror the script-side collector — a
 //! whole-identifier callee (`emit(...)`, never `bus.emit(...)`) invoked with a
 //! string-literal first argument — plus the template-only `$emit` helper,
-//! which dispatches the same declared events. Dynamic event names
-//! (`emit(name)`) record nothing, matching the script-side treatment.
+//! which dispatches the same declared events. A dynamic event name
+//! (`emit(name)`) records nothing but escapes the analysis, matching the
+//! script-side treatment.
 
 use vize_l0::{CompactString, FxHashSet};
 
@@ -30,6 +31,121 @@ pub(super) fn collect_template_emitted_events(
 ) {
     collect_callee_events(template, binding, used);
     collect_callee_events(template, "$emit", used);
+}
+
+/// Whether a template expression uses `binding` (or `$emit`) as a value rather
+/// than calling it, as `useEmitAsProps(emit)` or `:emit="$emit"` does. The
+/// function then emits events this scan cannot see, as eslint-plugin-vue
+/// assumes when the emit function is passed on. Only directive values and
+/// interpolations are read, so prose that mentions the name never counts.
+pub(super) fn template_emit_escapes(template: &str, binding: &str) -> bool {
+    expressions(template).any(|(handler, expression)| {
+        [binding, "$emit"]
+            .into_iter()
+            .filter(|name| !name.is_empty())
+            // `@click="emit"` calls it with the native event, which names no
+            // declared event.
+            .filter(|name| !(handler && expression.trim() == *name))
+            .any(|name| value_reference(expression, name) || computed_call(expression, name))
+    })
+}
+
+/// Whether `expression` calls `callee` with a first argument that is not a
+/// quoted literal, so the emitted name is computed.
+fn computed_call(expression: &str, callee: &str) -> bool {
+    let bytes = expression.as_bytes();
+    expression.match_indices(callee).any(|(index, _)| {
+        let before = index.checked_sub(1).and_then(|i| bytes.get(i).copied());
+        let after = index + callee.len();
+        if before.is_some_and(|byte| is_identifier_byte(byte) || byte == b'.')
+            || bytes.get(after).copied().is_some_and(is_identifier_byte)
+        {
+            return false;
+        }
+        let mut cursor = skip_ascii_whitespace(bytes, after);
+        if bytes.get(cursor) == Some(&b'?') && bytes.get(cursor + 1) == Some(&b'.') {
+            cursor = skip_ascii_whitespace(bytes, cursor + 2);
+        }
+        if bytes.get(cursor) != Some(&b'(') {
+            return false;
+        }
+        let argument = skip_ascii_whitespace(bytes, cursor + 1);
+        !matches!(bytes.get(argument), None | Some(b')' | b'\'' | b'"'))
+    })
+}
+
+/// Directive values (`:x`, `@x`, `#x`, `v-*`) and `{{ }}` interpolations,
+/// each with whether it is a `v-on` handler.
+fn expressions(template: &str) -> impl Iterator<Item = (bool, &str)> {
+    let bytes = template.as_bytes();
+    // The first `needle` byte at or after `from`, or the end of the template.
+    let find = move |from: usize, needle: &[u8]| {
+        (from..bytes.len())
+            .find(|&at| bytes.get(at..at + needle.len()) == Some(needle))
+            .unwrap_or(bytes.len())
+    };
+    let mut cursor = 0;
+    std::iter::from_fn(move || {
+        while cursor < bytes.len() {
+            if bytes.get(cursor..cursor + 2) == Some(b"{{") {
+                let start = cursor + 2;
+                let end = find(start, b"}}");
+                cursor = end + 2;
+                return template.get(start..end).map(|text| (false, text));
+            }
+            let directive = matches!(bytes.get(cursor), Some(b':' | b'@' | b'#'))
+                || bytes.get(cursor..cursor + 2) == Some(b"v-");
+            let after_space = cursor
+                .checked_sub(1)
+                .and_then(|at| bytes.get(at))
+                .is_some_and(u8::is_ascii_whitespace);
+            if directive && after_space {
+                let directive_start = cursor;
+                let mut equals = cursor;
+                while bytes
+                    .get(equals)
+                    .is_some_and(|byte| !matches!(byte, b'=' | b'>') && !byte.is_ascii_whitespace())
+                {
+                    equals += 1;
+                }
+                let open = skip_ascii_whitespace(bytes, equals + 1);
+                if bytes.get(equals) == Some(&b'=')
+                    && let Some(&quote @ (b'"' | b'\'')) = bytes.get(open)
+                {
+                    let start = open + 1;
+                    let end = find(start, &[quote]);
+                    cursor = end + 1;
+                    let handler = bytes.get(directive_start) == Some(&b'@')
+                        || bytes.get(directive_start..directive_start + 5) == Some(b"v-on:");
+                    return template.get(start..end).map(|text| (handler, text));
+                }
+                cursor = equals.max(cursor + 1);
+                continue;
+            }
+            cursor += 1;
+        }
+        None
+    })
+}
+
+/// Whether `name` appears in `expression` as a whole identifier that is not
+/// the callee of a call.
+fn value_reference(expression: &str, name: &str) -> bool {
+    let bytes = expression.as_bytes();
+    expression.match_indices(name).any(|(index, _)| {
+        let before = index.checked_sub(1).and_then(|i| bytes.get(i).copied());
+        let after = index + name.len();
+        if before.is_some_and(|byte| is_identifier_byte(byte) || byte == b'.')
+            || bytes.get(after).copied().is_some_and(is_identifier_byte)
+        {
+            return false;
+        }
+        let mut cursor = skip_ascii_whitespace(bytes, after);
+        if bytes.get(cursor) == Some(&b'?') && bytes.get(cursor + 1) == Some(&b'.') {
+            cursor = skip_ascii_whitespace(bytes, cursor + 2);
+        }
+        bytes.get(cursor) != Some(&b'(')
+    })
 }
 
 /// Record the string-literal first argument of every `callee(...)` call in

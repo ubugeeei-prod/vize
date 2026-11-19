@@ -4,6 +4,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 import { pathToFileURL } from "node:url";
 
 import { offsetToPosition } from "./lsp/assertions.ts";
+import { LspRequestError } from "./lsp/errors.ts";
 import type { LspRange, PublishDiagnosticsParams, WorkspaceEdit } from "./lsp/protocol.ts";
 import {
   assertMissingModuleDiagnostic,
@@ -23,6 +24,7 @@ import type {
   LspAuthoredOracle,
 } from "./real-project-lsp-report.ts";
 import {
+  lifecycleRepairDiagnostics,
   normalizeLifecycleRepairDiagnostics,
   reservedPath,
   waitForDiagnostics,
@@ -208,7 +210,7 @@ export async function exerciseAuthoredFileLifecycle(
       deletedDocumentSymbols: responseEvidence(deletedDocumentSymbols, 0, workspaceDir),
       deletedImporterDiagnostics: diagnosticEvidence(deletedDiagnostics.diagnostics),
       deletedWorkspaceSymbols: responseEvidence(deletedWorkspaceSymbols, 0, workspaceDir),
-      repairedDiagnostics: diagnosticEvidence(repaired.diagnostics),
+      repairedDiagnostics: diagnosticEvidence(lifecycleRepairDiagnostics(repaired, lifecycle)),
       renameEdit: responseEvidence(renameEdit, 1, workspaceDir),
       renamedDefinition: responseEvidence(renamedDefinition, 1, workspaceDir),
       renamedFile: lifecycle.renamedFile,
@@ -288,8 +290,8 @@ async function expectNullDocumentSymbols(
   );
 }
 
-async function expectNullResponse(
-  session: OracleSession,
+export async function expectNullResponse(
+  session: Pick<OracleSession, "request">,
   method: string,
   params: unknown,
   message: string,
@@ -299,12 +301,25 @@ async function expectNullResponse(
   let response: unknown = undefined;
   do {
     const remainingMs = Math.max(1, deadline - Date.now());
-    response = await session.request(method, params, Math.min(remainingMs, 5000));
+    try {
+      response = await session.request(method, params, Math.min(remainingMs, 5000));
+    } catch (error) {
+      if (!isTransientRequestFailure(error, method) || Date.now() >= deadline) throw error;
+      await sleep(Math.min(100, Math.max(1, deadline - Date.now())));
+      continue;
+    }
     if (response === null) return null;
     await sleep(Math.min(100, Math.max(1, deadline - Date.now())));
   } while (Date.now() < deadline);
   assert.equal(response, null, message);
   return null;
+}
+
+function isTransientRequestFailure(error: unknown, method: string): boolean {
+  return (
+    (error instanceof Error && error.message.startsWith(`Timed out waiting for ${method}`)) ||
+    (error instanceof LspRequestError && error.method === method && error.code === -32801)
+  );
 }
 
 function assertRenameEdit(

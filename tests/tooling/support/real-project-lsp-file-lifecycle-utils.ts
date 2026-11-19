@@ -14,11 +14,17 @@ export function normalizeLifecycleRepairDiagnostics(
   lifecycle: LspAuthoredOracle["fileLifecycle"],
 ): string[] {
   // Real-project backends can resolve unrelated package aliases while this
-  // lifecycle exercises editor features. Keep lifecycle-owned imports exact.
-  return normalizeDiagnostics(
-    published.diagnostics.filter(
-      (diagnostic) => !isUnownedMissingModuleDiagnostic(diagnostic, lifecycle),
-    ),
+  // lifecycle exercises editor features. Compare only the import owned by the
+  // lifecycle; definition and symbol oracles cover the repaired dependency.
+  return normalizeDiagnostics(lifecycleRepairDiagnostics(published, lifecycle));
+}
+
+export function lifecycleRepairDiagnostics(
+  published: PublishDiagnosticsParams,
+  lifecycle: LspAuthoredOracle["fileLifecycle"],
+): LspDiagnostic[] {
+  return published.diagnostics.filter((diagnostic) =>
+    isOwnedMissingModuleDiagnostic(diagnostic, lifecycle),
   );
 }
 
@@ -33,7 +39,7 @@ export function reservedPath(workspaceDir: string, relativeFile: string, label: 
   return absolute;
 }
 
-function isUnownedMissingModuleDiagnostic(
+function isOwnedMissingModuleDiagnostic(
   diagnostic: LspDiagnostic,
   lifecycle: LspAuthoredOracle["fileLifecycle"],
 ): boolean {
@@ -44,7 +50,7 @@ function isUnownedMissingModuleDiagnostic(
   if (!message.startsWith("Cannot find module '")) {
     return false;
   }
-  return ![
+  return [
     lifecycle.originalImportSpecifier,
     lifecycle.copiedImportSpecifier,
     lifecycle.renamedImportSpecifier,

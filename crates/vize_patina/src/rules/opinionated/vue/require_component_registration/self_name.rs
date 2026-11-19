@@ -6,17 +6,20 @@
 //! Vue feature for recursive components that needs no import.
 
 use oxc_ast::ast::{
-    Argument, BindingPattern, Declaration, ExportDefaultDeclarationKind, Expression,
-    ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement, VariableDeclaration,
+    Argument, BindingPattern, CallExpression, Declaration, ExportDefaultDeclarationKind,
+    Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
+    VariableDeclaration,
 };
 use vize_croquis::Croquis;
 use vize_croquis::macros::MacroKind;
 
-/// The file name without directories or extension
-/// (`"src/tree-item.vue"` -> `"tree-item"`).
+/// The file name without directories or its last extension
+/// (`"src/tree-item.vue"` -> `"tree-item"`). Vue's template compiler drops
+/// only the last one, so `router-link.demo.vue` is `RouterLink.demo`, never
+/// `<router-link>`.
 pub(super) fn file_stem(filename: &str) -> &str {
     let base = filename.rsplit(['/', '\\']).next().unwrap_or(filename);
-    base.split('.').next().unwrap_or(base)
+    base.rsplit_once('.').map_or(base, |(stem, _)| stem)
 }
 
 /// The component name declared via `defineOptions({ name: "..." })`, if any.
@@ -37,20 +40,59 @@ pub(super) fn options_api_name<'a>(program: &'a Program<'_>) -> Option<&'a str> 
         };
         let object = match &export.declaration {
             ExportDefaultDeclarationKind::ObjectExpression(object) => Some(object.as_ref()),
-            ExportDefaultDeclarationKind::CallExpression(call)
-                if matches!(
-                    call.callee.get_inner_expression(),
-                    Expression::Identifier(identifier)
-                        if matches!(identifier.name.as_str(), "defineComponent" | "defineNuxtComponent")
-                ) =>
-            {
-                call.arguments.first().and_then(argument_object)
+            ExportDefaultDeclarationKind::CallExpression(call) => component_factory_object(call),
+            ExportDefaultDeclarationKind::Identifier(identifier) => {
+                component_binding_object(program, identifier.name.as_str())
             }
             _ => None,
         }?;
         return object_name(object);
     }
     None
+}
+
+fn component_binding_object<'a, 'alloc>(
+    program: &'a Program<'alloc>,
+    binding_name: &str,
+) -> Option<&'a ObjectExpression<'alloc>> {
+    for statement in &program.body {
+        let declaration = match statement {
+            Statement::VariableDeclaration(declaration) => declaration.as_ref(),
+            _ => continue,
+        };
+        for declarator in &declaration.declarations {
+            let BindingPattern::BindingIdentifier(identifier) = &declarator.id else {
+                continue;
+            };
+            if identifier.name != binding_name {
+                continue;
+            }
+            let Some(Expression::CallExpression(call)) = declarator
+                .init
+                .as_ref()
+                .map(Expression::get_inner_expression)
+            else {
+                return None;
+            };
+            return component_factory_object(call);
+        }
+    }
+    None
+}
+
+fn component_factory_object<'a, 'alloc>(
+    call: &'a CallExpression<'alloc>,
+) -> Option<&'a ObjectExpression<'alloc>> {
+    let Expression::Identifier(identifier) = call.callee.get_inner_expression() else {
+        return None;
+    };
+    if !matches!(
+        identifier.name.as_str(),
+        "defineComponent" | "defineNuxtComponent"
+    ) {
+        return None;
+    }
+    call.arguments.first().and_then(argument_object)
 }
 
 /// Component factory bindings authored in the paired normal script live at
@@ -227,5 +269,7 @@ mod tests {
         assert_eq!(file_stem("src/components/tree-item.vue"), "tree-item");
         assert_eq!(file_stem("App.vue"), "App");
         assert_eq!(file_stem(r"win\path\Item.vue"), "Item");
+        assert_eq!(file_stem("demos/router-link.demo.vue"), "router-link.demo");
+        assert_eq!(file_stem("Item.stories.vue"), "Item.stories");
     }
 }

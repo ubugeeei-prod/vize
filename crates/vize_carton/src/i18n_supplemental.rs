@@ -332,6 +332,12 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "类名 '{name}' 重复",
     ),
     (
+        "html/no-duplicate-class.message_many",
+        "Duplicate class names {names}",
+        "クラス名 {names} が重複しています",
+        "类名 {names} 重复",
+    ),
+    (
         "html/no-duplicate-class.help",
         "Remove the duplicate occurrence so each class name appears only once in the class attribute.",
         "重複しているクラス名を削除し、各クラス名がclass属性内で一度だけ現れるようにしてください。",

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -139,6 +140,64 @@ test("typecheck targets are validated before their units", () => {
     ] as const) {
       assert.throws(() => validateTypecheckPerformanceTarget(project, fixtureRoot), message);
     }
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+});
+
+test("baseline input exclusions are exact source-pinned declaration files", () => {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-typecheck-exclusions-"));
+  const config = "packages/app/tsconfig.json";
+  const excluded = "packages/app/src/editor-types.d.ts";
+  try {
+    fs.mkdirSync(path.dirname(path.join(fixtureRoot, excluded)), { recursive: true });
+    fs.writeFileSync(path.join(fixtureRoot, config), "{}\n");
+    fs.writeFileSync(path.join(fixtureRoot, excluded), "declare namespace Broken {\n}}\n");
+    fs.writeFileSync(path.join(fixtureRoot, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
+    const sha256 = createHash("sha256")
+      .update(fs.readFileSync(path.join(fixtureRoot, excluded)))
+      .digest("hex");
+    const project = {
+      id: "excluded-input",
+      tsconfig: config,
+      typecheckPerformance: {
+        ...performance,
+        baseline: {
+          tsconfig: config,
+          excludedInputs: [
+            {
+              path: excluded,
+              reason: "loaded as editor text rather than a TypeScript program input",
+              sha256,
+            },
+          ],
+        },
+      },
+    };
+    assert.doesNotThrow(() => validateTypecheckPerformanceTarget(project, fixtureRoot));
+
+    const stale = structuredClone(project);
+    stale.typecheckPerformance.baseline.excludedInputs[0].sha256 = "0".repeat(64);
+    assert.throws(
+      () => validateTypecheckPerformanceTarget(stale, fixtureRoot),
+      /sha256 does not match/,
+    );
+    const emptyReason = structuredClone(project);
+    emptyReason.typecheckPerformance.baseline.excludedInputs[0].reason = " ";
+    assert.throws(
+      () => validateTypecheckPerformanceTarget(emptyReason, fixtureRoot),
+      /reason must be a non-empty string/,
+    );
+    const unknown = structuredClone(project) as typeof project & {
+      typecheckPerformance: typeof project.typecheckPerformance & {
+        baseline: typeof project.typecheckPerformance.baseline & { extra?: boolean };
+      };
+    };
+    unknown.typecheckPerformance.baseline.extra = true;
+    assert.throws(
+      () => validateTypecheckPerformanceTarget(unknown, fixtureRoot),
+      /baseline has unknown fields/,
+    );
   } finally {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }

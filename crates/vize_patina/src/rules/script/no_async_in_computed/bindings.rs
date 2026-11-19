@@ -22,7 +22,9 @@ impl ComputedBindings {
             if import.import_kind.is_type() {
                 continue;
             }
-            let is_vue = matches!(import.source.value.as_str(), "vue" | "@vue/composition-api");
+            let is_vue = crate::rules::script::composition_api::is_composition_api_module(
+                import.source.value.as_str(),
+            );
             for specifier in import.specifiers.iter().flatten() {
                 if !is_vue {
                     let shadows_computed = match specifier {

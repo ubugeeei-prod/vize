@@ -1,0 +1,3 @@
+{
+  "vue/require-component-registration": "warn"
+}

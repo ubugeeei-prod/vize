@@ -51,13 +51,15 @@ pub fn typechecker_run_status(exit_code: i64, parsed: &Value) -> &'static str {
             if matches!(code, 5101 | 5102 | 5107 | 5108) {
                 continue;
             }
-            // Missing modules/generated declarations can introduce `any` into
-            // later checks. An authored error elsewhere cannot qualify this run.
+            // Program inputs that TypeScript could not construct make the run
+            // partial. Positioned module-resolution diagnostics (TS2307/TS2792)
+            // are ordinary semantic findings, though: vue-tsc can compare the
+            // same authored import and its downstream diagnostics.
             if path.ends_with(".json")
                 || path.ends_with(".jsonc")
                 || matches!(
                     code,
-                    2307 | 2318 | 2688 | 2792 | 5083 | 6053 | 6059 | 6305 | 6307 | 18002 | 18003
+                    2318 | 2688 | 5083 | 6053 | 6059 | 6305 | 6307 | 18002 | 18003
                 )
             {
                 return "configuration";
@@ -100,16 +102,18 @@ mod tests {
             ),
             "configuration"
         );
-        for code in [
-            2307, 2318, 2688, 2792, 5083, 6053, 6059, 6305, 6307, 18002, 18003,
-        ] {
+        for code in [2318, 2688, 5083, 6053, 6059, 6305, 6307, 18002, 18003] {
             let diagnostic = format!("error:1:1 [TS{code}] Unavailable input.");
             assert_eq!(status("src/App.vue", &diagnostic), "configuration");
+        }
+        for code in [2307, 2792] {
+            let diagnostic = format!("error:1:1 [TS{code}] Cannot find module './x'.");
+            assert_eq!(status("src/App.vue", &diagnostic), "findings");
         }
         let mixed = json!({"files": [
             {"file": "tsconfig.json", "diagnostics": ["error:1:1 [TS5102] Option 'baseUrl' has been removed."]},
             {"file": "src/App.vue", "diagnostics": ["error:1:1 [TS2307] Cannot find module './x'."]}
         ]});
-        assert_eq!(typechecker_run_status(1, &mixed), "configuration");
+        assert_eq!(typechecker_run_status(1, &mixed), "findings");
     }
 }

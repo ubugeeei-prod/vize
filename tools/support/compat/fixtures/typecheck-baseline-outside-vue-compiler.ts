@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 
 import { resolveWithConfigDir } from "./typecheck-baseline-config-dir.ts";
@@ -12,8 +12,9 @@ import { resolvePackageExtends } from "./typecheck-baseline-outside-paths.ts";
  * `vueCompilerOptions.globalTypesPath`, `typesRoot`, and path-form `plugins`
  * are filesystem or package walks. Overlay `compilerOptions` cannot retarget
  * them. An outside path still loads Vize's `@vue/language-core` or
- * `require("../../node_modules/<pkg>")` beside the fixture Vue. Unique-link
- * answers package-name plugins; relative plugin specifiers still walk out.
+ * `require("../../node_modules/<pkg>")` beside the fixture Vue. Plugin
+ * resolution starts beside vue-tsc's language core rather than the fixture,
+ * so package names and their exported subpaths are pinned to concrete files.
  * When the fixture already has that package, this copies every winning
  * `vueCompilerOptions` key and retargets those paths. Overlay replaces the
  * object, so other keys must be preserved. Plugin lists are concatenated
@@ -93,7 +94,6 @@ function retargetPluginName(
   fallback: unknown,
 ): Retargeted {
   const normalized = name.replaceAll("\\", "/");
-  if (!isPathSpecifier(normalized)) return { value: fallback, changed: false };
   const retargeted = retargetVueCompilerPath(fixtureRoot, sourceDir, configDir, normalized);
   return retargeted == null
     ? { value: fallback, changed: false }
@@ -129,9 +129,39 @@ function localPackageTarget(
   if (!existsSync(join(local, "package.json"))) return null;
   const nested = typeof subpath === "string" ? subpath.replaceAll("\\", "/") : "";
   if (nested.startsWith("..") || nested.startsWith("/")) return null;
-  const target = nested === "" ? local : join(local, nested);
-  if (nested !== "" && !existsSync(target)) return null;
+  const direct = nested === "" ? local : join(local, nested);
+  const target =
+    nested === "" || existsSync(direct) ? direct : packageExportTarget(local, `./${nested}`);
+  if (target == null) return null;
   return configRelativePath(configDir, target);
+}
+
+function packageExportTarget(packageRoot: string, key: string): string | null {
+  let manifest: { readonly exports?: unknown };
+  try {
+    manifest = JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8")) as {
+      readonly exports?: unknown;
+    };
+  } catch {
+    return null;
+  }
+  const exports = manifest.exports;
+  if (exports == null || typeof exports !== "object" || Array.isArray(exports)) return null;
+  const candidate = exportPath((exports as Readonly<Record<string, unknown>>)[key]);
+  if (candidate == null || !candidate.startsWith("./")) return null;
+  const target = resolve(packageRoot, candidate);
+  return isInside(packageRoot, target) && existsSync(target) ? target : null;
+}
+
+function exportPath(value: unknown): string | null {
+  if (typeof value === "string") return value;
+  if (value == null || typeof value !== "object" || Array.isArray(value)) return null;
+  const conditions = value as Readonly<Record<string, unknown>>;
+  for (const key of ["default", "require", "import", "node", "types"]) {
+    const path = exportPath(conditions[key]);
+    if (path != null) return path;
+  }
+  return null;
 }
 
 function isPathSpecifier(entry: string): boolean {

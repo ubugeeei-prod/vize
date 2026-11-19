@@ -16,6 +16,7 @@ export type FixtureProject = {
   fixturePath: string;
   id: string;
   lspAuthoredOracle?: LspAuthoredOracle;
+  lspRequestTimeoutMs?: number;
   revision: string;
   vueGlobs: string[];
 };

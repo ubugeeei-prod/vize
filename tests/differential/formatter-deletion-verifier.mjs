@@ -81,6 +81,14 @@ function exactIds(actual, expected, label) {
   );
 }
 
+function matrixProjectIds(projects, includesTypechecker) {
+  return projects.flatMap((project) => {
+    const targets = project.typecheckPerformance?.targets;
+    if (!includesTypechecker || !Array.isArray(targets) || targets.length < 2) return [project.id];
+    return [project.id, ...targets.slice(1).map((target) => `${project.id}@${target.id}`)];
+  });
+}
+
 function validatePropertyArtifact(artifact, property, sourceRevision, expectedProjects) {
   record(artifact, `${property} artifact`);
   assert.equal(artifact.schema, "vize.glyphCorpusPropertyEvidence");
@@ -179,7 +187,7 @@ export function assessFormatterDeletionShard({
   assert(Array.isArray(matrix.projects), "matrix projects are required");
   exactIds(
     matrix.projects.map((project) => project.id),
-    selectedIds,
+    matrixProjectIds(selected, matrix.command.tools.includes("typechecker")),
     "matrix.projects",
   );
 
@@ -426,7 +434,10 @@ export function recordFormatterDeletionShard(root, reportDir) {
   const registry = JSON.parse(registryBytes);
   const matrix = readJson(path.join(reportDir, "summary.json"));
   const rawFormatterRuns = new Map();
-  for (const project of matrix.projects ?? []) {
+  const selected = registry.projects.filter((_, index) => index % shardCount === shardIndex);
+  for (const registryProject of selected) {
+    const project = matrix.projects?.find((candidate) => candidate.id === registryProject.id);
+    assert(project, `${registryProject.id}: matrix project is missing`);
     const run = formatterRun(project);
     rawFormatterRuns.set(
       project.id,

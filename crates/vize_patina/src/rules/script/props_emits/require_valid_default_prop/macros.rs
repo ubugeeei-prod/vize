@@ -20,6 +20,7 @@ use super::{
     validate_descriptor,
 };
 
+mod annotation;
 mod infer;
 
 pub(super) fn check_setup_defaults(
@@ -255,46 +256,11 @@ fn imported_prop_types(
         .properties
         .into_iter()
         .filter_map(|property| {
-            let types = native_types_from_annotation(property.prop_type.as_deref()?);
-            if types.is_empty() {
-                None
-            } else {
-                Some((property.name, types))
-            }
+            let types =
+                annotation::runtime_types(world, &property.module, property.prop_type.as_deref()?)?;
+            (!types.is_empty()).then_some((property.name, types))
         })
         .collect()
-}
-
-fn native_types_from_annotation(annotation: &str) -> Vec<&'static str> {
-    let mut types = Vec::new();
-    for part in annotation.split('|') {
-        let Some(name) = native_type_from_annotation(part) else {
-            continue;
-        };
-        if !types.contains(&name) {
-            types.push(name);
-        }
-    }
-    types
-}
-
-fn native_type_from_annotation(part: &str) -> Option<&'static str> {
-    let mut text = part.trim();
-    while let Some(inner) = text
-        .strip_prefix('(')
-        .and_then(|text| text.strip_suffix(')'))
-    {
-        text = inner.trim();
-    }
-    match text {
-        "string" | "String" => Some("String"),
-        "number" | "Number" => Some("Number"),
-        "boolean" | "Boolean" => Some("Boolean"),
-        "bigint" | "BigInt" => Some("BigInt"),
-        "symbol" | "Symbol" => Some("Symbol"),
-        "object" | "Object" => Some("Object"),
-        _ => None,
-    }
 }
 
 fn runtime_prop_types(object: &ObjectExpression<'_>) -> Vec<(CompactString, Vec<&'static str>)> {

@@ -58,6 +58,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Accessibility and explicit-slot parity add one literal fixture.
         + 1
         // Native `is` attributes retain attribute-name validation.
+        + 1
+        // Duplicate-class report nodes add one multi-part literal fixture.
         + 1,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
@@ -247,6 +249,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Native `is` attribute-name coverage adds one literal call.
         + 1
         // Upstream static-class node coverage adds one helper-driven call.
+        + 1
+        // Duplicate-class report nodes add one literal call.
         + 1,
     rule_fixture_skipped: 87
         + 4
@@ -367,7 +371,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         + 5
         // Authored table rows drop the eighteen trace lines that belonged only
         // to a parser-implied `tbody` or `tr`; every authored node is kept.
-        - 18,
+        - 18
+        // The duplicate-class report-node fixture retains twenty trace lines.
+        + 20,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

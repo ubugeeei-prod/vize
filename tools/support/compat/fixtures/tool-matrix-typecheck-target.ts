@@ -1,4 +1,5 @@
-import { statSync, type Stats } from "node:fs";
+import { createHash } from "node:crypto";
+import { readFileSync, statSync, type Stats } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
 
 import { typecheckUnits } from "./typecheck-targets.ts";
@@ -84,7 +85,13 @@ export function validateTypecheckPerformanceTarget(
   requireFile(project, fixtureRoot, performance.lockfile, "lockfile");
   const baseline = performance.baseline as Readonly<Record<string, unknown>> | null | undefined;
   if (baseline == null) return;
+  if (
+    Object.keys(baseline).some((key) => !["excludedInputs", "prepare", "tsconfig"].includes(key))
+  ) {
+    invalid(project, "baseline has unknown fields");
+  }
   requireRelativePath(project, baseline.tsconfig, "baseline tsconfig");
+  validateExcludedInputs(project, fixtureRoot, baseline.excludedInputs);
   if (baseline.prepare == null) {
     requireFile(project, fixtureRoot, baseline.tsconfig, "baseline tsconfig");
     return;
@@ -107,6 +114,53 @@ export function validateTypecheckPerformanceTarget(
       project,
       `baseline prepare must be a ${String(manager)} command argument array or a list of them`,
     );
+  }
+}
+
+function validateExcludedInputs(
+  project: TypecheckTargetProject,
+  fixtureRoot: string,
+  value: unknown,
+): void {
+  if (value === undefined) return;
+  if (!Array.isArray(value) || value.length === 0) {
+    invalid(project, "baseline.excludedInputs must be a non-empty array when present");
+  }
+  const seen = new Set<string>();
+  for (const [index, entry] of value.entries()) {
+    const label = `baseline.excludedInputs[${index}]`;
+    if (
+      entry == null ||
+      typeof entry !== "object" ||
+      Object.keys(entry).sort().join(",") !== "path,reason,sha256"
+    ) {
+      invalid(project, `${label} must contain exactly path, reason, and sha256`);
+    }
+    const record = entry as Readonly<Record<string, unknown>>;
+    requireRelativePath(project, record.path, `${label}.path`);
+    const inputPath = record.path as string;
+    if (
+      !inputPath.endsWith(".d.ts") &&
+      !inputPath.endsWith(".d.mts") &&
+      !inputPath.endsWith(".d.cts")
+    ) {
+      invalid(project, `${label}.path must be a declaration file`);
+    }
+    if (seen.has(inputPath)) invalid(project, `duplicate baseline excluded input ${inputPath}`);
+    seen.add(inputPath);
+    if (typeof record.reason !== "string" || record.reason.trim().length === 0) {
+      invalid(project, `${label}.reason must be a non-empty string`);
+    }
+    if (typeof record.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(record.sha256)) {
+      invalid(project, `${label}.sha256 must be a lowercase SHA-256 digest`);
+    }
+    requireFile(project, fixtureRoot, inputPath, `${label}.path`);
+    const actual = createHash("sha256")
+      .update(readFileSync(resolve(fixtureRoot, inputPath)))
+      .digest("hex");
+    if (actual !== record.sha256) {
+      invalid(project, `${label}.sha256 does not match ${inputPath}`);
+    }
   }
 }
 

@@ -6,13 +6,76 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
 import { offsetToPosition } from "./support/lsp/assertions.ts";
+import { LspRequestError } from "./support/lsp/errors.ts";
 import type { LspRange, PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import {
   assertOrderedEvents,
   FakeAuthoredLspSession,
 } from "./support/fake-authored-lsp-session.ts";
-import { exerciseAuthoredFileLifecycle } from "./support/real-project-lsp-file-lifecycle.ts";
+import {
+  exerciseAuthoredFileLifecycle,
+  expectNullResponse,
+} from "./support/real-project-lsp-file-lifecycle.ts";
+import { normalizeLifecycleRepairDiagnostics } from "./support/real-project-lsp-file-lifecycle-utils.ts";
 import type { LspAuthoredOracle } from "./support/real-project-lsp-report.ts";
+
+test("lifecycle repair diagnostics ignore unrelated project cascades", () => {
+  const lifecycle = fixtureOracle().fileLifecycle;
+  const published: PublishDiagnosticsParams = {
+    diagnostics: [
+      diagnostic(2307, "Cannot find module './Child.vue' or its corresponding type declarations."),
+      diagnostic(
+        2307,
+        "Cannot find module '@transient/package' or its corresponding type declarations.",
+      ),
+      diagnostic(7006, "Parameter 'value' implicitly has an 'any' type."),
+    ],
+    uri: "file:///workspace/Importer.vue",
+    version: 3,
+  };
+
+  assert.equal(normalizeLifecycleRepairDiagnostics(published, lifecycle).length, 1);
+  published.diagnostics.shift();
+  assert.deepEqual(normalizeLifecycleRepairDiagnostics(published, lifecycle), []);
+});
+
+test("eventual-null lifecycle requests retry transient request deadlines", async () => {
+  const timeouts: number[] = [];
+  const session = {
+    async request(method: string, _params: unknown, timeoutMs?: number) {
+      timeouts.push(timeoutMs ?? 0);
+      if (timeouts.length === 1) throw new Error(`Timed out waiting for ${method}`);
+      if (timeouts.length === 2) {
+        throw new LspRequestError(2, method, { code: -32801, message: "Content modified" });
+      }
+      return null;
+    },
+  };
+
+  assert.equal(
+    await expectNullResponse(
+      session,
+      "textDocument/definition",
+      { textDocument: { uri: "file:///workspace/Importer.vue" } },
+      "deleted dependency definition must disappear",
+      1_000,
+    ),
+    null,
+  );
+  assert.equal(timeouts.length, 3);
+  assert.ok(timeouts.every((timeout) => timeout > 0 && timeout <= 1_000));
+  await assert.rejects(
+    () =>
+      expectNullResponse(
+        { request: async () => Promise.reject(new Error("transport closed")) },
+        "textDocument/definition",
+        {},
+        "deleted dependency definition must disappear",
+        1_000,
+      ),
+    /transport closed/,
+  );
+});
 
 test("authored file lifecycle creates, renames, deletes, and repairs a dependency", async () => {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-authored-file-lifecycle-"));
@@ -99,8 +162,8 @@ const childValue = 1
       "delete diagnostics wait must skip stale same-version payloads",
     );
     assert.ok(
-      session.events.some((event) => event.endsWith(":stale-repair-skipped")),
-      "repair diagnostics wait must skip incomplete same-version payloads",
+      session.events.some((event) => event.endsWith(":stale-repair")),
+      "repair diagnostics wait must ignore unrelated same-version diagnostics",
     );
     assert.equal(fs.existsSync(path.join(workspace, "$OracleChild.vue")), false);
     assert.equal(fs.existsSync(path.join(workspace, "$OracleRenamedChild.vue")), false);
@@ -218,5 +281,18 @@ function rangeAt(source: string, offset: number, length: number): LspRange {
   return {
     start: offsetToPosition(source, offset),
     end: offsetToPosition(source, offset + length),
+  };
+}
+
+function diagnostic(code: number, message: string) {
+  return {
+    code,
+    message,
+    range: {
+      start: { character: 0, line: 1 },
+      end: { character: 1, line: 1 },
+    },
+    severity: 1,
+    source: "vize/types",
   };
 }

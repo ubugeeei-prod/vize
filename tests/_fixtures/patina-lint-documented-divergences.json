@@ -1,1 +1,23 @@
-[]
+[
+  {
+    "project": "vue2-elm",
+    "file": "src/components/common/shoplist.vue",
+    "ruleId": "parser/template",
+    "patina": {
+      "severity": "warning",
+      "line": 10,
+      "column": 60,
+      "endLine": 10,
+      "endColumn": 65
+    },
+    "baseline": {
+      "severity": "error",
+      "line": 10,
+      "column": 60,
+      "endLine": 10,
+      "endColumn": 60
+    },
+    "issue": 13306,
+    "reason": "The Vue 2 dialect keeps the compiler's recoverable duplicate-attribute diagnostic at warning severity, while vue-eslint-parser exposes the same authored duplicate as an error point."
+  }
+]

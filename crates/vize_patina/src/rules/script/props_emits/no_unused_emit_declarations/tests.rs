@@ -341,16 +341,41 @@ myEmit('change')
 }
 
 #[test]
-fn test_dynamic_emit_argument_does_not_mark() {
-    // A non-string-literal argument can't be matched to a declared name, so the
-    // declared events remain unused.
+fn test_a_computed_emit_name_may_emit_every_event() {
+    // `emit(name)` with a name the rule cannot resolve may dispatch any
+    // declared event, so none can be proven unused (splitpanes'
+    // `emitEvent(name)`, #12336). This replaced a test that pinned the
+    // opposite: both events used to be reported although `change` is emitted.
     let source = r#"
-const emit = defineEmits(['change'])
-const name = 'change'
-emit(name)
+const emit = defineEmits(['change', 'close'])
+function forward(name) {
+  emit(name, {})
+}
 "#;
     let result = create_linter().lint(source, 0);
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_a_resolvable_emit_name_marks_exactly_its_events() {
+    let source = r#"
+const emit = defineEmits(['change', 'open', 'close', 'save', 'unused'])
+const CHANGE = 'change'
+const EVENTS = { save: 'save' } as const
+declare const isOpen: boolean
+emit(CHANGE)
+emit(isOpen ? 'open' : `close`)
+emit(EVENTS.save)
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.message.as_str())
+            .collect::<Vec<_>>(),
+        ["The 'unused' event is declared but never emitted."]
+    );
 }
 
 #[test]
