@@ -87,6 +87,13 @@ and 0.
   contracts GA (2026-11-09).
 - Unpublished crates: `davinci_harness` → `level_harness`, `davinci_test_support` →
   `level_test_support`.
+- Rust API: `vize_atelier_vapor` compile option `davinci_retained_lane` → `level_retained_lane`;
+  `vize_incremental` artifact field `folio` → `dump`; `vize_carton` `WALK_KEY` value
+  `davinci.pass.walk` → `levels.pass.walk`.
+- Measurement (maintainer, 2026-11-19): instruction rows and binary size are judged on the shipped
+  release profile (fat LTO, 1 codegen unit). The rename changes crate hashes and symbol names,
+  which reshuffles thin-LTO codegen units in the ci-opt bench binaries; those shifts are reported
+  but do not gate.
 
 ## Removed with the rename
 
