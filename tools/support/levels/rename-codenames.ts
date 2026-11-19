@@ -487,11 +487,12 @@ const gitBlob = (bytes: Buffer) =>
 /**
  * Holders whose digests pin bytes of a past revision that only happen to equal main's: the
  * provider-qualification records and their loaders, the TS-40 projection receipts and the JSX
- * child-value historical source admission (which embeds the bytes it pins). Re-pinning
+ * child-value historical source admission (which embeds the bytes it pins). The instruction
+ * budgets re-record their input digests from a measurement instead. Re-pinning
  * them would rewrite history, so they keep every digest.
  */
 const historicalPins =
-  /^(?:tests\/_fixtures\/differential\/typechecker\/empty-vue-star-exports\/malformed-membership\/|crates\/vize_canon\/tests\/empty_vue_star_exports\/|crates\/vize_maestro\/tests\/level_ts40_projection_support\/|tests\/_fixtures\/differential\/compiler\/jsx-child-values-6890\/historical-source-admission\.json$)/u;
+  /^(?:tests\/_fixtures\/differential\/typechecker\/empty-vue-star-exports\/malformed-membership\/|crates\/vize_canon\/tests\/empty_vue_star_exports\/|crates\/vize_maestro\/tests\/level_ts40_projection_support\/|tests\/_fixtures\/differential\/compiler\/jsx-child-values-6890\/historical-source-admission\.json$|docs\/davinci\/plan\/instruction-budgets\.toml$)/u;
 
 /**
  * Holders that pin the current bytes of only some files and the bytes of past revisions of
