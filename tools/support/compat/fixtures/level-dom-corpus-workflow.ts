@@ -258,7 +258,7 @@ function hydrateFixtureSerially(fixturePath: string, runCommand: RunCommand): vo
     ]);
   } catch (error) {
     console.warn(
-      `::warning title=level corpus hydrate full fallback::${fixturePath}: ${errorMessage(error)}`,
+      `::warning title=Level corpus hydrate full fallback::${fixturePath}: ${errorMessage(error)}`,
     );
     runCommand("git", [
       "submodule",
@@ -299,7 +299,7 @@ export function hydrateCorpus({
       ...fixturePaths,
     ]);
   } catch (error) {
-    console.warn(`::warning title=level corpus hydrate serial fallback::${errorMessage(error)}`);
+    console.warn(`::warning title=Level corpus hydrate serial fallback::${errorMessage(error)}`);
     for (const fixturePath of fixturePaths) {
       hydrateFixtureSerially(fixturePath, runCommand);
     }
@@ -400,7 +400,7 @@ export async function finalizeCorpus(
     for (const failure of validation.failures) {
       console.error(`::error title=Invalid level L2 DOM corpus evidence::${failure}`);
     }
-    console.error(`::error title=level L2 DOM corpus failed::mode=${mode} verdict=${verdict}`);
+    console.error(`::error title=Level L2 DOM corpus failed::mode=${mode} verdict=${verdict}`);
     return 1;
   }
   return 0;

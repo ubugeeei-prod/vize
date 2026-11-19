@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
+import { rewriteText } from "../../../tools/support/levels/rename-codenames.ts";
 
 const readRepoFile = (...parts: string[]): string =>
   readFileSync(new URL("../../../" + parts.join("/"), import.meta.url), "utf8");
@@ -34,13 +35,17 @@ const evidence =
 const workflows = files.map((file) => ({
   file,
   current: parse(readRepoFile(".github", "workflows", file)) as Workflow,
+  // The frozen copies predate the level rename; read them through it.
   before: parse(
-    readRepoFile(
-      "tests",
-      "tooling",
-      "fixtures",
-      "release-public-observers",
-      file.replace(".yml", ".before.yml.txt"),
+    rewriteText(
+      ".github/workflows/" + file,
+      readRepoFile(
+        "tests",
+        "tooling",
+        "fixtures",
+        "release-public-observers",
+        file.replace(".yml", ".before.yml.txt"),
+      ),
     ),
   ) as Workflow,
 }));

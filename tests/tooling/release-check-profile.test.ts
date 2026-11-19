@@ -8,6 +8,7 @@ import {
   readRepoFile,
   restorePinnedWildAction,
 } from "./support/github-workflows.ts";
+import { rewriteText } from "../../tools/support/levels/rename-codenames.ts";
 
 type Step = { name?: string; uses?: string; run?: string; if?: string; env?: object };
 type Job = {
@@ -106,9 +107,13 @@ test("explicit profile refuses nonrelease and malformed release refs through its
 });
 
 test("parallel Rust jobs preserve their setup and migrate only the Clippy helper commands", () => {
-  const original = (
+  const original = // The frozen original predates the level rename; read it through the rename.
+  (
     parse(
-      readRepoFile("tests", "_fixtures", "ci", "check-clippy-and-test.original.yml.txt"),
+      rewriteText(
+        ".github/workflows/check.yml",
+        readRepoFile("tests", "_fixtures", "ci", "check-clippy-and-test.original.yml.txt"),
+      ),
     ) as Record<string, Job>
   )["clippy-and-test"];
   const firstCommand = original.steps.findIndex((step) => step.name === "Clippy");

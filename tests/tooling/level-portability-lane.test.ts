@@ -90,7 +90,9 @@ test("the no_std claim stays on five stage libraries and excludes the std L0 fou
       encoding: "utf8",
     }),
   ) as { packages: Array<{ name: string; targets: Array<{ kind: string[] }> }> };
-  assert.ok(resolved.packages.every((pkg) => pkg.name !== "vize_l0"));
+  // The retired runtime crate, spelled in parts so the codename rename keeps its old name.
+  const retired = ["vize", "da" + "vinci"].join("_");
+  assert.ok(resolved.packages.every((pkg) => pkg.name !== retired));
   const substrate = resolved.packages.find((pkg) => pkg.name === "vize_l0");
   assert.ok(substrate, "the foundation must be present in Cargo metadata");
   assert.deepEqual(
