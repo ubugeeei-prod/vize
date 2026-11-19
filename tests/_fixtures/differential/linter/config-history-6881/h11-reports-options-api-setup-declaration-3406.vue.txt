@@ -1,0 +1,13 @@
+<script>
+import { ref } from 'vue'
+export default {
+  setup() {
+    const root = ref(null)
+    return { root }
+  },
+}
+</script>
+
+<template>
+  <div ref="root" />
+</template>

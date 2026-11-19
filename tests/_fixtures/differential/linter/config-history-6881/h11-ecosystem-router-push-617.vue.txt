@@ -1,0 +1,3 @@
+<script setup lang="ts">
+router.push('/settings')
+</script>

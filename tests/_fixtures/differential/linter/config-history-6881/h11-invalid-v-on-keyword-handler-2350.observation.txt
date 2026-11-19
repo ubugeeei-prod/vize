@@ -1,0 +1,63 @@
+Case {
+    id: "h11-invalid-v-on-keyword-handler-2350",
+    history: "3d7dad4e1bc71f1b5d361604067c8681c07a542e",
+    source_file: "h11-invalid-v-on-keyword-handler-2350.html.txt",
+    filename: "History.vue",
+    entry: "template",
+    preset: "incremental",
+    enabled_rules: Some(
+        [
+            "vue/valid-v-on",
+        ],
+    ),
+    disabled_rules: [],
+    rule_severities: [],
+    disabled_categories: [],
+    category_severities: [],
+    rule_options: Object {},
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/valid-v-on",
+                severity: Error,
+                message: "v-on handler must not be a JavaScript keyword",
+                start: 5,
+                end: 17,
+                help: Some(
+                    "**Fix:** Specify the event name:\n```vue\n<!-- Shorthand -->\n<button @click=\"handleClick\">Click</button>\n\n<!-- Full syntax -->\n<button v-on:click=\"handleClick\">Click</button>\n\n<!-- With modifiers -->\n<form @submit.prevent=\"onSubmit\">...</form>\n<input @keyup.enter=\"onEnter\">\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/valid-v-on",
+                    severity: Error,
+                    message: "v-on handler must not be a JavaScript keyword",
+                    start: 5,
+                    end: 17,
+                    help: Some(
+                        "**Fix:** Specify the event name:\n```vue\n<!-- Shorthand -->\n<button @click=\"handleClick\">Click</button>\n\n<!-- Full syntax -->\n<button v-on:click=\"handleClick\">Click</button>\n\n<!-- With modifiers -->\n<form @submit.prevent=\"onSubmit\">...</form>\n<input @keyup.enter=\"onEnter\">\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

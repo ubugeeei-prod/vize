@@ -1,0 +1,63 @@
+Case {
+    id: "h11-static-autofocus-control-2419",
+    history: "2a3b4771b244e6bf51fdf4012b2faa9588594cdf",
+    source_file: "h11-static-autofocus-control-2419.html.txt",
+    filename: "History.vue",
+    entry: "template",
+    preset: "incremental",
+    enabled_rules: Some(
+        [
+            "a11y/no-autofocus",
+        ],
+    ),
+    disabled_rules: [],
+    rule_severities: [],
+    disabled_categories: [],
+    category_severities: [],
+    rule_options: Object {},
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/no-autofocus",
+                severity: Warning,
+                message: "The autofocus attribute should not be used. It can disrupt navigation for screen reader users",
+                start: 19,
+                end: 28,
+                help: Some(
+                    "Remove the autofocus attribute. Manage focus programmatically when needed using ref and focus()",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/no-autofocus",
+                    severity: Warning,
+                    message: "The autofocus attribute should not be used. It can disrupt navigation for screen reader users",
+                    start: 19,
+                    end: 28,
+                    help: Some(
+                        "Remove the autofocus attribute. Manage focus programmatically when needed using ref and focus()",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

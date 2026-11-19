@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+const error = ref(null)
+const root = ref(null)
+</script>
+
+<template>
+  <div ref="root">{{ error }}</div>
+</template>

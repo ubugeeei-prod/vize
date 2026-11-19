@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+const root = useTemplateRef('root')
+</script>
+
+<template>
+  <div ref="root" />
+</template>
