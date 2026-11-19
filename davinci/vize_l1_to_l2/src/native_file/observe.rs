@@ -3,8 +3,8 @@ use crate::vue_file::{RejectedVueFile, VueFile, VueScriptReceipt};
 use alloc::vec::Vec;
 use vize_l0::SourceBlock;
 use vize_l1::container::vue::{DescriptorObservation, ScriptRole, ScriptView};
-use vize_l1::style::css::StyleSyntax;
 use vize_l1::embed::{Lang, syntax::EmbedSyntax};
+use vize_l1::style::css::StyleSyntax;
 use vize_l2::file::ScriptUnitId;
 
 /// Original selected role, original syntax and the actually minted unit, if any.

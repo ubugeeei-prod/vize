@@ -46,7 +46,7 @@ pub use strip_comments::strip_vize_comments;
 pub use style_rule::StyleRule;
 
 use vize_l0::FxHashSet;
-use vize_l1::style::language::StyleLanguage;
+use vize_l1::style::StyleLanguage;
 
 use lightningcss::stylesheet::StyleSheet;
 use memchr::memmem;

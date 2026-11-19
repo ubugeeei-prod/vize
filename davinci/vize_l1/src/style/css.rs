@@ -7,13 +7,14 @@ use crate::container::vue::StyleView;
 use alloc::vec::Vec;
 use cssparser::{CowRcStr, ParseError, ParseErrorKind, Token};
 use vize_l0::{SourceBlock, Span};
+
 mod empty;
+mod lexis;
 mod list;
 mod parser;
-pub use crate::style::classes::AuthoredClasses;
 pub use empty::EmptyClassStyle;
+pub(super) use lexis::{LEXIS, authored_classes};
 pub use list::SimpleClassListStyle;
-pub use crate::style::structure::{StyleCode, StyleComment, StyleNode, StyleNodeKind, StyleSheet};
 
 /// Why this original syntax cannot lend the simple-class scoped family.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -220,4 +221,3 @@ impl<'o, 'a> SimpleClassStyle<'o, 'a> {
 
 #[cfg(test)]
 mod tests;
-pub(crate) mod lexis;

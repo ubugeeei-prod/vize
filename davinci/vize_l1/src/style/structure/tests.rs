@@ -1,5 +1,5 @@
 use super::{StyleNodeKind, StyleSheet};
-use crate::style::language::StyleLanguage::{self, Css, Less, Sass, Scss, Stylus};
+use crate::style::StyleLanguage::{self, Css, Less, Sass, Scss, Stylus};
 use alloc::vec::Vec;
 use vize_l0::{Span, String, cstr};
 

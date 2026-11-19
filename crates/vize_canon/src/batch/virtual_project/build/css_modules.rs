@@ -8,7 +8,7 @@ use vize_carton::{String as CompactString, ToCompactString};
 use crate::virtual_ts::{
     CSS_MODULE_GLOBAL_MARKER, ResolveStyleClassNames, TemplateGlobal, VirtualTsOptions,
 };
-use vize_l1::style::css::AuthoredClasses;
+use vize_l1::style::AuthoredClasses;
 
 pub(crate) fn virtual_ts_options_for_descriptor(
     base: &VirtualTsOptions,
@@ -256,7 +256,7 @@ mod tests {
     use std::collections::BTreeSet;
 
     use vize_carton::String as CompactString;
-    use vize_l1::style::css::{AuthoredClasses, lang::StyleLanguage};
+    use vize_l1::style::{AuthoredClasses, StyleLanguage};
 
     use super::{
         contains_dynamic_css_module_exports, css_import_targets, css_module_block_shape,

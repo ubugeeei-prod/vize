@@ -5,8 +5,8 @@ use crate::file::FileArtifact;
 use vize_l0::Span;
 use vize_l1::{
     container::vue::{AdmittedDescriptor, DescriptorObservation},
-    style::css::{EmptyClassStyle, StyleIssue, StyleSyntax},
     markup::{SurfaceParseOptions, TemplateGrammar},
+    style::css::{EmptyClassStyle, StyleIssue, StyleSyntax},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -7,8 +7,8 @@ use super::{
 use vize_l0::{Allocator, Span};
 use vize_l1::{
     container::vue::{DescriptorObservation, DescriptorOptions},
-    style::css::StyleSyntax,
     markup::SurfaceParseOptions,
+    style::css::StyleSyntax,
 };
 use vize_l2::lang::js::{NativeScopedTemplateIssueKind as Kind, NativeScopedTemplateView};
 

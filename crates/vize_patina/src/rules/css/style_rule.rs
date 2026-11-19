@@ -9,7 +9,7 @@
 
 use cssparser::{Parser, ParserInput, Token};
 use vize_l0::{Span, String};
-use vize_l1::style::css::{StyleNode, StyleNodeKind, StyleSheet};
+use vize_l1::style::{StyleNode, StyleNodeKind, StyleSheet};
 
 use super::{CssLintResult, CssRuleMeta};
 

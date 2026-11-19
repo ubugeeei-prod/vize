@@ -1,5 +1,7 @@
-//! SCSS and Less: braced rules that nest, with selectors resolved against
-//! their parents (`.card { &__title {} }` declares `card__title`).
+//! Selector nesting shared by the nesting style languages: rules whose
+//! selectors resolve against their parents (`.card { &__title {} }` declares
+//! `card__title`). Braced rules (SCSS, Less, braced Stylus) and indented rules
+//! (Sass, Stylus) are walked here; each language module supplies its lexis.
 //!
 //! Rules whose selector cannot be known statically (interpolation, mixin and
 //! control-flow bodies) contribute nothing; their siblings still do.
@@ -8,9 +10,9 @@ use alloc::collections::BTreeSet;
 use alloc::vec::Vec;
 use vize_l0::String;
 
-use crate::style::classes::collect_classes_from_selector_prelude;
-use crate::style::structure::{Interpolation, Lexis, StyleSheet, shared};
-use crate::style::css::{AuthoredClasses, StyleNodeKind};
+use super::classes::AuthoredClasses;
+use super::classes::collect_classes_from_selector_prelude;
+use super::structure::{StyleNodeKind, StyleSheet};
 
 /// A resolved selector list grows multiplicatively with nested comma lists.
 const MAX_SELECTORS: usize = 256;
@@ -21,26 +23,9 @@ pub(super) enum Dialect {
     Less,
 }
 
-pub(super) const SCSS: Lexis = Lexis {
-    line_comments: true,
-    interpolation: Interpolation::Hash,
-    indented: false,
-    indented_comments: false,
-    colonless_declarations: false,
-    construct: shared,
-};
-
-pub(super) const LESS: Lexis = Lexis {
-    interpolation: Interpolation::At,
-    ..SCSS
-};
-
 /// Class names the rules declare, or `None` when the source is unbalanced.
 /// Less mixin definitions (`.m() {}`) emit no rules and add no names.
-pub(super) fn authored_classes(
-    sheet: &StyleSheet<'_>,
-    dialect: Dialect,
-) -> Option<AuthoredClasses> {
+pub(super) fn braced_classes(sheet: &StyleSheet<'_>, dialect: Dialect) -> Option<AuthoredClasses> {
     if !sheet.is_balanced() || !sheet.is_terminated() {
         return None;
     }
@@ -256,4 +241,122 @@ fn split_top_level_commas(text: &str) -> Vec<&str> {
     }
     parts.extend(text.get(start..));
     parts
+}
+
+/// The indented languages: a selector opens a block by indenting the lines
+/// after it.
+#[derive(Clone, Copy, PartialEq)]
+pub(super) enum Syntax {
+    Sass,
+    Stylus,
+}
+
+/// Class names the rules declare. Stylus written with braces reads like SCSS,
+/// but its mixin calls are not modeled there, so that result is incomplete.
+pub(super) fn indented_classes(sheet: &StyleSheet<'_>, syntax: Syntax) -> Option<AuthoredClasses> {
+    if syntax == Syntax::Stylus && super::stylus::is_braced(sheet.source()) {
+        return braced_classes(sheet, Dialect::Scss)
+            .map(|found| AuthoredClasses::new(found.into_names(), false));
+    }
+    let mut classes = BTreeSet::new();
+    let mut complete = true;
+    // The resolved selectors of every node that opens a block; `None` is an
+    // unknown context.
+    let mut resolved: Vec<Option<Vec<String>>> = Vec::with_capacity(sheet.nodes().len());
+    for node in sheet.nodes() {
+        // A declaration adds no rules.
+        if node.block().is_none() && matches!(sheet.kind(node), StyleNodeKind::Declaration { .. }) {
+            resolved.push(None);
+            continue;
+        }
+        let parent = match node.parent() {
+            Some(parent) => resolved.get(parent)?.clone(),
+            None => Some(Vec::new()),
+        };
+        let known = parent.is_some();
+        let text = sheet.code(node.prelude());
+        if node.block().is_none() {
+            if known && indented_statement_adds_rules(&text, syntax) {
+                complete = false;
+            }
+            resolved.push(None);
+            continue;
+        }
+        let (selectors, hides) = match indented_line(&text, syntax) {
+            Line::Selector(selector) => {
+                let selectors = resolve(
+                    selector.as_bytes(),
+                    parent,
+                    node.is_interpolated(),
+                    Dialect::Scss,
+                );
+                let hides =
+                    block_hides_rules(selector.as_bytes(), selectors.is_some(), Dialect::Scss);
+                (selectors, hides)
+            }
+            Line::Definition => (None, false),
+            Line::Unknown => (None, true),
+        };
+        if known && hides {
+            complete = false;
+        }
+        for selector in selectors.iter().flatten() {
+            let mut rule = BTreeSet::new();
+            if collect_classes_from_selector_prelude(selector.as_bytes(), &mut rule).is_some() {
+                classes.extend(rule);
+            } else {
+                complete = false;
+            }
+        }
+        resolved.push(selectors);
+    }
+    Some(AuthoredClasses::new(classes, complete))
+}
+
+/// What a block-opening line spells.
+enum Line<'t> {
+    /// A selector or an at-rule.
+    Selector(&'t str),
+    /// A mixin or function definition: its body emits nothing here.
+    Definition,
+    /// A block whose rules cannot be named: control flow, a Stylus block
+    /// mixin call or partial parent reference.
+    Unknown,
+}
+
+/// Whether a statement line can add rules: an include, an import or, in
+/// Stylus, a mixin call.
+fn indented_statement_adds_rules(text: &str, syntax: Syntax) -> bool {
+    text.starts_with('+')
+        || syntax == Syntax::Stylus && super::stylus::starts_call(text)
+        || statement_adds_rules(text.as_bytes(), Dialect::Scss)
+}
+
+fn indented_line(text: &str, syntax: Syntax) -> Line<'_> {
+    match syntax {
+        Syntax::Sass => {
+            if text.starts_with('=') {
+                return Line::Definition;
+            }
+            // `+mixin` content blocks keep the enclosing selector.
+            if text.starts_with('+') {
+                return Line::Selector("@include");
+            }
+            Line::Selector(text)
+        }
+        Syntax::Stylus => {
+            if super::stylus::starts_call(text) {
+                return Line::Definition;
+            }
+            let keyword = text.split_ascii_whitespace().next().unwrap_or_default();
+            if text.starts_with('+')
+                || matches!(keyword, "if" | "unless" | "for" | "else")
+                || text.contains(['^', '~'])
+                || text.contains("../")
+            {
+                return Line::Unknown;
+            }
+            Line::Selector(text)
+        }
+    }
 }

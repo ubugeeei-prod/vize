@@ -217,3 +217,25 @@ test("use trees and paths name what a package reaches", () => {
     ["A", "B", "C", "K", "S", "e", "f", "g"],
   );
 });
+
+test("the style and Vue steps move the most specific module first", () => {
+  const style = steps["l1-style"]!.moves;
+  assert.deepEqual(relocate(style, ["css", "lang", "nested"]), ["style", "nesting"]);
+  assert.deepEqual(relocate(style, ["css", "bind"]), ["framework", "vue", "style_bind"]);
+  assert.deepEqual(relocate(style, ["css", "parser"]), ["style", "css", "parser"]);
+  const vue = steps["l1-vue"]!.moves;
+  assert.deepEqual(relocate(vue, ["dialect", "vue", "feature", "event"]), [
+    "framework",
+    "vue",
+    "feature",
+    "event",
+  ]);
+  assert.deepEqual(relocate(vue, ["dialect", "vue"]), ["framework", "vue", "quirks"]);
+  assert.deepEqual(relocate(vue, ["dialect", "vue2", "text"]), [
+    "framework",
+    "vue",
+    "version",
+    "v2",
+    "text",
+  ]);
+});

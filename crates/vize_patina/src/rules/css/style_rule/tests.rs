@@ -1,4 +1,4 @@
-use vize_l1::style::language::StyleLanguage;
+use vize_l1::style::StyleLanguage;
 
 use super::super::{CssLinter, NoIdSelectors, NoImportant, StyleRule};
 

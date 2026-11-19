@@ -100,8 +100,8 @@ pub(super) fn observe<'o, 'a>(
 mod tests {
     use crate::{
         container::{Vue, vue::DescriptorOptions},
-        style::css::{StyleIssueCode, StyleSyntax},
         markup::SurfaceParseOptions,
+        style::css::{StyleIssueCode, StyleSyntax},
     };
     use cssparser::Token;
     use vize_l0::{

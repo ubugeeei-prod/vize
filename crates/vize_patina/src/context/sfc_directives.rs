@@ -8,7 +8,7 @@ use vize_l0::directive::{
     DirectiveKind, DirectiveSeverity, parse_level_severity, parse_vize_directive,
 };
 use vize_l0::{Allocator, FxHashMap, FxHashSet};
-use vize_l1::style::language::StyleLanguage;
+use vize_l1::style::StyleLanguage;
 
 use super::eslint_directive::{
     EslintDisableDirective, EslintDisableKind, ExactSuppressionState, InlineSuppressionState,
