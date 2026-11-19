@@ -1,14 +1,18 @@
 //! Preserve explicit JSX/TSX script boundaries without changing regex contents.
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
-use vize_l1::container::vue::compat::SfcParseOptions;
-use vize_l1::container::vue::compat::parse_sfc;
+extern crate std;
+
+use std::format;
+
+use crate::container::vue::compat::SfcParseOptions;
+use crate::container::vue::compat::parse_sfc;
 
 const TSX: &str = include_str!(
-    "../../../../tests/_fixtures/differential/sfc/script-jsx-boundary-7982/tsx.vue.txt"
+    "../../../../../../../tests/_fixtures/differential/sfc/script-jsx-boundary-7982/tsx.vue.txt"
 );
 const JSX: &str = include_str!(
-    "../../../../tests/_fixtures/differential/sfc/script-jsx-boundary-7982/jsx.vue.txt"
+    "../../../../../../../tests/_fixtures/differential/sfc/script-jsx-boundary-7982/jsx.vue.txt"
 );
 
 fn assert_setup(source: &str, language: &str, expected: &str) {

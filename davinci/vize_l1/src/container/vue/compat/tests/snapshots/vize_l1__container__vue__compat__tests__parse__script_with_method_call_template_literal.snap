@@ -1,14 +1,14 @@
 ---
-source: davinci/vize_l1/tests/sfc_descriptor/parse.rs
+source: davinci/vize_l1/src/container/vue/compat/tests/parse.rs
 expression: script
 ---
 SfcScriptBlock {
-    content: "\nconst x = 10 / 2\nconst y = \"test\"\nconst z = x / y\n",
+    content: "\nconst result = getTemplate()`<div>${content}</div>`\nconst arr = items.map((x) => `<li>${x}</li>`)\nconst z = 3\n",
     loc: BlockLocation {
         start: 14,
-        end: 65,
+        end: 125,
         tag_start: 0,
-        tag_end: 74,
+        tag_end: 134,
         start_line: 1,
         start_column: 15,
         end_line: 5,

@@ -1,5 +1,9 @@
+extern crate std;
+
+use std::vec;
+
+use crate::container::vue::compat::parse_sfc;
 use std::borrow::Cow;
-use vize_l1::container::vue::compat::parse_sfc;
 
 #[test]
 fn test_parse_empty_sfc() {

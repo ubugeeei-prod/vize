@@ -1,4 +1,8 @@
-use vize_l1::container::vue::compat::parse_sfc;
+extern crate std;
+
+use std::string::String;
+
+use crate::container::vue::compat::parse_sfc;
 
 #[test]
 fn ignores_template_tokens_in_non_markup_contexts() {

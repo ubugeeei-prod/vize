@@ -7,8 +7,14 @@
 //! together — a partial assertion is exactly how #3602 stayed latent, because
 //! the two halves only disagree once an opening tag spans more than one line.
 
-use vize_l1::container::vue::compat::BlockLocation;
-use vize_l1::container::vue::compat::parse_sfc;
+extern crate std;
+
+use std::string::ToString;
+use std::vec;
+use std::vec::Vec;
+
+use crate::container::vue::compat::BlockLocation;
+use crate::container::vue::compat::parse_sfc;
 
 /// Every field of a [`BlockLocation`], so a comparison cannot silently skip one.
 #[derive(Debug, PartialEq, Eq)]

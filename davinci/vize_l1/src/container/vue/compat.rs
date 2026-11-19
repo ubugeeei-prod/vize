@@ -10,6 +10,8 @@
 //! every block, including custom ones.
 
 mod parse;
+#[cfg(test)]
+mod tests;
 mod types;
 #[doc(hidden)]
 pub mod v_bind;

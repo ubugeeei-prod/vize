@@ -275,8 +275,6 @@ crates/vize_croquis/src/script_parser/legacy_vue2_tests.rs	5
 crates/vize_croquis/src/script_parser/reexecuted_map_tests.rs	1
 crates/vize_croquis/src/script_parser/tests.rs	27
 crates/vize_croquis/src/script_parser/tests/reactivity_offsets.rs	3
-crates/vize_croquis/src/sfc/parse/template_boundary/tests.rs	12
-crates/vize_croquis/src/sfc/parse/tests.rs	9
 crates/vize_croquis/src/types/tests.rs	3
 crates/vize_croquis_cf/src/analyzer/tests_fallthrough.rs	5
 crates/vize_croquis_cf/src/analyzer/tests_fallthrough/dynamic_names.rs	2
@@ -431,6 +429,8 @@ crates/vize_vitrine/src/plugin_output/tests/cache.rs	1
 crates/vize_vitrine/src/plugin_transform/tests.rs	5
 crates/vize_vitrine/src/wasm/tests.rs	8
 davinci/vize_l0/src/profiler/tests.rs	3
+davinci/vize_l1/src/container/vue/compat/tests/parse.rs	9
+davinci/vize_l1/src/container/vue/compat/tests/template_boundary.rs	12
 davinci/vize_l1/src/container/vue/descriptor/template/tests.rs	2
 davinci/vize_l1/src/embed/source/tests.rs	1
 davinci/vize_l1/src/markup/htmlish/document/tests.rs	3

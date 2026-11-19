@@ -1,5 +1,5 @@
 ---
-source: davinci/vize_l1/tests/sfc_descriptor/parse.rs
+source: davinci/vize_l1/src/container/vue/compat/tests/parse.rs
 expression: script
 ---
 SfcScriptBlock {

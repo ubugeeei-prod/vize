@@ -1,9 +1,9 @@
 ---
-source: davinci/vize_l1/tests/sfc_descriptor/parse.rs
+source: davinci/vize_l1/src/container/vue/compat/tests/parse.rs
 expression: script
 ---
 SfcScriptBlock {
-    content: "\nconst tag = '</script>'\nconst y = 2\n",
+    content: "\nconst tag = \"</script>\"\nconst z = 3\n",
     loc: BlockLocation {
         start: 14,
         end: 51,

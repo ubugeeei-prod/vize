@@ -1,8 +1,10 @@
 //! Speculative regex scanning must not corrupt the enclosing block's location.
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
-use vize_l1::container::vue::compat::SfcParseOptions;
-use vize_l1::container::vue::compat::parse_sfc;
+extern crate std;
+
+use crate::container::vue::compat::SfcParseOptions;
+use crate::container::vue::compat::parse_sfc;
 
 #[test]
 fn failed_regex_lookahead_preserves_the_authored_script_boundary() {

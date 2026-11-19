@@ -1,8 +1,12 @@
 //! `parse_sfc_without_css_vars` leaves `css_vars` empty and changes nothing
 //! else in the descriptor.
 
-use vize_l1::container::vue::compat::SfcParseOptions;
-use vize_l1::container::vue::compat::{parse_sfc, parse_sfc_without_css_vars};
+extern crate std;
+
+use std::vec::Vec;
+
+use crate::container::vue::compat::SfcParseOptions;
+use crate::container::vue::compat::{parse_sfc, parse_sfc_without_css_vars};
 
 const SOURCE: &str = "<template><p>{{ a }}</p></template>\n\
 <style scoped>\n.a { color: v-bind(color); }\n</style>\n\
