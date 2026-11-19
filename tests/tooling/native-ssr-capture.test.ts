@@ -118,7 +118,7 @@ void test("prose, generated ledgers and independent target consumers do not gran
     "crates/vize_atelier_sfc/src/native_vapor.rs",
     "crates/vize_atelier_sfc/src/native_selected.rs",
     "crates/vize_atelier_sfc/src/native/setup.rs",
-    "davinci/vize_l1/src/css.rs",
+    "davinci/vize_l1/src/style/css.rs",
     "davinci/vize_l4/src/targets/vapor/write.rs",
     "davinci/vize_l4/src/targets/dom/output.rs",
     "README.md",
@@ -164,7 +164,7 @@ void test("the native runtime matrix requires SSR for affected sources and broad
   assert.ok(
     planNativeRuntime(["crates/vize_atelier_sfc/src/native_ssr.rs"]).matrix.lane.includes("ssr"),
   );
-  assert.ok(planNativeRuntime(["davinci/vize_l1/src/css.rs"]).matrix.lane.includes("ssr"));
+  assert.ok(planNativeRuntime(["davinci/vize_l1/src/style/css.rs"]).matrix.lane.includes("ssr"));
   assert.equal(planNativeRuntime(["docs/unrelated.md"]).matrix.lane.includes("ssr"), false);
   assert(action.includes('VIZE_L4_SSR_REQUIRE_NATIVE: "1"'));
   assert(action.includes("VIZE_JSX_SLOTS_SSR_CAPTURE:"));

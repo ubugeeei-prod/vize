@@ -7,18 +7,13 @@ use crate::container::vue::StyleView;
 use alloc::vec::Vec;
 use cssparser::{CowRcStr, ParseError, ParseErrorKind, Token};
 use vize_l0::{SourceBlock, Span};
-
-pub mod bind;
-mod classes;
 mod empty;
-pub mod lang;
 mod list;
 mod parser;
-mod structure;
-pub use classes::AuthoredClasses;
+pub use crate::style::classes::AuthoredClasses;
 pub use empty::EmptyClassStyle;
 pub use list::SimpleClassListStyle;
-pub use structure::{StyleCode, StyleComment, StyleNode, StyleNodeKind, StyleSheet};
+pub use crate::style::structure::{StyleCode, StyleComment, StyleNode, StyleNodeKind, StyleSheet};
 
 /// Why this original syntax cannot lend the simple-class scoped family.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -96,7 +91,7 @@ impl<'a> CssRule<'a> {
 /// Private construction requires a genuine original descriptor StyleView.
 ///
 /// ```compile_fail
-/// use vize_l1::css::StyleSyntax;
+/// use vize_l1::style::css::StyleSyntax;
 /// let _ = StyleSyntax { source: "replacement", container_index: 0 };
 /// ```
 #[derive(Debug)]
@@ -225,3 +220,4 @@ impl<'o, 'a> SimpleClassStyle<'o, 'a> {
 
 #[cfg(test)]
 mod tests;
+pub(crate) mod lexis;

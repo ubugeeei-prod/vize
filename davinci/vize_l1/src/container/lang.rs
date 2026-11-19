@@ -48,7 +48,7 @@ use alloc::borrow::Cow;
 
 use vize_l0::Span;
 
-pub use crate::css::lang::StyleLanguage;
+pub use crate::style::language::StyleLanguage;
 pub use crate::markup::pug::PugProfile;
 
 /// The grammar that reads a template's content.

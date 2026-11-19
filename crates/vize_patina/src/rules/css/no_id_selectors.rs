@@ -5,7 +5,7 @@
 //! ID selectors have very high specificity which makes styles hard to override.
 //! They also can't be reused since IDs must be unique in a document.
 
-use vize_l1::css::StyleSheet;
+use vize_l1::style::css::StyleSheet;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 

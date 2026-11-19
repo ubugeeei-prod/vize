@@ -3,7 +3,7 @@
 use vize_l0::Span;
 use vize_l1::{
     container::vue::{AdmittedDescriptor, StyleView},
-    css::StyleSyntax,
+    style::css::StyleSyntax,
 };
 use vize_l4::module::ScopeId;
 use vize_l4::write::{EmitDocument, LinkSink};

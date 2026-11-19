@@ -10,9 +10,9 @@ const read = (path: string) => readFileSync(new URL(`../../${path}`, import.meta
 
 void test("every new original scoped dependency selects both source proofs even without ordinary tooling files", () => {
   for (const path of [
-    "davinci/vize_l1/src/css.rs",
-    "davinci/vize_l1/src/css/empty.rs",
-    "davinci/vize_l1/src/css/parser.rs",
+    "davinci/vize_l1/src/style/css.rs",
+    "davinci/vize_l1/src/style/css/empty.rs",
+    "davinci/vize_l1/src/style/css/parser.rs",
     "davinci/vize_l1_to_l2/src/native_file/selected_scoped.rs",
     "davinci/vize_l1_to_l2/src/dialect/vue3/native_file/selected_scoped.rs",
     "davinci/vize_l4/src/module/scope.rs",

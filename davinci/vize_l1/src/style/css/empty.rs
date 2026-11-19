@@ -8,7 +8,7 @@ use vize_l0::Span;
 /// No caller-supplied selector, offsets or pseudo kind grants authority.
 ///
 /// ```compile_fail
-/// use vize_l1::css::EmptyClassStyle;
+/// use vize_l1::style::css::EmptyClassStyle;
 /// let _ = EmptyClassStyle { insertion: 2, pseudo: "empty" };
 /// ```
 #[derive(Debug, Clone, Copy)]
@@ -89,7 +89,7 @@ pub(super) fn observe<'o, 'a>(
 mod tests {
     use crate::{
         container::{Vue, vue::DescriptorOptions},
-        css::StyleSyntax,
+        style::css::StyleSyntax,
         markup::SurfaceParseOptions,
     };
     use cssparser::Token;

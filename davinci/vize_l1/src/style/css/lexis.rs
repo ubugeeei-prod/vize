@@ -2,7 +2,7 @@
 
 use alloc::collections::BTreeSet;
 
-use super::super::AuthoredClasses;
+use crate::style::css::AuthoredClasses;
 use super::super::classes::collect_classes_from_selector_prelude;
 use super::super::structure::{Interpolation, Lexis, StyleSheet, shared};
 

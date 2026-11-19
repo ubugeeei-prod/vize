@@ -5,7 +5,7 @@ use std::collections::BTreeSet;
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, Documentation, MarkupContent, MarkupKind,
 };
-use vize_l1::css::AuthoredClasses;
+use vize_l1::style::css::AuthoredClasses;
 
 use crate::ide::IdeContext;
 

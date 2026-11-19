@@ -14,7 +14,7 @@ use vize_l1::{
         Vue,
         vue::{DescriptorObservation, DescriptorOptions},
     },
-    css::StyleSyntax,
+    style::css::StyleSyntax,
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::lang::js::{NativeScopedTemplateIssueKind as Kind, NativeTemplateOwner};

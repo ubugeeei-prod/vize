@@ -4,12 +4,8 @@
 //! authored source: where rules, comments and nesting are, and which class
 //! names the rules declare.
 
-use super::AuthoredClasses;
+use crate::style::css::AuthoredClasses;
 use super::structure::{Lexis, StyleSheet};
-
-mod css;
-mod indented;
-mod nested;
 
 /// The language of one style block. A block's `lang` value is resolved to
 /// one by the block-language registry, `crate::container::lang::style_lang`.
@@ -44,11 +40,11 @@ impl StyleLanguage {
     pub fn authored_classes(self, source: &str) -> Option<AuthoredClasses> {
         let sheet = self.structure(source, 0);
         match self {
-            Self::Css => css::authored_classes(&sheet),
-            Self::Scss => nested::authored_classes(&sheet, nested::Dialect::Scss),
-            Self::Less => nested::authored_classes(&sheet, nested::Dialect::Less),
-            Self::Sass => indented::authored_classes(&sheet, indented::Syntax::Sass),
-            Self::Stylus => indented::authored_classes(&sheet, indented::Syntax::Stylus),
+            Self::Css => crate::style::css::lexis::authored_classes(&sheet),
+            Self::Scss => crate::style::nesting::authored_classes(&sheet, crate::style::nesting::Dialect::Scss),
+            Self::Less => crate::style::nesting::authored_classes(&sheet, crate::style::nesting::Dialect::Less),
+            Self::Sass => crate::style::sass::authored_classes(&sheet, crate::style::sass::Syntax::Sass),
+            Self::Stylus => crate::style::sass::authored_classes(&sheet, crate::style::sass::Syntax::Stylus),
         }
     }
 
@@ -61,11 +57,11 @@ impl StyleLanguage {
 
     fn lexis(self, source: &str) -> Lexis {
         match self {
-            Self::Css => css::LEXIS,
-            Self::Scss => nested::SCSS,
-            Self::Less => nested::LESS,
-            Self::Sass => indented::SASS,
-            Self::Stylus => indented::stylus(source),
+            Self::Css => crate::style::css::lexis::LEXIS,
+            Self::Scss => crate::style::nesting::SCSS,
+            Self::Less => crate::style::nesting::LESS,
+            Self::Sass => crate::style::sass::SASS,
+            Self::Stylus => crate::style::sass::stylus(source),
         }
     }
 }

@@ -2,7 +2,7 @@
 
 use tower_lsp::lsp_types::FoldingRange;
 use vize_atelier_sfc::SfcStyleBlock;
-use vize_l1::css::lang::StyleLanguage;
+use vize_l1::style::language::StyleLanguage;
 
 use super::region;
 

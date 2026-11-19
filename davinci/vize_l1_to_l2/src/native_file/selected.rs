@@ -7,7 +7,7 @@ use vize_l1::{
         Vue,
         vue::{DescriptorObservation, DescriptorOptions, ScriptRole},
     },
-    css::StyleSyntax,
+    style::css::StyleSyntax,
     markup::{ComponentSourceError, InterpolationFailure, NativeTemplateComponent},
 };
 use vize_l2::{

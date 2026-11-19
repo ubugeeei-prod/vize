@@ -7,7 +7,7 @@
 
 use oxc_span::GetSpan;
 use vize_l0::{Allocator, Box, SourceBlock, Span, Vec};
-use vize_l1::css::bind::v_bind_calls;
+use vize_l1::framework::vue::style_bind::v_bind_calls;
 use vize_l2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 use vize_l2::op::{BindingOp, ElementOp, Namespace, Op, Region, VueCssBindOp};
 

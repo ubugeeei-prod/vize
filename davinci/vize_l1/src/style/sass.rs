@@ -5,10 +5,10 @@ use alloc::collections::BTreeSet;
 use alloc::vec::Vec;
 use vize_l0::String;
 
-use super::super::classes::collect_classes_from_selector_prelude;
-use super::super::structure::{Construct, Interpolation, Lexis, StyleSheet};
-use super::super::{AuthoredClasses, StyleNodeKind};
-use super::nested::{self, Dialect, resolve};
+use crate::style::classes::collect_classes_from_selector_prelude;
+use crate::style::structure::{Construct, Interpolation, Lexis, StyleSheet};
+use crate::style::css::{AuthoredClasses, StyleNodeKind};
+use crate::style::nesting::{self, Dialect, resolve};
 
 #[derive(Clone, Copy, PartialEq)]
 pub(super) enum Syntax {

@@ -5,7 +5,7 @@ use crate::file::FileArtifact;
 use vize_l0::Span;
 use vize_l1::{
     container::vue::{AdmittedDescriptor, DescriptorObservation},
-    css::{EmptyClassStyle, StyleIssue, StyleSyntax},
+    style::css::{EmptyClassStyle, StyleIssue, StyleSyntax},
     markup::{SurfaceParseOptions, TemplateGrammar},
 };
 
@@ -34,7 +34,7 @@ pub struct NativeScopedTemplateIssue {
 /// Normal lower orchestration separately owns its one original CSS parse.
 ///
 /// ```compile_fail
-/// use vize_l1::{container::vue::AdmittedDescriptor, css::EmptyClassStyle};
+/// use vize_l1::{container::vue::AdmittedDescriptor, style::css::EmptyClassStyle};
 /// use vize_l2::{file::FileArtifact, lang::js::{NativeScopedTemplateView, NativeTemplateView}};
 /// fn forge<'o, 'a>(template: NativeTemplateView<'o, 'a>, file: &'o FileArtifact<'a>,
 ///     descriptor: AdmittedDescriptor<'o, 'a>, empty: EmptyClassStyle<'o, 'a>) {
@@ -47,7 +47,7 @@ pub struct NativeScopedTemplateIssue {
 /// ```
 /// The separately supplied original owners must remain alive:
 /// ```compile_fail
-/// use vize_l1::{container::vue::DescriptorObservation, css::StyleSyntax};
+/// use vize_l1::{container::vue::DescriptorObservation, style::css::StyleSyntax};
 /// use vize_l2::lang::js::NativeTemplateFile;
 /// fn discard_style<'a>(owner: &NativeTemplateFile<'a>, original: &DescriptorObservation<'a>, syntax: StyleSyntax<'a>) {
 ///     let view = owner.scoped_view(original, &syntax).unwrap();
@@ -55,7 +55,7 @@ pub struct NativeScopedTemplateIssue {
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l1::{container::vue::DescriptorObservation, css::StyleSyntax};
+/// use vize_l1::{container::vue::DescriptorObservation, style::css::StyleSyntax};
 /// use vize_l2::lang::js::NativeTemplateFile;
 /// fn discard_descriptor<'a>(owner: &NativeTemplateFile<'a>, original: DescriptorObservation<'a>, syntax: &StyleSyntax<'a>) {
 ///     let view = owner.scoped_view(&original, syntax).unwrap();

@@ -5,7 +5,7 @@
 //! Using !important makes styles harder to override and maintain.
 //! It's often a sign of specificity wars and can lead to CSS bloat.
 
-use vize_l1::css::StyleSheet;
+use vize_l1::style::css::StyleSheet;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 

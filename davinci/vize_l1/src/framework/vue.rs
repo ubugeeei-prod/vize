@@ -2,5 +2,6 @@
 //! the directive syntax join (`docs/davinci/decisions/2026-11-17-input-neutral-levels.md`).
 
 pub mod profile;
+pub mod style_bind;
 
 pub use profile::VueTemplate;

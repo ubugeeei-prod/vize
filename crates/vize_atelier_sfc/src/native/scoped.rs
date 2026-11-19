@@ -2,7 +2,7 @@
 
 use super::NativeSfcCompileError;
 use vize_l0::Span;
-use vize_l1::{container::vue::StyleView, css::StyleSyntax};
+use vize_l1::{container::vue::StyleView, style::css::StyleSyntax};
 use vize_l4::{module::ScopeId, write::EmitDocument};
 
 pub(super) fn append(

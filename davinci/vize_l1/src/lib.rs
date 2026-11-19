@@ -65,7 +65,6 @@
 extern crate alloc;
 
 pub mod container;
-pub mod css;
 pub mod dialect;
 pub mod edit;
 pub mod embed;
@@ -74,6 +73,7 @@ pub mod markup;
 mod moved;
 pub mod registry;
 mod slice;
+pub mod style;
 
 // The surface was moved under `markup` (#6835); these paths are deprecated.
 pub use moved::*;

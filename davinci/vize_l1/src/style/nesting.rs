@@ -8,9 +8,9 @@ use alloc::collections::BTreeSet;
 use alloc::vec::Vec;
 use vize_l0::String;
 
-use super::super::classes::collect_classes_from_selector_prelude;
-use super::super::structure::{Interpolation, Lexis, StyleSheet, shared};
-use super::super::{AuthoredClasses, StyleNodeKind};
+use crate::style::classes::collect_classes_from_selector_prelude;
+use crate::style::structure::{Interpolation, Lexis, StyleSheet, shared};
+use crate::style::css::{AuthoredClasses, StyleNodeKind};
 
 /// A resolved selector list grows multiplicatively with nested comma lists.
 const MAX_SELECTORS: usize = 256;

@@ -9,7 +9,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::vue::{DescriptorOptions, ScriptRole},
-    css::StyleIssue,
+    style::css::StyleIssue,
     embed::Lang,
     markup::SurfaceParseOptions,
 };

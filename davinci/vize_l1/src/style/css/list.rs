@@ -7,7 +7,7 @@ use cssparser::Token;
 /// Every insertion is the end of an actual original classname token.
 ///
 /// ```compile_fail
-/// use vize_l1::css::SimpleClassListStyle;
+/// use vize_l1::style::css::SimpleClassListStyle;
 /// let _ = SimpleClassListStyle { count: 2, insertions: [1, 2] };
 /// ```
 #[derive(Debug, Clone, Copy)]
@@ -100,7 +100,7 @@ pub(super) fn observe<'o, 'a>(
 mod tests {
     use crate::{
         container::{Vue, vue::DescriptorOptions},
-        css::{StyleIssueCode, StyleSyntax},
+        style::css::{StyleIssueCode, StyleSyntax},
         markup::SurfaceParseOptions,
     };
     use cssparser::Token;
