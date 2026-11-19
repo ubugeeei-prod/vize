@@ -118,6 +118,7 @@ jobs:
             node tools/benchmarks/scripts/instruction-counts.mjs --sfc-parsing --collect --out "$RUNNER_TEMP/sfc/sic"
             cp "$RUNNER_TEMP/sfc/sic/run-1.json" ../out/$NAME.sic.json
             cp "$RUNNER_TEMP/sfc/sic/binaries.json" ../out/$NAME.sic-binaries.json
+            tar -C "$RUNNER_TEMP/sfc/sic/run-1" -czf ../out/$NAME.sicdumps.tgz .
             exit 0
           fi
           node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "$RUNNER_TEMP/ic"
@@ -131,6 +132,7 @@ jobs:
           node tools/benchmarks/scripts/instruction-counts.mjs --sfc-parsing --collect --out "$RUNNER_TEMP/sfc/sic"
           cp "$RUNNER_TEMP/sfc/sic/run-1.json" ../out/$NAME.sic.json
           cp "$RUNNER_TEMP/sfc/sic/binaries.json" ../out/$NAME.sic-binaries.json
+            tar -C "$RUNNER_TEMP/sfc/sic/run-1" -czf ../out/$NAME.sicdumps.tgz .
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with: { name: "size-${{ steps.role.outputs.name }}", path: out, retention-days: 3 }
