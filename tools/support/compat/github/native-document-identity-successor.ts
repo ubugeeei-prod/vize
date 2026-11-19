@@ -6,6 +6,7 @@ import {
   assertNativeDocumentIdentityAbi,
   nativeDocumentIdentityActor,
 } from "./native-document-identity-fixtures.ts";
+import { renamePath, rewriteText } from "../../levels/rename-codenames.ts";
 
 type Read = (side: "base" | "head", path: string) => Buffer | null;
 export const NATIVE_IDENTITY_SUCCESSOR_ID =
@@ -112,8 +113,12 @@ function sourceImage(
 }
 function actualSources(read: Read, side: "base" | "head", images: Record<string, string>) {
   for (const [path, encoded] of Object.entries(images)) {
+    const image = Buffer.from(encoded, "base64");
+    // Images predate the level rename; a source matches its image as written or as renamed.
+    const actual = bytes(read, side, renamePath(path));
     assert.ok(
-      bytes(read, side, path).equals(Buffer.from(encoded, "base64")),
+      actual.equals(image) ||
+        actual.equals(Buffer.from(rewriteText(renamePath(path), image.toString("utf8")))),
       `changed ${side} native identity successor source: ${path}`,
     );
   }
