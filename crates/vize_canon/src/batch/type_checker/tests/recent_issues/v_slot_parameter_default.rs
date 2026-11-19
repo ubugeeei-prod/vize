@@ -3,6 +3,15 @@
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 
+const REPRO: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/v-slot-parameter-default-13415/A.vue.txt"
+));
+const SEMANTIC_CONTROL: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/v-slot-parameter-default-13415/semantic.ts.txt"
+));
+
 #[test]
 fn defaulted_v_slot_pattern_preserves_the_project_semantic_pass() {
     if resolve_test_tsgo_binary().is_none() {
@@ -10,26 +19,7 @@ fn defaulted_v_slot_pattern_preserves_the_project_semantic_pass() {
     }
     let project_root = create_project_case(
         "v-slot-parameter-default",
-        &[
-            (
-                "src/A.vue",
-                r#"<script setup lang="ts">
-import { defineComponent } from 'vue'
-
-const Slotty = defineComponent({
-  props: { a: String },
-  slots: Object as any,
-  template: '<div/>',
-})
-</script>
-
-<template>
-  <Slotty v-slot="{ editor } = {}">{{ editor }}</Slotty>
-</template>
-"#,
-            ),
-            ("src/semantic.ts", "export const visible: string = 1;\n"),
-        ],
+        &[("src/A.vue", REPRO), ("src/semantic.ts", SEMANTIC_CONTROL)],
     );
 
     let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
