@@ -38,6 +38,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 self.rules,
                 self.rule_names,
                 selection,
+                &self.indexed_plans.template,
                 CallbackSite::Template,
                 |_, rule, ctx| rule.run_on_template(ctx, root),
             );

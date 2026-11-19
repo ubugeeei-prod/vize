@@ -16,6 +16,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 self.rules,
                 self.rule_names,
                 selection,
+                &self.indexed_plans.if_node,
                 CallbackSite::Conditional(if_node.loc.span.start),
                 |_, rule, ctx| rule.check_if(ctx, if_node),
             );
@@ -39,6 +40,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 self.rules,
                 self.rule_names,
                 selection,
+                &self.indexed_plans.for_node,
                 CallbackSite::List(for_node.loc.span.start),
                 |_, rule, ctx| rule.check_for(ctx, for_node),
             );

@@ -31,6 +31,10 @@ impl Rule for NoUndefinedRefs {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE
+    }
+
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
         // Imported props can declare any of the otherwise unresolved names.
         // A single-file pass cannot prove they are absent from that shape.

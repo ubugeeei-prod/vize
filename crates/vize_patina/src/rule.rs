@@ -48,6 +48,43 @@ pub struct RuleMeta {
     pub default_severity: Severity,
 }
 
+/// Legacy template callbacks a [`Rule`] implements.
+///
+/// The default keeps every callback for compatibility with external rules.
+/// Built-in rules can narrow the set to avoid empty virtual calls.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RuleHooks(u8);
+
+impl RuleHooks {
+    /// No legacy template callbacks.
+    pub const NONE: Self = Self(0);
+    /// Template-root callback.
+    pub const TEMPLATE: Self = Self(1 << 0);
+    /// Element-entry callback.
+    pub const ELEMENT: Self = Self(1 << 1);
+    /// Element-exit callback.
+    pub const EXIT: Self = Self(1 << 2);
+    /// Directive callback.
+    pub const DIRECTIVE: Self = Self(1 << 3);
+    /// `v-for` callback.
+    pub const FOR: Self = Self(1 << 4);
+    /// `v-if` callback.
+    pub const IF: Self = Self(1 << 5);
+    /// Interpolation callback.
+    pub const INTERPOLATION: Self = Self(1 << 6);
+    /// Every legacy template callback.
+    pub const ALL: Self = Self((1 << 7) - 1);
+
+    /// Combine callback sets in a const expression.
+    pub const fn union(self, other: Self) -> Self {
+        Self(self.0 | other.0)
+    }
+
+    pub(crate) const fn contains(self, hook: Self) -> bool {
+        self.0 & hook.0 != 0
+    }
+}
+
 /// Rule trait for implementing lint rules
 ///
 /// Rules implement visitor-like methods that are called during AST traversal.
@@ -55,6 +92,11 @@ pub struct RuleMeta {
 pub trait Rule: Send + Sync {
     /// Get rule metadata
     fn meta(&self) -> &'static RuleMeta;
+
+    /// Legacy template callbacks implemented by this rule.
+    fn template_hooks(&self) -> RuleHooks {
+        RuleHooks::ALL
+    }
 
     /// Borrow this actual configured instance's ordinary-SFC script callback.
     /// Names alone confer no capability. The existing shared parse supplies

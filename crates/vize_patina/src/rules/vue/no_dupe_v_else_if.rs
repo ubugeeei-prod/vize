@@ -60,6 +60,10 @@ impl Rule for NoDupeVElseIf {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE.union(crate::rule::RuleHooks::ELEMENT)
+    }
+
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         // Check root children
         check_element_children(ctx, &root.children);

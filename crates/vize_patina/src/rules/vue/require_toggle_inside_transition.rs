@@ -157,6 +157,10 @@ impl Rule for RequireToggleInsideTransition {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Built-in `<transition>` / `<Transition>` wrapper (case-insensitive,
         // matching how Vue resolves the built-in component name).

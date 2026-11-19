@@ -230,6 +230,10 @@ impl Rule for NoMutatingProps {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE
+    }
+
     fn as_sfc_script_rule(&self) -> Option<&dyn crate::rules::script::ScriptRule> {
         Some(&self.options)
     }

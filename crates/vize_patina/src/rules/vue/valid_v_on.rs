@@ -88,6 +88,10 @@ impl Rule for ValidVOn {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::DIRECTIVE
+    }
+
     fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
         Some(self)
     }
@@ -188,6 +192,10 @@ struct ConfiguredValidVOn {
 impl Rule for ConfiguredValidVOn {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::DIRECTIVE
     }
 
     fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {

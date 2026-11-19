@@ -45,6 +45,10 @@ impl Rule for CommentDirective {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
+
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::NONE
+    }
 }
 
 #[cfg(test)]
