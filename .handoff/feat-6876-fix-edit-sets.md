@@ -16,6 +16,9 @@
     Wall times were stable. RSS moved ±1 MB on every lane, including Compile and Format, which this
     change does not touch.
   - The code change is about 100 lines, so this is a codegen or inlining cascade, not new code.
+    First rule out build noise with an A/A release build of the base. Main's ci-opt size moved
+    about 1 MB between `dc783944a3` (80,784,152) and `f16ac2dff9` (79,786,840), so the base
+    number itself may be the outlier. Use the release-measure workflow for both builds.
     The next step is to build both with `--config 'profile.release.package.vize.strip="none"'` and
     diff `nm --size-sort` to find the function that grew.
   - Suspects: the `sort_by_key` monomorphization of `SpanEdit<'_, '_, ()>` (48 bytes) in
@@ -24,7 +27,28 @@
     bind `SpanEdit`s only after selection.
   - No instruction-count dispatch was made, because the CI queue was over 100.
 
-## Next steps, in order
+## Maintainer decision (2026-11-19, later): pure L1 for syntax rules
+
+Syntax rules run on the pure L1 `native/` engine with no L2 lowering. The L2 markup facade serves
+semantic rules only. #13397's ledger already targets `L1 syntax` at `native-l1` and adds an
+`l1-callback` column (12 of 202 today). Instruction counts are judged on the RELEASE profile
+(fat LTO, 1 CGU), every row ≤ base, with ci-opt informational. Release size must not grow. Use the
+perf-backlog agent's dispatchable release-measure workflow, not local release builds. As of
+2026-11-19 it had not landed on main.
+
+LN2 replaces item 2 below:
+1. Complete `native/` until it admits every input the facade admits, with no whole-input
+   refusals. The refusal kinds to retire are in `native.rs` (`NativeLintRefusal`) and
+   `native/template.rs` (`NativeTemplateLintRefusal`, the attribute and text profiles).
+2. Make `native/` the default engine for syntax rules. A run with both syntax and semantic rules
+   builds L1 once and lowers L2 once from it (`L2Template::lower` already starts from the one L1
+   parse), with no second parse. A syntax-only run never lowers L2.
+3. Migrate the 202 `L1 syntax` ledger rows onto it in waves of about 20, by directory. Start with
+   the 12 `l1-callback = yes` rows, then the 82 `markup-l2` syntax rows, then the 111
+   `relief-visitor` rows. Each wave deletes the rule's Relief/facade body in the same PR, so no
+   wave runs two implementations.
+
+## Next steps, in order (pre-decision; item 2 is superseded by the section above)
 
 1. **FX2 step 2:** move `Fix`/`TextEdit` from `vize_patina::diagnostic::types` to `vize_l0::diag`
    (serde is already a vize_l0 dependency) and re-export them from Patina under the current paths.
