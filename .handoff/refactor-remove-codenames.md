@@ -1,44 +1,44 @@
 # Handoff: refactor/remove-codenames (#6832, gate `levels.codenames`)
 
-Base: 4a0fb417ed. The branch is a full scripted replay (rehearsed four times, deterministic).
-Gate `levels.codenames`: 0 paths / 0 lines. Maintainer decisions 2026-11-19: hard rename without
-aliases ("Breaking changes" in the PR body); refined gate measure accepted; instruction rows and
-binary size are judged on the shipped release profile (fat LTO, 1 CGU), ci-opt shifts are
-informational.
+Base: 4a0fb417ed. The branch is a full scripted replay. A rehearsal from the derived commit lists
+reproduces the branch tree byte for byte. Gate `levels.codenames`: 0 paths / 0 lines.
+
+## Maintainer rules for this PR (2026-11-19)
+
+- Hard rename without aliases; every public rename listed under "Breaking changes" in the PR body.
+- Refined gate measure accepted (decision record updated).
+- Move/rename-only PR passes if: optimized LLVM IR is identical to base after normalizing symbol
+  names and paths (IR-identity checker, being built by the levels-inputs agent), output is
+  byte-identical, and the release (fat LTO, 1 CGU) binary does not grow. ci-opt and release
+  instruction row shifts are reported for information.
 
 ## Replay (merge window)
 
-`replay.sh <worktree> <base> <branch> <pre-list> <post-list>` in the agent scratchpad does all of it:
-reset, cherry-pick the pre-move commits, `--move` + commit, `--rewrite` (node 26 outside
-`nix develop`, pinned rust bin on PATH) + `git add -A` + commit, cherry-pick the post-rewrite
-commits, `--check`.
+The agent scratchpad has `codenames/replay-plan.sh <repo> <base> <branch> <pre> <post>`, which
+derives the lists (the pre-move commits plus every later commit that touches only the script and
+its test; the post commits are the rest; it drops the move, rewrite and `tmp:` commits).
+`codenames/replay.sh <worktree> <base> <branch> <pre> <post>` then: reset, cherry-pick pre,
+`--move` + commit, `--rewrite` (node 26 outside `nix develop`, pinned rust bin on PATH) + `git add
+-A` + commit, cherry-pick post, `--check`. Drop the handoff commit for the final PR.
 
-- Pre-move (script and its tests): every `refactor(levels): script …`, `rewrite codename prose …`,
-  `delete the deprecated program-named feature aliases`, `keep the old L3 package and op names`,
-  and every `fix(levels): keep … / re-pin … / skip … / reflow … / treat …` commit that touches only
-  `tools/support/levels/rename-codenames.ts` and `tests/tooling/codename-rename.test.ts`.
-- Post-rewrite: alias lines, instruction ratchet, replay-script deletion, storage bridge record,
-  translated docs, decision record (x2), regenerated lists, retired-name guards, historical
-  compiler rows, fixture digests of touched bench sources, re-blessed remarks baselines,
-  reconstructed-original re-pins (#6832 notes), frozen copies read through the rename, q16, archived
-  instruction evidence, suite registry, release metadata, native DTO custody, native identity images.
+## Evidence so far
 
-## Rules the script now carries
+- Behavior (ci-opt `vize`, 2078 .vue files, A/A clean): compile DOM/SSR/Vapor, lint, fmt, check and
+  virtual TS are byte-identical. Only the help text changes (the renamed CLI names).
+- Tooling: every regression found by the 11-19 full checks is fixed locally. Left: CI-only tests
+  (literal sources need Actions) and differential-compiler-cli (needs the CLI build).
+- Rust, `--profile ci` per package, local: l0, l1, l1_to_l2, l2, l2_to_l3, l3, croquis, armature,
+  patina, atelier_core/dom/ssr/vapor/jsx, incremental and musea (after the golden regeneration) are
+  green. Two failures are environmental (they also fail on base or are path aliasing): l4
+  `tsrx_dom` (fails on base too) and carton `declared_platform_follows_its_hoisted_slot`
+  (/tmp vs /private/tmp). maestro `level_ts40_projection` is green. atelier_sfc, maestro (full) and
+  vize are not yet run (paused at 58 GB free).
+- ci-opt size: base 71,862,992 B, head 71,862,256 B (−736). ci-opt instruction shift is explained by
+  name hashing (probe runs 44469785640, 44469790948). The base release-profile instruction
+  measurement is in run 44488538947.
 
-- Keep bytes: history verifiers and their manifests, L2 v1 wire tests, literal listing sources,
-  captured provenance, fix-history TSV ledgers, lint preset audit inputs, archived instruction
-  evidence, retained template-emit manifest, 47c6 research packets, `*-observation.json`,
-  `/tmp` paths, recorded commit subjects.
-- Re-pin (current bytes only): compiler fix-history receipt, native source recipe fixtures,
-  compiler differential manifest, Vapor style witnesses. All other digests stay (most pin past
-  bytes that only equal main's).
+## Open
 
-## Still open
-
-- Full check on the replay4 head (queue was >140; dispatch when it drains). Expect remaining CI-only
-  checks (literal sources need Actions).
-- Rust: regenerate `vize_musea` golden fingerprints (`VIZE_MUSEA_GOLDEN_WRITE=1`) and the
-  `vize_maestro` ts40 insta snapshots if the projection text embeds the renamed fixture path.
-- Release-profile instruction counts: base twin, head, head twin with the temporary
-  `[profile.ci-opt]` fat-LTO override (`bench/codenames-release-*` branches); release size A/B.
-- A/A performance observation.
+- Full check on the branch head (dispatch queued behind the CI backlog).
+- IR identity (checker pending), release size (release-measure workflow pending), A/A perf
+  observation, and the remaining local Rust packages once disk ≥ 60 GB.
