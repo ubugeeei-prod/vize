@@ -10,6 +10,7 @@ use vize_l2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp};
 
 use super::children::contains_jsx;
 use super::directives::directive;
+use super::modifiers::split_event_modifiers;
 use super::slots::{SlotsAttribute, V_SLOTS, slots_attribute, slots_object};
 use super::{Cx, JsxRefusal, span};
 
@@ -134,11 +135,33 @@ fn attribute<'a>(
     if contains_jsx(expression) {
         return Err(JsxRefusal::Attribute);
     }
-    if cx.dialect.features.event_underscore_modifiers && is_on(name) && name.contains('_') {
-        return Err(JsxRefusal::Attribute);
-    }
     cx.mint();
     let value = value(cx, expression.span())?;
+    // `onClick_stop`: the head names the event, `_` segments its modifiers.
+    if cx.dialect.features.event_underscore_modifiers
+        && let Some((head, underscored)) = split_event_modifiers(name)
+    {
+        let (event, mut modifiers) = cx
+            .dialect
+            .features
+            .on_option_suffixes
+            .then(|| split_option_suffixes(cx.allocator, head))
+            .flatten()
+            .unwrap_or_else(|| (event_name(cx.allocator, head), Vec::new_in(&cx.allocator)));
+        for modifier in underscored.split('_') {
+            modifiers.push(modifier);
+        }
+        out.bindings.push(BindingOp::On(Box::new_in(
+            OnOp {
+                name: Some(DynamicName::Static(event)),
+                modifiers,
+                handler: Some(value.into()),
+                span: span(attribute.span),
+            },
+            &cx.allocator,
+        )));
+        return Ok(());
+    }
     if cx.dialect.features.on_option_suffixes
         && let Some((event, modifiers)) = split_option_suffixes(cx.allocator, name)
     {
@@ -224,10 +247,20 @@ fn split_option_suffixes<'a>(
     for modifier in reversed.iter().rev() {
         modifiers.push(*modifier);
     }
-    let mut chars = event.chars();
-    let first = chars.next()?;
+    Some((lower_first(allocator, event), modifiers))
+}
+
+/// `onClick` → `click`.
+fn event_name<'a>(allocator: &'a Allocator, head: &str) -> &'a str {
+    lower_first(allocator, head.get(2..).unwrap_or_default())
+}
+
+fn lower_first<'a>(allocator: &'a Allocator, name: &str) -> &'a str {
+    let mut chars = name.chars();
     let mut lowered = vize_l0::String::default();
-    lowered.push(first.to_ascii_lowercase());
+    if let Some(first) = chars.next() {
+        lowered.push(first.to_ascii_lowercase());
+    }
     lowered.push_str(chars.as_str());
-    Some((allocator.alloc_str(&lowered), modifiers))
+    allocator.alloc_str(&lowered)
 }

@@ -78,11 +78,11 @@ a reviewed update to the executable verdict inventory.
 | `events/capture-suffix`                          | divergent  | only vue-jsx-vapor ignores the `Capture` name suffix                            |
 | `events/once-suffix`                             | divergent  | only vue-jsx-vapor ignores the `Once` name suffix                               |
 | `components/dynamic-component`                   | divergent  | only Vize resolves `<component is>` dynamically                                 |
-| `events/capture-modifier`                        | divergent  | Vize ignores the underscore `capture` modifier                                  |
-| `events/once-modifier`                           | divergent  | Vize ignores the underscore `once` modifier                                     |
-| `events/stop-modifier`                           | divergent  | Vize ignores the underscore `stop` modifier                                     |
-| `events/prevent-modifier`                        | divergent  | Vize ignores the underscore `prevent` modifier                                  |
-| `directives/custom-modifiers`                    | divergent  | Vize passes no custom directive modifiers                                       |
+| `events/capture-modifier`                        | equivalent | the underscore `capture` modifier registers a capture listener                  |
+| `events/once-modifier`                           | equivalent | the underscore `once` modifier runs the listener once                           |
+| `events/stop-modifier`                           | equivalent | the underscore `stop` modifier stops propagation                                |
+| `events/prevent-modifier`                        | equivalent | the underscore `prevent` modifier prevents the default action                   |
+| `directives/custom-modifiers`                    | equivalent | underscore argument modifiers reach the custom directive                        |
 | `directives/v-once`                              | divergent  | Vize keeps updating a `v-once` subtree                                          |
 | `props/ref-callback`                             | divergent  | Vize throws on a function `ref`                                                 |
 | `options/on-object-value`                        | equivalent | value-sensitive pair agrees                                                     |

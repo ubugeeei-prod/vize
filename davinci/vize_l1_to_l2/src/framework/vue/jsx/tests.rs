@@ -229,7 +229,7 @@ fn unlanded_constructs_refuse_the_whole_root() {
         "const A = <div v-show:x={x} />;",
         "const A = <i v-show=\"x\" />;",
         "const A = <i v-show={<b />} />;",
-        "const A = <a v-x:a_b={v} />;",
+        "const A = <a v-x:_b={v} />;",
         "const A = <a v-x_m={v} />;",
         "const A = <B v-custom={v} />;",
         "const A = <B v-html={h} />;",
@@ -314,6 +314,23 @@ fn boolean_and_and_ternary_chains_become_ui_if() {
         )
         .as_deref(),
         Ok("ops=6 <p> if[ a? if[ b? <i> else: <b> ] else: <s> ] ")
+    );
+}
+
+#[test]
+fn underscore_modifiers_split_events_and_directive_arguments() {
+    assert_eq!(
+        lower(
+            "const A = <b onClick_stop_prevent={f} onKeyupCapture_enter={g} onSelect_item={h} />;",
+            Exec::ReRender
+        )
+        .as_deref(),
+        Ok("ops=4 <b @Some(Static(\"click\"))Vec([\"stop\", \"prevent\"]) \
+             @Some(Static(\"keyup\"))Vec([\"capture\", \"enter\"]) :onSelect_item> ")
+    );
+    assert_eq!(
+        lower("const A = <p v-mark:left_a_b={v} />;", Exec::ReRender).as_deref(),
+        Ok("ops=2 <p v-mark:Some(Static(\"left\"))Vec([\"a\", \"b\"])=Some(\"v\")> ")
     );
 }
 

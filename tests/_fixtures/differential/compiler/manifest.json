@@ -6519,6 +6519,33 @@
       }
     },
     {
+      "id": "compiler/jsx/underscore-modifiers-12313",
+      "state": "active",
+      "adapter": "compiler-jsx-entry-source-v1",
+      "compat": "native",
+      "targets": [
+        "vdom",
+        "vapor",
+        "vdom-ssr",
+        "vapor-ssr"
+      ],
+      "inputs": {
+        "root": "jsx-underscore-modifiers-12313",
+        "files": [
+          {
+            "path": "App.jsx.txt",
+            "role": "entry",
+            "sha256": "3e4c54582143d00f04a493c11459ad4d20be99e99bb028c93a39a93563d502f4"
+          }
+        ]
+      },
+      "reference": {
+        "path": "jsx-underscore-modifiers-12313/modules.expected.json",
+        "sha256": "96a782544b1aef1d764da17873c8aba3fb4f27089f137d110a95199f6cfa0a06",
+        "source": "Source-built vize_atelier_jsx compile_jsx with the #12313 fix: `onX_mod` names the `x` listener with `v-on` modifiers when every `_` segment is one (a segment that is not, as in `onSelect_item`, keeps the prop), and a custom directive argument `arg_a_b` is the argument `arg` with modifiers `a` and `b`, on every target. The reference was reviewed against the vue-jsx-vapor oracle rows the fix turned equivalent."
+      }
+    },
+    {
       "id": "compiler/jsx/v-model-array-shapes-13167",
       "state": "active",
       "adapter": "compiler-jsx-entry-source-v1",
