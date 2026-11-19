@@ -36,7 +36,7 @@ impl TemplateFormatter<'_> {
                 continue;
             }
             if source.get(pos..pos + 2) == Some(b"</".as_slice())
-                && let Some((tag_name, end)) = helpers::parse_closing_tag(text, pos)
+                && let Some((tag_name, end)) = super::tag_lex::closing(text, pos)
                 && source.get(end.saturating_sub(1)) == Some(&b'>')
             {
                 output.extend_from_slice(b"</");
@@ -48,7 +48,7 @@ impl TemplateFormatter<'_> {
             }
             if source.get(pos) == Some(&b'<')
                 && let Some((tag_name, mut attrs, self_closing, end)) =
-                    self.parse_opening_tag(text, pos, depth)
+                    self.opening(text, pos, depth)
                 && source.get(end.saturating_sub(1)) == Some(&b'>')
             {
                 if self.options.sort_attributes {

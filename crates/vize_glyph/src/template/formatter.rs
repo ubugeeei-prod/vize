@@ -23,6 +23,7 @@ mod opening_attributes;
 mod preserved_text;
 mod suppression;
 mod tags;
+pub(crate) mod tag_lex;
 mod text;
 mod text_wrap;
 mod whitespace_significant;
@@ -157,7 +158,7 @@ impl<'a> TemplateFormatter<'a> {
             if byte_at(source, pos) == b'<' {
                 if pos + 1 < len
                     && byte_at(source, pos + 1) == b'/'
-                    && let Some((tag_name, end_pos)) = parse_closing_tag(input, pos)
+                    && let Some((tag_name, end_pos)) = tag_lex::closing(input, pos)
                 {
                     self.flush_text_buffer::<CANONICAL>(&mut output, &mut text, depth, &mut joiner);
                     let join = joiner.open(pos);
@@ -184,7 +185,7 @@ impl<'a> TemplateFormatter<'a> {
                     continue;
                 }
                 if let Some((tag_name, attrs, is_self_closing, end_pos)) =
-                    self.parse_opening_tag(input, pos, depth)
+                    self.opening(input, pos, depth)
                 {
                     self.flush_text_buffer::<CANONICAL>(&mut output, &mut text, depth, &mut joiner);
                     let join = joiner.open(pos);
@@ -249,7 +250,7 @@ impl<'a> TemplateFormatter<'a> {
                     } else if !is_void
                         && !whitespace_significant
                         && let Some(closing_end_pos) =
-                            self.parse_immediate_empty_closing_tag(input, end_pos, &tag_name)
+                            self.immediate_empty(input, end_pos, &tag_name)
                     {
                         output.push(b'>');
                         output.extend_from_slice(b"</");

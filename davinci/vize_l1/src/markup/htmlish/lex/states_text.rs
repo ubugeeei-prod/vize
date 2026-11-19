@@ -81,7 +81,7 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
         }
     }
 
-    fn recover_incomplete_tag_at_eof(&mut self) {
+    pub(super) fn recover_incomplete_tag_at_eof(&mut self) {
         let inferred_tag_end = self.index.saturating_sub(1);
 
         match self.state {

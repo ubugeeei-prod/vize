@@ -88,3 +88,7 @@ pub(crate) fn format_template_content_with_base_depth(
 
 #[cfg(test)]
 mod tests;
+
+pub(crate) fn experiment_set_l1_tags(on: bool) {
+    formatter::tag_lex::L1_TAGS.store(on, core::sync::atomic::Ordering::Relaxed);
+}

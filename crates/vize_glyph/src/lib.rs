@@ -135,3 +135,8 @@ pub fn format_script_with_sort_imports(
 ) -> Result<String, FormatError> {
     script::format_script_content_stable(source, options, allocator, source_type, sort_imports)
 }
+
+#[doc(hidden)]
+pub fn experiment_set_l1_tags(on: bool) {
+    template::experiment_set_l1_tags(on);
+}

@@ -3,7 +3,7 @@ use super::{
     TemplateFormatter, format_interpolations_with_vue_version, parse_interpolation_range,
     suppression::{ChunkJoin, LineJoiner},
 };
-use crate::template::helpers::{is_whitespace, parse_closing_tag};
+use crate::template::helpers::is_whitespace;
 use unicode_width::UnicodeWidthStr;
 
 pub(super) fn hugged_closing_name(
@@ -96,7 +96,7 @@ impl TemplateFormatter<'_> {
             child
         };
         let child_bytes = child.as_bytes();
-        let (closing_name, _) = parse_closing_tag(input, close)?;
+        let (closing_name, _) = super::tag_lex::closing(input, close)?;
         if closing_name != tag_name {
             return None;
         }

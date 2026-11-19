@@ -10,6 +10,7 @@ pub mod char_codes;
 mod configuration;
 mod dynamic_arg;
 mod in_tag_comment;
+mod pull;
 mod sequences;
 mod states_special;
 mod states_tag;
@@ -21,6 +22,7 @@ use core::marker::PhantomData;
 use crate::markup::profile::Profile;
 use crate::markup::token::Sink;
 
+pub use pull::PulledTag;
 use sequences::Sequence;
 pub(crate) use types::State;
 pub use types::{is_end_of_tag_section, is_tag_start_char, is_whitespace};
