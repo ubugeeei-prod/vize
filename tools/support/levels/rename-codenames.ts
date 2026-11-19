@@ -34,8 +34,13 @@ const capture =
  */
 const parsedCapture =
   /^(?:tests\/tooling\/fixtures\/canonical-observer-logs|tests\/fixtures\/l3-reference|crates\/vize\/tests\/fixtures\/dump_cli)\//u;
-/** Records that pin git trees at past revisions name the paths those trees had. */
-const pinnedTrees = /^editors\/vscode\/test\/css-hover-source-custody\.json$/u;
+/**
+ * Records that pin git trees at past revisions name the paths those trees had, and so do the
+ * verifiers that read those revisions (the warm type-backed path and timing host moves and the
+ * raw git-reader harness, whose body digests are of past bytes).
+ */
+const pinnedTrees =
+  /^(?:editors\/vscode\/test\/css-hover-source-custody\.json|tests\/performance\/support\/warm-type-backed-(?:(?:path|timing)-host(?:-manifest\.json|\.ts)|git-reader-harness\.ts)|tests\/tooling\/warm-type-backed-(?:path|timing)-host\.test\.ts)$/u;
 /**
  * Frozen copies of past files are captures too: a source or config file saved as `.txt` or
  * `.fixture`, and the frozen-source and source-custody trees that pin such copies.
