@@ -205,6 +205,11 @@ test("maximum non-release runners preserve every original job contract", () => {
         before.jobs["pr-source-plan"],
         "pr-source-plan",
       );
+      restoreReviewedCheckout(
+        restored.jobs["source-report"],
+        before.jobs["source-report"],
+        "source-report",
+      );
       restoreHistoryToolchainSelection(
         restored.jobs["ci-selection-tests"],
         before.jobs["ci-selection-tests"],

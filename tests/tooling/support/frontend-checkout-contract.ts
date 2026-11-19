@@ -29,6 +29,16 @@ const contracts = {
       "tools/support/json-value.ts",
     ],
   },
+  // #6830: the source gate's script closure (report-checkout-closure.test.ts).
+  "source-report": {
+    depth: 1,
+    files: [
+      "package.json",
+      "tools/support/compat/github/canonical-corpus-selection.mjs",
+      "tools/support/compat/github/plan-source-checks.ts",
+      "tools/support/compat/github/require-needs-success.ts",
+    ],
+  },
 } as const;
 
 /** Invert only independently exercised checkout input changes. */
