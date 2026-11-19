@@ -3,7 +3,7 @@
 use super::*;
 use vize_l2::{
     expr::ExprRef,
-    file::{DeclarationKind, InitializerKind, Namespace, FileModelState},
+    file::{DeclarationKind, FileModelState, InitializerKind, Namespace},
     op::{BindingOp, Op},
     resolution::Usage,
 };

@@ -21,9 +21,7 @@ impl<'a> super::build::Facts<'a> {
             .as_deref()
             .map_or(&[], |storage| storage.rows.as_slice())
     }
-    pub(crate) fn file_conditionals_mut(
-        &mut self,
-    ) -> &mut alloc::vec::Vec<FileConditional<'a>> {
+    pub(crate) fn file_conditionals_mut(&mut self) -> &mut alloc::vec::Vec<FileConditional<'a>> {
         &mut self
             .conditional_storage
             .get_or_insert_with(|| alloc::boxed::Box::new(ConditionalStorage::default()))

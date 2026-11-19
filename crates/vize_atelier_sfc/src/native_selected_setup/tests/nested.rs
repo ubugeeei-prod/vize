@@ -60,8 +60,7 @@ fn exact_original_nested_case_retains_element_operand_file_scope_and_setup_read(
         panic!("normally attached original node");
     };
     assert!(core::ptr::eq(
-        file.file_interpolation(node)
-            .expect("same actual File row"),
+        file.file_interpolation(node).expect("same actual File row"),
         record
     ));
     assert!(

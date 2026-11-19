@@ -16,8 +16,8 @@ use vize_l1::{
 use vize_l2::{
     file::{DeclarationKind, Namespace},
     lang::js::{
-        FileProducer, SelectedSetupIssueKind, TemplateRouteIssueKind, TemplateOwner,
-        ProgramInput, ProgramScope, SetupIssueKind, VueSetup,
+        FileProducer, ProgramInput, ProgramScope, SelectedSetupIssueKind, SetupIssueKind,
+        TemplateOwner, TemplateRouteIssueKind, VueSetup,
     },
 };
 

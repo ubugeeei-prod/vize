@@ -1,6 +1,4 @@
-use super::{
-    Allocator, InterpolationInput, InterpolationInputError, Test, check, same, selected,
-};
+use super::{Allocator, InterpolationInput, InterpolationInputError, Test, check, same, selected};
 
 #[test]
 fn equal_text_foreign_owner_and_duplicate_original_child_cannot_join() -> Test {

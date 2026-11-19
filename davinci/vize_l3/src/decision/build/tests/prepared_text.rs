@@ -96,12 +96,7 @@ fn complete_original_prepared_text_view_is_refused_by_each_existing_native_targe
 fn existing_condensed_owner_and_all_generic_none_routes_keep_their_exact_authority() -> Test {
     let arena = Allocator::default();
     let old = completed(&arena, "<template>plain</template>", false)?;
-    check(
-        old.file()
-            .ok_or("old File")?
-            .file_text_values()
-            .is_empty(),
-    )?;
+    check(old.file().ok_or("old File")?.file_text_values().is_empty())?;
     check(native::build_native_dom_file_decisions(old.view().map_err(|_| "old view")?).is_ok())?;
     check(ssr::build_native_ssr_file_decisions(old.view().map_err(|_| "old view")?).is_ok())?;
     check(vapor::build_native_vapor_file_decisions(old.view().map_err(|_| "old view")?).is_ok())?;

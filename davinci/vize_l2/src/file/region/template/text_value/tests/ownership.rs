@@ -70,10 +70,7 @@ fn equal_foreign_files_numeric_nodes_and_populated_neutral_text_never_join() -> 
         content: actual.content,
         span: actual.span,
     };
-    check(
-        file.file_text_value_for(NodeId::FIRST, &neutral)
-            .is_none(),
-    )?;
+    check(file.file_text_value_for(NodeId::FIRST, &neutral).is_none())?;
     let value = file.file_text_values()[0]
         .observation()
         .ok_or("whole original source")?;

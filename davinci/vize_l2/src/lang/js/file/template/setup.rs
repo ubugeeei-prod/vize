@@ -1,8 +1,8 @@
 //! Normally owned original setup syntax, attached by the selected owner itself.
 
 use super::{
-    TemplateRouteState, TemplateFile, TemplateRouteIssue, TemplateRouteIssueKind as Kind,
-    TemplateOwner,
+    TemplateFile, TemplateOwner, TemplateRouteIssue, TemplateRouteIssueKind as Kind,
+    TemplateRouteState,
 };
 use crate::file::ScriptUnitId;
 use alloc::boxed::Box;

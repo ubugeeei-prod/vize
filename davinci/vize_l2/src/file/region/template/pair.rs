@@ -3,9 +3,7 @@
 use super::{TemplateVisibility, body};
 use crate::artifact::{ElementAllocation, RegionBuilder};
 use crate::file::region::FileRegion;
-use crate::file::{
-    ConditionalElseInput, FileConditionalState, TemplateBody, TemplateChildRegion,
-};
+use crate::file::{ConditionalElseInput, FileConditionalState, TemplateBody, TemplateChildRegion};
 use crate::lang::js::TemplateRouteIssueKind as Kind;
 use crate::op::{Attribute, Namespace};
 use core::ops::DerefMut;
@@ -211,8 +209,11 @@ struct BranchBody<'selected, 'owner, 'result, 'a> {
     result: &'result mut Result<(), Kind>,
 }
 impl<'a> TemplateBody<'a, TemplateVisibility> for BranchBody<'_, '_, '_, 'a> {
-    fn run<'r, 'b>(self, region: &mut TemplateChildRegion<'r, 'b, 'a, TemplateVisibility>, _: NodeId)
-    where
+    fn run<'r, 'b>(
+        self,
+        region: &mut TemplateChildRegion<'r, 'b, 'a, TemplateVisibility>,
+        _: NodeId,
+    ) where
         'a: 'b,
         'b: 'r,
     {

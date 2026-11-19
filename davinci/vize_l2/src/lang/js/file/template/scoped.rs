@@ -1,6 +1,6 @@
 //! Physical original style/template/File custody, without generated scope policy.
 
-use super::{TemplateFile, TemplateRouteIssue, TemplateFileView};
+use super::{TemplateFile, TemplateFileView, TemplateRouteIssue};
 use crate::file::FileArtifact;
 use vize_l0::Span;
 use vize_l1::{
@@ -168,12 +168,10 @@ impl<'arena> TemplateFile<'arena> {
         {
             return Err(reject(Kind::Source));
         }
-        let empty = syntax
-            .empty_class()
-            .map_err(|issue| ScopedTemplateIssue {
-                span: issue.span,
-                kind: Kind::StyleSyntax(issue),
-            })?;
+        let empty = syntax.empty_class().map_err(|issue| ScopedTemplateIssue {
+            span: issue.span,
+            kind: Kind::StyleSyntax(issue),
+        })?;
         Ok(ScopedTemplateView {
             template,
             file,

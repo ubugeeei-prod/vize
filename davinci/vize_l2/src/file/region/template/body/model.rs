@@ -106,8 +106,11 @@ struct ModelBody<'result> {
 }
 
 impl<'a> TemplateBody<'a, TemplateVisibility> for ModelBody<'_> {
-    fn run<'r, 'b>(self, region: &mut TemplateChildRegion<'r, 'b, 'a, TemplateVisibility>, _: NodeId)
-    where
+    fn run<'r, 'b>(
+        self,
+        region: &mut TemplateChildRegion<'r, 'b, 'a, TemplateVisibility>,
+        _: NodeId,
+    ) where
         'a: 'b,
         'b: 'r,
     {

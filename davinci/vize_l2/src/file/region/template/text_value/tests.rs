@@ -1,6 +1,6 @@
 use super::interruption::{Fault, observations, reset_observations, set_fault};
 use crate::file::{FileTextValueState as State, TextValuePolicyError as Policy};
-use crate::lang::js::{TemplateFile, TemplateRouteIssueKind as Kind, TemplateOwner};
+use crate::lang::js::{TemplateFile, TemplateOwner, TemplateRouteIssueKind as Kind};
 use crate::op::{Op, TextOp};
 use vize_l0::{
     Allocator, Span,
@@ -44,16 +44,10 @@ fn selected<'a>(
         .map_err(|_| "original selected parse")?
         .ok_or("template")
 }
-fn owner<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-) -> Result<TemplateOwner<'a>, &'static str> {
+fn owner<'a>(arena: &'a Allocator, source: &'a str) -> Result<TemplateOwner<'a>, &'static str> {
     TemplateOwner::new(selected(arena, source)?).map_err(|_| "original File owner")
 }
-fn completed<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-) -> Result<TemplateFile<'a>, &'static str> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> Result<TemplateFile<'a>, &'static str> {
     let mut original = owner(arena, source)?;
     {
         let mut walk = original.begin().map_err(|_| "begin")?;

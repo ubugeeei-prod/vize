@@ -99,6 +99,6 @@ impl<'a> Builder<'a> {
     }
 }
 
+mod file_on;
 #[cfg(test)]
 mod tests;
-mod file_on;

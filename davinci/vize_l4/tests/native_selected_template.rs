@@ -38,10 +38,7 @@ fn field<'f>(fixture: &'f serde_json::Value, name: &str) -> Result<&'f str, &'st
         .ok_or("fixture string")
 }
 
-fn owner<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-) -> Result<TemplateOwner<'a>, &'static str> {
+fn owner<'a>(arena: &'a Allocator, source: &'a str) -> Result<TemplateOwner<'a>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -60,10 +57,7 @@ fn owner<'a>(
     TemplateOwner::new(selected).map_err(|_| "original File start")
 }
 
-fn completed<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-) -> Result<TemplateFile<'a>, &'static str> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> Result<TemplateFile<'a>, &'static str> {
     let mut original = owner(arena, source)?;
     {
         let mut walk = original.begin().map_err(|_| "original root begin")?;

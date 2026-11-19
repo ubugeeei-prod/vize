@@ -2,9 +2,7 @@
 
 extern crate std;
 
-use crate::file::{
-    DeclarationKind, InitializerKind, Namespace, FileModelKind, FileModelState,
-};
+use crate::file::{DeclarationKind, FileModelKind, FileModelState, InitializerKind, Namespace};
 use crate::lang::js::TemplateRouteIssueKind as Kind;
 use crate::op::{BindingOp, Op};
 use crate::resolution::Usage;

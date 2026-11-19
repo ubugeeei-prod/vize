@@ -18,8 +18,8 @@ pub use module_source::{
 pub(crate) mod observer;
 pub(crate) mod ordinary;
 pub(crate) mod setup;
-mod walk;
 pub mod template;
+mod walk;
 use guard::ProgramWalkGuard;
 use observer::{FileObserver, NoObserver};
 

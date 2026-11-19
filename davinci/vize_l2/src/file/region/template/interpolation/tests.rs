@@ -1,8 +1,6 @@
 use super::interruption::{Fault, set_fault};
 use crate::file::FileInterpolationState as State;
-use crate::lang::js::{
-    InterpolationInput, TemplateRouteIssueKind as Kind, TemplateOwner,
-};
+use crate::lang::js::{InterpolationInput, TemplateOwner, TemplateRouteIssueKind as Kind};
 use vize_l0::{
     Allocator,
     config::{VueDialect, VueVersion},
@@ -45,9 +43,6 @@ fn selected<'a>(
         .map_err(|_| "selected parse")?
         .ok_or("template")
 }
-fn owner<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-) -> Result<TemplateOwner<'a>, &'static str> {
+fn owner<'a>(arena: &'a Allocator, source: &'a str) -> Result<TemplateOwner<'a>, &'static str> {
     TemplateOwner::new(selected(arena, source)?).map_err(|_| "original File start")
 }

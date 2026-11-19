@@ -2,7 +2,7 @@
 
 use super::*;
 use crate::expr::ExprRef;
-use crate::file::{Namespace, FileInterpolationState};
+use crate::file::{FileInterpolationState, Namespace};
 use crate::resolution::Usage;
 
 #[test]

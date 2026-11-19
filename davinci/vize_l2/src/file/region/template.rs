@@ -5,7 +5,7 @@ use crate::artifact::ComponentFactory;
 use crate::file::template::TemplateWalk;
 use crate::file::{FileBuilder, FileIssueKind, ScopeId, ScriptUnitId, TemplateIssue};
 use crate::lang::js::file::template::{
-    TemplateRouteState, TemplateRouteIssue, TemplateRouteIssueKind,
+    TemplateRouteIssue, TemplateRouteIssueKind, TemplateRouteState,
 };
 use vize_l0::id::NodeId;
 use vize_l1::markup::{ChildView, ChildrenView, NativeTemplateComponent, RootText, SurfaceChild};

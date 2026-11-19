@@ -1,7 +1,5 @@
 use super::super::{Allocator, NodeId, Op, check, owner};
-use vize_l2::{
-    expr::ExprRef, file::FileInterpolationState, lang::js::InterpolationInput,
-};
+use vize_l2::{expr::ExprRef, file::FileInterpolationState, lang::js::InterpolationInput};
 use vize_l3::decision::{
     dom::{DomChild, DomDependency, DomRootKind},
     native::build_native_dom_file_decisions,

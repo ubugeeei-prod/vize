@@ -11,7 +11,7 @@ extern crate std;
 use super::tests::{completed, owner};
 use super::*;
 use crate::expr::ExprRef;
-use crate::file::{Namespace as BindingNamespace, FileInterpolationState as State};
+use crate::file::{FileInterpolationState as State, Namespace as BindingNamespace};
 use crate::lang::js::TemplateFile;
 use crate::op::Op;
 use crate::resolution::Usage;

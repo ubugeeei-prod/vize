@@ -5,8 +5,7 @@ use crate::artifact::RegionBuilder;
 use crate::file::build::ScopedResolution;
 use crate::file::region::{FileRegion, Lookup, TemplatePolicy};
 use crate::file::{
-    DeclarationKind, FileIssueKind, Namespace, FileModel, FileModelKind,
-    FileModelState,
+    DeclarationKind, FileIssueKind, FileModel, FileModelKind, FileModelState, Namespace,
 };
 use crate::lang::js::{ModelInput, TemplateRouteIssueKind as Kind};
 use crate::resolution::{ResolutionErrorKind, Usage, resolve_model_facts};

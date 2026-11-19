@@ -3,9 +3,7 @@
 use super::{check, equal};
 use vize_l0::{Span, id::NodeId};
 use vize_l1::markup::SurfaceChild;
-use vize_l2::{
-    expr::ExprRef, file::FileInterpolationState, lang::js::TemplateFile, op::Op,
-};
+use vize_l2::{expr::ExprRef, file::FileInterpolationState, lang::js::TemplateFile, op::Op};
 use vize_l3::decision::native::NativeTemplateDomAnalysis;
 use vize_l4::write::EmitDocument;
 
@@ -130,8 +128,7 @@ pub(super) fn inspect<'owner, 'a>(
                         .ok_or("original text extent")?,
                 )?;
                 check(
-                    file.file_interpolation(node).is_none()
-                        && analysis.expression(node).is_none(),
+                    file.file_interpolation(node).is_none() && analysis.expression(node).is_none(),
                 )?;
             }
             (SurfaceChild::Comment(token), Op::Comment(comment)) => {
@@ -150,8 +147,7 @@ pub(super) fn inspect<'owner, 'a>(
                         .ok_or("original comment extent")?,
                 )?;
                 check(
-                    file.file_interpolation(node).is_none()
-                        && analysis.expression(node).is_none(),
+                    file.file_interpolation(node).is_none() && analysis.expression(node).is_none(),
                 )?;
             }
             _ => return Err("same original ordered root operation"),

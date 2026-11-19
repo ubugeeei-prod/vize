@@ -1,9 +1,7 @@
 use super::NativeSelectedSfcIssueKind as Kind;
 use vize_l0::Span;
 use vize_l1::markup::{InterpolationFailure, SurfaceChild};
-use vize_l2::lang::js::{
-    InterpolationInput, TemplateRouteIssue, TemplateOwner, FileTemplateWalk,
-};
+use vize_l2::lang::js::{FileTemplateWalk, InterpolationInput, TemplateOwner, TemplateRouteIssue};
 
 pub(super) struct Failure<'a> {
     pub span: Option<Span>,

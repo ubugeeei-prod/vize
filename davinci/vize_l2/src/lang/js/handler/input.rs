@@ -124,7 +124,7 @@ mod tests {
     use vize_l1::container::{Vue, vue::DescriptorOptions};
     use vize_l1::markup::NativeTemplateComponent;
 
-    use super::{HandlerInputErrorKind, FileHandlerInput};
+    use super::{FileHandlerInput, HandlerInputErrorKind};
 
     fn selected<'a>(allocator: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
         let descriptor = Vue.observe_descriptor(

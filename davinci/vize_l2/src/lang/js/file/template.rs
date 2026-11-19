@@ -15,9 +15,7 @@ mod header;
 mod program;
 mod scoped;
 mod setup;
-pub use scoped::{
-    ScopedTemplateIssue, ScopedTemplateIssueKind, ScopedTemplateView,
-};
+pub use scoped::{ScopedTemplateIssue, ScopedTemplateIssueKind, ScopedTemplateView};
 pub use setup::{SelectedSetup, SelectedSetupIssue, SelectedSetupIssueKind};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -7,7 +7,7 @@ use vize_l0::{
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::{
-    file::{DeclarationKind, InitializerKind, FileModelKind, FileModelState},
+    file::{DeclarationKind, FileModelKind, FileModelState, InitializerKind},
     op::{BindingOp, Op},
     resolution::Usage,
 };

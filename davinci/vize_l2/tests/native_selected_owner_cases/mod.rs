@@ -13,9 +13,7 @@ use vize_l1::{
     },
     markup::{NativeTemplateComponent, SurfaceParseOptions, TemplateGrammar},
 };
-use vize_l2::lang::js::{
-    TemplateRouteIssue, TemplateRouteIssueKind as Kind, TemplateOwner,
-};
+use vize_l2::lang::js::{TemplateOwner, TemplateRouteIssue, TemplateRouteIssueKind as Kind};
 
 fn check(condition: bool) -> Result<(), &'static str> {
     if condition {
@@ -51,10 +49,7 @@ fn selected<'a>(
     .map_err(|_| "component")?
     .ok_or("template")
 }
-fn owner<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-) -> Result<TemplateOwner<'a>, &'static str> {
+fn owner<'a>(arena: &'a Allocator, source: &'a str) -> Result<TemplateOwner<'a>, &'static str> {
     TemplateOwner::new(selected(arena, source)?).map_err(|_| "file start")
 }
 fn kind<T>(result: Result<T, TemplateRouteIssue>) -> Result<Kind, &'static str> {

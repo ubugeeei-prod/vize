@@ -35,8 +35,7 @@ fn original_file_handler_crosses_as_a_typed_id_without_js_source_or_diagnostic_a
     let selected = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
-    let mut original =
-        TemplateOwner::new(selected).unwrap_or_else(|_| panic!("original owner"));
+    let mut original = TemplateOwner::new(selected).unwrap_or_else(|_| panic!("original owner"));
     {
         let mut walk = original.begin().unwrap();
         walk.child(walk.selected().children().next().unwrap())

@@ -1,7 +1,5 @@
 //! Every original nested negative's custody law, now required on accepted output.
-use vize_l2::{
-    expr::ExprRef, file::FileInterpolationState, lang::js::SelectedSetup, op::Op,
-};
+use vize_l2::{expr::ExprRef, file::FileInterpolationState, lang::js::SelectedSetup, op::Op};
 
 pub fn assert_original(setup: &SelectedSetup<'_, '_>, source: &str) {
     let name = "nested";

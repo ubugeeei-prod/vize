@@ -13,8 +13,8 @@ use vize_l1::{
 use vize_l2::{
     artifact::ArtifactError,
     lang::js::{
-        ScopedTemplateIssueKind, TemplateFile, TemplateRouteIssue,
-        TemplateOwner, TemplateFileView, RejectedTemplateOwner,
+        RejectedTemplateOwner, ScopedTemplateIssueKind, TemplateFile, TemplateFileView,
+        TemplateOwner, TemplateRouteIssue,
     },
 };
 

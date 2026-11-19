@@ -1,10 +1,10 @@
 //! Check whole original setup eligibility before entering the original cursor.
 
 use super::{
-    TemplateRouteState, SelectedSetupIssue, SelectedSetupIssueKind, TemplateRouteIssue,
-    TemplateOwner,
+    SelectedSetupIssue, SelectedSetupIssueKind, TemplateOwner, TemplateRouteIssue,
+    TemplateRouteState,
 };
-use crate::lang::js::{TemplateRouteIssueKind, FileTemplateWalk};
+use crate::lang::js::{FileTemplateWalk, TemplateRouteIssueKind};
 
 impl<'a> TemplateOwner<'a> {
     /// Begin the existing sole native root cursor only after this original

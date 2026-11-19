@@ -84,8 +84,11 @@ struct ConditionalBody<'selected, 'owner, 'result, 'a> {
 }
 
 impl<'a> TemplateBody<'a, TemplateVisibility> for ConditionalBody<'_, '_, '_, 'a> {
-    fn run<'r, 'b>(self, region: &mut TemplateChildRegion<'r, 'b, 'a, TemplateVisibility>, _: NodeId)
-    where
+    fn run<'r, 'b>(
+        self,
+        region: &mut TemplateChildRegion<'r, 'b, 'a, TemplateVisibility>,
+        _: NodeId,
+    ) where
         'a: 'b,
         'b: 'r,
     {

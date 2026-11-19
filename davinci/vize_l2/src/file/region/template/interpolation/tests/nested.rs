@@ -98,10 +98,7 @@ fn nested_original_literals_preserve_order_full_source_stock_roots_and_move_cust
     ] {
         joined(file, index, actual)?;
         same(actual.span.slice(source), authored)?;
-        let syntax = file.file_interpolations()[index]
-            .input()
-            .operand()
-            .syntax();
+        let syntax = file.file_interpolations()[index].input().operand().syntax();
         same(syntax.source().text(), decoded)?;
         same(syntax.comments().count(), comments)?;
         same(syntax.diagnostics().count(), 0)?;

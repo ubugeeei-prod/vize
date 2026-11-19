@@ -323,6 +323,6 @@ impl<'a> Builder<'a> {
     }
 }
 
+mod file_if;
 #[cfg(test)]
 mod tests;
-mod file_if;

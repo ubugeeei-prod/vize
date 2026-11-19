@@ -55,8 +55,7 @@ fn caught_original_for_park_and_scope_unwind_preserve_whole_owner_parent_and_pre
         let selected = NativeTemplateComponent::parse_in(&arena, admitted)
             .unwrap()
             .unwrap();
-        let mut owner =
-            TemplateOwner::new(selected).unwrap_or_else(|_| panic!("actual owner"));
+        let mut owner = TemplateOwner::new(selected).unwrap_or_else(|_| panic!("actual owner"));
         owner
             .setup_program(syntax.admitted_program().unwrap())
             .unwrap();

@@ -1,4 +1,4 @@
-use super::{Allocator, Kind, InterpolationInput, State, Test, check, owner, same, selected};
+use super::{Allocator, InterpolationInput, Kind, State, Test, check, owner, same, selected};
 use vize_l0::id::NodeId;
 
 #[test]

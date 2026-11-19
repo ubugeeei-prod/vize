@@ -12,11 +12,10 @@ mod cases {
         },
         markup::{NativeTemplateComponent, SurfaceParseOptions},
     };
-    use vize_l2::file::FileIssueKind;
     use vize_l2::file::FileInterpolationState;
+    use vize_l2::file::FileIssueKind;
     use vize_l2::lang::js::{
-        InterpolationInput, SelectedSetupIssueKind, TemplateRouteIssueKind,
-        TemplateOwner,
+        InterpolationInput, SelectedSetupIssueKind, TemplateOwner, TemplateRouteIssueKind,
     };
 
     fn descriptor<'a>(arena: &'a Allocator, source: &'a str) -> DescriptorObservation<'a> {

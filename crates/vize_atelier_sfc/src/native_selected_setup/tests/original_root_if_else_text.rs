@@ -254,8 +254,7 @@ fn twelve_whole_original_root_if_else_text_components_and_raw_maps_are_captured(
                                     if file.file_interpolation(node).is_some_and(|retained| core::ptr::eq(retained, *record))
                                         && record.input().operand().syntax().expression().is_some_and(|ast| core::ptr::eq(ast, actual.ast)))
                             }).ok_or("same actual text record")?;
-                            let FileInterpolationState::Admitted(text_node) =
-                                text_record.state()
+                            let FileInterpolationState::Admitted(text_node) = text_record.state()
                             else {
                                 return Err(cstr!("{id}: admitted text node"));
                             };

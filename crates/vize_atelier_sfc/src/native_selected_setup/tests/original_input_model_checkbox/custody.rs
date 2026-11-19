@@ -5,8 +5,8 @@ use vize_l1_to_l2::native_file::NativeSelectedSetupSfcObservation;
 use vize_l2::{
     expr::ExprRef,
     file::{
-        DeclarationKind, InitializerKind, Namespace, FileAttributeValueState,
-        FileModelKind, FileModelState,
+        DeclarationKind, FileAttributeValueState, FileModelKind, FileModelState, InitializerKind,
+        Namespace,
     },
     op::{BindingOp, Op},
     resolution::Usage,

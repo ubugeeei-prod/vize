@@ -26,10 +26,7 @@ fn check(value: bool) -> Test {
         Err("original attribute condition")
     }
 }
-fn owner<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-) -> Result<TemplateOwner<'a>, &'static str> {
+fn owner<'a>(arena: &'a Allocator, source: &'a str) -> Result<TemplateOwner<'a>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -45,10 +42,7 @@ fn owner<'a>(
             .ok_or("missing template")?;
     TemplateOwner::new(selected).map_err(|_| "original owner")
 }
-fn completed<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-) -> Result<TemplateFile<'a>, &'static str> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> Result<TemplateFile<'a>, &'static str> {
     let mut original = owner(arena, source)?;
     {
         let mut walk = original.begin().map_err(|_| "begin")?;

@@ -1,4 +1,4 @@
-use super::{Allocator, BindingPattern, ForRefusal, GetSpan, Lang, FileForInput, Span};
+use super::{Allocator, BindingPattern, FileForInput, ForRefusal, GetSpan, Lang, Span};
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l1::container::{Vue, vue::DescriptorOptions};
 use vize_l1::markup::NativeTemplateComponent;

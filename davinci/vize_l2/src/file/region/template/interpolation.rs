@@ -28,13 +28,10 @@ where
 {
     let index = region.facts.file_interpolations.len();
     let span = input.operand().full_span();
-    region
-        .facts
-        .file_interpolations
-        .push(FileInterpolation {
-            input,
-            state: FileInterpolationState::Pending,
-        });
+    region.facts.file_interpolations.push(FileInterpolation {
+        input,
+        state: FileInterpolationState::Pending,
+    });
     #[cfg(test)]
     interruption::after_park();
     let result = (|| {

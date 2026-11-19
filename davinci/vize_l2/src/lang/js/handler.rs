@@ -107,7 +107,7 @@ impl<'a> HandlerInput<'a> {
     }
 }
 
+mod input;
 #[cfg(test)]
 mod tests;
-mod input;
 pub use input::{FileHandlerInput, RejectedFileHandlerInput};

@@ -4,7 +4,7 @@ use super::{DomFacts, PropertyRole, ValueKind, file::matches_expression};
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
     expr::ExprRef,
-    file::{BindingRef, FileResolution, FileModel, FileModelState},
+    file::{BindingRef, FileModel, FileModelState, FileResolution},
     op::{BindingOp, ElementOp, ModelOp},
     resolution::{Occurrence, Usage},
 };

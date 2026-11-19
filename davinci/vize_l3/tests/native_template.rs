@@ -11,7 +11,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::{TemplateFile, TemplateRouteIssueKind, TemplateOwner},
+    lang::js::{TemplateFile, TemplateOwner, TemplateRouteIssueKind},
     op::Op,
 };
 use vize_l3::decision::{
@@ -40,10 +40,7 @@ fn descriptor<'a>(arena: &'a Allocator, source: &'a str) -> DescriptorObservatio
     )
 }
 
-fn owner<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-) -> Result<TemplateOwner<'a>, &'static str> {
+fn owner<'a>(arena: &'a Allocator, source: &'a str) -> Result<TemplateOwner<'a>, &'static str> {
     let observation = descriptor(arena, source);
     let selected =
         NativeTemplateComponent::parse_in(arena, observation.admitted().map_err(|_| "descriptor")?)
@@ -52,10 +49,7 @@ fn owner<'a>(
     TemplateOwner::new(selected).map_err(|_| "file start")
 }
 
-fn completed<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-) -> Result<TemplateFile<'a>, &'static str> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> Result<TemplateFile<'a>, &'static str> {
     let mut owner = owner(arena, source)?;
     {
         let mut walk = owner.begin().map_err(|_| "begin")?;

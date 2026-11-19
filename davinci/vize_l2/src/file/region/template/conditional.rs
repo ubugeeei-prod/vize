@@ -45,16 +45,14 @@ where
             }
         };
         let index = self.facts.file_conditionals().len();
-        self.facts
-            .file_conditionals_mut()
-            .push(FileConditional {
-                input: ConditionalInput::from_operand(operand),
-                state: FileConditionalState::Pending,
-                scope: self.scope,
-                binding: None,
-                original: None,
-                otherwise: None,
-            });
+        self.facts.file_conditionals_mut().push(FileConditional {
+            input: ConditionalInput::from_operand(operand),
+            state: FileConditionalState::Pending,
+            scope: self.scope,
+            binding: None,
+            original: None,
+            otherwise: None,
+        });
         #[cfg(test)]
         tests::after_park();
         let record = self

@@ -122,6 +122,6 @@ impl<'a> ForHeadInput<'a> {
 }
 pub use input::{FileForInput, RejectedFileForInput};
 
+mod input;
 #[cfg(test)]
 mod tests;
-mod input;

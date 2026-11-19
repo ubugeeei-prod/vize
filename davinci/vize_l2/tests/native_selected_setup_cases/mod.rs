@@ -25,10 +25,7 @@ fn descriptor<'a>(arena: &'a Allocator, source: &'a str) -> DescriptorObservatio
         },
     )
 }
-fn owner<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-) -> Result<TemplateOwner<'a>, &'static str> {
+fn owner<'a>(arena: &'a Allocator, source: &'a str) -> Result<TemplateOwner<'a>, &'static str> {
     let descriptor = descriptor(arena, source);
     let selected =
         NativeTemplateComponent::parse_in(arena, descriptor.admitted().map_err(|_| "descriptor")?)

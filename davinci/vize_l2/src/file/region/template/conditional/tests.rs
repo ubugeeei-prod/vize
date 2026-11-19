@@ -1,7 +1,7 @@
 extern crate std;
 
 use super::*;
-use crate::file::{InitializerKind, FileConditionalState};
+use crate::file::{FileConditionalState, InitializerKind};
 use crate::lang::js::{TemplateFile, TemplateOwner};
 use crate::op::Op;
 use vize_l0::{
@@ -115,10 +115,7 @@ fn native_boolean_if_keeps_actual_input_read_scope_and_if_allocation_without_ali
             panic!("real If root");
         };
         assert!(record.accepts(original));
-        assert!(core::ptr::eq(
-            record,
-            file.file_conditional(node).unwrap()
-        ));
+        assert!(core::ptr::eq(record, file.file_conditional(node).unwrap()));
         assert!(file.artifact().scopes().get(node).is_none());
         assert_eq!(record.scope(), unit.scope);
         let resolution = file.expression(node).unwrap();

@@ -204,10 +204,7 @@ fn checkbox_unwinds_keep_the_actual_prefix_and_never_publish_an_incomplete_file(
             let [value] = rejected.file_attribute_values() else {
                 panic!("retained prepared type")
             };
-            assert_eq!(
-                value.state(),
-                crate::file::FileAttributeValueState::Pending
-            );
+            assert_eq!(value.state(), crate::file::FileAttributeValueState::Pending);
             assert_eq!(value.observation().unwrap().source().text(), "checkbox");
             continue;
         }

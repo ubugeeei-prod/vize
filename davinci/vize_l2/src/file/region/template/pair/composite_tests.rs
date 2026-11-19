@@ -12,8 +12,8 @@ use super::Kind;
 use super::tests::{completed, owner};
 use crate::expr::ExprRef;
 use crate::file::{
-    FileArtifact, Namespace as BindingNamespace, FileConditionalState,
-    FileInterpolationState as State,
+    FileArtifact, FileConditionalState, FileInterpolationState as State,
+    Namespace as BindingNamespace,
 };
 use crate::lang::js::TemplateFile;
 use crate::op::Op;

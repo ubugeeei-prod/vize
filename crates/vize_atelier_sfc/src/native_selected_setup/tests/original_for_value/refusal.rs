@@ -65,8 +65,7 @@ fn generic_and_neutral_same_mutable_owner_keep_operation_refusal() {
         let [interpolation] = file.file_interpolations() else {
             panic!("one original Vue interpolation, never literal braces");
         };
-        let vize_l2::file::FileInterpolationState::Admitted(node) = interpolation.state()
-        else {
+        let vize_l2::file::FileInterpolationState::Admitted(node) = interpolation.state() else {
             panic!("normally attached original interpolation");
         };
         let selected = build_native_selected_setup_dom_decisions(view.setup()).unwrap();

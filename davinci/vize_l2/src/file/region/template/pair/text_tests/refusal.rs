@@ -49,10 +49,7 @@ fn each_branch_still_refuses_non_bare_unowned_or_mixed_original_bodies() {
                 (file.file_interpolations(), file.file_conditionals())
             } else {
                 let rejected = output.rejected_file().unwrap();
-                (
-                    rejected.file_interpolations(),
-                    rejected.file_conditionals(),
-                )
+                (rejected.file_interpolations(), rejected.file_conditionals())
             };
             let [conditional] = conditionals else {
                 panic!("retained original pair")
@@ -113,10 +110,7 @@ fn late_second_policy_refusal_keeps_the_admitted_first_prefix_and_both_actual_in
         let State::Admitted(node) = first.state() else {
             panic!("genuine prefix")
         };
-        assert!(core::ptr::eq(
-            first,
-            file.file_interpolation(node).unwrap()
-        ));
+        assert!(core::ptr::eq(first, file.file_interpolation(node).unwrap()));
         assert!(matches!(
             last.state(),
             State::Refused(Kind::UnsupportedChild)
@@ -124,10 +118,7 @@ fn late_second_policy_refusal_keeps_the_admitted_first_prefix_and_both_actual_in
         (file.file_interpolations(), file.file_conditionals())
     } else {
         let rejected = output.rejected_file().unwrap();
-        (
-            rejected.file_interpolations(),
-            rejected.file_conditionals(),
-        )
+        (rejected.file_interpolations(), rejected.file_conditionals())
     };
     let [first, last] = rows else {
         panic!("whole two original input owners")

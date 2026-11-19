@@ -1,6 +1,6 @@
 //! Attach the actual selected Program through the existing sole declaration walk.
 
-use super::{TemplateRouteState, TemplateRouteIssue, TemplateRouteIssueKind, TemplateOwner};
+use super::{TemplateOwner, TemplateRouteIssue, TemplateRouteIssueKind, TemplateRouteState};
 use crate::file::ScriptUnitId;
 use crate::lang::js::file::{FileProducer, ProgramInput, ProgramScope};
 use oxc_parser::AdmittedProgram;

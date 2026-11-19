@@ -47,8 +47,7 @@ fn original_selected_search_elements_keep_neutral_structure_but_refuse_vue_ssr_r
         let component = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
             .unwrap()
             .unwrap();
-        let mut owner =
-            TemplateOwner::new(component).unwrap_or_else(|_| panic!("original owner"));
+        let mut owner = TemplateOwner::new(component).unwrap_or_else(|_| panic!("original owner"));
         {
             let mut walk = owner.begin().unwrap();
             let selected = walk.selected();

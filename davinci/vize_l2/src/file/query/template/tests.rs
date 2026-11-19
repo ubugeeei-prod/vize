@@ -35,8 +35,7 @@ fn attempt<'a>(arena: &'a Allocator, source: &'a str, complete: bool) -> Templat
     let selected = NativeTemplateComponent::parse_in(arena, admitted)
         .unwrap()
         .unwrap();
-    let mut original =
-        TemplateOwner::new(selected).unwrap_or_else(|_| panic!("native owner"));
+    let mut original = TemplateOwner::new(selected).unwrap_or_else(|_| panic!("native owner"));
     let syntax = admitted.setup().map(|setup| {
         parse_program_once(
             arena,

@@ -4,8 +4,8 @@ use vize_l0::id::NodeId;
 use vize_l2::{
     expr::ExprRef,
     file::{
-        DeclarationKind, FileArtifact, FileResolution, InitializerKind, Namespace,
-        FileModelKind, FileModelState,
+        DeclarationKind, FileArtifact, FileModelKind, FileModelState, FileResolution,
+        InitializerKind, Namespace,
     },
     op::{BindingOp, ElementOp, ModelOp},
     resolution::Usage,

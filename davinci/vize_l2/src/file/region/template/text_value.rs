@@ -1,6 +1,6 @@
 //! One original root event: guard, observe, park, join, mint and attach.
 
-use super::{TemplateVisibility, RootRegion};
+use super::{RootRegion, TemplateVisibility};
 use crate::file::TextValuePolicyError as Policy;
 use crate::file::{FileTextValueRecord, FileTextValueState as State};
 use crate::lang::js::TemplateRouteIssueKind as Kind;

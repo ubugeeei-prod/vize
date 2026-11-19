@@ -38,10 +38,7 @@ fn field<'f>(fixture: &'f serde_json::Value, name: &str) -> Result<&'f str, &'st
         .ok_or("fixture string")
 }
 
-fn completed<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-) -> Result<TemplateFile<'a>, &'static str> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> Result<TemplateFile<'a>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,

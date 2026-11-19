@@ -50,10 +50,7 @@ fn third_same_kind_nested_comment_whitespace_entity_and_non_bare_parts_stay_refu
                 (file.file_interpolations(), file.file_conditionals())
             } else {
                 let rejected = output.rejected_file().unwrap();
-                (
-                    rejected.file_interpolations(),
-                    rejected.file_conditionals(),
-                )
+                (rejected.file_interpolations(), rejected.file_conditionals())
             };
             let expected = if first {
                 [construct, "{{message}}"]
@@ -115,17 +112,11 @@ fn late_second_and_third_parts_retain_real_admitted_prefixes_without_completing_
             let State::Admitted(node) = first.state() else {
                 panic!("actual prefix")
             };
-            assert!(core::ptr::eq(
-                first,
-                file.file_interpolation(node).unwrap()
-            ));
+            assert!(core::ptr::eq(first, file.file_interpolation(node).unwrap()));
             (file.file_interpolations(), file.file_conditionals())
         } else {
             let rejected = output.rejected_file().unwrap();
-            (
-                rejected.file_interpolations(),
-                rejected.file_conditionals(),
-            )
+            (rejected.file_interpolations(), rejected.file_conditionals())
         };
         let first = if second_refusal {
             let [first, second] = records else {

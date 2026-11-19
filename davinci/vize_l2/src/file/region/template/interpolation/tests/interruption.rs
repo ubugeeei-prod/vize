@@ -1,6 +1,6 @@
 extern crate std;
 use super::{
-    Allocator, Fault, Kind, InterpolationInput, State, Test, check, owner, same, set_fault,
+    Allocator, Fault, InterpolationInput, Kind, State, Test, check, owner, same, set_fault,
 };
 use vize_l0::id::NodeId;
 

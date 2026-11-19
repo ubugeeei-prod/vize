@@ -5,10 +5,7 @@ use vize_l2::{
 };
 use vize_l3::decision::{dom::DomUnsupported, native::build_native_dom_file_decisions};
 
-fn completed<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-) -> Result<TemplateFile<'a>, &'static str> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> Result<TemplateFile<'a>, &'static str> {
     let mut original = owner(arena, source)?;
     {
         let mut walk = original.begin().map_err(|_| "begin")?;

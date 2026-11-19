@@ -27,9 +27,9 @@ pub trait TemplatePolicy: Copy {
 mod facade;
 pub use facade::TemplateRegion;
 mod child;
+pub(crate) mod template;
 mod walk;
 mod whole;
-pub(crate) mod template;
 pub use child::{TemplateBody, TemplateChildRegion};
 pub use whole::TemplateWalkRegion;
 

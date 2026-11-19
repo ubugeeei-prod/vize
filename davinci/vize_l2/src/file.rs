@@ -18,12 +18,8 @@ pub use region::{
 mod attribute_value;
 mod conditional;
 mod model;
-pub use attribute_value::{
-    FileAttributeValue, FileAttributeValueRecord, FileAttributeValueState,
-};
-pub use conditional::{
-    ConditionalElseInput, FileConditional, FileConditionalState,
-};
+pub use attribute_value::{FileAttributeValue, FileAttributeValueRecord, FileAttributeValueState};
+pub use conditional::{ConditionalElseInput, FileConditional, FileConditionalState};
 pub use model::{FileModel, FileModelKind, FileModelState};
 mod for_head;
 mod handler;
@@ -37,9 +33,7 @@ pub use for_head::{FileForHead, FileTemplateDeclaration, RejectedFileFor, Templa
 pub(crate) use module_source::{DYNAMIC_IMPORT, EMPTY_SOURCE_EXPORT, SourceSite};
 mod query;
 pub use handler::{FileHandler, RejectedFileHandler};
-pub use interpolation::{
-    FileInterpolation, FileInterpolationFailure, FileInterpolationState,
-};
+pub use interpolation::{FileInterpolation, FileInterpolationFailure, FileInterpolationState};
 mod records;
 pub use query::{
     HandlerLocalRef, PositionQueryError, ReferenceRef, ScopeRef, TemplateQueryError,

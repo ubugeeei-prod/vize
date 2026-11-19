@@ -148,10 +148,7 @@ fn equal_source_files_sibling_slots_and_neutral_elements_cannot_borrow_value_aut
         .ok_or("second File")?;
     let actual = element(file, 0)?;
     for (index, slot) in [(0, 0), (1, 1)] {
-        check(
-            file.file_attribute_value_for(index, actual, slot)
-                .is_some(),
-        )?;
+        check(file.file_attribute_value_for(index, actual, slot).is_some())?;
         check(
             file.file_attribute_value_for(index, element(file, 1)?, slot)
                 .is_none(),

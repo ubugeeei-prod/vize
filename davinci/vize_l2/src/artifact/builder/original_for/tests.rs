@@ -35,8 +35,7 @@ fn original<'a>(arena: &'a Allocator, source: &'a str) -> (ForResolution<'a>, Sp
         .unwrap();
     let element = selected.children().next().unwrap().into_element().unwrap();
     let attribute = element.attributes().next().unwrap();
-    let input =
-        FileForInput::new(selected.observe_attribute_for_head(attribute).unwrap()).unwrap();
+    let input = FileForInput::new(selected.observe_attribute_for_head(attribute).unwrap()).unwrap();
     (
         resolve_for_head(input, &Enclosing).unwrap(),
         selected.component().block().span(),
