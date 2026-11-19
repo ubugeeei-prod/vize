@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-6712",
+    history: "0119bcb41f3267ef0b22793b2da7b811a6baf574",
+    source: "<template><div class=\"a\"><slot /></div></template>\n<style scoped>\n.a > :deep(:where(b, c) > d) { color: red; }\n.a :deep(:is(.b) .c) { color: green; }\n:slotted(.x) { color: blue; }\n</style>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { renderSlot as _renderSlot, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { class: \"a\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, [\n    _renderSlot(_ctx.$slots, \"default\")\n  ]))\n}",
+            css: Some(
+                "\n.a[data-v-4045eae1] > :where(b, c) > d{color: red;}\n.a[data-v-4045eae1] :is(.b) .c{color: green;}\n.x[data-v-4045eae1-s]{color: blue;}",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

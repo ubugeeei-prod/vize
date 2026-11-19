@@ -1,0 +1,63 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-1-6051328",
+    history: "605132848597fe69ba4ddd95038b2eaf39dba979",
+    source: "function Outer() { const App = () => { return <p>{new.target}</p>; }; return App; }",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 1,
+}
+Observation {
+    module: "",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "App",
+            ),
+            mode: Vdom,
+            setup: Some(
+                ComponentSetupSpan {
+                    declaration_start: 19,
+                    declaration_end: 69,
+                    params_start: 0,
+                    params_end: 0,
+                    type_params_start: 0,
+                    type_params_end: 0,
+                    is_async: false,
+                    destructured_props: [],
+                    setup_start: 38,
+                    setup_end: 39,
+                    render_start: 46,
+                    render_end: 65,
+                },
+            ),
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"p\", null, [\n    new.target\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [
+        JsxDiagnostic {
+            severity: Error,
+            message: "Block-body JSX component setup cannot preserve lexical this, arguments or new.target; use a function declaration or expression-bodied component",
+            start: 50,
+            end: 60,
+        },
+    ],
+}

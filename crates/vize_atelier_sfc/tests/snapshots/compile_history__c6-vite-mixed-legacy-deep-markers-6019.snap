@@ -1,0 +1,30 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-vite-mixed-legacy-deep-markers-6019",
+    history: "31eda47f02acc8cdc9d34338a3655d6e3a285467",
+    source: ".panel >>> .inner ::v-deep(.leaf) { padding: 0; }.panel ::v-deep(.other) /deep/ ::v-deep(.child) { margin: 0; }[data-label=\">>>\"] .plain { color: red; }.panel[data-token=\"::v-deep\"] { color: blue; }.panel/* >>> */ .after-comment { color: purple; }.literal\\>\\>\\> .plain { color: green; }",
+    filename: "History.vue",
+    entry: "vite-css",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+PipelineCss(
+    ".panel[data-v-history] .inner .leaf{padding: 0;}.panel[data-v-history] .other .child{margin: 0;}[data-label=\">>>\"] .plain[data-v-history]{color: red;}.panel[data-token=\"::v-deep\"][data-v-history]{color: blue;}.panel/* >>> */ .after-comment[data-v-history]{color: purple;}.literal\\>\\>\\> .plain[data-v-history]{color: green;}",
+)

@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-5842",
+    history: "6e47205896906fe8e0c3e0a4ea3c6e02b6e08122",
+    source: "<ion-button @click=\"go\">{{ label }}</ion-button>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_ion_button = _resolveComponent(\"ion-button\")\n  \n  return (_openBlock(), _createBlock(_component_ion_button, { onClick: go }, {\n    default: _withCtx(() => [\n      _createTextVNode(_toDisplayString(label), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }, 8 /* PROPS */, [\"onClick\"]))\n}",
+    map: None,
+}

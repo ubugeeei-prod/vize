@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-options-method-shadows-import-6681",
+    history: "6529c45443a99019dfa1897430e9ba9cb7c567da",
+    source: "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nimport { format } from './format'\n\nexport default defineComponent({\n  methods: {\n    format(value: string) {\n      return value\n    },\n  },\n})\n</script>\n<template><span>{{ format(value) }}</span></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineComponent } from \"vue\";\nconst _sfc_main = defineComponent({ methods: { format(value) {\n  return value;\n} } });\n\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"span\", null, _toDisplayString($options.format(_ctx.value)), 1 /* TEXT */))\n}\n_sfc_main.render = _sfc_render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

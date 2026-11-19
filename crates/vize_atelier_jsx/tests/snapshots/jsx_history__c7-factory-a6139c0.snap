@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-factory-a6139c0",
+    history: "a6139c03d61653fe6c0dd0eb7c010d6871fb8351",
+    source: "\n            export const make = function (label: string) {\n                return () => { return <p>{label}</p>; };\n            };\n            export default make(\"retained-factory\");\n        ",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { createElementVNode as _createElementVNode } from \"vue\"\n\n\n            export const make = function (label: string) {\n                return () => { return (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"p\", null, [\n    label\n  ]))\n})(undefined, [])\n})(); };\n            };\n            export default make(\"retained-factory\");\n        ",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "make",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"p\", null, [\n    label\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

@@ -1,0 +1,30 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-vite-global-before-legacy-deep-6713",
+    history: "dc68be43bed308d0603fc08f7ebfcef50ff99ce0",
+    source: ".a :global(.b) >>> .c { color: red; }::v-global(.x) /deep/ .y { color: blue; }.z ::v-deep(.w) { color: green; }",
+    filename: "History.vue",
+    entry: "vite-css",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+PipelineCss(
+    ".b{color: red;}.x{color: blue;}.z[data-v-history] .w{color: green;}",
+)

@@ -1,0 +1,59 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-typed-1a2c5f7",
+    history: "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    source: "\n            export default function marker() { return \"retained\"; }\n            export const Typed = (props: { label: string; amount?: number }) => {\n                const read = () => props.label;\n                return <p>{read()}</p>;\n            };\n        ",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { createElementVNode as _createElementVNode } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\n\n            export default function marker() { return \"retained\"; }\n            export const Typed = _defineComponent({\nname: \"Typed\",\nprops: [\"label\", \"amount\"],\nsetup(props: { label: string; amount?: number }) {\n\n                const read = () => props.label;\n                return (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"p\", null, [\n    read()\n  ]))\n})\n})()\n}\n});\n        ",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "Typed",
+            ),
+            mode: Vdom,
+            setup: Some(
+                ComponentSetupSpan {
+                    declaration_start: 88,
+                    declaration_end: 253,
+                    params_start: 103,
+                    params_end: 144,
+                    type_params_start: 0,
+                    type_params_end: 0,
+                    is_async: false,
+                    destructured_props: [
+                        "label",
+                        "amount",
+                    ],
+                    setup_start: 150,
+                    setup_end: 215,
+                    render_start: 222,
+                    render_end: 237,
+                },
+            ),
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"p\", null, [\n    read()\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

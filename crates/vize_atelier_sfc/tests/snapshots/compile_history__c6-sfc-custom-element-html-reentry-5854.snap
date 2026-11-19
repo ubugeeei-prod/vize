@@ -1,0 +1,46 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-sfc-custom-element-html-reentry-5854",
+    history: "ae0721dbafe29c4b4b9eefe5b4c8ca58f8438f9d",
+    source: "<template><svg><foreignObject><my-el /></foreignObject></svg></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        custom_elements: Some(
+            [
+                "my-*",
+            ],
+        ),
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"svg\", null, [\n    (_openBlock(), _createElementBlock(\"foreignObject\", null, [\n      _createElementVNode(\"my-el\")\n    ]))\n  ]))\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

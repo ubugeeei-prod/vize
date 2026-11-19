@@ -1,0 +1,66 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-mixed-1a2c5f7",
+    history: "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    source: "\n            import { ref } from \"vue\";\n            export const Stateful = () => {\n                const count = ref(0);\n                const increment = () => count.value++;\n                return <button onClick={increment}>{count.value}</button>;\n            };\n            export const Pure = (props: {label:string}) => <i>{props.label}</i>;\n            export default Stateful;\n        ",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { createElementVNode as _createElementVNode } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\n\n            import { ref } from \"vue\";\n            export const Stateful = _defineComponent({\nname: \"Stateful\",\nsetup() {\n\n                const count = ref(0);\n                const increment = () => count.value++;\n                return (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"button\", { onClick: increment }, [\n    count.value\n  ], 8 /* PROPS */, [\"onClick\"]))\n})\n})()\n}\n});\n            export const Pure = (props: {label:string}) => (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"i\", null, [\n    props.label\n  ]))\n})(undefined, [])\n})();\n            export default Stateful;\n        ",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "Stateful",
+            ),
+            mode: Vdom,
+            setup: Some(
+                ComponentSetupSpan {
+                    declaration_start: 59,
+                    declaration_end: 266,
+                    params_start: 0,
+                    params_end: 0,
+                    type_params_start: 0,
+                    type_params_end: 0,
+                    is_async: false,
+                    destructured_props: [],
+                    setup_start: 83,
+                    setup_end: 193,
+                    render_start: 200,
+                    render_end: 250,
+                },
+            ),
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"button\", { onClick: increment }, [\n    count.value\n  ], 8 /* PROPS */, [\"onClick\"]))\n}",
+            map: None,
+        },
+        Component {
+            name: Some(
+                "Pure",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"i\", null, [\n    props.label\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

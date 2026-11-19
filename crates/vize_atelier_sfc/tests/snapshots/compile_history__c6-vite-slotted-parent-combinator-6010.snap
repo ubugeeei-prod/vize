@@ -1,0 +1,30 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-vite-slotted-parent-combinator-6010",
+    history: "035c80d9663fdbe7b5e85fcdd5fcba5cdcede219",
+    source: ".card > :slotted(*) { flex: 1; }.card > :slotted(.title), .card > :slotted(.subtitle) { line-height: 1.2; }.card > :slotted(*):not(:last-child) { margin-bottom: 2px; }",
+    filename: "History.vue",
+    entry: "vite-css",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+PipelineCss(
+    ".card >[data-v-history-s]{flex: 1;}.card >.title[data-v-history-s],.card >.subtitle[data-v-history-s]{line-height: 1.2;}.card >[data-v-history-s]:not(:last-child){margin-bottom: 2px;}",
+)

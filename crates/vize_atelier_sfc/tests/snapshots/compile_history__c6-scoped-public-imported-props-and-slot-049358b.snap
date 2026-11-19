@@ -1,0 +1,60 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-scoped-public-imported-props-and-slot-049358b",
+    history: "049358b200baa82d99b04c40f95aa68d0e8fae7c",
+    source: "<script setup lang='ts'>import type { Public } from './types'; defineProps<Public>()</script><template><slot name='footer'/></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    files: {
+        "types.ts": "export interface Public { label: number; pending?: boolean }\n",
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { renderSlot as _renderSlot } from \"vue\"\n\n\nexport default {\n  __name: 'History',\n  props: {\n    label: { type: Number, required: true },\n    pending: { type: Boolean, required: false }\n  },\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return _renderSlot(_ctx.$slots, \"footer\")\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "pending": Props,
+                        "label": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [
+                "$PROJECT/tsconfig.json",
+                "$PROJECT/types.ts",
+                "/private/tmp/nix-shell.1INRuc/tsconfig.json",
+                "/private/tmp/tsconfig.json",
+                "/private/tsconfig.json",
+                "/tsconfig.json",
+            ],
+        },
+    ),
+)

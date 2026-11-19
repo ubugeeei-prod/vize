@@ -1,0 +1,73 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-3-6227",
+    history: "0dfe185cb89453abd87c72568e6c89d2bab34583",
+    source: "<template v-match><p v-when=\"_\"><template v-match.once=\"nested\"><i v-when=\"_\"></i></template></p><section><p v-when=\"'orphan'\"></p></section></template>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 3,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: ExtendPoint,
+            message: "`v-match` requires a subject expression.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 10,
+                        end: 17,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: ExtendPoint,
+            message: "`v-match` does not accept directive arguments or modifiers.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 42,
+                        end: 63,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: ExtendPoint,
+            message: "`v-when` branches must be direct children of a `v-match` container.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 109,
+                        end: 126,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _directive_when = _resolveDirective(\"when\")\n  \n  return (_openBlock(), _createElementBlock(\"template\", null, [\n    _createElementVNode(\"p\", null, [\n      _createElementVNode(\"template\", null, [\n        _createElementVNode(\"i\")\n      ])\n    ]),\n    _createElementVNode(\"section\", null, [\n      _withDirectives(_createElementVNode(\"p\", null, null, 512 /* NEED_PATCH */), [\n        [_directive_when, 'orphan']\n      ])\n    ])\n  ]))\n}",
+    map: None,
+}

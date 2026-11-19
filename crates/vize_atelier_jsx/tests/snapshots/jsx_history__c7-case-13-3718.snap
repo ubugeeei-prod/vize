@@ -1,0 +1,45 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-13-3718",
+    history: "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    source: "const A = () => <MyEl class=\"a\" {...p} class={c} on={{ click: h }}/>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: Some(
+            "babel",
+        ),
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: Some(
+            "My",
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"MyEl\", _mergeProps({ class: \"a\" }, p, {\n    class: c,\n    on: { click: h }\n  }), null, 16 /* FULL_PROPS */, [\"on\"]))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "A",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"MyEl\", _mergeProps({ class: \"a\" }, p, {\n    class: c,\n    on: { click: h }\n  }), null, 16 /* FULL_PROPS */, [\"on\"]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-compound-dynamic-model-argument-6222",
+    history: "cb7949c9203d1f5ac012ddff8b64f8e36bad1126",
+    source: "<Child v-model:[`p-${name}`].trim=\"value\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, normalizeProps as _normalizeProps, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Child = _resolveComponent(\"Child\")\n  \n  return (_openBlock(), _createBlock(_component_Child, _normalizeProps({ [(`p-${name}`)]: value,\n  [\"onUpdate:\" + (`p-${name}`)]: $event => ((value) = $event),\n  [(`p-${name}`) + \"Modifiers\"]: { trim: true } }), null, 16 /* FULL_PROPS */))\n}",
+    map: None,
+}

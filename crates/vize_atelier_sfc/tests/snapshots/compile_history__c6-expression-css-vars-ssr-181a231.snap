@@ -1,0 +1,53 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-expression-css-vars-ssr-181a231",
+    history: "181a231bdf164253843f3dc973f30813f196fe01",
+    source: "<script setup>\nimport { ref } from 'vue'\nconst fontSize = ref(18)\nconst fogOpacity = ref(0.5)\n</script>\n<template><div class=\"root\">text</div></template>\n<style scoped>\n.root { font-size: v-bind(fontSize + 'px'); opacity: v-bind('fogOpacity * 2'); }\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { useCssVars as _useCssVars, unref as _unref } from 'vue'\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  const _cssVars = { style: {\":--v9822b67c\": ($setup.fontSize + 'px'), \":--v3a1c0678\": ($setup.fogOpacity * 2)} }\n  _attrs = _mergeProps(_attrs, _cssVars)\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"root\" }, _attrs))} data-v-4045eae1>text</div>`)\n}\nimport { ref } from 'vue'\n\n\nexport default {\n  __name: 'History',\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n_useCssVars(_ctx => ({\n  \"v9822b67c\": (fontSize.value + 'px'),\n  \"v3a1c0678\": (fogOpacity.value * 2)\n}))\n\nconst fontSize = ref(18)\nconst fogOpacity = ref(0.5)\n\nconst __returned__ = { ref, fontSize, fogOpacity }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+            css: Some(
+                ".root[data-v-4045eae1]{ font-size: var(--v9822b67c); opacity: var(--v3a1c0678); }\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "ref": SetupConst,
+                        "fontSize": SetupRef,
+                        "fogOpacity": SetupRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

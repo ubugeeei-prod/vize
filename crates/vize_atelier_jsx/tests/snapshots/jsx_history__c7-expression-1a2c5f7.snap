@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-expression-1a2c5f7",
+    history: "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    source: "\n            import Child from \"./Child\";\n            export const suffix = \"!\";\n            export function Card(props: { label: string }) {\n                const label = props.label + suffix;\n                return <Child label={label}/>;\n            }\n            export default <T extends string,>(props: { label: T }) => <Card label={props.label}/>;\n        ",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\n\n            import Child from \"./Child\";\n            export const suffix = \"!\";\n            export function Card(props: { label: string }) {\n                const label = props.label + suffix;\n                return (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createBlock(_resolveDynamicComponent(Child), { label: label }, null, 8 /* PROPS */, [\"label\"]))\n})(undefined, [])\n})();\n            }\n            export default <T extends string,>(props: { label: T }) => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createBlock(_resolveDynamicComponent(Card), { label: props.label }, null, 8 /* PROPS */, [\"label\"]))\n})(undefined, [])\n})();\n        ",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "Card",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createBlock(_resolveDynamicComponent(Child), { label: label }, null, 8 /* PROPS */, [\"label\"]))\n}",
+            map: None,
+        },
+        Component {
+            name: None,
+            mode: Vdom,
+            setup: None,
+            preamble: "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createBlock(_resolveDynamicComponent(Card), { label: props.label }, null, 8 /* PROPS */, [\"label\"]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

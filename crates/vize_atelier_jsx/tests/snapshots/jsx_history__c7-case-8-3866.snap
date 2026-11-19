@@ -1,0 +1,58 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-8-3866",
+    history: "d05141f8c89a38098acaaeb0b590a7553f66a3fb",
+    source: "\n        type Props = { label?: string };\n\n        const Typed = ({ label = \"TSX\" }: Props) => {\n          const shown = label;\n          return <div>{shown}</div>;\n        };\n        ",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { createElementVNode as _createElementVNode } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\n\n        type Props = { label?: string };\n\n        const Typed = _defineComponent({\nname: \"Typed\",\nprops: [\"label\"],\nsetup({ label = \"TSX\" }: Props) {\n\n          const shown = label;\n          return (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"div\", null, [\n    shown\n  ]))\n})\n})()\n}\n});\n        ",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "Typed",
+            ),
+            mode: Vdom,
+            setup: Some(
+                ComponentSetupSpan {
+                    declaration_start: 51,
+                    declaration_end: 175,
+                    params_start: 66,
+                    params_end: 90,
+                    type_params_start: 0,
+                    type_params_end: 0,
+                    is_async: false,
+                    destructured_props: [
+                        "label",
+                    ],
+                    setup_start: 96,
+                    setup_end: 138,
+                    render_start: 145,
+                    render_end: 163,
+                },
+            ),
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"div\", null, [\n    shown\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

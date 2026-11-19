@@ -25,6 +25,10 @@ const INDEX = "docs/davinci/plan/compiler-fix-history.tsv";
 const RECEIPT = "docs/davinci/plan/compiler-fix-history-index.json";
 const REVIEWS = "docs/davinci/plan/compiler-fix-history-reviews.json";
 export const COHORT = "crates/vize_atelier_sfc/tests/fixtures/compile-history/cases.json";
+// JSX/TSX fixes compile through vize_atelier_jsx, which depends on the SFC
+// crate, so their oracles run in that crate's own runner.
+export const JSX_COHORT = "crates/vize_atelier_jsx/tests/fixtures/jsx-history/cases.json";
+export const COHORTS: readonly string[] = [COHORT, JSX_COHORT];
 export const DISPOSITIONS =
   "crates/vize_atelier_sfc/tests/fixtures/compile-history/dispositions.json";
 const PINNED = "current-api-pinned";
@@ -245,19 +249,23 @@ function fixtureReferences(root: string): Map<string, CaseReference[]> {
       }
     }
   }
-  for (const fixture of readCohort(root)) {
-    const cases = links.get(fixture.history) ?? [];
-    cases.push({ id: `compiler/current-api/${fixture.id}`, evidence: COHORT });
-    links.set(fixture.history, cases);
-  }
+  for (const cohort of COHORTS)
+    for (const fixture of readCohort(root, cohort)) {
+      const cases = links.get(fixture.history) ?? [];
+      cases.push({ id: `compiler/current-api/${fixture.id}`, evidence: cohort });
+      links.set(fixture.history, cases);
+    }
   return links;
 }
 
 // Current public API oracles: one authored input per case, every result field
 // snapshotted by crates/vize_atelier_sfc/tests/compile_history.rs.
-export function readCohort(root: string): { id: string; history: string }[] {
-  const cases = JSON.parse(fs.readFileSync(path.join(root, COHORT), "utf8"));
-  assert(Array.isArray(cases), `${COHORT} must be an array`);
+export function readCohort(
+  root: string,
+  cohort: string = COHORT,
+): { id: string; history: string }[] {
+  const cases = JSON.parse(fs.readFileSync(path.join(root, cohort), "utf8"));
+  assert(Array.isArray(cases), `${cohort} must be an array`);
   const ids = new Set<string>();
   for (const fixture of cases) {
     assert.match(fixture.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
@@ -333,7 +341,7 @@ export function collectHistory(root: string) {
       scopeReview: reviewed.reviews.get(commit.sha) ?? null,
       review: reviewed.reviews.has(commit.sha)
         ? "fixture-linked;bounded-semantic-scope-reviewed;whole-fix-review-pending"
-        : references.some((reference) => reference.evidence === COHORT)
+        : references.some((reference) => COHORTS.includes(reference.evidence))
           ? PINNED
           : references.length
             ? "fixture-linked;target-and-semantic-review-pending"
@@ -341,8 +349,13 @@ export function collectHistory(root: string) {
     };
   });
   const indexedFixes = new Set(rows.map((row) => row.sha));
-  for (const fixture of readCohort(root))
-    assert(indexedFixes.has(fixture.history), `${fixture.id} names a non-indexed fix`);
+  const ids = new Set<string>();
+  for (const cohort of COHORTS)
+    for (const fixture of readCohort(root, cohort)) {
+      assert(indexedFixes.has(fixture.history), `${fixture.id} names a non-indexed fix`);
+      assert(!ids.has(fixture.id), `duplicate current-API case across cohorts: ${fixture.id}`);
+      ids.add(fixture.id);
+    }
   for (const sha of dispositions.keys()) {
     assert(indexedFixes.has(sha), `disposition names a non-indexed fix: ${sha}`);
     assert(!links.has(sha), `a fixture-linked fix cannot also be dispositioned: ${sha}`);
@@ -433,6 +446,10 @@ export function renderHistory(history: ReturnType<typeof collectHistory>) {
     currentApiCohort: {
       path: COHORT,
       sha256: digest(fs.readFileSync(path.join(history.root, COHORT))),
+    },
+    jsxApiCohort: {
+      path: JSX_COHORT,
+      sha256: digest(fs.readFileSync(path.join(history.root, JSX_COHORT))),
     },
     dispositions: {
       path: DISPOSITIONS,

@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-ssr-paren-slot-fallback-6403",
+    history: "beb84df46db611f6bf017fa6803af8cf84e6d59e",
+    source: "<template><slot>(fallback)</slot></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrRenderSlot as _ssrRenderSlot } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _ssrRenderSlot(_ctx.$slots, \"default\", {}, () => {\n    _push(`(fallback)`)\n  }, _push, _parent)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

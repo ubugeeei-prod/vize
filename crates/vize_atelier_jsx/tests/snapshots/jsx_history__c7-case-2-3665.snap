@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-2-3665",
+    history: "0c04ddcaa29a5a04adc23b89738fd6731d331748",
+    source: "const B = () => <div class={c} id={i}>{t}</div>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: Some(
+            "babel",
+        ),
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { normalizeProps as _normalizeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst B = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", _normalizeProps({\n    class: c,\n    id: i\n  }), [\n    t\n  ], 10 /* CLASS, PROPS */, [\"id\"]))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "B",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { normalizeProps as _normalizeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", _normalizeProps({\n    class: c,\n    id: i\n  }), [\n    t\n  ], 10 /* CLASS, PROPS */, [\"id\"]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

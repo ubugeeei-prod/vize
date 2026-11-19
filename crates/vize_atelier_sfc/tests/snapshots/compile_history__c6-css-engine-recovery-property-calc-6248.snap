@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-css-engine-recovery-property-calc-6248",
+    history: "4191117372384ec4c2b374536d2ce0b60dab7059",
+    source: "@property --x{syntax:\"<percentage>\";inherits:false;initial-value:calc(5);}",
+    filename: "History.vue",
+    entry: "css",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 2,
+}
+Css {
+    compiled: CssCompileResult {
+        code: "@property --x{syntax:\"<percentage>\";inherits:false;initial-value:calc(5);}",
+        map: None,
+        css_vars: [],
+        errors: [
+            "CSS parse error: Unexpected token Function(\"calc\") at style.css:0:6",
+        ],
+        warnings: [],
+        exports: None,
+    },
+    ast_errors: [
+        "CSS parse error: Unexpected token Function(\"calc\") at style.css:0:6",
+    ],
+    printed: None,
+}

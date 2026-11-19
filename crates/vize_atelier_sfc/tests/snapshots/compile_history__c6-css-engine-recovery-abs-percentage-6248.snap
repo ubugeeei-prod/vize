@@ -1,0 +1,48 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-css-engine-recovery-abs-percentage-6248",
+    history: "4191117372384ec4c2b374536d2ce0b60dab7059",
+    source: "a{border-image-slice:abs(-50%)}",
+    filename: "History.vue",
+    entry: "css",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Css {
+    compiled: CssCompileResult {
+        code: "a {\n  border-image-slice: abs(-50%);\n}\n",
+        map: None,
+        css_vars: [],
+        errors: [],
+        warnings: [],
+        exports: None,
+    },
+    ast_errors: [],
+    printed: Some(
+        CssCompileResult {
+            code: "a {\n  border-image-slice: abs(-50.0%);\n}\n",
+            map: None,
+            css_vars: [],
+            errors: [],
+            warnings: [],
+            exports: None,
+        },
+    ),
+}

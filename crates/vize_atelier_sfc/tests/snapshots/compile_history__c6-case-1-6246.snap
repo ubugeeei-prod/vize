@@ -1,0 +1,36 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-6246",
+    history: "66aae15e42872c314d508137548587b5386ba618",
+    source: "<div v-match=\"subject\" v-custom=\"customValue\"><p v-when=\"value\">{{ value }}</p></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _directive_custom = _resolveDirective(\"custom\")\n  \n  return _withDirectives((_openBlock(), _createElementBlock(\"div\", null, [\n    (() => { const __vize_match_0 = ((__vize_match_0_0) => { a0: { const __vize_match_0_1 = value; if (!(__vize_match_0_0 === __vize_match_0_1 || (__vize_match_0_0 !== __vize_match_0_0 && __vize_match_0_1 !== __vize_match_0_1))) break a0; return [0]; } return [-1]; })(subject); return (__vize_match_0[0] === 0)\n      ? (_openBlock(), _createElementBlock(\"p\", { key: 0 }, _toDisplayString(value), 1 /* TEXT */))\n      : _createCommentVNode(\"v-if\", true) })()\n  ], 512 /* NEED_PATCH */)), [\n    [_directive_custom, customValue]\n  ])\n}",
+    map: None,
+}

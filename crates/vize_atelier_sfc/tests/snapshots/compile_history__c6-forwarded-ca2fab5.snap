@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-forwarded-ca2fab5",
+    history: "ca2fab538daf53f08700f368d4b6dae77a2d80e5",
+    source: "<template><Forwarder><slot /></Forwarder></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrRenderComponent as _ssrRenderComponent, ssrRenderSlot as _ssrRenderSlot } from \"@vue/server-renderer\"\nimport { resolveComponent as _resolveComponent, renderSlot as _renderSlot, withCtx as _withCtx } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Forwarder\"), _attrs, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _ssrRenderSlot(_ctx.$slots, \"default\", {}, null, _push, _parent, _scopeId)\n      } else {\n        return [_renderSlot(_ctx.$slots, \"default\", {}, undefined, true)]\n      }\n    }),\n    _: 3 /* FORWARDED */\n  }, _parent))\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

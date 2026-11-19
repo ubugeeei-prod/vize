@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-css-engine-recovery-artifact-6248",
+    history: "4191117372384ec4c2b374536d2ce0b60dab7059",
+    source: "\n@keyframes kflex{\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\n tcodeht {\u{17}\0 flex-pack: cos4)cos(8)kelineke:;\n}cos(8)kelineke:;\n}\0\0k\n",
+    filename: "History.vue",
+    entry: "css",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 2,
+}
+Css {
+    compiled: CssCompileResult {
+        code: "\n@keyframes kflex{\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\n tcodeht {\u{17}\0 flex-pack: cos4)cos(8)kelineke:;\n}cos(8)kelineke:;\n}\0\0k\n",
+        map: None,
+        css_vars: [],
+        errors: [
+            "CSS parse error: Unexpected end of input at style.css:5:1",
+        ],
+        warnings: [],
+        exports: None,
+    },
+    ast_errors: [
+        "CSS parse error: Unexpected end of input at style.css:5:1",
+    ],
+    printed: None,
+}

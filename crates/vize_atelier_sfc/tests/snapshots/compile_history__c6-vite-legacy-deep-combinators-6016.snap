@@ -1,0 +1,30 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-vite-legacy-deep-combinators-6016",
+    history: "8706b9e8137a45eb07325cafc6a1e029eb0c133f",
+    source: ".panel >>> .inner >>> .leaf { padding: 0; }.panel ::v-deep .other /deep/ .child { margin: 0; }[data-label=\">>>\"] .plain { color: red; }.panel[data-token=\"::v-deep\"] { color: blue; }",
+    filename: "History.vue",
+    entry: "vite-css",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+PipelineCss(
+    ".panel[data-v-history] .inner .leaf{padding: 0;}.panel[data-v-history] .other .child{margin: 0;}[data-label=\">>>\"] .plain[data-v-history]{color: red;}.panel[data-token=\"::v-deep\"][data-v-history]{color: blue;}",
+)

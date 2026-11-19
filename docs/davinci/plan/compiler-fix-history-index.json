@@ -32,17 +32,21 @@
   "touchingCommits": 1321,
   "conventionalFixSubjects": 661,
   "nonMergeFixSubjects": 626,
-  "fixtureLinkedFixSubjects": 272,
+  "fixtureLinkedFixSubjects": 420,
   "boundedReviewedFixtureScopes": 16,
-  "currentApiPinnedFixSubjects": 242,
-  "noCompileBehaviorFixSubjects": 73,
+  "currentApiPinnedFixSubjects": 390,
+  "noCompileBehaviorFixSubjects": 97,
   "currentApiCohort": {
     "path": "crates/vize_atelier_sfc/tests/fixtures/compile-history/cases.json",
-    "sha256": "02f11008768be08e75993b01dc0c232b9a5ee565843ceb0452052aaee6bbb182"
+    "sha256": "635a97a66f7c4b6cca32374efca7be614bbef0741d63361be156f95423180df8"
+  },
+  "jsxApiCohort": {
+    "path": "crates/vize_atelier_jsx/tests/fixtures/jsx-history/cases.json",
+    "sha256": "f9f17edfce728395cbe79b033d97eb19a69a853cb244d90f32bcaf96707d42c2"
   },
   "dispositions": {
     "path": "crates/vize_atelier_sfc/tests/fixtures/compile-history/dispositions.json",
-    "sha256": "1efab107cff383bfaf6b4a5951e92e324fbce98f35dd0bf936fb7ce78e110bf8"
+    "sha256": "349b3e1341aa3a0c376be1f8984dfc2256ef90bd134cec6d879109529c5577fd"
   },
   "wholeFixReviewedSubjects": 0,
   "wholeFixReviewPendingSubjects": 626,
@@ -84,7 +88,7 @@
   ],
   "index": {
     "path": "docs/davinci/plan/compiler-fix-history.tsv",
-    "sha256": "a972ea7b7a813dc18b68e3c4432b9fb587073dc6ecf660a74910d54716ed00df"
+    "sha256": "be101ee8a8d9f4531f231828364bf8dc591876558034aabd3e998febab6d0c2a"
   },
   "semanticDenominator": null,
   "nativeAcceptance": 0,

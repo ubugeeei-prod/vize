@@ -1,0 +1,55 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-vapor-6671",
+    history: "dec200cb6b144e9c780ee53d9bf8c529f048513c",
+    source: "<script setup lang=\"ts\">\ninterface Scale { (value: number): number; readonly range: number[] }\ninterface Formatter { (value: number): string }\ninterface ExtendedFormatter extends Record<string, unknown> { (value: number): string }\ntype Labelled = { label: string; (value: string): void }\ntype ExtendedLabelled = Record<string, unknown> & { (value: string): void }\ndefineProps<{\n  scale: Scale\n  format: Formatter\n  extendedFormat: ExtendedFormatter\n  labelled: Labelled\n  extendedLabelled: ExtendedLabelled\n  inline: { (value: number): number; bandwidth?: number }\n  plain: { run(): void; label: string }\n}>()\n</script>\n\n<template><div /></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { template as _template } from 'vue';\n\nconst t0 = _template(\"<div></div>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\nconst __vaporRender = render\n\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'History',\n  props: {\n    scale: { type: [Function, Object], required: true },\n    format: { type: Function, required: true },\n    extendedFormat: { type: Function, required: true },\n    labelled: { type: [Object, Function], required: true },\n    extendedLabelled: { type: Function, required: true },\n    inline: { type: [Function, Object], required: true },\n    plain: { type: Object, required: true }\n  },\n  render: __vaporRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = {  }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "labelled": Props,
+                        "scale": Props,
+                        "extendedLabelled": Props,
+                        "format": Props,
+                        "extendedFormat": Props,
+                        "plain": Props,
+                        "inline": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

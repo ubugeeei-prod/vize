@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-emits-const-assertion-spread-c5c305c",
+    history: "c5c305cda113a424b9cc5ae77eaa62eedf958f90",
+    source: "<script setup lang=\"ts\">\ntype SavePayload = { id: number }; const commonEmits = { save: (payload: SavePayload) => payload.id > 0, close() { return true } } as const; const copied = { ...(commonEmits as const) }; defineEmits(({ ...copied, cancel: null } satisfies Contract) as const);\n</script>\n<template><div /></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "`defineEmits()` in <script setup> cannot reference locally declared variable `copied` because its arguments are hoisted outside setup(). Move the initialization to a normal <script> block or import it from another module.",
+            code: Some(
+                "SCRIPT_SETUP_MACRO_SCOPE",
+            ),
+            loc: Some(
+                BlockLocation {
+                    start: 230,
+                    end: 236,
+                    tag_start: 230,
+                    tag_end: 236,
+                    start_line: 2,
+                    start_column: 206,
+                    end_line: 2,
+                    end_column: 212,
+                },
+            ),
+        },
+    ),
+)

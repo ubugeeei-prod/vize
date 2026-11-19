@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-6208",
+    history: "60656df799a4c879268eb9a25d2a086ec8c96cdd",
+    source: "<script setup>\ndefineProps({ label: String });\nconst emit = defineEmits(['example']);\n</script><template><button @click=\"emit('example', label)\">{{ label }}</button></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, on as _on, renderEffect as _renderEffect, template as _template } from 'vue';\n\nconst t0 = _template(\"<button> </button>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  const x0 = _txt(n0)\n  _on(n0, \"click\", $event => (_ctx.emit('example', $props.label)))\n  _renderEffect(() => _setText(x0, _toDisplayString($props.label)))\n  return n0\n}\nconst __vaporRender = render\n\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'History',\n  props: { label: String },\n  emits: ['example'],\n  render: __vaporRender,\n  setup(__props, { expose: __expose, emit: __emit }) {\n  __expose();\n\nconst emit = __emit\n\nconst __returned__ = { emit }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "label": Props,
+                        "emit": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)
