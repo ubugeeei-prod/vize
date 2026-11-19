@@ -205,7 +205,7 @@ export function renderSummary(rows: readonly LedgerRow[]): string {
     "## Rules by substrate and status",
     "",
   ];
-  const statusRows = SUBSTRATES.map((substrate) => {
+  const statusRows: (string | number)[][] = SUBSTRATES.map((substrate) => {
     const of = rows.filter((row) => row.substrate === substrate);
     return [
       substrate,
