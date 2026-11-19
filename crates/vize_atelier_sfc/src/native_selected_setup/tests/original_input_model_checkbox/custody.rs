@@ -5,8 +5,8 @@ use vize_l1_to_l2::native_file::NativeSelectedSetupSfcObservation;
 use vize_l2::{
     expr::ExprRef,
     file::{
-        DeclarationKind, InitializerKind, Namespace, NativeFileAttributeValueState,
-        NativeFileModelKind, NativeFileModelState,
+        DeclarationKind, InitializerKind, Namespace, FileAttributeValueState,
+        FileModelKind, FileModelState,
     },
     op::{BindingOp, Op},
     resolution::Usage,
@@ -32,10 +32,10 @@ pub(super) fn capture(
         .ok_or("actual completed setup owner")?;
     let setup = view.setup();
     let file = setup.file();
-    let [record] = file.native_models() else {
+    let [record] = file.file_models() else {
         return Err("one actual Model".into());
     };
-    let NativeFileModelState::Admitted(node) = record.state() else {
+    let FileModelState::Admitted(node) = record.state() else {
         return Err("normally closed Model".into());
     };
     let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
@@ -49,16 +49,16 @@ pub(super) fn capture(
         return Err("one actual static type".into());
     };
     let operand = record.input().operand();
-    let [type_record] = file.native_attribute_values() else {
+    let [type_record] = file.file_attribute_values() else {
         return Err("one actual type owner".into());
     };
     let type_owner = file
-        .native_attribute_value_for(0, element, 0)
+        .file_attribute_value_for(0, element, 0)
         .ok_or("actual closed type slot")?;
     let type_value = type_owner.observation().ok_or("actual type observation")?;
     if !file.is_complete()
         || expected_kind != "checkbox"
-        || record.kind() != Some(NativeFileModelKind::Checkbox)
+        || record.kind() != Some(FileModelKind::Checkbox)
         || file.units().len() != 1
         || file.scopes().len() != 2
         || file.artifact().node_count() != 2
@@ -74,7 +74,7 @@ pub(super) fn capture(
         || operand.lazy_span().is_some()
         || operand.number_span().is_some()
         || type_record.state()
-            != (NativeFileAttributeValueState::Attached {
+            != (FileAttributeValueState::Attached {
                 node: element_node,
                 slot: 0,
             })

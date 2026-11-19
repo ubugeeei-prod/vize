@@ -5,7 +5,7 @@ use vize_l0::{Span, String, cstr};
 use vize_l1::markup::AttributeValueOperand;
 use vize_l1_to_l2::native_file::{NativeSelectedSfcIssueKind, NativeSelectedSfcObservation};
 use vize_l2::{
-    file::{FileArtifact, NativeFileAttributeValueState},
+    file::{FileArtifact, FileAttributeValueState},
     op::Op,
     walk::NodeRef,
 };
@@ -76,7 +76,7 @@ fn file_observation(file: &FileArtifact<'_>, source: &str) -> Value {
         "id":binding.id().index(),"declarationDebug":binding.declaration().map(|row|cstr!("{row:#?}"))
     })).collect();
     let attributes: Vec<_> = file
-        .native_attribute_values()
+        .file_attribute_values()
         .iter()
         .enumerate()
         .map(|(index, row)| {
@@ -87,11 +87,11 @@ fn file_observation(file: &FileArtifact<'_>, source: &str) -> Value {
             })
         })
         .collect();
-    let interpolations: Vec<_> = file.native_interpolations().iter().map(|row|json!({
+    let interpolations: Vec<_> = file.file_interpolations().iter().map(|row|json!({
         "state":cstr!("{:?}",row.state()),"inputDebug":cstr!("NativeInterpolationInput {{ full_span: {:?}, content_span: {:?}, raw_content: {:?}, syntax: {:#?} }}",row.input().operand().full_span(),row.input().operand().content_span(),row.input().operand().raw_content(),row.input().operand().syntax())
     })).collect();
     let interpolation_failures: Vec<_> = file
-        .native_interpolation_failures()
+        .file_interpolation_failures()
         .iter()
         .map(|row| {
             json!({
@@ -111,7 +111,7 @@ fn file_observation(file: &FileArtifact<'_>, source: &str) -> Value {
         "diagnosticCounts":{"issues":file.issues().len(),"templateIssues":file.template_issues().len(),
             "templateInterruption":usize::from(file.template_interruption().is_some()),
             "interruptedPrograms":file.interrupted_programs().count(),
-            "interpolationFailures":file.native_interpolation_failures().len()},
+            "interpolationFailures":file.file_interpolation_failures().len()},
         "templateInterruption":file.template_interruption().map(|issue|cstr!("{issue:#?}")),
         "interruptedPrograms":file.interrupted_programs().map(|issue|cstr!("{issue:#?}")).collect::<Vec<_>>(),
         "rejectedHandlers":debug_rows(file.rejected_handlers()),
@@ -205,9 +205,9 @@ fn joined_values<'owner, 'arena>(
 ) -> (Vec<Value>, Option<String>) {
     let file = facts.file();
     let mut values = Vec::new();
-    for (index, record) in file.native_attribute_values().iter().enumerate() {
+    for (index, record) in file.file_attribute_values().iter().enumerate() {
         let (node, slot) = match record.state() {
-            NativeFileAttributeValueState::Attached { node, slot } => (Some(node), Some(slot)),
+            FileAttributeValueState::Attached { node, slot } => (Some(node), Some(slot)),
             _ => (None, None),
         };
         values.push(
@@ -220,8 +220,8 @@ fn joined_values<'owner, 'arena>(
     // never a source decoder or caller-created attribute/provider tuple.
     let visit_error = file.artifact().visit_nodes(&mut |node, current| {
         let NodeRef::Op(Op::Element(element)) = current else { return; };
-        for (index, record) in file.native_attribute_values().iter().enumerate() {
-            let NativeFileAttributeValueState::Attached { node: actual, slot } = record.state()
+        for (index, record) in file.file_attribute_values().iter().enumerate() {
+            let FileAttributeValueState::Attached { node: actual, slot } = record.state()
             else { continue; };
             if actual != node { continue; }
             let Some(joined) = facts.value(index,element,slot) else { continue; };

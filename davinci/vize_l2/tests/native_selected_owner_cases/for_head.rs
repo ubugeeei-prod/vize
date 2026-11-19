@@ -1,7 +1,7 @@
 use super::{Allocator, Kind, check, descriptor, equal, owner, syntax};
 use vize_l2::{
     file::Namespace,
-    lang::js::NativeTemplateFile,
+    lang::js::TemplateFile,
     op::{BindingOp, Op},
     resolution::{ForAliasRole, HandlerBindingRef, Usage},
 };
@@ -9,7 +9,7 @@ use vize_l2::{
 fn complete_setup<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<TemplateFile<'a>, &'static str> {
     let descriptor = descriptor(arena, source);
     let program = syntax(arena, &descriptor, true)?;
     let mut original = owner(arena, source)?;

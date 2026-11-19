@@ -11,7 +11,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::{NativeTemplateFile, NativeTemplateIssueKind, NativeTemplateOwner},
+    lang::js::{TemplateFile, TemplateRouteIssueKind, TemplateOwner},
     op::Op,
 };
 use vize_l3::decision::{
@@ -43,19 +43,19 @@ fn descriptor<'a>(arena: &'a Allocator, source: &'a str) -> DescriptorObservatio
 fn owner<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateOwner<'a>, &'static str> {
+) -> Result<TemplateOwner<'a>, &'static str> {
     let observation = descriptor(arena, source);
     let selected =
         NativeTemplateComponent::parse_in(arena, observation.admitted().map_err(|_| "descriptor")?)
             .map_err(|_| "component")?
             .ok_or("template")?;
-    NativeTemplateOwner::new(selected).map_err(|_| "file start")
+    TemplateOwner::new(selected).map_err(|_| "file start")
 }
 
 fn completed<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<TemplateFile<'a>, &'static str> {
     let mut owner = owner(arena, source)?;
     {
         let mut walk = owner.begin().map_err(|_| "begin")?;
@@ -173,7 +173,7 @@ fn equal_source_foreign_child_cannot_reach_native_analysis() -> Result<(), &'sta
             .next()
             .ok_or("foreign child")?;
         let error = walk.child(child).err().ok_or("foreign refusal")?;
-        check(error.kind == NativeTemplateIssueKind::InvalidEvent)?;
+        check(error.kind == TemplateRouteIssueKind::InvalidEvent)?;
     }
     let output = original.finish();
     check(output.view().is_err())?;
@@ -194,7 +194,7 @@ fn unsupported_element_and_entity_roots_keep_no_native_completion() -> Result<()
             let mut walk = original.begin().map_err(|_| "begin")?;
             let child = walk.selected().children().next().ok_or("child")?;
             let error = walk.child(child).err().ok_or("bounded refusal")?;
-            check(error.kind == NativeTemplateIssueKind::UnsupportedChild)?;
+            check(error.kind == TemplateRouteIssueKind::UnsupportedChild)?;
         }
         check(original.finish().view().is_err())?;
     }
@@ -216,7 +216,7 @@ fn original_html_whitespace_refuses_before_native_decisions() -> Result<(), &'st
             let mut walk = original.begin().map_err(|_| "begin")?;
             let child = walk.selected().children().next().ok_or("text")?;
             let issue = walk.child(child).err().ok_or("whitespace refusal")?;
-            check(issue.kind == NativeTemplateIssueKind::UnsupportedChild)?;
+            check(issue.kind == TemplateRouteIssueKind::UnsupportedChild)?;
         }
         let output = original.finish();
         check(output.view().is_err())?;

@@ -3,7 +3,7 @@ use crate::decision::dom::{DomUnsupported, LiteralExpressions};
 
 #[test]
 fn actual_constant_scope_uses_vnodes_and_rejects_a_counterfeit_mutable_access_kind() {
-    struct WrongMode<'v, 'o, 'a>(&'v NativeSelectedSetup<'o, 'a>);
+    struct WrongMode<'v, 'o, 'a>(&'v SelectedSetup<'o, 'a>);
     impl<'o, 'a> FileReads<'o, 'a> for WrongMode<'_, 'o, 'a> {
         const RECORD: bool = true;
         const NATIVE_SETUP: bool = true;

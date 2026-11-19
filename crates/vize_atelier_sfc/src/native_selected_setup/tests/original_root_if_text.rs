@@ -3,7 +3,7 @@
 use super::*;
 use vize_l2::{
     expr::ExprRef,
-    file::{NativeFileConditionalState, NativeFileInterpolationState},
+    file::{FileConditionalState, FileInterpolationState},
     op::Op,
     resolution::Usage,
 };
@@ -122,17 +122,17 @@ fn eight_whole_original_root_if_text_components_and_raw_maps_are_captured() -> R
                 let [Op::If(original)] = file.artifact().root().ops.as_slice() else {
                     return Err(cstr!("{id}: actual root If"));
                 };
-                let [condition_record] = file.native_conditionals() else {
+                let [condition_record] = file.file_conditionals() else {
                     return Err(cstr!("{id}: one original condition"));
                 };
-                let NativeFileConditionalState::Admitted(if_node) = condition_record.state() else {
+                let FileConditionalState::Admitted(if_node) = condition_record.state() else {
                     return Err(cstr!("{id}: normally closed If"));
                 };
                 require!(
                     if_node == NodeId::FIRST
                         && condition_record.accepts(original)
                         && file
-                            .native_conditional(if_node)
+                            .file_conditional(if_node)
                             .is_some_and(|row| core::ptr::eq(row, condition_record)),
                     "{id}: actual introducing If allocation and dense root id"
                 );
@@ -156,15 +156,15 @@ fn eight_whole_original_root_if_text_components_and_raw_maps_are_captured() -> R
                 let ExprRef::Js(expression) = interpolation.expression else {
                     return Err(cstr!("{id}: original text AST"));
                 };
-                let [text_record] = file.native_interpolations() else {
+                let [text_record] = file.file_interpolations() else {
                     return Err(cstr!("{id}: one original text input"));
                 };
-                let NativeFileInterpolationState::Admitted(text_node) = text_record.state() else {
+                let FileInterpolationState::Admitted(text_node) = text_record.state() else {
                     return Err(cstr!("{id}: normally minted text"));
                 };
                 let syntax = text_record.input().operand().syntax();
                 require!(
-                    file.native_interpolation(text_node)
+                    file.file_interpolation(text_node)
                         .is_some_and(|row| core::ptr::eq(row, text_record))
                         && interpolation.span == text_record.input().operand().full_span()
                         && core::ptr::eq(

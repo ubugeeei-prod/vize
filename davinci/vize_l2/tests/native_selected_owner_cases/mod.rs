@@ -14,7 +14,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions, TemplateGrammar},
 };
 use vize_l2::lang::js::{
-    NativeTemplateIssue, NativeTemplateIssueKind as Kind, NativeTemplateOwner,
+    TemplateRouteIssue, TemplateRouteIssueKind as Kind, TemplateOwner,
 };
 
 fn check(condition: bool) -> Result<(), &'static str> {
@@ -54,10 +54,10 @@ fn selected<'a>(
 fn owner<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateOwner<'a>, &'static str> {
-    NativeTemplateOwner::new(selected(arena, source)?).map_err(|_| "file start")
+) -> Result<TemplateOwner<'a>, &'static str> {
+    TemplateOwner::new(selected(arena, source)?).map_err(|_| "file start")
 }
-fn kind<T>(result: Result<T, NativeTemplateIssue>) -> Result<Kind, &'static str> {
+fn kind<T>(result: Result<T, TemplateRouteIssue>) -> Result<Kind, &'static str> {
     match result {
         Err(issue) => Ok(issue.kind),
         Ok(_) => Err("genuine refusal"),

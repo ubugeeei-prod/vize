@@ -20,7 +20,7 @@ use super::{
     policy::{BindingOwner, TargetPolicy},
 };
 use vize_l0::{id::NodeId, side_table::SideTable};
-use vize_l2::{artifact::Artifact, file::FileArtifact, lang::js::NativeSelectedSetup};
+use vize_l2::{artifact::Artifact, file::FileArtifact, lang::js::SelectedSetup};
 
 /// Compute conservative shared facts for every canonical L2 node.
 ///
@@ -81,7 +81,7 @@ pub(in crate::decision) fn build_with_original<'owner, 'arena>(
 }
 
 pub(in crate::decision) fn build_with_ssr_setup<'owner, 'arena>(
-    setup: &NativeSelectedSetup<'owner, 'arena>,
+    setup: &SelectedSetup<'owner, 'arena>,
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
     let file = setup.file();
     if !file.is_complete() {
@@ -102,7 +102,7 @@ pub(in crate::decision) fn build_with_ssr_setup<'owner, 'arena>(
 }
 
 pub(in crate::decision) fn build_with_vapor_setup<'owner, 'arena>(
-    setup: &NativeSelectedSetup<'owner, 'arena>,
+    setup: &SelectedSetup<'owner, 'arena>,
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
     let file = setup.file();
     build_with_context(
@@ -129,7 +129,7 @@ fn build_with_context<'owner, 'arena>(
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
     if context
         .original_file
-        .is_some_and(|file| !file.native_text_values().is_empty())
+        .is_some_and(|file| !file.file_text_values().is_empty())
     {
         return Err(DecisionBuildError::PreparedTextProfile);
     }
@@ -182,8 +182,8 @@ fn build_with_context<'owner, 'arena>(
 
 #[derive(Default)]
 struct BuildContext<'facts, 'owner, 'arena> {
-    ssr_setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>,
-    vapor_setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>,
+    ssr_setup: Option<&'facts SelectedSetup<'owner, 'arena>>,
+    vapor_setup: Option<&'facts SelectedSetup<'owner, 'arena>>,
     original_file: Option<&'owner FileArtifact<'arena>>,
 }
 

@@ -60,7 +60,7 @@ fn original_js_ts_model_ast_coordinates_and_full_quoted_attribute_survive_moves_
         let raw = operand.raw_value();
         assert_eq!(operand.name_span().slice(source), "v-model");
         assert_eq!(operand.value_span().slice(source), "café");
-        let mut input = NativeModelInput::from_operand(operand);
+        let mut input = ModelInput::from_operand(operand);
         assert!(input.expression().is_none());
         assert!(input.attribute_span().is_none());
         let expression = input.admitted_for(&selected, attribute.reborrow()).unwrap();
@@ -121,18 +121,18 @@ fn same_buffer_reparse_sibling_and_header_ordinal_cannot_substitute_the_original
         .unwrap()
         .observe_expression()
         .unwrap();
-    let mut input = NativeModelInput::from_operand(operand);
+    let mut input = ModelInput::from_operand(operand);
     assert!(matches!(
         input.admitted_for(&foreign, other_attribute),
-        Err(NativeModelInputError::UnadmittedOriginal)
+        Err(ModelInputError::UnadmittedOriginal)
     ));
     assert!(matches!(
         input.admitted_for(&own, duplicate),
-        Err(NativeModelInputError::UnadmittedOriginal)
+        Err(ModelInputError::UnadmittedOriginal)
     ));
     assert!(matches!(
         input.admitted_for(&own, sibling_attribute),
-        Err(NativeModelInputError::UnadmittedOriginal)
+        Err(ModelInputError::UnadmittedOriginal)
     ));
     assert!(input.expression().is_none() && input.attribute_span().is_none());
     let original = input.admitted_for(&own, attribute.reborrow()).unwrap();
@@ -153,7 +153,7 @@ fn same_buffer_reparse_sibling_and_header_ordinal_cannot_substitute_the_original
         .unwrap()
         .observe_expression()
         .unwrap();
-    let mut other_input = NativeModelInput::from_operand(other_operand);
+    let mut other_input = ModelInput::from_operand(other_operand);
     let other_expression = other_input.admitted_for(&foreign, other_attribute).unwrap();
     assert!(!input.matches_expression(other_expression));
     assert!(input.admitted_for(&own, attribute).is_ok());
@@ -194,12 +194,12 @@ fn model_member_ts_wrapper_comments_entities_padding_and_parse_holes_keep_origin
         let comments = operand.syntax().comments().count();
         let diagnostics = operand.syntax().diagnostics().count();
         let ast = operand.syntax().expression().map(core::ptr::from_ref);
-        let mut input = NativeModelInput::from_operand(operand);
+        let mut input = ModelInput::from_operand(operand);
         let error = input.admitted_for(&selected, attribute).unwrap_err();
         if let Some(hole) = hole {
-            assert_eq!(error, NativeModelInputError::Hole(hole), "{value}");
+            assert_eq!(error, ModelInputError::Hole(hole), "{value}");
         } else {
-            assert_eq!(error, NativeModelInputError::UnsupportedOperand, "{value}");
+            assert_eq!(error, ModelInputError::UnsupportedOperand, "{value}");
         }
         assert!(input.expression().is_none());
         assert!(input.attribute_span().is_none());

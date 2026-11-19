@@ -12,14 +12,14 @@ use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
-use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use vize_l2::lang::js::{TemplateFile, TemplateOwner};
 use vize_l3::decision::vapor::{VaporUnsupported, build_native_vapor_file_decisions};
 use vize_l4::{
     targets::vapor::{VaporErrorKind, emit_template},
     write::{NoLinks, Recorded},
 };
 
-fn original<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn original<'a>(arena: &'a Allocator, source: &'a str) -> TemplateFile<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -32,7 +32,7 @@ fn original<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a>
     let selected = NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
-    let mut owner = NativeTemplateOwner::new(selected)
+    let mut owner = TemplateOwner::new(selected)
         .map_err(|_| "original owner")
         .unwrap();
     {
@@ -161,7 +161,7 @@ fn unsupported_original_lower_events_cannot_authorize_the_target() {
         let selected = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
             .unwrap()
             .unwrap();
-        let mut owner = NativeTemplateOwner::new(selected)
+        let mut owner = TemplateOwner::new(selected)
             .map_err(|_| "original owner")
             .unwrap();
         {
@@ -218,7 +218,7 @@ fn whole_component_assembly_never_omits_original_scripts_or_styles() {
         let selected = NativeTemplateComponent::parse_in(&arena, admitted)
             .unwrap()
             .unwrap();
-        let mut owner = NativeTemplateOwner::new(selected)
+        let mut owner = TemplateOwner::new(selected)
             .map_err(|_| "original owner")
             .unwrap();
         for script in [admitted.ordinary(), admitted.setup()]

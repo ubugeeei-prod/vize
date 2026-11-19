@@ -9,7 +9,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::{NativeTemplateFile, NativeTemplateOwner},
+    lang::js::{TemplateFile, TemplateOwner},
     op::Op,
 };
 
@@ -29,7 +29,7 @@ fn check(value: bool) -> Test {
 fn owner<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateOwner<'a>, &'static str> {
+) -> Result<TemplateOwner<'a>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -43,12 +43,12 @@ fn owner<'a>(
         NativeTemplateComponent::parse_in(arena, descriptor.admitted().map_err(|_| "descriptor")?)
             .map_err(|_| "original template")?
             .ok_or("missing template")?;
-    NativeTemplateOwner::new(selected).map_err(|_| "original owner")
+    TemplateOwner::new(selected).map_err(|_| "original owner")
 }
 fn completed<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<TemplateFile<'a>, &'static str> {
     let mut original = owner(arena, source)?;
     {
         let mut walk = original.begin().map_err(|_| "begin")?;
@@ -70,12 +70,12 @@ fn element<'f, 'a>(
 }
 fn node(file: &FileArtifact<'_>, index: usize) -> Result<NodeId, &'static str> {
     match file
-        .native_attribute_values()
+        .file_attribute_values()
         .get(index)
         .ok_or("original row")?
         .state()
     {
-        NativeFileAttributeValueState::Attached { node, .. } => Ok(node),
+        FileAttributeValueState::Attached { node, .. } => Ok(node),
         _ => Err("normal attachment"),
     }
 }
@@ -132,7 +132,7 @@ fn original_title_family_keeps_same_file_full_preparation_in_each_sole_target_wa
             check(value.value_span().slice(&source) == value.raw_value())?;
             check(core::ptr::eq(
                 value,
-                file.native_attribute_values()[0]
+                file.file_attribute_values()[0]
                     .observation()
                     .ok_or("parked original")?,
             ))?;

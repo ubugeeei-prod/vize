@@ -11,7 +11,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::{NativeTemplateFile, NativeTemplateOwner},
+    lang::js::{TemplateFile, TemplateOwner},
     op::{BindingOp, OnOp, Op, Region},
 };
 use vize_l3::decision::{dom::PropertyRole, native::build_native_dom_file_decisions};
@@ -22,7 +22,7 @@ use vize_l4::{
     write::{NoLinks, Recorded},
 };
 
-fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> TemplateFile<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -35,7 +35,7 @@ fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a
     let selected = NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
-    let mut owner = NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));
+    let mut owner = TemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));
     {
         let mut walk = owner.begin().unwrap();
         for child in walk.selected().children() {

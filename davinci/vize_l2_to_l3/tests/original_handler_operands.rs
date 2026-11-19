@@ -8,7 +8,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::NativeTemplateOwner,
+    lang::js::TemplateOwner,
     op::{BindingOp, OnHandlerRef, Op},
 };
 use vize_l2_to_l3::lower;
@@ -36,7 +36,7 @@ fn original_file_handler_crosses_as_a_typed_id_without_js_source_or_diagnostic_a
         .unwrap()
         .unwrap();
     let mut original =
-        NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("original owner"));
+        TemplateOwner::new(selected).unwrap_or_else(|_| panic!("original owner"));
     {
         let mut walk = original.begin().unwrap();
         walk.child(walk.selected().children().next().unwrap())

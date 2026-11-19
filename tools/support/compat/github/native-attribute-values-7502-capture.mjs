@@ -15,7 +15,7 @@ const sourceTrees = [
   "davinci/vize_l2/src/file",
   "davinci/vize_l2/src/artifact",
   "davinci/vize_l2/src/op",
-  "davinci/vize_l2/src/lang/js/file/native",
+  "davinci/vize_l2/src/lang/js/file/template",
   "davinci/vize_l3/src/decision",
   "davinci/vize_l4/src/write",
   "davinci/vize_l4/src/runtime",

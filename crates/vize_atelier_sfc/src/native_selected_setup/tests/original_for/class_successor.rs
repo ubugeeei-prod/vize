@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use vize_l0::Span;
 use vize_l1::markup::AttributeValueOperand;
 use vize_l2::file::FileArtifact;
-use vize_l2::file::NativeFileAttributeValueState;
+use vize_l2::file::FileAttributeValueState;
 use vize_l3::decision::dom::{DomRejection, DomUnsupported};
 use vize_l4::{
     targets::dom::{DomError, DomErrorKind, emit_selected_setup_template},
@@ -62,12 +62,12 @@ pub(super) fn assert_current(class: &crate::NativeSelectedSetupSfcDomCompilation
     let facts = analysis.original_attributes().unwrap();
     assert!(core::ptr::eq(facts.file(), file));
     assert_eq!(facts.len(), 1);
-    let [record] = file.native_attribute_values() else {
+    let [record] = file.file_attribute_values() else {
         panic!("whole original class value");
     };
     assert_eq!(
         record.state(),
-        NativeFileAttributeValueState::Attached {
+        FileAttributeValueState::Attached {
             node: NodeId::from_index(1).unwrap(),
             slot: 0
         }
@@ -148,7 +148,7 @@ fn file_observation(file: &FileArtifact<'_>, source: &str) -> Value {
         "id":binding.id().index(),"declarationDebug":binding.declaration().map(|row|format!("{row:#?}"))
     })).collect();
     let attributes: Vec<_> = file
-        .native_attribute_values()
+        .file_attribute_values()
         .iter()
         .enumerate()
         .map(|(index, row)| {
@@ -159,11 +159,11 @@ fn file_observation(file: &FileArtifact<'_>, source: &str) -> Value {
             })
         })
         .collect();
-    let interpolations: Vec<_> = file.native_interpolations().iter().map(|row|json!({
+    let interpolations: Vec<_> = file.file_interpolations().iter().map(|row|json!({
         "state":format!("{:?}",row.state()),"inputDebug":format!("NativeInterpolationInput {{ full_span: {:?}, content_span: {:?}, raw_content: {:?}, syntax: {:#?} }}",row.input().operand().full_span(),row.input().operand().content_span(),row.input().operand().raw_content(),row.input().operand().syntax())
     })).collect();
     let interpolation_failures: Vec<_> = file
-        .native_interpolation_failures()
+        .file_interpolation_failures()
         .iter()
         .map(|row| {
             json!({
@@ -183,7 +183,7 @@ fn file_observation(file: &FileArtifact<'_>, source: &str) -> Value {
         "diagnosticCounts":{"issues":file.issues().len(),"templateIssues":file.template_issues().len(),
             "templateInterruption":usize::from(file.template_interruption().is_some()),
             "interruptedPrograms":file.interrupted_programs().count(),
-            "interpolationFailures":file.native_interpolation_failures().len()},
+            "interpolationFailures":file.file_interpolation_failures().len()},
         "templateInterruption":file.template_interruption().map(|issue|format!("{issue:#?}")),
         "interruptedPrograms":file.interrupted_programs().map(|issue|format!("{issue:#?}")).collect::<Vec<_>>(),
         "rejectedHandlers":debug_rows(file.rejected_handlers()),

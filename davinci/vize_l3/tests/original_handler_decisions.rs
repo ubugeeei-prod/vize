@@ -9,7 +9,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::{NativeTemplateFile, NativeTemplateOwner},
+    lang::js::{TemplateFile, TemplateOwner},
     op::{BindingOp, Op},
 };
 use vize_l3::decision::{
@@ -17,7 +17,7 @@ use vize_l3::decision::{
     dom::{DomUnsupported, LiteralExpressions},
 };
 
-fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> TemplateFile<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -31,7 +31,7 @@ fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a
         .unwrap()
         .unwrap();
     let mut original =
-        NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("original File owner"));
+        TemplateOwner::new(selected).unwrap_or_else(|_| panic!("original File owner"));
     {
         let mut walk = original.begin().unwrap();
         for child in walk.selected().children() {

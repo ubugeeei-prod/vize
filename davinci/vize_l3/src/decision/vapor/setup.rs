@@ -5,41 +5,41 @@ use crate::decision::{DecisionBuildError, DecisionTables, NativeAnalysis, build}
 use vize_l2::{
     artifact::Artifact,
     file::FileArtifact,
-    lang::js::{NativeSelectedSetup, NativeTemplateFile, NativeTemplateView},
+    lang::js::{SelectedSetup, TemplateFile, TemplateFileView},
 };
 
 /// The real selected setup and its own completed template stay borrowed.
 /// Neither a neutral File nor an independently supplied template grants this
 /// capability; original expression rows are joined by the sole event walk.
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeSelectedSetup;
+/// use vize_l2::lang::js::SelectedSetup;
 /// use vize_l3::decision::vapor::NativeSelectedSetupVaporAnalysis;
-/// fn forge(setup: &NativeSelectedSetup<'_, '_>) {
+/// fn forge(setup: &SelectedSetup<'_, '_>) {
 ///     let _ = NativeSelectedSetupVaporAnalysis { setup };
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeSelectedSetup;
+/// use vize_l2::lang::js::SelectedSetup;
 /// use vize_l3::decision::vapor::build_native_selected_setup_vapor_decisions;
-/// fn discard(setup: NativeSelectedSetup<'_, '_>) {
+/// fn discard(setup: SelectedSetup<'_, '_>) {
 ///     let analysis = build_native_selected_setup_vapor_decisions(&setup).unwrap();
 ///     drop(setup);
 ///     let _ = analysis.setup();
 /// }
 /// ```
 pub struct NativeSelectedSetupVaporAnalysis<'view, 'owner, 'arena> {
-    setup: &'view NativeSelectedSetup<'owner, 'arena>,
-    template: NativeTemplateView<'owner, 'arena>,
+    setup: &'view SelectedSetup<'owner, 'arena>,
+    template: TemplateFileView<'owner, 'arena>,
     analysis: NativeAnalysis<'owner, 'arena>,
 }
 
 impl<'view, 'owner, 'arena> NativeSelectedSetupVaporAnalysis<'view, 'owner, 'arena> {
     #[must_use]
-    pub fn setup(&self) -> &'view NativeSelectedSetup<'owner, 'arena> {
+    pub fn setup(&self) -> &'view SelectedSetup<'owner, 'arena> {
         self.setup
     }
     #[must_use]
-    pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner TemplateFile<'arena> {
         self.template.owner()
     }
     #[must_use]
@@ -69,7 +69,7 @@ impl<'view, 'owner, 'arena> NativeSelectedSetupVaporAnalysis<'view, 'owner, 'are
 /// Derive both original File and template internally from the sealed setup.
 /// No parsing, declaration walk, name lookup or independent analysis is added.
 pub fn build_native_selected_setup_vapor_decisions<'view, 'owner, 'arena>(
-    setup: &'view NativeSelectedSetup<'owner, 'arena>,
+    setup: &'view SelectedSetup<'owner, 'arena>,
 ) -> Result<NativeSelectedSetupVaporAnalysis<'view, 'owner, 'arena>, DecisionBuildError> {
     let template = setup
         .owner()

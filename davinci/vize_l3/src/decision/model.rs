@@ -5,7 +5,7 @@ use vize_l2::{
     expr::ExprRef,
     file::{
         DeclarationKind, FileArtifact, FileResolution, InitializerKind, Namespace,
-        NativeFileModelKind, NativeFileModelState,
+        FileModelKind, FileModelState,
     },
     op::{BindingOp, ElementOp, ModelOp},
     resolution::Usage,
@@ -32,8 +32,8 @@ pub(super) fn checked<'owner, 'arena>(
     {
         return None;
     }
-    let original = file.native_model(node)?;
-    if original.state() != NativeFileModelState::Admitted(node)
+    let original = file.file_model(node)?;
+    if original.state() != FileModelState::Admitted(node)
         || !original.accepts(model)
         || !original.accepts_element(element_node, element)
         || original.element_node() != Some(element_node)
@@ -42,15 +42,15 @@ pub(super) fn checked<'owner, 'arena>(
         return None;
     }
     match original.kind()? {
-        NativeFileModelKind::Text if element.attributes.is_empty() => {}
-        NativeFileModelKind::Checkbox => {
+        FileModelKind::Text if element.attributes.is_empty() => {}
+        FileModelKind::Checkbox => {
             let [attribute] = element.attributes.as_slice() else {
                 return None;
             };
-            let [_record] = file.native_attribute_values() else {
+            let [_record] = file.file_attribute_values() else {
                 return None;
             };
-            let value = file.native_attribute_value_for(0, element, 0)?;
+            let value = file.file_attribute_value_for(0, element, 0)?;
             let observation = value.observation()?;
             if attribute.name != "type"
                 || attribute.value != Some("checkbox")

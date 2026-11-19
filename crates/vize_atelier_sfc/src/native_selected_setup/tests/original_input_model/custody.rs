@@ -3,7 +3,7 @@
 use super::*;
 use vize_l2::{
     expr::ExprRef,
-    file::{DeclarationKind, InitializerKind, Namespace, NativeFileModelState},
+    file::{DeclarationKind, InitializerKind, Namespace, FileModelState},
     op::{BindingOp, Op},
     resolution::Usage,
 };
@@ -31,10 +31,10 @@ pub(super) fn capture(
         ),
         "{id}: exact original setup owner"
     );
-    let [record] = file.native_models() else {
+    let [record] = file.file_models() else {
         return Err(cstr!("{id}: one original Model"));
     };
-    let NativeFileModelState::Admitted(node) = record.state() else {
+    let FileModelState::Admitted(node) = record.state() else {
         return Err(cstr!("{id}: closed Model"));
     };
     let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
@@ -63,7 +63,7 @@ pub(super) fn capture(
     require!(
         record.input().attribute_span() == Some(model.span)
             && record.scope() == setup.scope()
-            && core::ptr::eq(record, file.native_model(node).ok_or("same model query")?),
+            && core::ptr::eq(record, file.file_model(node).ok_or("same model query")?),
         "{id}: current complete File row/attribute/scope"
     );
     let (ExprRef::Js(read), ExprRef::Js(write)) = (model.contract.read, model.contract.write)
@@ -154,7 +154,7 @@ pub(super) fn capture(
         dom.unsupported().is_empty()
             && *root == element_node
             && analysis.expression(node).is_none()
-            && file.native_interpolations().is_empty(),
+            && file.file_interpolations().is_empty(),
         "{id}: no generic read/write or fake interpolation promotion"
     );
     require!(

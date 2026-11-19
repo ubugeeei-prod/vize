@@ -4,7 +4,7 @@ use super::DecisionBuildError;
 use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::Artifact,
-    file::{FileArtifact, FileAttributeValue, NativeFileAttributeValueState},
+    file::{FileArtifact, FileAttributeValue, FileAttributeValueState},
     op::ElementOp,
 };
 
@@ -46,7 +46,7 @@ impl<'owner, 'arena> OriginalAttributeFacts<'owner, 'arena> {
         if index >= self.consumed {
             return None;
         }
-        self.file.native_attribute_value_for(index, element, slot)
+        self.file.file_attribute_value_for(index, element, slot)
     }
 }
 
@@ -94,9 +94,9 @@ impl<'owner, 'arena> OriginalAttributeCursor<'owner, 'arena> {
             }
             let joined = self
                 .file
-                .native_attribute_value_for(self.next, element, slot)?;
-            let record = self.file.native_attribute_values().get(self.next)?;
-            if record.state() != (NativeFileAttributeValueState::Attached { node, slot }) {
+                .file_attribute_value_for(self.next, element, slot)?;
+            let record = self.file.file_attribute_values().get(self.next)?;
+            if record.state() != (FileAttributeValueState::Attached { node, slot }) {
                 return None;
             }
             let value = joined.observation()?;
@@ -134,7 +134,7 @@ impl<'owner, 'arena> OriginalAttributeCursor<'owner, 'arena> {
         if let Some(error) = self.failure {
             return Err(error);
         }
-        if self.next != self.file.native_attribute_values().len() {
+        if self.next != self.file.file_attribute_values().len() {
             return Err(DecisionBuildError::OriginalAttributeValue {
                 node: None,
                 slot: self.next,

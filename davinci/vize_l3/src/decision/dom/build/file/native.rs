@@ -11,7 +11,7 @@ pub(super) fn refusal<'a>(
     expression: &JsExpr<'a>,
     setup: bool,
 ) -> Option<DomRejection> {
-    if let Some(record) = file.native_conditional(node) {
+    if let Some(record) = file.file_conditional(node) {
         let rejected = |reason| DomRejection {
             node,
             span: record.input().operand().value_span(),
@@ -38,7 +38,7 @@ pub(super) fn refusal<'a>(
     }
     // Only the normal private receiver's actual node/input association grants
     // selected origin. Other File routes retain their existing policy.
-    let Some(record) = file.native_interpolation(node) else {
+    let Some(record) = file.file_interpolation(node) else {
         return setup.then_some(DomRejection {
             node,
             span: expression.span,

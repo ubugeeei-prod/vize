@@ -1,6 +1,6 @@
 //! Whole original root If observations, with explicit target mode and no guessed goldens.
 use super::*;
-use vize_l2::{expr::ExprRef, file::NativeFileConditionalState, op::Op};
+use vize_l2::{expr::ExprRef, file::FileConditionalState, op::Op};
 
 #[test]
 fn eighteen_whole_original_root_if_components_and_maps_are_captured() -> Result<(), String> {
@@ -103,16 +103,16 @@ fn eighteen_whole_original_root_if_components_and_maps_are_captured() -> Result<
                 let [Op::If(original)] = file.artifact().root().ops.as_slice() else {
                     return Err(cstr!("{id}: actual single original If"));
                 };
-                let [record] = file.native_conditionals() else {
+                let [record] = file.file_conditionals() else {
                     return Err(cstr!("{id}: one original conditional record"));
                 };
-                let NativeFileConditionalState::Admitted(node) = record.state() else {
+                let FileConditionalState::Admitted(node) = record.state() else {
                     return Err(cstr!("{id}: normal completed If attachment"));
                 };
                 require!(
                     record.accepts(original)
                         && file
-                            .native_conditional(node)
+                            .file_conditional(node)
                             .is_some_and(|actual| core::ptr::eq(actual, record)),
                     "{id}: same actual If allocation and node"
                 );

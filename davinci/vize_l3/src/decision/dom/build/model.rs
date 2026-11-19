@@ -26,11 +26,11 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         };
         let dependency = match resolution
             .file()
-            .native_model(node)
+            .file_model(node)
             .and_then(|original| original.kind())
         {
-            Some(vize_l2::file::NativeFileModelKind::Text) => DomDependency::TextModel,
-            Some(vize_l2::file::NativeFileModelKind::Checkbox) => DomDependency::CheckboxModel,
+            Some(vize_l2::file::FileModelKind::Text) => DomDependency::TextModel,
+            Some(vize_l2::file::FileModelKind::Checkbox) => DomDependency::CheckboxModel,
             None => {
                 self.reject(node, model.span, DomUnsupported::FileBinding);
                 return;

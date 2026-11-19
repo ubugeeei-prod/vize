@@ -30,7 +30,7 @@ impl<'h, 'a> HandlerReferenceSource<'h, 'a> {
         }
     }
 
-    pub(crate) fn from_native(input: &'h crate::lang::js::NativeHandlerInput<'a>) -> Self {
+    pub(crate) fn from_file(input: &'h crate::lang::js::FileHandlerInput<'a>) -> Self {
         Self {
             owner: input.operand().syntax(),
             body: input.body(),

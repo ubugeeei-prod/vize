@@ -1,7 +1,7 @@
 //! Authored whole class module controls; runtime authority remains separately hosted.
 use serde_json::{Value, json};
 use vize_l0::{Allocator, Span};
-use vize_l2::lang::js::{NativeTemplateIssue, NativeTemplateIssueKind};
+use vize_l2::lang::js::{TemplateRouteIssue, TemplateRouteIssueKind};
 use vize_l3::decision::vapor::{VaporUnsupported, build_native_vapor_file_decisions};
 use vize_l4::{
     targets::vapor::{VaporErrorKind, emit_template},
@@ -105,7 +105,7 @@ fn static_class_never_authorizes_nul_ordinary_cr_style_duplicates_or_dynamic_hea
         )
         .unwrap()
         .unwrap();
-        let mut owner = vize_l2::lang::js::NativeTemplateOwner::new(selected)
+        let mut owner = vize_l2::lang::js::TemplateOwner::new(selected)
             .map_err(|_| "owner")
             .unwrap();
         let mut refusal = None;
@@ -132,9 +132,9 @@ fn static_class_never_authorizes_nul_ordinary_cr_style_duplicates_or_dynamic_hea
             assert_eq!(owner.selected().component().block().span(), span);
             assert_eq!(
                 refusal,
-                Some(NativeTemplateIssue {
+                Some(TemplateRouteIssue {
                     span,
-                    kind: NativeTemplateIssueKind::UnsupportedChild,
+                    kind: TemplateRouteIssueKind::UnsupportedChild,
                 }),
                 "{}",
                 row["id"]

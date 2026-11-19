@@ -163,7 +163,7 @@ fn constant_syntax_hole_remains_rejected_file_with_its_whole_normal_original_own
     assert!(inputs.next().is_none());
     assert_eq!(input.operand().raw_value(), "item in count");
     assert_eq!(input.aliases().len(), 1);
-    let [record] = file.native_interpolations() else {
+    let [record] = file.file_interpolations() else {
         panic!("normally parked original");
     };
     assert_eq!(record.input().operand().raw_content(), "item +");

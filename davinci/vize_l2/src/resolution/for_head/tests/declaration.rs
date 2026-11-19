@@ -76,9 +76,9 @@ fn equal_alias_facts_do_not_substitute_another_original_header_owner() {
     let first = attributes.next().unwrap();
     let second = attributes.next().unwrap();
     let first_input =
-        NativeForInput::new(owner.observe_attribute_for_head(first.reborrow()).unwrap()).unwrap();
+        FileForInput::new(owner.observe_attribute_for_head(first.reborrow()).unwrap()).unwrap();
     let second_input =
-        NativeForInput::new(owner.observe_attribute_for_head(second.reborrow()).unwrap()).unwrap();
+        FileForInput::new(owner.observe_attribute_for_head(second.reborrow()).unwrap()).unwrap();
     let first_table = resolve_for_head(first_input, &Lookup::new(&[("items", 5)])).unwrap();
     let second_table = resolve_for_head(second_input, &Lookup::new(&[("items", 5)])).unwrap();
     let first_alias = first_table.value_declaration();

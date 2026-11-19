@@ -13,7 +13,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::{NativeTemplateFile, NativeTemplateOwner},
+    lang::js::{TemplateFile, TemplateOwner},
     op::{Op, OriginalForOp},
 };
 use vize_l3::decision::{
@@ -24,7 +24,7 @@ use vize_l3::decision::{
 
 mod original_for_decision_cases;
 
-fn prepared<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateOwner<'a> {
+fn prepared<'a>(arena: &'a Allocator, source: &'a str) -> TemplateOwner<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -44,14 +44,14 @@ fn prepared<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateOwner<'a
     let selected = NativeTemplateComponent::parse_in(arena, admitted)
         .unwrap()
         .unwrap();
-    let mut owner = NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));
+    let mut owner = TemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));
     owner
         .setup_program(syntax.admitted_program().unwrap())
         .unwrap();
     owner
 }
 
-fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> TemplateFile<'a> {
     let mut owner = prepared(arena, source);
     {
         let mut walk = owner.begin().unwrap();
@@ -63,7 +63,7 @@ fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a
     core::hint::black_box(owner.finish())
 }
 
-fn first<'f, 'a>(owner: &'f NativeTemplateFile<'a>) -> &'f OriginalForOp<'a> {
+fn first<'f, 'a>(owner: &'f TemplateFile<'a>) -> &'f OriginalForOp<'a> {
     let [Op::OriginalFor(original)] = owner.file().unwrap().artifact().root().ops.as_slice() else {
         panic!("actual original For")
     };

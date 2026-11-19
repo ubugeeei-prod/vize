@@ -7,7 +7,7 @@ use vize_l1::container::vue::ScriptRole;
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind as Lower;
 use vize_l2::{
     file::{FileIssueKind, RejectedFileHandler},
-    lang::js::{NativeSetupIssueKind, NativeTemplateIssueKind as Template},
+    lang::js::{SelectedSetupIssueKind, TemplateRouteIssueKind as Template},
     op::Op,
 };
 use vize_l3::decision::ssr::SsrUnsupported;
@@ -55,27 +55,27 @@ pub fn capture() -> Vec<serde_json::Value> {
         (
             "empty",
             "<script setup>/*original*/</script><template><i/></template>",
-            Expected::Template(Template::SetupPolicy(NativeSetupIssueKind::EmptyProgram)),
+            Expected::Template(Template::SetupPolicy(SelectedSetupIssueKind::EmptyProgram)),
         ),
         (
             "imports",
             "<script setup>import value from 'original'</script><template><i/></template>",
             Expected::Template(Template::SetupPolicy(
-                NativeSetupIssueKind::UnsupportedSyntax,
+                SelectedSetupIssueKind::UnsupportedSyntax,
             )),
         ),
         (
             "function",
             "<script setup>function value(){}</script><template><i/></template>",
             Expected::Template(Template::SetupPolicy(
-                NativeSetupIssueKind::UnsupportedSyntax,
+                SelectedSetupIssueKind::UnsupportedSyntax,
             )),
         ),
         (
             "array",
             "<script setup>const value=[1]</script><template><i/></template>",
             Expected::Template(Template::SetupPolicy(
-                NativeSetupIssueKind::UnsupportedSyntax,
+                SelectedSetupIssueKind::UnsupportedSyntax,
             )),
         ),
         (

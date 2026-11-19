@@ -261,7 +261,7 @@ fn root_text_and_interpolation_use_original_visits_and_retained_input() {
     let [Op::Interpolation(interpolation)] = file.artifact().root().ops.as_slice() else {
         panic!("one genuine interpolation; original root blanks are omitted");
     };
-    let [record] = file.native_interpolations() else {
+    let [record] = file.file_interpolations() else {
         panic!("whole original input");
     };
     let syntax = record.input().operand().syntax();

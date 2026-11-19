@@ -1,4 +1,4 @@
-use super::{ForHeadInput, NativeForInput};
+use super::{ForHeadInput, FileForInput};
 use oxc_ast::ast::BindingPattern;
 use oxc_span::GetSpan;
 use vize_l0::{Allocator, SourceRoot, Span};

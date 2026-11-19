@@ -4,7 +4,7 @@ use super::{VaporFacts, VaporPart, VaporRejection, VaporRoot, VaporUnsupported};
 use alloc::vec::Vec;
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    lang::js::NativeSelectedSetup,
+    lang::js::SelectedSetup,
     op::{BindingOp, ElementOp, Namespace, Op},
     walk::NodeRef,
 };
@@ -12,7 +12,7 @@ use vize_l2::{
 mod model;
 
 pub(in crate::decision) struct VaporBuilder<'facts, 'owner, 'arena> {
-    setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>,
+    setup: Option<&'facts SelectedSetup<'owner, 'arena>>,
     facts: VaporFacts<'owner, 'arena>,
     frames: Vec<(NodeId, Option<&'owner ElementOp<'arena>>, bool)>,
     non_comments: usize,
@@ -20,7 +20,7 @@ pub(in crate::decision) struct VaporBuilder<'facts, 'owner, 'arena> {
 }
 
 impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
-    pub fn new(setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>) -> Self {
+    pub fn new(setup: Option<&'facts SelectedSetup<'owner, 'arena>>) -> Self {
         Self {
             setup,
             facts: VaporFacts {

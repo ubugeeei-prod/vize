@@ -1,7 +1,7 @@
 //! The original refused source becomes positive only with its genuine provider.
 
 use super::*;
-use vize_l2::{expr::ExprRef, file::NativeFileInterpolationState, op::Op};
+use vize_l2::{expr::ExprRef, file::FileInterpolationState, op::Op};
 
 #[test]
 fn exact_original_nested_case_retains_element_operand_file_scope_and_setup_read() {
@@ -17,8 +17,8 @@ fn exact_original_nested_case_retains_element_operand_file_scope_and_setup_read(
     let setup = envelope.setup();
     let file = setup.file();
     assert!(file.is_complete());
-    assert!(file.native_interpolation_failures().is_empty());
-    assert_eq!(file.native_interpolations().len(), 1);
+    assert!(file.file_interpolation_failures().is_empty());
+    assert_eq!(file.file_interpolations().len(), 1);
     assert!(core::ptr::eq(
         setup.syntax(),
         setup
@@ -53,14 +53,14 @@ fn exact_original_nested_case_retains_element_operand_file_scope_and_setup_read(
     let [Op::Interpolation(interpolation)] = element.children.ops.as_slice() else {
         panic!("one original nested expression");
     };
-    let [record] = file.native_interpolations() else {
+    let [record] = file.file_interpolations() else {
         panic!("one complete original operand");
     };
-    let NativeFileInterpolationState::Admitted(node) = record.state() else {
+    let FileInterpolationState::Admitted(node) = record.state() else {
         panic!("normally attached original node");
     };
     assert!(core::ptr::eq(
-        file.native_interpolation(node)
+        file.file_interpolation(node)
             .expect("same actual File row"),
         record
     ));

@@ -39,7 +39,7 @@ fn exact_original_late_class_header_has_whole_public_dom_ssr_successors() {
             assert!(core::ptr::eq(observation.descriptor().source(), source));
             let file = observation.template().unwrap().file().unwrap();
             assert!(file.is_complete());
-            assert_eq!(file.native_attribute_values().len(), 2);
+            assert_eq!(file.file_attribute_values().len(), 2);
         }
         let dom_output = dom.result().unwrap();
         assert_eq!(

@@ -6,7 +6,7 @@ use alloc::vec::Vec;
 use vize_l0::{Span, id::NodeId, side_table::SideTable};
 use vize_l2::{
     expr::ExprRef,
-    lang::js::NativeSelectedSetup,
+    lang::js::SelectedSetup,
     op::{BindingOp, ElementOp, Namespace, Op},
     walk::NodeRef,
 };
@@ -19,7 +19,7 @@ pub(in crate::decision) struct SsrBuilder<'facts, 'owner, 'arena> {
     roots: usize,
     non_comments: usize,
     root_element: Option<NodeId>,
-    setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>,
+    setup: Option<&'facts SelectedSetup<'owner, 'arena>>,
     previous_root_text: Option<bool>,
     root_interpolation_seen: bool,
     nested_interpolation: Option<(NodeId, Span, NodeId)>,
@@ -46,7 +46,7 @@ impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
         }
     }
 
-    pub fn new_setup(setup: &'facts NativeSelectedSetup<'owner, 'arena>) -> Self {
+    pub fn new_setup(setup: &'facts SelectedSetup<'owner, 'arena>) -> Self {
         Self {
             setup: Some(setup),
             ..Self::new()

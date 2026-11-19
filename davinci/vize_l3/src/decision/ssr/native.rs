@@ -6,7 +6,7 @@ use vize_l0::Span;
 use vize_l2::{
     artifact::Artifact,
     file::FileArtifact,
-    lang::js::{NativeTemplateFile, NativeTemplateView},
+    lang::js::{TemplateFile, TemplateFileView},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -46,22 +46,22 @@ pub enum NativeSsrBuildError {
 /// ```
 /// The original owner cannot be dropped while the result remains live:
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeTemplateFile;
+/// use vize_l2::lang::js::TemplateFile;
 /// use vize_l3::decision::ssr::build_native_ssr_file_decisions;
-/// fn discard(owner: NativeTemplateFile<'_>) {
+/// fn discard(owner: TemplateFile<'_>) {
 ///     let receipt = build_native_ssr_file_decisions(owner.view().unwrap()).unwrap();
 ///     drop(owner);
 ///     let _ = receipt.owner();
 /// }
 /// ```
 pub struct NativeTemplateSsrAnalysis<'owner, 'arena> {
-    view: NativeTemplateView<'owner, 'arena>,
+    view: TemplateFileView<'owner, 'arena>,
     analysis: NativeSsrFileAnalysis<'owner, 'arena>,
 }
 
 impl<'owner, 'arena> NativeTemplateSsrAnalysis<'owner, 'arena> {
     #[must_use]
-    pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner TemplateFile<'arena> {
         self.view.owner()
     }
     #[must_use]
@@ -92,7 +92,7 @@ impl<'owner, 'arena> NativeTemplateSsrAnalysis<'owner, 'arena> {
 /// Styles refuse from Descriptor metadata before the existing single walk.
 /// No reconstructed File, additional AST pass or caller eligibility flag exists.
 pub fn build_native_ssr_file_decisions<'owner, 'arena>(
-    view: NativeTemplateView<'owner, 'arena>,
+    view: TemplateFileView<'owner, 'arena>,
 ) -> Result<NativeTemplateSsrAnalysis<'owner, 'arena>, NativeSsrBuildError> {
     let selected = view.owner().selected();
     if selected.has_styles() {

@@ -11,7 +11,7 @@ mod transfer;
 
 /// A failed join or coordinate transfer leaves the whole operand owned.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeInterpolationInputError {
+pub enum InterpolationInputError {
     UnadmittedOriginal,
     Hole(EmbedHole),
     Coordinates(JsCoordinateError),
@@ -24,22 +24,22 @@ pub enum NativeInterpolationInputError {
 /// It grants no completed File, body cursor or runtime binding access.
 ///
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeInterpolationInput;
+/// use vize_l2::lang::js::InterpolationInput;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeInterpolationInput<'static>>();
+/// requires_clone::<InterpolationInput<'static>>();
 /// ```
 /// ```compile_fail
-/// use vize_l2::{expr::JsExpr, lang::js::NativeInterpolationInput};
+/// use vize_l2::{expr::JsExpr, lang::js::InterpolationInput};
 /// fn raw(expression: JsExpr<'_>) {
-///     let _ = NativeInterpolationInput::from_operand(expression);
+///     let _ = InterpolationInput::from_operand(expression);
 /// }
 /// ```
-pub struct NativeInterpolationInput<'a> {
+pub struct InterpolationInput<'a> {
     operand: InterpolationOperand<'a>,
     expression: Option<&'a JsExpr<'a>>,
 }
 
-impl<'a> NativeInterpolationInput<'a> {
+impl<'a> InterpolationInput<'a> {
     /// Move the genuine whole L1 operand, including any typed syntax hole.
     #[must_use]
     pub const fn from_operand(operand: InterpolationOperand<'a>) -> Self {
@@ -65,23 +65,23 @@ impl<'a> NativeInterpolationInput<'a> {
         &'s mut self,
         selected: &'s NativeTemplateComponent<'a>,
         child: ChildView<'s, 'a>,
-    ) -> Result<NativeInterpolationInputView<'s, 'a>, NativeInterpolationInputError> {
+    ) -> Result<InterpolationInputView<'s, 'a>, InterpolationInputError> {
         if let Some(hole) = self.operand.syntax().hole() {
-            return Err(NativeInterpolationInputError::Hole(hole));
+            return Err(InterpolationInputError::Hole(hole));
         }
         let original = self
             .operand
             .admitted_for(selected, child)
-            .ok_or(NativeInterpolationInputError::UnadmittedOriginal)?;
+            .ok_or(InterpolationInputError::UnadmittedOriginal)?;
         let expression = if let Some(expression) = self.expression {
             expression
         } else {
             let expression =
-                transfer::retain(&original).map_err(NativeInterpolationInputError::Coordinates)?;
+                transfer::retain(&original).map_err(InterpolationInputError::Coordinates)?;
             self.expression = Some(expression);
             expression
         };
-        Ok(NativeInterpolationInputView {
+        Ok(InterpolationInputView {
             input: self,
             original,
             expression,
@@ -93,10 +93,10 @@ impl<'a> NativeInterpolationInput<'a> {
 ///
 /// ```compile_fail
 /// use vize_l1::markup::{ChildView, NativeTemplateComponent};
-/// use vize_l2::lang::js::{NativeInterpolationInput, NativeInterpolationInputView};
-/// fn escape<'a>(input: &mut NativeInterpolationInput<'a>,
+/// use vize_l2::lang::js::{InterpolationInput, InterpolationInputView};
+/// fn escape<'a>(input: &mut InterpolationInput<'a>,
 ///     selected: &NativeTemplateComponent<'a>, child: ChildView<'_, 'a>)
-///     -> NativeInterpolationInputView<'static, 'a> {
+///     -> InterpolationInputView<'static, 'a> {
 ///     match input.admitted_for(selected, child) {
 ///         Ok(view) => view,
 ///         Err(_) => loop {},
@@ -105,8 +105,8 @@ impl<'a> NativeInterpolationInput<'a> {
 /// ```
 /// ```compile_fail
 /// use vize_l1::markup::{ChildView, NativeTemplateComponent};
-/// use vize_l2::lang::js::NativeInterpolationInput;
-/// fn discard<'a>(mut input: NativeInterpolationInput<'a>,
+/// use vize_l2::lang::js::InterpolationInput;
+/// fn discard<'a>(mut input: InterpolationInput<'a>,
 ///     selected: &NativeTemplateComponent<'a>, child: ChildView<'_, 'a>) {
 ///     let view = match input.admitted_for(selected, child) {
 ///         Ok(view) => view,
@@ -116,15 +116,15 @@ impl<'a> NativeInterpolationInput<'a> {
 ///     let _ = view.original().operand().syntax().comments().count();
 /// }
 /// ```
-pub struct NativeInterpolationInputView<'s, 'a> {
-    input: &'s NativeInterpolationInput<'a>,
+pub struct InterpolationInputView<'s, 'a> {
+    input: &'s InterpolationInput<'a>,
     original: InterpolationView<'s, 'a>,
     expression: &'a JsExpr<'a>,
 }
 
-impl<'s, 'a> NativeInterpolationInputView<'s, 'a> {
+impl<'s, 'a> InterpolationInputView<'s, 'a> {
     #[must_use]
-    pub const fn input(&self) -> &'s NativeInterpolationInput<'a> {
+    pub const fn input(&self) -> &'s InterpolationInput<'a> {
         self.input
     }
     #[must_use]

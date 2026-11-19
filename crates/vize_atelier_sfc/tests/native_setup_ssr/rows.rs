@@ -1,12 +1,12 @@
 use vize_l2::{
-    lang::js::NativeSelectedSetup,
+    lang::js::SelectedSetup,
     op::{BindingOp, Op},
     resolution::{HandlerBindingRef, Usage},
 };
 use vize_l3::decision::ssr::{NativeSelectedSetupSsrAnalysis, SsrPart};
 
 pub fn setup(
-    setup: &NativeSelectedSetup<'_, '_>,
+    setup: &SelectedSetup<'_, '_>,
     analysis: &NativeSelectedSetupSsrAnalysis<'_, '_, '_>,
     handler: bool,
 ) -> serde_json::Value {
@@ -56,7 +56,7 @@ pub fn setup(
         .collect();
     let interpolations: Vec<_> = analysis.ssr().unwrap().parts().iter().filter_map(|part| {
         let SsrPart::Interpolation { node, interpolation } = part else { return None; };
-        let record = setup.file().native_interpolation(*node).unwrap();
+        let record = setup.file().file_interpolation(*node).unwrap();
         let operand = record.input().operand();
         assert_eq!(operand.full_span(), interpolation.span);
         assert_eq!(operand.content_span().slice(source), operand.raw_content());

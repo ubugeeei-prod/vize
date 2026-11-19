@@ -1,7 +1,7 @@
 //! Runtime reference identities from the entire original event handler body.
 
 use super::{BindingLookup, ResolutionError, walk};
-use crate::lang::js::NativeHandlerInput;
+use crate::lang::js::FileHandlerInput;
 use alloc::boxed::Box;
 use vize_l0::Span;
 
@@ -16,7 +16,7 @@ pub(crate) struct ResolvedHandlerFacts<'a> {
 impl<'a> ResolvedHandlerFacts<'a> {
     pub(crate) fn join(
         self,
-        input: &mut Option<NativeHandlerInput<'a>>,
+        input: &mut Option<FileHandlerInput<'a>>,
     ) -> Option<HandlerResolution<'a>> {
         let original = input.as_ref()?;
         let source = original.operand().syntax().source();
@@ -35,7 +35,7 @@ impl<'a> ResolvedHandlerFacts<'a> {
 }
 
 pub(crate) fn resolve_handler_facts<'a>(
-    input: &NativeHandlerInput<'a>,
+    input: &FileHandlerInput<'a>,
     bindings: &impl BindingLookup,
 ) -> Result<ResolvedHandlerFacts<'a>, ResolutionError> {
     let source = input.references();
@@ -68,13 +68,13 @@ use sink::{Pending, Tables};
 /// ```
 #[derive(Debug)]
 pub struct HandlerResolution<'a> {
-    input: NativeHandlerInput<'a>,
+    input: FileHandlerInput<'a>,
     tables: Tables<'a>,
 }
 
 impl<'a> HandlerResolution<'a> {
     #[must_use]
-    pub const fn input(&self) -> &NativeHandlerInput<'a> {
+    pub const fn input(&self) -> &FileHandlerInput<'a> {
         &self.input
     }
     #[must_use]
@@ -98,7 +98,7 @@ impl<'a> HandlerResolution<'a> {
         self.tables.syntax
     }
     #[must_use]
-    pub fn into_input(self) -> NativeHandlerInput<'a> {
+    pub fn into_input(self) -> FileHandlerInput<'a> {
         self.input
     }
     pub fn authored_span(&self, span: Span) -> Result<Span, vize_l1::embed::SourceError> {
@@ -109,16 +109,16 @@ impl<'a> HandlerResolution<'a> {
 /// No partial table escapes failure; the entire original event/body owner does.
 #[derive(Debug)]
 pub struct RejectedHandlerResolution<'a> {
-    input: NativeHandlerInput<'a>,
+    input: FileHandlerInput<'a>,
     pub error: ResolutionError,
 }
 impl<'a> RejectedHandlerResolution<'a> {
     #[must_use]
-    pub const fn input(&self) -> &NativeHandlerInput<'a> {
+    pub const fn input(&self) -> &FileHandlerInput<'a> {
         &self.input
     }
     #[must_use]
-    pub fn into_input(self) -> NativeHandlerInput<'a> {
+    pub fn into_input(self) -> FileHandlerInput<'a> {
         self.input
     }
 }
@@ -133,7 +133,7 @@ impl<'a> RejectedHandlerResolution<'a> {
 /// return precise refusals, retaining the complete original owner. These facts
 /// do not legalize ui.on, establish File admission, or emit runtime code.
 pub fn resolve_handler<'a>(
-    input: NativeHandlerInput<'a>,
+    input: FileHandlerInput<'a>,
     bindings: &impl BindingLookup,
 ) -> Result<HandlerResolution<'a>, Box<RejectedHandlerResolution<'a>>> {
     let result = {

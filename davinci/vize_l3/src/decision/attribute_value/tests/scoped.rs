@@ -41,7 +41,7 @@ fn genuine_styled_ssr_view_consumes_the_same_original_value_slots() -> Test {
         check(core::ptr::eq(observation.source().authored_root(), source))?;
         check(core::ptr::eq(
             observation,
-            file.native_attribute_values()[index]
+            file.file_attribute_values()[index]
                 .observation()
                 .ok_or("same normally parked owner")?,
         ))?;

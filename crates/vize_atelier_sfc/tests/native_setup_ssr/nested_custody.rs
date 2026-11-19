@@ -1,9 +1,9 @@
 //! Every original nested negative's custody law, now required on accepted output.
 use vize_l2::{
-    expr::ExprRef, file::NativeFileInterpolationState, lang::js::NativeSelectedSetup, op::Op,
+    expr::ExprRef, file::FileInterpolationState, lang::js::SelectedSetup, op::Op,
 };
 
-pub fn assert_original(setup: &NativeSelectedSetup<'_, '_>, source: &str) {
+pub fn assert_original(setup: &SelectedSetup<'_, '_>, source: &str) {
     let name = "nested";
     let file = setup.file();
     let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
@@ -15,14 +15,14 @@ pub fn assert_original(setup: &NativeSelectedSetup<'_, '_>, source: &str) {
     let ExprRef::Js(expression) = interpolation.expression else {
         panic!("{name}: original JS expression missing")
     };
-    let [record] = file.native_interpolations() else {
+    let [record] = file.file_interpolations() else {
         panic!("{name}: exact original input missing")
     };
-    let NativeFileInterpolationState::Admitted(node) = record.state() else {
+    let FileInterpolationState::Admitted(node) = record.state() else {
         panic!("{name}: genuine interpolation admission missing")
     };
     assert!(core::ptr::eq(
-        file.native_interpolation(node).unwrap(),
+        file.file_interpolation(node).unwrap(),
         record
     ));
     let operand = record.input().operand();

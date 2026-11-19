@@ -12,11 +12,11 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::{NativeTemplateFile, NativeTemplateOwner},
+    lang::js::{TemplateFile, TemplateOwner},
     op::Op,
 };
 
-fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> TemplateFile<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -36,7 +36,7 @@ fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a
     let selected = NativeTemplateComponent::parse_in(arena, admitted)
         .unwrap()
         .unwrap();
-    let mut owner = NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));
+    let mut owner = TemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));
     owner
         .setup_program(syntax.admitted_program().unwrap())
         .unwrap();

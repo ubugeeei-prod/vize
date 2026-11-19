@@ -13,8 +13,8 @@ use vize_l1::{
 use vize_l2::{
     artifact::ArtifactError,
     lang::js::{
-        NativeScopedTemplateIssueKind, NativeTemplateFile, NativeTemplateIssue,
-        NativeTemplateOwner, NativeTemplateView, RejectedNativeTemplateOwner,
+        ScopedTemplateIssueKind, TemplateFile, TemplateRouteIssue,
+        TemplateOwner, TemplateFileView, RejectedTemplateOwner,
     },
 };
 
@@ -28,12 +28,12 @@ pub enum NativeSelectedSfcIssueKind {
     Descriptor,
     Script(ScriptRole),
     Style,
-    ScopedStyle(NativeScopedTemplateIssueKind),
+    ScopedStyle(ScopedTemplateIssueKind),
     MissingTemplate,
     MissingSetup,
     Source(ComponentSourceError),
     FileCreation(ArtifactError),
-    Template(NativeTemplateIssue),
+    Template(TemplateRouteIssue),
     RootText(vize_l1::markup::RootTextError),
     Interpolation(vize_l1::markup::InterpolationError),
 }
@@ -57,9 +57,9 @@ pub struct NativeSelectedSfcIssue {
 /// ```
 pub struct NativeSelectedSfcObservation<'a> {
     descriptor: DescriptorObservation<'a>,
-    template: Option<NativeTemplateFile<'a>>,
+    template: Option<TemplateFile<'a>>,
     style: Option<StyleSyntax<'a>>,
-    rejected_creation: Option<Box<RejectedNativeTemplateOwner<'a>>>,
+    rejected_creation: Option<Box<RejectedTemplateOwner<'a>>>,
     interpolation_failure: Option<InterpolationFailure<'a>>,
     issues: Vec<NativeSelectedSfcIssue>,
 }
@@ -82,14 +82,14 @@ impl<'a> NativeSelectedSfcObservation<'a> {
         &self.descriptor
     }
     #[must_use]
-    pub fn template(&self) -> Option<&NativeTemplateFile<'a>> {
+    pub fn template(&self) -> Option<&TemplateFile<'a>> {
         self.template.as_ref()
     }
     pub(super) fn style(&self) -> Option<&StyleSyntax<'a>> {
         self.style.as_ref()
     }
     #[must_use]
-    pub fn rejected_creation(&self) -> Option<&RejectedNativeTemplateOwner<'a>> {
+    pub fn rejected_creation(&self) -> Option<&RejectedTemplateOwner<'a>> {
         self.rejected_creation.as_deref()
     }
     #[must_use]
@@ -155,7 +155,7 @@ impl<'a> NativeSelectedSfcObservation<'a> {
 /// ```
 pub struct NativeSelectedSfc<'o, 'a> {
     observation: &'o NativeSelectedSfcObservation<'a>,
-    template: NativeTemplateView<'o, 'a>,
+    template: TemplateFileView<'o, 'a>,
 }
 impl<'o, 'a> NativeSelectedSfc<'o, 'a> {
     #[must_use]
@@ -163,7 +163,7 @@ impl<'o, 'a> NativeSelectedSfc<'o, 'a> {
         self.observation
     }
     #[must_use]
-    pub fn into_template_view(self) -> NativeTemplateView<'o, 'a> {
+    pub fn into_template_view(self) -> TemplateFileView<'o, 'a> {
         self.template
     }
 }
@@ -283,7 +283,7 @@ pub(super) fn observe<'a>(
             return observation;
         }
     };
-    let mut owner = match NativeTemplateOwner::new(selected) {
+    let mut owner = match TemplateOwner::new(selected) {
         Ok(owner) => owner,
         Err(rejected) => {
             observation.issues.push(NativeSelectedSfcIssue {

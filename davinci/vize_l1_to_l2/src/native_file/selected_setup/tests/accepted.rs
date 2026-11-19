@@ -53,7 +53,7 @@ fn whole_js_ts_descriptor_program_and_completed_file_remain_one_moved_owner()
                     && annotation.span().end <= script.block().span().end,
             )?;
         }
-        check(setup.file().native_interpolations().len() == 1)?;
+        check(setup.file().file_interpolations().len() == 1)?;
         let original_file = setup.file();
         let original_body = setup.program().program().body.as_ptr();
         let native = view.into_template_view();

@@ -1,7 +1,7 @@
 //! Whole original conditional inputs, attached only at their actual If factory.
 
 use super::{FileArtifact, RejectedFile, ScopeId};
-use crate::lang::js::{NativeConditionalInput, NativeTemplateIssueKind};
+use crate::lang::js::{ConditionalInput, TemplateRouteIssueKind};
 use crate::{
     op::{ElementOp, IfOp},
     resolution::BindingId,
@@ -11,30 +11,30 @@ use vize_l1::markup::{AttributeElse, AttributeExpressionFailure};
 
 #[derive(Default)]
 pub(crate) struct ConditionalStorage<'a> {
-    rows: alloc::vec::Vec<NativeFileConditional<'a>>,
+    rows: alloc::vec::Vec<FileConditional<'a>>,
     failures: alloc::vec::Vec<AttributeExpressionFailure<'a>>,
 }
 
 impl<'a> super::build::Facts<'a> {
-    pub(crate) fn native_conditionals(&self) -> &[NativeFileConditional<'a>] {
+    pub(crate) fn file_conditionals(&self) -> &[FileConditional<'a>] {
         self.conditional_storage
             .as_deref()
             .map_or(&[], |storage| storage.rows.as_slice())
     }
-    pub(crate) fn native_conditionals_mut(
+    pub(crate) fn file_conditionals_mut(
         &mut self,
-    ) -> &mut alloc::vec::Vec<NativeFileConditional<'a>> {
+    ) -> &mut alloc::vec::Vec<FileConditional<'a>> {
         &mut self
             .conditional_storage
             .get_or_insert_with(|| alloc::boxed::Box::new(ConditionalStorage::default()))
             .rows
     }
-    pub(crate) fn native_conditional_failures(&self) -> &[AttributeExpressionFailure<'a>] {
+    pub(crate) fn file_conditional_failures(&self) -> &[AttributeExpressionFailure<'a>] {
         self.conditional_storage
             .as_deref()
             .map_or(&[], |storage| storage.failures.as_slice())
     }
-    pub(crate) fn native_conditional_failures_mut(
+    pub(crate) fn file_conditional_failures_mut(
         &mut self,
     ) -> &mut alloc::vec::Vec<AttributeExpressionFailure<'a>> {
         &mut self
@@ -45,29 +45,29 @@ impl<'a> super::build::Facts<'a> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeFileConditionalState {
+pub enum FileConditionalState {
     Pending,
     Admitted(NodeId),
-    Refused(NativeTemplateIssueKind),
+    Refused(TemplateRouteIssueKind),
 }
 
-pub struct NativeFileConditional<'a> {
-    pub(crate) input: NativeConditionalInput<'a>,
-    pub(crate) state: NativeFileConditionalState,
+pub struct FileConditional<'a> {
+    pub(crate) input: ConditionalInput<'a>,
+    pub(crate) state: FileConditionalState,
     pub(crate) scope: ScopeId,
     pub(crate) binding: Option<BindingId>,
     pub(crate) original: Option<core::ptr::NonNull<IfOp<'a>>>,
-    pub(crate) otherwise: Option<alloc::boxed::Box<NativeConditionalElseInput<'a>>>,
+    pub(crate) otherwise: Option<alloc::boxed::Box<ConditionalElseInput<'a>>>,
 }
 
 /// The original valueless Else and its actual normally closed Element body.
 /// Its presence alone grants no completed File or conditional authority.
-pub struct NativeConditionalElseInput<'a> {
+pub struct ConditionalElseInput<'a> {
     pub(crate) operand: AttributeElse<'a>,
     pub(crate) body: Option<(NodeId, core::ptr::NonNull<ElementOp<'a>>)>,
 }
 
-impl<'a> NativeConditionalElseInput<'a> {
+impl<'a> ConditionalElseInput<'a> {
     #[must_use]
     pub const fn operand(&self) -> &AttributeElse<'a> {
         &self.operand
@@ -86,13 +86,13 @@ impl<'a> NativeConditionalElseInput<'a> {
     }
 }
 
-impl<'a> NativeFileConditional<'a> {
+impl<'a> FileConditional<'a> {
     #[must_use]
-    pub const fn input(&self) -> &NativeConditionalInput<'a> {
+    pub const fn input(&self) -> &ConditionalInput<'a> {
         &self.input
     }
     #[must_use]
-    pub const fn state(&self) -> NativeFileConditionalState {
+    pub const fn state(&self) -> FileConditionalState {
         self.state
     }
     #[must_use]
@@ -104,12 +104,12 @@ impl<'a> NativeFileConditional<'a> {
         self.binding
     }
     #[must_use]
-    pub fn else_input(&self) -> Option<&NativeConditionalElseInput<'a>> {
+    pub fn else_input(&self) -> Option<&ConditionalElseInput<'a>> {
         self.otherwise.as_deref()
     }
     #[must_use]
     pub fn accepts(&self, original: &IfOp<'a>) -> bool {
-        matches!(self.state, NativeFileConditionalState::Admitted(_))
+        matches!(self.state, FileConditionalState::Admitted(_))
             && self
                 .original
                 .is_some_and(|pointer| core::ptr::eq(pointer.as_ptr(), original))
@@ -118,33 +118,33 @@ impl<'a> NativeFileConditional<'a> {
 
 impl<'a> FileArtifact<'a> {
     #[must_use]
-    pub fn native_conditionals(&self) -> &[NativeFileConditional<'a>] {
-        self.facts.native_conditionals()
+    pub fn file_conditionals(&self) -> &[FileConditional<'a>] {
+        self.facts.file_conditionals()
     }
     #[must_use]
-    pub fn native_conditional_failures(&self) -> &[AttributeExpressionFailure<'a>] {
-        self.facts.native_conditional_failures()
+    pub fn file_conditional_failures(&self) -> &[AttributeExpressionFailure<'a>] {
+        self.facts.file_conditional_failures()
     }
     #[must_use]
-    pub fn native_conditional(&self, node: NodeId) -> Option<&NativeFileConditional<'a>> {
+    pub fn file_conditional(&self, node: NodeId) -> Option<&FileConditional<'a>> {
         if !self.is_complete() {
             return None;
         }
-        let [record] = self.facts.native_conditionals() else {
+        let [record] = self.facts.file_conditionals() else {
             return None;
         };
-        matches!(record.state(), NativeFileConditionalState::Admitted(actual) if actual == node)
+        matches!(record.state(), FileConditionalState::Admitted(actual) if actual == node)
             .then_some(record)
     }
 }
 
 impl<'a> RejectedFile<'a> {
     #[must_use]
-    pub fn native_conditionals(&self) -> &[NativeFileConditional<'a>] {
-        self.facts.native_conditionals()
+    pub fn file_conditionals(&self) -> &[FileConditional<'a>] {
+        self.facts.file_conditionals()
     }
     #[must_use]
-    pub fn native_conditional_failures(&self) -> &[AttributeExpressionFailure<'a>] {
-        self.facts.native_conditional_failures()
+    pub fn file_conditional_failures(&self) -> &[AttributeExpressionFailure<'a>] {
+        self.facts.file_conditional_failures()
     }
 }

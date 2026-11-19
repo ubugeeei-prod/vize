@@ -83,7 +83,7 @@ impl<'owner, 'arena, E: ExpressionWriter, L: LinkSink> Emitter<'_, 'owner, 'aren
             return false;
         };
         let resolution = row.resolution();
-        let Some(record) = resolution.file().native_conditional(id) else {
+        let Some(record) = resolution.file().file_conditional(id) else {
             return false;
         };
         resolution.node() == id

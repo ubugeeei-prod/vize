@@ -1,4 +1,4 @@
-use super::{NativeInterpolationInput, NativeInterpolationInputError};
+use super::{InterpolationInput, InterpolationInputError};
 use vize_l0::{
     Allocator, String,
     config::{VueDialect, VueVersion},

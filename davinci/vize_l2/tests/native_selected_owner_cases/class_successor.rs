@@ -1,7 +1,7 @@
 //! Only the named exact original class header becomes normally complete.
 use super::{Allocator, check, equal, owner};
 use vize_l0::Span;
-use vize_l2::{file::NativeFileAttributeValueState, op::Op};
+use vize_l2::{file::FileAttributeValueState, op::Op};
 
 pub(super) fn assert_current(arena: &Allocator, source: &str) -> Result<(), &'static str> {
     equal(
@@ -38,16 +38,16 @@ pub(super) fn assert_current(arena: &Allocator, source: &str) -> Result<(), &'st
     };
     equal(body.content, "unvisited")?;
     equal(element.attributes.len(), 2)?;
-    equal(file.native_attribute_values().len(), 2)?;
+    equal(file.file_attribute_values().len(), 2)?;
     for (index, expected) in [(0, ("data-first", "kept")), (1, ("class", "a  b"))] {
-        let record = &file.native_attribute_values()[index];
-        let NativeFileAttributeValueState::Attached { node, slot } = record.state() else {
+        let record = &file.file_attribute_values()[index];
+        let FileAttributeValueState::Attached { node, slot } = record.state() else {
             return Err("original attached value");
         };
         equal(node.index(), 1)?;
         equal(slot, index)?;
         let joined = file
-            .native_attribute_value_for(index, element, slot)
+            .file_attribute_value_for(index, element, slot)
             .ok_or("actual File/Element/slot")?;
         check(core::ptr::eq(joined.file(), file))?;
         check(core::ptr::eq(joined.element(), &**element))?;

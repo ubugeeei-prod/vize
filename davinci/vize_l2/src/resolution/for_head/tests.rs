@@ -21,10 +21,10 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
         .unwrap()
 }
 
-fn input<'a>(selected: &NativeTemplateComponent<'a>) -> NativeForInput<'a> {
+fn input<'a>(selected: &NativeTemplateComponent<'a>) -> FileForInput<'a> {
     let element = selected.children().next().unwrap().into_element().unwrap();
     let attribute = element.attributes().next().unwrap();
-    NativeForInput::new(selected.observe_attribute_for_head(attribute).unwrap()).unwrap()
+    FileForInput::new(selected.observe_attribute_for_head(attribute).unwrap()).unwrap()
 }
 
 struct Lookup<'a> {
@@ -146,7 +146,7 @@ fn normal_resolution_owner_moves_and_rejoins_only_the_original_selected_header()
     let first = attributes.next().unwrap();
     let second = attributes.next().unwrap();
     let original =
-        NativeForInput::new(owner.observe_attribute_for_head(first.reborrow()).unwrap()).unwrap();
+        FileForInput::new(owner.observe_attribute_for_head(first.reborrow()).unwrap()).unwrap();
     let aliases = original.aliases().as_ptr();
     let collection = original.collection() as *const _;
     let table = resolve_for_head(original, &Lookup::new(&[("items", 3)])).unwrap();

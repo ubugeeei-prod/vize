@@ -4,7 +4,7 @@ use super::{DomFacts, PropertyRole, ValueKind, file::matches_expression};
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
     expr::ExprRef,
-    file::{BindingRef, FileResolution, NativeFileModel, NativeFileModelState},
+    file::{BindingRef, FileResolution, FileModel, FileModelState},
     op::{BindingOp, ElementOp, ModelOp},
     resolution::{Occurrence, Usage},
 };
@@ -13,7 +13,7 @@ use vize_l2::{
 /// Its checked role comes from the sole canonical Model binding visit. The
 /// borrowed view is derived on demand, without a second stored fact table.
 pub struct DomFileModel<'owner, 'arena> {
-    original: &'owner NativeFileModel<'arena>,
+    original: &'owner FileModel<'arena>,
     model: &'owner ModelOp<'arena>,
     resolution: FileResolution<'owner, 'arena>,
     binding: BindingRef<'owner, 'arena>,
@@ -33,14 +33,14 @@ pub(super) fn get<'owner, 'arena>(
         return None;
     };
     let resolution = facts.file_expression(node)?.resolution();
-    let original = resolution.file().native_model(node)?;
+    let original = resolution.file().file_model(node)?;
     let (ExprRef::Js(read), ExprRef::Js(write)) = (model.contract.read, model.contract.write)
     else {
         return None;
     };
     if resolution.node() != node
         || resolution.scope() != Some(original.scope())
-        || original.state() != NativeFileModelState::Admitted(node)
+        || original.state() != FileModelState::Admitted(node)
         || !original.accepts(model)
         || original.input().attribute_span() != Some(model.span)
         || !core::ptr::eq(read, write)
@@ -82,7 +82,7 @@ impl core::fmt::Debug for DomFileModel<'_, '_> {
 
 impl<'owner, 'arena> DomFileModel<'owner, 'arena> {
     #[must_use]
-    pub const fn original(&self) -> &'owner NativeFileModel<'arena> {
+    pub const fn original(&self) -> &'owner FileModel<'arena> {
         self.original
     }
     #[must_use]

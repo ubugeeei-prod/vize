@@ -120,9 +120,8 @@ impl<'a> ForHeadInput<'a> {
         ForReferenceSource::checked(&self.syntax)
     }
 }
-
-mod native;
-pub use native::{NativeForInput, RejectedNativeForInput};
+pub use input::{FileForInput, RejectedFileForInput};
 
 #[cfg(test)]
 mod tests;
+mod input;

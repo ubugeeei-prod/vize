@@ -8,7 +8,7 @@ use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
-use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use vize_l2::lang::js::{TemplateFile, TemplateOwner};
 use vize_l3::decision::native::build_native_dom_file_decisions;
 use vize_l4::{
     module::assemble_template,
@@ -41,7 +41,7 @@ fn field<'f>(fixture: &'f serde_json::Value, name: &str) -> Result<&'f str, &'st
 fn owner<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateOwner<'a>, &'static str> {
+) -> Result<TemplateOwner<'a>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -57,13 +57,13 @@ fn owner<'a>(
     )
     .map_err(|_| "original Component")?
     .ok_or("selected template")?;
-    NativeTemplateOwner::new(selected).map_err(|_| "original File start")
+    TemplateOwner::new(selected).map_err(|_| "original File start")
 }
 
 fn completed<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<TemplateFile<'a>, &'static str> {
     let mut original = owner(arena, source)?;
     {
         let mut walk = original.begin().map_err(|_| "original root begin")?;

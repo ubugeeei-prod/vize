@@ -6,7 +6,7 @@ use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::Artifact,
     file::{BindingRef, FileArtifact, FileResolution},
-    lang::js::{NativeSelectedSetup, NativeTemplateFile, NativeTemplateView},
+    lang::js::{SelectedSetup, TemplateFile, TemplateFileView},
     resolution::Occurrence,
 };
 
@@ -78,30 +78,30 @@ impl<'owner, 'arena> SsrSetupExpression<'owner, 'arena> {
 /// Only the normally owned setup derives this same-File SSR analysis.
 /// No neutral analysis, source, binding list or runtime policy can be paired.
 /// ```compile_fail
-/// use vize_l2::lang::js::{NativeSelectedSetup, NativeTemplateView};
+/// use vize_l2::lang::js::{SelectedSetup, TemplateFileView};
 /// use vize_l3::decision::{NativeAnalysis, ssr::NativeSelectedSetupSsrAnalysis};
-/// fn forge<'v,'o,'a>(setup: &'v NativeSelectedSetup<'o,'a>,
-///     template: NativeTemplateView<'o,'a>, analysis: NativeAnalysis<'o,'a>) {
+/// fn forge<'v,'o,'a>(setup: &'v SelectedSetup<'o,'a>,
+///     template: TemplateFileView<'o,'a>, analysis: NativeAnalysis<'o,'a>) {
 ///     let _ = NativeSelectedSetupSsrAnalysis { setup, template, analysis };
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeSelectedSetup;
+/// use vize_l2::lang::js::SelectedSetup;
 /// use vize_l3::decision::ssr::build_native_selected_setup_ssr_decisions;
-/// fn discard(setup: NativeSelectedSetup<'_, '_>) {
+/// fn discard(setup: SelectedSetup<'_, '_>) {
 ///     let result = build_native_selected_setup_ssr_decisions(&setup).unwrap();
 ///     drop(setup);
 ///     let _ = result.setup();
 /// }
 /// ```
 pub struct NativeSelectedSetupSsrAnalysis<'view, 'owner, 'arena> {
-    setup: &'view NativeSelectedSetup<'owner, 'arena>,
-    template: NativeTemplateView<'owner, 'arena>,
+    setup: &'view SelectedSetup<'owner, 'arena>,
+    template: TemplateFileView<'owner, 'arena>,
     analysis: NativeAnalysis<'owner, 'arena>,
 }
 impl<'view, 'owner, 'arena> NativeSelectedSetupSsrAnalysis<'view, 'owner, 'arena> {
     #[must_use]
-    pub fn setup(&self) -> &'view NativeSelectedSetup<'owner, 'arena> {
+    pub fn setup(&self) -> &'view SelectedSetup<'owner, 'arena> {
         self.setup
     }
     #[must_use]
@@ -109,7 +109,7 @@ impl<'view, 'owner, 'arena> NativeSelectedSetupSsrAnalysis<'view, 'owner, 'arena
         self.setup.file()
     }
     #[must_use]
-    pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner TemplateFile<'arena> {
         self.template.owner()
     }
     #[must_use]
@@ -139,7 +139,7 @@ impl<'view, 'owner, 'arena> NativeSelectedSetupSsrAnalysis<'view, 'owner, 'arena
 /// Join original immutable reads in the existing sole canonical Enter stream.
 /// Scope roles retain their actual IDs, which share the current setup root.
 pub fn build_native_selected_setup_ssr_decisions<'view, 'owner, 'arena>(
-    setup: &'view NativeSelectedSetup<'owner, 'arena>,
+    setup: &'view SelectedSetup<'owner, 'arena>,
 ) -> Result<NativeSelectedSetupSsrAnalysis<'view, 'owner, 'arena>, NativeSsrBuildError> {
     let template = setup.owner().view().map_err(|_| {
         NativeSsrBuildError::Decision(crate::decision::DecisionBuildError::IncompleteFile)

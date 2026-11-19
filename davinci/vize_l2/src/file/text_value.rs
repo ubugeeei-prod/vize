@@ -1,14 +1,14 @@
 //! Normally owned original preparation, joined only to its real Text mint.
 
 use super::{FileArtifact, RejectedFile};
-use crate::{lang::js::NativeTemplateIssueKind, op::TextOp};
+use crate::{lang::js::TemplateRouteIssueKind, op::TextOp};
 use core::ptr::NonNull;
 use vize_l0::id::NodeId;
 use vize_l1::markup::{TextValue, TextValueFailure};
 
 /// Bounded source policy, independent of target or whitespace condensation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeTextValuePolicyError {
+pub enum TextValuePolicyError {
     RootExtent,
     Leading,
     Empty,
@@ -19,31 +19,31 @@ pub enum NativeTextValuePolicyError {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeFileTextValueState {
+pub enum FileTextValueState {
     Pending,
     Attached(NodeId),
-    Refused(NativeTemplateIssueKind),
+    Refused(TemplateRouteIssueKind),
 }
 
 /// Whole results remain normally owned on failure and caught unwind.
 /// This row alone grants no File completion or native output profile.
 /// ```compile_fail
-/// use vize_l2::file::NativeFileTextValue;
+/// use vize_l2::file::FileTextValueRecord;
 /// fn clone<T: Clone>() {}
-/// clone::<NativeFileTextValue<'static>>();
+/// clone::<FileTextValueRecord<'static>>();
 /// ```
 /// ```compile_fail
-/// use vize_l2::file::{NativeFileTextValue, NativeFileTextValueState};
-/// let _ = NativeFileTextValue {
-///     observation: panic!(), state: NativeFileTextValueState::Pending, text: None,
+/// use vize_l2::file::{FileTextValueRecord, FileTextValueState};
+/// let _ = FileTextValueRecord {
+///     observation: panic!(), state: FileTextValueState::Pending, text: None,
 /// };
 /// ```
-pub struct NativeFileTextValue<'a> {
+pub struct FileTextValueRecord<'a> {
     pub(crate) observation: Result<TextValue<'a>, TextValueFailure<'a>>,
-    pub(crate) state: NativeFileTextValueState,
+    pub(crate) state: FileTextValueState,
     pub(crate) text: Option<NonNull<TextOp<'a>>>,
 }
-impl<'a> NativeFileTextValue<'a> {
+impl<'a> FileTextValueRecord<'a> {
     #[must_use]
     pub fn observation(&self) -> Option<&TextValue<'a>> {
         self.observation.as_ref().ok()
@@ -53,7 +53,7 @@ impl<'a> NativeFileTextValue<'a> {
         self.observation.as_ref().err()
     }
     #[must_use]
-    pub const fn state(&self) -> NativeFileTextValueState {
+    pub const fn state(&self) -> FileTextValueState {
         self.state
     }
 }
@@ -75,23 +75,23 @@ pub struct FileTextValue<'f, 'a> {
 }
 impl<'a> FileArtifact<'a> {
     #[must_use]
-    pub fn native_text_values(&self) -> &[NativeFileTextValue<'a>] {
-        &self.facts.native_text_values
+    pub fn file_text_values(&self) -> &[FileTextValueRecord<'a>] {
+        &self.facts.file_text_values
     }
     /// Attached diagnostic prefixes remain readable even in incomplete Files.
     /// Product completion must independently require the actual whole owner.
     #[must_use]
-    pub fn native_text_value_for<'f>(
+    pub fn file_text_value_for<'f>(
         &'f self,
         node: NodeId,
         text: &'f TextOp<'a>,
     ) -> Option<FileTextValue<'f, 'a>> {
-        let [record] = self.facts.native_text_values.as_slice() else {
+        let [record] = self.facts.file_text_values.as_slice() else {
             return None;
         };
         let observation = record.observation()?;
         let source = observation.source();
-        if record.state != NativeFileTextValueState::Attached(node)
+        if record.state != FileTextValueState::Attached(node)
             || record.text != Some(NonNull::from(text))
             || !self.artifact().contains_node(node)
             || !core::ptr::eq(source.authored_root(), self.artifact().source())
@@ -109,8 +109,8 @@ impl<'a> FileArtifact<'a> {
 }
 impl<'a> RejectedFile<'a> {
     #[must_use]
-    pub fn native_text_values(&self) -> &[NativeFileTextValue<'a>] {
-        &self.facts.native_text_values
+    pub fn file_text_values(&self) -> &[FileTextValueRecord<'a>] {
+        &self.facts.file_text_values
     }
 }
 impl<'f, 'a> FileTextValue<'f, 'a> {
@@ -128,6 +128,6 @@ impl<'f, 'a> FileTextValue<'f, 'a> {
     }
     #[must_use]
     pub fn observation(self) -> Option<&'f TextValue<'a>> {
-        self.file.native_text_values().first()?.observation()
+        self.file.file_text_values().first()?.observation()
     }
 }

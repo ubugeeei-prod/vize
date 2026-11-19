@@ -1,11 +1,11 @@
 //! Model-specific semantic use of the one actual original Identifier.
 
 use super::{BindingLookup, ResolutionError, ResolutionErrorKind, ResolutionTable, sink};
-use crate::lang::js::NativeModelInput;
+use crate::lang::js::ModelInput;
 use vize_l0::Span;
 
 pub(crate) fn resolve_model_facts<'a>(
-    input: &NativeModelInput<'a>,
+    input: &ModelInput<'a>,
     bindings: &impl BindingLookup,
 ) -> Result<ResolutionTable<'a>, ResolutionError> {
     let expression = input.expression().ok_or(ResolutionError {

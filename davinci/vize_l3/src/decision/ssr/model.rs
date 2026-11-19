@@ -3,8 +3,8 @@
 use super::{NativeSelectedSetupSsrAnalysis, SsrSetupAccess, SsrSetupExpression, SsrUnsupported};
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::{BindingRef, FileResolution, NativeFileModel, NativeFileModelState},
-    lang::js::NativeSelectedSetup,
+    file::{BindingRef, FileResolution, FileModel, FileModelState},
+    lang::js::SelectedSetup,
     op::{BindingOp, ElementOp, ModelOp},
     resolution::Occurrence,
 };
@@ -12,7 +12,7 @@ use vize_l2::{
 /// The original mutable source is retained, but SSR receives no update writer.
 /// Construction is private and the same current File must outlive this view.
 pub struct SsrFileModel<'owner, 'arena> {
-    original: &'owner NativeFileModel<'arena>,
+    original: &'owner FileModel<'arena>,
     model: &'owner ModelOp<'arena>,
     resolution: FileResolution<'owner, 'arena>,
     binding: BindingRef<'owner, 'arena>,
@@ -21,7 +21,7 @@ pub struct SsrFileModel<'owner, 'arena> {
 }
 
 pub(super) fn classify<'owner, 'arena>(
-    setup: &NativeSelectedSetup<'owner, 'arena>,
+    setup: &SelectedSetup<'owner, 'arena>,
     element_node: NodeId,
     element: &'owner ElementOp<'arena>,
     node: NodeId,
@@ -59,12 +59,12 @@ impl<'owner, 'arena> NativeSelectedSetupSsrAnalysis<'_, 'owner, 'arena> {
         element: &'owner ElementOp<'arena>,
     ) -> Result<Option<SsrFileModel<'owner, 'arena>>, SsrUnsupported> {
         let file = self.file();
-        let original = match file.native_models() {
+        let original = match file.file_models() {
             [] => return Ok(None),
             [original] => original,
             _ => return Err(SsrUnsupported::FileBinding),
         };
-        let NativeFileModelState::Admitted(node) = original.state() else {
+        let FileModelState::Admitted(node) = original.state() else {
             return Err(SsrUnsupported::FileBinding);
         };
         let facts = self.ssr().ok_or(SsrUnsupported::FileExpression)?;
@@ -134,7 +134,7 @@ impl core::fmt::Debug for SsrFileModel<'_, '_> {
 
 impl<'owner, 'arena> SsrFileModel<'owner, 'arena> {
     #[must_use]
-    pub const fn original(&self) -> &'owner NativeFileModel<'arena> {
+    pub const fn original(&self) -> &'owner FileModel<'arena> {
         self.original
     }
     #[must_use]

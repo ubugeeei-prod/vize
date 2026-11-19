@@ -8,18 +8,18 @@ use vize_l0::id::NodeId;
 use vize_l2::{
     expr::JsExpr,
     file::{DeclarationKind, Namespace},
-    lang::js::NativeSelectedSetup,
+    lang::js::SelectedSetup,
     resolution::Usage,
 };
 
 pub(super) fn classify<'owner, 'arena>(
-    setup: &NativeSelectedSetup<'owner, 'arena>,
+    setup: &SelectedSetup<'owner, 'arena>,
     node: NodeId,
     expression: &JsExpr<'arena>,
 ) -> Result<SsrSetupExpression<'owner, 'arena>, SsrUnsupported> {
     let file = setup.file();
     let record = file
-        .native_interpolation(node)
+        .file_interpolation(node)
         .ok_or(SsrUnsupported::FileExpression)?;
     let syntax = record.input().operand().syntax();
     let original = syntax

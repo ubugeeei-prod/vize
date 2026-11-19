@@ -1,6 +1,6 @@
 use super::super::{Allocator, NoLinks, Recorded, check, owner};
 use vize_l0::id::NodeId;
-use vize_l2::lang::js::NativeInterpolationInput;
+use vize_l2::lang::js::InterpolationInput;
 use vize_l3::decision::{dom::DomUnsupported, native::build_native_dom_file_decisions};
 use vize_l4::targets::dom::{DomErrorKind, emit_template};
 
@@ -27,7 +27,7 @@ fn original_selected_legacy_and_regexp_refusals_return_no_partial_writer()
             let mut walk = original.begin().map_err(|_| "begin")?;
             let selected = walk.selected();
             let child = selected.children().next().ok_or("original child")?;
-            let input = NativeInterpolationInput::from_operand(
+            let input = InterpolationInput::from_operand(
                 selected
                     .observe_interpolation_expression(child.reborrow())
                     .map_err(|_| "original stock observation")?,
@@ -43,7 +43,7 @@ fn original_selected_legacy_and_regexp_refusals_return_no_partial_writer()
         check(file.is_complete())?;
         check(core::ptr::eq(file.artifact().source(), source))?;
         let operand = file
-            .native_interpolation(NodeId::FIRST)
+            .file_interpolation(NodeId::FIRST)
             .ok_or("normal whole original input")?
             .input()
             .operand();

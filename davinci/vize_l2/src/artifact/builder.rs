@@ -86,7 +86,6 @@ pub(crate) use element::ElementAllocation;
 mod factory;
 mod host_for;
 pub use host_for::{HostForBuilder, HostForHead};
-mod native_if;
 mod original_for;
 mod region;
 mod text;
@@ -326,3 +325,4 @@ impl<'a> Builder<'a> {
 
 #[cfg(test)]
 mod tests;
+mod file_if;

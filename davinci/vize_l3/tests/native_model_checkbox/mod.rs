@@ -7,7 +7,7 @@ use vize_l0::{
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::{
-    file::{DeclarationKind, InitializerKind, NativeFileModelKind, NativeFileModelState},
+    file::{DeclarationKind, InitializerKind, FileModelKind, FileModelState},
     op::{BindingOp, Op},
     resolution::Usage,
 };
@@ -55,13 +55,13 @@ fn original_checkbox_type_and_real_mutable_binding_reach_all_three_consumers() -
         let setup = view.setup();
         let file = setup.file();
         let before = file.artifact().provenance().to_vec();
-        let [original] = file.native_models() else {
+        let [original] = file.file_models() else {
             return Err("one original Model".into());
         };
-        let NativeFileModelState::Admitted(node) = original.state() else {
+        let FileModelState::Admitted(node) = original.state() else {
             return Err("closed Model".into());
         };
-        assert_eq!(original.kind(), Some(NativeFileModelKind::Checkbox));
+        assert_eq!(original.kind(), Some(FileModelKind::Checkbox));
         let element_node = original.element_node().ok_or("Element")?;
         let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
             return Err("root input".into());
@@ -74,7 +74,7 @@ fn original_checkbox_type_and_real_mutable_binding_reach_all_three_consumers() -
             return Err("one original type".into());
         };
         let value = file
-            .native_attribute_value_for(0, element, 0)
+            .file_attribute_value_for(0, element, 0)
             .ok_or("closed static type owner")?;
         let original_value = value.observation().ok_or("original source")?;
         assert_eq!(attribute.name, "type");
@@ -189,7 +189,7 @@ fn all_derived_checkbox_outside_inputs_remain_lower_refusals() -> Result<(), Str
             .and_then(|template| template.file());
         assert!(file.is_none_or(|file| !file.is_complete()));
         if let Some(file) = file {
-            for original in file.native_models() {
+            for original in file.file_models() {
                 assert_eq!(original.kind(), None);
             }
         }

@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use vize_l1_to_l2::native_file::NativeSelectedSetupSfcObservation;
 use vize_l2::{
     expr::ExprRef,
-    file::{DeclarationKind, InitializerKind, Namespace, NativeFileModelState},
+    file::{DeclarationKind, InitializerKind, Namespace, FileModelState},
     op::{BindingOp, Op},
     resolution::Usage,
 };
@@ -29,10 +29,10 @@ pub(super) fn capture(
         .ok_or("actual completed setup owner")?;
     let setup = view.setup();
     let file = setup.file();
-    let [record] = file.native_models() else {
+    let [record] = file.file_models() else {
         return Err("one actual Model".into());
     };
-    let NativeFileModelState::Admitted(node) = record.state() else {
+    let FileModelState::Admitted(node) = record.state() else {
         return Err("normally closed Model".into());
     };
     let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {

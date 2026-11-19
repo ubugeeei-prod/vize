@@ -43,9 +43,9 @@ fn foreign_element_sibling_slot_node_duplicate_and_out_of_order_rows_stickily_re
     check(cursor.finish().is_err())?;
     check(OriginalAttributeCursor::new(file, other.artifact()).is_err())?;
     // All refused experiments retain the original full map and normal rows.
-    check(file.native_attribute_values().len() == 3)?;
+    check(file.file_attribute_values().len() == 3)?;
     check(
-        file.native_attribute_values()[0]
+        file.file_attribute_values()[0]
             .observation()
             .ok_or("source")?
             .source()
@@ -97,7 +97,7 @@ fn complete_neutral_value_without_any_original_row_cannot_pass_native_consumptio
             .map_err(|_| "neutral Element")?;
     }
     let file = producer.finish().map_err(|_| "neutral File")?;
-    check(file.is_complete() && file.native_attribute_values().is_empty())?;
+    check(file.is_complete() && file.file_attribute_values().is_empty())?;
     let result = crate::decision::build::build_with_original(
         &file,
         TargetPolicy::Dom,
@@ -134,7 +134,7 @@ fn attached_prefix_on_incomplete_original_file_never_seals_whole_target_facts() 
     let file = original.file().ok_or("retained original prefix")?;
     check(!file.is_complete())?;
     let actual = element(file, 0)?;
-    check(file.native_attribute_value_for(0, actual, 0).is_some())?;
+    check(file.file_attribute_value_for(0, actual, 0).is_some())?;
     check(matches!(
         OriginalAttributeCursor::new(file, file.artifact()),
         Err(DecisionBuildError::IncompleteFile)

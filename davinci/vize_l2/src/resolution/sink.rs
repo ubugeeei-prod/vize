@@ -96,7 +96,7 @@ pub(super) fn resolve<'a>(
 }
 
 pub(super) fn resolve_model<'a>(
-    input: &crate::lang::js::NativeModelInput<'a>,
+    input: &crate::lang::js::ModelInput<'a>,
     bindings: &impl BindingLookup,
 ) -> Result<Vec<Occurrence<'a>>, ResolutionError> {
     let mut sink = Immediate {

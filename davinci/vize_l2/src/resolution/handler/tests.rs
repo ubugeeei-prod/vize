@@ -1,5 +1,5 @@
 use super::{HandlerBindingRef, HandlerDeclarationKind, resolve_handler};
-use crate::lang::js::NativeHandlerInput;
+use crate::lang::js::FileHandlerInput;
 use crate::resolution::{BindingId, BindingLookup, ResolutionErrorKind, Usage};
 use alloc::vec::Vec;
 mod statements;
@@ -20,7 +20,7 @@ impl BindingLookup for Outer {
     }
 }
 
-fn input<'a>(allocator: &'a Allocator, text: &str) -> NativeHandlerInput<'a> {
+fn input<'a>(allocator: &'a Allocator, text: &str) -> FileHandlerInput<'a> {
     let file = allocator.alloc_str(&alloc::format!(
         "<template><b @click=\"{text}\"/></template>"
     ));
@@ -40,7 +40,7 @@ fn input<'a>(allocator: &'a Allocator, text: &str) -> NativeHandlerInput<'a> {
     let operand = selected
         .observe_attribute_handler(element.attributes().next().unwrap())
         .unwrap();
-    NativeHandlerInput::new(operand).unwrap()
+    FileHandlerInput::new(operand).unwrap()
 }
 
 #[test]

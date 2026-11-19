@@ -5,7 +5,7 @@ use crate::decision::{DecisionBuildError, DecisionTables};
 use vize_l2::{
     artifact::Artifact,
     file::FileArtifact,
-    lang::js::{NativeTemplateFile, NativeTemplateView},
+    lang::js::{TemplateFile, TemplateFileView},
 };
 
 /// Only a moved original template completion can authorize native Vapor output.
@@ -19,9 +19,9 @@ use vize_l2::{
 /// ```
 /// Its original lower owner remains live until the analysis is released:
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeTemplateFile;
+/// use vize_l2::lang::js::TemplateFile;
 /// use vize_l3::decision::vapor::build_native_vapor_file_decisions;
-/// fn discard(owner: NativeTemplateFile<'_>) {
+/// fn discard(owner: TemplateFile<'_>) {
 ///     let analysis = build_native_vapor_file_decisions(owner.view().unwrap()).unwrap();
 ///     drop(owner);
 ///     let _ = analysis.owner();
@@ -34,13 +34,13 @@ use vize_l2::{
 /// fn forge(file: &FileArtifact<'_>) { let _ = build_native_vapor_file_decisions(file); }
 /// ```
 pub struct NativeTemplateVaporAnalysis<'owner, 'arena> {
-    view: NativeTemplateView<'owner, 'arena>,
+    view: TemplateFileView<'owner, 'arena>,
     analysis: NativeVaporFileAnalysis<'owner, 'arena>,
 }
 
 impl<'owner, 'arena> NativeTemplateVaporAnalysis<'owner, 'arena> {
     #[must_use]
-    pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner TemplateFile<'arena> {
         self.view.owner()
     }
     #[must_use]
@@ -70,7 +70,7 @@ impl<'owner, 'arena> NativeTemplateVaporAnalysis<'owner, 'arena> {
 /// Derive the File internally from the genuine non-cloneable lower completion.
 /// It runs the existing producer once; no second AST/tree walk is introduced.
 pub fn build_native_vapor_file_decisions<'owner, 'arena>(
-    view: NativeTemplateView<'owner, 'arena>,
+    view: TemplateFileView<'owner, 'arena>,
 ) -> Result<NativeTemplateVaporAnalysis<'owner, 'arena>, DecisionBuildError> {
     let file = view.file().ok_or(DecisionBuildError::IncompleteFile)?;
     let analysis = super::file::build_original_file_decisions(file)?;

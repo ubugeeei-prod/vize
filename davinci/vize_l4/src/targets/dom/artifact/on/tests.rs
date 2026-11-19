@@ -8,7 +8,7 @@ fn whole_original_file_handler_is_refused_before_expression_emission() {
         markup::{NativeTemplateComponent, SurfaceParseOptions},
     };
     use vize_l2::{
-        lang::js::NativeTemplateOwner,
+        lang::js::TemplateOwner,
         op::{BindingOp, Op},
     };
     let arena = vize_l0::Allocator::default();
@@ -26,7 +26,7 @@ fn whole_original_file_handler_is_refused_before_expression_emission() {
         .unwrap()
         .unwrap();
     let mut original =
-        NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("original owner"));
+        TemplateOwner::new(selected).unwrap_or_else(|_| panic!("original owner"));
     {
         let mut walk = original.begin().unwrap();
         walk.child(walk.selected().children().next().unwrap())

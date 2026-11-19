@@ -17,7 +17,7 @@ use vize_l1::{
     css::StyleSyntax,
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
-use vize_l2::lang::js::{NativeScopedTemplateIssueKind as Kind, NativeTemplateOwner};
+use vize_l2::lang::js::{ScopedTemplateIssueKind as Kind, TemplateOwner};
 
 fn options() -> DescriptorOptions {
     DescriptorOptions {
@@ -282,7 +282,7 @@ fn nondefault_public_profile_and_uncompleted_file_cannot_grant_scoped_authority(
     let selected = NativeTemplateComponent::parse_in(&arena, original.admitted().unwrap())
         .unwrap()
         .unwrap();
-    let unfinished = NativeTemplateOwner::new(selected).ok().unwrap().finish();
+    let unfinished = TemplateOwner::new(selected).ok().unwrap().finish();
     assert!(matches!(
         unfinished
             .scoped_view(original, owner.style_syntax().unwrap())
@@ -329,7 +329,7 @@ fn former_scoped_class_refusal_keeps_original_style_and_completed_class_custody(
         source
     ));
     let file = owner.original().template().unwrap().file().unwrap();
-    let [record] = file.native_attribute_values() else {
+    let [record] = file.file_attribute_values() else {
         panic!("one retained original class");
     };
     assert_eq!(record.observation().unwrap().raw_value(), "a");

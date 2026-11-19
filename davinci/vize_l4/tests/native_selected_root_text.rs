@@ -10,7 +10,7 @@ use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{NativeTemplateComponent, SurfaceChild, SurfaceParseOptions},
 };
-use vize_l2::lang::js::NativeTemplateOwner;
+use vize_l2::lang::js::TemplateOwner;
 use vize_l3::decision::native::build_native_dom_file_decisions;
 use vize_l4::{
     module::assemble_template,
@@ -79,7 +79,7 @@ fn whole_selected_condensed_root_modules_maps_and_links_match_pinned_packets()
             selected.children().len(),
             fixture["rootSlots"].as_array().ok_or("slots")?.len()
         );
-        let mut original = NativeTemplateOwner::new(selected).map_err(|_| "genuine File owner")?;
+        let mut original = TemplateOwner::new(selected).map_err(|_| "genuine File owner")?;
         {
             let mut walk = original.begin().map_err(|_| "original root begin")?;
             let selected = walk.selected();

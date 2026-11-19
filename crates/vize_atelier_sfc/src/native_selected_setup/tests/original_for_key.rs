@@ -119,10 +119,10 @@ fn nine_whole_original_key_sources_capture_real_bindings_and_maps() -> Result<()
                         .is_some_and(|facts| core::ptr::eq(row.scope_facts(), facts)),
                 "{id}: canonical binding row belongs to the original File"
             );
-            let [interpolation] = file.native_interpolations() else {
+            let [interpolation] = file.file_interpolations() else {
                 return Err(cstr!("{id}: one actual key interpolation"));
             };
-            let vize_l2::file::NativeFileInterpolationState::Admitted(node) = interpolation.state()
+            let vize_l2::file::FileInterpolationState::Admitted(node) = interpolation.state()
             else {
                 return Err(cstr!("{id}: attached original interpolation"));
             };

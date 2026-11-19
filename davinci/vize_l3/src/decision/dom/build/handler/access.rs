@@ -100,11 +100,11 @@ mod tests {
         markup::{NativeTemplateComponent, SurfaceParseOptions},
     };
     use vize_l2::{
-        lang::js::{NativeTemplateFile, NativeTemplateOwner},
+        lang::js::{TemplateFile, TemplateOwner},
         op::{BindingOp, Op},
     };
 
-    fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+    fn completed<'a>(arena: &'a Allocator, source: &'a str) -> TemplateFile<'a> {
         let descriptor = Vue.observe_descriptor(
             arena,
             source,
@@ -117,7 +117,7 @@ mod tests {
         let selected = NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
             .unwrap()
             .unwrap();
-        let mut owner = NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));
+        let mut owner = TemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));
         {
             let mut walk = owner.begin().unwrap();
             for child in walk.selected().children() {
@@ -128,7 +128,7 @@ mod tests {
         owner.finish()
     }
 
-    fn resolution<'o, 'a>(owner: &'o NativeTemplateFile<'a>) -> &'o HandlerResolution<'a> {
+    fn resolution<'o, 'a>(owner: &'o TemplateFile<'a>) -> &'o HandlerResolution<'a> {
         let file = owner.file().unwrap();
         let Some(Op::Element(element)) = file.artifact().root().ops.first() else {
             panic!("actual element")

@@ -16,7 +16,7 @@ use vize_l1::{
 use vize_l2::{
     file::{DeclarationKind, Namespace},
     lang::js::{
-        FileProducer, NativeSetupIssueKind, NativeTemplateIssueKind, NativeTemplateOwner,
+        FileProducer, SelectedSetupIssueKind, TemplateRouteIssueKind, TemplateOwner,
         ProgramInput, ProgramScope, SetupIssueKind, VueSetup,
     },
 };
@@ -84,14 +84,14 @@ fn optional_setup_refuses_before_consuming_any_original_template_child() {
         .unwrap()
         .unwrap();
     let mut owner =
-        NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("original selected owner"));
+        TemplateOwner::new(selected).unwrap_or_else(|_| panic!("original selected owner"));
     owner.parse_setup_program().unwrap();
     let syntax = owner.retained_setup().unwrap();
     let body = syntax.program().unwrap().body.as_ptr();
     let span = syntax.source().span();
     assert_eq!(syntax.comments().count(), 1);
     assert!(
-        matches!(owner.begin_setup(), Err(issue) if issue.span == span && issue.kind == NativeTemplateIssueKind::SetupPolicy(NativeSetupIssueKind::UnsupportedSyntax))
+        matches!(owner.begin_setup(), Err(issue) if issue.span == span && issue.kind == TemplateRouteIssueKind::SetupPolicy(SelectedSetupIssueKind::UnsupportedSyntax))
     );
     let output = Box::new(owner.finish());
     assert!(output.view().is_err());
@@ -100,7 +100,7 @@ fn optional_setup_refuses_before_consuming_any_original_template_child() {
     assert_eq!(syntax.source().span(), span);
     assert!(core::ptr::eq(syntax.source().authored_root(), source));
     let file = output.file().unwrap();
-    assert!(file.native_interpolations().is_empty());
+    assert!(file.file_interpolations().is_empty());
     assert!(file.bindings().any(|binding| {
         binding.declaration().is_some_and(|declaration| {
             declaration.kind == DeclarationKind::Parameter

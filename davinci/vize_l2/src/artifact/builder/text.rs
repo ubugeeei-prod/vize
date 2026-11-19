@@ -16,10 +16,10 @@ impl<'a> TextAllocation<'a> {
 impl<'a> Builder<'a> {
     /// Build a leaf only after its span is checked against the current owner.
     pub fn text(&mut self, content: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
-        self.native_text(content, span).map(|(node, _)| node)
+        self.file_text(content, span).map(|(node, _)| node)
     }
 
-    pub(super) fn native_text(
+    pub(super) fn file_text(
         &mut self,
         content: &'a str,
         span: Span,

@@ -12,25 +12,25 @@ use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::Artifact,
     file::{BindingRef, DeclarationKind, FileArtifact},
-    lang::js::{NativeSelectedSetup, NativeTemplateView},
+    lang::js::{SelectedSetup, TemplateFileView},
     resolution::{Occurrence, Usage},
 };
 
 /// Native runtime reads borrow the normal whole setup owner and its own template.
 /// A caller cannot pair another File or substitute a neutral analysis.
 /// ```compile_fail
-/// use vize_l2::lang::js::{NativeSelectedSetup, NativeTemplateView};
+/// use vize_l2::lang::js::{SelectedSetup, TemplateFileView};
 /// use vize_l3::decision::NativeAnalysis;
 /// use vize_l3::decision::native::NativeSelectedSetupDomAnalysis;
-/// fn forge<'v, 'o, 'a>(setup: &'v NativeSelectedSetup<'o, 'a>,
-///     template: NativeTemplateView<'o, 'a>, analysis: NativeAnalysis<'o, 'a>) {
+/// fn forge<'v, 'o, 'a>(setup: &'v SelectedSetup<'o, 'a>,
+///     template: TemplateFileView<'o, 'a>, analysis: NativeAnalysis<'o, 'a>) {
 ///     let _ = NativeSelectedSetupDomAnalysis { setup, template, analysis };
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeSelectedSetup;
+/// use vize_l2::lang::js::SelectedSetup;
 /// use vize_l3::decision::native::build_native_selected_setup_dom_decisions;
-/// fn discard(setup: NativeSelectedSetup<'_, '_>) {
+/// fn discard(setup: SelectedSetup<'_, '_>) {
 ///     let result = build_native_selected_setup_dom_decisions(&setup).unwrap();
 ///     drop(setup);
 ///     let _ = result.setup();
@@ -42,14 +42,14 @@ use vize_l2::{
 ///     -> NativeAnalysis<'o, 'a> { result.analysis }
 /// ```
 pub struct NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena> {
-    setup: &'view NativeSelectedSetup<'owner, 'arena>,
-    template: NativeTemplateView<'owner, 'arena>,
+    setup: &'view SelectedSetup<'owner, 'arena>,
+    template: TemplateFileView<'owner, 'arena>,
     analysis: NativeAnalysis<'owner, 'arena>,
 }
 
 impl<'view, 'owner, 'arena> NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena> {
     #[must_use]
-    pub fn setup(&self) -> &'view NativeSelectedSetup<'owner, 'arena> {
+    pub fn setup(&self) -> &'view SelectedSetup<'owner, 'arena> {
         self.setup
     }
     #[must_use]
@@ -57,7 +57,7 @@ impl<'view, 'owner, 'arena> NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena
         self.setup.file()
     }
     #[must_use]
-    pub fn owner(&self) -> &'owner vize_l2::lang::js::NativeTemplateFile<'arena> {
+    pub fn owner(&self) -> &'owner vize_l2::lang::js::TemplateFile<'arena> {
         self.template.owner()
     }
     #[must_use]
@@ -88,7 +88,7 @@ impl<'view, 'owner, 'arena> NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena
     }
 }
 
-struct SelectedReads<'view, 'owner, 'arena>(&'view NativeSelectedSetup<'owner, 'arena>);
+struct SelectedReads<'view, 'owner, 'arena>(&'view SelectedSetup<'owner, 'arena>);
 impl<'owner, 'arena> FileReads<'owner, 'arena> for SelectedReads<'_, 'owner, 'arena> {
     const RECORD: bool = true;
     const NATIVE_SETUP: bool = true;
@@ -118,7 +118,7 @@ impl<'owner, 'arena> FileReads<'owner, 'arena> for SelectedReads<'_, 'owner, 'ar
 /// original-root For/static-or-current-value-singleton family receives separate
 /// runtime eligibility; other callback body families retain typed refusals.
 pub fn build_native_selected_setup_dom_decisions<'view, 'owner, 'arena>(
-    setup: &'view NativeSelectedSetup<'owner, 'arena>,
+    setup: &'view SelectedSetup<'owner, 'arena>,
 ) -> Result<NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena>, DecisionBuildError> {
     let template = setup
         .owner()

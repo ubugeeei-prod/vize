@@ -3,7 +3,7 @@ use vize_l1::embed::{
     EmbedSource,
     syntax::{ProgramOptions, parse_program_once},
 };
-use vize_l2::lang::js::{NativeSetupIssueKind as SetupKind, NativeTemplateIssueKind as Kind};
+use vize_l2::lang::js::{SelectedSetupIssueKind as SetupKind, TemplateRouteIssueKind as Kind};
 
 #[test]
 fn borrowed_program_cannot_mint_owning_receipt_or_reparse_selected_slot() -> Result<(), &'static str>

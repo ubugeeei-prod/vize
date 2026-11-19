@@ -46,7 +46,7 @@ pub(super) fn assert_current(arena: &Allocator, source: &str) -> Result<(), &'st
         check(core::ptr::eq(joined.file(), file))?;
         check(core::ptr::eq(
             value,
-            file.native_attribute_values()[index]
+            file.file_attribute_values()[index]
                 .observation()
                 .ok_or("same value")?,
         ))?;

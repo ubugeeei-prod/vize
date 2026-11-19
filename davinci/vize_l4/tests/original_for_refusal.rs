@@ -12,7 +12,7 @@ use vize_l1::{
     },
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
-use vize_l2::{lang::js::NativeTemplateOwner, op::Op};
+use vize_l2::{lang::js::TemplateOwner, op::Op};
 use vize_l3::decision::{dom::DomUnsupported, native::build_native_dom_file_decisions};
 use vize_l4::{
     targets::dom::{DomErrorKind, emit_template},
@@ -42,7 +42,7 @@ fn authentic_whole_head_still_returns_typed_dom_operation_refusal_before_output(
     let selected = NativeTemplateComponent::parse_in(&arena, admitted)
         .unwrap()
         .unwrap();
-    let mut owner = NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));
+    let mut owner = TemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));
     owner
         .setup_program(syntax.admitted_program().unwrap())
         .unwrap();

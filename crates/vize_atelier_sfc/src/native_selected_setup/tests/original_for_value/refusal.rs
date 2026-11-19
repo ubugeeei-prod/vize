@@ -62,10 +62,10 @@ fn generic_and_neutral_same_mutable_owner_keep_operation_refusal() {
             panic!("actual original For");
         };
         let head = file.for_head_for(original).unwrap();
-        let [interpolation] = file.native_interpolations() else {
+        let [interpolation] = file.file_interpolations() else {
             panic!("one original Vue interpolation, never literal braces");
         };
-        let vize_l2::file::NativeFileInterpolationState::Admitted(node) = interpolation.state()
+        let vize_l2::file::FileInterpolationState::Admitted(node) = interpolation.state()
         else {
             panic!("normally attached original interpolation");
         };
@@ -163,8 +163,8 @@ fn syntax_hole_keeps_whole_for_setup_and_original_body_without_read_admission() 
     let owner = compiled.observation().original().template().unwrap();
     assert_eq!(
         owner.view().err().unwrap().kind,
-        vize_l2::lang::js::NativeTemplateIssueKind::Interpolation(
-            vize_l2::lang::js::NativeInterpolationInputError::Hole(
+        vize_l2::lang::js::TemplateRouteIssueKind::Interpolation(
+            vize_l2::lang::js::InterpolationInputError::Hole(
                 vize_l1::embed::syntax::EmbedHole::Syntax
             )
         )
@@ -179,14 +179,14 @@ fn syntax_hole_keeps_whole_for_setup_and_original_body_without_read_admission() 
     assert_eq!(input.operand().raw_value(), "item in count");
     assert_eq!(input.aliases().len(), 1);
     assert!(input.collection().is_identifier_reference());
-    let [record] = file.native_interpolations() else {
+    let [record] = file.file_interpolations() else {
         panic!("normally parked original body");
     };
     assert_eq!(
         record.state(),
-        vize_l2::file::NativeFileInterpolationState::Refused(
-            vize_l2::lang::js::NativeTemplateIssueKind::Interpolation(
-                vize_l2::lang::js::NativeInterpolationInputError::Hole(
+        vize_l2::file::FileInterpolationState::Refused(
+            vize_l2::lang::js::TemplateRouteIssueKind::Interpolation(
+                vize_l2::lang::js::InterpolationInputError::Hole(
                     vize_l1::embed::syntax::EmbedHole::Syntax
                 )
             )

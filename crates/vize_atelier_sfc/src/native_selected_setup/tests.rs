@@ -136,7 +136,7 @@ fn seven_whole_original_setup_components_and_maps_are_captured() -> Result<(), S
             };
             let resolution = row.resolution();
             let record = file
-                .native_interpolation(node)
+                .file_interpolation(node)
                 .ok_or("original interpolation")?;
             let table = resolution.table().ok_or("whole immutable table")?;
             require!(

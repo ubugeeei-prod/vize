@@ -10,7 +10,7 @@ use vize_l1::{
     css::StyleSyntax,
     markup::SurfaceParseOptions,
 };
-use vize_l2::lang::js::{NativeScopedTemplateIssueKind as Kind, NativeScopedTemplateView};
+use vize_l2::lang::js::{ScopedTemplateIssueKind as Kind, ScopedTemplateView};
 
 /// Original Descriptor, original CSS parser owner and sole selected File stay
 /// normally owned together. This route performs the CSS parse once, before the
@@ -63,8 +63,8 @@ impl<'a> NativeSelectedScopedSfcObservation<'a> {
 ///
 /// ```compile_fail
 /// use vize_l1_to_l2::native_file::{NativeSelectedScopedSfc, NativeSelectedScopedSfcObservation};
-/// use vize_l2::lang::js::NativeScopedTemplateView;
-/// fn forge<'o, 'a>(observation: &'o NativeSelectedScopedSfcObservation<'a>, scoped: NativeScopedTemplateView<'o, 'a>) {
+/// use vize_l2::lang::js::ScopedTemplateView;
+/// fn forge<'o, 'a>(observation: &'o NativeSelectedScopedSfcObservation<'a>, scoped: ScopedTemplateView<'o, 'a>) {
 ///     let _ = NativeSelectedScopedSfc { observation, scoped };
 /// }
 /// ```
@@ -81,7 +81,7 @@ impl<'a> NativeSelectedScopedSfcObservation<'a> {
 /// ```
 pub struct NativeSelectedScopedSfc<'owner, 'arena> {
     observation: &'owner NativeSelectedScopedSfcObservation<'arena>,
-    scoped: NativeScopedTemplateView<'owner, 'arena>,
+    scoped: ScopedTemplateView<'owner, 'arena>,
 }
 impl<'owner, 'arena> NativeSelectedScopedSfc<'owner, 'arena> {
     #[must_use]
@@ -89,7 +89,7 @@ impl<'owner, 'arena> NativeSelectedScopedSfc<'owner, 'arena> {
         self.observation
     }
     #[must_use]
-    pub fn into_scoped_template_view(self) -> NativeScopedTemplateView<'owner, 'arena> {
+    pub fn into_scoped_template_view(self) -> ScopedTemplateView<'owner, 'arena> {
         self.scoped
     }
 }

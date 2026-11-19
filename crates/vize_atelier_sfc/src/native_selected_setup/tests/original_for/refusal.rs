@@ -56,7 +56,7 @@ fn generated_alias_prefixes_keep_the_earliest_owned_resolution_refusal() {
 }
 
 fn rejected_heads<'o, 'a>(
-    owner: &'o vize_l2::lang::js::NativeTemplateFile<'a>,
+    owner: &'o vize_l2::lang::js::TemplateFile<'a>,
 ) -> &'o [vize_l2::file::RejectedFileFor<'a>] {
     owner
         .file()

@@ -13,10 +13,10 @@ mod cases {
         markup::{NativeTemplateComponent, SurfaceParseOptions},
     };
     use vize_l2::file::FileIssueKind;
-    use vize_l2::file::NativeFileInterpolationState;
+    use vize_l2::file::FileInterpolationState;
     use vize_l2::lang::js::{
-        NativeInterpolationInput, NativeSetupIssueKind, NativeTemplateIssueKind,
-        NativeTemplateOwner,
+        InterpolationInput, SelectedSetupIssueKind, TemplateRouteIssueKind,
+        TemplateOwner,
     };
 
     fn descriptor<'a>(arena: &'a Allocator, source: &'a str) -> DescriptorObservation<'a> {
@@ -48,7 +48,7 @@ mod cases {
                     .unwrap()
                     .unwrap();
             let template_span = selected.component().block().span();
-            let mut original = NativeTemplateOwner::new(selected)
+            let mut original = TemplateOwner::new(selected)
                 .unwrap_or_else(|_| panic!("the genuine selected owner"));
             original.parse_setup_program().unwrap();
             let syntax = original.retained_setup().unwrap();
@@ -60,20 +60,20 @@ mod cases {
                 let mut walk = original.begin().unwrap();
                 let selected = walk.selected();
                 let child = selected.children().next().unwrap();
-                let input = NativeInterpolationInput::from_operand(
+                let input = InterpolationInput::from_operand(
                     selected
                         .observe_interpolation_expression(child.reborrow())
                         .unwrap(),
                 );
                 let issue = walk.root_interpolation(child, input).unwrap_err();
-                assert!(matches!(issue.kind, NativeTemplateIssueKind::Artifact(_)));
+                assert!(matches!(issue.kind, TemplateRouteIssueKind::Artifact(_)));
                 assert!(walk.complete().is_err());
             }
             let output = Box::new(original.finish());
             assert!(output.view().is_err());
             assert!(matches!(
                 output.setup(),
-                Err(issue) if issue.kind == NativeSetupIssueKind::IncompleteFile
+                Err(issue) if issue.kind == SelectedSetupIssueKind::IncompleteFile
             ));
             let syntax = output.retained_setup().unwrap();
             assert_eq!(syntax.program().unwrap().body.as_ptr(), program_body);
@@ -98,12 +98,12 @@ mod cases {
             assert_eq!(selection.kind, FileIssueKind::UnsupportedSyntax);
             assert_eq!(selection.span, template_span);
             assert!(selection.node.is_none());
-            let [interpolation] = file.native_interpolations() else {
+            let [interpolation] = file.file_interpolations() else {
                 panic!("the retained original interpolation owner");
             };
             assert!(matches!(
                 interpolation.state(),
-                NativeFileInterpolationState::Refused(NativeTemplateIssueKind::Artifact(_))
+                FileInterpolationState::Refused(TemplateRouteIssueKind::Artifact(_))
             ));
             let operand = interpolation.input().operand();
             assert_eq!(operand.raw_content(), " primitive ");

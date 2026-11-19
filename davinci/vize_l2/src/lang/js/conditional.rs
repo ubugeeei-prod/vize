@@ -8,7 +8,7 @@ use vize_l1::embed::syntax::EmbedHole;
 use vize_l1::markup::{AttributeExpression, AttributeView, ConditionKind, NativeTemplateComponent};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeConditionalInputError {
+pub enum ConditionalInputError {
     UnadmittedOriginal,
     UnsupportedCondition,
     Hole(EmbedHole),
@@ -17,15 +17,15 @@ pub enum NativeConditionalInputError {
 
 /// No raw AST, source span or interpolation can construct this whole owner.
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeConditionalInput;
-/// fn duplicate(input: NativeConditionalInput<'_>) { let _ = input.clone(); }
+/// use vize_l2::lang::js::ConditionalInput;
+/// fn duplicate(input: ConditionalInput<'_>) { let _ = input.clone(); }
 /// ```
-pub struct NativeConditionalInput<'a> {
+pub struct ConditionalInput<'a> {
     operand: AttributeExpression<'a>,
     expression: Option<&'a JsExpr<'a>>,
 }
 
-impl<'a> NativeConditionalInput<'a> {
+impl<'a> ConditionalInput<'a> {
     #[must_use]
     pub const fn from_operand(operand: AttributeExpression<'a>) -> Self {
         Self {
@@ -60,25 +60,25 @@ impl<'a> NativeConditionalInput<'a> {
         &'s mut self,
         selected: &'s NativeTemplateComponent<'a>,
         attribute: AttributeView<'s, 'a>,
-    ) -> Result<&'a JsExpr<'a>, NativeConditionalInputError> {
+    ) -> Result<&'a JsExpr<'a>, ConditionalInputError> {
         if self.operand.kind() != ConditionKind::If {
-            return Err(NativeConditionalInputError::UnsupportedCondition);
+            return Err(ConditionalInputError::UnsupportedCondition);
         }
         let syntax = self.operand.syntax();
         if let Some(hole) = syntax.hole() {
-            return Err(NativeConditionalInputError::Hole(hole));
+            return Err(ConditionalInputError::Hole(hole));
         }
         let original = self
             .operand
             .admitted_for(selected, attribute)
-            .ok_or(NativeConditionalInputError::UnadmittedOriginal)?;
+            .ok_or(ConditionalInputError::UnadmittedOriginal)?;
         let admitted = original
             .expression()
-            .ok_or(NativeConditionalInputError::UnadmittedOriginal)?;
+            .ok_or(ConditionalInputError::UnadmittedOriginal)?;
         let ast = admitted.expression();
         let source = syntax.source();
         let Some(identifier) = ast.get_identifier_reference() else {
-            return Err(NativeConditionalInputError::UnsupportedCondition);
+            return Err(ConditionalInputError::UnsupportedCondition);
         };
         if syntax.comments().next().is_some()
             || source.decode_map().is_some()
@@ -88,7 +88,7 @@ impl<'a> NativeConditionalInput<'a> {
                 selected.component().block().root_source(),
             )
         {
-            return Err(NativeConditionalInputError::UnsupportedCondition);
+            return Err(ConditionalInputError::UnsupportedCondition);
         }
         if let Some(expression) = self.expression {
             return Ok(expression);
@@ -101,10 +101,10 @@ impl<'a> NativeConditionalInput<'a> {
             syntax.parser_prefix(),
             &[],
         )
-        .map_err(NativeConditionalInputError::Coordinates)?;
+        .map_err(ConditionalInputError::Coordinates)?;
         let expression =
             JsExpr::from_retained_in(allocator, ast, source.text(), source.span(), coordinates)
-                .map_err(NativeConditionalInputError::Coordinates)?;
+                .map_err(ConditionalInputError::Coordinates)?;
         self.expression = Some(expression);
         Ok(expression)
     }

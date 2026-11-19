@@ -15,11 +15,11 @@ pub use module_source::{
     ModuleSourceError, ModuleSourceErrorKind, ModuleSourceKind, OriginalModuleSource,
     OriginalModuleSources,
 };
-pub mod native;
 pub(crate) mod observer;
 pub(crate) mod ordinary;
 pub(crate) mod setup;
 mod walk;
+pub mod template;
 use guard::ProgramWalkGuard;
 use observer::{FileObserver, NoObserver};
 

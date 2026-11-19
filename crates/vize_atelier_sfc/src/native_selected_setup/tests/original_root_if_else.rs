@@ -1,7 +1,7 @@
 //! Genuine two-branch originals replay whole independently reviewed captures.
 
 use super::*;
-use vize_l2::{expr::ExprRef, file::NativeFileConditionalState, op::Op, resolution::Usage};
+use vize_l2::{expr::ExprRef, file::FileConditionalState, op::Op, resolution::Usage};
 use vize_l3::decision::dom::control::ConditionalFallback;
 
 #[test]
@@ -113,17 +113,17 @@ fn twelve_whole_original_root_if_else_components_and_raw_maps_are_captured() -> 
                 let [Op::If(original)] = file.artifact().root().ops.as_slice() else {
                     return Err(cstr!("{id}: actual original root If"));
                 };
-                let [record] = file.native_conditionals() else {
+                let [record] = file.file_conditionals() else {
                     return Err(cstr!("{id}: exactly one conditional owner"));
                 };
-                let NativeFileConditionalState::Admitted(node) = record.state() else {
+                let FileConditionalState::Admitted(node) = record.state() else {
                     return Err(cstr!("{id}: normally completed whole pair"));
                 };
                 require!(
                     node == NodeId::FIRST
                         && record.accepts(original)
                         && file
-                            .native_conditional(node)
+                            .file_conditional(node)
                             .is_some_and(|row| core::ptr::eq(row, record))
                         && record.scope() == setup.scope(),
                     "{id}: actual introducing If/NodeId/current scope join"

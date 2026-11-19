@@ -2,18 +2,18 @@
 
 mod conditional;
 mod model;
-pub use model::{NativeModelInput, NativeModelInputError};
+pub use model::{ModelInput, ModelInputError};
 pub(crate) mod file;
-pub use conditional::{NativeConditionalInput, NativeConditionalInputError};
+pub use conditional::{ConditionalInput, ConditionalInputError};
 mod for_head;
 mod handler;
 pub mod interpolation;
-pub use crate::file::region::native::NativeTemplateWalk;
-pub use file::native::{
-    NativeScopedTemplateIssue, NativeScopedTemplateIssueKind, NativeScopedTemplateView,
-    NativeSelectedSetup, NativeSetupIssue, NativeSetupIssueKind, NativeTemplateFile,
-    NativeTemplateIssue, NativeTemplateIssueKind, NativeTemplateOwner, NativeTemplateView,
-    RejectedNativeTemplateOwner,
+pub use crate::file::region::template::FileTemplateWalk;
+pub use file::template::{
+    ScopedTemplateIssue, ScopedTemplateIssueKind, ScopedTemplateView,
+    SelectedSetup, SelectedSetupIssue, SelectedSetupIssueKind, TemplateFile,
+    TemplateRouteIssue, TemplateRouteIssueKind, TemplateOwner, TemplateFileView,
+    RejectedTemplateOwner,
 };
 pub use file::observer::{
     CallEvent, DeclaredEvent, FileObserver, InvocationEvent, StatementEvent, SyntaxEvent,
@@ -25,15 +25,15 @@ pub use file::{
     ModuleSourceError, ModuleSourceErrorKind, ModuleSourceKind, OriginalModuleSource,
     OriginalModuleSources,
 };
-pub use for_head::{ForHeadInput, NativeForInput, RejectedForHeadInput, RejectedNativeForInput};
+pub use for_head::{ForHeadInput, FileForInput, RejectedForHeadInput, RejectedFileForInput};
 pub use interpolation::{
-    NativeInterpolationInput, NativeInterpolationInputError, NativeInterpolationInputView,
+    InterpolationInput, InterpolationInputError, InterpolationInputView,
 };
 
 mod jsx_body;
 pub use handler::{
-    HandlerInput, HandlerInputErrorKind, NativeHandlerInput, RejectedHandlerInput,
-    RejectedNativeHandlerInput,
+    HandlerInput, HandlerInputErrorKind, FileHandlerInput, RejectedHandlerInput,
+    RejectedFileHandlerInput,
 };
 pub use jsx_body::{JsxChildren, JsxFile, JsxFileError, JsxFileProducer, JsxNode, RejectedJsxFile};
 pub use jsx_body::{JsxMarkupFile, JsxMarkupIssue, JsxMarkupIssueKind, RejectedJsxMarkupFile};

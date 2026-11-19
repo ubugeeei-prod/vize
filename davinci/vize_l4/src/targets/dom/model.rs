@@ -1,7 +1,7 @@
 //! Runtime text-model realization from a distinct authenticated read/write row.
 
 use vize_l0::id::NodeId;
-use vize_l2::file::NativeFileModelKind;
+use vize_l2::file::FileModelKind;
 use vize_l2::op::{BindingOp, ElementOp, ModelOp};
 use vize_l3::decision::dom::{DomChild, DomFileModel, PropertyRole};
 
@@ -20,8 +20,8 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         let fail = || self.error(node, DomErrorKind::FileOwnerMismatch);
         let row = self.facts.file_model(node).ok_or_else(fail)?;
         match row.original().kind() {
-            Some(NativeFileModelKind::Text) => Ok(false),
-            Some(NativeFileModelKind::Checkbox) => {
+            Some(FileModelKind::Text) => Ok(false),
+            Some(FileModelKind::Checkbox) => {
                 let [attribute] = element.attributes.as_slice() else {
                     return Err(fail());
                 };
@@ -100,8 +100,8 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
             .file_model(node)
             .ok_or_else(|| self.error(node, DomErrorKind::MissingBinding))?;
         let helper_name = match row.original().kind() {
-            Some(NativeFileModelKind::Text) => "vModelText",
-            Some(NativeFileModelKind::Checkbox) => "vModelCheckbox",
+            Some(FileModelKind::Text) => "vModelText",
+            Some(FileModelKind::Checkbox) => "vModelCheckbox",
             None => return Err(self.error(node, DomErrorKind::FileOwnerMismatch)),
         };
         let model_text = self

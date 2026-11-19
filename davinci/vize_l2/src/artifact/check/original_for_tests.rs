@@ -1,6 +1,6 @@
 //! Revalidate the actual original receiver without fabricating neutral scopes.
 
-use crate::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use crate::lang::js::{TemplateFile, TemplateOwner};
 use crate::op::Op;
 use crate::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
 use crate::walk::{NodeEvent, NodeRef};
@@ -17,7 +17,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 
-fn native<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn native<'a>(arena: &'a Allocator, source: &'a str) -> TemplateFile<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -37,7 +37,7 @@ fn native<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
     let selected = NativeTemplateComponent::parse_in(arena, admitted)
         .unwrap()
         .unwrap();
-    let mut owner = NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("actual owner"));
+    let mut owner = TemplateOwner::new(selected).unwrap_or_else(|_| panic!("actual owner"));
     owner
         .setup_program(syntax.admitted_program().unwrap())
         .unwrap();

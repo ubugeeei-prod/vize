@@ -1,5 +1,5 @@
 use super::{
-    Allocator, NativeInterpolationInput, NativeInterpolationInputError, Test, check, same, selected,
+    Allocator, InterpolationInput, InterpolationInputError, Test, check, same, selected,
 };
 
 #[test]
@@ -11,14 +11,14 @@ fn equal_text_foreign_owner_and_duplicate_original_child_cannot_join() -> Test {
     let operand = owner
         .observe_interpolation_expression(owner.children().next().ok_or("child missing")?)
         .map_err(|_| "observation refused")?;
-    let mut input = NativeInterpolationInput::from_operand(operand);
+    let mut input = InterpolationInput::from_operand(operand);
     let ast = input.operand().syntax().expression().ok_or("AST missing")?;
     let fail = input.admitted_for(
         &foreign,
         foreign.children().next().ok_or("foreign child missing")?,
     );
     check(
-        matches!(fail, Err(NativeInterpolationInputError::UnadmittedOriginal)),
+        matches!(fail, Err(InterpolationInputError::UnadmittedOriginal)),
         "equal foreign owner admitted",
     )?;
     check(
@@ -29,7 +29,7 @@ fn equal_text_foreign_owner_and_duplicate_original_child_cannot_join() -> Test {
     check(
         matches!(
             input.admitted_for(&owner, duplicate),
-            Err(NativeInterpolationInputError::UnadmittedOriginal)
+            Err(InterpolationInputError::UnadmittedOriginal)
         ),
         "same-text different ordinal admitted",
     )?;
@@ -48,7 +48,7 @@ fn equal_text_foreign_owner_and_duplicate_original_child_cannot_join() -> Test {
                 &foreign,
                 foreign.children().next().ok_or("foreign missing")?
             ),
-            Err(NativeInterpolationInputError::UnadmittedOriginal)
+            Err(InterpolationInputError::UnadmittedOriginal)
         ),
         "cached metadata admitted foreign owner",
     )?;
@@ -83,14 +83,14 @@ fn same_ordinal_under_another_original_parent_is_refused() -> Test {
     let operand = owner
         .observe_interpolation_expression(first.children().next().ok_or("first child missing")?)
         .map_err(|_| "observation refused")?;
-    let mut input = NativeInterpolationInput::from_operand(operand);
+    let mut input = InterpolationInput::from_operand(operand);
     check(
         matches!(
             input.admitted_for(
                 &owner,
                 second.children().next().ok_or("second child missing")?
             ),
-            Err(NativeInterpolationInputError::UnadmittedOriginal)
+            Err(InterpolationInputError::UnadmittedOriginal)
         ),
         "foreign parent admitted",
     )?;
@@ -131,9 +131,9 @@ fn typed_holes_keep_original_full_syntax_and_stock_diagnostics() -> Test {
         let raw = operand.raw_content();
         let full = operand.full_span();
         let diagnostics = operand.syntax().diagnostics().count();
-        let mut input = NativeInterpolationInput::from_operand(operand);
+        let mut input = InterpolationInput::from_operand(operand);
         check(
-            matches!(input.admitted_for(&owner, owner.children().next().ok_or("original missing")?), Err(NativeInterpolationInputError::Hole(actual)) if actual == hole),
+            matches!(input.admitted_for(&owner, owner.children().next().ok_or("original missing")?), Err(InterpolationInputError::Hole(actual)) if actual == hole),
             "typed hole admitted or changed",
         )?;
         check(

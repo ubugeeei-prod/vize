@@ -191,8 +191,8 @@ fn equal_source_foreign_setup_bindings_cannot_substitute_for_the_original_owner(
     assert!(setup_a.binding(binding_b).is_err());
     assert!(setup_b.binding(binding_a).is_err());
     assert!(!binding_a.same_owner(binding_b));
-    let vize_l2::file::NativeFileInterpolationState::Admitted(node_a) =
-        setup_a.file().native_interpolations()[0].state()
+    let vize_l2::file::FileInterpolationState::Admitted(node_a) =
+        setup_a.file().file_interpolations()[0].state()
     else {
         panic!("original node")
     };

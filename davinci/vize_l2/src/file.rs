@@ -19,18 +19,18 @@ mod attribute_value;
 mod conditional;
 mod model;
 pub use attribute_value::{
-    FileAttributeValue, NativeFileAttributeValue, NativeFileAttributeValueState,
+    FileAttributeValue, FileAttributeValueRecord, FileAttributeValueState,
 };
 pub use conditional::{
-    NativeConditionalElseInput, NativeFileConditional, NativeFileConditionalState,
+    ConditionalElseInput, FileConditional, FileConditionalState,
 };
-pub use model::{NativeFileModel, NativeFileModelKind, NativeFileModelState};
+pub use model::{FileModel, FileModelKind, FileModelState};
 mod for_head;
 mod handler;
 mod interpolation;
 mod text_value;
 pub use text_value::{
-    FileTextValue, NativeFileTextValue, NativeFileTextValueState, NativeTextValuePolicyError,
+    FileTextValue, FileTextValueRecord, FileTextValueState, TextValuePolicyError,
 };
 mod module_source;
 pub use for_head::{FileForHead, FileTemplateDeclaration, RejectedFileFor, TemplateDeclaration};
@@ -38,7 +38,7 @@ pub(crate) use module_source::{DYNAMIC_IMPORT, EMPTY_SOURCE_EXPORT, SourceSite};
 mod query;
 pub use handler::{FileHandler, RejectedFileHandler};
 pub use interpolation::{
-    NativeFileInterpolation, NativeFileInterpolationFailure, NativeFileInterpolationState,
+    FileInterpolation, FileInterpolationFailure, FileInterpolationState,
 };
 mod records;
 pub use query::{

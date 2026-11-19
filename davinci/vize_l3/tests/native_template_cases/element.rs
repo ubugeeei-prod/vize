@@ -1,7 +1,7 @@
 use crate::{Allocator, NodeId, Op, StaticLevel, TargetPolicy, build_native_dom_file_decisions};
 use crate::{check, completed, owner};
 use vize_l0::Span;
-use vize_l2::{lang::js::NativeTemplateIssueKind, op::Namespace, walk::NodeRef};
+use vize_l2::{lang::js::TemplateRouteIssueKind, op::Namespace, walk::NodeRef};
 use vize_l3::decision::dom::{
     DomChanges, DomChild, DomChildren, DomDependency, DomRootKind, DomText,
 };
@@ -139,7 +139,7 @@ fn refused_nested_html_retains_its_prefix_without_native_analysis() -> Result<()
                 .child(children.next().ok_or("section")?)
                 .err()
                 .ok_or("nested refusal")?;
-            check(refusal.kind == NativeTemplateIssueKind::UnsupportedChild)?;
+            check(refusal.kind == TemplateRouteIssueKind::UnsupportedChild)?;
             check(walk.child(children.next().ok_or("tail")?).err() == Some(refusal))?;
             check(walk.complete().err() == Some(refusal))?;
         }
@@ -184,7 +184,7 @@ fn consuming_the_whole_original_element_without_root_end_cannot_reach_analysis()
         .map(build_native_dom_file_decisions)
         .err()
         .ok_or("no native analysis without original root completion")?;
-    check(denied.kind == NativeTemplateIssueKind::Interrupted)?;
+    check(denied.kind == TemplateRouteIssueKind::Interrupted)?;
     check(output.selected().children().len() == 1)?;
     let file = output.file().ok_or("retained partial File")?;
     check(!file.is_complete())?;

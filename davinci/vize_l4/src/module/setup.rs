@@ -3,7 +3,7 @@
 use crate::write::{LinkSink, Writer};
 use vize_l0::{SourceBlock, Span};
 use vize_l2::file::{BindingRef, DeclarationKind};
-use vize_l2::lang::js::{NativeSelectedSetup, SetupAnnotation, VueSetup};
+use vize_l2::lang::js::{SelectedSetup, SetupAnnotation, VueSetup};
 
 mod segments;
 
@@ -36,7 +36,7 @@ pub fn emit_setup<L: LinkSink>(
 
 /// Emit the normally owned original setup; no caller Program/File/source pairing.
 pub fn emit_selected_setup<L: LinkSink>(
-    setup: &NativeSelectedSetup<'_, '_>,
+    setup: &SelectedSetup<'_, '_>,
 ) -> Result<Writer<L>, SetupEmitError> {
     emit_body(setup)
 }
@@ -64,7 +64,7 @@ pub fn emit_selected_setup<L: LinkSink>(
 /// }
 /// ```
 pub fn write_selected_setup_runtime_segments<L: LinkSink>(
-    setup: &NativeSelectedSetup<'_, '_>,
+    setup: &SelectedSetup<'_, '_>,
     writer: &mut Writer<L>,
 ) -> Result<(), SetupEmitError> {
     segments::validate(setup)?;
@@ -89,7 +89,7 @@ impl<'owner, 'arena: 'owner> SetupInput<'owner, 'arena> for VueSetup<'owner, '_,
         self.type_annotations()
     }
 }
-impl<'owner, 'arena: 'owner> SetupInput<'owner, 'arena> for NativeSelectedSetup<'owner, 'arena> {
+impl<'owner, 'arena: 'owner> SetupInput<'owner, 'arena> for SelectedSetup<'owner, 'arena> {
     fn source(&self) -> SourceBlock<'arena> {
         self.source()
     }

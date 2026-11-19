@@ -6,7 +6,7 @@ use vize_l0::Span;
 use vize_l1::embed::{EmbedSource, Grammar, syntax::ForHeadPart};
 
 use super::{Facts, ForResolution, ForResolutionError, ForResolutionErrorKind, resolve};
-use crate::lang::js::NativeForInput;
+use crate::lang::js::FileForInput;
 use crate::resolution::{BindingLookup, ResolutionErrorKind};
 
 /// Private and move-only: caller facts/root tuples cannot construct this packet.
@@ -24,8 +24,8 @@ pub(crate) struct ResolvedForFacts<'a> {
 impl<'a> ResolvedForFacts<'a> {
     pub(crate) fn join(
         self,
-        input: NativeForInput<'a>,
-    ) -> Result<ForResolution<'a>, Box<NativeForInput<'a>>> {
+        input: FileForInput<'a>,
+    ) -> Result<ForResolution<'a>, Box<FileForInput<'a>>> {
         let Some(sources) = sources(&input) else {
             return Err(Box::new(input));
         };
@@ -55,7 +55,7 @@ impl<'a> ResolvedForFacts<'a> {
 }
 
 pub(crate) fn resolve_for_facts<'a>(
-    input: &NativeForInput<'a>,
+    input: &FileForInput<'a>,
     enclosing: &impl BindingLookup,
 ) -> Result<ResolvedForFacts<'a>, ForResolutionError> {
     let parts = resolve(input, enclosing)?;
@@ -69,7 +69,7 @@ pub(crate) fn resolve_for_facts<'a>(
     })
 }
 
-fn sources<'a>(input: &NativeForInput<'a>) -> Option<[EmbedSource<'a>; 3]> {
+fn sources<'a>(input: &FileForInput<'a>) -> Option<[EmbedSource<'a>; 3]> {
     let syntax = input.operand().syntax();
     Some([
         syntax.source(),

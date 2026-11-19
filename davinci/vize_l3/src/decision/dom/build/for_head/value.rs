@@ -107,9 +107,9 @@ mod tests {
     };
     use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
     use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
-    use vize_l2::{file::DeclarationKind, lang::js::NativeSelectedSetup};
+    use vize_l2::{file::DeclarationKind, lang::js::SelectedSetup};
 
-    struct Reads<'v, 'o, 'a>(&'v NativeSelectedSetup<'o, 'a>);
+    struct Reads<'v, 'o, 'a>(&'v SelectedSetup<'o, 'a>);
     impl<'o, 'a> FileReads<'o, 'a> for Reads<'_, 'o, 'a> {
         const RECORD: bool = true;
         const NATIVE_SETUP: bool = true;
@@ -168,10 +168,10 @@ mod tests {
         let [DomChild::Node(body_node)] = children.as_slice() else {
             panic!("body node");
         };
-        let [record] = file.native_interpolations() else {
+        let [record] = file.file_interpolations() else {
             panic!("original");
         };
-        let vize_l2::file::NativeFileInterpolationState::Admitted(node) = record.state() else {
+        let vize_l2::file::FileInterpolationState::Admitted(node) = record.state() else {
             panic!("attached");
         };
         let resolution = file.expression(node).unwrap();
@@ -276,10 +276,10 @@ mod tests {
         let [DomChild::Node(body_node)] = children.as_slice() else {
             panic!("body node");
         };
-        let [record] = file.native_interpolations() else {
+        let [record] = file.file_interpolations() else {
             panic!("original");
         };
-        let vize_l2::file::NativeFileInterpolationState::Admitted(node) = record.state() else {
+        let vize_l2::file::FileInterpolationState::Admitted(node) = record.state() else {
             panic!("attached");
         };
         let head = file.for_head_for(original).unwrap();

@@ -2,7 +2,7 @@ use crate::{check, equal};
 use vize_l0::{Span, id::NodeId};
 use vize_l1::markup::{ChildView, ChildrenView, ElementClose, SurfaceChild};
 use vize_l2::{
-    lang::js::NativeTemplateFile,
+    lang::js::TemplateFile,
     op::{ElementOp, Namespace, Op},
 };
 use vize_l3::decision::{StaticLevel, dom::DomChanges, native::NativeTemplateDomAnalysis};
@@ -10,7 +10,7 @@ use vize_l4::write::EmitDocument;
 
 pub(crate) fn inspect<'owner, 'a>(
     id: &str,
-    original: &'owner NativeTemplateFile<'a>,
+    original: &'owner TemplateFile<'a>,
     analysis: &NativeTemplateDomAnalysis<'owner, 'a>,
     document: &EmitDocument,
 ) -> Result<(u32, u32), &'static str> {

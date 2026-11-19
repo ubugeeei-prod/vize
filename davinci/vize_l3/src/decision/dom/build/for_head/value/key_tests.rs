@@ -8,8 +8,8 @@ use vize_l0::{
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::{
-    file::{DeclarationKind, NativeFileInterpolationState},
-    lang::js::NativeSelectedSetup,
+    file::{DeclarationKind, FileInterpolationState},
+    lang::js::SelectedSetup,
     scope::ScopeOrigin,
 };
 
@@ -21,7 +21,7 @@ fn options() -> DescriptorOptions {
     }
 }
 
-struct Reads<'view, 'owner, 'arena>(&'view NativeSelectedSetup<'owner, 'arena>);
+struct Reads<'view, 'owner, 'arena>(&'view SelectedSetup<'owner, 'arena>);
 impl<'owner, 'arena> FileReads<'owner, 'arena> for Reads<'_, 'owner, 'arena> {
     const RECORD: bool = true;
     const NATIVE_SETUP: bool = true;
@@ -125,10 +125,10 @@ fn actual_key_role_keeps_its_original_parameter_scope_occurrence_and_canonical_r
         assert_ne!(key.id(), head.collection().id());
         assert!(key.declaration().is_none());
         assert!(setup.binding(key).is_err());
-        let [record] = file.native_interpolations() else {
+        let [record] = file.file_interpolations() else {
             panic!("one original interpolation");
         };
-        let NativeFileInterpolationState::Admitted(node) = record.state() else {
+        let FileInterpolationState::Admitted(node) = record.state() else {
             panic!("actual canonical interpolation");
         };
         let expression = analysis.expression(node).unwrap();
@@ -174,10 +174,10 @@ fn key_receipt_refuses_equal_foreign_files_copied_occurrences_value_roles_and_fo
     let [DomChild::Node(body_node)] = children.as_slice() else {
         panic!("one body");
     };
-    let [record] = file.native_interpolations() else {
+    let [record] = file.file_interpolations() else {
         panic!("one interpolation");
     };
-    let NativeFileInterpolationState::Admitted(node) = record.state() else {
+    let FileInterpolationState::Admitted(node) = record.state() else {
         panic!("attached");
     };
     let resolution = file.expression(node).unwrap();

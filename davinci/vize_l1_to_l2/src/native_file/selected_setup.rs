@@ -6,7 +6,7 @@ use super::{
 };
 use vize_l0::Allocator;
 use vize_l1::{container::vue::DescriptorOptions, embed::Lang, markup::TemplateGrammar};
-use vize_l2::lang::js::{NativeSelectedSetup, NativeTemplateView};
+use vize_l2::lang::js::{SelectedSetup, TemplateFileView};
 
 #[cfg(test)]
 mod tests;
@@ -116,15 +116,15 @@ impl<'a> NativeSelectedSetupSfcObservation<'a> {
 /// ```
 /// ```compile_fail
 /// use vize_l1_to_l2::native_file::NativeSelectedSetupSfcObservation;
-/// use vize_l2::lang::js::NativeSelectedSetup;
-/// fn separate<'a>(owner: NativeSelectedSetupSfcObservation<'a>) -> NativeSelectedSetup<'a, 'a> {
+/// use vize_l2::lang::js::SelectedSetup;
+/// fn separate<'a>(owner: NativeSelectedSetupSfcObservation<'a>) -> SelectedSetup<'a, 'a> {
 ///     owner.original().template().unwrap().setup().unwrap()
 /// }
 /// ```
 pub struct NativeSelectedSetupSfc<'owner, 'arena> {
     observation: &'owner NativeSelectedSetupSfcObservation<'arena>,
-    template: NativeTemplateView<'owner, 'arena>,
-    setup: NativeSelectedSetup<'owner, 'arena>,
+    template: TemplateFileView<'owner, 'arena>,
+    setup: SelectedSetup<'owner, 'arena>,
 }
 impl<'owner, 'arena> NativeSelectedSetupSfc<'owner, 'arena> {
     #[must_use]
@@ -132,11 +132,11 @@ impl<'owner, 'arena> NativeSelectedSetupSfc<'owner, 'arena> {
         self.observation
     }
     #[must_use]
-    pub fn setup(&self) -> &NativeSelectedSetup<'owner, 'arena> {
+    pub fn setup(&self) -> &SelectedSetup<'owner, 'arena> {
         &self.setup
     }
     #[must_use]
-    pub fn into_template_view(self) -> NativeTemplateView<'owner, 'arena> {
+    pub fn into_template_view(self) -> TemplateFileView<'owner, 'arena> {
         self.template
     }
 }

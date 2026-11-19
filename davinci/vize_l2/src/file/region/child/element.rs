@@ -11,7 +11,7 @@ where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
     P: TemplatePolicy,
 {
-    pub(in crate::file::region) fn native_element_body<B: TemplateBody<'a, P>>(
+    pub(in crate::file::region) fn file_element_body<B: TemplateBody<'a, P>>(
         &mut self,
         tag: &'a str,
         namespace: Namespace,
@@ -28,7 +28,7 @@ where
                 source,
                 ..
             } = file;
-            region.native_element(tag, namespace, attributes, span, |child, node| {
+            region.file_element(tag, namespace, attributes, span, |child, node| {
                 body.run(
                     &mut TemplateChildRegion {
                         inner: FileRegion {

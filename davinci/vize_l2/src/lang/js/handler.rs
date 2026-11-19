@@ -109,6 +109,5 @@ impl<'a> HandlerInput<'a> {
 
 #[cfg(test)]
 mod tests;
-
-mod native;
-pub use native::{NativeHandlerInput, RejectedNativeHandlerInput};
+mod input;
+pub use input::{FileHandlerInput, RejectedFileHandlerInput};

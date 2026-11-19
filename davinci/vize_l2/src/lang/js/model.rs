@@ -9,7 +9,7 @@ use vize_l1::embed::syntax::EmbedHole;
 use vize_l1::markup::{AttributeModelExpression, AttributeView, NativeTemplateComponent};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeModelInputError {
+pub enum ModelInputError {
     UnadmittedOriginal,
     UnsupportedOperand,
     Hole(EmbedHole),
@@ -22,16 +22,16 @@ mod tests;
 /// A distinct original Model owner, never an interpolation or assignment shim.
 /// File mutation authority is checked separately against its actual declaration.
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeModelInput;
-/// fn duplicate(input: NativeModelInput<'_>) { let _ = input.clone(); }
+/// use vize_l2::lang::js::ModelInput;
+/// fn duplicate(input: ModelInput<'_>) { let _ = input.clone(); }
 /// ```
-pub struct NativeModelInput<'a> {
+pub struct ModelInput<'a> {
     operand: AttributeModelExpression<'a>,
     expression: Option<&'a JsExpr<'a>>,
     attribute_span: Option<Span>,
 }
 
-impl<'a> NativeModelInput<'a> {
+impl<'a> ModelInput<'a> {
     #[must_use]
     pub const fn from_operand(operand: AttributeModelExpression<'a>) -> Self {
         Self {
@@ -77,22 +77,22 @@ impl<'a> NativeModelInput<'a> {
         &'s mut self,
         selected: &'s NativeTemplateComponent<'a>,
         attribute: AttributeView<'s, 'a>,
-    ) -> Result<&'a JsExpr<'a>, NativeModelInputError> {
+    ) -> Result<&'a JsExpr<'a>, ModelInputError> {
         let syntax = self.operand.syntax();
         if let Some(hole) = syntax.hole() {
-            return Err(NativeModelInputError::Hole(hole));
+            return Err(ModelInputError::Hole(hole));
         }
         let original = self
             .operand
             .admitted_for(selected, attribute)
-            .ok_or(NativeModelInputError::UnadmittedOriginal)?;
+            .ok_or(ModelInputError::UnadmittedOriginal)?;
         let admitted = original
             .expression()
-            .ok_or(NativeModelInputError::UnadmittedOriginal)?;
+            .ok_or(ModelInputError::UnadmittedOriginal)?;
         let ast = admitted.expression();
         let source = syntax.source();
         let Some(identifier) = ast.get_identifier_reference() else {
-            return Err(NativeModelInputError::UnsupportedOperand);
+            return Err(ModelInputError::UnsupportedOperand);
         };
         if syntax.comments().next().is_some()
             || source.decode_map().is_some()
@@ -102,27 +102,27 @@ impl<'a> NativeModelInput<'a> {
                 selected.component().block().root_source(),
             )
         {
-            return Err(NativeModelInputError::UnsupportedOperand);
+            return Err(ModelInputError::UnsupportedOperand);
         }
         let value = original
             .attribute()
             .surface()
             .value
             .as_ref()
-            .ok_or(NativeModelInputError::UnadmittedOriginal)?;
+            .ok_or(ModelInputError::UnadmittedOriginal)?;
         let block = selected.component().block();
         let end = match &value.close_quote {
             Some(quote) => {
                 block
                     .span_of(quote.text)
-                    .ok_or(NativeModelInputError::UnadmittedOriginal)?
+                    .ok_or(ModelInputError::UnadmittedOriginal)?
                     .end
             }
             None => self.operand.value_span().end,
         };
         let span = Span::new(self.operand.name_span().start, end);
         if !block.contains_block_span(span) {
-            return Err(NativeModelInputError::UnadmittedOriginal);
+            return Err(ModelInputError::UnadmittedOriginal);
         }
         self.attribute_span = Some(span);
         if let Some(expression) = self.expression {
@@ -135,7 +135,7 @@ impl<'a> NativeModelInput<'a> {
             syntax.parser_prefix(),
             &[],
         )
-        .map_err(NativeModelInputError::Coordinates)?;
+        .map_err(ModelInputError::Coordinates)?;
         let expression = JsExpr::from_retained_in(
             selected.component().allocator(),
             ast,
@@ -143,7 +143,7 @@ impl<'a> NativeModelInput<'a> {
             source.span(),
             coordinates,
         )
-        .map_err(NativeModelInputError::Coordinates)?;
+        .map_err(ModelInputError::Coordinates)?;
         self.expression = Some(expression);
         Ok(expression)
     }

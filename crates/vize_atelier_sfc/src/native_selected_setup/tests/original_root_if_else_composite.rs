@@ -3,7 +3,7 @@
 use super::*;
 use vize_l2::{
     expr::ExprRef,
-    file::{NativeFileConditionalState, NativeFileInterpolationState},
+    file::{FileConditionalState, FileInterpolationState},
     op::Op,
     resolution::Usage,
 };
@@ -116,17 +116,17 @@ fn fourteen_whole_original_root_if_else_composite_components_and_raw_maps_are_ca
                 let [Op::If(original)] = file.artifact().root().ops.as_slice() else {
                     return Err(cstr!("{id}: actual original root If"));
                 };
-                let [record] = file.native_conditionals() else {
+                let [record] = file.file_conditionals() else {
                     return Err(cstr!("{id}: exactly one conditional owner"));
                 };
-                let NativeFileConditionalState::Admitted(node) = record.state() else {
+                let FileConditionalState::Admitted(node) = record.state() else {
                     return Err(cstr!("{id}: normally completed whole pair"));
                 };
                 require!(
                     node == NodeId::FIRST
                         && record.accepts(original)
                         && file
-                            .native_conditional(node)
+                            .file_conditional(node)
                             .is_some_and(|row| core::ptr::eq(row, record))
                         && record.scope() == setup.scope(),
                     "{id}: actual introducing If/NodeId/current scope join"
@@ -290,12 +290,12 @@ fn fourteen_whole_original_root_if_else_composite_components_and_raw_maps_are_ca
                                 let ExprRef::Js(actual) = interpolation.expression else {
                                     return Err(cstr!("{id}: original text AST"));
                                 };
-                                let text_record = file.native_interpolations().iter().find(|record| {
-                                matches!(record.state(), NativeFileInterpolationState::Admitted(node)
-                                    if file.native_interpolation(node).is_some_and(|retained| core::ptr::eq(retained, *record))
+                                let text_record = file.file_interpolations().iter().find(|record| {
+                                matches!(record.state(), FileInterpolationState::Admitted(node)
+                                    if file.file_interpolation(node).is_some_and(|retained| core::ptr::eq(retained, *record))
                                         && record.input().operand().syntax().expression().is_some_and(|ast| core::ptr::eq(ast, actual.ast)))
                             }).ok_or("same actual text record")?;
-                                let NativeFileInterpolationState::Admitted(text_node) =
+                                let FileInterpolationState::Admitted(text_node) =
                                     text_record.state()
                                 else {
                                     return Err(cstr!("{id}: admitted text node"));
@@ -411,10 +411,10 @@ fn fourteen_whole_original_root_if_else_composite_components_and_raw_maps_are_ca
                     .filter(|name| !name.is_null())
                     .count();
                 require!(
-                    file.native_interpolations().len() == expected_text_count,
+                    file.file_interpolations().len() == expected_text_count,
                     "{id}: exactly the original branch text occurrences"
                 );
-                if let [first, last] = file.native_interpolations() {
+                if let [first, last] = file.file_interpolations() {
                     require!(
                         first.state() != last.state()
                             && !core::ptr::eq(

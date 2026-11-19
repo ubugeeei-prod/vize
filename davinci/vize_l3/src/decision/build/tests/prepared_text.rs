@@ -8,7 +8,7 @@ use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
-use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use vize_l2::lang::js::{TemplateFile, TemplateOwner};
 type Test = Result<(), &'static str>;
 fn check(value: bool) -> Test {
     if value {
@@ -21,7 +21,7 @@ fn completed<'a>(
     arena: &'a Allocator,
     source: &'a str,
     prepared: bool,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<TemplateFile<'a>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -35,7 +35,7 @@ fn completed<'a>(
         NativeTemplateComponent::parse_in(arena, descriptor.admitted().map_err(|_| "Descriptor")?)
             .map_err(|_| "original parse")?
             .ok_or("template")?;
-    let mut original = NativeTemplateOwner::new(selected).map_err(|_| "owner")?;
+    let mut original = TemplateOwner::new(selected).map_err(|_| "owner")?;
     {
         let mut walk = original.begin().map_err(|_| "begin")?;
         for child in walk.selected().children() {
@@ -59,7 +59,7 @@ fn complete_original_prepared_text_view_is_refused_by_each_existing_native_targe
     let arena = Allocator::default();
     let original = completed(&arena, "<template>&amp;lt;</template>", true)?;
     let file = original.file().ok_or("complete File")?;
-    check(file.is_complete() && file.native_text_values().len() == 1)?;
+    check(file.is_complete() && file.file_text_values().len() == 1)?;
     check(
         native::build_native_dom_file_decisions(original.view().map_err(|_| "view")?).err()
             == Some(Error::PreparedTextProfile),
@@ -99,7 +99,7 @@ fn existing_condensed_owner_and_all_generic_none_routes_keep_their_exact_authori
     check(
         old.file()
             .ok_or("old File")?
-            .native_text_values()
+            .file_text_values()
             .is_empty(),
     )?;
     check(native::build_native_dom_file_decisions(old.view().map_err(|_| "old view")?).is_ok())?;

@@ -6,7 +6,6 @@ use crate::op::{BindOp, BindingOp, DynamicName};
 use vize_l0::{Box, Span, id::NodeId};
 
 mod model;
-mod native;
 
 impl<'a> Builder<'a> {
     pub(super) fn bind(
@@ -102,3 +101,4 @@ impl<'a> Builder<'a> {
 
 #[cfg(test)]
 mod tests;
+mod file_on;

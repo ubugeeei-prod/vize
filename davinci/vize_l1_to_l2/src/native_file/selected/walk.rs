@@ -2,7 +2,7 @@ use super::NativeSelectedSfcIssueKind as Kind;
 use vize_l0::Span;
 use vize_l1::markup::{InterpolationFailure, SurfaceChild};
 use vize_l2::lang::js::{
-    NativeInterpolationInput, NativeTemplateIssue, NativeTemplateOwner, NativeTemplateWalk,
+    InterpolationInput, TemplateRouteIssue, TemplateOwner, FileTemplateWalk,
 };
 
 pub(super) struct Failure<'a> {
@@ -10,8 +10,8 @@ pub(super) struct Failure<'a> {
     pub kind: Kind,
     pub interpolation: Option<InterpolationFailure<'a>>,
 }
-impl From<NativeTemplateIssue> for Failure<'_> {
-    fn from(issue: NativeTemplateIssue) -> Self {
+impl From<TemplateRouteIssue> for Failure<'_> {
+    fn from(issue: TemplateRouteIssue) -> Self {
         Self {
             span: Some(issue.span),
             kind: Kind::Template(issue),
@@ -20,13 +20,13 @@ impl From<NativeTemplateIssue> for Failure<'_> {
     }
 }
 
-pub(super) fn construct<'a>(owner: &mut NativeTemplateOwner<'a>) -> Result<(), Failure<'a>> {
+pub(super) fn construct<'a>(owner: &mut TemplateOwner<'a>) -> Result<(), Failure<'a>> {
     construct_walk(owner.begin()?)
 }
-pub(super) fn construct_setup<'a>(owner: &mut NativeTemplateOwner<'a>) -> Result<(), Failure<'a>> {
+pub(super) fn construct_setup<'a>(owner: &mut TemplateOwner<'a>) -> Result<(), Failure<'a>> {
     construct_walk(owner.begin_setup()?)
 }
-fn construct_walk<'a>(mut walk: NativeTemplateWalk<'_, 'a>) -> Result<(), Failure<'a>> {
+fn construct_walk<'a>(mut walk: FileTemplateWalk<'_, 'a>) -> Result<(), Failure<'a>> {
     let selected = walk.selected();
     let mut children = selected.children();
     while let Some(child) = children.next() {
@@ -54,7 +54,7 @@ fn construct_walk<'a>(mut walk: NativeTemplateWalk<'_, 'a>) -> Result<(), Failur
                         kind: Kind::Interpolation(failure.kind()),
                         interpolation: Some(failure),
                     })?;
-                walk.root_interpolation(child, NativeInterpolationInput::from_operand(operand))?;
+                walk.root_interpolation(child, InterpolationInput::from_operand(operand))?;
             }
             _ => {
                 walk.child_with_tail(child, &mut children)?;

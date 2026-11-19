@@ -2,7 +2,7 @@ use crate::{check, completed, equal, owner};
 use vize_l0::{Allocator, Span};
 use vize_l2::{
     file::{FileIssueKind, RejectedFileHandler},
-    lang::js::NativeTemplateIssueKind as Kind,
+    lang::js::TemplateRouteIssueKind as Kind,
     op::Op,
     resolution::ResolutionErrorKind,
 };
@@ -121,9 +121,9 @@ fn formerly_refused_entity_header_retains_original_input_for_target_qualificatio
         return Err("actual body");
     };
     equal(body.content, "unvisited")?;
-    equal(file.native_attribute_values().len(), 2)?;
+    equal(file.file_attribute_values().len(), 2)?;
     let joined = file
-        .native_attribute_value_for(1, element, 1)
+        .file_attribute_value_for(1, element, 1)
         .ok_or("actual File/Element/slot")?;
     check(core::ptr::eq(joined.file(), file))?;
     check(core::ptr::eq(joined.element(), &**element))?;

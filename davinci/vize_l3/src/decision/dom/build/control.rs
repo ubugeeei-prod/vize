@@ -73,7 +73,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             return false;
         }
         let Some(file) = self.file else { return false };
-        let Some(record) = file.native_conditional(id).filter(|row| row.accepts(owner)) else {
+        let Some(record) = file.file_conditional(id).filter(|row| row.accepts(owner)) else {
             return false;
         };
         let original_branches = match (owner.branches.as_slice(), record.else_input()) {

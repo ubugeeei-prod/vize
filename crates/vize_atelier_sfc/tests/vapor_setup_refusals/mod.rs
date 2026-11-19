@@ -213,7 +213,7 @@ fn real_fragment_lifecycle_collisions_and_runtime_version_refuse_complete_source
 #[test]
 fn original_nested_whitespace_is_a_source_refusal_before_vapor() {
     use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind;
-    use vize_l2::lang::js::NativeTemplateIssueKind;
+    use vize_l2::lang::js::TemplateRouteIssueKind;
     let arena = Allocator::default();
     let source = "<script setup>let count=1</script><template><div>a  b</div></template>";
     let compilation = compile_native_vapor_setup_sfc(&arena, source, Default::default());
@@ -228,7 +228,7 @@ fn original_nested_whitespace_is_a_source_refusal_before_vapor() {
     };
     assert!(
         matches!(issue.kind, NativeSelectedSfcIssueKind::Template(child)
-        if child.kind == NativeTemplateIssueKind::UnsupportedChild)
+        if child.kind == TemplateRouteIssueKind::UnsupportedChild)
     );
     assert_eq!(issue.span, vize_l0::Span::new(44, 59));
     assert!(!original.template().unwrap().file().unwrap().is_complete());

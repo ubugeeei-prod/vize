@@ -6,7 +6,7 @@ use vize_l0::id::NodeId;
 use vize_l2::{
     expr::{ExprRef, JsExpr},
     file::{DeclarationKind, FileResolution, InitializerKind, Namespace},
-    lang::js::NativeSelectedSetup,
+    lang::js::SelectedSetup,
     op::InterpolationOp,
     resolution::Usage,
 };
@@ -45,7 +45,7 @@ impl<'owner, 'arena> VaporExpression<'owner, 'arena> {
 }
 
 pub(super) fn admit<'owner, 'arena>(
-    setup: &NativeSelectedSetup<'owner, 'arena>,
+    setup: &SelectedSetup<'owner, 'arena>,
     node: NodeId,
     interpolation: &InterpolationOp<'arena>,
 ) -> Result<VaporExpression<'owner, 'arena>, VaporUnsupported> {
@@ -54,7 +54,7 @@ pub(super) fn admit<'owner, 'arena>(
         return Err(VaporUnsupported::Expression);
     };
     let record = file
-        .native_interpolation(node)
+        .file_interpolation(node)
         .ok_or(VaporUnsupported::ExpressionOrigin)?;
     let operand = record.input().operand();
     let syntax = operand.syntax();

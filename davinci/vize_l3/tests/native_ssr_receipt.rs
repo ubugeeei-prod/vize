@@ -6,7 +6,7 @@ use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
-use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use vize_l2::lang::js::{TemplateFile, TemplateOwner};
 use vize_l3::decision::ssr::{
     NativeSsrBuildError, SsrPart, SsrUnsupported, build_native_ssr_file_decisions,
 };
@@ -15,7 +15,7 @@ use vize_l3::decision::ssr::{
     clippy::unwrap_used,
     reason = "invalid original fixture must fail admission"
 )]
-fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn completed<'a>(arena: &'a Allocator, source: &'a str) -> TemplateFile<'a> {
     let component = {
         let descriptor = Vue.observe_descriptor(
             arena,
@@ -30,7 +30,7 @@ fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a
             .unwrap()
             .unwrap()
     };
-    let mut owner = NativeTemplateOwner::new(component).unwrap_or_else(|_| panic!("owner"));
+    let mut owner = TemplateOwner::new(component).unwrap_or_else(|_| panic!("owner"));
     {
         let mut walk = owner.begin().unwrap();
         let selected = walk.selected();

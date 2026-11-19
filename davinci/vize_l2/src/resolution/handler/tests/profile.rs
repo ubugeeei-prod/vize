@@ -1,5 +1,5 @@
 use super::{
-    Allocator, DescriptorOptions, NativeHandlerInput, NativeTemplateComponent, Outer,
+    Allocator, DescriptorOptions, FileHandlerInput, NativeTemplateComponent, Outer,
     ResolutionErrorKind, Vue, VueDialect, VueVersion, resolve_handler,
 };
 use vize_l1::embed::Lang;
@@ -36,7 +36,7 @@ fn original_ts_profile_is_intrinsic_and_type_annotations_remain_precise_refusals
             .unwrap();
         assert_eq!(operand.syntax().grammar().lang, Lang::Ts);
         assert!(operand.syntax().source_type().is_typescript());
-        let original = NativeHandlerInput::new(operand).unwrap();
+        let original = FileHandlerInput::new(operand).unwrap();
         let body = original.body();
         let result = resolve_handler(original, &Outer(&[]));
         if supported {

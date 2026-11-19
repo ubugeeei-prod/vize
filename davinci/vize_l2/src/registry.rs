@@ -7,7 +7,7 @@ use vize_l0::FileDialect;
 
 /// Whether the existing native scoped-template semantic view is registered.
 #[must_use]
-pub fn native_scoped_template(dialect: FileDialect) -> bool {
+pub fn scoped_template(dialect: FileDialect) -> bool {
     vize_l1::registry::is_standard_vue3_component(dialect)
 }
 
@@ -30,7 +30,7 @@ mod tests {
             TemplateSyntaxMode::Quirks,
             Lang::Js,
         );
-        assert!(native_scoped_template(vue3));
-        assert!(!native_scoped_template(quirks));
+        assert!(scoped_template(vue3));
+        assert!(!scoped_template(quirks));
     }
 }

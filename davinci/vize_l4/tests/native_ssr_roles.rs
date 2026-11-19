@@ -8,7 +8,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
-    lang::js::NativeTemplateOwner,
+    lang::js::TemplateOwner,
     op::{Namespace, Op},
 };
 use vize_l3::decision::ssr::{SsrUnsupported, build_ssr_file_decisions};
@@ -48,7 +48,7 @@ fn original_selected_search_elements_keep_neutral_structure_but_refuse_vue_ssr_r
             .unwrap()
             .unwrap();
         let mut owner =
-            NativeTemplateOwner::new(component).unwrap_or_else(|_| panic!("original owner"));
+            TemplateOwner::new(component).unwrap_or_else(|_| panic!("original owner"));
         {
             let mut walk = owner.begin().unwrap();
             let selected = walk.selected();

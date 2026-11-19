@@ -248,7 +248,7 @@ fn whole_setup_policy_and_entity_refusals_never_gain_a_collection_read() {
     );
     assert_eq!(
         exported.begin().err().unwrap().kind,
-        vize_l2::lang::js::NativeTemplateIssueKind::UnsupportedExport
+        vize_l2::lang::js::TemplateRouteIssueKind::UnsupportedExport
     );
     let exported = exported.finish();
     assert!(exported.view().is_err());

@@ -55,7 +55,7 @@ fn original_setup_reads_borrow_the_same_complete_file_and_occurrences() {
         let row = expression.resolution();
         assert!(core::ptr::eq(row.file(), setup.file()));
         assert_eq!(row.node(), *node);
-        assert!(setup.file().native_interpolation(*node).is_some());
+        assert!(setup.file().file_interpolation(*node).is_some());
         for occurrence in row.table().unwrap().occurrences() {
             assert!(
                 setup

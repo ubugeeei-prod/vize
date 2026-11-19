@@ -5,7 +5,7 @@ use vize_atelier_sfc::{
 };
 use vize_l0::Allocator;
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind as LowerKind;
-use vize_l2::lang::js::NativeScopedTemplateIssueKind;
+use vize_l2::lang::js::ScopedTemplateIssueKind;
 use vize_l3::decision::ssr::{
     NativeSsrBuildError, SsrPart, build_native_scoped_ssr_file_decisions,
     build_native_ssr_file_decisions,
@@ -265,7 +265,7 @@ fn original_style_refusals_do_not_grant_partial_scoped_product() {
         Options::default(),
     );
     assert!(
-        matches!(raw.result(), Err(Error::Lowering(issue)) if issue.kind == LowerKind::ScopedStyle(NativeScopedTemplateIssueKind::StyleProfile))
+        matches!(raw.result(), Err(Error::Lowering(issue)) if issue.kind == LowerKind::ScopedStyle(ScopedTemplateIssueKind::StyleProfile))
     );
 }
 

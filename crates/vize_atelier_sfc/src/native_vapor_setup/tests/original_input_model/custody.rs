@@ -3,7 +3,7 @@
 use super::*;
 use vize_l2::{
     expr::ExprRef,
-    file::{DeclarationKind, InitializerKind, Namespace, NativeFileModelState},
+    file::{DeclarationKind, InitializerKind, Namespace, FileModelState},
     op::{BindingOp, Op},
     resolution::Usage,
 };
@@ -33,10 +33,10 @@ pub(super) fn capture(
         ),
         "{id}: actual original setup syntax owner"
     );
-    let [record] = file.native_models() else {
+    let [record] = file.file_models() else {
         return Err(cstr!("{id}: one original Model"));
     };
-    let NativeFileModelState::Admitted(node) = record.state() else {
+    let FileModelState::Admitted(node) = record.state() else {
         return Err(cstr!("{id}: normally closed Model"));
     };
     let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
@@ -171,7 +171,7 @@ pub(super) fn capture(
             && row.resolution().node() == node
             && core::ptr::eq(row.resolution().file(), file)
             && row.authored_span() == Some(authored)
-            && file.native_interpolations().is_empty(),
+            && file.file_interpolations().is_empty(),
         "{id}: dedicated canonical Model role, no fake interpolation or generic write permission"
     );
     Ok(serde_json::json!({

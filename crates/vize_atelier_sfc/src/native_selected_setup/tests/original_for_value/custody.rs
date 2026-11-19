@@ -1,5 +1,5 @@
 use super::*;
-use vize_l2::file::NativeFileInterpolationState;
+use vize_l2::file::FileInterpolationState;
 
 const SOURCE: &str = "<script setup>let count=2</script><template><i v-for='count in count'>{{count}}</i></template>";
 
@@ -29,10 +29,10 @@ fn shadowed_original_parameter_is_the_body_read_and_foreign_equal_ids_never_join
     };
     let head = af.for_head_for(ao).unwrap();
     let alias = head.value().unwrap();
-    let [record] = af.native_interpolations() else {
+    let [record] = af.file_interpolations() else {
         panic!("body");
     };
-    let NativeFileInterpolationState::Admitted(node) = record.state() else {
+    let FileInterpolationState::Admitted(node) = record.state() else {
         panic!("attached");
     };
     let analysis = build_native_selected_setup_dom_decisions(av.setup()).unwrap();
@@ -89,7 +89,7 @@ fn movement_and_caught_consumer_unwind_leave_normal_program_params_and_body_ast_
                 .unwrap()
                 .value_declaration()
                 .parameter() as *const _,
-            file.native_interpolations()[0]
+            file.file_interpolations()[0]
                 .input()
                 .operand()
                 .syntax()
@@ -122,7 +122,7 @@ fn movement_and_caught_consumer_unwind_leave_normal_program_params_and_body_ast_
     );
     assert_eq!(
         body,
-        file.native_interpolations()[0]
+        file.file_interpolations()[0]
             .input()
             .operand()
             .syntax()
@@ -141,7 +141,7 @@ fn movement_and_caught_consumer_unwind_leave_normal_program_params_and_body_ast_
         moved.result().unwrap().source_map().unwrap(),
         pack["fixtures"][2]["nativeMapRaw"].as_str().unwrap()
     );
-    let retained_body = file.native_interpolations()[0]
+    let retained_body = file.file_interpolations()[0]
         .input()
         .operand()
         .syntax()

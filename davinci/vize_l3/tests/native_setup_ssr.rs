@@ -66,7 +66,7 @@ fn original_setup_reads_retain_actual_occurrences_bindings_and_scope_roles() {
         let [(node, interpolation)] = interpolations.as_slice() else {
             panic!("one root read")
         };
-        let original = file.native_interpolation(*node).unwrap();
+        let original = file.file_interpolation(*node).unwrap();
         assert_eq!(original.input().operand().full_span(), interpolation.span);
         let expression = analysis.expression(*node).unwrap();
         let resolution = expression.resolution();

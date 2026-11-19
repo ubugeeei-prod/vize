@@ -4,7 +4,7 @@ use super::super::{SsrUnsupported, model};
 use super::SsrBuilder;
 use vize_l0::id::NodeId;
 use vize_l2::{
-    file::NativeFileModelState,
+    file::FileModelState,
     op::{BindingOp, ModelOp},
 };
 
@@ -29,10 +29,10 @@ impl<'owner, 'arena> SsrBuilder<'_, 'owner, 'arena> {
 
     pub(super) fn finish_model(&mut self) {
         let Some(setup) = self.setup else { return };
-        let [original] = setup.file().native_models() else {
+        let [original] = setup.file().file_models() else {
             return;
         };
-        let NativeFileModelState::Admitted(node) = original.state() else {
+        let FileModelState::Admitted(node) = original.state() else {
             return;
         };
         if self

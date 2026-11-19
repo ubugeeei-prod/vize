@@ -8,7 +8,7 @@ use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{NativeTemplateComponent, SurfaceChild, SurfaceParseOptions},
 };
-use vize_l2::lang::js::{NativeInterpolationInput, NativeTemplateFile, NativeTemplateOwner};
+use vize_l2::lang::js::{InterpolationInput, TemplateFile, TemplateOwner};
 use vize_l4::targets::dom::NativeTemplateDomOutput;
 
 #[track_caller]
@@ -30,7 +30,7 @@ pub(super) fn equal<T: PartialEq>(actual: T, expected: T) -> Result<(), &'static
 pub(super) fn completed<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<TemplateFile<'a>, &'static str> {
     let observation = Vue.observe_descriptor(
         arena,
         source,
@@ -46,13 +46,13 @@ pub(super) fn completed<'a>(
     )
     .map_err(|_| "original selected Component")?
     .ok_or("selected template")?;
-    let mut owner = NativeTemplateOwner::new(selected).map_err(|_| "original File begin")?;
+    let mut owner = TemplateOwner::new(selected).map_err(|_| "original File begin")?;
     {
         let mut walk = owner.begin().map_err(|_| "root begin")?;
         let selected = walk.selected();
         for child in selected.children() {
             if matches!(child.surface(), SurfaceChild::Interpolation(_)) {
-                let input = NativeInterpolationInput::from_operand(
+                let input = InterpolationInput::from_operand(
                     selected
                         .observe_interpolation_expression(child.reborrow())
                         .map_err(|_| "original stock expression")?,

@@ -125,7 +125,7 @@ fn pending_receipts_survive_owner_moves_and_join_only_the_original_cursor()
         .map_err(|_| "last receipt")?;
     let mut pending = vec![first, last];
     pending.reserve(64);
-    let mut original = NativeTemplateOwner::new(core::hint::black_box(selected))
+    let mut original = TemplateOwner::new(core::hint::black_box(selected))
         .map_err(|_| "moved original owner")?;
     {
         let mut walk = original.begin().map_err(|_| "begin")?;

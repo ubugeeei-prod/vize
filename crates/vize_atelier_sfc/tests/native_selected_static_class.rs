@@ -80,7 +80,7 @@ fn whole_public_selected_class_components_preserve_once_decoding_and_complete_so
                 assert!(core::ptr::eq(observation.descriptor().source(), source));
                 let file = observation.template().unwrap().file().unwrap();
                 assert!(file.is_complete());
-                for record in file.native_attribute_values() {
+                for record in file.file_attribute_values() {
                     let value = record.observation().unwrap();
                     assert!(core::ptr::eq(value.source().authored_root(), source));
                     assert_eq!(
@@ -89,7 +89,7 @@ fn whole_public_selected_class_components_preserve_once_decoding_and_complete_so
                     );
                     assert!(matches!(
                         record.state(),
-                        vize_l2::file::NativeFileAttributeValueState::Attached { .. }
+                        vize_l2::file::FileAttributeValueState::Attached { .. }
                     ));
                 }
             }

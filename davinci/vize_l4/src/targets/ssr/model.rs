@@ -7,7 +7,7 @@ use crate::{
 };
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::{NativeFileModelKind, NativeFileModelState},
+    file::{FileModelKind, FileModelState},
     op::ElementOp,
 };
 use vize_l3::decision::ssr::{NativeSelectedSetupSsrAnalysis, SsrFileModel};
@@ -16,11 +16,11 @@ pub(super) fn prelude<L: LinkSink>(
     writer: &mut Writer<L>,
     analysis: &NativeSelectedSetupSsrAnalysis<'_, '_, '_>,
 ) {
-    let [original] = analysis.file().native_models() else {
+    let [original] = analysis.file().file_models() else {
         return;
     };
-    if matches!(original.state(), NativeFileModelState::Admitted(_))
-        && original.kind() == Some(NativeFileModelKind::Checkbox)
+    if matches!(original.state(), FileModelState::Admitted(_))
+        && original.kind() == Some(FileModelKind::Checkbox)
     {
         // This generated render-local never substitutes for an original binding.
         writer.push("let __vizeModelProps;");
@@ -59,10 +59,10 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
     writer.use_helper(merge);
     writer.use_helper(dynamic_model);
     match row.original().kind() {
-        Some(NativeFileModelKind::Checkbox) => {
+        Some(FileModelKind::Checkbox) => {
             let value = analysis
                 .file()
-                .native_attribute_value_for(0, element, 0)
+                .file_attribute_value_for(0, element, 0)
                 .ok_or_else(|| fail(SsrErrorKind::MissingAnalysis))?;
             let observation = value
                 .observation()
@@ -97,7 +97,7 @@ pub(super) fn write<'owner, 'arena, L: LinkSink>(
             writer.push("))))}");
             return Ok(true);
         }
-        Some(NativeFileModelKind::Text) => {}
+        Some(FileModelKind::Text) => {}
         None => return Err(fail(SsrErrorKind::MissingAnalysis)),
     }
     // Root attrs may carry a real input type/value. The actual pinned runtime

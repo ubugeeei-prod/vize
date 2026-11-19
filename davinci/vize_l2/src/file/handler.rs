@@ -1,7 +1,7 @@
 //! Original handler custody sealed with its actual attached File node.
 
 use super::{BindingRef, FileArtifact, ScopeId};
-use crate::lang::js::{NativeHandlerInput, RejectedNativeHandlerInput};
+use crate::lang::js::{FileHandlerInput, RejectedFileHandlerInput};
 use crate::op::{HandlerId, OnHandlerRef, OnOp};
 use crate::resolution::{HandlerResolution, ResolutionError};
 use alloc::boxed::Box;
@@ -14,7 +14,7 @@ pub(crate) struct HandlerRecord<'a> {
 }
 
 pub(crate) struct PendingHandler<'a> {
-    pub input: Option<NativeHandlerInput<'a>>,
+    pub input: Option<FileHandlerInput<'a>>,
     pub resolution: Option<HandlerResolution<'a>>,
     pub scope: ScopeId,
     pub span: vize_l0::Span,
@@ -24,9 +24,9 @@ pub(crate) struct PendingHandler<'a> {
 #[derive(Debug)]
 pub enum RejectedFileHandler<'a> {
     Observation(AttributeHandlerFailure<'a>),
-    Syntax(Box<RejectedNativeHandlerInput<'a>>),
+    Syntax(Box<RejectedFileHandlerInput<'a>>),
     Resolution {
-        input: Box<NativeHandlerInput<'a>>,
+        input: Box<FileHandlerInput<'a>>,
         error: ResolutionError,
     },
 }
@@ -66,7 +66,7 @@ impl<'a> FileArtifact<'a> {
     }
     /// Original observations parked before a fallible header/handler walk.
     /// Their presence grants no attached node or native completion.
-    pub fn unattached_handlers(&self) -> impl Iterator<Item = &NativeHandlerInput<'a>> {
+    pub fn unattached_handlers(&self) -> impl Iterator<Item = &FileHandlerInput<'a>> {
         self.facts.pending_handlers.iter().filter_map(|handler| {
             handler
                 .input

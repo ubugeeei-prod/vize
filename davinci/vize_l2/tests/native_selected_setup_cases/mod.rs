@@ -9,7 +9,7 @@ use vize_l1::{
     },
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
-use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use vize_l2::lang::js::{TemplateFile, TemplateOwner};
 mod accepted;
 mod primitive_strings;
 mod refusal;
@@ -28,15 +28,15 @@ fn descriptor<'a>(arena: &'a Allocator, source: &'a str) -> DescriptorObservatio
 fn owner<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateOwner<'a>, &'static str> {
+) -> Result<TemplateOwner<'a>, &'static str> {
     let descriptor = descriptor(arena, source);
     let selected =
         NativeTemplateComponent::parse_in(arena, descriptor.admitted().map_err(|_| "descriptor")?)
             .map_err(|_| "selected parse")?
             .ok_or("selected template")?;
-    NativeTemplateOwner::new(selected).map_err(|_| "owner")
+    TemplateOwner::new(selected).map_err(|_| "owner")
 }
-fn complete<'a>(owner: NativeTemplateOwner<'a>) -> Result<NativeTemplateFile<'a>, &'static str> {
+fn complete<'a>(owner: TemplateOwner<'a>) -> Result<TemplateFile<'a>, &'static str> {
     let mut owner = core::hint::black_box(owner);
     {
         let mut walk = owner.begin().map_err(|_| "native begin")?;

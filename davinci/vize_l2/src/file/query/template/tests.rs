@@ -2,7 +2,7 @@ use super::{
     FileArtifact, PositionQueryError, TemplateQueryError, TemplateSiteRef, TemplateSiteScope,
     TemplateSymbolRef,
 };
-use crate::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use crate::lang::js::{TemplateFile, TemplateOwner};
 use vize_l0::Span;
 use vize_l0::{
     Allocator,
@@ -17,11 +17,11 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 
-fn native<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
+fn native<'a>(arena: &'a Allocator, source: &'a str) -> TemplateFile<'a> {
     attempt(arena, source, true)
 }
 
-fn attempt<'a>(arena: &'a Allocator, source: &'a str, complete: bool) -> NativeTemplateFile<'a> {
+fn attempt<'a>(arena: &'a Allocator, source: &'a str, complete: bool) -> TemplateFile<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -36,7 +36,7 @@ fn attempt<'a>(arena: &'a Allocator, source: &'a str, complete: bool) -> NativeT
         .unwrap()
         .unwrap();
     let mut original =
-        NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("native owner"));
+        TemplateOwner::new(selected).unwrap_or_else(|_| panic!("native owner"));
     let syntax = admitted.setup().map(|setup| {
         parse_program_once(
             arena,
@@ -62,7 +62,7 @@ fn attempt<'a>(arena: &'a Allocator, source: &'a str, complete: bool) -> NativeT
     core::hint::black_box(original.finish())
 }
 
-fn file<'f, 'a>(output: &'f NativeTemplateFile<'a>) -> &'f FileArtifact<'a> {
+fn file<'f, 'a>(output: &'f TemplateFile<'a>) -> &'f FileArtifact<'a> {
     output.view().unwrap().file().unwrap()
 }
 

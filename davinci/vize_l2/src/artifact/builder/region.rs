@@ -16,15 +16,15 @@ impl<'a> RegionBuilder<'_, 'a> {
         self.builder.allocator
     }
 
-    pub(crate) fn native_text(
+    pub(crate) fn file_text(
         &mut self,
         content: &'a str,
         span: Span,
     ) -> Result<(NodeId, super::TextAllocation<'a>), ArtifactError> {
-        self.builder.native_text(content, span)
+        self.builder.file_text(content, span)
     }
 
-    pub(crate) fn native_element(
+    pub(crate) fn file_element(
         &mut self,
         tag: &'a str,
         namespace: Namespace,
@@ -33,7 +33,7 @@ impl<'a> RegionBuilder<'_, 'a> {
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
     ) -> Result<(NodeId, super::ElementAllocation<'a>), ArtifactError> {
         self.builder
-            .native_element(tag, namespace, attributes, span, children)
+            .file_element(tag, namespace, attributes, span, children)
     }
 
     pub(crate) fn begin_original_for(
@@ -43,25 +43,25 @@ impl<'a> RegionBuilder<'_, 'a> {
     ) -> Result<NodeId, ArtifactError> {
         self.builder.begin_original_for(head, span)
     }
-    pub(crate) fn begin_native_if(
+    pub(crate) fn begin_file_if(
         &mut self,
-        input: &crate::lang::js::NativeConditionalInput<'a>,
+        input: &crate::lang::js::ConditionalInput<'a>,
         span: Span,
     ) -> Result<NodeId, ArtifactError> {
-        self.builder.begin_native_if(input, span)
+        self.builder.begin_file_if(input, span)
     }
-    pub(crate) fn finish_native_if(
+    pub(crate) fn finish_file_if(
         &mut self,
         node: NodeId,
     ) -> Result<core::ptr::NonNull<crate::op::IfOp<'a>>, ArtifactError> {
-        self.builder.finish_native_if(node)
+        self.builder.finish_file_if(node)
     }
-    pub(crate) fn begin_native_else(
+    pub(crate) fn begin_file_else(
         &mut self,
         node: NodeId,
         input: &vize_l1::markup::AttributeElse<'a>,
     ) -> Result<(), ArtifactError> {
-        self.builder.begin_native_else(node, input)
+        self.builder.begin_file_else(node, input)
     }
     pub(crate) fn finish_original_for(
         &mut self,
@@ -69,19 +69,19 @@ impl<'a> RegionBuilder<'_, 'a> {
     ) -> Result<core::ptr::NonNull<crate::op::OriginalForOp<'a>>, ArtifactError> {
         self.builder.finish_original_for(node)
     }
-    pub(crate) fn native_on(
+    pub(crate) fn file_on(
         &mut self,
         handler: &crate::resolution::HandlerResolution<'a>,
         span: Span,
     ) -> Result<(NodeId, core::ptr::NonNull<crate::op::OnOp<'a>>), ArtifactError> {
-        self.builder.native_on(handler, span)
+        self.builder.file_on(handler, span)
     }
-    pub(crate) fn native_model(
+    pub(crate) fn file_model(
         &mut self,
-        input: &crate::lang::js::NativeModelInput<'a>,
-        kind: crate::file::NativeFileModelKind,
+        input: &crate::lang::js::ModelInput<'a>,
+        kind: crate::file::FileModelKind,
     ) -> Result<(NodeId, core::ptr::NonNull<crate::op::ModelOp<'a>>), ArtifactError> {
-        self.builder.native_model(input, kind)
+        self.builder.file_model(input, kind)
     }
 
     /// Attach an explicit static named binding before this owner's children.

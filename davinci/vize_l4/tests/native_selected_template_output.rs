@@ -1,7 +1,7 @@
 //! Sealed original output custody, whole modules and absolute source maps.
 
 use vize_l0::Allocator;
-use vize_l2::file::NativeFileInterpolationState;
+use vize_l2::file::FileInterpolationState;
 use vize_l2::op::Op;
 use vize_l3::decision::native::build_native_dom_file_decisions;
 use vize_l4::{
@@ -199,12 +199,12 @@ fn refused_output_retains_original_analysis_file_and_whole_input() -> Result<(),
             failure.analysis().artifact().source(),
             source,
         ))?;
-        if let Some(record) = file.native_interpolations().first() {
-            let NativeFileInterpolationState::Admitted(node) = record.state() else {
+        if let Some(record) = file.file_interpolations().first() {
+            let FileInterpolationState::Admitted(node) = record.state() else {
                 return Err("original normal input admission");
             };
             check(core::ptr::eq(
-                file.native_interpolation(node).ok_or("same input")?,
+                file.file_interpolation(node).ok_or("same input")?,
                 record,
             ))?;
             let child = original

@@ -23,7 +23,7 @@ use vize_l1::{
 use vize_l2::{
     dump::{Op as DumpOp, Page},
     file::FileArtifact,
-    lang::js::{NativeTemplateFile, NativeTemplateOwner},
+    lang::js::{TemplateFile, TemplateOwner},
     op::{Op, OriginalForOp},
 };
 use vize_l2_to_l3::{PartitionKind, lower};
@@ -47,7 +47,7 @@ ui.for original-ref=0 @47:84
 
 ";
 
-fn original_file(arena: &Allocator) -> Result<NativeTemplateFile<'_>, &'static str> {
+fn original_file(arena: &Allocator) -> Result<TemplateFile<'_>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         SOURCE,
@@ -67,7 +67,7 @@ fn original_file(arena: &Allocator) -> Result<NativeTemplateFile<'_>, &'static s
     let selected = NativeTemplateComponent::parse_in(arena, admitted)
         .map_err(|_| "selected original component")?
         .ok_or("selected template")?;
-    let mut owner = NativeTemplateOwner::new(selected).map_err(|_| "normal original owner")?;
+    let mut owner = TemplateOwner::new(selected).map_err(|_| "normal original owner")?;
     owner
         .setup_program(syntax.admitted_program().ok_or("once original Program")?)
         .map_err(|_| "actual setup walk")?;

@@ -1,6 +1,6 @@
 use super::super::{Allocator, NodeId, Op, check, owner};
 use vize_l2::{
-    expr::ExprRef, file::NativeFileInterpolationState, lang::js::NativeInterpolationInput,
+    expr::ExprRef, file::FileInterpolationState, lang::js::InterpolationInput,
 };
 use vize_l3::decision::{
     dom::{DomChild, DomDependency, DomRootKind},
@@ -17,7 +17,7 @@ fn original_root_literal_retains_file_input_and_resolution_in_the_existing_sole_
         let mut walk = original.begin().map_err(|_| "begin")?;
         let selected = walk.selected();
         let child = selected.children().next().ok_or("original child")?;
-        let input = NativeInterpolationInput::from_operand(
+        let input = InterpolationInput::from_operand(
             selected
                 .observe_interpolation_expression(child.reborrow())
                 .map_err(|_| "original observation")?,
@@ -42,9 +42,9 @@ fn original_root_literal_retains_file_input_and_resolution_in_the_existing_sole_
         return Err("actual interpolation Op");
     };
     let input = file
-        .native_interpolation(NodeId::FIRST)
+        .file_interpolation(NodeId::FIRST)
         .ok_or("actual File-owned input")?;
-    check(input.state() == NativeFileInterpolationState::Admitted(NodeId::FIRST))?;
+    check(input.state() == FileInterpolationState::Admitted(NodeId::FIRST))?;
     check(input.input().operand().full_span() == op.span)?;
     check(input.input().operand().syntax().comments().count() == 1)?;
     check(input.input().operand().syntax().diagnostics().count() == 0)?;

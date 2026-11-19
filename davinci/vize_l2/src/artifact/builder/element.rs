@@ -24,7 +24,7 @@ impl<'a> ElementAllocation<'a> {
     }
 }
 impl<'a> Builder<'a> {
-    pub(super) fn native_element(
+    pub(super) fn file_element(
         &mut self,
         tag: &'a str,
         namespace: Namespace,

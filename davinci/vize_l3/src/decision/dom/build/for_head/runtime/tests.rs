@@ -9,12 +9,12 @@ use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::{
     file::BindingRef,
-    lang::js::NativeSelectedSetup,
+    lang::js::SelectedSetup,
     resolution::{Occurrence, Usage},
 };
 
 struct InterruptedReads<'view, 'owner, 'arena> {
-    setup: &'view NativeSelectedSetup<'owner, 'arena>,
+    setup: &'view SelectedSetup<'owner, 'arena>,
     calls: &'view Cell<u32>,
 }
 impl<'owner, 'arena> FileReads<'owner, 'arena> for InterruptedReads<'_, 'owner, 'arena> {

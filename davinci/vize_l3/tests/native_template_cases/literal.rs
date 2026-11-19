@@ -1,20 +1,20 @@
 use super::super::{Allocator, NodeId, Op, check, owner};
 use vize_l2::{
     expr::ExprRef,
-    lang::js::{NativeInterpolationInput, NativeTemplateFile},
+    lang::js::{InterpolationInput, TemplateFile},
 };
 use vize_l3::decision::{dom::DomUnsupported, native::build_native_dom_file_decisions};
 
 fn completed<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateFile<'a>, &'static str> {
+) -> Result<TemplateFile<'a>, &'static str> {
     let mut original = owner(arena, source)?;
     {
         let mut walk = original.begin().map_err(|_| "begin")?;
         let selected = walk.selected();
         let child = selected.children().next().ok_or("original child")?;
-        let input = NativeInterpolationInput::from_operand(
+        let input = InterpolationInput::from_operand(
             selected
                 .observe_interpolation_expression(child.reborrow())
                 .map_err(|_| "original stock observation")?,
@@ -50,7 +50,7 @@ fn original_primitive_receipts_join_real_file_ast_and_source_in_the_sole_l3_visi
         check(file.is_complete())?;
         check(core::ptr::eq(file.artifact().source(), source))?;
         let input = file
-            .native_interpolation(NodeId::FIRST)
+            .file_interpolation(NodeId::FIRST)
             .ok_or("normal original input association")?;
         let original = input
             .input()
@@ -122,7 +122,7 @@ fn legacy_literals_and_regexp_retain_original_complete_file_and_full_span_refusa
         let file = analysis.file();
         check(file.is_complete())?;
         let input = file
-            .native_interpolation(NodeId::FIRST)
+            .file_interpolation(NodeId::FIRST)
             .ok_or("whole original input")?;
         let operand = input.input().operand();
         let syntax = operand.syntax();

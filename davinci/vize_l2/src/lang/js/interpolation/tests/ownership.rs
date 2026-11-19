@@ -1,4 +1,4 @@
-use super::{Allocator, NativeInterpolationInput, Test, check, same, selected};
+use super::{Allocator, InterpolationInput, Test, check, same, selected};
 use oxc_span::GetSpan;
 use vize_l1::embed::Lang;
 
@@ -18,7 +18,7 @@ fn root_original_stock_ast_and_coordinates_survive_moves_and_cached_rejoins() ->
         .expression()
         .ok_or("original AST missing")?;
     let decoded = operand.syntax().source().text();
-    let mut input = NativeInterpolationInput::from_operand(operand);
+    let mut input = InterpolationInput::from_operand(operand);
     let expression = {
         let view = input
             .admitted_for(&owner, child)
@@ -143,7 +143,7 @@ fn nested_ts_original_parent_ordinal_and_stock_observation_stay_owned() -> Test 
         .observe_interpolation_expression(child.reborrow())
         .map_err(|_| "observation refused")?;
     let ast = operand.syntax().expression().ok_or("AST missing")?;
-    let mut input = NativeInterpolationInput::from_operand(operand);
+    let mut input = InterpolationInput::from_operand(operand);
     let view = input
         .admitted_for(&owner, child)
         .map_err(|_| "nested join refused")?;

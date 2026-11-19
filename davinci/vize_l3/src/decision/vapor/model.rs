@@ -3,8 +3,8 @@
 use super::VaporUnsupported;
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::{BindingRef, FileResolution, NativeFileModel},
-    lang::js::NativeSelectedSetup,
+    file::{BindingRef, FileResolution, FileModel},
+    lang::js::SelectedSetup,
     op::{BindingOp, ElementOp, ModelOp},
     resolution::Occurrence,
 };
@@ -17,7 +17,7 @@ pub struct VaporModel<'owner, 'arena> {
 }
 
 pub(super) fn classify<'owner, 'arena>(
-    setup: &NativeSelectedSetup<'owner, 'arena>,
+    setup: &SelectedSetup<'owner, 'arena>,
     element_node: NodeId,
     element: &'owner ElementOp<'arena>,
     node: NodeId,
@@ -60,8 +60,8 @@ impl<'owner, 'arena> VaporModel<'owner, 'arena> {
     }
 
     #[must_use]
-    pub fn original(&self) -> Option<&'owner NativeFileModel<'arena>> {
-        self.resolution.file().native_model(self.resolution.node())
+    pub fn original(&self) -> Option<&'owner FileModel<'arena>> {
+        self.resolution.file().file_model(self.resolution.node())
     }
 
     #[must_use]

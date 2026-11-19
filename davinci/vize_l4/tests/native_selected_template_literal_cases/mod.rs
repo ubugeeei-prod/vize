@@ -4,14 +4,14 @@ use super::{check, equal};
 use vize_l0::{Span, id::NodeId};
 use vize_l1::markup::SurfaceChild;
 use vize_l2::{
-    expr::ExprRef, file::NativeFileInterpolationState, lang::js::NativeTemplateFile, op::Op,
+    expr::ExprRef, file::FileInterpolationState, lang::js::TemplateFile, op::Op,
 };
 use vize_l3::decision::native::NativeTemplateDomAnalysis;
 use vize_l4::write::EmitDocument;
 
 pub(super) fn inspect<'owner, 'a>(
     id: &str,
-    original: &'owner NativeTemplateFile<'a>,
+    original: &'owner TemplateFile<'a>,
     analysis: &NativeTemplateDomAnalysis<'owner, 'a>,
     document: &EmitDocument,
     nodes: u32,
@@ -56,9 +56,9 @@ pub(super) fn inspect<'owner, 'a>(
             (SurfaceChild::Interpolation(_), Op::Interpolation(op)) => {
                 interpolations += 1;
                 let record = file
-                    .native_interpolation(node)
+                    .file_interpolation(node)
                     .ok_or("normal original input association")?;
-                equal(record.state(), NativeFileInterpolationState::Admitted(node))?;
+                equal(record.state(), FileInterpolationState::Admitted(node))?;
                 let operand = record.input().operand();
                 check(operand.admitted_for(selected, child.reborrow()).is_some())?;
                 equal(operand.full_span(), op.span)?;
@@ -130,7 +130,7 @@ pub(super) fn inspect<'owner, 'a>(
                         .ok_or("original text extent")?,
                 )?;
                 check(
-                    file.native_interpolation(node).is_none()
+                    file.file_interpolation(node).is_none()
                         && analysis.expression(node).is_none(),
                 )?;
             }
@@ -150,17 +150,17 @@ pub(super) fn inspect<'owner, 'a>(
                         .ok_or("original comment extent")?,
                 )?;
                 check(
-                    file.native_interpolation(node).is_none()
+                    file.file_interpolation(node).is_none()
                         && analysis.expression(node).is_none(),
                 )?;
             }
             _ => return Err("same original ordered root operation"),
         }
     }
-    equal(file.native_interpolations().len(), interpolations)?;
+    equal(file.file_interpolations().len(), interpolations)?;
     equal(interpolations, if id == "mixed" { 2 } else { 1 })?;
     let next = NodeId::from_index(nodes).ok_or("first absent node")?;
-    check(file.native_interpolation(next).is_none() && analysis.expression(next).is_none())?;
+    check(file.file_interpolation(next).is_none() && analysis.expression(next).is_none())?;
     check(analysis.tables().nodes.get(next).is_none() && dom.node(next).is_none())?;
     check(!document.links().is_empty())?;
     for link in document.links() {

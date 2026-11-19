@@ -7,7 +7,7 @@ use vize_l0::{
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::{
-    file::{DeclarationKind, NativeFileModelState},
+    file::{DeclarationKind, FileModelState},
     op::{BindingOp, Op},
     resolution::Usage,
 };
@@ -55,10 +55,10 @@ fn original_number_tokens_and_write_bindings_are_shared_without_generic_read_pro
         let setup = view.setup();
         let file = setup.file();
         let before = file.artifact().provenance().to_vec();
-        let [original] = file.native_models() else {
+        let [original] = file.file_models() else {
             return Err("one original model".into());
         };
-        let NativeFileModelState::Admitted(node) = original.state() else {
+        let FileModelState::Admitted(node) = original.state() else {
             return Err("closed model".into());
         };
         let element_node = original.element_node().ok_or("original element")?;

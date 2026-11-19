@@ -210,9 +210,9 @@ fn formerly_refused_entity_header_retains_its_exact_original_slot() -> Result<()
         return Err("original body");
     };
     equal(body.content, "unvisited")?;
-    equal(file.native_attribute_values().len(), 2)?;
+    equal(file.file_attribute_values().len(), 2)?;
     let joined = file
-        .native_attribute_value_for(1, element, 1)
+        .file_attribute_value_for(1, element, 1)
         .ok_or("same Element/slot")?;
     check(core::ptr::eq(joined.file(), file))?;
     check(core::ptr::eq(joined.element(), &**element))?;

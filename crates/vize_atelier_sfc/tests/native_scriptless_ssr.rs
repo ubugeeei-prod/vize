@@ -12,7 +12,7 @@ use vize_l1::embed::syntax::{EmbedHole, ForRefusal};
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind;
 use vize_l2::{
     file::{FileIssueKind, RejectedFileFor, RejectedFileHandler},
-    lang::js::{HandlerInputErrorKind, NativeTemplateIssueKind},
+    lang::js::{HandlerInputErrorKind, TemplateRouteIssueKind},
     op::{BindingOp, OnOp, Op, Region},
     resolution::ResolutionErrorKind,
 };
@@ -254,7 +254,7 @@ fn refusals() -> Vec<serde_json::Value> {
             "for" => {
                 assert!(compilation.observation().admitted().is_none());
                 assert!(
-                    matches!(error, NativeSsrSfcCompileError::Lowering(issue) if matches!(issue.kind, NativeSelectedSfcIssueKind::Template(issue) if matches!(issue.kind, NativeTemplateIssueKind::For { kind: FileIssueKind::UnsupportedSyntax, .. }))),
+                    matches!(error, NativeSsrSfcCompileError::Lowering(issue) if matches!(issue.kind, NativeSelectedSfcIssueKind::Template(issue) if matches!(issue.kind, TemplateRouteIssueKind::For { kind: FileIssueKind::UnsupportedSyntax, .. }))),
                     "{id}: {error:?}"
                 );
                 let original = compilation.observation().template().unwrap();

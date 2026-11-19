@@ -1,4 +1,4 @@
-use super::{Allocator, BindingPattern, ForRefusal, GetSpan, Lang, NativeForInput, Span};
+use super::{Allocator, BindingPattern, ForRefusal, GetSpan, Lang, FileForInput, Span};
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l1::container::{Vue, vue::DescriptorOptions};
 use vize_l1::markup::NativeTemplateComponent;
@@ -45,7 +45,7 @@ fn one_original_header_visit_parks_both_observations_and_joins_the_same_token() 
             .unwrap()
             .expression()
             .unwrap() as *const _;
-        let input = NativeForInput::new(operand).unwrap();
+        let input = FileForInput::new(operand).unwrap();
         let mut pending = alloc::vec::Vec::new();
         pending.push(input);
         pending.reserve(32);
@@ -94,7 +94,7 @@ fn sibling_equal_parse_and_foreign_equal_file_cannot_replace_the_selected_header
     let operand = selected
         .observe_attribute_for_head(element.attributes().next().unwrap())
         .unwrap();
-    let input = NativeForInput::new(operand).unwrap();
+    let input = FileForInput::new(operand).unwrap();
     assert!(
         input
             .admitted_for(&selected, element.attributes().next().unwrap())
@@ -133,7 +133,7 @@ fn selected_refusal_retains_the_complete_original_attribute_and_syntax() {
         .text()
         .unwrap()
         .as_ptr();
-    let rejected = NativeForInput::new(operand).unwrap_err();
+    let rejected = FileForInput::new(operand).unwrap_err();
     assert_eq!(rejected.kind, ForRefusal::Comment);
     assert_eq!(rejected.span, span);
     assert_eq!(

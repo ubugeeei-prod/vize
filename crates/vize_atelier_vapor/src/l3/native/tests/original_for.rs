@@ -13,7 +13,7 @@ use vize_l1::{
     },
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
-use vize_l2::lang::js::NativeTemplateOwner;
+use vize_l2::lang::js::TemplateOwner;
 
 #[test]
 fn actual_original_for_generic_graph_does_not_mint_native_vapor_admission() {
@@ -38,7 +38,7 @@ fn actual_original_for_generic_graph_does_not_mint_native_vapor_admission() {
     let selected = NativeTemplateComponent::parse_in(&arena, admitted)
         .unwrap()
         .unwrap();
-    let mut owner = NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("actual owner"));
+    let mut owner = TemplateOwner::new(selected).unwrap_or_else(|_| panic!("actual owner"));
     owner
         .setup_program(syntax.admitted_program().unwrap())
         .unwrap();

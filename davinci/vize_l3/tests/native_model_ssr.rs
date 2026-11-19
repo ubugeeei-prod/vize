@@ -5,7 +5,7 @@ use vize_l0::{
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::{
-    file::{DeclarationKind, FileResolution, NativeFileModelState},
+    file::{DeclarationKind, FileResolution, FileModelState},
     resolution::Usage,
 };
 use vize_l3::decision::ssr::{
@@ -55,10 +55,10 @@ fn seven_original_models_retain_write_identity_without_becoming_generic_reads() 
         else {
             return Err(format!("{source}: sole actual void opening"));
         };
-        let [original] = file.native_models() else {
+        let [original] = file.file_models() else {
             return Err("one actual Model".into());
         };
-        let NativeFileModelState::Admitted(node) = original.state() else {
+        let FileModelState::Admitted(node) = original.state() else {
             return Err("normally closed Model".into());
         };
         let expression = analysis

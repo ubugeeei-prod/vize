@@ -7,24 +7,24 @@ use vize_l1::markup::InterpolationFailure;
 /// Only the private original-child receiver constructs these normally owned rows.
 ///
 /// ```compile_fail
-/// use vize_l2::file::NativeFileInterpolationFailure;
+/// use vize_l2::file::FileInterpolationFailure;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeFileInterpolationFailure<'static>>();
+/// requires_clone::<FileInterpolationFailure<'static>>();
 /// ```
 /// ```compile_fail
 /// use vize_l0::Span;
 /// use vize_l1::markup::InterpolationFailure;
-/// use vize_l2::file::NativeFileInterpolationFailure;
+/// use vize_l2::file::FileInterpolationFailure;
 /// fn forge<'a>(failure: InterpolationFailure<'a>) {
-///     let _ = NativeFileInterpolationFailure { span: Span::new(0, 1), failure };
+///     let _ = FileInterpolationFailure { span: Span::new(0, 1), failure };
 /// }
 /// ```
-pub struct NativeFileInterpolationFailure<'a> {
+pub struct FileInterpolationFailure<'a> {
     pub(crate) span: Span,
     pub(crate) failure: InterpolationFailure<'a>,
 }
 
-impl<'a> NativeFileInterpolationFailure<'a> {
+impl<'a> FileInterpolationFailure<'a> {
     #[must_use]
     pub const fn span(&self) -> Span {
         self.span
@@ -38,14 +38,14 @@ impl<'a> NativeFileInterpolationFailure<'a> {
 
 impl<'a> FileArtifact<'a> {
     #[must_use]
-    pub fn native_interpolation_failures(&self) -> &[NativeFileInterpolationFailure<'a>] {
-        &self.facts.native_interpolation_failures
+    pub fn file_interpolation_failures(&self) -> &[FileInterpolationFailure<'a>] {
+        &self.facts.file_interpolation_failures
     }
 }
 
 impl<'a> RejectedFile<'a> {
     #[must_use]
-    pub fn native_interpolation_failures(&self) -> &[NativeFileInterpolationFailure<'a>] {
-        &self.facts.native_interpolation_failures
+    pub fn file_interpolation_failures(&self) -> &[FileInterpolationFailure<'a>] {
+        &self.facts.file_interpolation_failures
     }
 }

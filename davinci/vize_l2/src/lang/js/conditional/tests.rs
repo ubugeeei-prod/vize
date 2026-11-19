@@ -40,7 +40,7 @@ fn conditional_original_stock_ast_and_authored_coordinates_survive_moves_and_rej
     let value = operand.raw_value();
     let name_span = operand.name_span();
     let value_span = operand.value_span();
-    let mut input = NativeConditionalInput::from_operand(operand);
+    let mut input = ConditionalInput::from_operand(operand);
     let expression = input.admitted_for(&selected, attribute.reborrow()).unwrap();
     assert!(core::ptr::eq(expression.ast, ast));
     assert!(core::ptr::eq(expression.source, value));
@@ -74,10 +74,10 @@ fn equal_reparse_header_and_copied_expression_do_not_satisfy_the_original_receip
     let operand = own
         .observe_attribute_expression(attribute.reborrow())
         .unwrap();
-    let mut input = NativeConditionalInput::from_operand(operand);
+    let mut input = ConditionalInput::from_operand(operand);
     assert!(matches!(
         input.admitted_for(&foreign, foreign_attribute),
-        Err(NativeConditionalInputError::UnadmittedOriginal)
+        Err(ConditionalInputError::UnadmittedOriginal)
     ));
     assert!(input.expression().is_none());
     let expression = input.admitted_for(&own, attribute).unwrap();
@@ -90,7 +90,7 @@ fn equal_reparse_header_and_copied_expression_do_not_satisfy_the_original_receip
     };
     assert!(!input.matches_expression(&neutral));
     let foreign_attribute = foreign_element.attributes().next().unwrap();
-    let mut other = NativeConditionalInput::from_operand(
+    let mut other = ConditionalInput::from_operand(
         foreign
             .observe_attribute_expression(foreign_attribute.reborrow())
             .unwrap(),
@@ -120,7 +120,7 @@ fn rejected_condition_syntax_retains_complete_original_observations_and_holes() 
         let hole = operand.syntax().hole();
         let comments = operand.syntax().comments().count();
         let diagnostics = operand.syntax().diagnostics().count();
-        let mut input = NativeConditionalInput::from_operand(operand);
+        let mut input = ConditionalInput::from_operand(operand);
         assert!(input.admitted_for(&selected, attribute).is_err(), "{value}");
         assert!(input.expression().is_none());
         assert_eq!(input.operand().raw_value(), value);

@@ -25,11 +25,11 @@ pub trait TemplatePolicy: Copy {
 }
 
 mod facade;
-pub(crate) mod native;
 pub use facade::TemplateRegion;
 mod child;
 mod walk;
 mod whole;
+pub(crate) mod template;
 pub use child::{TemplateBody, TemplateChildRegion};
 pub use whole::TemplateWalkRegion;
 

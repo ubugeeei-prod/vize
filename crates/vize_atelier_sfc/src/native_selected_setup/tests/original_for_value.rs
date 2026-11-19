@@ -167,7 +167,7 @@ fn six_whole_original_for_value_components_and_raw_maps_are_captured() -> Result
             "{id}: current original callback value and scope, never ScriptUnit"
         );
         let original_body = file
-            .native_interpolation(*body_node)
+            .file_interpolation(*body_node)
             .ok_or("original operand")?;
         require!(
             core::ptr::eq(

@@ -1,13 +1,13 @@
 //! A Model operand supplies semantic ReadWrite use without an assignment AST.
 
 use super::{ReferenceSink, ReferenceSource, Resolver, Usage};
-use crate::lang::js::NativeModelInput;
+use crate::lang::js::ModelInput;
 use crate::resolution::{ResolutionError, ResolutionErrorKind};
 use oxc_ast::ast::Expression;
 use vize_l0::Span;
 
 pub(in crate::resolution) fn original<'a>(
-    input: &NativeModelInput<'a>,
+    input: &ModelInput<'a>,
     sink: &mut impl ReferenceSink<'a>,
 ) -> Result<(), ResolutionError> {
     let expression = input.expression().ok_or(ResolutionError {
