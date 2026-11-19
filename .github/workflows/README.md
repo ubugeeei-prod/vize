@@ -30,7 +30,7 @@ surfaces and are not routine CI-refactor targets.
 | ----- | -------------------------------------------------------------------------------------- | --------- |
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 22        |
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 37        |
-| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 42        |
+| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 43        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 16        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 23        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 40        |
@@ -149,18 +149,19 @@ Wall time, allocation, instruction, memory, scaling, and reproducible benchmark 
 | 03.28 | Script recovery cost                                | [`script-recovery-cost.yml`](./script-recovery-cost.yml)                                 |
 | 03.29 | Setup binding anchor allocation profile             | [`setup-binding-anchor-profile.yml`](./setup-binding-anchor-profile.yml)                 |
 | 03.30 | Native SFC member phase comparison                  | [`sfc-member-profile.yml`](./sfc-member-profile.yml)                                     |
-| 03.31 | Source operation profile                            | [`source-operation-profile.yml`](./source-operation-profile.yml)                         |
-| 03.32 | String Storage Bench                                | [`string-storage-bench.yml`](./string-storage-bench.yml)                                 |
-| 03.33 | Text boundary benchmark                             | [`text-boundary-bench.yml`](./text-boundary-bench.yml)                                   |
-| 03.34 | Tool Benchmark                                      | [`tool-benchmark.yml`](./tool-benchmark.yml)                                             |
-| 03.35 | Type admission scale axes                           | [`type-admission-scale.yml`](./type-admission-scale.yml)                                 |
-| 03.36 | Type source snapshot benchmark                      | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                                   |
-| 03.37 | Type-check cold pair                                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                                   |
-| 03.38 | Type-check profile                                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                                       |
-| 03.39 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                                       |
-| 03.40 | VS Code startup bench                               | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)                                 |
-| 03.41 | Vue Benchmarks Current Qualification                | [`vue-benchmarks-current-qualification.yml`](./vue-benchmarks-current-qualification.yml) |
-| 03.42 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                               |
+| 03.31 | Shipped release-profile measure                     | [`shipped-profile-measure.yml`](./shipped-profile-measure.yml)                           |
+| 03.32 | Source operation profile                            | [`source-operation-profile.yml`](./source-operation-profile.yml)                         |
+| 03.33 | String Storage Bench                                | [`string-storage-bench.yml`](./string-storage-bench.yml)                                 |
+| 03.34 | Text boundary benchmark                             | [`text-boundary-bench.yml`](./text-boundary-bench.yml)                                   |
+| 03.35 | Tool Benchmark                                      | [`tool-benchmark.yml`](./tool-benchmark.yml)                                             |
+| 03.36 | Type admission scale axes                           | [`type-admission-scale.yml`](./type-admission-scale.yml)                                 |
+| 03.37 | Type source snapshot benchmark                      | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                                   |
+| 03.38 | Type-check cold pair                                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                                   |
+| 03.39 | Type-check profile                                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                                       |
+| 03.40 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                                       |
+| 03.41 | VS Code startup bench                               | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)                                 |
+| 03.42 | Vue Benchmarks Current Qualification                | [`vue-benchmarks-current-qualification.yml`](./vue-benchmarks-current-qualification.yml) |
+| 03.43 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                               |
 
 ## 04 Type checking and content mapping
 
