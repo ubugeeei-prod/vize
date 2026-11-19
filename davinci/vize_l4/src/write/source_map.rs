@@ -189,7 +189,7 @@ struct ResolvedSegment {
 /// byte/char column in the common case and only diverges on embedded non-ASCII.
 fn resolve_positions(code: &str, source: &str, segments: &[Segment]) -> Vec<ResolvedSegment> {
     let code_bytes = code.as_bytes();
-    let source_line_starts = line_start_table(source);
+    let source_line_starts = line_starts(source);
 
     let mut resolved = Vec::with_capacity(segments.len());
 
@@ -230,8 +230,9 @@ fn resolve_positions(code: &str, source: &str, segments: &[Segment]) -> Vec<Reso
 }
 
 /// Byte offsets at which each line of `text` begins. Always starts with `0`;
-/// each JavaScript line terminator adds the offset just past it.
-fn line_start_table(text: &str) -> Vec<usize> {
+/// each JavaScript line terminator (`\n`, `\r\n`, `\r`, U+2028, U+2029)
+/// adds the offset just past it.
+pub fn line_starts(text: &str) -> Vec<usize> {
     let mut starts = Vec::with_capacity(16);
     starts.push(0);
     let mut cursor = 0;

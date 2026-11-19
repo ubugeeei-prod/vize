@@ -13,7 +13,6 @@ use super::rewrite::Edit;
 use crate::CompileResult;
 use oxc_sourcemap::SourceMap;
 use serde_json::Value;
-use vize_atelier_core::codegen::source_map::document_source_map;
 use vize_l0::{Span, String as CompactString};
 use vize_l4::write::{EmitDocument, SpanLink};
 
@@ -75,7 +74,7 @@ pub(super) fn rebase(
         });
     }
     let document = EmitDocument::from_parts(CompactString::new(code), links);
-    let rebuilt = document_source_map(&document, filename, source);
+    let rebuilt = document.source_map(filename, source);
     let mut rebuilt: Value = serde_json::from_str(&rebuilt).map_err(|e| e.to_string())?;
     // Preserve map metadata; only generated positions and their name indices change.
     if let (Some(original), Some(target)) = (map.as_object(), rebuilt.as_object_mut()) {
@@ -88,14 +87,9 @@ pub(super) fn rebase(
     Ok(Some(rebuilt))
 }
 
+/// Line starts under the JavaScript line terminators every Vize map uses.
 fn line_starts(text: &str) -> Vec<usize> {
-    std::iter::once(0)
-        .chain(
-            text.bytes()
-                .enumerate()
-                .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1)),
-        )
-        .collect()
+    vize_l4::write::source_map::line_starts(text)
 }
 
 fn offset(text: &str, lines: &[usize], line: u32, column: u32) -> Result<u32, String> {
@@ -107,7 +101,7 @@ fn offset(text: &str, lines: &[usize], line: u32, column: u32) -> Result<u32, St
         if units == column {
             return u32::try_from(start + byte).map_err(|e| e.to_string());
         }
-        if ch == '\n' {
+        if matches!(ch, '\n' | '\r' | '\u{2028}' | '\u{2029}') {
             break;
         }
         units += ch.len_utf16() as u32;

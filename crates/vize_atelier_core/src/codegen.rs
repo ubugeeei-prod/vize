@@ -17,8 +17,6 @@ mod patch_flag;
 mod props;
 mod root;
 mod slots;
-pub mod source_map;
-pub mod source_map_anchor;
 mod v_for;
 mod v_if;
 

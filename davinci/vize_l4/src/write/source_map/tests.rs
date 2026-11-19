@@ -96,7 +96,7 @@ fn resolve_source_offset_to_line_column() {
     // "<div>\n  {{ msg }}\n</div>": line 1 starts at byte 6, so `msg` at byte
     // offset 11 is on line 1 (0-indexed), column 5 (`  {{ ` precedes it).
     let source = "<div>\n  {{ msg }}\n</div>";
-    let starts = line_start_table(source);
+    let starts = line_starts(source);
     assert_eq!(resolve_in_table(source, &starts, 11), (1, 5));
     // The `<` at offset 0 is line 0, column 0.
     assert_eq!(resolve_in_table(source, &starts, 0), (0, 0));
@@ -122,7 +122,7 @@ fn javascript_line_terminators_resolve_both_sides_once_with_utf16_columns() {
         );
         assert_eq!((resolved[0].source_line, resolved[0].source_column), (1, 3));
         assert_eq!(
-            line_start_table(&source),
+            line_starts(&source),
             vec![0, 1 + ending.len(), 9 + 2 * ending.len()]
         );
     }

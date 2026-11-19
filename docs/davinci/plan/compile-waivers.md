@@ -51,3 +51,17 @@ upstream's `_temp` sequence; `_resolveDirective` is inlined like
 (`$setup.key`; the render context proxies setup state and props, so the
 HTML matches); a dynamic key or directive argument naming a JavaScript
 global (`:[Math]`) is spelled `_ctx.Math` where upstream leaves it bare.
+
+## Open: source-map line terminators (#6840, maintainer ruling 2026-11-19)
+
+Emitted code is unchanged; only Source Map v3 `mappings` change, and only for
+templates or scripts that contain a lone CR, U+2028 or U+2029. Every backend
+and every Vize map decoder now breaks lines at the JavaScript line
+terminators (`\n`, `\r\n`, `\r`, U+2028, U+2029), as ECMA-426 and oxc do.
+`\n` and `\r\n` sources map exactly as before.
+
+| id      | shape                           | old map                                                                                                    | new map                   | fixture                                                                                                                                                           |
+| ------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| W-MAP-1 | lone CR in a template or script | legacy DOM/SSR/Vapor maps and the SFC module map counted it as a column; the native targets broke the line | one line break everywhere | `vize_atelier_ssr` `source_map_lines_break_at_every_javascript_line_terminator`, `vize_atelier_sfc` `module_maps_break_lines_at_every_javascript_line_terminator` |
+| W-MAP-2 | U+2028 in a template or script  | same split as W-MAP-1                                                                                      | one line break everywhere | same fixtures                                                                                                                                                     |
+| W-MAP-3 | U+2029 in a template or script  | same split as W-MAP-1                                                                                      | one line break everywhere | same fixtures                                                                                                                                                     |

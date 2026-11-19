@@ -24,8 +24,8 @@ mod sfc_tests;
 mod tests;
 
 use oxc_sourcemap::SourceMap;
-use vize_atelier_core::codegen::source_map::SourceMapBuilder;
 use vize_carton::String;
+use vize_l4::write::source_map::SourceMapBuilder;
 
 pub(crate) use reprint::{remap_reprinted, reprint_points};
 pub(crate) use runs::{Run, Runs, apply_edits, edit_runs, replace_traced};
@@ -33,13 +33,13 @@ pub(crate) use traced::TracedText;
 
 /// Decode a template codegen map into byte-offset provenance.
 ///
-/// Core codegen maps use UTF-16 columns and `\n` line boundaries. Converting
+/// Template maps use UTF-16 columns and JavaScript line terminators. Converting
 /// them once here lets the SFC assembler place the mapped render function in
 /// its final module and then compose its source offsets with authored Pug.
 pub(crate) fn source_map_points(raw: &str, generated: &str, source: &str) -> Option<Runs> {
     let map = SourceMap::from_json_string(raw).ok()?;
-    let generated_lines = reprint::Lines::newline_only(generated);
-    let source_lines = reprint::Lines::newline_only(source);
+    let generated_lines = reprint::Lines::new(generated);
+    let source_lines = reprint::Lines::new(source);
     let mut points = Runs::default();
     for token in map.get_tokens() {
         let Some(output) = generated_lines.offset(token.get_dst_line(), token.get_dst_col()) else {

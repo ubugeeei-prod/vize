@@ -141,3 +141,54 @@ fn source_map_is_additive_and_maps_tokens_byte_exactly() {
         ]
     );
 }
+
+/// Byte offset of a 0-based line and UTF-16 column, where lines break at the
+/// JavaScript line terminators (`\n`, `\r\n`, `\r`, U+2028, U+2029).
+fn js_offset(text: &str, line: usize, column: i64) -> usize {
+    let mut starts = std::vec![0];
+    let mut chars = text.char_indices().peekable();
+    while let Some((index, ch)) = chars.next() {
+        match ch {
+            '\r' if chars.peek().is_some_and(|&(_, next)| next == '\n') => {}
+            '\n' | '\r' | '\u{2028}' | '\u{2029}' => starts.push(index + ch.len_utf8()),
+            _ => {}
+        }
+    }
+    let start = starts[line];
+    let mut units = 0i64;
+    for (index, ch) in text[start..].char_indices() {
+        if units == column {
+            return start + index;
+        }
+        units += ch.len_utf16() as i64;
+    }
+    text.len()
+}
+
+#[test]
+fn source_map_lines_break_at_every_javascript_line_terminator() {
+    // A lone CR, U+2028 and U+2029 stay raw in the template literal, so they
+    // break both the generated and the authored line.
+    let source = "<p>{{ a }}\r{{ b }}\u{2028}{{ c }}\u{2029}{{ d }}\r\n{{ e }}</p>";
+    let result = compile(source, true);
+    let map: serde_json::Value = serde_json::from_str(&result.map.unwrap()).unwrap();
+    let names = map["names"].as_array().unwrap();
+    let mut named = std::vec::Vec::new();
+    for (line, column, source_line, source_column, name) in
+        decode(map["mappings"].as_str().unwrap())
+    {
+        let Some(name) = name else { continue };
+        let name = names[name as usize].as_str().unwrap();
+        let generated = js_offset(&result.code, line, column);
+        let authored = js_offset(source, source_line as usize, source_column);
+        assert!(result.code[generated..].starts_with(&std::format!("_ctx.{name}")));
+        assert!(source[authored..].starts_with(name), "{name} at {authored}");
+        named.push((name, source_line));
+    }
+    assert_eq!(
+        named,
+        [("a", 0), ("b", 1), ("c", 2), ("d", 3), ("e", 4)],
+        "{}",
+        result.code
+    );
+}

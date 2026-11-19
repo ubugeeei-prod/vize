@@ -9,23 +9,16 @@ use oxc_sourcemap::SourceMap;
 
 use super::runs::Runs;
 
-/// Line starts under oxc's line-break rules (`\n`, `\r\n`, `\r`, U+2028,
-/// U+2029), so a (line, column) pair from its codegen resolves back to the
-/// same byte.
+/// Line starts under JavaScript's line terminators (`\n`, `\r\n`, `\r`,
+/// U+2028, U+2029), which oxc's codegen and every Vize map use, so a
+/// (line, column) pair resolves back to the same byte.
 pub(super) struct Lines<'a> {
     text: &'a str,
     starts: Vec<usize>,
 }
 
 impl<'a> Lines<'a> {
-    /// Lines split at `\n` only, as `SourceMapBuilder` resolves them.
-    pub(super) fn newline_only(text: &'a str) -> Self {
-        let mut starts = vec![0];
-        starts.extend(text.match_indices('\n').map(|(index, _)| index + 1));
-        Self { text, starts }
-    }
-
-    fn new(text: &'a str) -> Self {
+    pub(super) fn new(text: &'a str) -> Self {
         let mut starts = vec![0];
         let mut chars = text.char_indices().peekable();
         while let Some((index, ch)) = chars.next() {
@@ -98,7 +91,7 @@ pub(crate) fn remap_reprinted(
     let filename = first_str("sources")?;
     let json = serde_json::to_string(map).ok()?;
     let parsed = SourceMap::from_json_string(&json).ok()?;
-    let (pre_lines, source_lines) = (Lines::newline_only(pre), Lines::newline_only(source));
+    let (pre_lines, source_lines) = (Lines::new(pre), Lines::new(source));
     let origins: vize_carton::FxHashMap<usize, usize> = parsed
         .get_tokens()
         .filter_map(|token| {

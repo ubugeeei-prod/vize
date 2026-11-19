@@ -3,9 +3,7 @@
 use std::fmt::Write;
 
 use crate::ir::{OperationNode, RootIRNode};
-use vize_atelier_core::{
-    Namespace, codegen::source_map::document_source_map, options::BindingMetadata,
-};
+use vize_atelier_core::{Namespace, options::BindingMetadata};
 use vize_carton::{FxHashSet, String, cstr};
 use vize_l4::write::EmitDocument;
 
@@ -274,7 +272,7 @@ pub(crate) fn generate_vapor_with_spans_and_runtime(
         let filename = experimental_options
             .source_map_filename
             .unwrap_or("template.vue");
-        document_source_map(&document, filename, ir.source)
+        document.source_map(filename, ir.source)
     });
 
     VaporGenerateResult {

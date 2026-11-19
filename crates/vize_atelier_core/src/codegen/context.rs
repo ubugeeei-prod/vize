@@ -8,7 +8,6 @@ use crate::options::CodegenOptions;
 use crate::runtime_helpers::RuntimeHelpers;
 use crate::{Namespace, RuntimeHelper};
 
-use super::source_map::document_source_map;
 use vize_l0::FxHashMap;
 use vize_l0::String;
 use vize_l4::write::EmitDocument;
@@ -171,7 +170,7 @@ impl CodegenContext {
     pub(super) fn source_map(&self, filename: &str, source: &str) -> Option<String> {
         self.out
             .is_recording()
-            .then(|| document_source_map(&self.out, filename, source))
+            .then(|| self.out.source_map(filename, source))
     }
 
     /// Byte length of the code generated so far.

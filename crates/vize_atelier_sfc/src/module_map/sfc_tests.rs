@@ -169,6 +169,57 @@ fn script_only_default_export_maps_to_its_authored_statement() {
     );
 }
 
+/// Byte offset of a 0-based line and UTF-16 column under the JavaScript line
+/// terminators (`\n`, `\r\n`, `\r`, U+2028, U+2029).
+fn js_offset(text: &str, line: u32, column: u32) -> Option<usize> {
+    let mut starts = vec![0];
+    let mut chars = text.char_indices().peekable();
+    while let Some((index, ch)) = chars.next() {
+        match ch {
+            '\r' if chars.peek().is_some_and(|&(_, next)| next == '\n') => {}
+            '\n' | '\r' | '\u{2028}' | '\u{2029}' => starts.push(index + ch.len_utf8()),
+            _ => {}
+        }
+    }
+    let start = *starts.get(line as usize)?;
+    let mut units = 0;
+    for (index, ch) in text[start..].char_indices() {
+        if units == column {
+            return Some(start + index);
+        }
+        units += ch.len_utf16() as u32;
+    }
+    (units == column).then_some(text.len())
+}
+
+#[test]
+fn module_maps_break_lines_at_every_javascript_line_terminator() {
+    // Lone CR, U+2028 and U+2029 inside the script and the template.
+    let source = "<script setup>\rconst n = 1\u{2028}const m = 2\u{2029}const k = 3\n</script>\n<template><p>{{ n }}\r{{ m }}\u{2028}{{ k }}</p></template>\n";
+    for inline_template in [false, true] {
+        let result = compile(source, inline_template, true);
+        let json = serde_json::to_string(result.map.as_ref().unwrap()).unwrap();
+        let map = SourceMap::from_json_string(&json).unwrap();
+        let mut pairs = Vec::new();
+        for token in map.get_tokens() {
+            let generated = js_offset(&result.code, token.get_dst_line(), token.get_dst_col())
+                .expect("generated position resolves");
+            let authored = js_offset(source, token.get_src_line(), token.get_src_col())
+                .expect("authored position resolves");
+            pairs.push((generated, authored));
+        }
+        for statement in ["const n = 1", "const m = 2", "const k = 3"] {
+            let generated = result.code.find(statement).unwrap();
+            let authored = source.find(statement).unwrap();
+            assert!(
+                pairs.contains(&(generated, authored)),
+                "{statement} unmapped (inline {inline_template}): {pairs:?}\n{}",
+                result.code
+            );
+        }
+    }
+}
+
 #[test]
 fn stripping_typescript_at_the_boundary_carries_the_map() {
     let source = SHAPES[1];
