@@ -78,17 +78,11 @@ export const TOOLING_LEAD_STEPS = [
     step: "Execute original selected-template DOM modules",
     output: "merge-only",
   },
-  {
-    id: "historical-sfc-documents",
-    step: "Join original historical Vue interpolation Docs to pinned whole goldens",
-    output: "always",
-  },
 ] as const;
 
 export function toolingLeadSteps(tier: ToolingTier, outputs: Record<string, boolean>) {
   return TOOLING_LEAD_STEPS.filter(
-    ({ output }) =>
-      output === "always" || tier === "merge" || (output !== "merge-only" && outputs[output]),
+    ({ output }) => tier === "merge" || (output !== "merge-only" && outputs[output]),
   ).map(({ id }) => id);
 }
 

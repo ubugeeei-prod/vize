@@ -108,7 +108,7 @@ void test("independent native and package execution stops on cancellation withou
       /inputs\.shard/.test(step.if ?? "") &&
       /(?:always|cancelled)\(/.test(step.if ?? ""),
   );
-  assert.equal(independent.length, 4, "retain every independent capture and plugin preparation");
+  assert.equal(independent.length, 3, "retain every independent capture and plugin preparation");
   for (const step of independent)
     for (const shard of ["1", "2"])
       for (const prior of ["success", "failure", "skipped"])
@@ -134,14 +134,13 @@ void test("independent native and package execution stops on cancellation withou
     "test-native-js-setup",
     "test-native-selected-sfc-dom",
     "test-native-attribute-values-7502",
-    "test-native-historical-sfc-documents",
   ])
     execution.push(
       ...yaml(`.github/actions/${name}/action.yml`).runs.steps.filter(
         (step) => step.if && !step.uses?.startsWith("actions/upload-artifact@"),
       ),
     );
-  assert.equal(execution.length, 14);
+  assert.equal(execution.length, 13);
   assert.equal(
     execution.filter(
       (step) =>
@@ -194,9 +193,6 @@ void test("failure uploads and strict full aggregators retain cancellation evide
     "test-full-tooling",
     "test-native-selected-sfc-dom",
     "test-native-attribute-values-7502",
-    "test-native-vue1-text-document",
-    "test-native-vue2-text-document",
-    "test-native-vue2-scriptless-sfc",
   ]) {
     const uploads = yaml(`.github/actions/${name}/action.yml`).runs.steps.filter(
       (step) =>

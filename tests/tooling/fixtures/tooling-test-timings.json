@@ -7,8 +7,7 @@
     "native-js-setup": 42396,
     "native-vapor": 21000,
     "native-attribute-values-7502": 91664,
-    "native-selected-template": 3000,
-    "historical-sfc-documents": 13896
+    "native-selected-template": 3000
   },
   "tiers": {
     "pr": {
@@ -695,12 +694,8 @@
       "tests/tooling/native-vapor-static-class-reference.test.mjs": 27,
       "tests/tooling/native-vapor-static-class-successor.test.ts": 781,
       "tests/tooling/native-vue-is-component-8328.test.ts": 60,
-      "tests/tooling/native-vue1-text-document-capture-workflow.test.ts": 194,
-      "tests/tooling/native-vue1-text-document-oracle.test.ts": 387,
       "tests/tooling/native-vue1-upstream-oracle.test.ts": 57,
       "tests/tooling/native-vue2-runtime-oracle.test.ts": 204,
-      "tests/tooling/native-vue2-scriptless-sfc-oracle.test.ts": 237,
-      "tests/tooling/native-vue2-text-document-oracle.test.ts": 326,
       "tests/tooling/native-vue2-upstream-oracle.test.ts": 63,
       "tests/tooling/nix-testbox.test.ts": 38,
       "tests/tooling/no-mutating-props-current-callers-shallow.test.mjs": 191,
@@ -1930,12 +1925,8 @@
       "tests/tooling/native-vapor-static-class-reference.test.mjs": 25,
       "tests/tooling/native-vapor-static-class-successor.test.ts": 801,
       "tests/tooling/native-vue-is-component-8328.test.ts": 61,
-      "tests/tooling/native-vue1-text-document-capture-workflow.test.ts": 207,
-      "tests/tooling/native-vue1-text-document-oracle.test.ts": 397,
       "tests/tooling/native-vue1-upstream-oracle.test.ts": 52,
       "tests/tooling/native-vue2-runtime-oracle.test.ts": 206,
-      "tests/tooling/native-vue2-scriptless-sfc-oracle.test.ts": 240,
-      "tests/tooling/native-vue2-text-document-oracle.test.ts": 324,
       "tests/tooling/native-vue2-upstream-oracle.test.ts": 61,
       "tests/tooling/nix-testbox.test.ts": 36,
       "tests/tooling/no-mutating-props-current-callers-shallow.test.mjs": 190,

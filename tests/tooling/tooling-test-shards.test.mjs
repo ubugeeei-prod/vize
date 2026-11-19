@@ -35,7 +35,7 @@ const allLeadSteps = TOOLING_LEAD_STEPS.map(({ id }) => id);
 for (const tier of ["pr", "merge"]) {
   void test(`${tier} shards preserve every selected file exactly once and remain serial`, () => {
     for (const size of [...Array.from({ length: 33 }, (_, size) => size), 100, 170, 400]) {
-      for (const leadSteps of [undefined, ["historical-sfc-documents"], allLeadSteps]) {
+      for (const leadSteps of [undefined, ["native-ssr"], allLeadSteps]) {
         const files = Array.from({ length: size }, (_, index) => `tests/tooling/${index}.test.ts`);
         const input = plan(files, tier, leadSteps);
         const shards = toolingShardMatrix(input).include;
@@ -100,12 +100,11 @@ void test("timed packing uses the fewest runners within the target and bounds th
 });
 
 void test("runner 1 reserves capture time while preserving the exact partition", () => {
-  assert.deepEqual(toolingLeadSteps("pr", {}), ["historical-sfc-documents"]);
+  assert.deepEqual(toolingLeadSteps("pr", {}), []);
   assert.deepEqual(toolingLeadSteps("merge", {}), allLeadSteps);
   assert.deepEqual(toolingLeadSteps("pr", { "native-ssr-capture": true }), [
     "native-ssr",
     "native-scoped-css",
-    "historical-sfc-documents",
   ]);
   assert.deepEqual(
     toolingLeadSteps("pr", {
@@ -233,7 +232,7 @@ void test("a selected shard keeps its spec output and logs one per-file timing r
   try {
     const file = join(cwd, "plan.json");
     const selected = ["tests/tooling/git-tracked-files.test.ts"];
-    writeFileSync(file, JSON.stringify(plan(selected, "pr", ["historical-sfc-documents"])));
+    writeFileSync(file, JSON.stringify(plan(selected, "pr", ["native-ssr"])));
     const env = { ...process.env, VIZE_TOOLING_TEST_TIER: "pr", VIZE_TOOLING_TEST_SHARD: "1/1" };
     delete env.NODE_TEST_CONTEXT;
     const result = spawnSync(

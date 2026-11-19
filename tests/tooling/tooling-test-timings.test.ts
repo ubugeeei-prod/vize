@@ -84,10 +84,6 @@ void test("the full tooling caller retains shard coordinates and native lead-ste
         "Capture original native attribute values and fixed fresh mounts",
         "./.github/actions/test-native-attribute-values-7502",
       ],
-      [
-        "Join original historical Vue documents to pinned whole goldens",
-        "./.github/actions/test-native-historical-sfc-documents",
-      ],
     ],
   );
   for (const step of lead) assert.equal(step.if, "${{ !cancelled() && inputs.shard == '1' }}");
@@ -104,7 +100,6 @@ void test("the full tooling caller retains shard coordinates and native lead-ste
     {
       "native-js-setup": 5000,
       "native-attribute-values-7502": 6000,
-      "historical-sfc-documents": 7000,
     },
   );
 });
@@ -353,7 +348,6 @@ void test("all current descriptive matrix cohorts retain success, failed and can
 void test("raw composite capture spans preserve failures before file timing starts", () => {
   const first = "Prepare plugin runtime and test native JS setup";
   const second = "Capture original native attribute values and fixed fresh mounts";
-  const historical = "Join original historical Vue documents to pinned whole goldens";
   const span = (name: string, id: string, outcome: string, ms: number | string) =>
     [
       `2026-10-16T17:13:11Z ##[start-action display=${name};id=${id}]`,
@@ -363,24 +357,22 @@ void test("raw composite capture spans preserve failures before file timing star
     span(first, "native", "failure", 1234),
     span(`Post ${first}`, "post-native", "success", 25),
     span(second, "attribute", "cancelled", 42),
-    span(historical, "historical", "failure", 37),
     span("unrelated setup", "other", "success", 99999),
   ].join("\n");
   const expected = {
     "native-js-setup": 1259,
     "native-attribute-values-7502": 42,
-    "historical-sfc-documents": 37,
   };
   assert.deepEqual(
     parseToolingLeadLog(
       span(
-        TOOLING_LEAD_STEPS.find(({ id }) => id === "historical-sfc-documents")!.step,
-        "legacy-historical",
+        TOOLING_LEAD_STEPS.find(({ id }) => id === "native-js-setup")!.step,
+        "legacy-native",
         "success",
         55,
       ),
     ),
-    { "historical-sfc-documents": 55 },
+    { "native-js-setup": 55 },
   );
   assert.deepEqual(parseToolingLeadLog(log), expected);
   assert.deepEqual(

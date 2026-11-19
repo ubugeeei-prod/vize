@@ -40,7 +40,6 @@ const TOOLING_FILE = /^tests\/tooling\/(?:[^/]+\/)?[^/]+\.test\.(?:ts|mjs)$/;
 const CURRENT_LEAD_NAMES: Record<string, string> = {
   "native-js-setup": "Prepare plugin runtime and test native JS setup",
   "native-attribute-values-7502": "Capture original native attribute values and fixed fresh mounts",
-  "historical-sfc-documents": "Join original historical Vue documents to pinned whole goldens",
 };
 
 function coordinates(shard: string) {
