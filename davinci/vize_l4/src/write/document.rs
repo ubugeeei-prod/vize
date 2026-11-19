@@ -205,12 +205,7 @@ impl EmitDocument {
     #[inline(always)]
     fn record(&mut self, generated: Span, authored: Span, name: Option<&str>) {
         if self.recording {
-            self.links.push(SpanLink {
-                generated,
-                authored,
-                name: name.map(String::new),
-                segment: true,
-            });
+            self.push_link(generated, authored, name);
         }
     }
 
@@ -218,14 +213,40 @@ impl EmitDocument {
     fn push_recorded(&mut self, text: &str, authored: Span, name: Option<&str>) {
         if self.recording {
             let start = self.cursor();
-            self.links.push(SpanLink {
-                generated: Span::new(start, start + text.len() as u32),
-                authored,
-                name: name.map(String::new),
-                segment: true,
-            });
+            self.push_link(Span::new(start, start + text.len() as u32), authored, name);
         }
         self.text.push_str(text);
+    }
+
+    // Link bookkeeping stays out of line: the text paths above are inlined
+    // into every emitter call site, and a document that does not record
+    // should pay only for the text there.
+
+    #[inline(never)]
+    fn push_link(&mut self, generated: Span, authored: Span, name: Option<&str>) {
+        self.links.push(SpanLink {
+            generated,
+            authored,
+            name: name.map(String::new),
+            segment: true,
+        });
+    }
+
+    #[inline(never)]
+    fn push_expression_links(&mut self, code: &str, span: Span, source_text: &str) {
+        let base = self.cursor();
+        self.links.extend(
+            expression_links(code, span, source_text)
+                .iter()
+                .map(|link| link.rebased(base)),
+        );
+    }
+
+    #[inline(never)]
+    fn push_rebased_links(&mut self, links: &[SpanLink]) {
+        let base = self.cursor();
+        self.links
+            .extend(links.iter().map(|link| link.rebased(base)));
     }
 
     /// Anchor the next written byte at the authored byte `source`.
@@ -259,12 +280,7 @@ impl EmitDocument {
     #[inline(always)]
     pub fn push_expression(&mut self, code: &str, span: Span, source_text: &str) {
         if self.recording {
-            let base = self.cursor();
-            self.links.extend(
-                expression_links(code, span, source_text)
-                    .iter()
-                    .map(|link| link.rebased(base)),
-            );
+            self.push_expression_links(code, span, source_text);
         }
         self.text.push_str(code);
     }
@@ -272,10 +288,8 @@ impl EmitDocument {
     /// Append another document, rebasing its links.
     #[inline(always)]
     pub fn push_spanned(&mut self, other: &EmitDocument) {
-        if self.recording {
-            let base = self.cursor();
-            self.links
-                .extend(other.links.iter().map(|link| link.rebased(base)));
+        if self.recording && !other.links.is_empty() {
+            self.push_rebased_links(&other.links);
         }
         self.text.push_str(&other.text);
     }

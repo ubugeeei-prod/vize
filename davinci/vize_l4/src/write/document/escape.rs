@@ -3,52 +3,79 @@ use vize_l0::Span;
 
 use super::{EmitDocument, SpanLink};
 
+/// The first `(from, to)` pattern that `rest` starts with. Single-byte
+/// patterns (quotes, backslashes, line breaks) are the common case and
+/// compare one byte; an empty pattern never matches.
+#[inline(always)]
+fn escape_at<'e>(rest: &[u8], escapes: &'e [(&'e str, &'e str)]) -> Option<&'e (&'e str, &'e str)> {
+    escapes.iter().find(|(from, _)| {
+        let pattern = from.as_bytes();
+        if pattern.len() == 1 {
+            rest.first() == pattern.first()
+        } else {
+            !pattern.is_empty() && rest.starts_with(pattern)
+        }
+    })
+}
+
 impl EmitDocument {
     /// Append another document with every occurrence of each `(from, to)`
     /// pattern replaced, rebasing its links onto the escaped output. Patterns
     /// are ASCII and tried in order at each byte; a link boundary at an
     /// escaped byte lands before its replacement.
+    ///
+    /// Only the text loop is inlined into callers; rebasing links runs out of
+    /// line, so a document that does not record pays for the text alone.
     #[inline(always)]
     pub fn push_escaped(&mut self, other: &EmitDocument, escapes: &[(&str, &str)]) {
-        let base = self.text.len();
+        if self.recording && !other.links.is_empty() {
+            self.push_escaped_linked(other, escapes);
+            return;
+        }
         let bytes = other.text.as_bytes();
-        // (input start, input end, cumulative signed length change)
-        let mut growth: Vec<(usize, usize, isize)> = Vec::new();
         let (mut start, mut index) = (0, 0);
         while index < bytes.len() {
-            let rest = bytes.split_at(index).1;
-            let Some((from, to)) = escapes.iter().find(|(from, _)| {
-                let pattern = from.as_bytes();
-                // Single-byte patterns (quotes, backslashes, line breaks) are
-                // the common case; compare the byte instead of a prefix.
-                if pattern.len() == 1 {
-                    rest.first() == pattern.first()
-                } else {
-                    !pattern.is_empty() && rest.starts_with(pattern)
-                }
-            }) else {
+            let Some((from, to)) = escape_at(bytes.split_at(index).1, escapes) else {
                 index += 1;
                 continue;
             };
             self.text
                 .push_str(other.text.get(start..index).unwrap_or_default());
             self.text.push_str(to);
-            if self.recording && !other.links.is_empty() {
-                let total = growth.last().map_or(0, |&(_, _, total)| total);
-                growth.push((
-                    index,
-                    index + from.len(),
-                    total + to.len() as isize - from.len() as isize,
-                ));
-            }
             index += from.len();
             start = index;
         }
         self.text
             .push_str(other.text.get(start..).unwrap_or_default());
-        if !self.recording {
-            return;
+    }
+
+    /// [`Self::push_escaped`] for a recording document whose source has links.
+    #[inline(never)]
+    fn push_escaped_linked(&mut self, other: &EmitDocument, escapes: &[(&str, &str)]) {
+        let base = self.text.len();
+        let bytes = other.text.as_bytes();
+        // (input start, input end, cumulative signed length change)
+        let mut growth: Vec<(usize, usize, isize)> = Vec::new();
+        let (mut start, mut index) = (0, 0);
+        while index < bytes.len() {
+            let Some((from, to)) = escape_at(bytes.split_at(index).1, escapes) else {
+                index += 1;
+                continue;
+            };
+            self.text
+                .push_str(other.text.get(start..index).unwrap_or_default());
+            self.text.push_str(to);
+            let total = growth.last().map_or(0, |&(_, _, total)| total);
+            growth.push((
+                index,
+                index + from.len(),
+                total + to.len() as isize - from.len() as isize,
+            ));
+            index += from.len();
+            start = index;
         }
+        self.text
+            .push_str(other.text.get(start..).unwrap_or_default());
         let out = |offset: u32| {
             let before = growth.partition_point(|&(at, _, _)| at < offset as usize);
             let shifted = match before.checked_sub(1).and_then(|last| growth.get(last)) {
