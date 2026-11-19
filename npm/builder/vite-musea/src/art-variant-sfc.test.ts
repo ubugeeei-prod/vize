@@ -2,34 +2,26 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { buildVariantSfcSource, compileVariantSfc } from "./art-variant-sfc.js";
-import { readFileSync } from "node:fs";
 import { loadNative } from "./native-loader.ts";
 import type { ArtFileInfo } from "./types/index.js";
 
-void test("native inline Art Self retains the imported host component", () => {
-  const fixture = JSON.parse(
-    readFileSync(
-      new URL(
-        "../../../../tests/_fixtures/differential/musea/inline-self-binding.json",
-        import.meta.url,
-      ),
-      "utf8",
-    ),
-  ) as { filename: string; source: string; template: string; variant: string };
-  const parsed = loadNative().parseArt(fixture.source, { filename: fixture.filename });
-  assert.equal(parsed.variants[0].template, fixture.template);
+void test("native inline Art retains the imported host component name", () => {
+  const filename = "/project/Button.vue";
+  const source = `<template><button /></template><art title="Button"><variant name="Default"><Button /></variant></art>`;
+  const parsed = loadNative().parseArt(source, { filename });
+  assert.equal(parsed.variants[0].template, "<Button />");
   const art = artFile({
-    path: fixture.filename,
-    componentPath: fixture.filename,
+    path: filename,
+    componentPath: filename,
     isInline: true,
     scriptSetupContent: undefined,
     hasScriptSetup: false,
     variants: parsed.variants,
   });
-  const result = compileVariantSfc(art, fixture.template, fixture.variant, fixture.filename);
+  const result = compileVariantSfc(art, "<Button />", "Default", filename);
   assert.deepEqual(result.errors, []);
-  assert.match(result.code, /import MuseaComponent from '\/project\/Button\.vue'/u);
-  assert.doesNotMatch(result.code, /_resolveComponent\("MuseaComponent"\)/u);
+  assert.match(result.code, /import Button from ['"]\/project\/Button\.vue['"]/u);
+  assert.doesNotMatch(result.code, /_resolveComponent\("Button"\)/u);
 });
 
 const scriptSetup = [
@@ -114,6 +106,44 @@ void test("the variant wrapper carries the variant name for gallery queries", ()
   assert.match(source, /<script setup lang="ts">/);
 });
 
+void test("an inline variant play is contextually typed and registered from script-setup scope", () => {
+  const source = buildVariantSfcSource(
+    artFile({ scriptSetupContent: "const expectedLabel = 'Save'" }),
+    `<button>Save</button>`,
+    "Primary",
+    {
+      play: "async ({ canvas, expect }) => expect(canvas.getByText(expectedLabel)).toBeVisible()",
+    },
+  );
+
+  assert.match(source, /const __museaVariantPlay: MuseaPlay = \(async \(\{ canvas, expect \}\)/);
+  assert.match(source, /canvas\.getByText\(expectedLabel\)/);
+  assert.match(source, /window as any\)\.__museaPlay = __museaVariantPlay/);
+  assert.throws(
+    () => buildVariantSfcSource(artFile(), `<button />`, "Unsafe", { play: "run); alert(1)" }),
+    /Invalid Musea play expression/,
+  );
+});
+
+void test("variant props and attrs keep generated component contracts", () => {
+  const source = buildVariantSfcSource(artFile(), `<MuseaComponent label="Override" />`, "Typed", {
+    componentImportPath: "/p/src/Example.vue",
+    componentBindingName: "MuseaComponent",
+    props: { label: "Save", disabled: false },
+    attrs: { "aria-label": "Save button", "data-state": "ready" },
+  });
+
+  assert.match(
+    source,
+    /__museaVariantProps = \{"label":"Save","disabled":false\} satisfies Partial<MuseaComponentProps<typeof MuseaComponent>>/,
+  );
+  assert.match(
+    source,
+    /__museaVariantAttrs = .* satisfies MuseaComponentAttrs<typeof MuseaComponent>/,
+  );
+  assert.match(source, /<MuseaComponent v-bind="__museaVariantBindings" label="Override" \/>/);
+});
+
 void test("an art file without a script block still compiles its template", () => {
   const result = compileVariantSfc(
     artFile({ scriptSetupContent: undefined, hasScriptSetup: false }),
@@ -129,7 +159,7 @@ void test("an art file without a script block still compiles its template", () =
   assert.match(result.code, /export default/, "every variant must export a component");
 });
 
-void test("the demonstrated component is imported so <Self> resolves", () => {
+void test("the inferred demonstrated component is imported for the authored tag", () => {
   const source = buildVariantSfcSource(artFile(), `<MuseaComponent />`, "Default", {
     componentImportPath: "/p/src/Example.vue",
     componentBindingName: "MuseaComponent",

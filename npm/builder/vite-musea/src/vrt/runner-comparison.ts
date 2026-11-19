@@ -38,6 +38,7 @@ export async function captureAndCompare(
 
   const options = runner.getOptions();
   const capture = runner.getCapture();
+  const authoredPlay = art.variants?.find((variant) => variant.name === variantName)?.play;
   // Authored async hooks can update configuration for a later capture. Keep
   // this capture's rendering, validation, and result metadata on one snapshot.
   const comparison = { ...runner.getComparison() };
@@ -74,12 +75,28 @@ export async function captureAndCompare(
     // Navigate to variant preview URL
     const variantUrl = runner.getPreviewUrl(baseUrl, art.path, variantName);
     const waitUntil = capture.waitForNetwork ? ("networkidle" as const) : ("load" as const);
-    if (capture.waitForPreviewReady) await observePreviewReady(page);
+    if (capture.waitForPreviewReady || authoredPlay) await observePreviewReady(page);
     await page.goto(variantUrl, { waitUntil });
-    if (capture.waitForPreviewReady) await waitForMountedPreview(page);
+    if (capture.waitForPreviewReady || authoredPlay) await waitForMountedPreview(page);
 
     // Wait for content to render
     await page.waitForSelector(capture.waitSelector, { timeout: 10000 });
+
+    // A colocated play function establishes the authored interaction state
+    // before user capture hooks and before the visual snapshot is taken.
+    if (authoredPlay) {
+      try {
+        await page.evaluate(async () => {
+          const runPlay = Reflect.get(window, "__museaRunPlay");
+          if (typeof runPlay !== "function") throw new Error("Musea play runtime is unavailable");
+          await runPlay();
+        });
+      } catch (error) {
+        throw new Error(`play failed: ${error instanceof Error ? error.message : String(error)}`, {
+          cause: error,
+        });
+      }
+    }
 
     if (capture.beforeCapture) {
       try {

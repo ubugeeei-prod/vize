@@ -2,7 +2,8 @@ import type { ArtFileInfo } from "../types/index.js";
 import type { MuseaVueVersion } from "../types/plugin.js";
 import type { ResolvedMuseaToolbarControl } from "../toolbar.js";
 import { generatePreviewGlobals } from "./globals.js";
-import { MUSEA_ADDONS_INIT_CODE } from "./addons.js";
+import { MUSEA_ADDONS_INIT_CODE, MUSEA_PLAY_INIT_CODE } from "./addons.js";
+import { MUSEA_PLAY_RUNTIME_CODE } from "./play.js";
 
 export { generatePreviewHtml } from "./html.js";
 
@@ -30,6 +31,9 @@ export function generatePreviewModule(
     ? `await __museaPreviewSetup(app${globals ? ", { globals: __museaGlobals }" : ""});`
     : "";
   const actionEvents = JSON.stringify(art.metadata.actionEvents ?? []);
+  const hasPlay = Boolean(art.variants?.find((variant) => variant.name === variantName)?.play);
+  const playRuntime = hasPlay ? MUSEA_PLAY_RUNTIME_CODE + MUSEA_PLAY_INIT_CODE : "";
+  const playInit = hasPlay ? `\n    __museaInitPlay(container, ${variantNameLiteral});` : "";
   const legacyVue = isLegacyVueVersion(vueVersion);
   const vueImport = legacyVue
     ? `import Vue, { reactive, shallowRef${globals ? ", ref as __museaCreateGlobalsRef" : ""} } from 'vue';`
@@ -52,11 +56,12 @@ import * as artModule from ${artModuleIdLiteral};
 
 const container = document.getElementById('app');
 
-${MUSEA_ADDONS_INIT_CODE}${generatePreviewGlobals(toolbar)}
+${playRuntime}${MUSEA_ADDONS_INIT_CODE}${generatePreviewGlobals(toolbar)}
 
 let currentApp = null;
 // Replace raw JSON snapshots so every literal prop name stays an own key.
 const propsOverride = shallowRef({});
+const attrsOverride = shallowRef({});
 const slotsOverride = reactive({ default: '' });
 
 function renderError(title, error) {
@@ -85,8 +90,9 @@ function renderError(title, error) {
 
 ${mountHelper}
 
-window.__museaSetProps = (props) => {
+window.__museaSetProps = (props, attrs = {}) => {
   propsOverride.value = { ...props };
+  attrsOverride.value = { ...attrs };
 };
 
 window.__museaSetSlots = (slots) => {
@@ -114,12 +120,13 @@ async function mount() {
     ${mountCurrentApp}
 
     console.log('[musea-preview] Mounted variant:', ${variantNameLiteral});
-    __museaInitAddons(container, ${variantNameLiteral}, ${actionEvents});
+    __museaInitAddons(container, ${variantNameLiteral}, ${actionEvents});${playInit}
 
     // Override set-props to remount with raw component + props
     const TargetComponent = RawComponent || VariantComponent;
-    window.__museaSetProps = (props) => {
+    window.__museaSetProps = (props, attrs = {}) => {
       propsOverride.value = { ...props };
+      attrsOverride.value = { ...attrs };
       remountWithProps(TargetComponent);
     };
     window.__museaSetSlots = (slots) => {
@@ -176,7 +183,7 @@ function vue2RemountAppSnippet(): string {
         slotFns[name] = slot;
         if (name === 'default') children.push(...slot());
       }
-      return h(Component, { props: { ...propsOverride.value }, scopedSlots: slotFns }, children);
+      return h(Component, { props: { ...propsOverride.value }, attrs: { ...attrsOverride.value }, scopedSlots: slotFns }, children);
     }
   });`;
 }
@@ -189,7 +196,7 @@ function vue3RemountAppSnippet(): string {
         for (const [name, content] of Object.entries(slotsOverride)) {
           if (content) slotFns[name] = () => h('span', String(content));
         }
-        return h(Component, { ...propsOverride.value }, slotFns);
+        return h(Component, { ...attrsOverride.value, ...propsOverride.value }, slotFns);
       };
     }
   });`;
@@ -221,6 +228,9 @@ export function generatePreviewModuleWithProps(
     ? `await __museaPreviewSetup(app${globals ? ", { globals: __museaGlobals }" : ""});`
     : "";
   const actionEvents = JSON.stringify(art.metadata.actionEvents ?? []);
+  const hasPlay = Boolean(art.variants?.find((variant) => variant.name === variantName)?.play);
+  const playRuntime = hasPlay ? MUSEA_PLAY_RUNTIME_CODE + MUSEA_PLAY_INIT_CODE : "";
+  const playInit = hasPlay ? `\n    __museaInitPlay(container, ${variantNameLiteral});` : "";
   const legacyVue = isLegacyVueVersion(vueVersion);
   const vueImport = legacyVue
     ? `import Vue${globals ? ", { ref as __museaCreateGlobalsRef }" : ""} from 'vue';`
@@ -252,7 +262,7 @@ import * as artModule from ${artModuleIdLiteral};
 const container = document.getElementById('app');
 const propsOverride = JSON.parse(${JSON.stringify(propsJson)});
 
-${MUSEA_ADDONS_INIT_CODE}${generatePreviewGlobals(toolbar)}
+${playRuntime}${MUSEA_ADDONS_INIT_CODE}${generatePreviewGlobals(toolbar)}
 
 function renderError(title, error) {
   container.textContent = '';
@@ -286,7 +296,7 @@ async function mount() {
     container.className = 'musea-variant';
     ${appMount}
     console.log('[musea-preview] Mounted variant with props override:', ${variantNameLiteral});
-    __museaInitAddons(container, ${variantNameLiteral}, ${actionEvents});
+    __museaInitAddons(container, ${variantNameLiteral}, ${actionEvents});${playInit}
   } catch (error) {
     console.error('[musea-preview] Failed to mount:', error);
     renderError('Failed to render', error);

@@ -70,8 +70,9 @@ Direct `musea()` options override shared config. Pass preview-only options such 
 ```vue
 <!-- Button.art.vue -->
 <script setup lang="ts">
-defineArt("./Button.vue", {
-  title: "Button",
+import Button from "./Button.vue";
+
+defineArtMeta({
   category: "UI",
   tags: ["button", "form"],
 });
@@ -87,10 +88,10 @@ defineArt("./Button.vue", {
 </art>
 ```
 
-`defineArt(source, options)` is a compiler macro. It declares the Vue component Musea should render
-and the metadata shown in the gallery. Prefer a relative component path string; the macro call is
-removed and Musea generates the component import. The Musea language server uses the same source
-for path completion, missing-file diagnostics, go-to-definition, and prop/slot inference.
+Musea infers the target from the imported component tag shared by the variants. `defineArtMeta()` is
+an optional compiler macro for gallery metadata; `title` defaults to the inferred binding name.
+Normal Vue template checking supplies prop, emit, slot, completion, and diagnostic types. If a
+composition contains multiple possible targets, use `defineArt(Component, metadata?)` explicitly.
 
 The source may be a `.vue`, `.ts`, `.tsx`, `.js`, or `.jsx` file. For render-function components,
 Musea reads statically declared runtime `props` and `emits` for the analysis and props panel.
@@ -125,8 +126,7 @@ computed values, and composable calls:
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-
-defineArt("./Counter.vue", { title: "Counter" });
+import Counter from "./Counter.vue";
 
 const count = ref(0);
 </script>
@@ -163,7 +163,8 @@ musea({
 });
 ```
 
-Use `<Self>` in an inline `<art>` block to render the host component.
+Use the host component's normal inferred SFC name in inline art, for example `<Button>` in
+`Button.vue`.
 
 ## Preview Setup
 

@@ -42,17 +42,28 @@ fn generate(script: &str, template: &str, check_unknown_components: bool) -> Vir
     )
 }
 
+fn line_suffixes<'a>(code: &'a str, prefix: &str) -> Vec<&'a str> {
+    code.lines()
+        .filter_map(|line| line.strip_prefix(prefix))
+        .collect()
+}
+
+fn registry_probes(code: &str) -> Vec<&str> {
+    code.lines()
+        .filter_map(|line| {
+            line.strip_prefix("const { \"")?
+                .split_once("\": __vize_global_component_")
+                .map(|(name, _)| name)
+        })
+        .collect()
+}
+
+fn occurrence_count(code: &str, needle: &str) -> usize {
+    code.match_indices(needle).count()
+}
+
 #[test]
-fn define_art_string_source_types_its_implicit_variant_component() {
-    fn registry_probes(code: &str) -> Vec<&str> {
-        code.lines()
-            .filter_map(|line| {
-                line.strip_prefix("const { \"")?
-                    .split_once("\": __vize_global_component_")
-                    .map(|(name, _)| name)
-            })
-            .collect::<Vec<_>>()
-    }
+fn define_art_string_source_does_not_register_an_implicit_variant_component() {
     let script = r#"defineArt("./MyCard.vue", { title: "MyCard" });"#;
     let template = r#"<variant><MyCard :title="123" /></variant>"#;
     let default = generate(script, template, false);
@@ -64,49 +75,57 @@ fn define_art_string_source_types_its_implicit_variant_component() {
     );
     assert_eq!(
         registry_probes(&checked.code),
-        vec!["variant"],
-        "unknown-component checking may probe the variant element but not the implicit art subject"
+        vec!["MyCard", "variant"],
+        "unknown-component checking must probe the unimported Art subject"
     );
 
     for output in [&default, &checked] {
         assert_eq!(
-            output
-                .code
-                .lines()
-                .filter_map(|line| line.strip_prefix("declare const MyCard: "))
-                .collect::<Vec<_>>(),
-            vec![r#"typeof import("./MyCard.vue").default;"#],
-            "the implicit art subject must resolve exactly to its authored module:\n{}",
+            line_suffixes(&output.code, "declare const MyCard:"),
+            vec![" $GlobalComponent<\"MyCard\">;"],
+            "a string source must not synthesize a component binding:\n{}",
             output.code,
+        );
+        assert_eq!(
+            occurrence_count(&output.code, r#"typeof import("./MyCard.vue").default"#),
+            0,
         );
     }
 }
 
 #[test]
 fn unknown_component_flag_preserves_complete_dynamic_code_and_projection() {
-    for (script, template) in [
-        ("", "<component :is=\"'button'\">x</component>"),
+    for (script, template, dynamic_declarations) in [
+        ("", "<component :is=\"'button'\">x</component>", 1),
         (
             "const open = true;",
             "<component :is=\"open ? 'div' : 'button'\" ref=\"target\" v-bind=\"{}\" />",
+            1,
         ),
         (
             "const registry = { button: 'button' };",
             "<component :is=\"registry['button']\" />",
+            1,
         ),
         (
             "function choose() { return 'button'; }",
             "<component :is=\"choose()\" />",
+            1,
         ),
         (
             "const open = true; const parts = [1];",
             "<component v-for=\"part in parts\" :is=\"open ? 'div' : 'button'\">{{ part }}</component>",
+            2,
         ),
     ] {
         let checked = generate(script, template, true);
         let default = generate(script, template, false);
-        assert!(checked.code.contains("const __vize_dynamic_is_"));
-        assert!(!checked.code.contains("__vize_global_component_"));
+        assert_eq!(
+            occurrence_count(&checked.code, "const __vize_dynamic_is_"),
+            dynamic_declarations,
+            "{template}",
+        );
+        assert_eq!(registry_probes(&checked.code), Vec::<&str>::new());
         assert_eq!(checked.code, default.code, "{template}");
         assert_eq!(checked.mapping, default.mapping, "{template}");
     }
@@ -116,7 +135,10 @@ fn unknown_component_flag_preserves_complete_dynamic_code_and_projection() {
 fn static_unknown_components_keep_their_authored_registry_mappings() {
     let template = "😀\r\n<component :is=\"'button'\" />\r\n<MissingWidget /><missing-widget />";
     let output = generate("", template, true);
-    assert!(output.code.contains("const __vize_dynamic_is_"));
+    assert_eq!(
+        occurrence_count(&output.code, "const __vize_dynamic_is_"),
+        1
+    );
     for name in ["MissingWidget", "missing-widget"] {
         let literal = vize_carton::cstr!("\"{name}\"");
         let start = output
@@ -132,7 +154,10 @@ fn static_unknown_components_keep_their_authored_registry_mappings() {
         let authored = 100 + template.find(name).expect("authored tag");
         assert_eq!(row.src_range, authored..authored + name.len());
     }
-    assert!(!output.code.contains("\"__vize_dynamic_is_"));
+    assert_eq!(
+        registry_probes(&output.code),
+        vec!["MissingWidget", "missing-widget"]
+    );
 }
 
 #[test]
@@ -142,7 +167,10 @@ fn invalid_dynamic_expression_keeps_its_authored_mapping_and_inference() {
     let default = generate("", template, false);
     assert_eq!(checked.code, default.code);
     assert_eq!(checked.mapping, default.mapping);
-    assert!(checked.code.contains("missing ? 'div' : 'button'"));
+    assert_eq!(
+        occurrence_count(&checked.code, "missing ? 'div' : 'button'"),
+        2
+    );
     let offset = 100 + template.find("missing").expect("authored reference");
     assert!(checked.mapping.to_generated(offset).is_some());
 }
@@ -155,8 +183,11 @@ fn dynamic_component_constructor_union_keeps_props_checks() {
     let default = generate(script, template, false);
     assert_eq!(checked.code, default.code);
     assert_eq!(checked.mapping, default.mapping);
-    assert!(checked.code.contains("typeof __vize_dynamic_is_"));
-    assert!(checked.code.contains("'wrong'"));
+    assert_eq!(
+        occurrence_count(&checked.code, "typeof __vize_dynamic_is_"),
+        5
+    );
+    assert_eq!(occurrence_count(&checked.code, "'wrong'"), 3);
 }
 
 #[test]
@@ -284,7 +315,7 @@ fn named_dynamic_values_require_their_fresh_ast_and_matching_usage() {
         "<Unknown :is=\"registry.button\" />",
         true,
     );
-    assert!(ordinary.code.contains("__vize_global_component_"));
+    assert_eq!(registry_probes(&ordinary.code), vec!["Unknown"]);
 }
 
 #[test]

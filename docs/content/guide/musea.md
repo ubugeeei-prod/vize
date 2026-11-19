@@ -100,9 +100,9 @@ directly to `musea()`.
 ```art-vue
 <script setup lang="ts">
 import { ref } from "vue";
+import MyButton from "./MyButton.vue";
 
-defineArt("./MyButton.vue", {
-  title: "MyButton",
+defineArtMeta({
   category: "Components",
   status: "ready",
   tags: ["button", "ui", "input"],
@@ -122,19 +122,77 @@ const pressed = ref(false);
 </art>
 ```
 
-`defineArt(source, options)` is a compiler macro. It declares the component that Musea should load,
-plus metadata that used to live on `<art>`. Prefer a relative component path string such as
-`defineArt("./MyButton.vue", { title: "MyButton" })`; Musea imports that component in generated
-runtime code and the language server uses the same source for prop and slot inference.
-The source string participates in path completion, unresolved-file diagnostics, document links, and
-go-to-definition.
+The demonstrated component is inferred from the imported tag shared by every variant. Vue therefore
+checks props, emits, and slots exactly as it does in an ordinary SFC. `defineArtMeta()` is optional;
+use it only to override inferred metadata. `title` defaults to the inferred component binding name.
+For an intentionally ambiguous composition, `defineArt(MyButton, metadata?)` remains available as
+an explicit target escape hatch.
 
 Render-function components can also be referenced from `.ts`, `.tsx`, `.js`, or `.jsx` files:
-`defineArt("./MyButton.ts", { title: "MyButton" })`. Musea imports the module's default export
-and reads statically declared runtime `props` and `emits` for the analysis and props panel.
+import the value and render it normally. Musea reads statically declared runtime
+`props` and `emits` for analysis and the props panel.
 
-`<art title="..." component="...">` still works for compatibility, and explicit `<art>` attributes
-override `defineArt` metadata when both are present.
+### Migrating from implicit Art targets
+
+This release removes the implicit component registration previously created by `defineArt()` and
+the synthetic `<Self>` component. Import and render the real component so Vue owns its props,
+attrs, emits, slots, and editor types.
+
+Before:
+
+```art-vue
+<script setup lang="ts">
+import Counter from "./Counter.vue";
+
+defineArt(Counter, {
+  title: "Counter",
+  category: "Examples",
+});
+</script>
+
+<art title="Counter">
+  <variant
+    name="Default"
+    :args="{ initial: 0, step: 1 }"
+    :attrs="{ 'aria-label': 'Counter example' }"
+  >
+    <Self />
+  </variant>
+</art>
+```
+
+After:
+
+```art-vue
+<script setup lang="ts">
+import Counter from "./Counter.vue";
+
+defineArtMeta({ category: "Examples" });
+</script>
+
+<art>
+  <variant name="Default">
+    <Counter :initial="0" :step="1" aria-label="Counter example" />
+  </variant>
+</art>
+```
+
+Apply these changes to each `.art.vue` file:
+
+1. Replace `<Self>` with the imported component tag used by that variant.
+2. Remove `defineArt(Component, metadata)` when every variant has one unambiguous target. Move
+   metadata to optional `defineArtMeta(metadata)`. Keep `defineArt(Target, metadata?)` only when an
+   intentional multi-component composition makes inference ambiguous.
+3. Replace the removed string form `defineArt("./Counter.vue", ...)` with a normal component import.
+4. Move `args`, props, and fallthrough attrs onto the component tag. `variant :props` and `:attrs`
+   remain compatibility shorthands for generated integrations, but direct bindings are the typed
+   authoring API.
+5. Remove redundant `<art title>` and metadata `title` values when the inferred binding or filename
+   is the intended display name.
+
+Run the gallery and `musea-vrt test` after converting a file. If an explicit title changes, review
+its snapshot identity and follow the [snapshot migration guide](./musea-snapshots.md) before
+updating baselines.
 
 ### Variant-local state
 
@@ -144,8 +202,7 @@ instance, so refs and computed values in one variant do not leak into another:
 ```art-vue
 <script setup lang="ts">
 import { computed, ref } from "vue";
-
-defineArt("./Counter.vue", { title: "Counter" });
+import Counter from "./Counter.vue";
 
 const count = ref(0);
 const doubled = computed(() => count.value * 2);
@@ -167,8 +224,7 @@ instance across every variant:
 ```art-vue
 <script setup lang="ts" isolate="false">
 import { ref } from "vue";
-
-defineArt("./Counter.vue", { title: "Counter" });
+import Counter from "./Counter.vue";
 
 const sharedCount = ref(0);
 </script>
@@ -178,18 +234,20 @@ const sharedCount = ref(0);
 
 | Element / Macro                  | Purpose                                |
 | -------------------------------- | -------------------------------------- |
-| `defineArt(source, options)`     | Target component and art metadata      |
-| `defineArt(...).title`           | Display name                           |
-| `defineArt(...).category`        | Sidebar grouping                       |
-| `defineArt(...).status`          | Optional status badge                  |
-| `defineArt(...).tags`            | Search and filtering tags              |
+| Imported component tag          | Inferred, Vue-typed target             |
+| `defineArtMeta(options)`         | Optional gallery metadata              |
+| `defineArtMeta(...).title`       | Optional display-name override         |
+| `defineArtMeta(...).category`    | Sidebar grouping                       |
+| `defineArtMeta(...).status`      | Optional status badge                  |
+| `defineArtMeta(...).tags`        | Search and filtering tags              |
+| `defineArt(component, options?)` | Explicit target for ambiguous Art      |
 | `<script setup>`                 | Variant-local setup state by default   |
 | `<script setup isolate="false">` | Shared setup state across all variants |
 | `<art>`                          | Root variants block                    |
-| `<art title component ...>`      | Compatibility metadata attributes      |
 | `<variant>`                      | Named component variation              |
 | `default`                        | Marks the default variant              |
-| `args`, `viewport`, `skip-vrt`   | Optional variant configuration         |
+| `play`                           | Typed interaction test                 |
+| `viewport`, `skip-vrt`           | Optional visual test configuration     |
 
 Keep art files close to the component when variants are part of the component's contract:
 
@@ -218,7 +276,8 @@ musea({
 });
 ```
 
-Inside inline art, use `<Self>` to render the host component.
+Inside inline art, render the host using its normal inferred SFC name, such as `<Button>` in
+`Button.vue`.
 
 ## Gallery Features
 
@@ -233,11 +292,21 @@ Musea can surface:
 - visual regression testing helpers
 - Storybook-compatible output when requested
 
+## Interaction Tests
+
+Musea supports fully typed inline `play` functions, a fast browser runner, rich traces, and
+Vitest registration. See [Musea interaction testing](./musea-testing.md) for the complete API,
+CLI workflow, execution model, and component-input contract.
+
 ## Props Palette
 
 ![Musea Props Panel](/musea-props.png)
 
-The palette pipeline can infer interactive controls from component metadata and art definitions.
+The palette pipeline infers interactive controls from component metadata and the target bindings.
+Choose a variant in the Props header to load its preview and use its authored component props as
+the initial control values. Fallthrough attrs are passed separately. Saved or shared values still
+take precedence, and Reset returns to the selected variant's authored values. The older `args`
+spelling remains readable for migration.
 
 Typed `defineProps` and runtime object/array declarations use native SFC metadata. String,
 number, boolean, array, and object defaults retain their JSON types; authored variant values take

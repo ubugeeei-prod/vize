@@ -142,6 +142,7 @@ fn each_kind_names_one_row() {
             MacroKind::DefineModel,
             MacroKind::WithDefaults,
             MacroKind::DefineArt,
+            MacroKind::DefineArtMeta,
             MacroKind::DefinePage,
             MacroKind::DefinePageMeta,
             MacroKind::DefineRouteRules,

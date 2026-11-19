@@ -27,7 +27,7 @@ void test(
       `<script setup>defineProps({ label: String });</script>
 <template><button id="host">{{ label }}</button></template>
 <docs>Owned by the docs plugin.</docs>
-<art title="Registered inline" status="ready"><variant name="Default" default><Self label="Preview component" /></variant></art>`,
+<art title="Registered inline" status="ready"><variant name="Default" default><Card label="Preview component" /></variant></art>`,
     );
     await writeFile(
       path.join(root, "app.html"),
@@ -110,7 +110,8 @@ createApp(Card, { label: "Runtime component" }).mount("#app");`,
             variants: [
               {
                 name: "Default",
-                template: '<Self label="Preview component" />',
+                template: '<Card label="Preview component" />',
+                props: { label: "Preview component" },
                 isDefault: true,
                 skipVrt: false,
               },
@@ -175,7 +176,7 @@ void test(
     const root = await mkdtemp(path.join(os.tmpdir(), "musea-inline-query-invalid-"));
     const file = path.join(root, "src/Card.vue");
     const source = `<template><div /></template>
-<art title="Registered"><variant name="Default"><Self /></variant></art>`;
+<art title="Registered"><variant name="Default"><Card /></variant></art>`;
     await mkdir(path.dirname(file));
     await writeFile(file, source);
     const [plugin] = musea({ include: ["src/**/*.vue"], inlineArt: true });
@@ -201,7 +202,7 @@ void test(
       await update.call({} as never, { file, modules: [] } as never);
       assert.equal(await load.call({} as never, request), null);
       assert.equal(await load.call({} as never, "\0musea-manifest"), "export const arts = [];");
-      assert.equal(await transform.call({} as never, "<variant><Self /></variant>", request), null);
+      assert.equal(await transform.call({} as never, "<variant><Card /></variant>", request), null);
     } finally {
       await server.close();
       await rm(root, { recursive: true, force: true });

@@ -30,8 +30,9 @@ void test("generateArtModule treats defineArt as a compiler macro and isolates s
     hasScriptSetup: true,
     scriptSetupContent: `
 import { ref } from "vue"
+import Button from "./Button.vue"
 
-defineArt("./Button.vue", {
+defineArt(Button, {
   title: "Button",
 })
 
@@ -44,7 +45,7 @@ const count = ref(0)
 
   const code = generateArtModule(art, art.path);
 
-  assert.match(code, /import Button from "\/repo\/components\/Button\.vue";/);
+  assert.match(code, /import Button from "\/repo\/components\/Button\.vue";?/);
   assert.doesNotMatch(code, /\bdefineArt\s*\(/);
   // Each variant is its own module, so isolation is structural rather than a
   // per-variant copy of the setup body.
@@ -81,7 +82,8 @@ void test("generateArtModule does not register local PascalCase constants as com
     ],
     hasScriptSetup: true,
     scriptSetupContent: `
-defineArt("./Foo.vue", { title: "Foo" });
+import Foo from "./Foo.vue";
+defineArt(Foo, { title: "Foo" });
 const SAMPLE = "hello";
 `.trim(),
     hasScript: false,
@@ -180,8 +182,8 @@ const count = ref(0)
     names: ["count"],
   };
 
-  // `<Self>` expands to `<Button>`, so the variant needs that binding even
-  // though the shared module does not export it.
+  // The target is authored as `<Button>`, so the variant needs that binding
+  // even though the shared module does not export it.
   const variant = buildVariantSfcSource(art, `<Button :count="count" />`, "Primary", {
     artFilePath: art.path,
     componentImportPath: "/repo/components/Button.vue",

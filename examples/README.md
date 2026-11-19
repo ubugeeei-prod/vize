@@ -215,11 +215,13 @@ vp dev
 
 ### Writing Art Files
 
-Use `defineArt(source, options)` in root `<script setup>` to declare the target component and gallery metadata. The `<art>` block then focuses on variants:
+Render the imported component directly. Musea infers it as the target; `defineArtMeta()` is only for optional gallery metadata:
 
 ```vue
 <script setup lang="ts">
-defineArt("./MuseaButton.vue", {
+import MuseaButton from "./MuseaButton.vue";
+
+defineArtMeta({
   title: "Button",
   category: "Components",
   tags: ["button", "form"],
@@ -229,25 +231,25 @@ defineArt("./MuseaButton.vue", {
 
 <art>
   <variant name="Default" default>
-    <Self>Default Button</Self>
+    <MuseaButton>Default Button</MuseaButton>
   </variant>
   <variant name="Primary">
-    <Self variant="primary">Primary Button</Self>
+    <MuseaButton variant="primary">Primary Button</MuseaButton>
   </variant>
 </art>
 ```
 
-**`defineArt()` options:**
+**`defineArtMeta()` options:**
 
 | Option        | Description                               |
 | ------------- | ----------------------------------------- |
-| `title`       | Component title                           |
+| `title`       | Optional component title override         |
 | `description` | Component summary                         |
 | `category`    | Category                                  |
 | `tags`        | Search tags                               |
 | `status`      | Status (`draft` / `ready` / `deprecated`) |
 
-Legacy `<art title="..." component="...">` metadata attributes are still supported for compatibility, but new examples should prefer `defineArt()`.
+Legacy `<art title="..." component="...">` metadata attributes and explicit `defineArt(Component)` targets remain supported for compatibility and ambiguous compositions.
 
 **`<variant>` attributes:**
 

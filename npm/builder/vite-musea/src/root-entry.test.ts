@@ -27,6 +27,8 @@ void test("root VRT facade preserves synchronous configuration access", () => {
     capture: { waitForPreviewReady: true },
   });
   assert.equal(runner.getOptions().workers, 1);
+  const automatic = new MuseaVrtRunner().getOptions().workers;
+  assert.ok(automatic >= 1 && automatic <= 8);
   assert.equal(runner.getCapture().waitForPreviewReady, true);
   assert.equal(
     runner.getPreviewUrl("https://example.test/", "src/Button.art.vue", "Primary"),

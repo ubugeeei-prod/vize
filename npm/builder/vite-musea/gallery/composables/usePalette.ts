@@ -49,7 +49,11 @@ export function usePalette() {
     () => new Set(customProps.value.map((cp) => cp.name)),
   );
 
-  async function load(artPath: string, sharedState?: SavedPaletteState) {
+  async function load(
+    artPath: string,
+    sharedState?: SavedPaletteState,
+    initialValues: Record<string, unknown> = {},
+  ) {
     const version = ++loadVersion;
     loading.value = true;
     error.value = null;
@@ -64,7 +68,11 @@ export function usePalette() {
         customProps.value = restored.customProps;
         deletedPaletteProps.value = restored.deletedPaletteProps;
       } else {
-        values.value = initialPaletteValues(palette.value.controls);
+        const allowedNames = new Set(palette.value.controls.map((control) => control.name));
+        values.value = Object.fromEntries([
+          ...Object.entries(initialPaletteValues(palette.value.controls)),
+          ...Object.entries(initialValues).filter(([name]) => allowedNames.has(name)),
+        ]);
         customProps.value = [];
         deletedPaletteProps.value = new Set();
       }
@@ -113,9 +121,13 @@ export function usePalette() {
     }
   }
 
-  function resetValues() {
+  function resetValues(initialValues: Record<string, unknown> = {}) {
     if (!palette.value) return;
-    values.value = initialPaletteValues(palette.value.controls);
+    const allowedNames = new Set(palette.value.controls.map((control) => control.name));
+    values.value = Object.fromEntries([
+      ...Object.entries(initialPaletteValues(palette.value.controls)),
+      ...Object.entries(initialValues).filter(([name]) => allowedNames.has(name)),
+    ]);
     customProps.value = [];
     deletedPaletteProps.value = new Set();
   }

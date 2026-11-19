@@ -120,10 +120,16 @@ pub(crate) fn composition_api_completions() -> Vec<CompletionItem> {
 pub(crate) fn macro_completions() -> Vec<CompletionItem> {
     vec![
         items::macro_item(
+            "defineArtMeta",
+            "defineArtMeta(options)",
+            "Declare optional Musea gallery metadata",
+            "defineArtMeta({\n\ttitle: \"$1\",\n});",
+        ),
+        items::macro_item(
             "defineArt",
-            "defineArt(source, options)",
-            "Declare Musea art metadata",
-            "defineArt(\"$1\", {\n\ttitle: \"$2\",\n});",
+            "defineArt(component, options?)",
+            "Select a Musea target when inference is ambiguous",
+            "defineArt($1);",
         ),
         items::macro_item(
             "defineProps",

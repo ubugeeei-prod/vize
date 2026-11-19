@@ -14,6 +14,7 @@ import DocumentationPanel from "../components/DocumentationPanel.vue";
 import A11yBadge from "../components/A11yBadge.vue";
 import A11yPanel from "../components/A11yPanel.vue";
 import VrtPanel from "../components/VrtPanel.vue";
+import TestPanel from "../components/TestPanel.vue";
 import AddonToolbar from "../components/AddonToolbar.vue";
 import ActionsPanel from "../components/ActionsPanel.vue";
 import FullscreenPreview from "../components/FullscreenPreview.vue";
@@ -32,7 +33,7 @@ const {
 } = useActions();
 const { setCurrentVariant } = useEventCapture();
 
-const activeTab = ref<"variants" | "props" | "docs" | "a11y" | "vrt">(
+const activeTab = ref<"variants" | "props" | "test" | "docs" | "a11y" | "vrt">(
   route.query[MUSEA_PROPS_QUERY] === undefined ? "variants" : "props",
 );
 const actionCount = computed(() => events.value.length);
@@ -240,6 +241,18 @@ onUnmounted(() => {
         <button
           type="button"
           class="tab-btn"
+          :class="{ active: activeTab === 'test' }"
+          :aria-pressed="activeTab === 'test'"
+          @click="() => selectTab('test')"
+        >
+          Test
+          <span v-if="art.variants.some((variant) => variant.play)" class="tab-count">
+            {{ art.variants.filter((variant) => variant.play).length }}
+          </span>
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
           :class="{ active: activeTab === 'variants' }"
           :aria-pressed="activeTab === 'variants'"
           @click="() => selectTab('variants')"
@@ -303,7 +316,7 @@ onUnmounted(() => {
               <span v-if="variant.isDefault" class="variant-section-badge">Default</span>
             </div>
 
-            <VariantCard :art-path="art.path" :variant :component-name="art.metadata.title" />
+            <VariantCard :art-path="art.path" :variant />
           </section>
         </div>
 
@@ -320,7 +333,17 @@ onUnmounted(() => {
       <PropsPanel
         v-if="activeTab === 'props'"
         :art-path="art.path"
-        :default-variant-name="art.variants.find((v) => v.isDefault)?.name || art.variants[0]?.name"
+        :variants="art.variants"
+        :selected-variant-name="selectedVariant?.name"
+        @select-variant="(name) => (selectedVariantName = name)"
+      />
+
+      <TestPanel
+        v-if="activeTab === 'test' && selectedVariant"
+        :art-path="art.path"
+        :variant="selectedVariant"
+        :variants="art.variants"
+        @select-variant="(name) => (selectedVariantName = name)"
       />
 
       <DocumentationPanel v-if="activeTab === 'docs'" :art-path="art.path" />
@@ -387,379 +410,5 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.component-view {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-.component-header {
-  margin-bottom: 1.5rem;
-}
-
-.component-title-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.component-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.component-description {
-  color: var(--musea-text-muted);
-  font-size: 0.9375rem;
-  max-width: 600px;
-  margin-bottom: 0.75rem;
-}
-
-.component-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.meta-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.625rem;
-  background: var(--musea-bg-secondary);
-  border: 1px solid var(--musea-border);
-  border-radius: var(--musea-radius-sm);
-  font-size: 0.75rem;
-  color: var(--musea-text-muted);
-
-  & svg {
-    width: 12px;
-    height: 12px;
-  }
-}
-
-.component-sticky-menu {
-  position: sticky;
-  top: 0;
-  z-index: var(--musea-z-sticky);
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.875rem;
-  background: linear-gradient(
-    to bottom,
-    var(--musea-bg-primary) 0%,
-    var(--musea-bg-primary) calc(100% - 0.5rem),
-    transparent 100%
-  );
-}
-
-.component-view {
-  & :deep(.addon-toolbar) {
-    margin-block-end: 0.75rem;
-  }
-}
-
-.component-tabs {
-  display: flex;
-  overflow-x: auto;
-  min-width: 0;
-  gap: 0.25rem;
-  border-bottom: 1px solid var(--musea-border);
-  background: color-mix(in srgb, var(--musea-bg-primary) 92%, transparent);
-  backdrop-filter: blur(10px);
-}
-
-.component-content {
-  min-height: 0;
-}
-
-.tab-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: none;
-  border: none;
-  color: var(--musea-text-muted);
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 0.75rem 1rem;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all var(--musea-transition);
-}
-
-.tab-btn:hover {
-  color: var(--musea-text);
-}
-
-.tab-btn.active {
-  color: var(--musea-accent);
-  border-bottom-color: var(--musea-accent);
-}
-
-.action-count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 0.375rem;
-  border-radius: 9px;
-  background: var(--musea-accent);
-  color: var(--musea-accent-contrast);
-  font-size: 0.625rem;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.variants-view {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(220px, 24vw, 280px);
-  gap: 2rem;
-  align-items: start;
-}
-
-.variant-preview-area {
-  min-height: 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.variant-toc-column {
-  min-width: 0;
-  position: sticky;
-  top: calc(var(--musea-header-height) + 1rem);
-  align-self: start;
-}
-
-.variant-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  scroll-margin-top: calc(var(--musea-header-height) + 1.25rem);
-}
-
-.variant-section-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding-inline: 0.25rem;
-}
-
-.variant-section-index {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 999px;
-  background: var(--musea-bg-secondary);
-  border: 1px solid var(--musea-border);
-  color: var(--musea-text-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.variant-section-title {
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.variant-section-badge {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 0.25rem 0.5rem;
-  border-radius: 999px;
-  background: var(--musea-accent-subtle);
-  color: var(--musea-accent);
-}
-
-.actions-footer {
-  position: sticky;
-  bottom: 0;
-  margin: 0 -2rem -2rem;
-  z-index: var(--musea-z-actions);
-}
-
-.actions-footer-shell {
-  border-top: 1px solid var(--musea-border-subtle);
-  background: color-mix(in srgb, var(--musea-bg-primary) 94%, transparent);
-  backdrop-filter: blur(14px);
-}
-
-.actions-footer.expanded {
-  & .actions-footer-shell {
-    box-shadow: 0 -12px 28px rgba(18, 18, 18, 0.08);
-  }
-}
-
-.actions-footer-resizer {
-  height: 1.375rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: ns-resize;
-  touch-action: none;
-}
-
-.actions-footer-resizer::before {
-  content: "";
-  width: 2.75rem;
-  height: 2px;
-  border-radius: 999px;
-  background: var(--musea-border);
-}
-
-.actions-footer-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: transparent;
-  border: none;
-  color: var(--musea-text-muted);
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background var(--musea-transition),
-    color var(--musea-transition);
-}
-
-.actions-footer-toggle:hover {
-  background: color-mix(in srgb, var(--musea-bg-secondary) 78%, transparent);
-  color: var(--musea-text);
-}
-
-.actions-footer.expanded {
-  & .actions-footer-toggle {
-    border-block-end: 1px solid var(--musea-border-subtle);
-  }
-}
-
-.actions-footer-toggle-copy {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.1875rem;
-  min-width: 0;
-}
-
-.actions-footer-toggle-line {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  min-width: 0;
-}
-
-.actions-footer-title {
-  color: var(--musea-text);
-  font-size: 0.8125rem;
-  font-weight: 600;
-}
-
-.actions-footer-caption {
-  color: var(--musea-text-muted);
-  font-size: 0.6875rem;
-}
-
-.actions-footer-chevron {
-  color: var(--musea-text-muted);
-  transition: transform var(--musea-transition);
-  flex-shrink: 0;
-}
-
-.actions-footer.expanded {
-  & .actions-footer-chevron {
-    transform: rotate(180deg);
-  }
-}
-
-.actions-footer-content {
-  overflow: hidden;
-}
-
-.component-not-found {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  text-align: center;
-  color: var(--musea-text-muted);
-
-  & h2 {
-    color: var(--musea-text);
-    margin-block-end: 0.5rem;
-  }
-}
-
-.back-link {
-  margin-top: 1rem;
-  color: var(--musea-accent);
-  text-decoration: underline;
-}
-
-@media (max-width: 960px) {
-  .component-view {
-    padding: 1.25rem;
-  }
-
-  .component-sticky-menu {
-    padding-bottom: 0.75rem;
-  }
-
-  .variants-view {
-    grid-template-columns: 1fr;
-  }
-
-  .variant-toc-column {
-    order: -1;
-    position: static;
-  }
-
-  .actions-footer {
-    margin: 0 -1.25rem -1.25rem;
-  }
-
-  .actions-footer-toggle {
-    padding-inline: 0.875rem;
-  }
-}
-
-/* A visible sidebar can make the content narrow while the outer viewport stays wide. */
-@container musea-content (max-width: 960px) {
-  .component-view {
-    padding: 1.25rem;
-  }
-
-  .component-sticky-menu {
-    padding-bottom: 0.75rem;
-  }
-
-  .variants-view {
-    grid-template-columns: 1fr;
-  }
-
-  .variant-toc-column {
-    order: -1;
-    position: static;
-  }
-
-  .actions-footer {
-    margin: 0 -1.25rem -1.25rem;
-  }
-
-  .actions-footer-toggle {
-    padding-inline: 0.875rem;
-  }
-}
+@import "./ComponentView.css";
 </style>

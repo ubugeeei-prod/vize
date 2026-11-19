@@ -17,6 +17,8 @@ import { parseScriptSetupForArt } from "../art-module.js";
 import { resolveArtComponent } from "../art-component.js";
 import { analyzeScriptComponent } from "../script-component-analysis.js";
 import { decodeUrlComponent, HttpError, isVueSourcePath } from "../security.js";
+import { sourceWithOptionalArtTitle } from "../plugin/art-processing.js";
+import type { ArtVariant } from "../types/index.js";
 
 type PaletteControl = {
   name: string;
@@ -61,13 +63,14 @@ export async function handleArtPalette(
     const binding = loadNative();
     let palette: PaletteResponse;
     if (binding.generateArtPalette) {
-      const generated = binding.generateArtPalette(source, {
+      const generated = binding.generateArtPalette(sourceWithOptionalArtTitle(source), {
         filename: readableArtPath,
       });
       // N-API object fields are camelCase; the gallery/export contract uses
       // default_value. Normalize actual native data before SFC defaults merge.
       palette = {
         ...generated,
+        title: art.metadata.title,
         controls: generated.controls.map(({ defaultValue, ...control }) => ({
           ...control,
           ...(defaultValue !== undefined ? { default_value: defaultValue } : {}),
@@ -97,6 +100,7 @@ export async function handleArtPalette(
       allowedSourceRoots(ctx.config.root, ctx.scanRoots),
     );
     if (!resolvedComponentPath) {
+      applyAuthoredVariantValues(palette, art.variants);
       sendJson(palette);
       return;
     }
@@ -122,6 +126,7 @@ export async function handleArtPalette(
       // Ignore errors reading component file.
     }
 
+    applyAuthoredVariantValues(palette, art.variants);
     sendJson(palette);
   } catch (e) {
     if (e instanceof HttpError) {
@@ -130,6 +135,22 @@ export async function handleArtPalette(
     }
     sendError(e instanceof Error ? e.message : String(e));
   }
+}
+
+function applyAuthoredVariantValues(palette: PaletteResponse, variants: ArtVariant[]): void {
+  const variant = variants.find((candidate) => candidate.isDefault) ?? variants[0];
+  const values = variant?.props ?? variant?.args;
+  if (!values) return;
+
+  const controlsByName = new Map(
+    palette.controls.map((control) => [normalizePropName(control.name), control]),
+  );
+  for (const [name, value] of Object.entries(values)) {
+    if (name === "viewport") continue;
+    const control = controlsByName.get(normalizePropName(name));
+    if (control) control.default_value = value;
+  }
+  palette.json = JSON.stringify({ title: palette.title, controls: palette.controls }, null, 2);
 }
 
 function mergeSfcPropsIntoPalette(palette: PaletteResponse, props: SfcProp[]): void {

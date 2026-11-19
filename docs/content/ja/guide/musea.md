@@ -112,9 +112,9 @@ export default defineConfig({
 ```art-vue
 <script setup lang="ts">
 import { ref } from "vue";
+import MyButton from "./MyButton.vue";
 
-defineArt("./MyButton.vue", {
-  title: "MyButton",
+defineArtMeta({
   category: "Components",
   status: "ready",
   tags: ["button", "ui", "input"],
@@ -134,15 +134,64 @@ const pressed = ref(false);
 </art>
 ```
 
-`defineArt(source, options)` は、Musea が読み込むコンポーネントと、そのメタデータを宣言するコンパイラマクロです。メタデータは、従来 `<art>` に書いていた項目です。
+すべてのバリアントで共通して使われている import 済みのタグから、対象コンポーネントを推論します。そのため、通常の SFC と同じように Vue が props、emits、slots を型検査します。`defineArtMeta()` は省略でき、推論されたメタデータを上書きするときだけ使います。`title` も省略でき、対象コンポーネントの binding 名（対象を推論できない場合はファイル名）から決まります。意図的に複数のコンポーネントを組み合わせる場合は、`defineArt(MyButton, metadata?)` で対象を明示できます。
 
-コンポーネントは `defineArt("./MyButton.vue", { title: "MyButton" })` のように相対パスの文字列で指定することを推奨します。Musea は生成する実行時コードからそのコンポーネントをインポートし、言語サーバーも同じソースから Props とスロットを推論します。このパスは、パスの補完、見つからないファイルの診断、ドキュメントリンク、定義への移動にも使います。
+render 関数で書いたコンポーネントも、`.ts`、`.tsx`、`.js`、`.jsx` から値を import して、そのままタグとして使えます。Musea は静的に宣言された runtime `props` と `emits` を分析画面と props パネルに表示します。
 
-render 関数で書いたコンポーネントには、`.ts`、`.tsx`、`.js`、`.jsx` ファイルも指定できます。
-例: `defineArt("./MyButton.ts", { title: "MyButton" })`。Musea は default export を読み込み、
-静的に宣言された runtime `props` と `emits` を分析画面と props パネルに表示します。
+<span id="暗黙の-art-対象から移行する"></span>
 
-`<art title="..." component="...">` も互換性のために引き続き使えます。両方を指定した場合、明示的な `<art>` の属性が `defineArt` のメタデータより優先されます。
+### 暗黙の Art 対象から移行する
+
+このリリースでは、`defineArt()` が作っていた暗黙のコンポーネント登録と、合成された `<Self>` を廃止します。実際のコンポーネントを import してそのタグを描画することで、props、attrs、emits、slots、エディターの型を通常の Vue と同じ契約にします。
+
+変更前:
+
+```art-vue
+<script setup lang="ts">
+import Counter from "./Counter.vue";
+
+defineArt(Counter, {
+  title: "Counter",
+  category: "Examples",
+});
+</script>
+
+<art title="Counter">
+  <variant
+    name="Default"
+    :args="{ initial: 0, step: 1 }"
+    :attrs="{ 'aria-label': 'Counter example' }"
+  >
+    <Self />
+  </variant>
+</art>
+```
+
+変更後:
+
+```art-vue
+<script setup lang="ts">
+import Counter from "./Counter.vue";
+
+defineArtMeta({ category: "Examples" });
+</script>
+
+<art>
+  <variant name="Default">
+    <Counter :initial="0" :step="1" aria-label="Counter example" />
+  </variant>
+</art>
+```
+
+各 `.art.vue` に次の変更を適用します。
+
+1. `<Self>` を、そのバリアントで使う import 済みのコンポーネントタグに置き換えます。
+2. すべてのバリアントから対象を一意に推論できる場合は、`defineArt(Component, metadata)` を削除します。メタデータが必要なら、省略可能な `defineArtMeta(metadata)` へ移します。複数コンポーネントを意図的に組み合わせて対象が曖昧になる場合だけ、`defineArt(Target, metadata?)` を残します。
+3. 廃止した文字列形式 `defineArt("./Counter.vue", ...)` は、通常のコンポーネント import に置き換えます。
+4. `args`、props、fallthrough attrs をコンポーネントタグへ移します。`variant :props` と `:attrs` は生成系の互換用として残りますが、手書きでは直接 binding する API を使います。
+5. 推論される binding 名またはファイル名を表示名に使う場合は、重複した `<art title>` と metadata の `title` を削除します。
+
+変換後はギャラリーと `musea-vrt test` を実行してください。明示的な title が変わる場合は、baseline を更新する前に snapshot の識別子を確認し、[snapshot の移行ガイド](./musea-snapshots.md)に従ってください。
 
 <span id="バリアントローカル状態"></span>
 
@@ -153,8 +202,7 @@ render 関数で書いたコンポーネントには、`.ts`、`.tsx`、`.js`、
 ```art-vue
 <script setup lang="ts">
 import { computed, ref } from "vue";
-
-defineArt("./Counter.vue", { title: "Counter" });
+import Counter from "./Counter.vue";
 
 const count = ref(0);
 const doubled = computed(() => count.value * 2);
@@ -175,8 +223,7 @@ const doubled = computed(() => count.value * 2);
 ```art-vue
 <script setup lang="ts" isolate="false">
 import { ref } from "vue";
-
-defineArt("./Counter.vue", { title: "Counter" });
+import Counter from "./Counter.vue";
 
 const sharedCount = ref(0);
 </script>
@@ -188,18 +235,20 @@ const sharedCount = ref(0);
 
 | 要素/マクロ                      | 目的                                           |
 | -------------------------------- | ---------------------------------------------- |
-| `defineArt(source, options)`     | 対象のコンポーネントと art のメタデータ        |
-| `defineArt(...).title`           | 表示名                                         |
-| `defineArt(...).category`        | サイドバーのグループ化                         |
-| `defineArt(...).status`          | オプションのステータスバッジ                   |
-| `defineArt(...).tags`            | タグの検索とフィルタリング                     |
+| import 済みのコンポーネントタグ | Vue の型が付いた推論対象                       |
+| `defineArtMeta(options)`         | 省略可能なギャラリーメタデータ                 |
+| `defineArtMeta(...).title`       | 省略可能な表示名の上書き                       |
+| `defineArtMeta(...).category`    | サイドバーのグループ化                         |
+| `defineArtMeta(...).status`      | オプションのステータスバッジ                   |
+| `defineArtMeta(...).tags`        | タグの検索とフィルタリング                     |
+| `defineArt(component, options?)` | 対象が曖昧な Art での明示指定                  |
 | `<script setup>`                 | デフォルトのバリアントローカルセットアップ状態 |
 | `<script setup isolate="false">` | すべてのバリアント間でセットアップ状態を共有   |
 | `<art>`                          | バリアントをまとめるルートのブロック           |
-| `<art title component ...>`      | 互換性メタデータ属性                           |
 | `<variant>`                      | 名前付きコンポーネントのバリエーション         |
-| `default`                        | デフォルトのバリアントをマークします           |
-| `args`、`viewport`、`skip-vrt`   | オプションのバリアント構成                     |
+| `default`                        | デフォルトのバリアントをマーク                 |
+| `play`                           | 型付きインタラクションテスト                   |
+| `viewport`、`skip-vrt`           | オプションのビジュアルテスト設定               |
 
 バリアントがコンポーネントの仕様の一部である場合は、art ファイルをコンポーネントの隣に置きます。
 
@@ -226,7 +275,7 @@ musea({
 });
 ```
 
-インライン art の中では、`<Self>` で、その art を持つコンポーネント自身をレンダリングします。
+インライン art の中では、`Button.vue` なら `<Button>` のように通常の SFC 名でホストコンポーネントをレンダリングします。
 
 ## ギャラリーの機能
 
@@ -240,6 +289,12 @@ Musea は次のことを実現できます。
 - アクセシビリティチェック
 - 見た目の回帰テストの補助
 - 必要に応じた Storybook 互換形式の出力
+
+## インタラクションテスト
+
+Musea は完全に型付けされたインライン `play` 関数、高速なブラウザー runner、詳細な実行トレース、
+Vitest への登録を提供します。CLI ではインタラクションテストと視覚的な回帰テストを実行でき、
+失敗した操作、DOM スナップショット、スクリーンショットをギャラリーとターミナルの両方で確認できます。
 
 <span id="小道具パレット"></span>
 

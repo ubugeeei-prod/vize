@@ -38,7 +38,9 @@ pub fn run(args: NewArgs) {
 
     let example_story = stories_dir.join("Button.art.vue");
     let example_content = r#"<script setup lang="ts">
-defineArt("../src/Button.vue", {
+import Button from "../src/Button.vue";
+
+defineArtMeta({
   title: "Button",
   category: "Components",
   tags: ["button", "ui"],

@@ -53,6 +53,15 @@ export interface NativeBinding {
       template: string;
       isDefault: boolean;
       skipVrt: boolean;
+      play?: string;
+      props?: Record<string, unknown>;
+      attrs?: Record<string, unknown>;
+      args?: Record<string, unknown>;
+      viewport?: {
+        width: number;
+        height: number;
+        deviceScaleFactor?: number;
+      };
     }>;
     hasScriptSetup: boolean;
     hasScript: boolean;
@@ -136,6 +145,90 @@ function loadTypeScript(): typeof TypeScript {
   const require = createRequire(import.meta.url);
   typescript = require("typescript") as typeof TypeScript;
   return typescript;
+}
+
+/** Parse a JSON-like TypeScript literal without evaluating project code. */
+export function parseStaticJsonExpression(source: string): unknown {
+  const ts = loadTypeScript();
+  const file = ts.createSourceFile(
+    "musea-static-expression.ts",
+    `(${source})`,
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  const statement = file.statements[0];
+  if (!statement || !ts.isExpressionStatement(statement)) return undefined;
+  let expression = statement.expression;
+  while (ts.isParenthesizedExpression(expression)) expression = expression.expression;
+
+  const read = (node: TypeScript.Expression): unknown => {
+    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return node.text;
+    if (ts.isNumericLiteral(node)) return Number(node.text);
+    if (node.kind === ts.SyntaxKind.TrueKeyword) return true;
+    if (node.kind === ts.SyntaxKind.FalseKeyword) return false;
+    if (node.kind === ts.SyntaxKind.NullKeyword) return null;
+    if (ts.isPrefixUnaryExpression(node) && ts.isNumericLiteral(node.operand)) {
+      const value = Number(node.operand.text);
+      if (node.operator === ts.SyntaxKind.MinusToken) return -value;
+      if (node.operator === ts.SyntaxKind.PlusToken) return value;
+      return undefined;
+    }
+    if (ts.isArrayLiteralExpression(node)) {
+      const values = node.elements.map((element) =>
+        ts.isSpreadElement(element) ? undefined : read(element as TypeScript.Expression),
+      );
+      return values.some(
+        (value, index) => value === undefined && node.elements[index] !== undefined,
+      )
+        ? undefined
+        : values;
+    }
+    if (ts.isObjectLiteralExpression(node)) {
+      const entries: Array<[string, unknown]> = [];
+      for (const property of node.properties) {
+        if (!ts.isPropertyAssignment(property)) return undefined;
+        const name = property.name;
+        if (!ts.isIdentifier(name) && !ts.isStringLiteral(name) && !ts.isNumericLiteral(name))
+          return undefined;
+        const value = read(property.initializer);
+        if (value === undefined) return undefined;
+        entries.push([name.text, value]);
+      }
+      return Object.fromEntries(entries);
+    }
+    return undefined;
+  };
+
+  return read(expression);
+}
+
+/** Validate one authored TypeScript expression before embedding it in a generated setup block. */
+export function assertStaticExpression(source: string, label: string): string {
+  const expression = source.trim();
+  const ts = loadTypeScript();
+  const file = ts.createSourceFile(
+    "musea-static-expression.ts",
+    `const __museaExpression = (${expression});`,
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  const diagnostics = (
+    file as TypeScript.SourceFile & { parseDiagnostics?: readonly TypeScript.Diagnostic[] }
+  ).parseDiagnostics;
+  const statement = file.statements[0];
+  const declaration =
+    statement && ts.isVariableStatement(statement)
+      ? statement.declarationList.declarations[0]
+      : undefined;
+  if (
+    !expression ||
+    diagnostics?.length ||
+    file.statements.length !== 1 ||
+    !declaration?.initializer
+  ) {
+    throw new Error(`Invalid Musea ${label} expression ${JSON.stringify(source)}.`);
+  }
+  return expression;
 }
 
 export function loadNative(): NativeBinding {

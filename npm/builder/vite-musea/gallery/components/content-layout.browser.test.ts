@@ -82,7 +82,7 @@ await test(
           assert.ok(state.previewRight <= state.toc.left, JSON.stringify(state));
         }
         const tabs = page.locator(".component-tabs .tab-btn");
-        assert.equal(await tabs.count(), 5);
+        assert.equal(await tabs.count(), 6);
         for (const tab of await tabs.all()) {
           await tab.scrollIntoViewIfNeeded();
           const reachable = await tab.evaluate((button) => {

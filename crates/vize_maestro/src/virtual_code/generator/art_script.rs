@@ -66,6 +66,12 @@ pub fn analyze_art_script_setup(
         .macros
         .define_art_call()
         .map(|call| (call.start as usize, call.end as usize));
+    let define_art_meta_range = parsed
+        .macros
+        .all_calls()
+        .iter()
+        .find(|call| call.name.as_str() == vize_croquis::macros::DEFINE_ART_META)
+        .map(|call| (call.start as usize, call.end as usize));
     let component_binding_range = component_name
         .as_ref()
         .and_then(|name| parsed.binding_spans.get(name.as_str()))
@@ -80,6 +86,8 @@ pub fn analyze_art_script_setup(
         let trimmed = statement.text.trim();
         if trimmed.is_empty()
             || define_art_range
+                .is_some_and(|range| ranges_overlap(range, (relative_start, relative_end)))
+            || define_art_meta_range
                 .is_some_and(|range| ranges_overlap(range, (relative_start, relative_end)))
         {
             continue;

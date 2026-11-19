@@ -45,7 +45,7 @@ mod walk;
 pub use value_binding_origins::ValueBindingOrigins;
 pub(crate) use value_binding_origins::component_binding_reference;
 
-pub use define_art::parse_define_art;
+pub use define_art::{parse_define_art, parse_define_art_meta};
 pub use module_exports::AuthoredModuleExport;
 pub(crate) use module_exports::ModuleExportCapture;
 pub(crate) use module_reads::ModuleReadFacts;

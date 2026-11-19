@@ -30,11 +30,12 @@ const CROQUIS_DEFECTS: &[&str] =
 /// `(name, start, end, runtime arguments, type arguments)`, script-relative.
 type Row = (String, u32, u32, Option<String>, Option<String>);
 
-/// Croquis records Vue's macros and `defineArt` only.
+/// Croquis records Vue's macros and Musea's Art macros only.
 fn croquis_records(kind: MacroKind) -> bool {
-    MACROS
-        .iter()
-        .any(|row| row.kind == kind && (row.builtin || kind == MacroKind::DefineArt))
+    MACROS.iter().any(|row| {
+        row.kind == kind
+            && (row.builtin || matches!(kind, MacroKind::DefineArt | MacroKind::DefineArtMeta))
+    })
 }
 
 fn native_rows(content: &str, base: u32, calls: &[MacroCall]) -> Vec<Row> {

@@ -40,7 +40,10 @@ void test(
     await writeFile(path.join(root, "index.html"), "<!doctype html><html><body></body></html>");
     await writeFile(
       art,
-      `<script setup lang="ts">defineArt("./SpacingProbe.vue", { title: "Optional Spacing" })</script><art><variant name="Default"><SpacingProbe :required="1" /></variant></art>`,
+      `<script setup lang="ts">
+import SpacingProbe from "./SpacingProbe.vue";
+defineArtMeta({ title: "Optional Spacing" });
+</script><art><variant name="Default"><SpacingProbe :required="1" /></variant></art>`,
     );
     const members =
       'spaced? : string;\ntabbed?\t: number;\ncommented? /* question */ : boolean;\ncompact?: string;\nrequired : number;\nreadonly read? : string;\n"scope.name"? : string;\ncafé? : number;\n"why?:"? /* trivia */ : boolean;';

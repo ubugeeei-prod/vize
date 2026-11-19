@@ -1,5 +1,6 @@
 //! Script setup extraction for Storybook CSF output.
 
+use vize_croquis::macros::DEFINE_ART_META;
 use vize_croquis::script_parser::parse_script_setup;
 use vize_l0::String;
 
@@ -25,6 +26,17 @@ pub(super) fn extract_script_setup_for_csf(content: &str) -> ScriptSetupCsf {
         removal_ranges.push((
             define_art.start as usize,
             extend_through_semicolon(content, define_art.end as usize),
+        ));
+    }
+    if let Some(define_art_meta) = parsed
+        .macros
+        .all_calls()
+        .iter()
+        .find(|call| call.name.as_str() == DEFINE_ART_META)
+    {
+        removal_ranges.push((
+            define_art_meta.start as usize,
+            extend_through_semicolon(content, define_art_meta.end as usize),
         ));
     }
     removal_ranges.sort_unstable();

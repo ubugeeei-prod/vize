@@ -89,7 +89,7 @@ fn editor_virtual_ts_rewrites_dot_vue_imports() {
 }
 
 #[test]
-fn editor_virtual_ts_for_inline_art_binds_self_to_host_props() {
+fn editor_virtual_ts_for_inline_art_binds_the_host_name_to_its_props() {
     use crate::DiagnosticService;
     use tower_lsp::lsp_types::Url;
 
@@ -102,7 +102,7 @@ defineProps<{ variant?: "primary" | "secondary" }>();
 
 <art>
   <variant name="Primary" default>
-    <Self :variant="123" />
+    <Button :variant="123" />
   </variant>
 </art>"#;
 
@@ -122,13 +122,15 @@ defineProps<{ variant?: "primary" | "secondary" }>();
     assert!(
         result
             .code
-            .contains("declare const Self: { new (): { $props: Props } };"),
-        "expected Self component binding, got:\n{}",
+            .contains("declare const Button: { new (): { $props: Props } };"),
+        "expected host component binding, got:\n{}",
         result.code,
     );
     assert!(
-        result.code.contains("type __Self_Props_0 = typeof Self"),
-        "expected Self prop checks, got:\n{}",
+        result
+            .code
+            .contains("type __Button_Props_0 = typeof Button"),
+        "expected host prop checks, got:\n{}",
         result.code,
     );
 }

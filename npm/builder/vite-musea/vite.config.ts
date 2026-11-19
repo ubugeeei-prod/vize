@@ -14,6 +14,7 @@ export default defineConfig({
     entry: [
       "src/index.ts",
       "src/vrt.ts",
+      "src/test-runner.ts",
       "src/cli/index.ts",
       "src/a11y/index.ts",
       "src/autogen/index.ts",

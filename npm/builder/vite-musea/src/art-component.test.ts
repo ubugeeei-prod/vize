@@ -1,23 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readFileSync } from "node:fs";
-import { resolveArtComponent, expandSelfTag } from "./art-component.ts";
+import { inferArtComponent, resolveArtComponent } from "./art-component.ts";
 import { buildVariantSfcSource } from "./art-variant-sfc.ts";
 import type { ArtFileInfo } from "./types/art.ts";
 
-void test("inline Self uses the binding actually imported into its synthetic SFC", () => {
-  const fixture = JSON.parse(
-    readFileSync(
-      new URL(
-        "../../../../tests/_fixtures/differential/musea/inline-self-binding.json",
-        import.meta.url,
-      ),
-      "utf8",
-    ),
-  ) as { filename: string; template: string; variant: string };
+void test("inline art uses the host component's filename binding", () => {
   const art: ArtFileInfo = {
-    path: fixture.filename,
-    componentPath: fixture.filename,
+    path: "/project/Button.vue",
+    componentPath: "/project/Button.vue",
     isInline: true,
     metadata: { title: "Button", tags: [], status: "ready" },
     variants: [],
@@ -29,11 +19,53 @@ void test("inline Self uses the binding actually imported into its synthetic SFC
   assert.equal(component.componentBindingName, component.componentTagName);
   const source = buildVariantSfcSource(
     art,
-    expandSelfTag(fixture.template, component.componentTagName),
-    fixture.variant,
+    "<Button>Default Button</Button>",
+    "Default",
     component,
   );
-  assert.match(source, /import MuseaComponent from "\/project\/Button\.vue"/u);
-  assert.match(source, /<MuseaComponent>Default Button<\/MuseaComponent>/u);
+  assert.match(source, /import Button from "\/project\/Button\.vue"/u);
+  assert.match(source, /<Button>Default Button<\/Button>/u);
   assert.doesNotMatch(source, /__MuseaComponent/u);
+});
+
+void test("standalone art infers one imported component shared by every variant", () => {
+  const inferred = inferArtComponent(
+    {
+      variants: [
+        { name: "Default", template: "<Counter />", isDefault: true, skipVrt: false },
+        {
+          name: "WithIcon",
+          template: "<Counter><Icon /></Counter>",
+          isDefault: false,
+          skipVrt: false,
+        },
+      ],
+    },
+    ['import Counter from "./Counter.vue"', 'import Icon from "./Icon.vue"'],
+  );
+  assert.deepEqual(inferred, {
+    localName: "Counter",
+    source: "./Counter.vue",
+    statement: 'import Counter from "./Counter.vue"',
+  });
+});
+
+void test("standalone art diagnoses multiple target candidates", () => {
+  assert.throws(
+    () =>
+      inferArtComponent(
+        {
+          variants: [
+            {
+              name: "Composition",
+              template: "<Counter /><Meter />",
+              isDefault: true,
+              skipVrt: false,
+            },
+          ],
+        },
+        ['import Counter from "./Counter.vue"', 'import Meter from "./Meter.vue"'],
+      ),
+    /cannot infer one target component \(Counter, Meter\).*defineArt\(Target\)/u,
+  );
 });

@@ -6,13 +6,6 @@ defineProps<{
   image?: string;
   variant?: "default" | "outlined" | "elevated";
 }>();
-
-defineArt("./MuseaCard.vue", {
-  title: "Card",
-  category: "Layout",
-  tags: ["card", "container", "layout"],
-  status: "ready",
-});
 </script>
 
 <template>
@@ -107,30 +100,30 @@ defineArt("./MuseaCard.vue", {
 }
 </style>
 
-<art>
+<art title="Card" category="Layout" tags="card,container,layout" status="ready">
   <variant name="Default" default>
-    <Self title="Getting Started" description="Learn how to build with Musea components.">
+    <MuseaCard title="Getting Started" description="Learn how to build with Musea components.">
       <button class="btn btn--primary">Read More</button>
-    </Self>
+    </MuseaCard>
   </variant>
   <variant name="With Image">
-    <Self
+    <MuseaCard
       title="Featured"
       description="A card with an image header for rich content display."
       image="var(--musea-accent)"
     >
       <button class="btn btn--primary">View</button>
       <button class="btn">Share</button>
-    </Self>
+    </MuseaCard>
   </variant>
   <variant name="Outlined">
-    <Self title="Outlined Card" description="A card with an outlined style." variant="outlined">
+    <MuseaCard title="Outlined Card" description="A card with an outlined style." variant="outlined">
       <button class="btn">Action</button>
-    </Self>
+    </MuseaCard>
   </variant>
   <variant name="Elevated">
-    <Self title="Elevated Card" description="A card with elevation shadow." variant="elevated">
+    <MuseaCard title="Elevated Card" description="A card with elevation shadow." variant="elevated">
       <button class="btn btn--primary">Action</button>
-    </Self>
+    </MuseaCard>
   </variant>
 </art>
