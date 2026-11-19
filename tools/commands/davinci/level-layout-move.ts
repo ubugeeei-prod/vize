@@ -193,6 +193,59 @@ export const steps: Readonly<Record<string, Step>> = {
     items: [],
     parents: {},
   },
+  // Step 3: one sibling per style language under `style/`, the shared readers
+  // beside them, and Vue's CSS `v-bind()` in the Vue owner. The language
+  // dispatch (`css::lang`) and the CSS lexis join their parents, and the
+  // indented reader is split per language, by hand afterwards.
+  "l1-style": {
+    crate: "davinci/vize_l1",
+    name: "vize_l1",
+    moves: [
+      move("css::lang::nested", "style::nesting"),
+      move("css::lang::indented", "style::sass"),
+      move("css::lang::css", "style::css::lexis"),
+      move("css::lang", "style::language"),
+      move("css::bind", "framework::vue::style_bind"),
+      move("css::structure", "style::structure"),
+      move("css::classes", "style::classes"),
+      move("css", "style::css"),
+    ],
+    items: [],
+    parents: {
+      style:
+        "//! Style languages: one sibling per `<style lang>` over shared readers.\n" +
+        "//!\n" +
+        "//! Preprocessors themselves stay upstream. `structure` reads where rules,\n" +
+        "//! declarations and comments are in any language, `classes` reads selector\n" +
+        "//! preludes, and `nesting` resolves nested selectors. Each language module\n" +
+        "//! supplies its lexis; `css` also owns the one production cssparser parse.\n",
+    },
+  },
+  // Step 4: one Vue owner. The per-version tables become `version::v0..v3`,
+  // the shared capability model `quirks`, its composable features `feature`,
+  // the shared scope recovery `surface`, and directive decomposition
+  // `directive`. `dialect`'s re-exports join `framework::vue` by hand.
+  "l1-vue": {
+    crate: "davinci/vize_l1",
+    name: "vize_l1",
+    moves: [
+      move("dialect::vue::feature", "framework::vue::feature"),
+      move("dialect::vue::surface", "framework::vue::surface"),
+      move("dialect::vue", "framework::vue::quirks"),
+      move("dialect::vue0", "framework::vue::version::v0"),
+      move("dialect::vue1", "framework::vue::version::v1"),
+      move("dialect::vue2", "framework::vue::version::v2"),
+      move("dialect::vue3", "framework::vue::version::v3"),
+      move("markup::directive", "framework::vue::directive"),
+    ],
+    items: [],
+    parents: {
+      "framework::vue::version":
+        "//! Vue's per-version template syntax: one module per major version, each\n" +
+        "//! composing its capability table from [`super::feature`] and owning the\n" +
+        "//! surfaces only that version reads.\n",
+    },
+  },
 };
 
 const ident = "[A-Za-z_][A-Za-z0-9_]*";
@@ -741,10 +794,16 @@ function moveDeclarations(
 ) {
   // A parent that moves in the same step is edited where it is now.
   const current = (file: string) => [...renames].find(([, moved]) => moved === file)?.[0] ?? file;
-  const parentFile = (module: readonly string[]) =>
-    module.length === 1
-      ? path.posix.join(step.crate, "src/lib.rs")
-      : moduleFiles(step.crate, module.slice(0, -1)).file;
+  // A parent is `name.rs`, or `name/mod.rs` when only that exists.
+  const parentFile = (module: readonly string[]) => {
+    if (module.length === 1) return path.posix.join(step.crate, "src/lib.rs");
+    const parent = moduleFiles(step.crate, module.slice(0, -1));
+    const nested = path.posix.join(parent.dir, "mod.rs");
+    return !fs.existsSync(path.join(repoRoot, parent.file)) &&
+      fs.existsSync(path.join(repoRoot, nested))
+      ? nested
+      : parent.file;
+  };
   const added = new Map<string, string[]>();
   for (const { from, to } of step.moves) {
     const oldParent = parentFile(from);
