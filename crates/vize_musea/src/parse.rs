@@ -79,6 +79,8 @@ pub fn parse_art<'a>(
     if art_metadata
         .as_ref()
         .is_none_or(|metadata| metadata.component.is_none())
+        && !blocks.is_inline
+        && attrs::attr_value(&art.open, "component").is_none()
         && let Some(script) = blocks.script_setup.as_ref()
     {
         infer_art_target(allocator, script.content, &variants, &mut art_metadata)?;
@@ -228,23 +230,44 @@ fn parse_art_macro_metadata<'a>(
     // Cheap pre-check: defineArt() can only return Some if the literal token
     // "defineArt" appears in the source (it is a compiler macro recognized by
     // name and cannot be aliased), so skip the OXC parse otherwise.
-    if !script.contains("defineArt") {
+    let has_define_art = contains_identifier(script, "defineArt");
+    let has_define_art_meta = contains_identifier(script, "defineArtMeta");
+    if !has_define_art && !has_define_art_meta {
         return None;
     }
 
     // The defineArt-only reader: one parse, none of the binding/scope
     // analysis the full `parse_script_setup` runs for other consumers, and
     // pinned equal to it by croquis's own differential battery.
-    let mut metadata = vize_croquis::script_parser::parse_define_art(script)
+    let mut metadata = has_define_art
+        .then(|| vize_croquis::script_parser::parse_define_art(script))
+        .flatten()
         .as_ref()
         .map(|art| define_art_metadata(allocator, art))
         .unwrap_or_else(|| DefineArtMetadata::new(allocator));
-    let has_define_art = metadata.component_name.is_some() || metadata.component.is_some();
-    if let Some(meta) = vize_croquis::script_parser::parse_define_art_meta(script) {
+    let found_define_art = metadata.component_name.is_some() || metadata.component.is_some();
+    if let Some(meta) = has_define_art_meta
+        .then(|| vize_croquis::script_parser::parse_define_art_meta(script))
+        .flatten()
+    {
         apply_art_metadata(allocator, &mut metadata, &meta);
         return Some(metadata);
     }
-    has_define_art.then_some(metadata)
+    found_define_art.then_some(metadata)
+}
+
+fn contains_identifier(source: &str, name: &str) -> bool {
+    source.match_indices(name).any(|(start, _)| {
+        let bytes = source.as_bytes();
+        let identifier = |byte: u8| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$');
+        !start
+            .checked_sub(1)
+            .and_then(|before| bytes.get(before))
+            .is_some_and(|byte| identifier(*byte))
+            && !bytes
+                .get(start + name.len())
+                .is_some_and(|byte| identifier(*byte))
+    })
 }
 
 /// The descriptor-side copy of a `defineArt()` call's metadata.

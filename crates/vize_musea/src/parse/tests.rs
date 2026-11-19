@@ -157,6 +157,22 @@ fn test_target_and_title_are_inferred_from_the_shared_imported_tag() {
 }
 
 #[test]
+fn test_inline_art_targets_the_host_without_parsing_script_imports() {
+    let allocator = Allocator::new();
+    let source = r#"
+<script setup lang="ts">
+import "./theme.css";
+defineProps<{ count?: number }>();
+</script>
+<template><output>{{ count }}</output></template>
+<art title="Counter"><variant name="Default"><Counter /></variant></art>
+"#;
+    let result = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
+    assert_eq!(result.metadata.title, "Counter");
+    assert_eq!(result.metadata.component, None);
+}
+
+#[test]
 fn test_ambiguous_target_requires_define_art() {
     let allocator = Allocator::new();
     let source = r#"
