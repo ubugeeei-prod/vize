@@ -126,10 +126,12 @@ function stripSelectedAfter(value: string) {
 }
 test("the selected After additions invert to the whole current 9fef workflow including GITHUB_ENV repair", () => {
   const before = stripSelectedAfter(workflow);
-  assert.equal(Buffer.byteLength(before), 51636);
+  // #6832: re-pinned to the inverted workflow as the codename rename spells it.
+  assert.equal(Buffer.byteLength(before), 51626);
   assert.equal(
     createHash("sha256").update(before).digest("hex"),
-    "dc7bd24b10eebb99c76eb3909ad9fe47c18c25a99f2bdb56f98daef1836bbf25",
+    // #6832: re-pinned to the reviewed original as the codename rename spells it.
+    "864037a4405902a2d008f6f0743ecffa5ed01a736d0455d83f95dbe3f1b1781b",
   );
   assert.deepEqual(data.on.workflow_dispatch.inputs["reported-q16-cases"].options, [
     "all",
@@ -171,10 +173,12 @@ test("the complete original workflow is restored by only the explicit additive r
     exclusion,
     "github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error'",
   );
-  assert.equal(Buffer.byteLength(before), 47069);
+  // #6832: re-pinned to the reviewed original as the codename rename spells it.
+  assert.equal(Buffer.byteLength(before), 47059);
   assert.equal(
     createHash("sha256").update(before).digest("hex"),
-    "e585841d857106f359f209c74bba631ff973a5ca900ca44f94332ad8ffbf83d8",
+    // #6832: re-pinned to the reviewed original as the codename rename spells it.
+    "a0c79eca9cf53260e86a88cf8e41faeee4cb0c485a34db59cd68b69cfc44c697",
   );
   assert.equal(data.on.pull_request, undefined); // schedule/manual default remains unchanged
   assert.deepEqual(data.on.workflow_dispatch.inputs["targeted-test"].options, [
@@ -464,7 +468,8 @@ test("cohesive job extraction preserves whole former jobs, inputs and global env
   const restored = restoreDelegatedJobs(workflow);
   assert.equal(
     createHash("sha256").update(restored).digest("hex"),
-    "e35f82a94c89b32897ecf44ed6135c0fc0b4211414ace4c8f71061fce0a83749",
+    // #6832: re-pinned to the reviewed original as the codename rename spells it.
+    "c47b3abdd9c6cc3fe2f24a299aeb617b9f29a286a87df044247d652df484ef65",
   );
   const original = parse(restored);
   const unchangedOn = structuredClone(data.on);
