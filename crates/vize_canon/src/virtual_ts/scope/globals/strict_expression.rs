@@ -66,7 +66,7 @@ pub(super) fn generate_strict_expression_refs(
                 continue;
             }
             let keyed = keyed_prop_bindings.contains(name);
-            let already_declared = member_root || keyed || !seen_names.insert(String::from(name));
+            let already_declared = keyed || !seen_names.insert(String::from(name));
             emit_header(ts, emitted_header);
             emit_strict_template_context_ref(
                 ts,
