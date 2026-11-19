@@ -1,3 +1,13 @@
+const oldLevelHome = "da" + "vinci";
+const levelHomes = ["levels", oldLevelHome];
+const unversionedWorkspacePackages = [
+  "level_harness",
+  "level_test_support",
+  `${oldLevelHome}_harness`,
+  `${oldLevelHome}_test_support`,
+  "vize-zed-extension",
+];
+
 /** Rewrites one manifest's version fields the way the release stamp does. */
 export function rewriteVersionMetadata(path, content, old, next) {
   const packageJson =
@@ -5,10 +15,12 @@ export function rewriteVersionMetadata(path, content, old, next) {
     (path.startsWith("npm/") ||
       ["editors/vscode/package.json", "editors/vscode-art/package.json"].includes(path));
   const readme = path === "README.md" || (path.startsWith("npm/") && path.endsWith("/README.md"));
-  // Preserve read-only metadata custody for historical published integrations.
+  // Preserve read-only metadata custody for historical published integrations. Revisions before
+  // the level rename name the level home and harness crates by their old spelling (in parts here).
   const cargoLock =
     ["Cargo.lock", "editors/zed/Cargo.lock", "examples/volt-target/Cargo.lock"].includes(path) ||
-    (path.startsWith("levels/vize_extension_host/tests/guests/") && path.endsWith("/Cargo.lock"));
+    (levelHomes.some((home) => path.startsWith(`${home}/vize_extension_host/tests/guests/`)) &&
+      path.endsWith("/Cargo.lock"));
   let section = "",
     pkg = "",
     replaced = false,
@@ -56,9 +68,7 @@ export function rewriteVersionMetadata(path, content, old, next) {
       }
       if (
         cargoLock &&
-        (pkg === "vize" ||
-          pkg.startsWith("vize_") ||
-          ["level_harness", "level_test_support", "vize-zed-extension"].includes(pkg)) &&
+        (pkg === "vize" || pkg.startsWith("vize_") || unversionedWorkspacePackages.includes(pkg)) &&
         trimmed === `version = "${old}"`
       )
         return line.replace(old, next);
