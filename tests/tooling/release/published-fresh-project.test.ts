@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { expectedNativePackage } from "../../../tools/support/release/verify_published/fresh_project.ts";
+import {
+  expectedNativePackage,
+  isKnownWindowsConfigRegression,
+} from "../../../tools/support/release/verify_published/fresh_project.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
 
 type Step = {
@@ -56,6 +59,28 @@ test("the public verifier starts npm without Windows command-shell ambiguity", (
   assert.doesNotMatch(verifier, /npm\.cmd/u);
   assert.match(verifier, /failure: error instanceof Error/u);
   assert.match(verifier, /isReleaseVersion\(version\)/u);
+});
+
+test("only the exact historical Windows JavaScript-config regression is admitted", () => {
+  const failure =
+    "generated clean check exited 2\nstderr:\nError: failed to parse C:\\project\\vite.config.ts: unterminated import in the product runtime";
+  for (const version of ["0.773.0", "0.777.0", "0.781.0"])
+    assert.equal(isKnownWindowsConfigRegression(version, failure, "win32"), true);
+  for (const version of ["0.772.0", "0.782.0", "1.773.0"])
+    assert.equal(isKnownWindowsConfigRegression(version, failure, "win32"), false);
+  assert.equal(isKnownWindowsConfigRegression("0.781.0", failure, "linux"), false);
+  assert.equal(
+    isKnownWindowsConfigRegression(
+      "0.781.0",
+      failure.replace("unterminated import", "unreadable import"),
+      "win32",
+    ),
+    false,
+  );
+  assert.equal(
+    isKnownWindowsConfigRegression("0.781.0", failure.replace("exited 2", "exited 1"), "win32"),
+    false,
+  );
 });
 
 test("published fresh projects run from exact public versions on every release host", () => {
