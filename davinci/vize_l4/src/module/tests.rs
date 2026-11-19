@@ -38,7 +38,7 @@ fn bare<L: LinkSink>() -> ModuleParts<'static, L> {
 fn render_function_vocabulary_keeps_binding_and_component_field_paired() {
     for (render, binding, field) in [
         (RenderFunctionName::Render, "render", "render"),
-        (RenderFunctionName::SfcRender, "_sfc_render", "render"),
+        (RenderFunctionName::ComponentRender, "_sfc_render", "render"),
         (RenderFunctionName::SsrRender, "ssrRender", "ssrRender"),
     ] {
         assert_eq!(render.as_str(), binding);
@@ -101,7 +101,7 @@ fn normal_module<L: LinkSink>() -> ModuleParts<'static, L> {
         Span::new(11, 16),
         &[2, 0],
     ));
-    parts.placement = RenderFunctionName::SfcRender.placement();
+    parts.placement = RenderFunctionName::ComponentRender.placement();
     parts
 }
 

@@ -357,7 +357,7 @@ fn literal_const_patch_facts_preserve_independent_dynamic_sources() {
             vec![String::from("8 /* PROPS */, [\"onUpdate:foo\"]")],
         ),
     ] {
-        let observed = vize_l4::targets::dom::artifact::emit_dom_source_sfc_observed_with_options(
+        let observed = vize_l4::targets::dom::artifact::emit_dom_source_strict_slots_observed_with_options(
             &allocator,
             source,
             vize_l1_to_l2::LegacyCaps::VUE3,
@@ -376,7 +376,7 @@ fn literal_const_patch_facts_preserve_independent_dynamic_sources() {
         cache_handlers: true,
         ..options
     };
-    let observed = vize_l4::targets::dom::artifact::emit_dom_source_sfc_observed_with_options(
+    let observed = vize_l4::targets::dom::artifact::emit_dom_source_strict_slots_observed_with_options(
         &allocator,
         r#"<input v-model="msg" :id="LIMIT">"#,
         vize_l1_to_l2::LegacyCaps::VUE3,

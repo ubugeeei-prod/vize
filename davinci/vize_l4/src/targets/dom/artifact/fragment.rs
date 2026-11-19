@@ -19,7 +19,7 @@ use super::children::{
 };
 use super::helper::Helper;
 use super::prefix::Site;
-use super::sfc_style;
+use crate::targets::dom::artifact::style_carrier;
 use super::slots::is_whitespace_text;
 use super::vnode;
 

@@ -7,7 +7,7 @@ use vize_l3::decision::template::build_template_dom_decisions;
 use vize_l4::{
     module::assemble_template,
     runtime::{Runtime, vocabulary},
-    targets::dom::{NativeTemplateDomOutputError, emit_template, emit_template_output},
+    targets::dom::{TemplateDomOutputError, emit_template, emit_template_output},
     write::Recorded,
 };
 
@@ -191,7 +191,7 @@ fn refused_output_retains_original_analysis_file_and_whole_input() -> Result<(),
         let Err(failure) = emit_template_output(analysis) else {
             return Err("no partial native output");
         };
-        equal(failure.error(), NativeTemplateDomOutputError::Dom(expected))?;
+        equal(failure.error(), TemplateDomOutputError::Dom(expected))?;
         check(core::ptr::eq(failure.analysis().owner(), &original))?;
         let file = original.file().ok_or("retained complete File")?;
         check(file.is_complete() && core::ptr::eq(failure.analysis().file(), file))?;

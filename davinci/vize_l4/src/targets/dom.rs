@@ -36,7 +36,7 @@ mod write;
 use expression::{BareExpressions, ExpressionWriter};
 pub use file::{emit_file, emit_template};
 pub use output::{
-    NativeTemplateDomOutput, NativeTemplateDomOutputError, NativeTemplateDomOutputFailure,
+    TemplateDomOutput, TemplateDomOutputError, TemplateDomOutputFailure,
     emit_template_output,
 };
 pub use vue::{emit_selected_setup_template, emit_selected_setup_template_with_mode, emit_vue};
