@@ -320,8 +320,8 @@ codegen-units = 256
 # the fat-LTO release profile while staying representative of it.
 [profile.ci-opt]
 inherits = "release"
-lto = "thin"
-codegen-units = 16
+lto = "fat"
+codegen-units = 1
 
 # TS-44 measures the same stripped CLI payload shipped by the release job.
 [profile.ci-opt.package.vize]
