@@ -61,8 +61,15 @@ export function planPrChecks({ paths, eventName, labels, workspace, cargoMetadat
     testMatrix: rustTestMatrix(cargoMetadata, requiredRust.packages),
   };
   const js = planAffectedJs(workspace, paths, affectedRust);
-  const native = planNativeRuntime(paths, affectedRust);
   const tier = selectPrTier({ paths, eventName, labels });
+  // #6830 T1: native runtime lanes execute real Vue and tsgo oracles. The merge
+  // queue plans the same affected lanes from the same diff; `full-ci` PRs and
+  // unknown diffs (heavy tier) keep them on the PR.
+  const affectedNative = planNativeRuntime(paths, affectedRust);
+  const native =
+    tier === "heavy" || !affectedNative.run
+      ? { ...affectedNative, deferred: [] as string[] }
+      : { run: false, matrix: { lane: ["none"] }, deferred: affectedNative.matrix.lane };
   // Preserve the real-tree source/API and reviewed-doc contracts in daily CI.
   // Unknown Rust/tooling inputs remain conservative; ordinary package-only
   // edits do not pay for these independent repository scans.
@@ -120,7 +127,7 @@ export function main(argv = process.argv.slice(2)) {
     .map(([name, value]) => `${name}=${value}\n`)
     .join("");
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, outputs);
-  const summary = `${paths.length} changed paths; Rust: ${plan.rust.packages.length} crates; JS: ${plan.js.groups.join(", ") || "none"}; native: ${plan.native.matrix.lane.join(", ")}; tier: ${plan.tier}.\n`;
+  const summary = `${paths.length} changed paths; Rust: ${plan.rust.packages.length} crates; JS: ${plan.js.groups.join(", ") || "none"}; native: ${plan.native.matrix.lane.join(", ")}${plan.native.deferred.length ? ` (T1: ${plan.native.deferred.join(", ")})` : ""}; tier: ${plan.tier}.\n`;
   process.stdout.write(summary);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
 }

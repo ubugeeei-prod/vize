@@ -124,7 +124,22 @@ test("Rust PRs validate their actual reverse dependency closure without replacin
     ["compiler", "cli-and-integrations"],
   );
   assert.deepEqual(compiler.js.groups, ["builders", "ui", "oxlint"]);
-  assert.equal(compiler.native.matrix.lane.length, 8);
+  // #6830: the fast PR tier defers native runtime lanes to the merge queue.
+  assert.deepEqual(compiler.native.matrix, { lane: ["none"] });
+  assert.equal(compiler.native.deferred.length, 8);
+  assert.equal(
+    plan(["crates/vize_armature/src/lib.rs"], "merge_group").native.matrix.lane.length,
+    8,
+  );
+  const fullCi = planPrChecks({
+    paths: ["crates/vize_armature/src/lib.rs"],
+    eventName: "pull_request",
+    labels: ["full-ci"],
+    workspace,
+    cargoMetadata: metadata(),
+  });
+  assert.equal(fullCi.native.matrix.lane.length, 8);
+  assert.deepEqual(fullCi.native.deferred, []);
 });
 
 test("unknown, shared, deleted and empty PR inputs retain full workspace validation", () => {
@@ -152,7 +167,13 @@ test("every merge candidate checks all Rust packages without widening actual JS/
       allPackages.flatMap((name) => ["--package", name]),
     );
     assert.deepEqual(merge.js, pr.js, path);
-    assert.deepEqual(merge.native, pr.native, path);
+    // The queue runs exactly the native lanes this PR deferred.
+    assert.deepEqual(
+      merge.native.matrix.lane,
+      pr.native.deferred.length ? pr.native.deferred : pr.native.matrix.lane,
+      path,
+    );
+    assert.deepEqual(merge.native.deferred, [], path);
   }
 });
 
