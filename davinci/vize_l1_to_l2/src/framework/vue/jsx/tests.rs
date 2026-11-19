@@ -292,6 +292,57 @@ fn text_cleaning_follows_the_babel_rule() {
     assert_eq!(clean_text("\n   \n   \n"), "");
     assert_eq!(clean_text("   "), "   ");
     assert_eq!(clean_text("a\r\n  b"), "a b");
+    assert_eq!(clean_text("\ta\t\tb\t"), " a  b ");
+}
+
+/// The rule as first written: each line copied with its tabs as spaces, then
+/// trimmed. `clean_text` must agree with it on every input.
+fn clean_text_by_copy(raw: &str) -> vize_l0::String {
+    let lines = || {
+        raw.split('\n')
+            .map(|line| line.strip_suffix('\r').unwrap_or(line))
+            .enumerate()
+    };
+    let line_count = raw.split('\n').count();
+    let last_non_blank = lines()
+        .filter(|(_, line)| line.bytes().any(|b| b != b' ' && b != b'\t'))
+        .last()
+        .map_or(0, |(index, _)| index);
+    let mut result = vize_l0::String::default();
+    for (index, line) in lines() {
+        let normalized = line.replace('\t', " ");
+        let mut trimmed: &str = &normalized;
+        if index != 0 {
+            trimmed = trimmed.trim_start_matches(' ');
+        }
+        if index + 1 != line_count {
+            trimmed = trimmed.trim_end_matches(' ');
+        }
+        if trimmed.is_empty() {
+            continue;
+        }
+        result.push_str(trimmed);
+        if index != last_non_blank {
+            result.push(' ');
+        }
+    }
+    result
+}
+
+#[test]
+fn text_cleaning_matches_the_copying_rule_on_every_short_input() {
+    const ALPHABET: [char; 5] = [' ', '\t', '\n', '\r', 'a'];
+    let mut raw = vize_l0::String::default();
+    for length in 0..=7u32 {
+        for mut code in 0..5usize.pow(length) {
+            raw.clear();
+            for _ in 0..length {
+                raw.push(ALPHABET[code % 5]);
+                code /= 5;
+            }
+            assert_eq!(clean_text(&raw), clean_text_by_copy(&raw), "{raw:?}");
+        }
+    }
 }
 
 #[test]

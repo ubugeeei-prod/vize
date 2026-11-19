@@ -259,21 +259,53 @@ pub fn clean_text(raw: &str) -> vize_l0::String {
         .map_or(0, |(index, _)| index);
     let mut result = vize_l0::String::default();
     for (index, line) in lines() {
-        let normalized = line.replace('\t', " ");
-        let mut trimmed: &str = &normalized;
+        // Tabs read as spaces: trim both, then copy with each tab as a space,
+        // without building a tab-free copy of every line first.
+        let mut trimmed = line;
         if index != 0 {
-            trimmed = trimmed.trim_start_matches(' ');
+            trimmed = trim_blank_start(trimmed);
         }
         if index + 1 != line_count {
-            trimmed = trimmed.trim_end_matches(' ');
+            trimmed = trim_blank_end(trimmed);
         }
         if trimmed.is_empty() {
             continue;
         }
-        result.push_str(trimmed);
+        push_tabs_as_spaces(&mut result, trimmed);
         if index != last_non_blank {
             result.push(' ');
         }
     }
     result
+}
+
+/// Byte loops rather than `str` pattern methods, so this text-only helper
+/// shares no generic searcher instantiation with other lowering code.
+fn trim_blank_start(line: &str) -> &str {
+    let blank = line
+        .bytes()
+        .take_while(|b| matches!(b, b' ' | b'\t'))
+        .count();
+    line.get(blank..).unwrap_or_default()
+}
+
+fn trim_blank_end(line: &str) -> &str {
+    let blank = line
+        .bytes()
+        .rev()
+        .take_while(|b| matches!(b, b' ' | b'\t'))
+        .count();
+    line.get(..line.len() - blank).unwrap_or_default()
+}
+
+fn push_tabs_as_spaces(result: &mut vize_l0::String, text: &str) {
+    let mut start = 0;
+    for (index, byte) in text.bytes().enumerate() {
+        if byte == b'\t' {
+            result.push_str(text.get(start..index).unwrap_or_default());
+            result.push(' ');
+            start = index + 1;
+        }
+    }
+    result.push_str(text.get(start..).unwrap_or_default());
 }
