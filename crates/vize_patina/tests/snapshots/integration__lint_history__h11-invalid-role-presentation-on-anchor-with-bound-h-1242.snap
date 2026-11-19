@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-invalid-role-presentation-on-anchor-with-bound-h-1242",
+    history: "84c7f8636c5c8b8c925649adfb27d0f520cd028e",
+    source: "<a :href=\"url\" role=\"presentation\">Home</a>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/no-role-presentation-on-focusable",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/no-role-presentation-on-focusable",
+                severity: Error,
+                message: "Focusable elements must not have role=\"presentation\" or role=\"none\"",
+                start: 0,
+                end: 35,
+                help: Some(
+                    "Remove the role attribute or make the element non-focusable. Presentation role removes semantic meaning while the element remains focusable",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/no-role-presentation-on-focusable",
+                    severity: Error,
+                    message: "Focusable elements must not have role=\"presentation\" or role=\"none\"",
+                    start: 0,
+                    end: 35,
+                    help: Some(
+                        "Remove the role attribute or make the element non-focusable. Presentation role removes semantic meaning while the element remains focusable",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

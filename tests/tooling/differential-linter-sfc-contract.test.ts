@@ -56,7 +56,7 @@ void test("all current SFC wires have the complete bounded transition and old pa
   assert.deepEqual(
     loaded.manifest.cohorts.map((cohort: any) => [cohort.id, cohort.cases.sha256]),
     [
-      ["current-api", "2b3b3b6305e6ee49c7654a1fbe29df4d3a487e9498c56637fbfdca58b84f12ee"],
+      ["current-api", "567f69404c8aabf0c8c1e8f8f87dbd55cc4d2cad45b9ecbeb7ff0ec6d1bf0ce1"],
       ["next-tick", "96b1745c527e4a65fc0347566d015d5063271e90d7fdc8d21fe160c54856c5c2"],
       ["report", "c10833e985b26e524cc9a0d0e469c3e651850fbe9dd6293d8f2854e692ef5622"],
       ["static-class", "a8e75c02b01aed33a505886090952ac63f7e7b78a9fa96cc31be591852e207af"],
@@ -67,7 +67,7 @@ void test("all current SFC wires have the complete bounded transition and old pa
     sha256(
       fs.readFileSync(path.join(root, "tests/_fixtures/differential/linter/oracle-index.json")),
     ),
-    "b9f91809b14d7986f345fc4c562261417854a4f5d9e1005396fc60af7e6b3cb8",
+    "ba86beb90c9d16b35d193fb26757786b5ed3984c9b1ce1d135588bd36f3e2733",
   );
   const expected: [string, ReturnType<typeof missing> | null][] = [
     ["current-api/ref-string-untyped", null],

@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-hydration-template-literal-embedded-call-1234",
+    history: "dc52682b235458680031a94b38c3b8887660db69",
+    source: "<div :key=\"`item-${Date.now()}`\">{{ `item-${Date.now()}` }}</div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "ssr/no-hydration-mismatch",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "ssr/no-hydration-mismatch",
+                severity: Warning,
+                message: "'Date.now' in attribute binding may cause hydration mismatch",
+                start: 5,
+                end: 32,
+                help: Some(
+                    "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "ssr/no-hydration-mismatch",
+                severity: Warning,
+                message: "'Date.now' may cause hydration mismatch between server and client",
+                start: 33,
+                end: 59,
+                help: Some(
+                    "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 2,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "ssr/no-hydration-mismatch",
+                    severity: Warning,
+                    message: "'Date.now' in attribute binding may cause hydration mismatch",
+                    start: 5,
+                    end: 32,
+                    help: Some(
+                        "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "ssr/no-hydration-mismatch",
+                    severity: Warning,
+                    message: "'Date.now' may cause hydration mismatch between server and client",
+                    start: 33,
+                    end: 59,
+                    help: Some(
+                        "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 2,
+        },
+    ),
+}

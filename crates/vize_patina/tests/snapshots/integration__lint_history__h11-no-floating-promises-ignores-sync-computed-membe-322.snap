@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-no-floating-promises-ignores-sync-computed-membe-322",
+    history: "c2cac772c40ca0afde5feccf95316df3ec59c963",
+    source: "<script setup lang=\"ts\">\nconst method = 'save' as const\nconst actions = {\n  save(): void {}\n}\n</script>\n\n<template>\n  <button @click=\"actions[method]\">Save</button>\n</template>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-floating-promises",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

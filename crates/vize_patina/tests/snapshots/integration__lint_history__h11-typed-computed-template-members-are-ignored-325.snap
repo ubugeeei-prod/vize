@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-typed-computed-template-members-are-ignored-325",
+    history: "994ae6314c7e3f2e3804b45fb956b1fff1e42cec",
+    source: "<script setup lang=\"ts\">\nconst key = 'label' as const\nconst payload: { label: string } = { label: 'safe' }\n</script>\n\n<template>\n  <div :title=\"payload[key]\" />\n</template>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-unsafe-template-binding",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

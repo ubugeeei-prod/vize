@@ -59,11 +59,11 @@ void test("shared linter corpus retains every complete actual public observation
       legacyMatches: plannedCases,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: plannedCases - 23,
+      nativeUnsupported: plannedCases - 28,
       nativeFailures: 0,
-      nativeHandled: 23,
-      nativeEquivalent: 23,
-      pairedComparisons: 23,
+      nativeHandled: 28,
+      nativeEquivalent: 28,
+      pairedComparisons: 28,
     },
     JSON.stringify(report.rows, null, 2),
   );
@@ -76,9 +76,9 @@ void test("shared linter corpus retains every complete actual public observation
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
   assert.deepEqual(acceptance.total, {
     planned: plannedCases,
-    nativeHandled: 23,
-    nativeEquivalent: 23,
-    unsupported: plannedCases - 23,
+    nativeHandled: 28,
+    nativeEquivalent: 28,
+    unsupported: plannedCases - 28,
     legacyBacked: 0,
     unverified: 0,
   });

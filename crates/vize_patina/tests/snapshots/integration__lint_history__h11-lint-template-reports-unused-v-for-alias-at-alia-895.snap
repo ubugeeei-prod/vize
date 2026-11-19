@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-lint-template-reports-unused-v-for-alias-at-alia-895",
+    history: "1c7163dbaf4f2962b0fc16208066ac75a4ca45a4",
+    source: "<template>\n<div>\n  <span v-for=\"(item, i) in items\" :key=\"item\">{{ item }}</span>\n  <span v-for=\"(entry, j) in items\" :key=\"entry\">{{ entry }}</span>\n</div>\n</template>\n<script setup>\nconst items = ['a', 'b'];\n</script>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-unused-vars",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unused-vars",
+                severity: Warning,
+                message: "Key variable 'i' is defined by v-for but never used",
+                start: 39,
+                end: 40,
+                help: Some(
+                    "Consider removing the key variable or prefix it with underscore: _key",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unused-vars",
+                severity: Warning,
+                message: "Key variable 'j' is defined by v-for but never used",
+                start: 105,
+                end: 106,
+                help: Some(
+                    "Consider removing the key variable or prefix it with underscore: _key",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 2,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-vars",
+                    severity: Warning,
+                    message: "Key variable 'i' is defined by v-for but never used",
+                    start: 39,
+                    end: 40,
+                    help: Some(
+                        "Consider removing the key variable or prefix it with underscore: _key",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-vars",
+                    severity: Warning,
+                    message: "Key variable 'j' is defined by v-for but never used",
+                    start: 105,
+                    end: 106,
+                    help: Some(
+                        "Consider removing the key variable or prefix it with underscore: _key",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 2,
+        },
+    ),
+}

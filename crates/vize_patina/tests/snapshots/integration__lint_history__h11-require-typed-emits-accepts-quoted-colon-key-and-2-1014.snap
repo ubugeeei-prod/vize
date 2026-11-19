@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-require-typed-emits-accepts-quoted-colon-key-and-2-1014",
+    history: "6ff5652a8a49c3d74b2212131b73166fbc8ec7a4",
+    source: "<script setup lang=\"ts\">\ndefineEmits([\"update:open\"])\n</script>",
+    filename: "TypedDialog.vue",
+    entry: "sfc",
+    rule: "type/require-typed-emits",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "TypedDialog.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "type/require-typed-emits",
+                severity: Warning,
+                message: "Emit should have a type definition",
+                start: 25,
+                end: 53,
+                help: Some(
+                    "Use `defineEmits<...>()` or a validator object with typed payload parameters.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "TypedDialog.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "type/require-typed-emits",
+                    severity: Warning,
+                    message: "Emit should have a type definition",
+                    start: 25,
+                    end: 53,
+                    help: Some(
+                        "Use `defineEmits<...>()` or a validator object with typed payload parameters.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

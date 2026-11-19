@@ -1,0 +1,203 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-reactivity-loss-plain-alias-mutation-1515",
+    history: "49e5531b2c7e9e77647d35c87e795134e5205477",
+    source: "<script setup lang=\"ts\">\nconst { count } = defineProps<{ count: number }>()\n\nconst alias = count\nconst second = alias\nlet assigned: number\nassigned = second\n\nuseMyComposable(second)\nuseMyComposable(assigned)\nassigned++\n\nconst ctx = useMyComposable(() => second)\nconst a = ctx.second()\n</script>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-reactivity-loss",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 7,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "type/no-reactivity-loss",
+                severity: Warning,
+                message: "Assigning plain snapshot 'count' to 'alias' keeps reactivity lost from 'count'",
+                start: 91,
+                end: 96,
+                help: Some(
+                    "Pass the reactive source itself, a getter, `toRef(...)`, or `computed(...)` instead of aliasing the snapshot.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "type/no-reactivity-loss",
+                severity: Warning,
+                message: "Assigning plain snapshot 'alias' to 'second' keeps reactivity lost from 'count'",
+                start: 112,
+                end: 117,
+                help: Some(
+                    "Pass the reactive source itself, a getter, `toRef(...)`, or `computed(...)` instead of aliasing the snapshot.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "type/no-reactivity-loss",
+                severity: Warning,
+                message: "Assigning plain snapshot 'second' to 'assigned' keeps reactivity lost from 'count'",
+                start: 150,
+                end: 156,
+                help: Some(
+                    "Pass the reactive source itself, a getter, `toRef(...)`, or `computed(...)` instead of aliasing the snapshot.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "type/no-reactivity-loss",
+                severity: Warning,
+                message: "Passing 'second' to 'useMyComposable' cuts the reactive graph from 'count'",
+                start: 174,
+                end: 180,
+                help: Some(
+                    "Pass `Ref<T>` or `ComputedRef<T>` instead, for example `toRef(source, 'key')` or `computed(() => value)`.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "type/no-reactivity-loss",
+                severity: Warning,
+                message: "Passing 'assigned' to 'useMyComposable' cuts the reactive graph from 'count'",
+                start: 198,
+                end: 206,
+                help: Some(
+                    "Pass `Ref<T>` or `ComputedRef<T>` instead, for example `toRef(source, 'key')` or `computed(() => value)`.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "type/no-reactivity-loss",
+                severity: Warning,
+                message: "Mutating 'assigned' writes through a plain snapshot from 'count'",
+                start: 208,
+                end: 216,
+                help: Some(
+                    "Mutate the reactive source directly, or keep the value as a ref/computed.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "type/no-reactivity-loss",
+                severity: Warning,
+                message: "Assigning 'ctx.second()' to 'a' stores a plain snapshot from 'count' returned by 'useMyComposable'",
+                start: 272,
+                end: 284,
+                help: Some(
+                    "Keep the getter lazy, wrap it in `computed(...)`, or have the composable return a ref-like value.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 7,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "type/no-reactivity-loss",
+                    severity: Warning,
+                    message: "Assigning plain snapshot 'count' to 'alias' keeps reactivity lost from 'count'",
+                    start: 91,
+                    end: 96,
+                    help: Some(
+                        "Pass the reactive source itself, a getter, `toRef(...)`, or `computed(...)` instead of aliasing the snapshot.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "type/no-reactivity-loss",
+                    severity: Warning,
+                    message: "Assigning plain snapshot 'alias' to 'second' keeps reactivity lost from 'count'",
+                    start: 112,
+                    end: 117,
+                    help: Some(
+                        "Pass the reactive source itself, a getter, `toRef(...)`, or `computed(...)` instead of aliasing the snapshot.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "type/no-reactivity-loss",
+                    severity: Warning,
+                    message: "Assigning plain snapshot 'second' to 'assigned' keeps reactivity lost from 'count'",
+                    start: 150,
+                    end: 156,
+                    help: Some(
+                        "Pass the reactive source itself, a getter, `toRef(...)`, or `computed(...)` instead of aliasing the snapshot.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "type/no-reactivity-loss",
+                    severity: Warning,
+                    message: "Passing 'second' to 'useMyComposable' cuts the reactive graph from 'count'",
+                    start: 174,
+                    end: 180,
+                    help: Some(
+                        "Pass `Ref<T>` or `ComputedRef<T>` instead, for example `toRef(source, 'key')` or `computed(() => value)`.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "type/no-reactivity-loss",
+                    severity: Warning,
+                    message: "Passing 'assigned' to 'useMyComposable' cuts the reactive graph from 'count'",
+                    start: 198,
+                    end: 206,
+                    help: Some(
+                        "Pass `Ref<T>` or `ComputedRef<T>` instead, for example `toRef(source, 'key')` or `computed(() => value)`.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "type/no-reactivity-loss",
+                    severity: Warning,
+                    message: "Mutating 'assigned' writes through a plain snapshot from 'count'",
+                    start: 208,
+                    end: 216,
+                    help: Some(
+                        "Mutate the reactive source directly, or keep the value as a ref/computed.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "type/no-reactivity-loss",
+                    severity: Warning,
+                    message: "Assigning 'ctx.second()' to 'a' stores a plain snapshot from 'count' returned by 'useMyComposable'",
+                    start: 272,
+                    end: 284,
+                    help: Some(
+                        "Keep the getter lazy, wrap it in `computed(...)`, or have the composable return a ref-like value.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 7,
+        },
+    ),
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-lint-sfc-allows-local-props-object-v-model-membe-326",
+    history: "4c1c93ee7525b48ed843fefd51d26fd1a129cb24",
+    source: "<script setup lang=\"ts\">\nimport { reactive } from 'vue'\n\ndefineProps<{ user: { name: string } }>()\nconst props = reactive({ user: { name: '' } })\n</script>\n\n<template>\n  <input v-model=\"props.user.name\" />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-mutating-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

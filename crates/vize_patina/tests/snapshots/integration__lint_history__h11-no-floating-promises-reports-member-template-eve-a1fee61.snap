@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-no-floating-promises-reports-member-template-eve-a1fee61",
+    history: "a1fee61d1433ad5d0883df597c95751135aabefd",
+    source: "<script setup lang=\"ts\">\nconst actions = {\n  async save(): Promise<void> {}\n}\n</script>\n\n<template>\n  <button @click=\"actions.save\">Save</button>\n</template>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-floating-promises",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

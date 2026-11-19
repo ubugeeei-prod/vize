@@ -1,0 +1,71 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-options-api-cdn-create-app-script-612",
+    history: "dab7edca29ef07b68ef81e11b19e3bf9ad8bc900",
+    source: "\nVue.createApp({\n  data() {\n    return { count: 0 }\n  }\n}).mount(\"#app\")\n",
+    filename: "main.js",
+    entry: "script",
+    rule: "script/no-options-api",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "main.js",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/no-options-api",
+                severity: Error,
+                message: "Options API component declarations are not supported",
+                start: 15,
+                end: 57,
+                help: Some(
+                    "Use <script setup> with Composition API. Move props/emits to defineProps()/defineEmits(), lifecycle options to onMounted()/onUnmounted(), and component metadata to defineOptions() when needed.",
+                ),
+                labels: [
+                    Label {
+                        message: "data() option (use ref()/reactive())",
+                        start: 19,
+                        end: 23,
+                    },
+                ],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "main.js",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/no-options-api",
+                    severity: Error,
+                    message: "Options API component declarations are not supported",
+                    start: 15,
+                    end: 57,
+                    help: Some(
+                        "Use <script setup> with Composition API. Move props/emits to defineProps()/defineEmits(), lifecycle options to onMounted()/onUnmounted(), and component metadata to defineOptions() when needed.",
+                    ),
+                    labels: [
+                        Label {
+                            message: "data() option (use ref()/reactive())",
+                            start: 19,
+                            end: 23,
+                        },
+                    ],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}
