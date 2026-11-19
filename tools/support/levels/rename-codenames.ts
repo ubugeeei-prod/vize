@@ -500,12 +500,9 @@ const historicalPins =
  * others, with the files whose pins they re-record.
  */
 const scopedPins: readonly (readonly [holder: RegExp, pins: RegExp])[] = [
-  // The registry pins current runtime packs, but its JSX child producer pairs pin the JSX sources
-  // at their admitted revision.
-  [
-    /^tests\/_fixtures\/differential\/compiler\/manifest\.json$/u,
-    /^(?!crates\/vize_atelier_jsx\/src\/)/u,
-  ],
+  // The registry pins current runtime packs, but its producer source pairs pin crate sources at
+  // their admitted revisions.
+  [/^tests\/_fixtures\/differential\/compiler\/manifest\.json$/u, /^(?!crates\/[^/]+\/src\/)/u],
   // The JSX child and Vapor style admissions pin current inputs and witnesses (tests and the
   // 10749 admission records); their producer source pairs pin past revisions.
   [
