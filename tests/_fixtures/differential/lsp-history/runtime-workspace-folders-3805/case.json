@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "commit": "7bebef6ef5275652bdf4bcf54474f89f608f1678",
+  "id": "lsp/fix-history/runtime-workspace-folders-3805",
+  "requirement": "Adding a workspace folder at runtime brings its config and files into the session (workspace symbols, per-folder lint config); removing it drops its symbols.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false
+  },
+  "files": {
+    "one/App.vue": "<script setup lang=\"ts\">\nfunction folderOneSymbol() {}\n</script>\n",
+    "two/App.vue": "<script setup lang=\"ts\">\nfunction folderTwoSymbol() {}\n</script>\n",
+    "two/vite.config.mjs": "export default { vue: { linter: { rules: { \"vue/require-v-for-key\": \"off\" } } } };\n",
+    "two/List.vue": "<template><ul><li v-for=\"i in [1]\">{{ i }}</li></ul></template>\n"
+  },
+  "steps": [
+    {
+      "open": "one/App.vue"
+    },
+    {
+      "notify": "workspace/didChangeWorkspaceFolders",
+      "params": {
+        "event": {
+          "added": [
+            {
+              "uri": "${workspace}/two",
+              "name": "two"
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    {
+      "request": "workspace/symbol",
+      "params": {
+        "query": "folder"
+      },
+      "retry": true
+    },
+    {
+      "open": "two/List.vue"
+    },
+    {
+      "diagnostics": "two/List.vue"
+    },
+    {
+      "notify": "workspace/didChangeWorkspaceFolders",
+      "params": {
+        "event": {
+          "added": [],
+          "removed": [
+            {
+              "uri": "${workspace}/two",
+              "name": "two"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": "workspace/symbol",
+      "params": {
+        "query": "folder"
+      },
+      "retry": true
+    }
+  ]
+}

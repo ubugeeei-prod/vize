@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "commit": "59767e4ee006d5211718aae515a7d124a9e4ecc0",
+  "id": "lsp/fix-history/reexported-component-navigation-4611",
+  "requirement": "Component definition follows exported aliases, barrels and package routes to the real Vue source.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "components/Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ title: string; count?: number }>()\nconst emit = defineEmits<{ save: [id: number]; 'update:title': [value: string] }>()\nconst model = defineModel<string>('label')\ndefineSlots<{ footer(props: { done: boolean }): any }>()\n</script>\n<template><footer><slot name=\"footer\" :done=\"true\" /></footer></template>\n",
+    "components/index.ts": "export { default as Child, default as AliasedChild } from './Child.vue'\n",
+    "node_modules/ui-kit/package.json": "{ \"name\": \"ui-kit\", \"version\": \"1.0.0\", \"exports\": { \".\": \"./index.ts\" } }\n",
+    "node_modules/ui-kit/index.ts": "export { default as KitButton } from './KitButton.vue'\n",
+    "node_modules/ui-kit/KitButton.vue": "<script setup lang=\"ts\">\ndefineProps<{ tone: 'primary' | 'ghost'; disabled?: boolean }>()\n</script>\n<template><button /></template>\n",
+    "Host.vue": "<script setup lang=\"ts\">\nimport { AliasedChild } from './components'\nimport { KitButton } from 'ui-kit'\n</script>\n<template>\n  <AliasedChild title=\"t\" :count=\"1\" />\n  <KitButton tone=\"primary\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "Host.vue"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "Host.vue",
+      "at": {
+        "find": "<AliasedChild",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "Host.vue",
+      "at": {
+        "find": "<KitButton",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "Host.vue",
+      "at": {
+        "find": "{ AliasedChild }",
+        "delta": 2,
+        "nth": 0
+      }
+    }
+  ]
+}

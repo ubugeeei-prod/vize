@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "commit": "fc2ac9a4e1622d03ddf9dcc690a689d21d3f05c0",
+  "id": "lsp/fix-history/live-backend-template-hovers-3349",
+  "requirement": "With typechecking enabled, template and script hovers come from the live checker types rather than structural guesses.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst items = ref([{ id: 1, label: 'a' }])\nfunction pick(id: number) { return items.value.find((x) => x.id === id) }\n</script>\n<template><p v-for=\"item in items\">{{ item.label }} {{ pick(item.id) }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ item.label",
+        "delta": 9,
+        "nth": 0
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ pick",
+        "delta": 3,
+        "nth": 0
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "const items",
+        "delta": 6,
+        "nth": 0
+      },
+      "retry": true
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "range": {
+        "end": {
+          "character": 27,
+          "line": 1
+        },
+        "start": {
+          "character": 22,
+          "line": 1
+        }
+      },
+      "uri": "${workspace}/App.vue"
+    }
+  },
+  {
+    "step": 2,
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 27,
+            "line": 1
+          },
+          "start": {
+            "character": 22,
+            "line": 1
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 40,
+            "line": 1
+          },
+          "start": {
+            "character": 35,
+            "line": 1
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 33,
+            "line": 3
+          },
+          "start": {
+            "character": 28,
+            "line": 3
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 43,
+            "line": 3
+          },
+          "start": {
+            "character": 38,
+            "line": 3
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 30,
+            "line": 4
+          },
+          "start": {
+            "character": 25,
+            "line": 4
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "result": {
+      "data": [
+        3,
+        13,
+        6,
+        9,
+        0,
+        0,
+        8,
+        4,
+        18,
+        0,
+        0,
+        5,
+        1,
+        21,
+        0,
+        0,
+        2,
+        5,
+        8,
+        0,
+        0,
+        10,
+        5,
+        8,
+        0,
+        1,
+        11,
+        6,
+        12,
+        0,
+        0,
+        7,
+        5,
+        8,
+        0
+      ]
+    }
+  },
+  {
+    "step": 4,
+    "result": {
+      "data": [
+        3,
+        13,
+        6,
+        9,
+        0,
+        0,
+        8,
+        4,
+        18,
+        0,
+        0,
+        5,
+        1,
+        21,
+        0,
+        0,
+        2,
+        5,
+        8,
+        0,
+        0,
+        10,
+        5,
+        8,
+        0
+      ]
+    }
+  }
+]

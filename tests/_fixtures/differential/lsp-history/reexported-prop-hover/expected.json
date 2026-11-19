@@ -1,0 +1,40 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**count**\n\n_Component prop_\n\n```typescript\ncount?: number\n```\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<AliasedChild count=\"...\" />\n<AliasedChild :count=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+      },
+      "range": {
+        "end": {
+          "character": 32,
+          "line": 5
+        },
+        "start": {
+          "character": 26,
+          "line": 5
+        }
+      }
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**tone**\n\n_Component prop_\n\n```typescript\ntone: 'primary' | 'ghost'\n```\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<KitButton tone=\"...\" />\n<KitButton :tone=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+      },
+      "range": {
+        "end": {
+          "character": 17,
+          "line": 6
+        },
+        "start": {
+          "character": 13,
+          "line": 6
+        }
+      }
+    }
+  }
+]

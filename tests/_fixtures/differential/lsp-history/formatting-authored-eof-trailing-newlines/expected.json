@@ -1,0 +1,20 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "newText": "<template>\n  <div>x</div>\n</template>\n",
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 5
+          },
+          "start": {
+            "character": 0,
+            "line": 0
+          }
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "commit": "df2044e5c2383838672f03c6bb4d9301a394d250",
+  "id": "lsp/fix-history/sfc-lint-diagnostics-324",
+  "requirement": "Editor linting reads the whole SFC (block order and script rules), not only the template slice.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false
+  },
+  "files": {
+    "vite.config.mjs": "export default { vue: { linter: { rules: { \"vue/sfc-element-order\": \"warn\" } } } };\n",
+    "App.vue": "<style scoped>p{}</style>\n<template><p>{{ 1 }}</p></template>\n<script setup lang=\"ts\">\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    }
+  ]
+}

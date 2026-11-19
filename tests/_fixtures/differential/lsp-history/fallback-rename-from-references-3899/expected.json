@@ -1,0 +1,50 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "changes": {
+        "${workspace}/App.vue": [
+          {
+            "newText": "heading",
+            "range": {
+              "end": {
+                "character": 11,
+                "line": 2
+              },
+              "start": {
+                "character": 6,
+                "line": 2
+              }
+            }
+          },
+          {
+            "newText": "heading",
+            "range": {
+              "end": {
+                "character": 18,
+                "line": 3
+              },
+              "start": {
+                "character": 13,
+                "line": 3
+              }
+            }
+          },
+          {
+            "newText": "heading",
+            "range": {
+              "end": {
+                "character": 30,
+                "line": 5
+              },
+              "start": {
+                "character": 25,
+                "line": 5
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+]

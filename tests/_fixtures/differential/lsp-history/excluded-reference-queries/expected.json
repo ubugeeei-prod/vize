@@ -1,0 +1,90 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 20,
+            "line": 1
+          },
+          "start": {
+            "character": 9,
+            "line": 1
+          }
+        },
+        "uri": "${workspace}/src/Used.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 24,
+            "line": 3
+          },
+          "start": {
+            "character": 13,
+            "line": 3
+          }
+        },
+        "uri": "${workspace}/src/Used.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 24,
+            "line": 0
+          },
+          "start": {
+            "character": 13,
+            "line": 0
+          }
+        },
+        "uri": "${workspace}/src/shared.ts"
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 20,
+            "line": 1
+          },
+          "start": {
+            "character": 9,
+            "line": 1
+          }
+        },
+        "uri": "${workspace}/ignored/Stray.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 21,
+            "line": 2
+          },
+          "start": {
+            "character": 10,
+            "line": 2
+          }
+        },
+        "uri": "${workspace}/ignored/Stray.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 24,
+            "line": 0
+          },
+          "start": {
+            "character": 13,
+            "line": 0
+          }
+        },
+        "uri": "${workspace}/src/shared.ts"
+      }
+    ]
+  }
+]

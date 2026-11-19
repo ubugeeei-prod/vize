@@ -1,0 +1,90 @@
+[
+  {
+    "step": 1,
+    "result": null
+  },
+  {
+    "step": 2,
+    "result": [
+      {
+        "detail": "Add template block",
+        "insertText": "<template>\n\t$1\n</template>",
+        "insertTextFormat": 2,
+        "kind": 15,
+        "label": "template"
+      },
+      {
+        "detail": "Add script setup block",
+        "insertText": "<script setup lang=\"ts\">\n$1\n</script>",
+        "insertTextFormat": 2,
+        "kind": 15,
+        "label": "script setup"
+      },
+      {
+        "detail": "Add script block",
+        "insertText": "<script lang=\"ts\">\nexport default {\n\t$1\n}\n</script>",
+        "insertTextFormat": 2,
+        "kind": 15,
+        "label": "script"
+      },
+      {
+        "detail": "Add scoped style block",
+        "insertText": "<style scoped>\n$1\n</style>",
+        "insertTextFormat": 2,
+        "kind": 15,
+        "label": "style scoped"
+      },
+      {
+        "detail": "Add style block",
+        "insertText": "<style>\n$1\n</style>",
+        "insertTextFormat": 2,
+        "kind": 15,
+        "label": "style"
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "result": null
+  },
+  {
+    "step": 4,
+    "result": null
+  },
+  {
+    "step": 5,
+    "result": null
+  },
+  {
+    "step": 6,
+    "result": null
+  },
+  {
+    "step": 7,
+    "result": null
+  },
+  {
+    "step": 8,
+    "result": null
+  },
+  {
+    "step": 9,
+    "result": null
+  },
+  {
+    "step": 10,
+    "result": null
+  },
+  {
+    "step": 11,
+    "result": null
+  },
+  {
+    "step": 12,
+    "result": null
+  },
+  {
+    "step": 13,
+    "result": null
+  }
+]

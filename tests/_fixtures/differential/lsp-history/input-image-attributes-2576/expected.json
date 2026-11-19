@@ -1,0 +1,59 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**align on <input>**\n\n_HTML attribute_\n\n```typescript\nalign: HTMLElementTagNameMap[\"input\"][\"align\"]\n```\n\nNative DOM attribute recognized by the Vue template compiler. Vue patches it on the platform element rather than resolving it as a component prop.\n\n**Runtime surface**\n\nDOM reflected attribute\n\n**Editor behavior**\n- Hover and go-to-definition use the DOM library type for the reflected property when the type service is available.\n- Component prop lookup is skipped because the enclosing tag is a native element.\n\n**Example**\n\n```vue\n<template>\n  <input align=\"...\">\n</template>\n```\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/align)"
+      },
+      "range": {
+        "end": {
+          "character": 27,
+          "line": 1
+        },
+        "start": {
+          "character": 22,
+          "line": 1
+        }
+      }
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**usemap on <input>**\n\n_HTML attribute_\n\n```typescript\nuseMap: HTMLElementTagNameMap[\"input\"][\"useMap\"]\n```\n\nNative DOM attribute recognized by the Vue template compiler. Vue patches it on the platform element rather than resolving it as a component prop.\n\n**Runtime surface**\n\nDOM reflected attribute\n\n**Editor behavior**\n- Hover and go-to-definition use the DOM library type for the reflected property when the type service is available.\n- Component prop lookup is skipped because the enclosing tag is a native element.\n\n**Example**\n\n```vue\n<template>\n  <input usemap=\"...\">\n</template>\n```\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/usemap)"
+      },
+      "range": {
+        "end": {
+          "character": 41,
+          "line": 1
+        },
+        "start": {
+          "character": 35,
+          "line": 1
+        }
+      }
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**webkitdirectory on <input>**\n\n_HTML attribute_\n\n```typescript\nwebkitdirectory: HTMLElementTagNameMap[\"input\"][\"webkitdirectory\"]\n```\n\nNative DOM attribute recognized by the Vue template compiler. Vue patches it on the platform element rather than resolving it as a component prop.\n\n**Runtime surface**\n\nBoolean HTML attribute\n\n**Editor behavior**\n- Hover and go-to-definition use the DOM library type for the reflected property when the type service is available.\n- Component prop lookup is skipped because the enclosing tag is a native element.\n\n**Example**\n\n```vue\n<template>\n  <input webkitdirectory>\n</template>\n```\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/webkitdirectory)"
+      },
+      "range": {
+        "end": {
+          "character": 62,
+          "line": 1
+        },
+        "start": {
+          "character": 47,
+          "line": 1
+        }
+      }
+    }
+  }
+]

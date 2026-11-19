@@ -1,0 +1,40 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 7006,
+        "message": "Parameter 'v' implicitly has an 'any' type.",
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 2
+          },
+          "start": {
+            "character": 94,
+            "line": 1
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 2339,
+        "message": "Property 'upper' does not exist on type 'ComponentPublicInstance<{}>'.",
+        "range": {
+          "end": {
+            "character": 27,
+            "line": 3
+          },
+          "start": {
+            "character": 22,
+            "line": 3
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

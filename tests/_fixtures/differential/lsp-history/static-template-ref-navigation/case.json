@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "commit": "bdca84dd4b771acf0c5c535108f4d6d63ee1c9f4",
+  "id": "lsp/fix-history/static-template-ref-navigation",
+  "requirement": "A static ref attribute navigates to its useTemplateRef declaration and hovers as that binding; a missing binding and non-value cursor regions are rejected.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nimport { useTemplateRef } from 'vue'\nconst panel = useTemplateRef<HTMLDivElement>('panel')\nconst other = 1\n</script>\n<template>\n  <div ref=\"panel\">x</div>\n  <div ref=\"missing\">y</div>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "\"panel\">",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "\"panel\">",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "\"missing\"",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "ref=\"panel",
+        "delta": 1,
+        "nth": 0
+      }
+    }
+  ]
+}

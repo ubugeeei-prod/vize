@@ -1,0 +1,50 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "range": {
+        "end": {
+          "character": 0,
+          "line": 0
+        },
+        "start": {
+          "character": 0,
+          "line": 0
+        }
+      },
+      "uri": "${workspace}/user.store.ts"
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "range": {
+        "end": {
+          "character": 0,
+          "line": 0
+        },
+        "start": {
+          "character": 0,
+          "line": 0
+        }
+      },
+      "uri": "${workspace}/Card.item.vue"
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "range": {
+        "end": {
+          "character": 22,
+          "line": 0
+        },
+        "start": {
+          "character": 13,
+          "line": 0
+        }
+      },
+      "uri": "${workspace}/user.store.ts"
+    }
+  }
+]

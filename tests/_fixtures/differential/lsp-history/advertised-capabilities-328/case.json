@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "commit": "db60c95ba23161999b0ff5084a0748813ff4dee4",
+  "id": "lsp/fix-history/advertised-capabilities-328",
+  "requirement": "Advertised capabilities match the enabled, implemented handlers for the default editor configuration (documentLink resolve stays false).",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": true
+  },
+  "recordInitialize": true,
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "App.vue": "<template><p /></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/documentLink",
+      "uri": "App.vue"
+    }
+  ]
+}

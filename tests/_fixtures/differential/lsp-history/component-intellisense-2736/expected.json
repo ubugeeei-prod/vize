@@ -1,0 +1,164 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": "component-required-props",
+        "codeDescription": {
+          "href": "https://vuejs.org/guide/components/props.html#prop-validation"
+        },
+        "message": "<Child> is missing required prop: `title`\n\nPass the prop in this template usage, or make it optional/provide a default in the child component.",
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 5
+          },
+          "start": {
+            "character": 3,
+            "line": 5
+          }
+        },
+        "severity": 1,
+        "source": "vize/components"
+      },
+      {
+        "code": "component-required-props",
+        "codeDescription": {
+          "href": "https://vuejs.org/guide/components/props.html#prop-validation"
+        },
+        "message": "<Child> is missing required prop: `title`\n\nPass the prop in this template usage, or make it optional/provide a default in the child component.",
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 6
+          },
+          "start": {
+            "character": 3,
+            "line": 6
+          }
+        },
+        "severity": 1,
+        "source": "vize/components"
+      },
+      {
+        "code": "component-required-props",
+        "codeDescription": {
+          "href": "https://vuejs.org/guide/components/props.html#prop-validation"
+        },
+        "message": "<Child> is missing required prop: `title`\n\nPass the prop in this template usage, or make it optional/provide a default in the child component.",
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 8
+          },
+          "start": {
+            "character": 3,
+            "line": 8
+          }
+        },
+        "severity": 1,
+        "source": "vize/components"
+      },
+      {
+        "code": 2322,
+        "message": "Type 'string' is not assignable to type 'number'.",
+        "range": {
+          "end": {
+            "character": 18,
+            "line": 8
+          },
+          "start": {
+            "character": 9,
+            "line": 8
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": {
+      "count": 1,
+      "items": [
+        {
+          "detail": "prop: string (required)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Prop `title`**\n\n_Required component prop_\n\n```typescript\ninterface Props {\n  title: string\n}\n```\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<Component title=\"...\" />\n<Component :title=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+          },
+          "insertTextFormat": 2,
+          "kind": 10,
+          "label": "title",
+          "labelDetails": {
+            "description": "required",
+            "detail": ": string"
+          },
+          "sortText": "00-prop-title",
+          "textEdit": {
+            "newText": "title=\"$1\"",
+            "range": {
+              "end": {
+                "character": 11,
+                "line": 5
+              },
+              "start": {
+                "character": 9,
+                "line": 5
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "count": 2,
+      "items": [
+        {
+          "detail": "event: [id: number]",
+          "insertTextFormat": 2,
+          "kind": 23,
+          "label": "@select",
+          "sortText": "00-event-select",
+          "textEdit": {
+            "newText": "@select=\"$1\"",
+            "range": {
+              "end": {
+                "character": 12,
+                "line": 6
+              },
+              "start": {
+                "character": 9,
+                "line": 6
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "step": 4,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**maxCount**\n\n_Component prop_\n\n```typescript\n(property) maxCount?: number | undefined\n```\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<Child max-count=\"...\" />\n<Child :max-count=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+      },
+      "range": {
+        "end": {
+          "character": 18,
+          "line": 8
+        },
+        "start": {
+          "character": 9,
+          "line": 8
+        }
+      }
+    }
+  }
+]

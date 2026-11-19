@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "commit": "67c4b310ff3c7435cd320e7cd286054801066a73",
+  "id": "lsp/fix-history/package-import-array-fallback",
+  "requirement": "Dependency refresh follows an array export fallback to the types target: changing it refreshes the importer.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "node_modules/cond/package.json": "{ \"name\": \"cond\", \"exports\": { \"./blocked\": null, \"./feature/*\": { \"types\": \"./types/feature/*.d.ts\" }, \"./feature/special/*\": { \"types\": \"./types/special/*.d.ts\" }, \".\": [{ \"types\": \"./types/index.d.ts\" }, \"./index.js\"] } }\n",
+    "node_modules/cond/types/index.d.ts": "export declare const root: number\n",
+    "node_modules/cond/types/feature/a.d.ts": "export declare const featureA: string\n",
+    "node_modules/cond/types/special/a.d.ts": "export declare const specialA: string\n",
+    "node_modules/cond/index.js": "export const root = 1\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport { root } from 'cond'\nconst n: boolean = root\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    },
+    {
+      "write": "node_modules/cond/types/index.d.ts",
+      "text": "export declare const root: boolean\n"
+    },
+    {
+      "notify": "workspace/didChangeWatchedFiles",
+      "params": {
+        "changes": [
+          {
+            "uri": "${workspace}/node_modules/cond/types/index.d.ts",
+            "type": 2
+          }
+        ]
+      }
+    },
+    {
+      "diagnostics": "App.vue",
+      "version": null
+    }
+  ]
+}

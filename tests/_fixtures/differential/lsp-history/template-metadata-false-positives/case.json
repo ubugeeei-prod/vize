@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "commit": "e6ae950c1e7c595db5ff43960cab6b3f9a71a207",
+  "id": "lsp/fix-history/template-metadata-false-positives",
+  "requirement": "Slot completion reads the child's template slot AST (no slots from comments or attribute lookalikes) and a spread keeps the component hover explicit about uncertainty.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "Panel.vue": "<script setup lang=\"ts\">\n</script>\n<template>\n  <!-- <slot name=\"commented\" /> -->\n  <div data-slot=\"fake\"><slot name=\"header\" :level=\"1\" /><slot /></div>\n  <svg viewBox=\"0 0 1 1\"><foreignObject /></svg>\n</template>\n",
+    "Use.vue": "<script setup lang=\"ts\">\nimport Panel from './Panel.vue'\nconst rest = {}\n</script>\n<template>\n  <Panel v-bind=\"rest\">\n    <template #></template>\n  </Panel>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "Use.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "Use.vue",
+      "at": {
+        "find": "#>",
+        "delta": 1,
+        "nth": 0
+      },
+      "labels": [
+        "header",
+        "default",
+        "commented",
+        "fake",
+        "#header",
+        "#default"
+      ]
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "Use.vue",
+      "at": {
+        "find": "<Panel",
+        "delta": 2,
+        "nth": 0
+      }
+    }
+  ]
+}

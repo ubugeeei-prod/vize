@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": "typecheck-unavailable",
+        "message": "Type checking is unavailable in this workspace. Make sure `tsconfig.json` exists. Provide a native TypeScript compiler, for example `typescript-native@npm:typescript@7.1.0-beta`, or configure `typeChecker.corsaPath`, `CORSA_PATH`, or `TSGO_PATH`; see https://vizejs.dev/guide/static-analysis.",
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 0
+          },
+          "start": {
+            "character": 0,
+            "line": 0
+          }
+        },
+        "severity": 4,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

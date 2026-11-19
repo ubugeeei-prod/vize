@@ -1,0 +1,66 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "range": {
+        "end": {
+          "character": 24,
+          "line": 0
+        },
+        "start": {
+          "character": 16,
+          "line": 0
+        }
+      },
+      "uri": "${workspace}/a.ts"
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "range": {
+        "end": {
+          "character": 32,
+          "line": 1
+        },
+        "start": {
+          "character": 24,
+          "line": 1
+        }
+      },
+      "uri": "${workspace}/a.ts"
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "range": {
+        "end": {
+          "character": 11,
+          "line": 3
+        },
+        "start": {
+          "character": 9,
+          "line": 3
+        }
+      },
+      "uri": "${workspace}/App.vue"
+    }
+  },
+  {
+    "step": 4,
+    "result": {
+      "range": {
+        "end": {
+          "character": 16,
+          "line": 1
+        },
+        "start": {
+          "character": 9,
+          "line": 1
+        }
+      },
+      "uri": "${workspace}/App.vue"
+    }
+  }
+]

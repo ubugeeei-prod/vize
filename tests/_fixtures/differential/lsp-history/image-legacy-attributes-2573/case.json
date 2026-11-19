@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "commit": "26df7458e3c5686c7e4c19f4e51f3fa1bc542a3f",
+  "id": "lsp/fix-history/image-legacy-attributes-2573",
+  "requirement": "Image legacy attribute hovers (align, border, hspace, longdesc, lowsrc, name, vspace) reflect real DOM properties.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<template>\n  <img src=\"a.png\" alt=\"\" align=\"left\" border=\"0\" hspace=\"1\" longdesc=\"d\" lowsrc=\"l\" name=\"n\" vspace=\"2\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "align",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "border",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "hspace",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "longdesc",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "lowsrc",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "name=",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "vspace",
+        "delta": 1,
+        "nth": 0
+      }
+    }
+  ]
+}

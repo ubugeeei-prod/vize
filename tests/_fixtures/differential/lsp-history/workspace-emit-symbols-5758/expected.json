@@ -1,0 +1,48 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "containerName": "Emitter",
+        "kind": 24,
+        "location": {
+          "range": {
+            "end": {
+              "character": 12,
+              "line": 2
+            },
+            "start": {
+              "character": 3,
+              "line": 2
+            }
+          },
+          "uri": "${workspace}/Emitter.vue"
+        },
+        "name": "save-item"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": [
+      {
+        "containerName": "Emitter",
+        "kind": 24,
+        "location": {
+          "range": {
+            "end": {
+              "character": 7,
+              "line": 3
+            },
+            "start": {
+              "character": 2,
+              "line": 3
+            }
+          },
+          "uri": "${workspace}/Emitter.vue"
+        },
+        "name": "close"
+      }
+    ]
+  }
+]

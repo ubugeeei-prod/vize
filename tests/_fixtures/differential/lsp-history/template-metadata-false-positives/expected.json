@@ -1,0 +1,69 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "count": 2,
+      "items": [
+        {
+          "detail": "slot",
+          "insertTextFormat": 2,
+          "kind": 5,
+          "label": "header",
+          "sortText": "00-slot-header",
+          "textEdit": {
+            "newText": "#header",
+            "range": {
+              "end": {
+                "character": 15,
+                "line": 6
+              },
+              "start": {
+                "character": 14,
+                "line": 6
+              }
+            }
+          }
+        },
+        {
+          "detail": "slot",
+          "insertTextFormat": 2,
+          "kind": 5,
+          "label": "default",
+          "sortText": "00-slot-default",
+          "textEdit": {
+            "newText": "#default",
+            "range": {
+              "end": {
+                "character": 15,
+                "line": 6
+              },
+              "start": {
+                "character": 14,
+                "line": 6
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst Panel: VueComponent\n```\n\nVue component: Panel.vue"
+      },
+      "range": {
+        "end": {
+          "character": 8,
+          "line": 5
+        },
+        "start": {
+          "character": 3,
+          "line": 5
+        }
+      }
+    }
+  }
+]

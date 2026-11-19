@@ -1,0 +1,40 @@
+[
+  {
+    "step": "initialize",
+    "capabilities": {
+      "documentFormattingProvider": true,
+      "documentOnTypeFormattingProvider": {
+        "firstTriggerCharacter": ";",
+        "moreTriggerCharacter": [
+          "}",
+          "\n"
+        ]
+      },
+      "documentRangeFormattingProvider": true,
+      "experimental": {
+        "vize": {
+          "jsxTypecheck": false
+        }
+      },
+      "textDocumentSync": {
+        "change": 2,
+        "openClose": true,
+        "save": {
+          "includeText": false
+        },
+        "willSave": false,
+        "willSaveWaitUntil": false
+      },
+      "workspace": {
+        "workspaceFolders": {
+          "changeNotifications": true,
+          "supported": true
+        }
+      }
+    }
+  },
+  {
+    "step": 1,
+    "result": null
+  }
+]

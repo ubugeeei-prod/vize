@@ -1,0 +1,37 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": "fallthrough-attrs",
+        "codeDescription": {
+          "href": "https://github.com/ubugeeei-prod/vize/wiki/type-errors#fallthrough-attrs"
+        },
+        "message": "Multi-root component may lose fallthrough attributes\n\nHelp: Bind $attrs explicitly to one root element or use inheritAttrs: false",
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 6
+          },
+          "start": {
+            "character": 2,
+            "line": 5
+          }
+        },
+        "severity": 2,
+        "source": "vize/types"
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "version": 2,
+    "diagnostics": []
+  },
+  {
+    "step": 5,
+    "version": 1,
+    "diagnostics": []
+  }
+]

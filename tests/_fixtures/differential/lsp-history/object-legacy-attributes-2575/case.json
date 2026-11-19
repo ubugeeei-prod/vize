@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "commit": "9df4084d411184201584d90d4fe090a42c4103b8",
+  "id": "lsp/fix-history/object-legacy-attributes-2575",
+  "requirement": "Object legacy attribute hovers map codebase/codetype/archive to the DOM property names.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<template>\n  <object codebase=\"/\" codetype=\"x\" archive=\"a\" declare></object>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "codebase",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "codetype",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "archive",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "declare",
+        "delta": 1,
+        "nth": 0
+      }
+    }
+  ]
+}

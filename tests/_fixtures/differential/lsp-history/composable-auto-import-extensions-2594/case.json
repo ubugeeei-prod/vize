@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "commit": "c7c3152089c63babc9451b9572fdba39697fa4b7",
+  "id": "lsp/fix-history/composable-auto-import-extensions-2594",
+  "requirement": "Composable auto-import quick fixes index sibling .mts/.cts modules and strip the extension from the inserted specifier while keeping the named export.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false,
+    "codeActions": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "useCounter.mts": "export function useCounter() { return 1 }\n",
+    "useFlag.cts": "export function useFlag() { return true }\n",
+    "App.vue": "<script setup lang=\"ts\">\nconst c = useCounter()\nconst f = useFlag()\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/codeAction",
+      "uri": "App.vue",
+      "params": {
+        "range": {
+          "start": {
+            "line": 1,
+            "character": 10
+          },
+          "end": {
+            "line": 1,
+            "character": 20
+          }
+        },
+        "context": {
+          "diagnostics": [],
+          "only": [
+            "quickfix"
+          ]
+        }
+      }
+    },
+    {
+      "request": "textDocument/codeAction",
+      "uri": "App.vue",
+      "params": {
+        "range": {
+          "start": {
+            "line": 2,
+            "character": 10
+          },
+          "end": {
+            "line": 2,
+            "character": 17
+          }
+        },
+        "context": {
+          "diagnostics": [],
+          "only": [
+            "quickfix"
+          ]
+        }
+      }
+    }
+  ]
+}

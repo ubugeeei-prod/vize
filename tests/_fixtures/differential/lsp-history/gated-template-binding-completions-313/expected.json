@@ -1,0 +1,55 @@
+[
+  {
+    "step": 1,
+    "result": null
+  },
+  {
+    "step": 2,
+    "result": {
+      "count": 42,
+      "items": [
+        {
+          "detail": " (literal)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Literal**\n\nLiteral constant value."
+          },
+          "kind": 21,
+          "label": "count",
+          "labelDetails": {
+            "detail": " (literal)"
+          },
+          "sortText": "0count"
+        }
+      ]
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "count": 42,
+      "items": []
+    }
+  },
+  {
+    "step": 4,
+    "result": {
+      "count": 42,
+      "items": [
+        {
+          "detail": " (literal)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Literal**\n\nLiteral constant value."
+          },
+          "kind": 21,
+          "label": "count",
+          "labelDetails": {
+            "detail": " (literal)"
+          },
+          "sortText": "0count"
+        }
+      ]
+    }
+  }
+]

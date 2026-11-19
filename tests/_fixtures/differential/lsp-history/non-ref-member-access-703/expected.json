@@ -1,0 +1,104 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "count": 3,
+      "items": [
+        {
+          "detail": " (const)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Const**\n\nConstant binding (function, class, or literal)."
+          },
+          "kind": 21,
+          "label": "obj",
+          "labelDetails": {
+            "detail": " (const)"
+          },
+          "sortText": "0obj"
+        },
+        {
+          "detail": " (ref)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Ref**\n\nReactive reference. Auto-unwrapped in template, needs `.value` in script."
+          },
+          "kind": 6,
+          "label": "r",
+          "labelDetails": {
+            "detail": " (ref)"
+          },
+          "sortText": "0r"
+        }
+      ]
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "count": 3,
+      "items": [
+        {
+          "detail": " (const)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Const**\n\nConstant binding (function, class, or literal)."
+          },
+          "kind": 21,
+          "label": "obj",
+          "labelDetails": {
+            "detail": " (const)"
+          },
+          "sortText": "0obj"
+        },
+        {
+          "detail": " (ref)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Ref**\n\nReactive reference. Auto-unwrapped in template, needs `.value` in script."
+          },
+          "kind": 6,
+          "label": "r",
+          "labelDetails": {
+            "detail": " (ref)"
+          },
+          "sortText": "0r"
+        }
+      ]
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "count": 44,
+      "items": [
+        {
+          "detail": " (const)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Const**\n\nConstant binding (function, class, or literal)."
+          },
+          "kind": 21,
+          "label": "obj",
+          "labelDetails": {
+            "detail": " (const)"
+          },
+          "sortText": "0obj"
+        },
+        {
+          "detail": " (ref)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Ref**\n\nReactive reference. Auto-unwrapped in template, needs `.value` in script."
+          },
+          "kind": 6,
+          "label": "r",
+          "labelDetails": {
+            "detail": " (ref)"
+          },
+          "sortText": "0r"
+        }
+      ]
+    }
+  }
+]

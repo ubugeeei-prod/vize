@@ -1,0 +1,156 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "children": [
+          {
+            "kind": 19,
+            "name": "div",
+            "range": {
+              "end": {
+                "character": 20,
+                "line": 10
+              },
+              "start": {
+                "character": 2,
+                "line": 10
+              }
+            },
+            "selectionRange": {
+              "end": {
+                "character": 6,
+                "line": 10
+              },
+              "start": {
+                "character": 3,
+                "line": 10
+              }
+            }
+          }
+        ],
+        "detail": "html",
+        "kind": 2,
+        "name": "template",
+        "range": {
+          "end": {
+            "character": 11,
+            "line": 11
+          },
+          "start": {
+            "character": 0,
+            "line": 7
+          }
+        },
+        "selectionRange": {
+          "end": {
+            "character": 9,
+            "line": 7
+          },
+          "start": {
+            "character": 1,
+            "line": 7
+          }
+        }
+      },
+      {
+        "children": [
+          {
+            "kind": 14,
+            "name": "a",
+            "range": {
+              "end": {
+                "character": 11,
+                "line": 4
+              },
+              "start": {
+                "character": 0,
+                "line": 4
+              }
+            },
+            "selectionRange": {
+              "end": {
+                "character": 7,
+                "line": 4
+              },
+              "start": {
+                "character": 6,
+                "line": 4
+              }
+            }
+          }
+        ],
+        "detail": "ts",
+        "kind": 2,
+        "name": "script setup",
+        "range": {
+          "end": {
+            "character": 9,
+            "line": 5
+          },
+          "start": {
+            "character": 0,
+            "line": 0
+          }
+        },
+        "selectionRange": {
+          "end": {
+            "character": 7,
+            "line": 0
+          },
+          "start": {
+            "character": 1,
+            "line": 0
+          }
+        }
+      },
+      {
+        "kind": 2,
+        "name": "style scoped",
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 16
+          },
+          "start": {
+            "character": 0,
+            "line": 12
+          }
+        },
+        "selectionRange": {
+          "end": {
+            "character": 6,
+            "line": 12
+          },
+          "start": {
+            "character": 1,
+            "line": 12
+          }
+        }
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": [
+      {
+        "collapsedText": "template",
+        "endLine": 10,
+        "kind": "region",
+        "startLine": 7
+      },
+      {
+        "collapsedText": "script setup",
+        "endLine": 4,
+        "kind": "region",
+        "startLine": 0
+      },
+      {
+        "collapsedText": "style",
+        "endLine": 15,
+        "kind": "region",
+        "startLine": 12
+      }
+    ]
+  }
+]
