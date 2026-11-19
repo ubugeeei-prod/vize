@@ -28,7 +28,8 @@ both fewer jobs and a shorter critical path.
 2. **Accurate tooling selection.** A test is selected only by inputs it actually reads.
    Path strings inside shared config modules and `node_modules` sources do not select
    their importers. Release contracts get audited inputs instead of "any input". The merge
-   queue still runs every tooling test.
+   queue plans tooling with the same PR-tier selector on the merge-group diff; nightly Full
+   qualification (`--tier merge`) still runs every tooling test.
 3. **One report job.** The three-hop chain collapses into `test-report`, which needs every
    product job directly. The reusable-workflow boundaries that force the chain go away, and
    the gate logic (`require-needs-success.ts`, canonical-corpus and Rust tier rules) runs
