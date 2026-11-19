@@ -99,7 +99,7 @@ void test("source-built LSP reproduces every pinned fix-history response", async
     fs.readFileSync(`${binary}.differential-build.json`, "utf8"),
   ) as BuildReceipt;
   validateBuildReceipt(receipt, expectedBuildIdentity(root));
-  const results = await runHistoryPack(binary, 4, root);
+  const results = await runHistoryPack(binary, 6, root);
   const failures = results.filter((result) => !result.equal);
   t.diagnostic(`${results.length - failures.length}/${results.length} sessions equal`);
   if (failures.length > 0) {

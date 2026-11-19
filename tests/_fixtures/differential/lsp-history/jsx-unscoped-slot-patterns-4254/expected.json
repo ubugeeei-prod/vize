@@ -1,0 +1,43 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2322,
+        "message": "Type 'number' is not assignable to type 'string'.",
+        "range": {
+          "end": {
+            "character": 35,
+            "line": 2
+          },
+          "start": {
+            "character": 29,
+            "line": 2
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\n(property) item: string\n```"
+      },
+      "range": {
+        "end": {
+          "character": 91,
+          "line": 1
+        },
+        "start": {
+          "character": 87,
+          "line": 1
+        }
+      }
+    }
+  }
+]

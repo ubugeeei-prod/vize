@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "commit": "417504f08a779fb6715410ba813d4667af4d15e0",
+  "id": "lsp/fix-history/jsx-component-props-4252",
+  "requirement": "JSX/TSX editor lowering keeps component tags, props and scoped-slot bodies: the Vue component prop hovers with its declared type.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"jsx\": \"preserve\", \"jsxImportSource\": \"vue\", \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "Widget.vue": "<script setup lang=\"ts\">\ndefineProps<{ fooBar: string }>()\ndefineSlots<{ default(props: { item: string }): any }>()\n</script>\n<template><slot item=\"x\" /></template>\n",
+    "View.tsx": "import Widget from './Widget.vue';\nexport const view = <Widget fooBar=\"ok\">{{ default: (props: { item: string }) => props.item }}</Widget>;\nexport const wrong = <Widget fooBar={1} />;\n"
+  },
+  "steps": [
+    {
+      "open": "View.tsx"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "View.tsx",
+      "at": {
+        "find": "fooBar=\"ok",
+        "delta": 2,
+        "nth": 0
+      },
+      "retry": true
+    }
+  ]
+}

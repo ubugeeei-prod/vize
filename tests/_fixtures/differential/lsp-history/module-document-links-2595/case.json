@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "commit": "7f35ef57ab36768ffcd96354f8ca155192aec50b",
+  "id": "lsp/fix-history/module-document-links-2595",
+  "requirement": "Document links include relative module-script imports and block src attributes with authored ranges and resolved targets.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "src/App.vue": "<script setup lang=\"ts\">\nimport util from './util.mts'\nimport Child from './Child.vue'\n</script>\n<script lang=\"ts\" src=\"./extra.ts\"></script>\n<template src=\"./tpl.html\"></template>\n<style src=\"./app.css\"></style>\n",
+    "src/util.mts": "export default 1\n",
+    "src/Child.vue": "<template />\n",
+    "src/extra.ts": "export {}\n",
+    "src/tpl.html": "<p/>\n",
+    "src/app.css": "p{}\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "request": "textDocument/documentLink",
+      "uri": "src/App.vue"
+    }
+  ]
+}

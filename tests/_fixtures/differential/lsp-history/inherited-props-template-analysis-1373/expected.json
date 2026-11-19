@@ -1,0 +1,43 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2322,
+        "message": "Type 'string' is not assignable to type 'number'.",
+        "range": {
+          "end": {
+            "character": 36,
+            "line": 3
+          },
+          "start": {
+            "character": 31,
+            "line": 3
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**extra**\n\n_Component prop_\n\n```typescript\n(property) Props.extra: number\n```\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<Inherited extra=\"...\" />\n<Inherited :extra=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+      },
+      "range": {
+        "end": {
+          "character": 36,
+          "line": 3
+        },
+        "start": {
+          "character": 31,
+          "line": 3
+        }
+      }
+    }
+  }
+]

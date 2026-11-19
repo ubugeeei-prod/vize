@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "commit": "2b56b13edcce4c485cbee8f652f9cd538f8afda2",
+  "id": "lsp/fix-history/shared-session-dependency-invalidation",
+  "requirement": "The reusable checker session invalidates its disk view after a watched dependency change: the open importer's diagnostics follow the changed declaration.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "types.ts": "export interface Item { id: number }\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport type { Item } from './types'\nconst item: Item = { id: 1 }\n</script>\n<template>{{ item.id }}</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    },
+    {
+      "write": "types.ts",
+      "text": "export interface Item { id: string }\n"
+    },
+    {
+      "notify": "workspace/didChangeWatchedFiles",
+      "params": {
+        "changes": [
+          {
+            "uri": "${workspace}/types.ts",
+            "type": 2
+          }
+        ]
+      }
+    },
+    {
+      "diagnostics": "App.vue",
+      "version": null
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ item.id",
+        "delta": 8,
+        "nth": 0
+      },
+      "retry": true
+    }
+  ]
+}

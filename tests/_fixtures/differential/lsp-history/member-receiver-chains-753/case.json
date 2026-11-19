@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "commit": "c98737e604ab534de8f99bf319ce14450af00965",
+  "id": "lsp/fix-history/member-receiver-chains-753",
+  "requirement": "Member completion keeps chained dotted/indexed receivers in script and template.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "App.vue": "<script setup lang=\"ts\">\nconst data = { list: [{ inner: { deep: 1, other: 'x' } }] }\ndata.list[0].inner.\n</script>\n<template>{{ data.list[0].inner. }}</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "inner.\n",
+        "delta": 6,
+        "nth": 0
+      },
+      "labels": [
+        "deep",
+        "other"
+      ],
+      "retry": true
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "inner. }}",
+        "delta": 6,
+        "nth": 0
+      },
+      "labels": [
+        "deep",
+        "other"
+      ],
+      "retry": true
+    }
+  ]
+}

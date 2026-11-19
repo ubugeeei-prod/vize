@@ -1,0 +1,60 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/App.vue": [
+              {
+                "newText": "import { useCounter } from './useCounter'\n",
+                "range": {
+                  "end": {
+                    "character": 0,
+                    "line": 1
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 1
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": true,
+        "kind": "quickfix",
+        "title": "Auto-import `useCounter` from `./useCounter`"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": [
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/App.vue": [
+              {
+                "newText": "import { useFlag } from './useFlag'\n",
+                "range": {
+                  "end": {
+                    "character": 0,
+                    "line": 1
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 1
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": true,
+        "kind": "quickfix",
+        "title": "Auto-import `useFlag` from `./useFlag`"
+      }
+    ]
+  }
+]

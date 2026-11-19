@@ -1,0 +1,59 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 33,
+            "line": 1
+          },
+          "start": {
+            "character": 28,
+            "line": 1
+          }
+        },
+        "uri": "${workspace}/Card.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 65,
+            "line": 3
+          },
+          "start": {
+            "character": 60,
+            "line": 3
+          }
+        },
+        "uri": "${workspace}/Card.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 13,
+            "line": 6
+          },
+          "start": {
+            "character": 8,
+            "line": 6
+          }
+        },
+        "uri": "${workspace}/Parent.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 14,
+            "line": 7
+          },
+          "start": {
+            "character": 9,
+            "line": 7
+          }
+        },
+        "uri": "${workspace}/Parent.vue"
+      }
+    ]
+  }
+]

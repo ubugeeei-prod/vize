@@ -1,0 +1,64 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 9,
+            "line": 1
+          },
+          "start": {
+            "character": 6,
+            "line": 1
+          }
+        },
+        "uri": "${workspace}/Slots.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 33,
+            "line": 5
+          },
+          "start": {
+            "character": 30,
+            "line": 5
+          }
+        },
+        "uri": "${workspace}/Slots.vue"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**row**\n\n_Template binding from script_\n\n```typescript\nrow: const\n```\n\nConstant binding from script setup. Non-reactive unless wrapped.\n\n**Source**\n\n`<script setup>`\n\n**Template behavior**\n- Ref values are automatically unwrapped in templates.\n- The binding is resolved from `<script setup>` analysis."
+      },
+      "range": {
+        "end": {
+          "character": 33,
+          "line": 5
+        },
+        "start": {
+          "character": 30,
+          "line": 5
+        }
+      }
+    }
+  },
+  {
+    "step": 3,
+    "result": null
+  },
+  {
+    "step": 4,
+    "result": null
+  },
+  {
+    "step": 5,
+    "result": null
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "commit": "ff74a83c379e22e55a8c5dba24a1e20c40722e56",
+  "id": "lsp/fix-history/did-change-configuration-640",
+  "requirement": "workspace/didChangeConfiguration is accepted without mutating the running configuration; requests keep answering.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nconst count = 1\n</script>\n<template>{{ count }}</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "notify": "workspace/didChangeConfiguration",
+      "params": {
+        "settings": {
+          "vize": {
+            "languageServer": {
+              "editor": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ count",
+        "delta": 3,
+        "nth": 0
+      }
+    }
+  ]
+}

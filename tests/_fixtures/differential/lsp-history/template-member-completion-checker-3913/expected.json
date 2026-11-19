@@ -1,0 +1,56 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "count": 2,
+      "items": [
+        {
+          "kind": 5,
+          "label": "name",
+          "sortText": "11"
+        },
+        {
+          "kind": 5,
+          "label": "tags",
+          "sortText": "11"
+        }
+      ]
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "count": 2,
+      "items": [
+        {
+          "kind": 5,
+          "label": "name",
+          "sortText": "11"
+        },
+        {
+          "kind": 5,
+          "label": "tags",
+          "sortText": "11"
+        }
+      ]
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "count": 2,
+      "items": [
+        {
+          "kind": 5,
+          "label": "name",
+          "sortText": "11"
+        },
+        {
+          "kind": 5,
+          "label": "tags",
+          "sortText": "11"
+        }
+      ]
+    }
+  }
+]

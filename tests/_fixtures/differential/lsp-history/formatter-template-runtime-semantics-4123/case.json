@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "commit": "fb462face5f1d1827b70cd0a0167ce25f661e50a",
+  "id": "lsp/fix-history/formatter-template-runtime-semantics-4123",
+  "requirement": "Whole-document and range formatting keep authored inline template text boundaries (no inserted whitespace inside inline content).",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "formatting": true
+  },
+  "files": {
+    "App.vue": "<template>\n<div>hello</div>\n</template>\n",
+    "Range.vue": "<script setup lang=\"ts\">\nconst   a=1\nconst   b=2\n</script>\n\n<template>\n  <div   class=\"x\"   >{{ a }}</div>\n</template>\n",
+    "Inline.vue": "<template><span>a</span><b>b</b>text<i>c</i></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/formatting",
+      "uri": "App.vue",
+      "params": {
+        "options": {
+          "tabSize": 2,
+          "insertSpaces": true
+        }
+      }
+    },
+    {
+      "open": "Range.vue"
+    },
+    {
+      "request": "textDocument/rangeFormatting",
+      "uri": "Range.vue",
+      "params": {
+        "range": {
+          "start": {
+            "line": 6,
+            "character": 0
+          },
+          "end": {
+            "line": 6,
+            "character": 35
+          }
+        },
+        "options": {
+          "tabSize": 2,
+          "insertSpaces": true
+        }
+      }
+    },
+    {
+      "request": "textDocument/rangeFormatting",
+      "uri": "Range.vue",
+      "params": {
+        "range": {
+          "start": {
+            "line": 1,
+            "character": 0
+          },
+          "end": {
+            "line": 2,
+            "character": 11
+          }
+        },
+        "options": {
+          "tabSize": 2,
+          "insertSpaces": true
+        }
+      }
+    },
+    {
+      "open": "Inline.vue"
+    },
+    {
+      "request": "textDocument/formatting",
+      "uri": "Inline.vue",
+      "params": {
+        "options": {
+          "tabSize": 2,
+          "insertSpaces": true
+        }
+      }
+    }
+  ]
+}

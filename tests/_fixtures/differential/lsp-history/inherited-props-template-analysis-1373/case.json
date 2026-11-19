@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "commit": "8252898b62bff2877e7e09dcfb2d98b223c19f9d",
+  "id": "lsp/fix-history/inherited-props-template-analysis-1373",
+  "requirement": "Template analysis resolves inherited (extends) and imported prop types through the shared generator: wrong child prop types report against the inherited contract.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "types.ts": "export interface BaseProps { base: string }\n",
+    "Inherited.vue": "<script setup lang=\"ts\">\nimport type { BaseProps } from './types'\ninterface Props extends BaseProps { extra: number }\ndefineProps<Props>()\n</script>\n<template><p /></template>\n",
+    "Use.vue": "<script setup lang=\"ts\">\nimport Inherited from './Inherited.vue'\n</script>\n<template><Inherited base=\"x\" :extra=\"'no'\" /></template>\n"
+  },
+  "steps": [
+    {
+      "open": "Use.vue"
+    },
+    {
+      "diagnostics": "Use.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "Use.vue",
+      "at": {
+        "find": ":extra",
+        "delta": 2,
+        "nth": 0
+      },
+      "retry": true
+    }
+  ]
+}

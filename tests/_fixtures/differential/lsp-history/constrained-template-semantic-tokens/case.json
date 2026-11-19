@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "commit": "8c90f998183efb6aa6d00b36e1143c89ce56442a",
+  "id": "lsp/fix-history/constrained-template-semantic-tokens",
+  "requirement": "Semantic tokens skip directive-like text in plain text and static values and never steal the following attribute value.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nconst v = 1\n</script>\n<template><p title=\"v-if=v :x=v\" :id=\"v\">v-if=\"v\" @click {{ v }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/semanticTokens/full",
+      "uri": "App.vue"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "commit": "0f8fecde36734640f40ffe64f3b2915321b184e0",
+  "id": "lsp/fix-history/implementation-gated-on-typecheck-5833",
+  "requirement": "With typecheck off the implementation provider is not advertised and textDocument/implementation returns null without backend work.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "recordInitialize": true,
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\ninterface Shape { area(): number }\nclass Square implements Shape { area() { return 4 } }\nconst s: Shape = new Square()\ns.area()\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/implementation",
+      "uri": "App.vue",
+      "at": {
+        "find": "s.area",
+        "delta": 2,
+        "nth": 0
+      }
+    }
+  ]
+}

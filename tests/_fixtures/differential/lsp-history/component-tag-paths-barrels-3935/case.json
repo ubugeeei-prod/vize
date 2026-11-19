@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "commit": "2922f41335b5990aead434832a1f6dc5dc83966d",
+  "id": "lsp/fix-history/component-tag-paths-barrels-3935",
+  "requirement": "Component-tag definition follows a paths alias and an export barrel to the authored component source.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "tsconfig.json": "{\n  // JSONC comment\n  \"compilerOptions\": { \"baseUrl\": \"./src\", \"paths\": { \"@lib/*\": [\"lib/*\"], \"@ui\": [\"ui/index.ts\"], }, },\n  \"include\": [\"src/**/*\"],\n}\n",
+    "src/lib/format.ts": "export const format = (v: string) => v\n",
+    "src/ui/index.ts": "export { default as Panel } from './Panel.vue'\n",
+    "src/ui/Panel.vue": "<template><section /></template>\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport { format } from '@lib/format'\nimport { Panel } from '@ui'\n</script>\n<template><Panel />{{ format('x') }}</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "src/App.vue",
+      "at": {
+        "find": "<Panel",
+        "delta": 3,
+        "nth": 0
+      }
+    }
+  ]
+}

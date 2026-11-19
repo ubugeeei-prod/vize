@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "commit": "d960802d31919aa9e7f2394fbd97621868d06a6e",
+  "id": "lsp/fix-history/editor-production-gates-2643",
+  "requirement": "Bound and native attributes are detected at identifier ends and across multiline/quoted-greater-than values for hover.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nconst id = 1\n</script>\n<template>\n  <input :value=\"id\" disabled\n    :title=\"id > 1\n      ? 'a' : 'b'\" data-x=\"y>z\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": ":value",
+        "delta": 3,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "disabled",
+        "delta": 3,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": ":title",
+        "delta": 3,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "? 'a'",
+        "delta": 0,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "data-x",
+        "delta": 2,
+        "nth": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": "vue/component-name-in-template-casing",
+        "codeDescription": {
+          "href": "https://eslint.vuejs.org/rules/component-name-in-template-casing.html"
+        },
+        "message": "Component should use kebab-case\n\nHelp: Use kebab-case for component names",
+        "range": {
+          "end": {
+            "character": 13,
+            "line": 4
+          },
+          "start": {
+            "character": 2,
+            "line": 4
+          }
+        },
+        "severity": 2,
+        "source": "vize/lint"
+      }
+    ]
+  }
+]

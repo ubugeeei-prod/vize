@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "commit": "ca314129da941092ade34fccc80341b40bd7e153",
+  "id": "lsp/fix-history/invalid-change-ranges-299",
+  "requirement": "Reversed and out-of-document incremental changes keep the authored text while the received version is recorded.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<template><ul><li v-for=\"i in [1]\">{{ i }}</li></ul></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "change": "App.vue",
+      "version": 2,
+      "contentChanges": [
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 20
+            },
+            "end": {
+              "line": 0,
+              "character": 10
+            }
+          },
+          "text": "BROKEN"
+        }
+      ]
+    },
+    {
+      "change": "App.vue",
+      "version": 3,
+      "contentChanges": [
+        {
+          "range": {
+            "start": {
+              "line": 50,
+              "character": 0
+            },
+            "end": {
+              "line": 51,
+              "character": 0
+            }
+          },
+          "text": "BROKEN"
+        }
+      ]
+    },
+    {
+      "diagnostics": "App.vue",
+      "version": 3
+    }
+  ]
+}

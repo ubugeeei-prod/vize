@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "commit": "7fc7a61f6b742d089dffe0ce8659b3160f605ce5",
+  "id": "lsp/fix-history/workspace-symbols-after-file-events-4687",
+  "requirement": "Workspace symbols stay responsive and current after created/changed file events while documents are edited.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "A.vue": "<script setup lang=\"ts\">\nfunction alphaResponsiveSymbol() {}\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "A.vue"
+    },
+    {
+      "request": "workspace/symbol",
+      "params": {
+        "query": "ResponsiveSymbol"
+      },
+      "retry": true
+    },
+    {
+      "write": "B.vue",
+      "text": "<script setup lang=\"ts\">\nfunction betaResponsiveSymbol() {}\n</script>\n"
+    },
+    {
+      "notify": "workspace/didChangeWatchedFiles",
+      "params": {
+        "changes": [
+          {
+            "uri": "${workspace}/B.vue",
+            "type": 1
+          }
+        ]
+      }
+    },
+    {
+      "change": "A.vue",
+      "version": 2,
+      "contentChanges": [
+        {
+          "text": "<script setup lang=\"ts\">\nfunction alphaRenamedResponsiveSymbol() {}\n</script>\n"
+        }
+      ]
+    },
+    {
+      "request": "workspace/symbol",
+      "params": {
+        "query": "ResponsiveSymbol"
+      },
+      "retry": true
+    }
+  ]
+}

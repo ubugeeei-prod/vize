@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "commit": "137486e7c9b5e3aaf5d519e3cffdf95142e0f97c",
+  "id": "lsp/fix-history/input-image-attributes-2576",
+  "requirement": "Input image/legacy attribute hovers (align, usemap, webkitdirectory) carry their reflected DOM metadata.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<template>\n  <input type=\"image\" align=\"left\" usemap=\"#m\" webkitdirectory />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "align",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "usemap",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "webkitdirectory",
+        "delta": 1,
+        "nth": 0
+      }
+    }
+  ]
+}

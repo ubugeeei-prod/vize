@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "commit": "d18ac76edca776c02b104127262e0689678f58ec",
+  "id": "lsp/fix-history/boundary-safe-template-definition-976",
+  "requirement": "Definition at a mid-codepoint UTF-16 position answers null safely, and template identifiers after astral or CJK text stay navigable.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nconst name = 1\nconst cafe = 2\n</script>\n<template><p>😀{{ cafe }}日本{{ name }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "params": {
+        "position": {
+          "line": 4,
+          "character": 14
+        }
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ cafe",
+        "delta": 4,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ name",
+        "delta": 4,
+        "nth": 0
+      }
+    }
+  ]
+}

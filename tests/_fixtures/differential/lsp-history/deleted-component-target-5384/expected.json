@@ -1,0 +1,38 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "range": {
+        "end": {
+          "character": 0,
+          "line": 0
+        },
+        "start": {
+          "character": 0,
+          "line": 0
+        }
+      },
+      "uri": "${workspace}/Child.vue"
+    }
+  },
+  {
+    "step": 4,
+    "result": null
+  },
+  {
+    "step": 6,
+    "result": {
+      "range": {
+        "end": {
+          "character": 0,
+          "line": 0
+        },
+        "start": {
+          "character": 0,
+          "line": 0
+        }
+      },
+      "uri": "${workspace}/Child.vue"
+    }
+  }
+]

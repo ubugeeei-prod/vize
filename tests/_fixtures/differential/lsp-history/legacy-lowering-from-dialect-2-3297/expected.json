@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 7006,
+        "message": "Parameter 'v' implicitly has an 'any' type.",
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 2
+          },
+          "start": {
+            "character": 94,
+            "line": 1
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]
