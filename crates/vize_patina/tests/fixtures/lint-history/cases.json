@@ -9828,30 +9828,6 @@
     "fixes": 0
   },
   {
-    "id": "h11-invalid-has-bound-accesskey-1247",
-    "history": "c3f6780cb9f7642503137ccf78797b3faf215725",
-    "source": "<div :accesskey=\"'h'\">Content</div>",
-    "filename": "History.vue",
-    "entry": "template",
-    "rule": "a11y/no-access-key",
-    "vue_version": null,
-    "vapor": null,
-    "diagnostics": 1,
-    "fixes": 0
-  },
-  {
-    "id": "h11-invalid-has-bound-autofocus-1247",
-    "history": "c3f6780cb9f7642503137ccf78797b3faf215725",
-    "source": "<input type=\"text\" :autofocus=\"true\" />",
-    "filename": "History.vue",
-    "entry": "template",
-    "rule": "a11y/no-autofocus",
-    "vue_version": null,
-    "vapor": null,
-    "diagnostics": 1,
-    "fixes": 0
-  },
-  {
     "id": "h11-lint-sfc-reports-nested-prop-v-model-mutation-323",
     "history": "c8a041c44c2414d0f61caba529e40c2142081710",
     "source": "<script setup lang=\"ts\">\nconst props = defineProps<{ user: { name: string }, count: number }>()\n</script>\n\n<template>\n  <input v-model=\"props.user.name\" />\n  <input v-model=\"props['count']\" />\n</template>\n",

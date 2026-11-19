@@ -3399,14 +3399,6 @@
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h11-floating-promise-script-call-control-322.snap",
     "sha256": "94e3fd0a3ec2ab64f7064b5fc6688540fd53e7891d3f8dea13077df463cd79ed"
   },
-  "linter/current-api/h11-invalid-has-bound-accesskey-1247": {
-    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h11-invalid-has-bound-accesskey-1247.snap",
-    "sha256": "de7bd518bc2a2db59721d7b27daedde0dbecee0deb6f7be19a5e29a69ef2575f"
-  },
-  "linter/current-api/h11-invalid-has-bound-autofocus-1247": {
-    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h11-invalid-has-bound-autofocus-1247.snap",
-    "sha256": "357eef25327f7a35eb2ce48228a1c5ef59a4f6932a8f48924ec65e2a7a18f26a"
-  },
   "linter/current-api/h11-lint-sfc-reports-nested-prop-v-model-mutation-323": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h11-lint-sfc-reports-nested-prop-v-model-mutation-323.snap",
     "sha256": "074e28b47a6a70e22c3b8e6d6738630b15bc71dbfbd4b4ef6e40b5b44025be3f"

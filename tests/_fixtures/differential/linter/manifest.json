@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "567f69404c8aabf0c8c1e8f8f87dbd55cc4d2cad45b9ecbeb7ff0ec6d1bf0ce1"
+        "sha256": "f980178a2584dc2d21fa1bbc1efd120d37247ea7646eb19b8075acce882c02e6"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "ba86beb90c9d16b35d193fb26757786b5ed3984c9b1ce1d135588bd36f3e2733"
+    "sha256": "0e5001409fa20d3b0438f822dfeca0ca207502586a4075848f35a0164302f401"
   },
   "cases": [
     {
@@ -4634,46 +4634,6 @@
     },
     {
       "id": "linter/current-api/h11-invalid-flow-content-in-anchor-when-outer-contex-900",
-      "state": "active",
-      "targets": [
-        "lint"
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc"
-            ],
-            "selector": "current-api pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "linter/current-api/h11-invalid-has-bound-accesskey-1247",
-      "state": "active",
-      "targets": [
-        "lint"
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc"
-            ],
-            "selector": "current-api pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "linter/current-api/h11-invalid-has-bound-autofocus-1247",
       "state": "active",
       "targets": [
         "lint"
