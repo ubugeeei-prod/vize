@@ -1,0 +1,47 @@
+name: Check full alert
+
+# The full suite runs only on the daily schedule and on manual dispatch, and no
+# pull request waits on it. Without this listener a red full Check on main
+# reached nobody for a month (2026-10-18 to 2026-11-19). It keeps one tracking
+# issue open while the full Check on the default branch is red, comments on
+# every further red run, and closes the issue on the next green run.
+on:
+  workflow_run:
+    workflows: [Check]
+    types: [completed]
+
+concurrency:
+  # Serialize issue updates so two completions never open two issues.
+  group: check-full-alert
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  alert:
+    if: ${{ (github.event.workflow_run.event == 'schedule' || github.event.workflow_run.event == 'workflow_dispatch') && github.event.workflow_run.head_branch == github.event.repository.default_branch }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    steps:
+      # workflow_run has write authority: execute only trusted default-branch code.
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /tools/support/compat/github/full-check-alert.ts
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - name: Open, update or close the full Check tracking issue
+        run: node tools/support/compat/github/full-check-alert.ts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Optional comma-separated logins to assign when the issue opens.
+          FULL_CHECK_ALERT_ASSIGNEES: ${{ vars.FULL_CHECK_ALERT_ASSIGNEES }}
