@@ -37,10 +37,11 @@ const parsedCapture =
 /**
  * Records that pin git trees at past revisions name the paths those trees had, and so do the
  * verifiers that read those revisions (the warm type-backed path and timing host moves and the
- * raw git-reader harness, whose body digests are of past bytes).
+ * raw git-reader harness, whose body digests are of past bytes), and the L2 dump tests that pin
+ * the historical v1 wire headers byte for byte.
  */
 const pinnedTrees =
-  /^(?:editors\/vscode\/test\/css-hover-source-custody\.json|tests\/performance\/support\/warm-type-backed-(?:(?:path|timing)-host(?:-manifest\.json|\.ts)|git-reader-harness\.ts)|tests\/tooling\/warm-type-backed-(?:path|timing)-host\.test\.ts)$/u;
+  /^(?:editors\/vscode\/test\/css-hover-source-custody\.json|tests\/performance\/support\/warm-type-backed-(?:(?:path|timing)-host(?:-manifest\.json|\.ts)|git-reader-harness\.ts)|tests\/tooling\/warm-type-backed-(?:path|timing)-host\.test\.ts|levels\/vize_l2\/tests\/dump_(?:protocol|owner_names)\.rs)$/u;
 /**
  * Frozen copies of past files are captures too: a source or config file saved as `.txt` or
  * `.fixture`, and the frozen-source and source-custody trees that pin such copies.
@@ -475,13 +476,23 @@ const gitBlob = (bytes: Buffer) =>
   createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
 
 /**
+ * Holders whose digests pin the current bytes of a file the rewrite changes. Most digests in the
+ * tree pin bytes of a past revision that only happen to equal main's (qualification records,
+ * body custody, frozen predecessors); re-pinning those breaks them, so a holder is listed here
+ * only when its test reads the current file.
+ */
+const currentPins: RegExp = /(?!)/u;
+
+/**
  * Re-records the whole-file digests (SHA-256 and git blob ids) that name a file the rewrite
- * changed, in every file that still follows the rename. A record whose pins change changes its
- * own digest, so this repeats until nothing moves. Captures and the kept history keep theirs.
+ * changed, in the holders listed in `currentPins`. A record whose pins change changes its own
+ * digest, so this repeats until nothing moves.
  */
 function repin(cwd: string): string[] {
   const pinned = new Set<string>();
-  const holders = contentTargets(cwd).filter((file) => !keptHistory(file));
+  const holders = contentTargets(cwd).filter(
+    (file) => !keptHistory(file) && currentPins.test(file),
+  );
   const last = new Map<string, readonly string[]>();
   for (let round = 0; round < 8; round++) {
     const replacements = new Map<string, string>();
