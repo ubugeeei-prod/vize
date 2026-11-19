@@ -125,12 +125,27 @@ pub(super) fn write_attributes(
     let uses_computed = has_static_attr
         && (has_object_binding || !dynamic_attrs.is_empty())
         && super::super::super::merged_props::uses_computed_props(el);
+    // A binding overrides the static attribute it names. A static attribute
+    // whose length no `v-bind` argument has cannot be named by one, so a mask
+    // of those lengths (bit `len % 32`) settles most attributes without hashing.
+    let mut bound_lengths = 0_u32;
+    if has_static_attr && !uses_computed && !dynamic_attrs.is_empty() {
+        for prop in el.props.iter() {
+            if let PropNode::Directive(dir) = prop
+                && dir.name == "bind"
+                && let Some(ExpressionNode::Simple(key)) = dir.arg.as_ref()
+            {
+                bound_lengths |= 1 << (key.content.len() % 32);
+            }
+        }
+    }
     for prop in el.props.iter() {
         if let PropNode::Attribute(attr) = prop {
             if uses_computed || super::is_runtime_only_attr(attr.name) {
                 continue;
             }
-            if dynamic_attrs.contains(attr.name) {
+            let maybe_bound = bound_lengths & (1 << (attr.name.len() % 32)) != 0;
+            if maybe_bound && dynamic_attrs.contains(attr.name) {
                 continue;
             }
             template.push_str(" ");
