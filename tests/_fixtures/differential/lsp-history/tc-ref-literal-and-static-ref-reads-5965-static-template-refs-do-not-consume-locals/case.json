@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "commit": "c0dae2112cf5ddf351946882af19b5ede2f76407",
+  "id": "lsp/fix-history/tc-ref-literal-and-static-ref-reads-5965-static-template-refs-do-not-consume-locals",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack ref-literal-and-static-ref-reads-5965 (case static-template-refs-do-not-consume-locals) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noUnusedLocals\": true,\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/App.vue": "<script setup lang=\"ts\">\nconst activatorRef = null\nconst menuRef = null\nconst decoy = null\n</script>\n\n<template>\n  <div ref=\"activatorRef\"><div ref=\"menuRef\" /></div>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    }
+  ]
+}

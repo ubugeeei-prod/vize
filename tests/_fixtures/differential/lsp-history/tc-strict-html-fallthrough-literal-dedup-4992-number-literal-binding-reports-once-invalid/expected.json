@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2322,
+        "message": "Type 'number' is not assignable to type 'boolean | undefined'.",
+        "range": {
+          "end": {
+            "character": 22,
+            "line": 5
+          },
+          "start": {
+            "character": 11,
+            "line": 5
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

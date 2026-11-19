@@ -1,0 +1,100 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 22,
+            "line": 1
+          },
+          "start": {
+            "character": 16,
+            "line": 1
+          }
+        },
+        "uri": "${workspace}/Lib.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 15,
+            "line": 1
+          },
+          "start": {
+            "character": 9,
+            "line": 1
+          }
+        },
+        "uri": "${workspace}/User.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 16,
+            "line": 2
+          },
+          "start": {
+            "character": 10,
+            "line": 2
+          }
+        },
+        "uri": "${workspace}/User.vue"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": null
+  },
+  {
+    "step": 4,
+    "result": {
+      "changes": {
+        "${workspace}/Lib.vue": [
+          {
+            "newText": "assist",
+            "range": {
+              "end": {
+                "character": 22,
+                "line": 1
+              },
+              "start": {
+                "character": 16,
+                "line": 1
+              }
+            }
+          }
+        ],
+        "${workspace}/User.vue": [
+          {
+            "newText": "assist",
+            "range": {
+              "end": {
+                "character": 15,
+                "line": 1
+              },
+              "start": {
+                "character": 9,
+                "line": 1
+              }
+            }
+          },
+          {
+            "newText": "assist",
+            "range": {
+              "end": {
+                "character": 16,
+                "line": 2
+              },
+              "start": {
+                "character": 10,
+                "line": 2
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+]

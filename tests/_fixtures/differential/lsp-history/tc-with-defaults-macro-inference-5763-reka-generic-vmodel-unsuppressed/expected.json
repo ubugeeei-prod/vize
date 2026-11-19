@@ -1,0 +1,40 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2769,
+        "message": "No overload matches this call.\n  The last overload gave the following error.\n    Type 'T[] | NonNullable<T> | undefined' is not assignable to type '(Readonly<$MappedOmit<LooseRequired<Props<T>>, \"modelValue\" | \"open\">> & { readonly modelValue: T | T[] | undefined; readonly open: boolean | undefined; } & { readonly [K in \"defaultOpen\" | ... 4 more ... | Extract<...>]-?: ...; } & { ...; })[\"modelValue\"] | undefined'.\n      Type 'T[]' is not assignable to type '((T | T[]) & boolean) | undefined'.\n        Type 'T[]' is not assignable to type 'T[] & true'.\n          Type 'T[]' is not assignable to type 'true'.",
+        "range": {
+          "end": {
+            "character": 14,
+            "line": 48
+          },
+          "start": {
+            "character": 2,
+            "line": 48
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 2769,
+        "message": "No overload matches this call.\n  The last overload gave the following error.\n    Type 'false' is not assignable to type 'true'.",
+        "range": {
+          "end": {
+            "character": 9,
+            "line": 49
+          },
+          "start": {
+            "character": 2,
+            "line": 49
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

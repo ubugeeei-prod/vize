@@ -1,0 +1,492 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "detail": "Local event handler binding",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**Local** binding from `event handler` scope.\n\nVisible only inside the current `event handler` subtree."
+        },
+        "kind": 6,
+        "label": "$event",
+        "labelDetails": {
+          "description": "local",
+          "detail": " (event handler)"
+        },
+        "sortText": "00$event"
+      },
+      {
+        "detail": " (reactive)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**Reactive**\n\nReactive object. Direct access without `.value`."
+        },
+        "kind": 6,
+        "label": "props",
+        "labelDetails": {
+          "detail": " (reactive)"
+        },
+        "sortText": "0props"
+      },
+      {
+        "detail": " (maybeRef)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**MaybeRef**\n\nPossibly a ref (from toRef/toRefs). Auto-unwrapped in template."
+        },
+        "kind": 6,
+        "label": "ref",
+        "labelDetails": {
+          "detail": " (maybeRef)"
+        },
+        "sortText": "0ref"
+      },
+      {
+        "detail": " (maybeRef)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**MaybeRef**\n\nPossibly a ref (from toRef/toRefs). Auto-unwrapped in template."
+        },
+        "kind": 6,
+        "label": "名前",
+        "labelDetails": {
+          "detail": " (maybeRef)"
+        },
+        "sortText": "0名前"
+      },
+      {
+        "detail": "prop: string",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**Prop** `a-b`\n\n```typescript\na-b: string\n```\n\n"
+        },
+        "kind": 10,
+        "label": "a-b",
+        "labelDetails": {
+          "detail": ": string"
+        },
+        "sortText": "0a-b"
+      },
+      {
+        "detail": "prop: number",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**Prop** `café`\n\n```typescript\ncafé: number\n```\n\n"
+        },
+        "kind": 10,
+        "label": "café",
+        "labelDetails": {
+          "detail": ": number"
+        },
+        "sortText": "0café"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": [
+      {
+        "detail": "function ref<T>(value: T): Ref<T>",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**ref**\n\n_Vue API_\n\n```typescript\nfunction ref<T>(value: T): Ref<T>\n```\n\nCreate a reactive reference\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "ref"
+      },
+      {
+        "detail": "function reactive<T>(target: T): T",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**reactive**\n\n_Vue API_\n\n```typescript\nfunction reactive<T>(target: T): T\n```\n\nCreate a reactive object\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "reactive"
+      },
+      {
+        "detail": "function computed<T>(getter: () => T): ComputedRef<T>",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**computed**\n\n_Vue API_\n\n```typescript\nfunction computed<T>(getter: () => T): ComputedRef<T>\n```\n\nCreate a computed property\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "computed"
+      },
+      {
+        "detail": "function watch(source, callback, options?)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**watch**\n\n_Vue API_\n\n```typescript\nfunction watch(source, callback, options?)\n```\n\nWatch reactive sources\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "watch"
+      },
+      {
+        "detail": "function watchEffect(effect: () => void)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**watchEffect**\n\n_Vue API_\n\n```typescript\nfunction watchEffect(effect: () => void)\n```\n\nRun effect with auto-tracking\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "watchEffect"
+      },
+      {
+        "detail": "function onMounted(callback: () => void)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**onMounted**\n\n_Vue API_\n\n```typescript\nfunction onMounted(callback: () => void)\n```\n\nLifecycle: after mount\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "onMounted"
+      },
+      {
+        "detail": "function onUnmounted(callback: () => void)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**onUnmounted**\n\n_Vue API_\n\n```typescript\nfunction onUnmounted(callback: () => void)\n```\n\nLifecycle: after unmount\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "onUnmounted"
+      },
+      {
+        "detail": "function onBeforeMount(callback: () => void)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**onBeforeMount**\n\n_Vue API_\n\n```typescript\nfunction onBeforeMount(callback: () => void)\n```\n\nLifecycle: before mount\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "onBeforeMount"
+      },
+      {
+        "detail": "function onBeforeUnmount(callback: () => void)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**onBeforeUnmount**\n\n_Vue API_\n\n```typescript\nfunction onBeforeUnmount(callback: () => void)\n```\n\nLifecycle: before unmount\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "onBeforeUnmount"
+      },
+      {
+        "detail": "function onUpdated(callback: () => void)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**onUpdated**\n\n_Vue API_\n\n```typescript\nfunction onUpdated(callback: () => void)\n```\n\nLifecycle: after update\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "onUpdated"
+      },
+      {
+        "detail": "function onBeforeUpdate(callback: () => void)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**onBeforeUpdate**\n\n_Vue API_\n\n```typescript\nfunction onBeforeUpdate(callback: () => void)\n```\n\nLifecycle: before update\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "onBeforeUpdate"
+      },
+      {
+        "detail": "function toRef<T>(object: T, key: K): Ref<T[K]>",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**toRef**\n\n_Vue API_\n\n```typescript\nfunction toRef<T>(object: T, key: K): Ref<T[K]>\n```\n\nCreate ref from reactive property\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "toRef"
+      },
+      {
+        "detail": "function toRefs<T>(object: T): ToRefs<T>",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**toRefs**\n\n_Vue API_\n\n```typescript\nfunction toRefs<T>(object: T): ToRefs<T>\n```\n\nConvert reactive to refs\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "toRefs"
+      },
+      {
+        "detail": "function unref<T>(ref: T | Ref<T>): T",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**unref**\n\n_Vue API_\n\n```typescript\nfunction unref<T>(ref: T | Ref<T>): T\n```\n\nUnwrap a ref\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "unref"
+      },
+      {
+        "detail": "function isRef(r): r is Ref",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**isRef**\n\n_Vue API_\n\n```typescript\nfunction isRef(r): r is Ref\n```\n\nCheck if value is ref\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "isRef"
+      },
+      {
+        "detail": "function shallowRef<T>(value: T): ShallowRef<T>",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**shallowRef**\n\n_Vue API_\n\n```typescript\nfunction shallowRef<T>(value: T): ShallowRef<T>\n```\n\nShallow reactive reference\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "shallowRef"
+      },
+      {
+        "detail": "function shallowReactive<T>(target: T): T",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**shallowReactive**\n\n_Vue API_\n\n```typescript\nfunction shallowReactive<T>(target: T): T\n```\n\nShallow reactive object\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "shallowReactive"
+      },
+      {
+        "detail": "function readonly<T>(target: T): DeepReadonly<T>",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**readonly**\n\n_Vue API_\n\n```typescript\nfunction readonly<T>(target: T): DeepReadonly<T>\n```\n\nCreate readonly proxy\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "readonly"
+      },
+      {
+        "detail": "function nextTick(callback?): Promise<void>",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**nextTick**\n\n_Vue API_\n\n```typescript\nfunction nextTick(callback?): Promise<void>\n```\n\nWait for next DOM update\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "nextTick"
+      },
+      {
+        "detail": "function provide<T>(key, value: T)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**provide**\n\n_Vue API_\n\n```typescript\nfunction provide<T>(key, value: T)\n```\n\nProvide value to descendants\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "provide"
+      },
+      {
+        "detail": "function inject<T>(key, defaultValue?): T",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**inject**\n\n_Vue API_\n\n```typescript\nfunction inject<T>(key, defaultValue?): T\n```\n\nInject value from ancestor\n\n**Docs**\n\n[Vue API](https://vuejs.org/api/)"
+        },
+        "kind": 3,
+        "label": "inject"
+      },
+      {
+        "detail": "Macro: defineArtMeta(options)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**defineArtMeta**\n\n_Vue compiler macro_\n\n```typescript\ndefineArtMeta(options)\n```\n\nDeclare optional Musea gallery metadata\n\n**Scope**\n\nOnly usable inside `<script setup>`."
+        },
+        "insertText": "defineArtMeta({\n\ttitle: \"$1\",\n});",
+        "insertTextFormat": 2,
+        "kind": 3,
+        "label": "defineArtMeta"
+      },
+      {
+        "detail": "Macro: defineArt(component, options?)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**defineArt**\n\n_Vue compiler macro_\n\n```typescript\ndefineArt(component, options?)\n```\n\nSelect a Musea target when inference is ambiguous\n\n**Scope**\n\nOnly usable inside `<script setup>`."
+        },
+        "insertText": "defineArt($1);",
+        "insertTextFormat": 2,
+        "kind": 3,
+        "label": "defineArt"
+      },
+      {
+        "detail": "Macro: defineProps<T>()",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**defineProps**\n\n_Vue compiler macro_\n\n```typescript\ndefineProps<T>()\n```\n\nDeclare component props\n\n**Scope**\n\nOnly usable inside `<script setup>`."
+        },
+        "insertText": "defineProps<{\n\t$1\n}>()",
+        "insertTextFormat": 2,
+        "kind": 3,
+        "label": "defineProps"
+      },
+      {
+        "detail": "Macro: defineEmits<T>()",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**defineEmits**\n\n_Vue compiler macro_\n\n```typescript\ndefineEmits<T>()\n```\n\nDeclare component emits\n\n**Scope**\n\nOnly usable inside `<script setup>`."
+        },
+        "insertText": "defineEmits<{\n\t$1\n}>()",
+        "insertTextFormat": 2,
+        "kind": 3,
+        "label": "defineEmits"
+      },
+      {
+        "detail": "Macro: defineExpose(exposed)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**defineExpose**\n\n_Vue compiler macro_\n\n```typescript\ndefineExpose(exposed)\n```\n\nExpose properties via refs\n\n**Scope**\n\nOnly usable inside `<script setup>`."
+        },
+        "insertText": "defineExpose({\n\t$1\n})",
+        "insertTextFormat": 2,
+        "kind": 3,
+        "label": "defineExpose"
+      },
+      {
+        "detail": "Macro: defineOptions(options)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**defineOptions**\n\n_Vue compiler macro_\n\n```typescript\ndefineOptions(options)\n```\n\nDeclare component options\n\n**Scope**\n\nOnly usable inside `<script setup>`."
+        },
+        "insertText": "defineOptions({\n\tname: '$1',\n})",
+        "insertTextFormat": 2,
+        "kind": 3,
+        "label": "defineOptions"
+      },
+      {
+        "detail": "Macro: defineSlots<T>()",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**defineSlots**\n\n_Vue compiler macro_\n\n```typescript\ndefineSlots<T>()\n```\n\nDeclare typed slots\n\n**Scope**\n\nOnly usable inside `<script setup>`."
+        },
+        "insertText": "defineSlots<{\n\t$1\n}>()",
+        "insertTextFormat": 2,
+        "kind": 3,
+        "label": "defineSlots"
+      },
+      {
+        "detail": "Macro: defineModel<T>(name?, options?)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**defineModel**\n\n_Vue compiler macro_\n\n```typescript\ndefineModel<T>(name?, options?)\n```\n\nDeclare two-way binding prop\n\n**Scope**\n\nOnly usable inside `<script setup>`."
+        },
+        "insertText": "defineModel<$1>()",
+        "insertTextFormat": 2,
+        "kind": 3,
+        "label": "defineModel"
+      },
+      {
+        "detail": "Macro: withDefaults(props, defaults)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**withDefaults**\n\n_Vue compiler macro_\n\n```typescript\nwithDefaults(props, defaults)\n```\n\nSet prop defaults\n\n**Scope**\n\nOnly usable inside `<script setup>`."
+        },
+        "insertText": "withDefaults(defineProps<{\n\t$1\n}>(), {\n\t$2\n})",
+        "insertTextFormat": 2,
+        "kind": 3,
+        "label": "withDefaults"
+      },
+      {
+        "detail": "Import from Vue",
+        "insertText": "import { $1 } from 'vue'",
+        "insertTextFormat": 2,
+        "kind": 9,
+        "label": "import vue"
+      },
+      {
+        "detail": "Import ref from Vue",
+        "insertText": "import { ref } from 'vue'",
+        "insertTextFormat": 2,
+        "kind": 9,
+        "label": "import ref"
+      },
+      {
+        "detail": "Import reactive from Vue",
+        "insertText": "import { reactive } from 'vue'",
+        "insertTextFormat": 2,
+        "kind": 9,
+        "label": "import reactive"
+      },
+      {
+        "detail": "Import computed from Vue",
+        "insertText": "import { computed } from 'vue'",
+        "insertTextFormat": 2,
+        "kind": 9,
+        "label": "import computed"
+      },
+      {
+        "detail": "Import watch from Vue",
+        "insertText": "import { watch, watchEffect } from 'vue'",
+        "insertTextFormat": 2,
+        "kind": 9,
+        "label": "import watch"
+      },
+      {
+        "detail": "Import lifecycle hooks",
+        "insertText": "import { onMounted, onUnmounted } from 'vue'",
+        "insertTextFormat": 2,
+        "kind": 9,
+        "label": "import lifecycle"
+      },
+      {
+        "detail": " (prop)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**Prop**\n\nComponent property from defineProps."
+        },
+        "kind": 10,
+        "label": "a-b",
+        "labelDetails": {
+          "detail": " (prop)"
+        },
+        "sortText": "0a-b"
+      },
+      {
+        "detail": " (prop)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**Prop**\n\nComponent property from defineProps."
+        },
+        "kind": 10,
+        "label": "café",
+        "labelDetails": {
+          "detail": " (prop)"
+        },
+        "sortText": "0café"
+      },
+      {
+        "detail": " (reactive)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**Reactive**\n\nReactive object. Direct access without `.value`."
+        },
+        "kind": 6,
+        "label": "props",
+        "labelDetails": {
+          "detail": " (reactive)"
+        },
+        "sortText": "0props"
+      },
+      {
+        "detail": " (maybeRef)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**MaybeRef**\n\nPossibly a ref (from toRef/toRefs). Auto-unwrapped in template."
+        },
+        "kind": 6,
+        "label": "ref",
+        "labelDetails": {
+          "description": ".value",
+          "detail": " (maybeRef)"
+        },
+        "sortText": "0ref"
+      },
+      {
+        "detail": " (maybeRef)",
+        "documentation": {
+          "kind": "markdown",
+          "value": "**MaybeRef**\n\nPossibly a ref (from toRef/toRefs). Auto-unwrapped in template."
+        },
+        "kind": 6,
+        "label": "名前",
+        "labelDetails": {
+          "description": ".value",
+          "detail": " (maybeRef)"
+        },
+        "sortText": "0名前"
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "result": null
+  }
+]

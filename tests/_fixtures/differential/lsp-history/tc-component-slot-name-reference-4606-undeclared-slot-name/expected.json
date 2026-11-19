@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2339,
+        "message": "Property 'footer' does not exist on type 'Partial<$Slots>'.",
+        "range": {
+          "end": {
+            "character": 21,
+            "line": 15
+          },
+          "start": {
+            "character": 15,
+            "line": 15
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

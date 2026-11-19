@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+  "id": "lsp/fix-history/tc-tsx-sfc-component-props-5962-tsx-union-component-wrong-alpha-type",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack tsx-sfc-component-props-5962 (case tsx-union-component-wrong-alpha-type) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"jsx\": \"preserve\",\n    \"jsxImportSource\": \"vue\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/Alpha.vue": "<script setup lang=\"ts\">\ndefineProps<{ alpha: string }>()\n</script>\n\n<template>\n  <div>{{ alpha }}</div>\n</template>\n",
+    "src/Beta.vue": "<script setup lang=\"ts\">\ndefineProps<{ beta: number }>()\n</script>\n\n<template>\n  <div>{{ beta }}</div>\n</template>\n",
+    "src/Parent.tsx": "import Alpha from './Alpha.vue'\nimport Beta from './Beta.vue'\n\ndeclare const useAlpha: boolean\ndeclare const forwarded: { alpha: number; beta: number }\n\nconst pick = () => useAlpha ? Alpha : Beta\n\nexport default () => {\n  const Component = pick()\n  return <Component {...forwarded} />\n}\n"
+  },
+  "steps": [
+    {
+      "open": "src/Parent.tsx"
+    },
+    {
+      "diagnostics": "src/Parent.tsx"
+    }
+  ]
+}

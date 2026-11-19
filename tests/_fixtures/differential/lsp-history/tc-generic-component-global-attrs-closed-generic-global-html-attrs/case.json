@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "d7796777839f961aa97d1a55397ad4e2d0372a31",
+  "id": "lsp/fix-history/tc-generic-component-global-attrs-closed-generic-global-html-attrs",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack generic-component-global-attrs (case closed-generic-global-html-attrs) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/GenericField.vue": "<script setup lang=\"ts\" generic=\"T\">\ndefineProps<{ value: T; label: string }>()\n</script>\n\n<template>\n  <label>{{ label }}</label>\n  <input :value=\"String(value)\" />\n</template>\n",
+    "src/Parent.vue": "<script setup lang=\"ts\">\nimport GenericField from './GenericField.vue'\n\nconst value = { id: 1 }\n</script>\n\n<template>\n  <GenericField :value=\"value\" label=\"Search\" id=\"search\" />\n  <GenericField :value=\"value\" label=\"Search\" aria-label=\"Search\" />\n  <GenericField :value=\"value\" label=\"Search\" aria-activedescendant=\"row-1\" />\n  <GenericField :value=\"value\" label=\"Search\" data-test-id=\"search\" />\n  <GenericField :value=\"value\" label=\"Search\" dataTestId=\"search\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/GenericField.vue"
+    },
+    {
+      "diagnostics": "src/GenericField.vue"
+    }
+  ]
+}

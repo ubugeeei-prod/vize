@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+  "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-resolved-component-event-matching-handler",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack real-project-parity-models-slots-5967 (case resolved-component-event-matching-handler) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/Child.vue": "<script setup lang=\"ts\">\ndefineEmits<{ change: [value: string] }>()\n</script>\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nfunction wrong(value: string) {\n  void value\n}\n</script>\n\n<template>\n  <Child @change=\"wrong\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/Child.vue"
+    },
+    {
+      "diagnostics": "src/Child.vue"
+    }
+  ]
+}

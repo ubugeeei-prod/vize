@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "commit": "a4d89982cb91bb3bcb0a267f01ca1676be9f615d",
+  "id": "lsp/fix-history/scoped-lint-rules-ignores-7113",
+  "requirement": "Per-document scoped lint entries and their ignores apply by path, and globally ignored files publish no lint diagnostics.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false
+  },
+  "files": {
+    "src/legacy/table.vue": "<template><button type=\"button\"><div class=\"content\">1</div></button></template>",
+    "src/legacy/skip.vue": "<template><button type=\"button\"><div class=\"content\">1</div></button></template>",
+    "src/other.vue": "<template><button type=\"button\"><div class=\"content\">1</div></button></template>",
+    "src/generated/table.vue": "<template><button type=\"button\"><div class=\"content\">1</div></button></template>",
+    "vite.config.mjs": "export default { vue: {\"entries\":[{\"files\":[\"src/legacy/**/*.vue\"],\"ignores\":[\"src/legacy/skip.vue\"],\"linter\":{\"rules\":{\"vue/permitted-contents\":\"off\"}}}],\"ignores\":[\"src/generated/**\"]} };\n"
+  },
+  "steps": [
+    {
+      "open": "src/legacy/table.vue"
+    },
+    {
+      "diagnostics": "src/legacy/table.vue"
+    },
+    {
+      "open": "src/legacy/skip.vue"
+    },
+    {
+      "diagnostics": "src/legacy/skip.vue"
+    },
+    {
+      "open": "src/other.vue"
+    },
+    {
+      "diagnostics": "src/other.vue"
+    },
+    {
+      "open": "src/generated/table.vue"
+    },
+    {
+      "diagnostics": "src/generated/table.vue"
+    }
+  ]
+}

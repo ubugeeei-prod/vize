@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+  "id": "lsp/fix-history/tc-imported-runtime-define-props-5962-runtime-props-cache-rebound-label-wrong-type",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack imported-runtime-define-props-5962 (case runtime-props-cache-rebound-label-wrong-type) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/props.ts": "export const sharedProps = {\n  label: { type: String, required: true },\n} as const\n",
+    "src/First.vue": "<script setup lang=\"ts\">\nimport { sharedProps as firstProps } from './props'\n\nconst props = defineProps(firstProps)\nconst value: string = props.label\n</script>\n\n<template>{{ value }} {{ label.toUpperCase() }}</template>\n",
+    "src/Second.vue": "<script setup lang=\"ts\">\nimport { sharedProps as secondProps } from './props'\n\nconst props = defineProps(secondProps)\nconst value: number = props.label\n</script>\n\n<template>{{ value }} {{ label.toUpperCase() }}</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/Second.vue"
+    },
+    {
+      "diagnostics": "src/Second.vue"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2345,
+        "message": "Argument of type '{ count: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\n  Type '{ count: string; }' is not assignable to type '{ readonly count: number; }'.\n    Types of property 'count' are incompatible.\n      Type 'string' is not assignable to type 'number'.",
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 7
+          },
+          "start": {
+            "character": 3,
+            "line": 7
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 2345,
+        "message": "Argument of type '{ [x: string]: unknown; class?: ClassValue; style?: StyleValue; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\n  Property 'count' is missing in type '{ [x: string]: unknown; class?: ClassValue; style?: StyleValue; }' but required in type '{ readonly count: number; }'.",
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 9
+          },
+          "start": {
+            "character": 3,
+            "line": 9
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

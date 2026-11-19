@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "commit": "7413782f199fa228b1155c3e9398cb68d55f8d15",
+  "id": "lsp/fix-history/unicode-diagnostic-logging-6198",
+  "requirement": "Long Unicode checker diagnostics are published intact (log previews stop at character boundaries), and the following unsaved repair clears them.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\"] }\n",
+    "App.vue": "<script setup lang=\"ts\">\nconst 長い名前の値éàü: number = 'ああああああああああああああああああああああああああああああああああああああ😀😀😀😀😀😀😀😀😀éééééééééé'\n</script>\n<template><p>{{ 長い名前の値éàü }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    },
+    {
+      "change": "App.vue",
+      "version": 2,
+      "contentChanges": [
+        {
+          "text": "<script setup lang=\"ts\">\nconst 長い名前の値éàü: string = 'ああああああああああああああああああああああああああああああああああああああ😀😀😀😀😀😀😀😀😀éééééééééé'\n</script>\n<template><p>{{ 長い名前の値éàü }}</p></template>\n"
+        }
+      ]
+    },
+    {
+      "diagnostics": "App.vue"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "commit": "9bf9ee47adb4da3a29eb049c18588d4f917a440c",
+  "id": "lsp/fix-history/tc-with-defaults-boolean-normalization-5724-with-defaults-boolean-props-in-template",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack with-defaults-boolean-normalization-5724 (case with-defaults-boolean-props-in-template) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/Foo.vue": "<script setup lang=\"ts\">\nimport { computed } from \"vue\";\nimport type { ComputedRef } from \"vue\";\n\ninterface Props {\n  disabled?: boolean;\n  unmountOnHide?: boolean;\n}\n\nconst props = withDefaults(defineProps<Props>(), {\n  unmountOnHide: undefined,\n});\nconst disabled = computed(() => props.disabled);\n\nfunction acceptDisabled(value: ComputedRef<boolean>) {\n  return value;\n}\n\nacceptDisabled(disabled);\n</script>\n\n<template>\n  <button :disabled=\"disabled\">{{ props.unmountOnHide === undefined ? 'auto' : 'set' }}</button>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/Foo.vue"
+    },
+    {
+      "diagnostics": "src/Foo.vue"
+    }
+  ]
+}

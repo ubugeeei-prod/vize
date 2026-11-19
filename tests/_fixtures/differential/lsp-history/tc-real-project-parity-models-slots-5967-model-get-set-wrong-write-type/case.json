@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+  "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-model-get-set-wrong-write-type",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack real-project-parity-models-slots-5967 (case model-get-set-wrong-write-type) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/App.vue": "<script setup lang=\"ts\">\nconst model = defineModel({\n  type: String,\n  required: true,\n  get(value: string) {\n    return value.length\n  },\n  set(value: number) {\n    return String(value)\n  },\n})\nconst read: number = model.value\nmodel.value = \"42\"\nvoid read\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "commit": "8e9ca8de9065ea6a896b6c832edf8dfe849d08a4",
+  "id": "lsp/fix-history/template-macro-props-dedupe-7087",
+  "requirement": "Template completion lists one typed defineProps prop per name (with its prop detail) in handlers and interpolations.",
+  "files": {
+    "MacroProps.vue": "<script setup lang=\"ts\">\nconst props = defineProps<{ title: string; count?: number }>()\nconst emit = defineEmits<{ select: [id: number] }>()\n</script>\n<template><button @click=\"emit('select', props.count ?? 0)\">{{ props.title }}</button></template>"
+  },
+  "steps": [
+    {
+      "open": "MacroProps.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "MacroProps.vue",
+      "at": {
+        "find": "emit('select'"
+      },
+      "labels": [
+        "title",
+        "count",
+        "props",
+        "emit"
+      ]
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "MacroProps.vue",
+      "at": {
+        "find": "props.title"
+      },
+      "labels": [
+        "title",
+        "count",
+        "props",
+        "emit"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "21e5bd408bfdf22f0c043f1e0c50d92f4055479a",
+  "id": "lsp/fix-history/tc-v-bind-object-prop-spread-3526-wrong-and-missing-spreads",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack v-bind-object-prop-spread-3526 (case wrong-and-missing-spreads) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ count: number }>()\n</script>\n\n<template><span /></template>\n",
+    "src/Parent.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nconst bag = { count: 'oops' }\nconst good = { count: 1 }\n</script>\n\n<template>\n  <Child v-bind=\"bag\" />\n  <Child v-bind=\"good\" />\n  <Child v-bind=\"$attrs\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/Parent.vue"
+    },
+    {
+      "diagnostics": "src/Parent.vue"
+    }
+  ]
+}

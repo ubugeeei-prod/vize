@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "commit": "ff1b322d28f00066701356446608010a8674b11b",
+  "id": "lsp/fix-history/panic-free-semantic-token-spans",
+  "requirement": "Semantic tokens over malformed directives, quotes, interpolation and style v-bind reject invalid spans instead of panicking while real directives keep their tokens.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "Edge.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst 名前 = ref(\nconst props = defineProps<{ 'a-b': string; café: number }>()\n</script>\n<template>\n  <div :class=\"{ 'x': 名前 \" @click=\">{{ café. }}<Comp v-bind=\"props\" :café=\" /><span v-for=\"(é, i) in\" />\n  <p :title=\"'unterminated>😀 {{ props.café }}</p>\n</template>\n<style>.a { color: v-bind( }</style>\n"
+  },
+  "steps": [
+    {
+      "open": "Edge.vue"
+    },
+    {
+      "request": "textDocument/semanticTokens/full",
+      "uri": "Edge.vue"
+    },
+    {
+      "request": "textDocument/semanticTokens/range",
+      "uri": "Edge.vue",
+      "params": {
+        "range": {
+          "start": {
+            "line": 6,
+            "character": 0
+          },
+          "end": {
+            "line": 8,
+            "character": 0
+          }
+        }
+      }
+    }
+  ]
+}

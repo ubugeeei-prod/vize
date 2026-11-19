@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "commit": "a4d89982cb91bb3bcb0a267f01ca1676be9f615d",
+  "id": "lsp/fix-history/folder-config-order-7113",
+  "requirement": "Each workspace folder's documents resolve their own folder config regardless of folder order.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false
+  },
+  "files": {
+    "relaxed-root/vize.config.json": "{ \"linter\": { \"rules\": { \"vue/require-v-for-key\": \"off\" } } }\n",
+    "relaxed-root/List.vue": "<template><ul><li v-for=\"item in [1, 2]\">{{ item }}</li></ul></template>\n",
+    "strict-root/List.vue": "<template><ul><li v-for=\"item in [1, 2]\">{{ item }}</li></ul></template>\n"
+  },
+  "steps": [
+    {
+      "notify": "workspace/didChangeWorkspaceFolders",
+      "params": {
+        "event": {
+          "added": [
+            {
+              "uri": "${workspace}/relaxed-root",
+              "name": "relaxed-root"
+            },
+            {
+              "uri": "${workspace}/strict-root",
+              "name": "strict-root"
+            }
+          ],
+          "removed": []
+        }
+      }
+    },
+    {
+      "open": "strict-root/List.vue"
+    },
+    {
+      "diagnostics": "strict-root/List.vue"
+    },
+    {
+      "open": "relaxed-root/List.vue"
+    },
+    {
+      "diagnostics": "relaxed-root/List.vue"
+    }
+  ]
+}

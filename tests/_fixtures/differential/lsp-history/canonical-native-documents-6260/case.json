@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "commit": "215ca5706f402ed831a3bac0166e96cbc21da286",
+  "id": "lsp/fix-history/canonical-native-documents-6260",
+  "requirement": "Editor diagnostics and completion read the canonical native documents: a TSX file and a Vue SFC publish authored checker diagnostics, and template member completion carries the prop JSDoc.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"jsx\": \"preserve\", \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "Panel.tsx": "export function Panel(props: { title: string }) {\n  const size: number = props.title\n  return <section class=\"panel\">{props.title}</section>\n}\n",
+    "Card.vue": "<script setup lang=\"ts\">\nconst props = defineProps<{\n  /** The visible card heading. */\n  heading: string\n}>()\nconst wrong: number = props.heading\n</script>\n<template><h2>{{ props.he }}</h2></template>\n"
+  },
+  "steps": [
+    {
+      "open": "Panel.tsx"
+    },
+    {
+      "diagnostics": "Panel.tsx"
+    },
+    {
+      "open": "Card.vue"
+    },
+    {
+      "diagnostics": "Card.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "Card.vue",
+      "at": {
+        "find": "props.he",
+        "delta": 8
+      },
+      "labels": [
+        "heading"
+      ],
+      "retry": true
+    }
+  ]
+}

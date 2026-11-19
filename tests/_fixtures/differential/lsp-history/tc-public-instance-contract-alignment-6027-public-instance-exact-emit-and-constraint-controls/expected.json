@@ -1,0 +1,104 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2344,
+        "message": "Type '$ComponentInstance' does not satisfy the constraint 'ComponentPublicInstance'.\n  Type '$ComponentInstance' is not assignable to type '{ $: ComponentInternalInstance; $data: {}; $props: {}; $attrs: Attrs; $refs: Data; $slots: Readonly<InternalSlots>; ... 8 more ...; $watch<T extends string | ((...args: any) => any)>(source: T, cb: ..., options?: WatchOptions<...> | undefined): WatchStopHandle; }'.\n    Types of property '$slots' are incompatible.\n      Type '$Slots' is not assignable to type 'Readonly<InternalSlots>'.\n        Property 'default' is incompatible with index signature.\n          Type '(props: { value: string; }) => unknown' is not assignable to type 'Slot<any>'.\n            Type 'unknown' is not assignable to type 'VNode<RendererNode, RendererElement, { [key: string]: any; }>[]'.",
+        "range": {
+          "end": {
+            "character": 83,
+            "line": 11
+          },
+          "start": {
+            "character": 44,
+            "line": 11
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 2344,
+        "message": "Type '{ __vizeCheck: <T extends string = string>(props: $SetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { ...; } & { ...; } & Record<...>) => void; ... 12 more ...; readonly __vizeFallthroughProps?: Record<...> | undefined; } & $GenericComponent' does not satisfy the constraint 'abstract new (...args: any) => any'.\n  Type '{ __vizeCheck: <T extends string = string>(props: $SetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { ...; } & { ...; } & Record<...>) => void; ... 12 more ...; readonly __vizeFallthroughProps?: Record<...> | undefined; } & $GenericComponent' provides no match for the signature 'new (...args: any): any'.",
+        "range": {
+          "end": {
+            "character": 50,
+            "line": 20
+          },
+          "start": {
+            "character": 36,
+            "line": 20
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 2769,
+        "message": "No overload matches this call.\n  The last overload gave the following error.\n    Argument of type '\"select\"' is not assignable to parameter of type '\"update:title\"'.",
+        "range": {
+          "end": {
+            "character": 23,
+            "line": 24
+          },
+          "start": {
+            "character": 15,
+            "line": 24
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 2769,
+        "message": "No overload matches this call.\n  The last overload gave the following error.\n    Argument of type '\"other\"' is not assignable to parameter of type '\"update:title\"'.",
+        "range": {
+          "end": {
+            "character": 22,
+            "line": 25
+          },
+          "start": {
+            "character": 15,
+            "line": 25
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 2322,
+        "message": "Type 'number' is not assignable to type 'string'.",
+        "range": {
+          "end": {
+            "character": 33,
+            "line": 26
+          },
+          "start": {
+            "character": 28,
+            "line": 26
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 2344,
+        "message": "Type '{ notAnInstance: true; }' does not satisfy the constraint 'ComponentPublicInstance'.\n  Type '{ notAnInstance: true; }' is missing the following properties from type '{ $: ComponentInternalInstance; $data: {}; $props: {}; $attrs: Attrs; $refs: Data; $slots: Readonly<InternalSlots>; ... 8 more ...; $watch<T extends string | ((...args: any) => any)>(source: T, cb: ..., options?: WatchOptions<...> | undefined): WatchStopHandle; }': $, $data, $props, $attrs, and 11 more.",
+        "range": {
+          "end": {
+            "character": 43,
+            "line": 28
+          },
+          "start": {
+            "character": 20,
+            "line": 28
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "1acad3cafdff185d4a4f3fa5f23166ef3c4840b1",
+  "id": "lsp/fix-history/tc-batch-diagnostic-subspan-mapping-3201-bound-call-mismatch-stays-inside-attribute",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack batch-diagnostic-subspan-mapping-3201 (case bound-call-mismatch-stays-inside-attribute) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\"\nconst benchmarkMirror = 1\n</script>\n\n<template>\n  <Child :code=\"String(benchmarkMirror)\" />\n</template>\n",
+    "src/Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ code: number }>()\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    }
+  ]
+}

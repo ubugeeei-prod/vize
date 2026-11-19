@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+  "id": "lsp/fix-history/tc-template-ref-slot-vnode-handlers-5962-unresolved-global-component-ref-callback",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack template-ref-slot-vnode-handlers-5962 (case unresolved-global-component-ref-callback) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport type { ComponentPublicInstance } from \"vue\"\n\ntype MenuInstance = ComponentPublicInstance & { focus(): void }\nconst refs: unknown[] = []\n</script>\n<template>\n  <el-cascader-menu :ref=\"(item) => refs.push(item as MenuInstance)\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    }
+  ]
+}

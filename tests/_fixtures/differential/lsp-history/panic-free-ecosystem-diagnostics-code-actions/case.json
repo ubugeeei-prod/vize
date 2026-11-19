@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "commit": "1fe8315f5eea8d7d7cbf7a0b2a1db6d816b476d1",
+  "id": "lsp/fix-history/panic-free-ecosystem-diagnostics-code-actions",
+  "requirement": "Diagnostics, document links, code actions and rename over malformed names and quotes answer without panicking or stray edits.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false,
+    "codeActions": true
+  },
+  "files": {
+    "Edge.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst 名前 = ref(\nconst props = defineProps<{ 'a-b': string; café: number }>()\n</script>\n<template>\n  <div :class=\"{ 'x': 名前 \" @click=\">{{ café. }}<Comp v-bind=\"props\" :café=\" /><span v-for=\"(é, i) in\" />\n  <p :title=\"'unterminated>😀 {{ props.café }}</p>\n</template>\n<style>.a { color: v-bind( }</style>\n"
+  },
+  "steps": [
+    {
+      "open": "Edge.vue"
+    },
+    {
+      "diagnostics": "Edge.vue"
+    },
+    {
+      "request": "textDocument/documentLink",
+      "uri": "Edge.vue"
+    },
+    {
+      "request": "textDocument/codeAction",
+      "uri": "Edge.vue",
+      "params": {
+        "range": {
+          "start": {
+            "line": 6,
+            "character": 0
+          },
+          "end": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        "context": {
+          "diagnostics": []
+        }
+      }
+    },
+    {
+      "request": "textDocument/prepareRename",
+      "uri": "Edge.vue",
+      "at": {
+        "find": "café.",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/rename",
+      "uri": "Edge.vue",
+      "at": {
+        "find": "café",
+        "delta": 0,
+        "nth": 1
+      },
+      "params": {
+        "newName": "cafe"
+      }
+    }
+  ]
+}

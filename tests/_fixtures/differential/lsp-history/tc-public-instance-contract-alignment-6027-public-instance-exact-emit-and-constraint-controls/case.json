@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "commit": "d4c05ee736862e678ff8b7cac8a728d80f2193c0",
+  "id": "lsp/fix-history/tc-public-instance-contract-alignment-6027-public-instance-exact-emit-and-constraint-controls",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack public-instance-contract-alignment-6027 (case public-instance-exact-emit-and-constraint-controls) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"jsx\": \"preserve\",\n    \"jsxImportSource\": \"vue\",\n    \"rootDir\": \"src\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/Public.vue": "<script setup lang=\"ts\">\ndefineProps<{\n  someValue: string\n  optionalValue?: boolean\n}>()\n\ndefineModel<number>({ required: true })\ndefineModel<string>('title', { default: 'ready' })\ndefineModel<boolean>('enabled')\n\ndefineEmits<{\n  select: [value: string]\n  clear: []\n}>()\n\ndefineSlots<{\n  default(props: { value: string }): unknown\n}>()\n\nfunction close(force = false): boolean {\n  return force\n}\n\ndefineExpose({ close })\n</script>\n\n<template>\n  <button @click=\"$emit('select', someValue)\">\n    <slot :value=\"someValue\" />\n  </button>\n</template>\n",
+    "src/Generic.vue": "<script setup lang=\"ts\" generic=\"T extends string = string\">\nconst props = defineProps<{ item: T }>()\ndefineEmits<{ pick: [value: T] }>()\ndefineSlots<{ default(props: { item: T }): unknown }>()\ndefineExpose({ current: (): T => props.item })\n</script>\n\n<template>\n  <slot :item=\"item\" />\n</template>\n",
+    "src/NoEmits.vue": "<script setup lang=\"ts\">\nfunction ping(): string {\n  return 'pong'\n}\n\ndefineExpose({ ping })\n</script>\n",
+    "src/consumer.ts": "import Public from \"./Public.vue\";\nimport type { ComponentPublicInstance } from \"vue\";\nimport Generic from \"./Generic.vue\";\nimport NoEmits from \"./NoEmits.vue\";\n\ntype GenericComponentInstance<T> = T extends new (...args: any[]) => infer R ? R : never;\ndeclare function usePrimitiveElement<T extends ComponentPublicInstance>(): {\n  primitiveElement: T | undefined;\n};\ntype PublicInstance = InstanceType<typeof Public>;\ndeclare const instance: PublicInstance;\nconst publicPrimitive = usePrimitiveElement<GenericComponentInstance<typeof Public>>();\n\ninstance.$emit(\"select\", \"ok\");\ninstance.$emit(\"clear\");\ninstance.$slots.default?.({ value: \"ok\" });\ninstance.close(true);\n\nconst noEmitsPrimitive = usePrimitiveElement<GenericComponentInstance<typeof NoEmits>>();\n\ndeclare const generic: InstanceType<typeof Generic>;\nconst genericItem: string = generic.$props.item;\nconst genericPrimitive = usePrimitiveElement<GenericComponentInstance<typeof Generic>>();\ngeneric.$emit(\"pick\", \"ok\");\ninstance.$emit(\"select\", 1);\ninstance.$emit(\"other\", 1);\ninstance.$slots.default?.({ value: 1 });\ngeneric.$emit(\"pick\", 1);\nusePrimitiveElement<{ notAnInstance: true }>();\n\nvoid publicPrimitive;\nvoid noEmitsPrimitive;\nvoid genericItem;\nvoid genericPrimitive;\n"
+  },
+  "steps": [
+    {
+      "open": "src/consumer.ts"
+    },
+    {
+      "diagnostics": "src/consumer.ts"
+    }
+  ]
+}

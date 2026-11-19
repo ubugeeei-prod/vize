@@ -1,0 +1,41 @@
+[
+  {
+    "step": 1,
+    "result": null
+  },
+  {
+    "step": 2,
+    "result": null
+  },
+  {
+    "step": 3,
+    "result": null
+  },
+  {
+    "step": 4,
+    "result": null
+  },
+  {
+    "step": 5,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**Comp**\n\n_Template expression_\n\nExpression evaluated against the component template scope."
+      },
+      "range": {
+        "end": {
+          "character": 52,
+          "line": 6
+        },
+        "start": {
+          "character": 48,
+          "line": 6
+        }
+      }
+    }
+  },
+  {
+    "step": 6,
+    "result": null
+  }
+]

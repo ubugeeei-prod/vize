@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "commit": "d87ae35bf83652a4ae3bdffb1a71f76ddfd4e620",
+  "id": "lsp/fix-history/inline-template-code-actions-multiline-header-6174",
+  "requirement": "Template lint quick fix and suppression for an inline template (multiline-header) keep authored columns, UTF-16 prefixes, CRLF and indentation.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false,
+    "codeActions": true
+  },
+  "files": {
+    "Inline.vue": "<template\n  ><div title=\"😀\"  class=\"a\">text</div></template>"
+  },
+  "steps": [
+    {
+      "open": "Inline.vue"
+    },
+    {
+      "diagnostics": "Inline.vue"
+    },
+    {
+      "request": "textDocument/codeAction",
+      "uri": "Inline.vue",
+      "params": {
+        "range": {
+          "start": {
+            "line": 1,
+            "character": 18
+          },
+          "end": {
+            "line": 1,
+            "character": 20
+          }
+        },
+        "context": {
+          "diagnostics": [],
+          "only": [
+            "quickfix"
+          ]
+        }
+      }
+    }
+  ]
+}

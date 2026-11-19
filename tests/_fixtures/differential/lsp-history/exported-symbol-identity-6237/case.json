@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "commit": "2b0a8604c1d33afa766153b9fcb11292b9ecf95e",
+  "id": "lsp/fix-history/exported-symbol-identity-6237",
+  "requirement": "Exported script symbols keep authored reference and rename spans (declaration, local use, template use) with crossFile disabled and without starting a checker.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "crossFile": false
+  },
+  "files": {
+    "Plain.vue": "<script lang=\"ts\">\nexport const shared = 1;\nconst copy = shared;\n</script>\n<template><div>{{ shared }}</div></template>",
+    "Other.vue": "<script setup lang=\"ts\">\nimport { shared } from './Plain.vue'\nconst again = shared\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "Plain.vue"
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "Plain.vue",
+      "at": {
+        "find": "shared",
+        "delta": 0,
+        "nth": 0
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": true
+        }
+      }
+    },
+    {
+      "request": "textDocument/rename",
+      "uri": "Plain.vue",
+      "at": {
+        "find": "shared",
+        "delta": 0,
+        "nth": 1
+      },
+      "params": {
+        "newName": "common"
+      }
+    }
+  ]
+}

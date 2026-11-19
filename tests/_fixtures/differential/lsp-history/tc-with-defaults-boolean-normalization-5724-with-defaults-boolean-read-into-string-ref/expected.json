@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2345,
+        "message": "Argument of type 'ComputedRef<boolean>' is not assignable to parameter of type 'ComputedRef<string>'.\n  Type 'boolean' is not assignable to type 'string'.",
+        "range": {
+          "end": {
+            "character": 23,
+            "line": 18
+          },
+          "start": {
+            "character": 15,
+            "line": 18
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

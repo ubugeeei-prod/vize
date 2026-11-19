@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "commit": "33afda2db5de18d43d4d1ee5d965da7cede1bd3c",
+  "id": "lsp/fix-history/closed-stderr-pipe-6321",
+  "requirement": "After the editor closes the server's stderr pipe, the stdio server keeps answering requests and still shuts down cleanly on exit.",
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nconst count = 1\n</script>\n<template><p>{{ count }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "closeStderr": true
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ count",
+        "delta": 4
+      }
+    },
+    {
+      "request": "textDocument/foldingRange",
+      "uri": "App.vue"
+    }
+  ]
+}

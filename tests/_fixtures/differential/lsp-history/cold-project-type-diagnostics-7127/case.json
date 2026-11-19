@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "commit": "4c52d0e39dca6ad888774281f7c231c094b84433",
+  "id": "lsp/fix-history/cold-project-type-diagnostics-7127",
+  "requirement": "The Corsa request bound comes from the workspace config, so a cold project's type pass completes and publishes its diagnostics for an imported child contract.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "vize.config.json": "{ \"typeChecker\": { \"lspRequestTimeoutMs\": 120000 } }\n",
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true }, \"include\": [\"src/**/*\"] }\n",
+    "src/Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ label: string }>()\n</script>\n<template><span>{{ label }}</span></template>\n",
+    "src/Parent.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child :label=\"1\" /></template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/Parent.vue"
+    },
+    {
+      "diagnostics": "src/Parent.vue"
+    }
+  ]
+}

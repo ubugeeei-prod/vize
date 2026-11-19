@@ -1,0 +1,78 @@
+[
+  {
+    "step": 2,
+    "result": {
+      "range": {
+        "end": {
+          "character": 21,
+          "line": 0
+        },
+        "start": {
+          "character": 16,
+          "line": 0
+        }
+      },
+      "uri": "${workspace}/src/Label.tsx"
+    }
+  },
+  {
+    "step": 4,
+    "result": {
+      "range": {
+        "end": {
+          "character": 21,
+          "line": 0
+        },
+        "start": {
+          "character": 16,
+          "line": 0
+        }
+      },
+      "uri": "${workspace}/src/Label.tsx"
+    }
+  },
+  {
+    "step": 5,
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 21,
+            "line": 0
+          },
+          "start": {
+            "character": 16,
+            "line": 0
+          }
+        },
+        "uri": "${workspace}/src/Label.tsx"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 14,
+            "line": 2
+          },
+          "start": {
+            "character": 9,
+            "line": 2
+          }
+        },
+        "uri": "${workspace}/src/App.tsx"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 15,
+            "line": 5
+          },
+          "start": {
+            "character": 10,
+            "line": 5
+          }
+        },
+        "uri": "${workspace}/src/App.tsx"
+      }
+    ]
+  }
+]

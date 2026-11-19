@@ -1,0 +1,40 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'.",
+        "range": {
+          "end": {
+            "character": 55,
+            "line": 1
+          },
+          "start": {
+            "character": 49,
+            "line": 1
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 2353,
+        "message": "Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'.",
+        "range": {
+          "end": {
+            "character": 41,
+            "line": 2
+          },
+          "start": {
+            "character": 36,
+            "line": 2
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

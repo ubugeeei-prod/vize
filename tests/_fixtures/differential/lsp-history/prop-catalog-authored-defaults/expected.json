@@ -1,0 +1,61 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "count": 39,
+      "items": [
+        {
+          "detail": "prop: string (required)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Prop `label`**\n\n_Required component prop_\n\n```typescript\ninterface Props {\n  label: string\n}\n```\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<Component label=\"...\" />\n<Component :label=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+          },
+          "insertText": "label=\"$1\"",
+          "insertTextFormat": 2,
+          "kind": 10,
+          "label": "label",
+          "labelDetails": {
+            "description": "required",
+            "detail": ": string"
+          },
+          "sortText": "00-prop-label"
+        },
+        {
+          "detail": "prop: number (optional)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Prop `count`**\n\n_Optional component prop_\n\n```typescript\ninterface Props {\n  count: number\n}\n```\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<Component count=\"...\" />\n<Component :count=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)\n\n**Default**\n\n`41`"
+          },
+          "insertText": "count=\"$1\"",
+          "insertTextFormat": 2,
+          "kind": 10,
+          "label": "count",
+          "labelDetails": {
+            "description": "optional",
+            "detail": ": number"
+          },
+          "sortText": "00-prop-count"
+        }
+      ]
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**count**\n\n_Component prop_\n\n```typescript\ncount?: number\n```\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<Known count=\"...\" />\n<Known :count=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)\n\n**Default**\n\n`41`"
+      },
+      "range": {
+        "end": {
+          "character": 15,
+          "line": 5
+        },
+        "start": {
+          "character": 9,
+          "line": 5
+        }
+      }
+    }
+  }
+]

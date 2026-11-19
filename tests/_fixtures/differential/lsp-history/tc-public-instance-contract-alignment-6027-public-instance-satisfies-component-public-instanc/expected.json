@@ -1,0 +1,40 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2344,
+        "message": "Type '$ComponentInstance' does not satisfy the constraint 'ComponentPublicInstance'.\n  Type '$ComponentInstance' is not assignable to type '{ $: ComponentInternalInstance; $data: {}; $props: {}; $attrs: Attrs; $refs: Data; $slots: Readonly<InternalSlots>; ... 8 more ...; $watch<T extends string | ((...args: any) => any)>(source: T, cb: ..., options?: WatchOptions<...> | undefined): WatchStopHandle; }'.\n    Types of property '$slots' are incompatible.\n      Type '$Slots' is not assignable to type 'Readonly<InternalSlots>'.\n        Property 'default' is incompatible with index signature.\n          Type '(props: { value: string; }) => unknown' is not assignable to type 'Slot<any>'.\n            Type 'unknown' is not assignable to type 'VNode<RendererNode, RendererElement, { [key: string]: any; }>[]'.",
+        "range": {
+          "end": {
+            "character": 83,
+            "line": 11
+          },
+          "start": {
+            "character": 44,
+            "line": 11
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 2344,
+        "message": "Type '{ __vizeCheck: <T extends string = string>(props: $SetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { ...; } & { ...; } & Record<...>) => void; ... 12 more ...; readonly __vizeFallthroughProps?: Record<...> | undefined; } & $GenericComponent' does not satisfy the constraint 'abstract new (...args: any) => any'.\n  Type '{ __vizeCheck: <T extends string = string>(props: $SetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { ...; } & { ...; } & Record<...>) => void; ... 12 more ...; readonly __vizeFallthroughProps?: Record<...> | undefined; } & $GenericComponent' provides no match for the signature 'new (...args: any): any'.",
+        "range": {
+          "end": {
+            "character": 50,
+            "line": 20
+          },
+          "start": {
+            "character": 36,
+            "line": 20
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]
