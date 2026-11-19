@@ -538,7 +538,7 @@ function format(cwd: string, files: string[]): void {
   for (const chunk of chunks(rust)) {
     execFileSync(process.env.RUSTFMT ?? "rustfmt", ["--edition", "2024", ...chunk], { cwd });
   }
-  const web = files.filter((file) => /\.(?:css|json|md|[cm]?[jt]sx?|vue|ya?ml)$/u.test(file));
+  const web = files.filter((file) => /\.(?:css|json|md|[cm]?[jt]sx?|toml|vue|ya?ml)$/u.test(file));
   for (const chunk of chunks(web)) {
     execFileSync(path.join(cwd, "node_modules/.bin/vp"), ["fmt", ...chunk], {
       cwd,
