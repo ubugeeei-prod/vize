@@ -1,3 +1,0 @@
-<style>
-.button { color: red !important; }
-</style>

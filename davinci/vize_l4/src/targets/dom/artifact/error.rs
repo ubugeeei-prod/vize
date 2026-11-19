@@ -323,7 +323,7 @@ fn op_span(op: &Op<'_>) -> Span {
         Op::Element(op) => op.span,
         Op::Component(op) => op.span,
         Op::Text(op) => op.span,
-        Op::Interpolation(op) | Op::ChildValue(op) => op.span,
+        Op::Interpolation(op) | Op::JsxChildValue(op) => op.span,
         Op::Comment(op) => op.span,
         Op::If(op) => op.span,
         Op::And(op) => op.span,

@@ -23,7 +23,7 @@ fn count_fors(ops: &[DumpOp]) -> usize {
             DumpOp::Component(component) => count_fors(&component.children),
             DumpOp::Text(_)
             | DumpOp::Interpolation(_)
-            | DumpOp::ChildValue(_)
+            | DumpOp::JsxChildValue(_)
             | DumpOp::Comment(_) => 0,
             DumpOp::If(if_op) => if_op
                 .branches

@@ -140,7 +140,7 @@ impl<'a> Cx<'a> {
                 self.capture_interpolation(id, interpolation.expression);
                 id
             }
-            l2::Op::ChildValue(child) => {
+            l2::Op::JsxChildValue(child) => {
                 let id = self.push_op(
                     OpKind::SetChildValue,
                     target_region,

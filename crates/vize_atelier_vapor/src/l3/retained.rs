@@ -52,7 +52,7 @@ impl<'s, 'a> Retained<'s, 'a> {
                         retained.bindings(&element.bindings);
                         pending.push(&element.children);
                     }
-                    Op::Interpolation(interpolation) | Op::ChildValue(interpolation) => {
+                    Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
                         retained.insert(interpolation.expression, false)
                     }
                     Op::If(branches) => {

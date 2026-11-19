@@ -37,7 +37,7 @@ pub(super) fn emit_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), 
             }
             Op::Element(_)
             | Op::Component(_)
-            | Op::ChildValue(_)
+            | Op::JsxChildValue(_)
             | Op::Comment(_)
             | Op::If(_)
             | Op::And(_)
@@ -167,7 +167,7 @@ pub(super) fn emit_raw_html_interpolation(
     Ok(())
 }
 
-pub(super) fn emit_child_value(
+pub(super) fn emit_jsx_child(
     cx: &mut EmitCx<'_>,
     child: &InterpolationOp<'_>,
 ) -> Result<(), EmitError> {

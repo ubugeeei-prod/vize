@@ -39,7 +39,7 @@ fn keyword(op: &DumpOp) -> &'static str {
         DumpOp::Component(_) => "ui.component",
         DumpOp::Text(_) => "ui.text",
         DumpOp::Interpolation(_) => "ui.interpolation",
-        DumpOp::ChildValue(_) => "ui.jsx-child",
+        DumpOp::JsxChildValue(_) => "ui.jsx-child",
         DumpOp::Comment(_) => "ui.comment",
         DumpOp::If(_) => "ui.if",
         DumpOp::And(_) => "ui.and",
@@ -54,7 +54,7 @@ fn op_span(op: &DumpOp) -> Span {
         DumpOp::Element(element) => element.span,
         DumpOp::Component(component) => component.span,
         DumpOp::Text(text) => text.span,
-        DumpOp::Interpolation(interpolation) | DumpOp::ChildValue(interpolation) => {
+        DumpOp::Interpolation(interpolation) | DumpOp::JsxChildValue(interpolation) => {
             interpolation.span
         }
         DumpOp::Comment(comment) => comment.span,
@@ -115,8 +115,10 @@ fn visit_op(op: &DumpOp, owner: Owner, rigor: Rigor, out: &mut Vec<Violation>) {
             rigor,
             out,
         ),
-        DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::ChildValue(_) | DumpOp::Comment(_) => {
-        }
+        DumpOp::Text(_)
+        | DumpOp::Interpolation(_)
+        | DumpOp::JsxChildValue(_)
+        | DumpOp::Comment(_) => {}
         DumpOp::If(if_op) => visit_if(if_op, rigor, out),
         DumpOp::For(for_op) => {
             let empty = for_op

@@ -168,7 +168,7 @@ fn visit_region_guarded<P: ProvenanceSink, R: RemarkSink>(
                 nested: true,
                 native: true,
             },
-            Op::ChildValue(_) => Contribution {
+            Op::JsxChildValue(_) => Contribution {
                 level: ChildLevel::Dynamic,
                 nested: false,
                 native: false,

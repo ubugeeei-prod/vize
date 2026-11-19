@@ -1,2 +1,0 @@
-<template><!-- eslint-disable-next-line vue/permitted-contents -->
-<p><div id="same"/></p><span><div id="same" align="left"/></span></template>

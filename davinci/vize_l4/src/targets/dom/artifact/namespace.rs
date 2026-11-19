@@ -68,7 +68,7 @@ fn structural_children_cross_boundary(
         | Op::Slot(_)
         | Op::Text(_)
         | Op::Interpolation(_)
-        | Op::ChildValue(_)
+        | Op::JsxChildValue(_)
         | Op::Comment(_) => false,
     })
 }
@@ -105,7 +105,7 @@ fn child_crosses(ns: Namespace, child: &Op<'_>) -> bool {
         | Op::Slot(_)
         | Op::Text(_)
         | Op::Interpolation(_)
-        | Op::ChildValue(_)
+        | Op::JsxChildValue(_)
         | Op::Comment(_) => false,
     }
 }

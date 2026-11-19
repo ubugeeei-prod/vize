@@ -122,22 +122,12 @@ impl Fix {
         }
     }
 
-    /// Apply the fix to a source string.
+    /// Apply the fix to a source string, through the same selection every
+    /// fix applier uses. A fix without a valid edit leaves `source` unchanged.
     #[inline]
     pub fn apply(&self, source: &str) -> String {
-        let mut result = source.to_compact_string();
-        // Apply edits in reverse order to preserve offsets
-        let mut edits = self.edits.clone();
-        edits.sort_by_key(|edit| std::cmp::Reverse(edit.start));
-
-        for edit in edits {
-            let start = edit.start as usize;
-            let end = edit.end as usize;
-            if start <= result.len() && end <= result.len() {
-                result.replace_range(start..end, &edit.new_text);
-            }
-        }
-        result
+        super::apply::apply_edits(source, self.edits.iter())
+            .unwrap_or_else(|| source.to_compact_string())
     }
 }
 

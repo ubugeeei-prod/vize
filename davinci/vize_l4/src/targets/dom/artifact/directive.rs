@@ -282,7 +282,7 @@ fn collect_from_guarded<'a>(region: &'a Region<'a>, names: &mut StdVec<&'a str>)
             Op::And(and) => collect_from(&and.region, names),
             Op::For(for_op) => collect_from(&for_op.region, names),
             Op::OriginalFor(for_op) => collect_from(&for_op.region, names),
-            Op::Text(_) | Op::Interpolation(_) | Op::ChildValue(_) | Op::Comment(_) => {}
+            Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => {}
         }
     }
 }

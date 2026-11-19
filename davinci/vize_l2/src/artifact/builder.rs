@@ -171,8 +171,8 @@ impl<'a> Builder<'a> {
         check::expression(self.parts.source, id, expression, span)?;
         self.mint();
         // Raw child values need complete child patching on every target.
-        self.parts.features = self.parts.features.observing(OpFamily::ChildValue);
-        self.push(Op::ChildValue(Box::new_in(
+        self.parts.features = self.parts.features.observing(OpFamily::JsxChild);
+        self.push(Op::JsxChildValue(Box::new_in(
             InterpolationOp {
                 expression,
                 raw_html: false,

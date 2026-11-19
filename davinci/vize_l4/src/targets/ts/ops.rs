@@ -67,7 +67,7 @@ fn op(cx: &mut Cx<'_>, op: &Op<'_>, items: &mut Items) -> Result<(), JsxModuleRe
     match op {
         Op::Text(_) => Ok(()),
         Op::Element(element) => self::element(cx, element, items),
-        Op::ChildValue(child) => {
+        Op::JsxChildValue(child) => {
             items.next(cx);
             cx.out.push("(");
             expression(cx, &child.expression)?;

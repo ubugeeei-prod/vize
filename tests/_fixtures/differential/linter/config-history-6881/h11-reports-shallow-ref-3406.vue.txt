@@ -1,8 +1,0 @@
-<script setup lang="ts">
-import { shallowRef } from 'vue'
-const root = shallowRef(null)
-</script>
-
-<template>
-  <div ref="root" />
-</template>

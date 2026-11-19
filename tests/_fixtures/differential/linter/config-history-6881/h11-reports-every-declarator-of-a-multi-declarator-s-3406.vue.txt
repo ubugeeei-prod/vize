@@ -1,8 +1,0 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-const count = ref(0), root = ref(null)
-</script>
-
-<template>
-  <div ref="root">{{ count }}</div>
-</template>

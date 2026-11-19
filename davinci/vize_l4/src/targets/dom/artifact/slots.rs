@@ -134,7 +134,7 @@ fn region_references_scope(scope: &PrefixScope<'_>, region: &Region<'_>) -> bool
                 bindings_reference_scope(scope, &component.bindings)
                     || region_references_scope(scope, &component.children)
             }
-            Op::Interpolation(interpolation) | Op::ChildValue(interpolation) => {
+            Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
                 expression_references_scope(scope, interpolation.expression)
             }
             Op::If(if_op) => if_op.branches.iter().any(|branch| {
@@ -337,7 +337,7 @@ pub(super) fn admit_default(children: &Region<'_>) -> Result<(), EmitError> {
 fn walk_admit(region: &Region<'_>) -> Result<(), EmitError> {
     for op in region.ops.iter() {
         match op {
-            Op::Text(_) | Op::Interpolation(_) | Op::ChildValue(_) | Op::Comment(_) => {}
+            Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => {}
             Op::Element(element) if is_slot_template(element) => {
                 if element.bindings.iter().any(|b| !is_inert_slot_binding(b)) {
                     return Err(EmitError::unsupported_at(

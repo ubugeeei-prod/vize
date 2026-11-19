@@ -1,4 +1,0 @@
-<script setup>
-import { Link } from "@void/vue";
-</script>
-<template><Link>Home</Link></template>

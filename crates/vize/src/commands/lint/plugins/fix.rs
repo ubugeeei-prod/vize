@@ -11,7 +11,6 @@ use vize_patina::LintResult;
 use super::{PluginLint, PluginLintReceipt};
 use crate::commands::atomic_write::atomic_write;
 use crate::commands::lint::cross_file::CliLintFileResult;
-use crate::commands::lint::fix::apply_lint_fixes;
 
 /// Each pass is one more sidecar crossing over the changed files only.
 const MAX_PLUGIN_FIX_PASSES: usize = 5;
@@ -49,8 +48,7 @@ impl PluginLint {
                         error_count: 0,
                         warning_count: 0,
                     };
-                    let Some(fixed) =
-                        apply_lint_fixes(source, &fixes).filter(|fixed| fixed != source)
+                    let Some(fixed) = fixes.apply_fixes(source).filter(|fixed| fixed != source)
                     else {
                         return Ok(None);
                     };

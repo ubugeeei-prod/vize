@@ -1,4 +1,0 @@
-<script setup>
-const emit = defineEmits(['myEvent'])
-emit('myEvent')
-</script>

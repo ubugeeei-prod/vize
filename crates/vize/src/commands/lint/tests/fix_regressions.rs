@@ -1,4 +1,4 @@
-use super::super::fix::{apply_lint_fixes, fix_until_stable, lint_source_with_optional_fix};
+use super::super::fix::{fix_until_stable, lint_source_with_optional_fix};
 use std::{fs, path::Path};
 use vize_patina::{Fix, LintDiagnostic, LintPreset, LintResult, Linter, TextEdit};
 
@@ -6,7 +6,7 @@ use vize_patina::{Fix, LintDiagnostic, LintPreset, LintResult, Linter, TextEdit}
 fn apply_lint_fixes_applies_existing_rule_fixes() {
     let source = r#"<template><button v-on:click="save">Save</button></template>"#;
     let result = Linter::new().lint_sfc(source, "App.vue");
-    let fixed = apply_lint_fixes(source, &result).expect("fix should be available");
+    let fixed = result.apply_fixes(source).expect("fix should be available");
 
     assert_eq!(
         fixed.as_str(),
@@ -74,7 +74,7 @@ fn overlapping_component_shape_and_casing_fixes_converge_with_original_file_byte
     assert_eq!(initial.error_count, 0);
     assert_eq!(initial.warning_count, 2);
     assert_eq!(initial.diagnostics.len(), 2);
-    let intermediate = apply_lint_fixes(source, &initial).unwrap();
+    let intermediate = initial.apply_fixes(source).unwrap();
     assert_eq!(
         intermediate.as_str(),
         source.replace(

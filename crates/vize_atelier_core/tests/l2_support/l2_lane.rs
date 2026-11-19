@@ -217,7 +217,7 @@ fn walk(
                     });
                 }
             }
-            DumpOp::ChildValue(_) => {
+            DumpOp::JsxChildValue(_) => {
                 *next += 1;
             }
             DumpOp::Interpolation(interpolation) => {

@@ -367,12 +367,8 @@ await test("historical anchors and the pinned integrated product tree remain qua
   assert.equal(report.currentContracts.changes.length, 1);
   assert.deepEqual(
     report.currentCheckoutLayers.map((layer) => layer.changes.length),
-    [2, 4, 30],
+    [2, 4],
   );
-  const catalog = report.currentCheckoutLayers[2];
-  assert.equal(catalog.name, "css-catalog-u16-tables-13374");
-  for (const { path } of catalog.changes)
-    assert.ok(path.startsWith("crates/vize_maestro/src/ide/style/"), path);
   assert.equal(report.vsixInfrastructure.changes.length, 7);
   assert.equal(report.historicalBaselineRevision, "2934b35b18393c188b3da5f8e50595299589fb8c");
   assert.equal(report.historicalCapture.sourceRevision, "0cc8615736db2f2ef6b82177aa2e92a7de9f86dc");

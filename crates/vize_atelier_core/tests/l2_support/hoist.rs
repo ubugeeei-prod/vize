@@ -288,7 +288,7 @@ pub fn shape_of_l2(ops: &[DumpOp], out: &mut vize_l0::String) {
             }
             DumpOp::Text(_)
             | DumpOp::Interpolation(_)
-            | DumpOp::ChildValue(_)
+            | DumpOp::JsxChildValue(_)
             | DumpOp::Comment(_) => {}
         }
     }

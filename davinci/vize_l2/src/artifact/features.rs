@@ -53,11 +53,10 @@ pub enum OpFamily {
     TextCompound,
     /// A `ui.model` binding.
     Model,
-    /// A dynamic child value normalized by the renderer (`ui.jsx-child`).
-    ChildValue,
-    /// A `class` binding whose value reaches the runtime as authored and is
-    /// normalized as `createVNode` does.
-    RuntimeClass,
+    /// A JSX-owned dynamic child whose value is normalized by the renderer.
+    JsxChild,
+    /// A JSX-owned `class` binding, normalized as `createVNode` does.
+    JsxClass,
 }
 
 /// Feature bits the lowering observed while building L2.
@@ -102,14 +101,14 @@ impl LoweringFeatures {
 
     /// Whether a genuine child-value mint requires complete child patching.
     #[must_use]
-    pub const fn has_child_values(self) -> bool {
-        self.holds(OpFamily::ChildValue)
+    pub const fn has_jsx_child_values(self) -> bool {
+        self.holds(OpFamily::JsxChild)
     }
 
     /// Whether a JSX `class` value reaches the runtime as authored.
     #[must_use]
-    pub const fn has_runtime_class_bindings(self) -> bool {
-        self.holds(OpFamily::RuntimeClass)
+    pub const fn has_jsx_class_bindings(self) -> bool {
+        self.holds(OpFamily::JsxClass)
     }
 
     /// The same bits with `family` observed.
@@ -133,8 +132,8 @@ impl OpFamily {
             OpFamily::SlotCarrier => 1 << 2,
             OpFamily::TextCompound => 1 << 3,
             OpFamily::Model => 1 << 4,
-            OpFamily::ChildValue => 1 << 5,
-            OpFamily::RuntimeClass => 1 << 6,
+            OpFamily::JsxChild => 1 << 5,
+            OpFamily::JsxClass => 1 << 6,
         }
     }
 }
@@ -149,16 +148,16 @@ mod tests {
         OpFamily::SlotCarrier,
         OpFamily::TextCompound,
         OpFamily::Model,
-        OpFamily::ChildValue,
-        OpFamily::RuntimeClass,
+        OpFamily::JsxChild,
+        OpFamily::JsxClass,
     ];
 
     #[test]
     fn empty_holds_no_family() {
         let features = LoweringFeatures::EMPTY;
         assert!(!features.has_model_bindings());
-        assert!(!features.has_child_values());
-        assert!(!features.has_runtime_class_bindings());
+        assert!(!features.has_jsx_child_values());
+        assert!(!features.has_jsx_class_bindings());
         assert!(!features.has_if_ops());
         assert!(!features.has_for_ops());
         assert!(!features.has_slot_carriers());
@@ -224,7 +223,7 @@ mod tests {
             .unwrap();
         assert_eq!(
             valued.finish().unwrap().parts().features,
-            LoweringFeatures::EMPTY.observing(OpFamily::ChildValue)
+            LoweringFeatures::EMPTY.observing(OpFamily::JsxChild)
         );
     }
 }

@@ -106,7 +106,7 @@ fn carrier_surface<'w, 'a>(
         | Op::Text(_)
         | Op::Comment(_)
         | Op::Interpolation(_)
-        | Op::ChildValue(_)
+        | Op::JsxChildValue(_)
         | Op::If(_)
         | Op::And(_)
         | Op::For(_)

@@ -263,7 +263,7 @@ fn interpolation(rest: &str, line_no: usize, jsx_child: bool) -> Result<Item, Du
         span: tail_span(tail, line_no)?,
     };
     Ok(Item::Op(if jsx_child {
-        Op::ChildValue(payload)
+        Op::JsxChildValue(payload)
     } else {
         Op::Interpolation(payload)
     }))

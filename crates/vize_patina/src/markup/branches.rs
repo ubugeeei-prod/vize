@@ -168,7 +168,7 @@ fn l2<'a>(
                 let step = scope_region(doc, for_op.span, &for_op.region.ops);
                 l2_step(doc, step, path, visitor);
             }
-            Op::Text(_) | Op::Interpolation(_) | Op::ChildValue(_) | Op::Comment(_) => {}
+            Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => {}
         }
     }
 }

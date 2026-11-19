@@ -27,7 +27,6 @@ mod component_setup_jsx_reads;
 mod computed_return_flow_history;
 mod computed_side_effects_history;
 mod computed_suppression_history;
-mod config_history;
 mod content_directives_history;
 mod css_engine_boundary;
 mod css_external_target_history;

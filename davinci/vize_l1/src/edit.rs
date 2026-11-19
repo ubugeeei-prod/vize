@@ -152,11 +152,34 @@ impl<'source, 'replacement, K: Copy + Eq> SpanEdit<'source, 'replacement, K> {
     }
 }
 
+/// Order `edits` by `(start, end)`, ties in supplied order, then keep the first
+/// of any overlapping edits at the front. Returns how many are kept; the kept
+/// prefix is a valid [`EditSet`] input. This is the one selection policy every
+/// fix applier shares: an edit that starts inside a kept edit is dropped.
+pub fn select_first<K: Copy + Eq>(edits: &mut [SpanEdit<'_, '_, K>]) -> usize {
+    edits.sort_by_key(|edit| (edit.span.start, edit.span.end));
+    let mut kept = 0usize;
+    let mut last_end = 0u32;
+    for index in 0..edits.len() {
+        let Some(start) = edits.get(index).map(|edit| edit.span.start) else {
+            break;
+        };
+        if start < last_end {
+            continue;
+        }
+        edits.swap(kept, index);
+        last_end = edits.get(kept).map_or(last_end, |edit| edit.span.end);
+        kept += 1;
+    }
+    kept
+}
+
 /// An immutable, source-ordered set; construction borrows and allocates nothing.
 ///
-/// Adjacent ranges and insertion at a replacement boundary are allowed, in
-/// supplied order. Interior overlaps and duplicate insertions at one point are
-/// refused. Consumers choose order explicitly; this type does not clone/sort.
+/// Adjacent ranges, insertions at one point and insertion at a replacement
+/// boundary are allowed and apply in supplied order. Interior overlaps are
+/// refused. Consumers choose order explicitly; this type does not clone/sort
+/// ([`select_first`] is the shared fix policy that does).
 /// At a replacement's start, insertions precede it; later insertions may use
 /// its end. An insertion back at its consumed start is an overlap.
 #[derive(Debug, Clone, Copy)]
@@ -180,7 +203,7 @@ impl<'edits, 'source, 'replacement, K: Copy + Eq> EditSet<'edits, 'source, 'repl
                 if edit.span.start < prior.start {
                     return Err(EditError::Unordered);
                 }
-                if edit.span.start < prior.end || (prior.start == prior.end && edit.span == prior) {
+                if edit.span.start < prior.end {
                     return Err(EditError::Overlap);
                 }
             }
@@ -249,6 +272,9 @@ impl<'edits, 'source, 'replacement, K: Copy + Eq> EditSet<'edits, 'source, 'repl
         Ok(output)
     }
 }
+
+#[cfg(test)]
+mod select_tests;
 
 #[cfg(test)]
 mod tests {
@@ -324,7 +350,6 @@ mod tests {
             [Span::new(0, 4), Span::new(2, 5)],
             [Span::new(1, 4), Span::new(2, 2)],
             [Span::new(1, 4), Span::new(1, 1)],
-            [Span::new(2, 2), Span::new(2, 2)],
             [Span::new(1, 3), Span::new(1, 3)],
         ] {
             let edits = spans.map(|range| frame.edit(range, "x").unwrap());

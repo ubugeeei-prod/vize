@@ -3,88 +3,11 @@
   "version": 1,
   "cases": [
     {
-      "id": "lsp/fix-history/advertised-capabilities-328",
-      "commit": "db60c95ba23161999b0ff5084a0748813ff4dee4",
-      "case": "advertised-capabilities-328/case.json",
-      "sha256": "f67def7bca74f6673d22582b557727ac0c1325d6134b5f702c534ef8f8d66ee3",
-      "expectedSha256": "d3ee6da6be2fe2b2cea31361d43c26e227d7c77fc4f9f5f049f4a0572b8a327c"
-    },
-    {
-      "id": "lsp/fix-history/anchor-image-map-attributes-2570",
-      "commit": "617f04d3432bcdedc8ddaa2d35edf9edc6bea56a",
-      "case": "anchor-image-map-attributes-2570/case.json",
-      "sha256": "25f41a29ffc88e5911a4c9ba9182d1896efe362990f0e2d23ff1ea514966a66b",
-      "expectedSha256": "d765ef3b17fe74da176ff52bc9107509f2005ea594a6e966e8606610eef4e6e6"
-    },
-    {
-      "id": "lsp/fix-history/art-variant-typed-documents-4249",
-      "commit": "b1cfcd4c1ff8beee810a1e4879a456fbb74df09d",
-      "case": "art-variant-typed-documents-4249/case.json",
-      "sha256": "fece0853b10c7108dfc0ca4bb43f9bdbeda2e3f31659411202a84dc0c4d2e4d4",
-      "expectedSha256": "3d00edd16d7a5b9c0b652ed17fb874ecc7f279e5b50190d2f49fc4e3e462d319"
-    },
-    {
-      "id": "lsp/fix-history/astral-diagnostic-columns-334",
-      "commit": "693e5a3954a23f3968e909676ba4d9f7725a372b",
-      "case": "astral-diagnostic-columns-334/case.json",
-      "sha256": "f75c613934409e91c4f61bc8925d99d0e3373945570f1bf7540f478be7caf7e6",
-      "expectedSha256": "d2dcc48c3af7272e28c89fe8ac1fc548ba984b183c266cad8ccfe322b89c913e"
-    },
-    {
-      "id": "lsp/fix-history/authored-component-hovers-4602",
-      "commit": "25fa051ae921c66e020d8e92e93da172981d0052",
-      "case": "authored-component-hovers-4602/case.json",
-      "sha256": "92118769c94db62d28810e7c168c77c88365b3953d85b9d630548a770e2cd625",
-      "expectedSha256": "4053e043f66145738431a573d15b6faf8f6152941f7517e4cb485879bef224c8"
-    },
-    {
-      "id": "lsp/fix-history/authored-mirror-paths-3565",
-      "commit": "5fda5ef7efbaf3ac62b2daf8bea25936aaba7b8b",
-      "case": "authored-mirror-paths-3565/case.json",
-      "sha256": "ffcb47445f7a564190b492b6db23631794609b4c651d61d04befc62244d27770",
-      "expectedSha256": "cfea12a52b2c61c0aeae35c1e87c872120359b9dc01be5878f7ba79dafc10223"
-    },
-    {
-      "id": "lsp/fix-history/authored-script-diagnostics-4595",
-      "commit": "8befe402174caab7019c3cc4c17a86571af1a175",
-      "case": "authored-script-diagnostics-4595/case.json",
-      "sha256": "48767a88d34e7df305cbf7cd9559660750086e2b127fdeb24f20b92cb04b8472",
-      "expectedSha256": "f66670993d178dd3869d712ac5e59199ded9add4c132d8addc158f72e17223c2"
-    },
-    {
-      "id": "lsp/fix-history/auto-insert-configuration-sections-5879",
-      "commit": "403aab0e4c53ed03d2393d31392303eec120cb3f",
-      "case": "auto-insert-configuration-sections-5879/case.json",
-      "sha256": "9000ace3214d66e42598f26833f4f1f00de0af23824ee28a6262bdf1375d4e42",
-      "expectedSha256": "1fc4ba30cb8691c5516d1891109bef758bad423846c7a2a10e12d0c40b7ec869"
-    },
-    {
       "id": "lsp/fix-history/backend-utf16-coordinates-6229",
       "commit": "bd8fff6f6c186f3efd072eb7d81431e00e1a9994",
       "case": "backend-utf16-coordinates-6229/case.json",
       "sha256": "3fd3230a80a2bd0c2d1d70a71dff250969410b17fd027a169a9ca921996ddf58",
       "expectedSha256": "b32f6c916f2a3c36acd26a7dd7725399d3d7d1c1b898e9f2643372d3474590b2"
-    },
-    {
-      "id": "lsp/fix-history/block-locations-content-offsets-3631",
-      "commit": "4ed90a55eb09ae1a8af7af940056965061c00993",
-      "case": "block-locations-content-offsets-3631/case.json",
-      "sha256": "3ca91010f297915b3ff46e6cc0f98e18b719f5ba32aae022100c94de8bf1f446",
-      "expectedSha256": "9869700ec6352a0ceb8a2c8a73bcdebc9f9628db87f3f82baffb51bb25cb019f"
-    },
-    {
-      "id": "lsp/fix-history/boundary-safe-template-definition-976",
-      "commit": "d18ac76edca776c02b104127262e0689678f58ec",
-      "case": "boundary-safe-template-definition-976/case.json",
-      "sha256": "90bace849396db9db05a479b50f76e081f378ba28fee99f42fe7ac9dec8e2b38",
-      "expectedSha256": "42713b563b095b7eb7438fb6751e454880488a0ccd367790d929b8fcdda478e8"
-    },
-    {
-      "id": "lsp/fix-history/canonical-mirror-navigation-2220",
-      "commit": "6800ef0c897408ebd089859f86acd4a0d2db8d8f",
-      "case": "canonical-mirror-navigation-2220/case.json",
-      "sha256": "cefe64a441d36731e14175abc957b005e91d107fd8f83f74ff9160b530dd55c7",
-      "expectedSha256": "eb55dd5d37dfd0b6f890f020dcf580c5c226ef1b6f4221f2db3bca1b417378cd"
     },
     {
       "id": "lsp/fix-history/canonical-native-documents-6260",
@@ -101,13 +24,6 @@
       "expectedSha256": "4ada1f9a8c12bbef943d864062aba093c60b081126de04d5e30e6d878be3ac22"
     },
     {
-      "id": "lsp/fix-history/canonical-virtual-ts-queries-2218",
-      "commit": "a21653a671c18ceb2d135aef46db641f53c33c4f",
-      "case": "canonical-virtual-ts-queries-2218/case.json",
-      "sha256": "38f64f419b5e44743a0621874a4c432139ec206947ac3e9972393797ee83a1bb",
-      "expectedSha256": "4e6a27fee3153e60dce2053a710619940dae09ca6fbb45800333695e4bb3e617"
-    },
-    {
       "id": "lsp/fix-history/checker-text-without-ref-hints-6214",
       "commit": "cf02a0debca63d5119e3bbd2b1bda9a692f194be",
       "case": "checker-text-without-ref-hints-6214/case.json",
@@ -115,32 +31,11 @@
       "expectedSha256": "99e2bc3b65acb8a9d32dd1b8b73fff6a085544625fd1786a51ee97c4109ad048"
     },
     {
-      "id": "lsp/fix-history/closed-file-reference-sources",
-      "commit": "0c52c111e29ab915b9e70101716e8b28824c7059",
-      "case": "closed-file-reference-sources/case.json",
-      "sha256": "2ff426dc7ccfee59f92fc11f32d906369c03d195590f0d932e9407693c759011",
-      "expectedSha256": "8fe7f301aaffdd8cb318d01196f2b309ee867eae86ad530e43ef51724119882f"
-    },
-    {
-      "id": "lsp/fix-history/closed-project-vue-references",
-      "commit": "972af46d436a800a7e2de0edbf4dc3e2703745dd",
-      "case": "closed-project-vue-references/case.json",
-      "sha256": "313401c4700100f44beaf646c91a5dd8170d7fe926608b2c05499ef74bc281c6",
-      "expectedSha256": "438376a01523d965d0ad692accc60904dac8c725448d57e46a2fb87d276df195"
-    },
-    {
       "id": "lsp/fix-history/closed-stderr-pipe-6321",
       "commit": "33afda2db5de18d43d4d1ee5d965da7cede1bd3c",
       "case": "closed-stderr-pipe-6321/case.json",
       "sha256": "4be094549f302dba70c8b67557cef2d57db832b952538d5531b0d43e51f609ae",
       "expectedSha256": "8f86da65fdffa5981da376928aab3d1e92b83bc348ac4e9a77ff3c9cf8feef7a"
-    },
-    {
-      "id": "lsp/fix-history/code-action-kinds-3853",
-      "commit": "0c12d43752d00d41b63b951c447dd2dc73b75c70",
-      "case": "code-action-kinds-3853/case.json",
-      "sha256": "5b9d84c93c113cb20701c7ace7a14958ecff5976a251a69cca4eea900b3a649a",
-      "expectedSha256": "0bd25666d48cf924ccf1b0b20e7371288b3ac2429ce908b4e79853ef76c6f215"
     },
     {
       "id": "lsp/fix-history/code-lens-declarations-7086",
@@ -157,25 +52,11 @@
       "expectedSha256": "364887b7bc62c64582bb218a518ae5b3229d6716251206647a8346fec7bb7578"
     },
     {
-      "id": "lsp/fix-history/compile-error-suppresses-checker-709",
-      "commit": "15b97c411d0b28062c921c9d7bb061fd16a77695",
-      "case": "compile-error-suppresses-checker-709/case.json",
-      "sha256": "df4278d07329687b4f061c39e8be18988e93850886482da0e35271837dddffe3",
-      "expectedSha256": "5c1fcc2aa190146497b9be4d56b425b11d085e2cc2c28e1cbb7177f6cd22b4a0"
-    },
-    {
       "id": "lsp/fix-history/completion-resolve-documentation-6181",
       "commit": "df757956e0a80b41de17187a97956d5c9be1c029",
       "case": "completion-resolve-documentation-6181/case.json",
       "sha256": "9cd5ba09ac0d1672b76463b0bb752de94ddfeccb9f9f702150438a950af21ff7",
       "expectedSha256": "cd6f9a652d6c0350f5ef06143fc3d6f64c904cb72afbaf1421cdb3efd8035932"
-    },
-    {
-      "id": "lsp/fix-history/completion-trigger-characters-3487",
-      "commit": "55a6b949d217080b986acda36a835719907dc09c",
-      "case": "completion-trigger-characters-3487/case.json",
-      "sha256": "b1b07ad62df2d973cbb35ed36814e96beedb524fcf3fdd56a4c91c81207122ac",
-      "expectedSha256": "481ea89759cc9fb482c691160051163baa1761c9b96c9d7f5eb51405cb3439d6"
     },
     {
       "id": "lsp/fix-history/component-definition-quoted-names-7333",
@@ -192,48 +73,6 @@
       "expectedSha256": "4d2d76c35f6faa51df1a2ca97a11be389c851fb236b744c99f3d39739dc1eda8"
     },
     {
-      "id": "lsp/fix-history/component-event-contracts",
-      "commit": "b33feb1c6c8bce110dc9fe6d4d5f9609d0a93043",
-      "case": "component-event-contracts/case.json",
-      "sha256": "9753627097a8eccc7efebc4d603e55b4c5b123c388f662d39c6a7be87d96bc79",
-      "expectedSha256": "f4a22a7ca4a3f275c779a35990eccb0c3d99aa8e1acbe238629d6fcac9aebb3e"
-    },
-    {
-      "id": "lsp/fix-history/component-intellisense-2736",
-      "commit": "30c1fa0049a3bf4522b741ec836bcffe359bfb1f",
-      "case": "component-intellisense-2736/case.json",
-      "sha256": "cecf16300ea5daf621c60d66e727944d1b2f80c2a61999701557a4045f832365",
-      "expectedSha256": "e0bc71f9db321aad2061ea214a47a8f1ca83a267da4aae43076c642ac0e1e2c7"
-    },
-    {
-      "id": "lsp/fix-history/component-prop-reference-fanout-4532",
-      "commit": "4bd6ca589ee3ee07d58fdbc721f0ebb076fd3aa4",
-      "case": "component-prop-reference-fanout-4532/case.json",
-      "sha256": "b2240639a0f11d7e39c905026a6666046c08b81dd3589528dc7801444a48a94e",
-      "expectedSha256": "d92d58bd280154037c2e2bafbe243cdd7e0916b0f920202810924d8a9ebfc267"
-    },
-    {
-      "id": "lsp/fix-history/component-prop-reference-ranges-4533",
-      "commit": "708c64e8ff932ae9d7573b3498f4cfe656691931",
-      "case": "component-prop-reference-ranges-4533/case.json",
-      "sha256": "614fda4bf132690d8820220f05fbfd6817840d2b4e4561cc1a88448706d00a9b",
-      "expectedSha256": "ac470e58315171f0126e058a2f92768b8cea63af78ce505cb2d58dbc1edfe16b"
-    },
-    {
-      "id": "lsp/fix-history/component-prop-references-across-files-4531",
-      "commit": "0b3e32318d609bae0e91839d9fff5707ca97acbc",
-      "case": "component-prop-references-across-files-4531/case.json",
-      "sha256": "c134a110a25c1a808dbb2f08e66865aff1322e71bc73dd80268d893e0082e5fa",
-      "expectedSha256": "6101836467b57dff619176ca7dfcb3d02eec4775dc6b27fd14baf6251ba9b30c"
-    },
-    {
-      "id": "lsp/fix-history/component-prop-rename-4534",
-      "commit": "d92e45b0d4d5959233bf88ec1be6767e9fd61fd0",
-      "case": "component-prop-rename-4534/case.json",
-      "sha256": "0bea24b2001b45f75b38dae45873c160459473c2e20d11b8faf36d059d7adff8",
-      "expectedSha256": "f8beb605e06b9f0cf4cb957989d0902bb8553b442ce09529409306c85136a29d"
-    },
-    {
       "id": "lsp/fix-history/component-tag-alias-barrel-hover-7321",
       "commit": "3924c20efaeb7865910509c0421477b661821c30",
       "case": "component-tag-alias-barrel-hover-7321/case.json",
@@ -248,214 +87,11 @@
       "expectedSha256": "70b8e319edffd92961571838e5d3dc72ae6ed0c9e41818d825c3246b8d0286be"
     },
     {
-      "id": "lsp/fix-history/component-tag-hover-as-import-3914",
-      "commit": "5dbb4803fdea6d47c50b3d92aac485eabfc718eb",
-      "case": "component-tag-hover-as-import-3914/case.json",
-      "sha256": "ae18275ae8adf08c3687317a2f34b23d1daf08add54924fcb24d54b009bf8c13",
-      "expectedSha256": "c97c1280691a416515ea7c68d78996181cfc83122261d3d624625d0d71127275"
-    },
-    {
-      "id": "lsp/fix-history/component-tag-paths-barrels-3935",
-      "commit": "2922f41335b5990aead434832a1f6dc5dc83966d",
-      "case": "component-tag-paths-barrels-3935/case.json",
-      "sha256": "54e64377f033cfe0b58076948a7ab7bbf84b647e91c760368ba6244e2814fb10",
-      "expectedSha256": "8411212c7227b627f3eab41e137765ba3c2ff1d707f281531ca147b8e451c9f6"
-    },
-    {
-      "id": "lsp/fix-history/component-v-model-navigation-4607",
-      "commit": "e05e903eaa130a1fb61a7413faee812c3d713460",
-      "case": "component-v-model-navigation-4607/case.json",
-      "sha256": "2f65efc163292818faa6991ed3ff7a82583615b65c2d4dc8369e595d3ba340ba",
-      "expectedSha256": "db915caa23ee27948fca62528d2882065305f44376dfa6e314d738038d79d935"
-    },
-    {
-      "id": "lsp/fix-history/composable-auto-import-extensions-2594",
-      "commit": "c7c3152089c63babc9451b9572fdba39697fa4b7",
-      "case": "composable-auto-import-extensions-2594/case.json",
-      "sha256": "70610ed9e651cf4436b1084bde0a166c867b224f0090cb423c48f692ff57179a",
-      "expectedSha256": "74c0dfb615117514726693faf0484491c65aa76c1f6de6522dc514f756bc716d"
-    },
-    {
-      "id": "lsp/fix-history/configured-casing-rule-options-5642",
-      "commit": "5b82f9f6edd3cdbeb88d28f4a1b797cb4f36b540",
-      "case": "configured-casing-rule-options-5642/case.json",
-      "sha256": "4e2ef3df5042460784f819fb1369458ac4ab7b7fee23173036703067296d33c4",
-      "expectedSha256": "ce3ec13bbafb5335813ff5b3d4c58e2aeb387c53676455552b6a0cd94d2d7959"
-    },
-    {
-      "id": "lsp/fix-history/configured-musea-token-lint-5612",
-      "commit": "bea75982f417ea35b656fbe404f640653f462ee4",
-      "case": "configured-musea-token-lint-5612/case.json",
-      "sha256": "c2bc9494530da5bc457a908e9469eda943537f8b2fe3c3d3a3b5a46279bee474",
-      "expectedSha256": "fb7af42f89c9675d073e21685241317f7ec7a46f6ba5ad9a4882b608ccd79812"
-    },
-    {
-      "id": "lsp/fix-history/configured-template-globals-3021",
-      "commit": "242557debdc6f86c01d91b8d0afa68c76e0200eb",
-      "case": "configured-template-globals-3021/case.json",
-      "sha256": "99e1cea1042db2556f92ffe9aa24ed297f28bf67566f6eca3fc1129250500b48",
-      "expectedSha256": "e7b9b0cd52182dcec37808c925d40b0bb990014ffa03e68f27bb6c67936f72c2"
-    },
-    {
-      "id": "lsp/fix-history/constrained-template-semantic-tokens",
-      "commit": "8c90f998183efb6aa6d00b36e1143c89ce56442a",
-      "case": "constrained-template-semantic-tokens/case.json",
-      "sha256": "c36c3cbba5bf305a1ad718326b4ce38ec6d7984553964fad91695422a55d2d3c",
-      "expectedSha256": "76d42cef018b7c77cffd1f47c6abdcc0b6810418b2d491d08e0a61451bbdcde0"
-    },
-    {
-      "id": "lsp/fix-history/corsa-framing-signature-rename-4161",
-      "commit": "d6c1ab1fb2c5a7c8b01cc6aa6d46bbf4e071a6f3",
-      "case": "corsa-framing-signature-rename-4161/case.json",
-      "sha256": "c7cd1d1f01e6522e85cc8c73b2f99146502a21e2452a0b26be9b7de07af7fe06",
-      "expectedSha256": "113a9a6696d686a4b10d16c2cbed93714cdd63eeec7f00339d729528c7524055"
-    },
-    {
-      "id": "lsp/fix-history/corsa-virtual-project-sync-2219",
-      "commit": "fb94e1744877e0a7cd6ca2cfcd9e6ec72c55d3ea",
-      "case": "corsa-virtual-project-sync-2219/case.json",
-      "sha256": "060506045e769ecb72d60b25a968cd6c176e6b9b4336391399f29ffc6e7bece4",
-      "expectedSha256": "a151c1bb127c441031aa8a7ce66e7546233be2f51611b27175cfb61fe89c7366"
-    },
-    {
-      "id": "lsp/fix-history/declaration-import-renames-2579",
-      "commit": "9fa08e49a5e1b11f9936c6d0965554aa1e6b1a22",
-      "case": "declaration-import-renames-2579/case.json",
-      "sha256": "5818200d165b1940c11c19dc8d3b8d78e3a2c12dd4e56071ce87607f5127ea21",
-      "expectedSha256": "6132b636b357b12001de6ca6a4493b25c90f8d9896447c1af6ba0444674864c1"
-    },
-    {
-      "id": "lsp/fix-history/declaration-index-directory-rename-2592",
-      "commit": "7723e2100189333f5aedcb7461462540b031556f",
-      "case": "declaration-index-directory-rename-2592/case.json",
-      "sha256": "f7e8e1669bf7eeab48e1bff0a6aa21f2a41306793a9df27783b242fa9789c1fc",
-      "expectedSha256": "e2c5b54dd33bba44ad09783378f91aa7496ce4d14b9d39bbeed22f7472d2a527"
-    },
-    {
-      "id": "lsp/fix-history/deleted-alias-definitions-4522",
-      "commit": "6579045311b7d4d00d2e8b0e5378466c18091b10",
-      "case": "deleted-alias-definitions-4522/case.json",
-      "sha256": "b378c85d328322b25df90c0456313b2441d4fedb0126a20713e7566a95d8968a",
-      "expectedSha256": "a4a648deb02b92b25dac1f4e777d9de1029e660b3180c6e6045bc2bf7fa2ef9d"
-    },
-    {
-      "id": "lsp/fix-history/deleted-component-target-5384",
-      "commit": "c200b692c480607e7555cddf3966bd0705746f7a",
-      "case": "deleted-component-target-5384/case.json",
-      "sha256": "f7251a3bdb618eb54168c25706b6e95818d01486f99c9dde55611f2cf4f7969a",
-      "expectedSha256": "8e04ad33787cc2bd031aeca3d122cf751bfcd5cae6b647b1929942752cd9d398"
-    },
-    {
-      "id": "lsp/fix-history/dependent-component-diagnostics-2907",
-      "commit": "7ce1bed3b99fcff3be32a2e111204020c833dfbb",
-      "case": "dependent-component-diagnostics-2907/case.json",
-      "sha256": "e791eedb6165a65698317e21dce4518c6f16cccc27891eb24f065778727f844c",
-      "expectedSha256": "c6942a066532aaa582ba1867f782721f1db588325fb993cb072afef81f7b82d7"
-    },
-    {
-      "id": "lsp/fix-history/diagnostic-code-shapes-2973",
-      "commit": "e19cb37379835985df55be8fc24c160dce4a5f23",
-      "case": "diagnostic-code-shapes-2973/case.json",
-      "sha256": "2263223e8a8992f8019aef327b3aabf24c621b124a93a996267774483f767803",
-      "expectedSha256": "0f11cd2aa10a6dfb00ad7c3a5f2ecbf530d0a31c43b49ff2863f087412681531"
-    },
-    {
-      "id": "lsp/fix-history/diagnostic-range-ends-3010",
-      "commit": "d7e2bbc44b4ee6f9b34ac2e690f37fb7b00ad4cb",
-      "case": "diagnostic-range-ends-3010/case.json",
-      "sha256": "203f2162fbd546bb8b5cb77542931d3af25194c8f532941f95a76e9708d733dc",
-      "expectedSha256": "530b2b850511446bae49db6fb925c7c0bfcc34bfb2f0835d37852923d2329e45"
-    },
-    {
-      "id": "lsp/fix-history/diagnostics-latest-version-3373",
-      "commit": "ab43bbd4fd5ffd036e74e32865b76c7d876ebe9c",
-      "case": "diagnostics-latest-version-3373/case.json",
-      "sha256": "b525f67cef2b2341dcf41072b7ec9fb59b863f14963fdceacc1edab8c3894609",
-      "expectedSha256": "7c74928e79b9ba47af1ac7c4023e42e1dc9266afd5ad45c720426190ac310aea"
-    },
-    {
-      "id": "lsp/fix-history/did-change-configuration-640",
-      "commit": "ff74a83c379e22e55a8c5dba24a1e20c40722e56",
-      "case": "did-change-configuration-640/case.json",
-      "sha256": "60e63a02eb6e5486cd02a1b02c4ca76ef3c55e19e43949db1ef5be9055e1beb9",
-      "expectedSha256": "a531e25aebbe5175c9bc2eb0fb926286ee73745b05db3281d17f4ff59f91a31d"
-    },
-    {
-      "id": "lsp/fix-history/directive-semantic-edges-447",
-      "commit": "051048725ec8ed52ae0e0518738e6365d5e5c3e5",
-      "case": "directive-semantic-edges-447/case.json",
-      "sha256": "bcd11ca048f3a9d55042e3989d42a977a54f5fe5a5c14d52e5a9465e16929e28",
-      "expectedSha256": "61748febb9b9c7aaf491d696c752aa07347b40da1ed3cbc7bfdf8545736cea05"
-    },
-    {
-      "id": "lsp/fix-history/directory-event-evicts-vue-descendants-5828",
-      "commit": "9c4486bdb6ab0fa4800c7ab856a31bc5c4c84aad",
-      "case": "directory-event-evicts-vue-descendants-5828/case.json",
-      "sha256": "0d4069919040c949d1050d03c028545e454efd9c8afa34a75fd881054a65542f",
-      "expectedSha256": "afb590b52f3775027905c00957210aa92f81c9a3ffbf91f2dc10dc3fda0b86d3"
-    },
-    {
-      "id": "lsp/fix-history/dotted-basename-imports-5502",
-      "commit": "2c5b4f30506d979b80d1525c1791882fb577434a",
-      "case": "dotted-basename-imports-5502/case.json",
-      "sha256": "50175b65415cbbca19c230e3fbb1cb4d0a38134bc6d2c251d7ad8df900b23ac1",
-      "expectedSha256": "500e93d72b39e5a89e5c37dfa4bebf36729048f37c0c4222d962835f33b10561"
-    },
-    {
-      "id": "lsp/fix-history/editor-disabled-capabilities-2643",
-      "commit": "d960802d31919aa9e7f2394fbd97621868d06a6e",
-      "case": "editor-disabled-capabilities-2643/case.json",
-      "sha256": "c12205a497212f930e79642d8a121fdc24314b8748bd0ea48dfc4b80ff741851",
-      "expectedSha256": "ab49bf60b7d81486579378a5a3b02738411fcb4ebe641b8a68874b50c79a0ead"
-    },
-    {
-      "id": "lsp/fix-history/editor-generation-barriers-4152",
-      "commit": "5a9cf00d8223041f522feed805c2c517ca1c0088",
-      "case": "editor-generation-barriers-4152/case.json",
-      "sha256": "48e3e8cd101438496404877fe18e78671cbd17e540bebb4b6980f2b49cf5364a",
-      "expectedSha256": "e8187031f5e8a10086289a40f9db8ad0c85f75b001188c43a575b39c83605253"
-    },
-    {
-      "id": "lsp/fix-history/editor-production-gates-2643",
-      "commit": "d960802d31919aa9e7f2394fbd97621868d06a6e",
-      "case": "editor-production-gates-2643/case.json",
-      "sha256": "bfef85b07c95b009def8b6c86054e19ed901c257f7bc628a38fce14170f7ba00",
-      "expectedSha256": "6347334ff678a075ffc261d8d77352a0305b4f1a2936df466b44aeebc03a46fd"
-    },
-    {
-      "id": "lsp/fix-history/editor-script-stabilization-1974",
-      "commit": "d25a270fe1d8e8ce8d15b345d6874caa63079374",
-      "case": "editor-script-stabilization-1974/case.json",
-      "sha256": "c9fbf9a89849131d65677b037b42d42026afdfffa076d0b716974f90a0f0fac9",
-      "expectedSha256": "d19eb7bf9d7e4e209aed2f6a6eea5069ea8a7828bfe12005a89b465b0365b41c"
-    },
-    {
-      "id": "lsp/fix-history/excluded-reference-queries",
-      "commit": "1bcafef051e03f162ba08d0322f4600d4e2dd231",
-      "case": "excluded-reference-queries/case.json",
-      "sha256": "e711f084928d4891b56d30da319258bac61da5b25ef40b61ab4aef8a87e3266a",
-      "expectedSha256": "5d441e24cc9d768fed9885d31be8978b494bcda2898230336f61c83e5aed1cc2"
-    },
-    {
-      "id": "lsp/fix-history/exit-without-eof-3697",
-      "commit": "6dd7aca0cad799892589ae2bc5bfd077bb3fe6b5",
-      "case": "exit-without-eof-3697/case.json",
-      "sha256": "a3d5d08cc310f464eabafa9ee27a9cfe3505f28d9849166b92c1582a606ac74c",
-      "expectedSha256": "b6b4f1c3b15d755f2724c093c051f4a2772fb4a481f4f661f1a4d7d23b1d8f6b"
-    },
-    {
       "id": "lsp/fix-history/exported-symbol-identity-6237",
       "commit": "2b0a8604c1d33afa766153b9fcb11292b9ecf95e",
       "case": "exported-symbol-identity-6237/case.json",
       "sha256": "f8c6b2a789110e06a0df9260c916958da4731e4a87aa7e5bed12d24b4c0f6c84",
       "expectedSha256": "5b356da457b8071001a32709f03455f6759a8f84e7920e85273791269642fb9b"
-    },
-    {
-      "id": "lsp/fix-history/extensionless-vue-imports-3336",
-      "commit": "1ace1157e7967bbbd5266552c35de76c3524e0c9",
-      "case": "extensionless-vue-imports-3336/case.json",
-      "sha256": "dcab1874e45c56e94f1465c2b1d4ef063b654f75b5a573f09f2bcb22f37718c3",
-      "expectedSha256": "364887b7bc62c64582bb218a518ae5b3229d6716251206647a8346fec7bb7578"
     },
     {
       "id": "lsp/fix-history/external-type-overlay-props",
@@ -465,165 +101,11 @@
       "expectedSha256": "47b1c3364d99000caac1d9e085a999f3f13111b5270ac33b8cb7194293dcce66"
     },
     {
-      "id": "lsp/fix-history/fallback-diagnostic-ranges-eof-3299",
-      "commit": "6430d76e92746646a5b363be1c0209afb1a0a931",
-      "case": "fallback-diagnostic-ranges-eof-3299/case.json",
-      "sha256": "11579ff2b00aa072559710b5b8251c23067fde4af299ba739f934dd44162ac0a",
-      "expectedSha256": "192436a257be8c6d5f9a108a55eb0b964fe1602150e58d7d00c707d3ae26b400"
-    },
-    {
-      "id": "lsp/fix-history/fallback-diagnostic-ranges-last-line-3299",
-      "commit": "6430d76e92746646a5b363be1c0209afb1a0a931",
-      "case": "fallback-diagnostic-ranges-last-line-3299/case.json",
-      "sha256": "b6fd0e977c289307482df25aa97e2b64bcee9ad7fda80f7f4b7fb9b586547bed",
-      "expectedSha256": "a6ee899adc61f98aef553cbe6acc5f02c42b0389889f2d031df7236be41c0813"
-    },
-    {
-      "id": "lsp/fix-history/fallback-diagnostic-ranges-preamble-3299",
-      "commit": "6430d76e92746646a5b363be1c0209afb1a0a931",
-      "case": "fallback-diagnostic-ranges-preamble-3299/case.json",
-      "sha256": "adab8cca6cee19030a8fb0d14b4f477020b4f3107fcec40777f66571b8a2528d",
-      "expectedSha256": "d0e11aca35349a6967fd7774f3b12a6e1fe1469027eff6c0d504d9f1f8f88323"
-    },
-    {
-      "id": "lsp/fix-history/fallback-reactive-hovers-4628",
-      "commit": "9fd9d72424d4959c18e05b5f589039f92134f6c1",
-      "case": "fallback-reactive-hovers-4628/case.json",
-      "sha256": "0f1a27a6b67383b6cc38302b4a528dda68cc0d0f34a1149a273aa93748a2df09",
-      "expectedSha256": "9013db1bb354249339b6a7a3bec0e15e25fac68495e92560db5f10fe7d2be9d0"
-    },
-    {
-      "id": "lsp/fix-history/fallback-rename-from-references-3899",
-      "commit": "147c8e355553c5040a1f9a966c2f27c065a616c6",
-      "case": "fallback-rename-from-references-3899/case.json",
-      "sha256": "3a01ede616753dba6fd37ae992f775a22149a118439e51e10782b56e744d4aae",
-      "expectedSha256": "e79c2ca9bb828a5330e75412fac047d0ceafeca37a39a3305e4d2687d3959352"
-    },
-    {
-      "id": "lsp/fix-history/fallthrough-diagnostics-template-anchor-4594",
-      "commit": "36cea242982dcc54da2728ee896df3d06e3c4c48",
-      "case": "fallthrough-diagnostics-template-anchor-4594/case.json",
-      "sha256": "35d625c40c59c46c388a4e685413e069c09bcccca8797acbbd5ca968336093ef",
-      "expectedSha256": "990b5b54fb495d16c960866691ccc7d7cb45ac14245bf7eeb9bad52be5a4bae7"
-    },
-    {
-      "id": "lsp/fix-history/fallthrough-template-root-diagnostics-4635",
-      "commit": "8ab913e8d771cb6762760bffdcb59582f8645e03",
-      "case": "fallthrough-template-root-diagnostics-4635/case.json",
-      "sha256": "4d7161ab08b835b19431912a60f9c3e368bf8fbb8ba87d358fc8820db92f7e4b",
-      "expectedSha256": "a2a1ab164fb9ed97b25061daaeeaaac063aa1b69a4236faed8a7bad582a1b300"
-    },
-    {
-      "id": "lsp/fix-history/file-rename-aliased-imports-3919",
-      "commit": "6a4cf395a53eddd68b2f817f71d4726035ac3789",
-      "case": "file-rename-aliased-imports-3919/case.json",
-      "sha256": "b10db5ecb10052dd796777b8d46305134f50f11f8ccbcb519d028ed7d0ebe0f0",
-      "expectedSha256": "5a86919f371a5e87caebb9f686b9a14ff4f8597c0830c5e0bdaec1c2e49ab452"
-    },
-    {
       "id": "lsp/fix-history/folder-config-order-7113",
       "commit": "a4d89982cb91bb3bcb0a267f01ca1676be9f615d",
       "case": "folder-config-order-7113/case.json",
       "sha256": "21fa3f1f2f13dbc501ce682ec7b4711dbd2ff256986f11c77bdaeef150291c66",
       "expectedSha256": "0cea5f191070b870998dcfea43846f3be1a5a13b2e2b5da523360d0651ed5c04"
-    },
-    {
-      "id": "lsp/fix-history/formatter-template-runtime-semantics-4123",
-      "commit": "fb462face5f1d1827b70cd0a0167ce25f661e50a",
-      "case": "formatter-template-runtime-semantics-4123/case.json",
-      "sha256": "96aeacf93ed9c3d952db28cd2fadb2edf9f5a8683571674254c87379bb435756",
-      "expectedSha256": "c23c1a28b1206159a5388feeecf01ca1334a93ce6923dfc3cbbe08743fb5ab7f"
-    },
-    {
-      "id": "lsp/fix-history/formatting-authored-eof-no-trailing-newline",
-      "commit": "aba27dd9e8c1bbcc6db1cb96b2785ab7cc659609",
-      "case": "formatting-authored-eof-no-trailing-newline/case.json",
-      "sha256": "d3348bb3ec2b485aab05c06792e7cb082722b86074be4171519786c3bc0e3bbb",
-      "expectedSha256": "54710d6ad84c20d69301d4a72e2b77d5a55f37079691a2099ade353ad8dac9a2"
-    },
-    {
-      "id": "lsp/fix-history/formatting-authored-eof-trailing-newlines",
-      "commit": "aba27dd9e8c1bbcc6db1cb96b2785ab7cc659609",
-      "case": "formatting-authored-eof-trailing-newlines/case.json",
-      "sha256": "c8cda72642bcb95a4fd3bd4daabcb2206602e50c7916ebc24dacc842a0b6a162",
-      "expectedSha256": "f05ee1cb6209aa9edd9dc045d3fb828489524a7d051a546f86ea422a278c019c"
-    },
-    {
-      "id": "lsp/fix-history/formatting-authored-eof-utf16",
-      "commit": "aba27dd9e8c1bbcc6db1cb96b2785ab7cc659609",
-      "case": "formatting-authored-eof-utf16/case.json",
-      "sha256": "1ee94edf7bbd53438c0a0a25ecb29e9ae89f222cd1af19a0afd193f5bf6cebed",
-      "expectedSha256": "280fd0bc92899321daf545b232ed430697634da1c86033e8f00a365451950f60"
-    },
-    {
-      "id": "lsp/fix-history/gated-template-binding-completions-313",
-      "commit": "1ad169f31a64a731a0c3a23a28a182fea7645db0",
-      "case": "gated-template-binding-completions-313/case.json",
-      "sha256": "e8d494be6b20997c445b1d3fa221431e227e1e77938282cb28d74557070f9c0c",
-      "expectedSha256": "a167b484db2692f40bd1e7df9c04f103ff52e4b336eec85883fffb43969bae81"
-    },
-    {
-      "id": "lsp/fix-history/global-attribute-docs-2569",
-      "commit": "8f9f80d7a329c7d9e46c5dc0606efda357cc285f",
-      "case": "global-attribute-docs-2569/case.json",
-      "sha256": "f565342cca8a587b1de07b8c36f8ebfe6300a4e9b8557bb40ca2706f33f84f44",
-      "expectedSha256": "3788e8c6fa85c537fb89f8df6480fdf3d18b495bc9636cd69dcf74155e84aebe"
-    },
-    {
-      "id": "lsp/fix-history/global-attribute-metadata-2564",
-      "commit": "f93dd305bbe26e4192a6a74184b634fbceceb60c",
-      "case": "global-attribute-metadata-2564/case.json",
-      "sha256": "53a7aee92040d2ad7ad8fa035c5e7e3bcb5a139159497557a285680c3a53a1c4",
-      "expectedSha256": "8a869238515672bcbfa14f9bbf00bd4c4eb8c0f075cb986fe4801e7ec4f93d63"
-    },
-    {
-      "id": "lsp/fix-history/hover-signature-first-3907",
-      "commit": "791a5a002a9e93ac1fb01b193dc06a6869272f3e",
-      "case": "hover-signature-first-3907/case.json",
-      "sha256": "109fa0bf430a75f77ab20a25eb578073f678e25240ae37c6bc7b02fd7613aefd",
-      "expectedSha256": "7d4e1a0de3b8b4989d7c1973ab70095515e084c4d4cc376fe04f15e0908dfe55"
-    },
-    {
-      "id": "lsp/fix-history/html-attribute-dom-properties-2565",
-      "commit": "00508c5b8b46387d7ce637768e7a6c48383d824c",
-      "case": "html-attribute-dom-properties-2565/case.json",
-      "sha256": "06d038e092550ec9ed611820124ee5f7158fcda9ae7dd52a540660464e7ed595",
-      "expectedSha256": "9761b267a82081c8241555d699d86aa86c41c3ee1ef29eeb5931884f4158cdcd"
-    },
-    {
-      "id": "lsp/fix-history/iframe-legacy-attributes-2572",
-      "commit": "cc7fd4abd4a3e95dfaa0a9b4ff4ae0119aa9af7f",
-      "case": "iframe-legacy-attributes-2572/case.json",
-      "sha256": "0fe1b6353238c52c1d066a058bc53d3d83b675641bda79159f168a395d2e9030",
-      "expectedSha256": "9e51796baf5ec4a700f9a9337df662f2dedfdf9dec37bf5150eaeb983fda00e9"
-    },
-    {
-      "id": "lsp/fix-history/image-legacy-attributes-2573",
-      "commit": "26df7458e3c5686c7e4c19f4e51f3fa1bc542a3f",
-      "case": "image-legacy-attributes-2573/case.json",
-      "sha256": "ee9f100134e7578b5ebc838b639da3e51e45a6a902c73abd6fbfc2e7ba50d246",
-      "expectedSha256": "444a1e1890a86124a35a8b92d6a26bbc67ad637265b768d0a0ecaada1775d06f"
-    },
-    {
-      "id": "lsp/fix-history/implementation-gated-on-typecheck-5833",
-      "commit": "0f8fecde36734640f40ffe64f3b2915321b184e0",
-      "case": "implementation-gated-on-typecheck-5833/case.json",
-      "sha256": "f99124b18968b01a711d923aaf1ac05d981cbcc5b18d8a59033eecb546c5b628",
-      "expectedSha256": "f4ff6863fc21bd5e21a58be80ed7622304e2031dc8f2ace561f4240d8162a032"
-    },
-    {
-      "id": "lsp/fix-history/implementation-with-typecheck-5833",
-      "commit": "0f8fecde36734640f40ffe64f3b2915321b184e0",
-      "case": "implementation-with-typecheck-5833/case.json",
-      "sha256": "74fbf84280a1fd977d23708c19aa03553a66a9c340b022cad42a20e42314cf4a",
-      "expectedSha256": "584100a4db2aa36628dd9bb330ec84c171fdeafc2334ee81375e07dc6d05a8ab"
-    },
-    {
-      "id": "lsp/fix-history/import-alias-hops-3938",
-      "commit": "dc7f298ee2f6093855b26fad644ec4da1e5920e0",
-      "case": "import-alias-hops-3938/case.json",
-      "sha256": "d3000d96f9fa07b4dccd3ae6e453f82721cd5ca45a5051d8a8a8587eac45bea5",
-      "expectedSha256": "4f973244c3ee3b15439606ab1f55c3d0f514efb7cdc58faf9db60d08befaf1b5"
     },
     {
       "id": "lsp/fix-history/import-rewrite-mapping-6406",
@@ -633,25 +115,11 @@
       "expectedSha256": "14c757bec826143c54ea6cf2abe3ac581198f36102d3228fb10470ace4ac165e"
     },
     {
-      "id": "lsp/fix-history/imported-component-hovers-4608",
-      "commit": "f8e750c187c99e1b1899d3fc76f81a751199acd5",
-      "case": "imported-component-hovers-4608/case.json",
-      "sha256": "e49833496b0d9fe13010212486cd459704fe61d84695713fbecf5e90203c0bf7",
-      "expectedSha256": "a9b7c4551fd5d5ee2a0faa8110fe99c4ddc635eb344a6cb9a96996c09f37dbfb"
-    },
-    {
       "id": "lsp/fix-history/incremental-unicode-separators-6276",
       "commit": "a8b17f73b36814081df0fad7c2e8b1712f685aa9",
       "case": "incremental-unicode-separators-6276/case.json",
       "sha256": "3f654ae3679da80c6597c36451f5cb821e2857bd4a32d7d70cf34601ae983db1",
       "expectedSha256": "286c46c4afa2e057462a5aa0b22961429acfde09e2d63defa12f83d1a6681e90"
-    },
-    {
-      "id": "lsp/fix-history/inherited-props-template-analysis-1373",
-      "commit": "8252898b62bff2877e7e09dcfb2d98b223c19f9d",
-      "case": "inherited-props-template-analysis-1373/case.json",
-      "sha256": "9c3a3c90f0147c59c29e6f97c06b87545f110bf62c7c28689522ee6723b980b2",
-      "expectedSha256": "d6908ab74f6e6922e059f65af58fbd6657620e86296eca65f106b364c0fac881"
     },
     {
       "id": "lsp/fix-history/inline-template-code-actions-crlf-6174",
@@ -675,67 +143,11 @@
       "expectedSha256": "53c2b66f51ca5cf14a71087941974111b88bed143ae3cb7b2751885dbc4a9440"
     },
     {
-      "id": "lsp/fix-history/input-image-attributes-2576",
-      "commit": "137486e7c9b5e3aaf5d519e3cffdf95142e0f97c",
-      "case": "input-image-attributes-2576/case.json",
-      "sha256": "e99b64f1d40421cc1e605ca63d8dde6a480ab3ef32152120e77af5d210d493a5",
-      "expectedSha256": "647d4626d09b3e7c83b2008f4713d58c6e0dbd3e0449caf9f83551c8cc6df8a7"
-    },
-    {
-      "id": "lsp/fix-history/invalid-change-ranges-299",
-      "commit": "ca314129da941092ade34fccc80341b40bd7e153",
-      "case": "invalid-change-ranges-299/case.json",
-      "sha256": "62bd2e5fd9e17da2e061b6a5131d5a75a7e1b8e4316583827ca4ec155facac93",
-      "expectedSha256": "915d029d2e61c5e15016256f1fe433fa4a1fce7bf79eda7e211f4b3ef64cedd7"
-    },
-    {
-      "id": "lsp/fix-history/invalid-document-positions",
-      "commit": "4057c94c6d2792bbf37e95ccb49e2ce6989839c7",
-      "case": "invalid-document-positions/case.json",
-      "sha256": "1b921192f047fac15b0fac4ee0cab727b84232b95a6a17f19beb0fed8ee5ef92",
-      "expectedSha256": "2f77236ebdd60d9557ca9c9e01095a043c3d143b05cab7ab424cce115a3fbb92"
-    },
-    {
-      "id": "lsp/fix-history/invalid-utf16-positions-374",
-      "commit": "26db417d55ee75e9876ae65ec507df8ba5d1b296",
-      "case": "invalid-utf16-positions-374/case.json",
-      "sha256": "c339564f96c99b40457afe01f6decd297bb75ac04c5be361e1257b4b63d503fb",
-      "expectedSha256": "6e8a595c2be14ace6bcd24afb158f23f2cc636af3d604a7931a584191e9292ce"
-    },
-    {
-      "id": "lsp/fix-history/isolated-rename-sessions-4132",
-      "commit": "2c0c078b803b517687deadecfc24a5c959d61145",
-      "case": "isolated-rename-sessions-4132/case.json",
-      "sha256": "f37886066a38b9fc843598c3c8b1acdeaecc98443aa3483e4dcb4f3b826c3299",
-      "expectedSha256": "4782380678862f99c4c387045fd0bfa952fc320d6afa6297078445ab1120f614"
-    },
-    {
       "id": "lsp/fix-history/jsx-authored-project-navigation",
       "commit": "4f8cef915cd56e662b5ecce19bad20a1b1f0c39b",
       "case": "jsx-authored-project-navigation/case.json",
       "sha256": "c078130980c09378ae11aebf6293d750e85a49d149b65c31520d643d06bbeef4",
       "expectedSha256": "d1c21e5c64f113b1db82faf11bf84d8f44cf7325c816e169f759aa3fccd40536"
-    },
-    {
-      "id": "lsp/fix-history/jsx-component-props-4252",
-      "commit": "417504f08a779fb6715410ba813d4667af4d15e0",
-      "case": "jsx-component-props-4252/case.json",
-      "sha256": "a0503ccc4f512d84fed448d2a4e3652750fa05a898576ecb055ed57d90f85ce4",
-      "expectedSha256": "2496df3dd2f4e2957502935770857282bbd4120b6ec18d54575061f9200678a4"
-    },
-    {
-      "id": "lsp/fix-history/jsx-declaration-checker-5868",
-      "commit": "6769bfb5bbd1d30df0cc76c45508718386920993",
-      "case": "jsx-declaration-checker-5868/case.json",
-      "sha256": "542d8bba48ee579d6ecca66a1884356b19087993a15bdb78f5d0fa18a91cc58a",
-      "expectedSha256": "839f2d50db72ede8a216220b8ec5d7e94bfbb8d690e5a6ba685f242dfa9fd69a"
-    },
-    {
-      "id": "lsp/fix-history/jsx-declaration-no-backend-5868",
-      "commit": "6769bfb5bbd1d30df0cc76c45508718386920993",
-      "case": "jsx-declaration-no-backend-5868/case.json",
-      "sha256": "be16b6c3fb04beb6191a1362f4919a58f20dd68cd56ae2a55d6260b3bc98015b",
-      "expectedSha256": "66c41efccb4dcae06d6afc17488ee414ba4e70840a78763a886f97c555c70c9f"
     },
     {
       "id": "lsp/fix-history/jsx-navigation-dedupe",
@@ -752,34 +164,6 @@
       "expectedSha256": "8b4454f93d093804bc9f62b401d5a9ea050af4ba91641b7f9d6b86243b9941c6"
     },
     {
-      "id": "lsp/fix-history/jsx-unscoped-slot-patterns-4254",
-      "commit": "c39a8c4dee32f8c5b2c9cf550e6ccf6c5a120db1",
-      "case": "jsx-unscoped-slot-patterns-4254/case.json",
-      "sha256": "889d10bc66665cba1738a8f2df8042aaca992ecf3c50fe4eed20a3d2dfda2c24",
-      "expectedSha256": "814680f36d3e145f8cf6d7bed693bc8815c2e623b1146764f3415dd1adf41a4f"
-    },
-    {
-      "id": "lsp/fix-history/legacy-lowering-from-dialect-2-3297",
-      "commit": "c47831e0438f8a030f9e1b6d71431cccbb23bbf5",
-      "case": "legacy-lowering-from-dialect-2-3297/case.json",
-      "sha256": "9b1fa1b269d7e7979a8d9f49f60e69293d732d1bef6527b36e2ec14882b8dfe5",
-      "expectedSha256": "6a292b855215cd003df9dcf3f115756893752d75fc8efbbc2b7c6527d08c4067"
-    },
-    {
-      "id": "lsp/fix-history/legacy-lowering-from-dialect-3-3297",
-      "commit": "c47831e0438f8a030f9e1b6d71431cccbb23bbf5",
-      "case": "legacy-lowering-from-dialect-3-3297/case.json",
-      "sha256": "105f626b78f608b37c8b696976198add314d361ad4bc0c0875a4877add52d98c",
-      "expectedSha256": "0291fd7c64af2e93f7261f0474b437f8d326bb639ecc2cc0b09c80ae2ff75d66"
-    },
-    {
-      "id": "lsp/fix-history/legacy-vue2-config-2040",
-      "commit": "86c6ee85652ba861c08d3027234a5c471a68f52f",
-      "case": "legacy-vue2-config-2040/case.json",
-      "sha256": "a940eb3b2fc122159a45b4e7d97fdccd5a501ca2ca94495c28b9cdf058b40b6a",
-      "expectedSha256": "9978d077cd3debc438d43d878f02f6573feeb27f6f610dc98dc4b6396e2605d5"
-    },
-    {
       "id": "lsp/fix-history/lexical-identity-checker-free-6246-crlf",
       "commit": "66aae15e42872c314d508137548587b5386ba618",
       "case": "lexical-identity-checker-free-6246-crlf/case.json",
@@ -794,13 +178,6 @@
       "expectedSha256": "49c67bbfefbef57dd1c0e1bf6b6027f67ab8524b5275d29c8a73567f07680f93"
     },
     {
-      "id": "lsp/fix-history/linked-resource-attributes-2571",
-      "commit": "5df08cd59b320f1dbd8d56f8dda599648b3a48bc",
-      "case": "linked-resource-attributes-2571/case.json",
-      "sha256": "60b0613c6c89936a22b68e8eaf8a8fd520315f0b43c6a8d58ae57520cf963af6",
-      "expectedSha256": "c52d8670792aca484f1db48298f7c22c957eae95472cf36a2708c7f065979786"
-    },
-    {
       "id": "lsp/fix-history/lint-hover-severity-labels-7053",
       "commit": "ef8c3e059ed645e319154d475ef6d994dc489ee6",
       "case": "lint-hover-severity-labels-7053/case.json",
@@ -808,81 +185,11 @@
       "expectedSha256": "70a7efd60a0cd29a6f746da1b7079e40ee32914941a965c4920143466d2a45bd"
     },
     {
-      "id": "lsp/fix-history/literal-ref-fallback-types-4626",
-      "commit": "585c4b242709374d50dd28eff1332133f94ee6b0",
-      "case": "literal-ref-fallback-types-4626/case.json",
-      "sha256": "f432ccd54b222e59521bc4c2754d8d302e859c4f58a431142ca7cb8dab0db026",
-      "expectedSha256": "5e8731bf2007678df1f6de4086ce96ec87bf1743e7d04b23e543ce5e284c2f35"
-    },
-    {
-      "id": "lsp/fix-history/live-backend-template-hovers-3349",
-      "commit": "fc2ac9a4e1622d03ddf9dcc690a689d21d3f05c0",
-      "case": "live-backend-template-hovers-3349/case.json",
-      "sha256": "0b4e8e857890bdeae7df1d0b075fd23729631afdbea98e8dc15c0639931c636f",
-      "expectedSha256": "e563e6a8b48442f3f89c029dacf2b972a28737794f43315a31a11610b26530fc"
-    },
-    {
-      "id": "lsp/fix-history/mapping-end-boundaries-2976",
-      "commit": "22a034cb99ff4ca109cee5286f50f1722e34b68d",
-      "case": "mapping-end-boundaries-2976/case.json",
-      "sha256": "6e618f605e7cbdeae95d8ae4e10ff501c198c2ce3b4b6cee4fd0a79f361ce158",
-      "expectedSha256": "cad75e928e3e6fff80923d27c7a11620bfd5bb4dc3e0577f79b955bb3f5ea7fb"
-    },
-    {
-      "id": "lsp/fix-history/mathml-tag-references-2568",
-      "commit": "0059ffb8da838f66e6376968745ae9d38eccd918",
-      "case": "mathml-tag-references-2568/case.json",
-      "sha256": "9063a333557a8b9503a1ec609106fbf4767af059a508aacacb1d994c7f09d4f0",
-      "expectedSha256": "9169312698136155a6d05847bea2648706380e6908683d1f5ac96bd6583993c4"
-    },
-    {
-      "id": "lsp/fix-history/member-completion-without-vue-extras-3936",
-      "commit": "831ba3528ee0b8056bca31e32cb9b110938a747c",
-      "case": "member-completion-without-vue-extras-3936/case.json",
-      "sha256": "4d29a23de0fb341354c08740401badc46b09fef1dc069ac885f172b71aeb20ae",
-      "expectedSha256": "69331942ad1777e96a8415337ba9bfa6df251ff090866a5b32fb4d2162f40d0f"
-    },
-    {
-      "id": "lsp/fix-history/member-receiver-chains-753",
-      "commit": "c98737e604ab534de8f99bf319ce14450af00965",
-      "case": "member-receiver-chains-753/case.json",
-      "sha256": "3a316906412958c361ca962e8ee98a1cf4c88a0829b7ecee17f4a0af002ac483",
-      "expectedSha256": "f65209428e5f95c41c23bed8d171bb0606903fc53353153385dc111f730ba1fb"
-    },
-    {
-      "id": "lsp/fix-history/module-declaration-renames-2580",
-      "commit": "6ae3d84c5e861e145298ab3885ff24400c7054d0",
-      "case": "module-declaration-renames-2580/case.json",
-      "sha256": "01e9db378e9c101735485fd536ead05b1108bbfb1666a872302d81f0fc8a8b71",
-      "expectedSha256": "ef37247b253e46d448540cee5f7b7833cd03f7e753fc89e7dd01ab7f4b27dde7"
-    },
-    {
-      "id": "lsp/fix-history/module-document-links-2595",
-      "commit": "7f35ef57ab36768ffcd96354f8ca155192aec50b",
-      "case": "module-document-links-2595/case.json",
-      "sha256": "45834a7b178830c72e64f8737e2ab8a9527d3b5c3f70116e51df01fac6fef73c",
-      "expectedSha256": "ac03e4daaf883bc4ca0b39a160b2679595a5005fffe91178c3777c7d111c059d"
-    },
-    {
-      "id": "lsp/fix-history/module-route-extensions-2590",
-      "commit": "9cbec2ba41b4aa5dae7a7ce020f6cd8a0874543a",
-      "case": "module-route-extensions-2590/case.json",
-      "sha256": "9db286fa179c73391849f8427f303a658a0c2fa4e8d9c527d8b07c41f7a4c1ee",
-      "expectedSha256": "0478d5d5fe26f8c4259a892c66c39e33613aa90c12d9b153c9a4205f4705d9dc"
-    },
-    {
       "id": "lsp/fix-history/monorepo-deferred-open-diagnostics-7280",
       "commit": "c5eea8eed6cf316aaa6ff6daa9e2dabd47a13165",
       "case": "monorepo-deferred-open-diagnostics-7280/case.json",
       "sha256": "cb0a2f7114546f1d4dceccee91e896660156581443872014eacc7e7858d5aa31",
       "expectedSha256": "cb6951840ce05800c15fb1eccb7c95579f6387d2de65b302d25694b81645bfda"
-    },
-    {
-      "id": "lsp/fix-history/native-element-hover-2547",
-      "commit": "6e920da1b4330ba92070099cf687d6cc76aae128",
-      "case": "native-element-hover-2547/case.json",
-      "sha256": "e5ad9d2bd0fa0a78b3873ba4cb781f0e6d0c6d4f726266bec4bdc65224324cf3",
-      "expectedSha256": "dfe6173438c660c1d5719363b6dde7582436fa13f905ba955f1ce056ddf26898"
     },
     {
       "id": "lsp/fix-history/native-quick-fix-exact-edits-crlf-6254",
@@ -897,97 +204,6 @@
       "case": "native-quick-fix-exact-edits-inline-6254/case.json",
       "sha256": "12c752faf152390005933d73a39d1809848db047a008c4bb9eca78875d564b41",
       "expectedSha256": "00184fc8b5f7e30636171c957d22071585d5dce5e797e01b7335b785f2639642"
-    },
-    {
-      "id": "lsp/fix-history/native-template-navigation-2558",
-      "commit": "7794b09d8ec9c73103b469d66778150be0385ec5",
-      "case": "native-template-navigation-2558/case.json",
-      "sha256": "c762810a4357c78b546dffc1e3e761a5bb2a7de4cbc400acc2e594b3cefa137b",
-      "expectedSha256": "8fc3e2af6546824641d7a99733536a4b33cf02139dded13dca89d0b3f61900e0"
-    },
-    {
-      "id": "lsp/fix-history/non-ref-member-access-703",
-      "commit": "d3c8f650b4f2fe5a2fc9e40cef79f682e503c52b",
-      "case": "non-ref-member-access-703/case.json",
-      "sha256": "a559e848d65e692f9e24ec7348324c5a18b082c059022b3aaf902c6c5067a008",
-      "expectedSha256": "52c77a2bb77124d720061f385d7c4910510cc4d3479c27dec3fca5eb934162b1"
-    },
-    {
-      "id": "lsp/fix-history/nuxt-aliases-before-generated-config-4573",
-      "commit": "44a0d4a51b5cc78cd96d1ad0c5d2aed259d73082",
-      "case": "nuxt-aliases-before-generated-config-4573/case.json",
-      "sha256": "3be5b9fa60698cce951b324a4e5cba2adc14be204db940e3165311bd3e8f011a",
-      "expectedSha256": "32c9e1bcb98d4b242243b54db56b8e47918d0c363b116968434efe5112814b6b"
-    },
-    {
-      "id": "lsp/fix-history/nuxt-ambient-declarations-3016",
-      "commit": "1dda271d36a977f1965088fecd841145e6a6d36d",
-      "case": "nuxt-ambient-declarations-3016/case.json",
-      "sha256": "13afc974e32f24c545c1ca63f77c84d04ba85ab2b35db0148e23691d4c7c4039",
-      "expectedSha256": "ca556cfd9ed84a222f677230e191d6ba03a92c9a3e7ad6b631dd5d06a41cb352"
-    },
-    {
-      "id": "lsp/fix-history/object-legacy-attributes-2575",
-      "commit": "9df4084d411184201584d90d4fe090a42c4103b8",
-      "case": "object-legacy-attributes-2575/case.json",
-      "sha256": "d5ade8384b3c67bf80c4feff981da37966711b1eba682fcf0e01940ad09ef117",
-      "expectedSha256": "86395fe567de52a3506d12c4e5fad35f66e5b4996819051280b0924b6cc76dd5"
-    },
-    {
-      "id": "lsp/fix-history/on-disk-vue-lifecycle-3816",
-      "commit": "9fceff289e3feaeb92449cebb40c291e6989a71a",
-      "case": "on-disk-vue-lifecycle-3816/case.json",
-      "sha256": "07210eeb042e5ad8b96dd17f10d1f5c9f22d6b5b2c023c0eb5dcb9720ba7afad",
-      "expectedSha256": "c77eb0dda8e3f131a1b6d84953231cfd5e9b167ec0a1f7666e3f0c8445fbc06a"
-    },
-    {
-      "id": "lsp/fix-history/open-buffer-prop-completion-2908",
-      "commit": "836e2b94ad77242a87bf773ed597a4b3fc1287f0",
-      "case": "open-buffer-prop-completion-2908/case.json",
-      "sha256": "efb18f1f3a16390163c30c662d98a2cf7d2776e626c03cff3f8a3f7e6b73449f",
-      "expectedSha256": "bf2156c6ce69f5bc01fe78269111b8137d8c2af5429cd1fc59267e06b5cbef69"
-    },
-    {
-      "id": "lsp/fix-history/package-export-conditions-blocked",
-      "commit": "d01f6b1d7384cd296eb3d87ec3750c7db1616c93",
-      "case": "package-export-conditions-blocked/case.json",
-      "sha256": "cc9f11d68e2627c021195e3ba389db6e9f9fc4b6768e9199101788b3bc24a278",
-      "expectedSha256": "fad864fbbc8e6c38bcb858dccad6ad1f160f83c3fa6efd5f87201c87612724aa"
-    },
-    {
-      "id": "lsp/fix-history/package-export-conditions-longest-prefix",
-      "commit": "d01f6b1d7384cd296eb3d87ec3750c7db1616c93",
-      "case": "package-export-conditions-longest-prefix/case.json",
-      "sha256": "4405d89dc9a611543c193b640530bdd097d8046f711b8a8faa3e36f62de1fe5a",
-      "expectedSha256": "c9783cc6d743be832e7790cdcec7029753eb8d2a9eb5ebbf8673771c5b1d214f"
-    },
-    {
-      "id": "lsp/fix-history/package-export-dependents",
-      "commit": "542cfd95c3208478acc4d38f3528f75ff09525bb",
-      "case": "package-export-dependents/case.json",
-      "sha256": "59a93c32f6232f8d0d0e9c80c7db4de8a5dc4afd51c94ffa17eb9ddad3791db3",
-      "expectedSha256": "6eb5e12d6a0ecac3dac12f0799e4ee038b850b17058291484c0f60d29d746f5e"
-    },
-    {
-      "id": "lsp/fix-history/package-identity-per-importer-4137",
-      "commit": "fa66155b296d9011b98c7855a9024dd6abc3f641",
-      "case": "package-identity-per-importer-4137/case.json",
-      "sha256": "b5aab09c29d25b7471e5a6f580ad211e6dea76b099a6db77946756bf6c966932",
-      "expectedSha256": "effbacc03c72f75a34735bf4a3e8d883f8934262428db7d53a01eb63843e3135"
-    },
-    {
-      "id": "lsp/fix-history/package-import-array-fallback",
-      "commit": "67c4b310ff3c7435cd320e7cd286054801066a73",
-      "case": "package-import-array-fallback/case.json",
-      "sha256": "9eb69179790a908e589e17422599005738061588e2e573c70f9c142fa15ee650",
-      "expectedSha256": "54ec3009377e6ab432317f1dc75a116e6c59d1f209734c9bc929b085f877df2e"
-    },
-    {
-      "id": "lsp/fix-history/package-import-definitions-3001",
-      "commit": "48ed58698766af52d664c4da876b9a18d3a5b256",
-      "case": "package-import-definitions-3001/case.json",
-      "sha256": "d79dd986212004f6d7204e312855f880effa9fc427c86eb14e623d65532ade2d",
-      "expectedSha256": "058b9434048c233672104441555bd61e633f6452cacf24be71557419871e5dc5"
     },
     {
       "id": "lsp/fix-history/panic-free-completion-inlay-selection",
@@ -1025,20 +241,6 @@
       "expectedSha256": "31e6a5eaf0849bf9575660cf904cce282d1d38c782de5ea631bf8ab9dd7c47c1"
     },
     {
-      "id": "lsp/fix-history/parse-errors-suppress-types-286",
-      "commit": "2a2b08f909d13831025d2f6f7c1891969e3ad0fc",
-      "case": "parse-errors-suppress-types-286/case.json",
-      "sha256": "f53be2a886cdea2d98dd3533360d3fea32d51b4d2b8b77e0ee884785b08e9a6c",
-      "expectedSha256": "f7cb73dfa9a33f4b26b2af11b2194bf1b7ee7a152a689e08069e66077b8cf34c"
-    },
-    {
-      "id": "lsp/fix-history/paths-baseurl-barrels-3922",
-      "commit": "ac1b99f8c231f52f62d9efb69a3a7f4f038f82aa",
-      "case": "paths-baseurl-barrels-3922/case.json",
-      "sha256": "092a93234db0146a0e19600dcc92c214496c9fb639852b7af4e28d2d21a62a0a",
-      "expectedSha256": "1289837a30bb366557fc05b8072d49a4eb913223de7a7f54fc7f86a77e0737e2"
-    },
-    {
       "id": "lsp/fix-history/patterned-template-identity-6207",
       "commit": "8fd82f7e75d5eea334e767303fe762948b77c067",
       "case": "patterned-template-identity-6207/case.json",
@@ -1051,13 +253,6 @@
       "case": "plain-script-typecheck-7061/case.json",
       "sha256": "9718ed9dca3316982a0c830fec00dce171b64c4918de309322c270cea4622cd8",
       "expectedSha256": "cc3c77a04c0845c3b5f7f6bc27822f6e7e931719c09ca37d7dcc9079ab10c489"
-    },
-    {
-      "id": "lsp/fix-history/plain-text-navigation-310",
-      "commit": "24ef6e14324be9c7e2025b8f8317d1c1dbefdd9c",
-      "case": "plain-text-navigation-310/case.json",
-      "sha256": "9b2263c05998fcc111def0a72dfc72800ad6908ef3053ae5563dcbe8415885f4",
-      "expectedSha256": "b01654ac6d0a1e2829538c09933d8d8ce3b3ca394147a3d1685e8a8a6a3d2d62"
     },
     {
       "id": "lsp/fix-history/project-call-hierarchy-6272",
@@ -1074,83 +269,6 @@
       "expectedSha256": "04b185ece4d48e7aa755d2466f9cace0fce8cfbc55964aa3b90e0a72553f3696"
     },
     {
-      "id": "lsp/fix-history/prop-hover-metadata-2550",
-      "commit": "230d5908ee89bbc85fcd127e89c404f41d2c0229",
-      "case": "prop-hover-metadata-2550/case.json",
-      "sha256": "e89fd108cf34089775ffd069b57e7edac7ca0e61f4def1f1ec62f9623c65e725",
-      "expectedSha256": "c368047c2c5ddade6caba8bae483a90b04c558808f4612d7ce875a0f1e8cbe4e"
-    },
-    {
-      "id": "lsp/fix-history/prop-inlay-hints-code-only-3212",
-      "commit": "aec607d66fb51ad50769c0b571b38e186eb832eb",
-      "case": "prop-inlay-hints-code-only-3212/case.json",
-      "sha256": "b8f5596f36c596ebee03bb7901e9ecb6f4630e390d3596025efa6a850fa3d03b",
-      "expectedSha256": "e51e1a9f5b29ee13a24466107ad4ea62af7899a152bd7a7a60d3e06e548424e7"
-    },
-    {
-      "id": "lsp/fix-history/props-destructure-default-anchor-750",
-      "commit": "7b821f8d0c46c56ab48d0a954def515a9219838e",
-      "case": "props-destructure-default-anchor-750/case.json",
-      "sha256": "67d9b16843bdf013201e7e9ed2fbb2ed224617a669e37a9927691cdbe25c7793",
-      "expectedSha256": "3a003a11dd5d71fe8f6c26cd7812208289900d351c1f1344ee3ae75b344ce74a"
-    },
-    {
-      "id": "lsp/fix-history/reactive-bindings-listed-once-746",
-      "commit": "6951435b8399486326e749fecb305d32bfa48acb",
-      "case": "reactive-bindings-listed-once-746/case.json",
-      "sha256": "9228d9384d2cf953b17917c619dfd391507d15898003ac8b4ca438ae9317b2f5",
-      "expectedSha256": "5542197a4bce15a3c8d25fa21ae3451c7f14559987148afd68b4efc5279b2baf"
-    },
-    {
-      "id": "lsp/fix-history/reexported-component-hovers-4615",
-      "commit": "00cc1157abb20d7de41cf73163e6c1aa8657aaa0",
-      "case": "reexported-component-hovers-4615/case.json",
-      "sha256": "71f08272d7b1ac19c3c91579a22668b18d165bbe5e6afa7c882110d1ccf758b9",
-      "expectedSha256": "507a3abbce86592046110f53a2704bb11f11ec6f3d0c438bb382116d54a8e236"
-    },
-    {
-      "id": "lsp/fix-history/reexported-component-navigation-4611",
-      "commit": "59767e4ee006d5211718aae515a7d124a9e4ecc0",
-      "case": "reexported-component-navigation-4611/case.json",
-      "sha256": "557e90b196df6d91f695ee483545cdec6844879991fb744f7da58a1b0abdb2d0",
-      "expectedSha256": "560744b35b3e13b280827df57426b00712e8b3e93779529e3d2dc3e29cc4dce2"
-    },
-    {
-      "id": "lsp/fix-history/reexported-prop-hover",
-      "commit": "f5d9d1ba2726ce67f2b23a73658f5d5afbc21ee1",
-      "case": "reexported-prop-hover/case.json",
-      "sha256": "07a938a75227ac14a0d7b8ea2ab09f70bc35f8a766a7fa164ded8efd9ea5498f",
-      "expectedSha256": "d6ea609fe43ac4011a9eb18272df66d9e11bae4f13671affcbec0b665e4a60b5"
-    },
-    {
-      "id": "lsp/fix-history/references-authored-ranges-3333",
-      "commit": "a8f48a1264dcb5636b2b2dfb2b1dbcc3691a2f5a",
-      "case": "references-authored-ranges-3333/case.json",
-      "sha256": "b53474ea2e8e3218d639db761c0b2de3e05d0a1d16248dc5febefbf682fa3840",
-      "expectedSha256": "d9c249833c89a02d211197eabfaeea53ae711d7264c10ce48bf55b6a1c29d66c"
-    },
-    {
-      "id": "lsp/fix-history/regex-literal-identifiers-314",
-      "commit": "d4237c13e1674d45d50772b0ad9c5707cfbbc4ec",
-      "case": "regex-literal-identifiers-314/case.json",
-      "sha256": "ce4a3896262bbe58dda47e5c10a59b79aa20bed3d64a60e71035a0e10e6f661b",
-      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
-    },
-    {
-      "id": "lsp/fix-history/relative-ts-overlay-types",
-      "commit": "0ab76785e1d310d32183cf963af51dff07556b59",
-      "case": "relative-ts-overlay-types/case.json",
-      "sha256": "8ba37d4896c44595da0f573216ce8e7d7b31cdeb61c841fb3d36ad762e02a427",
-      "expectedSha256": "58fc25d498ec4842eb8ce02e5f15602a36ca6ec66a3869d984ffeab6700bbcf4"
-    },
-    {
-      "id": "lsp/fix-history/relative-vue-imports-editor-session-755",
-      "commit": "1197c785f5172c325be4b907f8af09da38356475",
-      "case": "relative-vue-imports-editor-session-755/case.json",
-      "sha256": "e07f1821d28f8e0523f0842e5d5f62db8864aedb077c0c305291b43cda8c36ba",
-      "expectedSha256": "e2bc5730f1fce3472dd19e8ec696d958e512f8268fb7ccc85ef65200e04ecf98"
-    },
-    {
       "id": "lsp/fix-history/resident-ecosystem-diagnostics-6398",
       "commit": "a75c629c5c948885f7ffe2216f044a1a6c5e2851",
       "case": "resident-ecosystem-diagnostics-6398/case.json",
@@ -1163,13 +281,6 @@
       "case": "resident-typed-code-actions-6396/case.json",
       "sha256": "b33122938529bf0f45055f6561c588ab7a3dd4764f409074afad24b78e7e1420",
       "expectedSha256": "c769d07e95288cf4f591b56f0d14abf0f32e53d438a6948fcf74f7446b36ea44"
-    },
-    {
-      "id": "lsp/fix-history/runtime-workspace-folders-3805",
-      "commit": "7bebef6ef5275652bdf4bcf54474f89f608f1678",
-      "case": "runtime-workspace-folders-3805/case.json",
-      "sha256": "39d854eca9ea43de384af1a7ac73982456f13016c0f119518bcc8a6fdbf55e17",
-      "expectedSha256": "489e2dc2bf8702cdb1ee6b23b64e9caedc6a78fd907c8dbf036cb6b7b36b73ca"
     },
     {
       "id": "lsp/fix-history/scoped-lint-rules-ignores-7113",
@@ -1193,27 +304,6 @@
       "expectedSha256": "68504fac242d7477d6e0f9e350f0f4845e0501c80a49822247ac65e506d7738d"
     },
     {
-      "id": "lsp/fix-history/script-parse-diagnostics-template-308",
-      "commit": "dadba8c5df2ac90a3a1e982208d8e8ae899d77c6",
-      "case": "script-parse-diagnostics-template-308/case.json",
-      "sha256": "f5796fdf0cc22dd46126efe1e91032be2505dacf21985af2bf9792d4f9611d34",
-      "expectedSha256": "95cc13cc054fbf7639b1929ec7c1ad7f1fcd6663e5fdc16cb90c7aba1109b1e5"
-    },
-    {
-      "id": "lsp/fix-history/script-parse-diagnostics-ts-308",
-      "commit": "dadba8c5df2ac90a3a1e982208d8e8ae899d77c6",
-      "case": "script-parse-diagnostics-ts-308/case.json",
-      "sha256": "ba5f85cd9cad539d9db68f2633fcc5da5759e2874eb1dd571e6e4fb9578ab5a4",
-      "expectedSha256": "a538858b25724e243e333e3cbaa659be07223102405d883bc9cec34b42ec2765"
-    },
-    {
-      "id": "lsp/fix-history/script-parse-diagnostics-tsx-308",
-      "commit": "dadba8c5df2ac90a3a1e982208d8e8ae899d77c6",
-      "case": "script-parse-diagnostics-tsx-308/case.json",
-      "sha256": "8070681f49454732508291ec8fb56d4bc34d1f1b44476f6b13118a9f2995007f",
-      "expectedSha256": "6d2b71b27c7366f691197812d880880f18f8030d719709f406c3662fadaa307f"
-    },
-    {
       "id": "lsp/fix-history/script-unicode-navigation-7060",
       "commit": "370caeafee07cec57e78a7b0c75569b299ccd160",
       "case": "script-unicode-navigation-7060/case.json",
@@ -1221,116 +311,11 @@
       "expectedSha256": "9447e1eff3dd750eae3761a87d1a1eadaa7c81eda46eeff46638a3034b96852c"
     },
     {
-      "id": "lsp/fix-history/semantic-script-bindings-2794",
-      "commit": "a8caf919aef4dc2a52f9735d146c2fd018a45636",
-      "case": "semantic-script-bindings-2794/case.json",
-      "sha256": "53e8e73a36db60d90fd6ad0c4639c4fa5d07698515f9d113fec12c0bdaa8ec99",
-      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
-    },
-    {
-      "id": "lsp/fix-history/setup-local-macro-references-3074",
-      "commit": "0f835fead61e71a3efb6cdcdbf84b5fa38121cbd",
-      "case": "setup-local-macro-references-3074/case.json",
-      "sha256": "32a2e7712672c5aaf46fbbb9c65838a8038221c43c77008d322438fa6d5f3b55",
-      "expectedSha256": "193198bc62e958b5f1b1572dac661c7ce5f116f82a3e29f615f3fc0555aa8cac"
-    },
-    {
-      "id": "lsp/fix-history/sfc-compile-diagnostics-675",
-      "commit": "e957538964a4b570e2cdef3a2370c75e41bd28e5",
-      "case": "sfc-compile-diagnostics-675/case.json",
-      "sha256": "d27add9b13ac57f8759fbc0f21ce0b70d437ee2e86c23d053ed11cb90f54e3c8",
-      "expectedSha256": "bc158920bb9e5606f3e39ced85752f76e566082c16456661abf697f10ad7c6e1"
-    },
-    {
-      "id": "lsp/fix-history/sfc-element-order-4229",
-      "commit": "4a6d20cd9f5b59f80b3c9c1d3bafc97fbac72a09",
-      "case": "sfc-element-order-4229/case.json",
-      "sha256": "3b75d8d954f9391103e95ffccf84354fd019f348d08b87a90fc03ac93a48abcf",
-      "expectedSha256": "bddb338fce04c4ffb6050f61ae9d90080112c0fc3c07bbceb43459cbd19b2925"
-    },
-    {
-      "id": "lsp/fix-history/sfc-lint-diagnostics-324",
-      "commit": "df2044e5c2383838672f03c6bb4d9301a394d250",
-      "case": "sfc-lint-diagnostics-324/case.json",
-      "sha256": "1d7b23b170608cafc9b73ddf3a684b0e07c8749c3ba78180bd5105f4b9e3a743",
-      "expectedSha256": "fb0e9c8ba9f0c45c692703a35e1346c342c7746754d57b488dcc1ec4ea5535da"
-    },
-    {
-      "id": "lsp/fix-history/sfc-resource-file-renames-2670",
-      "commit": "df512303bbea4ee354dea25179b54ddf145e85b0",
-      "case": "sfc-resource-file-renames-2670/case.json",
-      "sha256": "86223566733d345d3ed172e35b600e8d465a4d953ed56007976d2c17e48a4017",
-      "expectedSha256": "9d43980876b72e045b6cc77e1d96f6008c6d9d15ef0ee18880fae2066bc70277"
-    },
-    {
-      "id": "lsp/fix-history/shared-canon-generator",
-      "commit": "59134d67b93e3624c71bbc4e2d8600f54a8d7653",
-      "case": "shared-canon-generator/case.json",
-      "sha256": "0f378647b6be35bb966682cefb694a0441b0287e43961ca5409adb57bf7a9ff5",
-      "expectedSha256": "49f4ff05e3871ba2632318bce000c7c3a82440c0ac99b8b8cf705496bf5106d4"
-    },
-    {
-      "id": "lsp/fix-history/shared-session-dependency-invalidation",
-      "commit": "2b56b13edcce4c485cbee8f652f9cd538f8afda2",
-      "case": "shared-session-dependency-invalidation/case.json",
-      "sha256": "679d57666958f5b7eed8d499c9271a0c3e03138f80599ed2ae40fe3099e4b2a6",
-      "expectedSha256": "f0832ef1ae7129b465faf76f2bff23f40b6317539758a83d8b1025631ad4575e"
-    },
-    {
-      "id": "lsp/fix-history/slot-outlet-payload-names-5005",
-      "commit": "b1b030fc945383564c0cf2699700a0047e29c989",
-      "case": "slot-outlet-payload-names-5005/case.json",
-      "sha256": "639a80a99841be751f86dc02e6a50c6c9b5a540e7bf0cf06bc2d4cea42169852",
-      "expectedSha256": "ad89065f01683875c43d4fa5400116955e3b245f646ee674dc56b020c5844278"
-    },
-    {
       "id": "lsp/fix-history/split-script-checker-6403",
       "commit": "beb84df46db611f6bf017fa6803af8cf84e6d59e",
       "case": "split-script-checker-6403/case.json",
       "sha256": "5c3c320459f755b4aab9ce2ff35a28325ee23c14eb0cb8edd6d088e5f2f5d7e2",
       "expectedSha256": "5a3154d3311fc3ff4fa3d4d9cf68ac883eceeaac244c945d030b67b12e27179b"
-    },
-    {
-      "id": "lsp/fix-history/stale-virtual-docs-298",
-      "commit": "37d049a2e18a6e1431fd298563453e7602f385ee",
-      "case": "stale-virtual-docs-298/case.json",
-      "sha256": "1c730c9d118143c9cf1006ab7c3a78a70c584259273b273f545836ae353d5af5",
-      "expectedSha256": "e8386e2b5dc80408833a163d176a2d0d7d2edeea806e8ae2f548d0261e9ab51f"
-    },
-    {
-      "id": "lsp/fix-history/standalone-html-formatting-1427",
-      "commit": "5b66e8861d773eda8bccd9b6683574ac731927bf",
-      "case": "standalone-html-formatting-1427/case.json",
-      "sha256": "b8191f0dbe201fdc83c66fc7fdd98093447804fd3f6c280caeebee62144067c8",
-      "expectedSha256": "c484d5a241d30a7068eda42fa71c0f268255a7802a57cafc7058f6bc20e2c4e4"
-    },
-    {
-      "id": "lsp/fix-history/static-template-ref-navigation",
-      "commit": "bdca84dd4b771acf0c5c535108f4d6d63ee1c9f4",
-      "case": "static-template-ref-navigation/case.json",
-      "sha256": "d3da95dc9e88f2fb7855efad3f86c00ec87863520a89faf693634d6977c1c606",
-      "expectedSha256": "f9e79bdd2ea098be20b1ce520c9125f610c99c4d8c6fbfc980ec6a27a159e476"
-    },
-    {
-      "id": "lsp/fix-history/structural-references-without-checker-4574",
-      "commit": "370332bd613c94fdba44d2d5687294437fd6a20c",
-      "case": "structural-references-without-checker-4574/case.json",
-      "sha256": "0439c060420a62db2f820711367b2e6c07b9e9f9725635daee0c33c1856e444a",
-      "expectedSha256": "8df1bf6258245025a8bb0058981f6daf6589335b8458aedf70e1a5ff60f914b1"
-    },
-    {
-      "id": "lsp/fix-history/svg-dom-attribute-mappings-2563",
-      "commit": "2ef58bb59aebd84bd69da6c32ded77a790ba76c2",
-      "case": "svg-dom-attribute-mappings-2563/case.json",
-      "sha256": "baf5fa3fb4f3667df6da8c344721d604ee26b9f98539f8840977da5efd16725e",
-      "expectedSha256": "55fe3bfb86da586d489bbba10380d2872b787c62a22a81661eb74a6690f2f8dc"
-    },
-    {
-      "id": "lsp/fix-history/table-legacy-attributes-2574",
-      "commit": "b82ac6f12f5932a282e451c7973e688b9a338dcd",
-      "case": "table-legacy-attributes-2574/case.json",
-      "sha256": "d9818b8e91d07c6ef2d88739e680b1c6753246651b7896fabdf92f65eea87757",
-      "expectedSha256": "13b0aa04cc7bab7aaf4311b168a2f544389f4ad80a605bf5fcce9a05e979dbc6"
     },
     {
       "id": "lsp/fix-history/tc-batch-diagnostic-subspan-mapping-3201-bound-call-matches-prop",
@@ -2138,46 +1123,11 @@
       "expectedSha256": "37147ae0d523802b21c45c29d11a8e274a758eea433f360b2bd500975891ef91"
     },
     {
-      "id": "lsp/fix-history/template-component-props-2221",
-      "commit": "1d21728c43103aff81708279db4a9be6553eb248",
-      "case": "template-component-props-2221/case.json",
-      "sha256": "c2de40c42190fe59189a5b3b1ffd7c611acd6678257b70bb5df81da0b4a8139c",
-      "expectedSha256": "2c35be560b82a558061a2e3303b2bb16bea7efc66b81be7591ae9dd8f1b62113"
-    },
-    {
-      "id": "lsp/fix-history/template-less-sfc-imports",
-      "commit": "41084ab94e2a6d747d0418427bdd269b851b3016",
-      "case": "template-less-sfc-imports/case.json",
-      "sha256": "5303c0d44bc23f2606a6a2c892603e97bf4d3fdbe1a50e4625ae209809f21104",
-      "expectedSha256": "54c2d9258b4c3a793fe50c4fb141fce537a630dcb9408f46d6dee299c66a80dd"
-    },
-    {
       "id": "lsp/fix-history/template-macro-props-dedupe-7087",
       "commit": "8e9ca8de9065ea6a896b6c832edf8dfe849d08a4",
       "case": "template-macro-props-dedupe-7087/case.json",
       "sha256": "aa915043c60d500b3830a154a987e27f2efa26784fc5732c7f6c7658c3365d1a",
       "expectedSha256": "2ab494316906944f2a109bcad5102baee3b7ef42ec11cf9dc9b25a9ba180b759"
-    },
-    {
-      "id": "lsp/fix-history/template-member-completion-checker-3913",
-      "commit": "5674c0937e07f67bf819b3f2b63d999ed9647e97",
-      "case": "template-member-completion-checker-3913/case.json",
-      "sha256": "70da27a429a42a7734782de44dfe1671ad4e3a1fedcaa91bb8c2d7ad3b16e3b2",
-      "expectedSha256": "df09d57da35a073b879c92e337bc568aea9a753725fd04b6ac01203a58ce5f9d"
-    },
-    {
-      "id": "lsp/fix-history/template-metadata-false-positives",
-      "commit": "e6ae950c1e7c595db5ff43960cab6b3f9a71a207",
-      "case": "template-metadata-false-positives/case.json",
-      "sha256": "58a85c500368bf12b696f35f80e640c72b78000db7519d1e1c357280787670ad",
-      "expectedSha256": "98ca65b7d4729d19e20b0f076c44832f948032741701ef1b645dc45af944a9e4"
-    },
-    {
-      "id": "lsp/fix-history/template-parser-utf16-columns-988",
-      "commit": "81b0c40c87bf5a1cf39258ffeec2a0baae6a81cf",
-      "case": "template-parser-utf16-columns-988/case.json",
-      "sha256": "f167cb2e465406381fff9ed79c03ca331fc0d449cca7cd5ec14587f217e46e6f",
-      "expectedSha256": "a5471001538c5eb88e615f7294aa8d87add00350e972b06c5c5a097013f7995e"
     },
     {
       "id": "lsp/fix-history/template-unicode-semantic-tokens-7057",
@@ -2201,130 +1151,11 @@
       "expectedSha256": "cea9a224d49f5b383881b0b7e10fff09878366bdebd64aa4d8fa439fe5e73ed4"
     },
     {
-      "id": "lsp/fix-history/type-definition-gated-on-typecheck-5730",
-      "commit": "c0769cc9857c2099c4b311e3240a0181c2946542",
-      "case": "type-definition-gated-on-typecheck-5730/case.json",
-      "sha256": "b185eb5986f50a86c8a4d1b51f2bd66d53139bff9aeac9e9cc07bbd5a3fce5b5",
-      "expectedSha256": "f4ff6863fc21bd5e21a58be80ed7622304e2031dc8f2ace561f4240d8162a032"
-    },
-    {
-      "id": "lsp/fix-history/type-definition-with-typecheck-5730",
-      "commit": "c0769cc9857c2099c4b311e3240a0181c2946542",
-      "case": "type-definition-with-typecheck-5730/case.json",
-      "sha256": "2335cb986f5c5636eeaf7170c248bf46a13f933d9aad37af00b2cffe0127d624",
-      "expectedSha256": "1812866b171dad86e99c01ef8ebe863c93c1674d6c09aa2baadb08e84290e1d4"
-    },
-    {
-      "id": "lsp/fix-history/typecheck-unavailable-guidance-5551",
-      "commit": "c7c1af64c4929c35aae6c0df33affb549a82624a",
-      "case": "typecheck-unavailable-guidance-5551/case.json",
-      "sha256": "54cb547748d053c5c7f67a3d435ad40052e2c3516126dc7fa0fa4e71acf596e9",
-      "expectedSha256": "f75e1efe1b89baa8b81314cd04e897d22c7ed4d6d0873b2961827683db616d2b"
-    },
-    {
       "id": "lsp/fix-history/unicode-diagnostic-logging-6198",
       "commit": "7413782f199fa228b1155c3e9398cb68d55f8d15",
       "case": "unicode-diagnostic-logging-6198/case.json",
       "sha256": "1a605a031971035ea13fde7fcbf35597fc173af30d9c826a737482b8b4771b66",
       "expectedSha256": "6142f212ae246ab39f8d5194456523bb8be8f16a73d925722a66af1497e2643c"
-    },
-    {
-      "id": "lsp/fix-history/unicode-member-access-3920",
-      "commit": "d3ea28fa51184470bb528453450f78741c20a578",
-      "case": "unicode-member-access-3920/case.json",
-      "sha256": "c10b45559e6d30787628e094543c18aa8eda2be1f5bb229efbfcec0604e07b80",
-      "expectedSha256": "c43dafac713d240e663cf8ea7e20b2476ca5b37d5d1843fee78baf526fdb12a9"
-    },
-    {
-      "id": "lsp/fix-history/unknown-reactive-fallbacks-618",
-      "commit": "84ad16ca4d099ecd589934d7bd7916d5d9ffad53",
-      "case": "unknown-reactive-fallbacks-618/case.json",
-      "sha256": "281cba46f0ed13dbf49b8bd0444e0f9ddf6a6221af4c9464461a41d383836ac3",
-      "expectedSha256": "362a87cdeee3609c60124ec7e849d33bc92c9bdeac2245ad18af97cca378e3b0"
-    },
-    {
-      "id": "lsp/fix-history/unmapped-html-tags-2566",
-      "commit": "7d3ba9902cbd62c5133f18ba9b4f26d7a71b5764",
-      "case": "unmapped-html-tags-2566/case.json",
-      "sha256": "212e723101ef2ead3ce9716756cc33bf37a71cb2b522a8b234baac218e8be2c3",
-      "expectedSha256": "25f2c614e3cd3175c1eb51ea9a9c9c43e74de283d273edc5ab83a243a1e69b4c"
-    },
-    {
-      "id": "lsp/fix-history/unmapped-svg-tags-2567",
-      "commit": "7befb93640c8d6089ec6aae67aff7ecd5b4e1ee4",
-      "case": "unmapped-svg-tags-2567/case.json",
-      "sha256": "13543322d9c55ab4a7a5ff41ce6d689d035d22c68de424de29b9f65d71b22050",
-      "expectedSha256": "9366e223c7f7dd564d9d535d732b84654ee0691358b4755ba8dd831469d96f39"
-    },
-    {
-      "id": "lsp/fix-history/utf16-navigation-semantic-tokens-367",
-      "commit": "8b3deb24cc89ec63ce5273aeecc8827b39c67a5c",
-      "case": "utf16-navigation-semantic-tokens-367/case.json",
-      "sha256": "ccb3df875e6ee06e784d1e001fdeb347c5c7c83968d8f8900e6c596a1032c149",
-      "expectedSha256": "d4d1e1271c60a192bbd558d0134ac2d6a05e7fc888decec5f288da6d1596e350"
-    },
-    {
-      "id": "lsp/fix-history/utf16-request-positions-331",
-      "commit": "0f38177dd9ba5390c62a762c4e708805029d38d2",
-      "case": "utf16-request-positions-331/case.json",
-      "sha256": "5afa49e1b50120f7b76ebe1045aada19de0919bb3a7b02702ef0504f385fa355",
-      "expectedSha256": "87f6459b9c43a0281495e1c9578d718e41ef7ebf55c6342ff791a1fc5b2184f0"
-    },
-    {
-      "id": "lsp/fix-history/v-for-scope-hovers-4629",
-      "commit": "f5195c55285b5986e8c5f19b8cfca1f390888b6d",
-      "case": "v-for-scope-hovers-4629/case.json",
-      "sha256": "87d829a1ece92b747173f1dbdea27049a45c4310bf5d6264c310adb2f1154e3e",
-      "expectedSha256": "2aefa4fec53db93abadc29a33c216295d3ba83c4e006e9d42ee500abc1157837"
-    },
-    {
-      "id": "lsp/fix-history/v-slot-scope-hovers",
-      "commit": "9cf96648ddacfb588eae28c9401dc6c5ed4570e3",
-      "case": "v-slot-scope-hovers/case.json",
-      "sha256": "6459f0dc218312c577e4b284059d3ef43b6ccc37d71f88a7d1929747e550b068",
-      "expectedSha256": "16d38e15fc15f847fd671634582039c0b9cdce6dc10ab37ca80c8600a539b84f"
-    },
-    {
-      "id": "lsp/fix-history/versioned-diagnostic-publishes-395",
-      "commit": "37d8e8e24e0a44ac251389d0a719d88477cd81f9",
-      "case": "versioned-diagnostic-publishes-395/case.json",
-      "sha256": "78e67bdbfdadf350e0b91896f4f03e36ea8401f19e865906ebfc44fa79a2cc99",
-      "expectedSha256": "8cfab75f198712dd769acb9ccc6249d324a1150697943f05a866eddd2a8d18c7"
-    },
-    {
-      "id": "lsp/fix-history/virtual-doc-snapshots-3429",
-      "commit": "e23b4d234ea053de78718229febc0920c43b163e",
-      "case": "virtual-doc-snapshots-3429/case.json",
-      "sha256": "7fd05586008ab090459a1c8d00a7d4c7ffe9357383d7a3b4eef7cffb604e4008",
-      "expectedSha256": "7cde7c215b80a23c6b2220df751641181bfbb4b8120f8923f4c86d2ce2edff86"
-    },
-    {
-      "id": "lsp/fix-history/virtual-import-suffixes-2234",
-      "commit": "8e424b91ac3fa4a8832907836ce4c3db2f20563c",
-      "case": "virtual-import-suffixes-2234/case.json",
-      "sha256": "673099b9ab01c70b714f77c61aa0997768b55552d7ccc7ae5c4f49c214ec2314",
-      "expectedSha256": "d22c78bff535ec76a985378b9590d0ec49c09eaeb33cf1633b4751a676fe450c"
-    },
-    {
-      "id": "lsp/fix-history/vitepress-declaration-refresh-3017",
-      "commit": "0a47371487f584b71c27eb5d43250367c388ea2a",
-      "case": "vitepress-declaration-refresh-3017/case.json",
-      "sha256": "60e3bb043d096c6e797a8d6d074047d12b9506541f744dc34b3cfff6bea35a29",
-      "expectedSha256": "5b9df658539515cfaf0a62d8c29818f0f807098f457128f175bc6a2283fdbaba"
-    },
-    {
-      "id": "lsp/fix-history/vue-authoring-support-2642",
-      "commit": "23ab8ad05731d7100207337730e75d2bf6a09dd0",
-      "case": "vue-authoring-support-2642/case.json",
-      "sha256": "37c40afbb8bc5ac648459a4a1d0b3dae0019edbf28c7232c930158f5dc70b19d",
-      "expectedSha256": "c2e1a7aebcc246ba30e1cb64020c507de05620fbbdec486ef170a1fe90191266"
-    },
-    {
-      "id": "lsp/fix-history/vue-import-contract-hovers",
-      "commit": "119a5d69d33afeb0d753e9b241e7d284a6f771bf",
-      "case": "vue-import-contract-hovers/case.json",
-      "sha256": "b906fcfc18869d36d43ff8d1fa61f71eeea4b4916512ee1a16eb1f091793e617",
-      "expectedSha256": "5591cfbfd1e064050f11ab0655b4cdadfd91238b131b749945f17e8867b14904"
     },
     {
       "id": "lsp/fix-history/vue2-filter-formatting-6952",
@@ -2341,46 +1172,11 @@
       "expectedSha256": "76af4c3f10f817026d03aadf7302c7f74c12055cea245f061809f4708c15d273"
     },
     {
-      "id": "lsp/fix-history/watched-declaration-revalidation-3798",
-      "commit": "38be3a0c5fa0742e2dad00c6d753f56732ce7780",
-      "case": "watched-declaration-revalidation-3798/case.json",
-      "sha256": "8a1f45109fed25840ae1a08963fe277918729e6f9b12b6db1a3fe82888658979",
-      "expectedSha256": "6246ffd99374d3c7b9062b7bb98771b0045973eb2b4442effea0f8a7adaeef85"
-    },
-    {
-      "id": "lsp/fix-history/watched-dependency-refresh-3921",
-      "commit": "014a2912fa3a631343b28f8fb6dfc739cf6385b2",
-      "case": "watched-dependency-refresh-3921/case.json",
-      "sha256": "a4c4700b18856a7a1cb87895ea2b35432cf38541ffaed81fc9b0d0ccdf99cf9d",
-      "expectedSha256": "c4de92466ad50eeef38e134f635696054c37ef83dcc5e1485c858791c3d10bc6"
-    },
-    {
       "id": "lsp/fix-history/workspace-discovery-git-metadata-7327",
       "commit": "848d5bc4ac6a2a81daadf6ec57f16b0b7b7e8db5",
       "case": "workspace-discovery-git-metadata-7327/case.json",
       "sha256": "9b9e757c6aaf2f0f2798cc4c61118c406f833d204892add9a6dd3900f0b48bb8",
       "expectedSha256": "c55917e353bb4184e4740176c0b2b3d6cc6f938b02a8a2c5fcee51a0461abbfe"
-    },
-    {
-      "id": "lsp/fix-history/workspace-emit-symbols-5758",
-      "commit": "427e3cd92ad3e5abaf6386803aacae3c8d82a869",
-      "case": "workspace-emit-symbols-5758/case.json",
-      "sha256": "c338384ff8379529cfb93acd961f9b5baca8de6ad51bbd6d0b3bdf954effd580",
-      "expectedSha256": "65750fdeaf6f9f7a2844bd764e534de9b8b7dc6bf95fe25c020681fd5db3998f"
-    },
-    {
-      "id": "lsp/fix-history/workspace-package-vue-exports-4100",
-      "commit": "d5e518eab2c5dd541a33e2cbb3bb307004a4c6f3",
-      "case": "workspace-package-vue-exports-4100/case.json",
-      "sha256": "61c6710bd9617e05ec0243d5689b68ef99d545b6d13333f222bc7433fe3ab878",
-      "expectedSha256": "3f9701b4d3c0a17059b88c72dec84b08960f1075f01ea6352ec409d901a859dc"
-    },
-    {
-      "id": "lsp/fix-history/workspace-symbols-after-file-events-4687",
-      "commit": "7fc7a61f6b742d089dffe0ce8659b3160f605ce5",
-      "case": "workspace-symbols-after-file-events-4687/case.json",
-      "sha256": "629418bad114bf618e3414848f539c183c35326c46d044f68e3371a69a4d8c71",
-      "expectedSha256": "e18b9e22747c67cd3d581d255dd9962180da13424e3f84e005770dc6f0c9b528"
     }
   ]
 }

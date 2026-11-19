@@ -1,1 +1,0 @@
-<div :[accesskey]="shortcut">Content</div>

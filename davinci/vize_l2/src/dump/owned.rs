@@ -39,7 +39,7 @@ pub enum Op {
     /// `ui.interpolation`.
     Interpolation(Interpolation),
     /// `ui.jsx-child`.
-    ChildValue(Interpolation),
+    JsxChildValue(Interpolation),
     /// `ui.comment`.
     Comment(Comment),
     /// `ui.if`.
@@ -278,7 +278,7 @@ fn own_op_guarded(op: &IrOp<'_>) -> Op {
             raw_html: interpolation.raw_html,
             span: interpolation.span,
         }),
-        IrOp::ChildValue(child) => Op::ChildValue(Interpolation {
+        IrOp::JsxChildValue(child) => Op::JsxChildValue(Interpolation {
             expression: own_expr(&child.expression),
             raw_html: child.raw_html,
             span: child.span,
@@ -366,7 +366,7 @@ fn count_op_guarded(op: &Op) -> u64 {
             1 + component.bindings.len() as u64
                 + component.children.iter().map(count_op).sum::<u64>()
         }
-        Op::Text(_) | Op::Interpolation(_) | Op::ChildValue(_) | Op::Comment(_) => 1,
+        Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => 1,
         Op::If(if_op) => {
             1 + if_op
                 .branches

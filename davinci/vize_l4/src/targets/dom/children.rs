@@ -8,7 +8,7 @@ use super::{DomError, DomErrorKind, Emitter, ExpressionWriter, LinkSink};
 
 impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
     pub(super) fn root_fragment(&mut self, single_non_comment: bool) -> Result<(), DomError> {
-        let block = !self.facts.has_child_values();
+        let block = !self.facts.has_jsx_child_values();
         self.writer.push("(");
         if block {
             spell(&mut self.writer, self.vocabulary, self.helpers.open_block);

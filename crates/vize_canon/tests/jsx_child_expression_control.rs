@@ -49,7 +49,7 @@ fn typed_child_value_projects_the_same_full_expression_and_span_as_template_text
         let root = Region {
             ops: Vec::from_iter_in(
                 [if child {
-                    Op::ChildValue(payload)
+                    Op::JsxChildValue(payload)
                 } else {
                     Op::Interpolation(payload)
                 }],

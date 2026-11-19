@@ -5,6 +5,7 @@
 //! - [`types`]: Core diagnostic data structures
 //! - [`formatting`]: Markdown rendering and help text formatting
 
+mod apply;
 mod compact_help;
 pub mod formatting;
 mod types;

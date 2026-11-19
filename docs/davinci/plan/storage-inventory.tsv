@@ -72,6 +72,7 @@ l1	analysis	davinci/vize_l1/src/dialect/vue2/surface.rs	1	6	0	0	1	2	0	0
 l1	analysis	davinci/vize_l1/src/dialect/vue2/text.rs	1	6	0	0	0	0	0	0
 l1	analysis	davinci/vize_l1/src/dialect/vue2/text/scan.rs	1	2	0	0	0	0	0	0
 l1	-	davinci/vize_l1/src/edit.rs	0	0	1	2	0	0	0	0
+l1	-	davinci/vize_l1/src/edit/select_tests.rs	0	0	1	0	0	0	0	0
 l1	-	davinci/vize_l1/src/embed/source.rs	0	0	1	2	1	2	0	0
 l1	-	davinci/vize_l1/src/embed/source/map.rs	0	0	0	0	1	1	0	0
 l1	-	davinci/vize_l1/src/embed/source/origin_tests.rs	0	0	1	2	0	0	0	0

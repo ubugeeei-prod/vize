@@ -39,7 +39,7 @@ pub(in crate::markup) fn walk_nodes<'a>(
                 }
             }
             Op::Text(text) => visitor(MarkupNode::Text(text_node(doc, text))),
-            Op::Interpolation(interpolation) | Op::ChildValue(interpolation) => {
+            Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
                 walk_interpolation(doc, interpolation, visitor)
             }
             Op::Comment(comment) => visitor(MarkupNode::Comment(l2_range(comment.span))),

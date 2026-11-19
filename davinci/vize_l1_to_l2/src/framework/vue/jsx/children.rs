@@ -164,8 +164,8 @@ fn element_children<'a>(
         return Err(JsxRefusal::Child);
     }
     cx.mint();
-    cx.observe(OpFamily::ChildValue);
-    ops.push(Op::ChildValue(Box::new_in(
+    cx.observe(OpFamily::JsxChild);
+    ops.push(Op::JsxChildValue(Box::new_in(
         InterpolationOp {
             expression: cx.expr(expression.span())?,
             raw_html: false,

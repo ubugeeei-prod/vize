@@ -164,7 +164,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                         self.text(children::text_node(doc, text));
                     }
                 }
-                Op::Interpolation(interpolation) | Op::ChildValue(interpolation) => {
+                Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
                     if self.traversal.keeps_text_and_exits()
                         || self.traversal.enters_interpolations()
                     {

@@ -16,7 +16,7 @@ impl<'a> Builder<'a> {
         let id = self.prepare(span)?;
         check::expression(self.parts.source, id, left, span)?;
         // A falsy `left` is a raw child value, as `ui.jsx-child` is.
-        self.parts.features = self.parts.features.observing(OpFamily::ChildValue);
+        self.parts.features = self.parts.features.observing(OpFamily::JsxChild);
         self.children(Owner::And { left }, span, id, children)?;
         Ok(id)
     }

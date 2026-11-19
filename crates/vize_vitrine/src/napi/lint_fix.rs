@@ -26,7 +26,7 @@ pub(super) fn lint_file_with_optional_fix(
         // config sort overlaps nested `$environment` sorts: the outer edit is
         // selected first, then the nested objects converge on the next pass.
         for _ in 0..10 {
-            let Some(fixed_source) = apply_lint_fixes(&source, &result) else {
+            let Some(fixed_source) = result.apply_fixes(&source) else {
                 break;
             };
             if fixed_source == source {
@@ -81,48 +81,6 @@ fn is_script_filename(filename: &str) -> bool {
                 "js" | "mjs" | "cjs" | "ts" | "mts" | "cts" | "jsx" | "tsx"
             )
         })
-}
-
-fn apply_lint_fixes(source: &str, result: &vize_patina::LintResult) -> Option<String> {
-    let mut edits: Vec<&vize_patina::TextEdit> = result
-        .diagnostics
-        .iter()
-        .filter_map(|diagnostic| diagnostic.fix.as_ref())
-        .flat_map(|fix| fix.edits.iter())
-        .filter(|edit| {
-            let start = edit.start as usize;
-            let end = edit.end as usize;
-            start <= end
-                && end <= source.len()
-                && source.is_char_boundary(start)
-                && source.is_char_boundary(end)
-        })
-        .collect();
-
-    if edits.is_empty() {
-        return None;
-    }
-
-    edits.sort_by_key(|edit| (edit.start, edit.end));
-    let mut selected = Vec::with_capacity(edits.len());
-    let mut last_end = 0u32;
-    for edit in edits {
-        if edit.start < last_end {
-            continue;
-        }
-        last_end = edit.end;
-        selected.push(edit);
-    }
-
-    if selected.is_empty() {
-        return None;
-    }
-
-    let mut fixed = source.to_compact_string();
-    for edit in selected.into_iter().rev() {
-        fixed.replace_range(edit.start as usize..edit.end as usize, &edit.new_text);
-    }
-    Some(fixed)
 }
 
 #[cfg(test)]

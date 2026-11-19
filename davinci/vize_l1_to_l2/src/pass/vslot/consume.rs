@@ -265,7 +265,7 @@ fn visit<'a>(
             }
         }
         Op::Text(text) => implicit_default_content(id, text.span),
-        Op::Interpolation(interpolation) | Op::ChildValue(interpolation) => {
+        Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
             implicit_default_content(id, interpolation.span)
         }
         Op::Comment(comment) => implicit_default_content(id, comment.span),
