@@ -1,5 +1,7 @@
 use std::path::{Path, PathBuf};
 
+use vize_carton::FxHashMap;
+
 use super::resolution::resolve_dependency_listed;
 use super::{
     resolve_dependency, resolve_dependency_with_inputs, resolve_generated_dependency,
@@ -10,6 +12,18 @@ use crate::batch::virtual_project::{VirtualFile, VirtualProject};
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 impl VirtualProject {
+    pub(super) fn may_have_authored_vue_ts_specifiers(&self) -> bool {
+        self.source_artifacts
+            .values()
+            .any(|artifacts| !artifacts.authored_vue_ts_specifiers.is_empty())
+    }
+
+    pub(super) fn source_has_authored_vue_ts_specifiers(&self, source: &Path) -> bool {
+        self.source_artifacts
+            .get(source)
+            .is_some_and(|artifacts| !artifacts.authored_vue_ts_specifiers.is_empty())
+    }
+
     fn source_authored_vue_ts_specifier(
         &self,
         source: &Path,
@@ -112,4 +126,11 @@ impl VirtualProject {
             aliases,
         )
     }
+}
+
+pub(super) fn canonical_importer(known: &FxHashMap<PathBuf, PathBuf>, importer: &Path) -> PathBuf {
+    known
+        .get(importer)
+        .cloned()
+        .unwrap_or_else(|| vize_carton::path::canonicalize_non_verbatim(importer))
 }
