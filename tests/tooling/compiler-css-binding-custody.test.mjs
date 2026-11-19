@@ -145,11 +145,19 @@ await test("binding registration preserves every previous compiler row and pins 
       ),
     );
   }
-  for (const pack of renamedBefore.runtimePacks)
-    assert.deepEqual(
-      current.runtimePacks.find((candidate) => candidate.path === pack.path),
-      pack,
-    );
+  for (const pack of renamedBefore.runtimePacks) {
+    const now = current.runtimePacks.find((candidate) => candidate.path === pack.path);
+    // A pack the level rename rewrote is re-pinned to exactly its renamed baseline bytes.
+    const packPath = `tests/_fixtures/differential/compiler/${pack.path}`;
+    const baselinePack = from(baseline, packPath);
+    const renamedPack =
+      baselinePack && Buffer.from(rewriteText(packPath, baselinePack.toString("utf8")));
+    if (now && now.sha256 !== pack.sha256 && renamedPack && !renamedPack.equals(baselinePack)) {
+      assert.equal(now.sha256, createHash("sha256").update(renamedPack).digest("hex"));
+      assert.deepEqual(read(packPath), renamedPack);
+      assert.deepEqual({ ...now, sha256: pack.sha256 }, pack);
+    } else assert.deepEqual(now, pack);
+  }
   assert.deepEqual(newCss.slice(0, oldCss.length), oldCss);
   const loaded = loadCompilerCssApiCases(newCss, read);
   const entry = loaded.find((row) => row.id === "compiler/css/v-bind-source-map-10712");
