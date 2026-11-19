@@ -97,7 +97,7 @@ name = "markup_ir_bench"
 harness = false
 
 [[bench]]
-name = "davinci_markup"
+name = "level_markup"
 harness = false
 
 [[test]]

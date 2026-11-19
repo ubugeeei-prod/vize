@@ -38,7 +38,7 @@ davinci_harness = { workspace = true }
 davinci_test_support = { workspace = true }
 
 [[bench]]
-name = "davinci"
+name = "levels"
 harness = false
 
 [[test]]

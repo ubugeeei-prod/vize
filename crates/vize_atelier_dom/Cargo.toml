@@ -52,7 +52,7 @@ oxc_span = { workspace = true }
 # L2 test and benchmark fixtures still use the stage diagnostics/types.
 
 [[bench]]
-name = "davinci"
+name = "levels"
 harness = false
 
 [[test]]

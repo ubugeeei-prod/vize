@@ -1,0 +1,30 @@
+consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize_canon/src/batch/virtual_project/content_mapper_config_tests.rs	8	l0	L0	stage	vize_l0	preferred	5
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_config.rs	7	l0	L0	stage	vize_l0	preferred	2
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_config.rs	7	carton	Carton host/compatibility	old	vize_carton	legacy	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize_canon/src/batch/virtual_project/content_mapper_config/strict_v_model_tests.rs	21	l0	L0	stage	vize_l0	preferred	2
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize_canon/src/batch/virtual_project/content_mapper_config/typed_router_tests.rs	23	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize_canon/src/batch/virtual_project/content_mapper_config/typed_router_tests.rs	23	carton	Carton host/compatibility	old	vize_carton	legacy	3
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_config/typed_router_tests/provider.rs	35	l0	L0	stage	vize_l0	preferred	2
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_config/typed_router_tests/provider.rs	35	carton	Carton host/compatibility	old	vize_carton	legacy	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_config/typed_router.rs	31	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize_canon/src/batch/virtual_project/content_mapper_config/vue_options_projection_tests.rs	79	l0	L0	stage	vize_l0	preferred	3
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper.rs	8	l0	L0	stage	vize_l0	preferred	2
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize_canon/src/batch/virtual_project/content_mapper.rs	319	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper/alias.rs	1	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper/component_name.rs	3	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize_canon/src/batch/virtual_project/content_mapper/directive_tests.rs	264	l0	L0	stage	vize_l0	preferred	3
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper/directive_tests/pug_equivalence.rs	8	l0	L0	stage	vize_l0	preferred	5
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper/directive_tests/unchecked_prop_values.rs	147	l0	L0	stage	vize_l0	preferred	2
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper/directives.rs	15	l0	L0	stage	vize_l0	preferred	2
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper/directives/semantic_diagnostics.rs	18	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper/protocol.rs	4	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper/publish.rs	5	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize_canon/src/batch/virtual_project/content_mapper/publish.rs	277	l0	L0	stage	vize_l0	preferred	5
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper/quoted_spans.rs	6	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize_canon/src/batch/virtual_project/content_mapper/quoted_spans.rs	345	l0	L0	stage	vize_l0	preferred	5
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs	4	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize_canon/src/batch/virtual_project/content_mapper/tests/attribute_boundaries.rs	3	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs	29	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize_canon/src/batch/virtual_project/content_mapper/typed_router_profile_tests.rs	3	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize_canon/src/batch/virtual_project/content_mapper/typed_router_profile_tests.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1

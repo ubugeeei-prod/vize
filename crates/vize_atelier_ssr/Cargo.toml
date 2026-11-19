@@ -44,7 +44,7 @@ vize_atelier_sfc = { workspace = true, features = ["ssr-production-comparison"] 
 workspace = true
 
 [[bench]]
-name = "davinci"
+name = "levels"
 harness = false
 
 [[test]]

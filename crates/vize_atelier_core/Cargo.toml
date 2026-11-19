@@ -77,7 +77,7 @@ name = "davinci_l2_transform_vue2"
 required-features = ["legacy"]
 
 [[bench]]
-name = "davinci"
+name = "levels"
 harness = false
 
 [lints]

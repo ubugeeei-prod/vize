@@ -1,0 +1,21 @@
+consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper.rs	14	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize/src/commands/content_mapper.rs	16	l0	L0	stage	vize_l0	preferred	2
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/dispatch.rs	17	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize/src/commands/content_mapper/dispatch.rs	104	l0	L0	stage	vize_l0	preferred	3
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/dispatch/compact.rs	100	l0	L0	stage	vize_l0	preferred	3
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/dispatch/initialize.rs	6	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize/src/commands/content_mapper/dispatch/trivia_scan/tests.rs	215	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize/src/commands/content_mapper/dispatch/wire/tests.rs	226	l0	L0	stage	vize_l0	preferred	2
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/helper_abi_fixture.rs	9	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/helper_abi.rs	15	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize/src/commands/content_mapper/imports_alias_template_ref_tests.rs	4	l0	L0	stage	vize_l0	preferred	2
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/mode.rs	55	l0	L0	stage	vize_l0	preferred	2
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize/src/commands/content_mapper/open_project_cost_tests.rs	8	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize/src/commands/content_mapper/project_tests.rs	2	l0	L0	stage	vize_l0	preferred	4
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/project.rs	19	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize/src/commands/content_mapper/shared_helper_tests.rs	2	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/test_support.rs	6	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize/src/commands/content_mapper/typed_router_tests.rs	47	carton	Carton host/compatibility	old	vize_carton	legacy	2
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/typed_router_tests/provider.rs	44	l0	L0	stage	vize_l0	preferred	3
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize/src/commands/content_mapper/typed_router_tests/provider.rs	44	carton	Carton host/compatibility	old	vize_carton	legacy	2
