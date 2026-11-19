@@ -148,3 +148,14 @@ pub(super) fn split_on_event_modifiers(name: &str) -> Option<(String, std::vec::
     lowered.push_str(chars.as_str());
     Some((lowered, mods))
 }
+
+/// `onClick` -> `click`: the event an `on<Event>` name listens to.
+pub(super) fn event_name(head: &str) -> String {
+    let mut chars = head.get(2..).unwrap_or_default().chars();
+    let mut lowered = String::new("");
+    if let Some(first) = chars.next() {
+        lowered.push(first.to_ascii_lowercase());
+    }
+    lowered.push_str(chars.as_str());
+    lowered
+}

@@ -13,6 +13,7 @@ mod children;
 mod control_flow;
 mod directives;
 mod model;
+mod modifiers;
 mod module;
 #[cfg(test)]
 mod module_tests;
@@ -24,6 +25,7 @@ mod tests;
 
 pub use boolean::BooleanBindings;
 pub use children::clean_text;
+pub use modifiers::{is_event_modifier, split_directive_argument, split_event_modifiers};
 pub use module::{
     EnteredFunction, FunctionNode, JsxModule, ModuleOptions, ModuleRoot, ModuleVisitor,
     PrologueIssue, RootContext, lower_module, walk_module,
@@ -73,8 +75,7 @@ pub const VIZE: JsxDialect = JsxDialect {
     depth: Depth::Structural,
     features: JsxFeatures {
         on_option_suffixes: true,
-        // #12313 turns this on.
-        event_underscore_modifiers: false,
+        event_underscore_modifiers: true,
     },
 };
 

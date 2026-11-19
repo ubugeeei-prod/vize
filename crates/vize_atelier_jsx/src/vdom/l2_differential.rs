@@ -103,6 +103,11 @@ fn l2_vdom_admitted_cases_match_relief_codegen() {
             JsxLang::Jsx,
         ),
         (
+            "element underscore event modifiers",
+            "const A = () => <b onClick_stop_prevent={f} onKeyup_enter={g} onSelect_item={h} />;",
+            JsxLang::Jsx,
+        ),
+        (
             "component capture event",
             "const A = () => <B onClickCapture={h} />;",
             JsxLang::Jsx,

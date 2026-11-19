@@ -1,0 +1,8 @@
+const Search = () => {
+  return (
+    <form onSubmit_prevent={submit}>
+      <input onKeyup_enter={submit} onSelect_item={pick} v-focus:start_once={focus} />
+      <button onClick_stop_prevent={save}>Save</button>
+    </form>
+  );
+};

@@ -2186,7 +2186,7 @@
       "source": "const App = () => <div onClick_capture={() => state.log += \"capture;\"}><button onClick={() => state.log += \"bubble;\"}>{state.log}</button></div>;",
       "initial": { "log": "" },
       "steps": [{ "event": { "selector": "button", "type": "click" } }],
-      "expectedText": ["", "bubble;"],
+      "expectedText": ["", "capture;bubble;"],
       "expectedElementIdentities": [
         [0, 1],
         [0, 1]
@@ -2214,27 +2214,10 @@
           {
             "tag": "div",
             "attributes": {},
-            "children": [{ "tag": "button", "attributes": {}, "children": ["bubble;"] }]
-          }
-        ]
-      ],
-      "expectedReferenceDom": [
-        [
-          {
-            "tag": "div",
-            "attributes": {},
-            "children": [{ "tag": "button", "attributes": {}, "children": [] }]
-          }
-        ],
-        [
-          {
-            "tag": "div",
-            "attributes": {},
             "children": [{ "tag": "button", "attributes": {}, "children": ["capture;bubble;"] }]
           }
         ]
-      ],
-      "expectedReferenceText": ["", "capture;bubble;"]
+      ]
     },
     {
       "id": "events/once-modifier",
@@ -2244,7 +2227,7 @@
         { "event": { "selector": "button", "type": "click" } },
         { "event": { "selector": "button", "type": "click" } }
       ],
-      "expectedText": ["count:0", "count:0", "count:0"],
+      "expectedText": ["count:0", "count:1", "count:1"],
       "expectedElementIdentities": [[0], [0], [0]],
       "expectedEvents": [
         [],
@@ -2273,22 +2256,16 @@
       ],
       "expectedDom": [
         [{ "tag": "button", "attributes": {}, "children": ["count:0"] }],
-        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }],
-        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }]
-      ],
-      "expectedReferenceDom": [
-        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }],
         [{ "tag": "button", "attributes": {}, "children": ["count:1"] }],
         [{ "tag": "button", "attributes": {}, "children": ["count:1"] }]
-      ],
-      "expectedReferenceText": ["count:0", "count:1", "count:1"]
+      ]
     },
     {
       "id": "events/stop-modifier",
       "source": "const App = () => <div onClick={() => state.log += \"outer;\"}><button onClick_stop={() => state.log += \"inner;\"}>{state.log}</button></div>;",
       "initial": { "log": "" },
       "steps": [{ "event": { "selector": "button", "type": "click" } }],
-      "expectedText": ["", "outer;"],
+      "expectedText": ["", "inner;"],
       "expectedElementIdentities": [
         [0, 1],
         [0, 1]
@@ -2316,56 +2293,19 @@
           {
             "tag": "div",
             "attributes": {},
-            "children": [{ "tag": "button", "attributes": {}, "children": ["outer;"] }]
-          }
-        ]
-      ],
-      "expectedReferenceDom": [
-        [
-          {
-            "tag": "div",
-            "attributes": {},
-            "children": [{ "tag": "button", "attributes": {}, "children": [] }]
-          }
-        ],
-        [
-          {
-            "tag": "div",
-            "attributes": {},
             "children": [{ "tag": "button", "attributes": {}, "children": ["inner;"] }]
           }
         ]
-      ],
-      "expectedReferenceText": ["", "inner;"]
+      ]
     },
     {
       "id": "events/prevent-modifier",
       "source": "const App = () => <button onClick_prevent={() => state.count += 1}>count:{state.count}</button>;",
       "initial": { "count": 0 },
       "steps": [{ "event": { "selector": "button", "type": "click" } }],
-      "expectedText": ["count:0", "count:0"],
+      "expectedText": ["count:0", "count:1"],
       "expectedElementIdentities": [[0], [0]],
       "expectedEvents": [
-        [],
-        [
-          {
-            "selector": "button",
-            "type": "click",
-            "defaultPrevented": false,
-            "dispatchResult": true
-          }
-        ]
-      ],
-      "expectedDom": [
-        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }],
-        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }]
-      ],
-      "expectedReferenceDom": [
-        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }],
-        [{ "tag": "button", "attributes": {}, "children": ["count:1"] }]
-      ],
-      "expectedReferenceText": ["count:0", "count:1"],
-      "expectedReferenceEvents": [
         [],
         [
           {
@@ -2375,6 +2315,10 @@
             "dispatchResult": false
           }
         ]
+      ],
+      "expectedDom": [
+        [{ "tag": "button", "attributes": {}, "children": ["count:0"] }],
+        [{ "tag": "button", "attributes": {}, "children": ["count:1"] }]
       ]
     },
     {
@@ -2384,19 +2328,10 @@
       "steps": [{ "patch": { "mark": "y" } }],
       "expectedText": ["m", "m"],
       "expectedElementIdentities": [[0], [0]],
-      "expectedWarnings": [
-        ["TypeError: Cannot convert undefined or null to object"],
-        ["TypeError: Cannot convert undefined or null to object"]
-      ],
       "expectedDom": [
-        [{ "tag": "p", "attributes": {}, "children": ["m"] }],
-        [{ "tag": "p", "attributes": {}, "children": ["m"] }]
-      ],
-      "expectedReferenceDom": [
         [{ "tag": "p", "attributes": { "data-mark": "a.b:x" }, "children": ["m"] }],
         [{ "tag": "p", "attributes": { "data-mark": "a.b:y" }, "children": ["m"] }]
-      ],
-      "expectedReferenceWarnings": [[], []]
+      ]
     },
     {
       "id": "directives/v-once",

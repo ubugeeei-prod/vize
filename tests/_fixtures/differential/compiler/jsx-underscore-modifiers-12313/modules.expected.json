@@ -1,0 +1,30 @@
+[
+  {
+    "target": "vdom",
+    "code": "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, withModifiers as _withModifiers, withKeys as _withKeys, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\nconst Search = _defineComponent({\nname: \"Search\",\nsetup() {\n\n  return (() => {\nreturn ((_ctx, _cache) => {\n  const _directive_focus = _resolveDirective(\"focus\")\n  \n  return (_openBlock(), _createElementBlock(\"form\", {\n    onSubmit: _withModifiers(submit, [\"prevent\"])\n  }, [\n    _withDirectives(_createElementVNode(\"input\", {\n      onKeyup: _withKeys(submit, [\"enter\"]),\n      onSelect_item: pick\n    }, null, 40 /* PROPS, NEED_HYDRATION */, [\"onKeyup\", \"onSelect_item\"]), [\n      [_directive_focus, focus, \"start\", { once: true }]\n    ]),\n    _createElementVNode(\"button\", {\n      onClick: _withModifiers(save, [\"stop\",\"prevent\"])\n    }, \"Save\", 8 /* PROPS */, [\"onClick\"])\n  ], 40 /* PROPS, NEED_HYDRATION */, [\"onSubmit\"]))\n})\n})()\n}\n});\n",
+    "errors": [],
+    "warnings": [],
+    "scopedStyles": []
+  },
+  {
+    "target": "vapor",
+    "code": "import { resolveDirective as _resolveDirective, child as _child, next as _next, withModifiers as _withModifiers, withKeys as _withKeys, on as _on, withVaporDirectives as _withVaporDirectives, setListener as _setListener, renderEffect as _renderEffect, template as _template } from \"vue\"\n\nconst Search = ({\n__vapor: true,\nname: \"Search\",\nsetup() {\n\n  return (() => {\n\nconst t0 = _template(\"<form><input><button>Save</button></form>\", true)\n\nreturn ((_ctx) => {\n  const _directive_focus = _resolveDirective(\"focus\")\n  const n2 = t0()\n  const n0 = _child(n2)\n  const n1 = _next(n0)\n  _on(n2, \"submit\", _withModifiers(e => submit(e), [\"prevent\"]))\n  _on(n0, \"keyup\", _withKeys(e => submit(e), [\"enter\"]))\n  _withVaporDirectives(n0, [[_directive_focus, () => (focus), () => (\"start\"), { \"once\": true }]])\n  _on(n1, \"click\", _withModifiers(e => save(e), [\"stop\",\"prevent\"]))\n  _renderEffect(() => _setListener(n0, \"onSelect_item\", pick))\n  return n2\n})(undefined, [])\n})()\n}\n});\n",
+    "errors": [],
+    "warnings": [],
+    "scopedStyles": []
+  },
+  {
+    "target": "vdom-ssr",
+    "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrGetDirectiveProps as _ssrGetDirectiveProps } from \"@vue/server-renderer\"\nimport { resolveDirective as _resolveDirective, mergeProps as _mergeProps } from \"vue\"\n\nconst Search = ({\n__ssrInlineRender: true,\nname: \"Search\",\nsetup() {\n\n  return (() => {\n\n\n\nreturn ((_ctx, _push, _parent, _attrs) => {\n  _push(`<form${_ssrRenderAttrs(_attrs)}><input${_ssrRenderAttrs(_mergeProps({ onSelect_item: pick }, _ssrGetDirectiveProps(_ctx, _resolveDirective(\"focus\"), focus, \"start\", { once: true })))}><button>Save</button></form>`)\n})\n})()\n}\n});\n",
+    "errors": [],
+    "warnings": [],
+    "scopedStyles": []
+  },
+  {
+    "target": "vapor-ssr",
+    "code": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrGetDirectiveProps as _ssrGetDirectiveProps } from \"@vue/server-renderer\"\nimport { resolveDirective as _resolveDirective, mergeProps as _mergeProps } from \"vue\"\n\nconst Search = ({\n__ssrInlineRender: true,\n__vapor: true,\nname: \"Search\",\nsetup() {\n\n  return (() => {\n\n\n\nreturn ((_ctx, _push, _parent, _attrs) => {\n  _push(`<form${_ssrRenderAttrs(_attrs)}><input${_ssrRenderAttrs(_mergeProps({ onSelect_item: pick }, _ssrGetDirectiveProps(_ctx, _resolveDirective(\"focus\"), focus, \"start\", { once: true })))}><button>Save</button></form>`)\n})\n})()\n}\n});\n",
+    "errors": [],
+    "warnings": [],
+    "scopedStyles": []
+  }
+]

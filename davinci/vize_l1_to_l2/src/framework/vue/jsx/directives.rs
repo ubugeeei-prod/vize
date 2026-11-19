@@ -3,8 +3,8 @@
 //! `vue.directive`.
 //!
 //! A custom directive takes its argument from `v-name:arg` or from the
-//! array spelling `v-name={[x, 'arg', ['m']]}`. A `_` in a directive name
-//! or argument waits for the `_`-modifier split (#12313); `v-slots`,
+//! array spelling `v-name={[x, 'arg', ['m']]}`; `v-name:arg_a_b` adds the
+//! modifiers `a` and `b` (#12313). A `_` in a directive name waits; `v-slots`,
 //! `v-slot`, `v-if`, `v-for`, `v-once`, `v-memo`, `v-pre`, `v-cloak`,
 //! `v-bind` and `v-on` wait for their slices.
 
@@ -19,6 +19,7 @@ use vize_l2::op::{BindingOp, DynamicName, VueDirectiveOp, VueHtmlOp, VueShowOp, 
 use super::attributes::{Owner, Props};
 use super::children::contains_jsx;
 use super::model::{model, models};
+use super::modifiers::split_directive_argument;
 use super::{Cx, JsxRefusal, span};
 
 /// Lower the `v-*` attribute `attribute` of `owner` into `out`.
@@ -90,7 +91,9 @@ pub(super) fn directive<'a>(
         (custom, Owner::Element { .. })
             if !is_built_in(custom)
                 && !custom.contains('_')
-                && !argument.is_some_and(|argument| argument.contains('_')) =>
+                && !argument.is_some_and(|argument| {
+                    argument.contains('_') && split_directive_argument(argument).is_none()
+                }) =>
         {
             custom_directive(cx, custom, argument, value, at)?
         }
@@ -131,6 +134,12 @@ fn custom_directive<'a>(
         value: value.map(|value| cx.expr(value.span())).transpose()?,
         span: span(at),
     };
+    if let Some((argument, modifiers)) = argument.and_then(split_directive_argument) {
+        directive.argument = Some(DynamicName::Static(argument));
+        for modifier in modifiers.split('_') {
+            directive.modifiers.push(modifier);
+        }
+    }
     if argument.is_none()
         && let Some(Expression::ArrayExpression(array)) = value
         && let Some(spelling) = ArraySpelling::of(array)

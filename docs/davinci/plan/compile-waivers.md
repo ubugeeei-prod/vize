@@ -51,3 +51,18 @@ upstream's `_temp` sequence; `_resolveDirective` is inlined like
 (`$setup.key`; the render context proxies setup state and props, so the
 HTML matches); a dynamic key or directive argument naming a JavaScript
 global (`:[Math]`) is spelled `_ctx.Math` where upstream leaves it bare.
+
+## Open: JSX `_` modifiers (#12313, `fix(jsx)`)
+
+A listed fix of the [JSX lowering record](../decisions/2026-11-10-6885-jsx-l2-lowering.md#observable-changes).
+JSX attribute names cannot hold a `.`, so `vue-jsx-vapor` and `@vue/babel-plugin-jsx`
+spell modifiers with `_`. Vize read the whole name as a prop or an argument. Both
+lowerings now share one split (`vize_l1_to_l2::framework::vue::jsx::modifiers`) on
+VDOM, Vapor and SSR. Babel-compatible files keep event names whole, as Babel does.
+
+| id      | shape                                                   | pre-fix output (effect)                                                             | aligned output                                            | render fixture                                |
+| ------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------------- |
+| W-JSX-1 | `onClick_stop={h}`, every `_` segment a `v-on` modifier | prop `onClick_stop` (a listener that never fires, no modifier)                      | `v-on:click.stop`: `onClick: _withModifiers(h, ["stop"])` | `events/{capture,once,stop,prevent}-modifier` |
+| W-JSX-2 | `v-name:arg_a_b={v}` on a custom directive              | argument `arg_a_b`, no modifiers (the directive throws on `Object.keys(modifiers)`) | argument `arg`, modifiers `{ a: true, b: true }`          | `directives/custom-modifiers`                 |
+
+Unchanged: a name with a segment that is not a `v-on` modifier (`onSelect_item`) stays a prop.

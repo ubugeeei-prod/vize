@@ -11,13 +11,14 @@ mod compat;
 mod static_style;
 mod value;
 
-use compat::split_on_event_modifiers;
+use compat::{event_name, split_on_event_modifiers};
 
 use oxc_ast::ast::{
     JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXSpreadAttribute,
 };
 use oxc_span::{GetSpan, Span};
 use vize_l0::{Box, Vec, is_builtin_directive};
+use vize_l1_to_l2::framework::vue::jsx::{split_directive_argument, split_event_modifiers};
 use vize_relief::{
     AttributeNode, DirectiveNode, PropNode, SimpleExpressionNode, SourceLocation, TextNode,
 };
@@ -146,11 +147,20 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
                     // `name={}` behaves like a boolean attribute.
                     None => self.boolean_attr(name, name_loc, loc),
                     Some(span) => {
-                        // `onClickCapture={h}` (event name + option modifiers) ->
-                        // a `v-on` directive so core codegen emits the suffixed
-                        // listener key. Plain `onClick={h}` has no recognized
-                        // suffix and stays a `v-bind` like before.
-                        if let Some((ev, mods)) = split_on_event_modifiers(name) {
+                        // `onClick_stop={h}` (#12313) -> `v-on:click.stop`, as
+                        // the shared lowering reads it. Babel keeps the name.
+                        if !self.uses_babel_compat()
+                            && let Some((head, underscored)) = split_event_modifiers(name)
+                        {
+                            let (ev, mut mods) = split_on_event_modifiers(head)
+                                .unwrap_or_else(|| (event_name(head), std::vec::Vec::new()));
+                            mods.extend(underscored.split('_'));
+                            self.von_modifier_prop(&ev, attr.name.span(), span, &mods, loc)
+                        } else if let Some((ev, mods)) = split_on_event_modifiers(name) {
+                            // `onClickCapture={h}` (event name + option
+                            // modifiers) -> a `v-on` directive so core codegen
+                            // emits the suffixed listener key. Plain
+                            // `onClick={h}` stays a `v-bind` like before.
                             self.von_modifier_prop(&ev, attr.name.span(), span, &mods, loc)
                         } else {
                             self.bind_prop(name, attr.name.span(), span, loc)
@@ -339,7 +349,24 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
 
         let mut directive = DirectiveNode::new(self.bump(), raw_name, loc.clone());
         if let Some((arg_name, arg_span)) = arg {
-            directive.arg = Some(self.static_expr(arg_name, arg_span));
+            // `v-name:arg_a_b` (#12313): a custom directive's argument and
+            // modifiers, as the shared lowering reads them.
+            if !is_builtin_directive(raw_name)
+                && raw_name != "models"
+                && let Some((argument, modifiers)) = split_directive_argument(arg_name)
+            {
+                let end = arg_span.start + u32::try_from(argument.len()).unwrap_or(0);
+                directive.arg = Some(self.static_expr(argument, Span::new(arg_span.start, end)));
+                for modifier in modifiers.split('_') {
+                    directive.modifiers.push(SimpleExpressionNode::new(
+                        modifier,
+                        false,
+                        loc.clone(),
+                    ));
+                }
+            } else {
+                directive.arg = Some(self.static_expr(arg_name, arg_span));
+            }
         }
         directive.exp = self.directive_value_expr(attr.value.as_ref());
         DirectiveAttributeLowering::Lowered(PropNode::Directive(Box::new_in(
