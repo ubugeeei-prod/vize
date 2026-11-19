@@ -176,9 +176,6 @@ pub struct SfcScriptBlock<'a> {
     /// Additional attributes.
     #[serde(default)]
     pub attrs: FxHashMap<Cow<'a, str>, Cow<'a, str>>,
-    /// Binding metadata filled after analysis.
-    #[serde(default)]
-    pub bindings: Option<BindingMetadata>,
 }
 
 impl<'a> SfcScriptBlock<'a> {
@@ -191,7 +188,6 @@ impl<'a> SfcScriptBlock<'a> {
             src: self.src.map(|value| Cow::Owned(value.into_owned())),
             setup: self.setup,
             attrs: owned_attrs(self.attrs),
-            bindings: self.bindings,
         }
     }
 }

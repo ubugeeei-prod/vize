@@ -20,5 +20,4 @@ SfcScriptBlock {
     attrs: {
         "setup": "",
     },
-    bindings: None,
 }

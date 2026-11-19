@@ -150,7 +150,6 @@ fn parse_complete_sfc<'a>(
                 src: attrs.get("src").cloned(),
                 setup: is_setup,
                 attrs,
-                bindings: None,
             };
             if is_setup {
                 if descriptor.script_setup.is_some() {

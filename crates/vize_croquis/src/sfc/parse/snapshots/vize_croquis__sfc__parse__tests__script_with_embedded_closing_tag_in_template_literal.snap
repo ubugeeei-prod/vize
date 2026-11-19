@@ -23,5 +23,4 @@ SfcScriptBlock {
         "lang": "ts",
         "setup": "",
     },
-    bindings: None,
 }

@@ -218,7 +218,6 @@ fn supplied_frames(source: &str, module: &str, setup: &str) -> Vec<LintDiagnosti
             src: None,
             setup: is_setup,
             attrs: Default::default(),
-            bindings: None,
         }
     };
     let descriptor = SfcDescriptor {

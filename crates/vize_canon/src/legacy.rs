@@ -6,9 +6,9 @@
 //! **not** compiled into the default Vue 3 (`vize`) binary: legacy support is
 //! strictly opt-in.
 //!
-//! The version model is shared from [`vize_armature::legacy`] so the parser,
-//! type checker, and editor layers all agree on which legacy line is in play,
-//! and dialects are resolved once per file into a
+//! The version model is owned by L1's dialect modules ([`vize_l1::dialect`]), so
+//! the parser, type checker, and editor layers all agree on which legacy line is
+//! in play, and dialects are resolved once per file into a
 //! [`LegacyDialectCapabilities`] set rather than re-matched in hot paths.
 
-pub use vize_armature::legacy::{DirectiveArgStyle, LegacyDialectCapabilities, LegacyVueVersion};
+pub use vize_l1::dialect::{DirectiveArgStyle, LegacyDialectCapabilities, LegacyVueVersion};

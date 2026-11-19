@@ -35,7 +35,7 @@ fn assert_setup(source: &str, language: &str, expected: &str) {
     );
     assert_eq!((script.loc.end_line, script.loc.end_column), location(end));
     assert_eq!(script.lang.as_deref(), Some(language));
-    assert!(script.setup && script.src.is_none() && script.bindings.is_none());
+    assert!(script.setup && script.src.is_none());
     assert_eq!(script.attrs.len(), 2);
     assert_eq!(script.attrs.get("lang").map(|v| v.as_ref()), Some(language));
     assert_eq!(script.attrs.get("setup").map(|v| v.as_ref()), Some(""));
