@@ -28,9 +28,10 @@ use vize_atelier_sfc::{
 };
 use vize_l0::{Allocator, String, config::VueVersion};
 
-#[path = "compile_history/project.rs"]
-mod project;
-use project::{relocate, write_project};
+mod compile_history {
+    pub(crate) mod project;
+}
+use compile_history::project::{relocate, write_project};
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]

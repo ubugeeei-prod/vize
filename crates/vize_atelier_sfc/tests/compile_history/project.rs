@@ -4,13 +4,13 @@ use std::path::Path;
 
 use vize_l0::String;
 
-use super::Case;
+use crate::Case;
 
 /// Write the case's project files and its own source into a fresh directory.
 /// A project without its own `tsconfig.json` gets an empty one, so config
 /// discovery stops at the project root instead of probing the machine's
 /// temporary-directory ancestors.
-pub(super) fn write_project(case: &Case) -> tempfile::TempDir {
+pub(crate) fn write_project(case: &Case) -> tempfile::TempDir {
     let project = tempfile::tempdir().expect("project directory");
     let tsconfig: (String, String) = ("tsconfig.json".into(), "{}\n".into());
     let default_config = (!case.files.contains_key("tsconfig.json")
@@ -33,7 +33,7 @@ pub(super) fn write_project(case: &Case) -> tempfile::TempDir {
 
 /// Replace the temporary project root, in both its given and canonical
 /// spellings, with `$PROJECT`.
-pub(super) fn relocate(bytes: std::string::String, root: Option<&Path>) -> std::string::String {
+pub(crate) fn relocate(bytes: std::string::String, root: Option<&Path>) -> std::string::String {
     let Some(root) = root else {
         return bytes;
     };
