@@ -1,0 +1,37 @@
+{
+  "commit": "22a49aca2fb9331217d59511fbd6cf4f2414cd04",
+  "cases": [
+    {
+      "id": "lsp/fix-history/ambient-global-slot-host-13384",
+      "requirement": "The editor template checker applies project GlobalComponents declarations: a kebab-case use of an ambient global slot host types its scoped slot props (TS2339 on a missing member).",
+      "initializationOptions": { "editor": true, "lint": false, "typecheck": true },
+      "packages": ["vue"],
+      "files": {
+        "tsconfig.json": "{\"compilerOptions\":{\"strict\":true,\"target\":\"ES2022\",\"module\":\"ESNext\",\"moduleResolution\":\"bundler\",\"noEmit\":true},\"include\":[\"src/**/*\"]}\n",
+        "src/components.d.ts": "declare module 'vue' {\n  interface GlobalComponents {\n    ElBadge: typeof import('./components/ElBadge.vue')['default']\n  }\n}\nexport {}\n",
+        "src/components/ElBadge.vue": "<script setup lang=\"ts\">\ndefineSlots<{ content(props: { value: { label: string } }): any }>()\n</script>\n<template><span><slot name=\"content\" :value=\"{ label: 'new' }\" /></span></template>\n",
+        "src/App.vue": "<template>\n  <el-badge><template #content=\"{ value }\">{{ value.missing }}</template></el-badge>\n</template>\n"
+      },
+      "steps": [
+        { "open": "src/App.vue" },
+        { "diagnostics": "src/App.vue" }
+      ]
+    },
+    {
+      "id": "lsp/fix-history/global-component-props-13384",
+      "requirement": "The editor template checker applies a declared global component's prop types: a wrong-typed prop reports TS2322.",
+      "initializationOptions": { "editor": true, "lint": false, "typecheck": true },
+      "packages": ["vue"],
+      "files": {
+        "tsconfig.json": "{\"compilerOptions\":{\"strict\":true,\"target\":\"ES2022\",\"module\":\"ESNext\",\"moduleResolution\":\"bundler\",\"noEmit\":true},\"include\":[\"src/**/*\"]}\n",
+        "src/components.d.ts": "import GlobalBadge from './GlobalBadge.vue'\ndeclare module 'vue' { export interface GlobalComponents { GlobalBadge: typeof GlobalBadge } }\nexport {}\n",
+        "src/GlobalBadge.vue": "<script setup lang=\"ts\">\ndefineProps<{ level: number }>()\n</script>\n<template><span>{{ level }}</span></template>\n",
+        "src/App.vue": "<template><GlobalBadge :level=\"'x'\" /></template>\n"
+      },
+      "steps": [
+        { "open": "src/App.vue" },
+        { "diagnostics": "src/App.vue" }
+      ]
+    }
+  ]
+}
