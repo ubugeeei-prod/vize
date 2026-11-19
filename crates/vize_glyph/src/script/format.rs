@@ -1,8 +1,9 @@
 use crate::{error::FormatError, options::FormatOptions};
 use oxc_allocator::Allocator as OxcAllocator;
-use oxc_formatter::{format_program, parse_for_format};
+use oxc_formatter::format_program;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, String, ToCompactString};
+use vize_l1::embed::syntax::parse_program_for_format;
 
 /// Format JavaScript/TypeScript/JSX/TSX content using an explicit OXC source type.
 ///
@@ -35,14 +36,14 @@ pub(super) fn format_script_content_with_sort_imports(
         return Ok(String::default());
     }
 
-    // Use OXC's allocator for parsing (required by oxc_parser)
+    // A fresh printer arena per pass: the printed AST is never retained.
     let oxc_allocator = OxcAllocator::default();
 
-    // Parse the source with formatter-compatible options. `parse_for_format` is
-    // the parse the formatter requires (`preserve_parens: false`, hashed
-    // identifiers, JSX enabled for JavaScript source types); `format_program`
-    // may panic on an AST parsed any other way.
-    let parsed = parse_for_format(&oxc_allocator, source, source_type);
+    // The L1 formatter profile is the parse `format_program` requires
+    // (`preserve_parens: false`, JSX enabled for JavaScript source types);
+    // the printer may panic on an AST parsed any other way. Any diagnostic
+    // refuses the parse, so recovered syntax is never printed.
+    let parsed = parse_program_for_format(&oxc_allocator, source, source_type);
 
     if !parsed.diagnostics.is_empty() {
         let error_messages: Vec<String> = parsed

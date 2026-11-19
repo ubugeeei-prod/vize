@@ -12,6 +12,18 @@ use crate::error::FormatError;
 use crate::options::FormatOptions;
 use oxc_span::{FileExtension, SourceType};
 use vize_l0::{Allocator, String};
+use vize_l1::embed::syntax::format::{ParserReturn, parse_program_for_format};
+
+/// The formatter-profile parse of one embedded expression, kept out of line so
+/// the per-expression formatter frame does not grow by a parser.
+#[inline(never)]
+pub(crate) fn parse_for_print<'a>(
+    allocator: &'a oxc_allocator::Allocator,
+    source: &'a str,
+    source_type: SourceType,
+) -> ParserReturn<'a> {
+    parse_program_for_format(allocator, source, source_type)
+}
 
 pub(crate) use block_identity::format_sfc_script_content_stable;
 pub use expression::format_js_expression;

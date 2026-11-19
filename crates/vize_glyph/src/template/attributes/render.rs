@@ -69,6 +69,12 @@ pub(super) fn write_rendered_attribute(
     } else {
         attr
     };
+    // A one-line attribute has no continuation line whose literal ownership
+    // could matter; most attributes take this path.
+    if memchr::memchr(b'\n', attr.as_bytes()).is_none() {
+        output.extend_from_slice(attr.trim_end_matches('\r').as_bytes());
+        return;
+    }
     let mut lines = attr.split('\n');
     let mut literal = ValueLines::for_attribute(attr);
     if let Some(first) = lines.next() {

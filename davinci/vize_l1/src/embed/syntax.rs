@@ -18,8 +18,10 @@ mod admission;
 mod borrowed;
 mod coordinates;
 mod for_head;
+pub mod format;
 mod handler;
 mod handoff;
+pub mod literal_lines;
 mod params;
 mod program;
 mod shapes;
@@ -32,8 +34,10 @@ pub use for_head::{
     AdmittedDenseForHead, DenseForHeadView, ForHead, ForHeadHole, ForHeadPart, ForInput,
     ForInputError, ForKeyword, ForRefusal, RejectedForInput, parse_vue_for_head_once,
 };
+pub use format::parse_program_for_format;
 pub use handler::RetainedHandlerBody;
 pub use handoff::RetainedExpression;
+pub use literal_lines::{LiteralLineOptions, literal_line_starts};
 pub use params::RetainedSlotParams;
 pub use program::{ProgramGoal, ProgramOptions, parse_program_once};
 pub use shapes::{HandlerBodyView, SlotParamsView};

@@ -3,9 +3,9 @@ use crate::error::FormatError;
 use crate::options::FormatOptions;
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast::Statement;
-use oxc_formatter::parse_for_format;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, String, ToCompactString};
+use vize_l1::embed::syntax::parse_program_for_format;
 
 /// Formats an SFC script without letting cleanup erase its block identity.
 ///
@@ -35,7 +35,7 @@ pub(crate) fn format_sfc_script_content_stable(
 
 fn is_empty_statement_only_program(source: &str, source_type: SourceType) -> bool {
     let allocator = OxcAllocator::default();
-    let parsed = parse_for_format(&allocator, source, source_type);
+    let parsed = parse_program_for_format(&allocator, source, source_type);
     parsed.diagnostics.is_empty()
         && parsed.program.comments.is_empty()
         && parsed.program.directives.is_empty()
