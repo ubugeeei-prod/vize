@@ -6,9 +6,9 @@ Delete this file before merging.
 
 | Slice | Branch | PR | State |
 | ----- | ------ | -- | ----- |
-| L3-1 record | `davinci/l3-shared-decisions` | #13398 | docs only, auto-merge on |
+| L3-1 record | `davinci/l3-shared-decisions` | #13398 | merged |
 | L4-1 one `EmitDocument` | `davinci/l4-one-emit-document` | #13390 | code final candidate (v7); instruction evidence incomplete |
-| L4-2 SSR helpers in `vize_l4::runtime` | `davinci/l4-ssr-runtime-helpers` (this branch, stacked on L4-1) | none yet | code done; parity and suites done; instructions pending |
+| L4-2 SSR helpers in `vize_l4::runtime` | `davinci/l4-ssr-runtime-helpers` (this branch, stacked on L4-1) | none yet | code done; parity and suites done; ci-opt vs its v5 parent (run 44494869586 vs 44490444478): 12 `atelier_ssr_*` rows fall (up to −3.2%), 89 identical, 0 regress; twins and re-measure on the final L4-1 still owed |
 
 ## L4-1 measurement state
 
@@ -23,7 +23,7 @@ old head `6be122088b` (branches `measure/laneb-l41-*`), so they share the base.
 | v3 | identical to the deleted atelier copy | 46, up to +3.6% (push_escaped out of line, slower) | 21 |
 | v5 | v1 + link bookkeeping out of line, lean push_escaped `inline(always)` | 12, ≤ +0.48% | 7, up to +1.65% (SSR wrappers outlined) |
 | v6 | v5 with linking mutators left to the inliner | 8, ≤ +0.58% | 5, ≤ +0.11% (SSR `flush_push` escape loop) |
-| v7 (`35b30eb935`, branch head) | v6 + push_str `inline(always)`, push_escaped not forced | pending (`measure/laneb-l41-head-v7`) | pending: run 44495575103 |
+| v7 (`35b30eb935`; PR head rebased as `0784ba5dd3`) | v6 + push_str `inline(always)`, push_escaped not forced | pending: run 44498741070 | 2: `atelier_ssr_compile_medium` +0.014% (`flush_push` escape loop +304), `atelier_dom_compile_stress-deep` +0.006% (`vize_l1_to_l2` lowering, untouched; constant +125 in every variant); 32 rows fall |
 
 Every remaining ci-opt increase is in code this PR does not touch, per callgrind self-cost diffs
 (`core::str::from_utf8` in Croquis rows, `RuntimeHelpers::add` in atelier_core transforms,
