@@ -226,8 +226,7 @@ fn level_lowered_roots_emit_what_the_projection_emitted() {
         for root in &mut relief_lowered.roots {
             root.l2 = try_lower_root(relief, relief_source, &root.root);
         }
-        for (level_root, relief_root) in level_lowered.roots.into_iter().zip(relief_lowered.roots)
-        {
+        for (level_root, relief_root) in level_lowered.roots.into_iter().zip(relief_lowered.roots) {
             if !level_root.l2.as_ref().is_ok_and(|l2| l2.native) {
                 continue;
             }
