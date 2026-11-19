@@ -202,14 +202,12 @@ impl EmitDocument {
         self.text.len() as u32
     }
 
-    #[inline(always)]
     fn record(&mut self, generated: Span, authored: Span, name: Option<&str>) {
         if self.recording {
             self.push_link(generated, authored, name);
         }
     }
 
-    #[inline(always)]
     fn push_recorded(&mut self, text: &str, authored: Span, name: Option<&str>) {
         if self.recording {
             let start = self.cursor();
@@ -250,34 +248,29 @@ impl EmitDocument {
     }
 
     /// Anchor the next written byte at the authored byte `source`.
-    #[inline]
     pub fn anchor(&mut self, source: u32) {
         let at = self.cursor();
         self.record(Span::new(at, at), Span::new(source, source), None);
     }
 
     /// Append `text` generated from the authored unit starting at `source`.
-    #[inline]
     pub fn push_mapped(&mut self, text: &str, source: u32) {
         self.push_recorded(text, Span::new(source, source), None);
     }
 
     /// Append `text` generated from the authored range `authored`.
-    #[inline]
     pub fn push_linked(&mut self, text: &str, authored: Span) {
         self.push_recorded(text, authored, None);
     }
 
     /// Append `text` generated from the authored range `authored`, which
     /// spells the symbol `name`.
-    #[inline]
     pub fn push_named(&mut self, text: &str, authored: Span, name: &str) {
         self.push_recorded(text, authored, Some(name));
     }
 
     /// Append an emitted expression authored at `span` of `source_text`, with
     /// its whole-expression and rewritten-identifier links.
-    #[inline(always)]
     pub fn push_expression(&mut self, code: &str, span: Span, source_text: &str) {
         if self.recording {
             self.push_expression_links(code, span, source_text);
@@ -286,7 +279,6 @@ impl EmitDocument {
     }
 
     /// Append another document, rebasing its links.
-    #[inline(always)]
     pub fn push_spanned(&mut self, other: &EmitDocument) {
         if self.recording && !other.links.is_empty() {
             self.push_rebased_links(&other.links);
