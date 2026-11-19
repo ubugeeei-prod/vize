@@ -85,6 +85,7 @@ jobs:
     "test-js-packages",
     "full-rust-workspace",
     "full-rust-report",
+    "differential-acceptance",
     "rust-clippy-portability",
     "rust-davinci-allocations",
     "rust-native-differential",

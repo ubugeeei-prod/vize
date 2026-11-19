@@ -11,6 +11,7 @@ import {
 import { loadFormatterManifest } from "../differential/manifest.mjs";
 import { runFormatterPack } from "../differential/formatter.mjs";
 import { runFormatterHistoryCli } from "../differential/formatter-history-cli.ts";
+import { writeBundleEntry } from "../differential/bundle.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -33,6 +34,16 @@ void test("source-built formatter matches every exact reference and reaches a fi
   const acceptance = summarizeNativeAcceptance(loaded, report, {
     sourceRevision: revision.stdout.trim(),
   });
+  const bundleEntry = writeBundleEntry({
+    repoRoot: root,
+    tier: "T1",
+    pack: "cli",
+    manifestPath,
+    loaded,
+    report,
+    acceptance,
+  });
+  t.diagnostic(`Differential bundle entry: ${bundleEntry}`);
   assert.deepEqual(acceptance.total, {
     planned: count,
     nativeHandled: 0,

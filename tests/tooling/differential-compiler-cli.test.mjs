@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { summarizeNativeAcceptance } from "../differential/acceptance-rates.mjs";
 import { loadCompilerManifest, runCompilerPack } from "../differential/compiler.mjs";
+import { writeBundleEntry } from "../differential/bundle.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -27,6 +28,16 @@ void test("ordinary source-built compiler records intentional syntax failures wi
   const acceptance = summarizeNativeAcceptance(loaded, report, {
     sourceRevision: revision.stdout.trim(),
   });
+  const bundleEntry = writeBundleEntry({
+    repoRoot: root,
+    tier: "T1",
+    pack: "cli",
+    manifestPath,
+    loaded,
+    report,
+    acceptance,
+  });
+  t.diagnostic(`Differential bundle entry: ${bundleEntry}`);
   assert.deepEqual(acceptance.total, {
     planned: loaded.cases.length,
     nativeHandled: 0,

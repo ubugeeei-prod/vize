@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -13,6 +14,7 @@ import {
   type Capture,
 } from "../differential/typechecker.ts";
 import { passedFixtureTests } from "../differential/typechecker-shards.ts";
+import { readBundles, writeBundleEntry } from "../differential/bundle.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const manifest = path.join(root, "tests/_fixtures/differential/typechecker/manifest.json");
@@ -245,4 +247,23 @@ test("complete legacy-only observations stay in the denominator with zero native
     legacyBacked: 0,
     unverified: 0,
   });
+  // The expanded pack cases are the bundle's planned coordinates.
+  const bundleDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-typechecker-bundle-"));
+  try {
+    writeBundleEntry({
+      repoRoot: root,
+      bundleDir,
+      tier: "T1",
+      pack: "workspace",
+      manifestPath: manifest,
+      loaded,
+      report,
+      acceptance,
+    });
+    const [entry] = readBundles([bundleDir]);
+    assert.equal(entry.loaded.cases.length, loaded.cases.length);
+    assert.deepEqual(entry.acceptance, acceptance);
+  } finally {
+    fs.rmSync(bundleDir, { recursive: true, force: true });
+  }
 });

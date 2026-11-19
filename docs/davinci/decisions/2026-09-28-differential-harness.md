@@ -83,3 +83,10 @@ with compared templates is `legacy-backed`, and `equal` only while the corpus
 reports zero divergences (divergences are not attributed to projects). Every
 other native lane is `unsupported`. Compiler `vapor` has no real-project
 lane, so it has no T2 rows.
+
+## One census over every product (2026-11-19)
+
+Every T1 product runner and the T2 writer now share one bundle layout, and
+`tests/differential/native-acceptance.ts` publishes the per-product
+native-only rates and the zero-fallback verdict over both tiers. See
+[2026-11-19-native-acceptance-census.md](./2026-11-19-native-acceptance-census.md).
