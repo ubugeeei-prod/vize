@@ -341,13 +341,18 @@ export function rewriteRust(
         const close = matchingBrace(out, open);
         if (close < 0) continue;
         const body = out.slice(open + 1, close);
-        const rewritten = rewriteGroupBody(body, base, step);
+        const leaving: string[] = [];
+        const rewritten = rewriteGroupBody(body, base, step, leaving);
         const newHere = relocate(step.moves, here);
         const reached = newHere.slice(0, newHere.length - depth);
         const newBase = relocate(step.moves, base);
-        if (rewritten === body && reached.join("::") === newBase.join("::")) continue;
+        if (rewritten === body && !leaving.length && reached.join("::") === newBase.join("::"))
+          continue;
         result +=
-          out.slice(last, match.index) + ["crate", ...newBase].join("::") + "::{" + rewritten + "}";
+          out.slice(last, match.index) +
+          (leaving.length
+            ? regroup("crate", newBase, rewritten, leaving)
+            : ["crate", ...newBase].join("::") + "::{" + rewritten + "}");
         last = close + 1;
         opener.lastIndex = close + 1;
       }
@@ -412,17 +417,44 @@ function rewriteGroups(source: string, root: string, step: Step): string {
     const open = match.index + match[0].length - 1;
     const close = matchingBrace(source, open);
     if (close < 0) continue;
-    result +=
-      source.slice(last, open + 1) +
-      rewriteGroupBody(source.slice(open + 1, close), prefix, step) +
-      "}";
+    const leaving: string[] = [];
+    const body = rewriteGroupBody(source.slice(open + 1, close), prefix, step, leaving);
+    result += leaving.length
+      ? source.slice(last, match.index) + regroup(root, prefix, body, leaving)
+      : source.slice(last, open + 1) + body + "}";
     last = close + 1;
     opener.lastIndex = close + 1;
   }
   return result + source.slice(last);
 }
 
-function rewriteGroupBody(inner: string, prefix: readonly string[], step: Step): string {
+/**
+ * `root::{prefix::{body}, leaving…}`: a group whose members moved out of its
+ * prefix keeps the members that stayed under it and names the others from the
+ * root.
+ */
+function regroup(
+  root: string,
+  prefix: readonly string[],
+  body: string,
+  leaving: readonly string[],
+): string {
+  const stayed = body.trim().replace(/,$/u, "");
+  const kept = !stayed ? [] : prefix.length ? [`${prefix.join("::")}::{${stayed}}`] : [stayed];
+  return `${root}::{${[...kept, ...leaving].join(", ")}}`;
+}
+
+/**
+ * Relocate each member of a group against its prefix. A member that moves out
+ * of the group's (relocated) prefix is removed and, root-relative, pushed onto
+ * `leaving`; without a `leaving` list that is an error.
+ */
+function rewriteGroupBody(
+  inner: string,
+  prefix: readonly string[],
+  step: Step,
+  leaving?: string[],
+): string {
   const members: string[] = [];
   let depth = 0;
   let start = 0;
@@ -436,8 +468,9 @@ function rewriteGroupBody(inner: string, prefix: readonly string[], step: Step):
     }
   }
   members.push(inner.slice(start));
+  const left = new Set<number>();
   return members
-    .map((member) => {
+    .map((member, index) => {
       const lead = /^\s*/u.exec(member)![0];
       const body = member.slice(lead.length);
       const head = new RegExp(`^((?:${ident}::)+)`, "u").exec(body);
@@ -453,16 +486,21 @@ function rewriteGroupBody(inner: string, prefix: readonly string[], step: Step):
           lead +
           head[1] +
           "{" +
-          rewriteGroupBody(rest.slice(1, close), original, step) +
+          rewriteGroupBody(rest.slice(1, close), original, step, leaving) +
           rest.slice(close)
         );
       }
       // A moved group prefix carries its members; only their own move shows.
       const newPrefix = relocate(step.moves, prefix);
-      if (!startsWith(relocated, newPrefix))
-        throw new Error(`a group member leaves its group: ${original.join("::")}`);
+      if (!startsWith(relocated, newPrefix)) {
+        if (!leaving) throw new Error(`a group member leaves its group: ${original.join("::")}`);
+        leaving.push(relocated.join("::") + "::" + rest.trim());
+        left.add(index);
+        return "";
+      }
       return lead + relocated.slice(newPrefix.length).join("::") + "::" + rest;
     })
+    .filter((_member, index) => !left.has(index))
     .join(",");
 }
 

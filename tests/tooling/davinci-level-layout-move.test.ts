@@ -239,3 +239,30 @@ test("the style and Vue steps move the most specific module first", () => {
     "text",
   ]);
 });
+
+test("group members that leave their group are named from the root", () => {
+  const vue = steps["l1-vue"]!;
+  assert.equal(
+    rewriteRust("use vize_l1::markup::{directive::DirectiveName, token::Token};", vue, null),
+    "use vize_l1::{markup::{token::Token}, framework::vue::directive::DirectiveName};",
+  );
+  assert.equal(
+    rewriteRust("use super::{directive::DirectiveName, token::Token};", vue, [
+      "markup",
+      "grammar",
+    ]),
+    "use crate::{markup::{token::Token}, framework::vue::directive::DirectiveName};",
+  );
+  assert.equal(
+    rewriteRust("use vize_l1::markup::{directive::DirectiveName};", vue, null),
+    "use vize_l1::{framework::vue::directive::DirectiveName};",
+  );
+  assert.equal(
+    rewriteRust(
+      "use vize_l1::{dialect::vue3::VueDirectives, markup::{token::Token, directive::DirectivePrefix,},};",
+      vue,
+      null,
+    ),
+    "use vize_l1::{framework::vue::version::v3::VueDirectives, markup::{token::Token,}, framework::vue::directive::DirectivePrefix};",
+  );
+});
