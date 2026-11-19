@@ -1,51 +1,41 @@
-# perf/atelier-vapor-lower-stress-wide handoff (2026-11-18)
+# Handoff: perf/atelier-vapor-lower-stress-wide (PR #13344, closed; 2026-11-19)
 
-PR #13344 (ready, auto-merge NOT armed). Branch now holds variant v5 (sources) on top of the
-earlier v1 commit; the PR body still describes v1 and needs updating.
+Remove this `.handoff/` file before anything from this branch merges.
 
-## Root causes
-- `atelier_vapor_lower_stress-wide` +1.38% (#13307): no table work runs on this fixture. #13307
-  (l3.rs now instantiates `lower_with_caps_and_comment_policy::<Vec<_>>` in the vapor crate)
-  re-partitioned the ci-opt build (thin LTO, 16 CGUs). `HashMap<&str,()>::contains_key` stopped
-  being inlined into `write_attributes`, so each of the 100 static-attr override probes rose to
-  ~64 instr (+1405). Fix: skip the probe when no `v-bind` argument has the attr's length
-  (u32 mask, bit len%32). v5 builds the mask by scanning `el.props` in `write_attributes` only
-  (no struct/type change).
-- `atelier_ssr_codegen_large` +0.10% (#13328): `static_slot_name` built an owned String for every
-  static slot, and `slot_entry_name` quoted that copy. v5: `SlotName::{Plain(&str), Dotted(String)}`
-  borrowed in `ComponentTemplateSlot.name`; `slot_entry_name` match arm calls
-  `#[inline(always)] quoted_static_slot_name` that quotes the argument directly; dotted paths
-  are `#[cold] #[inline(never)]`.
+PR #13344 is closed, not merged, because no shape passes every bar yet. The
+branch head before this note is ab16d515b2 (v5). The SSR half now lives on
+`perf/atelier-ssr-slot-name`; see its own handoff.
 
-## Measurements (level-instruction-counts.yml; Callgrind is deterministic)
-- Main 403207f2d8: run 44289548336. A/A on 8d4b97a5: 44276729662 (merge queue) vs 44286294812
-  = 0 diffs over 107 stages.
-- Pre-culprit references: lower_stress-wide 102055 (fbe3f910); ssr_codegen_large 801474
-  (ef44203d, merge-queue run 44254143442). Main: 103460 / 802276.
-- v1 (PR head ecfeb925, run 44292501940): wide 97129, ssr 801722 (> pre); up: lower_stress-interp
-  +776, compile_small +52, compile_medium +73.
-- v2 (44294305604): 11 vapor stages up (generate_imports outlined). Rejected.
-- v3 (44296595392): wide 97172, ssr 801481; up: generate/compile_stress-wide +300
-  (generate_operation +3/call, same callees = partition), lower_stress-interp +1.
-- v4a/v4b (44299016749/44299215348): SSR quoted helper returning Option<String> is worse (801530).
-- v5 (44300504570, bench branch perf-bench/atelier-vapor-lower-v5 = this branch's sources):
-  ssr 801411 (<= pre-culprit OK), wide 98529 (OK); still up: generate_stress-wide +300,
-  compile_stress-wide +300, lower_large +56, generate_large +44, compile_large +100.
+## Measurement setup
 
-## Status of gates
-- Output byte-identity was verified for v1 only (DOM/SSR/Vapor of 6,222 inputs: 0 diffs). Redo for v5.
-- v5: cargo fmt + CI clippy (--profile ci -D warnings -D clippy::wildcard_imports) clean; tests
-  for ssr/vapor/sfc NOT yet completed on v5 (v1 passed). Assertion lint, source-length vs merge
-  base, storage tests passed on v1; component.rs stays at 659 lines in v5.
+- Scratch driver: branch `perf/pb-driver`, workflow file `level-instruction-counts.yml`.
+  - Dispatch: `gh workflow run level-instruction-counts.yml --ref perf/pb-driver -f release=true -f roles='["name=<full sha>",...]'`.
+  - Each role builds ci-opt exactly like pr-performance-observation, plus an optional release (fat LTO) probe.
+  - Each role then runs `instruction-counts.mjs --collect` (stages, formatter, sfc-parsing).
+- Diff the artifacts with the scratchpad tools `sdiff.py` and `cmp.sh` (path in the session report).
+- Base: 9c7d4cba55. Its Rust sources are identical to later mains up to dc783944a3. Base numbers are in run 44468615200.
 
-## Next steps
-1. The SSR half (v5) meets both bars. Keep it.
-2. Vapor: every variant moves unrelated vapor-crate codegen (CGU re-partition under ci-opt), e.g.
-   `generate::operations::generate_operation` +3 instr/call with identical callees. Decide with
-   the user whether such partition-only flips can be accepted (the vapor change is a real
-   -4.8..-6.1% on the target stage), or split SSR into its own PR and look into vapor separately
-   (e.g. check generate_operation asm on x86_64 to see what changed).
-3. Before pushing again: run tests, the byte-identity dump (scripts were in the session
-   scratchpad; vize build --format json --continue-on-error over all .vue + .vue.txt,
-   modes dom/--ssr/--vapor), update the PR body, then `gh pr merge 13344 --auto`.
-4. Delete bench branches perf-bench/atelier-vapor-lower-{v2,v4b,v5} after.
+## Vapor (`write_attributes` length mask)
+
+The target row is `atelier_vapor_lower_stress-wide`: 103,460 on main. Every mask shape drops it by 4.7–5.8%. But every shape also shifts the `vize_atelier_vapor` ci-opt codegen-unit partition (thin LTO, 16 CGUs). The shift moves unrelated generate rows up.
+
+| Variant (commit on 9c7d4) | lower_stress-wide | Rows up |
+| --- | ---: | --- |
+| va5 = v5, mask from a props scan (356dd54d12) | −4,931 | generate/compile_stress-wide +300, generate_large +44, lower_large +56, compile_large +100 |
+| va9, mask helper `#[inline(never)]` (cf5f2ae941) | −4,826 | same, plus lower_large +95, compile_large +139 |
+| va10, plain helper (32eaa58ee9) | −4,931 | same as va5 |
+| va11, mask from the bound-name set (58c9409943) | −6,006 | generate/compile_stress-wide +300, generate_large +44 (3 rows) |
+| va16, `fold` (b14910367b) | −5,969 | 13 rows up, up to +2.3% |
+
+- **x86 partition probe.** `xmono.sh` builds `cargo rustc --target x86_64-unknown-linux-gnu -Zprint-mono-items`, using a downloaded rust-std sysroot and `/usr/bin/true` as linker. `cgu2.py` compares root-item groupings.
+  - va5, va9, va10, va11, va12, va13, va15 and va17 all produce the same shifted partition (4 CGUs split vs main): `generate::operations::generate_operation` separates from its module mates, which costs about +3 instructions per call.
+  - va16, va18, va19, va21 and va22 produce a second, worse partition.
+  - No shape tried reproduces main's partition.
+- **Next ideas:**
+  - Find which callee `generate_operation` stops reaching locally. Use a callgrind function diff of `atelier_vapor_generate_stress-wide`, base vs va11, then make that callee partition-independent (e.g. `#[inline]`, so it is instantiated in every CGU).
+  - Alternatively, move the probe change to a module whose size estimate does not reorder the merge.
+- Output byte-identity was verified for v1 only. Redo it for the final shape.
+
+## Release-size rule (maintainer, 2026-11-19)
+
+Size is judged on the shipped release profile (fat LTO, 1 CGU), which must not grow. A ci-opt-only shift is not a regression. va16's release is +512 B; the other vapor variants were not release-probed.
