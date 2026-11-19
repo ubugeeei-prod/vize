@@ -191,9 +191,9 @@ export const steps: Readonly<Record<string, Step>> = {
     items: [],
     parents: {},
   },
-  // The parsed-component owners, named by what they own. Their `Debug` text is
-  // pinned by the reviewed #7502 attribute-value outputs; V4 of that evidence
-  // equals V3 once these names are spelled back (`rename_v4.json`).
+  // The parsed-component owners, named by what they own. The reviewed #7502
+  // attribute-value outputs pin their `Debug` text; the gates read them through
+  // `docs/davinci/plan/evidence-renames.json` (entry `l1-components`).
   "l1-components": {
     crate: "davinci/vize_l1",
     name: "vize_l1",

@@ -1,0 +1,18 @@
+{
+  "schema": "vize.evidence-renames",
+  "version": 1,
+  "renames": [
+    {
+      "id": "l1-components",
+      "names": [
+        ["NativeComponent", "OwnedComponent"],
+        ["NativeTemplateComponent", "SelectedTemplateComponent"]
+      ],
+      "evidence": [
+        "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output.json",
+        "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output_v2.json",
+        "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output_v3.json"
+      ]
+    }
+  ]
+}

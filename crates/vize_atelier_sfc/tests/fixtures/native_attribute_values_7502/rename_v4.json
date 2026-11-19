@@ -1,9 +1,0 @@
-{
-  "schema": "vize.native-attribute-values-7502.rename",
-  "from": 3,
-  "to": 4,
-  "names": {
-    "NativeComponent": "OwnedComponent",
-    "NativeTemplateComponent": "SelectedTemplateComponent"
-  }
-}

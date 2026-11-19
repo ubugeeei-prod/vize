@@ -22,16 +22,12 @@ import {
   fixtureUrl7502,
   hash7502,
   loadInputs7502,
-  outputSha7502,
   outputUrl7502,
-  previousSpelling7502,
-  renames7502,
   requireReviewed7502,
   transition7502,
   unchangedRows7502,
-  v3OutputSha7502,
-  v3OutputUrl7502,
 } from "./support/native-attribute-values-7502-inputs.ts";
+import { spellForwardText } from "./support/evidence-renames.ts";
 import { mandatory7502Paths } from "./support/native-attribute-values-7502-judge.ts";
 import { coordinate7502, maps7502 } from "./support/native-attribute-values-7502-maps.ts";
 import {
@@ -77,13 +73,13 @@ test("unfrozen/null, missing fields and incomplete rows cannot grant whole nativ
   const stored = JSON.parse(readFileSync(outputUrl7502, "utf8"));
   exactKeys7502(stored, ["schema", "version", "state", "capture"]);
   assert.equal(stored.schema, "vize.native-attribute-values-7502.reviewed-output");
-  assert.equal(stored.version, 4);
+  assert.equal(stored.version, 3);
   assert(["unfrozen", "reviewed"].includes(stored.state));
   if (stored.state === "unfrozen") assert.equal(stored.capture, null);
   else validateCapture7502(stored.capture); // Schema only; never hosted runtime credit.
   const unfrozen = {
     schema: "vize.native-attribute-values-7502.reviewed-output",
-    version: 4,
+    version: 3,
     state: "unfrozen",
     capture: null,
   };
@@ -131,27 +127,17 @@ test("mandatory hosted paths reject absent capture instead of using fixture nati
   );
 });
 
-test("reviewed V4 is V3 with only the L1 component owners renamed", () => {
-  const v3Bytes = readFileSync(v3OutputUrl7502);
-  const v4Bytes = readFileSync(outputUrl7502);
-  assert.equal(hash7502(v3Bytes), v3OutputSha7502, "whole reviewed V3 bytes drift");
-  assert.equal(hash7502(v4Bytes), outputSha7502, "whole reviewed V4 bytes drift");
-  const [v3Text, v4Text] = [v3Bytes, v4Bytes].map((bytes) => bytes.toString("utf8"));
-  const pairs = renames7502();
-  for (const [old, renamed] of pairs) {
-    assert(!v3Text.includes(renamed), `V3 already spells ${renamed}`);
-    assert(v3Text.includes(old), `V3 never spells ${old}`);
-    assert(!v4Text.includes(old), `V4 still spells ${old}`);
-  }
-  const [v3, v4] = [v3Text, v4Text].map((text) => JSON.parse(text));
-  assert.equal(v4.version, 4);
-  assert.deepEqual({ ...v4, version: 3, capture: null }, { ...v3, capture: null });
-  assert.notDeepEqual(v4.capture, v3.capture);
-  assert.deepEqual(previousSpelling7502(v4.capture, pairs), v3.capture);
-  // A row that differs beyond the rename stays different after spelling back.
-  const forged = structuredClone(v4.capture);
-  forged.rows[0].observation.file.nodeCount++;
-  assert.notDeepEqual(previousSpelling7502(forged, pairs), v3.capture);
+test("a capture spelled with today's names meets the pinned V3 through the rename map", () => {
+  const file =
+    "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output_v3.json";
+  const text = readFileSync(outputUrl7502, "utf8");
+  const frozen = JSON.parse(text);
+  const today = JSON.parse(spellForwardText(text, file)).capture;
+  assert.notDeepEqual(today, frozen.capture, "the rename changes the recorded Debug text");
+  requireReviewed7502(today, frozen);
+  unchangedRows7502(today);
+  today.rows[0].observation.file.nodeCount++;
+  assert.throws(() => requireReviewed7502(today, frozen), /must equal frozen output/);
 });
 
 test("the named successor retains every original byte and every unaffected whole row", () => {

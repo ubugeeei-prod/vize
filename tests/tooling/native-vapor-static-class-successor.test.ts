@@ -79,17 +79,17 @@ await test("the actual original L3 class refusal is an additional mandatory pinn
   ]);
 });
 
-await test("current whole V4 output is deliberately unqualified until independently frozen", () => {
+await test("current whole V3 output is deliberately unqualified until independently frozen", () => {
   const fixture = JSON.parse(
     readFileSync(
       new URL(
-        "../../crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output_v4.json",
+        "../../crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output_v3.json",
         import.meta.url,
       ),
       "utf8",
     ),
   );
-  assert.equal(fixture.version, 4);
+  assert.equal(fixture.version, 3);
   if (fixture.state === "unfrozen") {
     assert.equal(fixture.capture, null);
     assert.throws(() => requireReviewed7502(previousCapture7502(), fixture), /remain unfrozen/);
