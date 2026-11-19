@@ -410,26 +410,22 @@ mod tests {
 
     #[test]
     fn test_detects_math_random() {
-        let content = "items.map(() => Math.random())";
-        assert!(NoHydrationMismatch::check_expression(content).is_some());
+        assert!(NoHydrationMismatch::check_expression("items.map(() => Math.random())").is_some());
     }
 
     #[test]
     fn test_detects_date_now() {
-        let content = "Date.now()";
-        assert!(NoHydrationMismatch::check_expression(content).is_some());
+        assert!(NoHydrationMismatch::check_expression("Date.now()").is_some());
     }
 
     #[test]
     fn test_detects_new_date() {
-        let content = "new Date()";
-        assert!(NoHydrationMismatch::check_expression(content).is_some());
+        assert!(NoHydrationMismatch::check_expression("new Date()").is_some());
     }
 
     #[test]
     fn test_detects_crypto_random() {
-        let content = "crypto.randomUUID()";
-        assert!(NoHydrationMismatch::check_expression(content).is_some());
+        assert!(NoHydrationMismatch::check_expression("crypto.randomUUID()").is_some());
     }
 
     #[test]
