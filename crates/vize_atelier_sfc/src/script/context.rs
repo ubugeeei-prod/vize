@@ -12,8 +12,8 @@ pub use batch_epoch::{TypeResolutionBatchGuard, begin_type_resolution_batch};
 pub use external_types::resolution::project::Project as SfcTypeProject;
 pub use source_snapshot::TypeSourceSnapshot;
 
-use crate::types::{BindingMetadata, BindingType};
-use vize_carton::{CompactString, String, ToCompactString};
+use crate::types::BindingMetadata;
+use vize_carton::{String, ToCompactString};
 
 use super::ScriptSetupMacros;
 

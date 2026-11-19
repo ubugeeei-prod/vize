@@ -3,8 +3,8 @@ use oxc_ast::ast::{
     Argument, CallExpression, Expression, ObjectExpression, ObjectPropertyKind, PropertyKey,
     Statement,
 };
-use oxc_span::{GetSpan, SourceType};
-use vize_carton::{CompactString, String, ToCompactString};
+use oxc_span::SourceType;
+use vize_carton::{String, ToCompactString};
 
 use super::MacroCall;
 
