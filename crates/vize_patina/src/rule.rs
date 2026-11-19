@@ -1,7 +1,10 @@
 //! Rule trait and registry for lint rules.
 
+mod dispatch_plan;
 mod happy_path;
 mod opt_in;
+
+pub(crate) use dispatch_plan::{IndexedHookMask, IndexedRulePlans, LegacyTemplatePlan};
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
@@ -199,6 +202,9 @@ pub struct RuleRegistry {
     /// [`Self::markup_ranks_named`] for the first name list asked, until a
     /// rule is registered or replaced.
     named_markup_ranks: OnceLock<(&'static [&'static str], Vec<usize>)>,
+    /// Legacy visitor ranks and callback masks paired with the first named SFC
+    /// facade plan. Preset-backed linters reuse this plan for every file.
+    named_legacy_template_plan: OnceLock<(&'static [&'static str], usize, LegacyTemplatePlan)>,
 }
 
 impl RuleRegistry {
@@ -212,6 +218,7 @@ impl RuleRegistry {
             has_exit_element_rules: true,
             ecosystem_template_prefix: None,
             named_markup_ranks: OnceLock::new(),
+            named_legacy_template_plan: OnceLock::new(),
         }
     }
 
@@ -223,6 +230,7 @@ impl RuleRegistry {
             has_exit_element_rules: false,
             ecosystem_template_prefix: None,
             named_markup_ranks: OnceLock::new(),
+            named_legacy_template_plan: OnceLock::new(),
         }
     }
 
@@ -230,6 +238,7 @@ impl RuleRegistry {
     pub fn register(&mut self, rule: Box<dyn Rule>) {
         self.ecosystem_template_prefix = None;
         self.named_markup_ranks = OnceLock::new();
+        self.named_legacy_template_plan = OnceLock::new();
         self.rule_names.push(rule.meta().name);
         self.rules.push(rule);
     }
@@ -237,6 +246,7 @@ impl RuleRegistry {
     pub(crate) fn replace(&mut self, rule: Box<dyn Rule>) {
         self.ecosystem_template_prefix = None;
         self.named_markup_ranks = OnceLock::new();
+        self.named_legacy_template_plan = OnceLock::new();
         let rule_name = rule.meta().name;
         if let Some(slot) = self
             .rule_names
@@ -309,6 +319,28 @@ impl RuleRegistry {
         let (list, ranks) = self.named_markup_ranks.get_or_init(|| (names, compute()));
         if std::ptr::eq(*list, names) {
             Cow::Borrowed(ranks)
+        } else {
+            Cow::Owned(compute())
+        }
+    }
+
+    /// Legacy ranks and exact callback masks beside one named markup facade.
+    /// The full preset path is stable across files, so retain its plan beside
+    /// the registry instead of rebuilding seven masks for every SFC.
+    pub(crate) fn legacy_template_plan_named(
+        &self,
+        count: usize,
+        names: &'static [&'static str],
+    ) -> Cow<'_, LegacyTemplatePlan> {
+        let compute = || {
+            let facade_ranks = self.markup_ranks_named(names);
+            LegacyTemplatePlan::new(&self.rules, count, &facade_ranks)
+        };
+        let (list, cached_count, plan) = self
+            .named_legacy_template_plan
+            .get_or_init(|| (names, count, compute()));
+        if std::ptr::eq(*list, names) && *cached_count == count {
+            Cow::Borrowed(plan)
         } else {
             Cow::Owned(compute())
         }

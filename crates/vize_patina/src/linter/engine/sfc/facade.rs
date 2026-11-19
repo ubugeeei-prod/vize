@@ -130,22 +130,30 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
         return;
     }
 
+    let cached_legacy =
+        (linter.enabled_rules.is_none() && linter.disabled_rules.is_empty()).then(|| {
+            linter
+                .registry
+                .legacy_template_plan_named(input.rule_count, input.rules)
+        });
     let mut legacy = SmallVec::<[usize; 128]>::new();
-    let mut selected_index = 0;
-    for rank in 0..input.rule_count {
-        while selected
-            .get(selected_index)
-            .is_some_and(|rule| rule.rank() < rank)
-        {
-            selected_index += 1;
-        }
-        if selected
-            .get(selected_index)
-            .is_some_and(|rule| rule.rank() == rank)
-        {
-            selected_index += 1;
-        } else {
-            legacy.push(rank);
+    if cached_legacy.is_none() {
+        let mut selected_index = 0;
+        for rank in 0..input.rule_count {
+            while selected
+                .get(selected_index)
+                .is_some_and(|rule| rule.rank() < rank)
+            {
+                selected_index += 1;
+            }
+            if selected
+                .get(selected_index)
+                .is_some_and(|rule| rule.rank() == rank)
+            {
+                selected_index += 1;
+            } else {
+                legacy.push(rank);
+            }
         }
     }
     let markup = input.l2.markup();
@@ -155,8 +163,12 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
         document = document.with_analysis(analysis);
     }
     {
-        let mut visitor = LintVisitor::with_rule_indices(ctx, rules, names, exit, &legacy)
-            .with_template_directives(&directives);
+        let mut visitor = if let Some(plan) = cached_legacy.as_deref() {
+            LintVisitor::with_rule_plan(ctx, rules, names, exit, &plan.indices, &plan.hooks)
+        } else {
+            LintVisitor::with_rule_indices(ctx, rules, names, exit, &legacy)
+        }
+        .with_template_directives(&directives);
         profile!("patina.template.visit", visitor.visit_root(input.root));
     }
     profile!("patina.sfc.facade.visit", {

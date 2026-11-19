@@ -1,8 +1,9 @@
 //! Specialize editor bookkeeping outside the ordinary per-rule hot loop.
 
-use super::{IndexedHookMask, LintVisitor, RuleSelection};
 use crate::context::{CallbackSite, LintContext};
-use crate::rule::Rule;
+use crate::rule::{IndexedHookMask, Rule};
+
+use super::{LintVisitor, RuleSelection};
 
 impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     #[inline]
