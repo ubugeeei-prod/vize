@@ -6,6 +6,7 @@
 //! The table rides on the canonical artifact (`ArtifactParts::texts`).
 
 use alloc::vec::Vec as StdVec;
+use core::mem::MaybeUninit;
 use vize_l0::id::NodeId;
 use vize_l0::{Span, String};
 
@@ -117,33 +118,65 @@ const _: () = {
 ///
 /// [`OpaqueExpr::source`]: crate::expr::OpaqueExpr::source
 pub fn rebuild_source(parts: &[TextPart]) -> String {
-    // Escaped delimiters add six bytes and raw delimiters eight; one
-    // allocation suffices.
-    let capacity = (parts.iter())
+    let capacity = parts
+        .iter()
         .map(|part| {
-            part.text.len()
-                + if part.raw_html {
-                    8
-                } else if part.dynamic {
-                    6
-                } else {
-                    0
-                }
+            let (open, close) = delimiters(part);
+            open.len() + part.text.len() + close.len()
         })
         .sum();
     let mut out = String::with_capacity(capacity);
-    for part in parts {
-        if part.raw_html {
-            out.push_str("{{{ ");
-            out.push_str(part.text.as_str());
-            out.push_str(" }}}");
-        } else if part.dynamic {
-            out.push_str("{{ ");
-            out.push_str(part.text.as_str());
-            out.push_str(" }}");
-        } else {
-            out.push_str(part.text.as_str());
-        }
-    }
+    // One pass of plain copies into the pre-sized buffer, so the cost never
+    // depends on whether LLVM inlines `CompactString::push_str` at six call
+    // sites (it stopped doing so when unrelated code left this crate).
+    //
+    // SAFETY: `spare` is `out`'s uninitialized tail (`out` is empty, so it
+    // starts at byte 0). `fill` initializes a prefix of it and returns its
+    // length, which is at most `spare.len()`. That prefix is a concatenation
+    // of whole `&str` pieces, so it is valid UTF-8. An inline string's tag byte
+    // is overwritten only when the prefix fills the inline capacity, and then
+    // it is the final byte of that complete, valid UTF-8 string, which is what
+    // `spare_capacity_mut` allows.
+    let written = fill(unsafe { out.spare_capacity_mut() }, parts);
+    // SAFETY: `fill` initialized exactly `written <= capacity()` bytes of
+    // valid UTF-8 (see above), and nothing touched `out` in between.
+    unsafe { out.set_len(written) };
     out
+}
+
+/// The delimiters around a part's text in the rebuild.
+fn delimiters(part: &TextPart) -> (&'static str, &'static str) {
+    if part.raw_html {
+        ("{{{ ", " }}}")
+    } else if part.dynamic {
+        ("{{ ", " }}")
+    } else {
+        ("", "")
+    }
+}
+
+/// Copy the rebuild of `parts` into `spare` and return the number of bytes
+/// initialized. It copies whole pieces only and stops at the first piece that
+/// does not fit (it always fits: the caller sized `spare` from the same parts).
+fn fill(spare: &mut [MaybeUninit<u8>], parts: &[TextPart]) -> usize {
+    let mut written = 0;
+    // A macro, not a helper, so no copy waits on an inlining decision.
+    macro_rules! put {
+        ($piece:expr) => {{
+            let bytes: &[u8] = $piece.as_bytes();
+            let end = written + bytes.len();
+            let Some(slot) = spare.get_mut(written..end) else {
+                return written;
+            };
+            slot.write_copy_of_slice(bytes);
+            written = end;
+        }};
+    }
+    for part in parts {
+        let (open, close) = delimiters(part);
+        put!(open);
+        put!(part.text.as_str());
+        put!(close);
+    }
+    written
 }
