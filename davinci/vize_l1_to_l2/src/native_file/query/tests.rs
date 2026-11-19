@@ -9,7 +9,8 @@ use vize_l0::{
 };
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l2::{
-    file::{FileIssueKind, PositionQueryError},
+    file::FileIssueKind,
+    query::{Model, PositionQueryError},
     resolution::Usage,
 };
 
@@ -245,7 +246,7 @@ fn original_refused_assembly_cannot_mint_a_query_view_from_partial_file_facts() 
             let issues = if let Some(file) = rejected.file() {
                 assert!(!file.is_complete());
                 assert!(matches!(
-                    file.binding_at_offset(at(source, "value", 1)),
+                    Model::new(file).binding_at_offset(at(source, "value", 1)),
                     Err(PositionQueryError::IncompleteFile)
                 ));
                 file.issues()

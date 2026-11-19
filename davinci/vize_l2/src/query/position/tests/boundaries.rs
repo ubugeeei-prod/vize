@@ -1,6 +1,7 @@
 use super::{
     Allocator, Error, FileProducer, ProgramScope, SourceRoot, SourceType, Span, append, offset,
 };
+use crate::query::Model;
 
 #[test]
 fn authored_utf8_boundaries_nonzero_origins_and_half_open_ends_are_checked() {
@@ -24,23 +25,28 @@ fn authored_utf8_boundaries_nonzero_origins_and_half_open_ends_are_checked() {
     let owner = producer.finish().unwrap();
     assert!(owner.is_complete());
     let name = offset(source, "é =");
-    let declaration = owner.binding_at_offset(name).unwrap().unwrap();
+    let declaration = Model::new(&owner).binding_at_offset(name).unwrap().unwrap();
     assert_eq!(
         declaration.declaration().unwrap().span,
         Span::new(name, name + 2)
     );
     assert!(matches!(
-        owner.binding_at_offset(name + 1),
+        Model::new(&owner).binding_at_offset(name + 1),
         Err(Error::NotCharBoundary)
     ));
     assert!(matches!(
-        owner.reference_at_offset(1),
+        Model::new(&owner).reference_at_offset(1),
         Err(Error::NotCharBoundary)
     ));
-    assert!(owner.binding_at_offset(name + 2).unwrap().is_none());
+    assert!(
+        Model::new(&owner)
+            .binding_at_offset(name + 2)
+            .unwrap()
+            .is_none()
+    );
     let use_at = source.rfind('é').unwrap() as u32;
     assert_eq!(
-        owner
+        Model::new(&owner)
             .reference_at_offset(use_at)
             .unwrap()
             .unwrap()
@@ -48,24 +54,34 @@ fn authored_utf8_boundaries_nonzero_origins_and_half_open_ends_are_checked() {
             .span,
         Span::new(use_at, use_at + 2)
     );
-    assert!(owner.reference_at_offset(use_at + 2).unwrap().is_none());
-    assert!(owner.scope_at_offset(start).unwrap().is_some());
+    assert!(
+        Model::new(&owner)
+            .reference_at_offset(use_at + 2)
+            .unwrap()
+            .is_none()
+    );
+    assert!(Model::new(&owner).scope_at_offset(start).unwrap().is_some());
     for at in [0, start - 1, end, source.len() as u32] {
-        assert!(owner.scope_at_offset(at).unwrap().is_none());
-        assert!(owner.binding_at_offset(at).unwrap().is_none());
-        assert!(owner.reference_at_offset(at).unwrap().is_none());
+        assert!(Model::new(&owner).scope_at_offset(at).unwrap().is_none());
+        assert!(Model::new(&owner).binding_at_offset(at).unwrap().is_none());
+        assert!(
+            Model::new(&owner)
+                .reference_at_offset(at)
+                .unwrap()
+                .is_none()
+        );
     }
     let invalid = source.len() as u32 + 1;
     assert!(matches!(
-        owner.scope_at_offset(invalid),
+        Model::new(&owner).scope_at_offset(invalid),
         Err(Error::OutOfBounds)
     ));
     assert!(matches!(
-        owner.binding_at_offset(invalid),
+        Model::new(&owner).binding_at_offset(invalid),
         Err(Error::OutOfBounds)
     ));
     assert!(matches!(
-        owner.reference_at_offset(invalid),
+        Model::new(&owner).reference_at_offset(invalid),
         Err(Error::OutOfBounds)
     ));
 }
@@ -92,13 +108,13 @@ fn units_can_be_recorded_in_reverse_source_order_without_crossing_opaque_gaps() 
     let owner = producer.finish().unwrap();
     assert!(owner.is_complete());
     for (needle, unit) in [("earlier =", 4), ("later =", 9)] {
-        let binding = owner
+        let binding = Model::new(&owner)
             .binding_at_offset(offset(source, needle))
             .unwrap()
             .unwrap();
         assert_eq!(binding.declaration().unwrap().unit.index(), unit);
         assert_eq!(
-            owner
+            Model::new(&owner)
                 .scope_at_offset(offset(source, needle))
                 .unwrap()
                 .unwrap()
@@ -108,7 +124,7 @@ fn units_can_be_recorded_in_reverse_source_order_without_crossing_opaque_gaps() 
         );
     }
     assert!(
-        owner
+        Model::new(&owner)
             .scope_at_offset(offset(source, "opaque"))
             .unwrap()
             .is_none()
@@ -140,15 +156,15 @@ fn overlapping_original_unit_observations_are_ambiguous_even_on_a_non_name_byte(
         source.rfind("local").unwrap() as u32,
     ] {
         assert!(matches!(
-            owner.scope_at_offset(at),
+            Model::new(&owner).scope_at_offset(at),
             Err(Error::AmbiguousSite)
         ));
         assert!(matches!(
-            owner.binding_at_offset(at),
+            Model::new(&owner).binding_at_offset(at),
             Err(Error::AmbiguousSite)
         ));
         assert!(matches!(
-            owner.reference_at_offset(at),
+            Model::new(&owner).reference_at_offset(at),
             Err(Error::AmbiguousSite)
         ));
     }

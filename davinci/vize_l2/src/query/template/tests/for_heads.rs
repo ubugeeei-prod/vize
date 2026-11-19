@@ -1,6 +1,7 @@
 use super::{
     Allocator, TemplateSiteScope, TemplateSymbolRef, at, attempt, file, native, site, uses,
 };
+use crate::query::Model;
 
 #[test]
 fn original_for_alias_declarations_and_collection_keep_distinct_real_file_origins() {
@@ -63,12 +64,14 @@ fn original_nested_for_collection_resolves_parent_alias_before_its_own_shadowing
     );
     assert_eq!(uses(file, nested.symbol()), [inner_use.span()]);
     assert!(
-        file.template_symbol_at_offset(at(source, " in "))
+        Model::new(&file)
+            .template_symbol_at_offset(at(source, " in "))
             .unwrap()
             .is_none()
     );
     assert!(
-        file.template_symbol_at_offset(parent.span().end)
+        Model::new(&file)
+            .template_symbol_at_offset(parent.span().end)
             .unwrap()
             .is_none()
     );
@@ -90,7 +93,8 @@ fn original_for_unicode_sites_and_entity_refusals_keep_actual_source_namespaces(
     assert!(!alias.symbol().same_symbol(collection.symbol()));
     for byte in collection.span().start..collection.span().end {
         assert!(
-            file.template_symbol_at_offset(byte)
+            Model::new(&file)
+                .template_symbol_at_offset(byte)
                 .unwrap()
                 .unwrap()
                 .symbol()
@@ -98,13 +102,14 @@ fn original_for_unicode_sites_and_entity_refusals_keep_actual_source_namespaces(
         );
     }
     assert!(
-        file.template_symbol_at_offset(collection.span().end)
+        Model::new(&file)
+            .template_symbol_at_offset(collection.span().end)
             .unwrap()
             .is_none()
     );
     assert_eq!(uses(file, alias.symbol()), [reference.span()]);
     assert!(matches!(
-        file.template_symbol_at_offset(alias.span().start + 4),
+        Model::new(&file).template_symbol_at_offset(alias.span().start + 4),
         Err(super::TemplateQueryError::Position(
             super::PositionQueryError::NotCharBoundary
         ))
@@ -126,7 +131,7 @@ fn original_for_unicode_sites_and_entity_refusals_keep_actual_source_namespaces(
     assert_eq!(original.operand().raw_value(), "caf&#233; in it&#101;ms");
     assert!(original.operand().syntax().source().decode_map().is_some());
     assert!(matches!(
-        partial.template_symbol_at_offset(at(encoded, "caf&#233;")),
+        Model::new(&partial).template_symbol_at_offset(at(encoded, "caf&#233;")),
         Err(super::TemplateQueryError::Position(
             super::PositionQueryError::IncompleteFile
         ))

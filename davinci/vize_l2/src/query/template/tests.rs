@@ -3,6 +3,7 @@ use super::{
     TemplateSymbolRef,
 };
 use crate::lang::js::{NativeTemplateFile, NativeTemplateOwner};
+use crate::query::Model;
 use vize_l0::Span;
 use vize_l0::{
     Allocator,
@@ -71,14 +72,16 @@ fn at(source: &str, needle: &str) -> u32 {
 }
 
 fn site<'f, 'a>(file: &'f FileArtifact<'a>, source: &str, needle: &str) -> TemplateSiteRef<'f, 'a> {
-    file.template_symbol_at_offset(at(source, needle))
+    Model::new(&file)
+        .template_symbol_at_offset(at(source, needle))
         .unwrap()
         .unwrap()
 }
 
 fn uses(file: &FileArtifact<'_>, symbol: TemplateSymbolRef<'_, '_>) -> alloc::vec::Vec<Span> {
     let mut spans = alloc::vec::Vec::new();
-    file.for_each_template_reference_to(symbol, |site| spans.push(site.span()))
+    Model::new(&file)
+        .for_each_template_reference_to(symbol, |site| spans.push(site.span()))
         .unwrap();
     spans.sort_by_key(|span| (span.start, span.end));
     spans

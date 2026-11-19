@@ -1,6 +1,7 @@
 use super::{
     Allocator, PositionQueryError, TemplateQueryError, at, attempt, file, native, site, uses,
 };
+use crate::query::Model;
 
 #[test]
 fn equal_bytes_and_equal_local_ids_never_transfer_file_or_handler_symbols() {
@@ -18,7 +19,7 @@ fn equal_bytes_and_equal_local_ids_never_transfer_file_or_handler_symbols() {
         assert!(!local.symbol().same_symbol(foreign.symbol()));
         let mut visits = 0;
         assert_eq!(
-            left.for_each_template_reference_to(foreign.symbol(), |_| visits += 1),
+            Model::new(&left).for_each_template_reference_to(foreign.symbol(), |_| visits += 1),
             Err(TemplateQueryError::ForeignSymbol)
         );
         assert_eq!(visits, 0);
@@ -48,7 +49,7 @@ fn actual_late_header_refusal_never_grants_partial_query_completion() {
     assert!(partial.unattached_handlers().next().is_some());
     for offset in [0, at(source, "$event"), source.len() as u32, u32::MAX] {
         assert!(matches!(
-            partial.template_symbol_at_offset(offset),
+            Model::new(&partial).template_symbol_at_offset(offset),
             Err(TemplateQueryError::Position(
                 PositionQueryError::IncompleteFile
             ))
@@ -57,7 +58,7 @@ fn actual_late_header_refusal_never_grants_partial_query_completion() {
     let binding = partial.bindings().next().unwrap();
     let mut visits = 0;
     assert_eq!(
-        partial
+        Model::new(&partial)
             .for_each_template_reference_to(super::TemplateSymbolRef::File(binding), |_| visits +=
                 1),
         Err(TemplateQueryError::Position(
@@ -80,28 +81,31 @@ fn moved_original_owner_repeated_queries_do_not_change_original_arena_or_sites()
         let current = site(file, source, "item in items");
         assert!(current.symbol().same_symbol(alias.symbol()));
         let mut visits = 0;
-        file.for_each_template_reference_to(current.symbol(), |site| {
-            assert_eq!(site.span(), expected);
-            assert!(core::ptr::eq(site.file(), file));
-            visits += 1;
-        })
-        .unwrap();
+        Model::new(&file)
+            .for_each_template_reference_to(current.symbol(), |site| {
+                assert_eq!(site.span(), expected);
+                assert!(core::ptr::eq(site.file(), file));
+                visits += 1;
+            })
+            .unwrap();
         assert_eq!(visits, 1);
     }
     assert_eq!(arena.allocated_bytes(), before);
     assert!(matches!(
-        file.template_symbol_at_offset(u32::MAX),
+        Model::new(&file).template_symbol_at_offset(u32::MAX),
         Err(TemplateQueryError::Position(
             PositionQueryError::OutOfBounds
         ))
     ));
     assert!(
-        file.template_symbol_at_offset(at(source, "items=2"))
+        Model::new(&file)
+            .template_symbol_at_offset(at(source, "items=2"))
             .unwrap()
             .is_none()
     );
     assert!(
-        file.binding_at_offset(at(source, "items=2"))
+        Model::new(&file)
+            .binding_at_offset(at(source, "items=2"))
             .unwrap()
             .is_some()
     );
@@ -131,7 +135,7 @@ fn query_order_and_visitor_unwind_do_not_mutate_original_attachment_or_identity(
     }
     assert!(
         std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            let _ = file.for_each_template_reference_to(left.symbol(), |_| {
+            let _ = Model::new(&file).for_each_template_reference_to(left.symbol(), |_| {
                 std::panic::resume_unwind(alloc::boxed::Box::new("original query visitor"));
             });
         }))
