@@ -65,7 +65,7 @@ impl NoDeprecatedSlotAttribute {
             return;
         }
 
-        element.walk_attributes(&mut |attribute: MarkupAttribute<'_>| {
+        element.walk_attributes_inlined(&mut |attribute: MarkupAttribute<'_>| {
             if attribute.name() == "slot" {
                 Self::report(ctx, attribute.name_range());
             }
@@ -87,7 +87,7 @@ impl NoDeprecatedSlotAttribute {
             return;
         };
         let mut end = argument.end;
-        directive.walk_modifier_ranges(&mut |_modifier, range| {
+        directive.walk_modifier_ranges_inlined(&mut |_modifier, range| {
             end = end.max(range.end);
         });
         Self::report(ctx, ByteRange::new(start, end));

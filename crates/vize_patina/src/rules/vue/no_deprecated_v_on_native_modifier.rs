@@ -64,7 +64,7 @@ impl NoDeprecatedVOnNativeModifier {
         }
 
         let mut native_range = None;
-        directive.walk_modifier_ranges(&mut |modifier, range| {
+        directive.walk_modifier_ranges_inlined(&mut |modifier, range| {
             if native_range.is_none() && modifier == "native" {
                 native_range = Some(range);
             }

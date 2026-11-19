@@ -250,6 +250,13 @@ impl<'a> MarkupDirective<'a> {
     /// `prop` a `.name` shorthand implies is not spelled, so it is not visited;
     /// [`Self::walk_modifiers`] keeps it.
     pub fn walk_modifier_ranges(&self, visitor: &mut impl FnMut(&'a str, ByteRange)) {
+        self.walk_modifier_ranges_inlined(visitor);
+    }
+
+    /// [`Self::walk_modifier_ranges`], always inlined: for the few rule loops whose cost depends
+    /// on this walk being inlined, whatever the codegen-unit split.
+    #[inline(always)]
+    pub(crate) fn walk_modifier_ranges_inlined(&self, visitor: &mut impl FnMut(&'a str, ByteRange)) {
         match self.inner {
             MarkupDirectiveInner::Relief(node) => {
                 // An implied modifier's location never covers its own text.

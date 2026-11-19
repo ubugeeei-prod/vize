@@ -47,7 +47,7 @@ impl NoConsecutiveBr {
 
         let mut last_br_seen = false;
 
-        element.walk_children(&mut |child| match child {
+        element.walk_children_inlined(&mut |child| match child {
             MarkupNode::Element(child) if child.is_unqualified_tag_exact("br") => {
                 if last_br_seen {
                     let message = ctx.lint().t("html/no-consecutive-br.message");

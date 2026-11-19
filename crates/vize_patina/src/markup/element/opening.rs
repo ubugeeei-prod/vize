@@ -11,6 +11,13 @@ use vize_relief::PropNode;
 impl<'a> MarkupElement<'a> {
     /// Visit static attributes on this element.
     pub fn walk_attributes(&self, visitor: &mut impl FnMut(MarkupAttribute<'a>)) {
+        self.walk_attributes_inlined(visitor);
+    }
+
+    /// [`Self::walk_attributes`], always inlined: for the few rule loops whose cost depends
+    /// on this walk being inlined, whatever the codegen-unit split.
+    #[inline(always)]
+    pub(crate) fn walk_attributes_inlined(&self, visitor: &mut impl FnMut(MarkupAttribute<'a>)) {
         match self.inner {
             MarkupElementInner::Authored {
                 element,
