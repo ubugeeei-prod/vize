@@ -27,7 +27,7 @@ const self = "tools/support/levels/rename-codenames.ts";
 // The completion gate must spell the names it bans; it moves but keeps its bytes.
 const gate = /^tools\/commands\/[^/]+\/completion-gates\.ts$/u;
 const capture =
-  /\.(?:log|jsonl|stderr|stdout)(?:\.txt)?$|(?:^|\/)(?:stderr|stdout)\.txt$|(?:^|\/)(?:fix-history|capture-[^/]+)\/|(?:^|\/)(?:original-[^/]*|observed-[^/]*\.json|[^/]*\.observation\.json)$/u;
+  /\.(?:log|jsonl|stderr|stdout)(?:\.txt)?$|(?:^|\/)(?:stderr|stdout)\.txt$|(?:^|\/)(?:fix-history|capture-[^/]+)\/|(?:^|\/)(?:original-[^/]*|observed-[^/]*\.json|[^/]*[.-]observation\.json)$/u;
 /**
  * Captured output that a live parser or comparison reads in tests is a test input and follows the
  * rename: observer logs, the generated L3 reference graphs and the dump CLI's expected stderr.
