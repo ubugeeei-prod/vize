@@ -9,6 +9,8 @@ on:
       head_sha: { description: Head commit, required: true, type: string }
       formatter: { description: Formatter suites instead of stage suites, required: false, default: "false", type: string }
       rows: { description: Space-separated bench ids to diff, required: true, type: string }
+      symbols: { description: Space-separated demangled symbol substrings to disassemble, required: false, default: "", type: string }
+      binary: { description: Bench binary name prefix to disassemble, required: false, default: "formatter_instructions", type: string }
 
 permissions:
   contents: read
@@ -63,7 +65,7 @@ jobs:
               for line in open(p, errors='replace'):
                   m = re.match(r'\s*([\d,]+)\s+\([^)]*\)\s+(.*)$', line)
                   if m:
-                      d[m.group(2).strip()] += int(m.group(1).replace(',', ''))
+                      d[re.sub(r'\s*\[[^\]]*\]\s*$', '', m.group(2).strip())] += int(m.group(1).replace(',', ''))
               return d
           for row in os.environ['ROWS'].split():
               try:
@@ -75,6 +77,22 @@ jobs:
                   if a[k] != b[k]:
                       print(f'{b[k]-a[k]:+10,} {a[k]:12,} {k[:200]}')
           PY
+      - name: Disassemble
+        if: inputs.symbols != ''
+        env: { SYMBOLS: "${{ inputs.symbols }}", BINARY: "${{ inputs.binary }}" }
+        run: |
+          set -euo pipefail
+          for role in base head; do
+            bin=$(find "$role/target/ci-opt/build" -type f -name "$BINARY-*" -perm -u+x | head -1)
+            echo "$role $bin"
+            objdump -d --no-show-raw-insn -C "$bin" > "$RUNNER_TEMP/$role.asm"
+            for sym in $SYMBOLS; do
+              awk -v s="$sym" '/^[0-9a-f]+ <.*>:$/ { keep = index($0, s) > 0 } keep' "$RUNNER_TEMP/$role.asm" \
+                | sed -E 's/^ *[0-9a-f]+:\t//; s/0x[0-9a-f]+/ADDR/g; s/[0-9a-f]{6,}/ADDR/g' > "out/$role-$sym.asm"
+              wc -l "out/$role-$sym.asm"
+            done
+          done
+          for sym in $SYMBOLS; do echo "=== $sym"; diff "out/base-$sym.asm" "out/head-$sym.asm" | head -80 || true; done
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with: { name: cg-diff, path: out, retention-days: 3 }
