@@ -281,13 +281,6 @@ impl<'a> MarkupElement<'a> {
     /// [`MarkupNode::If`] / [`MarkupNode::For`] (as is an `IfNode` /
     /// `ForNode` in a lowered JSX root).
     pub fn walk_children(&self, visitor: &mut impl FnMut(MarkupNode<'a>)) {
-        self.walk_children_inlined(visitor);
-    }
-
-    /// [`Self::walk_children`], always inlined: for the few rule loops whose cost depends
-    /// on this walk being inlined, whatever the codegen-unit split.
-    #[inline(always)]
-    pub(crate) fn walk_children_inlined(&self, visitor: &mut impl FnMut(MarkupNode<'a>)) {
         match self.inner {
             MarkupElementInner::Authored {
                 element,
