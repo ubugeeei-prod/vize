@@ -10,6 +10,7 @@ use vize_relief::PropNode;
 
 impl<'a> MarkupElement<'a> {
     /// Visit static attributes on this element.
+    #[inline]
     pub fn walk_attributes(&self, visitor: &mut impl FnMut(MarkupAttribute<'a>)) {
         match self.inner {
             MarkupElementInner::Authored {

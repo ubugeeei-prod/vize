@@ -249,6 +249,7 @@ impl<'a> MarkupDirective<'a> {
     /// Visit each spelled modifier with its range, in authored order. The
     /// `prop` a `.name` shorthand implies is not spelled, so it is not visited;
     /// [`Self::walk_modifiers`] keeps it.
+    #[inline]
     pub fn walk_modifier_ranges(&self, visitor: &mut impl FnMut(&'a str, ByteRange)) {
         match self.inner {
             MarkupDirectiveInner::Relief(node) => {

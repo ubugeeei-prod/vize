@@ -280,6 +280,7 @@ impl<'a> MarkupElement<'a> {
     /// A JSX conditional or list is an expression, so it is one
     /// [`MarkupNode::If`] / [`MarkupNode::For`] (as is an `IfNode` /
     /// `ForNode` in a lowered JSX root).
+    #[inline]
     pub fn walk_children(&self, visitor: &mut impl FnMut(MarkupNode<'a>)) {
         match self.inner {
             MarkupElementInner::Authored {
