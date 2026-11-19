@@ -20,6 +20,9 @@ use script::find_script_block_end;
 pub(super) const TAG_TEMPLATE: &[u8] = b"template";
 const TAG_SCRIPT: &[u8] = b"script";
 const TAG_STYLE: &[u8] = b"style";
+/// Attributes one block table holds before it grows: SFC and custom blocks
+/// (`<art title component …>`) carry a handful.
+const BLOCK_ATTRS_CAPACITY: usize = 7;
 
 /// Fast tag name comparison using byte slices
 #[inline(always)]
@@ -180,6 +183,14 @@ pub fn parse_block_fast<'a>(
         };
 
         if !attr_name.is_empty() {
+            if attrs.capacity() == 0 {
+                // Size the table once, at the first attribute: growing it
+                // from the default rehashes every earlier name again.
+                attrs = FxHashMap::with_capacity_and_hasher(
+                    BLOCK_ATTRS_CAPACITY,
+                    Default::default(),
+                );
+            }
             attrs.insert(attr_name, attr_value);
         }
     }
