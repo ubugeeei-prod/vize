@@ -42,7 +42,6 @@ pub struct SpanLink {
 }
 
 impl SpanLink {
-    #[inline]
     fn rebased(&self, base: u32) -> Self {
         Self {
             generated: Span::new(self.generated.start + base, self.generated.end + base),
@@ -61,7 +60,6 @@ pub struct EmitDocument {
 
 impl Default for EmitDocument {
     /// An empty recording fragment.
-    #[inline]
     fn default() -> Self {
         Self::new(true)
     }
@@ -69,7 +67,6 @@ impl Default for EmitDocument {
 
 impl From<String> for EmitDocument {
     /// A recording fragment holding `text` with no links.
-    #[inline]
     fn from(text: String) -> Self {
         Self {
             text,
@@ -81,13 +78,11 @@ impl From<String> for EmitDocument {
 
 impl EmitDocument {
     /// An empty document; it keeps links only when `recording`.
-    #[inline]
     pub fn new(recording: bool) -> Self {
         Self::with_capacity(0, recording)
     }
 
     /// An empty document with room for `capacity` bytes of text.
-    #[inline]
     pub fn with_capacity(capacity: usize, recording: bool) -> Self {
         Self {
             text: String::with_capacity(capacity),
@@ -107,58 +102,48 @@ impl EmitDocument {
     }
 
     /// A fragment holding `text` with no links.
-    #[inline]
     pub fn plain(text: &str) -> Self {
         Self::from(String::new(text))
     }
 
     /// A fragment holding `text` generated from the authored byte `source`.
-    #[inline]
     pub fn mapped(text: &str, source: u32) -> Self {
         let mut fragment = Self::default();
         fragment.push_mapped(text, source);
         fragment
     }
 
-    #[inline]
     pub fn is_recording(&self) -> bool {
         self.recording
     }
 
-    #[inline]
     pub fn len(&self) -> usize {
         self.text.len()
     }
 
-    #[inline]
     pub fn is_empty(&self) -> bool {
         self.text.is_empty()
     }
 
-    #[inline]
     pub fn as_str(&self) -> &str {
         &self.text
     }
 
-    #[inline]
     pub fn links(&self) -> &[SpanLink] {
         &self.links
     }
 
     /// The generated text, dropping the links.
-    #[inline]
     pub fn into_string(self) -> String {
         self.text
     }
 
-    #[inline]
     pub fn into_parts(self) -> (String, Vec<SpanLink>) {
         (self.text, self.links)
     }
 
     /// A recording fragment from text and links over it, the inverse of
     /// [`Self::into_parts`].
-    #[inline]
     pub fn from_parts(text: String, links: Vec<SpanLink>) -> Self {
         Self {
             text,
