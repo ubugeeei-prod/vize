@@ -20,12 +20,13 @@ as the [generated-ledgers record](./2026-09-27-generated-ledgers.md) requires.
 The counts are a run artifact: `--summary` emits `lint-substrate.md` into the
 `davinci-generated-ledgers` bundle.
 
-| Column      | Meaning                                                                                                                                                                                                     |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `substrate` | The level the rule belongs on: `L1 syntax`, `L2 semantic`, `L1 script` or `L1 css`.                                                                                                                         |
-| `engine`    | What runs the rule on the default SFC path today, `+`-joined when it has several entries (for example `relief-visitor+sfc-descriptor`).                                                                     |
-| `status`    | `native` when every engine is a target engine for the substrate and the rule code reads no legacy crate; `legacy-engine` when only the engine is legacy; `legacy-rule` when the rule code reads one itself. |
-| `legacy`    | Legacy crates named in the rule file or its private submodule directory (`relief`, `croquis`, `armature`, `atelier_sfc`, `atelier_jsx`, ...).                                                               |
+| Column        | Meaning                                                                                                                                                                                                     |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `substrate`   | The level the rule belongs on: `L1 syntax`, `L2 semantic`, `L1 script` or `L1 css`.                                                                                                                         |
+| `engine`      | What runs the rule on the default SFC path today, `+`-joined when it has several entries (for example `relief-visitor+sfc-descriptor`).                                                                     |
+| `status`      | `native` when every engine is a target engine for the substrate and the rule code reads no legacy crate; `legacy-engine` when only the engine is legacy; `legacy-rule` when the rule code reads one itself. |
+| `legacy`      | Legacy crates named in the rule file or its private submodule directory (`relief`, `croquis`, `armature`, `atelier_sfc`, `atelier_jsx`, ...).                                                               |
+| `l1-callback` | `yes` when the rule code already offers an opt-in `native/` L1 callback.                                                                                                                                    |
 
 ## Classification
 
@@ -34,34 +35,40 @@ The counts are a run artifact: `--summary` emits `lint-substrate.md` into the
   type-aware rule. Otherwise it is `L1 syntax`; container rules (`run_on_sfc`)
   and Musea rules read L1 container syntax. A script rule is `L1 script` unless
   it reads Croquis. Every css rule is `L1 css`.
-- **Engine.** `markup-l2` is a rule named in `sfc::facade::RULES`: the markup
+- **Engine.** `native-l1` is the pure L1 syntax engine in
+  `crates/vize_patina/src/native/` on the default route; no rule runs there by
+  default yet. `markup-l2` is a rule named in `sfc::facade::RULES`: the markup
   facade over the L2 template artifact (`MarkupDocument::from_l2`).
   `markup-relief` is a `MarkupRule` that still walks the Relief compatibility
   root on SFC. `relief-visitor` is a `Rule` with template hooks. The rest are
   `sfc-descriptor` (`run_on_sfc`), `script-oxc` (the Atelier SFC script parses),
   `style-l1` (`StyleRule`), `css-lightningcss` (`CssRule`), `corsa` and
   `musea-blocks`.
-- **Target engines.** `L1 syntax` and `L2 semantic` finish on `markup-l2`
-  (semantic rules additionally read `vize_l2::query` instead of Croquis, which
-  the `legacy` column shows). `L1 css` finishes on `style-l1`. `L1 script`
-  finishes on a script engine fed by the L1 program, which does not exist yet,
-  so no script rule is `native` today.
+- **Target engines.** `L1 syntax` finishes on `native-l1`. `L2 semantic`
+  finishes on `markup-l2`, reading `vize_l2::query` instead of Croquis (the
+  `legacy` column shows the Croquis reads). `L1 css` finishes on `style-l1`.
+  `L1 script` finishes on a script engine fed by the L1 program, which does not
+  exist yet, so no script rule is `native` today.
+- **`l1-callback`.** `yes` when the rule code already offers an opt-in
+  callback to `native/` (`as_native_template_rule`,
+  `as_native_sfc_template_rule` or a `Native*TemplateRule` impl). It tracks
+  LN2 progress before the default route switches.
 
-## Why `markup-l2` is the L1 syntax engine
+## Syntax rules run on pure L1
 
-The template is parsed once, by L1, and lowered to the L2 template artifact.
-The facade reads that artifact and reports through the authored L1 spans it
-retains. Rules moved onto it add no parse, which is the condition for every
-LN2 wave. The Relief root that `relief-visitor` rules walk is a compatibility
-projection of the same pair (`LintTemplate::with_compatibility_root`), and it
-disappears with the last such rule.
+Maintainer decision (2026-11-19): syntax rules run on a pure L1 engine that
+needs no L2 lowering, so syntax-only lint never pays for L2. LN2 completes
+`native/` until it admits every input the facade does, with no whole-input
+refusals. It then makes `native/` the default engine for syntax rules and
+migrates the 202 `L1 syntax` rules onto it in waves. The L2 markup facade
+serves semantic rules (LN3). When one lint run has both kinds, L1 is built
+once and L2 is lowered once from it, with no second parse.
 
-`crates/vize_patina/src/native/` is a separate, opt-in L1 lane with
-whole-input refusal. Only tests and observer examples call it, and its
-callbacks duplicate existing rules, most of which already run on `markup-l2`.
-It is not a default engine and the ledger does not count it. Whether it is folded into the facade or deleted is
-left to the LN2 waves; promoting it would need a fallback for every refusal
-and could not add a second walk.
+The 86 rules on `markup-l2` today are therefore not finished: the 82 syntax
+rules among them move to `native-l1`. The Relief root that `relief-visitor`
+rules walk is a compatibility projection of the same L1/L2 pair
+(`LintTemplate::with_compatibility_root`), and it disappears with the last
+such rule.
 
 ## Baseline
 
@@ -75,9 +82,10 @@ At `754ee0e8a5` the 372 rules are:
 | L1 css      |      2 |             8 |           0 |    10 |
 | total       |      2 |           158 |         212 |   372 |
 
-All 86 `markup-l2` rules are still `legacy-rule`: each keeps its Relief `Rule`
-body, which only the standalone-HTML lane and the parity tests still run. 111
-rules run on `relief-visitor`.
+No rule runs on `native-l1` by default; 12 syntax rules already offer an
+opt-in `native/` callback. All 86 `markup-l2` rules are still `legacy-rule`:
+each keeps its Relief `Rule` body, which only the standalone-HTML lane and the
+parity tests still run. 111 rules run on `relief-visitor`.
 
 ## Limits
 

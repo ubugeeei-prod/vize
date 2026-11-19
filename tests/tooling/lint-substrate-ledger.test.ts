@@ -72,10 +72,15 @@ void test("every rule has one substrate, known engines and a consistent status",
     engine: ["style-l1"],
     legacy: [],
     status: "native",
+    l1Callback: false,
   });
   assert.equal(byName.get("vue/no-template-shadow")?.substrate, "L2 semantic");
   assert.equal(byName.get("type/await-thenable")?.engine.join("+"), "corsa");
-  assert.equal(byName.get("a11y/no-access-key")?.engine.join("+"), "markup-l2");
+  // Syntax rules finish on the pure L1 engine, not on the L2 facade.
+  const accessKey = byName.get("a11y/no-access-key");
+  assert.equal(accessKey?.engine.join("+"), "markup-l2");
+  assert.equal(accessKey?.l1Callback, true);
+  assert.notEqual(accessKey?.status, "native");
 });
 
 void test("the summary counts every row once per substrate", () => {

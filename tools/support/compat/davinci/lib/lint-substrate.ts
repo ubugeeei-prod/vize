@@ -27,14 +27,16 @@ export type Status = (typeof STATUSES)[number];
 
 /**
  * Engines a rule runs on once it is registered (configured rules register from
- * their options, so registration does not change the engine), and whether each one already reads the shared
- * levels. `markup-l2` is the markup facade over the L2 template artifact that
- * the one L1 template parse lowers to (`MarkupDocument::from_l2`); it serves
- * the L1 syntax substrate without a second parse. Everything else is fed by a
- * legacy producer: the Relief compatibility root, the Atelier SFC descriptor
- * and its script parses, lightningcss, the Corsa checker or the Musea parser.
+ * their options, so registration does not change the engine). Syntax rules
+ * finish on `native-l1`, the pure L1 engine in `crates/vize_patina/src/native/`
+ * that needs no L2 lowering, so syntax-only lint never pays for L2. Semantic
+ * rules finish on `markup-l2`, the markup facade over the L2 artifact lowered
+ * once from the same L1 tree. Everything else is fed by a legacy producer: the
+ * Relief compatibility root, the Atelier SFC descriptor and its script parses,
+ * lightningcss, the Corsa checker or the Musea parser.
  */
 export const ENGINES = new Map<string, string>([
+  ["native-l1", "the pure L1 syntax engine (`native/`) on the default route, no L2 lowering"],
   ["markup-l2", "markup facade over the L2 template artifact (`MarkupDocument::from_l2`)"],
   ["markup-relief", "markup facade over the Relief compatibility root"],
   ["relief-visitor", "`Rule` template hooks over the Relief compatibility root"],
@@ -48,7 +50,7 @@ export const ENGINES = new Map<string, string>([
 
 /** The engines each substrate is finished on. */
 const TARGET_ENGINES = new Map<Substrate, ReadonlySet<string>>([
-  ["L1 syntax", new Set(["markup-l2"])],
+  ["L1 syntax", new Set(["native-l1"])],
   ["L2 semantic", new Set(["markup-l2"])],
   ["L1 script", new Set(["script-l1"])],
   ["L1 css", new Set(["style-l1"])],
@@ -64,6 +66,8 @@ export interface LedgerRow {
   engine: string[];
   legacy: string[];
   status: Status;
+  /** The rule already offers an opt-in callback to the `native/` L1 engine. */
+  l1Callback: boolean;
 }
 
 /** `RULES` in the SFC facade: the rules the default SFC path runs on L2. */
@@ -76,8 +80,12 @@ export function facadeRules(): Set<string> {
   return new Set(names);
 }
 
-/** Legacy crates named in a rule file or in its private submodule directory. */
-function legacyCrates(ruleRel: string): string[] {
+const L1_CALLBACK_RE =
+  /\bfn\s+as_native_(?:sfc_)?template_rule\b|\bimpl\b[^{;]*\bNative(?:Sfc)?TemplateRule\s+for\b/u;
+
+/** Legacy crates named in a rule file or its private submodule directory, and
+ * whether that code offers a `native/` L1 callback. */
+function scanRuleCode(ruleRel: string): { legacy: string[]; l1Callback: boolean } {
   const abs = path.join(RULES_DIR, ruleRel);
   const files = [abs];
   const dir = abs.replace(/\.rs$/u, "");
@@ -85,11 +93,13 @@ function legacyCrates(ruleRel: string): string[] {
     files.push(...walkRustFiles(dir).filter((file) => !/_tests?\.rs$|\/tests?\//u.test(file)));
   }
   const crates = new Set<string>();
+  let l1Callback = false;
   for (const file of files) {
     const code = stripRust(readFileSync(file, "utf8"));
     for (const match of code.matchAll(LEGACY_CRATE_RE)) crates.add(match[1]);
+    l1Callback ||= L1_CALLBACK_RE.test(code);
   }
-  return [...crates].sort(byKey);
+  return { legacy: [...crates].sort(byKey), l1Callback };
 }
 
 function cssEngine(ruleRel: string): string {
@@ -107,7 +117,7 @@ export function buildLedger(matrix: Matrix = buildMatrix()): LedgerRow[] {
   const rows: LedgerRow[] = [];
   for (const rule of matrix.rules.values()) {
     const surfaces = new Set(rule.surfaces);
-    const legacy = legacyCrates(rule.file);
+    const { legacy, l1Callback } = scanRuleCode(rule.file);
     const semanticReads =
       legacy.includes("croquis") ||
       rule.croquis.size > 0 ||
@@ -157,12 +167,12 @@ export function buildLedger(matrix: Matrix = buildMatrix()): LedgerRow[] {
         : engine.every((name) => target.has(name))
           ? "native"
           : "legacy-engine";
-    rows.push({ rule: rule.name, file: rule.file, substrate, engine, legacy, status });
+    rows.push({ rule: rule.name, file: rule.file, substrate, engine, legacy, status, l1Callback });
   }
   return rows.sort((left, right) => byKey(left.rule, right.rule));
 }
 
-const HEADER = ["rule", "substrate", "engine", "status", "legacy", "file"] as const;
+const HEADER = ["rule", "substrate", "engine", "status", "legacy", "l1-callback", "file"] as const;
 
 /** The committed per-rule ledger; no totals, so independent rows never conflict. */
 export function renderLedger(rows: readonly LedgerRow[]): string {
@@ -178,6 +188,7 @@ export function renderLedger(rows: readonly LedgerRow[]): string {
         row.engine.join("+"),
         row.status,
         row.legacy.length > 0 ? row.legacy.join(",") : "-",
+        row.l1Callback ? "yes" : "-",
         row.file,
       ].join("\t"),
     );
@@ -233,6 +244,13 @@ export function renderSummary(rows: readonly LedgerRow[]): string {
       ["left", "right", "left"],
       [...ENGINES].map(([name, reads]) => [name, engines.get(name) ?? 0, reads]),
     ),
+  );
+  const syntax = rows.filter((row) => row.substrate === "L1 syntax");
+  out.push(
+    "## L1 syntax rules with a `native/` callback",
+    "",
+    `${syntax.filter((row) => row.l1Callback).length} of ${syntax.length} L1 syntax rules already offer an opt-in \`native/\` L1 callback; none runs on it by default yet.`,
+    "",
   );
   out.push("## Legacy crates read by rule code", "");
   const legacy = countBy(rows, (row) => row.legacy);
