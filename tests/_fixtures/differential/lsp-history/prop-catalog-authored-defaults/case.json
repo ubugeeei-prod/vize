@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "commit": "21fbf06a5908a70fe8602ca7362fccdd7110415b",
+  "id": "lsp/fix-history/prop-catalog-authored-defaults",
+  "requirement": "A withDefaults prop keeps its optional/default contract (count = 41) in the child's prop completion and hover catalog.",
+  "files": {
+    "Known.vue": "<script setup lang='ts'>withDefaults(defineProps<{ label: string; count?: number }>(), { count: 41 });</script>",
+    "Host.vue": "<script setup lang='ts'>\nimport Known from './Known.vue'\n</script>\n<template>\n  <Known  />\n  <Known :count=\"1\" label=\"x\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "Host.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "Host.vue",
+      "at": {
+        "find": "<Known  />",
+        "delta": 7
+      },
+      "labels": [
+        "label",
+        ":label",
+        "count",
+        ":count"
+      ]
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "Host.vue",
+      "at": {
+        "find": ":count",
+        "delta": 2
+      }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2540,
+        "message": "Cannot assign to 'to' because it is a read-only property.",
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 12
+          },
+          "start": {
+            "character": 6,
+            "line": 12
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

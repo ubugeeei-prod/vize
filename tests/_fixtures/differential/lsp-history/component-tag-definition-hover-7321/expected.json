@@ -1,0 +1,40 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst Child: VueComponent &\n{\n  props: { message: string; count?: number };\n  emits: { save: [value: number] };\n  slots: { item(props: { row: string; index: number }): any; empty(): any };\n  model: { \"title\": string };\n}\n```\n\nVue component: Child.vue"
+      },
+      "range": {
+        "end": {
+          "character": 8,
+          "line": 5
+        },
+        "start": {
+          "character": 3,
+          "line": 5
+        }
+      }
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst Child: VueComponent &\n{\n  props: { message: string; count?: boolean };\n  emits: { save: [value: number] };\n  slots: { item(props: { row: number; index: number }): any; empty(): any };\n  model: { \"title\": string };\n}\n```\n\nVue component: Child.vue"
+      },
+      "range": {
+        "end": {
+          "character": 8,
+          "line": 5
+        },
+        "start": {
+          "character": 3,
+          "line": 5
+        }
+      }
+    }
+  }
+]

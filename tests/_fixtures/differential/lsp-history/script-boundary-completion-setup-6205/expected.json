@@ -1,0 +1,36 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "count": 38,
+      "items": [
+        {
+          "detail": " (literal)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Literal**\n\nLiteral constant value."
+          },
+          "kind": 21,
+          "label": "label",
+          "labelDetails": {
+            "detail": " (literal)"
+          },
+          "sortText": "0label"
+        },
+        {
+          "detail": " (literal)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Literal**\n\nLiteral constant value."
+          },
+          "kind": 21,
+          "label": "other",
+          "labelDetails": {
+            "detail": " (literal)"
+          },
+          "sortText": "0other"
+        }
+      ]
+    }
+  }
+]

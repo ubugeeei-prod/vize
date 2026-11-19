@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "commit": "a75c629c5c948885f7ffe2216f044a1a6c5e2851",
+  "id": "lsp/fix-history/resident-ecosystem-diagnostics-6398",
+  "requirement": "Ecosystem route-param diagnostics read the resident descriptor with authored CRLF/astral UTF-16 ranges, and a revision that defines the param clears them.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "ecosystem": true
+  },
+  "files": {
+    "Route.vue": "<script setup lang=\"ts\">\r\nimport { useRoute } from 'vue-router'\r\nconst route = useRoute()\r\nconst label = '雪😀'; route.params.slug\r\n</script>\r\n<route lang=\"json\">{\"path\":\"/users/:id\"}</route>"
+  },
+  "steps": [
+    {
+      "open": "Route.vue"
+    },
+    {
+      "diagnostics": "Route.vue"
+    },
+    {
+      "change": "Route.vue",
+      "version": 2,
+      "contentChanges": [
+        {
+          "text": "<script setup lang=\"ts\">\r\nimport { useRoute } from 'vue-router'\r\nconst route = useRoute()\r\nconst label = '雪😀'; route.params.slug\r\n</script>\r\n<route lang=\"json\">{\"path\":\"/users/:slug\"}</route>"
+        }
+      ]
+    },
+    {
+      "diagnostics": "Route.vue"
+    }
+  ]
+}

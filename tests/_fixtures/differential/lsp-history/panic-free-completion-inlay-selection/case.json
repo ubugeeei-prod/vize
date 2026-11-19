@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "commit": "8e6f6377ce5b14bbd0fdf56e41c7d8c2076880cd",
+  "id": "lsp/fix-history/panic-free-completion-inlay-selection",
+  "requirement": "Completion and selection ranges over malformed Unicode template/script facts answer without panicking and keep the server usable.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "Edge.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst 名前 = ref(\nconst props = defineProps<{ 'a-b': string; café: number }>()\n</script>\n<template>\n  <div :class=\"{ 'x': 名前 \" @click=\">{{ café. }}<Comp v-bind=\"props\" :café=\" /><span v-for=\"(é, i) in\" />\n  <p :title=\"'unterminated>😀 {{ props.café }}</p>\n</template>\n<style>.a { color: v-bind( }</style>\n"
+  },
+  "steps": [
+    {
+      "open": "Edge.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "Edge.vue",
+      "at": {
+        "find": "café.",
+        "delta": 5,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "Edge.vue",
+      "at": {
+        "find": "名前 ",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/selectionRange",
+      "uri": "Edge.vue",
+      "params": {
+        "positions": [
+          {
+            "line": 6,
+            "character": 30
+          },
+          {
+            "line": 7,
+            "character": 20
+          },
+          {
+            "line": 99,
+            "character": 0
+          }
+        ]
+      }
+    }
+  ]
+}

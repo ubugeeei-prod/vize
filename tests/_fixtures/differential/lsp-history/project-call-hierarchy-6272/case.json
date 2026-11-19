@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "commit": "4b79fe030265ee66aecb82f8698e68c6f8e58370",
+  "id": "lsp/fix-history/project-call-hierarchy-6272",
+  "requirement": "Call hierarchy from an SFC function expands outgoing calls into an unopened script module and its Unicode leaf, and incoming calls include the open and the closed Vue callers with authored UTF-16 ranges.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"jsx\": \"preserve\", \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"allowImportingTsExtensions\": true }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "leaf.ts": "// 日本語 🌱\r\nexport function 葉(value: string): string { return value }\r\nexport function caller(): string { return 葉(\"hello\") }\r\n",
+    "Library.ts": "import { 葉 } from \"./leaf\"\r\nexport function library() { return 葉(\"library\") }\r\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport { library } from \"./Library.ts\"\nfunction caller() { return library() }\n</script>\n<template>{{ caller() }}</template>\n",
+    "Closed.vue": "<script setup lang=\"ts\">\nimport { library } from \"./Library.ts\"\nfunction closedCaller() { return library() }\n</script>\n<template>{{ closedCaller() }}</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/prepareCallHierarchy",
+      "uri": "App.vue",
+      "at": {
+        "find": "caller()"
+      },
+      "retry": true
+    },
+    {
+      "request": "callHierarchy/outgoingCalls",
+      "from": {
+        "step": 1,
+        "as": "item"
+      },
+      "retry": true
+    },
+    {
+      "request": "callHierarchy/outgoingCalls",
+      "from": {
+        "step": 2,
+        "field": "to",
+        "as": "item"
+      },
+      "retry": true
+    },
+    {
+      "request": "callHierarchy/incomingCalls",
+      "from": {
+        "step": 2,
+        "field": "to",
+        "as": "item"
+      },
+      "retry": true
+    },
+    {
+      "request": "callHierarchy/outgoingCalls",
+      "from": {
+        "step": 3,
+        "field": "to",
+        "as": "item"
+      },
+      "retry": true
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**名前**\n\n_Script binding_\n\n```typescript\n名前: literal const\n```\n\nLiteral constant value, hoisted for optimization."
+      }
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**名前**\n\n_Script binding_\n\n```typescript\n名前: literal const\n```\n\nLiteral constant value, hoisted for optimization."
+      }
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "range": {
+        "end": {
+          "character": 8,
+          "line": 1
+        },
+        "start": {
+          "character": 6,
+          "line": 1
+        }
+      },
+      "uri": "${workspace}/App.vue"
+    }
+  }
+]

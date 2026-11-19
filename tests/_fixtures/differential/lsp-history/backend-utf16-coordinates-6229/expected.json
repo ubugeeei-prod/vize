@@ -1,0 +1,97 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2322,
+        "message": "Type 'number' is not assignable to type 'string'.",
+        "range": {
+          "end": {
+            "character": 9,
+            "line": 2
+          },
+          "start": {
+            "character": 6,
+            "line": 2
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\n(method) Number.toFixed(fractionDigits?: number): string\n```\nReturns a string representing a number in fixed-point notation.\n\n*@param* `fractionDigits` — Number of digits after the decimal point. Must be in the range 0 - 100, inclusive."
+      },
+      "range": {
+        "end": {
+          "character": 40,
+          "line": 4
+        },
+        "start": {
+          "character": 33,
+          "line": 4
+        }
+      }
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "range": {
+        "end": {
+          "character": 38,
+          "line": 1
+        },
+        "start": {
+          "character": 33,
+          "line": 1
+        }
+      },
+      "uri": "${workspace}/App.vue"
+    }
+  },
+  {
+    "step": 5,
+    "version": 2,
+    "diagnostics": [
+      {
+        "code": 2322,
+        "message": "Type 'number' is not assignable to type 'string'.",
+        "range": {
+          "end": {
+            "character": 9,
+            "line": 3
+          },
+          "start": {
+            "character": 6,
+            "line": 3
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  },
+  {
+    "step": 6,
+    "result": {
+      "range": {
+        "end": {
+          "character": 38,
+          "line": 2
+        },
+        "start": {
+          "character": 33,
+          "line": 2
+        }
+      },
+      "uri": "${workspace}/App.vue"
+    }
+  }
+]

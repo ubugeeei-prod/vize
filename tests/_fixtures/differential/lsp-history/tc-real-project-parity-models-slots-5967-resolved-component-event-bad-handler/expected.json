@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2322,
+        "message": "Type '(value: number) => void' is not assignable to type '(value: string) => any'.\n  Types of parameters 'value' and 'value' are incompatible.\n    Type 'string' is not assignable to type 'number'.",
+        "range": {
+          "end": {
+            "character": 16,
+            "line": 8
+          },
+          "start": {
+            "character": 10,
+            "line": 8
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

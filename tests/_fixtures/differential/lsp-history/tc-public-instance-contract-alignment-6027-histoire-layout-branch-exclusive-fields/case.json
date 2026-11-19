@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "d4c05ee736862e678ff8b7cac8a728d80f2193c0",
+  "id": "lsp/fix-history/tc-public-instance-contract-alignment-6027-histoire-layout-branch-exclusive-fields",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack public-instance-contract-alignment-6027 (case histoire-layout-branch-exclusive-fields) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/global-components.d.ts": "import type { DefineComponent } from 'vue'\nexport {}\n\ndeclare module 'vue' {\n  interface GlobalComponents {\n    Story: DefineComponent<{\n      layout?:\n        | { type: 'grid'; width?: string | number }\n        | { type: 'single'; iframe?: boolean }\n    }>\n  }\n}\n",
+    "src/Parent.vue": "<template>\n  <Story :layout=\"{ type: 'grid', width: '100%', iframe: false }\" />\n  <Story :layout=\"{ type: 'single', width: '100%', iframe: false }\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/Parent.vue"
+    },
+    {
+      "diagnostics": "src/Parent.vue"
+    }
+  ]
+}

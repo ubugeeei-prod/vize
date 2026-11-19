@@ -1,0 +1,80 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "count": 1,
+      "items": [
+        {
+          "kind": 2,
+          "label": "greetVisitor",
+          "sortText": "11"
+        }
+      ]
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "detail": "(method) greetVisitor(name: string): string",
+      "documentation": {
+        "kind": "markdown",
+        "value": "```typescript\n(method) greetVisitor(name: string): string\n```\n\nProduce the greeting shown in the welcome banner."
+      },
+      "kind": 2,
+      "label": "greetVisitor",
+      "sortText": "11"
+    }
+  },
+  {
+    "step": 4,
+    "result": {
+      "count": 1,
+      "items": [
+        {
+          "kind": 2,
+          "label": "greetVisitor",
+          "sortText": "11"
+        }
+      ]
+    }
+  },
+  {
+    "step": 5,
+    "result": {
+      "detail": "(method) greetVisitor(name: string): string",
+      "documentation": {
+        "kind": "markdown",
+        "value": "```typescript\n(method) greetVisitor(name: string): string\n```\n\nUse the greeting from the unsaved buffer."
+      },
+      "kind": 2,
+      "label": "greetVisitor",
+      "sortText": "11"
+    }
+  },
+  {
+    "step": 7,
+    "result": {
+      "count": 1,
+      "items": [
+        {
+          "kind": 2,
+          "label": "greetVisitor",
+          "sortText": "11"
+        }
+      ]
+    }
+  },
+  {
+    "step": 8,
+    "result": {
+      "detail": "(method) greetVisitor(name: string): string",
+      "documentation": {
+        "kind": "markdown",
+        "value": "```typescript\n(method) greetVisitor(name: string): string\n```\n\nProduce the greeting shown in the welcome banner."
+      },
+      "kind": 2,
+      "label": "greetVisitor",
+      "sortText": "11"
+    }
+  }
+]

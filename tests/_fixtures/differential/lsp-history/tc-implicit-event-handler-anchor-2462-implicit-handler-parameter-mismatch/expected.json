@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2345,
+        "message": "Argument of type '(name: string) => void' is not assignable to parameter of type '(_e: PointerEvent) => unknown'.\n  Types of parameters 'name' and '_e' are incompatible.\n    Type 'PointerEvent' is not assignable to type 'string'.",
+        "range": {
+          "end": {
+            "character": 28,
+            "line": 11
+          },
+          "start": {
+            "character": 18,
+            "line": 11
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

@@ -1,0 +1,1182 @@
+{
+  "schema": "vize.lsp.fix-history.sessions",
+  "version": 1,
+  "cases": [
+    {
+      "id": "lsp/fix-history/backend-utf16-coordinates-6229",
+      "commit": "bd8fff6f6c186f3efd072eb7d81431e00e1a9994",
+      "case": "backend-utf16-coordinates-6229/case.json",
+      "sha256": "3fd3230a80a2bd0c2d1d70a71dff250969410b17fd027a169a9ca921996ddf58",
+      "expectedSha256": "b32f6c916f2a3c36acd26a7dd7725399d3d7d1c1b898e9f2643372d3474590b2"
+    },
+    {
+      "id": "lsp/fix-history/canonical-native-documents-6260",
+      "commit": "215ca5706f402ed831a3bac0166e96cbc21da286",
+      "case": "canonical-native-documents-6260/case.json",
+      "sha256": "ef28ec111ea27faa571fd8b4edd722841c1235bb628f738291483416113e8158",
+      "expectedSha256": "e3292a27596f0f2f172b79063052c762230167b2c349cc25603d4883e8a6b0f9"
+    },
+    {
+      "id": "lsp/fix-history/canonical-rename-document-versions-6158",
+      "commit": "f94ec36a0747bd22447f78a8e206aca360cf43d1",
+      "case": "canonical-rename-document-versions-6158/case.json",
+      "sha256": "188adec2a86cb08dc47df133ac750927af89e502909cdefb2fc6fb3934519fc1",
+      "expectedSha256": "4ada1f9a8c12bbef943d864062aba093c60b081126de04d5e30e6d878be3ac22"
+    },
+    {
+      "id": "lsp/fix-history/checker-text-without-ref-hints-6214",
+      "commit": "cf02a0debca63d5119e3bbd2b1bda9a692f194be",
+      "case": "checker-text-without-ref-hints-6214/case.json",
+      "sha256": "a44c8ac64863c459380be1959e20a3b2ffc99d7bf3c67b8762192698d4963423",
+      "expectedSha256": "99e2bc3b65acb8a9d32dd1b8b73fff6a085544625fd1786a51ee97c4109ad048"
+    },
+    {
+      "id": "lsp/fix-history/closed-stderr-pipe-6321",
+      "commit": "33afda2db5de18d43d4d1ee5d965da7cede1bd3c",
+      "case": "closed-stderr-pipe-6321/case.json",
+      "sha256": "4be094549f302dba70c8b67557cef2d57db832b952538d5531b0d43e51f609ae",
+      "expectedSha256": "8f86da65fdffa5981da376928aab3d1e92b83bc348ac4e9a77ff3c9cf8feef7a"
+    },
+    {
+      "id": "lsp/fix-history/code-lens-declarations-7086",
+      "commit": "c1545ef05e0f9d78eec28506a98db87dd258739b",
+      "case": "code-lens-declarations-7086/case.json",
+      "sha256": "7738e0d0c3db869346fe5da133f87ac77e05a2e9262a8b22af78a43626adda59",
+      "expectedSha256": "94bf9d6308f2623ca1bcf9328f7dbd2450c977bc05f99215df4b851525e7d3e7"
+    },
+    {
+      "id": "lsp/fix-history/cold-project-type-diagnostics-7127",
+      "commit": "4c52d0e39dca6ad888774281f7c231c094b84433",
+      "case": "cold-project-type-diagnostics-7127/case.json",
+      "sha256": "8de39327a651d32d11b31c0c6839048c8269b904100f8816a8f4c49175e6ace2",
+      "expectedSha256": "364887b7bc62c64582bb218a518ae5b3229d6716251206647a8346fec7bb7578"
+    },
+    {
+      "id": "lsp/fix-history/completion-resolve-documentation-6181",
+      "commit": "df757956e0a80b41de17187a97956d5c9be1c029",
+      "case": "completion-resolve-documentation-6181/case.json",
+      "sha256": "9cd5ba09ac0d1672b76463b0bb752de94ddfeccb9f9f702150438a950af21ff7",
+      "expectedSha256": "cd6f9a652d6c0350f5ef06143fc3d6f64c904cb72afbaf1421cdb3efd8035932"
+    },
+    {
+      "id": "lsp/fix-history/component-definition-quoted-names-7333",
+      "commit": "cc87bb5960ea9e49e82672205df919de58bb4b24",
+      "case": "component-definition-quoted-names-7333/case.json",
+      "sha256": "8e5f97a3b1665e7487433d34f090c4a6f4113456e95fc02a8cb7095204c4748d",
+      "expectedSha256": "4115e1bfb8b125020cf0d9a3e4d20c39455486061fa93f5d0ca45b6fe538f31c"
+    },
+    {
+      "id": "lsp/fix-history/component-emit-completion-7087",
+      "commit": "8e9ca8de9065ea6a896b6c832edf8dfe849d08a4",
+      "case": "component-emit-completion-7087/case.json",
+      "sha256": "ee521cdc33512f403d600f445f103bc12df89d3e2dac9aa5fb3505fb490cbc99",
+      "expectedSha256": "4d2d76c35f6faa51df1a2ca97a11be389c851fb236b744c99f3d39739dc1eda8"
+    },
+    {
+      "id": "lsp/fix-history/component-tag-alias-barrel-hover-7321",
+      "commit": "3924c20efaeb7865910509c0421477b661821c30",
+      "case": "component-tag-alias-barrel-hover-7321/case.json",
+      "sha256": "7f76d2bbc7d40b2cf8021b82017b0141cd3356b04f67ec775fa5a493a0745360",
+      "expectedSha256": "166c704fbecaeb16c7a8d641ac9df9a0ac4efb6ae447855d7fb7c4cc0b032e70"
+    },
+    {
+      "id": "lsp/fix-history/component-tag-definition-hover-7321",
+      "commit": "3924c20efaeb7865910509c0421477b661821c30",
+      "case": "component-tag-definition-hover-7321/case.json",
+      "sha256": "72c452b987060020d612a0acb5dc55d6e1a8f444fd55c156f59ddf2dfdafa11d",
+      "expectedSha256": "70b8e319edffd92961571838e5d3dc72ae6ed0c9e41818d825c3246b8d0286be"
+    },
+    {
+      "id": "lsp/fix-history/exported-symbol-identity-6237",
+      "commit": "2b0a8604c1d33afa766153b9fcb11292b9ecf95e",
+      "case": "exported-symbol-identity-6237/case.json",
+      "sha256": "f8c6b2a789110e06a0df9260c916958da4731e4a87aa7e5bed12d24b4c0f6c84",
+      "expectedSha256": "5b356da457b8071001a32709f03455f6759a8f84e7920e85273791269642fb9b"
+    },
+    {
+      "id": "lsp/fix-history/external-type-overlay-props",
+      "commit": "049358b200baa82d99b04c40f95aa68d0e8fae7c",
+      "case": "external-type-overlay-props/case.json",
+      "sha256": "b6382f664ddaa10086ae014f8d4b1f04399cf5bea1602ac489f57e111c2d9dfb",
+      "expectedSha256": "47b1c3364d99000caac1d9e085a999f3f13111b5270ac33b8cb7194293dcce66"
+    },
+    {
+      "id": "lsp/fix-history/folder-config-order-7113",
+      "commit": "a4d89982cb91bb3bcb0a267f01ca1676be9f615d",
+      "case": "folder-config-order-7113/case.json",
+      "sha256": "21fa3f1f2f13dbc501ce682ec7b4711dbd2ff256986f11c77bdaeef150291c66",
+      "expectedSha256": "0cea5f191070b870998dcfea43846f3be1a5a13b2e2b5da523360d0651ed5c04"
+    },
+    {
+      "id": "lsp/fix-history/import-rewrite-mapping-6406",
+      "commit": "3a2fd80a314ae1c644af30bed1419855b2133c1e",
+      "case": "import-rewrite-mapping-6406/case.json",
+      "sha256": "b039893fdd4afcf1b6e9212437a2fc384e68150abe2da4c3f10407dcf98cc661",
+      "expectedSha256": "14c757bec826143c54ea6cf2abe3ac581198f36102d3228fb10470ace4ac165e"
+    },
+    {
+      "id": "lsp/fix-history/incremental-unicode-separators-6276",
+      "commit": "a8b17f73b36814081df0fad7c2e8b1712f685aa9",
+      "case": "incremental-unicode-separators-6276/case.json",
+      "sha256": "3f654ae3679da80c6597c36451f5cb821e2857bd4a32d7d70cf34601ae983db1",
+      "expectedSha256": "286c46c4afa2e057462a5aa0b22961429acfde09e2d63defa12f83d1a6681e90"
+    },
+    {
+      "id": "lsp/fix-history/inline-template-code-actions-crlf-6174",
+      "commit": "d87ae35bf83652a4ae3bdffb1a71f76ddfd4e620",
+      "case": "inline-template-code-actions-crlf-6174/case.json",
+      "sha256": "662cc402bba414ec4be9d3ca296dae994cdfe48f5729320bb560ae4d6e7b3303",
+      "expectedSha256": "ca46620ea2fb0146bf606f8787c573691c6024d59ca40dcd0fba0867f46c62ab"
+    },
+    {
+      "id": "lsp/fix-history/inline-template-code-actions-multiline-header-6174",
+      "commit": "d87ae35bf83652a4ae3bdffb1a71f76ddfd4e620",
+      "case": "inline-template-code-actions-multiline-header-6174/case.json",
+      "sha256": "2fac4e410cd37ae1e948053fdd9e2674580e35d20841b897a52de1b13577e60a",
+      "expectedSha256": "3693f941822e3ab87b8a43e073d46a2c594fc66e21a7f85cabecdd5584f2086a"
+    },
+    {
+      "id": "lsp/fix-history/inline-template-code-actions-unicode-prefix-6174",
+      "commit": "d87ae35bf83652a4ae3bdffb1a71f76ddfd4e620",
+      "case": "inline-template-code-actions-unicode-prefix-6174/case.json",
+      "sha256": "f1e321d7c3052d6cd5961b9d295edd4f7f7f069e0048d4c1ac4ac87807c8b8c3",
+      "expectedSha256": "53c2b66f51ca5cf14a71087941974111b88bed143ae3cb7b2751885dbc4a9440"
+    },
+    {
+      "id": "lsp/fix-history/jsx-authored-project-navigation",
+      "commit": "4f8cef915cd56e662b5ecce19bad20a1b1f0c39b",
+      "case": "jsx-authored-project-navigation/case.json",
+      "sha256": "c078130980c09378ae11aebf6293d750e85a49d149b65c31520d643d06bbeef4",
+      "expectedSha256": "d1c21e5c64f113b1db82faf11bf84d8f44cf7325c816e169f759aa3fccd40536"
+    },
+    {
+      "id": "lsp/fix-history/jsx-navigation-dedupe",
+      "commit": "f364b97274eba467295e2dbf1007018be6b4ffd1",
+      "case": "jsx-navigation-dedupe/case.json",
+      "sha256": "fe0e96324a6e7ef8c131979a17748845756172d45411ec3d4a5102dddff5fd67",
+      "expectedSha256": "0eb655c116471c998c1d6e6f1d098051a8bd67e110dd4f3ad37e22c9efbff65c"
+    },
+    {
+      "id": "lsp/fix-history/jsx-query-revision-mappings",
+      "commit": "d59acf245cb52694df5f8e8536b223a705d732d6",
+      "case": "jsx-query-revision-mappings/case.json",
+      "sha256": "1626954cf21780c53bb98b18adfdffe31eab91df1f8dc8d601816e613bc40e1a",
+      "expectedSha256": "8b4454f93d093804bc9f62b401d5a9ea050af4ba91641b7f9d6b86243b9941c6"
+    },
+    {
+      "id": "lsp/fix-history/lexical-identity-checker-free-6246-crlf",
+      "commit": "66aae15e42872c314d508137548587b5386ba618",
+      "case": "lexical-identity-checker-free-6246-crlf/case.json",
+      "sha256": "742dd8cb9de33eb8ac3e7b7a18b259723b24be04ed77847795f4fc7ad98aaa66",
+      "expectedSha256": "49c67bbfefbef57dd1c0e1bf6b6027f67ab8524b5275d29c8a73567f07680f93"
+    },
+    {
+      "id": "lsp/fix-history/lexical-identity-checker-free-6246-lf",
+      "commit": "66aae15e42872c314d508137548587b5386ba618",
+      "case": "lexical-identity-checker-free-6246-lf/case.json",
+      "sha256": "248db6f9dd1ce23f7e3cbd791021c078ca2840676f6ecf1870e65d392313cfbb",
+      "expectedSha256": "49c67bbfefbef57dd1c0e1bf6b6027f67ab8524b5275d29c8a73567f07680f93"
+    },
+    {
+      "id": "lsp/fix-history/lint-hover-severity-labels-7053",
+      "commit": "ef8c3e059ed645e319154d475ef6d994dc489ee6",
+      "case": "lint-hover-severity-labels-7053/case.json",
+      "sha256": "f6900799e984986138b178893d2e89f776e24cccd63fdab37d6a2b1a7300ce8a",
+      "expectedSha256": "70a7efd60a0cd29a6f746da1b7079e40ee32914941a965c4920143466d2a45bd"
+    },
+    {
+      "id": "lsp/fix-history/monorepo-deferred-open-diagnostics-7280",
+      "commit": "c5eea8eed6cf316aaa6ff6daa9e2dabd47a13165",
+      "case": "monorepo-deferred-open-diagnostics-7280/case.json",
+      "sha256": "cb0a2f7114546f1d4dceccee91e896660156581443872014eacc7e7858d5aa31",
+      "expectedSha256": "cb6951840ce05800c15fb1eccb7c95579f6387d2de65b302d25694b81645bfda"
+    },
+    {
+      "id": "lsp/fix-history/native-quick-fix-exact-edits-crlf-6254",
+      "commit": "0bd36715d4ecbb448630157c7ce233b60e142362",
+      "case": "native-quick-fix-exact-edits-crlf-6254/case.json",
+      "sha256": "1fd672c6c5d40f35ac659b714f2df8cd999e6ca6991810e64258510708429939",
+      "expectedSha256": "fe53b8a41f7ea64fb66e632c5266317ec55dda8391cc33e02f3ce4d72d912c2b"
+    },
+    {
+      "id": "lsp/fix-history/native-quick-fix-exact-edits-inline-6254",
+      "commit": "0bd36715d4ecbb448630157c7ce233b60e142362",
+      "case": "native-quick-fix-exact-edits-inline-6254/case.json",
+      "sha256": "12c752faf152390005933d73a39d1809848db047a008c4bb9eca78875d564b41",
+      "expectedSha256": "00184fc8b5f7e30636171c957d22071585d5dce5e797e01b7335b785f2639642"
+    },
+    {
+      "id": "lsp/fix-history/panic-free-completion-inlay-selection",
+      "commit": "8e6f6377ce5b14bbd0fdf56e41c7d8c2076880cd",
+      "case": "panic-free-completion-inlay-selection/case.json",
+      "sha256": "75dd5d29b43de96a5709b17d67be43af1b3f6a1ce93d23f2c6b373b5c42117bd",
+      "expectedSha256": "71ca4387c95e44e5aea38d364ae293e6d62b87a3196d9e786ae7407857a40dda"
+    },
+    {
+      "id": "lsp/fix-history/panic-free-definition-hover-ranges",
+      "commit": "46dfdd549d72c1cf6fa7afa2ce91b7894fabcd09",
+      "case": "panic-free-definition-hover-ranges/case.json",
+      "sha256": "e447f959af66ca33025be57e40b7829897b3227afd17b222f7c8faf807d96289",
+      "expectedSha256": "331d39dbf780e777ad328f20ea895dffd2ad1c211ddda0e120ef5e758c80f5af"
+    },
+    {
+      "id": "lsp/fix-history/panic-free-ecosystem-diagnostics-code-actions",
+      "commit": "1fe8315f5eea8d7d7cbf7a0b2a1db6d816b476d1",
+      "case": "panic-free-ecosystem-diagnostics-code-actions/case.json",
+      "sha256": "c2105ae714355b591a1f477bcc31b360b45bfbde8530b892b2914fb1bdd8fe80",
+      "expectedSha256": "9b0f7479f8bfb59673c1552cf2db3570ed5b0c6ce254703acae64b1f89f2925b"
+    },
+    {
+      "id": "lsp/fix-history/panic-free-semantic-token-spans",
+      "commit": "ff1b322d28f00066701356446608010a8674b11b",
+      "case": "panic-free-semantic-token-spans/case.json",
+      "sha256": "ec97a3c5db4b02d8323baa3b5b02c84a82ddd04edd137db8af8ab7976df8e3e9",
+      "expectedSha256": "6c9ce0727f21a1d596cbdbe4ef91ce72cca91eb6cdda96c3300b7ed9b152122b"
+    },
+    {
+      "id": "lsp/fix-history/panic-free-server-routing-malformed",
+      "commit": "044e518c22a7d72fb6b3ccc3d0c8361f816019a9",
+      "case": "panic-free-server-routing-malformed/case.json",
+      "sha256": "1208d2071a26fcdcc9214b114797a90773fd83a91af843c81afcf75871704371",
+      "expectedSha256": "31e6a5eaf0849bf9575660cf904cce282d1d38c782de5ea631bf8ab9dd7c47c1"
+    },
+    {
+      "id": "lsp/fix-history/patterned-template-identity-6207",
+      "commit": "8fd82f7e75d5eea334e767303fe762948b77c067",
+      "case": "patterned-template-identity-6207/case.json",
+      "sha256": "10ff64c2b2824ba1b0ede0df16e74cacc4bfff64d941c465ee9d49c9c2b1108e",
+      "expectedSha256": "7b3dae89fb5360a27fb312558476a8cf1525d260753adfe42a307c172546bb65"
+    },
+    {
+      "id": "lsp/fix-history/plain-script-typecheck-7061",
+      "commit": "7100d7a790146d4252103088f69dbf15756e36a5",
+      "case": "plain-script-typecheck-7061/case.json",
+      "sha256": "9718ed9dca3316982a0c830fec00dce171b64c4918de309322c270cea4622cd8",
+      "expectedSha256": "cc3c77a04c0845c3b5f7f6bc27822f6e7e931719c09ca37d7dcc9079ab10c489"
+    },
+    {
+      "id": "lsp/fix-history/project-call-hierarchy-6272",
+      "commit": "4b79fe030265ee66aecb82f8698e68c6f8e58370",
+      "case": "project-call-hierarchy-6272/case.json",
+      "sha256": "06b841b96dac6b96930d93eecdc5f42f6f8699ebe0fcfe7643231aef0ea8e97f",
+      "expectedSha256": "47a3d9e90f104d421d22479d0c91b305ceb82a35cd01073e97b4d97833eab8ce"
+    },
+    {
+      "id": "lsp/fix-history/prop-catalog-authored-defaults",
+      "commit": "21fbf06a5908a70fe8602ca7362fccdd7110415b",
+      "case": "prop-catalog-authored-defaults/case.json",
+      "sha256": "c0270d4ab10f303ef2820fb10e54f1240371a3cd2a2b8d7b8096947b600725ea",
+      "expectedSha256": "04b185ece4d48e7aa755d2466f9cace0fce8cfbc55964aa3b90e0a72553f3696"
+    },
+    {
+      "id": "lsp/fix-history/resident-ecosystem-diagnostics-6398",
+      "commit": "a75c629c5c948885f7ffe2216f044a1a6c5e2851",
+      "case": "resident-ecosystem-diagnostics-6398/case.json",
+      "sha256": "d062bcce055bca84498d9e2189acac3eac825fe5b6af41c690dc0a8753c3252a",
+      "expectedSha256": "feda7adc328f02249631a4046d725a90a97f11310082f2c0e8ea1453f62c924d"
+    },
+    {
+      "id": "lsp/fix-history/resident-typed-code-actions-6396",
+      "commit": "ce3a418977252b87cc7262b857fe640d35158c97",
+      "case": "resident-typed-code-actions-6396/case.json",
+      "sha256": "b33122938529bf0f45055f6561c588ab7a3dd4764f409074afad24b78e7e1420",
+      "expectedSha256": "c769d07e95288cf4f591b56f0d14abf0f32e53d438a6948fcf74f7446b36ea44"
+    },
+    {
+      "id": "lsp/fix-history/scoped-lint-rules-ignores-7113",
+      "commit": "a4d89982cb91bb3bcb0a267f01ca1676be9f615d",
+      "case": "scoped-lint-rules-ignores-7113/case.json",
+      "sha256": "064108e8484ae3cfcb61117618514a59bebf551868dc757c0a233cfdd157ebf4",
+      "expectedSha256": "372af8452004da3d41867dea421bdfc7f76baafddee8d105614de15a4308658e"
+    },
+    {
+      "id": "lsp/fix-history/script-boundary-completion-script-6205",
+      "commit": "9ff23eb19c0f22bc1b449bd7eb5c2fcdda74f57d",
+      "case": "script-boundary-completion-script-6205/case.json",
+      "sha256": "2a8e6d5fd59511ce508e3c4795e96bf75c5360524ba2e9feb052237c460c16ae",
+      "expectedSha256": "6b1c7cfd7c58598d6a66add83413b583683ca9aea80abadedb3ee0d61fe7aaa5"
+    },
+    {
+      "id": "lsp/fix-history/script-boundary-completion-setup-6205",
+      "commit": "9ff23eb19c0f22bc1b449bd7eb5c2fcdda74f57d",
+      "case": "script-boundary-completion-setup-6205/case.json",
+      "sha256": "eb77674b34cd01dc0f5c7a68d803f179cec26db3b0d6b05f5199577133062b58",
+      "expectedSha256": "68504fac242d7477d6e0f9e350f0f4845e0501c80a49822247ac65e506d7738d"
+    },
+    {
+      "id": "lsp/fix-history/script-unicode-navigation-7060",
+      "commit": "370caeafee07cec57e78a7b0c75569b299ccd160",
+      "case": "script-unicode-navigation-7060/case.json",
+      "sha256": "18bc34198f864f6e7271d2922faada644dfea20b7b781cce61d5e93499e10507",
+      "expectedSha256": "9447e1eff3dd750eae3761a87d1a1eadaa7c81eda46eeff46638a3034b96852c"
+    },
+    {
+      "id": "lsp/fix-history/split-script-checker-6403",
+      "commit": "beb84df46db611f6bf017fa6803af8cf84e6d59e",
+      "case": "split-script-checker-6403/case.json",
+      "sha256": "5c3c320459f755b4aab9ce2ff35a28325ee23c14eb0cb8edd6d088e5f2f5d7e2",
+      "expectedSha256": "5a3154d3311fc3ff4fa3d4d9cf68ac883eceeaac244c945d030b67b12e27179b"
+    },
+    {
+      "id": "lsp/fix-history/tc-batch-diagnostic-subspan-mapping-3201-bound-call-matches-prop",
+      "commit": "1acad3cafdff185d4a4f3fa5f23166ef3c4840b1",
+      "case": "tc-batch-diagnostic-subspan-mapping-3201-bound-call-matches-prop/case.json",
+      "sha256": "cbf32825eccfe4a0c63d0e1a21d51fe0d3f1db15ca0f49423c81953274bf9ff6",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-batch-diagnostic-subspan-mapping-3201-bound-call-mismatch-stays-inside-attribute",
+      "commit": "1acad3cafdff185d4a4f3fa5f23166ef3c4840b1",
+      "case": "tc-batch-diagnostic-subspan-mapping-3201-bound-call-mismatch-stays-inside-attribute/case.json",
+      "sha256": "442d37585bf9104e399cc705c388ea82789992d85db830b283b73ae4def3b3f3",
+      "expectedSha256": "43486495aa45629af9e6fee1047ad24805633113d3d80cc1befa56e564575fda"
+    },
+    {
+      "id": "lsp/fix-history/tc-batch-diagnostic-subspan-mapping-3201-unknown-name-inside-bound-call-maps-exactly",
+      "commit": "1acad3cafdff185d4a4f3fa5f23166ef3c4840b1",
+      "case": "tc-batch-diagnostic-subspan-mapping-3201-unknown-name-inside-bound-call-maps-exactly/case.json",
+      "sha256": "9b288762bc964fc8711a8ba6e845d219451ab39cfbdbfb8a0bcdfe5169ecc3ae",
+      "expectedSha256": "edfd7f1a8639e674e6d86429bb347df2bb53a139bfc48a563254eb710762a2ca"
+    },
+    {
+      "id": "lsp/fix-history/tc-component-prop-bound-expression-anchor-2975-bound-expression-matches-prop",
+      "commit": "fa98cd8e728c94c923429d56e3b8326bd5f22eac",
+      "case": "tc-component-prop-bound-expression-anchor-2975-bound-expression-matches-prop/case.json",
+      "sha256": "a1b0765c0c0aef224bf7e97db26962be97b2962d3f0ecaff7fcc94e8d475920c",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-component-prop-bound-expression-anchor-2975-bound-expression-mismatch-anchor",
+      "commit": "fa98cd8e728c94c923429d56e3b8326bd5f22eac",
+      "case": "tc-component-prop-bound-expression-anchor-2975-bound-expression-mismatch-anchor/case.json",
+      "sha256": "eeb4c12f44bd973ba60db5a58b343adb8c89018074a455cd0f2e8defd6805e12",
+      "expectedSha256": "43486495aa45629af9e6fee1047ad24805633113d3d80cc1befa56e564575fda"
+    },
+    {
+      "id": "lsp/fix-history/tc-component-slot-name-reference-4606-declared-default-slot",
+      "commit": "ce8eae99b0981377f73239429d6d65896b59f371",
+      "case": "tc-component-slot-name-reference-4606-declared-default-slot/case.json",
+      "sha256": "c59cd6464c5141cf84e3902b766831ca277ddd316ed43eda5c38934acb0bcd41",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-component-slot-name-reference-4606-default-slot-payload-misuse-invalid",
+      "commit": "ce8eae99b0981377f73239429d6d65896b59f371",
+      "case": "tc-component-slot-name-reference-4606-default-slot-payload-misuse-invalid/case.json",
+      "sha256": "21311d8164f2ef479d33a2f4e6fb02ce08c6decc4fd953021c8608151ea3b4a6",
+      "expectedSha256": "2cf32857f95dcf5ffe97dea5e5144ad0420befdeb2fe0d8fd8c8fa46f7f7f1e7"
+    },
+    {
+      "id": "lsp/fix-history/tc-component-slot-name-reference-4606-undeclared-slot-name",
+      "commit": "ce8eae99b0981377f73239429d6d65896b59f371",
+      "case": "tc-component-slot-name-reference-4606-undeclared-slot-name/case.json",
+      "sha256": "7ee5888d2063f0d3c6490109f405f091e8b08ecfdfe9f3fca7cd26d3cf33f0d7",
+      "expectedSha256": "09121464942d4186ae603ca6f253944190e9b77f2801fd4e06bac39efcc9b3ec"
+    },
+    {
+      "id": "lsp/fix-history/tc-define-model-template-unwrap-5847-define-model-number-record-string-assignment",
+      "commit": "00b6fd3939ed3f1c77e1a342215849644f64aded",
+      "case": "tc-define-model-template-unwrap-5847-define-model-number-record-string-assignment/case.json",
+      "sha256": "ebbce08332a3d2cd98ee9bd7f07164adb4da19de07ccbd11d7317ef91a1c1e8f",
+      "expectedSha256": "daa0d87ed2679cb9452ae1a3cb00f00b708e252c7a1780cdee29101cc3186b5e"
+    },
+    {
+      "id": "lsp/fix-history/tc-define-model-template-unwrap-5847-define-model-record-v-for-index",
+      "commit": "00b6fd3939ed3f1c77e1a342215849644f64aded",
+      "case": "tc-define-model-template-unwrap-5847-define-model-record-v-for-index/case.json",
+      "sha256": "8024e8902cb232bc61511b149f1c76370d16fd2d038041ace88db6d8fd56c5d5",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-dynamic-directive-names-2797-dynamic-event-name-expression-still-checked",
+      "commit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "case": "tc-dynamic-directive-names-2797-dynamic-event-name-expression-still-checked/case.json",
+      "sha256": "64b9ea10d46f1fd56accc09c97c2be316dad34696890ec1c7ef9bdf04659c848",
+      "expectedSha256": "5d3b6525b614ea6b9463e4b75300383091f1c52f9310ffda95001314116a550e"
+    },
+    {
+      "id": "lsp/fix-history/tc-dynamic-directive-names-2797-dynamic-prop-and-event-names-unchecked-as-keys",
+      "commit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "case": "tc-dynamic-directive-names-2797-dynamic-prop-and-event-names-unchecked-as-keys/case.json",
+      "sha256": "b6447ee0dec7cab9011384d638624c92dca82de02444d494687a62b8f6884b03",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-dynamic-directive-names-2797-dynamic-prop-value-still-checked",
+      "commit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "case": "tc-dynamic-directive-names-2797-dynamic-prop-value-still-checked/case.json",
+      "sha256": "449ed25f91ff14c707b6c64d8978f15536d4aab1e2309ced9d858d383846a9fe",
+      "expectedSha256": "df4bc78d0e109b7b66547b6f4a54dd93d8c0e8bb4b6bcace250a5d816eb1d5ee"
+    },
+    {
+      "id": "lsp/fix-history/tc-dynamic-directive-names-2797-runtime-prop-name-beside-static-props",
+      "commit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "case": "tc-dynamic-directive-names-2797-runtime-prop-name-beside-static-props/case.json",
+      "sha256": "d4435890b5cd8c428631270d403a1e10a223d82deb9656f923e16a0abf05ce95",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-dynamic-directive-names-2797-runtime-prop-name-may-satisfy-required-prop",
+      "commit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "case": "tc-dynamic-directive-names-2797-runtime-prop-name-may-satisfy-required-prop/case.json",
+      "sha256": "dcfec0e639d69928db0d8b5b776e1e946497f73f86f24b3be2aae2efd5f17231",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-dynamic-directive-names-2797-runtime-prop-name-value-checked-against-its-prop",
+      "commit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "case": "tc-dynamic-directive-names-2797-runtime-prop-name-value-checked-against-its-prop/case.json",
+      "sha256": "1d8dcbe0b60a87aaf524fae1d6111735369400b64aafe1980b40191a0b173cf7",
+      "expectedSha256": "b7e320f4fec3a7e60f5e007c01ff51ebc88016486fb9c91b85dc929e54f5e991"
+    },
+    {
+      "id": "lsp/fix-history/tc-dynamic-directive-names-2797-static-prop-beside-dynamic-name-still-checked",
+      "commit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "case": "tc-dynamic-directive-names-2797-static-prop-beside-dynamic-name-still-checked/case.json",
+      "sha256": "e92057eca5bd051da9837aab6eaa679bb227870dca8ce5bf442dfb169d74983d",
+      "expectedSha256": "3d407227891c9d2b9d3ee5c6ed4987763a217da702db57e48468ddc17112bafd"
+    },
+    {
+      "id": "lsp/fix-history/tc-dynamic-directive-names-2797-string-prop-name-supplies-no-required-prop",
+      "commit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "case": "tc-dynamic-directive-names-2797-string-prop-name-supplies-no-required-prop/case.json",
+      "sha256": "ca4fe53d7d829a9c0421c98abd946f3eb7e06e914f8cc014bb2456986ba4c6e4",
+      "expectedSha256": "9636ede25dabfad295169113a722819e703fa356b369dbf9216cc8c28789b7af"
+    },
+    {
+      "id": "lsp/fix-history/tc-dynamic-directive-names-2797-v-for-runtime-prop-name",
+      "commit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+      "case": "tc-dynamic-directive-names-2797-v-for-runtime-prop-name/case.json",
+      "sha256": "83e7068661d8519392f326158bde4ae419945067d9a312e0430976cb1378a7bf",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-generic-component-global-attrs-closed-generic-global-html-attrs",
+      "commit": "d7796777839f961aa97d1a55397ad4e2d0372a31",
+      "case": "tc-generic-component-global-attrs-closed-generic-global-html-attrs/case.json",
+      "sha256": "fae4e37dd27b6ad935239e656c8748304641cb572b9b525daf3cbf82bcdad37e",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-generic-component-global-attrs-closed-generic-unknown-attrs-rejected",
+      "commit": "d7796777839f961aa97d1a55397ad4e2d0372a31",
+      "case": "tc-generic-component-global-attrs-closed-generic-unknown-attrs-rejected/case.json",
+      "sha256": "1c6fac57eb2017d5f52b1b8bf7c9e692f3d3476fa4c3565d60d18099cee1dca8",
+      "expectedSha256": "c68e72a98f5bd887f8d86ecd1d06ed12d09b3fb789ea8192f4b8fe9d3ea44e85"
+    },
+    {
+      "id": "lsp/fix-history/tc-implicit-event-handler-anchor-2462-implicit-handler-accepts-event",
+      "commit": "b34acb9e2a3a27ea3b4981c41ed64c42367447c2",
+      "case": "tc-implicit-event-handler-anchor-2462-implicit-handler-accepts-event/case.json",
+      "sha256": "d06b8f1723098a4a0f076436a7607fd8fe03697076eb1074764e214685692056",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-implicit-event-handler-anchor-2462-implicit-handler-parameter-mismatch",
+      "commit": "b34acb9e2a3a27ea3b4981c41ed64c42367447c2",
+      "case": "tc-implicit-event-handler-anchor-2462-implicit-handler-parameter-mismatch/case.json",
+      "sha256": "4386a72f6cf6f15933ade00d1ac17d29db80433ac7b2f2ae9711ee17f9990c6a",
+      "expectedSha256": "4f74d5d08392bff2b78a1ad132d1552c156a93b6c249f53abbb7b8dd4e7d63d6"
+    },
+    {
+      "id": "lsp/fix-history/tc-imported-runtime-define-props-5962-imported-runtime-number-prop-read-as-boolean",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-imported-runtime-define-props-5962-imported-runtime-number-prop-read-as-boolean/case.json",
+      "sha256": "f7dc3d5a9834dd011624ed74d28fb2101aafc9ee298b7636edec61e2f7db13c0",
+      "expectedSha256": "ee72c79629c15fb3d779a0168cac931eb951064607dc7ebd93e6d70b5665516c"
+    },
+    {
+      "id": "lsp/fix-history/tc-imported-runtime-define-props-5962-imported-runtime-props-reach-script-and-template",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-imported-runtime-define-props-5962-imported-runtime-props-reach-script-and-template/case.json",
+      "sha256": "fbab1647260f36ebd4bf8c261d87b1fcd9d75e06452c1895935cb265ccdc18fc",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-imported-runtime-define-props-5962-runtime-props-cache-rebinds-local-names",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-imported-runtime-define-props-5962-runtime-props-cache-rebinds-local-names/case.json",
+      "sha256": "ae48d8ff59ba79cf7d2a27ba64d9b19d5b459a7e04b26f8c9358c2ab77a232c7",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-imported-runtime-define-props-5962-runtime-props-cache-rebound-label-wrong-type",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-imported-runtime-define-props-5962-runtime-props-cache-rebound-label-wrong-type/case.json",
+      "sha256": "3ffb864363e83590977c78c61e9cd48579d9cdad5473563f5eb403c771421d83",
+      "expectedSha256": "508d9917f38f8e97f1ba46e4c4835028b2351b1004553d65e3d28dcf35ca93ef"
+    },
+    {
+      "id": "lsp/fix-history/tc-imported-runtime-define-props-5962-with-defaults-omitted-label-stays-optional",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-imported-runtime-define-props-5962-with-defaults-omitted-label-stays-optional/case.json",
+      "sha256": "905a1ee7b36dfbb3b7f65fcb8ea43dc642c6a4a8756f10dfe2702d2cba8e20ae",
+      "expectedSha256": "a4fbff2ac4a3f73a13f9ec44c8b0f78f6355b3f7e3193b13b492f0d152c70452"
+    },
+    {
+      "id": "lsp/fix-history/tc-imported-runtime-define-props-5962-with-defaults-resolves-imported-omit-defaults",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-imported-runtime-define-props-5962-with-defaults-resolves-imported-omit-defaults/case.json",
+      "sha256": "82aebe83e19507e17891948ea2c93f4a02db84529703c2118be7c7c811896f40",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-public-instance-contract-alignment-6027-histoire-layout-branch-exclusive-fields",
+      "commit": "d4c05ee736862e678ff8b7cac8a728d80f2193c0",
+      "case": "tc-public-instance-contract-alignment-6027-histoire-layout-branch-exclusive-fields/case.json",
+      "sha256": "f9ef6745fcaa98a423524a3846d99c2bc3ec04d81b40d6c9d88d7883d4a9ebbd",
+      "expectedSha256": "dd789aeaa8e00aa3761ea6ae09f620c1a19b1d72eaede3ec135b337c37b89971"
+    },
+    {
+      "id": "lsp/fix-history/tc-public-instance-contract-alignment-6027-histoire-layout-matching-branches",
+      "commit": "d4c05ee736862e678ff8b7cac8a728d80f2193c0",
+      "case": "tc-public-instance-contract-alignment-6027-histoire-layout-matching-branches/case.json",
+      "sha256": "65f88e790e02e84cebb34376878c10eafcb32c4bf69e10da9d427757cb43bcbb",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-public-instance-contract-alignment-6027-public-instance-exact-emit-and-constraint-controls",
+      "commit": "d4c05ee736862e678ff8b7cac8a728d80f2193c0",
+      "case": "tc-public-instance-contract-alignment-6027-public-instance-exact-emit-and-constraint-controls/case.json",
+      "sha256": "2976b273379d048d26b7f87d5a6c9bdbc42e6895c47b4f9e3176f246d3610421",
+      "expectedSha256": "664b2914248d84211aae3877f6c3e13ae632ce64d038107ca49ddc45030912c3"
+    },
+    {
+      "id": "lsp/fix-history/tc-public-instance-contract-alignment-6027-public-instance-satisfies-component-public-instanc",
+      "commit": "d4c05ee736862e678ff8b7cac8a728d80f2193c0",
+      "case": "tc-public-instance-contract-alignment-6027-public-instance-satisfies-component-public-instanc/case.json",
+      "sha256": "1fd3b4c399fd82c5154f212d8219e79a0fdc9f5531be4981adadd4e3ec74e54b",
+      "expectedSha256": "4da469ae613991f79616c9cc61189b1e938c66602a46690adfa76df6396d2007"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-configured-alias-vue-type-import",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-configured-alias-vue-type-import/case.json",
+      "sha256": "19cdcc23a409717acfcab0f3d844def7aafc77cceca440d9e30813320455f3aa",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-configured-alias-vue-type-import-wrong-item",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-configured-alias-vue-type-import-wrong-item/case.json",
+      "sha256": "bc0765a2ebb13d9841582d6f2aed3b6b580185f99bf0bf719597277b50a75a32",
+      "expectedSha256": "c15773ba018810112b23fc7ed865812735c9d3e394ce0fffacd9f4c518c93413"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-dynamic-slot-spread-unknown-payload",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-dynamic-slot-spread-unknown-payload/case.json",
+      "sha256": "e554457854505b2d8d600f8d9812c164e3305d7e3f5b1820e672b5c0405c4972",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-escaped-model-and-prop-names",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-escaped-model-and-prop-names/case.json",
+      "sha256": "cc86c2bc65527af48ad500104c352d735e2b4600b9cc699f7303de344ddd1d1c",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-escaped-model-name-read-as-number",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-escaped-model-name-read-as-number/case.json",
+      "sha256": "98331640a7b3180871188600810fd91d86cdf981cca2d7d3c68fa83d3b85f2f6",
+      "expectedSha256": "93e97d69be40a29196a4eed6f14e749b318a7ed0683e4f36ac7fc4abcb58610b"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-generic-slot-spread-exact-payload",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-generic-slot-spread-exact-payload/case.json",
+      "sha256": "b54bb0f7a6c9f41e4d5ec9f2043dd0b5ba21de985d41dcf7f45f99fd2673372f",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-imported-generic-props-instantiation-wrong-item",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-imported-generic-props-instantiation-wrong-item/case.json",
+      "sha256": "18cbc9e700ac3d9fb6a97d85868e2864cabd32f67113f1d8b14fbcce0b3d9b6d",
+      "expectedSha256": "02708fdc0f7da522b73bd405bf8ccc24348f726bcac96c57aac835dba79b023d"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-imported-type-only-props-with-models",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-imported-type-only-props-with-models/case.json",
+      "sha256": "47d3b98a496fa99e28d690c53c6de6b38d2fbaa2667d03a419af37f5f73d13ba",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-model-get-set-contextual-callbacks",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-model-get-set-contextual-callbacks/case.json",
+      "sha256": "8a44eae286a63705d2d1e61d6c2c86b4b1fe3254513b2afa11fa4e73411dca2f",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-model-get-set-contextual-wrong-member",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-model-get-set-contextual-wrong-member/case.json",
+      "sha256": "93f956a96f617b49456c088ebfa6562498c6b622836a434c359346e059d17a18",
+      "expectedSha256": "073a01dcca4e85aef597c6bdd16af61cd1363758a05186b3c99d2080016e654e"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-model-get-set-distinct-read-write",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-model-get-set-distinct-read-write/case.json",
+      "sha256": "b8d68afcd78ea17eb039c6ac938827f9cf61bcdf470a61b036788f83bb310405",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-model-get-set-wrong-write-type",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-model-get-set-wrong-write-type/case.json",
+      "sha256": "bd2cd2c60392798c04fce5521d2cad3dd72e244bd95b7565aa04fc4e69717ef1",
+      "expectedSha256": "6315d9e7b3870d8c5efd6a0c530dd7cc2d218cd6498bb9c19bff403e3f87dba3"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-resolved-component-event-bad-handler",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-resolved-component-event-bad-handler/case.json",
+      "sha256": "545316d323e96e22e8a0778b9b27074c59a04a72bfb10263b88428cdfc382c9e",
+      "expectedSha256": "35e9efb86b8c2bb789fc7e8a877450dfa5cc231dae8d730665f580b2627350dc"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-resolved-component-event-matching-handler",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-resolved-component-event-matching-handler/case.json",
+      "sha256": "ef2a90eb84af4665c7040c113e1aa71cc37f0f04753b106947a706746c88e848",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-runtime-model-defaulted-string",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-runtime-model-defaulted-string/case.json",
+      "sha256": "9367970458fee600433849a7ed39d04d66bb8c98e6f8c9c7feb26c03cd6b25f3",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-runtime-model-optional-keeps-undefined",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-runtime-model-optional-keeps-undefined/case.json",
+      "sha256": "7397e9ae87ac978805320e134952fa11994c6bdfefbc211c0c120930f5cf0b19",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-runtime-model-optional-read-as-string",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-runtime-model-optional-read-as-string/case.json",
+      "sha256": "3f85a4f0a1ee2e9f9855d5d00a6a995892390bd4625143356a032c5080150543",
+      "expectedSha256": "25e4d9c8f20c83de4edd780be12a78e72d697a5cf475c5a7fa1e0d190bc477a3"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-slot-spread-explicit-prop-matching",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-slot-spread-explicit-prop-matching/case.json",
+      "sha256": "13fcf19f3b974241f43bffbc4670b1261616608e4b0fbcc7ae850542e4f142aa",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-slot-spread-explicit-prop-still-checked",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-slot-spread-explicit-prop-still-checked/case.json",
+      "sha256": "6e69bd87cd9621e36e4bdcef3da81ed32d1b79ffccd5e45a16d934a0eb4355ed",
+      "expectedSha256": "d0ec8cb60a53dcb43b4611622d26dfc754eadbf52ec80900af3fab123ffb0446"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-unconfigured-alias-vue-type-import-stays-authored",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-unconfigured-alias-vue-type-import-stays-authored/case.json",
+      "sha256": "9e21eaf82bd85c9dabb75bbdd4eb58bfecf938a017ec8a586e7e796aa1109706",
+      "expectedSha256": "30da248dbbe75caf8a290860b7f3e4f3fca6e620b85a9d8a7332b31ac07d5ab9"
+    },
+    {
+      "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-unresolved-component-event-callback-any",
+      "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+      "case": "tc-real-project-parity-models-slots-5967-unresolved-component-event-callback-any/case.json",
+      "sha256": "ae52b6a8bc38e356e5ae498c8abcfa2e8d3f76959702f303215b9338d5122ba2",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-recoverable-template-vfor-guard-props-1566-recoverable-repair-keeps-dependent-diagnostic",
+      "commit": "beeb9d20faa6f952a8137b60f531cc37088deccd",
+      "case": "tc-recoverable-template-vfor-guard-props-1566-recoverable-repair-keeps-dependent-diagnostic/case.json",
+      "sha256": "44fad559e17dfac07695a6c3dd512f58b213eacd9e11f54d4e3cc172e5606f24",
+      "expectedSha256": "baf99b288d9cb786fe4ba8fe77c39121e0b54fc97762012a8e08c35199433628"
+    },
+    {
+      "id": "lsp/fix-history/tc-recoverable-template-vfor-guard-props-1566-recoverable-repair-keeps-template-checked",
+      "commit": "beeb9d20faa6f952a8137b60f531cc37088deccd",
+      "case": "tc-recoverable-template-vfor-guard-props-1566-recoverable-repair-keeps-template-checked/case.json",
+      "sha256": "a3125ee49c211159789fe0608ca71963de54cebe62cbc1eb1a03df5c0ed132aa",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-recoverable-template-vfor-guard-props-1566-recoverable-repair-template-first-keeps-depende",
+      "commit": "beeb9d20faa6f952a8137b60f531cc37088deccd",
+      "case": "tc-recoverable-template-vfor-guard-props-1566-recoverable-repair-template-first-keeps-depende/case.json",
+      "sha256": "bd4eb8dcf0c08de4f61f88df14dcd08b37c51492f99e44ae5d12228a8bb4e2fa",
+      "expectedSha256": "5083fb209383d0f67d40d150ec9b19bfcd1206cd6d73c2f9f2de8a0d77a0c791"
+    },
+    {
+      "id": "lsp/fix-history/tc-recoverable-template-vfor-guard-props-1566-vfor-component-props-narrowed-by-enclosing-vif",
+      "commit": "beeb9d20faa6f952a8137b60f531cc37088deccd",
+      "case": "tc-recoverable-template-vfor-guard-props-1566-vfor-component-props-narrowed-by-enclosing-vif/case.json",
+      "sha256": "20e0fcad5324a5a413d6493b9896dc5c7fcd75d9ef8f58cbc5df48478b34cfaf",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-recoverable-template-vfor-guard-props-1566-vfor-component-props-without-enclosing-vif",
+      "commit": "beeb9d20faa6f952a8137b60f531cc37088deccd",
+      "case": "tc-recoverable-template-vfor-guard-props-1566-vfor-component-props-without-enclosing-vif/case.json",
+      "sha256": "fa7909f884b05365c5730c7ef9a2f9dd52281c8bb8f3210f22bdc21d2850c89e",
+      "expectedSha256": "0f59fec35b2be759f329f3ceffa8543970bb9b91b78232d6ed7b9de08c0581cc"
+    },
+    {
+      "id": "lsp/fix-history/tc-ref-literal-and-static-ref-reads-5965-explicit-ref-literal-outside-prop-union",
+      "commit": "c0dae2112cf5ddf351946882af19b5ede2f76407",
+      "case": "tc-ref-literal-and-static-ref-reads-5965-explicit-ref-literal-outside-prop-union/case.json",
+      "sha256": "8a9cc2a30a4910b6b7e0062871e26e51147e3e74492902142a03cac888ee64ab",
+      "expectedSha256": "00f3b1a9a65eaa82ad42a9252f2652429cbc02811a706ce3b165cc81c574c6c7"
+    },
+    {
+      "id": "lsp/fix-history/tc-ref-literal-and-static-ref-reads-5965-explicit-ref-literal-reaches-literal-prop",
+      "commit": "c0dae2112cf5ddf351946882af19b5ede2f76407",
+      "case": "tc-ref-literal-and-static-ref-reads-5965-explicit-ref-literal-reaches-literal-prop/case.json",
+      "sha256": "5be2ac5121ff41c93263713c78e928101556638f005c75f7202aaef66981fb76",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-ref-literal-and-static-ref-reads-5965-static-template-ref-to-vue-ref-counts-as-use",
+      "commit": "c0dae2112cf5ddf351946882af19b5ede2f76407",
+      "case": "tc-ref-literal-and-static-ref-reads-5965-static-template-ref-to-vue-ref-counts-as-use/case.json",
+      "sha256": "091f3672702fd2493bfa3451c9ec146e80094a33344f815c9673dd72340a39bc",
+      "expectedSha256": "b2accdbb493f252b6da6ad5dad04bad3c95bcdcb845c3f4f3dffbb4bd36f5ee2"
+    },
+    {
+      "id": "lsp/fix-history/tc-ref-literal-and-static-ref-reads-5965-static-template-refs-do-not-consume-locals",
+      "commit": "c0dae2112cf5ddf351946882af19b5ede2f76407",
+      "case": "tc-ref-literal-and-static-ref-reads-5965-static-template-refs-do-not-consume-locals/case.json",
+      "sha256": "7a44172f5e9b829a9e9823cab37201b53ff3d36145db5dfc38be855dceadfe00",
+      "expectedSha256": "a3ee9efc0a0395951e1f60d01c24fc369a90ce5abd59ae4bd25fc3812239d434"
+    },
+    {
+      "id": "lsp/fix-history/tc-ref-literal-and-static-ref-reads-5965-template-expression-read-consumes-ref-local",
+      "commit": "c0dae2112cf5ddf351946882af19b5ede2f76407",
+      "case": "tc-ref-literal-and-static-ref-reads-5965-template-expression-read-consumes-ref-local/case.json",
+      "sha256": "3fcc6d2fa97ffc1c37ec021ee48f09dce8dd3b0f463115acac338c7bd9bd0d5d",
+      "expectedSha256": "f1865feea1a8fae84b4e2364822e166182df94d84bd7cb256909470d58317b85"
+    },
+    {
+      "id": "lsp/fix-history/tc-ref-literal-and-static-ref-reads-5965-template-expression-read-only-local",
+      "commit": "c0dae2112cf5ddf351946882af19b5ede2f76407",
+      "case": "tc-ref-literal-and-static-ref-reads-5965-template-expression-read-only-local/case.json",
+      "sha256": "6989170bc68dcdf19d77ca08382db9146e8255a70ffd390c256211843cb13104",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-strict-html-fallthrough-literal-dedup-4992-boolean-literal-binding-valid",
+      "commit": "13bcf1ba4ddb588b79296623f259c310a1bab2b5",
+      "case": "tc-strict-html-fallthrough-literal-dedup-4992-boolean-literal-binding-valid/case.json",
+      "sha256": "34861b72a947ef613cc04e847e3379693dccc88e7c6960cb805e8fac54b7339a",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-strict-html-fallthrough-literal-dedup-4992-number-literal-binding-reports-once-invalid",
+      "commit": "13bcf1ba4ddb588b79296623f259c310a1bab2b5",
+      "case": "tc-strict-html-fallthrough-literal-dedup-4992-number-literal-binding-reports-once-invalid/case.json",
+      "sha256": "3bf5adec65653a75df1f39f7e8300b0c0cf8b0977f383052696cd78a4f5e47ae",
+      "expectedSha256": "5a2a2f73047d1f198be1b3032735a8c6efb015f1251aa7a2e3ab4c0814e83383"
+    },
+    {
+      "id": "lsp/fix-history/tc-strict-html-fallthrough-literal-dedup-4992-real-html-attrs-on-closed-component",
+      "commit": "13bcf1ba4ddb588b79296623f259c310a1bab2b5",
+      "case": "tc-strict-html-fallthrough-literal-dedup-4992-real-html-attrs-on-closed-component/case.json",
+      "sha256": "5b6b76474efe346b5090a05aefe5bb8fa5c5d19b714a2b06a7f450ed155cffa8",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-strict-html-fallthrough-literal-dedup-4992-unknown-attr-stays-strict-invalid",
+      "commit": "13bcf1ba4ddb588b79296623f259c310a1bab2b5",
+      "case": "tc-strict-html-fallthrough-literal-dedup-4992-unknown-attr-stays-strict-invalid/case.json",
+      "sha256": "c8ec09e82ee6db3103bc618f5ddb5e74e8e4c71dc0847cea1ab255deac38e974",
+      "expectedSha256": "dc4e1a59b96293df448a4b2ac3af436cfb531ecc590141650b6e682edfd004df"
+    },
+    {
+      "id": "lsp/fix-history/tc-template-parser-attribute-recovery-347-missing-dynamic-argument-end-recovered",
+      "commit": "731cce813a41207950923d89099ac2c87047c0b6",
+      "case": "tc-template-parser-attribute-recovery-347-missing-dynamic-argument-end-recovered/case.json",
+      "sha256": "328f14723619046624e9f3d64f8cd546a6912b63afb9e730877f7ab79a79156e",
+      "expectedSha256": "cdc84919712a0766802ccf4cf17bb671f3b406e56e5c52c4dd938275cfa1b0c2"
+    },
+    {
+      "id": "lsp/fix-history/tc-template-parser-attribute-recovery-347-missing-dynamic-argument-end-unknown-value",
+      "commit": "731cce813a41207950923d89099ac2c87047c0b6",
+      "case": "tc-template-parser-attribute-recovery-347-missing-dynamic-argument-end-unknown-value/case.json",
+      "sha256": "11d6249d84a025edf1ebc7ce10a49bb4f5dc8c3d9b6400f67d173e861ea3cab2",
+      "expectedSha256": "cdc84919712a0766802ccf4cf17bb671f3b406e56e5c52c4dd938275cfa1b0c2"
+    },
+    {
+      "id": "lsp/fix-history/tc-template-parser-attribute-recovery-347-missing-equals-static-prop-recovered",
+      "commit": "731cce813a41207950923d89099ac2c87047c0b6",
+      "case": "tc-template-parser-attribute-recovery-347-missing-equals-static-prop-recovered/case.json",
+      "sha256": "85208455e35d3a2a7f2f9ac65599673351cb08e5930a81ab2351f8eb868efb18",
+      "expectedSha256": "c51b5cfc1f43d28e7c1c6669f12834b69c087b28a6704efb0db994dce789ca8c"
+    },
+    {
+      "id": "lsp/fix-history/tc-template-parser-attribute-recovery-347-missing-equals-static-prop-wrong-type",
+      "commit": "731cce813a41207950923d89099ac2c87047c0b6",
+      "case": "tc-template-parser-attribute-recovery-347-missing-equals-static-prop-wrong-type/case.json",
+      "sha256": "115d8ba5f193848583e65810fe21e614e6dc2d6c0f0f8497586dcc751a350c53",
+      "expectedSha256": "d85767b36190fa245b31a2b42cfec3eaf708ab9fc40cdf903e1cd5a9b8304215"
+    },
+    {
+      "id": "lsp/fix-history/tc-template-ref-slot-vnode-handlers-5962-component-ref-callback-contextual",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-template-ref-slot-vnode-handlers-5962-component-ref-callback-contextual/case.json",
+      "sha256": "b40bd75d2972a9aceeb88ed37ed9b073c43107b0171d059d34c9052a789f96fc",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-template-ref-slot-vnode-handlers-5962-component-ref-callback-keeps-ts-ignore",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-template-ref-slot-vnode-handlers-5962-component-ref-callback-keeps-ts-ignore/case.json",
+      "sha256": "b958f658df8919762e52704a66bf8a56c0100ea380a642b51d42f77138cb7094",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-template-ref-slot-vnode-handlers-5962-component-ref-callback-without-ts-ignore",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-template-ref-slot-vnode-handlers-5962-component-ref-callback-without-ts-ignore/case.json",
+      "sha256": "7c44a225c375862f51a8281e90c699341667c6c2f5c2e7b1f523098e554f1994",
+      "expectedSha256": "006242d04ce028f6bfeb625878f6bd59891dc315324208559ce3e6e3d59bf8f8"
+    },
+    {
+      "id": "lsp/fix-history/tc-template-ref-slot-vnode-handlers-5962-slot-outlet-listener-payload-mismatch",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-template-ref-slot-vnode-handlers-5962-slot-outlet-listener-payload-mismatch/case.json",
+      "sha256": "4d855f308e729cc699680d9400b0b4ac45fc23e1ee71c831e53022fe03171b10",
+      "expectedSha256": "8b2e11208dee08998889e9e4f7f67fb3363a1cb1a85597a1f98b7c8832782f78"
+    },
+    {
+      "id": "lsp/fix-history/tc-template-ref-slot-vnode-handlers-5962-slot-outlet-listeners-use-declared-slot-props",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-template-ref-slot-vnode-handlers-5962-slot-outlet-listeners-use-declared-slot-props/case.json",
+      "sha256": "d8536107d860f6d723432299d010310d1cfb9e119c4f313021fdd3ea0a575372",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-template-ref-slot-vnode-handlers-5962-unresolved-global-component-ref-callback",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-template-ref-slot-vnode-handlers-5962-unresolved-global-component-ref-callback/case.json",
+      "sha256": "0aa0571be3549e683e644e21368d0fb07c21339d8727ef207ced01a38fd92912",
+      "expectedSha256": "d4415054bf3780715b80f1a62390310c29c4ac59fa5c0549cc4aa63772121aac"
+    },
+    {
+      "id": "lsp/fix-history/tc-template-ref-slot-vnode-handlers-5962-vnode-hook-handler-expects-mouse-event",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-template-ref-slot-vnode-handlers-5962-vnode-hook-handler-expects-mouse-event/case.json",
+      "sha256": "04d5551ec2772f439fa285635bd74822df624f1ee45dfa33e0a81416e6441d05",
+      "expectedSha256": "62e8d0b1b58d2d03163735e32d16940aa8f6751775aa37a1424532ebbd8baf48"
+    },
+    {
+      "id": "lsp/fix-history/tc-template-ref-slot-vnode-handlers-5962-vnode-hook-receives-vnode",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-template-ref-slot-vnode-handlers-5962-vnode-hook-receives-vnode/case.json",
+      "sha256": "92dcce800d83a5589948c459a0459b50fd888a1dda037cf5cb323908a20f5608",
+      "expectedSha256": "c2ee49dbd2883b79bd3b98051ad720d4731fa9339e59d7720ad828c0bea41914"
+    },
+    {
+      "id": "lsp/fix-history/tc-tsx-sfc-component-props-5962-tsx-catch-all-emit-listener-props",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-tsx-sfc-component-props-5962-tsx-catch-all-emit-listener-props/case.json",
+      "sha256": "f2a9770cccc5df26100d9dabfbfe9cf642c44ec19986433a23cd77c4c9172b28",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-tsx-sfc-component-props-5962-tsx-catch-all-emits-wrong-label-type",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-tsx-sfc-component-props-5962-tsx-catch-all-emits-wrong-label-type/case.json",
+      "sha256": "f867f4c25aa01bbb0f6b0ca60427e5380134cd08aa0308bedd5a73976233bc4f",
+      "expectedSha256": "00ea9f41d96e8e11231722457b36ba87b08dc1da7531e9fd58995dfd28c36013"
+    },
+    {
+      "id": "lsp/fix-history/tc-tsx-sfc-component-props-5962-tsx-union-component-prop-keys",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-tsx-sfc-component-props-5962-tsx-union-component-prop-keys/case.json",
+      "sha256": "be1bb40cc0958f98b830af54355385bd0e1b2bc77e250986033698c2345b02ed",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-tsx-sfc-component-props-5962-tsx-union-component-wrong-alpha-type",
+      "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+      "case": "tc-tsx-sfc-component-props-5962-tsx-union-component-wrong-alpha-type/case.json",
+      "sha256": "d6bce2548c0b4b741099ac66eea923720796660db647bef3f6ef855796d4fdb9",
+      "expectedSha256": "abe2ad96146ed8fc0d2daee21e25772c6862c799285b870e6cbff0a80516d5f3"
+    },
+    {
+      "id": "lsp/fix-history/tc-v-bind-object-prop-spread-3526-correct-spread",
+      "commit": "21e5bd408bfdf22f0c043f1e0c50d92f4055479a",
+      "case": "tc-v-bind-object-prop-spread-3526-correct-spread/case.json",
+      "sha256": "91ad361ee2247a66904d6316fa0709882f10ed26f3820d75d16e3ac3a7159b9c",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-v-bind-object-prop-spread-3526-error-inside-spread-expression",
+      "commit": "21e5bd408bfdf22f0c043f1e0c50d92f4055479a",
+      "case": "tc-v-bind-object-prop-spread-3526-error-inside-spread-expression/case.json",
+      "sha256": "4b15fcea975f5b57068a4f1498280c937e6c40b0a5e1a222d501a731ffe0c58f",
+      "expectedSha256": "c9851ec389f943c0f4584fe7b5863ced5a01938cac03056e1b6bfac92c1bb74f"
+    },
+    {
+      "id": "lsp/fix-history/tc-v-bind-object-prop-spread-3526-spread-beside-correct-named-prop",
+      "commit": "21e5bd408bfdf22f0c043f1e0c50d92f4055479a",
+      "case": "tc-v-bind-object-prop-spread-3526-spread-beside-correct-named-prop/case.json",
+      "sha256": "9ea2a020439344b601e2c5c5477385d4923725ffd9da558b4cf1c312f58c5bc9",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-v-bind-object-prop-spread-3526-spread-beside-wrong-named-prop",
+      "commit": "21e5bd408bfdf22f0c043f1e0c50d92f4055479a",
+      "case": "tc-v-bind-object-prop-spread-3526-spread-beside-wrong-named-prop/case.json",
+      "sha256": "5c2aa46d128105ec2a03e5b5b755a08a2753d5fb5b567e8bd2107e613bcef6f7",
+      "expectedSha256": "e5b5e061001b76734b89c8a03c394d328029c21f3619376ac4bc2613cec374ec"
+    },
+    {
+      "id": "lsp/fix-history/tc-v-bind-object-prop-spread-3526-wrong-and-missing-spreads",
+      "commit": "21e5bd408bfdf22f0c043f1e0c50d92f4055479a",
+      "case": "tc-v-bind-object-prop-spread-3526-wrong-and-missing-spreads/case.json",
+      "sha256": "6ec6d28845e3c02ccf825c14e3ed01657fc140fd2b4dad9de309ea59629e0086",
+      "expectedSha256": "30c8212a5af120c3108ada1e1c5c50a5dbd598ab972e9588a6a17d5d71509c52"
+    },
+    {
+      "id": "lsp/fix-history/tc-v-for-alias-declaration-anchor-3909-alias-declarations",
+      "commit": "31eecf0427b56b8221290e16ec73022d73633f9b",
+      "case": "tc-v-for-alias-declaration-anchor-3909-alias-declarations/case.json",
+      "sha256": "fc3daa1581762078dd38897eb9d882c3e770994311d881d11640f8bf3f303cb6",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-v-for-alias-declaration-anchor-3909-missing-destructured-alias-property-invalid",
+      "commit": "31eecf0427b56b8221290e16ec73022d73633f9b",
+      "case": "tc-v-for-alias-declaration-anchor-3909-missing-destructured-alias-property-invalid/case.json",
+      "sha256": "544678c07a13c08fb4e5ae4a9608c583ea948f539ed9d9c76bf6956a3ad68dcc",
+      "expectedSha256": "959f59ac5531fb1deecdd79940dd62dbf76d0249a20c1790a46936a01338f9e6"
+    },
+    {
+      "id": "lsp/fix-history/tc-vue-alias-public-instance-guard-5672-alias-without-public-instance",
+      "commit": "c220f47b65134eee36851c7841b1e8d5567eafe4",
+      "case": "tc-vue-alias-public-instance-guard-5672-alias-without-public-instance/case.json",
+      "sha256": "b3d01d09ef2d1f9d9112aa3c19d0c21fc83d24941422c4b7a6af28df903ef786",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-vue-alias-public-instance-guard-5672-alias-without-public-instance-wrong-assignment",
+      "commit": "c220f47b65134eee36851c7841b1e8d5567eafe4",
+      "case": "tc-vue-alias-public-instance-guard-5672-alias-without-public-instance-wrong-assignment/case.json",
+      "sha256": "7dbfc7ab1d2980d7660e11a444999f67186a1dc0ab53ba1a45606ed48832e678",
+      "expectedSha256": "38e1192fae60279758fe3fb1d2220865008a04ee0762ba4ea87709f586a72a87"
+    },
+    {
+      "id": "lsp/fix-history/tc-vue-alias-public-instance-guard-5672-standard-vue-template-context",
+      "commit": "c220f47b65134eee36851c7841b1e8d5567eafe4",
+      "case": "tc-vue-alias-public-instance-guard-5672-standard-vue-template-context/case.json",
+      "sha256": "f5bd519a673d2470fb2e883504a346113f6cdb0a6638036f67664626c538d73c",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-vue-module-import-resolution-617-async-setup-body-mismatch",
+      "commit": "2e884f7b2df816c675f1473bba681b4429a4f458",
+      "case": "tc-vue-module-import-resolution-617-async-setup-body-mismatch/case.json",
+      "sha256": "c6e5524bb69599e3bcd0887afffd4053f4585f2a5b57f5f45d6451a26dbd5c29",
+      "expectedSha256": "75402de4e273f4af2fd4c94f53006fb36565c9749543777d95705f8ff42a4f4e"
+    },
+    {
+      "id": "lsp/fix-history/tc-vue-module-import-resolution-617-async-setup-invocation",
+      "commit": "2e884f7b2df816c675f1473bba681b4429a4f458",
+      "case": "tc-vue-module-import-resolution-617-async-setup-invocation/case.json",
+      "sha256": "d6e81b5aea1a93c966a74f404e90f589a480a043e4daeaf7a3a0df67f0c3d77c",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-vue-module-import-resolution-617-ts-entry-imports-existing-vue",
+      "commit": "2e884f7b2df816c675f1473bba681b4429a4f458",
+      "case": "tc-vue-module-import-resolution-617-ts-entry-imports-existing-vue/case.json",
+      "sha256": "a58119d46a53756070b807ab9e8cfc53e035c6cf09d8f207768e6a87559bc067",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-vue-module-import-resolution-617-ts-entry-imports-missing-vue",
+      "commit": "2e884f7b2df816c675f1473bba681b4429a4f458",
+      "case": "tc-vue-module-import-resolution-617-ts-entry-imports-missing-vue/case.json",
+      "sha256": "da000741403e3bc44ce5b36e3d3bc0408f41fa7d75e23f1614382f7aae5cc104",
+      "expectedSha256": "a182fb29654bac3d3f9d817dfb93f6c917cbaaf347a41ffbe8d7f321a7b387a2"
+    },
+    {
+      "id": "lsp/fix-history/tc-vue27-render-h-sfc-constructors-6020-imported-generic-sfc-in-render-h",
+      "commit": "9193b13ca62af15076609a3a8d7e2405b5df98d1",
+      "case": "tc-vue27-render-h-sfc-constructors-6020-imported-generic-sfc-in-render-h/case.json",
+      "sha256": "32af26bb92dd5ba46bc80f21b05493219271ea64bc42170ca9cc34899b1fba15",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-vue27-render-h-sfc-constructors-6020-imported-sfc-in-render-h",
+      "commit": "9193b13ca62af15076609a3a8d7e2405b5df98d1",
+      "case": "tc-vue27-render-h-sfc-constructors-6020-imported-sfc-in-render-h/case.json",
+      "sha256": "d3697500523510b8f8979c18d36d63107acd54db4dc2e262e55bd4497f27cff7",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-vue27-render-h-sfc-constructors-6020-imported-sfc-static-wrong-member",
+      "commit": "9193b13ca62af15076609a3a8d7e2405b5df98d1",
+      "case": "tc-vue27-render-h-sfc-constructors-6020-imported-sfc-static-wrong-member/case.json",
+      "sha256": "a19279aa4b7c28721cc262c275b69c2ca88a8c829e019b8a9a3fdf45c04061dc",
+      "expectedSha256": "23f4d56f6f1d6d07611e80ee054fd62a88231d4572c5e31fbdc63ca3e3903a3a"
+    },
+    {
+      "id": "lsp/fix-history/tc-with-defaults-boolean-normalization-5724-with-defaults-boolean-props-in-template",
+      "commit": "9bf9ee47adb4da3a29eb049c18588d4f917a440c",
+      "case": "tc-with-defaults-boolean-normalization-5724-with-defaults-boolean-props-in-template/case.json",
+      "sha256": "c89ee0b467fab67010ddf6514c09913f5bf964ce3a19d9a9c3bd53c1c7aea3bb",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-with-defaults-boolean-normalization-5724-with-defaults-boolean-read-into-string-ref",
+      "commit": "9bf9ee47adb4da3a29eb049c18588d4f917a440c",
+      "case": "tc-with-defaults-boolean-normalization-5724-with-defaults-boolean-read-into-string-ref/case.json",
+      "sha256": "25972a2cadaafaf36a1e26bc7ea406f1cca0c0b458d0b884f7c417398dacdbee",
+      "expectedSha256": "23d63f2957f757487b4a2dc0b332ee5b166163d4fee677a26db7e1b2beb79793"
+    },
+    {
+      "id": "lsp/fix-history/tc-with-defaults-boolean-normalization-5724-with-defaults-keeps-untouched-boolean-normalized",
+      "commit": "9bf9ee47adb4da3a29eb049c18588d4f917a440c",
+      "case": "tc-with-defaults-boolean-normalization-5724-with-defaults-keeps-untouched-boolean-normalized/case.json",
+      "sha256": "45aba5846e47c6c73c6141135b4e3da740bd9d4e33c1fe21defa31f603ed89cd",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-with-defaults-macro-inference-5763-direct-template-prop-narrowed",
+      "commit": "91754f691b70884a7b1723fb723388485b2ed54b",
+      "case": "tc-with-defaults-macro-inference-5763-direct-template-prop-narrowed/case.json",
+      "sha256": "5216ee46c22235327a027e5e07b5aee2d352e83463a09bf670d6cdbe119412f7",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-with-defaults-macro-inference-5763-never-prop-not-boolean",
+      "commit": "91754f691b70884a7b1723fb723388485b2ed54b",
+      "case": "tc-with-defaults-macro-inference-5763-never-prop-not-boolean/case.json",
+      "sha256": "921321c87a04d025b107cb5389d336110e1105e7650b6bfef1a6eef5965308df",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-with-defaults-macro-inference-5763-reka-generic-vmodel-expect-error-consumed",
+      "commit": "91754f691b70884a7b1723fb723388485b2ed54b",
+      "case": "tc-with-defaults-macro-inference-5763-reka-generic-vmodel-expect-error-consumed/case.json",
+      "sha256": "d24b7782ea21fd19d69a94e3f3ba348ae2b78955236ca87d6280c36ce5850714",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-with-defaults-macro-inference-5763-reka-generic-vmodel-unsuppressed",
+      "commit": "91754f691b70884a7b1723fb723388485b2ed54b",
+      "case": "tc-with-defaults-macro-inference-5763-reka-generic-vmodel-unsuppressed/case.json",
+      "sha256": "146cce85f78e325d450dd4a6214c1424d828592ca009933f7cffb97ed49c01eb",
+      "expectedSha256": "ecd281b30ddf763a99010ab7c041468bab9fd0eab7a98724568e282be2378b8d"
+    },
+    {
+      "id": "lsp/fix-history/tc-with-defaults-macro-inference-5763-template-props-default-resolved",
+      "commit": "91754f691b70884a7b1723fb723388485b2ed54b",
+      "case": "tc-with-defaults-macro-inference-5763-template-props-default-resolved/case.json",
+      "sha256": "a55f559c18254bf13d70c3ae9baa8afbc02f443f2a37a5f924068bda7e8bc7e9",
+      "expectedSha256": "54d09ee626a6ec24def72929294c73a2490a001438792f300f5b1ee8448e7c7b"
+    },
+    {
+      "id": "lsp/fix-history/tc-with-defaults-macro-inference-5763-template-undefaulted-prop-read",
+      "commit": "91754f691b70884a7b1723fb723388485b2ed54b",
+      "case": "tc-with-defaults-macro-inference-5763-template-undefaulted-prop-read/case.json",
+      "sha256": "b6520486f5590050080a6bccf2cf48971ef8030b9f6b54328789f5c3d86b8878",
+      "expectedSha256": "aae0e4469720c229c13724e4a74aa797b8a2d22d8ea2cbc92d93e4ba3a637e80"
+    },
+    {
+      "id": "lsp/fix-history/tc-with-defaults-macro-inference-5763-with-defaults-props-readonly",
+      "commit": "91754f691b70884a7b1723fb723388485b2ed54b",
+      "case": "tc-with-defaults-macro-inference-5763-with-defaults-props-readonly/case.json",
+      "sha256": "758f46a4834678c4aef5598d3a06a8c247c4a172036c7fd96f1f52b1497c13d0",
+      "expectedSha256": "62d2b7a51fa9a1f2befaaed973cc74aae9d480646f53f49c68bd705b5cb1e455"
+    },
+    {
+      "id": "lsp/fix-history/tc-with-defaults-undefined-boolean-vmodel-undefined-boolean-default-stays-optional",
+      "commit": "f647dbb6698c3125e95c12ed1c5d947d08f600b0",
+      "case": "tc-with-defaults-undefined-boolean-vmodel-undefined-boolean-default-stays-optional/case.json",
+      "sha256": "4c18b4ed5a33ff21ce07549730312788b4138a71bd6eaa1b1d694990f962f01d",
+      "expectedSha256": "9809fb81dc115b976f7f28cca9e9db8ebf44460c351ac0d5e0cfaf24b3663d32"
+    },
+    {
+      "id": "lsp/fix-history/tc-with-defaults-undefined-boolean-vmodel-undefined-boolean-default-vmodel-overloads",
+      "commit": "f647dbb6698c3125e95c12ed1c5d947d08f600b0",
+      "case": "tc-with-defaults-undefined-boolean-vmodel-undefined-boolean-default-vmodel-overloads/case.json",
+      "sha256": "506e2272d5e3e542a189bdbe40a19a8768a2e1a6db41d7abf6068c1281408573",
+      "expectedSha256": "8be99ee722b8cd484e90ac01c433a5f3a3fffddebdf38bf5395e8fb7855da979"
+    },
+    {
+      "id": "lsp/fix-history/tc-with-defaults-undefined-boolean-vmodel-wrong-open-default-value",
+      "commit": "f647dbb6698c3125e95c12ed1c5d947d08f600b0",
+      "case": "tc-with-defaults-undefined-boolean-vmodel-wrong-open-default-value/case.json",
+      "sha256": "584d187bb2ba7ccfcdcfb967d8bfb6b99fcefbcc6a5157cac3291e43afd7e65f",
+      "expectedSha256": "37147ae0d523802b21c45c29d11a8e274a758eea433f360b2bd500975891ef91"
+    },
+    {
+      "id": "lsp/fix-history/template-macro-props-dedupe-7087",
+      "commit": "8e9ca8de9065ea6a896b6c832edf8dfe849d08a4",
+      "case": "template-macro-props-dedupe-7087/case.json",
+      "sha256": "aa915043c60d500b3830a154a987e27f2efa26784fc5732c7f6c7658c3365d1a",
+      "expectedSha256": "2ab494316906944f2a109bcad5102baee3b7ef42ec11cf9dc9b25a9ba180b759"
+    },
+    {
+      "id": "lsp/fix-history/template-unicode-semantic-tokens-7057",
+      "commit": "9150b60adddfe60515e79bde6d02824da55ff5fe",
+      "case": "template-unicode-semantic-tokens-7057/case.json",
+      "sha256": "3291e70eafd14db6d94914060939f30694cca8f0f0fa0023b50e3367812fefbb",
+      "expectedSha256": "00a9fe68333ec970b7faa73f0dc9196b5de741f226f6ad9a6f818e7113b832be"
+    },
+    {
+      "id": "lsp/fix-history/tsconfig-extends-paths-7266",
+      "commit": "bfb7c96b81041903f4feb3164433fde717fc45b9",
+      "case": "tsconfig-extends-paths-7266/case.json",
+      "sha256": "b2cd783146b6670cbbc0b138324d6b5af510dc035a078196b1ae760c8f0117da",
+      "expectedSha256": "29a2c5d4930e20197a0e9fb8248864c753ec15216b582d75c44625993fc79f7d"
+    },
+    {
+      "id": "lsp/fix-history/type-checker-config-timeout-7185",
+      "commit": "d15a41f5d30eae45df29a6ec82292890f69756b9",
+      "case": "type-checker-config-timeout-7185/case.json",
+      "sha256": "0c9c69e947f2bcbb0420c34b15cc06fa83cb7b09306e2640678e83a1066b1150",
+      "expectedSha256": "cea9a224d49f5b383881b0b7e10fff09878366bdebd64aa4d8fa439fe5e73ed4"
+    },
+    {
+      "id": "lsp/fix-history/unicode-diagnostic-logging-6198",
+      "commit": "7413782f199fa228b1155c3e9398cb68d55f8d15",
+      "case": "unicode-diagnostic-logging-6198/case.json",
+      "sha256": "1a605a031971035ea13fde7fcbf35597fc173af30d9c826a737482b8b4771b66",
+      "expectedSha256": "6142f212ae246ab39f8d5194456523bb8be8f16a73d925722a66af1497e2643c"
+    },
+    {
+      "id": "lsp/fix-history/vue2-filter-formatting-6952",
+      "commit": "c681035734fa84c223ee77395ea26bdd07297fb2",
+      "case": "vue2-filter-formatting-6952/case.json",
+      "sha256": "2545613209da48046c363cb40e556d507f54302b051a7ca6863374c800315102",
+      "expectedSha256": "76af4c3f10f817026d03aadf7302c7f74c12055cea245f061809f4708c15d273"
+    },
+    {
+      "id": "lsp/fix-history/vue27-filter-formatting-6952",
+      "commit": "c681035734fa84c223ee77395ea26bdd07297fb2",
+      "case": "vue27-filter-formatting-6952/case.json",
+      "sha256": "16175f53fd438a35303e685c256d4521838eb08d68549de91a953ceee36abbea",
+      "expectedSha256": "76af4c3f10f817026d03aadf7302c7f74c12055cea245f061809f4708c15d273"
+    },
+    {
+      "id": "lsp/fix-history/workspace-discovery-git-metadata-7327",
+      "commit": "848d5bc4ac6a2a81daadf6ec57f16b0b7b7e8db5",
+      "case": "workspace-discovery-git-metadata-7327/case.json",
+      "sha256": "9b9e757c6aaf2f0f2798cc4c61118c406f833d204892add9a6dd3900f0b48bb8",
+      "expectedSha256": "c55917e353bb4184e4740176c0b2b3d6cc6f938b02a8a2c5fcee51a0461abbfe"
+    }
+  ]
+}

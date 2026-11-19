@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da",
+  "id": "lsp/fix-history/tc-dynamic-directive-names-2797-dynamic-event-name-expression-still-checked",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack dynamic-directive-names-2797 (case dynamic-event-name-expression-still-checked) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nconst staticValue = 'fixed'\nconst dynamicValue = 'runtime'\nconst propName = 'staticProp'\nconst eventName = 'save'\nconst handler = () => {}\n</script>\n\n<template>\n  <Child :static-prop=\"staticValue\" :[propName]=\"dynamicValue\" @save=\"handler\" @[eventNam]=\"handler\" />\n</template>\n",
+    "src/Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ staticProp: string }>()\ndefineEmits<{ save: [] }>()\n</script>\n\n<template>\n  <div />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    }
+  ]
+}

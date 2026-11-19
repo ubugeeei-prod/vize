@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "c0dae2112cf5ddf351946882af19b5ede2f76407",
+  "id": "lsp/fix-history/tc-ref-literal-and-static-ref-reads-5965-explicit-ref-literal-outside-prop-union",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack ref-literal-and-static-ref-reads-5965 (case explicit-ref-literal-outside-prop-union) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ direction: 'ltr' }>()\n</script>\n\n<template>\n  <div :dir=\"direction\" />\n</template>\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nimport Child from './Child.vue'\nconst direction = ref<'rtl'>('rtl')\n</script>\n\n<template>\n  <Child :direction=\"direction\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    }
+  ]
+}

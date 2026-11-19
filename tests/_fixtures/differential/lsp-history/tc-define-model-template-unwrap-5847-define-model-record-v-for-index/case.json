@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "00b6fd3939ed3f1c77e1a342215849644f64aded",
+  "id": "lsp/fix-history/tc-define-model-template-unwrap-5847-define-model-record-v-for-index",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack define-model-template-unwrap-5847 (case define-model-record-v-for-index) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/Field.vue": "<script setup lang=\"ts\">\ndefineProps<{ modelValue: unknown }>()\ndefineEmits<{ \"update:modelValue\": [value: unknown] }>()\n</script>\n<template><input /></template>\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport Field from './Field.vue'\n\ntype FormEntry = {\n  hidden?: (values: Record<string, any>) => boolean\n  type: 'text' | 'file'\n}\n\ndefineProps<{ form: Record<string, FormEntry> }>()\n\nconst values = defineModel<Record<string, any>>({ required: true })\n</script>\n\n<template>\n  <template v-for=\"v, k in form\" :key=\"k\">\n    <Field v-if=\"!v.hidden?.(values) && v.type === 'text'\" v-model=\"values[k]\" />\n    <button v-else @click=\"values[k] = 'file'\">set</button>\n  </template>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/Field.vue"
+    },
+    {
+      "diagnostics": "src/Field.vue"
+    }
+  ]
+}

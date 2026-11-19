@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "commit": "ef8c3e059ed645e319154d475ef6d994dc489ee6",
+  "id": "lsp/fix-history/lint-hover-severity-labels-7053",
+  "requirement": "Lint diagnostic hovers label severity in words (Warning:/Error:) without emoji and link the rule documentation as plain text.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false
+  },
+  "files": {
+    "vite.config.mjs": "export default { vue: { linter: { rules: { \"vue/require-v-for-key\": \"error\" } } } };\n",
+    "App.vue": "<template>\n  <ul><li v-for=\"item in [1, 2]\">{{ item }}</li></ul>\n  <div v-html=\"'<b>x</b>'\"></div>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "v-for",
+        "delta": 1
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "v-html",
+        "delta": 1
+      }
+    }
+  ]
+}

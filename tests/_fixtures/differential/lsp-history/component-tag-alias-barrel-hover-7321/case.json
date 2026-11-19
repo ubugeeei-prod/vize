@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "commit": "3924c20efaeb7865910509c0421477b661821c30",
+  "id": "lsp/fix-history/component-tag-alias-barrel-hover-7321",
+  "requirement": "A kebab-case component tag imported through an aliased barrel export hovers with the definition contract.",
+  "files": {
+    "Parent.vue": "<script setup lang=\"ts\">\nimport { Child as AliasChild } from './index'\nconst attrs = {}\n</script>\n<template>\n  <alias-child v-bind=\"attrs\" message=\"usage-only\" @save=\"() => {}\">\n    <template #provided>usage slot</template>\n  </alias-child>\n</template>\n",
+    "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ message: string; count?: number }>()\ndefineEmits<{ save: [value: number] }>()\ndefineSlots<{ item(props: { row: string; index: number }): any; empty(): any }>()\ndefineModel<string>('title')\n</script>\n<template><div><slot name=\"item\" :row=\"message\" :index=\"count\" /></div></template>\n",
+    "index.ts": "export { default as Child } from './Child.vue';"
+  },
+  "steps": [
+    {
+      "open": "Parent.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "Parent.vue",
+      "at": {
+        "find": "<alias-child",
+        "delta": 2
+      }
+    }
+  ]
+}

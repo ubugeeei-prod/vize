@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "commit": "7100d7a790146d4252103088f69dbf15756e36a5",
+  "id": "lsp/fix-history/plain-script-typecheck-7061",
+  "requirement": "Authored plain .ts and .js documents enter the Corsa script diagnostic lane with source-aware codes and ranges.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "plain.ts": "export const n: number = \"x\";\n",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"*.ts\"]\n}\n",
+    "plain.js": "// @ts-check\n/** @type {number} */\nconst count = 'x';\nexport { count };\n"
+  },
+  "steps": [
+    {
+      "open": "plain.ts"
+    },
+    {
+      "diagnostics": "plain.ts"
+    },
+    {
+      "open": "plain.js"
+    },
+    {
+      "diagnostics": "plain.js"
+    }
+  ]
+}

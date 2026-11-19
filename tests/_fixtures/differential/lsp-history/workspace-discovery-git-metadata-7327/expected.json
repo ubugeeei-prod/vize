@@ -1,0 +1,48 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "containerName": "script setup",
+        "kind": 12,
+        "location": {
+          "range": {
+            "end": {
+              "character": 0,
+              "line": 1
+            },
+            "start": {
+              "character": 0,
+              "line": 1
+            }
+          },
+          "uri": "${workspace}/.github/App.vue"
+        },
+        "name": "discoveredAuthoredSymbol"
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "result": [
+      {
+        "containerName": "script setup",
+        "kind": 12,
+        "location": {
+          "range": {
+            "end": {
+              "character": 0,
+              "line": 1
+            },
+            "start": {
+              "character": 0,
+              "line": 1
+            }
+          },
+          "uri": "${workspace}/.github/App.vue"
+        },
+        "name": "discoveredAuthoredSymbol"
+      }
+    ]
+  }
+]

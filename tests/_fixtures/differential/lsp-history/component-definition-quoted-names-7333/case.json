@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "commit": "cc87bb5960ea9e49e82672205df919de58bb4b24",
+  "id": "lsp/fix-history/component-definition-quoted-names-7333",
+  "requirement": "Component-tag hover spells runtime prop/emit/slot/model names that are not identifiers as quoted TypeScript keys.",
+  "files": {
+    "Parent.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nconst attrs = {}\n</script>\n<template>\n  <Child v-bind=\"attrs\" message=\"usage-only\" @save=\"() => {}\">\n    <template #provided>usage slot</template>\n  </Child>\n</template>\n",
+    "Child.vue": "<script setup lang=\"ts\">\ndefineProps({ 'font-size': { type: Number, required: true } })\ndefineEmits(['update:title'])\ndefineSlots<{ 'header-title'(props: { value: string }): unknown }>()\ndefineModel<boolean>('quoted\"model')\n</script>\n<template><slot name=\"header-title\" value=\"ready\" /></template>\n",
+    "index.ts": "export { default as Child } from './Child.vue';"
+  },
+  "steps": [
+    {
+      "open": "Parent.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "Parent.vue",
+      "at": {
+        "find": "<Child",
+        "delta": 2
+      }
+    }
+  ]
+}

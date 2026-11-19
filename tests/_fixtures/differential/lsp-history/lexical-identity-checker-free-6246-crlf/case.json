@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "commit": "66aae15e42872c314d508137548587b5386ba618",
+  "id": "lsp/fix-history/lexical-identity-checker-free-6246-crlf",
+  "requirement": "Without the checker, references and rename use exact lexical identity (CRLF): the script binding, its template and CSS v-bind uses move together; the shadowing parameter, strings, comments and object keys stay untouched.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "crossFile": false
+  },
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\r\nconst emoji = '😀'; const café = 'fixed';\r\nfunction inner(café: number) { return café + 1; }\r\nconst text = 'café'; // café\r\nconst object = { café: 1 };\r\n</script>\r\n<template>{{ café.toUpperCase() }}</template>\r\n<style>/* v-bind(café) */ .x { color: v-bind(café); }</style>\r\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "App.vue",
+      "at": {
+        "find": "café",
+        "delta": 0,
+        "nth": 0
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": true
+        }
+      }
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ café",
+        "delta": 3,
+        "nth": 0
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": false
+        }
+      }
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "App.vue",
+      "at": {
+        "find": "café",
+        "delta": 0,
+        "nth": 1
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": true
+        }
+      }
+    },
+    {
+      "request": "textDocument/prepareRename",
+      "uri": "App.vue",
+      "at": {
+        "find": "v-bind(café);",
+        "delta": 7,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/rename",
+      "uri": "App.vue",
+      "at": {
+        "find": "café",
+        "delta": 0,
+        "nth": 0
+      },
+      "params": {
+        "newName": "coffee"
+      }
+    },
+    {
+      "request": "textDocument/rename",
+      "uri": "App.vue",
+      "at": {
+        "find": "café",
+        "delta": 0,
+        "nth": 0
+      },
+      "params": {
+        "newName": "inner"
+      }
+    }
+  ]
+}

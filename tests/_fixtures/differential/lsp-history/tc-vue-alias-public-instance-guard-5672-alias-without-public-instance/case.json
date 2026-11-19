@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "c220f47b65134eee36851c7841b1e8d5567eafe4",
+  "id": "lsp/fix-history/tc-vue-alias-public-instance-guard-5672-alias-without-public-instance",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack vue-alias-public-instance-guard-5672 (case alias-without-public-instance) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"paths\": { \"vue\": [\"./types/vue-alias.d.ts\"] }\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "types/vue-alias.d.ts": "export * from \"vue/dist/vue.js\";\n// This alias omits Vue's public instance type: the shadowing name is a value only.\nexport declare const ComponentPublicInstance: unique symbol;\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst count = ref(0)\n</script>\n\n<template>\n  <button :class=\"$attrs.class\" @click=\"count++\">{{ count }}</button>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    }
+  ]
+}

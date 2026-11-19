@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "commit": "2e884f7b2df816c675f1473bba681b4429a4f458",
+  "id": "lsp/fix-history/tc-vue-module-import-resolution-617-async-setup-invocation",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack vue-module-import-resolution-617 (case async-setup-invocation) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/App.vue": "<script setup lang=\"ts\">\nconst payload = await Promise.resolve({ label: \"ready\" });\nconst label: string = payload.label;\n</script>\n\n<template>\n  <div>{{ label }}</div>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    }
+  ]
+}

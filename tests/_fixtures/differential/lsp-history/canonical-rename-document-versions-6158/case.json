@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "commit": "f94ec36a0747bd22447f78a8e206aca360cf43d1",
+  "id": "lsp/fix-history/canonical-rename-document-versions-6158",
+  "requirement": "Canonical rename merges the checker queries of an exported Vue symbol: references span the closed importer, rename covers the open importer (version-bearing client) in resource order, and with the importer closed the rename fails closed.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "capabilities": {
+    "textDocument": {
+      "completion": {
+        "completionItem": {
+          "documentationFormat": [
+            "markdown",
+            "plaintext"
+          ]
+        }
+      }
+    },
+    "workspace": {
+      "workspaceEdit": {
+        "documentChanges": true,
+        "resourceOperations": [
+          "create",
+          "rename",
+          "delete"
+        ]
+      }
+    }
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "Lib.vue": "<script lang=\"ts\">\nexport function helper() { return 1 }\n</script>\n<template><p /></template>\n",
+    "User.vue": "<script setup lang=\"ts\">\nimport { helper } from './Lib.vue'\nconst y = helper()\n</script>\n<template><p>{{ y }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "Lib.vue"
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "Lib.vue",
+      "at": {
+        "find": "helper",
+        "delta": 0,
+        "nth": 0
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": true
+        }
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/rename",
+      "uri": "Lib.vue",
+      "at": {
+        "find": "helper",
+        "delta": 0,
+        "nth": 0
+      },
+      "params": {
+        "newName": "assist"
+      },
+      "retry": true
+    },
+    {
+      "open": "User.vue",
+      "version": 4
+    },
+    {
+      "request": "textDocument/rename",
+      "uri": "Lib.vue",
+      "at": {
+        "find": "helper",
+        "delta": 0,
+        "nth": 0
+      },
+      "params": {
+        "newName": "assist"
+      },
+      "retry": true
+    }
+  ]
+}

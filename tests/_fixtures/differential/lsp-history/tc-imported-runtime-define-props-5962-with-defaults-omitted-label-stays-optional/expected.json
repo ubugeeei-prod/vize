@@ -1,0 +1,40 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 18048,
+        "message": "'props.label' is possibly 'undefined'.",
+        "range": {
+          "end": {
+            "character": 25,
+            "line": 10
+          },
+          "start": {
+            "character": 14,
+            "line": 10
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 18048,
+        "message": "'label' is possibly 'undefined'.",
+        "range": {
+          "end": {
+            "character": 42,
+            "line": 14
+          },
+          "start": {
+            "character": 37,
+            "line": 14
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

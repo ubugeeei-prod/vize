@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "commit": "df757956e0a80b41de17187a97956d5c9be1c029",
+  "id": "lsp/fix-history/completion-resolve-documentation-6181",
+  "requirement": "Checker completion items resolve the authored JSDoc of script and template-member candidates; an unsaved edit exposes the current documentation.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "capabilities": {
+    "textDocument": {
+      "completion": {
+        "completionItem": {
+          "documentationFormat": [
+            "markdown",
+            "plaintext"
+          ],
+          "resolveSupport": {
+            "properties": [
+              "documentation"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "App.vue": "<script setup lang=\"ts\">\nconst greeter = {\n  /** Produce the greeting shown in the welcome banner. */\n  greetVisitor(name: string): string { return \"Hello \" + name; },\n}\nconst greeting = greeter.greetVis\n</script>",
+    "Member.vue": "<script setup lang=\"ts\">\nfunction createApi() { return {\n  /** Produce the greeting shown in the welcome banner. */\n  greetVisitor(name: string): string { return \"Hello \" + name; }\n}; }\nconst api = createApi();\n</script>\n<template><p>{{ api.greetVis }}</p></template>"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "greeter.greetVis",
+        "delta": 16,
+        "nth": 0
+      },
+      "labels": [
+        "greetVisitor"
+      ],
+      "retry": true
+    },
+    {
+      "request": "completionItem/resolve",
+      "from": {
+        "step": 1,
+        "label": "greetVisitor",
+        "as": "$"
+      },
+      "retry": true
+    },
+    {
+      "change": "App.vue",
+      "version": 2,
+      "contentChanges": [
+        {
+          "text": "<script setup lang=\"ts\">\nconst greeter = {\n  /** Use the greeting from the unsaved buffer. */\n  greetVisitor(name: string): string { return \"Hello \" + name; },\n}\nconst greeting = greeter.greetVis\n</script>"
+        }
+      ]
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "greeter.greetVis",
+        "delta": 16,
+        "nth": 0
+      },
+      "labels": [
+        "greetVisitor"
+      ],
+      "retry": true
+    },
+    {
+      "request": "completionItem/resolve",
+      "from": {
+        "step": 4,
+        "label": "greetVisitor",
+        "as": "$"
+      },
+      "retry": true
+    },
+    {
+      "open": "Member.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "Member.vue",
+      "at": {
+        "find": "api.greetVis",
+        "delta": 12,
+        "nth": 0
+      },
+      "labels": [
+        "greetVisitor"
+      ],
+      "retry": true
+    },
+    {
+      "request": "completionItem/resolve",
+      "from": {
+        "step": 7,
+        "label": "greetVisitor",
+        "as": "$"
+      },
+      "retry": true
+    }
+  ]
+}

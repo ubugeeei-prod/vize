@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "commit": "91754f691b70884a7b1723fb723388485b2ed54b",
+  "id": "lsp/fix-history/tc-with-defaults-macro-inference-5763-direct-template-prop-narrowed",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack with-defaults-macro-inference-5763 (case direct-template-prop-narrowed) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/test.vue": "<script setup lang=\"ts\">\nconst props = withDefaults(\n  defineProps<{\n    count?: number;\n    label: string;\n  }>(),\n  { count: 0 },\n);\n\nconst emit = defineEmits<{\n  increment: [value: number];\n}>();\n\nvoid props;\n</script>\n\n<template>\n  <button type=\"button\" @click=\"emit('increment', count + 1)\">\n    {{ label }}: {{ count }}\n  </button>\n</template>"
+  },
+  "steps": [
+    {
+      "open": "src/test.vue"
+    },
+    {
+      "diagnostics": "src/test.vue"
+    }
+  ]
+}

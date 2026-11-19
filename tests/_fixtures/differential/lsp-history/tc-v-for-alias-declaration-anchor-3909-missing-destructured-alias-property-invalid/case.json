@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "commit": "31eecf0427b56b8221290e16ec73022d73633f9b",
+  "id": "lsp/fix-history/tc-v-for-alias-declaration-anchor-3909-missing-destructured-alias-property-invalid",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack v-for-alias-declaration-anchor-3909 (case missing-destructured-alias-property-invalid) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/App.vue": "<script setup lang=\"ts\">\ninterface User {\n  id: number\n  name: string\n}\n\nconst users: User[] = [{ id: 1, name: 'Ada' }]\n</script>\n\n<template>\n  <ul><li v-for=\"(it, index) in users\" :key=\"it.id\">{{ it.name }}</li></ul>\n  <ol><li v-for=\"({ id, nickname }, position) in users\" :key=\"id\">{{ position }}: {{ nickname }}</li></ol>\n  <p v-for=\"[first, ...rest] in [[1, 2, 3]]\" :key=\"first\">{{ first + rest.length }}</p>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    }
+  ]
+}

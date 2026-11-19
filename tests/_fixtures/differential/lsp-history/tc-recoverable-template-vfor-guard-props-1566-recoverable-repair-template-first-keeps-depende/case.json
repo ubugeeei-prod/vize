@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "commit": "beeb9d20faa6f952a8137b60f531cc37088deccd",
+  "id": "lsp/fix-history/tc-recoverable-template-vfor-guard-props-1566-recoverable-repair-template-first-keeps-depende",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack recoverable-template-vfor-guard-props-1566 (case recoverable-repair-template-first-keeps-dependent-diagnostic) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/RecoverableTemplateRepair.vue": "<template>\n  <span />\n  {{ missing }}\n</template>\n<script setup lang=\"ts\">\nconst count = 1\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "src/RecoverableTemplateRepair.vue"
+    },
+    {
+      "diagnostics": "src/RecoverableTemplateRepair.vue"
+    }
+  ]
+}

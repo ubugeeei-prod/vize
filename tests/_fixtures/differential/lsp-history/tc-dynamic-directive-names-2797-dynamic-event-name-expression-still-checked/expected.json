@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2339,
+        "message": "Property 'eventNam' does not exist on the component instance.",
+        "range": {
+          "end": {
+            "character": 89,
+            "line": 10
+          },
+          "start": {
+            "character": 81,
+            "line": 10
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

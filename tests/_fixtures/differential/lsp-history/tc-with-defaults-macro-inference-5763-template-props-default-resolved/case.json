@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "commit": "91754f691b70884a7b1723fb723388485b2ed54b",
+  "id": "lsp/fix-history/tc-with-defaults-macro-inference-5763-template-props-default-resolved",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack with-defaults-macro-inference-5763 (case template-props-default-resolved) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/test.vue": "<template>\n  <svg>\n    <line :stroke-width=\"props.thickness / 2\"></line>\n    <text>{{ label.toUpperCase() }} {{ props.label.toUpperCase() }}</text>\n  </svg>\n</template>\n\n<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{\n  thickness?: number;\n  label?: string;\n  raw?: string;\n}>(), {\n  thickness: 0.1,\n  label: 'ok',\n});\n\nconst { thickness, label } = props;\n</script>"
+  },
+  "steps": [
+    {
+      "open": "src/test.vue"
+    },
+    {
+      "diagnostics": "src/test.vue"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "commit": "848d5bc4ac6a2a81daadf6ec57f16b0b7b7e8db5",
+  "id": "lsp/fix-history/workspace-discovery-git-metadata-7327",
+  "requirement": "Workspace Vue discovery skips files under .git (on disk and in open buffers) while authored dot-directories such as .github stay discoverable.",
+  "files": {
+    ".github/App.vue": "<script setup lang=\"ts\">\nfunction discoveredAuthoredSymbol() {}\n</script>\n<template><div /></template>\n",
+    ".git/worktrees/cache/Snapshot.vue": "<script setup lang=\"ts\">\nfunction discoveredMetadataSymbol() {}\n</script>\n<template><div /></template>\n",
+    "src/Main.vue": "<script setup lang=\"ts\">\nconst main = 1\n</script>\n<template><div>{{ main }}</div></template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/Main.vue"
+    },
+    {
+      "request": "workspace/symbol",
+      "params": {
+        "query": "discovered"
+      },
+      "retry": true
+    },
+    {
+      "open": ".git/worktrees/cache/Snapshot.vue"
+    },
+    {
+      "request": "workspace/symbol",
+      "params": {
+        "query": "discovered"
+      },
+      "retry": true
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "commit": "46dfdd549d72c1cf6fa7afa2ce91b7894fabcd09",
+  "id": "lsp/fix-history/panic-free-definition-hover-ranges",
+  "requirement": "Definition, hover and type helpers over malformed template facts and Unicode bindings return no fabricated navigation instead of panicking.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "Edge.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst 名前 = ref(\nconst props = defineProps<{ 'a-b': string; café: number }>()\n</script>\n<template>\n  <div :class=\"{ 'x': 名前 \" @click=\">{{ café. }}<Comp v-bind=\"props\" :café=\" /><span v-for=\"(é, i) in\" />\n  <p :title=\"'unterminated>😀 {{ props.café }}</p>\n</template>\n<style>.a { color: v-bind( }</style>\n"
+  },
+  "steps": [
+    {
+      "open": "Edge.vue"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "Edge.vue",
+      "at": {
+        "find": "名前 \"",
+        "delta": 0,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "Edge.vue",
+      "at": {
+        "find": "名前 \"",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "Edge.vue",
+      "at": {
+        "find": "café.",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "Edge.vue",
+      "at": {
+        "find": "(é",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "Edge.vue",
+      "at": {
+        "find": "Comp",
+        "delta": 0,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "Edge.vue",
+      "at": {
+        "find": "v-bind(",
+        "delta": 7,
+        "nth": 0
+      }
+    }
+  ]
+}

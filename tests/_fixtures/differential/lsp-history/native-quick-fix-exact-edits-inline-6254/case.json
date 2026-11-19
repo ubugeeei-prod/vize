@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "commit": "0bd36715d4ecbb448630157c7ce233b60e142362",
+  "id": "lsp/fix-history/native-quick-fix-exact-edits-inline-6254",
+  "requirement": "With lint off and typecheck on (inline), the checker quick fix and Fix All apply exact authored edits across astral/CRLF text; an empty `only` filter returns null.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true,
+    "codeActions": true
+  },
+  "files": {
+    "tsconfig.json": "{\"compilerOptions\":{\"strict\":true,\"target\":\"ESNext\",\"module\":\"ESNext\",\"moduleResolution\":\"Bundler\",\"jsx\":\"preserve\"},\"include\":[\"**/*.vue\"]}",
+    "App.vue": "<script setup lang=\"ts\">const marker = \"😀\"; interface Greeting { greet(name: string): string; } class Welcome implements Greeting {}</script>"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    },
+    {
+      "request": "textDocument/codeAction",
+      "uri": "App.vue",
+      "retry": true,
+      "params": {
+        "range": {
+          "start": {
+            "line": 0,
+            "character": 102
+          },
+          "end": {
+            "line": 0,
+            "character": 109
+          }
+        },
+        "context": {
+          "diagnostics": [],
+          "only": [
+            "quickfix"
+          ]
+        }
+      }
+    },
+    {
+      "request": "textDocument/codeAction",
+      "uri": "App.vue",
+      "retry": true,
+      "params": {
+        "range": {
+          "start": {
+            "line": 0,
+            "character": 102
+          },
+          "end": {
+            "line": 0,
+            "character": 109
+          }
+        },
+        "context": {
+          "diagnostics": [],
+          "only": [
+            "source"
+          ]
+        }
+      }
+    },
+    {
+      "request": "textDocument/codeAction",
+      "uri": "App.vue",
+      "retry": true,
+      "params": {
+        "range": {
+          "start": {
+            "line": 0,
+            "character": 102
+          },
+          "end": {
+            "line": 0,
+            "character": 109
+          }
+        },
+        "context": {
+          "diagnostics": [],
+          "only": []
+        }
+      }
+    }
+  ],
+  "recordInitialize": true
+}

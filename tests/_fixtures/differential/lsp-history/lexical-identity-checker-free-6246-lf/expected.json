@@ -1,0 +1,173 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 30,
+            "line": 1
+          },
+          "start": {
+            "character": 26,
+            "line": 1
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 17,
+            "line": 6
+          },
+          "start": {
+            "character": 13,
+            "line": 6
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 49,
+            "line": 7
+          },
+          "start": {
+            "character": 45,
+            "line": 7
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 17,
+            "line": 6
+          },
+          "start": {
+            "character": 13,
+            "line": 6
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 49,
+            "line": 7
+          },
+          "start": {
+            "character": 45,
+            "line": 7
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 19,
+            "line": 2
+          },
+          "start": {
+            "character": 15,
+            "line": 2
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 42,
+            "line": 2
+          },
+          "start": {
+            "character": 38,
+            "line": 2
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      }
+    ]
+  },
+  {
+    "step": 4,
+    "result": {
+      "end": {
+        "character": 49,
+        "line": 7
+      },
+      "start": {
+        "character": 45,
+        "line": 7
+      }
+    }
+  },
+  {
+    "step": 5,
+    "result": {
+      "changes": {
+        "${workspace}/App.vue": [
+          {
+            "newText": "coffee",
+            "range": {
+              "end": {
+                "character": 30,
+                "line": 1
+              },
+              "start": {
+                "character": 26,
+                "line": 1
+              }
+            }
+          },
+          {
+            "newText": "coffee",
+            "range": {
+              "end": {
+                "character": 17,
+                "line": 6
+              },
+              "start": {
+                "character": 13,
+                "line": 6
+              }
+            }
+          },
+          {
+            "newText": "coffee",
+            "range": {
+              "end": {
+                "character": 49,
+                "line": 7
+              },
+              "start": {
+                "character": 45,
+                "line": 7
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "step": 6,
+    "result": null
+  }
+]

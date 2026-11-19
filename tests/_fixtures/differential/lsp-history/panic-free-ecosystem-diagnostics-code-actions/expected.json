@@ -1,0 +1,353 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": "script-parse-error",
+        "message": "Script parse error: Unexpected token",
+        "range": {
+          "end": {
+            "character": 5,
+            "line": 3
+          },
+          "start": {
+            "character": 0,
+            "line": 3
+          }
+        },
+        "severity": 1,
+        "source": "vize/script"
+      },
+      {
+        "code": 15,
+        "message": "Missing whitespace between attributes; inferred a new attribute boundary.",
+        "range": {
+          "end": {
+            "character": 62,
+            "line": 6
+          },
+          "start": {
+            "character": 61,
+            "line": 6
+          }
+        },
+        "severity": 1,
+        "source": "vize/template"
+      },
+      {
+        "code": 17,
+        "message": "Attribute name contains an invalid character; inferred the nearest attribute boundary and continued.",
+        "range": {
+          "end": {
+            "character": 67,
+            "line": 6
+          },
+          "start": {
+            "character": 66,
+            "line": 6
+          }
+        },
+        "severity": 1,
+        "source": "vize/template"
+      },
+      {
+        "code": 9,
+        "message": "Unexpected end of input inside a tag; inferred the missing tag close so parsing can continue.",
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 8
+          },
+          "start": {
+            "character": 0,
+            "line": 8
+          }
+        },
+        "severity": 1,
+        "source": "vize/template"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": null
+  },
+  {
+    "step": 3,
+    "result": [
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/Edge.vue": [
+              {
+                "newText": "</p>",
+                "range": {
+                  "end": {
+                    "character": 0,
+                    "line": 8
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 8
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": true,
+        "kind": "quickfix",
+        "title": "Fix: Add the end tag"
+      },
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/Edge.vue": [
+              {
+                "newText": "  <!-- @vize:forget a11y/click-events-have-key-events -->\n",
+                "range": {
+                  "end": {
+                    "character": 0,
+                    "line": 6
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 6
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": false,
+        "kind": "quickfix",
+        "title": "Suppress with @vize:forget (a11y/click-events-have-key-events)"
+      },
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/Edge.vue": [
+              {
+                "newText": "  <!-- @vize:forget a11y/no-static-element-interactions -->\n",
+                "range": {
+                  "end": {
+                    "character": 0,
+                    "line": 6
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 6
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": false,
+        "kind": "quickfix",
+        "title": "Suppress with @vize:forget (a11y/no-static-element-interactions)"
+      },
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/Edge.vue": [
+              {
+                "newText": "  <!-- @vize:forget parser/template -->\n",
+                "range": {
+                  "end": {
+                    "character": 0,
+                    "line": 6
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 6
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": false,
+        "kind": "quickfix",
+        "title": "Suppress with @vize:forget (parser/template)"
+      },
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/Edge.vue": [
+              {
+                "newText": "  <!-- @vize:forget parser/template -->\n",
+                "range": {
+                  "end": {
+                    "character": 0,
+                    "line": 6
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 6
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": false,
+        "kind": "quickfix",
+        "title": "Suppress with @vize:forget (parser/template)"
+      },
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/Edge.vue": [
+              {
+                "newText": "  <!-- @vize:forget vue/attribute-order -->\n",
+                "range": {
+                  "end": {
+                    "character": 0,
+                    "line": 6
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 6
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": false,
+        "kind": "quickfix",
+        "title": "Suppress with @vize:forget (vue/attribute-order)"
+      },
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/Edge.vue": [
+              {
+                "newText": "  <!-- @vize:forget parser/template -->\n",
+                "range": {
+                  "end": {
+                    "character": 0,
+                    "line": 6
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 6
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": false,
+        "kind": "quickfix",
+        "title": "Suppress with @vize:forget (parser/template)"
+      },
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/Edge.vue": [
+              {
+                "newText": "  <!-- @vize:forget vue/require-v-for-key -->\n",
+                "range": {
+                  "end": {
+                    "character": 0,
+                    "line": 6
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 6
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": false,
+        "kind": "quickfix",
+        "title": "Suppress with @vize:forget (vue/require-v-for-key)"
+      },
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/Edge.vue": [
+              {
+                "newText": "  <!-- @vize:forget vue/valid-v-for -->\n",
+                "range": {
+                  "end": {
+                    "character": 0,
+                    "line": 6
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 6
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": false,
+        "kind": "quickfix",
+        "title": "Suppress with @vize:forget (vue/valid-v-for)"
+      },
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/Edge.vue": [
+              {
+                "newText": "  <!-- @vize:forget html/no-empty-palpable-content -->\n",
+                "range": {
+                  "end": {
+                    "character": 0,
+                    "line": 7
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 7
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": false,
+        "kind": "quickfix",
+        "title": "Suppress with @vize:forget (html/no-empty-palpable-content)"
+      },
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/Edge.vue": [
+              {
+                "newText": "  <!-- @vize:forget vue/html-end-tags -->\n",
+                "range": {
+                  "end": {
+                    "character": 0,
+                    "line": 7
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 7
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": false,
+        "kind": "quickfix",
+        "title": "Suppress with @vize:forget (vue/html-end-tags)"
+      }
+    ]
+  },
+  {
+    "step": 4,
+    "result": null
+  },
+  {
+    "step": 5,
+    "result": null
+  }
+]
