@@ -2,9 +2,9 @@
 //! directives own (`v-html`, `v-text`, `<textarea v-model>`,
 //! `<select v-model>`), and the end tag.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::cstr;
 use vize_l2::op as l2;
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::TransformContent;
 
 use super::{Emitter, Flags, Result, attrs, merged, model, plan_source};
@@ -146,14 +146,14 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             Content::Text(text) => {
                 let value = text.value.as_ref().ok_or(LegacyReason::Binding)?;
                 let exp = self.expr(value, TransformContent::Decoded)?;
-                self.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
+                self.ctx.use_helper(server_renderer::SSR_INTERPOLATE);
                 self.ctx
                     .push_string_part_dynamic(&cstr!("_ssrInterpolate({exp})"));
                 self.skip_children()
             }
             Content::TextareaModel(model) => {
                 let exp = self.expr(&model.contract.read, TransformContent::Decoded)?;
-                self.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
+                self.ctx.use_helper(server_renderer::SSR_INTERPOLATE);
                 self.ctx
                     .push_string_part_dynamic(&cstr!("_ssrInterpolate({exp})"));
                 self.skip_children()

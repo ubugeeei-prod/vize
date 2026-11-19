@@ -1,10 +1,10 @@
 //! Component prop bags: source-ordered segments that never cross a spread or
 //! dynamic-key boundary (the legacy `build_component_props` shape).
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::{
     TransformContent, TransformExpressions, decode_template_entities,
 };
@@ -141,7 +141,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
             [] => "null".to_compact_string(),
             [only] => only.clone(),
             _ => {
-                self.ctx.use_core_helper(RuntimeHelper::MergeProps);
+                self.ctx.use_helper(server_renderer::MERGE_PROPS);
                 cstr!("_mergeProps({})", rendered.join(", "))
             }
         })
@@ -153,15 +153,15 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                 let dynamic = entries.iter().any(|entry| entry.dynamic());
                 let object = component_props_object(&normalize_prop_entries(entries));
                 if dynamic {
-                    self.ctx.use_core_helper(RuntimeHelper::NormalizeProps);
+                    self.ctx.use_helper(server_renderer::NORMALIZE_PROPS);
                     wrap_call("_normalizeProps", &object)
                 } else {
                     object
                 }
             }
             Segment::Spread(spread) => {
-                self.ctx.use_core_helper(RuntimeHelper::NormalizeProps);
-                self.ctx.use_core_helper(RuntimeHelper::GuardReactiveProps);
+                self.ctx.use_helper(server_renderer::NORMALIZE_PROPS);
+                self.ctx.use_helper(server_renderer::GUARD_REACTIVE_PROPS);
                 wrap_call(
                     "_normalizeProps",
                     &wrap_call("_guardReactiveProps", &spread),
@@ -188,7 +188,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                     Some(name) => {
                         let key = self.dynamic_key(name)?;
                         let key = if bind.modifiers.contains(&"camel") {
-                            self.ctx.use_core_helper(RuntimeHelper::Camelize);
+                            self.ctx.use_helper(server_renderer::CAMELIZE);
                             cstr!("_camelize(({key}) || \"\")")
                         } else {
                             key
@@ -203,7 +203,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                 }
                 let Some(name) = &on.name else {
                     let object = self.required_value(on.expression().as_ref())?;
-                    self.ctx.use_core_helper(RuntimeHelper::ToHandlers);
+                    self.ctx.use_helper(server_renderer::TO_HANDLERS);
                     return Ok(Some(wrap_call("_toHandlers", &object)));
                 };
                 let handler = match &on.expression() {
@@ -217,7 +217,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                     }
                     DynamicName::Dynamic(_) => {
                         let name = self.dynamic_key(name)?;
-                        self.ctx.use_core_helper(RuntimeHelper::ToHandlerKey);
+                        self.ctx.use_helper(server_renderer::TO_HANDLER_KEY);
                         let key = cstr!("_toHandlerKey({name})");
                         entries.push(component_prop_entry(&key, &handler, true));
                     }

@@ -6,9 +6,9 @@
 //! lanes register that helper and carry `_: 2 /* DYNAMIC */` on the base
 //! object. The VNode expression form lives in `vnode_create_slots`.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::TransformContent;
 
 use super::control::alias;
@@ -179,8 +179,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
     /// `_createSlots({ default, named, _: 2 }, [entries])`, written in place.
     pub(super) fn emit_create_slots(&mut self, slots: &ComponentSlots) -> Result<()> {
-        self.ctx.use_core_helper(RuntimeHelper::CreateSlots);
-        self.ctx.use_core_helper(RuntimeHelper::WithCtx);
+        self.ctx.use_helper(server_renderer::CREATE_SLOTS);
+        self.ctx.use_helper(server_renderer::WITH_CTX);
         self.ctx.push("_createSlots({\n");
         self.ctx.indent_level += 1;
         if !slots.default.is_empty() {
@@ -261,7 +261,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .ok_or(AdmissionFailure::Invalid(
                 "createSlots loop lost its slot template",
             ))?;
-        self.ctx.use_core_helper(RuntimeHelper::RenderList);
+        self.ctx.use_helper(server_renderer::RENDER_LIST);
         let (source, aliases, mark) = self.enter_loop(at)?;
         let span = match self.segment(at)?.source {
             Source::For(for_op) => expression_span(&for_op.binding.source),

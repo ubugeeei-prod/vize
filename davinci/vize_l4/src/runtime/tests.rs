@@ -96,3 +96,23 @@ fn helper_bits_include_the_boundary_and_union_preserves_first_use() {
     assert_eq!(body.in_use_order(), &[first, second, third]);
     assert!(body.contains(first));
 }
+
+#[test]
+fn named_server_renderer_helpers_resolve_to_their_exports() {
+    let vocabulary = vocabulary(Runtime::VueServerRenderer);
+    for &(helper, name) in super::server_renderer::NAMED {
+        assert_eq!(vocabulary.name(helper), Some(name));
+        assert_eq!(vocabulary.helper(name), Some(helper));
+    }
+}
+
+#[test]
+fn index_order_walks_the_mask_in_vocabulary_order() {
+    let mut set = HelperSet::default();
+    for index in [70, 3, 127, 0, 64, 3] {
+        set.insert(Helper::from_index(index).unwrap());
+    }
+    let order: Vec<u8> = set.in_index_order().map(Helper::index).collect();
+    assert_eq!(order, [0, 3, 64, 70, 127]);
+    assert_eq!(HelperSet::default().in_index_order().count(), 0);
+}

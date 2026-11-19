@@ -1,9 +1,9 @@
 //! `v-if` chains and `v-for` loops: flushed `_push` blocks around runtime
 //! control flow, with the legacy lane's fragment-marker rules.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l2::expr::ExprRef;
 use vize_l2::op as l2;
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::TransformContent;
 
 use super::spans::{expression_span, quoted_value};
@@ -116,7 +116,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let index = binding.index.as_ref().map(alias).transpose()?;
 
         self.ctx.flush_push();
-        self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderList);
+        self.ctx.use_helper(server_renderer::SSR_RENDER_LIST);
         if !disable_nested_fragments {
             self.ctx.push_indent();
             self.ctx.push("_push(`<!--[-->`)\n");

@@ -1,8 +1,8 @@
 //! The VNode fallback's `createSlots` expression: the same entries as the
 //! push form, with `_withCtx((params) => [children])` slot functions.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, cstr};
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::TransformContent;
 
 use super::create_slots::{Dynamic, Entry};
@@ -13,8 +13,8 @@ use crate::l4::AdmissionFailure;
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// The VNode fallback's `_createSlots({ ... }, [ ... ])` expression.
     pub(super) fn vnode_create_slots(&mut self, slots: &ComponentSlots) -> Result<String> {
-        self.ctx.use_core_helper(RuntimeHelper::CreateSlots);
-        self.ctx.use_core_helper(RuntimeHelper::WithCtx);
+        self.ctx.use_helper(server_renderer::CREATE_SLOTS);
+        self.ctx.use_helper(server_renderer::WITH_CTX);
         let mut out = String::from("_createSlots({ ");
         if !slots.default.is_empty() {
             out.push_str("default: _withCtx(() => ");
@@ -80,7 +80,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .ok_or(AdmissionFailure::Invalid(
                 "createSlots loop lost its slot template",
             ))?;
-        self.ctx.use_core_helper(RuntimeHelper::RenderList);
+        self.ctx.use_helper(server_renderer::RENDER_LIST);
         let (source, aliases, mark) = self.enter_loop(at)?;
         let entry = self
             .entry(template)

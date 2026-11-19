@@ -1,8 +1,8 @@
 //! VNode fallback props and slot outlets.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
 use super::attrs::Attached;
@@ -93,7 +93,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 component_props_object(&entries)
             });
         }
-        self.ctx.use_core_helper(RuntimeHelper::MergeProps);
+        self.ctx.use_helper(server_renderer::MERGE_PROPS);
         if !entries.is_empty() {
             spreads.push(component_props_object(&entries));
         }
@@ -111,7 +111,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.pos += 1;
         let attached = self.take_attached(slot.attributes.len() + slot.bindings.len())?;
         let attached = attached.as_slice();
-        self.ctx.use_core_helper(RuntimeHelper::RenderSlot);
+        self.ctx.use_helper(server_renderer::RENDER_SLOT);
         let name = self.outlet_name(slot)?;
         let props = self.slot_props(attached)?;
         let props = self.ctx.vnode_loop_key_props(&props, key);

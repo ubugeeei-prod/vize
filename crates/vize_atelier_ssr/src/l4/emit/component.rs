@@ -2,9 +2,9 @@
 //! `ssrRenderTeleport`, `ssrRenderSuspense`, and the transparent
 //! `<Transition>` / `<KeepAlive>` wrappers.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 use vize_l4::write::EmitDocument;
 
@@ -209,7 +209,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         // The runtime captures scope on the VNode, outside forwarded $attrs.
         let props = self.with_fallthrough_attrs(props, inherit);
         self.ctx.flush_push();
-        self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
+        self.ctx.use_helper(server_renderer::SSR_RENDER_COMPONENT);
         // The resolved name maps to the authored tag, as the AST walker's does.
         let callee = match binding {
             Some(binding) => EmitDocument::from(binding),
@@ -265,9 +265,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             self.vnode_slots(component)?
         };
         self.ctx.flush_push();
-        self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
-        self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderVNode);
-        self.ctx.use_core_helper(RuntimeHelper::CreateVNode);
+        self.ctx.use_helper(server_renderer::SSR_RENDER_COMPONENT);
+        self.ctx.use_helper(server_renderer::SSR_RENDER_VNODE);
+        self.ctx.use_helper(server_renderer::CREATE_VNODE);
         self.ctx.push_indent();
         self.ctx.push("_ssrRenderVNode(_push, _createVNode(");
         self.ctx.push(&callee);
@@ -286,7 +286,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `_resolveDynamicComponent(is)`, with `null` when no `is` is spelled.
     pub(super) fn dynamic_callee(&mut self, attached: &Attached<'_, '_>) -> Result<String> {
         self.ctx
-            .use_core_helper(RuntimeHelper::ResolveDynamicComponent);
+            .use_helper(server_renderer::RESOLVE_DYNAMIC_COMPONENT);
         let target = self.static_or_bound(attached, "is")?;
         let target = target.as_deref().unwrap_or("null");
         Ok(cstr!("_resolveDynamicComponent({target})"))
@@ -299,7 +299,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         if props == "null" || props == "_attrs" {
             return "_attrs".to_compact_string();
         }
-        self.ctx.use_core_helper(RuntimeHelper::MergeProps);
+        self.ctx.use_helper(server_renderer::MERGE_PROPS);
         cstr!("_mergeProps({props}, _attrs)")
     }
 
@@ -308,7 +308,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let target = self.static_or_bound(attached, "to")?;
         let disabled = self.static_or_bound(attached, "disabled")?;
         self.ctx.flush_push();
-        self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderTeleport);
+        self.ctx.use_helper(server_renderer::SSR_RENDER_TELEPORT);
         self.ctx.push_indent();
         self.ctx.push("_ssrRenderTeleport(_push, (_push) => {\n");
         self.ctx.indent_level += 1;

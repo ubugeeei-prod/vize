@@ -6,7 +6,7 @@
 
 use super::{HelperModule, Vocabulary};
 
-const DOM_NAMES: &[&str] = &[
+pub(super) const DOM_NAMES: &[&str] = &[
     "Fragment",
     "Teleport",
     "Suspense",
@@ -66,7 +66,7 @@ const DOM_NAMES: &[&str] = &[
     "useCssVars",
 ];
 
-const SERVER_NAMES: &[&str] = &[
+pub(super) const SERVER_NAMES: &[&str] = &[
     "ssrInterpolate",
     "ssrRenderVNode",
     "ssrRenderComponent",

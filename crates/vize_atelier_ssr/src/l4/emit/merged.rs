@@ -7,9 +7,9 @@
 //! `_ssrGetDirectiveProps(...)` per custom directive. A directive (or a merged
 //! `<textarea>`) may own the element's content through a `_temp` binding.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, camelize, cstr};
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
 
 use super::attrs::{Attached, BindName, bind};
@@ -142,7 +142,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                 };
                 let temp = self.ctx.alloc_temp();
                 merged = assigned(&temp, &merged);
-                self.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
+                self.ctx.use_helper(server_renderer::SSR_INTERPOLATE);
                 content = Some(cstr!(
                     "_ssrInterpolate((\"value\" in {temp}) ? {temp}.value : {fallback})"
                 ));
@@ -150,12 +150,12 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         } else if tag != "input" && directives > 0 && children.is_empty() && !content_override {
             let temp = self.ctx.alloc_temp();
             merged = assigned(&temp, &merged);
-            self.ctx.use_ssr_helper(RuntimeHelper::SsrInterpolate);
+            self.ctx.use_helper(server_renderer::SSR_INTERPOLATE);
             content = Some(cstr!(
                 "(\"textContent\" in {temp}) ? _ssrInterpolate({temp}.textContent) : {temp}.innerHTML ?? ''"
             ));
         }
-        self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderAttrs);
+        self.ctx.use_helper(server_renderer::SSR_RENDER_ATTRS);
         let tag_arg = if !GROUP && (tag == "textarea" || tag.contains('-')) {
             cstr!(", \"{tag}\"")
         } else {
@@ -272,7 +272,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         }
         if let Some(model) = dynamic_model {
             self.ctx
-                .use_ssr_helper(RuntimeHelper::SsrGetDynamicModelProps);
+                .use_helper(server_renderer::SSR_GET_DYNAMIC_MODEL_PROPS);
             let existing: String = if args.is_empty() {
                 "{}".to_compact_string()
             } else {
@@ -302,7 +302,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         if let [only] = args {
             return only.clone();
         }
-        self.ctx.use_core_helper(RuntimeHelper::MergeProps);
+        self.ctx.use_helper(server_renderer::MERGE_PROPS);
         merge_props_call(args)
     }
 }

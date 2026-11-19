@@ -103,6 +103,7 @@ impl Vocabulary {
     }
 }
 
+pub mod server_renderer;
 mod vue;
 pub use vue::{VUE_DOM, VUE_SERVER_RENDERER, VUE_VAPOR};
 
@@ -157,6 +158,17 @@ impl HelperSet {
     #[must_use]
     pub fn in_use_order(&self) -> &[Helper] {
         &self.order
+    }
+
+    /// Used helpers, in vocabulary index order: module by module, each in
+    /// table order.
+    pub fn in_index_order(&self) -> impl Iterator<Item = Helper> + use<> {
+        let mut rest = self.mask;
+        core::iter::from_fn(move || {
+            let index = rest.trailing_zeros();
+            rest &= rest.checked_sub(1)?;
+            Some(Helper(index as u8))
+        })
     }
 
     #[must_use]

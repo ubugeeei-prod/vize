@@ -1,8 +1,8 @@
 //! Component slot functions render the push form and VNode fallback.
 
-use vize_atelier_core::RuntimeHelper;
 use vize_l0::{FxHashSet, String, ToCompactString};
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l4::runtime::server_renderer;
 use vize_l4::targets::dom::artifact::TransformExpressions;
 
 use super::{Emitter, PLAIN, Result};
@@ -254,7 +254,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         if !slots.dynamic.is_empty() {
             return self.emit_create_slots(slots);
         }
-        self.ctx.use_core_helper(RuntimeHelper::WithCtx);
+        self.ctx.use_helper(server_renderer::WITH_CTX);
         self.ctx.push("{\n");
         self.ctx.indent_level += 1;
         if let Some(own) = &slots.own {
@@ -316,7 +316,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
     /// Emit a push-form `_withCtx` slot function with VNode fallback.
     pub(super) fn slot_fn(&mut self, spec: &SlotSpec) -> Result<()> {
-        self.ctx.use_core_helper(RuntimeHelper::WithCtx);
+        self.ctx.use_helper(server_renderer::WITH_CTX);
         self.ctx.push_optionally_mapped("_withCtx((", spec.anchor.1);
         self.ctx.push(spec.pattern.as_deref().unwrap_or("_"));
         self.ctx.push(", _push, _parent, _scopeId) => {\n");

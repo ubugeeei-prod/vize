@@ -16,6 +16,7 @@ mod spans;
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use vize_atelier_core::{RootNode, RuntimeHelper, codegen::source_map::document_source_map};
 use vize_l0::{Allocator, FxHashSet, SmallVec, String};
+use vize_l4::runtime::{Helper, HelperSet};
 use vize_l4::write::EmitDocument;
 
 /// SSR codegen result
@@ -95,10 +96,9 @@ pub struct SsrCodegenContext<'a> {
     pub(crate) out: EmitDocument,
     /// Indent level
     pub(crate) indent_level: u32,
-    /// Used SSR helpers
-    pub(crate) ssr_helpers: FxHashSet<RuntimeHelper>,
-    /// Used core helpers (from vue)
-    pub(crate) core_helpers: FxHashSet<RuntimeHelper>,
+    /// Helpers the body used, in the server-rendering vocabulary
+    /// (`@vue/server-renderer` exports, then the Vue runtime's).
+    helpers: HelperSet,
     /// Current template literal parts being accumulated
     pub(crate) current_template_parts: SmallVec<[TemplatePart; 8]>,
     /// Whether currently within a slot scope
@@ -157,8 +157,7 @@ impl<'a> SsrCodegenContext<'a> {
             source,
             out: EmitDocument::with_capacity(1024, experimental_options.source_map),
             indent_level: 0,
-            ssr_helpers: FxHashSet::default(),
-            core_helpers: FxHashSet::default(),
+            helpers: HelperSet::default(),
             current_template_parts: SmallVec::new(),
             with_slot_scope_id: false,
             vnode_slot_fallback: false,
@@ -314,14 +313,30 @@ impl<'a> SsrCodegenContext<'a> {
         self.push("`)\n");
     }
 
-    /// Use an SSR helper
-    pub(crate) fn use_ssr_helper(&mut self, helper: RuntimeHelper) {
-        self.ssr_helpers.insert(helper);
+    /// Record a use of `helper`; the preamble imports it.
+    #[inline]
+    pub(crate) fn use_helper(&mut self, helper: Helper) {
+        self.helpers.insert(helper);
     }
 
-    /// Use a core helper (from vue)
+    /// The legacy walker's spelling of [`Self::use_helper`] for an
+    /// `@vue/server-renderer` helper.
+    #[inline]
+    pub(crate) fn use_ssr_helper(&mut self, helper: RuntimeHelper) {
+        self.use_legacy_helper(helper);
+    }
+
+    /// The legacy walker's spelling of [`Self::use_helper`] for a Vue
+    /// runtime helper.
+    #[inline]
     pub(crate) fn use_core_helper(&mut self, helper: RuntimeHelper) {
-        self.core_helpers.insert(helper);
+        self.use_legacy_helper(helper);
+    }
+
+    fn use_legacy_helper(&mut self, helper: RuntimeHelper) {
+        if let Some(helper) = module_parts::legacy_helper(helper) {
+            self.helpers.insert(helper);
+        }
     }
 
     pub(crate) fn push_scoped_params(&mut self, params: FxHashSet<String>) {
