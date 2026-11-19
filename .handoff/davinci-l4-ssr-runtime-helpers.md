@@ -23,7 +23,8 @@ old head `6be122088b` (branches `measure/laneb-l41-*`), so they share the base.
 | v3 | identical to the deleted atelier copy | 46, up to +3.6% (push_escaped out of line, slower) | 21 |
 | v5 | v1 + link bookkeeping out of line, lean push_escaped `inline(always)` | 12, ≤ +0.48% | 7, up to +1.65% (SSR wrappers outlined) |
 | v6 | v5 with linking mutators left to the inliner | 8, ≤ +0.58% | 5, ≤ +0.11% (SSR `flush_push` escape loop) |
-| v7 (`35b30eb935`; PR head rebased as `0784ba5dd3`) | v6 + push_str `inline(always)`, push_escaped not forced | pending: run 44498741070 | 2: `atelier_ssr_compile_medium` +0.014% (`flush_push` escape loop +304), `atelier_dom_compile_stress-deep` +0.006% (`vize_l1_to_l2` lowering, untouched; constant +125 in every variant); 32 rows fall |
+| v7 (`35b30eb935`) | v6 + push_str `inline(always)`, push_escaped not forced | 31, up to +2.2%: out-of-line push_escaped in Vapor generate | 2: +0.014% (SSR flush_push), +0.006% (untouched l1_to_l2) |
+| **v6 = PR head `8567dd13a1`** | see v6 row; ci-opt run 44492585295, release-shaped 44492579701 | 8, all untouched stages | 5, all at most +0.11% |
 
 Every remaining ci-opt increase is in code this PR does not touch, per callgrind self-cost diffs
 (`core::str::from_utf8` in Croquis rows, `RuntimeHelpers::add` in atelier_core transforms,
@@ -40,8 +41,8 @@ Tools (scratchpad of the 2026-11-19 session; recreate if gone):
 
 ## Next steps
 
-1. Read v7 runs. If release-shaped has no regression, push `35b30eb935` to #13390, run the
-   ci-opt twin pair on it, and get the PR performance observation for the new head.
+1. #13390 now carries v6 (the best balance of the two profiles; v7 was worse on ci-opt). Run the
+   head twins and read the PR performance observation for `8567dd13a1`.
    Release size probe: the base `vize` is 57,219,936 B and vitrine napi is 80,706,640 B
    (`a74306cee7`, release profile, macOS arm64). Build the head under the fleet lock
    `/private/tmp/claude-501/vize-release-build.lock`.
