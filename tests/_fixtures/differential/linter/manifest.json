@@ -16,7 +16,7 @@
       "api": "--current-api",
       "cases": {
         "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
-        "sha256": "f980178a2584dc2d21fa1bbc1efd120d37247ea7646eb19b8075acce882c02e6"
+        "sha256": "f58476e8c38793edc442364bd1de75b93abf51fddb3b70252c9962a5cd2322d3"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "0e5001409fa20d3b0438f822dfeca0ca207502586a4075848f35a0164302f401"
+    "sha256": "47a0cc2f5a9e69d6b9aeee6a585e1e4bfbe48bcd4cc49b0c51bab8bd84f63f64"
   },
   "cases": [
     {
@@ -795,6 +795,599 @@
               "vue3-sfc",
               "html-template",
               "js"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/config-history-6881",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "config-history-6881",
+        "files": [
+          {
+            "path": "cases.json",
+            "role": "pinned-configuration-and-counts",
+            "sha256": "ca45c483f50fb1823ec9734205babd9496227903188084cf76783c894cc2abbf"
+          },
+          {
+            "path": "h11-config-disabled-rule-568.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "40c7767639b35ced360a19b369f7fb0365a75899ad1e6b9c79c2a3299ee616f5"
+          },
+          {
+            "path": "h11-config-disabled-rule-568.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "fed4a787415e7bf6d3e124c00bec6232563a8d470462032d83a60bf663cab002"
+          },
+          {
+            "path": "h11-config-enabled-rule-control-568.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "40c7767639b35ced360a19b369f7fb0365a75899ad1e6b9c79c2a3299ee616f5"
+          },
+          {
+            "path": "h11-config-enabled-rule-control-568.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "1650f99f6ab49c209940f827219ad0c9413d1d85bfcdddd006ff41986b16b0c6"
+          },
+          {
+            "path": "h11-configured-kebab-emit-allows-kebab-5642.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "63bad7ee3919ee1469171017e2a38300da2097f27e13bc9f4c7c2bf7e7178b8a"
+          },
+          {
+            "path": "h11-configured-kebab-emit-allows-kebab-5642.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "1f05aad6dfd3e8bb382d9cd36453f8edec6ba2daf1812c94316bbd4ca005d80f"
+          },
+          {
+            "path": "h11-configured-kebab-emit-reports-camel-5642.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "3bb13e29c583a2a4f5e72e8b6a19ff1a38df14cc31bdb4bbf31aa8e44b7699f0"
+          },
+          {
+            "path": "h11-configured-kebab-emit-reports-camel-5642.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "da83c1028b44464f402e61bf96a2c7ce70e735ef74122a580444b2957b1232b8"
+          },
+          {
+            "path": "h11-configured-kebab-template-allows-kebab-5642.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "bc7fb01629a9e649a10de494dc96e9726a47b8c6e2cefa811e24c729c12309af"
+          },
+          {
+            "path": "h11-configured-kebab-template-allows-kebab-5642.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "b39b65c4b215231bb4adf78be3e967e22e351deeb6591836e0feb0400c6bc756"
+          },
+          {
+            "path": "h11-configured-kebab-template-reports-pascal-5642.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "3518ab3aa9f5f2f83f7e61b440063f3e8a550c3c672529d29e04c71d5529f4b8"
+          },
+          {
+            "path": "h11-configured-kebab-template-reports-pascal-5642.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "356d35e0b9d6497ef8fdd9c919a8f1f481df1d8c5e4475cfbf43bfd4d619d68d"
+          },
+          {
+            "path": "h11-content-model-registry-order-all-rules.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "97b8afebbd376d363ba0cc67d81a6d83433d110ba708886a677e69ec24dfc152"
+          },
+          {
+            "path": "h11-content-model-registry-order-all-rules.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "79dcc5fe5382b14e5289855e135655767e2dc71a8fde9f099cb789ad5b68c573"
+          },
+          {
+            "path": "h11-content-model-registry-order-disable-comment.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "ffd5d493d173e0c929d5fbbbf3f899639d687e54383b7cff4cf33857d2d2c204"
+          },
+          {
+            "path": "h11-content-model-registry-order-disable-comment.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "db40fc350f06162764ddb4b901614220c33ffcd621f3a726e93b6f0d78661cf0"
+          },
+          {
+            "path": "h11-content-model-registry-order-table-ids.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "fb27fe91148acc7882b856c6f3879b3114fdba5c7662c7a6282b0f0b82f1f58f"
+          },
+          {
+            "path": "h11-content-model-registry-order-table-ids.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "8be055dcc9ad312cec9590c8c8e6d57b0251da919136f2325434f41a5a911f26"
+          },
+          {
+            "path": "h11-css-perf-rule-disabled-category-5604.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "dfd661b0acfdc67cefa7d8bf6f988f1153d28df9ee6286697cf6170590948e15"
+          },
+          {
+            "path": "h11-css-perf-rule-disabled-category-5604.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "77e9798c7c7e30ad74ed8a065e3002f1f14262e634f4162b434093d6e88b5c13"
+          },
+          {
+            "path": "h11-css-perf-rule-enabled-control-5604.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "dfd661b0acfdc67cefa7d8bf6f988f1153d28df9ee6286697cf6170590948e15"
+          },
+          {
+            "path": "h11-css-perf-rule-enabled-control-5604.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "24127ffb6f5decdd61bc36c6c34ef5cb09b43f136d230e6f3daceceb964cc438"
+          },
+          {
+            "path": "h11-css-rule-category-severity-override-5604.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "72cfc030c450ff58fe469486bbd61bf723859abf222dd5907f818cf41aa1119c"
+          },
+          {
+            "path": "h11-css-rule-category-severity-override-5604.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "af5480069af673fa5b404fe86f07c83343e81502d2f710b64ad121ee9a71ade1"
+          },
+          {
+            "path": "h11-css-rule-default-severity-control-2676.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "72cfc030c450ff58fe469486bbd61bf723859abf222dd5907f818cf41aa1119c"
+          },
+          {
+            "path": "h11-css-rule-default-severity-control-2676.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "78508dd057d252322e115a1f2bccee0ecff283d8a5462ff24a6106f850e83b2a"
+          },
+          {
+            "path": "h11-css-rule-disabled-category-5604.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "72cfc030c450ff58fe469486bbd61bf723859abf222dd5907f818cf41aa1119c"
+          },
+          {
+            "path": "h11-css-rule-disabled-category-5604.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "0e72b98ebcfb3b5cd829282f5cb0e874daf3e5af3cdfd17964f20c544a3521e4"
+          },
+          {
+            "path": "h11-css-rule-severity-override-2676.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "72cfc030c450ff58fe469486bbd61bf723859abf222dd5907f818cf41aa1119c"
+          },
+          {
+            "path": "h11-css-rule-severity-override-2676.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "882b3968040fa32e15765c6eb2c4ce445471fab800709c4d07691f46117a9d27"
+          },
+          {
+            "path": "h11-default-pascal-template-reports-kebab-control-5642.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "bc7fb01629a9e649a10de494dc96e9726a47b8c6e2cefa811e24c729c12309af"
+          },
+          {
+            "path": "h11-default-pascal-template-reports-kebab-control-5642.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "917186e8c4972149bcb1c93e4a9222b128934bff5a3558e626f96de6db03807d"
+          },
+          {
+            "path": "h11-disabled-category-disables-script-rule-3696.ts.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "9c9afd1c08f40eecbd9434fc6cc98d6882aa8f4992f1ea4c09d7fbed5647c514"
+          },
+          {
+            "path": "h11-disabled-category-disables-script-rule-3696.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "c5309e7aa1c22bb6b520cbc47ab26ba1c9a259398148002607580ba6dad49801"
+          },
+          {
+            "path": "h11-ecosystem-preset-router-link-617.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "821cba6921f8bb948f185f85007db77f31effc71abdc22ed97faedd6b9dd61f0"
+          },
+          {
+            "path": "h11-ecosystem-preset-router-link-617.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "da502db5c65b59de033f5f84b4d58b4f3eef992000e362e1addeb1a8ac6fc773"
+          },
+          {
+            "path": "h11-ecosystem-router-push-617.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "08607fc61c0104abbc2005d246149bce7599a5f3562ddb16b6b51da0c5be266a"
+          },
+          {
+            "path": "h11-ecosystem-router-push-617.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "707b1a29b5f01a2cab514747933d609f504b7b14393076f8ea14f346eea720f4"
+          },
+          {
+            "path": "h11-ecosystem-void-link-source-hint-617.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "e27baa8af1178326155f4064696f50f813078faf5d00754edf578dcb623fa2a0"
+          },
+          {
+            "path": "h11-ecosystem-void-link-source-hint-617.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "131cd6114f8afc037aca3d4909b07e906d95fd95e86088a1968b039335f943c6"
+          },
+          {
+            "path": "h11-form-label-bound-literal-hidden-input-255.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "8267287d3fc85595d47bfe697ef872dabf46070d6d1a3fa55cd3cfcbd67d28c4"
+          },
+          {
+            "path": "h11-form-label-bound-literal-hidden-input-255.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "54cb0eee6128623abb91973467bc2d74fdd41fb0dfe71a6442522fa14245ebd0"
+          },
+          {
+            "path": "h11-form-label-bound-literal-text-control-255.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "3cb9c39f4c03911b2f104538e60da16ed631b1daad6a40949c76a0cccda76837"
+          },
+          {
+            "path": "h11-form-label-bound-literal-text-control-255.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "668b5ff0be503923453f184fcbf7c68e1c06539da6ed323f5574ea973184c8a3"
+          },
+          {
+            "path": "h11-happy-path-preset-router-link-617.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "821cba6921f8bb948f185f85007db77f31effc71abdc22ed97faedd6b9dd61f0"
+          },
+          {
+            "path": "h11-happy-path-preset-router-link-617.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "9840ac76a5f91625fbabf36906b48d1c8cf98e07b5e605399fa1612f0b950c6c"
+          },
+          {
+            "path": "h11-ignores-attributes-whose-name-merely-ends-in-ref-3406.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "781d21470c1e318c9c200f34fd0ba2c45f4b30cc5385a2f5ccb0b153f2ea573c"
+          },
+          {
+            "path": "h11-ignores-attributes-whose-name-merely-ends-in-ref-3406.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "4927c694a8dad370da1c1913650f1aa4775f44c7b54c7d56fc76561a44e786e4"
+          },
+          {
+            "path": "h11-ignores-declaration-nested-in-a-callback-3406.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "27a5bc949cff9ab5e34b1401e7fac3489aab8c1406ba3e058e7dcdbabcaa1ece"
+          },
+          {
+            "path": "h11-ignores-declaration-nested-in-a-callback-3406.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "79cf59e143ae522af3a9a3ea36081087dc248201e4b286ef8b681255c4c437d7"
+          },
+          {
+            "path": "h11-ignores-dynamically-bound-ref-attributes-3406.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "d26091991ca1603ebc9a09b062d98d7c1487c9279d544e1273dd0887652a3ce4"
+          },
+          {
+            "path": "h11-ignores-dynamically-bound-ref-attributes-3406.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "5f88054cfec7b4c67ab5c43dcc2d83c381af3d1ab4241e62bcfedb2e3607c9a8"
+          },
+          {
+            "path": "h11-ignores-nullable-data-ref-the-template-never-bin-3406.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "a1d0a5345f5138ea9398c8eb14493130950728d98439419c35ba8eb427163a69"
+          },
+          {
+            "path": "h11-ignores-nullable-data-ref-the-template-never-bin-3406.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "599f6d9eea3020ede0cefd3776fb464183e56bdf855e5a45dd8a5e2384cb6dd9"
+          },
+          {
+            "path": "h11-ignores-nullable-data-ref-when-another-name-is-a-3406.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "cbb8c66377fb9546d16995fda3277da8ae02a1c75ed71fdce55ca42c02a7a69f"
+          },
+          {
+            "path": "h11-ignores-nullable-data-ref-when-another-name-is-a-3406.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "1937e54ba6a5cc09245ce2396f025bb0c86085094eb4b64687fb1f43f2f0ae7b"
+          },
+          {
+            "path": "h11-ignores-unrelated-ref-factories-3406.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "0fc256af2bdf0ff04f3d53ed8bd992bd07b8e2b4449e6e61548e8de76167fa09"
+          },
+          {
+            "path": "h11-ignores-unrelated-ref-factories-3406.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "839c9107f1c6c23d2bc8e30c3919def0aba4dca32684775c150ba2474fa2f14a"
+          },
+          {
+            "path": "h11-ignores-use-template-ref-3406.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "40ef7a11c5fd7d553b97c8064666a05df353d906bb60a4ff98512aa15c5bfec3"
+          },
+          {
+            "path": "h11-ignores-use-template-ref-3406.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "0677bd16692303b490caadb8e2e149b77fb7324a28fe93ff9e52bf64370969d6"
+          },
+          {
+            "path": "h11-invalid-has-bound-accesskey-1247.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "9d7fc41439af68d7a7807af78bc160ed903810d260d15ced663b9000e1712947"
+          },
+          {
+            "path": "h11-invalid-has-bound-accesskey-1247.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "6887a3281199f11e5aae51dc1a2806e415b443ad32897210dd3a6ab1428a5f58"
+          },
+          {
+            "path": "h11-invalid-has-bound-autofocus-1247.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "10962cb19a89610ce7802ce6b26b034999e3b260b2aec3f6ff0701b750379660"
+          },
+          {
+            "path": "h11-invalid-has-bound-autofocus-1247.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "6038bed839530f118408db72deaf353eb511cada189678594246609f667b7c24"
+          },
+          {
+            "path": "h11-invalid-v-on-keyword-handler-2350.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "6a1c3fa0ffbc94443c87aaaa7e52bd927b85e553bff942ebb8ffa5b691d6b624"
+          },
+          {
+            "path": "h11-invalid-v-on-keyword-handler-2350.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "0437ab69cdb772f03cb7f463b0cfae1169aed20c6ca908d6f51378aec52fa8d7"
+          },
+          {
+            "path": "h11-invalid-v-on-keyword-object-syntax-2350.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "428ae5edddd9f8befde29a4105e3cb34533d366d3ab26c820d46448539c82334"
+          },
+          {
+            "path": "h11-invalid-v-on-keyword-object-syntax-2350.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "2a7390badf60ec9edaea390dd4801e0a20b384ec33b35e6cbedc396fab865a70"
+          },
+          {
+            "path": "h11-musea-configured-tokens-report-5612.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "1f789d8f59da90bcaf2c9b5160a016b8027a6b2121d5ee38cf6f6d35324de195"
+          },
+          {
+            "path": "h11-musea-configured-tokens-report-5612.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "96499bf92b52bc292a263100ca84cf51956fa6f51aa06eca89a4a3603852cd13"
+          },
+          {
+            "path": "h11-musea-without-tokens-control-5612.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "1f789d8f59da90bcaf2c9b5160a016b8027a6b2121d5ee38cf6f6d35324de195"
+          },
+          {
+            "path": "h11-musea-without-tokens-control-5612.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "4b258cee04c4a9d358e936b96fb786b804860d05dd076383e7fb608a3f5d412e"
+          },
+          {
+            "path": "h11-nuxt-preset-allows-options-api-1922.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "90ecfab995fe3ecaf28ba45960eecffd03c7ba7ca35d16cbf9361d143d44fe1a"
+          },
+          {
+            "path": "h11-nuxt-preset-allows-options-api-1922.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "08a4dd400b2e247d423d616e8253c6ad99c9a0e96242b1851069885a7dee9b13"
+          },
+          {
+            "path": "h11-opinionated-preset-reports-options-api-1922.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "90ecfab995fe3ecaf28ba45960eecffd03c7ba7ca35d16cbf9361d143d44fe1a"
+          },
+          {
+            "path": "h11-opinionated-preset-reports-options-api-1922.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "d6b6bb56426543a9df830c6547b49070fd3c3de06d911d34687d52b7b7acd1ca"
+          },
+          {
+            "path": "h11-perf-category-applies-to-script-rule-3696.ts.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "1a6f6236eafd4edaaad84426d049f8e277327e932bf2b463f68ca1030b285c2f"
+          },
+          {
+            "path": "h11-perf-category-applies-to-script-rule-3696.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "b12547f8f0d65cd086168f968b864361ca88e7b8b84e21960516fb1ffd41c362"
+          },
+          {
+            "path": "h11-reports-every-declarator-of-a-multi-declarator-s-3406.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "6fa5fa86000b5a607e4f26d662f97bffc47d40f719d15dbef579ce5fec27198d"
+          },
+          {
+            "path": "h11-reports-every-declarator-of-a-multi-declarator-s-3406.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "d39e17ba5496046df729a268c5f78ce5d3bbe3fee141337fb27aea71a7dc914e"
+          },
+          {
+            "path": "h11-reports-nothing-for-an-sfc-without-a-template-3406.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "2778b40b6971b7eb0fc47b8025caf3b62fff5e7f86f0feb2d049d171450f4198"
+          },
+          {
+            "path": "h11-reports-nothing-for-an-sfc-without-a-template-3406.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "ba347b7c4e98134fea0e9b110dfba56a3d4d87dfe9ca54b536c4d66c0e240224"
+          },
+          {
+            "path": "h11-reports-options-api-setup-declaration-3406.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "8c254c69059dbdc0167de5b016768024521b48056f968a89d2af0a2a051eaffa"
+          },
+          {
+            "path": "h11-reports-options-api-setup-declaration-3406.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "17d2c3c437a2ac74959ae0194fb326314d3d4c97d0e7279f72ac28d425478649"
+          },
+          {
+            "path": "h11-reports-ref-null-paired-with-a-template-ref-3406.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "a95023f4efba06c25860ea816eeafafa9b2d5fa8660d1b39f1fe34cb1abdae97"
+          },
+          {
+            "path": "h11-reports-ref-null-paired-with-a-template-ref-3406.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "e665d9d3df2e2d89d73518ea290d55542cba65910cdfa57072f9ed6b7fe3a9dd"
+          },
+          {
+            "path": "h11-reports-ref-without-an-initializer-3406.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "26aa8b8ea05424e7d0b535abfb194b51259a25c6576ba3c405922b567f243eef"
+          },
+          {
+            "path": "h11-reports-ref-without-an-initializer-3406.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "fe64932c3ac28b7f425387c62bf51d97dbe85aff7a747c0a97842c1338469563"
+          },
+          {
+            "path": "h11-reports-shallow-ref-3406.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "fed87081238b7af548bb11a71acbd9783729c7d549fd42c80e20c8a4257232e0"
+          },
+          {
+            "path": "h11-reports-shallow-ref-3406.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "f422d9accf04a9b1ae13c2cd34182cc2013c7ba439c301f5bd1ebe2a723f6565"
+          },
+          {
+            "path": "h11-script-rule-category-severity-override-3696.ts.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "9c9afd1c08f40eecbd9434fc6cc98d6882aa8f4992f1ea4c09d7fbed5647c514"
+          },
+          {
+            "path": "h11-script-rule-category-severity-override-3696.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "353fa49cac8be0fddd004f3f9bd03d506e9e99ee143488f480a31aac88f723a5"
+          },
+          {
+            "path": "h11-script-rule-default-severity-control-2676.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "c0148c485e619b6161062ecc61ee7731a47b9139b64aecdc541d9e18d65d6ac4"
+          },
+          {
+            "path": "h11-script-rule-default-severity-control-2676.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "8da1a11b9ec6da57742542ef98dea34258434b8a13f5ff81f6043a35e84b57a4"
+          },
+          {
+            "path": "h11-script-rule-severity-override-2676.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "c0148c485e619b6161062ecc61ee7731a47b9139b64aecdc541d9e18d65d6ac4"
+          },
+          {
+            "path": "h11-script-rule-severity-override-2676.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "7e58b59719f21813ea2f188e4a027f7707ba888b3c454975fba78d7c839acca9"
+          },
+          {
+            "path": "h11-sfc-parser-error-default-preset-1258.vue.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "5fed279db86fa2ec460ae32d9c5542a38f7807a000aaa9483ef670e7d43ce20e"
+          },
+          {
+            "path": "h11-sfc-parser-error-default-preset-1258.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "43d5ff89e66fa88ba5a6cfef0addac41078c9c14fc4ec869fa3105f375683788"
+          },
+          {
+            "path": "h11-static-accesskey-1247-control.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "c894456a8d8a14dd0d505a81b62b27b29e0b20316da78874a1113373df531035"
+          },
+          {
+            "path": "h11-static-accesskey-1247-control.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "47c7d18b863245b801678b23fc72a663386ed3394e7d6c37b02cd97f3ccd4a2e"
+          },
+          {
+            "path": "h11-static-accesskey-control-2415.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "c894456a8d8a14dd0d505a81b62b27b29e0b20316da78874a1113373df531035"
+          },
+          {
+            "path": "h11-static-accesskey-control-2415.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "d7f2dcfe5fb5ac77d6100828e3017cd8b21a0acf1eb0ef5a581f89c699561319"
+          },
+          {
+            "path": "h11-static-autofocus-control-2419.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "8d35e943b612857d7d38d708392cfba891e0d19e1add64cd55ecadb95659e144"
+          },
+          {
+            "path": "h11-static-autofocus-control-2419.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "e0ed2c7e2d5cc8365c7b7e4577845ac1d26391d74359963542b3fe05512f23b5"
+          },
+          {
+            "path": "h11-unrelated-category-keeps-script-severity-3696.ts.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "9c9afd1c08f40eecbd9434fc6cc98d6882aa8f4992f1ea4c09d7fbed5647c514"
+          },
+          {
+            "path": "h11-unrelated-category-keeps-script-severity-3696.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "25d95f2e256fc7e14953542e8dec7102806c52890a13c40be4347e44a2f62d58"
+          },
+          {
+            "path": "h11-valid-dynamic-accesskey-argument-2415.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "73929c3e0c074eaf4f59fbfee06ac58c38a244452ff112623136e21cdb2e0009"
+          },
+          {
+            "path": "h11-valid-dynamic-accesskey-argument-2415.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "753628299b714e0cc00655266a48e02e1712dfc8f11c2cdbf97dcc5ea9f2053a"
+          },
+          {
+            "path": "h11-valid-dynamic-autofocus-argument-2419.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "f3dee271864e87886b29a9e8b27be0e72fa3f689ab40776755821c88ec620692"
+          },
+          {
+            "path": "h11-valid-dynamic-autofocus-argument-2419.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "4fa9cbc7fbfa59df0f1f81d6fce99bae0e60a8e414fc26e4b958e242ac99502f"
+          },
+          {
+            "path": "h11-valid-v-on-literal-handler-expression-2350.html.txt",
+            "role": "authored-fix-history-input",
+            "sha256": "f3ac48baec63d31ce8fefad869fb6fb0843474043e3007de113ea33d23fbf24f"
+          },
+          {
+            "path": "h11-valid-v-on-literal-handler-expression-2350.observation.txt",
+            "role": "complete-current-observation",
+            "sha256": "62d3100b7025467a674c4ab6457f4b06df07565e234aa9a82760a4578ec4cc10"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
             ],
             "selector": "linter manifest pinned authored sources"
           }
@@ -3798,6 +4391,50 @@
       }
     },
     {
+      "id": "linter/current-api/h11-boolean-prop-key-template-binding-6403",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/h11-boolean-prop-template-binding-2475",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/h11-bound-compound-expression-role-is-dynamic-1233",
       "state": "active",
       "targets": [
@@ -6026,6 +6663,28 @@
       }
     },
     {
+      "id": "linter/current-api/h11-relative-source-path-typed-import-3159",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/h11-rendered-outputs-interpolate-lint-message-placeh-864",
       "state": "active",
       "targets": [
@@ -6562,6 +7221,28 @@
       }
     },
     {
+      "id": "linter/current-api/h11-tsx-setup-template-binding-2475",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "tsx"
+            ],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/h11-typed-computed-template-members-are-ignored-325",
       "state": "active",
       "targets": [
@@ -6651,6 +7332,50 @@
     },
     {
       "id": "linter/current-api/h11-typed-v-for-sources-use-the-inferred-iterable-ty-6411",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/h11-unresolved-ref-prop-template-binding-6403",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "current-api pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/current-api/h11-unsafe-binding-any-control-6403",
       "state": "active",
       "targets": [
         "lint"

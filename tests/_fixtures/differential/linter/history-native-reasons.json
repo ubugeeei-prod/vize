@@ -197,6 +197,18 @@
     "kind": "UnprovidedRule",
     "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
   },
+  "current-api/h11-boolean-prop-key-template-binding-6403": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-boolean-prop-template-binding-2475": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
   "current-api/h11-catch-without-handler-reports-floating-promise-af80c05": {
     "api": "--native-current-api",
     "entry": "sfc",
@@ -521,6 +533,12 @@
     "kind": "UnsupportedTypeAwareMode",
     "detail": "UnsupportedTypeAwareMode"
   },
+  "current-api/h11-relative-source-path-typed-import-3159": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
   "current-api/h11-rendered-outputs-interpolate-lint-message-placeh-864": {
     "api": "--native-current-api",
     "entry": "sfc",
@@ -581,6 +599,12 @@
     "kind": "UnsupportedTypeAwareMode",
     "detail": "UnsupportedTypeAwareMode"
   },
+  "current-api/h11-tsx-setup-template-binding-2475": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
   "current-api/h11-typed-computed-template-members-are-ignored-325": {
     "api": "--native-current-api",
     "entry": "sfc",
@@ -606,6 +630,18 @@
     "detail": "UnsupportedTypeAwareMode"
   },
   "current-api/h11-typed-v-for-sources-use-the-inferred-iterable-ty-6411": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-unresolved-ref-prop-template-binding-6403": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-unsafe-binding-any-control-6403": {
     "api": "--native-current-api",
     "entry": "sfc",
     "kind": "UnsupportedTypeAwareMode",

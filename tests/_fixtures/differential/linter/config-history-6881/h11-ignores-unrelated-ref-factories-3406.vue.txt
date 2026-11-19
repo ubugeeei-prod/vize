@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { toRef } from 'vue'
+const root = toRef(state, 'root')
+</script>
+
+<template>
+  <div ref="root" />
+</template>

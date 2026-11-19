@@ -1,0 +1,80 @@
+Case {
+    id: "h11-script-rule-severity-override-2676",
+    history: "91c890b28da5e98c7118b61dd5d47864fadc7c2e",
+    source_file: "h11-script-rule-severity-override-2676.vue.txt",
+    filename: "Stepper.vue",
+    entry: "sfc",
+    preset: "ecosystem",
+    enabled_rules: Some(
+        [
+            "script/custom-event-name-casing",
+        ],
+    ),
+    disabled_rules: [],
+    rule_severities: [
+        (
+            "script/custom-event-name-casing",
+            "warning",
+        ),
+    ],
+    disabled_categories: [],
+    category_severities: [],
+    rule_options: Object {},
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Stepper.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/custom-event-name-casing",
+                severity: Warning,
+                message: "Custom event name 'step-changed' is not camelCase.",
+                start: 73,
+                end: 87,
+                help: Some(
+                    "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. `myEvent`).",
+                ),
+                labels: [
+                    Label {
+                        message: "expected camelCase",
+                        start: 73,
+                        end: 87,
+                    },
+                ],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Stepper.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/custom-event-name-casing",
+                    severity: Warning,
+                    message: "Custom event name 'step-changed' is not camelCase.",
+                    start: 73,
+                    end: 87,
+                    help: Some(
+                        "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. `myEvent`).",
+                    ),
+                    labels: [
+                        Label {
+                            message: "expected camelCase",
+                            start: 73,
+                            end: 87,
+                        },
+                    ],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

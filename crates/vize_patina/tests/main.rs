@@ -53,6 +53,7 @@ mod global_component_registration;
 mod html_content_model_differential;
 mod jsx_child_expression_control;
 mod legacy_instance_apis;
+mod config_history;
 mod lint_history;
 mod musea_component_names;
 mod musea_variant_registration;
