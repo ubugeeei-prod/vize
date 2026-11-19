@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const { locale } = useLocale()
+const localePath = useLocalePath()
+</script>
+
+<template>
+  <a :href="localePath('/')">{{ $shout('home') }}</a>
+  <p>{{ $shout(locale) }}</p>
+</template>

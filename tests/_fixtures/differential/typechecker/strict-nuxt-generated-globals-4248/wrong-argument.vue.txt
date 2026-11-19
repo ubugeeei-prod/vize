@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const localePath = useLocalePath()
+const wrongAlias = localePath(1)
+</script>
+
+<template>
+  <p>{{ wrongAlias }} {{ $shout(3) }}</p>
+</template>

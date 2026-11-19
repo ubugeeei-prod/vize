@@ -52,6 +52,13 @@ type CheckerOptions = {
   jsxTypecheck?: boolean;
   legacyVue2?: boolean;
   virtualTsChecks?: { props: boolean; templateBindings: boolean; emits: boolean };
+  // What `vize check` derives from a Nuxt project's generated types.
+  strictInstanceGlobals?: boolean;
+  autoImportStubs?: string[];
+  // Package routes `vize check` installs, by importer and specifier.
+  packageRoutes?: Array<{ importer: string; specifier: string }>;
+  // Workspace packages linked into node_modules.
+  workspaceLinks?: Array<{ package: string; link: string }>;
 };
 type Spec = {
   pack: string;

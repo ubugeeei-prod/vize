@@ -1,0 +1,2 @@
+import { size } from '@demo/kit/tokens'
+export const label: number = size

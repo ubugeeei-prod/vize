@@ -1,0 +1,12 @@
+<script setup lang="ts">
+interface Option { name: string, to: string, hide?: boolean, disabled?: boolean, tags: string[] }
+const { options } = defineProps<{ options: Option[] }>()
+</script>
+
+<template>
+  <div>
+    <template v-for="(option, index) in options" :key="index">
+      <b v-for="tag in option.tags" :key="tag + index">{{ option.name }}</b>
+    </template>
+  </div>
+</template>

@@ -1,0 +1,6 @@
+<script setup lang="ts">
+</script>
+
+<template>
+  <div>{{ getPreferences().theme }} {{ currentUser.name }} {{ $shout('ok') }}</div>
+</template>
