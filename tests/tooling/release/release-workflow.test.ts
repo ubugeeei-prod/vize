@@ -394,12 +394,7 @@ test("verification runs outside the release concurrency group and gates only JSR
 });
 
 test("post-publish product checks follow npm verification and gate nothing", () => {
-  for (const check of [
-    "verify-config",
-    "verify-musea-vrt",
-    "verify-oxlint-windows-json-config",
-    "verify-windows-js-config",
-  ]) {
+  for (const check of ["verify-config", "verify-musea-vrt", "verify-oxlint-windows-json-config"]) {
     assert.deepEqual(verifyNeeds(check), ["verify-npm"]);
     assert.equal(verify.jobs[check].if, undefined);
     for (const name of Object.keys(verify.jobs)) assert.ok(!verifyNeeds(name).includes(check));
@@ -411,9 +406,6 @@ test("post-publish product checks follow npm verification and gate nothing", () 
   const oxlint = command("verify-oxlint-windows-json-config", "windows-json-config.test.ts");
   assert.ok(oxlint);
   assert.equal(oxlint.env?.OXLINT_VIZE_PUBLIC_VERSION, "${{ inputs.version }}");
-  const vize = command("verify-windows-js-config", "windows-js-config-public.test.ts");
-  assert.ok(vize);
-  assert.equal(vize.env?.VIZE_PUBLIC_VERSION, "${{ inputs.version }}");
 });
 
 test("the stamp reaches every tracked non-private npm and editor manifest", async () => {

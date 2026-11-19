@@ -131,4 +131,11 @@ test("release verification calls the public host matrix after npm propagation", 
     version: "${{ inputs.version }}",
     source_ref: "${{ inputs.tag }}",
   });
+  const windows = releaseVerify.jobs["verify-windows-js-config"]!;
+  assert.equal(windows.needs, "verify-npm");
+  assert.equal(windows["runs-on"], "windows-2025");
+  const command = windows.steps?.find((step) =>
+    step.run?.includes("windows-js-config-public.test.ts"),
+  );
+  assert.equal(command?.env?.VIZE_PUBLIC_VERSION, "${{ inputs.version }}");
 });
