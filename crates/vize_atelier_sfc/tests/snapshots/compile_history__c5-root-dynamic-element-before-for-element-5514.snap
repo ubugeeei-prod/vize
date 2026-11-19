@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-root-dynamic-element-before-for-element-5514",
+    history: "cec8d6139b9dcf89a8d32dd574d6a95eaa8e3abc",
+    source: "<feImage :href=\"parts.top\" /><feComposite v-for=\"part in parts\" :key=\"part\" :in=\"part\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    (_openBlock(), _createElementBlock(\"feImage\", { href: parts.top }, null, 8 /* PROPS */, [\"href\"])),\n    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(parts, (part) => {\n      return (_openBlock(), _createElementBlock(\"feComposite\", {\n        key: part,\n        in: part\n      }, null, 8 /* PROPS */, [\"in\"]))\n    }), 128 /* KEYED_FRAGMENT */))\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    map: None,
+}

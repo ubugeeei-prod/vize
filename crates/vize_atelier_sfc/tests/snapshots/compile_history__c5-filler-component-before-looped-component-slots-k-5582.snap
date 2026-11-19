@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-filler-component-before-looped-component-slots-k-5582",
+    history: "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    source: "\n<TransitionGroup tag=\"ul\">\n  <Item v-if=\"empty\" key=\"empty\">&nbsp;</Item>\n  <Item v-for=\"msg in messages\" :key=\"msg.id\" class=\"py-2\">\n    <Badge :variant=\"msg.kind\">{{ msg.kind }}</Badge>\n    <span :class=\"[`text-${msg.kind}`]\">{{ msg.text }}</span>\n  </Item>\n</TransitionGroup>\n",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, renderList as _renderList, TransitionGroup as _TransitionGroup, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Item = _resolveComponent(\"Item\")\n  const _component_Badge = _resolveComponent(\"Badge\")\n  \n  return (_openBlock(), _createBlock(_TransitionGroup, { tag: \"ul\" }, {\n    default: _withCtx(() => [\n      (empty)\n        ? (_openBlock(), _createBlock(_component_Item, { key: \"empty\" }))\n        : _createCommentVNode(\"v-if\", true),\n      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(messages, (msg) => {\n        return (_openBlock(), _createBlock(_component_Item, {\n          key: msg.id,\n          class: \"py-2\"\n        }, {\n          default: _withCtx(() => [\n            _createVNode(_component_Badge, { variant: msg.kind }, {\n              default: _withCtx(() => [\n                _createTextVNode(_toDisplayString(msg.kind), 1 /* TEXT */)\n              ]),\n              _: 2 /* DYNAMIC */\n            }, 1032 /* PROPS, DYNAMIC_SLOTS */, [\"variant\"]),\n            _createElementVNode(\"span\", {\n              class: _normalizeClass([`text-${msg.kind}`])\n            }, _toDisplayString(msg.text), 3 /* TEXT, CLASS */)\n          ]),\n          _: 2 /* DYNAMIC */\n        }, 1024 /* DYNAMIC_SLOTS */))\n      }), 128 /* KEYED_FRAGMENT */))\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

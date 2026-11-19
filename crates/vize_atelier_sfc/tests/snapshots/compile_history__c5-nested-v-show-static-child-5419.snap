@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-nested-v-show-static-child-5419",
+    history: "efb4f9bfcfe062e6725ca288d151507d801295e5",
+    source: "<div><span v-show=\"ok\"><b>Downloading update</b></span></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, vShow as _vShow } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _withDirectives(_createElementVNode(\"span\", null, [\n      _createElementVNode(\"b\", null, \"Downloading update\")\n    ], 512 /* NEED_PATCH */), [\n      [_vShow, ok]\n    ])\n  ]))\n}",
+    map: None,
+}

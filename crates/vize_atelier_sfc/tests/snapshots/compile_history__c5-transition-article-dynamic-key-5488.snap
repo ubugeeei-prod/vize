@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-transition-article-dynamic-key-5488",
+    history: "ac4d82f56c9a66ac27c9831e558d4df37ce69cf8",
+    source: "<Transition :name=\"transitionName\" mode=\"out-in\"><article :key=\"path\" class=\"docs-article\"><h1>{{ pageTitle }}</h1><Content /></article></Transition>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Transition as _Transition, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Content = _resolveComponent(\"Content\")\n  \n  return (_openBlock(), _createBlock(_Transition, {\n    name: transitionName,\n    mode: \"out-in\"\n  }, {\n    default: _withCtx(() => [\n      (_openBlock(), _createElementBlock(\"article\", {\n        key: path,\n        class: \"docs-article\"\n      }, [\n        _createElementVNode(\"h1\", null, _toDisplayString(pageTitle), 1 /* TEXT */),\n        _createVNode(_component_Content)\n      ]))\n    ]),\n    _: 1 /* STABLE */\n  }, 8 /* PROPS */, [\"name\"]))\n}",
+    map: None,
+}

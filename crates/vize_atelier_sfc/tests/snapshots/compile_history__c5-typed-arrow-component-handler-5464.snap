@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-typed-arrow-component-handler-5464",
+    history: "f4af66730ec52d6754e7c57d5f3b2e6a68d00af4",
+    source: "<FieldKeyValues @add=\"(key: string, value: string) => addKeyValue(headers, key, value)\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_FieldKeyValues = _resolveComponent(\"FieldKeyValues\")\n  \n  return (_openBlock(), _createBlock(_component_FieldKeyValues, {\n    onAdd: $event => ((key: string, value: string) => addKeyValue(headers, key, value))\n  }, null, 8 /* PROPS */, [\"onAdd\"]))\n}",
+    map: None,
+}

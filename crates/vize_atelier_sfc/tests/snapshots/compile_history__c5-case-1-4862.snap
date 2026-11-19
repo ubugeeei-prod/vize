@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-case-1-4862",
+    history: "fdaa8d16582b217d05d29dd16ff3d353dbe20b33",
+    source: "<div :[prefix+suffix]=\"value\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { normalizeProps as _normalizeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", _normalizeProps({ [prefix+suffix || \"\"]: value }), null, 16 /* FULL_PROPS */))\n}",
+    map: None,
+}

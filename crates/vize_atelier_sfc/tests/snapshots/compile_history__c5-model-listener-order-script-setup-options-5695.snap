@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-model-listener-order-script-setup-options-5695",
+    history: "725b3313bcff8bb4679af5f455fdec9c75126439",
+    source: "<MyComp @update:modelValue=\"track\" v-model=\"msg\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: Some(
+            true,
+        ),
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_MyComp = _resolveComponent(\"MyComp\")\n  \n  return (_openBlock(), _createBlock(_component_MyComp, {\n    \"onUpdate:modelValue\": [_ctx.track, _cache[0] || (_cache[0] = $event => ((_ctx.msg) = $event))],\n    modelValue: _ctx.msg\n  }, null, 8 /* PROPS */, [\"onUpdate:modelValue\", \"modelValue\"]))\n}",
+    map: None,
+}

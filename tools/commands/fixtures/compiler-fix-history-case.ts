@@ -84,6 +84,27 @@ function normalize(spec: Spec, item: Omit<Case, "history">, errors: Record<strin
   return normalized;
 }
 
+// The cohort lives under `crates/**/tests/fixtures/**`, which `vp fmt` ignores
+// (it exits non-zero when every named file is ignored). Format byte copies at
+// an unignored scratch path and write the formatted bytes back.
+function formatIgnored(files: string[]) {
+  const scratch = fs.mkdtempSync(path.join(root, ".compile-history-fmt-"));
+  try {
+    const copies = files.map((file, index) => {
+      const copy = path.join(scratch, `${index}.json`);
+      fs.copyFileSync(path.join(root, file), copy);
+      return copy;
+    });
+    execFileSync("vp", ["fmt", ...copies.map((copy) => path.relative(root, copy))], {
+      cwd: root,
+      stdio: "ignore",
+    });
+    files.forEach((file, index) => fs.copyFileSync(copies[index], path.join(root, file)));
+  } finally {
+    fs.rmSync(scratch, { recursive: true, force: true });
+  }
+}
+
 function register(files: string[], errors: Record<string, number>) {
   const cohort: Case[] = JSON.parse(read(COHORT));
   const dispositions = JSON.parse(read(DISPOSITIONS));
@@ -126,7 +147,7 @@ function register(files: string[], errors: Record<string, number>) {
   assert.match(source, pin);
   write(runner, source.replace(pin, `$1${cohort.length},`));
   // The receipt pins the formatted bytes, so format before regenerating it.
-  execFileSync("vp", ["fmt", COHORT, DISPOSITIONS], { cwd: root, stdio: "ignore" });
+  formatIgnored([COHORT, DISPOSITIONS]);
   const rendered = renderHistory(collectHistory(root));
   write(INDEX, rendered.index);
   write(RECEIPT, rendered.receipt);

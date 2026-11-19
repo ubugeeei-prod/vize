@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-component-slot-dynamic-text-parent-keeps-icon-in-5506",
+    history: "78232a56f504fe4bf203b945e357baf432269722",
+    source: "<Panel><label :class=\"['flex', 'items-center', 'gap-2']\"><div i-solar:magic-stick-bold-duotone></div>{{ t('settings.pages.modules.artistry.autonomous.title') }}</label><Checkbox></Checkbox></Panel>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Checkbox = _resolveComponent(\"Checkbox\")\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx(() => [\n      _createElementVNode(\"label\", {\n        class: _normalizeClass(['flex', 'items-center', 'gap-2'])\n      }, [\n        _createElementVNode(\"div\", { \"i-solar:magic-stick-bold-duotone\": \"\" }),\n        _createTextVNode(_toDisplayString(t('settings.pages.modules.artistry.autonomous.title')), 1 /* TEXT */)\n      ]),\n      _createVNode(_component_Checkbox)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-explicit-slot-template-nested-slot-prefers-rende-5552",
+    history: "af800fd3996e05a0df0e0566267a7099d982963a",
+    source: "<Carousel><template #slides><SwiperSlide v-for=\"item in items\"><div :class=\"cls\"></div><p class=\"x\"><slot name=\"referenceText\" /></p></SwiperSlide></template></Carousel>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, renderSlot as _renderSlot, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_SwiperSlide = _resolveComponent(\"SwiperSlide\")\n  const _component_Carousel = _resolveComponent(\"Carousel\")\n  \n  return (_openBlock(), _createBlock(_component_Carousel, null, {\n    slides: _withCtx(() => [\n      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => {\n        return (_openBlock(), _createBlock(_component_SwiperSlide, null, {\n          default: _withCtx(() => [\n            _createElementVNode(\"div\", {\n              class: _normalizeClass(cls)\n            }, null, 2 /* CLASS */),\n            _createElementVNode(\"p\", { class: \"x\" }, [\n              _renderSlot(_ctx.$slots, \"referenceText\")\n            ])\n          ]),\n          _: 2 /* DYNAMIC */\n        }, 1024 /* DYNAMIC_SLOTS */))\n      }), 256 /* UNKEYED_FRAGMENT */))\n    ]),\n    _: 3 /* FORWARDED */\n  }))\n}",
+    map: None,
+}

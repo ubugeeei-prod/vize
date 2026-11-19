@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-component-static-attr-props-precede-direct-stati-5576",
+    history: "185d49ba9f16b87fd65e23e59cb232011b28a010",
+    source: "<Head title=\"Test Head Component\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" /><meta name=\"undefined\" :content=\"undefined\" /><meta name=\"number\" :content=\"0\" /></Head><h1 :style=\"{ fontSize: '40px' }\">Head Component</h1>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Head = _resolveComponent(\"Head\")\n  \n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createVNode(_component_Head, { title: \"Test Head Component\" }, {\n      default: _withCtx(() => [\n        _createElementVNode(\"meta\", {\n          name: \"viewport\",\n          content: \"width=device-width, initial-scale=1\"\n        }),\n        _createElementVNode(\"meta\", {\n          name: \"undefined\",\n          content: undefined\n        }, null, 8 /* PROPS */, [\"content\"]),\n        _createElementVNode(\"meta\", {\n          name: \"number\",\n          content: 0\n        })\n      ]),\n      _: 1 /* STABLE */\n    }),\n    _createElementVNode(\"h1\", {\n      style: { fontSize: '40px' }\n    }, \"Head Component\")\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    map: None,
+}

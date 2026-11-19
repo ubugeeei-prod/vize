@@ -679,6 +679,16 @@
       ]
     },
     {
+      "fixCommit": "f5da870f54760b9a96561c15ce9bbd18b9498d4a",
+      "state": "no-compile-behavior",
+      "reason": "Croquis v-for alias usage facts consumed only by Patina's no-unused-vars rule (leading v-for aliases before a used index are no longer reported). Compiled DOM/SSR/Vapor output does not read these facts.",
+      "coveredBy": [
+        "crates/vize_patina/src/linter/tests/v_for_unused_vars.rs::test_lint_template_allows_leading_v_for_alias_when_index_is_used",
+        "crates/vize_patina/src/linter/tests/v_for_unused_vars.rs::test_lint_template_allows_value_and_key_aliases_when_index_is_used",
+        "crates/vize_patina/src/linter/tests/v_for_unused_vars.rs::test_lint_template_reports_unused_destructured_value_before_used_index"
+      ]
+    },
+    {
       "fixCommit": "f6f692cad55299e155289c85964a17028c49c3f4",
       "state": "no-compile-behavior",
       "reason": "Adds Options API `components` registration collection to croquis script parsing and widens the croquis analyzer's is_component_tag; both feed patina's vue/no-unused-components only. compile_sfc neither reads component_registrations nor calls is_component_tag, so compiled output cannot differ.",
@@ -687,6 +697,14 @@
         "crates/vize_patina/src/linter/tests/no_unused_components.rs::test_lint_sfc_no_unused_components_reports_unused_options_api_component_alias",
         "crates/vize_croquis/src/script_parser/tests.rs::test_parse_options_api_component_registrations",
         "crates/vize_croquis/src/drawer/helpers/keywords.rs::tests::test_is_component_tag"
+      ]
+    },
+    {
+      "fixCommit": "f7c31b121f56e8013b9b9b496e5bd9ec616bdf3d",
+      "state": "no-compile-behavior",
+      "reason": "Test-harness-only: widens a match arm in the S2 surface comparison helper (crates/vize_atelier_core/tests/s2_support) to cover v-show bindings. No product source changed, so no compiled output can change.",
+      "coveredBy": [
+        "crates/vize_atelier_dom/tests/l2_show.rs::l2_v_show_matches_the_shipped_dom_lane_byte_for_byte"
       ]
     },
     {

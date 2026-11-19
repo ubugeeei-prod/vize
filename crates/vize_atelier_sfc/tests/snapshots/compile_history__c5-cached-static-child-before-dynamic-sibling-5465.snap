@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-cached-static-child-before-dynamic-sibling-5465",
+    history: "0a3a17180a2c22ec9dc6e98cc03d8db006c63a90",
+    source: "<div class=\"root\"><button><span>x</span></button><i :id=\"foo\"></i></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"root\" }, [\n    _createElementVNode(\"button\", null, [\n      _createElementVNode(\"span\", null, \"x\")\n    ]),\n    _createElementVNode(\"i\", { id: foo }, null, 8 /* PROPS */, [\"id\"])\n  ]))\n}",
+    map: None,
+}

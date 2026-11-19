@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-for-component-child-hoists-keep-avatar-props-ord-0a0dbb7",
+    history: "0a0dbb737fc930a6dcded59a85fe721fb470b967",
+    source: "<div v-for=\"(author, index) of authors\" :key=\"index\"><AvatarRoot class=\"size-10 inline-flex select-none items-center justify-center overflow-hidden rounded-full bg-neutral-100 align-middle dark:bg-neutral-800\"><AvatarImage class=\"h-full w-full rounded-[inherit] object-cover\" :src=\"author.avatar || author.avatarFallback\" :alt=\"`${author.displayName}'s avatar`\" /><AvatarFallback class=\"h-full w-full flex items-center justify-center bg-white text-sm text-primary font-medium leading-1 dark:bg-neutral-800 dark:text-neutral-300\" :delay-ms=\"600\" as-child>{{ [author.displayName.charAt(0).toUpperCase(), author.displayName.charAt(1).toUpperCase()].join('') }}</AvatarFallback></AvatarRoot></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, renderList as _renderList, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_AvatarImage = _resolveComponent(\"AvatarImage\")\n  const _component_AvatarFallback = _resolveComponent(\"AvatarFallback\")\n  const _component_AvatarRoot = _resolveComponent(\"AvatarRoot\")\n  \n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(authors, (author, index) => {\n    return (_openBlock(), _createElementBlock(\"div\", { key: index }, [\n      _createVNode(_component_AvatarRoot, { class: \"size-10 inline-flex select-none items-center justify-center overflow-hidden rounded-full bg-neutral-100 align-middle dark:bg-neutral-800\" }, {\n        default: _withCtx(() => [\n          _createVNode(_component_AvatarImage, {\n            class: \"h-full w-full rounded-[inherit] object-cover\",\n            src: author.avatar || author.avatarFallback,\n            alt: `${author.displayName}'s avatar`\n          }, null, 8 /* PROPS */, [\"src\", \"alt\"]),\n          _createVNode(_component_AvatarFallback, {\n            class: \"h-full w-full flex items-center justify-center bg-white text-sm text-primary font-medium leading-1 dark:bg-neutral-800 dark:text-neutral-300\",\n            \"delay-ms\": 600,\n            \"as-child\": \"\"\n          }, {\n            default: _withCtx(() => [\n              _createTextVNode(_toDisplayString([author.displayName.charAt(0).toUpperCase(), author.displayName.charAt(1).toUpperCase()].join('')), 1 /* TEXT */)\n            ]),\n            _: 2 /* DYNAMIC */\n          }, 1024 /* DYNAMIC_SLOTS */)\n        ]),\n        _: 2 /* DYNAMIC */\n      }, 1024 /* DYNAMIC_SLOTS */)\n    ]))\n  }), 128 /* KEYED_FRAGMENT */))\n}",
+    map: None,
+}

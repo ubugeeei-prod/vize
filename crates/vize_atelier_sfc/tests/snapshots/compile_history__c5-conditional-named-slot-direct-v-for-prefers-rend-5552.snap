@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-conditional-named-slot-direct-v-for-prefers-rend-5552",
+    history: "af800fd3996e05a0df0e0566267a7099d982963a",
+    source: "<ChatPrompt><template v-if=\"attachments.length\" #header><Button v-for=\"(file, index) in attachments\" :key=\"index\" :label=\"file.name\" /></template><template #body><Editor /></template></ChatPrompt>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList, createSlots as _createSlots, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Button = _resolveComponent(\"Button\")\n  const _component_Editor = _resolveComponent(\"Editor\")\n  const _component_ChatPrompt = _resolveComponent(\"ChatPrompt\")\n  \n  return (_openBlock(), _createBlock(_component_ChatPrompt, null, _createSlots({ _: 2 /* DYNAMIC */ }, [\n    (attachments.length)\n      ? {\n        name: \"header\",\n        fn: _withCtx(() => [\n          (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(attachments, (file, index) => {\n            return (_openBlock(), _createBlock(_component_Button, {\n              key: index,\n              label: file.name\n            }, null, 8 /* PROPS */, [\"label\"]))\n          }), 128 /* KEYED_FRAGMENT */))\n        ]),\n        key: \"0\"\n      }\n    : undefined,\n    {\n      name: \"body\",\n      fn: _withCtx(() => [\n        _createVNode(_component_Editor)\n      ])\n    }\n  ]), 1024 /* DYNAMIC_SLOTS */))\n}",
+    map: None,
+}

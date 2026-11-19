@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-template-if-slot-keeps-upload-icon-hoist-after-p-5506",
+    history: "78232a56f504fe4bf203b945e357baf432269722",
+    source: "<InputFileCard><template #default=\"{ isDragging }\"><template v-if=\"!isDragging\"><div flex flex-col items-center><div i-solar:upload-square-line-duotone mb-4 text-5xl text=\"neutral-400 dark:neutral-500\"></div><p font-medium text=\"neutral-600 dark:neutral-300\">{{ t('settings.pages.card.upload') }}</p><p text=\"neutral-500 dark:neutral-400\" mt-2 text-sm>{{ t('settings.pages.card.upload_desc') }}</p></div></template><template v-else><div flex flex-col items-center><div i-solar:upload-minimalistic-bold class=\"mb-2 text-5xl text-primary-500 dark:text-primary-400\"></div><p font-medium text=\"primary-600 dark:primary-300\">{{ t('settings.pages.card.drop_here') }}</p></div></template></template></InputFileCard>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_InputFileCard = _resolveComponent(\"InputFileCard\")\n  \n  return (_openBlock(), _createBlock(_component_InputFileCard, null, {\n    default: _withCtx(({ isDragging }) => [\n      (!isDragging)\n        ? (_openBlock(), _createElementBlock(\"div\", {\n          key: 0,\n          flex: \"\",\n          \"flex-col\": \"\",\n          \"items-center\": \"\"\n        }, [\n          _createElementVNode(\"div\", {\n            \"i-solar:upload-square-line-duotone\": \"\",\n            \"mb-4\": \"\",\n            \"text-5xl\": \"\",\n            text: \"neutral-400 dark:neutral-500\"\n          }),\n          _createElementVNode(\"p\", {\n            \"font-medium\": \"\",\n            text: \"neutral-600 dark:neutral-300\"\n          }, _toDisplayString(t('settings.pages.card.upload')), 1 /* TEXT */),\n          _createElementVNode(\"p\", {\n            text: \"neutral-500 dark:neutral-400\",\n            \"mt-2\": \"\",\n            \"text-sm\": \"\"\n          }, _toDisplayString(t('settings.pages.card.upload_desc')), 1 /* TEXT */)\n        ]))\n        : (_openBlock(), _createElementBlock(\"div\", {\n          key: 1,\n          flex: \"\",\n          \"flex-col\": \"\",\n          \"items-center\": \"\"\n        }, [\n          _createElementVNode(\"div\", {\n            \"i-solar:upload-minimalistic-bold\": \"\",\n            class: \"mb-2 text-5xl text-primary-500 dark:text-primary-400\"\n          }),\n          _createElementVNode(\"p\", {\n            \"font-medium\": \"\",\n            text: \"primary-600 dark:primary-300\"\n          }, _toDisplayString(t('settings.pages.card.drop_here')), 1 /* TEXT */)\n        ]))\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

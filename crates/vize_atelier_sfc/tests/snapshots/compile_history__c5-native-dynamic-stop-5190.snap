@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-native-dynamic-stop-5190",
+    history: "2f9f6bc656b1a380f7a4e85aa7643544877a9a4a",
+    source: "<button @[event].stop=\"handler\"></button>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { withModifiers as _withModifiers, toHandlerKey as _toHandlerKey, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    [_toHandlerKey(_ctx.event)]: _withModifiers(handler, [\"stop\"])\n  }, null, 16 /* FULL_PROPS */))\n}",
+    map: None,
+}

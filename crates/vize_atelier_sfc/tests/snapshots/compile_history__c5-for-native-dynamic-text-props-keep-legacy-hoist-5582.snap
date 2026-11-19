@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-for-native-dynamic-text-props-keep-legacy-hoist-5582",
+    history: "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    source: "<div v-for=\"project in projects\" :key=\"project.name\" class=\"card\"><div class=\"card-content\"><div class=\"content\"><p>{{ project.name }}</p><p>{{ project.status }}</p>{{ project.description }}</div></div><footer class=\"card-footer\"><a class=\"card-footer-item\">Open</a></footer></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(projects, (project) => {\n    return (_openBlock(), _createElementBlock(\"div\", {\n      key: project.name,\n      class: \"card\"\n    }, [\n      _createElementVNode(\"div\", { class: \"card-content\" }, [\n        _createElementVNode(\"div\", { class: \"content\" }, [\n          _createElementVNode(\"p\", null, _toDisplayString(project.name), 1 /* TEXT */),\n          _createElementVNode(\"p\", null, _toDisplayString(project.status), 1 /* TEXT */),\n          _createTextVNode(_toDisplayString(project.description), 1 /* TEXT */)\n        ])\n      ]),\n      _createElementVNode(\"footer\", { class: \"card-footer\" }, [\n        _createElementVNode(\"a\", { class: \"card-footer-item\" }, \"Open\")\n      ])\n    ]))\n  }), 128 /* KEYED_FRAGMENT */))\n}",
+    map: None,
+}

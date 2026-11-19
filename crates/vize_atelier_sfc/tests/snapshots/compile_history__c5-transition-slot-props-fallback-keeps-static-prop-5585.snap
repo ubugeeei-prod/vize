@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-transition-slot-props-fallback-keeps-static-prop-5585",
+    history: "7fad0210b5aa9c8e9341c43954cf79cc1e841c76",
+    source: "<transition name=\"sw-update-popup\"><slot :reload=\"reload\"><br /></slot></transition>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { renderSlot as _renderSlot, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, Transition as _Transition, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createBlock(_Transition, { name: \"sw-update-popup\" }, {\n    default: _withCtx(() => [\n      _renderSlot(_ctx.$slots, \"default\", { reload: reload }, () => [\n        _createElementVNode(\"br\")\n      ])\n    ]),\n    _: 3 /* FORWARDED */\n  }))\n}",
+    map: None,
+}

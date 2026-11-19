@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-comp-arg-ts-non-null-5498",
+    history: "707b5b26cd261cdfdbaaaebb2aaa2b0ffca95728",
+    source: "<Foo v-model:voice=\"voice!\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Foo = _resolveComponent(\"Foo\")\n  \n  return (_openBlock(), _createBlock(_component_Foo, {\n    voice: voice!,\n    \"onUpdate:voice\": $event => ($event => ($event => ((voice!) = $event)))\n  }, null, 8 /* PROPS */, [\"voice\", \"onUpdate:voice\"]))\n}",
+    map: None,
+}

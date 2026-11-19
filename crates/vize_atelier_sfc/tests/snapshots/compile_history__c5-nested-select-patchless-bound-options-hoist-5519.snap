@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-nested-select-patchless-bound-options-hoist-5519",
+    history: "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    source: "<div><select v-model=\"user.role\"><option :value=\"1\">User</option><option :value=\"2\">Admin</option></select></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { vModelSelect as _vModelSelect, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _withDirectives(_createElementVNode(\"select\", {\n      \"onUpdate:modelValue\": $event => ((user.role) = $event)\n    }, [\n      _createElementVNode(\"option\", { value: 1 }, \"User\"),\n      _createElementVNode(\"option\", { value: 2 }, \"Admin\")\n    ], 8 /* PROPS */, [\"onUpdate:modelValue\"]), [\n      [_vModelSelect, user.role]\n    ])\n  ]))\n}",
+    map: None,
+}

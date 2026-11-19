@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-component-v-slot-direct-slot-prefers-render-slot-5552",
+    history: "af800fd3996e05a0df0e0566267a7099d982963a",
+    source: "<MenuItem v-slot=\"{ active }\" v-bind=\"$attrs\"><a :class=\"[active ? 'on' : 'off']\"><slot :active=\"active\" /></a></MenuItem>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, renderSlot as _renderSlot, createElementVNode as _createElementVNode, normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps, normalizeClass as _normalizeClass, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_MenuItem = _resolveComponent(\"MenuItem\")\n  \n  return (_openBlock(), _createBlock(_component_MenuItem, _normalizeProps(_guardReactiveProps($attrs)), {\n    default: _withCtx(({ active }) => [\n      _createElementVNode(\"a\", {\n        class: _normalizeClass([active ? 'on' : 'off'])\n      }, [\n        _renderSlot(_ctx.$slots, \"default\", { active: active })\n      ], 2 /* CLASS */)\n    ]),\n    _: 3 /* FORWARDED */\n  }, 16 /* FULL_PROPS */))\n}",
+    map: None,
+}

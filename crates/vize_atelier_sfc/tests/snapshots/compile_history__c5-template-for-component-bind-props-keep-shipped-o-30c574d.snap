@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-template-for-component-bind-props-keep-shipped-o-30c574d",
+    history: "30c574d5e46004a3a32d625071e3da1847661658",
+    source: "<a-form><a-row :gutter=\"24\"><template v-for=\"i in 10\" :key=\"i\"><a-col v-show=\"expand || i <= 6\" :span=\"8\"><a-form-item><a-input /></a-form-item></a-col></template></a-row><a-row><a-col :span=\"24\" style=\"text-align: right\"><a-button type=\"primary\" html-type=\"submit\">Search</a-button></a-col></a-row></a-form>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, withDirectives as _withDirectives, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, renderList as _renderList, withCtx as _withCtx, vShow as _vShow } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_a_input = _resolveComponent(\"a-input\")\n  const _component_a_form_item = _resolveComponent(\"a-form-item\")\n  const _component_a_col = _resolveComponent(\"a-col\")\n  const _component_a_row = _resolveComponent(\"a-row\")\n  const _component_a_button = _resolveComponent(\"a-button\")\n  const _component_a_form = _resolveComponent(\"a-form\")\n  \n  return (_openBlock(), _createBlock(_component_a_form, null, {\n    default: _withCtx(() => [\n      _createVNode(_component_a_row, { gutter: 24 }, {\n        default: _withCtx(() => [\n          (_openBlock(), _createElementBlock(_Fragment, null, _renderList(10, (i) => {\n            return _withDirectives((_openBlock(), _createBlock(_component_a_col, {\n              key: i,\n              span: 8\n            }, {\n              default: _withCtx(() => [\n                _createVNode(_component_a_form_item, null, {\n                  default: _withCtx(() => [\n                    _createVNode(_component_a_input)\n                  ]),\n                  _: 2 /* DYNAMIC */\n                }, 1024 /* DYNAMIC_SLOTS */)\n              ]),\n              _: 2 /* DYNAMIC */\n            }, 1024 /* DYNAMIC_SLOTS */)), [\n              [_vShow, expand || i <= 6]\n            ])\n          }), 64 /* STABLE_FRAGMENT */))\n        ]),\n        _: 1 /* STABLE */\n      }),\n      _createVNode(_component_a_row, null, {\n        default: _withCtx(() => [\n          _createVNode(_component_a_col, {\n            span: 24,\n            style: \"text-align: right\"\n          }, {\n            default: _withCtx(() => [\n              _createVNode(_component_a_button, {\n                type: \"primary\",\n                \"html-type\": \"submit\"\n              }, {\n                default: _withCtx(() => [\n                  _createTextVNode(\"Search\")\n                ]),\n                _: 1 /* STABLE */\n              })\n            ]),\n            _: 1 /* STABLE */\n          })\n        ]),\n        _: 1 /* STABLE */\n      })\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

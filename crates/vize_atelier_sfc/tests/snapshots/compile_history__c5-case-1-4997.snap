@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-case-1-4997",
+    history: "88bf3df02f022d8d24eac03fcfbfd0e764966fe2",
+    source: "<div v-if=\"show\" v-bind=\"attrs\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps, mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (show)\n    ? (_openBlock(), _createElementBlock(\"div\", _normalizeProps(_mergeProps({ key: 0 }, attrs)), null, 16 /* FULL_PROPS */))\n    : _createCommentVNode(\"v-if\", true)\n}",
+    map: None,
+}

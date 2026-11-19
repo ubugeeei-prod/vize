@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-merge-object-prop-5208",
+    history: "1f64c4164362e0a24239469c836d6da0b8b05807",
+    source: "<div id=\"x\" v-bind.prop=\"bag\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", _mergeProps({ id: \"x\" }, bag), null, 16 /* FULL_PROPS */))\n}",
+    map: None,
+}

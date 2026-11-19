@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-block-arrow-handler-preserves-line-comment-5501",
+    history: "d6beb151dccc4fe2225048e153d8b4170150f303",
+    source: "<button @click=\"() => {\nif (active) {\n  // keep active click note\n  next();\n}\nelse {\n  // keep inactive click note\n  select();\n}\n}\"></button>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    onClick: () => {\nif (active) {\n  // keep active click note\n  next();\n}\nelse {\n  // keep inactive click note\n  select();\n}\n}\n  }, null, 8 /* PROPS */, [\"onClick\"]))\n}",
+    map: None,
+}

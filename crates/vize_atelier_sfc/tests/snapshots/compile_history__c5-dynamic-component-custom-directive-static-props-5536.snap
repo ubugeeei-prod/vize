@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-dynamic-component-custom-directive-static-props-5536",
+    history: "7a98d785bd0b30f6e57ae5c04308c302318e524b",
+    source: "<component :is=\"copied ? 'CheckOutlined' : 'SnippetsOutlined'\" key=\"copy\" class=\"code-action\" v-clipboard:copy=\"sourceCode\" v-clipboard:success=\"handleCodeCopied\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveDirective as _resolveDirective, resolveDynamicComponent as _resolveDynamicComponent, withDirectives as _withDirectives, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _directive_clipboard = _resolveDirective(\"clipboard\")\n  \n  return _withDirectives((_openBlock(), _createBlock(_resolveDynamicComponent(copied ? 'CheckOutlined' : 'SnippetsOutlined'), {\n    key: \"copy\",\n    class: \"code-action\"\n  }, null, 512 /* NEED_PATCH */)), [\n    [_directive_clipboard, sourceCode, \"copy\"],\n    [_directive_clipboard, handleCodeCopied, \"success\"]\n  ])\n}",
+    map: None,
+}

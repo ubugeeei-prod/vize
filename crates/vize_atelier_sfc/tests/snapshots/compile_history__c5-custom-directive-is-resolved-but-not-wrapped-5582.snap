@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-custom-directive-is-resolved-but-not-wrapped-5582",
+    history: "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    source: "<h3 v-once v-example=\"heading\">{{ question }}</h3>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, setBlockTracking as _setBlockTracking } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _directive_example = _resolveDirective(\"example\")\n  \n  return _cache[0] || (\n    _setBlockTracking(-1, true),\n    (_cache[0] = _withDirectives(_createElementVNode(\"h3\", null, [\n      _createTextVNode(_toDisplayString(question), 1 /* TEXT */)\n    ], 512 /* NEED_PATCH */), [\n      [_directive_example, heading]\n    ])).cacheIndex = 0,\n    _setBlockTracking(1),\n    _cache[0]\n  )\n}",
+    map: None,
+}

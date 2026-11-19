@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-static-child-fe834c0",
+    history: "fe834c02d65360e1657ec9901fded9afddd9de3c",
+    source: "<div v-example><span id=\"\">content</span></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _directive_example = _resolveDirective(\"example\")\n  \n  return _withDirectives((_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { id: \"\" }, \"content\")\n  ], 512 /* NEED_PATCH */)), [\n    [_directive_example]\n  ])\n}",
+    map: None,
+}
