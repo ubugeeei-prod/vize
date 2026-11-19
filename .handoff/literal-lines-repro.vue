@@ -1,0 +1,9 @@
+<template>
+  <button
+    @click="track();
+      notify(`one
+  two`)"
+  >
+    Go
+  </button>
+</template>

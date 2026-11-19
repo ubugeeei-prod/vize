@@ -6,18 +6,18 @@
 //! which lines it must keep verbatim. Parsed spans decide that exactly, so a
 //! backtick inside a string or comment is never taken for a literal.
 //!
-//! The value is read as the expression it starts with, under the compiler
-//! profile's TypeScript module parse. When it does not start with one and
-//! statements are allowed, it is read as a whole Program instead. Syntax that
-//! is not clean under either reading has no answer; the caller keeps its
-//! lexical fallback.
+//! The value is read as one expression under the compiler profile's
+//! TypeScript module parse. When it is not exactly one expression, it is read
+//! as a whole Program: handler statements where statements are allowed, one
+//! expression statement elsewhere. Syntax that is not clean under either
+//! reading has no answer; the caller keeps its lexical fallback.
 
 use alloc::vec::Vec;
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{StringLiteral, TemplateElement, TemplateLiteral};
+use oxc_ast::ast::{Program, Statement, StringLiteral, TemplateElement, TemplateLiteral};
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_span::{GetSpan, SourceType};
 
 /// How a printer reads the literals of a value.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -47,16 +47,26 @@ pub fn literal_line_starts(source: &str, options: LiteralLineOptions) -> Option<
         spans: Vec::new(),
         whole_templates: options.whole_templates,
     };
-    match Parser::new(&allocator, source, source_type).parse_expression() {
-        Ok(expression) => spans.visit_expression(&expression),
-        Err(_) if options.statements => {
+    // An expression is admitted only when it is the whole value. A value that
+    // merely starts with one (`track(); notify(`…`)`) is read as a Program, so
+    // literals after its first statement are owned too.
+    let leading = Parser::new(&allocator, source, source_type).parse_expression();
+    match leading {
+        Ok(expression) if expression.span().end as usize >= source.trim_end().len() => {
+            spans.visit_expression(&expression);
+        }
+        Ok(_) | Err(_) => {
             let parsed = Parser::new(&allocator, source, source_type).parse();
             if !parsed.diagnostics.is_empty() || parsed.panicked {
                 return None;
             }
+            // Interpolations hold one expression; trailing comments are the
+            // only other syntax a clean single-statement Program can add.
+            if !options.statements && !is_one_expression(&parsed.program) {
+                return None;
+            }
             spans.visit_program(&parsed.program);
         }
-        Err(_) => return None,
     }
     let mut lines = alloc::vec![false];
     for (index, byte) in source.bytes().enumerate() {
@@ -71,6 +81,12 @@ pub fn literal_line_starts(source: &str, options: LiteralLineOptions) -> Option<
         }
     }
     Some(lines)
+}
+
+#[inline]
+fn is_one_expression(program: &Program<'_>) -> bool {
+    program.directives.is_empty()
+        && matches!(program.body.as_slice(), [Statement::ExpressionStatement(_)])
 }
 
 struct LiteralSpans {

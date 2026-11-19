@@ -64,6 +64,22 @@ fn statements_are_read_only_when_allowed() {
 }
 
 #[test]
+fn literals_after_a_leading_expression_are_owned() {
+    // `track()` alone is an expression; the value is two statements.
+    let source = "track();\nnotify(`x\ny`)";
+    assert_eq!(
+        literal_line_starts(source, DIRECTIVE),
+        Some(vec![false, false, true])
+    );
+    assert_eq!(literal_line_starts(source, INTERPOLATION), None);
+    // A trailing comment keeps a one-expression interpolation.
+    assert_eq!(
+        literal_line_starts("`x\ny` // tail\n", INTERPOLATION),
+        Some(vec![false, true, false])
+    );
+}
+
+#[test]
 fn a_lone_cr_ends_lines_when_selected() {
     let options = LiteralLineOptions {
         newline: b'\r',
