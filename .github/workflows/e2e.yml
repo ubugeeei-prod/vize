@@ -64,7 +64,7 @@ jobs:
               - 'Cargo.lock'
               - 'Cargo.toml'
               - 'crates/**'
-              - 'davinci/**'
+              - 'levels/**'
               - 'npm/native/**'
               - 'npm/cli/**'
               - 'npm/builder/vite/**'

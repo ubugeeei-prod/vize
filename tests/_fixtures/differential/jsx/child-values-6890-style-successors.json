@@ -17,7 +17,7 @@
     {
       "name": "main",
       "path": "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/authored-module-successor-10701/head.json",
-      "sha256": "fe0e35484a54d401a9e6453111ef547e670cb1beebaf3aa6e93d5d02762fa6d3",
+      "sha256": "ee318241afe33c3880f3b6cd1fe28d93fbe95cb962b6d6ba16afabc499aa2d0f",
       "population": 180,
       "captureMember": "head.json",
       "captureSha256": "d93c04afd1477fced6ee360a24498d541c0ab6d7c228160d0b74afd5283070d2",

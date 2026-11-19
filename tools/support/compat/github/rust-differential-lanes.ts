@@ -74,17 +74,17 @@ export const rustDifferentialLanes: readonly Lane[] = [
     name: "lowering",
     steps: [
       corpus("vize_l1_to_l2", [
-        "davinci_lowering_corpus",
-        "davinci_dom_corpus",
-        "davinci_remarks_corpus",
-        "davinci_pug_corpus",
+        "level_lowering_corpus",
+        "level_dom_corpus",
+        "level_remarks_corpus",
+        "level_pug_corpus",
       ]),
     ],
   },
   {
     name: "sfc",
     steps: [
-      corpus("vize_atelier_sfc", ["davinci_production_reach"], "legacy-dom-differential"),
+      corpus("vize_atelier_sfc", ["level_production_reach"], "legacy-dom-differential"),
       test("vize_atelier_sfc", [
         "--features",
         "legacy-dom-differential",
@@ -102,10 +102,10 @@ export const rustDifferentialLanes: readonly Lane[] = [
     name: "ssr",
     steps: [
       {
-        ...corpus("vize_atelier_ssr", ["davinci_ssr_corpus"]),
+        ...corpus("vize_atelier_ssr", ["level_ssr_corpus"]),
         workspaceCorpus: true,
       },
-      corpus("vize_atelier_ssr", ["davinci_ssr_production_cases", "slot_element_text_children"]),
+      corpus("vize_atelier_ssr", ["level_ssr_production_cases", "slot_element_text_children"]),
       {
         ...corpus("vize_atelier_ssr", ["vue_ssr_render"]),
         env: { VIZE_VUE_RUNTIME_PRODUCTION: "1" },
@@ -123,7 +123,7 @@ export const rustDifferentialLanes: readonly Lane[] = [
         "--",
         "--exact",
       ]),
-      corpus("vize_atelier_core", ["davinci_l2_transform_vue2"], "legacy"),
+      corpus("vize_atelier_core", ["level_l2_transform_vue2"], "legacy"),
       corpus("vize_atelier_dom", [
         "v_pre_freezes_its_subtree",
         "component_v_once",
@@ -148,12 +148,12 @@ export const rustDifferentialLanes: readonly Lane[] = [
   { name: "wasm", steps: [test("vize_vitrine", ["--no-default-features", "--features", "wasm"])] },
   {
     name: "formatter",
-    steps: [{ ...corpus("vize_patina", ["davinci_markup_differential"]), workspaceCorpus: true }],
+    steps: [{ ...corpus("vize_patina", ["level_markup_differential"]), workspaceCorpus: true }],
   },
   {
     name: "vapor",
     steps: [
-      test("vize_atelier_vapor", ["--test", "davinci_vapor_upstream_parity"], {
+      test("vize_atelier_vapor", ["--test", "level_vapor_upstream_parity"], {
         VIZE_VUE_RUNTIME_PRODUCTION: "1",
       }),
     ],
@@ -197,7 +197,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   for (const step of steps) {
     const env = {
       ...process.env,
-      ...(step.workspaceCorpus ? { VIZE_DAVINCI_DIFFERENTIAL_CORPUS: process.cwd() } : {}),
+      ...(step.workspaceCorpus ? { VIZE_LEVEL_DIFFERENTIAL_CORPUS: process.cwd() } : {}),
       ...step.env,
     };
     if (process.env.VIZE_TEST_CASES) {

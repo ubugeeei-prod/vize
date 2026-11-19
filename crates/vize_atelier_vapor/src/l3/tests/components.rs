@@ -21,13 +21,13 @@ fn dynamic_components_match_the_retained_lane() {
             "{source}: {status:?}"
         );
         for prefix_identifiers in [false, true] {
-            let compile = |davinci_retained_lane| {
+            let compile = |level_retained_lane| {
                 crate::compile_vapor(
                     &allocator,
                     source,
                     crate::VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane,
+                        level_retained_lane,
                         ..Default::default()
                     },
                 )

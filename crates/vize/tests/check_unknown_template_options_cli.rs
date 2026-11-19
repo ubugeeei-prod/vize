@@ -1,6 +1,6 @@
 //! Complete public checker vectors for the unchanged original #7874 project.
 use crate::support::corsa_requirement;
-use davinci_test_support::unknown_template_fixture as fixture;
+use level_test_support::unknown_template_fixture as fixture;
 use serde_json::{Value, json};
 use std::{
     path::{Path, PathBuf},

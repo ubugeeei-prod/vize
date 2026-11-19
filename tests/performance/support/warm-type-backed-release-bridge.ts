@@ -44,7 +44,7 @@ export function verifyReleaseBridge(
   const recipe = fileURLToPath(new URL("./warm-type-backed-release-bridge.json", import.meta.url));
   assert.equal(
     sha256(fs.readFileSync(script)),
-    "a9ed87a505b875b93b1b3850dff3d1050f55a91e5da11fffa32565b0813a51a1",
+    "af9a2a9fc189f0d24d8e624b89a47fda08260ea705d6beb90ddeda7cd4e86902",
     "the independently reviewed verifier bytes are frozen",
   );
   assert.equal(

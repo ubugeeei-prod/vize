@@ -142,7 +142,7 @@ const fixtures = samples.map(([id, template, prefix = ""]) => {
 });
 writeFileSync(
   new URL(
-    "../../../davinci/vize_l4/tests/fixtures/native-vapor-vue-3.6.0-rc.9.json",
+    "../../../levels/vize_l4/tests/fixtures/native-vapor-vue-3.6.0-rc.9.json",
     import.meta.url,
   ),
   JSON.stringify({ version: vueVaporVersion, fixtures }, null, 2) + "\n",

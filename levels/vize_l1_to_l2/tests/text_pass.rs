@@ -5,7 +5,7 @@
 //! condensed surface, the compound ops with their recorded parts, and
 //! the artifact's [`TextParts`] table — plus the comment-boundary parity
 //! cases the port's lowering-absorption argument rests on. The TS-17
-//! folio snapshots live in `text_pass_snapshot.rs`.
+//! dump snapshots live in `text_pass_snapshot.rs`.
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
@@ -38,10 +38,10 @@ fn span_of(source: &str, needle: &str) -> Span {
 #[test]
 fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
     let source = "<p>Hi {{ name }}! You have {{ n }} new  mails.</p>";
-    with_transformed(source, |lowered, folio, _, _| {
+    with_transformed(source, |lowered, dump, _, _| {
         // The tree: one element, one compound interpolation child.
-        let DumpOp::Element(p) = &folio.ops[0] else {
-            panic!("root is not the element: {:?}", folio.ops);
+        let DumpOp::Element(p) = &dump.ops[0] else {
+            panic!("root is not the element: {:?}", dump.ops);
         };
         assert_eq!(p.children.len(), 1, "the run merged into one op");
         let DumpOp::Interpolation(compound) = &p.children[0] else {
@@ -185,10 +185,10 @@ fn lone_nodes_never_compound() {
     // A single interpolation and a single text stay themselves — the
     // legacy run grouping's own rule, and the pass's ≥2-parts law.
     let source = "<p>{{ a }}</p><q>b</q>";
-    with_transformed(source, |lowered, folio, _, _| {
+    with_transformed(source, |lowered, dump, _, _| {
         assert!(lowered.artifact.texts.is_empty());
         assert!(lowered.artifact.texts.is_empty());
-        let DumpOp::Element(p) = &folio.ops[0] else {
+        let DumpOp::Element(p) = &dump.ops[0] else {
             panic!("no p element");
         };
         assert!(
@@ -212,8 +212,8 @@ fn a_dropped_comment_is_not_a_run_boundary() {
     // `vize_atelier_dom/tests/dropped_comment_text_runs.rs` pins the
     // compiled form; this pins the op the lowering mints.
     let source = "<p>a<!--c-->b {{ x }}</p>";
-    with_transformed(source, |lowered, folio, _, _| {
-        let DumpOp::Element(p) = &folio.ops[0] else {
+    with_transformed(source, |lowered, dump, _, _| {
+        let DumpOp::Element(p) = &dump.ops[0] else {
             panic!("no p element");
         };
         assert_eq!(p.children.len(), 1, "one unit: {:?}", p.children);
@@ -236,8 +236,8 @@ fn comment_free_neighbours_drive_the_remove_rule() {
     // crate's legacy parse/transform lane under the shipped
     // `comments: false`.
     let source = "<p>a<!--c-->\n<!--d-->b</p>";
-    with_transformed(source, |_, folio, _, _| {
-        let DumpOp::Element(p) = &folio.ops[0] else {
+    with_transformed(source, |_, dump, _, _| {
+        let DumpOp::Element(p) = &dump.ops[0] else {
             panic!("no p element");
         };
         assert_eq!(p.children.len(), 1, "one unit: {:?}", p.children);
@@ -252,8 +252,8 @@ fn whitespace_condenses_by_the_armature_rules() {
     // newline-bearing run between elements is removed; interior runs in
     // mixed text collapse.
     let source = "<i>one</i> <i>two</i>\n<i>three</i><b>x   y</b>";
-    with_transformed(source, |_, folio, _, _| {
-        let kinds: Vec<String> = folio
+    with_transformed(source, |_, dump, _, _| {
+        let kinds: Vec<String> = dump
             .ops
             .iter()
             .map(|op| match op {
@@ -272,7 +272,7 @@ fn whitespace_condenses_by_the_armature_rules() {
                 String::from("el:b"),
             ]
         );
-        let DumpOp::Element(b) = &folio.ops[4] else {
+        let DumpOp::Element(b) = &dump.ops[4] else {
             panic!("no b element");
         };
         assert!(matches!(&b.children[..], [DumpOp::Text(text)] if text.content == "x y"));
@@ -287,8 +287,8 @@ fn pre_and_textarea_keep_their_remaining_whitespace() {
     // Merging still applies inside `<pre>` (the legacy codegen
     // grouping never checked pre), with the parts uncondensed.
     let source = "<pre>  a   {{ x }}  b </pre><textarea> c   d </textarea>";
-    with_transformed(source, |lowered, folio, _, _| {
-        let DumpOp::Element(pre) = &folio.ops[0] else {
+    with_transformed(source, |lowered, dump, _, _| {
+        let DumpOp::Element(pre) = &dump.ops[0] else {
             panic!("no pre element");
         };
         assert!(matches!(
@@ -298,8 +298,8 @@ fn pre_and_textarea_keep_their_remaining_whitespace() {
                     if source == "  a   {{ x }}  b ")
         ));
         assert_eq!(lowered.artifact.texts.len(), 1);
-        let DumpOp::Element(textarea) = &folio.ops[1] else {
-            panic!("no textarea element: {:?}", folio.ops);
+        let DumpOp::Element(textarea) = &dump.ops[1] else {
+            panic!("no textarea element: {:?}", dump.ops);
         };
         assert!(
             matches!(&textarea.children[..], [DumpOp::Text(text)] if text.content == " c   d ")
@@ -311,10 +311,10 @@ fn pre_and_textarea_keep_their_remaining_whitespace() {
 #[test]
 fn rawtext_whitespace_only_subtrees_drop_like_the_shipped_dom_lane() {
     let source = "<textarea>\n</textarea><iframe>\n</iframe><noscript>\n</noscript><pre>\n</pre>";
-    with_transformed(source, |_, folio, _, _| {
+    with_transformed(source, |_, dump, _, _| {
         for (index, tag) in ["iframe", "noscript"].into_iter().enumerate() {
-            let DumpOp::Element(element) = &folio.ops[index + 1] else {
-                panic!("no {tag} element: {:?}", folio.ops);
+            let DumpOp::Element(element) = &dump.ops[index + 1] else {
+                panic!("no {tag} element: {:?}", dump.ops);
             };
             assert_eq!(element.tag, tag);
             assert!(
@@ -323,12 +323,12 @@ fn rawtext_whitespace_only_subtrees_drop_like_the_shipped_dom_lane() {
                 element.children
             );
         }
-        let DumpOp::Element(textarea) = &folio.ops[0] else {
+        let DumpOp::Element(textarea) = &dump.ops[0] else {
             panic!("no textarea element");
         };
         assert!(matches!(&textarea.children[..], [DumpOp::Text(text)] if text.content.is_empty()));
-        let DumpOp::Element(pre) = &folio.ops[3] else {
-            panic!("no pre element: {:?}", folio.ops);
+        let DumpOp::Element(pre) = &dump.ops[3] else {
+            panic!("no pre element: {:?}", dump.ops);
         };
         assert_eq!(pre.tag, "pre");
         assert!(matches!(&pre.children[..], [DumpOp::Text(text)] if text.content.is_empty()));

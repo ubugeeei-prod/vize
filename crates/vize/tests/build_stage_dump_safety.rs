@@ -7,7 +7,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-use davinci_test_support::schema;
+use level_test_support::schema;
 use serde_json::Value;
 
 fn project(name: &str, source: &str) -> PathBuf {

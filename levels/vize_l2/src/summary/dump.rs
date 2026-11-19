@@ -1,4 +1,4 @@
-//! The `[sfc-summary]` folio.
+//! The `[sfc-summary]` dump.
 //!
 //! Hand-written, because two decisions are semantic and the derive refuses
 //! both: a schema line that is not the version this summary reads is
@@ -12,7 +12,7 @@ use alloc::vec::Vec;
 
 use vize_l0::{String, cstr};
 
-use super::{Declaration, Facet, SfcSummary, finish, folio_error, insert, schema};
+use super::{Declaration, Facet, SfcSummary, dump_error, finish, insert, schema};
 use vize_l0::dump::page::{self, LineEvent, ParseState};
 use vize_l0::dump::value::DumpValue;
 use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
@@ -96,7 +96,7 @@ fn parse_summary(input: &str) -> Result<SfcSummary, DumpError> {
                         String::from(name),
                         String::from(contract),
                     )
-                    .map_err(|err| folio_error(err, line_no))?;
+                    .map_err(|err| dump_error(err, line_no))?;
                 }
             }
         }
@@ -105,7 +105,7 @@ fn parse_summary(input: &str) -> Result<SfcSummary, DumpError> {
     require_schemas(seen_schema)?;
     let name = page::require_scalar(signature_name, "name")?;
     let params = page::require_scalar(signature_params, "params")?;
-    insert(&mut declarations, Facet::Signature, name, params).map_err(|err| folio_error(err, 0))?;
+    insert(&mut declarations, Facet::Signature, name, params).map_err(|err| dump_error(err, 0))?;
     Ok(finish(declarations))
 }
 
@@ -164,12 +164,12 @@ fn signature_field(
                 String::from(value),
                 String::from(""),
             )
-            .map_err(|err| folio_error(err, line_no))?;
+            .map_err(|err| dump_error(err, line_no))?;
             page::set_scalar(name_slot, "name", value, line_no)?;
         }
         "params" => {
             if value.chars().any(|ch| ch == '\n' || ch == '\r') {
-                return Err(folio_error(
+                return Err(dump_error(
                     super::SummaryError::BadContract {
                         facet: Facet::Signature,
                         name: String::from("params"),

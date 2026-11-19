@@ -112,7 +112,7 @@ impl Preserved {
         self.0 == 0
     }
 
-    /// The raw mask, for a folio page that serializes a plan.
+    /// The raw mask, for a dump page that serializes a plan.
     #[inline]
     #[must_use]
     pub const fn to_bits(self) -> u64 {

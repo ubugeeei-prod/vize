@@ -73,7 +73,7 @@ void test("merge groups use the same product input selection on their merge cand
     ["docs/guide/example.md", "npm/ui/src/index.ts"],
     ["crates/vize/README.md"],
     ["npm/ui/src/index.ts"],
-    ["davinci/vize_l1/src/lib.rs"],
+    ["levels/vize_l1/src/lib.rs"],
   ]) {
     assert.deepEqual(
       planSourceChecks(paths, "merge_group"),
@@ -176,9 +176,9 @@ void test("coverage goldens run the Rust fixture gate", () => {
 
 void test("corpus test-support manifests, sources and laws require Rust validation", () => {
   for (const path of [
-    "tests/davinci_test_support/Cargo.toml",
-    "tests/davinci_test_support/src/corpus.rs",
-    "tests/davinci_test_support/src/corpus/io_tests.rs",
+    "tests/level_test_support/Cargo.toml",
+    "tests/level_test_support/src/corpus.rs",
+    "tests/level_test_support/src/corpus/io_tests.rs",
   ]) {
     assert.deepEqual(
       planSourceChecks([path]),

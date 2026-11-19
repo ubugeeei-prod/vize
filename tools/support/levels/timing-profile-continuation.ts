@@ -41,7 +41,7 @@ export function withTimingProfileContinuation(read: Reader): Reader {
   const law = read(timingMoves[1][1]);
   assert.equal(
     digest(law),
-    "bc0e294183226f946b1240571db41073cf6b3f2416fd7d68b67df16192f46296",
+    "37ae8090ba415386e687cfe12ae1e17bfae10ee329a85b3cdb2f02d2100c92f1",
     "unexpected whole moved timing law",
   );
   const original = law.replace(hostImport, "use vize_l0::pass::observer::TimingObserver;");

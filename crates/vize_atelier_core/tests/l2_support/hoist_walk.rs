@@ -1,6 +1,6 @@
 //! The hoist projection's three-tree walk ([`super::hoist`]'s module
 //! docs carry the design): run-1 legacy children (replay control),
-//! run-2 legacy children (the decisions), and the L2 folio ops (the
+//! run-2 legacy children (the decisions), and the L2 dump ops (the
 //! facts' side), in lockstep. Split from `hoist.rs` under the source
 //! budget; the element/component verdict arms live in
 //! [`super::hoist_owner`].
@@ -37,7 +37,7 @@ pub fn structural<'t, 'a>(children: &'t [TemplateChildNode<'a>]) -> Vec<&'t Temp
         .collect()
 }
 
-/// Structural filter over folio ops.
+/// Structural filter over dump ops.
 pub fn structural_l2(ops: &[DumpOp]) -> Vec<&DumpOp> {
     ops.iter()
         .filter(|op| {

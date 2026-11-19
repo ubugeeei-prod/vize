@@ -28,7 +28,7 @@ fn register_if_missing(registry: &mut RuleRegistry, rule: Box<dyn Rule>) {
 }
 
 #[cfg(test)]
-mod davinci_parity_tests {
+mod level_parity_tests {
     use super::{ValidVEffect, ValidVScope};
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
@@ -52,7 +52,7 @@ mod davinci_parity_tests {
     }
 
     #[test]
-    fn admitted_davinci_diagnostics_match_the_shipped_relief_route() {
+    fn admitted_level_diagnostics_match_the_shipped_relief_route() {
         let linter = linter();
         let mut observed = 0;
         for markup in [
@@ -64,11 +64,11 @@ mod davinci_parity_tests {
             r#"<section V-SCOPE="ignored" V-EFFECT></section>"#,
         ] {
             let source = document(markup);
-            let davinci = linter.lint_standalone_html(&source, "index.html");
+            let levels = linter.lint_standalone_html(&source, "index.html");
             let relief = linter.lint_standalone_html_relief_for_test(&source, "index.html");
-            observed += davinci.diagnostics.len();
+            observed += levels.diagnostics.len();
             assert_eq!(
-                format!("{davinci:#?}"),
+                format!("{levels:#?}"),
                 format!("{relief:#?}"),
                 "route mismatch for {markup}"
             );
@@ -80,7 +80,7 @@ mod davinci_parity_tests {
     }
 
     #[test]
-    fn refused_davinci_document_preserves_the_relief_fallback() {
+    fn refused_level_document_preserves_the_relief_fallback() {
         let source = concat!(
             "<!DOCTYPE html><html><body>",
             "<script src=\"https://unpkg.com/petite-vue\" init></script>",
@@ -97,8 +97,8 @@ mod davinci_parity_tests {
         );
 
         let linter = linter();
-        let davinci = linter.lint_standalone_html(source, "index.html");
+        let levels = linter.lint_standalone_html(source, "index.html");
         let relief = linter.lint_standalone_html_relief_for_test(source, "index.html");
-        assert_eq!(format!("{davinci:#?}"), format!("{relief:#?}"));
+        assert_eq!(format!("{levels:#?}"), format!("{relief:#?}"));
     }
 }

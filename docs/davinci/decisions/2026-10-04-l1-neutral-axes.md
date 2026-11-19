@@ -9,7 +9,7 @@ implementation, any new framework parser, or product acceptance.
 
 The present-state source audit is pinned to [commit `da66dc241c`](https://github.com/ubugeeei-prod/vize/commit/da66dc241cb7e6ad25fc52fbb4a1b2c1effec9e5). Later implementation changes do not update this dated census automatically.
 
-The representative `davinci/vize_l1/src/` boundaries at that commit are:
+The representative `levels/vize_l1/src/` boundaries at that commit are:
 
 | Current API                                                                | What it actually supplies                                                              | Remaining boundary                                                                |
 | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |

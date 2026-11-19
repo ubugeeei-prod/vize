@@ -113,7 +113,7 @@ const approvedInputs = [
   },
   {
     path: "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/admission-source-pairs.json",
-    sha256: "12725a1c38d5050762348679167dde5ff4c71a1e510cdde966510f86c6126765",
+    sha256: "4db30c6660279a0c41e03caedc3865b464cffa6c0484155bbb8573d65454c593",
   },
   {
     path: "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/attribute-case-inputs.json",
@@ -121,7 +121,7 @@ const approvedInputs = [
   },
   {
     path: "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/authority.json",
-    sha256: "e113463a40ba2d54d8c8a82e81f9b5a42e5f88900e1850a1c4ccd791ab0aa01b",
+    sha256: "91f3bc51fd86dd268673d34a9a0e40d2d11fb0e8f8f5fcbfd267c3fa430fc270",
   },
   {
     path: "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/inputs.json",
@@ -156,7 +156,7 @@ const approvedWitnesses = [
   {
     path: "crates/vize_atelier_jsx/tests/literal_style_source.rs",
     symbol: "complete_literal_style_source_observations",
-    sha256: "09a903698328436c8de15218365b2df2008f2e42af325e1663a5f8008641fe2f",
+    sha256: "27ea943e8b7125ee5d36c1ee70f0ed52e882b3a153875ff17cdb93c6da34f678",
   },
   {
     path: "crates/vize_atelier_jsx/tests/literal_object_styles.rs",
@@ -166,7 +166,7 @@ const approvedWitnesses = [
   {
     path: "crates/vize_atelier_jsx/tests/literal_style_maps.rs",
     symbol: "folded_css_has_real_complete_utf16_origins_and_rejects_mutations",
-    sha256: "badda2c866e4bf68b7ee8e11f09a1c6bbd2dae805c2f25157f39263e96fdf693",
+    sha256: "998579fef67b04cbb4777c371d7e5cc529befd59334d98151dc8886c924f30de",
   },
   {
     path: "crates/vize_atelier_jsx/tests/literal_style_sfc.rs",
@@ -176,7 +176,7 @@ const approvedWitnesses = [
   {
     path: "crates/vize_atelier_jsx/tests/literal_style_source.rs",
     symbol: "priority_tokens_keep_original_runtime_semantics",
-    sha256: "09a903698328436c8de15218365b2df2008f2e42af325e1663a5f8008641fe2f",
+    sha256: "27ea943e8b7125ee5d36c1ee70f0ed52e882b3a153875ff17cdb93c6da34f678",
   },
 ] as const;
 const digest = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");

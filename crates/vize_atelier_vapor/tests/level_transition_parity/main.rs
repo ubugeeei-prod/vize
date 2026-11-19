@@ -120,7 +120,7 @@ fn controlled_transition_hooks_match_native_retained_and_official_runtime() {
             &allocator,
             &source,
             VaporCompilerOptions {
-                davinci_retained_lane: true,
+                level_retained_lane: true,
                 ..options
             },
         );

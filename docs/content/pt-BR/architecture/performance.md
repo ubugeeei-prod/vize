@@ -108,13 +108,13 @@ Diferente dos compiladores baseados em JavaScript que rodam na V8, o Vize compil
 
 ### Alocação em Arena
 
-`vize_carton::Allocator` é um alocador de bump para nós da AST que encapsula o [`oxc_allocator`](https://docs.rs/oxc_allocator), de modo que os nós de template e as expressões JavaScript retidas compartilham uma arena e um tempo de vida (`davinci/vize_l0/src/allocator.rs`). Isso significa:
+`vize_carton::Allocator` é um alocador de bump para nós da AST que encapsula o [`oxc_allocator`](https://docs.rs/oxc_allocator), de modo que os nós de template e as expressões JavaScript retidas compartilham uma arena e um tempo de vida (`levels/vize_l0/src/allocator.rs`). Isso significa:
 
 - **A alocação é O(1)** — Basta avançar um ponteiro. Sem percorrer listas livres, sem gerenciamento de fragmentação.
-- **A recuperação é O(1) e reutilizada** — Ao fim de uma compilação a arena sofre `reset()`, não é descartada: o ponteiro de bump volta ao início do bloco e a arena retorna a uma lista livre por worker (`davinci/vize_l0/src/pool.rs`, limitada a 4 arenas ociosas por worker). O arquivo seguinte reutiliza a mesma memória em vez de pedir mais ao sistema operacional.
+- **A recuperação é O(1) e reutilizada** — Ao fim de uma compilação a arena sofre `reset()`, não é descartada: o ponteiro de bump volta ao início do bloco e a arena retorna a uma lista livre por worker (`levels/vize_l0/src/pool.rs`, limitada a 4 arenas ociosas por worker). O arquivo seguinte reutiliza a mesma memória em vez de pedir mais ao sistema operacional.
 - **A localidade de memória é excelente** — Os nós são empacotados de forma contígua na memória, maximizando os acertos de cache L1/L2 durante a travessia da árvore.
 
-Valores apoiados na arena não podem sobreviver à sua compilação. Esse contrato é imposto pelo compilador (`reset` recebe `&mut self`, e o guard do pool é dono da sua arena) e, em builds de depuração, por um carimbo de geração que causa panic se um valor for lido depois que sua arena foi reciclada (`davinci/vize_l0/src/allocator/generation.rs`).
+Valores apoiados na arena não podem sobreviver à sua compilação. Esse contrato é imposto pelo compilador (`reset` recebe `&mut self`, e o guard do pool é dono da sua arena) e, em builds de depuração, por um carimbo de geração que causa panic se um valor for lido depois que sua arena foi reciclada (`levels/vize_l0/src/allocator/generation.rs`).
 
 Nada na AST implementa `Drop` — os tipos de contêiner da arena rejeitam payloads que precisem ser destruídos, então isso é um erro de compilação, e não uma convenção.
 
@@ -131,7 +131,7 @@ Nomes que se repetem dentro de uma compilação — nomes de diretiva normalizad
 - Nomes computados repetidos compartilham uma única alocação na arena
 - As buscas por nomes bem conhecidos são um hash perfeito de tempo de compilação, sem alocação
 
-A internação é o caminho de fallback, não o caso comum. A maioria dos nomes nunca é copiada: um nome de tag, um nome de atributo e a maior parte do conteúdo de expressões são fatias `&'a str` emprestadas diretamente do código-fonte do template, então o caminho comum não aloca nada (`davinci/vize_l0/src/interner.rs` documenta a política campo a campo).
+A internação é o caminho de fallback, não o caso comum. A maioria dos nomes nunca é copiada: um nome de tag, um nome de atributo e a maior parte do conteúdo de expressões são fatias `&'a str` emprestadas diretamente do código-fonte do template, então o caminho comum não aloca nada (`levels/vize_l0/src/interner.rs` documenta a política campo a campo).
 
 Átomos são `&'a str` comuns, então comparações de nome são comparações de conteúdo, não de identidade de ponteiro. A internação compra economia de alocação e localidade de cache — ela não é um atalho rápido para `==`.
 
@@ -145,9 +145,9 @@ O plugin do Vite (`@vizejs/vite-plugin`) faz cache em nível de arquivo, em duas
 
 ## Medido: trabalho de arena e de expressões
 
-O trabalho interno do compilador descrito acima é medido por um harness de microbenchmarks por crate (`cargo bench --bench davinci`) sobre uma escada fixa de seis fixtures, `tools/benchmarks/crates/davinci_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue`.
+O trabalho interno do compilador descrito acima é medido por um harness de microbenchmarks por crate (`cargo bench --bench levels`) sobre uma escada fixa de seis fixtures, `tools/benchmarks/crates/level_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue`.
 
-**Como ler estes números.** As contagens de alocação são determinísticas e independentes de máquina, portanto são fatos exatos e servem como catraca de regressão. Os tempos de parede foram tomados em uma máquina de desenvolvimento compartilhada com amostragem `--quick` e são **apenas indicativos** — as gravações no runner de referência (Blacksmith) ainda estão pendentes, e é por isso que cada entrada `wall_p50_ns` e `allocs` em `docs/davinci/plan/budgets.toml` continua em `0`, significando "ainda não gravado, apenas informativo". Os arquivos de resultado de cada execução caem em `tools/benchmarks/results/davinci/` e são artefatos locais, não baselines versionadas.
+**Como ler estes números.** As contagens de alocação são determinísticas e independentes de máquina, portanto são fatos exatos e servem como catraca de regressão. Os tempos de parede foram tomados em uma máquina de desenvolvimento compartilhada com amostragem `--quick` e são **apenas indicativos** — as gravações no runner de referência (Blacksmith) ainda estão pendentes, e é por isso que cada entrada `wall_p50_ns` e `allocs` em `docs/davinci/plan/budgets.toml` continua em `0`, significando "ainda não gravado, apenas informativo". Os arquivos de resultado de cada execução caem em `tools/benchmarks/results/levels/` e são artefatos locais, não baselines versionadas.
 
 Chamadas de alocação por compilação, antes e depois do trabalho de strings e arena (exatas, mesmas fixtures):
 

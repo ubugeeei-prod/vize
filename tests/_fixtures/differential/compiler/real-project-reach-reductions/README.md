@@ -8,7 +8,7 @@ difference. Each fingerprint directory contains only a minimized
 the corpus-relative filename; full third-party source files must never be
 committed here.
 
-`davinci_production_reach::fixtures::promoted_real_project_reach_fixtures_agree`
+`level_production_reach::fixtures::promoted_real_project_reach_fixtures_agree`
 compiles every promoted witness in pull requests and the merge queue. A
 generated pull request therefore stays red until the product difference is
 fixed.

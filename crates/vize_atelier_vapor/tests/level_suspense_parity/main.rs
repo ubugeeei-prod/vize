@@ -133,7 +133,7 @@ fn async_suspense_lifetimes_match_native_retained_and_official_vapor() {
             &allocator,
             source,
             VaporCompilerOptions {
-                davinci_retained_lane: true,
+                level_retained_lane: true,
                 ..options.clone()
             },
         );

@@ -31,7 +31,7 @@
         "crates/vize_atelier_jsx",
         "crates/vize_atelier_core",
         "crates/vize_relief",
-        "davinci",
+        "levels",
         "crates/vize_vitrine",
         "npm/builder/rspack",
         "npm/native/src",

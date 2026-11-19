@@ -4,7 +4,7 @@
 //! `tests/_fixtures`, `_git` and `node_modules` excluded): each inline HTML
 //! template is lowered L1 -> L2 -> L3 and run through the `s3` `OPTIMIZE`
 //! pipeline at `-O3` under a remark collector. The `[remarks-corpus]` page
-//! must equal `tests/_fixtures/davinci-s3-remarks-baseline.folio` exactly.
+//! must equal `tests/_fixtures/level-s3-remarks-baseline.dump` exactly.
 //!
 //! Re-bless with `UPDATE_REMARKS_BASELINE=1`. The bless refuses every
 //! `applied -> missed` transition not listed with a reason in
@@ -27,7 +27,7 @@ use vize_l3::optimize::optimize;
 use vize_l3::verify::verify;
 
 const CORPUS_REL: &str = "tests/_fixtures";
-const BASELINE_REL: &str = "tests/_fixtures/davinci-s3-remarks-baseline.folio";
+const BASELINE_REL: &str = "tests/_fixtures/level-s3-remarks-baseline.dump";
 const UPDATE_ENV: &str = "UPDATE_REMARKS_BASELINE";
 
 fn repo_root() -> PathBuf {

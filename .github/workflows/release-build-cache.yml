@@ -12,7 +12,7 @@ on:
       - "rust-toolchain.toml"
       - ".cargo/**"
       - "crates/**"
-      - "davinci/**"
+      - "levels/**"
       - "npm/native/**"
       - "npm/fresco-native/**"
       - ".github/actions/build-release-*/**"

@@ -1,11 +1,11 @@
-//! Language-owned expression payload printing for the stable L2 folio.
+//! Language-owned expression payload printing for the stable L2 dump.
 
 use core::fmt::{Result, Write};
 
 use crate::dump::Expr;
 use crate::dump::print::{Style, quoted, span_tail};
 
-/// Write one expression payload in the selected folio style.
+/// Write one expression payload in the selected dump style.
 pub(crate) fn print_expr<W: Write>(w: &mut W, expr: &Expr, mode: Style) -> Result {
     let (head, source, span) = match expr {
         Expr::Js { source, span } => {

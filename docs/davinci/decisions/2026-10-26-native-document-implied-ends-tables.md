@@ -36,7 +36,7 @@ foreign content, raw text, formatting elements and templates still refuse
 as unsupported elements.
 
 Twelve complete sources in
-`davinci/vize_l1/tests/fixtures/document/html-implied-ends-and-tables.json`
+`levels/vize_l1/tests/fixtures/document/html-implied-ends-and-tables.json`
 pin whole ancestry, attributes and direct child nodes. Native Rust and real
 Chromium `DOMParser` compare against the same packets, and native Rust also
 pins which elements close without an authored end tag. Eighteen refusal

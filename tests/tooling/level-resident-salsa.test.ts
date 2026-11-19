@@ -18,7 +18,7 @@ import {
   readRepoFile,
   repoRoot,
   workspacePackage,
-} from "./support/davinci-stage-dependencies.ts";
+} from "./support/level-stage-dependencies.ts";
 
 /** The crates allowed to depend on salsa: the resident tier. */
 const residentTier = new Set(["vize_incremental"]);

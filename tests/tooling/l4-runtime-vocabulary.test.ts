@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url";
 import { vueVaporBrowserRuntime, vueVaporVersion } from "./support/vue-vapor-release.mjs";
 
 const source = fs.readFileSync(
-  new URL("../../davinci/vize_l4/src/runtime/vue.rs", import.meta.url),
+  new URL("../../levels/vize_l4/src/runtime/vue.rs", import.meta.url),
   "utf8",
 );
 const fromUi = createRequire(new URL("../../npm/ui/package.json", import.meta.url));

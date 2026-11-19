@@ -3,7 +3,7 @@
 Issue: [#6832](https://github.com/ubugeeei-prod/vize/issues/6832).
 Audited actual main: `d71d8398187dfbee63c26f1e4f2946fbe9fe38f9`.
 
-Move `davinci/vize_l1_to_l2/tests/support/folio_spans.rs` to
+Move `levels/vize_l1_to_l2/tests/support/dump_spans.rs` to
 `tests/support/dump_spans.rs` in a byte-identical move-only commit. A separate
 integration commit changes only the private module declaration and its
 re-export prefix in `tests/support/mod.rs`.

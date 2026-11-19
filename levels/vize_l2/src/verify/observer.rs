@@ -24,11 +24,11 @@
 //!
 //! Every check body and the rigor field exist only under
 //! `debug_assertions`, the same cfg the arena-generation stamp uses
-//! (`davinci/vize_l0/src/allocator/generation.rs`). In release the
+//! (`levels/vize_l0/src/allocator/generation.rs`). In release the
 //! struct is a ZST with empty bodies — const-asserted below — so a release
 //! pipeline makes **zero** verifier calls, and by the P2-3 zero-cost
 //! measurement (static dispatch; empty bodies inline away; the
-//! `davinci_pipeline_no_observer` bench is alloc-identical to the
+//! `level_pipeline_no_observer` bench is alloc-identical to the
 //! unobserved pipeline) the empty shape costs nothing to carry.
 //!
 //! # Failure is a panic naming the pass
@@ -102,23 +102,23 @@ impl VerifyObserver {
         let _ = event;
     }
 
-    /// Check the tree-shaped invariants of `folio` at the current rigor.
+    /// Check the tree-shaped invariants of `dump` at the current rigor.
     ///
     /// # Panics
     ///
     /// In debug builds, panics with the aggregated page-order report
     /// naming `event`'s pass when any invariant is violated. Empty in
     /// release builds.
-    pub fn check(&self, event: &PassEvent<'_>, folio: &L2Page) {
+    pub fn check(&self, event: &PassEvent<'_>, dump: &L2Page) {
         #[cfg(debug_assertions)]
         {
-            fail(event, &verify(folio, self.rigor));
+            fail(event, &verify(dump, self.rigor));
         }
         #[cfg(not(debug_assertions))]
-        let _ = (event, folio);
+        let _ = (event, dump);
     }
 
-    /// Check that every id `table` references resolves in `folio`.
+    /// Check that every id `table` references resolves in `dump`.
     ///
     /// One call per side table: tables are typed, and which tables exist
     /// is the caller's knowledge.
@@ -127,13 +127,13 @@ impl VerifyObserver {
     ///
     /// In debug builds, panics with the aggregated report naming
     /// `event`'s pass when a reference dangles. Empty in release builds.
-    pub fn check_table<T>(&self, event: &PassEvent<'_>, folio: &L2Page, table: &SideTable<T>) {
+    pub fn check_table<T>(&self, event: &PassEvent<'_>, dump: &L2Page, table: &SideTable<T>) {
         #[cfg(debug_assertions)]
         {
-            fail(event, &verify_table(folio, table));
+            fail(event, &verify_table(dump, table));
         }
         #[cfg(not(debug_assertions))]
-        let _ = (event, folio, table);
+        let _ = (event, dump, table);
     }
 
     /// Check that the arena tree behind the artifact is still live: its

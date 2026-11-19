@@ -18,7 +18,7 @@ on:
       - npm/native/**
       - npm/linter/oxlint/**
       - crates/vize_carton/src/config/**
-      - davinci/vize_l0/src/config/**
+      - levels/vize_l0/src/config/**
       - tools/support/compat/nuxt/fixtures/nuxt2-bridge-module-build/**
       - tools/support/compat/nuxt/nuxt2-module-build.ts
       - tools/support/compat/nuxt/nuxt2-bridge-source.ts
@@ -43,7 +43,7 @@ on:
       - npm/native/**
       - npm/linter/oxlint/**
       - crates/vize_carton/src/config/**
-      - davinci/vize_l0/src/config/**
+      - levels/vize_l0/src/config/**
       - tools/support/compat/nuxt/fixtures/nuxt2-bridge-module-build/**
       - tools/support/compat/nuxt/nuxt2-module-build.ts
       - tools/support/compat/nuxt/nuxt2-bridge-source.ts

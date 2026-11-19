@@ -4,7 +4,7 @@
   "sourceRevision": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
   "buildInputTreeSha256": "72f8eee9c0edd6960538e133984fd888a6dee2cfa8505794696b6abf50dee4e9",
   "buildInputFiles": 7066,
-  "buildInputSelection": "git ls-files -- crates Cargo.toml Cargo.lock rust-toolchain.toml .cargo tools/benchmarks/crates tests/davinci_test_support, including staged test/input and before staging new snapshots",
+  "buildInputSelection": "git ls-files -- crates Cargo.toml Cargo.lock rust-toolchain.toml .cargo tools/benchmarks/crates tests/level_test_support, including staged test/input and before staging new snapshots",
   "preparedRustPatchSha256": "5fc8327e4e79844b89b52cd79cec8423debcf4cdc38345e86c6de4c67feaeb51",
   "testSourceSha256": "a4c021f8f2a013de43a376d2161675e5a682142dadef2d3d66b0403fc687d15d",
   "caseFileSha256": "af6e2923bbe07a2e15041ac81873030684e57e680791db3d5c133843e5fd0c94",

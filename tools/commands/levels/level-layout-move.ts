@@ -1,7 +1,7 @@
 // Scripted, replayable module moves for the input-neutral level layout
 // (docs/davinci/decisions/2026-11-17-input-neutral-levels.md, "Migration").
 //
-//   node tools/commands/davinci/level-layout-move.ts <step> [--dry-run]
+//   node tools/commands/levels/level-layout-move.ts <step> [--dry-run]
 //
 // A step runs `git mv` for its files and rewrites the paths that name them:
 // the `mod` declarations, `crate::`/`self::`/`super::` paths and `use` groups
@@ -47,7 +47,7 @@ const move = (from: string, to: string): ModuleMove => ({
 export const steps: Readonly<Record<string, Step>> = {
   // Step 2: one sibling per markup grammar in L1.
   "l1-markup": {
-    crate: "davinci/vize_l1",
+    crate: "levels/vize_l1",
     name: "vize_l1",
     moves: [
       move("pug", "markup::pug"),
@@ -80,7 +80,7 @@ export const steps: Readonly<Record<string, Step>> = {
   // NativeComponent and NativeTemplateComponent keep their names for now: the
   // reviewed #7502 attribute-value outputs pin their `Debug` text.
   "l1-tag-facts": {
-    crate: "davinci/vize_l1",
+    crate: "levels/vize_l1",
     name: "vize_l1",
     moves: [
       move("markup::htmlish::view::lint", "markup::htmlish::view::tag_facts_component"),
@@ -176,7 +176,7 @@ export const steps: Readonly<Record<string, Step>> = {
   },
   // Step 2b: L1 modules named by concept, not by migration status (`native`).
   "l1-concepts": {
-    crate: "davinci/vize_l1",
+    crate: "levels/vize_l1",
     name: "vize_l1",
     moves: [
       // The lexer is the module itself: lex/native.rs becomes lex.rs, beside
@@ -790,8 +790,8 @@ const git = (...args: string[]) =>
   execFileSync("git", args, { cwd: repoRoot, encoding: "utf8", maxBuffer: 1 << 28 }).trim();
 
 const selfFiles = new Set([
-  "tools/commands/davinci/level-layout-move.ts",
-  "tests/tooling/davinci-level-layout-move.test.ts",
+  "tools/commands/levels/level-layout-move.ts",
+  "tests/tooling/level-layout-move.test.ts",
 ]);
 
 export function run(stepName: string, dryRun: boolean): string[] {

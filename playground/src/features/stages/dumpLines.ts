@@ -1,17 +1,17 @@
-// Folio page text -> display lines: syntax tokens plus the authored span each
-// line points at. The grammar being read is the committed folio format
-// (`docs/davinci/plan/folio-format.md`, `folio-format-impeto.md`); nothing
+// Dump page text -> display lines: syntax tokens plus the authored span each
+// line points at. The grammar being read is the committed dump format
+// (`docs/davinci/plan/dump-format.md`, `dump-format-l3.md`); nothing
 // here re-derives compiler facts, it only reads the spans the pages print.
 
 import type { Range } from "./offsets";
 
 export type PageKind =
   | "surface"
-  | "disegno"
+  | "l2"
   | "plan"
   | "provenance"
   | "facts"
-  | "impeto"
+  | "l3"
   | "partition"
   | "values";
 
@@ -55,7 +55,7 @@ export interface DumpLine {
 }
 
 const DUMP_TOKEN =
-  /("(?:[^"\\]|\\.)*")|(@\d+:\d+)|(\b[a-z][\w-]*=)|(\b(?:ui|impeto|vue)\.[\w.-]+|\b(?:attr|branch)\b)|(\b(?:js|opaque|foreign|compound)\()|(\bstatic\b)|(\bdynamic\b)|(\d+:\d+)|(\bnull\b|(?<==)-(?=\s|$))|(\d+)|([()[\],])/g;
+  /("(?:[^"\\]|\\.)*")|(@\d+:\d+)|(\b[a-z][\w-]*=)|(\b(?:ui|l3|vue)\.[\w.-]+|\b(?:attr|branch)\b)|(\b(?:js|opaque|foreign|compound)\()|(\bstatic\b)|(\bdynamic\b)|(\d+:\d+)|(\bnull\b|(?<==)-(?=\s|$))|(\d+)|([()[\],])/g;
 
 const DUMP_GROUPS: TokenType[] = [
   "string",
@@ -85,7 +85,7 @@ function scan(text: string, pattern: RegExp, groups: TokenType[]): Token[] {
   return tokens;
 }
 
-/** Tokens for one folio page line. */
+/** Tokens for one dump page line. */
 export function dumpTokens(line: string): Token[] {
   if (/^\[[\w.-]+\]$/.test(line)) return [{ type: "section", text: line }];
   const tokens = scan(line, DUMP_TOKEN, DUMP_GROUPS);
@@ -132,17 +132,17 @@ function lastMatch(pattern: RegExp, line: string): RegExpExecArray | null {
   return found;
 }
 
-/** The authored span a folio line describes, by page kind. */
+/** The authored span a dump line describes, by page kind. */
 export function lineSpan(kind: PageKind, line: string): Range | null {
   switch (kind) {
-    case "disegno":
+    case "l2":
     case "provenance": {
       // An op (or record) line ends in its own `@start:end`; inner `@` spans
       // belong to its expressions.
       const match = /@(\d+):(\d+)\s*$/.exec(line);
       return match ? { start: Number(match[1]), end: Number(match[2]) } : null;
     }
-    case "impeto":
+    case "l3":
     case "partition": {
       const match = lastMatch(/\bspan=(\d+):(\d+)/, line);
       return match ? { start: Number(match[1]), end: Number(match[2]) } : null;
@@ -181,8 +181,8 @@ export function dumpLines(kind: PageKind, text: string): DumpLine[] {
       text: line,
       tokens: kind === "surface" ? surfaceTokens(line) : dumpTokens(line),
       span,
-      depth: kind === "disegno" ? Math.floor((/^ */.exec(line)?.[0].length ?? 0) / 2) : 0,
-      node: kind === "disegno" && /^\s*ui\./.test(line) ? nextNode++ : null,
+      depth: kind === "l2" ? Math.floor((/^ */.exec(line)?.[0].length ?? 0) / 2) : 0,
+      node: kind === "l2" && /^\s*ui\./.test(line) ? nextNode++ : null,
     };
   });
 }

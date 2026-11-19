@@ -8,8 +8,8 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const script = path.join(repoRoot, "tools/support/levels/move-vue-directive-syntax.ts");
-const old = "davinci/vize_l1/src/markup/directive.rs";
-const current = "davinci/vize_l1/src/dialect/vue3/directive.rs";
+const old = "levels/vize_l1/src/markup/directive.rs";
+const current = "levels/vize_l1/src/dialect/vue3/directive.rs";
 
 function write(root: string, file: string, content: string): void {
   const destination = path.join(root, file);
@@ -52,7 +52,7 @@ test("missing, conflicting and unrelated directive owners fail before mutation",
 test("owner check rejects concrete Vue policy leaking back into generic contracts", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-directive-policy-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  for (const file of [old, current, "davinci/vize_l1/src/dialect/vue3.rs"])
+  for (const file of [old, current, "levels/vize_l1/src/dialect/vue3.rs"])
     write(root, file, fs.readFileSync(path.join(repoRoot, file), "utf8"));
   assert.equal(run(root, "check").status, 0);
   fs.appendFileSync(path.join(root, old), "\npub struct VueDirectives;\n");

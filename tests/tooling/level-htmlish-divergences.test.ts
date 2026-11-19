@@ -8,7 +8,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { packetPath, packets } from "../../tools/commands/davinci/htmlish-oracle.ts";
+import { packetPath, packets } from "../../tools/commands/levels/htmlish-oracle.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (file: string) => fs.readFileSync(path.join(repoRoot, file), "utf8");
@@ -47,7 +47,7 @@ test("every dialect names its profile, oracle and norm", () => {
 });
 
 test("rows are unique, state both dialects and name real profile switches", () => {
-  const profile = read("davinci/vize_l1/src/markup/profile.rs");
+  const profile = read("levels/vize_l1/src/markup/profile.rs");
   const ids = ledger.rows.map((row) => row.id);
   assert.equal(new Set(ids).size, ids.length, "duplicate row id");
   for (const row of ledger.rows) {
@@ -102,6 +102,6 @@ test("every oracle packet is the tree its oracle builds today", () => {
     assert.equal(
       fs.readFileSync(packetPath(packet), "utf8"),
       JSON.stringify(packet, null, 2) + "\n",
-      `${packet.row}.${packet.dialect}: run node tools/commands/davinci/htmlish-oracle.ts`,
+      `${packet.row}.${packet.dialect}: run node tools/commands/levels/htmlish-oracle.ts`,
     );
 });

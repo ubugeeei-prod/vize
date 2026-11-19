@@ -219,7 +219,7 @@ pub fn extract_identifiers_oxc(expr: &str) -> Vec<CompactString> {
 }
 
 /// Node-aware hybrid identifier extraction over the parse-once retained AST
-/// (Davinci P1-6).
+/// (plan P1-6).
 ///
 /// Identical results to [`extract_identifiers_oxc`], but when the expression's
 /// node carries the retained AST (P1-5, `SimpleExpressionNode::js_ast`) **and**
@@ -273,7 +273,7 @@ pub fn extract_identifiers_retained(
     result
 }
 
-/// Davinci P1-6 differential lane: the retained-AST walk must reproduce the
+/// Plan P1-6 differential lane: the retained-AST walk must reproduce the
 /// legacy re-parse byte-for-byte (same names, same order). Any divergence is
 /// a bug in one side — panic, never average. Only comment-free text reaches
 /// this point, so both sides consume identical bytes.
@@ -283,7 +283,7 @@ fn assert_retained_identifiers_agree(expr: &str, retained_result: &[CompactStrin
     assert_eq!(
         retained_result,
         legacy.as_slice(),
-        "davinci-differential (P1-6): retained-AST identifier walk diverged from the legacy re-parse for expression {expr:?}"
+        "legacy-differential (P1-6): retained-AST identifier walk diverged from the legacy re-parse for expression {expr:?}"
     );
     crate::drawer::differential::record_identifier_comparison();
 }

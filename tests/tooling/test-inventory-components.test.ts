@@ -50,7 +50,7 @@ test("component inventory separates static declarations from measured execution"
               measuredFile("/checkout/crates/formatter/src/one.rs", 1, 1),
               measuredFile("C:\\checkout\\crates\\formatter\\src\\two.rs", 9, 0),
               measuredFile("/checkout/crates/lsp/src/provider.rs", 5, 0),
-              measuredFile("/checkout/davinci/removed_component/src/lib.rs", 2, 1),
+              measuredFile("/checkout/levels/removed_component/src/lib.rs", 2, 1),
               measuredFile("/checkout/tests/tooling/helper.rs", 2, 1),
               measuredFile("/checkout/vendor/engine/src/lib.rs", 100, 100),
             ],
@@ -65,7 +65,7 @@ test("component inventory separates static declarations from measured execution"
     assert.match(markdown, /1\/10 \(10\.00%\)/, "weight totals instead of averaging files");
     assert.match(markdown, /crates\/lsp \| 0 \| 0 \| 0\/5 \(0\.00%\)/);
     assert.match(markdown, /npm\/editor \| 1 \| 1 \| unmeasured/);
-    assert.match(markdown, /davinci\/removed_component \| 0 \| 0 \| 1\/2/);
+    assert.match(markdown, /levels\/removed_component \| 0 \| 0 \| 1\/2/);
     assert.match(markdown, /tests\/tooling \| 1 \| 1 \| 1\/2/);
     assert.match(markdown, /coverage describes this separate commit/);
     assert.ok(!markdown.includes("vendor/engine"));

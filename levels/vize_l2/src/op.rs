@@ -101,7 +101,7 @@ pub enum Op<'a> {
 }
 
 impl Op<'_> {
-    /// The op's stage-wide mnemonic - the keyword its folio line starts
+    /// The op's stage-wide mnemonic - the keyword its dump line starts
     /// with.
     #[must_use]
     pub const fn mnemonic(&self) -> &'static str {
@@ -168,7 +168,7 @@ pub enum BindingOp<'a> {
 }
 
 impl BindingOp<'_> {
-    /// The op's stage-wide mnemonic - the keyword its folio line starts
+    /// The op's stage-wide mnemonic - the keyword its dump line starts
     /// with.
     #[must_use]
     pub const fn mnemonic(&self) -> &'static str {

@@ -4,8 +4,8 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
-const oldPath = "davinci/vize_l3/tests/folio_laws.rs";
-const newPath = "davinci/vize_l3/tests/dump_laws.rs";
+const oldPath = "levels/vize_l3/tests/dump_laws.rs";
+const newPath = "levels/vize_l3/tests/dump_laws.rs";
 const phase = process.argv[2];
 if (!["moves", "integrate", "check"].includes(phase)) {
   throw new Error("Usage: rename-l3-dump-test.ts moves|integrate|check");

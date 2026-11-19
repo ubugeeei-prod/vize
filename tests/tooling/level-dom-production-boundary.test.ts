@@ -9,7 +9,7 @@ import {
   readRepoFile,
   repoRoot,
   workspacePackage,
-} from "./support/davinci-stage-dependencies.ts";
+} from "./support/level-stage-dependencies.ts";
 
 const domStageDeps = new Set(["vize_l0", "vize_l1_to_l2", "vize_l2", "vize_l4"]);
 const compilerOptionsProjectedToS2 = [
@@ -155,7 +155,7 @@ test("DOM L2 emit options stay scoped to the supported switch surface", () => {
   assert.deepEqual(
     [
       ...publicStructFieldNames(
-        readRepoFile("davinci", "vize_l4", "src", "targets", "dom", "artifact", "options.rs"),
+        readRepoFile("levels", "vize_l4", "src", "targets", "dom", "artifact", "options.rs"),
         "DomEmitOptions",
       ),
     ].sort(),
@@ -181,7 +181,7 @@ test("DOM L2 production switch classifies every adapter codegen option", () => {
 });
 
 test("DOM production selector has no live env lane override", () => {
-  const removedEnvName = ["VIZE", "DAVINCI", "DOM"].join("_");
+  const removedEnvName = ["VIZE", "LEVELS", "DOM"].join("_");
   const removedFlagSymbol = ["DOM", "LANE", "FLAG"].join("_");
   const removedSelectorFn = ["dom", "lane", "selection"].join("_");
   const removedSelectorType = ["Dom", "Lane", "Selection"].join("");
@@ -189,8 +189,8 @@ test("DOM production selector has no live env lane override", () => {
     ["crates", "vize_atelier_dom", "src", "compile.rs"],
     ["crates", "vize_atelier_dom", "src", "compile", "sfc.rs"],
     ["crates", "vize_atelier_dom", "src", "compile", "stage_options.rs"],
-    ["davinci", "vize_l4", "src", "targets", "dom", "artifact.rs"],
-    ["davinci", "vize_l1_to_l2", "src", "lib.rs"],
+    ["levels", "vize_l4", "src", "targets", "dom", "artifact.rs"],
+    ["levels", "vize_l1_to_l2", "src", "lib.rs"],
   ] as const;
 
   for (const sourcePath of liveSources) {

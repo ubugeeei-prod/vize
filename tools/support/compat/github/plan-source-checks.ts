@@ -2,9 +2,9 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 
 const censusScripts = new Set([
-  "tools/support/compat/davinci/croquis-consumers.ts",
-  "tools/support/compat/davinci/lib/croquis-render.ts",
-  "tools/support/compat/davinci/lib/croquis-shards.ts",
+  "tools/support/compat/levels/croquis-consumers.ts",
+  "tools/support/compat/levels/lib/croquis-render.ts",
+  "tools/support/compat/levels/lib/croquis-shards.ts",
 ]);
 
 // These Node-only census renderers and their owned generated reports have no
@@ -85,19 +85,19 @@ export function planSourceChecks(
       result.rust = result.js = result.playground = true;
       continue;
     }
-    if (path.startsWith("tests/expected/") || path.startsWith("tests/davinci_test_support/")) {
+    if (path.startsWith("tests/expected/") || path.startsWith("tests/level_test_support/")) {
       result.rust = true;
       continue;
     }
     if (
-      /^(crates\/|davinci\/|upstream\/forks\/|\.cargo\/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)/.test(
+      /^(crates\/|levels\/|upstream\/forks\/|\.cargo\/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)/.test(
         path,
       )
     ) {
       result.rust = true;
       result.js = true;
       if (
-        /^(davinci\/|crates\/vize_(atelier|s[12]|l[0-4]|davinci|impeto|armature)|Cargo\.(toml|lock)$|rust-toolchain\.toml$)/.test(
+        /^(levels\/|crates\/vize_(atelier|s[12]|l[0-4]|levels|l3|armature)|Cargo\.(toml|lock)$|rust-toolchain\.toml$)/.test(
           path,
         )
       ) {

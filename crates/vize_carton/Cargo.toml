@@ -31,7 +31,7 @@ micro-profiling = ["vize_l0/micro-profiling"]
 lint-glob = ["dep:globset"]
 
 [dev-dependencies]
-davinci_test_support.workspace = true
+level_test_support.workspace = true
 insta.workspace = true
 
 [lints]

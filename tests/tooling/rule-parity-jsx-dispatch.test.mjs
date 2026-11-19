@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { validateJsxDispatch } from "../../tools/support/compat/davinci/lib/rule-parity-dispatch.ts";
-import { matchBraceBlock } from "../../tools/support/compat/davinci/lib/rule-parity-rust-text.ts";
-import { stripRust } from "../../tools/support/compat/davinci/lib/rust-source.ts";
+import { validateJsxDispatch } from "../../tools/support/compat/levels/lib/rule-parity-dispatch.ts";
+import { matchBraceBlock } from "../../tools/support/compat/levels/lib/rule-parity-rust-text.ts";
+import { stripRust } from "../../tools/support/compat/levels/lib/rust-source.ts";
 
 const engine = fs.readFileSync(
   new URL("../../crates/vize_patina/src/linter/engine.rs", import.meta.url),

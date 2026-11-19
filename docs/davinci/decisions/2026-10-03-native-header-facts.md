@@ -26,7 +26,7 @@ range; it adds no parse, body walk, pipeline stage or serialization.
 
 ## SDK allocation and proof
 
-Central `davinci/vize_l0/src/fact/ids.rs` allocates only these production IDs.
+Central `levels/vize_l0/src/fact/ids.rs` allocates only these production IDs.
 Existing IDs 1–15 and the fixture range beginning at 32 remain unchanged.
 
 | Group                   | ID  | Stratum | Key                               | Dependencies          |

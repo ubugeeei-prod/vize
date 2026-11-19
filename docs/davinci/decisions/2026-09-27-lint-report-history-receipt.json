@@ -2,7 +2,7 @@
   "schema": "vize.lint-history.report-capture",
   "version": 1,
   "sourceRevision": "d7a9b74bf90b77cc93cd7096105fcf1a2e76b56c",
-  "buildInputSelection": "git ls-files -- crates Cargo.toml Cargo.lock rust-toolchain.toml .cargo tools/benchmarks/crates tests/davinci_test_support, including staged test/input and before staging new report snapshots; each path NUL SHA256 NUL in git path order",
+  "buildInputSelection": "git ls-files -- crates Cargo.toml Cargo.lock rust-toolchain.toml .cargo tools/benchmarks/crates tests/level_test_support, including staged test/input and before staging new report snapshots; each path NUL SHA256 NUL in git path order",
   "buildInputFiles": 7092,
   "buildInputTreeSha256": "a811d7ce43895bf330ef61d00c871f8edcc91b8e0e1375456553a0e46ffd6580",
   "preparedRustPatchSha256": "b60b1198557bf757d3a13d0dea0ef09cdb3983d3677c2969229d1774c35db070",

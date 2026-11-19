@@ -7,5 +7,5 @@ import { renderArtifact } from "./lib/rule-parity-render.ts";
 aggregateMain(
   "rule-parity.md",
   () => renderArtifact(buildMatrix()),
-  "usage: node tools/support/compat/davinci/rule-parity.ts --write | --check | --summary [--out-dir <dir>]",
+  "usage: node tools/support/compat/levels/rule-parity.ts --write | --check | --summary [--out-dir <dir>]",
 );

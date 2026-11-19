@@ -1,7 +1,7 @@
 // The storage aggregates (retained alloc Vec totals, per-category and
 // per-scope counts) are derived from the reviewed per-file ledger into the
 // generated storage summary; the per-file ratchet itself lives in
-// davinci-storage-policy.test.ts.
+// level-storage-policy.test.ts.
 
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -16,15 +16,15 @@ import {
   summarizeAllocVecCategories,
   summarizeKind,
   summarizeScopes,
-} from "./davinci-storage-inventory.ts";
-import { storageKinds } from "./davinci-storage-scan.ts";
+} from "./level-storage-inventory.ts";
+import { storageKinds } from "./level-storage-scan.ts";
 import {
   STORAGE_INVENTORY_REL,
   STORAGE_SUMMARY_REGEN,
   STORAGE_SUMMARY_REL,
   renderStorageSummary,
   storageTypeNames,
-} from "./davinci-storage-summary.ts";
+} from "./level-storage-summary.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const expectedRows = parseStorageInventory(
@@ -34,7 +34,7 @@ const expectedRows = parseStorageInventory(
 test("the storage aggregates are derived from the exact inventory, never hand-copied", () => {
   const summary = execFileSync(
     process.execPath,
-    ["tools/support/compat/davinci/storage-summary.ts", "--summary"],
+    ["tools/support/compat/levels/storage-summary.ts", "--summary"],
     { cwd: repoRoot, encoding: "utf8" },
   );
   assert.equal(

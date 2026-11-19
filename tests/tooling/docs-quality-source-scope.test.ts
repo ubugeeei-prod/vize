@@ -172,7 +172,7 @@ void test("nearby unknown contracts, scripts and changed spelling preserve conse
 void test("mixed product, workflow, native and shared contracts retain their actual gates and Rust consumers", () => {
   for (const path of [
     "crates/syntax/src/lib.rs",
-    "davinci/vize_l1/src/lib.rs",
+    "levels/vize_l1/src/lib.rs",
     "npm/native/src/index.ts",
     "npm/cli/schemas/vize.config.schema.json",
     "docs/davinci/plan/budgets.toml",

@@ -1,6 +1,6 @@
 ---
 source: crates/vize_l1_to_l2/tests/hoist_pass_remarks.rs
-expression: "$crate :: folio :: Folio ::\nprint_to_string(& run.remarks, $crate :: folio :: FolioMode :: Full,)"
+expression: "$crate :: dump :: Dump ::\nprint_to_string(& run.remarks, $crate :: dump :: DumpMode :: Full,)"
 ---
 [remarks]
 

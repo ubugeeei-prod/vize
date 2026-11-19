@@ -10,7 +10,7 @@
 
 mod costs;
 
-use davinci_harness::alloc::{CountingAllocator, mark_installed};
+use level_harness::alloc::{CountingAllocator, mark_installed};
 use oxc_ast::ast::{BindingPattern, Expression, FormalParameters};
 use oxc_span::{GetSpan, SourceType};
 use vize_armature::parse;
@@ -54,7 +54,7 @@ fn parse_counted<'a>(arena: &'a Allocator, source: &'a str, attempts: u64) -> Ro
     let actual = summary
         .entries
         .iter()
-        .find(|entry| entry.name == "davinci.expr.parses");
+        .find(|entry| entry.name == "levels.expr.parses");
     if attempts == 0 {
         assert!(
             actual.is_none(),
@@ -345,7 +345,7 @@ fn demanded_syntax_reuses_original_goals_without_changing_default_counters() {
     let counters = profiler.counter_snapshot();
     let parsed = counters
         .iter()
-        .find(|(name, _)| *name == "davinci.expr.parses")
+        .find(|(name, _)| *name == "levels.expr.parses")
         .expect("both original goals");
     assert_eq!(parsed.1.total, 2);
     assert_eq!(parsed.1.samples, 2);
@@ -392,7 +392,7 @@ fn demanded_syntax_reuses_original_goals_without_changing_default_counters() {
     let counters = profiler.counter_snapshot();
     let original = counters
         .iter()
-        .find(|(name, _)| *name == "davinci.expr.parses")
+        .find(|(name, _)| *name == "levels.expr.parses")
         .expect("one original failed statement-expression trial");
     assert_eq!(original.1.samples, 1);
     assert_eq!(original.1.total, 1);
@@ -416,7 +416,7 @@ fn named_handler_expressions_keep_the_original_goals_and_counters() {
     let counters = profiler.counter_snapshot();
     let original = counters
         .iter()
-        .find(|(name, _)| *name == "davinci.expr.parses")
+        .find(|(name, _)| *name == "levels.expr.parses")
         .expect("three unchanged original goals");
     assert_eq!(original.1.samples, 3);
     assert_eq!(original.1.total, 3);

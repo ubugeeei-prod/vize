@@ -10,8 +10,8 @@ import {
   assertFixturesPristine,
   cleanFixtures,
   materializedNodeModules,
-} from "../../tools/support/compat/davinci/lib/corpus-fixture-state.ts";
-import { normalizeMachinePaths } from "../../tools/support/compat/davinci/lib/corpus-paths.ts";
+} from "../../tools/support/compat/levels/lib/corpus-fixture-state.ts";
+import { normalizeMachinePaths } from "../../tools/support/compat/levels/lib/corpus-paths.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -19,11 +19,11 @@ test("corpus baseline and diff commands expose their stable Node interface", () 
   for (const command of ["corpus-baseline.ts", "corpus-diff.ts"]) {
     const result = spawnSync(
       process.execPath,
-      [path.join(repoRoot, "tools", "commands", "davinci", command), "--help"],
+      [path.join(repoRoot, "tools", "commands", "levels", command), "--help"],
       { cwd: repoRoot, encoding: "utf8" },
     );
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, new RegExp(`^usage: node tools/commands/davinci/${command}`));
+    assert.match(result.stdout, new RegExp(`^usage: node tools/commands/levels/${command}`));
     assert.equal(result.stderr, "");
   }
 });
@@ -31,7 +31,7 @@ test("corpus baseline and diff commands expose their stable Node interface", () 
 test("corpus commands reject unknown arguments before doing corpus work", () => {
   const result = spawnSync(
     process.execPath,
-    [path.join(repoRoot, "tools", "commands", "davinci", "corpus-baseline.ts"), "--wat"],
+    [path.join(repoRoot, "tools", "commands", "levels", "corpus-baseline.ts"), "--wat"],
     { cwd: repoRoot, encoding: "utf8" },
   );
   assert.equal(result.status, 1);

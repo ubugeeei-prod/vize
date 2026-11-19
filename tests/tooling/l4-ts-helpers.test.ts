@@ -8,8 +8,8 @@ import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const targetDir = "davinci/vize_l4/src/targets/ts";
-const helpersFile = "davinci/vize_l4/src/targets/ts/helpers.rs";
+const targetDir = "levels/vize_l4/src/targets/ts";
+const helpersFile = "levels/vize_l4/src/targets/ts/helpers.rs";
 const globalsFile = "npm/cli/virtual-ts-globals.d.ts";
 
 function rustFiles(dir: string): string[] {

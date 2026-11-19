@@ -13,7 +13,7 @@ v-if` and `#slot v-for` carriers still use the shipped `createSlots` shape.
 
 The durable witnesses are:
 
-- [`emit_create_slots_wrappers.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_create_slots_wrappers.rs)
+- [`emit_create_slots_wrappers.rs`](../../../../../levels/vize_l1_to_l2/tests/emit_create_slots_wrappers.rs)
   - pins S1-to-S2 exact output for both single and multiple nested wrapper
     slot cases.
 - [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/l2_slots.rs)

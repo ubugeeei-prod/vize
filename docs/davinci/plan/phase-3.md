@@ -61,7 +61,7 @@ total lowering skeleton, and exported partition fact contract. _Closed
 to the same record.
 
 **P3-4 Rust reference + differential.** The independent, test-only reference in
-`tests/davinci_test_support/src/l3_reference` provides executable small-step
+`tests/level_test_support/src/l3_reference` provides executable small-step
 semantics for L3 ops under both Vapor and VDOM interpretations; the runner
 compares compiled-output behavior traces with the reference on L3 fixtures
 (TS-28). _Accept:_ runner in CI on the fixture ladder. The 2026-09-15
@@ -89,7 +89,7 @@ branches and keyed loops) now share eight full observations too. The mounted
 runner and the independent reference use one contract across the fixture ladder, the
 TS-29 matrix and the model/slot references (see the record).
 
-**P3-5 Op reference doc.** `docs/davinci/plan/impeto-ops.md`: every op's
+**P3-5 Op reference doc.** `docs/davinci/plan/l3-ops.md`: every op's
 meaning under both interpretations, written **before any optional pass
 lands** (MIR anti-lesson); the independent Rust reference is the normative
 companion; Folio is the concrete syntax. _Accept:_ review point — signed off;

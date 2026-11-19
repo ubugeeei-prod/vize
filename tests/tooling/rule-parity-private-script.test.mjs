@@ -6,10 +6,10 @@ import { test } from "node:test";
 import {
   accountRuleFiles,
   buildMatrix,
-} from "../../tools/support/compat/davinci/lib/rule-parity-matrix.ts";
-import { RULES_DIR } from "../../tools/support/compat/davinci/lib/rule-parity-paths.ts";
-import { collectPrivateScriptCallbacks } from "../../tools/support/compat/davinci/lib/rule-parity-private-script.ts";
-import { parseRuleSource } from "../../tools/support/compat/davinci/lib/rule-parity-rules.ts";
+} from "../../tools/support/compat/levels/lib/rule-parity-matrix.ts";
+import { RULES_DIR } from "../../tools/support/compat/levels/lib/rule-parity-paths.ts";
+import { collectPrivateScriptCallbacks } from "../../tools/support/compat/levels/lib/rule-parity-private-script.ts";
+import { parseRuleSource } from "../../tools/support/compat/levels/lib/rule-parity-rules.ts";
 
 const model = {
   templateHooks: ["as_sfc_script_rule", "run_on_template", "run_on_sfc"],

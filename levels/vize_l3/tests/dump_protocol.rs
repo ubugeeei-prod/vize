@@ -44,12 +44,13 @@ fn canonical_graph_protocol_roundtrips_without_changing_rows() {
 #[test]
 fn old_graph_protocol_is_rejected() {
     // Historical input is a negative fixture, never an accepted compatibility alias.
-    assert!(Page::parse(&GRAPH.replace("l3-dump-v2", "s3-folio")).is_err());
+    assert!(Page::parse(&GRAPH.replace("l3-dump-v2", "s3-dump")).is_err());
 }
 
 #[test]
 fn old_and_unknown_opcode_vocabularies_are_rejected() {
-    for kind in ["impeto.set-text", "l3.unknown", "l2.set-text"] { // codename: historical op name
+    for kind in ["impeto.set-text", "l3.unknown", "l2.set-text"] {
+        // codename: historical op name
         assert_eq!(OpKind::from_mnemonic(kind), None);
         assert!(Page::parse(&GRAPH.replace("l3.set-text", kind)).is_err());
     }

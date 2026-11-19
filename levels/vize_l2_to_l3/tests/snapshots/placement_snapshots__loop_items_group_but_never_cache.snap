@@ -33,7 +33,7 @@ id=2 owner=3 region=2 span=30:49
 id=3 owner=4 region=2 span=50:68
 id=4 owner=5 region=3 span=69:84
 
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-placement-folio.placements]
+[s3-placement-dump.placements]
 op=5 alternatives=inline,group leader=4 chosen=inline

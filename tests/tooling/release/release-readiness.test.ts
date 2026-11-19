@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const checklistPath = path.join(root, "docs", "release", "v1-alpha-go-no-go.md");
-const evidencePath = path.join(root, "docs", "release", "davinci-v1-evidence.md");
+const evidencePath = path.join(root, "docs", "release", "level-v1-evidence.md");
 const productionReadinessPath = path.join(root, "docs", "release", "production-readiness.md");
 const supplyChainPath = path.join(root, "docs", "release", "supply-chain.md");
 const vueParityMatrixPath = path.join(root, "docs", "release", "vue-parity-matrix.md");

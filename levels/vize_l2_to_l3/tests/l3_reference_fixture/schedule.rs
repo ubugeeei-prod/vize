@@ -3,7 +3,7 @@
 //! Every Rust-lowered reference template is lowered, mutated by a named
 //! ordering scenario and checked by the TS-27 validator. The committed
 //! `schedule-contract.txt` records the exact violation codes. The independent
-//! reference (`davinci_test_support::l3_reference`) re-applies the same
+//! reference (`level_test_support::l3_reference`) re-applies the same
 //! scenarios to the committed graph Dumps and recomputes the codes with its
 //! own model of the validator's edge contract, whose acceptance Kani proves
 //! orders every state edge.
@@ -16,7 +16,7 @@
 
 use std::path::Path;
 
-use davinci_test_support::l3_reference::{fixtures, schedule_fixture::schedule_contract};
+use level_test_support::l3_reference::{fixtures, schedule_fixture::schedule_contract};
 use vize_l0::Allocator;
 use vize_l3::op::{EdgeKind, EffectId, OpId, Phase, Program, StateEdge};
 use vize_l3::verify::verify;
@@ -45,7 +45,7 @@ fn source(stem: &str) -> String {
     if stem == "rust-lowered-static-dynamic" {
         return crate::STATIC_DYNAMIC_SOURCE.to_string();
     }
-    let fixtures = davinci_test_support::l3_reference::fixtures();
+    let fixtures = level_test_support::l3_reference::fixtures();
     std::fs::read_to_string(fixtures.join(format!("{stem}.template.txt"))).unwrap()
 }
 

@@ -5,10 +5,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { maskRustNonCode } from "./davinci-storage-rust-syntax.ts";
+import { maskRustNonCode } from "./level-storage-rust-syntax.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const sourceRoot = path.join(repoRoot, "davinci/vize_l1/src");
+const sourceRoot = path.join(repoRoot, "levels/vize_l1/src");
 // Generic modules: a `.rs` file at one of these paths and every file under it.
 const genericModules = [
   "slice",
@@ -49,7 +49,7 @@ test("generic L1 construction, rendering and lexer never depend on dialect polic
 });
 
 test("generic lexer and profile policy mutations fail without rejecting dialect markup hooks", (t) => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-l1-isolation-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "level-l1-isolation-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const genericMarkupFiles = [
     "markup/profile.rs",

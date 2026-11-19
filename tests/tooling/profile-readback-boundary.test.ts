@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { exposeReadbacks } from "../../tools/support/levels/expose-profile-readbacks.ts";
 
 const source = fs.readFileSync(
-  new URL("../../davinci/vize_l0/src/profiler/snapshot.rs", import.meta.url),
+  new URL("../../levels/vize_l0/src/profiler/snapshot.rs", import.meta.url),
   "utf8",
 );
 

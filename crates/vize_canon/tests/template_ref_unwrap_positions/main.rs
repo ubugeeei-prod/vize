@@ -2,7 +2,7 @@
 //! pin the two positions the plain identifier unwrap missed, against the
 //! upstream `unwrapBindingAccess` corpus project.
 
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 const NO_DIAGNOSTICS: [&str; 0] = [];
 

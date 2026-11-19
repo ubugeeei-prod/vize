@@ -145,7 +145,7 @@ mod tests {
         );
         let result = analyze(source);
         assert_eq!(result["diagnostics"], serde_json::json!([]));
-        assert_eq!(result["vir"], result["folio"]["croquis"]);
+        assert_eq!(result["vir"], result["dump"]["croquis"]);
         // Exact VIR shape; only the universal scope's global list is elided.
         let lines = result["vir"]
             .as_str()

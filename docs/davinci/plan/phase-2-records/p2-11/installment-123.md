@@ -17,7 +17,7 @@ compatibility diagnostics.
 
 ## Evidence
 
-`tests/tooling/davinci-dom-production-boundary.test.ts` requires live DOM
+`tests/tooling/level-dom-production-boundary.test.ts` requires live DOM
 production sources to stay free of `VIZE_DAVINCI_DOM`, `DOM_LANE_FLAG`,
 `dom_lane_selection`, `DomLaneSelection` and direct environment reads.
 

@@ -39,7 +39,7 @@ edge re-exports that sole producer; it still owns flat-program lowering.
 The resident tier (`vize_incremental`, P5-4a) is a consumer above every stage
 tier: it runs the stage functions as salsa queries for long-lived processes
 and is the only crate allowed to depend on `salsa`
-(`tests/tooling/davinci-resident-salsa.test.ts`). No stage crate may depend
+(`tests/tooling/level-resident-salsa.test.ts`). No stage crate may depend
 on it, and the one-shot CLI never links it.
 
 The [storage boundary](./storage-boundary.md) defines how every stage consumes
@@ -50,7 +50,7 @@ Cargo manifests use dependency renames where the package id still differs from
 the preferred crate name. Today those exceptions are L0/Carton and L3/Impeto,
 so source imports stay on `vize_l0`, `vize_l1`, `vize_l2`, `vize_l3`, and
 `vize_l1_to_l2` while package publication remains compatible.
-`tests/tooling/davinci-stage-dependencies.test.ts` reads Cargo metadata to pin
+`tests/tooling/level-stage-dependencies.test.ts` reads Cargo metadata to pin
 every spelling and reject a reversed tier edge or cycle.
 
 ## L0 host boundary

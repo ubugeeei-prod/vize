@@ -9,8 +9,8 @@ roadmaps [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (levels),
 they measure, and the rules each gate enforces, are in the [charter](./charter.md).
 
 ```sh
-node tools/commands/davinci/completion-gates.ts            # measured gates
-node tools/commands/davinci/completion-gates.ts --issues   # plus issue state via gh
+node tools/commands/levels/completion-gates.ts            # measured gates
+node tools/commands/levels/completion-gates.ts --issues   # plus issue state via gh
 ```
 
 A **measured** gate is computed from the repository by the tool. An **issue** gate passes
@@ -21,7 +21,7 @@ are not committed here; the tool prints them.
 
 - Only native Davinci work counts. A legacy-backed result never passes a gate (#6828).
 - A definition changes only by a maintainer decision recorded in this file. The tool and
-  the tables change together; `tests/tooling/davinci-completion-gates.test.ts` keeps their
+  the tables change together; `tests/tooling/level-completion-gates.test.ts` keeps their
   ids identical.
 - Tiers are the dependency order. A tier's work needs the earlier gates it consumes; the
   `**Order:**` line of each issue in #6826 gives the finer edges. Structural slices may

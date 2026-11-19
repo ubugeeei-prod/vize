@@ -43,11 +43,11 @@ fn assert_trace(source: &str, context: Value, steps: Value, slots: Value, expect
         "{source}: native L3"
     );
     let native = trace(
-        "davinci-mounted-trace.mjs",
+        "level-mounted-trace.mjs",
         json!({"backend": "vapor", "code": compiled.code, "context": context, "steps": steps, "slots": slots, "identities": true}),
     );
     let official = trace(
-        "davinci-upstream-vapor-trace.mjs",
+        "level-upstream-vapor-trace.mjs",
         json!({"source": source, "context": context, "steps": steps, "slots": slots}),
     );
     assert_eq!(native, expected, "{source}: native trace");

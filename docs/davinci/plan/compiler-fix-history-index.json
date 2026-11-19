@@ -42,7 +42,7 @@
   },
   "dispositions": {
     "path": "crates/vize_atelier_sfc/tests/fixtures/compile-history/dispositions.json",
-    "sha256": "b5c62f530e75b73133e1910153a85ec8070110af68f7b9151fc60a72164dae5d"
+    "sha256": "b4224c14fa0af3b2cf3b6ac6118f3d5a568042583d983b097ba787ebe4e6f2be"
   },
   "wholeFixReviewedSubjects": 0,
   "wholeFixReviewPendingSubjects": 626,
@@ -60,7 +60,7 @@
       },
       {
         "path": "tests/_fixtures/differential/compiler/vapor-fix-history.manifest.json",
-        "sha256": "f6e780d96b45f5dbdd8965e11f6092ada038764bd1f6d537462057a23eb87b51"
+        "sha256": "64cd9097afd199040a106d2dfe38e5be9ede862f385545bcbfbda8c477b96f79"
       }
     ]
   },

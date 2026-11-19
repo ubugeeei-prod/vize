@@ -3,8 +3,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { compareLspMarkerScans } from "../../tools/support/compat/davinci/lsp-marker-scan-compare.ts";
-import { lspMarkerProductionPaths } from "../../tools/support/compat/davinci/lsp-marker-scan-source.ts";
+import { compareLspMarkerScans } from "../../tools/support/compat/levels/lsp-marker-scan-compare.ts";
+import { lspMarkerProductionPaths } from "../../tools/support/compat/levels/lsp-marker-scan-source.ts";
 
 test("paired marker evidence rejects wrong binaries, missing files and changed diagnostics", () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "lsp-marker-compare-"));

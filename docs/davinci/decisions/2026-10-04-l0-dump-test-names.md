@@ -12,7 +12,7 @@ Two auto-discovered Cargo test targets still carry the old page codename:
 | `folio_derive_laws` | `dump_derive_laws` | Nine derived Dump normalization, round-trip and error laws |
 | `folio_dump`        | `dump_hash_gate`   | Four Collector order and change-gate laws                  |
 
-Move only these two `.rs` files under `davinci/vize_l0/tests/`, in a move-only
+Move only these two `.rs` files under `levels/vize_l0/tests/`, in a move-only
 commit. Their Rust bytes, test functions, expected wire headers, diagnostics
 and `.folio` output names remain exact. Cargo discovers the new targets
 without manifest changes. This introduces no implementation, pipeline stage,

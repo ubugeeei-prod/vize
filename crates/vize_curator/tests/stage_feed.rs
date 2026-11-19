@@ -7,7 +7,7 @@
 
 use std::path::Path;
 
-use davinci_test_support::schema as schema_check;
+use level_test_support::schema as schema_check;
 use vize_curator::inspector::feed::{StageFeed, StageFeedSchemaMismatch, StagePage};
 
 fn negotiate_feed_schema(feed: &serde_json::Value) -> Result<(), SchemaGateError> {
@@ -111,7 +111,7 @@ fn the_schema_refuses_version_and_shape_mismatches_loudly() {
     );
 
     let mut bad_stage = valid;
-    bad_stage["pages"][0]["stage"] = serde_json::Value::from("L2 disegno");
+    bad_stage["pages"][0]["stage"] = serde_json::Value::from("L2 l2");
     let error = schema_check::validate(&schema, &bad_stage, "$").expect_err("bad stage must fail");
     assert_eq!(
         error.message().as_str(),

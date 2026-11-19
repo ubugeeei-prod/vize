@@ -32,7 +32,7 @@ export const renamedPackages = [
   ],
   [
     "vize_l3",
-    "vize_impeto",
+    "vize_l3",
     "0.429.0",
     "d51929bec2e0ece251a468179854df74184b46126d764fb6a606a3579934badf",
   ],
@@ -188,7 +188,7 @@ export function adaptWorkspaceDependency(source: string, oldName: string, newNam
   if (match === null) throw new Error("actual base workspace dependency lookup is missing");
   const details = match[2];
   const dependencyPath = /\bpath\s*=\s*"([^"]+)"/u.exec(details)?.[1];
-  if (![`crates/${oldName}`, `davinci/${oldName}`].includes(dependencyPath ?? "")) {
+  if (![`crates/${oldName}`, `levels/${oldName}`].includes(dependencyPath ?? "")) {
     throw new Error("actual base workspace dependency path mismatch");
   }
   const packageName = /\bpackage\s*=\s*"([^"]+)"/u.exec(details)?.[1];
@@ -285,7 +285,7 @@ function prepareGitBaseline(
   const verified = capture("git", ["rev-parse", "--verify", `${base}^{commit}`]);
   if (verified.status !== 0) throw new Error("actual Git base is unavailable");
   const sha = verified.stdout.trim();
-  for (const directory of ["crates", "davinci"]) {
+  for (const directory of ["crates", "levels"]) {
     const current = capture("git", ["show", `${sha}:${directory}/${packageName}/Cargo.toml`]);
     if (current.status === 0) {
       if (stringField(current.stdout, "package", "name") !== packageName) {
@@ -302,7 +302,7 @@ function prepareGitBaseline(
     "cannot archive actual base",
   );
   requireSuccess("tar", ["-xf", archive, "-C", destination], "cannot extract actual Git base");
-  const root = ["crates", "davinci"]
+  const root = ["crates", "levels"]
     .map((directory) => path.join(destination, directory, oldName))
     .find((candidate) => fs.existsSync(path.join(candidate, "Cargo.toml")));
   if (root === undefined) throw new Error("actual base package manifest is missing");
@@ -333,7 +333,7 @@ function run(args: readonly string[]): void {
   const rename = renamedPackages.find(([name]) => name === packageName);
   if (rename === undefined) return;
   const [, oldName, oldVersion, checksum] = rename;
-  const manifestPath = ["crates", "davinci"]
+  const manifestPath = ["crates", "levels"]
     .map((directory) => path.join(directory, packageName, "Cargo.toml"))
     .find((candidate) => fs.existsSync(candidate));
   if (manifestPath === undefined) throw new Error("current package manifest is missing");

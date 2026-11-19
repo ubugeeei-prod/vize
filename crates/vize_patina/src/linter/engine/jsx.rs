@@ -1,4 +1,4 @@
-//! JSX/TSX markup dispatch (Davinci P4-7b).
+//! JSX/TSX markup dispatch (plan P4-7b).
 //!
 //! Markup rules run over the P2-16 L2 projection of each render root through
 //! the input-neutral markup entry (`markup.rs`). Rules with no markup entry

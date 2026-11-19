@@ -144,7 +144,7 @@ neither is in scope.
 
 - `budgets.toml [traversal]`, keyed `<backend>_<fixture>` — 18 entries,
   gated exactly, reconciled against the ladder in both directions by
-  `tests/tooling/davinci-traversal-budgets.test.ts`.
+  `tests/tooling/level-traversal-budgets.test.ts`.
 - `crates/vize_atelier_{dom,ssr,vapor}/tests/davinci_walk_baseline.rs` — the
   same numbers pinned as ordinary integration tests, so they run in the
   default `cargo test --workspace` lane rather than a feature-gated one (the

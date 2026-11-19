@@ -21,7 +21,7 @@ package ordering; the actual resolver locks zero changed dependency versions.
 Format the changed Rust imports with `cargo fmt --package vize_incremental
 --package vize_maestro` and changed Markdown tables with `vp fmt`. Regenerate
 the existing Croquis and consumer-migration inventories through their
-`tools/support/compat/davinci/{croquis-consumers,consumer-migration-surfaces}.mjs`
+`tools/support/compat/levels/{croquis-consumers,consumer-migration-surfaces}.mjs`
 `--write` entry points. The import regrouping changes three LSP inventory
 source-line coordinates; the natural scanner remains unchanged.
 The key-capture fixture's historical build logs retain their original bytes.

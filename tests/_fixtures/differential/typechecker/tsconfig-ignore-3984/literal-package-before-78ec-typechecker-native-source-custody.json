@@ -342,7 +342,7 @@
       "beforeMode": "000000",
       "afterMode": "100644",
       "beforeBlob": "0000000000000000000000000000000000000000",
-      "afterBlob": "9da1f3a0d0a09bfe092de957d1ef893b2c1e2990"
+      "afterBlob": "f39d34db290b2115eeaba7e8b6770d986bed3ebf"
     },
     {
       "path": "tests/_fixtures/tooling/native-current-recipe-ignore-3984.sh",
@@ -350,7 +350,7 @@
       "beforeMode": "000000",
       "afterMode": "100644",
       "beforeBlob": "0000000000000000000000000000000000000000",
-      "afterBlob": "415c503ffaa5f80285c799c0257479b961d4f995"
+      "afterBlob": "00a16b71b944af7490e07cda74cc6eeebd008534"
     },
     {
       "path": "tests/_fixtures/tooling/native-source-recipe-436.md",
@@ -358,7 +358,7 @@
       "beforeMode": "100644",
       "afterMode": "100644",
       "beforeBlob": "3e3a54d786069ad0e89ed730532bb79ffe24584d",
-      "afterBlob": "fe3620e58e648cdaea7afbf6ad9a987b9aebd638"
+      "afterBlob": "d2ba47e2dfab4be5ceb0ac28c1e8a4f47e33a989"
     },
     {
       "path": "tools/benchmarks/scripts/typechecker-native-source-recipe-fixture.mjs",

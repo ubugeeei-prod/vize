@@ -14,7 +14,7 @@ Vize の JavaScript パッケージと Rust のコンパイラ・開発ツール
 実装ファイルは [ソースガイド](./source-guide.md)、公開 API の役割は
 [クレートリファレンス](./crates.md) で確認できます。
 
-図は `crates/` にある既存製品の処理経路を表しています。実験段階のレベル構造は `davinci/` にあり、
+図は `crates/` にある既存製品の処理経路を表しています。実験段階のレベル構造は `levels/` にあり、
 移行の順序と条件は [レベル再編の決定記録](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-09-27-level-restructure%2Emd) に記載されています。
 内部構造は引き続き変更されます。
 

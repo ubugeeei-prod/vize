@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
-const runner = fileURLToPath(new URL("./support/davinci-mounted-trace.mjs", import.meta.url));
+const runner = fileURLToPath(new URL("./support/level-mounted-trace.mjs", import.meta.url));
 
 function run(steps: unknown[], buttons = 1, hasHandler = true) {
   return spawnSync(process.execPath, [runner], {

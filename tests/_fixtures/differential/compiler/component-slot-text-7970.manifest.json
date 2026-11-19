@@ -65,7 +65,7 @@
         "lockedVue": "3.5.35",
         "nativeHandled": 0,
         "legacyRawCompatibility": {
-          "rustTarget": "crates/vize_atelier_core/tests/davinci_l2_transform_vue2.rs",
+          "rustTarget": "crates/vize_atelier_core/tests/level_l2_transform_vue2.rs",
           "helper": "tests/tooling/support/slot-text-raw-7970.mjs",
           "cells": 5,
           "qualification": "existing legacy feature target; actual Vue3 runtime observes retained Vue1 source coercion, not Vue1 runtime equivalence"

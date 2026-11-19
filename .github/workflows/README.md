@@ -34,7 +34,7 @@ surfaces and are not routine CI-refactor targets.
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 16        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 23        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 40        |
-| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 23        |
+| 07    | [level, Canon, and Level](#07-level-canon-and-level)                                   | 23        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
@@ -128,8 +128,8 @@ Wall time, allocation, instruction, memory, scaling, and reproducible benchmark 
 | 03.07 | Content Mapper Cold Start                           | [`content-mapper-cold-start.yml`](./content-mapper-cold-start.yml)                       |
 | 03.08 | Content mapper span allocation                      | [`content-mapper-span-allocation.yml`](./content-mapper-span-allocation.yml)             |
 | 03.09 | Criterion Bench                                     | [`criterion-bench.yml`](./criterion-bench.yml)                                           |
-| 03.10 | Davinci Canon distinct-host scaling                 | [`davinci-canon-scaling.yml`](./davinci-canon-scaling.yml)                               |
-| 03.11 | Davinci resource budgets                            | [`davinci-resource-budgets.yml`](./davinci-resource-budgets.yml)                         |
+| 03.10 | Level Canon distinct-host scaling                   | [`level-canon-scaling.yml`](./level-canon-scaling.yml)                                   |
+| 03.11 | Level resource budgets                              | [`level-resource-budgets.yml`](./level-resource-budgets.yml)                             |
 | 03.12 | Diagnostic digest benchmark                         | [`diagnostic-digest-bench.yml`](./diagnostic-digest-bench.yml)                           |
 | 03.13 | Doctor filter benchmark                             | [`doctor-filter-bench.yml`](./doctor-filter-bench.yml)                                   |
 | 03.14 | Document snapshot source profile                    | [`document-snapshot-source-profile.yml`](./document-snapshot-source-profile.yml)         |
@@ -262,9 +262,9 @@ SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctne
 | 06.39 | Vapor literal object styles              | [`vapor-literal-object-styles.yml`](./vapor-literal-object-styles.yml)         |
 | 06.40 | Native Vue 2 IR template target          | [`vue2-ir-template.yml`](./vue2-ir-template.yml)                               |
 
-## 07 Davinci, Canon, and Level
+## 07 level, Canon, and Level
 
-Davinci migration, Canon ownership, Level lowering, and cross-file graph contracts.
+Level migration, Canon ownership, Level lowering, and cross-file graph contracts.
 
 | ID    | Workflow                                      | File                                                                           |
 | ----- | --------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -282,12 +282,12 @@ Davinci migration, Canon ownership, Level lowering, and cross-file graph contrac
 | 07.12 | Cross-file SFC effect graphs                  | [`cross-file-sfc-effects.yml`](./cross-file-sfc-effects.yml)                   |
 | 07.13 | Cross-file retained import updates            | [`cross-file-source-updates.yml`](./cross-file-source-updates.yml)             |
 | 07.14 | Cross-file WASM effect grammars               | [`cross-file-wasm-effects.yml`](./cross-file-wasm-effects.yml)                 |
-| 07.15 | Canonical Davinci corpus                      | [`davinci-canonical-corpus.yml`](./davinci-canonical-corpus.yml)               |
-| 07.16 | Davinci Incremental                           | [`davinci-incremental.yml`](./davinci-incremental.yml)                         |
-| 07.17 | Davinci Kani                                  | [`davinci-kani.yml`](./davinci-kani.yml)                                       |
-| 07.18 | Davinci Plugin SDK                            | [`davinci-plugin-sdk.yml`](./davinci-plugin-sdk.yml)                           |
-| 07.19 | Davinci reference backends                    | [`davinci-reference.yml`](./davinci-reference.yml)                             |
-| 07.20 | Davinci unused bindings                       | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                 |
+| 07.15 | Canonical level corpus                        | [`level-canonical-corpus.yml`](./level-canonical-corpus.yml)                   |
+| 07.16 | Level Incremental                             | [`level-incremental.yml`](./level-incremental.yml)                             |
+| 07.17 | Level Kani                                    | [`level-kani.yml`](./level-kani.yml)                                           |
+| 07.18 | Level Plugin SDK                              | [`level-plugin-sdk.yml`](./level-plugin-sdk.yml)                               |
+| 07.19 | Level reference backends                      | [`level-reference.yml`](./level-reference.yml)                                 |
+| 07.20 | Level unused bindings                         | [`level-unused-bindings.yml`](./level-unused-bindings.yml)                     |
 | 07.21 | Level deletion readiness                      | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)               |
 | 07.22 | Level dependencies                            | [`level-dependencies.yml`](./level-dependencies.yml)                           |
 | 07.23 | Level HTML content model                      | [`level-html-content-model.yml`](./level-html-content-model.yml)               |

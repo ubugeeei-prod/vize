@@ -1,18 +1,18 @@
 //! Harness selfcheck bench (P0-1): exercises every metric family end to end.
 //!
-//! Run with: cargo bench -p davinci_harness
+//! Run with: cargo bench -p level_harness
 //!
 //! The routine allocates one Vec, fills it, and reduces it - enough to make
 //! the allocation counters, peak-bytes tracking, wall percentiles, and RSS
 //! delta all take non-degenerate values in the exported report at
-//! `tools/benchmarks/results/davinci/harness-selfcheck.json`.
+//! `tools/benchmarks/results/levels/harness-selfcheck.json`.
 
 use std::hint::black_box;
 
 use criterion::{Criterion, criterion_group};
 
 fn selfcheck(criterion: &mut Criterion) {
-    davinci_harness::bench_with_metrics(
+    level_harness::bench_with_metrics(
         criterion,
         "harness-selfcheck",
         "synthetic:vec-fill-1024",
@@ -27,4 +27,4 @@ fn selfcheck(criterion: &mut Criterion) {
 }
 
 criterion_group!(selfcheck_group, selfcheck);
-davinci_harness::main!(selfcheck_group);
+level_harness::main!(selfcheck_group);

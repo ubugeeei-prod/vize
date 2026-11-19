@@ -1,11 +1,11 @@
-//! The stage feed v1 (P2-18): the observer's folio output as one
+//! The stage feed v1 (P2-18): the observer's dump output as one
 //! consumable, schema-versioned JSON document.
 //!
 //! A [`StageFeed`] is the payload the inspector hands to stage-view
 //! consumers: a `schema_version` to negotiate on
 //! (`devtool.md`'s data-layer requirement - a consumer refuses a mismatch
 //! loudly instead of misrendering), the producing surface's `command`, and
-//! the folio pages in emission order. The committed schema is
+//! the dump pages in emission order. The committed schema is
 //! `docs/davinci/plan/stage-ladder-feed.schema.json`, validated in tests through
 //! the strict TS-15 subset validator - one producer here, one validator in
 //! the tree.
@@ -53,7 +53,7 @@ pub struct StagePage {
     /// Producing step: the pass name for a pipeline dump, or the
     /// non-pass step that made the page (`parse` for the L1 surface tree).
     pub pass: String,
-    /// The page text: the artifact's canonical `Full`-mode folio text, or
+    /// The page text: the artifact's canonical `Full`-mode dump text, or
     /// for L1 the byte-faithful surface render.
     pub text: String,
 }

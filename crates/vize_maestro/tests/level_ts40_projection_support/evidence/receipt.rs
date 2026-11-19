@@ -23,7 +23,7 @@ pub(super) fn authenticate_packets(
         .collect();
     assert_eq!(changed, expected_changed);
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/davinci_ts40_projection_support/fixtures")
+        .join("tests/level_ts40_projection_support/fixtures")
         .join(directory);
     let retained = manifest["retainedFiles"]
         .as_array()

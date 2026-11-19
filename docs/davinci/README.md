@@ -32,7 +32,7 @@ in the archived phase-6 plans. Production compiler and editor work takes priorit
 
 The goal and the rules that follow from it are in the [charter](./charter.md).
 Whether Davinci is complete is decided by the [completion gates](./completion-gates.md);
-run `node tools/commands/davinci/completion-gates.ts --issues` for the current state.
+run `node tools/commands/levels/completion-gates.ts --issues` for the current state.
 
 The current numbered layers are L0–L4; see [layer names and compatibility](./layer-names.md) for package migration and retained wire identities.
 
@@ -40,10 +40,10 @@ The current numbered layers are L0–L4; see [layer names and compatibility](./l
    [phase plan](./plan/README.md) for the current task index. Open a phase file
    before its task contracts: the phase index shows completed work, start gates,
    and links to the implementation records.
-2. Follow the foundation in [`vize_davinci`](../../davinci/vize_l0/src/lib.rs),
-   then the lossless surface tree in [`vize_l1`](../../davinci/vize_l1/src/lib.rs),
-   the semantic IR in [`vize_l2`](../../davinci/vize_l2/src/lib.rs), and the
-   conversion in [`vize_l1_to_l2`](../../davinci/vize_l1_to_l2/src/lib.rs).
+2. Follow the foundation in [`vize_davinci`](../../levels/vize_l0/src/lib.rs),
+   then the lossless surface tree in [`vize_l1`](../../levels/vize_l1/src/lib.rs),
+   the semantic IR in [`vize_l2`](../../levels/vize_l2/src/lib.rs), and the
+   conversion in [`vize_l1_to_l2`](../../levels/vize_l1_to_l2/src/lib.rs).
    These are experimental stage crates; use the phase records to distinguish
    implemented contracts from production-connected paths.
 3. For a concrete behavior, start with the relevant phase record, follow its

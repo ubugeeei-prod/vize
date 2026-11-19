@@ -1,7 +1,7 @@
 //! TS-53, explain half: every page in every locale equals its committed
 //! snapshot, `snapshots/<locale>.txt` beside this module, byte for byte. The
 //! page list is [`subjects::all`](super::subjects::all), generated from the
-//! producers' metadata; `tests/tooling/davinci-diagnostic-catalog.test.ts`
+//! producers' metadata; `tests/tooling/level-diagnostic-catalog.test.ts`
 //! cross-checks that the snapshots hold a page for every rule and compiler
 //! code it finds in source.
 //!

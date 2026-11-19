@@ -5,8 +5,8 @@ import { nativeVaporCaptureRequired } from "../../tools/support/compat/github/na
 
 test("checkbox producer, inputs and all three consumers select genuine hosted capture", () => {
   for (const path of [
-    "davinci/vize_l3/tests/native_model_checkbox/mod.rs",
-    ...["dom", "ssr", "vapor"].map((target) => `davinci/vize_l4/src/targets/${target}/model.rs`),
+    "levels/vize_l3/tests/native_model_checkbox/mod.rs",
+    ...["dom", "ssr", "vapor"].map((target) => `levels/vize_l4/src/targets/${target}/model.rs`),
     "crates/vize_atelier_sfc/src/native_selected_setup/tests.rs",
     "crates/vize_atelier_sfc/src/native_selected_setup/tests/original_input_model_checkbox.rs",
     ...["custody", "output", "refusal", "finish"].map(
@@ -19,9 +19,9 @@ test("checkbox producer, inputs and all three consumers select genuine hosted ca
     ),
     "tests/tooling/native-input-model-checkbox-reference.test.ts",
     "tests/tooling/native-input-model-checkbox-capture-workflow.test.ts",
-    "davinci/vize_l4/src/targets/ssr.rs",
-    "davinci/vize_l4/src/targets/dom/write.rs",
-    "davinci/vize_l4/src/targets/dom/element.rs",
+    "levels/vize_l4/src/targets/ssr.rs",
+    "levels/vize_l4/src/targets/dom/write.rs",
+    "levels/vize_l4/src/targets/dom/element.rs",
     "tests/tooling/support/native-original-input-model-vapor-primary.ts",
     ...["boundary", "dom-runtime", "vapor-runtime", "modules", "vapor-environment"].map(
       (name) => `tests/tooling/support/native-input-model-checkbox-${name}.ts`,
@@ -29,7 +29,7 @@ test("checkbox producer, inputs and all three consumers select genuine hosted ca
   ])
     assert.equal(nativeVaporCaptureRequired([path]), true, path);
   for (const path of [
-    "davinci/vize_l3/tests/native_model_checkboxes.rs",
+    "levels/vize_l3/tests/native_model_checkboxes.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_input_model_checkbox_inputs.json.old",
     "tests/tooling/support/native-input-model-checkbox-unknown.ts",
     "docs/davinci/model-checkbox.md",

@@ -4,7 +4,7 @@ import path from "node:path";
 import { isEntrypoint, repositoryRoot, runEntrypoint } from "../../support/command-runtime.ts";
 
 const report = "docs/davinci/plan/corpus-coverage.md";
-const usage = "usage: node tools/commands/davinci/corpus-coverage.ts --write | --check";
+const usage = "usage: node tools/commands/levels/corpus-coverage.ts --write | --check";
 
 export function maintainCorpusCoverage(arguments_: readonly string[]): number {
   const root = repositoryRoot(import.meta.url);
@@ -18,7 +18,7 @@ export function maintainCorpusCoverage(arguments_: readonly string[]): number {
   if (arguments_[0] === "--check") {
     if (!fs.existsSync(target)) {
       throw new Error(
-        `stale: ${report} does not exist. Regenerate with: node tools/commands/davinci/corpus-coverage.ts --write`,
+        `stale: ${report} does not exist. Regenerate with: node tools/commands/levels/corpus-coverage.ts --write`,
       );
     }
     console.log(`${report} is up to date`);

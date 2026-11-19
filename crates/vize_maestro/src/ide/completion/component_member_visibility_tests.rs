@@ -272,7 +272,7 @@ async fn component_member_completion_labels(
     (raw_labels, labels)
 }
 
-/// Select generated private labels outside assertion macros so Davinci's
+/// Select generated private labels outside assertion macros so level's
 /// assertions remain exact full-vector comparisons.
 fn generated_member_labels(labels: &[String]) -> Vec<&str> {
     labels

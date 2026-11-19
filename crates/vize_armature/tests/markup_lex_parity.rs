@@ -179,9 +179,9 @@ fn component_lexer_events_and_recovery_match_moved_tokenizer() {
         assert_eq!(native, compat, "{source}");
     }
 
-    for fixture in davinci_test_support::surface_fixture::WELL_FORMED
+    for fixture in level_test_support::surface_fixture::WELL_FORMED
         .iter()
-        .chain(davinci_test_support::surface_fixture::MALFORMED)
+        .chain(level_test_support::surface_fixture::MALFORMED)
     {
         let (compat, native) = traces(fixture.source);
         assert_eq!(native, compat, "{}: {}", fixture.name, fixture.source);
@@ -190,9 +190,9 @@ fn component_lexer_events_and_recovery_match_moved_tokenizer() {
 
 #[test]
 fn truncated_component_corpus_keeps_exact_recovery_events() {
-    for fixture in davinci_test_support::surface_fixture::WELL_FORMED
+    for fixture in level_test_support::surface_fixture::WELL_FORMED
         .iter()
-        .chain(davinci_test_support::surface_fixture::MALFORMED)
+        .chain(level_test_support::surface_fixture::MALFORMED)
     {
         for (index, _) in fixture.source.char_indices() {
             let prefix = fixture.source.get(..index).expect("UTF-8 boundary");
@@ -264,9 +264,9 @@ fn multi_scalar_entity_marks_the_legacy_adapter_boundary() {
 
 #[test]
 fn native_adapter_keeps_moved_tokenizer_events_and_recovery() {
-    for fixture in davinci_test_support::surface_fixture::WELL_FORMED
+    for fixture in level_test_support::surface_fixture::WELL_FORMED
         .iter()
-        .chain(davinci_test_support::surface_fixture::MALFORMED)
+        .chain(level_test_support::surface_fixture::MALFORMED)
     {
         let (compat, _) = traces(fixture.source);
         let adapted = adapted_trace_with::<Component>(fixture.source, false);

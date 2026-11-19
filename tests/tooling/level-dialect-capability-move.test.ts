@@ -9,8 +9,8 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const script = path.join(repoRoot, "tools/support/levels/move-dialect-capabilities.ts");
 const paths = [
-  ["crates/vize_armature/src/legacy.rs", "davinci/vize_l1/src/dialect/vue.rs"],
-  ["davinci/vize_l1_to_l2/src/lower/caps.rs", "davinci/vize_l1/src/dialect/template.rs"],
+  ["crates/vize_armature/src/legacy.rs", "levels/vize_l1/src/dialect/vue.rs"],
+  ["levels/vize_l1_to_l2/src/lower/caps.rs", "levels/vize_l1/src/dialect/template.rs"],
 ] as const;
 const historicalOwnerBytes = [
   fs.readFileSync(path.join(repoRoot, paths[0][1]), "utf8"),

@@ -25,7 +25,7 @@ const command = [
   "--package",
   "vize_atelier_vapor",
   "--test",
-  "davinci_transition_parity",
+  "level_transition_parity",
   "--",
   "controlled_transition_hooks_match_native_retained_and_official_runtime",
   "--exact",

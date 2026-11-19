@@ -9,7 +9,7 @@
 //!   every binding family and shorthand, and ill-formed spellings.
 //! - The rule-fixture plane ([`super::rule_fixtures`]): every template the
 //!   rule unit tests lint — what rule authors chose to exercise.
-//! - The P2-15 construct matrix (`tests/fixtures/davinci-matrix/*.vue`):
+//! - The P2-15 construct matrix (`tests/fixtures/level-matrix/*.vue`):
 //!   element kind × directive, generated, so no construct is missed by taste.
 //! - [`JSX`]: JSX/TSX modules whose lowered roots the P2-16 projection admits
 //!   (and some it refuses, counted).
@@ -260,7 +260,7 @@ pub struct BatteryCensus {
 }
 
 fn matrix_dir() -> std::path::PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/davinci-matrix")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/level-matrix")
 }
 
 fn tally(census: &mut BatteryCensus, comparison: TemplateComparison) {

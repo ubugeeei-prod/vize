@@ -27,7 +27,7 @@ records one `davinci.s2_dom.files` counter.
 HTML roots plus SVG and MathML HTML re-entry cases that keep compatibility
 diagnostics while emitting through S2. The stage-option unit tests assert
 opaque static predicates are S2-supported, and
-`tests/tooling/davinci-dom-production-boundary.test.ts` records
+`tests/tooling/level-dom-production-boundary.test.ts` records
 `custom_element_predicate` as part of the audited S2 DOM emit option surface.
 
 ## Remaining blocker

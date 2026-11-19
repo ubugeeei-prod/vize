@@ -152,8 +152,8 @@ export function collectFreshReports(root, stderr, identities) {
   const directory = path.join(path.resolve(root), REPORT_DIRECTORY);
   const emitted = new Map();
   for (const line of stderr.split("\n")) {
-    if (!line.startsWith("davinci-harness: wrote ")) continue;
-    const file = line.slice("davinci-harness: wrote ".length);
+    if (!line.startsWith("level-harness: wrote ")) continue;
+    const file = line.slice("level-harness: wrote ".length);
     assert.ok(path.isAbsolute(file), "foreign relative report marker");
     regularFileWithin(file, directory);
     const id = path.basename(file, ".json");

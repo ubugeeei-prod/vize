@@ -1,7 +1,7 @@
 # Array-loop reference contract
 
 `rust-lowered-loop-{keyed,unkeyed,nested}` each owns one authored template,
-Rust-verified L3 graph/value Folios, scenario, and expected behavior artifact.
+Rust-verified L3 graph/value Dumps, scenario, and expected behavior artifact.
 The `.behavior.json` observations were specified independently of compiler
 output. Only the graph/value/operation-label artifacts have an explicit Rust
 regeneration option, `VIZE_UPDATE_LOOP_REFERENCE_FIXTURES=1`.
@@ -37,7 +37,7 @@ keys and nested owners stay distinct. No source-template parser runs in Lean.
 
 Supported execution covers JSON arrays, objects (`value, key, index`, in
 canonical key order without array-index keys) and integer ranges. It also covers
-simple lexical aliases, the `Impeto.Expression` JavaScript subset, one native
+simple lexical aliases, the `L3.Expression` JavaScript subset, one native
 root per iteration, nested loops, string/integer keys, `data-id`/`title`/boolean
 `disabled` bindings and `record(path)` string payloads. The generated TS-29
 matrix (`ivm-matrix.*.jsonl`) extends these hand-authored anchors.
@@ -46,7 +46,7 @@ including restoration after a nested loop. Duplicate/unsupported keys,
 malformed operands, ambiguous interaction targets and unsupported expressions
 fail closed. Arbitrary JavaScript, destructuring,
 event-object payloads (`$event` is reserved) and multi-root template loops
-remain outside this subset. `Impeto.IncrementalLaws` proves that every accepted
+remain outside this subset. `L3.IncrementalLaws` proves that every accepted
 update equals fresh rendering, retains the identity of each surviving address
 and allocates exactly the inserted elements. This reference update algorithm
 makes no production complexity claim.

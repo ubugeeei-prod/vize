@@ -132,9 +132,9 @@ fn default_entity_provider_preserves_full_values_context_and_source_spans() {
 
 #[test]
 fn default_provider_is_total_on_every_surface_fixture_and_utf8_truncation() {
-    for fixture in davinci_test_support::surface_fixture::WELL_FORMED
+    for fixture in level_test_support::surface_fixture::WELL_FORMED
         .iter()
-        .chain(davinci_test_support::surface_fixture::MALFORMED)
+        .chain(level_test_support::surface_fixture::MALFORMED)
     {
         lex::<Component>(fixture.source, LexOptions::default());
         for (index, _) in fixture.source.char_indices() {

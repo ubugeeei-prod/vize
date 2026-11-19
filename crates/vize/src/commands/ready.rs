@@ -167,7 +167,7 @@ pub fn run(args: ReadyArgs) {
             verbose: false,
             dump_dir: None,
             dump_after_change: false,
-            davinci_inject_panic: None,
+            level_inject_panic: None,
             profile_export: Default::default(),
         })
     });

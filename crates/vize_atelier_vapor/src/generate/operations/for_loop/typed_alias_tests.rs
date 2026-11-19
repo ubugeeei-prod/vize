@@ -78,7 +78,7 @@ fn typed_escaped_loop_aliases_keep_exact_reactive_reads_and_javascript_keys() {
                 &allocator,
                 source,
                 crate::VaporCompilerOptions {
-                    davinci_retained_lane: retained,
+                    level_retained_lane: retained,
                     ..Default::default()
                 },
             );

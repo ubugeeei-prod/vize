@@ -1,4 +1,4 @@
-//! Executable backend-observation traces for Impeto programs.
+//! Executable backend-observation traces for L3 programs.
 //!
 //! The independent test-only Rust reference is the normative semantics.
 //! Generated L3 fixtures are checked against it by ordinary cargo tests, while

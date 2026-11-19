@@ -2,9 +2,9 @@
 source: crates/vize_l2_to_l3/tests/extraction_snapshots.rs
 expression: "decisions(ELEVEN_TITLES, OptTier::O1)"
 ---
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-placement-folio.placements]
+[s3-placement-dump.placements]
 op=4 alternatives=inline,group leader=2 chosen=group
 op=6 alternatives=inline,group leader=2 chosen=group
 op=8 alternatives=inline,group leader=2 chosen=group
@@ -16,7 +16,7 @@ op=18 alternatives=inline,group leader=2 chosen=group
 op=20 alternatives=inline,group leader=2 chosen=inline
 op=22 alternatives=inline,group leader=2 chosen=inline
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O1
 candidate_budget=8
 budget_left=0
@@ -27,7 +27,7 @@ reactive_edges_after=3
 update_path_before=11
 update_path_after=11
 
-[s3-extraction-folio.decisions]
+[s3-extraction-dump.decisions]
 op=4 placement=group kind=applied reason=committed span=26:36 size=-21 edges=-1 path=0 budget=7
 op=6 placement=group kind=applied reason=committed span=44:54 size=-21 edges=-1 path=0 budget=6
 op=8 placement=group kind=applied reason=committed span=62:72 size=-21 edges=-1 path=0 budget=5

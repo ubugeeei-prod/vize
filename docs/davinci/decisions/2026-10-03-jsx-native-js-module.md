@@ -38,7 +38,7 @@ dependency, extra level stage or parallel metadata table is introduced.
 ## Independent execution evidence
 
 The eleven committed sources in
-`davinci/vize_l4/tests/fixtures/jsx-js-module-vue-3.5.35.json` are lowered by
+`levels/vize_l4/tests/fixtures/jsx-js-module-vue-3.5.35.json` are lowered by
 the genuine parser → owning L2 File → L3 decisions → L4 module path. Rust
 compares the complete native code and complete serialized map to that fixture.
 The Node tooling suite independently transforms every original source using

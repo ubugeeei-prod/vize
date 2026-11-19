@@ -1,4 +1,4 @@
-//! Deep L2 folio mirroring and printing stay heap-grown on small stacks.
+//! Deep L2 dump mirroring and printing stay heap-grown on small stacks.
 
 #![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
@@ -48,17 +48,17 @@ fn deep_dump_mirror_count_and_print_survive_small_stack() {
         .spawn(|| {
             let allocator = Allocator::default();
             let ops = nested_tree(&allocator);
-            let folio = L2Page::of(&ops);
+            let dump = L2Page::of(&ops);
 
-            assert_eq!(folio.op_count(), DEPTH as u64 + 1);
-            let printed = folio.print_to_string(DumpMode::Display);
+            assert_eq!(dump.op_count(), DEPTH as u64 + 1);
+            let printed = dump.print_to_string(DumpMode::Display);
             let expected_tail = format!("{}ui.text \"x\"\n\n", "  ".repeat(DEPTH));
             assert_eq!(printed.lines().nth(1), Some("ops=1101"));
             assert_eq!(
                 printed.get(printed.len() - expected_tail.len()..),
                 Some(expected_tail.as_str())
             );
-            std::mem::forget(folio);
+            std::mem::forget(dump);
         })
         .expect("spawn worker thread")
         .join()

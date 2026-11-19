@@ -22,7 +22,7 @@ Sections, in struct declaration order:
 
 The optional id value is spelled `-` when absent. The op mnemonic set and its
 VDOM/Vapor meaning are defined in
-[`impeto-ops.md`](./impeto-ops.md). The P3-1 mnemonic set is:
+[`l3-ops.md`](./l3-ops.md). The P3-1 mnemonic set is:
 `l3.set-prop`, `l3.set-dynamic-props`, `l3.set-text`,
 `l3.set-event`, `l3.set-html`, `l3.set-template-ref`,
 `l3.insert-node`, `l3.prepend-node`, `l3.directive`, `l3.if`,
@@ -51,9 +51,9 @@ that owns `PartitionKind`, which is why `vize_l2_to_l3` depends on the tier-1
 | `[s3-partition-folio.ops]` | `op=<n> kind=<static\|dynamic> span=<start>:<end>` |
 
 One record per canonical L3 op, in export order. The TS-17 L2-to-L3 snapshots
-(`davinci/vize_l2_to_l3/tests/l3_snapshots.rs`) print this page instead of the
+(`levels/vize_l2_to_l3/tests/l3_snapshots.rs`) print this page instead of the
 former test-local `[s3-partition-facts]` helper, and
-`davinci/vize_l2_to_l3/tests/partition_folio.rs` pins the TS-16 round-trip laws
+`levels/vize_l2_to_l3/tests/partition_dump.rs` pins the TS-16 round-trip laws
 and the exact rejections. The Spolvero stage ladder feeds it as the
 `s3-partition` page.
 

@@ -16,14 +16,14 @@ fn quote_bounded_concatenations_resolve_their_references() {
         r#"<p>{{ "x" + n + "y" }} {{ 'it\'s' }}</p>"#,
     ] {
         for prefix_identifiers in [false, true] {
-            let compile = |davinci_retained_lane| {
+            let compile = |level_retained_lane| {
                 let allocator = Allocator::new();
                 crate::compile_vapor(
                     &allocator,
                     source,
                     crate::VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane,
+                        level_retained_lane,
                         ..Default::default()
                     },
                 )
@@ -69,14 +69,14 @@ fn simple_once_element_uses_native_one_shot_operations() {
             "{source}: {status:?}"
         );
         for prefix_identifiers in [false, true] {
-            let compile = |davinci_retained_lane| {
+            let compile = |level_retained_lane| {
                 let allocator = Allocator::new();
                 crate::compile_vapor(
                     &allocator,
                     source,
                     crate::VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane,
+                        level_retained_lane,
                         ..Default::default()
                     },
                 )
@@ -190,13 +190,13 @@ fn valueless_static_class_and_style_merge_as_empty_strings() {
             "{source}: {status:?}"
         );
         for prefix_identifiers in [false, true] {
-            let compile = |davinci_retained_lane| {
+            let compile = |level_retained_lane| {
                 crate::compile_vapor(
                     &allocator,
                     source,
                     crate::VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane,
+                        level_retained_lane,
                         ..Default::default()
                     },
                 )
@@ -244,13 +244,13 @@ fn cloak_is_a_native_one_shot_directive_in_static_and_branch_regions() {
             "{source}: {status:?}"
         );
         for prefix_identifiers in [false, true] {
-            let compile = |davinci_retained_lane| {
+            let compile = |level_retained_lane| {
                 crate::compile_vapor(
                     &allocator,
                     source,
                     crate::VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane,
+                        level_retained_lane,
                         ..Default::default()
                     },
                 )

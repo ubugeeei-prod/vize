@@ -28,7 +28,7 @@ export const currentOriginalRun = readFileSync(
 );
 assert.equal(
   hash(currentOriginalRun),
-  "397a7119bdeab7cecdb7e1f7c5ed62b8df1232005fcd3d538ac6f20bf761fb13",
+  "e9bc232282eddeda1e237c20bff4a158e1ff98a4d6e217ef635d741643cb498c",
 );
 export const bomRequiredRun = readFileSync(
   new URL("../../../tests/_fixtures/tooling/native-current-recipe-8253.sh", import.meta.url),
@@ -36,7 +36,7 @@ export const bomRequiredRun = readFileSync(
 );
 assert.equal(
   hash(bomRequiredRun),
-  "b2bd7c08e90ca1625044d09cbe221c22f8a8344be8c4347854acb73a66dfc05f",
+  "347fb42ea486692c1760fb5771a7aa04d13d276c544dfc2e986af9418df15384",
 );
 assert.equal(
   bomRequiredRun,
@@ -51,7 +51,7 @@ export const ignoreRequiredRun = readFileSync(
 );
 assert.equal(
   hash(ignoreRequiredRun),
-  "8a2b3e2ffc52c4a80a3c02ae15cede5d8c15fd3415a2368aa1974135703e9c56",
+  "623681241ea1fbcdd18bb28f4bb1fea60a3fd514a1f049e20090fa36ef96cca7",
 );
 assert.equal(
   ignoreRequiredRun,
@@ -70,7 +70,7 @@ export const jsxRequiredRun = readFileSync(
 );
 assert.equal(
   hash(jsxRequiredRun),
-  "3e1cbab6ccc79028c9de0d086801c140b0e99f1876dc9b7002acb74144b600e7",
+  "a37819a3c934a65eeb6ec3fcd7e398942c1a09095a92e4365dcd8384826bb6fc",
 );
 assert.equal(
   jsxRequiredRun,
@@ -89,7 +89,7 @@ export const selectedAliasRequiredRun = readFileSync(
 );
 assert.equal(
   hash(selectedAliasRequiredRun),
-  "ae22cd812c7def2272acf9596ba7c9fe0e94d2c590b5f9d3411fad73b84b14a2",
+  "686d855f4ea73f2e4389f1c973a5c921b96030a43e745188b22c614d385d98bf",
 );
 const receiptCommands = [
   "node tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs",
@@ -115,7 +115,7 @@ export const passiveRequiredRun = readFileSync(
 );
 assert.equal(
   hash(passiveRequiredRun),
-  "9a6c630b68910f0c48f45040eb166ae7fa7fa4b0df798d34c74154eb1742d518",
+  "5d0e6b8191bd85d94e40ab1a4c7ebbd67545c025828bf32c8b9818b17a7652eb",
 );
 const selectedAliasFirstCargo = selectedAliasRequiredRun.split("\n")[3];
 const passiveCargo =
@@ -155,7 +155,7 @@ export const currentRequiredRun = readFileSync(
 );
 assert.equal(
   hash(currentRequiredRun),
-  "880218d69b963ec2feb279bc818922dc58192a46b17b2f2b8fddaab98c943c71",
+  "c2bedaf6133d65c459b0bd868786d794ce3cdb2f817769ceb22da456fdb9a2a4",
 );
 assert.equal(currentRequiredRun, integrationBinaryRun(passiveRequiredRun));
 

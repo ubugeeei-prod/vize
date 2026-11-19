@@ -154,17 +154,17 @@ where
         #[cfg(debug_assertions)]
         {
             verify.note(event);
-            let folio = vize_l2::dump::Page::of(&lowered.artifact.root.ops);
-            verify.check(event, &folio);
-            verify.check_table(event, &folio, &lowered.artifact.scopes);
-            verify.check_table(event, &folio, &lowered.artifact.texts);
-            verify.check_table(event, &folio, &lowered.artifact.if_facts);
-            verify.check_table(event, &folio, &lowered.artifact.for_facts);
-            verify.check_table(event, &folio, &lowered.artifact.branch_fragments);
-            verify.check_table(event, &folio, &lowered.artifact.loop_fragments);
-            verify.check_table(event, &folio, &facts.slot_facts);
-            verify.check_table(event, &folio, &facts.model_faults);
-            verify.check_table(event, &folio, &facts.static_facts);
+            let dump = vize_l2::dump::Page::of(&lowered.artifact.root.ops);
+            verify.check(event, &dump);
+            verify.check_table(event, &dump, &lowered.artifact.scopes);
+            verify.check_table(event, &dump, &lowered.artifact.texts);
+            verify.check_table(event, &dump, &lowered.artifact.if_facts);
+            verify.check_table(event, &dump, &lowered.artifact.for_facts);
+            verify.check_table(event, &dump, &lowered.artifact.branch_fragments);
+            verify.check_table(event, &dump, &lowered.artifact.loop_fragments);
+            verify.check_table(event, &dump, &facts.slot_facts);
+            verify.check_table(event, &dump, &facts.model_faults);
+            verify.check_table(event, &dump, &facts.static_facts);
         }
         after_pass(event, lowered);
         Ok(())

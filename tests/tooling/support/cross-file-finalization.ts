@@ -15,7 +15,7 @@ const git = (...args: string[]) =>
 const sha = git("rev-parse", "HEAD");
 assert.equal(sha, process.env.EXPECTED_SOURCE_SHA);
 assert.equal(
-  git("status", "--porcelain", "--untracked-files=no", "--", "crates", "davinci", "Cargo.lock"),
+  git("status", "--porcelain", "--untracked-files=no", "--", "crates", "levels", "Cargo.lock"),
   "",
 );
 
@@ -60,7 +60,7 @@ save(output, "source-build.json", {
   command: ["cargo", "build", "--locked", "--profile", "ci-opt", "-p", "vize"],
   profile: { inherits: "release", lto: "thin", codegenUnits: 16 },
   sourceTrees: Object.fromEntries(
-    ["crates/vize_croquis_cf/src", "crates/vize/src", "davinci/vize_l0"].map((name) => [
+    ["crates/vize_croquis_cf/src", "crates/vize/src", "levels/vize_l0"].map((name) => [
       name,
       git("rev-parse", `HEAD:${name}`),
     ]),

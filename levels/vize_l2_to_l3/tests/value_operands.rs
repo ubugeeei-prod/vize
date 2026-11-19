@@ -83,10 +83,10 @@ fn lowered_values_outlive_both_source_text_and_the_l2_arena() {
     assert_eq!(branches.len(), 2);
     assert_ne!(branches[0].region, branches[1].region);
     assert_eq!(branches[1].value.kind, ValueKind::Absent);
-    let folio = ValuesPage::of(&lowered.program);
+    let dump = ValuesPage::of(&lowered.program);
     assert_eq!(
-        ValuesPage::parse(folio.print_to_string(DumpMode::Full).as_str()).unwrap(),
-        folio
+        ValuesPage::parse(dump.print_to_string(DumpMode::Full).as_str()).unwrap(),
+        dump
     );
 }
 

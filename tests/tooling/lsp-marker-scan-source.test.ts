@@ -5,7 +5,7 @@ import {
   recordLspMarkerProductionDiff,
   selectLspMarkerSources,
   verifyLspMarkerProductionReceipt,
-} from "../../tools/support/compat/davinci/lsp-marker-scan-source.ts";
+} from "../../tools/support/compat/levels/lsp-marker-scan-source.ts";
 
 const oldBase = "a".repeat(40);
 const actualBase = "b".repeat(40);

@@ -106,14 +106,14 @@ fn custom_directive_payloads_remain_reactive_on_elements_and_components() {
             {"patch": {"view": "Child", "value": "E"}},
         ]);
         let actual = trace(
-            "davinci-directive-trace.mjs",
+            "level-directive-trace.mjs",
             json!({
                 "code": parent.code, "context": context, "steps": steps, "directives": directives,
             "components": {"Child": {"code": child_code.code, "props": ["label"]}, "Second": {"code": second_code.code, "props": ["label"]}},
             }),
         );
         let expected = trace(
-            "davinci-directive-trace.mjs",
+            "level-directive-trace.mjs",
             json!({
                 "source": source, "context": context, "steps": steps, "directives": directives,
             "components": {"Child": {"source": child, "props": ["label"]}, "Second": {"source": second, "props": ["label"]}},

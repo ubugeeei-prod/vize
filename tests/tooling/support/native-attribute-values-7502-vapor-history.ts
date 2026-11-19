@@ -4,9 +4,9 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { baseline7502, exactKeys7502, hash7502 } from "./native-attribute-values-7502-inputs.ts";
 
-const testPath = "davinci/vize_l4/tests/native_vapor.rs";
+const testPath = "levels/vize_l4/tests/native_vapor.rs";
 const testSha = "5903289dae43f4efa359612a243976365bf0280536fd5dead194b8bc959f19b9";
-const fixturePath = "davinci/vize_l4/tests/fixtures/native-vapor-vue-3.6.0-rc.9.json";
+const fixturePath = "levels/vize_l4/tests/fixtures/native-vapor-vue-3.6.0-rc.9.json";
 const fixture = new URL(`../../../${fixturePath}`, import.meta.url);
 const fixtureSha = "c68a4b876c510879d0f70071e6469d175f53c0040be382e95e9e563c73636651";
 

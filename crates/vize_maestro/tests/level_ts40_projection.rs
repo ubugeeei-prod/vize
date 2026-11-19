@@ -12,9 +12,9 @@
     reason = "tests assert by panicking"
 )]
 
-mod davinci_ts40_projection_support;
+mod level_ts40_projection_support;
 
-use davinci_ts40_projection_support::{Drift, capture_fixture, load_matrix, verify_exact};
+use level_ts40_projection_support::{Drift, capture_fixture, load_matrix, verify_exact};
 use vize_l0::{String, cstr};
 
 #[test]
@@ -42,7 +42,7 @@ fn current_projection_matrix_is_exact_and_non_empty() {
         } else {
             "default"
         };
-        let snapshot = cstr!("davinci_ts40__{}__{feature}", fixture.id);
+        let snapshot = cstr!("level_ts40__{}__{feature}", fixture.id);
         if std::panic::catch_unwind(|| {
             insta::assert_snapshot!(snapshot.as_str(), record.render());
         })

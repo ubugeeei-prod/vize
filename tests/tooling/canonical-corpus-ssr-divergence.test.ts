@@ -40,23 +40,23 @@ type Shard = { counter: number | null; lines?: string[] };
 // the panic that names every divergent path (code dumps for the first ten).
 function ssrLog(shards: Shard[], total = shards.length): string {
   return [
-    "canonical observer process: test=davinci_ssr_corpus role=base",
-    "canonical observer process exit: test=davinci_ssr_corpus role=base status=0 signal=none elapsed_ms=11",
+    "canonical observer process: test=level_ssr_corpus role=base",
+    "canonical observer process exit: test=level_ssr_corpus role=base status=0 signal=none elapsed_ms=11",
     ...shards.flatMap((shard, index) => [
-      `canonical observer process: test=davinci_ssr_corpus role=shard index=${index} count=${total} vector=ssr-pug-davinci_ssr_corpus-shard-${index}-of-${total}.nul`,
-      "davinci-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=2",
+      `canonical observer process: test=level_ssr_corpus role=shard index=${index} count=${total} vector=ssr-pug-level_ssr_corpus-shard-${index}-of-${total}.nul`,
+      "legacy-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=2",
       ...(shard.counter === null
         ? []
         : [
-            `davinci SSR production sweep: scope=canonical templates=3 compared=3 s4=3 error_skips=0 rejected=0 divergences=${shard.counter}`,
-            'davinci SSR production lanes: {"s4": 3}',
+            `levels SSR production sweep: scope=canonical templates=3 compared=3 s4=3 error_skips=0 rejected=0 divergences=${shard.counter}`,
+            'levels SSR production lanes: {"s4": 3}',
           ]),
       ...(shard.lines ?? []),
-      `canonical observer process exit: test=davinci_ssr_corpus role=shard index=${index} status=0 signal=none elapsed_ms=1`,
+      `canonical observer process exit: test=level_ssr_corpus role=shard index=${index} status=0 signal=none elapsed_ms=1`,
     ]),
-    "canonical observer process: test=davinci_pug_corpus role=full",
+    "canonical observer process: test=level_pug_corpus role=full",
     `${root}/${fixtureA}/src/Pug.vue ["s4"]`,
-    "canonical observer process exit: test=davinci_pug_corpus role=full status=0 signal=none elapsed_ms=1",
+    "canonical observer process exit: test=level_pug_corpus role=full status=0 signal=none elapsed_ms=1",
   ].join("\n");
 }
 
@@ -65,7 +65,7 @@ const divergent = ssrLog([
   {
     counter: 2,
     lines: [
-      "thread '<unnamed>' panicked at crates/vize_atelier_ssr/tests/davinci_ssr_corpus/production.rs:73:5:",
+      "thread '<unnamed>' panicked at crates/vize_atelier_ssr/tests/level_ssr_corpus/production.rs:73:5:",
       "production: 2 production SFC divergences:",
       `${root}/${fixtureB}/src/B.vue ["s4", "legacy.operation"]`,
       "--- selected",
@@ -115,15 +115,15 @@ void test("SSR evidence fails closed on missing shards, counters or samples", ()
 void test("an SSR difference becomes a fixture-owned issue without compiled output", () => {
   const plan = createDivergenceIssue(ssr, divergent, ledger, selected, context);
   assert.ok(plan);
-  assert.match(plan.title, /^fix\(davinci\): triage canonical SSR divergence [a-f0-9]{12}$/);
+  assert.match(plan.title, /^fix\(levels\): triage canonical SSR divergence [a-f0-9]{12}$/);
   assert.equal(plan.observer, "ssr");
   assert.deepEqual(plan.fixtures, [fixtureA, fixtureB]);
-  assert.match(plan.body, /legacy-vs-Davinci SSR output divergence/);
+  assert.match(plan.body, /legacy-vs-Level SSR output divergence/);
   assert.match(plan.body, /canonical-corpus-ssr-pug-1234-2-/);
   assert.match(plan.body, /production lanes=`s4, legacy\.operation`/);
   assert.match(plan.body, /the selected lane failed to compile/);
   assert.doesNotMatch(plan.body, /\/home\/runner|_sfc_main|SfcError/);
-  assert.deepEqual(plan.labels, ["area:ci", "area:testing", "area:davinci"]);
+  assert.deepEqual(plan.labels, ["area:ci", "area:testing", "area:levels"]);
 });
 
 void test("an SSR reduction runs the production predicate under the corpus path", () => {
@@ -186,7 +186,7 @@ void test("a reduced SSR witness is promoted beside its observer's fixture test"
     );
     const plan = createPromotionPlan(directory);
     assert.ok(plan);
-    assert.equal(plan.branch, "automation/davinci-ssr-abc123abc123");
+    assert.equal(plan.branch, "automation/level-ssr-abc123abc123");
     assert.match(plan.title, /preserve real-project SSR divergence abc123abc123$/);
     assert.match(plan.body, /promoted_real_project_ssr_fixtures_agree/);
     const prefix = "tests/_fixtures/differential/compiler/real-project-ssr-reductions/abc123abc123";

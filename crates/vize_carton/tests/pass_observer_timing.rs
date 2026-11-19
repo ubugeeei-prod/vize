@@ -11,7 +11,7 @@
 //!
 //! `TimingObserver` records through `vize_l0::profiler::record_attributed`,
 //! which is the same serializer path P0-11's
-//! `crates/vize_carton/tests/davinci_profile_export.rs` already validates
+//! `crates/vize_carton/tests/level_profile_export.rs` already validates
 //! against `docs/davinci/plan/profile-export.schema.json` — with a strict
 //! validator that errors on any schema keyword it does not implement. Copying
 //! that validator here would be a second implementation of the thing whose
@@ -20,7 +20,7 @@
 //! schema conformance of that export stays pinned where the validator lives.
 //!
 //! The profiler is process-global, so this file holds a single `#[test]` in
-//! its own binary — the `davinci_expr_reparse_floor.rs` shape.
+//! its own binary — the `level_expr_reparse_floor.rs` shape.
 
 use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};
 use vize_carton::timing_observer::TimingObserver;
@@ -48,7 +48,7 @@ const VERIFY: PassDesc = PassDesc::new(
     Preserved::ALL,
 );
 
-const KEY: &str = "davinci.test.walk";
+const KEY: &str = "levels.test.walk";
 
 #[test]
 fn the_timing_observer_records_one_attributed_span_per_walk() {
@@ -112,7 +112,7 @@ fn the_timing_observer_records_one_attributed_span_per_walk() {
             span.attribution
                 .as_ref()
                 .and_then(|attribution| attribution.pass)
-                .expect("every davinci walk span is attributed to its lead pass")
+                .expect("every levels walk span is attributed to its lead pass")
         })
         .collect();
     leads.sort_unstable();
@@ -122,7 +122,7 @@ fn the_timing_observer_records_one_attributed_span_per_walk() {
         let attribution = span
             .attribution
             .as_ref()
-            .expect("every davinci walk span carries attribution");
+            .expect("every levels walk span carries attribution");
         assert_eq!(
             attribution.stage,
             Some("s2"),

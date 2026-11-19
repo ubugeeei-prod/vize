@@ -58,7 +58,7 @@ if (process.argv[2] === "prepare") {
     head,
     "--",
     "crates",
-    "davinci",
+    "levels",
     "vendor",
     "npm",
     "Cargo.toml",

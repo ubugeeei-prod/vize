@@ -8,7 +8,7 @@
 //! a table gain an implicit `tbody`, and direct cells under that synthesized
 //! section gain an implicit `tr`; cells under an authored row group remain
 //! direct children. L2 inserts those owners during lowering so synthesized op
-//! ids stay in folio page order.
+//! ids stay in dump page order.
 //!
 //! [`LowerPolicy::with_implied_table_sections`]: super::LowerPolicy::with_implied_table_sections
 

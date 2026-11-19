@@ -11,7 +11,7 @@ import {
 import type { SfcCompileResult, WasmModule } from "../../wasm/index";
 import { negotiateProductCapture } from "../../wasm/types/productCapture";
 import type { InspectorDiff } from "../../wasm/types/inspector";
-import { DAVINCI_PRESET } from "../../shared/presets/davinci";
+import { LEVEL_PRESET } from "../../shared/presets/levels";
 import type { EditorHighlight } from "../../shared/monaco-editor.vue";
 import {
   compileCodeOutputs,
@@ -41,7 +41,7 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
   const injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");
   const theme = computed<"dark" | "light">(() => injectedTheme?.value ?? "light");
 
-  const source = ref(DAVINCI_PRESET);
+  const source = ref(LEVEL_PRESET);
   const captures = shallowRef<Partial<Record<OutputTarget, ProductCapturedResult>>>({});
   const compiledSource = ref<string | null>(null);
   const error = ref<string | null>(null);
@@ -81,15 +81,15 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
   const lineMarks = computed(() => {
     const shown = page.value;
     const partition = rung.value?.pages.find((p) => p.kind === "partition");
-    if (!shown || shown.kind !== "impeto" || !partition) return new Map<number, string>();
+    if (!shown || shown.kind !== "l3" || !partition) return new Map<number, string>();
     return graphLineKinds(shown.text, partitionKinds(partition.text));
   });
   /** The page this one is compared against: the previous tree page of its stage. */
   const previousPage = computed(() => {
     const current = rung.value;
     const shown = page.value;
-    if (!current || !shown || shown.kind !== "disegno") return null;
-    const trees = current.pages.filter((p) => p.kind === "disegno");
+    if (!current || !shown || shown.kind !== "l2") return null;
+    const trees = current.pages.filter((p) => p.kind === "l2");
     const index = trees.indexOf(shown);
     return index > 0 ? trees[index - 1] : null;
   });
@@ -129,7 +129,7 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
     const span = focusSpan.value;
     if (!span || !ladder.value || templateStart.value === null) return [];
     const range = templateBytesToSfcRange(ladder.value.template, templateStart.value, span);
-    return [{ ...range, className: "davinci-provenance", reveal: hoveredLine.value === null }];
+    return [{ ...range, className: "level-provenance", reveal: hoveredLine.value === null }];
   });
   const focusSource = computed(() => {
     const span = focusSpan.value;

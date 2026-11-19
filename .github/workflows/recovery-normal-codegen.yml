@@ -40,7 +40,7 @@ jobs:
           done
           git cat-file commit "$PINNED_HEAD" > codegen/head.commit
           python3 -c 'import os,pathlib; h=pathlib.Path("codegen/head.commit").read_bytes().partition(b"\n\n")[0].splitlines(); p=[x.split()[1].decode() for x in h if x.startswith(b"parent ")]; assert p[0]==os.environ["PINNED_BASE"]'
-          cp "$RUNNER_TEMP/recovery-codegen-head/davinci/vize_l0/examples/source_recovery_clone_benchmark.rs" "$RUNNER_TEMP/recovery-codegen-base/davinci/vize_l0/examples/"
+          cp "$RUNNER_TEMP/recovery-codegen-head/levels/vize_l0/examples/source_recovery_clone_benchmark.rs" "$RUNNER_TEMP/recovery-codegen-base/levels/vize_l0/examples/"
           git diff --name-status "$PINNED_BASE" "$PINNED_HEAD" > codegen/source-diff.txt
           rustc +1.99.1 -vV > codegen/rustc.txt
           objdump --version > codegen/objdump.txt
@@ -73,7 +73,7 @@ jobs:
               recovery=source/"crates/vize_croquis/src/script_parser/recovery.rs"
               assert digest(recovery)==expected[role]
               assert digest(source/"Cargo.lock")=="1b6040a4bedd2393261364237dc67474d436a7919d54bbdf7638133b2375010d"
-              assert digest(source/"davinci/vize_l0/examples/source_recovery_clone_benchmark.rs")=="30d7478d54d0eccf631a3c8171beeef791d4acb75bdf5db8f228c6d8d3517404"
+              assert digest(source/"levels/vize_l0/examples/source_recovery_clone_benchmark.rs")=="30d7478d54d0eccf631a3c8171beeef791d4acb75bdf5db8f228c6d8d3517404"
               artifacts=[json.loads(x) for x in (root/("build-"+role+".jsonl")).read_text().splitlines()]
               selected=[x for x in artifacts if x.get("reason")=="compiler-artifact" and x["target"]["name"] in ("vize_croquis","source_recovery_clone_benchmark")]
               assert len(selected)==2
@@ -97,9 +97,9 @@ jobs:
                       p=subprocess.run(["objdump","-d","-C","--start-address="+str(start),"--stop-address="+str(stop),str(binary)],stdout=out,stderr=subprocess.PIPE,text=True)
                       assert p.returncode==0,p.stderr
                       exports.append({"symbol":name,"address":start,"end":stop})
-              for rel,label in (("Cargo.toml","cargo"),("davinci/vize_l0/examples/source_recovery_clone_benchmark.rs","carrier"),("crates/vize_croquis/src/script_parser/recovery.rs","recovery")):
+              for rel,label in (("Cargo.toml","cargo"),("levels/vize_l0/examples/source_recovery_clone_benchmark.rs","carrier"),("crates/vize_croquis/src/script_parser/recovery.rs","recovery")):
                   (root/(label+"-"+role+".txt")).write_bytes((source/rel).read_bytes())
-              receipt["roles"][role]={"sourceRoot":str(source),"source":(root/(role+".sha")).read_text().strip(),"binarySha256":digest(binary),"binaryBytes":binary.stat().st_size,"recoverySha256":digest(recovery),"lockSha256":digest(source/"Cargo.lock"),"carrierSha256":digest(source/"davinci/vize_l0/examples/source_recovery_clone_benchmark.rs"),"artifacts":selected,"assemblySymbols":exports,"recoveryOutOfLine":any("parse_program_for_analysis" in x["symbol"] for x in exports),"allocatorQualification":"inspect actual shim assembly and dynamic symbols; dependency compilation alone is not allocator selection","normalSpeedQualified":False,"allocationTrace":None}
+              receipt["roles"][role]={"sourceRoot":str(source),"source":(root/(role+".sha")).read_text().strip(),"binarySha256":digest(binary),"binaryBytes":binary.stat().st_size,"recoverySha256":digest(recovery),"lockSha256":digest(source/"Cargo.lock"),"carrierSha256":digest(source/"levels/vize_l0/examples/source_recovery_clone_benchmark.rs"),"artifacts":selected,"assemblySymbols":exports,"recoveryOutOfLine":any("parse_program_for_analysis" in x["symbol"] for x in exports),"allocatorQualification":"inspect actual shim assembly and dynamic symbols; dependency compilation alone is not allocator selection","normalSpeedQualified":False,"allocationTrace":None}
           assert receipt["roles"]["base"]["binarySha256"]!=receipt["roles"]["head"]["binarySha256"]
           (root/"receipt.json").write_text(json.dumps(receipt,indent=2)+"\n")
           print(json.dumps(receipt,indent=2))

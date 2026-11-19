@@ -18,7 +18,7 @@
       "lsp-editors"
     ],
     "excluded": [
-      "davinci-v3",
+      "level-v3",
       "eslint",
       "prettier",
       "babel",

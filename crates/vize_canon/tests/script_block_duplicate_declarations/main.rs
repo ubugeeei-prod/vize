@@ -5,7 +5,7 @@
 //! 3.6.0-beta.10 run over byte-identical fixtures (issue #4151).
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 /// Two declarations of one name inside the classic block.
 const DUPLICATE_IN_CLASSIC: &str = r#"<script lang="ts">

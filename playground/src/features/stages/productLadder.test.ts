@@ -59,7 +59,7 @@ describe("same-run product stage feed", () => {
       { level: "l2", step: "facts", text: "L2Facts { static: true }" },
       { level: "l2", step: "provenance", text: "[l2-provenance]" },
       { level: "l3", step: "lower", text: "[l3-dump-v2.ops]\nop=0" },
-      { level: "l3", step: "partition", text: "[s3-partition-folio.ops]\nop=0 kind=dynamic" },
+      { level: "l3", step: "partition", text: "[s3-partition-dump.ops]\nop=0 kind=dynamic" },
       { level: "l3", step: "values", text: "[l3-values]" },
       { level: "l4", step: "emit", text: "export function ssrRender() {}" },
     ];
@@ -68,13 +68,13 @@ describe("same-run product stage feed", () => {
     if (!negotiated.ok) return;
     const ladder = buildProductLadder(negotiated.feed, result);
     expect(ladder.rungs.find(({ id }) => id === "l2")?.pages.map(({ kind }) => kind)).toEqual([
-      "disegno",
+      "l2",
       "facts",
       "provenance",
     ]);
     expect(ladder.rungs.find(({ id }) => id === "l2")?.facts).toEqual(["1 op", "0 passes"]);
     expect(ladder.rungs.find(({ id }) => id === "l3")?.pages.map(({ kind }) => kind)).toEqual([
-      "impeto",
+      "l3",
       "partition",
       "values",
     ]);
@@ -91,7 +91,7 @@ describe("same-run product stage feed", () => {
       {
         level: "l2",
         step: "plan",
-        text: "[fusion-plan-folio]\nstage=s2\nwalks=1\n\n[fusion-plan-folio.passes]\nwalk=0 pass=hoist-static kind=optional fusability=fusable\n\n",
+        text: "[fusion-plan-dump]\nstage=s2\nwalks=1\n\n[fusion-plan-dump.passes]\nwalk=0 pass=hoist-static kind=optional fusability=fusable\n\n",
       },
       { level: "l2", step: "hoist-static", text: "ops=1\n" },
       { level: "l4", step: "emit", text: "export default {}" },

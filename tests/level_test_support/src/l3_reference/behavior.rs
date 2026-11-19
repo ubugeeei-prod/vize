@@ -3,7 +3,7 @@
 
 use std::path::Path;
 
-use super::folio::parse_program;
+use super::dump::parse_program;
 use super::incremental;
 use super::iteration::identifier;
 use super::json::{self, Json, get, get_arr, get_str, keys, object, set};
@@ -126,8 +126,8 @@ pub fn read_case(stem: &Path) -> Result<(Program, Vec<Operand>, Json), String> {
         std::fs::read_to_string(&path).map_err(|e| format!("{path}: {e}"))
     };
     Ok((
-        parse_program(&read("s3.folio")?)?,
-        values::parse(&read("values.folio")?)?,
+        parse_program(&read("s3.dump")?)?,
+        values::parse(&read("values.dump")?)?,
         json::parse(&read("scenario.json")?)?,
     ))
 }

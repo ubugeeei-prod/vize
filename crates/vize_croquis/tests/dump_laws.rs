@@ -1,7 +1,7 @@
-//! Dump trait laws on hand-written croquis folio texts.
+//! Dump trait laws on hand-written croquis dump texts.
 //!
-//! The mode-explicit contract under test (see `davinci/vize_l0/src/dump.rs`
-//! and `docs/davinci/plan/folio-format.md`):
+//! The mode-explicit contract under test (see `levels/vize_l0/src/dump.rs`
+//! and `docs/davinci/plan/dump-format.md`):
 //!
 //! - `Full`: `print(parse(t)) == t` for canonical text, `parse(print(v)) == v`
 //!   for (normalized) values; non-canonical input is normalized by the first
@@ -15,7 +15,7 @@ use vize_l0::assert_dump_snapshot;
 use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{String, cstr};
 
-/// A canonical text exercising every section of the croquis folio.
+/// A canonical text exercising every section of the croquis dump.
 const CANONICAL: &str = "\
 [vir]
 script_setup=true
@@ -70,16 +70,16 @@ rows=Const@197:237
 
 #[test]
 fn full_print_is_identity_on_canonical_text() {
-    let folio = CroquisPage::parse(CANONICAL).expect("canonical text parses");
-    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
+    let dump = CroquisPage::parse(CANONICAL).expect("canonical text parses");
+    assert_eq!(dump.print_to_string(DumpMode::Full).as_str(), CANONICAL);
 }
 
 #[test]
 fn parse_print_is_structural_identity() {
-    let folio = CroquisPage::parse(CANONICAL).expect("canonical text parses");
-    let printed = folio.print_to_string(DumpMode::Full);
+    let dump = CroquisPage::parse(CANONICAL).expect("canonical text parses");
+    let printed = dump.print_to_string(DumpMode::Full);
     let reparsed = CroquisPage::parse(printed.as_str()).expect("printed text parses");
-    assert_eq!(reparsed, folio);
+    assert_eq!(reparsed, dump);
 }
 
 #[test]
@@ -137,17 +137,17 @@ vue^
 [errors]
 rows=Const@197:237
 ";
-    let folio = CroquisPage::parse(scrambled).expect("non-canonical text parses");
-    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
+    let dump = CroquisPage::parse(scrambled).expect("non-canonical text parses");
+    assert_eq!(dump.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     // And the canonical parse is the same value (normalization happened at
     // parse time, not only in print).
     let canonical = CroquisPage::parse(CANONICAL).expect("canonical text parses");
-    assert_eq!(folio, canonical);
+    assert_eq!(dump, canonical);
 }
 
 #[test]
 fn display_mode_elides_spans_and_defaults() {
-    let folio = CroquisPage::parse(CANONICAL).expect("canonical text parses");
+    let dump = CroquisPage::parse(CANONICAL).expect("canonical text parses");
     let expected = "\
 [vir]
 script_setup=true
@@ -198,7 +198,7 @@ st:count
 rows=Const
 
 ";
-    assert_eq!(folio.print_to_string(DumpMode::Display).as_str(), expected);
+    assert_eq!(dump.print_to_string(DumpMode::Display).as_str(), expected);
 }
 
 #[test]
@@ -217,17 +217,17 @@ bindings=0
 }>> @14:98
 
 ";
-    let folio = CroquisPage::parse(text).expect("multi-line macro parses");
-    assert_eq!(folio.macros.len(), 1);
+    let dump = CroquisPage::parse(text).expect("multi-line macro parses");
+    assert_eq!(dump.macros.len(), 1);
     assert_eq!(
-        folio.macros[0]
+        dump.macros[0]
             .type_args
             .as_ref()
             .expect("type args")
             .as_str(),
         "<{\n  change: [value: string];\n\n  update: [id: number, value: string];\n}>"
     );
-    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), text);
+    assert_eq!(dump.print_to_string(DumpMode::Full).as_str(), text);
 }
 
 #[test]
@@ -239,9 +239,9 @@ scopes=0
 bindings=0
 
 ";
-    let folio = CroquisPage::parse(text).expect("header-only text parses");
-    assert_eq!(folio, CroquisPage::default());
-    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), text);
+    let dump = CroquisPage::parse(text).expect("header-only text parses");
+    assert_eq!(dump, CroquisPage::default());
+    assert_eq!(dump.print_to_string(DumpMode::Full).as_str(), text);
 }
 
 fn parse_err(input: &str) -> DumpError {
@@ -296,29 +296,29 @@ fn parse_errors_carry_line_numbers() {
 
 #[test]
 fn hand_built_normalized_value_round_trips() {
-    let mut folio = CroquisPage::parse(CANONICAL).expect("canonical text parses");
+    let mut dump = CroquisPage::parse(CANONICAL).expect("canonical text parses");
     // Perturb into a non-normalized equivalent, then normalize by hand.
-    folio.bindings[0].names.reverse();
-    folio.scopes[1].bindings.reverse();
-    folio.normalize();
+    dump.bindings[0].names.reverse();
+    dump.scopes[1].bindings.reverse();
+    dump.normalize();
 
-    let printed = folio.print_to_string(DumpMode::Full);
+    let printed = dump.print_to_string(DumpMode::Full);
     assert_eq!(printed.as_str(), CANONICAL);
     let reparsed = CroquisPage::parse(printed.as_str()).expect("printed text parses");
-    assert_eq!(reparsed, folio);
+    assert_eq!(reparsed, dump);
 }
 
 #[test]
-fn folio_snapshot_macro_uses_the_normalized_full_printer() {
-    let folio = CroquisPage::parse(CANONICAL).expect("canonical text parses");
-    assert_dump_snapshot!(folio);
+fn dump_snapshot_macro_uses_the_normalized_full_printer() {
+    let dump = CroquisPage::parse(CANONICAL).expect("canonical text parses");
+    assert_dump_snapshot!(dump);
 }
 
 #[test]
-fn folio_error_displays_line_information() {
+fn dump_error_displays_line_information() {
     let error = DumpError::new(3, String::from("boom"));
     let mut rendered = String::default();
     use core::fmt::Write as _;
     write!(rendered, "{error}").expect("write to string");
-    assert_eq!(rendered.as_str(), "folio parse error at line 3: boom");
+    assert_eq!(rendered.as_str(), "dump parse error at line 3: boom");
 }

@@ -7,7 +7,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const sourceRoot = "davinci/vize_l1_to_l2/src";
+const sourceRoot = "levels/vize_l1_to_l2/src";
 const script = path.join(repoRoot, "tools/support/levels/move-dialect-legalization.ts");
 const helpers = [
   "filter.rs",

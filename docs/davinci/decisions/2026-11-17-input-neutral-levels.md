@@ -244,7 +244,7 @@ A difference between the two dialects is not a vize decision: each follows its
 oracle. Where **vize** departs from an oracle, the ledger lists it under
 `divergences`, with a `decidedBy` link to the record that decided it, a
 fixture, and a `fuzzExempt` rule that tells the oracle fuzzer which inputs not
-to compare. `tests/tooling/davinci-htmlish-divergences.test.ts` checks the
+to compare. `tests/tooling/level-htmlish-divergences.test.ts` checks the
 ledger:
 
 - fixture paths exist;
@@ -253,11 +253,11 @@ ledger:
 - every named switch is a constant of `Profile`;
 - every divergence names its decision, fixture and exemption.
 
-The oracle packets under `davinci/vize_l1/tests/fixtures/htmlish/` hold one
+The oracle packets under `levels/vize_l1/tests/fixtures/htmlish/` hold one
 source per row and dialect and the tree its oracle builds (parse5 for
 `document`, `@vue/compiler-dom` for `vue`), written by
-`tools/commands/davinci/htmlish-oracle.ts` and checked current by the ledger
-test. `davinci/vize_l1/tests/htmlish_ledger.rs` parses each source with L1 and
+`tools/commands/levels/htmlish-oracle.ts` and checked current by the ledger
+test. `levels/vize_l1/tests/htmlish_ledger.rs` parses each source with L1 and
 requires the oracle's elements, text, comments and error presence, or a listed
 divergence. A packet that starts to match must leave that list.
 
@@ -353,7 +353,7 @@ vize_l4/src/
 
 ## The gate: `levels.inputs`
 
-`tests/tooling/davinci-level-input-placement.test.ts` lands with this record:
+`tests/tooling/level-input-placement.test.ts` lands with this record:
 
 - **L2→L3, L3, L4:** no module path segment, file name or Rust identifier
   naming an input (`jsx`, `tsx`, `tsrx`, `sfc`, `pug`, case-insensitive on
@@ -382,7 +382,7 @@ vize_l4/src/
 ## Migration
 
 Every structural step is a **scripted move**:
-`tools/commands/davinci/level-layout-move.ts <step>` runs `git mv` and rewrites
+`tools/commands/levels/level-layout-move.ts <step>` runs `git mv` and rewrites
 paths in Rust `mod`/`use` items, `#[path]` attributes, tooling path strings,
 storage-policy inventories, pinned source lists and doc links. It makes no
 other edit. A sibling branch rebases by re-running the same step on its own

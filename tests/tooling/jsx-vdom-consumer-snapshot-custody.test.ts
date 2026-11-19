@@ -35,7 +35,7 @@ const data = JSON.parse(bytes.toString()) as {
   }[];
 };
 function verify(reader: (path: string) => Buffer) {
-  assert.equal(hash(bytes), "03cc702afa07dd83be08e8cebd1eaf08d226db65aa35608d5422e0e3293a9b3a");
+  assert.equal(hash(bytes), "5e4c3d8e74e8ccdb74e279aee561276d90c1acdab52bfd8f9f78802d834a33df");
   assert.equal(data.schema, 1);
   assert.equal(data.head, "11004c61eff840a54965a569da47cec245ae75b6");
   for (const key of [

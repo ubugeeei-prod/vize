@@ -44,14 +44,14 @@ fn every_role_and_value_kind_round_trips_without_losing_escaped_text() {
             });
         }
     }
-    let folio = ValuesPage::of(&program);
+    let dump = ValuesPage::of(&program);
     // All original 18×6 rows plus the appended child-value role across all six codecs.
-    assert_eq!(folio.operands.len(), 114);
-    let printed = folio.print_to_string(DumpMode::Full);
+    assert_eq!(dump.operands.len(), 114);
+    let printed = dump.print_to_string(DumpMode::Full);
     let reparsed = ValuesPage::parse(printed.as_str()).unwrap();
-    assert_eq!(reparsed, folio);
+    assert_eq!(reparsed, dump);
     assert_eq!(reparsed.print_to_string(DumpMode::Full), printed);
-    for operand in folio.operands {
+    for operand in dump.operands {
         let mut text = String::default();
         operand.print_value(&mut text).unwrap();
         let row: OperandRow = operand.0;

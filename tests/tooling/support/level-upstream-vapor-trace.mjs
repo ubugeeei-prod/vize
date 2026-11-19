@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import process from "node:process";
-import { traceMountedBackend } from "./davinci-mounted-trace.mjs";
+import { traceMountedBackend } from "./level-mounted-trace.mjs";
 import { officialCompilerVapor } from "./vue-vapor-release.mjs";
 
 // The official compiler and the mounted runtime come from the same Vue

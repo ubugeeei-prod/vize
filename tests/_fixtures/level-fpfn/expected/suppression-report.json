@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "tool": "tools/commands/davinci/suppression-telemetry.ts",
+  "tool": "tools/commands/levels/suppression-telemetry.ts",
   "source": {
     "kind": "fixtures",
-    "label": "tests/_fixtures/davinci-fpfn"
+    "label": "tests/_fixtures/level-fpfn"
   },
   "ruleMap": {
     "fixture": "tests/_fixtures/patina-eslint-vue-rule-map.json",

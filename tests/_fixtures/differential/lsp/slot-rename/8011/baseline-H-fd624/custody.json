@@ -10,7 +10,7 @@
     {
       "file": "declaration-packet.json",
       "bytes": 5084,
-      "sha256": "9cedd85b589c481c57a21ea08c947881664f1ca61faceebcdd4e68c2c63f542f"
+      "sha256": "c323203b2e78392a9f88fff772ddbe05863a4037a4069dc93ac0b84cc656e6d4"
     },
     {
       "file": "declaration-frames.json",
@@ -20,7 +20,7 @@
     {
       "file": "outlet-packet.json",
       "bytes": 5703,
-      "sha256": "bc481990b37e754f6bc616e3747398eb79e2ff644fb52418152d5639df3475fe"
+      "sha256": "6550b234f2af8edb7894c26ac962e8f99125a1e234c2dc61540a8b39cafc86a6"
     },
     {
       "file": "outlet-frames.json",
@@ -30,7 +30,7 @@
     {
       "file": "consumer-packet.json",
       "bytes": 5723,
-      "sha256": "c29d02820c917b9a99306c49ccdf29d26e235d188cc8cd42493c3a28046a9c57"
+      "sha256": "5dc75d80a497234cf560fae7806d2bf8d12d77587796eb1d8a2b079c27c38fa9"
     },
     {
       "file": "consumer-frames.json",

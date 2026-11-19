@@ -1,6 +1,6 @@
 //! TS-17 for the hoist-static analysis (P2-9 series 6): committed
-//! fixture in, pipeline out, **full normalized folio** snapshot — the
-//! P2-4 harness shape. An analysis pass moves no surface, so the folio
+//! fixture in, pipeline out, **full normalized dump** snapshot — the
+//! P2-4 harness shape. An analysis pass moves no surface, so the dump
 //! shows exactly what the lowering built (the snapshot IS the
 //! fact-not-mutation proof); the published lattice, the walk
 //! accounting, and the empty diagnostics channel are the structural
@@ -37,13 +37,13 @@ fn rows(facts: &vize_l0::side_table::SideTable<StaticFacts>) -> Vec<(u32, Static
 }
 
 #[test]
-fn the_levels_fixture_snapshots_the_post_pass_folio() {
+fn the_levels_fixture_snapshots_the_post_pass_dump() {
     let source = fixture("levels.vue");
-    with_transformed(&source, |lowered, folio, facts, budget| {
-        // The oracle: the full normalized folio after the pipeline ran
-        // — byte-identical to the pre-pass folio, because the analysis
+    with_transformed(&source, |lowered, dump, facts, budget| {
+        // The oracle: the full normalized dump after the pipeline ran
+        // — byte-identical to the pre-pass dump, because the analysis
         // mutates nothing.
-        assert_dump_snapshot!(*folio);
+        assert_dump_snapshot!(*dump);
 
         // Supplements: one walk. The fixture builds none of the
         // structural families and no model, and text facts are
@@ -87,10 +87,10 @@ fn the_levels_fixture_snapshots_the_post_pass_folio() {
 }
 
 #[test]
-fn the_positions_fixture_snapshots_the_post_pass_folio() {
+fn the_positions_fixture_snapshots_the_post_pass_dump() {
     let source = fixture("positions.vue");
-    with_transformed(&source, |_, folio, facts, _| {
-        assert_dump_snapshot!(*folio);
+    with_transformed(&source, |_, dump, facts, _| {
+        assert_dump_snapshot!(*dump);
 
         // The owner census: article, header, em, the branch p, the
         // iterated li and its u, Card and its carrier template with the

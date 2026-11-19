@@ -15,36 +15,36 @@ const summary = computed(() => summarizeRemarks(remarks));
 </script>
 
 <template>
-  <div class="davinci-remarks">
-    <div v-if="remarks.length === 0" class="davinci-remarks-empty">
-      <p class="davinci-remarks-title">No optimization remarks for this source</p>
-      <p class="davinci-hint">
+  <div class="level-remarks">
+    <div v-if="remarks.length === 0" class="level-remarks-empty">
+      <p class="level-remarks-title">No optimization remarks for this source</p>
+      <p class="level-hint">
         Remarks explain why a pass did or did not transform something, with the source site it
         looked at. The passes that ran here had nothing to explain.
       </p>
     </div>
     <template v-else>
-      <p class="davinci-remarks-title">
+      <p class="level-remarks-title">
         {{ summary.applied }} applied, {{ summary.missed }} missed<template
           v-if="summary.analysis > 0"
           >, {{ summary.analysis }} analysis</template
         >
       </p>
-      <ul class="davinci-remark-list">
+      <ul class="level-remark-list">
         <li
           v-for="remark in remarks"
           :key="`${remark.stage}:${remark.pass}:${remark.kind}:${remark.name}:${remark.span.start}:${remark.span.end}`"
-          :class="['davinci-remark', remark.kind]"
+          :class="['level-remark', remark.kind]"
         >
-          <span class="davinci-remark-outcome">{{ remark.kind }}</span>
-          <span class="davinci-remark-pass">{{ remark.pass }}</span>
-          <span class="davinci-remark-message"
+          <span class="level-remark-outcome">{{ remark.kind }}</span>
+          <span class="level-remark-pass">{{ remark.pass }}</span>
+          <span class="level-remark-message"
             ><strong>{{ remark.name }}</strong>
-            <span v-for="arg in remark.args" :key="arg.key" class="davinci-remark-arg">{{
+            <span v-for="arg in remark.args" :key="arg.key" class="level-remark-arg">{{
               formatArg(arg)
             }}</span></span
           >
-          <button type="button" class="davinci-ghost" @click="() => emit('locate', remark)">
+          <button type="button" class="level-ghost" @click="() => emit('locate', remark)">
             Show source
           </button>
         </li>

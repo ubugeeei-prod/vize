@@ -8,7 +8,7 @@
     reason = "measurement evidence uses serde JSON and original source strings"
 )]
 
-use davinci_harness::alloc::{self, CountingAllocator};
+use level_harness::alloc::{self, CountingAllocator};
 use serde_json::{Value, json};
 use vize_atelier_core::{
     CodegenOptions, TemplateSyntaxMode, expr_parse_probe, options::CustomElementMatcher,

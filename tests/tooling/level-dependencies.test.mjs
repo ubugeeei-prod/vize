@@ -19,7 +19,7 @@ import {
   repoRoot,
   validateAllowlist,
   validateProductAllowlist,
-} from "../../tools/support/compat/davinci/level-dependencies.ts";
+} from "../../tools/support/compat/levels/level-dependencies.ts";
 
 import { fixture, oldL3Package, rejectsPath } from "./support/level-dependencies.mjs";
 

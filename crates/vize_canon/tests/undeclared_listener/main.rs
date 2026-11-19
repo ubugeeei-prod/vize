@@ -1,5 +1,5 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
-use davinci_test_support::script_block_project as project;
+use level_test_support::script_block_project as project;
 
 const COMPONENTS: &str = include_str!(
     "../../../../tests/_fixtures/differential/typechecker/undeclared-listener-11913/comps.ts.txt"

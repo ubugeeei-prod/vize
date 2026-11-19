@@ -6,7 +6,7 @@ use std::fs;
 use std::path::Path;
 use std::process::{Command, Output};
 
-use davinci_test_support::schema;
+use level_test_support::schema;
 use vize_atelier_core::options::{
     CodegenExperimentalOptions, CodegenOptions, CustomElementMatcher, TemplateSyntaxMode,
 };

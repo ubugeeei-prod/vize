@@ -1,4 +1,4 @@
-//! Rendered template complexity (Davinci P4-9b): a component's own score
+//! Rendered template complexity (plan P4-9b): a component's own score
 //! plus the own score of every **distinct** component reachable in its
 //! render tree through template component-usage edges.
 //!

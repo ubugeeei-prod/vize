@@ -351,7 +351,7 @@ export function listStarCounterpartFiles(owner, source, initialNames) {
       ].map((match) => path.posix.normalize(path.posix.join(directory, match[1])));
       candidates.push(
         ...[
-          ...body.matchAll(/["']((?:tests|tools|crates|docs|davinci|\.github)\/[^"'\n]+)["']/gu),
+          ...body.matchAll(/["']((?:tests|tools|crates|docs|levels|\.github)\/[^"'\n]+)["']/gu),
         ].map((match) => match[1]),
         ...[...body.matchAll(/["']([A-Za-z0-9_.-]+\.(?:json|gz|txt))["']/gu)].map((match) =>
           path.posix.join(directory, match[1]),

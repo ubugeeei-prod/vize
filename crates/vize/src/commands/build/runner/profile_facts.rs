@@ -90,7 +90,7 @@ fn record_source_facts(
     profiler.record_counter("source.block.style.count", style_count as u64);
 
     record_lane(settings);
-    record_davinci_plan(settings);
+    record_level_plan(settings);
     record_dialect(settings.dialect);
     record_template_syntax(settings.template_syntax);
     record_cache_status(cache_status);
@@ -104,15 +104,15 @@ fn file_note(
     cache_status: StatsCacheStatus,
 ) -> String {
     cstr!(
-        "lane {}, plate source.sfc, dialect {}, syntax {}, blocks template {} B / script {} B / styles {}, davinci planned groups {} / passes {}, cache {}",
+        "lane {}, plate source.sfc, dialect {}, syntax {}, blocks template {} B / script {} B / styles {}, levels planned groups {} / passes {}, cache {}",
         lane_label(settings),
         dialect_label(settings.dialect),
         template_syntax_label(settings.template_syntax),
         template_size,
         script_size,
         style_count,
-        settings.davinci.planned_groups,
-        settings.davinci.planned_passes,
+        settings.levels.planned_groups,
+        settings.levels.planned_passes,
         cache_status.label()
     )
 }
@@ -129,17 +129,17 @@ fn record_lane(settings: &CompileFileSettings) {
     }
 }
 
-fn record_davinci_plan(settings: &CompileFileSettings) {
+fn record_level_plan(settings: &CompileFileSettings) {
     let profiler = global_profiler();
     profiler.record_counter(
-        "davinci.build.planned_groups",
-        u64::from(settings.davinci.planned_groups),
+        "levels.build.planned_groups",
+        u64::from(settings.levels.planned_groups),
     );
     profiler.record_counter(
-        "davinci.build.planned_passes",
-        u64::from(settings.davinci.planned_passes),
+        "levels.build.planned_passes",
+        u64::from(settings.levels.planned_passes),
     );
-    profiler.record_counter("davinci.build.files", 1);
+    profiler.record_counter("levels.build.files", 1);
 }
 
 fn record_dialect(dialect: VueVersion) {

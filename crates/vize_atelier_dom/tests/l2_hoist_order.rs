@@ -1,4 +1,4 @@
-//! Davinci L2 hoist ordering residuals, compared byte-for-byte.
+//! Level L2 hoist ordering residuals, compared byte-for-byte.
 
 use crate::support;
 

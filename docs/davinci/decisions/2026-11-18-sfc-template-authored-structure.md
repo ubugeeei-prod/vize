@@ -76,6 +76,6 @@ the omission in lint.
 - Parser pins: `vize_armature::parser::tests::authored_structure` (component
   versus repaired lane) and the document-mode expectations in
   `crates/vize_armature/src/parser/tests.rs`.
-- Native pins: `davinci/vize_l1/tests/implied_end_tags_legacy_oracle.rs` (both
+- Native pins: `levels/vize_l1/tests/implied_end_tags_legacy_oracle.rs` (both
   parsers agree in the authored and the repaired lane) and
-  `davinci/vize_l1/tests/authored_projection.rs`.
+  `levels/vize_l1/tests/authored_projection.rs`.

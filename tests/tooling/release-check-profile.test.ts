@@ -21,11 +21,7 @@ const workflow = parse(checkWorkflowJobSources()) as {
   jobs: Record<string, Job>;
 };
 const jobs = workflow.jobs;
-const producers = [
-  "rust-clippy-portability",
-  "rust-davinci-allocations",
-  "rust-native-differential",
-];
+const producers = ["rust-clippy-portability", "rust-level-allocations", "rust-native-differential"];
 
 function condition(expression: string | undefined, event: string, ref: string, profile: boolean) {
   if (!expression) return true;

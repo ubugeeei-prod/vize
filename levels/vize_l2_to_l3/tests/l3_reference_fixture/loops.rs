@@ -13,7 +13,7 @@ use vize_l3::verify::verify;
 
 #[test]
 fn loop_reference_graph_and_values_are_rust_lowered() {
-    let fixtures = davinci_test_support::l3_reference::fixtures();
+    let fixtures = level_test_support::l3_reference::fixtures();
     for name in ["keyed", "unkeyed", "nested"] {
         let stem = fixtures.join(format!("rust-lowered-loop-{name}"));
         let source = std::fs::read_to_string(stem.with_extension("template.txt")).unwrap();
@@ -26,13 +26,13 @@ fn loop_reference_graph_and_values_are_rust_lowered() {
         assert_eq!(verify(&lowered.program), []);
         for (extension, actual) in [
             (
-                "s3.folio",
+                "s3.dump",
                 L3Page::of(&lowered.program)
                     .print_to_string(DumpMode::Full)
                     .to_string(),
             ),
             (
-                "values.folio",
+                "values.dump",
                 ValuesPage::of(&lowered.program)
                     .print_to_string(DumpMode::Full)
                     .to_string(),

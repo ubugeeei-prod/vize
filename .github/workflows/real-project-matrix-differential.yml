@@ -44,7 +44,7 @@ jobs:
         with:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
-          name: real-project-davinci-dom-corpus
+          name: real-project-level-dom-corpus
           path: dom-corpus
       - name: Download canonical SSR corpus evidence
         continue-on-error: true

@@ -54,8 +54,8 @@ jobs:
       - name: Test default harness and client request windows
         if: env.MEASURE == 'true'
         run: |
-          cargo test --locked -p davinci_harness --lib
-          cargo test --locked -p davinci_harness --lib --features instruction-counts
+          cargo test --locked -p level_harness --lib
+          cargo test --locked -p level_harness --lib --features instruction-counts
       - name: Measure original formatter routines three times without Criterion sampling
         if: env.MEASURE == 'true'
         run: node tools/benchmarks/scripts/instruction-counts.mjs --formatter --collect --out "${RUNNER_TEMP}/formatter-instruction-counts"

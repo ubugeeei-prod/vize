@@ -60,10 +60,10 @@ test("registry failures cannot turn the first-publish baseline into a skipped ch
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-semver-registry-"));
   const bin = path.join(root, "bin");
   fs.mkdirSync(bin);
-  fs.mkdirSync(path.join(root, "davinci", "vize_l1_to_l2"), { recursive: true });
+  fs.mkdirSync(path.join(root, "levels", "vize_l1_to_l2"), { recursive: true });
   fs.writeFileSync(path.join(root, "Cargo.toml"), '[workspace.package]\nversion = "0.429.0"\n');
   fs.writeFileSync(
-    path.join(root, "davinci", "vize_l1_to_l2", "Cargo.toml"),
+    path.join(root, "levels", "vize_l1_to_l2", "Cargo.toml"),
     '[package]\nname = "vize_l1_to_l2"\nversion.workspace = true\n',
   );
   writeFakeCommand(
@@ -151,7 +151,7 @@ test("a renamed package uses the exact Git parent source and version before regi
     "exact API parent",
   ]);
   const base = git(["rev-parse", "HEAD"]);
-  const newCrate = path.join(root, "davinci", "vize_l1_to_l2");
+  const newCrate = path.join(root, "levels", "vize_l1_to_l2");
   fs.mkdirSync(path.dirname(newCrate), { recursive: true });
   fs.renameSync(oldCrate, newCrate);
   fs.writeFileSync(
@@ -187,7 +187,7 @@ test("a renamed package uses the exact Git parent source and version before regi
     assert.match(exact.stderr, new RegExp(base));
     assert.notEqual(run("missing-base").status, 0);
     // Once the package already exists in the base, preserve --baseline-rev.
-    git(["add", "Cargo.toml", "crates", "davinci"]);
+    git(["add", "Cargo.toml", "crates", "levels"]);
     git([
       "-c",
       "user.name=Vize",

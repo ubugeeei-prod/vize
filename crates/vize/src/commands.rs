@@ -7,7 +7,6 @@ pub mod clean;
 pub(crate) mod config_stdin;
 pub mod content_mapper;
 pub mod curator;
-pub(crate) mod davinci_ice;
 pub mod doctor;
 pub mod dump;
 pub mod env_info;
@@ -17,6 +16,7 @@ pub mod fmt;
 #[cfg(feature = "maestro")]
 pub mod ide;
 pub mod inspector;
+pub(crate) mod level_ice;
 pub mod library;
 pub mod lint;
 #[cfg(feature = "maestro")]

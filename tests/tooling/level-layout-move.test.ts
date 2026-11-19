@@ -14,13 +14,13 @@ import {
   rewriteRust,
   type Step,
   steps,
-} from "../../tools/commands/davinci/level-layout-move.ts";
+} from "../../tools/commands/levels/level-layout-move.ts";
 
 const step: Step = steps["l1-markup"]!;
 
 test("module paths of files and their relocation", () => {
-  assert.deepEqual(modulePathOf("davinci/vize_l1", "davinci/vize_l1/src/lib.rs"), []);
-  assert.deepEqual(modulePathOf("davinci/vize_l1", "davinci/vize_l1/src/markup/lex.rs"), [
+  assert.deepEqual(modulePathOf("levels/vize_l1", "levels/vize_l1/src/lib.rs"), []);
+  assert.deepEqual(modulePathOf("levels/vize_l1", "levels/vize_l1/src/markup/lex.rs"), [
     "markup",
     "lex",
   ]);
@@ -90,26 +90,26 @@ test("crate, relative and grouped paths follow the moved modules", () => {
 
 test("repository paths, regex literals, test filters and relative includes", () => {
   assert.equal(
-    rewritePaths("see davinci/vize_l1/src/markup/lex.rs and davinci/vize_l1/src/pug/tree.rs", step),
-    "see davinci/vize_l1/src/markup/htmlish/lex.rs and davinci/vize_l1/src/markup/pug/tree.rs",
+    rewritePaths("see levels/vize_l1/src/markup/lex.rs and levels/vize_l1/src/pug/tree.rs", step),
+    "see levels/vize_l1/src/markup/htmlish/lex.rs and levels/vize_l1/src/markup/pug/tree.rs",
   );
   assert.equal(
-    rewritePaths("/^davinci\\/vize_l1\\/src\\/markup\\/native\\/operand(?:\\.rs$|\\/)/", step),
-    "/^davinci\\/vize_l1\\/src\\/markup\\/htmlish\\/native\\/operand(?:\\.rs$|\\/)/",
+    rewritePaths("/^levels\\/vize_l1\\/src\\/markup\\/native\\/operand(?:\\.rs$|\\/)/", step),
+    "/^levels\\/vize_l1\\/src\\/markup\\/htmlish\\/native\\/operand(?:\\.rs$|\\/)/",
   );
   assert.equal(
     rewritePaths("cargo test -p vize_l1 --lib markup::native::operand::model::tests::", step),
     "cargo test -p vize_l1 --lib markup::htmlish::native::operand::model::tests::",
   );
   assert.equal(
-    rewritePaths("davinci/vize_l1/src/markup/lexer.rs", step),
-    "davinci/vize_l1/src/markup/lexer.rs",
+    rewritePaths("levels/vize_l1/src/markup/lexer.rs", step),
+    "levels/vize_l1/src/markup/lexer.rs",
   );
   assert.equal(
     rewriteRelativeFiles(
       'include_str!("../../../tests/fixtures/a.json")',
-      "davinci/vize_l1/src/markup/document/tests.rs",
-      "davinci/vize_l1/src/markup/htmlish/document/tests.rs",
+      "levels/vize_l1/src/markup/document/tests.rs",
+      "levels/vize_l1/src/markup/htmlish/document/tests.rs",
       new Map(),
     ),
     'include_str!("../../../../tests/fixtures/a.json")',

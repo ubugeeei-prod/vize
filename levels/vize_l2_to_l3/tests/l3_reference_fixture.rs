@@ -1,5 +1,5 @@
 //! TS-28 bridge from Rust L2->L3 lowering into the independent L3 reference
-//! (`davinci_test_support::l3_reference`). Rust producers write the committed
+//! (`level_test_support::l3_reference`). Rust producers write the committed
 //! graph, value and trace pages; the reference reads only those pages.
 
 use vize_l0::Allocator;
@@ -30,13 +30,13 @@ fn rust_lowered_values_match_stateful_reference_input() {
         (
             STATIC_DYNAMIC_SOURCE,
             include_str!(
-                "../../../tests/fixtures/l3-reference/rust-lowered-static-dynamic.values.folio"
+                "../../../tests/fixtures/l3-reference/rust-lowered-static-dynamic.values.dump"
             ),
         ),
         (
             CONTROL_SLOTS_SOURCE,
             include_str!(
-                "../../../tests/fixtures/l3-reference/rust-lowered-control-slots.values.folio"
+                "../../../tests/fixtures/l3-reference/rust-lowered-control-slots.values.dump"
             ),
         ),
     ] {
@@ -60,7 +60,7 @@ fn rust_lowered_fixtures_match_reference_inputs() {
         (
             STATIC_DYNAMIC_SOURCE,
             include_str!(
-                "../../../tests/fixtures/l3-reference/rust-lowered-static-dynamic.s3.folio"
+                "../../../tests/fixtures/l3-reference/rust-lowered-static-dynamic.s3.dump"
             ),
             include_str!("../../../tests/fixtures/l3-reference/rust-lowered-static-dynamic.trace"),
             include_str!(
@@ -72,9 +72,7 @@ fn rust_lowered_fixtures_match_reference_inputs() {
         ),
         (
             CONTROL_SLOTS_SOURCE,
-            include_str!(
-                "../../../tests/fixtures/l3-reference/rust-lowered-control-slots.s3.folio"
-            ),
+            include_str!("../../../tests/fixtures/l3-reference/rust-lowered-control-slots.s3.dump"),
             include_str!("../../../tests/fixtures/l3-reference/rust-lowered-control-slots.trace"),
             include_str!(
                 "../../../tests/fixtures/l3-reference/rust-lowered-control-slots.vdom.trace"
@@ -85,10 +83,10 @@ fn rust_lowered_fixtures_match_reference_inputs() {
         ),
     ];
 
-    for (source, expected_folio, expected_trace, expected_vdom, expected_vapor) in cases {
+    for (source, expected_dump, expected_trace, expected_vdom, expected_vapor) in cases {
         assert_rust_lowered_fixture(
             source,
-            expected_folio,
+            expected_dump,
             expected_trace,
             expected_vdom,
             expected_vapor,
@@ -98,7 +96,7 @@ fn rust_lowered_fixtures_match_reference_inputs() {
 
 fn assert_rust_lowered_fixture(
     source: &str,
-    expected_folio: &str,
+    expected_dump: &str,
     expected_trace: &str,
     expected_vdom: &str,
     expected_vapor: &str,
@@ -113,7 +111,7 @@ fn assert_rust_lowered_fixture(
     let actual = L3Page::of(&lowered.program).print_to_string(DumpMode::Full);
     assert_eq!(
         actual.trim_end_matches('\n'),
-        expected_folio.trim_end_matches('\n')
+        expected_dump.trim_end_matches('\n')
     );
     assert_eq!(
         reference_trace_text(&lowered.program).trim_end_matches('\n'),

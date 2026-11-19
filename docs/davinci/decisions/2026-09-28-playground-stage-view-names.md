@@ -18,7 +18,7 @@ focused playground tests, typechecking, the browser stage ladder, ordinary
 Actions, and the protected merge queue before treating this slice as landed.
 
 Remaining #6832 naming inventory is explicit: the active
-`playground/src/shared/presets/davinci.ts` path and its exported names; the
+`playground/src/shared/presets/levels.ts` path and its exported names; the
 `Davinci` tab key, label, query parameter and VRT snapshot names; and the
 `.davinci-*` CSS/DOM class names across the stage view. Those are not approved
 exceptions. A later PR must rename them with URL/VRT migration evidence, or

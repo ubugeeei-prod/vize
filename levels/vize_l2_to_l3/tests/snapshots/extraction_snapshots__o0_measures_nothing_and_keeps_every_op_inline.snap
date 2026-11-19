@@ -2,13 +2,13 @@
 source: crates/vize_l2_to_l3/tests/extraction_snapshots.rs
 expression: "decisions(BRANCH_AND_HANDLER, OptTier::O0)"
 ---
-[s3-placement-folio]
+[s3-placement-dump]
 
-[s3-placement-folio.placements]
+[s3-placement-dump.placements]
 op=2 alternatives=inline,hoist leader=- chosen=inline
 op=7 alternatives=inline,cache leader=- chosen=inline
 
-[s3-extraction-folio]
+[s3-extraction-dump]
 tier=O0
 candidate_budget=0
 budget_left=0
@@ -19,7 +19,7 @@ reactive_edges_after=2
 update_path_before=6
 update_path_after=6
 
-[s3-extraction-folio.decisions]
+[s3-extraction-dump.decisions]
 op=2 placement=hoist kind=missed reason=budget-exhausted span=9:43 size=0 edges=0 path=0 budget=0
 op=7 placement=cache kind=missed reason=budget-exhausted span=51:64 size=0 edges=0 path=0 budget=0
 

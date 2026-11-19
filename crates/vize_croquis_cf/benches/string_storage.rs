@@ -82,12 +82,12 @@ fn write_report(name: &str, value: &serde_json::Value) {
 }
 
 pub(super) fn bench(c: &mut Criterion) {
-    davinci_harness::alloc::mark_installed();
+    level_harness::alloc::mark_installed();
     for (name, long) in [("short_keys", false), ("long_unicode_keys", true)] {
         let files = tree_project(long);
         let options = CrossFileOptions::default().with_provide_inject(true);
         let mut analyzer = build_analyzer(&files, options.clone());
-        let (result, allocation) = davinci_harness::alloc::measure_returning(|| analyzer.analyze());
+        let (result, allocation) = level_harness::alloc::measure_returning(|| analyzer.analyze());
         if result.provide_inject_matches.len() != 3_200 {
             eprintln!("tree fixture did not resolve all 3,200 authored inject calls");
             std::process::exit(1);
@@ -120,8 +120,7 @@ pub(super) fn bench(c: &mut Criterion) {
         ("long_unicode", "src/components/application/状態/"),
     ] {
         let paths = module_paths(prefix);
-        let (project, allocation) =
-            davinci_harness::alloc::measure_returning(|| add_modules(&paths));
+        let (project, allocation) = level_harness::alloc::measure_returning(|| add_modules(&paths));
         write_report(
             &format!("modules_{name}"),
             &serde_json::json!({

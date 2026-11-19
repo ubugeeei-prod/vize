@@ -14,7 +14,7 @@
 use std::hint::black_box;
 
 use criterion::{Criterion, criterion_group};
-use davinci_harness::stage::bench_stage_with_metrics;
+use level_harness::stage::bench_stage_with_metrics;
 use vize_glyph::{
     Allocator, FormatOptions, format_script, format_sfc, format_sfc_with_allocator, format_template,
 };
@@ -99,4 +99,4 @@ criterion_group!(
     original_script,
     original_template,
 );
-davinci_harness::main!(probes);
+level_harness::main!(probes);

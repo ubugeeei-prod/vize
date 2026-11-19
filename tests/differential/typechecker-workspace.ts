@@ -32,8 +32,8 @@ type WorkspaceOptions = {
 
 export const TYPECHECKER_TS40_TESTS = [
   "current_projection_matrix_is_exact_and_non_empty",
-  "davinci_ts40_projection_support::evidence::public_instance_mixed_vue2_packets_remain_authenticated",
-  "davinci_ts40_projection_support::evidence::public_instance_slot_packets_remain_authenticated",
+  "level_ts40_projection_support::evidence::public_instance_mixed_vue2_packets_remain_authenticated",
+  "level_ts40_projection_support::evidence::public_instance_slot_packets_remain_authenticated",
   "mapping_drift_fails_closed",
   "diagnostic_drift_fails_closed",
 ] as const;
@@ -47,7 +47,7 @@ const files = {
   timing: "workspace-timing.json",
   junit: "workspace-junit-ci.xml",
 };
-const matrixPath = "tests/_fixtures/davinci-ts40-projection/matrix.json";
+const matrixPath = "tests/_fixtures/level-ts40-projection/matrix.json";
 const json = <T>(file: string): T => JSON.parse(fs.readFileSync(file, "utf8"));
 const bytes = (file: string) => fs.readFileSync(file);
 const save = (file: string, value: unknown) =>
@@ -150,7 +150,7 @@ function physicalBinary(binary: Receipt["binary"], source: Source) {
 function requiredCases(inventory: Inventory) {
   for (const [id, names] of [
     ["vize_canon::fix_history_diagnostics", Object.values(TYPECHECKER_TESTS)],
-    ["vize_maestro::davinci_ts40_projection", TYPECHECKER_TS40_TESTS],
+    ["vize_maestro::level_ts40_projection", TYPECHECKER_TS40_TESTS],
   ] as const) {
     const suites = inventory.binaries.filter((item) => item.id === id);
     assert.equal(suites.length, 1);
@@ -279,7 +279,7 @@ function ts40Captures(repoRoot: string, captureRoot: string) {
     const snapshot = fs.readFileSync(
       path.join(
         repoRoot,
-        `crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__${fixture.id}__${feature}.snap`,
+        `crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__${fixture.id}__${feature}.snap`,
       ),
       "utf8",
     );

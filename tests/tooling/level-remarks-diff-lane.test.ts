@@ -20,13 +20,13 @@ test("the TS-32 remarks-diff lane is wired and documented", () => {
     "test-rust-workspace-differential",
     "action.yml",
   );
-  const manifest = readRepoFile("davinci", "vize_l1_to_l2", "Cargo.toml");
+  const manifest = readRepoFile("levels", "vize_l1_to_l2", "Cargo.toml");
   const suites = readRepoFile("docs/davinci", "plan", "test-suites.md");
-  const baseline = readRepoFile("tests", "_fixtures", "davinci-remarks-baseline.folio");
+  const baseline = readRepoFile("tests", "_fixtures", "level-remarks-baseline.dump");
 
   assert.match(
     manifest,
-    /^\[\[test\]\]\nname = "davinci_remarks_corpus"\nrequired-features = \["legacy-differential"\]$/m,
+    /^\[\[test\]\]\nname = "level_remarks_corpus"\nrequired-features = \["legacy-differential"\]$/m,
   );
   assert.match(nativeJob, /uses: \.\/\.github\/actions\/test-rust-workspace-differential/);
   assert.match(
@@ -37,14 +37,14 @@ test("the TS-32 remarks-diff lane is wired and documented", () => {
   assert.ok(
     lowering.some(
       (step) =>
-        step.args.includes("davinci_remarks_corpus") && step.args.includes("legacy-differential"),
+        step.args.includes("level_remarks_corpus") && step.args.includes("legacy-differential"),
     ),
     "the TS-32 remarks corpus must run explicitly after cargo test --workspace",
   );
   assert.match(
     suites,
-    /^\| TS-32 \| Remarks diff\s+\| `cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_remarks_corpus`: /m,
+    /^\| TS-32 \| Remarks diff\s+\| `cargo test -p vize_l1_to_l2 --features legacy-differential --test level_remarks_corpus`: /m,
   );
-  assert.match(suites, /`tests\/_fixtures\/davinci-remarks-baseline\.folio`/u);
+  assert.match(suites, /`tests\/_fixtures\/level-remarks-baseline\.dump`/u);
   assert.match(baseline, /^\[remarks-corpus\]\n\n\[remarks-corpus\.files\]\n/u);
 });

@@ -1,4 +1,4 @@
-//! P2-10 follow-up: keep the ricalco CSS `v-bind()` scanner byte-for-byte
+//! P2-10 follow-up: keep the l1_to_l2 CSS `v-bind()` scanner byte-for-byte
 //! aligned with the shipped SFC extractor while the scanner remains local.
 
 #![expect(clippy::panic, reason = "tests assert by panicking")]

@@ -15,7 +15,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { maskRustSource } from "./davinci-storage-rust-syntax.ts";
+import { maskRustSource } from "./level-storage-rust-syntax.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const owedFile = "docs/davinci/plan/input-placement-owed.json";
@@ -200,7 +200,7 @@ function fixtureOffenders(): string[] {
 }
 
 export function offenders(): string[] {
-  const root = path.join(repoRoot, "davinci");
+  const root = path.join(repoRoot, "levels");
   return [
     ...neutralOffenders(root),
     ...l1Offenders(root),

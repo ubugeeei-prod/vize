@@ -37,7 +37,7 @@ fn computed_outlet_names_use_native_l3_with_retained_expressions() {
                 source,
                 VaporCompilerOptions {
                     prefix_identifiers,
-                    davinci_retained_lane: true,
+                    level_retained_lane: true,
                     ..Default::default()
                 },
             );
@@ -118,13 +118,13 @@ fn named_and_scoped_slots_match_the_retained_lane() {
         assert!(admitted(source), "{source}");
         for prefix_identifiers in [false, true] {
             let allocator = Allocator::new();
-            let compile = |davinci_retained_lane| {
+            let compile = |level_retained_lane| {
                 compile_vapor(
                     &allocator,
                     source,
                     VaporCompilerOptions {
                         prefix_identifiers,
-                        davinci_retained_lane,
+                        level_retained_lane,
                         ..Default::default()
                     },
                 )
@@ -151,7 +151,7 @@ fn plain_identifier_slot_params_name_the_props_object() {
             &allocator,
             source,
             VaporCompilerOptions {
-                davinci_retained_lane: retained,
+                level_retained_lane: retained,
                 ..Default::default()
             },
         )

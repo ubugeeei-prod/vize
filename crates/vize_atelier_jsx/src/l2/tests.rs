@@ -344,7 +344,7 @@ fn custom_directive_projects_with_its_argument_and_value() {
 }
 
 #[test]
-fn runtime_slots_keep_their_typed_expression_owner_span_and_folio() {
+fn runtime_slots_keep_their_typed_expression_owner_span_and_dump() {
     use vize_l0::dump::{Dump, Mode};
     use vize_l2::dump::Page;
     use vize_l2::walk::NodeRef;
@@ -401,7 +401,7 @@ fn runtime_slots_keep_their_typed_expression_owner_span_and_folio() {
     assert_eq!(visited, [("getSlots(owner)", value)]);
     let page = Page::of(&l2.root.ops);
     let printed = page.print_to_string(Mode::Full);
-    assert_eq!(Page::parse(&printed).expect("complete typed folio"), page);
+    assert_eq!(Page::parse(&printed).expect("complete typed dump"), page);
     let misplaced = printed.replace("ui.component", "ui.element");
     assert!(
         Page::parse(&misplaced).is_err(),

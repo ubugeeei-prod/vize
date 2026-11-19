@@ -7,10 +7,10 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 // Spelled in parts so this script never matches itself.
-const oldPrefix = ["davinci", "s3_vapor", ""].join(".");
+const oldPrefix = ["levels", "s3_vapor", ""].join(".");
 const newPrefix = "l3.vapor.";
 const suffixes = new Set([".rs", ".ts", ".mjs", ".toml"]);
-const scopes = ["crates", "davinci", "tools", "tests", "npm"];
+const scopes = ["crates", "levels", "tools", "tests", "npm"];
 
 /** Live sources only: docs and captured fixtures keep their historical bytes. */
 export function eligible(relative: string): boolean {

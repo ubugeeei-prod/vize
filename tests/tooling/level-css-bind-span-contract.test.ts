@@ -29,13 +29,13 @@ test("P2-10 docs describe vue.css-bind spans as file-absolute", () => {
   const records = readRepoFile("docs/davinci", "plan", "phase-2-records.md");
   const tasks = readRepoFile("docs/davinci", "plan", "phase-2-tasks.md");
   const p2_10 = readRepoFile("docs/davinci", "plan", "phase-2-records", "p2-10.md");
-  const folioFormat = readRepoFile("docs/davinci", "plan", "folio-format.md");
+  const dumpFormat = readRepoFile("docs/davinci", "plan", "dump-format.md");
   const entries = [
     lineMatching(phase, /P2-10.*vue\.css-bind/u),
     lineMatching(records, /P2-10.*vue\.css-bind/u),
     taskSection(tasks, "P2-10"),
     p2_10,
-    lineMatching(folioFormat, /vue\.css-bind value=<expr>.*style-block content start/u),
+    lineMatching(dumpFormat, /vue\.css-bind value=<expr>.*style-block content start/u),
   ];
 
   for (const entry of entries) {
@@ -48,7 +48,7 @@ test("P2-10 docs describe vue.css-bind spans as file-absolute", () => {
 });
 
 test("P2-10 implementation pins shifted file-absolute spans", () => {
-  const regression = readRepoFile("davinci", "vize_l1_to_l2", "tests", "css_bind_lowering.rs");
+  const regression = readRepoFile("levels", "vize_l1_to_l2", "tests", "css_bind_lowering.rs");
 
   assert.match(regression, /fn block_start_produces_file_absolute_spans\(\)/u);
   assert.match(regression, /ui\.element style @90:120/u);

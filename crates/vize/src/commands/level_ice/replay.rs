@@ -1,4 +1,4 @@
-//! Replaying a `repro.folio` (TS-23), and the content-seeded injection that
+//! Replaying a `repro.dump` (TS-23), and the content-seeded injection that
 //! `vize reduce` shrinks against (P3-14).
 //!
 //! A plain injected panic (`inject-panic=<pass>`) fires whatever the
@@ -42,33 +42,33 @@ pub(crate) fn has_element(source: &str, tag: &str) -> bool {
 
 /// Replay a parsed repro: `Ok(Some(_))` reproduced a failure, `Ok(None)`
 /// completed without one, `Err` means this repro cannot be replayed at all.
-pub(crate) fn replay(folio: &ReproPage) -> Result<Option<IceFailure>, String> {
-    if let Some(pass) = folio.config.get(CONFIG_INJECT) {
-        if let Some(tag) = folio.config.get(CONFIG_INJECT_WHEN)
-            && !has_element(folio.artifact.as_str(), tag.as_str())
+pub(crate) fn replay(dump: &ReproPage) -> Result<Option<IceFailure>, String> {
+    if let Some(pass) = dump.config.get(CONFIG_INJECT) {
+        if let Some(tag) = dump.config.get(CONFIG_INJECT_WHEN)
+            && !has_element(dump.artifact.as_str(), tag.as_str())
         {
             return Ok(None);
         }
-        return Ok(run_injected(folio.pipeline.as_str(), pass.as_str()).err());
+        return Ok(run_injected(dump.pipeline.as_str(), pass.as_str()).err());
     }
-    if folio.artifact_stage.as_str() != ARTIFACT_STAGE_SOURCE {
+    if dump.artifact_stage.as_str() != ARTIFACT_STAGE_SOURCE {
         return Err(cstr!(
             "cannot replay artifact stage `{}`; only `{ARTIFACT_STAGE_SOURCE}` replays today",
-            folio.artifact_stage
+            dump.artifact_stage
         ));
     }
-    let mode = folio.config.get(CONFIG_MODE).map_or("dom", |m| m.as_str());
+    let mode = dump.config.get(CONFIG_MODE).map_or("dom", |m| m.as_str());
     let Some((ssr, vapor)) = mode_flags(mode) else {
         return Err(cstr!("unknown mode `{mode}` in [repro.config]"));
     };
     silence_panics();
-    let segments = parse_pipelines(folio.pipeline.as_str())
+    let segments = parse_pipelines(dump.pipeline.as_str())
         .map_err(|error| cstr!("invalid repro pipeline: {error:?}"))?;
     let stage = segments.first().map_or("", |segment| {
         vize_l0::stage::pipeline_wire_id(segment.stage)
     });
     match catch_unwind(AssertUnwindSafe(|| {
-        compile_source(folio.artifact.as_str(), ssr, vapor);
+        compile_source(dump.artifact.as_str(), ssr, vapor);
     })) {
         Ok(()) => Ok(None),
         // The same attribution rule the record side used for a real-compile

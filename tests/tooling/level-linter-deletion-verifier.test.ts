@@ -6,7 +6,7 @@ import {
   validateLinterDeletionArtifact,
 } from "../differential/linter-deletion-verifier.ts";
 import { unmatchedPatternsLinterStderr } from "../differential/linter-deletion-matrix.ts";
-import { control } from "./_helpers/davinci-linter-deletion-fixture.ts";
+import { control } from "./_helpers/level-linter-deletion-fixture.ts";
 
 void test("linter preflight binds Matrix diagnostics but remains deletion-blocked", () => {
   const input = control(),

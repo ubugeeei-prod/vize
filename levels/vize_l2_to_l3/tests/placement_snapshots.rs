@@ -74,7 +74,7 @@ fn loop_items_group_but_never_cache() {
 /// verifier-accepted placement overlay; the page per fixture is pinned whole.
 #[test]
 fn surface_battery_placements_verify() {
-    use davinci_test_support::surface_fixture::{MALFORMED, WELL_FORMED};
+    use level_test_support::surface_fixture::{MALFORMED, WELL_FORMED};
     let mut output = String::default();
     for fixture in WELL_FORMED.iter().chain(MALFORMED) {
         output.push_str("# ");

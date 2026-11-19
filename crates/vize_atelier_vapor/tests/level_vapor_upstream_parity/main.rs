@@ -35,7 +35,7 @@ use trace::{Fixture, assert_native_upstream_trace, trace};
 #[test]
 fn l3_branch_matches_official_vapor_state_and_identity_trace() {
     let fixture: Fixture = serde_json::from_str(include_str!(
-        "../../../../tests/_fixtures/davinci-ts33-vapor-branch.json"
+        "../../../../tests/_fixtures/level-ts33-vapor-branch.json"
     ))
     .unwrap();
     assert!(!fixture.steps.is_empty());
@@ -63,7 +63,7 @@ fn l3_branch_matches_official_vapor_state_and_identity_trace() {
     );
 
     let vize = trace(
-        "davinci-mounted-trace.mjs",
+        "level-mounted-trace.mjs",
         json!({
             "backend": "vapor",
             "code": compiled.code,
@@ -73,7 +73,7 @@ fn l3_branch_matches_official_vapor_state_and_identity_trace() {
         }),
     );
     let upstream = trace(
-        "davinci-upstream-vapor-trace.mjs",
+        "level-upstream-vapor-trace.mjs",
         json!({
             "source": fixture.source,
             "context": fixture.context,
@@ -170,7 +170,7 @@ export function render(_ctx) {{
             "{source}: TS-33 must exercise native L3"
         );
         let vize = trace(
-            "davinci-mounted-trace.mjs",
+            "level-mounted-trace.mjs",
             json!({
                 "backend": "vapor",
                 "code": compiled.code,
@@ -180,7 +180,7 @@ export function render(_ctx) {{
             }),
         );
         let upstream = trace(
-            "davinci-upstream-vapor-trace.mjs",
+            "level-upstream-vapor-trace.mjs",
             json!({"source": source, "context": context.clone(), "steps": steps.clone()}),
         );
         assert_eq!(vize, expected, "{source}: Vize native L3 trace");

@@ -44,7 +44,7 @@ test("zizmor workflow audits GitHub Actions with pinned security scanning", () =
   assert.equal(parsed.name, "Zizmor");
   assert.deepEqual(parsed.permissions, {});
   assert.equal(parsed.env?.FORCE_JAVASCRIPT_ACTIONS_TO_NODE24, true);
-  assert.deepEqual(parsed.on?.push?.branches, ["main", "davinci"]);
+  assert.deepEqual(parsed.on?.push?.branches, ["main", "levels"]);
   assert.deepEqual(parsed.on?.push?.paths, [".github/**"]);
   assert.deepEqual(parsed.on?.pull_request, {});
   assert.deepEqual(parsed.on?.release?.types, ["published"]);
@@ -154,7 +154,7 @@ async function runSelector(options: SelectionCase = {}) {
   const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
   const select = new AsyncFunction("context", "github", "core", script);
   const head = "a".repeat(40);
-  const files = options.files ?? [{ filename: "davinci/vize_l1/src/lib.rs" }];
+  const files = options.files ?? [{ filename: "levels/vize_l1/src/lib.rs" }];
   const changedFiles = options.changedFiles ?? files.length;
   const context = {
     eventName: options.eventName ?? "pull_request",

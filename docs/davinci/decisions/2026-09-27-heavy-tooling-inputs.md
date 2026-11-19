@@ -27,7 +27,7 @@ Guide-only documents are outside this
 scope. A newly introduced runtime input must be added to the catalog when its
 consumer changes.
 
-The three invoked Rust oracle targets read `tests/fixtures/davinci-matrix/**`
+The three invoked Rust oracle targets read `tests/fixtures/level-matrix/**`
 for their committed matrix. The wrapper processes pass the hydrated
 `tests/_fixtures/_git/{ant-design-vue,create-vue}` roots as corpus shards.
 The selector adds each wrapper's own file and transitive local imports. Other
@@ -41,7 +41,7 @@ without running its publication/package commands. Unrelated Rust crate source
 is therefore outside its inputs. The selector separately includes its
 transitive `tests/tooling/_helpers/moonbit.ts` import.
 
-The benchmark test invokes `tools/commands/davinci/bench-compare.rs` through
+The benchmark test invokes `tools/commands/levels/bench-compare.rs` through
 `rust-script`. Its dependencies are declared in the script header; it imports
 `tools/support/common.rs`, not workspace crates. Every invocation overrides
 budgets, baseline and result paths with the committed benchmark fixture or a

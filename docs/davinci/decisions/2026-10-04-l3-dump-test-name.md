@@ -3,13 +3,13 @@
 Decision for [#6832](https://github.com/ubugeeei-prod/vize/issues/6832), 2026-10-04.
 
 The audit is pinned to `ac1675fef35c5637c38b1e366a91d6bdfe419885`.
-`davinci/vize_l3/tests/folio_laws.rs` directly exercises the native L3 Dump
+`levels/vize_l3/tests/dump_laws.rs` directly exercises the native L3 Dump
 page. Its two tests pin full canonical print identity and structural
 parse/print identity for the same scheduled Program, regions, operations,
 effect and ordering edge. The auto-discovered target alone retains the old
 page codename.
 
-Move this file byte-for-byte to `davinci/vize_l3/tests/dump_laws.rs`, in a
+Move this file byte-for-byte to `levels/vize_l3/tests/dump_laws.rs`, in a
 move-only commit. All Rust, test function names and the complete
 `[l3-dump-v2]`/`l3.*` canonical text remain exact. Cargo discovers the target
 without manifest changes. The target has no snapshots or active external

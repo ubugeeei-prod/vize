@@ -19,7 +19,7 @@ export const report = (id) => ({
 export function fixture(t) {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "level-memory-law-")));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const dir = path.join(root, "tools/benchmarks/results/davinci");
+  const dir = path.join(root, "tools/benchmarks/results/levels");
   fs.mkdirSync(dir, { recursive: true });
   const identities = new Map(
     ["one", "two"].map((id) => [
@@ -35,7 +35,7 @@ export function fixture(t) {
   for (const id of identities.keys())
     fs.writeFileSync(path.join(dir, `${id}.json`), JSON.stringify(report(id)));
   const markers = [...identities.keys()]
-    .map((id) => `davinci-harness: wrote ${path.join(dir, `${id}.json`)}`)
+    .map((id) => `level-harness: wrote ${path.join(dir, `${id}.json`)}`)
     .join("\n");
   return { root, dir, identities, markers };
 }
@@ -64,17 +64,17 @@ export function sourceHarnessFixture(t, version, existingRoot) {
     existingRoot ??
     fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "memory-source-harness-")));
   if (existingRoot === undefined) t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const directory = path.join(root, "tools/benchmarks/crates/davinci_harness");
+  const directory = path.join(root, "tools/benchmarks/crates/level_harness");
   fs.mkdirSync(path.join(directory, "src"), { recursive: true });
   fs.writeFileSync(path.join(root, "Cargo.toml"), `[workspace.package]\nversion = "${version}"\n`);
   const manifest = path.join(directory, "Cargo.toml");
-  fs.writeFileSync(manifest, '[package]\nname = "davinci_harness"\nversion.workspace = true\n');
+  fs.writeFileSync(manifest, '[package]\nname = "level_harness"\nversion.workspace = true\n');
   const source = path.join(directory, "src/lib.rs");
   fs.writeFileSync(source, 'pub const VERSION: &str = env!("CARGO_PKG_VERSION");\n');
   const sourcePaths = [
     "Cargo.toml",
-    "tools/benchmarks/crates/davinci_harness/Cargo.toml",
-    "tools/benchmarks/crates/davinci_harness/src/lib.rs",
+    "tools/benchmarks/crates/level_harness/Cargo.toml",
+    "tools/benchmarks/crates/level_harness/src/lib.rs",
   ];
   const wholeTree = sourcePaths
     .map((relative) => {
@@ -89,7 +89,7 @@ export function sourceHarnessFixture(t, version, existingRoot) {
     wholeTree,
     metadata: {
       workspace_root: root,
-      packages: [{ name: "davinci_harness", version, id, manifest_path: manifest }],
+      packages: [{ name: "level_harness", version, id, manifest_path: manifest }],
     },
     artifacts: [
       {

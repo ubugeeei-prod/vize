@@ -16,7 +16,7 @@ const sources = [
   "tests/tooling/support/mounted-runtime-producer.ts",
   "tests/tooling/support/mounted-runtime-native-boundary.ts",
   "tests/tooling/support/mounted-runtime-native-exit.mjs",
-  "tests/tooling/support/davinci-mounted-trace.mjs",
+  "tests/tooling/support/level-mounted-trace.mjs",
   "tests/tooling/support/patterned-template-runtime.mjs",
   "tests/tooling/support/vue-vapor-release.mjs",
   "tools/support/compat/github/verify-mounted-runtime-boundary.ts",

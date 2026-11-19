@@ -38,7 +38,7 @@ fn template_carriers_and_fragment_bodies_match_the_retained_lane() {
             &allocator,
             source,
             VaporCompilerOptions {
-                davinci_retained_lane: true,
+                level_retained_lane: true,
                 ..Default::default()
             },
         );

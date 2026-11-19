@@ -141,14 +141,14 @@ fn names_switch_scoped_content_and_fallbacks_like_official_vapor() {
             expected.insert(1, expected[0].clone());
         }
         let vize = trace(
-            "davinci-mounted-trace.mjs",
+            "level-mounted-trace.mjs",
             json!({
                 "backend":"vapor", "code":compiled.code, "context":context, "steps":steps, "identities":true,
                 "components":{"MyComp":{"code":compiled_child.code, "props":["value"]}},
             }),
         );
         let upstream = trace(
-            "davinci-upstream-vapor-trace.mjs",
+            "level-upstream-vapor-trace.mjs",
             json!({
                 "source":source, "context":context, "steps":steps,
                 "components":{"MyComp":{"source":child, "props":["value"]}},

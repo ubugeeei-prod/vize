@@ -14,21 +14,21 @@ recipe selection; it grants no hosted compiler or release acceptance.
 `native-current-recipe-8231.sh` preserves the complete current step from signed
 actual main `b41811e3b33676f68a0843a693c9ed4898f2e86a`, including the nine declared
 CLI targets and every downstream command/flag. Its SHA256 is
-`397a7119bdeab7cecdb7e1f7c5ed62b8df1232005fcd3d538ac6f20bf761fb13`.
+`e9bc232282eddeda1e237c20bff4a158e1ff98a4d6e217ef635d741643cb498c`.
 The original full bytes and digest remain immutable controls.
 
 `native-current-recipe-8253.sh` independently authors the complete ten-target
 successor by adding only `--test check_tsconfig_bom_cli` after the last existing
 target. All original nine targets and downstream bytes remain unchanged; the
 fixture law verifies this complete additive relation. Its SHA256 is
-`b2bd7c08e90ca1625044d09cbe221c22f8a8344be8c4347854acb73a66dfc05f`.
+`347fb42ea486692c1760fb5771a7aa04d13d276c544dfc2e986af9418df15384`.
 At the BOM layer the wrapper executes that complete successor once; a version-only
 source that deletes its new target is rejected. Neither fixture is derived from
 an executing producer's response or grants hosted native acceptance.
 
 `native-current-recipe-ignore-3984.sh` adds only
 `--test check_tsconfig_ignore_cli` to the complete ten-target successor. Its SHA256
-is `8a2b3e2ffc52c4a80a3c02ae15cede5d8c15fd3415a2368aa1974135703e9c56`.
+is `623681241ea1fbcdd18bb28f4bb1fea60a3fd514a1f049e20090fa36ef96cca7`.
 The nine- and ten-target files, digests and complete additive laws remain fixed.
 The configured-ignore layer must execute the whole eleven-target recipe once;
 version-only sources that remove either new target are rejected.

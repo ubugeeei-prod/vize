@@ -14,7 +14,7 @@ const bytes = readFileSync(
 );
 assert.equal(
   createHash("sha256").update(bytes).digest("hex"),
-  "0e354fb17cb1bd34e1d00a5c34489ccefa4161fb00ef12774ab4a5d17e7262b7",
+  "0dc910bf915aa853a9c71618c3700a398e218196f530d4b1f7605b3167124f95",
 );
 const record = JSON.parse(bytes.toString("utf8")) as {
   schema: string;

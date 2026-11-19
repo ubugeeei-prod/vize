@@ -1,5 +1,5 @@
 // P4-16 measurement: the same rule over the same corpus through every arm
-// the spike compared. `node tests/tooling/fixtures/davinci-plugin-sdk/bench.mjs [rounds]`
+// the spike compared. `node tests/tooling/fixtures/level-plugin-sdk/bench.mjs [rounds]`
 // prints µs per file; `measure()` is what the node test runs on a small
 // corpus to keep the arms agreeing.
 import { readdirSync, readFileSync } from "node:fs";

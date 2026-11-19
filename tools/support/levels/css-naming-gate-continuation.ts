@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 
-export const cssNamingGate = "tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs";
+export const cssNamingGate = "tests/tooling/levels/level-atelier-sfc-stage-alias.test.mjs";
 export const currentCSSNamingGateSHA =
   "429f0747c4f3c0d9867c929b1f5b01165cd380b21714411c56b11093f40b566c";
 export const historicalCSSNamingGateSHA =

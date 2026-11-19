@@ -9,7 +9,7 @@ use std::path::Path;
 
 use super::behavior::run_loop;
 use super::checker_corpus::{json_lines, text_field};
-use super::folio::parse_program;
+use super::dump::parse_program;
 use super::json::{self, Json, get, object};
 use super::model_behavior;
 use super::program::Program;
@@ -44,7 +44,7 @@ pub fn compute(
     let cases = json_lines(cases)?;
     let lowered = json_lines(lowered)?;
     if cases.len() != lowered.len() || cases.len() < minimum {
-        return Err("matrix case and Folio files are out of step".into());
+        return Err("matrix case and Dump files are out of step".into());
     }
     let mut out = String::new();
     let mut names: Vec<&str> = Vec::new();
@@ -126,7 +126,7 @@ pub fn reference_trace_text(program: &Program) -> String {
 /// executes to its committed combined and per-backend traces.
 pub fn check_ladder(fixtures: &Path) -> Result<usize, String> {
     for stem in LADDER {
-        let program = parse_program(&read(&fixtures.join(format!("{stem}.s3.folio")))?)?;
+        let program = parse_program(&read(&fixtures.join(format!("{stem}.s3.dump")))?)?;
         for (suffix, actual) in [
             ("trace", reference_trace_text(&program)),
             ("vdom.trace", backend_trace_text(Backend::Vdom, &program)),

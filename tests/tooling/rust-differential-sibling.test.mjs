@@ -138,7 +138,7 @@ exec "$REAL_GIT" "$@"
   writeFileSync(
     join(bin, "cargo"),
     `#!/bin/sh
-exec "$NODE" -e 'const fs=require("node:fs"),assert=require("node:assert/strict"),args=process.argv.slice(1);if(process.env.REQUIRE_HYDRATION==="1")assert.equal(fs.readFileSync(${JSON.stringify(`${fixturePath}/fixture-pin`)},"utf8"),process.env.FIXTURE_PIN);fs.appendFileSync(process.env.LOG,JSON.stringify({args,tsgo:process.env.VIZE_TEST_REQUIRE_TSGO,disable:process.env.VIZE_TEST_DISABLE_TSGO,iterations:process.env.VIZE_NUXT_CONFIG_ITERATIONS,production:process.env.VIZE_VUE_RUNTIME_PRODUCTION,corpus:process.env.VIZE_DAVINCI_DIFFERENTIAL_CORPUS})+"\\n");if(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")||process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(92);if(args.includes(process.env.FAIL))process.exit(42);' -- "$@"
+exec "$NODE" -e 'const fs=require("node:fs"),assert=require("node:assert/strict"),args=process.argv.slice(1);if(process.env.REQUIRE_HYDRATION==="1")assert.equal(fs.readFileSync(${JSON.stringify(`${fixturePath}/fixture-pin`)},"utf8"),process.env.FIXTURE_PIN);fs.appendFileSync(process.env.LOG,JSON.stringify({args,tsgo:process.env.VIZE_TEST_REQUIRE_TSGO,disable:process.env.VIZE_TEST_DISABLE_TSGO,iterations:process.env.VIZE_NUXT_CONFIG_ITERATIONS,production:process.env.VIZE_VUE_RUNTIME_PRODUCTION,corpus:process.env.VIZE_LEVEL_DIFFERENTIAL_CORPUS})+"\\n");if(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")||process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(92);if(args.includes(process.env.FAIL))process.exit(42);' -- "$@"
 `,
     { mode: 0o755 },
   );
@@ -196,7 +196,7 @@ await test("selected sibling lanes keep pinned hydration, oracle environments an
     ["program", "no-such-command"],
     ["program", "fixture-hydration"],
     ["program", "source_folding::tests::"],
-    ["lowering", "davinci_dom_corpus"],
+    ["lowering", "level_dom_corpus"],
     ["sfc", "no-such-command"],
     ["sfc", "compile_template::duplicates::"],
     ["ssr", "no-such-command"],

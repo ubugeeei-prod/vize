@@ -187,7 +187,7 @@ mod tests {
     #[test]
     fn kebab_case_is_mechanical() {
         assert_eq!(kebab_case("BudgetObserver"), "budget-observer");
-        assert_eq!(kebab_case("L2Folio"), "l2-folio");
+        assert_eq!(kebab_case("L2Dump"), "l2-dump");
         assert_eq!(kebab_case("Sample"), "sample");
     }
 

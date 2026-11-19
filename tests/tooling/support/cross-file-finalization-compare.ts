@@ -33,7 +33,7 @@ const sameTrees = [
   "crates/vize_croquis_cf/src",
   "crates/vize_croquis/src",
   "crates/vize_atelier_sfc/src",
-  "davinci/vize_l0",
+  "levels/vize_l0",
 ];
 const identities = providers.map((provider) => {
   assert.equal(git(provider.root, "rev-parse", "HEAD"), provider.sha);
@@ -45,7 +45,7 @@ const identities = providers.map((provider) => {
       "--untracked-files=no",
       "--",
       "crates",
-      "davinci",
+      "levels",
       "Cargo.lock",
     ),
     "",
@@ -100,7 +100,7 @@ assert.deepEqual(
 assert.equal(head.lockSha256, base.lockSha256);
 assert.equal(head.cargoManifestSha256, base.cargoManifestSha256);
 assert.equal(head.cargoConfigTree, base.cargoConfigTree);
-const changed = git(repo, "diff", "--name-only", baseSha, "HEAD", "--", "crates", "davinci")
+const changed = git(repo, "diff", "--name-only", baseSha, "HEAD", "--", "crates", "levels")
   .split("\n")
   .filter(Boolean);
 assert.deepEqual(

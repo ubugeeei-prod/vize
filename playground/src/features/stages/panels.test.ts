@@ -52,13 +52,13 @@ describe("PassTimeline timings", () => {
 
   it("labels each step and splits the strip by measured share", () => {
     const wrapper = mount(PassTimeline, { props: { steps, walks: [], current: "l2/lower" } });
-    expect(wrapper.findAll(".davinci-step-time").map((label) => label.text())).toEqual([
+    expect(wrapper.findAll(".level-step-time").map((label) => label.text())).toEqual([
       "5 µs",
       "15 µs",
       "<1 µs",
       "20 µs",
     ]);
-    const segments = wrapper.findAll(".davinci-time-segment");
+    const segments = wrapper.findAll(".level-time-segment");
     expect(segments.map((segment) => segment.attributes("style"))).toEqual([
       "width: 12.5%;",
       "width: 37.5%;",
@@ -66,13 +66,13 @@ describe("PassTimeline timings", () => {
       "width: 50%;",
     ]);
     expect(segments[1].classes()).toContain("current");
-    const badge = wrapper.find(".davinci-step-remarks");
+    const badge = wrapper.find(".level-step-remarks");
     expect([badge.text(), badge.attributes("title")]).toEqual(["5", "5 optimization remarks"]);
-    expect(wrapper.find(".davinci-time-strip").attributes("aria-label")).toBe(
+    expect(wrapper.find(".level-time-strip").attributes("aria-label")).toBe(
       "Measured compiler work: 40 µs in total",
     );
-    expect(wrapper.find(".davinci-timeline-summary").text()).toBe(
-      "0 of 1 pass changed the folio, 40 µs total",
+    expect(wrapper.find(".level-timeline-summary").text()).toBe(
+      "0 of 1 pass changed the dump, 40 µs total",
     );
     wrapper.unmount();
   });
@@ -80,8 +80,8 @@ describe("PassTimeline timings", () => {
   it("draws no strip when nothing was measured", () => {
     const unmeasured = steps.map((step) => ({ ...step, nanos: null }));
     const wrapper = mount(PassTimeline, { props: { steps: unmeasured, walks: [], current: null } });
-    expect(wrapper.find(".davinci-time-strip").exists()).toBe(false);
-    expect(wrapper.findAll(".davinci-step-time")).toHaveLength(0);
+    expect(wrapper.find(".level-time-strip").exists()).toBe(false);
+    expect(wrapper.findAll(".level-step-time")).toHaveLength(0);
     wrapper.unmount();
   });
 });
@@ -89,10 +89,10 @@ describe("PassTimeline timings", () => {
 describe("RemarksPanel", () => {
   it("says so when the passes had nothing to explain", () => {
     const wrapper = mount(RemarksPanel, { props: { remarks: [] } });
-    expect(wrapper.find(".davinci-remarks-title").text()).toBe(
+    expect(wrapper.find(".level-remarks-title").text()).toBe(
       "No optimization remarks for this source",
     );
-    expect(wrapper.find(".davinci-remark-list").exists()).toBe(false);
+    expect(wrapper.find(".level-remark-list").exists()).toBe(false);
     wrapper.unmount();
   });
 
@@ -119,13 +119,13 @@ describe("RemarksPanel", () => {
       },
     ];
     const wrapper = mount(RemarksPanel, { props: { remarks } });
-    expect(wrapper.find(".davinci-remarks-title").text()).toBe("1 applied, 1 missed");
-    const rows = wrapper.findAll(".davinci-remark");
+    expect(wrapper.find(".level-remarks-title").text()).toBe("1 applied, 1 missed");
+    const rows = wrapper.findAll(".level-remark");
     expect(rows.map((row) => row.classes())).toEqual([
-      ["davinci-remark", "applied"],
-      ["davinci-remark", "missed"],
+      ["level-remark", "applied"],
+      ["level-remark", "missed"],
     ]);
-    expect(rows[1].findAll(".davinci-remark-arg").map((arg) => arg.text())).toEqual([
+    expect(rows[1].findAll(".level-remark-arg").map((arg) => arg.text())).toEqual([
       "tag=p",
       "blocker=binding",
     ]);
@@ -147,7 +147,7 @@ describe("DumpDiffView", () => {
         },
       },
     });
-    expect(wrapper.find(".davinci-diff-summary").text()).toBe(
+    expect(wrapper.find(".level-diff-summary").text()).toBe(
       "v-slot left the page byte-for-byte identical to Lowered: its product is facts, not tree edits.",
     );
     wrapper.unmount();
@@ -167,15 +167,15 @@ describe("DumpDiffView", () => {
         },
       },
     });
-    expect(wrapper.find(".davinci-diff-summary").text()).toBe(
+    expect(wrapper.find(".level-diff-summary").text()).toBe(
       "legacy against Lowered: 1 added, 1 removed, 4 unchanged",
     );
-    const rows = wrapper.findAll(".davinci-line");
+    const rows = wrapper.findAll(".level-line");
     expect(rows.map((row) => row.classes())).toEqual([
-      ["davinci-line", "diff-remove"],
-      ["davinci-line", "diff-add"],
+      ["level-line", "diff-remove"],
+      ["level-line", "diff-add"],
     ]);
-    expect(rows.map((row) => row.find(".davinci-diff-mark").text())).toEqual(["−", "+"]);
+    expect(rows.map((row) => row.find(".level-diff-mark").text())).toEqual(["−", "+"]);
     wrapper.unmount();
   });
 });

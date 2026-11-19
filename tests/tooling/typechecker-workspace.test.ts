@@ -36,7 +36,7 @@ function controlled(t: { after: (callback: () => void) => void }) {
     fs.writeFileSync(path.join(repoRoot, file), value);
   };
   const save = (file: string, value: unknown) => write(file, `${JSON.stringify(value, null, 2)}\n`);
-  const matrix = "tests/_fixtures/davinci-ts40-projection/matrix.json";
+  const matrix = "tests/_fixtures/level-ts40-projection/matrix.json";
   save(matrix, {
     schemaVersion: 1,
     fixtures: [{ id: "controlled", file: "controlled.vue", lineEnding: "lf", legacyVue2: false }],
@@ -80,7 +80,7 @@ function controlled(t: { after: (callback: () => void) => void }) {
     }
   }
   write(
-    "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__davinci_ts40__controlled__default.snap",
+    "crates/vize_maestro/tests/snapshots/level_ts40_projection__level_ts40__controlled__default.snap",
     snapshot.join("\n") + "\n",
   );
   const fixtureRoot = "tests/_fixtures/differential/typechecker";
@@ -156,10 +156,10 @@ function controlled(t: { after: (callback: () => void) => void }) {
         "fix_history_diagnostics",
         names,
       ),
-      "vize_maestro::davinci_ts40_projection": suite(
-        "vize_maestro::davinci_ts40_projection",
+      "vize_maestro::level_ts40_projection": suite(
+        "vize_maestro::level_ts40_projection",
         "vize_maestro",
-        "davinci_ts40_projection",
+        "level_ts40_projection",
         [...TYPECHECKER_TS40_TESTS],
       ),
     },

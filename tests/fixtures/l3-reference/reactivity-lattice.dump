@@ -1,6 +1,6 @@
-[s3-reactivity-folio]
+[s3-reactivity-dump]
 
-[s3-reactivity-folio.bindings]
+[s3-reactivity-dump.bindings]
 id=0 class=static verdict=proven origin=local effects=- escape=none span=0:0
 id=1 class=props-stable verdict=refuted origin=local effects=freeze escape=none span=0:0
 id=2 class=reactive verdict=unknown origin=local effects=capture escape=none span=0:0

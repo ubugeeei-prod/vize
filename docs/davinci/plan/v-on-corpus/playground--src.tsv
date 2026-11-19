@@ -14,4 +14,4 @@ playground/src/features/stages/dump-view.vue	@keydown.space.prevent
 playground/src/presets.ts	@click.prevent
 playground/src/presets.ts	@keyup.enter
 playground/src/presets.ts	@mouseover.self
-playground/src/shared/presets/davinci.ts	@keyup.enter
+playground/src/shared/presets/levels.ts	@keyup.enter

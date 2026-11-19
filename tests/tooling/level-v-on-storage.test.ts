@@ -12,7 +12,7 @@ import {
   renderVOnCorpus,
   syntheticBoundary,
   trackedNaturalSources,
-} from "../../tools/support/compat/davinci/lib/v-on-corpus.ts";
+} from "../../tools/support/compat/levels/lib/v-on-corpus.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -34,7 +34,7 @@ test("the natural committed v-on corpus fits the two-entry inline buckets", () =
   const sources = trackedNaturalSources();
   const spellings = sources.flatMap(({ source }) => modifiedOnSpellings(source));
   const dynamicEntryFixture = sources.find(
-    ({ file }) => file === "davinci/vize_l1_to_l2/tests/emit_create_slots/dynamic_entries.rs",
+    ({ file }) => file === "levels/vize_l1_to_l2/tests/emit_create_slots/dynamic_entries.rs",
   );
   const maxima = spellings.map(classify).reduce<Buckets>(
     (max, buckets) => ({

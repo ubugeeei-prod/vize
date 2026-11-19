@@ -19,7 +19,7 @@ fn compiled(source: &str, retained: bool) -> std::string::String {
         &allocator,
         source,
         VaporCompilerOptions {
-            davinci_retained_lane: retained,
+            level_retained_lane: retained,
             ..Default::default()
         },
     );

@@ -112,7 +112,7 @@ pub struct Lowered<'a, P = StdVec<ProvenanceRecord>> {
     /// all validated and published by lowering.
     pub artifact: ArtifactParts<'a, P>,
     /// How many ops were numbered (page order: every region op and
-    /// attached binding, top to bottom). Equals the folio's `ops=`
+    /// attached binding, top to bottom). Equals the dump's `ops=`
     /// header.
     pub op_count: u32,
     /// Surface diagnostics (the converted tokenizer errors) followed by

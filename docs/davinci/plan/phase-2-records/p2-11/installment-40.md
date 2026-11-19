@@ -20,7 +20,7 @@ The current phase-2 decision is a firewall:
   unresolvable.
 
 The machine check is
-`tests/tooling/davinci-stage-dependencies.test.ts`: it reads locked
+`tests/tooling/level-stage-dependencies.test.ts`: it reads locked
 `cargo metadata`, asserts the stage crates remain unpublished, and scans every
 publishable workspace package for an unstripped stage edge. The existing
 `moonbit-publish-crates` test still owns release ordering for crates that are
@@ -32,5 +32,5 @@ S2 DOM witnesses remain test-only.
 
 ## Validation
 
-- `node --test tests/tooling/davinci-stage-dependencies.test.ts`
+- `node --test tests/tooling/level-stage-dependencies.test.ts`
 - `git diff --check`

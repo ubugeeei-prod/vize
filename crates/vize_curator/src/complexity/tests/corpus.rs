@@ -1,5 +1,5 @@
 //! Corpus measurement of rendered template complexity (P4-9b): every
-//! project under `VIZE_DAVINCI_RENDERED_CORPUS=<dir>[,<dir>…]` (each
+//! project under `VIZE_LEVEL_RENDERED_CORPUS=<dir>[,<dir>…]` (each
 //! immediate subdirectory is one project) runs the real pipeline, the
 //! rendered distribution is printed for `complexity-metrics.md`, and two
 //! laws are checked on every component:
@@ -114,14 +114,14 @@ fn run_project(root: &Path, totals: &mut Totals) {
 
 #[test]
 fn the_rendered_distribution_over_a_corpus_obeys_its_laws() {
-    let Some(roots) = std::env::var_os("VIZE_DAVINCI_RENDERED_CORPUS") else {
-        eprintln!("VIZE_DAVINCI_RENDERED_CORPUS unset: nothing to measure");
+    let Some(roots) = std::env::var_os("VIZE_LEVEL_RENDERED_CORPUS") else {
+        eprintln!("VIZE_LEVEL_RENDERED_CORPUS unset: nothing to measure");
         return;
     };
     let mut totals = Totals::default();
     for root in roots.to_string_lossy().split(',') {
         let mut projects: Vec<PathBuf> = std::fs::read_dir(root)
-            .expect("VIZE_DAVINCI_RENDERED_CORPUS must name directories")
+            .expect("VIZE_LEVEL_RENDERED_CORPUS must name directories")
             .filter_map(|e| e.ok().map(|e| e.path()))
             .filter(|path| path.is_dir())
             .collect();

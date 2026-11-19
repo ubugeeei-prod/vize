@@ -6,7 +6,7 @@ use super::{BindingId, BindingOrigin, EffectSet, EscapeKind, ReactivityClass};
 ///
 /// One axis for every fact group: P4-6a moved the type into
 /// `vize_l0::diag` so witnesses and the verifier share it, and the
-/// lattice re-exports it with its folio spellings unchanged.
+/// lattice re-exports it with its dump spellings unchanged.
 pub use vize_l0::diag::Verdict;
 
 /// Summary provided by the retained-AST analyzer.

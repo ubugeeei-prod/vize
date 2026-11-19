@@ -7,7 +7,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const command = path.join(repoRoot, "tools", "commands", "davinci", "incremental-equivalence.ts");
+const command = path.join(repoRoot, "tools", "commands", "levels", "incremental-equivalence.ts");
 
 test("incremental equivalence accepts complete normal and seeded scope evidence", (context) => {
   const fakeBin = mkdtempSync(path.join(tmpdir(), "vize-incremental-command-"));

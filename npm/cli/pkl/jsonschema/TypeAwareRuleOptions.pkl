@@ -2,7 +2,7 @@
 ///
 /// Generated from the rule schemas and defaults of @typescript-eslint/eslint-plugin
 /// 8.72.1; keep it in step with
-/// davinci/vize_l0/src/config/model/linter_rule_options/type_aware.rs.
+/// levels/vize_l0/src/config/model/linter_rule_options/type_aware.rs.
 module vize.jsonschema.TypeAwareRuleOptions
 
 import "@json_schema/JsonSchema.pkl"
