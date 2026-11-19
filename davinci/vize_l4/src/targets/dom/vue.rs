@@ -8,9 +8,9 @@ use vize_l2::{expr::ExprRef, resolution::Occurrence};
 use vize_l3::decision::{
     dom::{
         DomFacts,
-        vue::{NativeVueRenderAnalysis, VueReadKind, VueRenderExpression},
+        vue::{VueRenderAnalysis, VueReadKind, VueRenderExpression},
     },
-    native::NativeSelectedSetupDomAnalysis,
+    template::SelectedSetupDomAnalysis,
 };
 
 use super::expression::ExpressionWriter;
@@ -33,14 +33,14 @@ mod for_head;
 /// refusing references, and a caller cannot supply an accessor policy here.
 ///
 /// ```compile_fail
-/// use vize_l3::decision::NativeFileAnalysis;
+/// use vize_l3::decision::FileAnalysis;
 /// use vize_l4::{targets::dom::emit_vue, write::NoLinks};
-/// fn substitute(analysis: &NativeFileAnalysis<'_, '_>) {
+/// fn substitute(analysis: &FileAnalysis<'_, '_>) {
 ///     let _ = emit_vue::<NoLinks>(analysis);
 /// }
 /// ```
 pub fn emit_vue<L: LinkSink>(
-    analysis: &NativeVueRenderAnalysis<'_, '_, '_, '_, '_>,
+    analysis: &VueRenderAnalysis<'_, '_, '_, '_, '_>,
 ) -> Result<Writer<L>, DomError> {
     encode(
         analysis.artifact().source(),
@@ -56,21 +56,21 @@ pub fn emit_vue<L: LinkSink>(
 /// Consume only genuine original setup/template read decisions.
 /// No neutral File analysis or caller accessor policy selects this entry.
 /// ```compile_fail
-/// use vize_l3::decision::NativeFileAnalysis;
+/// use vize_l3::decision::FileAnalysis;
 /// use vize_l4::{targets::dom::emit_selected_setup_template, write::NoLinks};
-/// fn promote(file: &NativeFileAnalysis<'_, '_>) {
+/// fn promote(file: &FileAnalysis<'_, '_>) {
 ///     let _ = emit_selected_setup_template::<NoLinks>(file);
 /// }
 /// ```
 pub fn emit_selected_setup_template<L: LinkSink>(
-    analysis: &NativeSelectedSetupDomAnalysis<'_, '_, '_>,
+    analysis: &SelectedSetupDomAnalysis<'_, '_, '_>,
 ) -> Result<Writer<L>, DomError> {
     emit_selected_setup_template_with_mode(analysis, DomMode::Development)
 }
 
 /// Consume the same sealed owner with an explicit runtime comment mode.
 pub fn emit_selected_setup_template_with_mode<L: LinkSink>(
-    analysis: &NativeSelectedSetupDomAnalysis<'_, '_, '_>,
+    analysis: &SelectedSetupDomAnalysis<'_, '_, '_>,
     mode: DomMode,
 ) -> Result<Writer<L>, DomError> {
     encode_with_mode(
@@ -88,8 +88,8 @@ pub fn emit_selected_setup_template_with_mode<L: LinkSink>(
 // This private union preserves both sealed owners without allocating or
 // accepting an external policy. The original expression encoder stays shared.
 enum VueRows<'read, 'view, 'owner, 'descriptor, 'program, 'arena> {
-    Ordinary(&'read NativeVueRenderAnalysis<'view, 'owner, 'descriptor, 'program, 'arena>),
-    Selected(&'read NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena>),
+    Ordinary(&'read VueRenderAnalysis<'view, 'owner, 'descriptor, 'program, 'arena>),
+    Selected(&'read SelectedSetupDomAnalysis<'view, 'owner, 'arena>),
 }
 impl<'owner, 'arena> VueRows<'_, '_, 'owner, '_, '_, 'arena> {
     fn file(&self) -> &'owner FileArtifact<'arena> {

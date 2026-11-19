@@ -15,7 +15,7 @@ use vize_l2::{
     op::Op,
 };
 use vize_l3::decision::{
-    StaticLevel, dom::DomRootKind, native::build_native_dom_file_decisions, policy::TargetPolicy,
+    StaticLevel, dom::DomRootKind, template::build_template_dom_decisions, policy::TargetPolicy,
 };
 
 mod native_template_cases;
@@ -73,7 +73,7 @@ fn original_text_comment_order_and_owning_file_survive_move() -> Result<(), &'st
     let arena = Allocator::default();
     let source = "<template>hé<!--original-->tail</template>";
     let output = completed(&arena, source)?;
-    let analysis = build_native_dom_file_decisions(output.view().map_err(|_| "view")?)
+    let analysis = build_template_dom_decisions(output.view().map_err(|_| "view")?)
         .map_err(|_| "analysis")?;
     check(core::ptr::eq(analysis.owner(), &output))?;
     check(core::ptr::eq(analysis.file(), output.file().ok_or("file")?))?;
@@ -120,7 +120,7 @@ fn original_text_comment_order_and_owning_file_survive_move() -> Result<(), &'st
 fn a_single_original_comment_retains_its_actual_op() -> Result<(), &'static str> {
     let arena = Allocator::default();
     let output = completed(&arena, "<template><!--body--></template>")?;
-    let analysis = build_native_dom_file_decisions(output.view().map_err(|_| "view")?)
+    let analysis = build_template_dom_decisions(output.view().map_err(|_| "view")?)
         .map_err(|_| "analysis")?;
     let [original] = analysis.artifact().root().ops.as_slice() else {
         return Err("single root");
@@ -140,7 +140,7 @@ fn a_single_original_comment_retains_its_actual_op() -> Result<(), &'static str>
 fn selected_empty_template_has_real_empty_decisions() -> Result<(), &'static str> {
     let arena = Allocator::default();
     let output = completed(&arena, "<template></template>")?;
-    let analysis = build_native_dom_file_decisions(output.view().map_err(|_| "view")?)
+    let analysis = build_template_dom_decisions(output.view().map_err(|_| "view")?)
         .map_err(|_| "analysis")?;
     check(analysis.artifact().node_count() == 0)?;
     check(analysis.tables().nodes.is_empty() && analysis.tables().controls.is_empty())?;

@@ -103,12 +103,12 @@ fn original_title_family_keeps_same_file_full_preparation_in_each_sole_target_wa
         let file = original.file().ok_or("normal File")?;
         let actual = element(file, 0)?;
         let dom =
-            native::build_native_dom_file_decisions(original.view().map_err(|_| "native view")?)
+            native::build_template_dom_decisions(original.view().map_err(|_| "native view")?)
                 .map_err(|_| "DOM cursor")?;
-        let ssr = ssr::build_native_ssr_file_decisions(original.view().map_err(|_| "SSR view")?)
+        let ssr = ssr::build_template_ssr_decisions(original.view().map_err(|_| "SSR view")?)
             .map_err(|_| "SSR cursor")?;
         let vapor =
-            vapor::build_native_vapor_file_decisions(original.view().map_err(|_| "Vapor view")?)
+            vapor::build_template_vapor_decisions(original.view().map_err(|_| "Vapor view")?)
                 .map_err(|_| "Vapor cursor")?;
         check(dom.dom().ok_or("DOM facts")?.unsupported().is_empty())?;
         check(ssr.ssr().ok_or("SSR facts")?.unsupported().is_empty())?;
@@ -147,7 +147,7 @@ fn bare_none_empty_unknown_and_nested_unicode_slots_consume_only_their_actual_ro
     let source = "<template><div hidden title='' data-note='&unknown;'><span title='😀&amp;lt;'/></div><div title='plain'/></template>";
     let original = completed(&arena, source)?;
     let file = original.file().ok_or("File")?;
-    let analysis = native::build_native_dom_file_decisions(original.view().map_err(|_| "view")?)
+    let analysis = native::build_template_dom_decisions(original.view().map_err(|_| "view")?)
         .map_err(|_| "cursor")?;
     let facts = analysis.original_attributes().ok_or("normal finish")?;
     check(facts.len() == 4 && core::ptr::eq(facts.file(), file))?;

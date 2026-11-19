@@ -1,7 +1,7 @@
 use crate::{check, completed, equal};
 use vize_l0::{Allocator, Span, id::NodeId};
 use vize_l2::op::{Namespace, Op};
-use vize_l3::decision::{dom::DomUnsupported, native::build_native_dom_file_decisions};
+use vize_l3::decision::{dom::DomUnsupported, template::build_template_dom_decisions};
 use vize_l4::{
     targets::dom::{DomErrorKind, emit_template},
     write::{NoLinks, Recorded},
@@ -36,7 +36,7 @@ fn target_role_refusal_preserves_complete_original_root_and_nested_search_owners
         check(core::ptr::eq(view.owner(), &original))?;
         check(core::ptr::eq(view.file().ok_or("view File")?, file))?;
         let analysis =
-            build_native_dom_file_decisions(view).map_err(|_| "original DOM analysis")?;
+            build_template_dom_decisions(view).map_err(|_| "original DOM analysis")?;
         check(core::ptr::eq(analysis.owner(), &original))?;
         check(core::ptr::eq(analysis.file(), file))?;
         check(core::ptr::eq(analysis.artifact(), file.artifact()))?;

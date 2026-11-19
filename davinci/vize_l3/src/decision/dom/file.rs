@@ -1,7 +1,7 @@
 //! Sole-file analysis retains genuine scopes without assigning runtime access.
 
 use super::{DomFacts, LiteralExpressions, vue::policy::NoReads};
-use crate::decision::{DecisionBuildError, DecisionTables, NativeAnalysis, TargetPolicy, build};
+use crate::decision::{DecisionBuildError, DecisionTables, DecisionAnalysis, TargetPolicy, build};
 use vize_l2::{
     artifact::Artifact,
     file::{FileArtifact, FileResolution, ScopeId},
@@ -42,8 +42,8 @@ impl<'owner, 'arena> DomFileExpression<'owner, 'arena> {
 /// runtime exposure. A target must consume an actual same-file access policy.
 ///
 /// ```compile_fail
-/// use vize_l3::decision::{NativeAnalysis, NativeFileAnalysis};
-/// fn discard_file<'f, 'a>(result: NativeFileAnalysis<'f, 'a>) -> NativeAnalysis<'f, 'a> {
+/// use vize_l3::decision::{DecisionAnalysis, FileAnalysis};
+/// fn discard_file<'f, 'a>(result: FileAnalysis<'f, 'a>) -> DecisionAnalysis<'f, 'a> {
 ///     result.analysis
 /// }
 /// ```
@@ -59,16 +59,16 @@ impl<'owner, 'arena> DomFileExpression<'owner, 'arena> {
 /// ```
 /// A bare artifact consumer cannot silently infer framework access:
 /// ```compile_fail
-/// use vize_l3::decision::{NativeAnalysis, NativeFileAnalysis};
-/// fn bare(_: &NativeAnalysis<'_, '_>) {}
-/// fn emit(result: &NativeFileAnalysis<'_, '_>) { bare(result); }
+/// use vize_l3::decision::{DecisionAnalysis, FileAnalysis};
+/// fn bare(_: &DecisionAnalysis<'_, '_>) {}
+/// fn emit(result: &FileAnalysis<'_, '_>) { bare(result); }
 /// ```
-pub struct NativeFileAnalysis<'owner, 'arena> {
+pub struct FileAnalysis<'owner, 'arena> {
     file: &'owner FileArtifact<'arena>,
-    analysis: NativeAnalysis<'owner, 'arena>,
+    analysis: DecisionAnalysis<'owner, 'arena>,
 }
 
-impl<'owner, 'arena> NativeFileAnalysis<'owner, 'arena> {
+impl<'owner, 'arena> FileAnalysis<'owner, 'arena> {
     #[must_use]
     pub const fn file(&self) -> &'owner FileArtifact<'arena> {
         self.file
@@ -110,7 +110,7 @@ impl<'owner, 'arena> NativeFileAnalysis<'owner, 'arena> {
 /// still held until their actual file factories record complete owned facts.
 pub fn build_dom_file_decisions<'owner, 'arena>(
     file: &'owner FileArtifact<'arena>,
-) -> Result<NativeFileAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<FileAnalysis<'owner, 'arena>, DecisionBuildError> {
     if !file.is_complete() {
         return Err(DecisionBuildError::IncompleteFile);
     }
@@ -121,7 +121,7 @@ pub fn build_dom_file_decisions<'owner, 'arena>(
         Some(file),
         &NoReads,
     )?;
-    Ok(NativeFileAnalysis { file, analysis })
+    Ok(FileAnalysis { file, analysis })
 }
 
 // Numeric query keys are meaningful only in this file. The entry above derives
@@ -148,12 +148,12 @@ pub(super) fn matches_expression(
 // Called only after the real selected template entry derives its own File.
 pub(in crate::decision) fn build_original_file_decisions<'owner, 'arena>(
     file: &'owner FileArtifact<'arena>,
-) -> Result<NativeFileAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<FileAnalysis<'owner, 'arena>, DecisionBuildError> {
     let analysis = crate::decision::build::build_with_original(
         file,
         TargetPolicy::Dom,
         &crate::decision::dom::LiteralExpressions,
         &crate::decision::dom::vue::policy::NoReads,
     )?;
-    Ok(NativeFileAnalysis { file, analysis })
+    Ok(FileAnalysis { file, analysis })
 }

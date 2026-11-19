@@ -9,7 +9,7 @@ use vize_l2::{
     resolution::Usage,
 };
 use vize_l3::decision::ssr::{
-    SsrPart, SsrSetupExpression, SsrSetupRead, build_native_selected_setup_ssr_decisions,
+    SsrPart, SsrSetupExpression, SsrSetupRead, build_selected_setup_ssr_decisions,
 };
 
 fn descriptor() -> DescriptorOptions {
@@ -37,7 +37,7 @@ fn seven_original_models_retain_write_identity_without_becoming_generic_reads() 
         let setup = admitted.setup();
         let file = setup.file();
         let provenance = file.artifact().provenance().to_vec();
-        let analysis = build_native_selected_setup_ssr_decisions(setup)
+        let analysis = build_selected_setup_ssr_decisions(setup)
             .map_err(|error| format!("{error:?}"))?;
         let facts = analysis.ssr().ok_or("SSR decisions")?;
         assert!(
@@ -116,9 +116,9 @@ fn equal_foreign_ids_and_source_bytes_cannot_supply_an_opening_owner() -> Result
     let observation_b = lower_selected_setup_sfc_native(&arena_b, &source_b, descriptor());
     let admitted_a = observation_a.admitted().ok_or("first setup")?;
     let admitted_b = observation_b.admitted().ok_or("second setup")?;
-    let analysis_a = build_native_selected_setup_ssr_decisions(admitted_a.setup())
+    let analysis_a = build_selected_setup_ssr_decisions(admitted_a.setup())
         .map_err(|error| format!("{error:?}"))?;
-    let analysis_b = build_native_selected_setup_ssr_decisions(admitted_b.setup())
+    let analysis_b = build_selected_setup_ssr_decisions(admitted_b.setup())
         .map_err(|error| format!("{error:?}"))?;
     let [
         SsrPart::Open {
@@ -166,7 +166,7 @@ fn ordinary_read_receipts_and_model_absence_keep_their_existing_policy() -> Resu
     let arena = Allocator::default();
     let observation = lower_selected_setup_sfc_native(&arena, source, descriptor());
     let admitted = observation.admitted().ok_or("actual setup")?;
-    let analysis = build_native_selected_setup_ssr_decisions(admitted.setup())
+    let analysis = build_selected_setup_ssr_decisions(admitted.setup())
         .map_err(|error| format!("{error:?}"))?;
     let facts = analysis.ssr().ok_or("SSR decisions")?;
     assert!(facts.unsupported().is_empty());

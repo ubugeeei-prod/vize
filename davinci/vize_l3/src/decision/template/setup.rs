@@ -1,7 +1,7 @@
 //! Same original setup/template owner specializes the sole canonical DOM walk.
 
 use crate::decision::{
-    DecisionBuildError, DecisionTables, NativeAnalysis, build,
+    DecisionBuildError, DecisionTables, DecisionAnalysis, build,
     dom::{
         DomFacts, LiteralExpressions,
         vue::{VueReadKind, VueRenderExpression, policy::FileReads},
@@ -20,34 +20,34 @@ use vize_l2::{
 /// A caller cannot pair another File or substitute a neutral analysis.
 /// ```compile_fail
 /// use vize_l2::lang::js::{NativeSelectedSetup, NativeTemplateView};
-/// use vize_l3::decision::NativeAnalysis;
-/// use vize_l3::decision::native::NativeSelectedSetupDomAnalysis;
+/// use vize_l3::decision::DecisionAnalysis;
+/// use vize_l3::decision::template::SelectedSetupDomAnalysis;
 /// fn forge<'v, 'o, 'a>(setup: &'v NativeSelectedSetup<'o, 'a>,
-///     template: NativeTemplateView<'o, 'a>, analysis: NativeAnalysis<'o, 'a>) {
-///     let _ = NativeSelectedSetupDomAnalysis { setup, template, analysis };
+///     template: NativeTemplateView<'o, 'a>, analysis: DecisionAnalysis<'o, 'a>) {
+///     let _ = SelectedSetupDomAnalysis { setup, template, analysis };
 /// }
 /// ```
 /// ```compile_fail
 /// use vize_l2::lang::js::NativeSelectedSetup;
-/// use vize_l3::decision::native::build_native_selected_setup_dom_decisions;
+/// use vize_l3::decision::template::build_selected_setup_dom_decisions;
 /// fn discard(setup: NativeSelectedSetup<'_, '_>) {
-///     let result = build_native_selected_setup_dom_decisions(&setup).unwrap();
+///     let result = build_selected_setup_dom_decisions(&setup).unwrap();
 ///     drop(setup);
 ///     let _ = result.setup();
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l3::decision::{NativeAnalysis, native::NativeSelectedSetupDomAnalysis};
-/// fn neutral<'v, 'o, 'a>(result: NativeSelectedSetupDomAnalysis<'v, 'o, 'a>)
-///     -> NativeAnalysis<'o, 'a> { result.analysis }
+/// use vize_l3::decision::{DecisionAnalysis, template::SelectedSetupDomAnalysis};
+/// fn neutral<'v, 'o, 'a>(result: SelectedSetupDomAnalysis<'v, 'o, 'a>)
+///     -> DecisionAnalysis<'o, 'a> { result.analysis }
 /// ```
-pub struct NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena> {
+pub struct SelectedSetupDomAnalysis<'view, 'owner, 'arena> {
     setup: &'view NativeSelectedSetup<'owner, 'arena>,
     template: NativeTemplateView<'owner, 'arena>,
-    analysis: NativeAnalysis<'owner, 'arena>,
+    analysis: DecisionAnalysis<'owner, 'arena>,
 }
 
-impl<'view, 'owner, 'arena> NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena> {
+impl<'view, 'owner, 'arena> SelectedSetupDomAnalysis<'view, 'owner, 'arena> {
     #[must_use]
     pub fn setup(&self) -> &'view NativeSelectedSetup<'owner, 'arena> {
         self.setup
@@ -91,7 +91,7 @@ impl<'view, 'owner, 'arena> NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena
 struct SelectedReads<'view, 'owner, 'arena>(&'view NativeSelectedSetup<'owner, 'arena>);
 impl<'owner, 'arena> FileReads<'owner, 'arena> for SelectedReads<'_, 'owner, 'arena> {
     const RECORD: bool = true;
-    const NATIVE_SETUP: bool = true;
+    const SELECTED_SETUP: bool = true;
     const ORIGINAL_FOR: bool = true;
     fn classify(
         &self,
@@ -117,9 +117,9 @@ impl<'owner, 'arena> FileReads<'owner, 'arena> for SelectedReads<'_, 'owner, 'ar
 /// no AST walk, lookup or new resolution occurs. Only the bounded primitive
 /// original-root For/static-or-current-value-singleton family receives separate
 /// runtime eligibility; other callback body families retain typed refusals.
-pub fn build_native_selected_setup_dom_decisions<'view, 'owner, 'arena>(
+pub fn build_selected_setup_dom_decisions<'view, 'owner, 'arena>(
     setup: &'view NativeSelectedSetup<'owner, 'arena>,
-) -> Result<NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena>, DecisionBuildError> {
+) -> Result<SelectedSetupDomAnalysis<'view, 'owner, 'arena>, DecisionBuildError> {
     let template = setup
         .owner()
         .view()
@@ -134,7 +134,7 @@ pub fn build_native_selected_setup_dom_decisions<'view, 'owner, 'arena>(
         &LiteralExpressions,
         &SelectedReads(setup),
     )?;
-    Ok(NativeSelectedSetupDomAnalysis {
+    Ok(SelectedSetupDomAnalysis {
         setup,
         template,
         analysis,

@@ -3,7 +3,7 @@
 use alloc::boxed::Box;
 use core::fmt;
 use vize_l0::{SourceBlock, String};
-use vize_l3::decision::native::NativeTemplateDomAnalysis;
+use vize_l3::decision::template::TemplateDomAnalysis;
 
 use super::{DomError, emit_template};
 use crate::{
@@ -52,10 +52,10 @@ use crate::{
 /// The actual lower owner must remain alive:
 /// ```compile_fail
 /// use vize_l2::lang::js::NativeTemplateFile;
-/// use vize_l3::decision::native::build_native_dom_file_decisions;
+/// use vize_l3::decision::template::build_template_dom_decisions;
 /// use vize_l4::targets::dom::emit_template_output;
 /// fn discard(owner: NativeTemplateFile<'_>) {
-///     let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
+///     let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
 ///     let output = emit_template_output(analysis).unwrap();
 ///     drop(owner);
 ///     let _ = output.source_map("Original.vue");
@@ -72,13 +72,13 @@ use crate::{
 /// ```
 /// The retained analysis cannot escape a borrow of the output:
 /// ```compile_fail
-/// use vize_l3::decision::native::NativeTemplateDomAnalysis;
+/// use vize_l3::decision::template::TemplateDomAnalysis;
 /// use vize_l4::targets::dom::NativeTemplateDomOutput;
 /// fn escape<'o, 'a>(output: &NativeTemplateDomOutput<'o, 'a>)
-///     -> &'o NativeTemplateDomAnalysis<'o, 'a> { output.analysis() }
+///     -> &'o TemplateDomAnalysis<'o, 'a> { output.analysis() }
 /// ```
 pub struct NativeTemplateDomOutput<'owner, 'arena> {
-    analysis: NativeTemplateDomAnalysis<'owner, 'arena>,
+    analysis: TemplateDomAnalysis<'owner, 'arena>,
     block: SourceBlock<'arena>,
     document: EmitDocument,
     helpers: HelperSet,
@@ -87,7 +87,7 @@ pub struct NativeTemplateDomOutput<'owner, 'arena> {
 impl<'owner, 'arena> NativeTemplateDomOutput<'owner, 'arena> {
     /// The same moved analysis; this borrow cannot outlive the output.
     #[must_use]
-    pub fn analysis(&self) -> &NativeTemplateDomAnalysis<'owner, 'arena> {
+    pub fn analysis(&self) -> &TemplateDomAnalysis<'owner, 'arena> {
         &self.analysis
     }
 
@@ -132,13 +132,13 @@ pub enum NativeTemplateDomOutputError {
 
 /// Refusal retains the same completed File, source and original L3 diagnostics.
 pub struct NativeTemplateDomOutputFailure<'owner, 'arena> {
-    analysis: Box<NativeTemplateDomAnalysis<'owner, 'arena>>,
+    analysis: Box<TemplateDomAnalysis<'owner, 'arena>>,
     error: NativeTemplateDomOutputError,
 }
 
 impl<'owner, 'arena> NativeTemplateDomOutputFailure<'owner, 'arena> {
     #[must_use]
-    pub fn analysis(&self) -> &NativeTemplateDomAnalysis<'owner, 'arena> {
+    pub fn analysis(&self) -> &TemplateDomAnalysis<'owner, 'arena> {
         &self.analysis
     }
 
@@ -162,15 +162,15 @@ impl fmt::Debug for NativeTemplateDomOutputFailure<'_, '_> {
 ///
 /// The analysis cannot be reused after transfer:
 /// ```compile_fail
-/// use vize_l3::decision::native::NativeTemplateDomAnalysis;
+/// use vize_l3::decision::template::TemplateDomAnalysis;
 /// use vize_l4::targets::dom::emit_template_output;
-/// fn reuse(analysis: NativeTemplateDomAnalysis<'_, '_>) {
+/// fn reuse(analysis: TemplateDomAnalysis<'_, '_>) {
 ///     let _ = emit_template_output(analysis);
 ///     let _ = analysis.file();
 /// }
 /// ```
 pub fn emit_template_output<'owner, 'arena>(
-    analysis: NativeTemplateDomAnalysis<'owner, 'arena>,
+    analysis: TemplateDomAnalysis<'owner, 'arena>,
 ) -> Result<NativeTemplateDomOutput<'owner, 'arena>, NativeTemplateDomOutputFailure<'owner, 'arena>>
 {
     match record(&analysis) {
@@ -188,7 +188,7 @@ pub fn emit_template_output<'owner, 'arena>(
 }
 
 fn record<'arena>(
-    analysis: &NativeTemplateDomAnalysis<'_, 'arena>,
+    analysis: &TemplateDomAnalysis<'_, 'arena>,
 ) -> Result<(SourceBlock<'arena>, EmitDocument, HelperSet), NativeTemplateDomOutputError> {
     let block = analysis.owner().selected().component().block();
     if !core::ptr::eq(block.root_source(), analysis.artifact().source()) {

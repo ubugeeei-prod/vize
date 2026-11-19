@@ -11,19 +11,19 @@ use vize_l2::op::{CommentOp, ElementOp, InterpolationOp, TextOp};
 pub(super) mod build;
 mod file;
 mod model;
-mod native;
 mod scoped;
 mod setup;
 #[cfg(test)]
 mod tests;
-pub use file::{NativeSsrFileAnalysis, build_ssr_file_decisions};
+mod template;
+pub use file::{SsrFileAnalysis, build_ssr_file_decisions};
 pub use model::SsrFileModel;
-pub use native::{NativeSsrBuildError, NativeTemplateSsrAnalysis, build_native_ssr_file_decisions};
-pub use scoped::{NativeTemplateScopedSsrAnalysis, build_native_scoped_ssr_file_decisions};
+pub use template::{SsrTemplateBuildError, TemplateSsrAnalysis, build_template_ssr_decisions};
+pub use scoped::{TemplateScopedSsrAnalysis, build_scoped_template_ssr_decisions};
 use setup::SsrSetupAccess;
 pub use setup::{
-    NativeSelectedSetupSsrAnalysis, SsrSetupExpression, SsrSetupRead, SsrSetupReadKind,
-    build_native_selected_setup_ssr_decisions,
+    SelectedSetupSsrAnalysis, SsrSetupExpression, SsrSetupRead, SsrSetupReadKind,
+    build_selected_setup_ssr_decisions,
 };
 
 /// A whole SSR view retains unsupported locations instead of partial output.

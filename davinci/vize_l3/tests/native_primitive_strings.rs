@@ -7,8 +7,8 @@ use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::file::{DeclarationKind, InitializerKind};
 use vize_l3::decision::{
     dom::{ValueKind, vue::VueReadKind},
-    native::build_native_selected_setup_dom_decisions,
-    ssr::{SsrPart, SsrSetupReadKind, build_native_selected_setup_ssr_decisions},
+    template::build_selected_setup_dom_decisions,
+    ssr::{SsrPart, SsrSetupReadKind, build_selected_setup_ssr_decisions},
 };
 
 #[test]
@@ -49,7 +49,7 @@ fn genuine_selected_dom_and_ssr_reads_preserve_all_original_primitive_classes() 
             assert!(observation.original().issues().is_empty(), "{source}");
             let selected = observation.admitted().unwrap();
             let setup = selected.setup();
-            let analysis = build_native_selected_setup_dom_decisions(setup).unwrap();
+            let analysis = build_selected_setup_dom_decisions(setup).unwrap();
             assert!(analysis.dom().unwrap().unsupported().is_empty(), "{source}");
             let expression = analysis.expression(vize_l0::id::NodeId::FIRST).unwrap();
             assert_eq!(
@@ -72,7 +72,7 @@ fn genuine_selected_dom_and_ssr_reads_preserve_all_original_primitive_classes() 
             assert!(setup.binding(read.binding()).is_ok());
             assert!(core::ptr::eq(read.binding().file(), setup.file()));
 
-            let ssr = build_native_selected_setup_ssr_decisions(setup).unwrap();
+            let ssr = build_selected_setup_ssr_decisions(setup).unwrap();
             let facts = ssr.ssr().unwrap();
             assert!(facts.unsupported().is_empty(), "{source}");
             let [SsrPart::Interpolation { node, .. }] = facts.parts() else {

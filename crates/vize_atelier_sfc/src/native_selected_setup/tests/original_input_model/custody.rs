@@ -140,7 +140,7 @@ pub(super) fn capture(
         "{id}: primitive target value policy and exact original named coordinates"
     );
     let analysis =
-        build_native_selected_setup_dom_decisions(setup).map_err(|error| cstr!("{error:?}"))?;
+        build_selected_setup_dom_decisions(setup).map_err(|error| cstr!("{error:?}"))?;
     let dom = analysis.dom().ok_or("DOM decisions")?;
     let model_row = dom
         .file_model(node)

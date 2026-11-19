@@ -6,10 +6,10 @@
 
 use vize_l0::{Span, id::NodeId};
 use vize_l3::decision::ssr::{
-    NativeSelectedSetupSsrAnalysis, NativeSsrFileAnalysis, NativeTemplateScopedSsrAnalysis,
-    NativeTemplateSsrAnalysis, SsrFacts, SsrPart, SsrUnsupported,
+    SelectedSetupSsrAnalysis, SsrFileAnalysis, TemplateScopedSsrAnalysis,
+    TemplateSsrAnalysis, SsrFacts, SsrPart, SsrUnsupported,
 };
-use vize_l3::decision::{NativeAnalysis, policy::TargetPolicy};
+use vize_l3::decision::{DecisionAnalysis, policy::TargetPolicy};
 
 use crate::module::ScopeId;
 use crate::runtime::{Runtime, vocabulary};
@@ -40,7 +40,7 @@ pub enum SsrErrorKind {
 
 /// Emit a diagnostic SSR function from its exact sealed neutral artifact.
 /// This does not certify original selected-template output authority.
-pub fn emit<L: LinkSink>(analysis: &NativeAnalysis<'_, '_>) -> Result<Writer<L>, SsrError> {
+pub fn emit<L: LinkSink>(analysis: &DecisionAnalysis<'_, '_>) -> Result<Writer<L>, SsrError> {
     if analysis.policy() != TargetPolicy::Ssr {
         return Err(SsrError {
             node: None,
@@ -54,7 +54,7 @@ pub fn emit<L: LinkSink>(analysis: &NativeAnalysis<'_, '_>) -> Result<Writer<L>,
 /// Consume only a complete SSR file view and retain its diagnostic owner.
 /// Original native SFC custody and runtime expression exposure remain separate.
 pub fn emit_file<L: LinkSink>(
-    analysis: &NativeSsrFileAnalysis<'_, '_>,
+    analysis: &SsrFileAnalysis<'_, '_>,
 ) -> Result<Writer<L>, SsrError> {
     encode(analysis.artifact().source(), analysis.ssr(), None, None)
 }
@@ -65,14 +65,14 @@ pub fn emit_file<L: LinkSink>(
 ///
 /// Diagnostic File completion cannot be promoted at this entry:
 /// ```compile_fail
-/// use vize_l3::decision::ssr::NativeSsrFileAnalysis;
+/// use vize_l3::decision::ssr::SsrFileAnalysis;
 /// use vize_l4::{targets::ssr::emit_template, write::NoLinks};
-/// fn promote(analysis: &NativeSsrFileAnalysis<'_, '_>) {
+/// fn promote(analysis: &SsrFileAnalysis<'_, '_>) {
 ///     let _ = emit_template::<NoLinks>(analysis);
 /// }
 /// ```
 pub fn emit_template<L: LinkSink>(
-    receipt: &NativeTemplateSsrAnalysis<'_, '_>,
+    receipt: &TemplateSsrAnalysis<'_, '_>,
 ) -> Result<Writer<L>, SsrError> {
     encode(receipt.artifact().source(), receipt.ssr(), None, None)
 }
@@ -82,14 +82,14 @@ pub fn emit_template<L: LinkSink>(
 /// or second op walk occurs. Generated scope bytes have no authored links.
 ///
 /// ```compile_fail
-/// use vize_l3::decision::ssr::NativeTemplateSsrAnalysis;
+/// use vize_l3::decision::ssr::TemplateSsrAnalysis;
 /// use vize_l4::{module::ScopeId, targets::ssr::emit_scoped_template, write::NoLinks};
-/// fn promote(receipt: &NativeTemplateSsrAnalysis<'_, '_>, scope: ScopeId<'_>) {
+/// fn promote(receipt: &TemplateSsrAnalysis<'_, '_>, scope: ScopeId<'_>) {
 ///     let _ = emit_scoped_template::<NoLinks>(receipt, scope);
 /// }
 /// ```
 pub fn emit_scoped_template<L: LinkSink>(
-    receipt: &NativeTemplateScopedSsrAnalysis<'_, '_>,
+    receipt: &TemplateScopedSsrAnalysis<'_, '_>,
     scope: ScopeId<'_>,
 ) -> Result<Writer<L>, SsrError> {
     encode(
@@ -104,7 +104,7 @@ fn encode<'owner, 'arena, L: LinkSink>(
     source: &str,
     facts: Option<&SsrFacts<'owner, 'arena>>,
     scope: Option<ScopeId<'_>>,
-    setup: Option<&NativeSelectedSetupSsrAnalysis<'_, 'owner, 'arena>>,
+    setup: Option<&SelectedSetupSsrAnalysis<'_, 'owner, 'arena>>,
 ) -> Result<Writer<L>, SsrError> {
     let error = |kind| SsrError {
         node: None,

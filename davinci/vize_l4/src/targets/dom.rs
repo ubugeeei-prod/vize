@@ -12,7 +12,7 @@ use vize_l2::expr::ExprRef;
 use vize_l2::op::Op;
 use vize_l2::walk::NodeRef;
 use vize_l3::decision::dom::{DomFacts, DomRootKind, DomUnsupported};
-use vize_l3::decision::{DecisionTables, NativeAnalysis, policy::TargetPolicy};
+use vize_l3::decision::{DecisionTables, DecisionAnalysis, policy::TargetPolicy};
 
 use crate::expr::{AccessProvider, EmitError as ExpressionError, ResolvedExpressions};
 use crate::runtime::{Runtime, Vocabulary, vocabulary};
@@ -85,7 +85,7 @@ pub enum DomErrorKind {
 /// retained ASTs. This target only consumes them. The module assembler imports
 /// helpers afterwards in the fragment's transform-compatible use order.
 pub fn emit<L: LinkSink>(
-    analysis: &NativeAnalysis<'_, '_>,
+    analysis: &DecisionAnalysis<'_, '_>,
     expressions: ResolvedExpressions<'_, '_>,
     access: &impl AccessProvider,
 ) -> Result<Writer<L>, DomError> {

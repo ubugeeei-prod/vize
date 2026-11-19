@@ -7,7 +7,7 @@ use vize_l2::{
     op::{BindingOp, Op},
     resolution::Usage,
 };
-use vize_l3::decision::ssr::{SsrPart, build_native_selected_setup_ssr_decisions};
+use vize_l3::decision::ssr::{SsrPart, build_selected_setup_ssr_decisions};
 
 pub(super) fn capture(
     compilation: &NativeSetupSsrSfcCompilation<'_>,
@@ -139,7 +139,7 @@ pub(super) fn capture(
         "{id}: primitive target value policy and exact original named coordinates"
     );
     let analysis =
-        build_native_selected_setup_ssr_decisions(setup).map_err(|error| cstr!("{error:?}"))?;
+        build_selected_setup_ssr_decisions(setup).map_err(|error| cstr!("{error:?}"))?;
     let facts = analysis.ssr().ok_or("SSR decisions")?;
     let [
         SsrPart::Open {

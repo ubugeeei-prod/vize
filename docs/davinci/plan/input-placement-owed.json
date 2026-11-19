@@ -87,10 +87,10 @@
     "ident:davinci/vize_l3/src/decision/dom/vue.rs",
     "ident:davinci/vize_l3/src/decision/dom/vue/policy.rs",
     "ident:davinci/vize_l3/src/decision/mod.rs",
-    "ident:davinci/vize_l3/src/decision/native.rs",
-    "ident:davinci/vize_l3/src/decision/native/setup.rs",
+    "ident:davinci/vize_l3/src/decision/template.rs",
+    "ident:davinci/vize_l3/src/decision/template/setup.rs",
     "ident:davinci/vize_l3/src/decision/ssr/file.rs",
-    "ident:davinci/vize_l3/src/decision/ssr/native.rs",
+    "ident:davinci/vize_l3/src/decision/ssr/template.rs",
     "ident:davinci/vize_l3/src/decision/ssr/scoped.rs",
     "ident:davinci/vize_l3/src/decision/ssr/setup.rs",
     "ident:davinci/vize_l3/src/decision/vapor/file.rs",
@@ -115,8 +115,8 @@
     "status:davinci/vize_l2/src/lang/js/file/native",
     "status:davinci/vize_l2/src/lang/js/for_head/native",
     "status:davinci/vize_l2/src/lang/js/handler/native",
-    "status:davinci/vize_l3/src/decision/dom/build/file/native",
-    "status:davinci/vize_l3/src/decision/native",
-    "status:davinci/vize_l3/src/decision/ssr/native"
+    "status:davinci/vize_l3/src/decision/dom/build/file/refusal",
+    "status:davinci/vize_l3/src/decision/template",
+    "status:davinci/vize_l3/src/decision/ssr/template"
   ]
 }

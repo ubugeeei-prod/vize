@@ -65,7 +65,7 @@ fn six_whole_original_for_value_components_and_raw_maps_are_captured() -> Result
         };
         let head = file.for_head_for(original).ok_or("attached original")?;
         let analysis =
-            build_native_selected_setup_dom_decisions(setup).map_err(|e| cstr!("{id}: {e:?}"))?;
+            build_selected_setup_dom_decisions(setup).map_err(|e| cstr!("{id}: {e:?}"))?;
         let dom = analysis.dom().ok_or("dom")?;
         require!(
             dom.unsupported().is_empty(),

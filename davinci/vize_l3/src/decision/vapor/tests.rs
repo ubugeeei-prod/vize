@@ -145,7 +145,7 @@ fn interrupted_file_fails_before_the_shared_walk() {
 
 #[test]
 fn original_selected_completion_is_the_sole_target_capability() {
-    use super::build_native_vapor_file_decisions;
+    use super::build_template_vapor_decisions;
     use vize_l1::{container::Vue, markup::NativeTemplateComponent};
     use vize_l2::lang::js::NativeTemplateOwner;
     let arena = Allocator::default();
@@ -166,7 +166,7 @@ fn original_selected_completion_is_the_sole_target_capability() {
         walk.complete().unwrap();
     }
     let output = owner.finish();
-    let analysis = build_native_vapor_file_decisions(output.view().unwrap()).unwrap();
+    let analysis = build_template_vapor_decisions(output.view().unwrap()).unwrap();
     assert!(core::ptr::eq(analysis.owner(), &output));
     assert!(core::ptr::eq(analysis.file(), output.file().unwrap()));
     assert!(core::ptr::eq(analysis.artifact().source(), source));

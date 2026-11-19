@@ -9,7 +9,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceChild, SurfaceParseOptions},
 };
 use vize_l2::lang::js::{NativeInterpolationInput, NativeTemplateFile, NativeTemplateOwner};
-use vize_l3::decision::native::build_native_dom_file_decisions;
+use vize_l3::decision::template::build_template_dom_decisions;
 use vize_l4::{
     module::assemble_template,
     runtime::{Runtime, vocabulary},
@@ -127,7 +127,7 @@ fn original_modern_literals_keep_complete_module_map_and_projection_custody()
             field(&fixture, "template")?,
         )?;
         let analysis =
-            build_native_dom_file_decisions(original.view().map_err(|_| "completed view")?)
+            build_template_dom_decisions(original.view().map_err(|_| "completed view")?)
                 .map_err(|_| "sole L3 visit")?;
         let recorded = assemble_template(
             emit_template::<Recorded>(&analysis).map_err(|_| "original recorded entry")?,

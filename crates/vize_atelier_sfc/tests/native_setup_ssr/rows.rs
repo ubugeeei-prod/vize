@@ -3,11 +3,11 @@ use vize_l2::{
     op::{BindingOp, Op},
     resolution::{HandlerBindingRef, Usage},
 };
-use vize_l3::decision::ssr::{NativeSelectedSetupSsrAnalysis, SsrPart};
+use vize_l3::decision::ssr::{SelectedSetupSsrAnalysis, SsrPart};
 
 pub fn setup(
     setup: &NativeSelectedSetup<'_, '_>,
-    analysis: &NativeSelectedSetupSsrAnalysis<'_, '_, '_>,
+    analysis: &SelectedSetupSsrAnalysis<'_, '_, '_>,
     handler: bool,
 ) -> serde_json::Value {
     let source = setup.file().artifact().source();

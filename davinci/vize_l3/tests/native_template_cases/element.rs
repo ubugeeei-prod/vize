@@ -1,4 +1,4 @@
-use crate::{Allocator, NodeId, Op, StaticLevel, TargetPolicy, build_native_dom_file_decisions};
+use crate::{Allocator, NodeId, Op, StaticLevel, TargetPolicy, build_template_dom_decisions};
 use crate::{check, completed, owner};
 use vize_l0::Span;
 use vize_l2::{lang::js::NativeTemplateIssueKind, op::Namespace, walk::NodeRef};
@@ -17,7 +17,7 @@ fn selected_nested_html_retains_exact_ops_spans_decisions_and_dependency_order()
 -> Result<(), &'static str> {
     let arena = Allocator::default();
     let output = completed(&arena, SOURCE)?;
-    let analysis = build_native_dom_file_decisions(output.view().map_err(|_| "view")?)
+    let analysis = build_template_dom_decisions(output.view().map_err(|_| "view")?)
         .map_err(|_| "analysis")?;
     let file = output.file().ok_or("original File")?;
     check(core::ptr::eq(analysis.owner(), &output))?;
@@ -146,7 +146,7 @@ fn refused_nested_html_retains_its_prefix_without_native_analysis() -> Result<()
         let output = original.finish();
         let denied = output
             .view()
-            .map(build_native_dom_file_decisions)
+            .map(build_template_dom_decisions)
             .err()
             .ok_or("no native analysis of partial prefix")?;
         check(denied == refusal)?;
@@ -181,7 +181,7 @@ fn consuming_the_whole_original_element_without_root_end_cannot_reach_analysis()
     let output = original.finish();
     let denied = output
         .view()
-        .map(build_native_dom_file_decisions)
+        .map(build_template_dom_decisions)
         .err()
         .ok_or("no native analysis without original root completion")?;
     check(denied.kind == NativeTemplateIssueKind::Interrupted)?;

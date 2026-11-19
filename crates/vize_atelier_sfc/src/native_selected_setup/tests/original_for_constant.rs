@@ -89,7 +89,7 @@ fn eleven_whole_original_constant_for_components_and_raw_maps_are_captured() -> 
             let head = file.for_head_for(original).ok_or("attached For")?;
             let resolution = head.resolution().ok_or("whole resolution")?;
             let analysis =
-                build_native_selected_setup_dom_decisions(setup).map_err(|e| cstr!("{e:?}"))?;
+                build_selected_setup_dom_decisions(setup).map_err(|e| cstr!("{e:?}"))?;
             let dom = analysis.dom().ok_or("DOM")?;
             require!(
                 dom.unsupported().is_empty(),

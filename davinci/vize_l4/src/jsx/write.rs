@@ -1,6 +1,6 @@
 use vize_l0::Span;
 use vize_l2::lang::js::JsxNode;
-use vize_l3::jsx::{JsxDecisionKind as Kind, NativeJsxAnalysis};
+use vize_l3::jsx::{JsxDecisionKind as Kind, JsxAnalysis};
 
 use super::helpers::SelectedHelpers;
 use super::{JsxEmitError, JsxEmitErrorKind, invalid, kind};
@@ -53,7 +53,7 @@ pub(super) fn quoted<L: LinkSink>(writer: &mut Writer<L>, value: &str, span: Spa
 
 pub(super) fn element<L: LinkSink>(
     writer: &mut Writer<L>,
-    analysis: &NativeJsxAnalysis<'_>,
+    analysis: &JsxAnalysis<'_>,
     node: JsxNode<'_, '_>,
     helper: &SelectedHelpers,
 ) -> Result<(), JsxEmitError> {
@@ -179,7 +179,7 @@ pub(super) fn element<L: LinkSink>(
 
 fn container<L: LinkSink>(
     writer: &mut Writer<L>,
-    analysis: &NativeJsxAnalysis<'_>,
+    analysis: &JsxAnalysis<'_>,
     node: JsxNode<'_, '_>,
 ) -> Result<(), JsxEmitError> {
     let span = node.span().ok_or_else(|| invalid(node))?;

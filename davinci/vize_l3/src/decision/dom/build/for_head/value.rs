@@ -112,7 +112,7 @@ mod tests {
     struct Reads<'v, 'o, 'a>(&'v NativeSelectedSetup<'o, 'a>);
     impl<'o, 'a> FileReads<'o, 'a> for Reads<'_, 'o, 'a> {
         const RECORD: bool = true;
-        const NATIVE_SETUP: bool = true;
+        const SELECTED_SETUP: bool = true;
         const ORIGINAL_FOR: bool = true;
         fn classify(
             &self,
@@ -155,7 +155,7 @@ mod tests {
             panic!("value");
         };
         let analysis =
-            crate::decision::native::build_native_selected_setup_dom_decisions(setup).unwrap();
+            crate::decision::template::build_selected_setup_dom_decisions(setup).unwrap();
         let DomChildren::Array(children) = &analysis
             .dom()
             .unwrap()
@@ -263,7 +263,7 @@ mod tests {
             panic!("value");
         };
         let analysis =
-            crate::decision::native::build_native_selected_setup_dom_decisions(setup).unwrap();
+            crate::decision::template::build_selected_setup_dom_decisions(setup).unwrap();
         let DomChildren::Array(children) = &analysis
             .dom()
             .unwrap()
@@ -313,7 +313,7 @@ mod tests {
         );
         assert_eq!(program, setup.program().program().body.as_ptr());
         let rebuilt =
-            crate::decision::native::build_native_selected_setup_dom_decisions(setup).unwrap();
+            crate::decision::template::build_selected_setup_dom_decisions(setup).unwrap();
         assert!(rebuilt.dom().unwrap().unsupported().is_empty());
     }
 }

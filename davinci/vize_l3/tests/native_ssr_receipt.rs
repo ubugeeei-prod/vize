@@ -8,7 +8,7 @@ use vize_l1::{
 };
 use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
 use vize_l3::decision::ssr::{
-    NativeSsrBuildError, SsrPart, SsrUnsupported, build_native_ssr_file_decisions,
+    SsrTemplateBuildError, SsrPart, SsrUnsupported, build_template_ssr_decisions,
 };
 
 #[expect(
@@ -53,7 +53,7 @@ fn original_completed_owner_supplies_all_ssr_decisions_after_descriptor_drop() {
         let output = completed(&arena, source);
         let file = output.file().unwrap();
         let original = file.artifact().provenance().to_vec();
-        let receipt = build_native_ssr_file_decisions(output.view().unwrap()).unwrap();
+        let receipt = build_template_ssr_decisions(output.view().unwrap()).unwrap();
         assert!(core::ptr::eq(receipt.owner(), &output));
         assert!(core::ptr::eq(receipt.file(), file));
         assert!(core::ptr::eq(receipt.artifact(), file.artifact()));
@@ -87,12 +87,12 @@ fn every_authentic_style_block_refuses_before_output_authority_is_returned() {
         let arena = Allocator::default();
         let output = completed(&arena, source);
         assert!(output.selected().has_styles());
-        let Err(error) = build_native_ssr_file_decisions(output.view().unwrap()) else {
+        let Err(error) = build_template_ssr_decisions(output.view().unwrap()) else {
             panic!("styled source cannot mint this bounded receipt");
         };
         assert_eq!(
             error,
-            NativeSsrBuildError::StyledSource {
+            SsrTemplateBuildError::StyledSource {
                 span: Span::new(0, source.len() as u32),
             }
         );
@@ -104,7 +104,7 @@ fn original_search_role_remains_an_exact_whole_view_semantic_refusal() {
     let arena = Allocator::default();
     let source = "<template><div><search/></div></template>";
     let output = completed(&arena, source);
-    let receipt = build_native_ssr_file_decisions(output.view().unwrap()).unwrap();
+    let receipt = build_template_ssr_decisions(output.view().unwrap()).unwrap();
     let rejected = &receipt.ssr().unwrap().unsupported()[0];
     assert_eq!(rejected.reason, SsrUnsupported::ElementSemantics);
     assert_eq!(rejected.node.index(), 1);

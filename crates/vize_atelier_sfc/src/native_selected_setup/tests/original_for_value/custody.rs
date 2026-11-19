@@ -35,7 +35,7 @@ fn shadowed_original_parameter_is_the_body_read_and_foreign_equal_ids_never_join
     let NativeFileInterpolationState::Admitted(node) = record.state() else {
         panic!("attached");
     };
-    let analysis = build_native_selected_setup_dom_decisions(av.setup()).unwrap();
+    let analysis = build_selected_setup_dom_decisions(av.setup()).unwrap();
     let row = analysis.expression(node).unwrap();
     let [read] = row.reads() else {
         panic!("value");
@@ -101,7 +101,7 @@ fn movement_and_caught_consumer_unwind_leave_normal_program_params_and_body_ast_
     let view = moved.observation().admitted().unwrap();
     let file = view.setup().file();
     let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        let analysis = build_native_selected_setup_dom_decisions(view.setup()).unwrap();
+        let analysis = build_selected_setup_dom_decisions(view.setup()).unwrap();
         assert!(analysis.dom().unwrap().unsupported().is_empty());
         panic!("stop after genuine original alias read projection");
     }));

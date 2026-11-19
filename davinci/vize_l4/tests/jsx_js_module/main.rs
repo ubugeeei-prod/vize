@@ -2,7 +2,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
 use vize_l2::lang::js::{JsxFile, JsxFileProducer};
-use vize_l3::jsx::{NativeJsxAnalysis, build_jsx_decisions};
+use vize_l3::jsx::{JsxAnalysis, build_jsx_decisions};
 use vize_l4::jsx::{JsxEmitErrorKind as Error, emit_js_module};
 use vize_l4::write::{NoLinks, Recorded};
 
@@ -25,7 +25,7 @@ fn analyze<'a>(
     arena: &'a Allocator,
     source: &'a str,
     profile: SourceType,
-) -> Result<NativeJsxAnalysis<'a>, &'static str> {
+) -> Result<JsxAnalysis<'a>, &'static str> {
     build_jsx_decisions(lower(arena, source, profile)?).map_err(|_| "L3")
 }
 

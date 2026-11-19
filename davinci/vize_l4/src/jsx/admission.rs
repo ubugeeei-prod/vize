@@ -1,10 +1,10 @@
 use vize_l0::{FxHashSet, Span, dom_tag_config};
 use vize_l2::lang::js::JsxNode;
-use vize_l3::jsx::{JsxDecisionKind as Kind, NativeJsxAnalysis};
+use vize_l3::jsx::{JsxDecisionKind as Kind, JsxAnalysis};
 
 use super::{JsxEmitError, JsxEmitErrorKind as Error, invalid, kind};
 
-pub(super) fn check(analysis: &NativeJsxAnalysis<'_>) -> Result<(), JsxEmitError> {
+pub(super) fn check(analysis: &JsxAnalysis<'_>) -> Result<(), JsxEmitError> {
     let owner = analysis.owner();
     let file = owner.file();
     let source = file.artifact().source();
@@ -109,7 +109,7 @@ fn has_entities(node: JsxNode<'_, '_>) -> Result<bool, JsxEmitError> {
 }
 
 fn check_element(
-    analysis: &NativeJsxAnalysis<'_>,
+    analysis: &JsxAnalysis<'_>,
     node: JsxNode<'_, '_>,
 ) -> Result<(), JsxEmitError> {
     let mut children = node.children();

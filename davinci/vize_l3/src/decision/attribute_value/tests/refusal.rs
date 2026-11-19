@@ -158,7 +158,7 @@ fn original_entity_text_and_unsupported_target_names_remain_precise_boundaries()
     check(completed(&arena, source).is_err())?;
     let arena = Allocator::default();
     let original = completed(&arena, "<template><div hidden='&amp;lt;'/></template>")?;
-    let analysis = vapor::build_native_vapor_file_decisions(original.view().map_err(|_| "view")?)
+    let analysis = vapor::build_template_vapor_decisions(original.view().map_err(|_| "view")?)
         .map_err(|_| "authentic native rows")?;
     check(
         analysis
@@ -183,15 +183,15 @@ fn original_class_retains_complete_rows_for_all_admitted_targets() -> Test {
     let arena = Allocator::default();
     let source = r#"<template><div class="a&amp;amp;b">x</div></template>"#;
     let original = completed(&arena, source)?;
-    let dom = native::build_native_dom_file_decisions(original.view().map_err(|_| "view")?)
+    let dom = native::build_template_dom_decisions(original.view().map_err(|_| "view")?)
         .map_err(|_| "DOM original rows")?;
     check(dom.dom().ok_or("DOM facts")?.unsupported().is_empty())?;
     check(dom.original_attributes().ok_or("original row")?.len() == 1)?;
-    let ssr = ssr::build_native_ssr_file_decisions(original.view().map_err(|_| "view")?)
+    let ssr = ssr::build_template_ssr_decisions(original.view().map_err(|_| "view")?)
         .map_err(|_| "SSR original rows")?;
     check(ssr.ssr().ok_or("SSR facts")?.unsupported().is_empty())?;
     check(ssr.original_attributes().ok_or("original row")?.len() == 1)?;
-    let vapor = vapor::build_native_vapor_file_decisions(original.view().map_err(|_| "view")?)
+    let vapor = vapor::build_template_vapor_decisions(original.view().map_err(|_| "view")?)
         .map_err(|_| "Vapor original rows")?;
     check(vapor.original_attributes().ok_or("original row")?.len() == 1)?;
     check(vapor.vapor().ok_or("Vapor facts")?.unsupported().is_empty())?;

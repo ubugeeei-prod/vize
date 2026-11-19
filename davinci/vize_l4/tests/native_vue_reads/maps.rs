@@ -1,9 +1,9 @@
 use vize_l1_to_l2::native_file::NativeTemplateObservation;
-use vize_l3::decision::dom::vue::{NativeVueRenderAnalysis, VueReadKind};
+use vize_l3::decision::dom::vue::{VueRenderAnalysis, VueReadKind};
 use vize_l4::write::document::EmitDocument;
 
 pub fn check(
-    analysis: &NativeVueRenderAnalysis<'_, '_, '_, '_, '_>,
+    analysis: &VueRenderAnalysis<'_, '_, '_, '_, '_>,
     template: &NativeTemplateObservation<'_>,
     document: &EmitDocument,
     source: &str,

@@ -7,12 +7,12 @@ use crate::{
 };
 use vize_l0::{String, cstr, id::NodeId};
 use vize_l2::{file::NativeFileModelKind, lang::js::NativeSelectedSetup, op::ElementOp};
-use vize_l3::decision::vapor::{NativeSelectedSetupVaporAnalysis, VaporModel};
+use vize_l3::decision::vapor::{SelectedSetupVaporAnalysis, VaporModel};
 
 pub(super) fn write<'owner, 'arena, L: LinkSink>(
     prelude: &mut Writer<L>,
     body: &mut Writer<L>,
-    analysis: &NativeSelectedSetupVaporAnalysis<'_, 'owner, 'arena>,
+    analysis: &SelectedSetupVaporAnalysis<'_, 'owner, 'arena>,
     node: NodeId,
     element: &'owner ElementOp<'arena>,
     model: VaporModel<'owner, 'arena>,

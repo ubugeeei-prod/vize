@@ -4,7 +4,7 @@ use vize_l2::{
 };
 use vize_l3::decision::{
     dom::{DomChild, DomDependency, DomRootKind},
-    native::build_native_dom_file_decisions,
+    template::build_template_dom_decisions,
 };
 
 #[test]
@@ -31,7 +31,7 @@ fn original_root_literal_retains_file_input_and_resolution_in_the_existing_sole_
     }
     let output = core::hint::black_box(original.finish());
     let analysis =
-        build_native_dom_file_decisions(output.view().map_err(|_| "genuine native view")?)
+        build_template_dom_decisions(output.view().map_err(|_| "genuine native view")?)
             .map_err(|_| "existing sole L3 walk")?;
     check(core::ptr::eq(analysis.owner(), &output))?;
     let file = analysis.file();
