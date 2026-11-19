@@ -18,10 +18,9 @@ mod static_style;
 mod structural_slots;
 mod text;
 
-use vize_atelier_core::{
-    Namespace, RootNode, SimpleExpressionNode, SourceLocation, codegen::document::EmitDocument,
-};
+use vize_atelier_core::{Namespace, RootNode, SimpleExpressionNode, SourceLocation};
 use vize_carton::{Allocator, Box, FxHashMap, String, Vec, ensure_sufficient_stack};
+use vize_l4::write::EmitDocument;
 
 use super::{AuthoredSpan, Content, Expr, NativeArtifact};
 use crate::generate::spans::{TemplateSpans, VaporSourceSpans};

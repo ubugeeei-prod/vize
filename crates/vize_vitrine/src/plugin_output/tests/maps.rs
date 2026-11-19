@@ -29,7 +29,7 @@ fn unicode_banner_rebases_every_native_anchor_without_inventing_provenance() {
 #[test]
 fn whitespace_deletion_rebases_following_anchors_exactly() {
     let source = "<div>{{ label }}</div>";
-    let mut document = vize_atelier_core::codegen::document::EmitDocument::default();
+    let mut document = vize_l4::write::EmitDocument::default();
     document.push_str("const a =   ");
     document.push_named("label", vize_l0::Span::new(8, 13), "label");
     document.push_str(";\n");

@@ -10,11 +10,11 @@ use oxc_ast::ast::{ArrowFunctionExpression, Class, Expression, Function, Identif
 use oxc_ast_visit::Visit;
 use oxc_ast_visit::walk::{walk_arrow_function_expression, walk_class, walk_function};
 use oxc_syntax::scope::ScopeFlags;
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{Allocator, Span, String};
 use vize_l1_to_l2::lower;
 use vize_l2::expr::{ExprDialect, ExprRef};
 use vize_l2::op::{DynamicName, Op, Region};
+use vize_l4::write::EmitDocument;
 
 mod bindings;
 use bindings::project_bindings;

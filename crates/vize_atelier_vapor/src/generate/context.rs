@@ -1,7 +1,7 @@
 //! Code generation context that tracks state during Vapor code emission.
 
 use super::{expression, names::NameSet};
-use vize_atelier_core::codegen::document::EmitDocument;
+use vize_l4::write::EmitDocument;
 
 mod component_resolution;
 mod scopes;

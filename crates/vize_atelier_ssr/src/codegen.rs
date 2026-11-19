@@ -14,8 +14,9 @@ pub(crate) mod scope_prefix;
 mod spans;
 
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
-use vize_atelier_core::{RootNode, RuntimeHelper, codegen::document::EmitDocument};
+use vize_atelier_core::{RootNode, RuntimeHelper, codegen::source_map::document_source_map};
 use vize_l0::{Allocator, FxHashSet, SmallVec, String};
+use vize_l4::write::EmitDocument;
 
 /// SSR codegen result
 #[derive(Debug, Default)]
@@ -249,8 +250,7 @@ impl<'a> SsrCodegenContext<'a> {
         let preamble = self.build_preamble();
 
         let map = self.out.is_recording().then(|| {
-            self.out
-                .source_map(self.source_map_filename.as_str(), self.source)
+            document_source_map(&self.out, self.source_map_filename.as_str(), self.source)
         });
         let code = self.out.into_string();
 

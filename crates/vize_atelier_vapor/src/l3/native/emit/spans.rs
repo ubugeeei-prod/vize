@@ -5,8 +5,8 @@
 //! located by the HTML/Vue syntax of that authored text, and each locator
 //! verifies the token it found before anchoring it.
 
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{Span, String};
+use vize_l4::write::EmitDocument;
 
 use super::super::{AuthoredSpan, BindingKind, Content};
 use super::Emitter;

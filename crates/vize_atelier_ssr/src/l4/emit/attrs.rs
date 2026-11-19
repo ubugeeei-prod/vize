@@ -9,7 +9,7 @@ use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities
 
 use super::{Emitter, Result, model, plan_source, require_dynamic};
 use crate::codegen::element::props::{merge_prop_values, quoted_js_string};
-use vize_atelier_core::codegen::document::EmitDocument;
+use vize_l4::write::EmitDocument;
 
 use super::spans::{attribute_value_start, directive_value, expression_span};
 use crate::codegen::helpers::escape_html_attr;

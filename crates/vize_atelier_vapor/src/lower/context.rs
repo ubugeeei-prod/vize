@@ -1,8 +1,9 @@
 //! Transform context for tracking state during AST-to-IR transformation.
 
 use crate::ir::{BlockIRNode, IREffect, OperationNode};
-use vize_atelier_core::{ElementNode, Namespace, TextNode, codegen::document::EmitDocument};
+use vize_atelier_core::{ElementNode, Namespace, TextNode};
 use vize_carton::{Allocator, FxHashMap, FxHashSet, String, Vec, interner::Interner};
+use vize_l4::write::EmitDocument;
 
 /// Template anchors, collected only for map-requesting compiles (P3-9).
 pub(crate) use crate::generate::spans::TemplateSpans;

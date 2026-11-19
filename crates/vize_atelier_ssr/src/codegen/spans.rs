@@ -8,8 +8,9 @@
 //! requested nothing is recorded and every part stays link-free, so the
 //! emitted bytes are identical either way (TS-11).
 
-use vize_atelier_core::{DirectiveNode, codegen::document::EmitDocument};
+use vize_atelier_core::DirectiveNode;
 use vize_l0::Span;
+use vize_l4::write::EmitDocument;
 
 use super::{SsrCodegenContext, TemplatePart};
 
@@ -136,8 +137,8 @@ impl SsrCodegenContext<'_> {
 mod tests {
     use super::super::SsrCodegenContext;
     use crate::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
-    use vize_atelier_core::codegen::document::EmitDocument;
     use vize_l0::{Allocator, Span};
+    use vize_l4::write::EmitDocument;
 
     #[test]
     fn wrapped_fragments_keep_complete_text_links_and_maps() {

@@ -25,7 +25,7 @@ use crate::codegen::element::spanned_props::{
 use crate::l4::string_plan::{
     SsrSegmentSource as Source, SsrStringPayloadKind, SsrStringSegmentKind as Kind,
 };
-use vize_atelier_core::codegen::document::EmitDocument;
+use vize_l4::write::EmitDocument;
 
 /// The merged attributes of one element and the content a temp owns.
 pub(super) struct Merged {

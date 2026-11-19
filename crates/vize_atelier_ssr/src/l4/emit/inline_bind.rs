@@ -4,8 +4,8 @@
 //! argument.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l0::{String, cstr};
+use vize_l4::write::EmitDocument;
 
 use super::attrs::{Attached, Bind, BindName, static_value};
 use super::spans::argument_start;

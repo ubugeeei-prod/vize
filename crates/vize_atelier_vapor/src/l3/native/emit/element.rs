@@ -3,8 +3,8 @@
 //! numbered before their parent element, which is numbered before its other
 //! dynamic descendants; those follow in document order.
 
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{Vec, ensure_sufficient_stack};
+use vize_l4::write::EmitDocument;
 
 use super::super::{BindingKind, Content};
 use super::spans::{tag_offset, value_offset};

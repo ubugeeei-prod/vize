@@ -3,10 +3,10 @@
 //! `<Transition>` / `<KeepAlive>` wrappers.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_l0::{String, ToCompactString, cstr};
 use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::{TransformContent, decode_template_entities};
+use vize_l4::write::EmitDocument;
 
 use super::attrs::{Attached, admit_value};
 use super::{Emitter, Flags, Result, plan_source, require_dynamic};

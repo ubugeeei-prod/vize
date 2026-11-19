@@ -1,8 +1,8 @@
 //! Effect generation and inline operation helpers.
 
 use crate::ir::OperationNode;
-use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{String, cstr};
+use vize_l4::write::EmitDocument;
 
 use super::{
     context::GenerateContext,

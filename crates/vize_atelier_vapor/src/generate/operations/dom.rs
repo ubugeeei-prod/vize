@@ -1,8 +1,9 @@
 use crate::ir::{
     SetDynamicPropsIRNode, SetHtmlIRNode, SetPropIRNode, SetTextIRNode, is_on, listener_prop,
 };
-use vize_atelier_core::{Namespace, SimpleExpressionNode, codegen::document::EmitDocument};
+use vize_atelier_core::{Namespace, SimpleExpressionNode};
 use vize_carton::{String, cstr};
+use vize_l4::write::EmitDocument;
 
 use super::super::{context::GenerateContext, setup::escape_js_string_literal};
 
