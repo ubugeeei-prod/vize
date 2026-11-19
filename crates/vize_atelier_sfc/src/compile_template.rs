@@ -490,6 +490,6 @@ pub(crate) fn recoverable_template_warnings(
                     != "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag."
         })
         .cloned()
-        .map(Into::into)
+        .map(crate::types::sfc_error_from_compiler)
         .collect()
 }

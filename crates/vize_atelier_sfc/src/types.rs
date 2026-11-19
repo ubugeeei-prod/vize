@@ -3,13 +3,28 @@
 //! Zero-copy design using borrowed strings for maximum parsing performance.
 
 #[doc(inline)]
-pub use vize_croquis::sfc::{
-    BindingMetadata, BindingType, BlockLocation, PadOption, SfcCustomBlock, SfcDescriptor,
-    SfcError, SfcParseOptions, SfcScriptBlock, SfcStyleBlock, SfcTemplateBlock,
+pub use vize_croquis::sfc::{BindingMetadata, BindingType};
+#[doc(inline)]
+pub use vize_l1::container::vue::compat::{
+    BlockLocation, PadOption, SfcCustomBlock, SfcDescriptor, SfcError, SfcParseOptions,
+    SfcScriptBlock, SfcStyleBlock, SfcTemplateBlock,
 };
 
 use serde::{Deserialize, Serialize};
 use vize_carton::{FxHashMap, String};
+
+/// A template compiler error as an SFC diagnostic: the message, and the
+/// error code's `Debug` spelling as the code.
+pub(crate) fn sfc_error_from_compiler(error: vize_atelier_core::CompilerError) -> SfcError {
+    use core::fmt::Write as _;
+    let mut code = String::default();
+    let _ = write!(&mut code, "{:?}", error.code);
+    SfcError {
+        message: error.message,
+        code: Some(code),
+        loc: None,
+    }
+}
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct CssModuleMapping {

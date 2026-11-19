@@ -2,7 +2,7 @@
 //!
 //! An `.art.vue` file is an SFC: `<art>` is a custom block beside the
 //! ordinary `<script>` / `<style>` blocks. The split is the shared SFC
-//! container scan (`vize_croquis::sfc::parse_sfc`, the same one compile,
+//! container scan (`vize_l1::container::vue::compat::parse_sfc`, the same one compile,
 //! lint and the LSP read), never a private substring search, and every
 //! block this module hands on is an L0 [`SourceBlock`] frame over the
 //! complete authored file, so each later slice keeps a file-absolute
@@ -10,11 +10,11 @@
 
 use std::borrow::Cow;
 
-use vize_croquis::sfc::{
+use vize_l0::{Allocator, SourceBlock, SourceRoot, ToCompactString, Vec};
+use vize_l1::container::vue::compat::{
     BlockLocation, SfcError, SfcParseOptions, SfcScriptBlock, SfcStyleBlock,
     parse_sfc_without_css_vars,
 };
-use vize_l0::{Allocator, SourceBlock, SourceRoot, ToCompactString, Vec};
 
 use super::calculate_location_fast;
 use crate::types::{ArtParseError, ArtScriptBlock, ArtStyleBlock};

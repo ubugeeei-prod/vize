@@ -1,28 +1,16 @@
-//! Parse-only Vue Single File Component support.
+//! Vue Single File Component support kept for Croquis consumers.
 //!
-//! This crate exposes the zero-copy SFC descriptor parser without depending on
-//! the DOM, SSR, Vapor, script-transform, code-generation, or CSS-engine
-//! portions of [`vize_atelier_sfc`](https://docs.rs/vize_atelier_sfc).
-
-#![cfg_attr(
-    test,
-    expect(
-        clippy::disallowed_macros,
-        clippy::disallowed_methods,
-        clippy::disallowed_types,
-        reason = "test modules format fixtures with std strings"
-    )
-)]
+//! The zero-copy descriptor and its parser live in the L1 container layer
+//! ([`vize_l1::container::vue::compat`]); this module re-exports them under
+//! their established paths and keeps the compiler's CSS `v-bind()` rewrite.
 
 mod css_transform;
-mod parse;
-mod types;
 
-pub use parse::{parse_sfc, parse_sfc_without_css_vars};
-pub use types::{
-    BindingMetadata, BindingType, BlockLocation, PadOption, SfcCustomBlock, SfcDescriptor,
-    SfcError, SfcParseOptions, SfcScriptBlock, SfcStyleBlock, SfcTemplateBlock,
+pub use vize_l1::container::vue::compat::{
+    BlockLocation, PadOption, SfcCustomBlock, SfcDescriptor, SfcError, SfcParseOptions,
+    SfcScriptBlock, SfcStyleBlock, SfcTemplateBlock, parse_sfc, parse_sfc_without_css_vars,
 };
+pub use vize_relief::options::{BindingMetadata, BindingType};
 
 #[doc(hidden)]
 pub mod __internal {
@@ -32,14 +20,5 @@ pub mod __internal {
         extract_and_transform_v_bind_with_scope, find_matching_paren, prod_scoped_v_bind_name,
         scoped_v_bind_name, v_bind_expression_ranges,
     };
-
-    /// Compatibility descriptor projection keeps the shipped CSS variable
-    /// vocabulary while SFC block splitting is owned by L1.
-    pub fn extract_css_vars(css: &str) -> Vec<vize_carton::String> {
-        super::extract_css_vars(css)
-    }
-}
-
-pub(crate) fn extract_css_vars(css: &str) -> Vec<vize_carton::String> {
-    css_transform::extract_v_bind_vars(css)
+    pub use vize_l1::container::vue::compat::v_bind::extract_v_bind_vars as extract_css_vars;
 }

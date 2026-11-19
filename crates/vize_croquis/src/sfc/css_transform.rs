@@ -4,10 +4,8 @@
 //! into CSS custom properties (variables). Also provides low-level byte search
 //! utilities used by both this module and the scoped CSS module.
 
-mod scanner;
-
-pub use scanner::find_matching_paren;
-use scanner::find_next_v_bind;
+pub use vize_l1::container::vue::compat::v_bind::find_matching_paren;
+use vize_l1::container::vue::compat::v_bind::{find_next_v_bind, trim_outer_quotes};
 
 use vize_carton::{Allocator, String, ToCompactString, Vec as ArenaVec};
 
@@ -125,24 +123,6 @@ pub fn extract_and_transform_v_bind_with_edits<'a>(
     (result_str, vars)
 }
 
-/// The expressions [`extract_and_transform_v_bind`] collects, without building
-/// the transformed stylesheet.
-pub(crate) fn extract_v_bind_vars(css: &str) -> Vec<String> {
-    let mut vars = Vec::new();
-    let mut pos = 0;
-    while let Some(open) = find_next_v_bind(css, pos) {
-        let start = open + 7;
-        let Some(end) = css.get(start..).and_then(find_matching_paren) else {
-            break;
-        };
-        if let Some(expr) = css.get(start..start + end) {
-            vars.push(trim_outer_quotes(expr.trim()).to_compact_string());
-        }
-        pos = start + end + 1;
-    }
-    vars
-}
-
 /// Authored JavaScript expression ranges, excluding CSS whitespace and quotes.
 /// Shares the compiler scanner, including its comment/string and nesting rules.
 #[doc(hidden)]
@@ -174,18 +154,6 @@ fn collect_v_bind_ranges(css: &str) -> (Vec<std::ops::Range<usize>>, bool) {
         pos = open + 7 + end + 1;
     }
     (ranges, true)
-}
-
-pub(crate) fn trim_outer_quotes(expr: &str) -> &str {
-    let bytes = expr.as_bytes();
-    if bytes.len() >= 2
-        && matches!(bytes.first(), Some(b'"' | b'\''))
-        && bytes.first() == bytes.last()
-    {
-        expr.get(1..expr.len() - 1).unwrap_or_default()
-    } else {
-        expr
-    }
 }
 
 /// Generate the Vue-compatible CSS variable name for a scoped SFC v-bind().

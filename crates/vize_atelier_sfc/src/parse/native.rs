@@ -178,7 +178,7 @@ fn parse_complete_sfc<'a>(
                     .cloned()
                     .unwrap_or(Cow::Borrowed("$style"))
             });
-            for css_var in vize_croquis::sfc::__internal::extract_css_vars(&content) {
+            for css_var in vize_l1::container::vue::compat::v_bind::extract_v_bind_vars(&content) {
                 if !descriptor
                     .css_vars
                     .iter()

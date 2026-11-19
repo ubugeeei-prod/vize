@@ -11,12 +11,12 @@
 
 use std::borrow::Cow;
 
-use vize_croquis::sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::compiler_error::ErrorCode;
 use vize_l0::config::VueVersion;
 use vize_l0::diag::Diagnostic;
 use vize_l0::key::{ArtifactKey, source_block_key};
 use vize_l0::{Allocator, FxHashMap, String};
+use vize_l1::container::vue::compat::{SfcParseOptions, parse_sfc};
 use vize_l1_to_l2::key::SurfacePage;
 use vize_l1_to_l2::{LegacyCaps, lower_style_block, lower_with_caps};
 use vize_l2::dump::Page as L2Page;

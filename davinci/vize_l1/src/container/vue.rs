@@ -9,6 +9,7 @@ use super::{Block, Container, ContainerError, ContainerErrorCode, ContainerForma
 pub struct Vue;
 
 pub mod boundary;
+pub mod compat;
 #[doc(hidden)]
 mod descriptor;
 mod scan;

@@ -71,17 +71,6 @@
       "reason": "Remove Maestro's inherited Canon-to-Relief path."
     },
     {
-      "from": "vize_incremental",
-      "to": "vize_croquis",
-      "rename": null,
-      "target": null,
-      "optional": false,
-      "workspace": true,
-      "roots": ["vize_maestro"],
-      "issue": 6851,
-      "reason": "Remove Maestro's inherited Incremental-to-Croquis path."
-    },
-    {
       "from": "vize_maestro",
       "to": "vize_armature",
       "rename": null,
