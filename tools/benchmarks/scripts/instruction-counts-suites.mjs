@@ -11,6 +11,7 @@ export function levelInstructionSuites(root) {
     ["vize_atelier_dom", "davinci"],
     ["vize_atelier_vapor", "davinci"],
     ["vize_atelier_ssr", "davinci"],
+    ["vize_atelier_jsx", "levels"],
     ["vize_l0", "pass_runtime"],
     ["vize_l0", "fact_runtime"],
     ["vize_l1_to_l2", "l1_to_l2_storage"],

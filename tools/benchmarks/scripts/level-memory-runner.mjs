@@ -149,7 +149,7 @@ export function build(root, target, out) {
     buildEnvironment,
   );
   const suites = memorySuites(root);
-  assert.equal(suites.length, 13, "original twelve level and one formatter providers required");
+  assert.equal(suites.length, 14, "thirteen level and one formatter providers required");
   const args = [
     "bench",
     "--locked",

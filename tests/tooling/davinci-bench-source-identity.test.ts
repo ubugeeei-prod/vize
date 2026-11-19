@@ -16,7 +16,7 @@ await test("source-owned different raw versions retain the closed default and al
   assert.match(original.stderr, /harness_version mismatch/);
   const positive = sourceCompare(f);
   assert.equal(positive.status, 0, positive.stderr);
-  assert.match(positive.stdout, /breaches=0 .*registered=101/);
+  assert.match(positive.stdout, /breaches=0 .*registered=104/);
   const id = Object.keys(f.budgets.bench).find((id) => f.budgets.bench[id].allocs > 0)!;
   for (const delta of [1, -1]) {
     f.writeReport("head", 1, id, { allocs: f.budgets.bench[id].allocs + delta });
@@ -49,7 +49,7 @@ await test("source-owned comparison refuses claim-only, incomplete, foreign and 
   f.write(f.pair, f.carrier);
   f.measurement.observations_complete = false;
   f.save();
-  refuse(/complete630 and complete101 required/);
+  refuse(/complete648 and complete104 required/);
   f.measurement.observations_complete = true;
   const id = Object.keys(f.measurement.measurements.head[0])[0];
   const original = f.measurement.measurements.head[0][id];
@@ -78,7 +78,7 @@ await test("source-owned comparison refuses claim-only, incomplete, foreign and 
   const formatId = [...f.authority.planes.formatter.registry][0];
   const dest = path.join(f.out, "head/run-1/level-reports", `${formatId}.json`);
   fs.copyFileSync(path.join(f.out, "head/run-1/formatter-reports", `${formatId}.json`), dest);
-  refuse(/wrong complete101 judge plane/);
+  refuse(/wrong complete104 judge plane/);
   fs.unlinkSync(dest);
   for (const args of [["--bench", id], ["--update-baseline"]]) {
     const result = sourceCompare(f, args);

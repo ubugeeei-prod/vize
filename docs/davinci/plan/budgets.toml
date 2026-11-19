@@ -224,6 +224,13 @@ musea_parse_art_define_art = { wall_p50_ns = 0, allocs = 14, rss_peak_bytes = 0,
 musea_parse_art_legacy_attrs = { wall_p50_ns = 0, allocs = 15, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 musea_parse_art_inline = { wall_p50_ns = 0, allocs = 10, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 
+# JSX/TSX compile entry (#6885): one `compile_jsx` window per configuration
+# over the pinned module, arena setup and output drop outside the window. The
+# exact alloc gate pins the whole compile path each JSX lowering slice moves.
+atelier_jsx_compile_vdom_slices = { wall_p50_ns = 0, allocs = 399, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_jsx_compile_babel_slices = { wall_p50_ns = 0, allocs = 338, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_jsx_compile_vapor_slices = { wall_p50_ns = 0, allocs = 531, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+
 [allocation_peak]
 # Exact peak live bytes over each stage window. The counting allocator makes
 # the value deterministic on one platform, but allocator requests can differ
