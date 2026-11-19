@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-case-2-prefixed-4494",
+    history: "67dc97e8ab5c0d96697e3b8e0f04aa1678ccc14f",
+    source: "<component :is=\"as\" :class=\"klass\"></component>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveDynamicComponent as _resolveDynamicComponent, normalizeClass as _normalizeClass, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.as), {\n    class: _normalizeClass(_ctx.klass)\n  }, null, 8 /* PROPS */, [\"class\"]))\n}",
+    map: None,
+}

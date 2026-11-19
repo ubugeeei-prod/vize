@@ -1,0 +1,47 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-case-1-4535",
+    history: "7c3e5e3de9c89c6679f59099f6d8d636814ebe85",
+    source: "<script setup>\ndefineEmits(['destroy'])\n</script>\n\n<template>\n  <Transition @after-leave=\"$emit('destroy')\">\n    <div />\n  </Transition>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, Transition as _Transition, withCtx as _withCtx } from \"vue\"\n\nconst _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"div\")\n\nexport default {\n  __name: 'History',\n  emits: ['destroy'],\n  setup(__props, { emit: $emit }) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createBlock(_Transition, {\n    onAfterLeave: _cache[0] || (_cache[0] = $event => ($emit('destroy')))\n  }, {\n    default: _withCtx(() => [\n      _hoisted_1\n    ]),\n    _: 1 /* STABLE */\n  }))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {},
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

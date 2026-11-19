@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-private-name-division-3108",
+    history: "5a5826cb6b402bd9419b6365e40bdecbfc242b5a",
+    source: "{{ a.#b / c / d }}",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return _toDisplayString(a.#b / c / d)\n}",
+    map: None,
+}

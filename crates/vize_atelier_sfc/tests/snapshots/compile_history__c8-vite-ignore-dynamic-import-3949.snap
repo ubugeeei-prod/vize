@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-vite-ignore-dynamic-import-3949",
+    history: "2c694c62a7f3d294cd7bd2d49fee9c3161eee9a6",
+    source: "const image = import(/* @vite-ignore */ `/src/assets/${name}.svg`);",
+    filename: "History.vue",
+    entry: "vite",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        vite_helper: Some(
+            "dynamicTemplateImports",
+        ),
+    },
+    errors: 0,
+}
+PipelineCss(
+    "const image = import(/* @vite-ignore */ `/src/assets/${name}.svg`);",
+)

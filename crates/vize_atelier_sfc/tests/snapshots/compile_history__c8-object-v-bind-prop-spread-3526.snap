@@ -1,0 +1,54 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-object-v-bind-prop-spread-3526",
+    history: "21e5bd408bfdf22f0c043f1e0c50d92f4055479a",
+    source: "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nconst bag = { count: 'oops' }\nconst good = { count: 1 }\n</script>\n\n<template>\n  <Child v-bind=\"bag\" />\n  <Child v-bind=\"good\" />\n  <Child v-bind=\"$attrs\" />\n</template>\n",
+    filename: "src/Parent.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    files: {
+        "src/Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ count: number }>()\n</script>\n\n<template><span /></template>\n",
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createVNode as _createVNode, normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n\nimport Child from './Child.vue'\n\n\nexport default {\n  __name: 'Parent',\n  setup(__props) {\n\nconst bag = { count: \"oops\" };\nconst good = { count: 1 };\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createVNode(Child, _normalizeProps(_guardReactiveProps(bag)), null, 16 /* FULL_PROPS */),\n    _createVNode(Child, _normalizeProps(_guardReactiveProps(good)), null, 16 /* FULL_PROPS */),\n    _createVNode(Child, _normalizeProps(_guardReactiveProps(_ctx.$attrs)), null, 16 /* FULL_PROPS */)\n  ], 64 /* STABLE_FRAGMENT */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "Child": SetupConst,
+                        "good": SetupConst,
+                        "bag": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

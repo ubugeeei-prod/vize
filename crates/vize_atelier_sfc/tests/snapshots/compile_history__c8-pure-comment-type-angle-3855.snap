@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-pure-comment-type-angle-3855",
+    history: "f17e0a7b13709c4fb6384e9469d1d700c475dc3c",
+    source: "{{ f<>/((\nd=//#__PURE__0 }}",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return _toDisplayString(f<>/((\nd=/* #__PURE__0 */)\n}",
+    map: None,
+}

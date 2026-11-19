@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-typed-mixin-array-as-const-3019",
+    history: "6a92fa4ea32376c0cb276214a76d8e99c7e79c18",
+    source: "<template><p>{{ inheritedMethod() }}</p></template>\n<script lang=\"ts\">\nconst LocalMixin = {\n  methods: { inheritedMethod() {} },\n  filters: { inheritedFilter(value) { return value } }\n}\nexport default { mixins: ([LocalMixin] as const) }\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "const LocalMixin = {\n  methods: { inheritedMethod() {} },\n  filters: { inheritedFilter(value) {\n    return value;\n  } }\n};\nconst _sfc_main = { mixins: [LocalMixin] };\n\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString($options.inheritedMethod()), 1 /* TEXT */))\n}\n_sfc_main.render = _sfc_render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

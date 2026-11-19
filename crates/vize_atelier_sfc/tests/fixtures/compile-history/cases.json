@@ -14882,5 +14882,2339 @@
       "types.ts": "export type Public = { value: string }\n"
     },
     "errors": 0
+  },
+  {
+    "id": "c8-image-set-css-ast-528",
+    "history": "fb0ede895d6365d23f28d2f0c024c5bca0e11594",
+    "source": ".hero { background-image: image-set(url('./one.png') 1x, url('./two.png') 2x); }",
+    "filename": "History.vue",
+    "entry": "css",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-src-alias-imported-type-props-786",
+    "history": "ab456f2bfc1cd5ca3a3c5b1baa4d9dc318fe4a07",
+    "source": "<template>\n  <MkPagination\n    :paginator=\"paginator\"\n    :direction=\"direction\"\n    :autoLoad=\"autoLoad\"\n    :pullToRefresh=\"pullToRefresh\"\n    :withControl=\"withControl\"\n    :forceDisableInfiniteScroll=\"forceDisableInfiniteScroll\"\n  />\n</template>\n\n<script setup lang=\"ts\" generic=\"T\">\nimport type { MkPaginationOptions } from '@/components/MkPagination.vue';\nimport MkPagination from '@/components/MkPagination.vue';\n\nconst props = withDefaults(defineProps<MkPaginationOptions & {\n  paginator: T;\n  noGap?: boolean;\n}>(), {\n  autoLoad: true,\n  direction: 'down',\n  pullToRefresh: true,\n  withControl: true,\n  forceDisableInfiniteScroll: false,\n});\n</script>",
+    "filename": "packages/frontend/src/components/MkNotesTimeline.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "noProjectConfig": true
+    },
+    "files": {
+      "packages/frontend/src/components/MkPagination.vue": "<script lang=\"ts\">\nexport type MkPaginationOptions = {\n  autoLoad?: boolean;\n  direction?: 'up' | 'down' | 'both';\n  pullToRefresh?: boolean;\n  withControl?: boolean;\n  forceDisableInfiniteScroll?: boolean;\n};\n</script>"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-import-meta-glob-relative-888",
+    "history": "6e259d0492f3b69e592938122287e98348cf03af",
+    "source": "const modules = import.meta.glob(\"./demos/*.vue\", { eager: true });",
+    "filename": "History.vue",
+    "entry": "vite",
+    "target": "dom",
+    "options": {
+      "viteHelper": "importMetaGlobBase"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-import-meta-glob-parent-array-888",
+    "history": "6e259d0492f3b69e592938122287e98348cf03af",
+    "source": "const a = import.meta.glob([\"../shared/*.ts\", \"!../shared/skip.ts\"]); const b = import.meta.glob(\"/abs/*.ts\");",
+    "filename": "History.vue",
+    "entry": "vite",
+    "target": "dom",
+    "options": {
+      "viteHelper": "importMetaGlobBase"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-imported-base-interface-props-901",
+    "history": "a039f8f7ef3b85fb1b57750d10a2a0bf8fad2565",
+    "source": "<script lang=\"ts\">\nimport type { PrimitiveProps } from './primitive'\n\nexport interface AppProps extends PrimitiveProps {\n  feature?: 'focusable' | 'hidden'\n}\n</script>\n\n<script setup lang=\"ts\">\nwithDefaults(defineProps<AppProps>(), {\n  as: 'span',\n  feature: 'focusable',\n})\n</script>\n\n<template>\n  <div\n    :data-as=\"as\"\n    :data-as-child=\"asChild\"\n    :data-feature=\"feature\"\n  />\n</template>\n",
+    "filename": "src/App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "files": {
+      "src/primitive.ts": "export interface PrimitiveProps {\n  asChild?: boolean\n  as?: string\n}\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-re-exported-sfc-interface-props-945",
+    "history": "4d4f036515bfd64c82ac2491f389c32072773610",
+    "source": "<script lang=\"ts\">\nimport type { ReExportedBaseProps } from \"./re-exported\";\n\nexport interface ReExportedParentWidgetProps extends ReExportedBaseProps {}\n</script>\n\n<script setup lang=\"ts\">\nimport ReExportedChild from \"./ReExportedChild.vue\";\n\nconst props = defineProps<ReExportedParentWidgetProps>();\n</script>\n\n<template>\n  <ReExportedChild :as=\"as\" :as-child=\"props.asChild\" />\n</template>\n",
+    "filename": "ReExportedParentWidget.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "files": {
+      "ReExportedBase.vue": "<script lang=\"ts\">\nexport interface ReExportedBaseProps {\n  as?: string;\n  asChild?: boolean;\n}\n</script>\n\n<template>\n  <div />\n</template>\n",
+      "ReExportedChild.vue": "<script setup lang=\"ts\">\ndefineProps<{\n  as?: string;\n  asChild?: boolean;\n}>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+      "re-exported.ts": "export { type ReExportedBaseProps } from \"./ReExportedBase.vue\";\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-mixed-reexported-vue-interface-props-952",
+    "history": "80333546c87b9bbd40362926e61114551eb28f93",
+    "source": "<script lang=\"ts\">\nimport type { ContentProps } from './content'\n\nexport interface WrapperProps extends ContentProps {}\n</script>\n\n<script setup lang=\"ts\">\nimport { Content } from './content'\n\nconst props = defineProps<WrapperProps>()\n</script>\n\n<template>\n  <Content\n    :as-child=\"props.asChild\"\n    :as=\"as\"\n    :force-mount=\"props.forceMount\"\n  />\n</template>\n",
+    "filename": "src/Wrapper.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "files": {
+      "src/primitive.ts": "export type AsTag = 'div' | 'span' | ({} & string)\n\nexport interface PrimitiveProps {\n  asChild?: boolean\n  as?: AsTag\n}\n",
+      "src/content/Content.vue": "<script lang=\"ts\">\nimport type { PrimitiveProps } from '../primitive'\n\nexport interface ContentProps extends PrimitiveProps {\n  forceMount?: boolean\n}\n</script>\n\n<script setup lang=\"ts\">\ndefineProps<ContentProps>()\n</script>\n\n<template><div /></template>\n",
+      "src/content/index.ts": "export {\n  default as Content,\n  type ContentProps,\n} from './Content.vue'\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-js-type-specifier-resolves-ts-source-1107",
+    "history": "41ea843005db983c98ae43bc1af8475d3ab679c6",
+    "source": "<script setup lang=\"ts\">\nimport type { ExtractorFunction } from '../utility/paginator.js'\ndefineProps<{ extract: ExtractorFunction<string> }>()\n</script>\n<template><div /></template>\n",
+    "filename": "src/components/Paginator.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "noProjectConfig": true
+    },
+    "files": {
+      "src/utility/paginator.ts": "export type ExtractorFunction<T> = (item: T) => T;\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-css-imports-utf8-blank-lines-1244",
+    "history": "0dd1f9a9df1814ca797c3a8509b448f0b46bf5ca",
+    "source": ".icon::before { content: \"→\"; }\n\n\n.日本語 { color: red; }",
+    "filename": "History.vue",
+    "entry": "vite",
+    "target": "dom",
+    "options": {
+      "viteHelper": "cssImports"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-plain-export-star-type-barrel-1362",
+    "history": "bd1aa453ae43810c4a87b9a5a56bea7b2e736433",
+    "source": "<script setup lang=\"ts\">\nimport type { LinkProps } from '../types'\ndefineProps<LinkProps & { raw?: boolean }>()\n</script>\n<template><a /></template>\n",
+    "filename": "src/components/Button.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "noProjectConfig": true
+    },
+    "files": {
+      "src/components/Link.vue": "<script lang=\"ts\">\nexport interface LinkProps {\n  to?: string\n  disabled?: boolean\n}\n</script>\n<script setup lang=\"ts\">\ndefineProps<LinkProps>()\n</script>\n<template><a /></template>\n",
+      "src/types/index.ts": "export * from '../components/Link.vue'\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-node-modules-types-field-1368",
+    "history": "1b175a044397f99dd191b3f561cc790b81b3fa98",
+    "source": "<script setup lang=\"ts\">\nimport type { PrimitiveProps } from 'some-ui'\ninterface Props extends PrimitiveProps { label?: string }\ndefineProps<Props>()\n</script>\n<template><div /></template>\n",
+    "filename": "src/Select.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "noProjectConfig": true
+    },
+    "files": {
+      "node_modules/some-ui/package.json": "{ \"name\": \"some-ui\", \"types\": \"./dist/index.d.ts\" }",
+      "node_modules/some-ui/dist/index.d.ts": "export interface PrimitiveProps { asChild?: boolean; as?: string }\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-node-modules-exports-types-condition-1368",
+    "history": "1b175a044397f99dd191b3f561cc790b81b3fa98",
+    "source": "<script setup lang=\"ts\">\nimport type { T } from '@scope/pkg'\ndefineProps<{ value: T }>()\n</script>\n<template><div /></template>\n",
+    "filename": "src/App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "noProjectConfig": true
+    },
+    "files": {
+      "node_modules/@scope/pkg/package.json": "{ \"name\": \"@scope/pkg\", \"exports\": { \".\": { \"import\": { \"types\": \"./dist/main.d.mts\", \"default\": \"./dist/main.mjs\" } } } }",
+      "node_modules/@scope/pkg/dist/main.d.mts": "export type T = string\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-legacy-sync-modifier-1490",
+    "history": "a17b0809e5b241610f7aba7b5aebc420d13cb4b9",
+    "source": "<MyComp :foo.sync=\"bar\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-legacy-sync-camel-modifier-1490",
+    "history": "a17b0809e5b241610f7aba7b5aebc420d13cb4b9",
+    "source": "<MyComp :foo.sync.camel=\"bar\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-vue2-sync-and-slot-scope-1490",
+    "history": "a17b0809e5b241610f7aba7b5aebc420d13cb4b9",
+    "source": "<template><MyComp :foo.sync=\"bar\"><template slot=\"header\" slot-scope=\"props\">{{ props.title }}</template></MyComp></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "vueVersion": "2"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-ssr-template-asset-fragment-urls-2706",
+    "history": "db9c0e954f5b9b4d91f79a5f82a584003940c9c1",
+    "source": "<template><svg><use href=\"./icons.svg#home\"></use></svg><img src=\"./icons.svg\"><img src=\"./logo.png\"></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "errors": 0
+  },
+  {
+    "id": "c8-dom-template-asset-fragment-urls-2706",
+    "history": "db9c0e954f5b9b4d91f79a5f82a584003940c9c1",
+    "source": "<template><svg><use href=\"./icons.svg#home\"></use></svg><img src=\"./icons.svg\"><img src=\"./logo.png\"></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-imported-type-cache-props-2840",
+    "history": "f365171dd4f04d9531a6e3d0add81f599bd9e853",
+    "source": "<script setup lang=\"ts\">\nimport type { Props } from './types'\ndefineProps<Props>()\n</script>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "files": {
+      "types.ts": "export interface Props { first: string }\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-custom-renderer-module-template-2858",
+    "history": "e27ac8a9c6fa9c54989f7a7cbcf46d23cfb3b743",
+    "source": "<div>{{ message }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "customRenderer": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-strict-template-syntax-2858",
+    "history": "e27ac8a9c6fa9c54989f7a7cbcf46d23cfb3b743",
+    "source": "<div>{{ message }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "templateSyntax": "strict"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-quirks-template-syntax-2858",
+    "history": "e27ac8a9c6fa9c54989f7a7cbcf46d23cfb3b743",
+    "source": "<div />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "templateSyntax": "quirks"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-plain-interpolation-2904",
+    "history": "06577a6cf43053e7eb9bb2784615a959d85f7af2",
+    "source": "{{ msg }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-unterminated-interpolation-delimiter-2904",
+    "history": "06577a6cf43053e7eb9bb2784615a959d85f7af2",
+    "source": "{{",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-empty-interpolation-2904",
+    "history": "06577a6cf43053e7eb9bb2784615a959d85f7af2",
+    "source": "<p>{{}}</p>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-recursive-static-key-expression-2965",
+    "history": "58894805001f9c26442c7232576192ab13557011",
+    "source": "<li :key=\"S[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[\">item</li>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-type-argument-nesting-reproducer-2966",
+    "history": "37a80d51acb311e60236657049131a91ae708853",
+    "source": "{{ eu.tfpS<{[ erntro-Coro-Couo<tidon<cttnS<{[ erntro-rntro-Coro-Couo<tidon<cttnS<{[ erntro-Coro-Couo<tidon<cttn<tuo<tidon<cttnS<{[ erntro-Coro-Coug<tidon<cttn<tidon<cttopti<nn<ctstrCoro[Couo<tidon<cttn<tuo<tidon<cttnS<{[ erntro-Coro-Couo<tidon<cttn<tidon<cttopti<nn<ctstrin<n<<on<ta<ts }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-comment-bearing-binding-2970",
+    "history": "210bad60e7a813f54669977657e3a8b7f7bb313e",
+    "source": "<div :data-x='value /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */'></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-regex-literal-binding-2970",
+    "history": "210bad60e7a813f54669977657e3a8b7f7bb313e",
+    "source": "<div :title=\"/[a-z]+/gu.test(value) ? value : 'x'\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-comparison-and-template-literal-2970",
+    "history": "210bad60e7a813f54669977657e3a8b7f7bb313e",
+    "source": "<div :title=\"value < limit || `literal ${value}`\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-vue2-slot-scope-destructure-3018",
+    "history": "ff43d1aff38cadb946dedd0157fe1a126187deb5",
+    "source": "<template><Child><template slot=\"item\" slot-scope=\"{ row, index }\">{{ row.id }} {{ index }}</template></Child></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "vueVersion": "2"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-vue2-slot-scope-filter-3018",
+    "history": "ff43d1aff38cadb946dedd0157fe1a126187deb5",
+    "source": "<template><Child><template slot=\"row\" slot-scope=\"scope\"><span>{{ scope.row.id | formatStatus }}</span></template></Child></template>\n<script>\nexport default {\n  filters: {\n    formatStatus(value) { return String(value) }\n  }\n}\n</script>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "vueVersion": "2"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-typed-mixin-array-as-const-3019",
+    "history": "6a92fa4ea32376c0cb276214a76d8e99c7e79c18",
+    "source": "<template><p>{{ inheritedMethod() }}</p></template>\n<script lang=\"ts\">\nconst LocalMixin = {\n  methods: { inheritedMethod() {} },\n  filters: { inheritedFilter(value) { return value } }\n}\nexport default { mixins: ([LocalMixin] as const) }\n</script>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-typed-mixin-array-satisfies-3019",
+    "history": "6a92fa4ea32376c0cb276214a76d8e99c7e79c18",
+    "source": "<template><p>{{ inheritedMethod() }}</p></template>\n<script lang=\"ts\">\nconst LocalMixin = {\n  methods: { inheritedMethod() {} },\n  filters: { inheritedFilter(value) { return value } }\n}\nexport default { mixins: ([LocalMixin] satisfies readonly object[]) }\n</script>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-1-3032",
+    "history": "7bb2407b60c48db3594aa7388c8f1f185581a6c1",
+    "source": "<a v-if=\"show\" target=\"_blank\" v-bind=\"attrs\" :href=\"href\"></a>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-2-3032",
+    "history": "7bb2407b60c48db3594aa7388c8f1f185581a6c1",
+    "source": "<a v-if=\"show\" v-bind=\"attrs\" target=\"_blank\"></a>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-3-3032",
+    "history": "7bb2407b60c48db3594aa7388c8f1f185581a6c1",
+    "source": "<Widget v-if=\"show\" id=\"before\" v-on=\"listeners\" title=\"middle\" v-bind=\"attrs\" @click=\"after\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-4-3032",
+    "history": "7bb2407b60c48db3594aa7388c8f1f185581a6c1",
+    "source": "<div v-if=\"show\" class=\"base\" v-bind=\"attrs\" :class=\"classes\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-5-3032",
+    "history": "7bb2407b60c48db3594aa7388c8f1f185581a6c1",
+    "source": "<div v-if=\"show\" style=\"color: red\" v-bind=\"attrs\" :style=\"styles\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-6-3032",
+    "history": "7bb2407b60c48db3594aa7388c8f1f185581a6c1",
+    "source": "<div v-if=\"show\" class=\"base\" :class=\"classes\" v-bind=\"attrs\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-7-3032",
+    "history": "7bb2407b60c48db3594aa7388c8f1f185581a6c1",
+    "source": "<div v-if=\"show\" v-bind=\"attrs\" :key=\"identity\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-8-3032",
+    "history": "7bb2407b60c48db3594aa7388c8f1f185581a6c1",
+    "source": "<div v-if=\"show\" v-bind=\"attrs\" v-on=\"listeners\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-9-3032",
+    "history": "7bb2407b60c48db3594aa7388c8f1f185581a6c1",
+    "source": "<component v-if=\"show\" :is=\"view\" id=\"before\" v-bind=\"attrs\" title=\"after\"></component>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-10-3032",
+    "history": "7bb2407b60c48db3594aa7388c8f1f185581a6c1",
+    "source": "<button v-if=\"show\" @click=\"before\" v-bind=\"attrs\" v-on:click=\"after\"></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-11-3032",
+    "history": "7bb2407b60c48db3594aa7388c8f1f185581a6c1",
+    "source": "<div v-if=\"show\" id=\"before\" v-bind=\"attrs\" title=\"after\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-12-3032",
+    "history": "7bb2407b60c48db3594aa7388c8f1f185581a6c1",
+    "source": "<div v-if=\"show\" id=\"stable\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-mismatched-delimiter-reproducer-3067",
+    "history": "16d18c32fd92114927a6c51c662d211ea3b752c1",
+    "source": "{{ \ndennProps<[\n  ao?: stri,\t\n);\n }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-balanced-literal-delimiters-3067",
+    "history": "16d18c32fd92114927a6c51c662d211ea3b752c1",
+    "source": "{{ foo(\"]\") + /[})]/u.test(value) + `] ${items.map((item) => ({ item }))}` }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-mismatched-brackets-3067",
+    "history": "16d18c32fd92114927a6c51c662d211ea3b752c1",
+    "source": "{{ ([)] }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-with-defaults-setup-local-reference-3074",
+    "history": "0f835fead61e71a3efb6cdcdbf84b5fa38121cbd",
+    "source": "<script setup lang=\"ts\">\nconst items = []\n\nwithDefaults(defineProps<{\n  items?: string[]\n}>(), { items })\n</script>\n\n<template>{{ items.join() }}</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-define-options-setup-local-function-3074",
+    "history": "0f835fead61e71a3efb6cdcdbf84b5fa38121cbd",
+    "source": "<script setup lang=\"ts\">\nfunction local() {}\ndefineOptions({ setup: local })\n</script>\n<template><div /></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-props-destructure-mismatched-default-3074",
+    "history": "0f835fead61e71a3efb6cdcdbf84b5fa38121cbd",
+    "source": "<script setup lang=\"ts\">\nconst { value = 0 } = defineProps<{ value?: string }>()\n</script>\n<template><p>{{ value }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-case-1-3080",
+    "history": "531c923d56c2954aea2854fbe687157833d2b4fe",
+    "source": "<button><span><button>share</button></span></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "templateSyntax": "quirks"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-case-1-standard-3080",
+    "history": "531c923d56c2954aea2854fbe687157833d2b4fe",
+    "source": "<button><span><button>share</button></span></button>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-2-3080",
+    "history": "531c923d56c2954aea2854fbe687157833d2b4fe",
+    "source": "<a href=\"#outer\"><span><a href=\"#inner\">open</a></span></a>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "templateSyntax": "quirks"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-case-2-standard-3080",
+    "history": "531c923d56c2954aea2854fbe687157833d2b4fe",
+    "source": "<a href=\"#outer\"><span><a href=\"#inner\">open</a></span></a>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-3-3080",
+    "history": "531c923d56c2954aea2854fbe687157833d2b4fe",
+    "source": "<form><section><form><input></form></section></form>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "templateSyntax": "quirks"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-case-3-standard-3080",
+    "history": "531c923d56c2954aea2854fbe687157833d2b4fe",
+    "source": "<form><section><form><input></form></section></form>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-4-3080",
+    "history": "531c923d56c2954aea2854fbe687157833d2b4fe",
+    "source": "<table><div>description</div><tr><td>value</td></tr></table>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "templateSyntax": "quirks"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-case-4-standard-3080",
+    "history": "531c923d56c2954aea2854fbe687157833d2b4fe",
+    "source": "<table><div>description</div><tr><td>value</td></tr></table>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-define-model-get-set-options-3082",
+    "history": "3293f3fe557220c9be8d8afbc14da87546ef7f9a",
+    "source": "<script setup lang=\"ts\">\n\nconst minimum = computed(() => 1)\nconst [model, modifiers] = defineModel<number>({\n  get(value) { return value ?? minimum.value },\n  set(value) { return modifiers.number ? Math.max(minimum.value, Number(value)) : value },\n})\n\n</script>\n<template><input v-model=\"model\"></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-define-model-named-get-3082",
+    "history": "3293f3fe557220c9be8d8afbc14da87546ef7f9a",
+    "source": "<script setup lang=\"ts\">\nconst model = defineModel<string>('label', { get(value) { return value; } })\n</script>\n<template><input v-model=\"model\"></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-static-setup-enum-3083",
+    "history": "e34e7aa51b5932a27d05a308d0af7f7d929715b3",
+    "source": "<script setup lang=\"ts\">\n\nenum Step { Name, General = 1 + 1 }\nconst current = Step.Name\n\n</script>\n<template><p>{{ current }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-static-setup-enum-default-3083",
+    "history": "e34e7aa51b5932a27d05a308d0af7f7d929715b3",
+    "source": "<script setup lang=\"ts\">\n\nenum Step { Name, General = 1 + 1 }\ninterface Props { step?: Step }\nconst props = withDefaults(defineProps<Props>(), { step: Step.Name })\n\n</script>\n<template><p>{{ props.step }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-runtime-seeded-enum-default-3083",
+    "history": "e34e7aa51b5932a27d05a308d0af7f7d929715b3",
+    "source": "<script setup lang=\"ts\">\n\nconst seed = runtime()\nenum Step { Name = seed }\nconst props = withDefaults(defineProps<{ step?: Step }>(), { step: Step.Name })\n\n</script>\n<template><p>{{ props.step }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-vue2-conditional-v-model-3084",
+    "history": "0a3641d18e59ec215e291a8c73b75517fe7d8c25",
+    "source": "<el-input v-model=\"multiple ? presentText : inputValue\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "templateSyntax": "quirks",
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-vue2-conditional-native-v-model-3084",
+    "history": "0a3641d18e59ec215e291a8c73b75517fe7d8c25",
+    "source": "<input v-model=\"enabled ? primary : fallback.value\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "templateSyntax": "quirks",
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-vue3-conditional-v-model-3084",
+    "history": "0a3641d18e59ec215e291a8c73b75517fe7d8c25",
+    "source": "<el-input v-model=\"multiple ? presentText : inputValue\" />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 1
+  },
+  {
+    "id": "c8-escaped-regex-literal-in-template-3088",
+    "history": "43dca4e0cbdfa70423544b341e73ca1fc64d979f",
+    "source": "<script setup lang=\"ts\">\nconst baseUrl = 'http://example.test'\nfunction translate(key: string, args: { url: string }) {\n  return `${key}: ${args.url}`\n}\n</script>\n\n<template>\n  <p>\n    {{\n      translate('description', {\n        url: baseUrl.replace(/^http:\\/\\//, ''),\n      })\n    }}\n  </p>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-runtime-function-prop-unions-3096",
+    "history": "4fc0ac4fdb7fe8227b54a8a24c54ba3a3873bdc3",
+    "source": "<script setup lang=\"ts\">\nconst props = defineProps({\n  data: { type: [Array, Function], required: true },\n  labelOrPredicate: { type: [String, Function], required: true },\n  formatter: { type: Function, required: true },\n})\nvoid props\n</script>\n\n<template><div /></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-1-3102",
+    "history": "56eb250acdeb21309affcf166a71144c9a125b9f",
+    "source": "<script setup lang=\"ts\">\nconst { tag = \"div\" } = defineProps<{ tag?: string }>();\n</script>\n\n<template>\n  <component :is=\"tag\" data-probe>hi</component>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-1-dom-3102",
+    "history": "56eb250acdeb21309affcf166a71144c9a125b9f",
+    "source": "<script setup lang=\"ts\">\nconst { tag = \"div\" } = defineProps<{ tag?: string }>();\n</script>\n\n<template>\n  <component :is=\"tag\" data-probe>hi</component>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-2-3102",
+    "history": "56eb250acdeb21309affcf166a71144c9a125b9f",
+    "source": "<script setup lang=\"ts\">\nconst { tag: theTag = \"div\" } = defineProps<{ tag?: string }>();\n</script>\n\n<template>\n  <component :is=\"theTag\" data-probe>hi</component>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-2-dom-3102",
+    "history": "56eb250acdeb21309affcf166a71144c9a125b9f",
+    "source": "<script setup lang=\"ts\">\nconst { tag: theTag = \"div\" } = defineProps<{ tag?: string }>();\n</script>\n\n<template>\n  <component :is=\"theTag\" data-probe>hi</component>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-3-3102",
+    "history": "56eb250acdeb21309affcf166a71144c9a125b9f",
+    "source": "<script setup lang=\"ts\">\nconst props = defineProps<{ itemKey: (item: string) => PropertyKey }>();\n</script>\n\n<template>\n  <li v-for=\"item in ['a']\" :key=\"props.itemKey(item)\" />\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-3-dom-3102",
+    "history": "56eb250acdeb21309affcf166a71144c9a125b9f",
+    "source": "<script setup lang=\"ts\">\nconst props = defineProps<{ itemKey: (item: string) => PropertyKey }>();\n</script>\n\n<template>\n  <li v-for=\"item in ['a']\" :key=\"props.itemKey(item)\" />\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-1-3099",
+    "history": "93da7a4d46686be1c7de2262720a2332013ce42f",
+    "source": "<template><div>{{ msg }}</div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-2-3099",
+    "history": "93da7a4d46686be1c7de2262720a2332013ce42f",
+    "source": "<script setup lang=\"ts\">\nimport { computed, ref } from 'vue'\n\nconst count = ref(1)\nconst doubled = computed(() => count.value * 2)\n</script>\n\n<template>\n  <div>{{ count }} {{ doubled }}</div>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-3-3099",
+    "history": "93da7a4d46686be1c7de2262720a2332013ce42f",
+    "source": "<script setup lang=\"ts\"></script>\n\n<template>\n  <div><slot /></div>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c8-private-name-division-3108",
+    "history": "5a5826cb6b402bd9419b6365e40bdecbfc242b5a",
+    "source": "{{ a.#b / c / d }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-regex-after-division-3108",
+    "history": "5a5826cb6b402bd9419b6365e40bdecbfc242b5a",
+    "source": "{{ a / b / /c/.test(d) }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-css-bracket-nesting-reproducer-3110",
+    "history": "3be198f8d69d7322271287682abb7b60cc4efcc9",
+    "source": "<template><div /></template>\n<style>\n.a { height: hwb(-het: hwb(max(60*\\ %\n (light-dark(fieldtext: hwb(-let: hwb(ma\n   }\n</style>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-css-nested-math-functions-3110",
+    "history": "3be198f8d69d7322271287682abb7b60cc4efcc9",
+    "source": "<template><div /></template>\n<style>\n.a { .b { .c { width: calc(1px + min(2px, max(3px, 4px))); } } }\n</style>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-css-deep-bracket-nesting-3110",
+    "history": "3be198f8d69d7322271287682abb7b60cc4efcc9",
+    "source": "<template><div /></template>\n<style>\n.a { --x: ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((; }\n</style>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-vapor-valueless-component-attr-3106",
+    "history": "628ea1e7d2bde05ec9cfae225e32fd6be5a4395a",
+    "source": "<template><MyComp data-probe /></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c8-vapor-valueless-dynamic-component-attr-3106",
+    "history": "628ea1e7d2bde05ec9cfae225e32fd6be5a4395a",
+    "source": "<script setup>const tag = 'div'</script><template><component :is=\"tag\" data-probe>hi</component></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c8-nested-object-destructuring-props-3097",
+    "history": "b6888302743503d92fef6e2edaa79b9180c583c2",
+    "source": "<script setup lang=\"ts\">\nconst { a: { b: { c } } = { b: { c: 1 } } } = defineProps<{ a?: { b: { c: number } } }>()\n</script>\n<template><p>{{ c }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-nested-slot-destructuring-3098",
+    "history": "70a8ea9a80d07ac9e72fec167a0938c4262ac3bd",
+    "source": "<Comp v-slot=\"{ a: { b: { c: [d, { e }] } } }\">{{ d }}{{ e }}</Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-deep-slot-destructuring-3098",
+    "history": "70a8ea9a80d07ac9e72fec167a0938c4262ac3bd",
+    "source": "<Comp v-slot=\"{ a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: { a: x } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } }\">{{ x }}</Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-provide-inside-exported-function-3152",
+    "history": "cfe96d1a3f162807597691b7e4e45dc128e4b557",
+    "source": "<script lang=\"ts\">\nimport { provide, ref } from 'vue'\n\nconst shared = ref(0)\n\nexport function installState() {\n    provide(\"state\", shared)\n}\n</script>\n<template><div /></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-macro-type-aliases-3153",
+    "history": "8de5e5c10113a9bcbdee73e01af610fb71121dea",
+    "source": "<script setup lang=\"ts\">\n\nconst props = defineProps<Record<string, { value: string }>>()\nconst emit = defineEmits<{ save: [value: string] }>()\ndefineExpose<{ focus(): void }>()\ndefineSlots<{ default(props: { value: string }): unknown }>()\n\n</script>\n<template><div /></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-attrs-binding-in-template-3157",
+    "history": "1a1be34d8de06f178c316b9afa9f12e541e3a286",
+    "source": "<div v-if=\"visible\" v-bind=\"$attrs\">{{ $attrs.id }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-attrs-binding-script-setup-3157",
+    "history": "1a1be34d8de06f178c316b9afa9f12e541e3a286",
+    "source": "<script setup lang=\"ts\">\nconst visible = true\n</script>\n<template><div v-if=\"visible\" v-bind=\"$attrs\">{{ $attrs.id }}</div></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-css-import-dependency-3175",
+    "history": "e869a36b3184cd848ea46f0474025c69d3bf6c98",
+    "source": "<template><div /></template>\n<style>\n@import './theme.css';\n.a { color: red }\n</style>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "files": {
+      "theme.css": ".theme { color: blue }\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-line-comment-terminator-1-3188",
+    "history": "34f5f7852fa16cd936db848242b6051cbfba21dd",
+    "source": "{{ //x\r((((((((((((((((((((((((((((((((((((((((( }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-line-comment-terminator-2-3188",
+    "history": "34f5f7852fa16cd936db848242b6051cbfba21dd",
+    "source": "{{ //x ((((((((((((((((((((((((((((((((((((((((( }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-line-comment-terminator-3-3188",
+    "history": "34f5f7852fa16cd936db848242b6051cbfba21dd",
+    "source": "{{ //x ((((((((((((((((((((((((((((((((((((((((( }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-regex-backslash-line-terminator-3190",
+    "history": "406a671d8121db31f0ecef7c577b12b57dc6dadd",
+    "source": "{{ a = /x\\\n((((((((((((((((((((((((((((((((((((((((( }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-unterminated-string-line-terminator-3218",
+    "history": "809ab0845394755b726a1b0559dc38d9b236164c",
+    "source": "{{ 'a b(' + c }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-escaped-newline-string-3218",
+    "history": "809ab0845394755b726a1b0559dc38d9b236164c",
+    "source": "{{ 'a\\\nb(' + c }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-unterminated-string-crlf-3218",
+    "history": "809ab0845394755b726a1b0559dc38d9b236164c",
+    "source": "{{ 'a\\\r\nb(' + c }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-angle-then-double-bang-3219",
+    "history": "6960d5544dd3831da88811b71b25b369139fc098",
+    "source": "{{ a<!! }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-angle-trivia-double-bang-3219",
+    "history": "6960d5544dd3831da88811b71b25b369139fc098",
+    "source": "{{ a< !! }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-chained-negated-comparisons-3219",
+    "history": "6960d5544dd3831da88811b71b25b369139fc098",
+    "source": "<div :title=\"x < !a && y < !b && z < !!c\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-backslash-quote-reproducer-3272",
+    "history": "84be7f2a39bbebdcbc3997a79dff4ce7c7accbd4",
+    "source": "{{ <X<\\'\\u{[([[[[[[[[{[ }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-quoted-delimiters-3272",
+    "history": "84be7f2a39bbebdcbc3997a79dff4ce7c7accbd4",
+    "source": "{{ 'a(' + '[' + \"{\" }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-regex-class-delimiters-3272",
+    "history": "84be7f2a39bbebdcbc3997a79dff4ce7c7accbd4",
+    "source": "{{ /[({]/u.test(value) }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-backslash-backtick-reproducer-3292",
+    "history": "4d619ee7062b93edab59731e52f2ffc01bb5398c",
+    "source": "{{ definePro\\`\\u{[([[[[[[,[[[[[[[[[[[[[[[[[[[[[[[[[[ }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-escaped-backtick-template-3292",
+    "history": "4d619ee7062b93edab59731e52f2ffc01bb5398c",
+    "source": "{{ `a\\`(b` + c }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-percentage-math-reproducer-3301",
+    "history": "4305480bbc70167ff562ebc0c6b3d9aea41cf9fa",
+    "source": "\n@t (lch(sign(-50%);\n  mask-clipatenv5,",
+    "filename": "History.vue",
+    "entry": "css",
+    "target": "dom",
+    "errors": 2
+  },
+  {
+    "id": "c8-lch-sign-percentage-3301",
+    "history": "4305480bbc70167ff562ebc0c6b3d9aea41cf9fa",
+    "source": "a{color:lch(sign(-50%) 0 0)}",
+    "filename": "History.vue",
+    "entry": "css",
+    "target": "dom",
+    "errors": 2
+  },
+  {
+    "id": "c8-lch-abs-percentage-3301",
+    "history": "4305480bbc70167ff562ebc0c6b3d9aea41cf9fa",
+    "source": "a{color:lch(0% abs(-50%) 0)}",
+    "filename": "History.vue",
+    "entry": "css",
+    "target": "dom",
+    "errors": 2
+  },
+  {
+    "id": "c8-parenthesized-type-angle-3302",
+    "history": "55402bd40ae9786a3c767399b03b4f563d783131",
+    "source": "{{ id<(xx)  }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-parenthesized-type-angle-spaced-3302",
+    "history": "55402bd40ae9786a3c767399b03b4f563d783131",
+    "source": "{{ id< (xx)  }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-handler-type-argument-3302",
+    "history": "55402bd40ae9786a3c767399b03b4f563d783131",
+    "source": "{{ useHandler<(payload: MouseEvent) => void>(handler) }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-paired-parenthesized-type-arguments-3302",
+    "history": "55402bd40ae9786a3c767399b03b4f563d783131",
+    "source": "{{ f<(A)>(x) + g<(B)>(y) }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-unclosed-interpolation-rescan-3305",
+    "history": "e2d509476a3c76efa9cadd5259bb293d4c5c82ea",
+    "source": "<template><p>{{ { }} {{ '</template>' }}</p><i>after</i></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-unclosed-interpolation-before-style-3305",
+    "history": "e2d509476a3c76efa9cadd5259bb293d4c5c82ea",
+    "source": "<template><div>{{a </div></template>\n<style>.ok {}</style>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-post-budget-interpolation-scan-3309",
+    "history": "6b41f98d10ab76ebcb608a3d90de63949e7dfb13",
+    "source": "<template><p>{{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ { }} {{ '</template>' }}</p><i>after</i></template><style>.ok {}</style>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-recovered-attribute-without-space-3310",
+    "history": "3c6e6362133dbd59843f5b4e2630812a1ab23909",
+    "source": "<template><div version=\"1.1\"class=\"x\"><span v-for=\"(item, index) in items\" :key=\"item\">{{ item }}</span></div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-recovered-missing-close-3310",
+    "history": "3c6e6362133dbd59843f5b4e2630812a1ab23909",
+    "source": "<template><div><span v-for=\"(item, index) in items\">{{ item }}</span></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-class-component-prop-decorator-3318",
+    "history": "519cec5990d37434620c3ac38e3750a0eefa195b",
+    "source": "<script lang=\"ts\">\nimport { Vue, Prop } from 'vue-property-decorator'\n\nexport default class HelloDecorator extends Vue {\n  @Prop({ type: String, required: true }) readonly name!: string;\n\n  count = 0;\n\n  get greeting(): string {\n    return `Hello, ${this.name}! (${this.count})`;\n  }\n}\n\n</script>\n<template><button>{{ greeting }}</button></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-vapor-nth-child-navigation-3331",
+    "history": "963d1fa149188db5d8e8346f2623d848520aafaa",
+    "source": "<template><div><p>a</p><p>b</p><p>c</p><p :id=\"x\">d</p></div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c8-vapor-chained-next-navigation-3331",
+    "history": "963d1fa149188db5d8e8346f2623d848520aafaa",
+    "source": "<template><div><span>a</span><span :id=\"x\">b</span><span :id=\"y\">c</span></div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c8-vapor-hydration-next-index-3337",
+    "history": "09e2504b412eb119979d4367eb132eb0299aee89",
+    "source": "<template><div>\n  <svg role=\"presentation\"><use href=\"#x\" /></svg>\n  <h2><span>Title</span></h2>\n  <p><span>Sub</span></p>\n  <ul>\n    <li><a href=\"https://example.com\"><img :src=\"logo\" alt=\"\" /><span>A</span></a></li>\n    <li><a href=\"https://example.org\"><img :src=\"logo\" alt=\"\" /><span>B</span></a></li>\n  </ul>\n</div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c8-vapor-hydration-index-sections-3341",
+    "history": "b829f91388e36a9f7047c96aaa5e6e68419b2a83",
+    "source": "<template><div><section><p/><span :id=\"x\"><i/></span><span :id=\"y\"><i/></span></section><span :id=\"z\"><i/></span></div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c8-over-limit-nesting-no-invented-end-tag-3481",
+    "history": "e9c3e59339bdadb4a81a565a6e0860500cec5aa7",
+    "source": "<section><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div>x</div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></section>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-custom-directive-values-3521",
+    "history": "375b0fb5b0d04af9014d81ef865d17dba02f3b0a",
+    "source": "<script setup lang=\"ts\">\nimport type { Directive } from 'vue'\nconst vUntyped: Directive = () => {}\nconst vNotADirective = 42\n</script>\n\n<template>\n  <div v-global=\"'anything'\" />\n  <div v-untyped=\"'anything'\" />\n  <div v-not-a-directive=\"'anything'\" />\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-typed-custom-directive-value-3521",
+    "history": "375b0fb5b0d04af9014d81ef865d17dba02f3b0a",
+    "source": "<script setup lang=\"ts\">\nimport type { Directive } from 'vue'\nconst vTooltip: Directive<HTMLElement, string> = () => {}\nconst user = { name: 'a' }\n</script>\n\n<template>\n  <div v-tooltip=\"user.title\" />\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-object-v-bind-prop-spread-3526",
+    "history": "21e5bd408bfdf22f0c043f1e0c50d92f4055479a",
+    "source": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nconst bag = { count: 'oops' }\nconst good = { count: 1 }\n</script>\n\n<template>\n  <Child v-bind=\"bag\" />\n  <Child v-bind=\"good\" />\n  <Child v-bind=\"$attrs\" />\n</template>\n",
+    "filename": "src/Parent.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "files": {
+      "src/Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ count: number }>()\n</script>\n\n<template><span /></template>\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-object-v-bind-with-explicit-prop-3526",
+    "history": "21e5bd408bfdf22f0c043f1e0c50d92f4055479a",
+    "source": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nconst rest = { extra: 1 }\n</script>\n\n<template>\n  <Child v-bind=\"rest\" :count=\"'nope'\" />\n</template>\n",
+    "filename": "src/Parent.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "files": {
+      "src/Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ count: number }>()\n</script>\n\n<template><span /></template>\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-typed-props-declaration-3562",
+    "history": "6707962c0d57b37109814d206c374c843ac3f389",
+    "source": "<script setup lang=\"ts\">\nconst props = defineProps<{\n                msg: string\n                count?: number\n            }>()\n</script>\n<template><p>{{ props.msg }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-array-props-declaration-3562",
+    "history": "6707962c0d57b37109814d206c374c843ac3f389",
+    "source": "<script setup lang=\"ts\">\nconst props = defineProps(['foo', 'bar'])\n</script>\n<template><p>{{ props.foo }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-hello-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<div>static</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-2-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<div :class=\"cls\">dynamic</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-3-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "{{ msg }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-4-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<div class=\"checkbox\"><span class=\"icon\" :class=\"{ active: checked }\" /></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-case-5-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<div class=\"wrapper\"><div class=\"checkbox\"><span :class=\"{ active: checked }\" /></div><label v-if=\"label\">{{ label }}</label></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-case-6-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<div class=\"outer\"><span class=\"a\">x</span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-7-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<div class=\"outer\"><div class=\"inner\"><span>deep</span></div></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-8-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<div class=\"outer\"><span>{{ msg }}</span></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-9-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<div><p v-if=\"ok\"><span class=\"a\"><b>x</b></span></p></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-10-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<template v-slot:header>content</template>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-default-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<Comp><template #header>H</template><template #footer>F</template></Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-footer-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<Comp><template #header>H1</template><template #header>H2</template></Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-header-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<div v-slot=\"{ item }\">Text</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-case-14-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<div v-slot></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-case-15-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<Comp v-slot><template #header>Header</template></Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-case-16-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<Comp><template #default>Default</template><span>Extra</span></Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-case-17-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<Comp><template #default>Default</template>\n  \t\n</Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-18-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<slot v-custom />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-case-19-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<Comp><template #default=\"{ item, active }\">{{ item.id }}{{ active }}</template></Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-20-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-case-21-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<Comp>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-case-22-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<template v-if=\"ok\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-case-23-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<slot />",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-24-3620",
+    "history": "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    "source": "<template v-for=\"item in items\">",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-vapor-transparent-template-children-3624",
+    "history": "5fef3035fc095b0f89d49d5d683018ded9970f7d",
+    "source": "<template><ul><template v-if=\"ok\"><li>Ready</li><li> </li></template><li>Empty</li></ul><aside>Aside</aside></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c8-vapor-transparent-template-for-3624",
+    "history": "5fef3035fc095b0f89d49d5d683018ded9970f7d",
+    "source": "<template><div><template v-for=\"i in 2\"><p>{{ i }}</p></template><p>Last</p></div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  },
+  {
+    "id": "c8-vapor-patterned-memo-3629",
+    "history": "a57137e9143c3fbbd2a8651e215aa14c03bba0c2",
+    "source": "<template><div v-memo=\"[label]\"><ul v-match=\"status\"><li v-case=\"'ready'\">{{ label }}</li></ul></div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "patternedTemplate": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-case-1-3631",
+    "history": "4ed90a55eb09ae1a8af7af940056965061c00993",
+    "source": "<template\n  lang=\"html\"\n>\n  <p>ok</p>\n</template>\n\n<script\n  lang=\"ts\"\n>\nexport default {}\n</script>\n\n<script\n  setup\n  lang=\"ts\"\n>\nconst x = 1\n</script>\n\n<style\n  scoped\n>\n.a { color: red }\n</style>\n\n<docs\n  kind=\"usage\"\n>\nusage notes\n</docs>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-2-3631",
+    "history": "4ed90a55eb09ae1a8af7af940056965061c00993",
+    "source": "<template lang=\"html\">\n  <p>ok</p>\n</template>\n\n<script lang=\"ts\">\nexport default {}\n</script>\n\n<script setup lang=\"ts\">\nconst x = 1\n</script>\n\n<style scoped>\n.a { color: red }\n</style>\n\n<docs kind=\"usage\">\nusage notes\n</docs>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-1-3657",
+    "history": "32908a8e6e887c062b8bb47b2c89aa44de84e5ea",
+    "source": "<div><span title=\"label\">text</span>{{ value }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-2-3657",
+    "history": "32908a8e6e887c062b8bb47b2c89aa44de84e5ea",
+    "source": "<div></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-3-3657",
+    "history": "32908a8e6e887c062b8bb47b2c89aa44de84e5ea",
+    "source": "<div :data-id.camel=\"'x'\" :value.prop=\"'y'\" :role.attr=\"'z'\">{{ message }}</div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-asi-separated-event-handler-3703",
+    "history": "4039c4c9a5217b81591d67c8123981eba1126f33",
+    "source": "<script setup lang=\"ts\">\nconst emit = defineEmits<{\n  create: []\n  close: []\n}>()\n</script>\n\n<template>\n  <Child\n    @create=\"\n      emit('create')\n      emit('close')\n    \"\n  />\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-identifier-led-type-angle-1-3727",
+    "history": "f1ba7cd0089cd24c574ce5de60033129ad4f3dd7",
+    "source": "{{ a<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReferencea<TypeReference }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-identifier-led-type-angle-2-3727",
+    "history": "f1ba7cd0089cd24c574ce5de60033129ad4f3dd7",
+    "source": "{{ a<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$typea<$type }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-identifier-led-type-angle-3-3727",
+    "history": "f1ba7cd0089cd24c574ce5de60033129ad4f3dd7",
+    "source": "{{ a<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_typea<_type }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-identifier-led-type-angle-4-3727",
+    "history": "f1ba7cd0089cd24c574ce5de60033129ad4f3dd7",
+    "source": "{{ a<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041typea<\\u0041type }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-identifier-led-type-angle-5-3727",
+    "history": "f1ba7cd0089cd24c574ce5de60033129ad4f3dd7",
+    "source": "{{ a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本a<日本 }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-vue27-static-value-object-3815",
+    "history": "ec660a80795c4853c723f71fc5cfe0c028deb987",
+    "source": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n\nconst OPTION = { text: 'Login info', value: 'LOGIN_INFO' } as const\nconst count = ref(0)\nconst wantsString = (value: string) => value\nconst wantsNumber = (value: number) => value\n</script>\n\n<template>\n  <div>{{ wantsString(OPTION.value) }} {{ wantsNumber(count) }}</div>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "vueVersion": "2.7"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-v-for-source-arrow-3818",
+    "history": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
+    "source": "<script setup lang=\"ts\">\nconst items: any = []\n</script>\n\n<template>\n  <div v-for=\"item in items.filter(value => value)\" :key=\"item\" />\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-declaration-barrel-prop-types-3837",
+    "history": "84b76a372057549964abd0faf4ab61393008db53",
+    "source": "<script setup lang=\"ts\">\nimport type { PrimitiveProps } from 'some-ui'\ninterface Props extends PrimitiveProps { variant?: string }\ndefineProps<Props>()\n</script>\n<template><div /></template>\n",
+    "filename": "src/Button.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "noProjectConfig": true
+    },
+    "files": {
+      "node_modules/some-ui/package.json": "{ \"name\": \"some-ui\", \"types\": \"./dist/index.d.ts\" }",
+      "node_modules/some-ui/dist/index.d.ts": "import { PrimitiveProps } from './index4.js'\nexport { PrimitiveProps }\n",
+      "node_modules/some-ui/dist/index4.d.ts": "export interface PrimitiveProps { asChild?: boolean; as?: string }\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-exports-types-over-legacy-field-3840",
+    "history": "ffa3b2664eecf398f263bfc89dab72fa00bd547c",
+    "source": "<script setup lang=\"ts\">\nimport type { Modern } from 'dual-types'\ndefineProps<{ value: Modern }>()\n</script>\n<template><div /></template>\n",
+    "filename": "src/App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "noProjectConfig": true
+    },
+    "files": {
+      "node_modules/dual-types/package.json": "{\"types\":\"./legacy.d.ts\",\"exports\":{\".\":{\"types\":\"./dist/index.d.ts\",\"import\":\"./dist/index.mjs\"}}}",
+      "node_modules/dual-types/legacy.d.ts": "export type Legacy = string\n",
+      "node_modules/dual-types/dist/index.d.ts": "export type Modern = number\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-pure-comment-type-angle-3855",
+    "history": "f17e0a7b13709c4fb6384e9469d1d700c475dc3c",
+    "source": "{{ f<>/((\nd=//#__PURE__0 }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-pure-comment-control-3855",
+    "history": "f17e0a7b13709c4fb6384e9469d1d700c475dc3c",
+    "source": "{{ f<a>/((\nd=//#__PURE__0 }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-slash-after-type-argument-close-3867",
+    "history": "95c6b9a0195a6d8fcdea38b6f34bf967f1b8f51c",
+    "source": "{{ Props<{a}>/b/.test(c) }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-division-after-generic-call-3867",
+    "history": "95c6b9a0195a6d8fcdea38b6f34bf967f1b8f51c",
+    "source": "<div :w=\"f<number>(a) / 2\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-unterminated-regex-literal-3874",
+    "history": "3df0fc3cb04fe7f5c7cf7102c2307b996a86e284",
+    "source": "{{ a = /[ }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-regex-class-bracket-3874",
+    "history": "3df0fc3cb04fe7f5c7cf7102c2307b996a86e284",
+    "source": "{{ a = /[]/.test(b) }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-bare-slash-3874",
+    "history": "3df0fc3cb04fe7f5c7cf7102c2307b996a86e284",
+    "source": "{{ a</ }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-line-terminated-regex-3876",
+    "history": "df5f983399f7e1b9805ce76754b95d3ddfaca7d6",
+    "source": "{{ a = /x\n((((((((((((((((((((((((((((((((((((((((( }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-v-for-alias-declaration-3909",
+    "history": "31eecf0427b56b8221290e16ec73022d73633f9b",
+    "source": "<script setup lang=\"ts\">\nconst items = [{ id: 1 }]\n</script>\n<template><p v-for=\"item in items\" :key=\"item.id\">{{ item.id }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-regex-with-double-slash-in-render-3947",
+    "history": "91ad9607aa0e2fa98083a41503b60ab5f72d6884",
+    "source": "<script setup lang=\"ts\">\nconst url = 'http://x'\n</script>\n<template><p>{{ url.replace(/^https?:\\/\\//, '') // strip scheme\n }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-regex-before-line-comment-handler-3947",
+    "history": "91ad9607aa0e2fa98083a41503b60ab5f72d6884",
+    "source": "<script setup lang=\"ts\">\nfunction go(v: string) { return v }\n</script>\n<template><button @click=\"go('//not-a-comment'.replace(/\\/\\//g, '')) // trailing\n\">x</button></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-hoist-literal-const-by-span-3948",
+    "history": "c8ecde5a186e0b4454837cc0fec3b9e7ee5e23e8",
+    "source": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n\nconst fetched = ref({ width: 5 })\n\nfunction hover() {\n    const max = fetched.value.width\n    return max\n}\n\nconst max = 7\n</script>\n<template><p @mouseover=\"hover\">{{ max }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-static-src-asset-import-3949",
+    "history": "2c694c62a7f3d294cd7bd2d49fee9c3161eee9a6",
+    "source": "const node = { src: \"@/assets/logo.svg\", other: true };",
+    "filename": "History.vue",
+    "entry": "vite",
+    "target": "dom",
+    "options": {
+      "viteHelper": "staticAssetUrls"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-script-src-not-an-asset-3949",
+    "history": "2c694c62a7f3d294cd7bd2d49fee9c3161eee9a6",
+    "source": "const node = { src: \"@/entry.ts\" };",
+    "filename": "History.vue",
+    "entry": "vite",
+    "target": "dom",
+    "options": {
+      "viteHelper": "staticAssetUrls"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-dynamic-template-asset-import-3949",
+    "history": "2c694c62a7f3d294cd7bd2d49fee9c3161eee9a6",
+    "source": "const image = import(`@/assets/${name}.svg`);",
+    "filename": "History.vue",
+    "entry": "vite",
+    "target": "dom",
+    "options": {
+      "viteHelper": "dynamicTemplateImports"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-vite-ignore-dynamic-import-3949",
+    "history": "2c694c62a7f3d294cd7bd2d49fee9c3161eee9a6",
+    "source": "const image = import(/* @vite-ignore */ `/src/assets/${name}.svg`);",
+    "filename": "History.vue",
+    "entry": "vite",
+    "target": "dom",
+    "options": {
+      "viteHelper": "dynamicTemplateImports"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-comment-rewriter-unterminated-quote-3951",
+    "history": "cd8e92e1828a361a7b7b30bcd0e70d5cae05770a",
+    "source": "<script setup lang=\"ts\">\nconst x = 1\n</script>\n<template><p>{{ x + ' // still a string }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 1
+  },
+  {
+    "id": "c8-wrapped-named-import-4162",
+    "history": "07ab61c40bcb1a8c2f7c8efc7c5f4afa0f68d3b7",
+    "source": "<script setup lang=\"ts\">\nimport {\n  createScope,\n  provideScope,\n} from \"./scope.ts\";\nconst a = 1;\n</script>\n<template><p>{{ a }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "files": {
+      "scope.ts": "export const createScope = () => 1; export const provideScope = () => 2\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-cascader-menu-array-spread-4373",
+    "history": "33e2b3b328a9d762c4853324f129579bccbb905a",
+    "source": "<template>\n  <el-cascader-menu v-for=\"(menu, index) in menus\" :key=\"index\" :nodes=\"[...menu]\" />\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-malformed-escaped-type-angle-4393",
+    "history": "2a8aa54e2ef23c41b29f979dfec3f47826b2896f",
+    "source": "{{ factory<\\u5>() }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-escaped-type-angle-root-4393",
+    "history": "2a8aa54e2ef23c41b29f979dfec3f47826b2896f",
+    "source": "{{ root<\\u0030 }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-escaped-type-argument-4393",
+    "history": "2a8aa54e2ef23c41b29f979dfec3f47826b2896f",
+    "source": "{{ factory<\\u0061>() }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-braced-escaped-type-argument-4393",
+    "history": "2a8aa54e2ef23c41b29f979dfec3f47826b2896f",
+    "source": "{{ factory<\\u{61}>() }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-object-runtime-prop-4451",
+    "history": "9a6dbdcfcfb33681ef5a310e841d73d6dd3e9875",
+    "source": "<script setup lang=\"ts\">\ndefineProps({ options: Object, config: { type: Object, required: true } })\n</script>\n<template><p>{{ options }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-define-model-modifier-tuple-4488",
+    "history": "08db7132a3fb81a618e2111c055fbc285bd4b86c",
+    "source": "<script setup lang=\"ts\">\nconst [model, modifiers] = defineModel<string, 'trim' | 'capitalize'>()\n</script>\n<template><input v-model=\"model\">{{ modifiers.trim }}</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-1-4494",
+    "history": "67dc97e8ab5c0d96697e3b8e0f04aa1678ccc14f",
+    "source": "<component :is=\"Child\" :count=\"count\"></component>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-1-prefixed-4494",
+    "history": "67dc97e8ab5c0d96697e3b8e0f04aa1678ccc14f",
+    "source": "<component :is=\"Child\" :count=\"count\"></component>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-case-2-4494",
+    "history": "67dc97e8ab5c0d96697e3b8e0f04aa1678ccc14f",
+    "source": "<component :is=\"as\" :class=\"klass\"></component>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-2-prefixed-4494",
+    "history": "67dc97e8ab5c0d96697e3b8e0f04aa1678ccc14f",
+    "source": "<component :is=\"as\" :class=\"klass\"></component>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-typed-slot-outlet-payload-4495",
+    "history": "8ab7fd93f0072880f46ea7fce8ac9f998922feed",
+    "source": "<script setup lang=\"ts\">\ndefineSlots<{ default(props: { item: string }): any }>()\nconst item = 'x'\n</script>\n<template><slot :item=\"item\" /></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-strict-fallthrough-child-4491",
+    "history": "cf759a1ee4e6f2c557f87a892a85112960ca65d9",
+    "source": "<script setup lang=\"ts\">\ndefineProps<{ title: string }>();\n</script>\n<template><div class=\"root\">{{ title }}</div></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-fallthrough-inherit-attrs-false-4491",
+    "history": "cf759a1ee4e6f2c557f87a892a85112960ca65d9",
+    "source": "<script setup lang=\"ts\">\ndefineOptions({ inheritAttrs: false });\ndefineProps<{ title: string }>();\n</script>\n<template><div class=\"root\">{{ title }}</div></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-dynamic-slot-setup-binding-4513",
+    "history": "54c7fac0049a4a664ef5a5cb973394313e709b17",
+    "source": "<script setup>\nimport { ref } from 'vue'\nimport Child from './Child.vue'\n\nconst slotName = ref('header')\n</script>\n\n<template>\n  <Child>\n    <template #[slotName]>content</template>\n  </Child>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-v-once-quoted-prop-keys-4512",
+    "history": "8765b1dd32ab519a1f6974f3ba93b3737deeb5f1",
+    "source": "<div v-once data-testid=\"once\" :aria-label=\"label\"></div>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-case-1-4520",
+    "history": "fb3beaf2485bf873a6f0ee965db839f88f9ae2cb",
+    "source": "<script setup lang=\"ts\">\ndefineProps<{ formatter?: (value: number) => string }>();\n</script>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-function-typed-prop-declaration-4520",
+    "history": "fb3beaf2485bf873a6f0ee965db839f88f9ae2cb",
+    "source": "<script setup lang=\"ts\" generic=\"T extends { id: number }\">\ndefineProps<{\n  items: T[];\n  selected?: T;\n  keyOf: (row: T) => string;\n}>();\n\ndefineEmits<{\n  pick: [row: T];\n}>();\n</script>\n\n<template>\n  <ul>\n    <li v-for=\"item in items\" :key=\"item.id\">{{ keyOf(item) }}</li>\n  </ul>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-imported-runtime-prop-keys-4521",
+    "history": "3d630bd8b30cfbcf4f7e4770cac7162d502b1b7c",
+    "source": "<script setup lang=\"ts\">\nimport { useEmptyValuesProps } from '@element-plus/hooks'\nconst props = defineProps({ ...useEmptyValuesProps, label: String })\n</script>\n<template><p>{{ props.label }}</p></template>\n",
+    "filename": "src/App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "noProjectConfig": true
+    },
+    "files": {
+      "node_modules/@element-plus/hooks/package.json": "{\n  \"name\": \"@element-plus/hooks\",\n  \"types\": \"index.d.ts\",\n  \"module\": \"index.ts\",\n  \"main\": \"index.ts\"\n}",
+      "node_modules/@element-plus/hooks/index.ts": "export * from './use-empty-values'\n",
+      "node_modules/@element-plus/hooks/use-empty-values.ts": "export const useEmptyValuesProps = { emptyValues: Array, valueOnClear: { type: [String, Number, Boolean, Function], default: undefined } }\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-case-1-4517",
+    "history": "0d704f543da04637e5697e9bc50757f7e8e1ac28",
+    "source": "<script setup>\nimport { computed } from 'vue'\n\nconst nodes = [1, 2, 3]\nconst flattenTree = computed(() => nodes)\n\ndefineExpose({ nodes })\n</script>\n\n<template>\n  <div v-for=\"node in flattenTree\" :key=\"node\">{{ node }}</div>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-1-separate-4517",
+    "history": "0d704f543da04637e5697e9bc50757f7e8e1ac28",
+    "source": "<script setup>\nimport { computed } from 'vue'\n\nconst nodes = [1, 2, 3]\nconst flattenTree = computed(() => nodes)\n\ndefineExpose({ nodes })\n</script>\n\n<template>\n  <div v-for=\"node in flattenTree\" :key=\"node\">{{ node }}</div>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "scriptOutput": "separate"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-case-2-4517",
+    "history": "0d704f543da04637e5697e9bc50757f7e8e1ac28",
+    "source": "<script setup lang=\"ts\">\nimport { BadgeType } from './types'\n\ninterface Props {\n  badges: BadgeType[]\n}\n\nconst props = defineProps<Props>()\n</script>\n\n<template>\n  <div>{{ props.badges.length }}</div>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-2-separate-4517",
+    "history": "0d704f543da04637e5697e9bc50757f7e8e1ac28",
+    "source": "<script setup lang=\"ts\">\nimport { BadgeType } from './types'\n\ninterface Props {\n  badges: BadgeType[]\n}\n\nconst props = defineProps<Props>()\n</script>\n\n<template>\n  <div>{{ props.badges.length }}</div>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "scriptOutput": "separate"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-imported-prop-defaults-01cea15",
+    "history": "01cea15d55f94f9d0cba6ccb36b6cd2489e94e90",
+    "source": "<script setup lang=\"ts\">\nimport { checkboxDefaults } from './checkbox-defaults'\n\ninterface Props {\n  label?: string | boolean\n  value?: string | boolean\n}\n\nconst props = withDefaults(defineProps<Props>(), checkboxDefaults)\n</script>\n\n<template>\n  <span v-if=\"props.value !== undefined\">{{ props.label }}</span>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "files": {
+      "checkbox-defaults.ts": "export const checkboxDefaults = { label: 'x', value: true }\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-prop-type-literal-trivia-4532",
+    "history": "4bd6ca589ee3ee07d58fdbc721f0ebb076fd3aa4",
+    "source": "<script setup lang=\"ts\">\ndefineProps<{\n  /* café 🌱 */ title: string;\n  /** A URL literal follows. */\n  epilogueText?: \"https://example.com/a/*b*/\";\n  // The colon here is trivia: not a property.\n  count: number;\n}>()\n</script>\n<template><div /></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-prop-type-template-literal-markers-4533",
+    "history": "708c64e8ff932ae9d7573b3498f4cfe656691931",
+    "source": "<script setup lang=\"ts\">\ndefineProps<{\n  value: `${string /* } */}`;\n  raw: `/* raw } comment marker */`;\n  nested: `${`${string}`}`;\n  quoted: `${Record<\"}\", string>}`;\n  count: number;\n}>()\n</script>\n<template><div /></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-1-4535",
+    "history": "7c3e5e3de9c89c6679f59099f6d8d636814ebe85",
+    "source": "<script setup>\ndefineEmits(['destroy'])\n</script>\n\n<template>\n  <Transition @after-leave=\"$emit('destroy')\">\n    <div />\n  </Transition>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-case-1-separate-4535",
+    "history": "7c3e5e3de9c89c6679f59099f6d8d636814ebe85",
+    "source": "<script setup>\ndefineEmits(['destroy'])\n</script>\n\n<template>\n  <Transition @after-leave=\"$emit('destroy')\">\n    <div />\n  </Transition>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "scriptOutput": "separate"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-picked-props-in-intersection-4537",
+    "history": "63c2154fc7aecddd4d6596da820df6d1a7d1f5e5",
+    "source": "<script lang=\"ts\" setup>\nimport { computed } from 'vue'\nimport { CASCADER_PANEL_HEIGHT, CASCADER_PANEL_ITEM_SIZE } from './config'\nimport type { CascaderCommonProps } from './config'\n\nconst props = withDefaults(\n  defineProps<\n    {\n      nodes: { uid: number }[]\n      index: number\n    } & Pick<CascaderCommonProps, 'virtualScroll' | 'itemSize' | 'height'>\n  >(),\n  {\n    virtualScroll: false,\n    itemSize: CASCADER_PANEL_ITEM_SIZE,\n    height: CASCADER_PANEL_HEIGHT,\n  }\n)\n\nconst virtualScroll = computed(() => props.virtualScroll)\n</script>\n\n<template>\n  <FixedSizeList v-if=\"virtualScroll\" />\n  <Node v-else v-for=\"node in nodes\" :key=\"node.uid\" />\n</template>",
+    "filename": "Menu.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "files": {
+      "config.ts": "export interface CascaderCommonProps {\n  virtualScroll?: boolean\n  itemSize?: number\n  height?: number\n}\n\nexport const CASCADER_PANEL_ITEM_SIZE = 34\nexport const CASCADER_PANEL_HEIGHT = 204\n"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-indexed-access-prop-runtime-types-4540",
+    "history": "caa47e68387268e33d9824544a7e42e04957f434",
+    "source": "<script setup lang=\"ts\">\ntype Arrayable<T> = T | T[]\ntype TooltipTriggerType = 'hover' | 'click'\ninterface UseTooltipProps { content: string; trigger?: Arrayable<TooltipTriggerType>; offset?: number }\ndefineProps<Partial<Omit<UseTooltipProps, 'content'>> & { effect?: string & NonNullable<unknown> }>()\n</script>\n<template><div /></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-branded-intersection-prop-types-4540",
+    "history": "caa47e68387268e33d9824544a7e42e04957f434",
+    "source": "<script setup lang=\"ts\">\ndefineProps<{ createdAt?: Date & { brand: true }; lookup?: Map<string, string> & { brand: true }; as?: 'a' | 'button' | ({} & string) }>()\n</script>\n<template><div /></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-multi-root-fallthrough-4594",
+    "history": "36cea242982dcc54da2728ee896df3d06e3c4c48",
+    "source": "<script setup lang=\"ts\">\nconst marker = 1;\n</script>\n\n<template>\n  <header>top</header>\n  <main>body</main>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-numeric-literal-tails-4604",
+    "history": "0c5b558d71929c26f5b0189ca6a44adee1da0ecb",
+    "source": "<script setup lang=\"ts\">\nconst count = 1\n</script>\n<template><p>{{ 1e22 + 0xFF + 0b1010 + 123n + .5e-2 + count }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-cumulative-type-angle-segments-4625",
+    "history": "f03ac64a96573598f46202d61e116cabcc0b62d8",
+    "source": "{{ a<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<ea<b<c<d<e }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-fallthrough-attrs-class-multi-root-4635",
+    "history": "8ab913e8d771cb6762760bffdcb59582f8645e03",
+    "source": "<script setup>\nconst msg = 'hello'\n</script>\n<template>\n  <div :class=\"$attrs.class\">first</div>\n  <div>second</div>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-fallthrough-multi-root-4635",
+    "history": "8ab913e8d771cb6762760bffdcb59582f8645e03",
+    "source": "<script setup>\nconst msg = 'hello'\n</script>\n<template>\n  <div>first</div>\n  <div>second</div>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-fallthrough-inherit-attrs-false-multi-root-4635",
+    "history": "8ab913e8d771cb6762760bffdcb59582f8645e03",
+    "source": "<script setup>\ndefineOptions({ inheritAttrs: false })\n</script>\n<template>\n  <header>first</header>\n  <main>second</main>\n</template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-assignment-target-identifiers-4762",
+    "history": "571da98196b0fbdcb6e3e5645cf8889b98d8ff93",
+    "source": "<script setup lang=\"ts\">\nlet step = 0\nconst row: any = {}\nconst col = 'a'\nconst next = 1\nconst source: any = {}\nconst fallback = 2\n</script>\n<template><button @click=\"(step += 1) as number\">a</button><button @click=\"({ value: row[col] = next })\">b</button><button @click=\"({ item = fallback, label: alias, ...rest } = source)\">c</button></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-statement-handler-identifiers-4765",
+    "history": "ca95ba9be51a2a8bf3a148a392ef85fc8c6d8908",
+    "source": "<script setup lang=\"ts\">\nfunction close() {}\nfunction modifyInventory() {}\nfunction toggle() {}\nconst active = true\n</script>\n<template><button @click=\"close();modifyInventory()\">a</button><button @click=\"$emit('selected', $event); close()\">b</button><button @click=\"if (active) toggle(); close()\">c</button></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-identifier-walk-typeof-new-void-c1a804a",
+    "history": "c1a804a55451a84d6ce6ef64c07cf84dd6c3f965",
+    "source": "<script setup lang=\"ts\">\nconst count = 1\nclass Formatter { constructor(_: number) {} }\nconst fallback = 0\n</script>\n<template><p>{{ typeof count === 'number' ? new Formatter(count) : void fallback }}</p></template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-prefix-operator-run-4787",
+    "history": "5a3fbc007703472d5e5b50146f4cc47a070d4b5c",
+    "source": "{{ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++value }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-template-literal-object-brace-4787",
+    "history": "5a3fbc007703472d5e5b50146f4cc47a070d4b5c",
+    "source": "{{ `literal ${{} value} literal` }}",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c8-separate-render-local-directive-5595",
+    "history": "c3774c0ad893039038c607ba3d9ef8b495e73898",
+    "source": "\n<template>\n  <div v-flip>{{ message }}</div>\n</template>\n\n<script setup lang=\"ts\">\nimport { ref } from 'vue'\n\nconst message = ref('hello')\nconst vFlip = {\n  mounted() {},\n}\n</script>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "scriptOutput": "separate"
+    },
+    "errors": 0
+  },
+  {
+    "id": "c8-separate-render-imported-directive-5595",
+    "history": "c3774c0ad893039038c607ba3d9ef8b495e73898",
+    "source": "\n<template>\n  <div v-flip>{{ message }}</div>\n</template>\n\n<script setup lang=\"ts\">\nimport { ref } from 'vue'\nimport { vFlip } from './directives'\n\nconst message = ref('hello')\n</script>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "scriptOutput": "separate"
+    },
+    "errors": 0
   }
 ]

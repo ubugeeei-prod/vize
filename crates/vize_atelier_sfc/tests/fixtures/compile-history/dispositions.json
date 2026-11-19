@@ -660,6 +660,14 @@
       ]
     },
     {
+      "fixCommit": "bb11a7637f6f097f421475e03d011a1b66dc1a6f",
+      "state": "no-compile-behavior",
+      "reason": "Vite plugin option plumbing (TypeScript adapter options for plugin-vue parity: isProduction, script.propsDestructure and friends) mapped onto existing SFC compile options. The compile entry and its outputs are unchanged; the options are covered by the adapter's own tests.",
+      "coveredBy": [
+        "crates/vize_atelier_sfc/tests/compile_history.rs::full_current_compile_results"
+      ]
+    },
+    {
       "fixCommit": "bea7cd0664ef06b9779ac00708501230ca2897d9",
       "state": "no-compile-behavior",
       "reason": "Canon's virtual TS now types template props declared through withDefaults as default-resolved (Required<Pick<...>>), changing only the generated virtual TypeScript and its snapshots. No vize_atelier_* code changed, so compiled output cannot differ.",

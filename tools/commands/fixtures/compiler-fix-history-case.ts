@@ -53,6 +53,8 @@ const OPTIONS = new Set([
   "inTagComments",
   "scoped",
   "minify",
+  "viteHelper",
+  "noProjectConfig",
 ]);
 const JSX_OPTIONS = new Set([
   "compat",
@@ -71,7 +73,7 @@ type Case = {
   history: string;
   source: string;
   filename: string;
-  entry: "sfc" | "template" | "css" | "vite-css";
+  entry: "sfc" | "template" | "css" | "vite-css" | "vite";
   target: "dom" | "ssr" | "vapor";
   options?: Record<string, boolean | string | string[]>;
   files?: Record<string, string>;
@@ -130,7 +132,7 @@ function normalize(spec: Spec, item: SpecCase, errors: Record<string, number>): 
   assert.match(item.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, item.id);
   assert(typeof item.source === "string", `${item.id}: source`);
   assert(
-    ["sfc", "template", "css", "vite-css"].includes(item.entry),
+    ["sfc", "template", "css", "vite-css", "vite"].includes(item.entry),
     `${item.id}: entry ${item.entry}`,
   );
   assert(["dom", "ssr", "vapor"].includes(item.target ?? ""), `${item.id}: target ${item.target}`);

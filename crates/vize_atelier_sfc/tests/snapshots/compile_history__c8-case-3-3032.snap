@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-case-3-3032",
+    history: "7bb2407b60c48db3594aa7388c8f1f185581a6c1",
+    source: "<Widget v-if=\"show\" id=\"before\" v-on=\"listeners\" title=\"middle\" v-bind=\"attrs\" @click=\"after\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, mergeProps as _mergeProps, toHandlers as _toHandlers, openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Widget = _resolveComponent(\"Widget\")\n  \n  return (show)\n    ? (_openBlock(), _createBlock(_component_Widget, _mergeProps({\n      key: 0,\n      id: \"before\"\n    }, _toHandlers(listeners), {\n      title: \"middle\"\n    }, attrs, {\n      onClick: after\n    }), null, 16 /* FULL_PROPS */, [\"onClick\"]))\n    : _createCommentVNode(\"v-if\", true)\n}",
+    map: None,
+}

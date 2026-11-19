@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-vapor-valueless-dynamic-component-attr-3106",
+    history: "628ea1e7d2bde05ec9cfae225e32fd6be5a4395a",
+    source: "<script setup>const tag = 'div'</script><template><component :is=\"tag\" data-probe>hi</component></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { createDynamicComponent as _createDynamicComponent, template as _template } from 'vue';\n\nconst t0 = _template(\"hi\")\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n1 = _createDynamicComponent(() => (tag), { \"data-probe\": () => (\"\") }, {\n    \"default\": () => {\n      const n0 = t0()\n      return n0\n    }\n  }, true)\n  return n1\n}\nconst __vaporRender = render\n\nconst tag = 'div'\n\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'History',\n  render: __vaporRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = { tag }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "tag": LiteralConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)
