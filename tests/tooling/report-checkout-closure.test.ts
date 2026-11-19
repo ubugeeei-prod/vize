@@ -29,7 +29,10 @@ for (const [file, id] of reports) {
       [...(step.run ?? "").matchAll(/\bnode (tools\/\S+\.(?:ts|mjs))/g)].map((match) => match[1]),
     );
     assert.equal(scripts.length, 1, "one gate script");
-    const closure = localImportInputs(scripts[0], root, new Set(), true);
+    const closure = localImportInputs(scripts[0], root, new Set(), true) as {
+      complete: boolean;
+      files: string[];
+    };
     assert.equal(closure.complete, true, "literal import closure");
     const files = [...new Set(closure.files)].filter((path) => existsSync(join(root, path)));
     const actions = steps
