@@ -1,5 +1,6 @@
 use vize_croquis::Scope;
 
+use super::super::emit::SlotParameterGeneratedParts;
 use crate::virtual_ts::types::VizeMapping;
 
 fn push_mapped_segment(
@@ -44,10 +45,10 @@ pub(super) fn map_slot_props_pattern(
     pattern_offset: Option<u32>,
     template_offset: u32,
     props_pattern: &str,
-    function_gen_start: usize,
     ts: &str,
+    generated_parts: SlotParameterGeneratedParts,
 ) {
-    let function_text = ts.get(function_gen_start..).unwrap_or_default();
+    let function_text = ts.get(generated_parts.function_start..).unwrap_or_default();
     let parameter = super::super::emit::slot_parameter(props_pattern);
     let mut binding_ranges = Vec::new();
     for (prop_name, binding) in scope.bindings() {
@@ -63,8 +64,8 @@ pub(super) fn map_slot_props_pattern(
         };
         let src_start = binding.declaration_offset;
         mappings.push(VizeMapping {
-            gen_range: function_gen_start + generated_relative
-                ..function_gen_start + generated_relative + prop_name.len(),
+            gen_range: generated_parts.function_start + generated_relative
+                ..generated_parts.function_start + generated_relative + prop_name.len(),
             src_range: (template_offset + src_start) as usize
                 ..(template_offset + src_start) as usize + prop_name.len(),
             sub_spans: Vec::new(),
@@ -84,31 +85,22 @@ pub(super) fn map_slot_props_pattern(
             .iter()
             .map(|range| authored_start + range.start..authored_start + range.end)
             .collect::<Vec<_>>();
-        let mut generated_cursor = function_text.find('(').map_or(0, |at| at + 1);
-        for part in [
-            Some(parameter.pattern),
-            parameter.annotation,
-            parameter.default,
+        for (part, generated_start) in [
+            Some((parameter.pattern, generated_parts.pattern_start)),
+            parameter.annotation.zip(generated_parts.annotation_start),
+            parameter.default.zip(generated_parts.default_start),
         ]
         .into_iter()
         .flatten()
-        .filter(|part| !part.text.is_empty())
+        .filter(|(part, _)| !part.text.is_empty())
         {
-            let Some(relative) = function_text
-                .get(generated_cursor..)
-                .and_then(|text| text.find(part.text))
-                .map(|relative| generated_cursor + relative)
-            else {
-                continue;
-            };
             push_mapped_segment(
                 mappings,
-                function_gen_start + relative,
+                generated_start,
                 authored_start + part.start,
                 part.text.len(),
                 &absolute_binding_ranges,
             );
-            generated_cursor = relative + part.text.len();
         }
     }
 }

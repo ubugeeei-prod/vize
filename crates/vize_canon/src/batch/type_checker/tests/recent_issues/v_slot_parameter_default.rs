@@ -11,6 +11,10 @@ const SEMANTIC_CONTROL: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../tests/_fixtures/differential/typechecker/v-slot-parameter-default-13415/semantic.ts.txt"
 ));
+const REPORTED_CONFIG: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/v-slot-parameter-default-13415/tsconfig.json.txt"
+));
 
 #[test]
 fn defaulted_v_slot_pattern_preserves_the_project_semantic_pass() {
@@ -19,7 +23,11 @@ fn defaulted_v_slot_pattern_preserves_the_project_semantic_pass() {
     }
     let project_root = create_project_case(
         "v-slot-parameter-default",
-        &[("src/A.vue", REPRO), ("src/semantic.ts", SEMANTIC_CONTROL)],
+        &[
+            ("A.vue", REPRO),
+            ("semantic.ts", SEMANTIC_CONTROL),
+            ("tsconfig.json", REPORTED_CONFIG),
+        ],
     );
 
     let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
@@ -30,14 +38,14 @@ fn defaulted_v_slot_pattern_preserves_the_project_semantic_pass() {
 
     assert!(
         snapshot.iter().all(|(file, code, _)| {
-            file != "src/A.vue" || !matches!(code, Some(1003 | 1005 | 1359))
+            file != "A.vue" || !matches!(code, Some(1003 | 1005 | 1359))
         }),
         "the slot default must not produce virtual TypeScript syntax errors: {snapshot:#?}"
     );
     assert!(
         snapshot
             .iter()
-            .any(|(file, code, _)| file == "src/semantic.ts" && *code == Some(2322)),
+            .any(|(file, code, _)| file == "semantic.ts" && *code == Some(2322)),
         "the unrelated semantic diagnostic must remain visible: {snapshot:#?}"
     );
 }

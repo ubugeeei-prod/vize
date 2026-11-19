@@ -23,13 +23,68 @@ fn is_parameter_default_equals(source: &str, at: usize) -> bool {
         )
 }
 
+fn can_start_regex(source: &str, at: usize) -> bool {
+    let prefix = source.get(..at).unwrap_or_default().trim_end();
+    let Some(last) = prefix.chars().next_back() else {
+        return true;
+    };
+    if matches!(
+        last,
+        '(' | '['
+            | '{'
+            | '='
+            | ','
+            | ':'
+            | ';'
+            | '!'
+            | '?'
+            | '&'
+            | '|'
+            | '+'
+            | '-'
+            | '*'
+            | '%'
+            | '^'
+            | '~'
+            | '<'
+            | '>'
+    ) {
+        return true;
+    }
+    let word_start = prefix
+        .char_indices()
+        .rev()
+        .find(|(_, ch)| !ch.is_alphanumeric() && *ch != '_' && *ch != '$')
+        .map_or(0, |(at, ch)| at + ch.len_utf8());
+    matches!(
+        prefix.get(word_start..).unwrap_or_default(),
+        "await"
+            | "case"
+            | "delete"
+            | "do"
+            | "else"
+            | "in"
+            | "instanceof"
+            | "new"
+            | "of"
+            | "return"
+            | "throw"
+            | "typeof"
+            | "void"
+            | "yield"
+    )
+}
+
 /// Split a slot function parameter into its authored binding pattern, optional
 /// annotation and optional whole-parameter default. The inferred payload type
 /// belongs before that default: `({ editor }: Payload = {})`, not the invalid
 /// `({ editor } = {}: Payload)`.
 pub(in super::super) fn slot_parameter(pattern: &str) -> SlotParameter<'_> {
     let mut depth = 0i32;
+    let mut type_angle_depth = 0i32;
     let mut quote: Option<char> = None;
+    let mut regex = false;
+    let mut regex_class = false;
     let mut escaped = false;
     let mut line_comment = false;
     let mut block_comment = false;
@@ -49,6 +104,20 @@ pub(in super::super) fn slot_parameter(pattern: &str) -> SlotParameter<'_> {
             if ch == '*' && next == Some('/') {
                 block_comment = false;
                 chars.next();
+            }
+            continue;
+        }
+        if regex {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == '[' && !regex_class {
+                regex_class = true;
+            } else if ch == ']' && regex_class {
+                regex_class = false;
+            } else if ch == '/' && !regex_class {
+                regex = false;
             }
             continue;
         }
@@ -72,12 +141,31 @@ pub(in super::super) fn slot_parameter(pattern: &str) -> SlotParameter<'_> {
             chars.next();
             continue;
         }
+        if ch == '/' && can_start_regex(pattern, at) {
+            regex = true;
+            regex_class = false;
+            escaped = false;
+            continue;
+        }
         match ch {
             '\'' | '"' | '`' => quote = Some(ch),
-            '{' | '[' | '(' | '<' => depth += 1,
-            '}' | ']' | ')' | '>' if depth > 0 => depth -= 1,
-            ':' if depth == 0 && annotation_at.is_none() => annotation_at = Some(at),
-            '=' if depth == 0 && is_parameter_default_equals(pattern, at) => {
+            '{' | '[' | '(' => depth += 1,
+            '}' | ']' | ')' if depth > 0 => depth -= 1,
+            '<' if annotation_at.is_some() && depth == 0 => type_angle_depth += 1,
+            '>' if annotation_at.is_some()
+                && depth == 0
+                && type_angle_depth > 0
+                && pattern.get(..at).and_then(|text| text.chars().next_back()) != Some('=') =>
+            {
+                type_angle_depth -= 1;
+            }
+            ':' if depth == 0 && type_angle_depth == 0 && annotation_at.is_none() => {
+                annotation_at = Some(at);
+            }
+            '=' if depth == 0
+                && type_angle_depth == 0
+                && is_parameter_default_equals(pattern, at) =>
+            {
                 default_at = Some(at);
                 break;
             }
@@ -129,6 +217,48 @@ mod tests {
                 Some("fallback"),
             ),
             ("{ editor = fallback }", "{ editor = fallback }", None, None),
+            (
+                "{ make = () => 1, editor = fallback }",
+                "{ make = () => 1, editor = fallback }",
+                None,
+                None,
+            ),
+            (
+                r"{ matcher = /\}/, editor = fallback }",
+                r"{ matcher = /\}/, editor = fallback }",
+                None,
+                None,
+            ),
+            (
+                r"{ matcher = /[}]/, editor = fallback }",
+                r"{ matcher = /[}]/, editor = fallback }",
+                None,
+                None,
+            ),
+            (
+                "{ ratio = total / count, editor = fallback }",
+                "{ ratio = total / count, editor = fallback }",
+                None,
+                None,
+            ),
+            (
+                "{ flag = count > 0, editor = fallback }",
+                "{ flag = count > 0, editor = fallback }",
+                None,
+                None,
+            ),
+            (
+                "{ flag = count < 1 } = {}",
+                "{ flag = count < 1 }",
+                None,
+                Some("{}"),
+            ),
+            (
+                "slot: Factory<T = string> = fallback",
+                "slot",
+                Some("Factory<T = string>"),
+                Some("fallback"),
+            ),
         ] {
             let parameter = slot_parameter(source);
             assert_eq!(parameter.pattern.text, pattern, "{source}");

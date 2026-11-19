@@ -29,6 +29,14 @@ pub(super) struct SlotParameter<'a> {
     pub(super) default: Option<SlotParameterPart<'a>>,
 }
 
+#[derive(Clone, Copy)]
+pub(super) struct SlotParameterGeneratedParts {
+    pub(super) function_start: usize,
+    pub(super) pattern_start: usize,
+    pub(super) annotation_start: Option<usize>,
+    pub(super) default_start: Option<usize>,
+}
+
 /// Emit the opening of a v-slot scope function. The parameter is annotated
 /// with the slot type inferred from the child's `$slots`; an authored
 /// annotation types the bindings instead (see [`emit_slot_annotation_check`]).
@@ -39,7 +47,7 @@ pub(super) fn emit_slot_function_open(
     props_pattern: &str,
     props_type: &String,
     capture: bool,
-    body: impl FnOnce(&mut crate::virtual_ts::TextBuf),
+    body: impl FnOnce(&mut crate::virtual_ts::TextBuf, SlotParameterGeneratedParts),
 ) {
     let declaration = if capture {
         cstr!("var {function_name} = function")
@@ -51,6 +59,17 @@ pub(super) fn emit_slot_function_open(
     let annotation = parameter
         .annotation
         .map_or(props_type.as_str(), |annotation| annotation.text);
+    let function_start = ts.len();
+    let pattern_start = function_start + indent.len() + declaration.len() + 1;
+    let emitted_annotation_start = pattern_start + pattern.len() + 2;
+    let generated_parts = SlotParameterGeneratedParts {
+        function_start,
+        pattern_start,
+        annotation_start: parameter.annotation.map(|_| emitted_annotation_start),
+        default_start: parameter
+            .default
+            .map(|_| emitted_annotation_start + annotation.len() + 3),
+    };
     let params = parameter.default.map_or_else(
         || cstr!("{pattern}: {annotation}"),
         |default| cstr!("{pattern}: {annotation} = {}", default.text),
@@ -60,7 +79,7 @@ pub(super) fn emit_slot_function_open(
     ts! { &mut *ts =>
         #(" ") {
             #("\n")
-            #{ body(__ts); }
+            #{ body(__ts, generated_parts); }
             #indent
         }
         #(";\n")

@@ -239,7 +239,6 @@ pub(super) fn generate_v_slot_scope(
         scope,
         data,
     );
-    let function_gen_start = ts.len();
     let capture_slots = ctx.slot_outlets.captures_scope(ctx.summary, scope.id);
     let function_name = if capture_slots {
         cstr!("__vize_slot_scope_{scope_id}")
@@ -254,15 +253,15 @@ pub(super) fn generate_v_slot_scope(
         props_pattern.as_str(),
         &slot_types.payload,
         capture_slots,
-        |ts| {
+        |ts, generated_parts| {
             map_slot_props_pattern(
                 mappings,
                 scope,
                 pattern_offset,
                 ctx.template_offset,
                 props_pattern.as_str(),
-                function_gen_start,
                 ts,
+                generated_parts,
             );
             // Only this pass checks the annotation; the props pass replays
             // the same scope and would report it twice.
@@ -391,7 +390,7 @@ pub(super) fn generate_v_slot_props_scope(
         props_pattern.as_str(),
         &props_type,
         false,
-        |ts| {
+        |ts, _| {
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {
                 vize_l0::emit_ts!(ts, "{inner_indent}void {binding_pattern};\n");
