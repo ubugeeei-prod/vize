@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const route = { query: { tab: 'home' } };
+</script>
+
+<template>
+  <div>{{ route.query.tab }} {{ route.missing }}</div>
+</template>

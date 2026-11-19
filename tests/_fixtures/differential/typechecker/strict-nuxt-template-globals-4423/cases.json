@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4423,
+  "regressionCommit": "d197098cb7a3d4d414a8225dda2a97267b253f82",
+  "sourceRevision": "d197098cb7a3d4d414a8225dda2a97267b253f82",
+  "checkerOptions": {
+    "strictInstanceGlobals": true,
+    "autoImportStubs": [
+      "declare const currentUser: { name: string };",
+      "declare const getPreferences: () => { theme: string };"
+    ]
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "auto-imports",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "source": "plugins.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "auto-imports.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unknown-globals",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "source": "plugins.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unknown-globals.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 5,
+          "column": 53,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property '$unknownPlugin' does not exist on type '$StrictTemplateContext'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 5,
+          "column": 23,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ name: string; }'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 5,
+          "column": 44,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "member-root",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "source": "plugins.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "member-root.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 39,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ query: { tab: string; }; }'."
+        }
+      ]
+    },
+    {
+      "id": "literals",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "source": "plugins.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "literals.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

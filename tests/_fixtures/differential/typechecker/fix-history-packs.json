@@ -81,6 +81,10 @@
     "test": "fix_history_cases::component_event_assignment_scope_4994::component_event_assignment_does_not_narrow_render_scope",
     "sourceRevision": "dfe3b6befc643c46031356e3b357e73cb1afe1ee"
   },
+  "component-event-full-tuple-1512": {
+    "test": "fix_history_cases::component_event_full_tuple_1512::component_event_listeners_check_the_full_emit_tuple",
+    "sourceRevision": "4d95a2ddda5f33550cd408b5fa759e80bf9b68d4"
+  },
   "component-fallthrough-touch-listener-2732": {
     "test": "fix_history_cases::component_fallthrough_touch_listener_2732::component_fallthrough_touch_listener_stays_loose",
     "sourceRevision": "b41d999468128f920fcbbda1cc5c019e90dc75ee"
@@ -750,6 +754,24 @@
       "optionsApi": true
     }
   },
+  "package-self-export-waves-6406": {
+    "test": "fix_history_cases::package_self_export_waves_6406::package_self_exports_resolve_in_later_route_waves",
+    "sourceRevision": "3a2fd80a314ae1c644af30bed1419855b2133c1e",
+    "checkerOptions": {
+      "packageRoutes": [
+        {
+          "importer": "src/App.vue",
+          "specifier": "@demo/kit"
+        }
+      ],
+      "workspaceLinks": [
+        {
+          "package": "packages/kit",
+          "link": "node_modules/@demo/kit"
+        }
+      ]
+    }
+  },
   "plain-options-define-component-1407": {
     "test": "fix_history_cases::plain_options_define_component_1407::plain_options_object_default_export_gets_instance_this",
     "sourceRevision": "df454d1dad18d3534176b6c9e8544fab636a2e88"
@@ -973,9 +995,38 @@
     "test": "fix_history_cases::strict_html_fallthrough_literal_dedup_4992::strict_unknown_props_accept_html_attrs_and_report_widened_literals_once",
     "sourceRevision": "13bcf1ba4ddb588b79296623f259c310a1bab2b5"
   },
+  "strict-nuxt-generated-globals-4248": {
+    "test": "fix_history_cases::strict_nuxt_generated_globals_4248::generated_nuxt_globals_are_authoritative",
+    "sourceRevision": "9687c6e64ec1b731e99dcb77053cbd3d893f5ef2",
+    "checkerOptions": {
+      "strictInstanceGlobals": true,
+      "autoImportStubs": [
+        "declare const useLocalePath: () => (path: string) => string;",
+        "declare const useLocale: () => { locale: string };"
+      ]
+    }
+  },
+  "strict-nuxt-template-globals-4423": {
+    "test": "fix_history_cases::strict_nuxt_template_globals_4423::strict_nuxt_template_globals_read_declared_surfaces",
+    "sourceRevision": "d197098cb7a3d4d414a8225dda2a97267b253f82",
+    "checkerOptions": {
+      "strictInstanceGlobals": true,
+      "autoImportStubs": [
+        "declare const currentUser: { name: string };",
+        "declare const getPreferences: () => { theme: string };"
+      ]
+    }
+  },
   "strict-template-diagnostics-alignment": {
     "test": "fix_history_cases::strict_template_diagnostics_alignment::strict_template_alignment_bundle_preserves_checked_diagnostics",
     "sourceRevision": "1acdeec5fc51a7f1d270fef08c4c65467e7f0821"
+  },
+  "strict-template-scopes-4427": {
+    "test": "fix_history_cases::strict_template_scopes_4427::strict_template_globals_keep_template_scope_aliases",
+    "sourceRevision": "eb489b2579e9a9d92e5e7260c7eef32e2d701f56",
+    "checkerOptions": {
+      "strictInstanceGlobals": true
+    }
   },
   "strict-unknown-component-attrs-4577": {
     "test": "fix_history_cases::strict_unknown_component_attrs_4577::closed_components_reject_unknown_fallthrough_attrs",

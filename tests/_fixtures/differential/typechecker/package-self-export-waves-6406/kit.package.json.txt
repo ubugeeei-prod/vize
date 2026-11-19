@@ -1,0 +1,10 @@
+{
+  "name": "@demo/kit",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./button": "./src/button.ts",
+    "./tokens": "./src/tokens.ts"
+  }
+}

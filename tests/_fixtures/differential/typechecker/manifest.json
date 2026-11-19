@@ -5423,6 +5423,256 @@
       }
     },
     {
+      "id": "typechecker/component-event-full-tuple-1512/tuple-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "component-event-full-tuple-1512",
+      "case": "tuple-valid",
+      "test": "fix_history_cases::component_event_full_tuple_1512::component_event_listeners_check_the_full_emit_tuple",
+      "regressionCommit": "4d95a2ddda5f33550cd408b5fa759e80bf9b68d4",
+      "sourceRevision": "4d95a2ddda5f33550cd408b5fa759e80bf9b68d4",
+      "packReference": {
+        "path": "component-event-full-tuple-1512/cases.json",
+        "sha256": "030b17c263b2564548057378f706040df3fe5a08cb7ddba5b50fb6f18e62ef54"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "component-event-full-tuple-1512/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "component-event-full-tuple-1512/tuple-valid.App.vue.txt",
+          "sha256": "f44f10446309c5297aa93ffc8f7a40ece2e93c2d519153bf53da55f9ed098540"
+        },
+        {
+          "file": "src/Test.vue",
+          "path": "component-event-full-tuple-1512/Test.vue.txt",
+          "sha256": "a019e7be6a76313f80824d3ebfa1249e4ba773eb070cbeabce2203ddcfe2480d"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/component-event-full-tuple-1512/second-parameter-invalid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "component-event-full-tuple-1512",
+      "case": "second-parameter-invalid",
+      "test": "fix_history_cases::component_event_full_tuple_1512::component_event_listeners_check_the_full_emit_tuple",
+      "regressionCommit": "4d95a2ddda5f33550cd408b5fa759e80bf9b68d4",
+      "sourceRevision": "4d95a2ddda5f33550cd408b5fa759e80bf9b68d4",
+      "packReference": {
+        "path": "component-event-full-tuple-1512/cases.json",
+        "sha256": "030b17c263b2564548057378f706040df3fe5a08cb7ddba5b50fb6f18e62ef54"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "component-event-full-tuple-1512/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "component-event-full-tuple-1512/second-invalid.App.vue.txt",
+          "sha256": "2443a5cad3616e5333b1fe2c3b592ef49aeab20122199cddde37f3f306913255"
+        },
+        {
+          "file": "src/Test.vue",
+          "path": "component-event-full-tuple-1512/Test.vue.txt",
+          "sha256": "a019e7be6a76313f80824d3ebfa1249e4ba773eb070cbeabce2203ddcfe2480d"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/component-event-full-tuple-1512/first-parameter-invalid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "component-event-full-tuple-1512",
+      "case": "first-parameter-invalid",
+      "test": "fix_history_cases::component_event_full_tuple_1512::component_event_listeners_check_the_full_emit_tuple",
+      "regressionCommit": "4d95a2ddda5f33550cd408b5fa759e80bf9b68d4",
+      "sourceRevision": "4d95a2ddda5f33550cd408b5fa759e80bf9b68d4",
+      "packReference": {
+        "path": "component-event-full-tuple-1512/cases.json",
+        "sha256": "030b17c263b2564548057378f706040df3fe5a08cb7ddba5b50fb6f18e62ef54"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "component-event-full-tuple-1512/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "component-event-full-tuple-1512/first-invalid.App.vue.txt",
+          "sha256": "23ec413427f49849ee67af9e3e9afd1bd9d57ac15a94d44b147efcaea1a1ae8d"
+        },
+        {
+          "file": "src/Test.vue",
+          "path": "component-event-full-tuple-1512/Test.vue.txt",
+          "sha256": "a019e7be6a76313f80824d3ebfa1249e4ba773eb070cbeabce2203ddcfe2480d"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/component-event-full-tuple-1512/native-single-event-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "component-event-full-tuple-1512",
+      "case": "native-single-event-valid",
+      "test": "fix_history_cases::component_event_full_tuple_1512::component_event_listeners_check_the_full_emit_tuple",
+      "regressionCommit": "4d95a2ddda5f33550cd408b5fa759e80bf9b68d4",
+      "sourceRevision": "4d95a2ddda5f33550cd408b5fa759e80bf9b68d4",
+      "packReference": {
+        "path": "component-event-full-tuple-1512/cases.json",
+        "sha256": "030b17c263b2564548057378f706040df3fe5a08cb7ddba5b50fb6f18e62ef54"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "component-event-full-tuple-1512/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "component-event-full-tuple-1512/native-valid.App.vue.txt",
+          "sha256": "82ea0f1b6c357d97f247dd61981146dadfb5bc8e3805b2d63388d3155ed75241"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/component-event-full-tuple-1512/native-single-event-invalid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "component-event-full-tuple-1512",
+      "case": "native-single-event-invalid",
+      "test": "fix_history_cases::component_event_full_tuple_1512::component_event_listeners_check_the_full_emit_tuple",
+      "regressionCommit": "4d95a2ddda5f33550cd408b5fa759e80bf9b68d4",
+      "sourceRevision": "4d95a2ddda5f33550cd408b5fa759e80bf9b68d4",
+      "packReference": {
+        "path": "component-event-full-tuple-1512/cases.json",
+        "sha256": "030b17c263b2564548057378f706040df3fe5a08cb7ddba5b50fb6f18e62ef54"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "component-event-full-tuple-1512/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "component-event-full-tuple-1512/native-invalid.App.vue.txt",
+          "sha256": "3858536b4cb5b4df17f9844fd5b95fcee54c62b66ee9374b3c327f3680d0af08"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/component-event-tuples/unresolved-valid",
       "state": "active",
       "targets": [
@@ -35557,6 +35807,178 @@
       }
     },
     {
+      "id": "typechecker/package-self-export-waves-6406/self-export-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "package-self-export-waves-6406",
+      "case": "self-export-valid",
+      "test": "fix_history_cases::package_self_export_waves_6406::package_self_exports_resolve_in_later_route_waves",
+      "regressionCommit": "3a2fd80a314ae1c644af30bed1419855b2133c1e",
+      "sourceRevision": "3a2fd80a314ae1c644af30bed1419855b2133c1e",
+      "checkerOptions": {
+        "packageRoutes": [
+          {
+            "importer": "src/App.vue",
+            "specifier": "@demo/kit"
+          }
+        ],
+        "workspaceLinks": [
+          {
+            "package": "packages/kit",
+            "link": "node_modules/@demo/kit"
+          }
+        ]
+      },
+      "packReference": {
+        "path": "package-self-export-waves-6406/cases.json",
+        "sha256": "1e5660ec14af1be9e552368e4fafc77fe4d9df4de12e7df53c37ca7900ea5d95"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "package-self-export-waves-6406/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "package.json",
+          "path": "package-self-export-waves-6406/package.json.txt",
+          "sha256": "d6f3e83c944816f5c708b1a5da4e6a06ab1f23f6ead2fbb332123bfebf6f82f2"
+        },
+        {
+          "file": "packages/kit/package.json",
+          "path": "package-self-export-waves-6406/kit.package.json.txt",
+          "sha256": "f36a7639b9c7cfe2e6f9f39bccdb991ddf922a52b1c3547ab12e9405b22d6ee1"
+        },
+        {
+          "file": "packages/kit/src/index.ts",
+          "path": "package-self-export-waves-6406/kit.index.ts.txt",
+          "sha256": "d1e3fbf4637916f33dd427afed98a160474fdb46095fd5dfe9d54812528abd91"
+        },
+        {
+          "file": "packages/kit/src/button.ts",
+          "path": "package-self-export-waves-6406/kit.button.ts.txt",
+          "sha256": "7d9810ae6119542d04b317a8f835b41e8bea79088aca552e5fb0855ce343b8c7"
+        },
+        {
+          "file": "packages/kit/src/tokens.ts",
+          "path": "package-self-export-waves-6406/kit.tokens.ts.txt",
+          "sha256": "fdf54594da4ec7d18a70211a2d45119ffe6e66e7925b0a33b4bf457b92171650"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "package-self-export-waves-6406/valid.App.vue.txt",
+          "sha256": "5efdb6e17278956062ba029fa5af5aebc55a47084e93b893efeda3724974705b"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/package-self-export-waves-6406/self-export-invalid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "package-self-export-waves-6406",
+      "case": "self-export-invalid",
+      "test": "fix_history_cases::package_self_export_waves_6406::package_self_exports_resolve_in_later_route_waves",
+      "regressionCommit": "3a2fd80a314ae1c644af30bed1419855b2133c1e",
+      "sourceRevision": "3a2fd80a314ae1c644af30bed1419855b2133c1e",
+      "checkerOptions": {
+        "packageRoutes": [
+          {
+            "importer": "src/App.vue",
+            "specifier": "@demo/kit"
+          }
+        ],
+        "workspaceLinks": [
+          {
+            "package": "packages/kit",
+            "link": "node_modules/@demo/kit"
+          }
+        ]
+      },
+      "packReference": {
+        "path": "package-self-export-waves-6406/cases.json",
+        "sha256": "1e5660ec14af1be9e552368e4fafc77fe4d9df4de12e7df53c37ca7900ea5d95"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "package-self-export-waves-6406/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "package.json",
+          "path": "package-self-export-waves-6406/package.json.txt",
+          "sha256": "d6f3e83c944816f5c708b1a5da4e6a06ab1f23f6ead2fbb332123bfebf6f82f2"
+        },
+        {
+          "file": "packages/kit/package.json",
+          "path": "package-self-export-waves-6406/kit.package.json.txt",
+          "sha256": "f36a7639b9c7cfe2e6f9f39bccdb991ddf922a52b1c3547ab12e9405b22d6ee1"
+        },
+        {
+          "file": "packages/kit/src/index.ts",
+          "path": "package-self-export-waves-6406/kit.index.ts.txt",
+          "sha256": "d1e3fbf4637916f33dd427afed98a160474fdb46095fd5dfe9d54812528abd91"
+        },
+        {
+          "file": "packages/kit/src/button.ts",
+          "path": "package-self-export-waves-6406/kit.button.ts.txt",
+          "sha256": "7d9810ae6119542d04b317a8f835b41e8bea79088aca552e5fb0855ce343b8c7"
+        },
+        {
+          "file": "packages/kit/src/tokens.ts",
+          "path": "package-self-export-waves-6406/kit.tokens.ts.txt",
+          "sha256": "fdf54594da4ec7d18a70211a2d45119ffe6e66e7925b0a33b4bf457b92171650"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "package-self-export-waves-6406/invalid.App.vue.txt",
+          "sha256": "52a05b652213aa07b8e65e4a10e857bfdbae91ad80499c324fb3a5086f351ac0"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/package-target-deletion-refresh/missing-target",
       "state": "active",
       "targets": [
@@ -55231,6 +55653,419 @@
       }
     },
     {
+      "id": "typechecker/strict-nuxt-generated-globals-4248/index",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "strict-nuxt-generated-globals-4248",
+      "case": "index",
+      "test": "fix_history_cases::strict_nuxt_generated_globals_4248::generated_nuxt_globals_are_authoritative",
+      "regressionCommit": "9687c6e64ec1b731e99dcb77053cbd3d893f5ef2",
+      "sourceRevision": "9687c6e64ec1b731e99dcb77053cbd3d893f5ef2",
+      "checkerOptions": {
+        "strictInstanceGlobals": true,
+        "autoImportStubs": [
+          "declare const useLocalePath: () => (path: string) => string;",
+          "declare const useLocale: () => { locale: string };"
+        ]
+      },
+      "packReference": {
+        "path": "strict-nuxt-generated-globals-4248/cases.json",
+        "sha256": "ed97ea5cd0b6a7c7593e87c4fa0a359255b430053561668384357b795bafb29a"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "strict-nuxt-generated-globals-4248/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "path": "strict-nuxt-generated-globals-4248/plugins.d.ts.txt",
+          "sha256": "3af210618562fb66ab43daa20d517986ec2d973e3b4f93ce8bb7fb302bb31a59"
+        },
+        {
+          "file": "src/pages/index.vue",
+          "path": "strict-nuxt-generated-globals-4248/index.vue.txt",
+          "sha256": "dbd5006dfd3e61b611993af9c72c399b5200357ae3b825aada75d019ac568476"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/strict-nuxt-generated-globals-4248/undeclared-global",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "strict-nuxt-generated-globals-4248",
+      "case": "undeclared-global",
+      "test": "fix_history_cases::strict_nuxt_generated_globals_4248::generated_nuxt_globals_are_authoritative",
+      "regressionCommit": "9687c6e64ec1b731e99dcb77053cbd3d893f5ef2",
+      "sourceRevision": "9687c6e64ec1b731e99dcb77053cbd3d893f5ef2",
+      "checkerOptions": {
+        "strictInstanceGlobals": true,
+        "autoImportStubs": [
+          "declare const useLocalePath: () => (path: string) => string;",
+          "declare const useLocale: () => { locale: string };"
+        ]
+      },
+      "packReference": {
+        "path": "strict-nuxt-generated-globals-4248/cases.json",
+        "sha256": "ed97ea5cd0b6a7c7593e87c4fa0a359255b430053561668384357b795bafb29a"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "strict-nuxt-generated-globals-4248/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "path": "strict-nuxt-generated-globals-4248/plugins.d.ts.txt",
+          "sha256": "3af210618562fb66ab43daa20d517986ec2d973e3b4f93ce8bb7fb302bb31a59"
+        },
+        {
+          "file": "src/pages/undeclared-global.vue",
+          "path": "strict-nuxt-generated-globals-4248/undeclared-global.vue.txt",
+          "sha256": "6d073c996a2b07a9b2ae0e70f18b7851dc9627e0d47182d06391784329300f5d"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/strict-nuxt-generated-globals-4248/wrong-argument",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "strict-nuxt-generated-globals-4248",
+      "case": "wrong-argument",
+      "test": "fix_history_cases::strict_nuxt_generated_globals_4248::generated_nuxt_globals_are_authoritative",
+      "regressionCommit": "9687c6e64ec1b731e99dcb77053cbd3d893f5ef2",
+      "sourceRevision": "9687c6e64ec1b731e99dcb77053cbd3d893f5ef2",
+      "checkerOptions": {
+        "strictInstanceGlobals": true,
+        "autoImportStubs": [
+          "declare const useLocalePath: () => (path: string) => string;",
+          "declare const useLocale: () => { locale: string };"
+        ]
+      },
+      "packReference": {
+        "path": "strict-nuxt-generated-globals-4248/cases.json",
+        "sha256": "ed97ea5cd0b6a7c7593e87c4fa0a359255b430053561668384357b795bafb29a"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "strict-nuxt-generated-globals-4248/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "path": "strict-nuxt-generated-globals-4248/plugins.d.ts.txt",
+          "sha256": "3af210618562fb66ab43daa20d517986ec2d973e3b4f93ce8bb7fb302bb31a59"
+        },
+        {
+          "file": "src/pages/wrong-argument.vue",
+          "path": "strict-nuxt-generated-globals-4248/wrong-argument.vue.txt",
+          "sha256": "01305e3c2b65be09298c0db7d851ef2c3574f7584b8ff54ca8b22ab985ec3474"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/strict-nuxt-template-globals-4423/auto-imports",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "strict-nuxt-template-globals-4423",
+      "case": "auto-imports",
+      "test": "fix_history_cases::strict_nuxt_template_globals_4423::strict_nuxt_template_globals_read_declared_surfaces",
+      "regressionCommit": "d197098cb7a3d4d414a8225dda2a97267b253f82",
+      "sourceRevision": "d197098cb7a3d4d414a8225dda2a97267b253f82",
+      "checkerOptions": {
+        "strictInstanceGlobals": true,
+        "autoImportStubs": [
+          "declare const currentUser: { name: string };",
+          "declare const getPreferences: () => { theme: string };"
+        ]
+      },
+      "packReference": {
+        "path": "strict-nuxt-template-globals-4423/cases.json",
+        "sha256": "d6042238fff09d293850af03ac5c73ccf1f98bc9ad843faabc9456083f0d3179"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "strict-nuxt-template-globals-4423/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "path": "strict-nuxt-template-globals-4423/plugins.d.ts.txt",
+          "sha256": "aa594d59daaf5582d2c96bbcacadec816ec0b665c1c0f85e279bb4778a9162de"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "strict-nuxt-template-globals-4423/auto-imports.App.vue.txt",
+          "sha256": "e2fd6b153c6c8dffc6b7908c2fb9f0da0385eabdff993e39d2f1fc8da00dfbd5"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/strict-nuxt-template-globals-4423/unknown-globals",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "strict-nuxt-template-globals-4423",
+      "case": "unknown-globals",
+      "test": "fix_history_cases::strict_nuxt_template_globals_4423::strict_nuxt_template_globals_read_declared_surfaces",
+      "regressionCommit": "d197098cb7a3d4d414a8225dda2a97267b253f82",
+      "sourceRevision": "d197098cb7a3d4d414a8225dda2a97267b253f82",
+      "checkerOptions": {
+        "strictInstanceGlobals": true,
+        "autoImportStubs": [
+          "declare const currentUser: { name: string };",
+          "declare const getPreferences: () => { theme: string };"
+        ]
+      },
+      "packReference": {
+        "path": "strict-nuxt-template-globals-4423/cases.json",
+        "sha256": "d6042238fff09d293850af03ac5c73ccf1f98bc9ad843faabc9456083f0d3179"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "strict-nuxt-template-globals-4423/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "path": "strict-nuxt-template-globals-4423/plugins.d.ts.txt",
+          "sha256": "aa594d59daaf5582d2c96bbcacadec816ec0b665c1c0f85e279bb4778a9162de"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "strict-nuxt-template-globals-4423/unknown-globals.App.vue.txt",
+          "sha256": "74755024cc5016e8b38aaf71396a5d8104e0459a06dfc479a9e2b054ed99088c"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/strict-nuxt-template-globals-4423/member-root",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "strict-nuxt-template-globals-4423",
+      "case": "member-root",
+      "test": "fix_history_cases::strict_nuxt_template_globals_4423::strict_nuxt_template_globals_read_declared_surfaces",
+      "regressionCommit": "d197098cb7a3d4d414a8225dda2a97267b253f82",
+      "sourceRevision": "d197098cb7a3d4d414a8225dda2a97267b253f82",
+      "checkerOptions": {
+        "strictInstanceGlobals": true,
+        "autoImportStubs": [
+          "declare const currentUser: { name: string };",
+          "declare const getPreferences: () => { theme: string };"
+        ]
+      },
+      "packReference": {
+        "path": "strict-nuxt-template-globals-4423/cases.json",
+        "sha256": "d6042238fff09d293850af03ac5c73ccf1f98bc9ad843faabc9456083f0d3179"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "strict-nuxt-template-globals-4423/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "path": "strict-nuxt-template-globals-4423/plugins.d.ts.txt",
+          "sha256": "aa594d59daaf5582d2c96bbcacadec816ec0b665c1c0f85e279bb4778a9162de"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "strict-nuxt-template-globals-4423/member-root.App.vue.txt",
+          "sha256": "fd40b701f5aaa5fc77c6ac6d8470365a96951d73167adb58167b016843eda7f5"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/strict-nuxt-template-globals-4423/literals",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "strict-nuxt-template-globals-4423",
+      "case": "literals",
+      "test": "fix_history_cases::strict_nuxt_template_globals_4423::strict_nuxt_template_globals_read_declared_surfaces",
+      "regressionCommit": "d197098cb7a3d4d414a8225dda2a97267b253f82",
+      "sourceRevision": "d197098cb7a3d4d414a8225dda2a97267b253f82",
+      "checkerOptions": {
+        "strictInstanceGlobals": true,
+        "autoImportStubs": [
+          "declare const currentUser: { name: string };",
+          "declare const getPreferences: () => { theme: string };"
+        ]
+      },
+      "packReference": {
+        "path": "strict-nuxt-template-globals-4423/cases.json",
+        "sha256": "d6042238fff09d293850af03ac5c73ccf1f98bc9ad843faabc9456083f0d3179"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "strict-nuxt-template-globals-4423/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "path": "strict-nuxt-template-globals-4423/plugins.d.ts.txt",
+          "sha256": "aa594d59daaf5582d2c96bbcacadec816ec0b665c1c0f85e279bb4778a9162de"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "strict-nuxt-template-globals-4423/literals.App.vue.txt",
+          "sha256": "1217aaaacee27a79e10d316942abedc8aee1c180e7a45a5cdf4d18f4884fc99e"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/strict-template-diagnostics-alignment/external-esm-augmentation-applies",
       "state": "active",
       "targets": [
@@ -55834,6 +56669,211 @@
           "file": "src/App.vue",
           "path": "strict-template-diagnostics-alignment/i18n.invalid.App.vue.txt",
           "sha256": "0129988e1a1132bbf84200ced33245dceae27642375e78bc752c05ec212cbbe6"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/strict-template-scopes-4427/v-for-alias-before-script-length",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "strict-template-scopes-4427",
+      "case": "v-for-alias-before-script-length",
+      "test": "fix_history_cases::strict_template_scopes_4427::strict_template_globals_keep_template_scope_aliases",
+      "regressionCommit": "eb489b2579e9a9d92e5e7260c7eef32e2d701f56",
+      "sourceRevision": "eb489b2579e9a9d92e5e7260c7eef32e2d701f56",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "strict-template-scopes-4427/cases.json",
+        "sha256": "f021a9f0a90512f76dd873226d3334237516de60fdd64d7be354001f47ab66ea"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "strict-template-scopes-4427/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "strict-template-scopes-4427/v-for-alias.App.vue.txt",
+          "sha256": "d9942c7adaf0146588334ee6d78532b1aa4f8368873cbb38db7b465c5843ecee"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/strict-template-scopes-4427/nested-v-for-aliases",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "strict-template-scopes-4427",
+      "case": "nested-v-for-aliases",
+      "test": "fix_history_cases::strict_template_scopes_4427::strict_template_globals_keep_template_scope_aliases",
+      "regressionCommit": "eb489b2579e9a9d92e5e7260c7eef32e2d701f56",
+      "sourceRevision": "eb489b2579e9a9d92e5e7260c7eef32e2d701f56",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "strict-template-scopes-4427/cases.json",
+        "sha256": "f021a9f0a90512f76dd873226d3334237516de60fdd64d7be354001f47ab66ea"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "strict-template-scopes-4427/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "strict-template-scopes-4427/nested-v-for.App.vue.txt",
+          "sha256": "af55ffa75febde4e06c9f3dc5906e10f755e5e7ef94078bf55d68be46ed84f3b"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/strict-template-scopes-4427/slot-props",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "strict-template-scopes-4427",
+      "case": "slot-props",
+      "test": "fix_history_cases::strict_template_scopes_4427::strict_template_globals_keep_template_scope_aliases",
+      "regressionCommit": "eb489b2579e9a9d92e5e7260c7eef32e2d701f56",
+      "sourceRevision": "eb489b2579e9a9d92e5e7260c7eef32e2d701f56",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "strict-template-scopes-4427/cases.json",
+        "sha256": "f021a9f0a90512f76dd873226d3334237516de60fdd64d7be354001f47ab66ea"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "strict-template-scopes-4427/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "strict-template-scopes-4427/slot-props.App.vue.txt",
+          "sha256": "92edea303f3c5a1388bf96cb1ae4cebb333965122bc6f62852229ace4bda9f87"
+        },
+        {
+          "file": "src/Child.vue",
+          "path": "strict-template-scopes-4427/Child.vue.txt",
+          "sha256": "40c546639ef0f4295c12e2021f109ebf11e51668615c11610d38f2ba6a00ef68"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/strict-template-scopes-4427/undeclared-names-in-template-scope",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "strict-template-scopes-4427",
+      "case": "undeclared-names-in-template-scope",
+      "test": "fix_history_cases::strict_template_scopes_4427::strict_template_globals_keep_template_scope_aliases",
+      "regressionCommit": "eb489b2579e9a9d92e5e7260c7eef32e2d701f56",
+      "sourceRevision": "eb489b2579e9a9d92e5e7260c7eef32e2d701f56",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "strict-template-scopes-4427/cases.json",
+        "sha256": "f021a9f0a90512f76dd873226d3334237516de60fdd64d7be354001f47ab66ea"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "strict-template-scopes-4427/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "strict-template-scopes-4427/undeclared.App.vue.txt",
+          "sha256": "c4e3e256cc97cc030d08b4ac750fd6204c9ec491981899e472f94b1b25f82404"
         }
       ],
       "dialectCoverage": {

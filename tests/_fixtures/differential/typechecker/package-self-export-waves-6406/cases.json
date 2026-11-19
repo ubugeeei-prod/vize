@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 6406,
+  "regressionCommit": "3a2fd80a314ae1c644af30bed1419855b2133c1e",
+  "sourceRevision": "3a2fd80a314ae1c644af30bed1419855b2133c1e",
+  "checkerOptions": {
+    "packageRoutes": [
+      {
+        "importer": "src/App.vue",
+        "specifier": "@demo/kit"
+      }
+    ],
+    "workspaceLinks": [
+      {
+        "package": "packages/kit",
+        "link": "node_modules/@demo/kit"
+      }
+    ]
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "self-export-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "package.json",
+          "source": "package.json.txt"
+        },
+        {
+          "file": "packages/kit/package.json",
+          "source": "kit.package.json.txt"
+        },
+        {
+          "file": "packages/kit/src/index.ts",
+          "source": "kit.index.ts.txt"
+        },
+        {
+          "file": "packages/kit/src/button.ts",
+          "source": "kit.button.ts.txt"
+        },
+        {
+          "file": "packages/kit/src/tokens.ts",
+          "source": "kit.tokens.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "self-export-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "package.json",
+          "source": "package.json.txt"
+        },
+        {
+          "file": "packages/kit/package.json",
+          "source": "kit.package.json.txt"
+        },
+        {
+          "file": "packages/kit/src/index.ts",
+          "source": "kit.index.ts.txt"
+        },
+        {
+          "file": "packages/kit/src/button.ts",
+          "source": "kit.button.ts.txt"
+        },
+        {
+          "file": "packages/kit/src/tokens.ts",
+          "source": "kit.tokens.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 42,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}
