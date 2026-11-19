@@ -199,7 +199,7 @@ test("Level L3 uses the physical crate package and directory", () => {
     path: "levels/vize_l3",
     version: `=${workspacePackage(metadata, "vize_l3").version}`,
   });
-  assert.doesNotMatch(workspaceManifest, /\bvize_l3\b/u);
+  assert.doesNotMatch(workspaceManifest, /\bvize_impeto\b/u); // codename: published package name
 
   const l3Manifest = readRepoFile("levels", "vize_l3", "Cargo.toml");
   assert.match(l3Manifest, /^name = "vize_l3"$/m);

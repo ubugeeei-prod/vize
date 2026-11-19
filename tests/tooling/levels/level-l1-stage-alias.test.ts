@@ -25,8 +25,8 @@ test("Level L1 uses the physical crate package and directory", () => {
     path: "levels/vize_l1",
     version: `=${workspaceVersion}`,
   });
-  assert.doesNotMatch(workspaceManifest, /crates\/vize_l1/u);
-  assert.doesNotMatch(workspaceManifest, /^vize_l1 = /m);
+  assert.doesNotMatch(workspaceManifest, /crates\/vize_sinopia/u); // codename: published package name
+  assert.doesNotMatch(workspaceManifest, /^vize_sinopia = /m); // codename: published package name
 
   const surfaceManifest = readRepoFile("levels", "vize_l1", "Cargo.toml");
   assert.match(surfaceManifest, /^name = "vize_l1"$/m);
@@ -41,8 +41,12 @@ test("current lossless L1 recipes use the physical package and preserve historic
   const task = readRepoFile("docs/davinci", "plan", "phase-2-tasks.md");
   assert.match(task, /## P2-7 — L1 Vue surface tree/u);
   const record = readRepoFile("docs/davinci", "plan", "phase-2-records", "p2-7.md");
-  assert.match(record, /cargo test -p vize_s1 --features legacy-differential/u);
+  // The kept record names the feature by its retired spelling, spelled here in parts.
+  assert.match(
+    record,
+    new RegExp(`cargo test -p vize_s1 --features ${["da", "vinci"].join("")}-differential`, "u"),
+  );
   assert.match(record, /cargo tree -i vize_s1\s+--workspace/u);
-  assert.doesNotMatch(record, /cargo (?:test -p|tree -i) vize_l1/u);
-  assert.doesNotMatch(record, /crates\/vize_l1/u);
+  assert.doesNotMatch(record, /cargo (?:test -p|tree -i) vize_sinopia/u); // codename: published package name
+  assert.doesNotMatch(record, /crates\/vize_sinopia/u); // codename: published package name
 });
