@@ -390,13 +390,21 @@ fn empty_v_slot_expression_keeps_the_slot_function_parseable() {
 #[test]
 fn defaulted_v_slot_pattern_keeps_the_slot_function_parseable() {
     let code = generate(r#"<Slotty v-slot="{ editor } = {}">{{ editor }}</Slotty>"#);
-    assert!(
-        code.contains("({ editor }: $SlotPayload<") && code.contains("> = {}) {"),
-        "the inferred payload type must precede the parameter default:\n{code}"
+    let expected = concat!(
+        "  void function _slot_default_1({ editor }: $SlotPayload<",
+        "typeof __vize_slot_host_1, \"default\", ",
+        "$RegisteredSlotProvider<import(\"vue\").GlobalComponents, ",
+        "\"Slotty\", \"Slotty\", \"Slotty\">> = {}) {",
     );
-    assert!(
-        !code.contains("{ editor } = {}:"),
-        "the invalid authored-default/type order must not survive:\n{code}"
+    assert_eq!(
+        exact_line_count(&code, expected),
+        1,
+        "the inferred payload type must precede the parameter default:\n{code}",
+    );
+    assert_eq!(
+        code.matches("{ editor } = {}:").count(),
+        0,
+        "the invalid authored-default/type order must not survive:\n{code}",
     );
 
     let allocator = oxc_allocator::Allocator::default();
