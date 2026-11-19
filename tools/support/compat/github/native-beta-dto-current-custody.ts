@@ -7,7 +7,7 @@ export const watcherSuccessor = {
   after4CleanupId: "source-owned-sdk4-post-batch-cleanup-41265655424",
   after4SourcePath: "tests/tooling/support/native-beta-dto/after4-cleanup-source.ts",
   after4SourceHash: "f916ca9c4d3785dce0c1abc632743f7a3b90fc14baa7a35a5c1817cac0efbcee",
-  after4SourceRuntime: "579667bfd61db3d557175ec3a8b0b6b54efaf976bcc2ce94ec3226ba3dcd5930",
+  after4SourceRuntime: "e71d2d69342119f6c58f6082aa67209f48bc678fa23fc3e75481a7c0b165ec3a",
   after4CleanupPath: "tests/tooling/support/native-beta-dto/logical-beta4-cleanup.ts",
   after4CleanupHash: "78f7756e6f81b713c9cd65141d167a0e92180068d90357416449e9a5f7a89d40",
   after4CleanupRuntime: "3c98ed034d6e8586accd438e17fa27577d3a2ffce135faf6ab1f916e76e5375e",
