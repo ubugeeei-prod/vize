@@ -1,0 +1,81 @@
+name: Level instruction counts
+
+# TEMPORARY parity and size probe on a throwaway branch (do not merge).
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BASE_SHA: __BASE__
+  HEAD_SHA: __HEAD__
+  CARGO_INCREMENTAL: "0"
+  CARGO_BUILD_JOBS: "16"
+  RUSTUP_TOOLCHAIN: "1.100.0"
+
+jobs:
+  probe:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { path: driver, persist-credentials: false }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { path: base, ref: "${{ env.BASE_SHA }}", persist-credentials: false }
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { path: head, ref: "${{ env.HEAD_SHA }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.100.0" }
+      - uses: ./driver/.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Build
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/probe"; mkdir -p "$out"
+          for side in base head; do
+            (cd "$side" && cargo build --locked --profile ci-opt -p vize --target-dir "$RUNNER_TEMP/t-$side-thin" -q)
+            (cd "$side" && cargo build --locked --profile ci-opt -p vize --target-dir "$RUNNER_TEMP/t-$side-fat" \
+              --config 'profile.ci-opt.lto="fat"' --config 'profile.ci-opt.codegen-units=1' -q)
+          done
+          for mode in thin fat; do
+            b="$RUNNER_TEMP/t-base-$mode/ci-opt/vize"; h="$RUNNER_TEMP/t-head-$mode/ci-opt/vize"
+            echo "== $mode bytes: base $(stat -c %s "$b") head $(stat -c %s "$h")"
+            diff <(size -A "$b" | awk 'NR>2 {print $1, $2}') <(size -A "$h" | awk 'NR>2 {print $1, $2}') || true
+          done | tee "$out/size.txt"
+          rm -rf "$RUNNER_TEMP"/t-*-fat
+      - name: Output parity over every tracked .vue file
+        run: |
+          set -uo pipefail
+          out="$RUNNER_TEMP/probe"
+          cd head
+          git ls-files '*.vue' > "$out/files.txt"
+          echo "files: $(wc -l < "$out/files.txt")" | tee "$out/parity.txt"
+          for side in base head; do
+            bin="$RUNNER_TEMP/t-$side-thin/ci-opt/vize"
+            for mode in dom ssr vapor; do
+              flag=""; [ "$mode" = ssr ] && flag="--ssr"; [ "$mode" = vapor ] && flag="--vapor"
+              rm -rf "$RUNNER_TEMP/b-$side-$mode"
+              xargs -a "$out/files.txt" "$bin" build --no-config -f json $flag -o "$RUNNER_TEMP/b-$side-$mode" \
+                > "$RUNNER_TEMP/b-$side-$mode.stdout" 2> "$RUNNER_TEMP/b-$side-$mode.stderr"
+              echo "$side $mode exit $?" >> "$out/parity.txt"
+            done
+            xargs -a "$out/files.txt" "$bin" lint --no-config -f json > "$RUNNER_TEMP/l-$side.json" 2> "$RUNNER_TEMP/l-$side.stderr"
+            echo "$side lint exit $?" >> "$out/parity.txt"
+          done
+          for mode in dom ssr vapor; do
+            n=$(find "$RUNNER_TEMP/b-head-$mode" -type f | wc -l)
+            if diff -r "$RUNNER_TEMP/b-base-$mode" "$RUNNER_TEMP/b-head-$mode" > "$out/diff-$mode.txt"; then
+              echo "build $mode: $n output files byte-identical" >> "$out/parity.txt"
+            else
+              echo "build $mode: DIFFERS ($(wc -l < "$out/diff-$mode.txt") diff lines)" >> "$out/parity.txt"
+            fi
+            cmp -s "$RUNNER_TEMP/b-base-$mode.stdout" "$RUNNER_TEMP/b-head-$mode.stdout" && echo "build $mode stdout identical" >> "$out/parity.txt" || echo "build $mode stdout DIFFERS" >> "$out/parity.txt"
+            cmp -s "$RUNNER_TEMP/b-base-$mode.stderr" "$RUNNER_TEMP/b-head-$mode.stderr" && echo "build $mode stderr identical" >> "$out/parity.txt" || echo "build $mode stderr DIFFERS" >> "$out/parity.txt"
+          done
+          echo "lint json bytes: base $(stat -c %s "$RUNNER_TEMP/l-base.json") head $(stat -c %s "$RUNNER_TEMP/l-head.json")" >> "$out/parity.txt"
+          cmp -s "$RUNNER_TEMP/l-base.json" "$RUNNER_TEMP/l-head.json" && echo "lint json identical" >> "$out/parity.txt" || echo "lint json DIFFERS" >> "$out/parity.txt"
+          cmp -s "$RUNNER_TEMP/l-base.stderr" "$RUNNER_TEMP/l-head.stderr" && echo "lint stderr identical" >> "$out/parity.txt" || echo "lint stderr DIFFERS" >> "$out/parity.txt"
+          cat "$out/parity.txt"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with: { name: parity-probe, path: "${{ runner.temp }}/probe" }

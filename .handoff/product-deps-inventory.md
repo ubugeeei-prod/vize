@@ -196,3 +196,20 @@ graph of Maestro, Canon or Patina will shift the ci-opt size**, in either
 direction, with no code change. This needs a maintainer rule before any edge
 removal can auto-merge. One option is to judge dependency-graph-only slices on
 release-profile size, or with a thin-LTO repartition A/A band.
+
+## Status at the 2026-11-19 pause
+
+- **#13375 merged** (`vize_incremental -> vize_relief`). Maestro's allowlist is now 19 on main.
+- Maintainer rulings:
+  - Binary size is judged on the shipped release profile (fat LTO, 1 CGU), which must not grow.
+    Instruction, wall, CPU and RSS stay strict.
+  - `SfcDescriptor` moves to `vize_l1::container::vue`.
+  - Canon's legacy version model goes into a level crate. It was already in `vize_l1::dialect`:
+    Canon now re-exports it from there, on branch `refactor/sfc-descriptor-l1`.
+- Branch `refactor/sfc-descriptor-l1` (no PR yet) moves the descriptor and drops
+  `vize_incremental -> vize_croquis`. Its state, its in-flight probe 44492961984 and its next steps
+  are in `.handoff/refactor-sfc-descriptor-l1.md` on that branch.
+- Next after that branch: the Musea `defineArt` fact in a new file under
+  `vize_l2/src/framework/vue/` (lane A owns the directory), then drop `vize_musea -> vize_croquis`.
+- Measurement helpers: `iccmp.py` and `cgdiff.py` (callgrind self-cost diff) are committed beside
+  this file under `.handoff/tools/`.
