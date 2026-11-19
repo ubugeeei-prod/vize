@@ -178,7 +178,7 @@ const fixture = new URL("tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/",
 const workflow = parse(
   fs.readFileSync(new URL(".github/workflows/nuxt3-module-build.yml", root), "utf8"),
 ) as {
-  on: { pull_request: { paths: string[] }; push: { paths: string[] } };
+  on: { pull_request?: unknown; push: { paths: string[] } };
   jobs: Record<string, { "runs-on": string; "timeout-minutes": number; steps: Step[] }>;
 };
 const job = workflow.jobs["nuxt3-module-build"];
@@ -285,7 +285,9 @@ void test("the existing source job appends development qualification after produ
   assert.equal(artifact.if, "always()");
   assert.ok(artifact.with?.path?.includes("${{ runner.temp }}/nuxt5-dev-runtime-proof"));
   assert.ok(job.steps.indexOf(artifact) > job.steps.indexOf(development));
-  for (const trigger of [workflow.on.pull_request, workflow.on.push]) {
+  // #6830: main runs this lane per commit; merge candidates call it.
+  assert.equal(workflow.on.pull_request, undefined);
+  for (const trigger of [workflow.on.push]) {
     for (const file of [
       "tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/app/app.vue",
       "tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/modules/runtime/stylesheet-observer.nitro3.ts",
