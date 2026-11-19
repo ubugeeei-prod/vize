@@ -1,6 +1,6 @@
 //! Original selected-template authority retained through the sole SSR walk.
 
-use super::{SsrFileAnalysis, SsrFacts};
+use super::{SsrFacts, SsrFileAnalysis};
 use crate::decision::{DecisionBuildError, DecisionTables};
 use vize_l0::Span;
 use vize_l2::{
@@ -103,7 +103,7 @@ pub fn build_template_ssr_decisions<'owner, 'arena>(
     let file = view.file().ok_or(SsrTemplateBuildError::Decision(
         DecisionBuildError::IncompleteFile,
     ))?;
-    let analysis =
-        super::file::build_original_file_decisions(file).map_err(SsrTemplateBuildError::Decision)?;
+    let analysis = super::file::build_original_file_decisions(file)
+        .map_err(SsrTemplateBuildError::Decision)?;
     Ok(TemplateSsrAnalysis { view, analysis })
 }

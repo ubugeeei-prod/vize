@@ -312,8 +312,7 @@ mod tests {
             record.input().operand().syntax().expression().unwrap() as *const _
         );
         assert_eq!(program, setup.program().program().body.as_ptr());
-        let rebuilt =
-            crate::decision::template::build_selected_setup_dom_decisions(setup).unwrap();
+        let rebuilt = crate::decision::template::build_selected_setup_dom_decisions(setup).unwrap();
         assert!(rebuilt.dom().unwrap().unsupported().is_empty());
     }
 }

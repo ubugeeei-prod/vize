@@ -1,6 +1,6 @@
 //! Genuine original styled-template custody through the same sole SSR walk.
 
-use super::{SsrTemplateBuildError, SsrFileAnalysis, SsrFacts};
+use super::{SsrFacts, SsrFileAnalysis, SsrTemplateBuildError};
 use crate::decision::DecisionTables;
 use vize_l2::{
     artifact::Artifact,

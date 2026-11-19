@@ -50,7 +50,7 @@ fn legacy<'a>(
         }
     }
     let options = ParserOptions {
-        is_platform_tag: Some(is_platform_tag),
+        is_native_tag: Some(is_platform_tag),
         html_tree_construction,
         ..ParserOptions::default()
     };

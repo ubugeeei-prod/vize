@@ -1,7 +1,7 @@
 //! SSR reads retain the normal original setup and its completed template File.
 
-use super::{SsrTemplateBuildError, SsrFacts};
-use crate::decision::{DecisionTables, DecisionAnalysis, build};
+use super::{SsrFacts, SsrTemplateBuildError};
+use crate::decision::{DecisionAnalysis, DecisionTables, build};
 use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::Artifact,

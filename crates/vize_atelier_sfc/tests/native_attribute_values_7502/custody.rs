@@ -10,8 +10,8 @@ use vize_l2::{
     walk::NodeRef,
 };
 use vize_l3::decision::{
-    OriginalAttributeFacts, template::build_template_dom_decisions,
-    ssr::build_template_ssr_decisions, vapor::build_template_vapor_decisions,
+    OriginalAttributeFacts, ssr::build_template_ssr_decisions,
+    template::build_template_dom_decisions, vapor::build_template_vapor_decisions,
 };
 
 pub fn span(span: Span) -> Value {

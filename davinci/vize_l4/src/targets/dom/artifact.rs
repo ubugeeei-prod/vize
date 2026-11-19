@@ -105,6 +105,7 @@ mod slot_root;
 mod slots;
 mod static_cache;
 mod style;
+mod style_carrier;
 mod tpl;
 mod transform_expr;
 mod vfor;
@@ -114,7 +115,6 @@ mod vnode;
 mod vnode_children;
 mod vnode_static;
 mod vtext;
-mod style_carrier;
 
 use alloc::vec::Vec as StdVec;
 use vize_l0::String;

@@ -8,7 +8,7 @@ use vize_l2::{expr::ExprRef, resolution::Occurrence};
 use vize_l3::decision::{
     dom::{
         DomFacts,
-        vue::{VueRenderAnalysis, VueReadKind, VueRenderExpression},
+        vue::{VueReadKind, VueRenderAnalysis, VueRenderExpression},
     },
     template::SelectedSetupDomAnalysis,
 };

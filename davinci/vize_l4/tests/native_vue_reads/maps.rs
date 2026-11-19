@@ -1,5 +1,5 @@
 use vize_l1_to_l2::native_file::NativeTemplateObservation;
-use vize_l3::decision::dom::vue::{VueRenderAnalysis, VueReadKind};
+use vize_l3::decision::dom::vue::{VueReadKind, VueRenderAnalysis};
 use vize_l4::write::document::EmitDocument;
 
 pub fn check(

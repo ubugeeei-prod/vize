@@ -126,9 +126,8 @@ fn original_modern_literals_keep_complete_module_map_and_projection_custody()
             original.selected().component().block().source(),
             field(&fixture, "template")?,
         )?;
-        let analysis =
-            build_template_dom_decisions(original.view().map_err(|_| "completed view")?)
-                .map_err(|_| "sole L3 visit")?;
+        let analysis = build_template_dom_decisions(original.view().map_err(|_| "completed view")?)
+            .map_err(|_| "sole L3 visit")?;
         let recorded = assemble_template(
             emit_template::<Recorded>(&analysis).map_err(|_| "original recorded entry")?,
             vocabulary(Runtime::VueDom),

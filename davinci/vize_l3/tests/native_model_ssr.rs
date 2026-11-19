@@ -37,8 +37,8 @@ fn seven_original_models_retain_write_identity_without_becoming_generic_reads() 
         let setup = admitted.setup();
         let file = setup.file();
         let provenance = file.artifact().provenance().to_vec();
-        let analysis = build_selected_setup_ssr_decisions(setup)
-            .map_err(|error| format!("{error:?}"))?;
+        let analysis =
+            build_selected_setup_ssr_decisions(setup).map_err(|error| format!("{error:?}"))?;
         let facts = analysis.ssr().ok_or("SSR decisions")?;
         assert!(
             facts.unsupported().is_empty(),

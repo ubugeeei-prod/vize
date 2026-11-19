@@ -49,7 +49,7 @@ fn dom_options() -> DomCompilerOptions {
 fn dom_parser_options() -> ParserOptions {
     ParserOptions {
         is_void_tag: vize_l0::is_void_tag,
-        is_platform_tag: Some(vize_l0::is_platform_tag),
+        is_native_tag: Some(vize_l0::is_platform_tag),
         comments: true,
         ..Default::default()
     }

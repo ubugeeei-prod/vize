@@ -1,6 +1,6 @@
 use vize_l0::{Span, String, cstr};
 use vize_l2::file::FileArtifact;
-use vize_l3::jsx::{JsxDecisionKind, JsxAnalysis};
+use vize_l3::jsx::{JsxAnalysis, JsxDecisionKind};
 
 use super::{JsxEmitError, JsxEmitErrorKind};
 use crate::runtime::{Helper, Runtime, vocabulary};

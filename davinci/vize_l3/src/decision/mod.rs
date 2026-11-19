@@ -20,8 +20,8 @@ pub mod dom;
 mod model;
 pub mod policy;
 pub mod ssr;
-pub mod vapor;
 pub mod template;
+pub mod vapor;
 
 pub use build::{DecisionBuildError, build_decisions, build_dom_decisions};
 pub use dom::{FileAnalysis, build_dom_file_decisions};

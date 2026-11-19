@@ -1,6 +1,6 @@
 //! Genuine original template completion retains its lower owner through L3.
 
-use super::{VaporFileAnalysis, VaporFacts};
+use super::{VaporFacts, VaporFileAnalysis};
 use crate::decision::{DecisionBuildError, DecisionTables};
 use vize_l2::{
     artifact::Artifact,

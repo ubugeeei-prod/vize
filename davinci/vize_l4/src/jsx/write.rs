@@ -1,6 +1,6 @@
 use vize_l0::Span;
 use vize_l2::lang::js::JsxNode;
-use vize_l3::jsx::{JsxDecisionKind as Kind, JsxAnalysis};
+use vize_l3::jsx::{JsxAnalysis, JsxDecisionKind as Kind};
 
 use super::helpers::SelectedHelpers;
 use super::{JsxEmitError, JsxEmitErrorKind, invalid, kind};

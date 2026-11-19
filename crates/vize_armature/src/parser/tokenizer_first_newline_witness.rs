@@ -55,7 +55,7 @@ fn default_fixture_options(options: &ParserOptions) -> bool {
         whitespace,
         delimiters,
         is_pre_tag,
-        is_platform_tag,
+        is_native_tag,
         is_custom_element,
         custom_renderer,
         is_void_tag,
@@ -72,7 +72,7 @@ fn default_fixture_options(options: &ParserOptions) -> bool {
         && *whitespace == WhitespaceStrategy::Condense
         && delimiters == &defaults.delimiters
         && core::ptr::fn_addr_eq(*is_pre_tag, defaults.is_pre_tag)
-        && is_platform_tag.is_none()
+        && is_native_tag.is_none()
         && is_custom_element.is_none()
         && !*custom_renderer
         && core::ptr::fn_addr_eq(*is_void_tag, defaults.is_void_tag)

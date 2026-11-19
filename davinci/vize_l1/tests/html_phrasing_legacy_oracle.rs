@@ -114,7 +114,7 @@ fn phrasing_packets_match_the_shipped_document_parser() {
         let source = case["source"].as_str().unwrap();
         let allocator = Allocator::default();
         let options = ParserOptions {
-            is_platform_tag: Some(is_platform_tag),
+            is_native_tag: Some(is_platform_tag),
             whitespace: WhitespaceStrategy::Preserve,
             ..ParserOptions::default()
         };

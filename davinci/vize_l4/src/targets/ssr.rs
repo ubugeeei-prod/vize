@@ -6,8 +6,8 @@
 
 use vize_l0::{Span, id::NodeId};
 use vize_l3::decision::ssr::{
-    SelectedSetupSsrAnalysis, SsrFileAnalysis, TemplateScopedSsrAnalysis,
-    TemplateSsrAnalysis, SsrFacts, SsrPart, SsrUnsupported,
+    SelectedSetupSsrAnalysis, SsrFacts, SsrFileAnalysis, SsrPart, SsrUnsupported,
+    TemplateScopedSsrAnalysis, TemplateSsrAnalysis,
 };
 use vize_l3::decision::{DecisionAnalysis, policy::TargetPolicy};
 
@@ -53,9 +53,7 @@ pub fn emit<L: LinkSink>(analysis: &DecisionAnalysis<'_, '_>) -> Result<Writer<L
 
 /// Consume only a complete SSR file view and retain its diagnostic owner.
 /// Original native SFC custody and runtime expression exposure remain separate.
-pub fn emit_file<L: LinkSink>(
-    analysis: &SsrFileAnalysis<'_, '_>,
-) -> Result<Writer<L>, SsrError> {
+pub fn emit_file<L: LinkSink>(analysis: &SsrFileAnalysis<'_, '_>) -> Result<Writer<L>, SsrError> {
     encode(analysis.artifact().source(), analysis.ssr(), None, None)
 }
 

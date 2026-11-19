@@ -8,7 +8,7 @@ use vize_l1::{
 };
 use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
 use vize_l3::decision::ssr::{
-    SsrTemplateBuildError, SsrPart, SsrUnsupported, build_template_ssr_decisions,
+    SsrPart, SsrTemplateBuildError, SsrUnsupported, build_template_ssr_decisions,
 };
 
 #[expect(

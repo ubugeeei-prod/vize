@@ -92,8 +92,7 @@ fn caught_enter_unwind_keeps_normal_program_collection_params_and_alias_scope() 
     assert_ne!(alias.id(), collection.id());
     assert!(setup.binding(alias).is_err());
     assert!(setup.binding(collection).is_ok());
-    let complete =
-        crate::decision::template::build_selected_setup_dom_decisions(setup).unwrap();
+    let complete = crate::decision::template::build_selected_setup_dom_decisions(setup).unwrap();
     let dom = complete.dom().unwrap();
     assert!(dom.unsupported().is_empty());
     assert!(dom.node(original.id().node()).unwrap().block_eligible);

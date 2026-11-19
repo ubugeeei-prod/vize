@@ -7,8 +7,8 @@ use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::file::{DeclarationKind, InitializerKind};
 use vize_l3::decision::{
     dom::{ValueKind, vue::VueReadKind},
-    template::build_selected_setup_dom_decisions,
     ssr::{SsrPart, SsrSetupReadKind, build_selected_setup_ssr_decisions},
+    template::build_selected_setup_dom_decisions,
 };
 
 #[test]

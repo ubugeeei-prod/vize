@@ -34,7 +34,7 @@ fn raw_slot_numeric_values_keep_the_original_implicit_and_explicit_coercion() {
             source,
             ParserOptions {
                 dialect: VueVersion::V1,
-                is_platform_tag: Some(vize_l0::is_platform_tag),
+                is_native_tag: Some(vize_l0::is_platform_tag),
                 ..Default::default()
             },
         );

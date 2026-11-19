@@ -91,7 +91,7 @@ impl<'a> Parser<'a> {
             if tag.chars().next().is_some_and(|c| c.is_uppercase()) || tag.contains('-') {
                 return true;
             }
-        } else if let Some(is_native) = self.options.is_platform_tag {
+        } else if let Some(is_native) = self.options.is_native_tag {
             if !is_native(tag) {
                 return true;
             }
@@ -101,7 +101,7 @@ impl<'a> Parser<'a> {
 
         // The dynamic component is Vue syntax in every parser entry point.
         // Compiler policies additionally resolve authored static Vue casts.
-        (self.options.is_platform_tag.is_some() || tag == "component")
+        (self.options.is_native_tag.is_some() || tag == "component")
             && !self.in_v_pre
             && !element.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre"))
             && (tag == "component"

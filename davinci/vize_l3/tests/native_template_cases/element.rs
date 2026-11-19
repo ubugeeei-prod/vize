@@ -17,8 +17,8 @@ fn selected_nested_html_retains_exact_ops_spans_decisions_and_dependency_order()
 -> Result<(), &'static str> {
     let arena = Allocator::default();
     let output = completed(&arena, SOURCE)?;
-    let analysis = build_template_dom_decisions(output.view().map_err(|_| "view")?)
-        .map_err(|_| "analysis")?;
+    let analysis =
+        build_template_dom_decisions(output.view().map_err(|_| "view")?).map_err(|_| "analysis")?;
     let file = output.file().ok_or("original File")?;
     check(core::ptr::eq(analysis.owner(), &output))?;
     check(core::ptr::eq(analysis.file(), file))?;

@@ -1,7 +1,7 @@
 //! Genuine setup membership and reads, without claiming template custody.
 
 use super::{DomFacts, LiteralExpressions, ValueKind};
-use crate::decision::{DecisionBuildError, DecisionTables, DecisionAnalysis, TargetPolicy, build};
+use crate::decision::{DecisionAnalysis, DecisionBuildError, DecisionTables, TargetPolicy, build};
 use alloc::vec::Vec;
 use vize_l0::id::NodeId;
 use vize_l2::{
@@ -162,8 +162,7 @@ impl<'owner, 'arena> VueRenderAnalysis<'_, 'owner, '_, '_, 'arena> {
 /// A raw File, role, binding list or caller access policy cannot select this path.
 pub fn build_vue_render_decisions<'view, 'owner, 'descriptor, 'program, 'arena>(
     exposure: &'view VueExposure<'owner, 'descriptor, 'program, 'arena>,
-) -> Result<VueRenderAnalysis<'view, 'owner, 'descriptor, 'program, 'arena>, DecisionBuildError>
-{
+) -> Result<VueRenderAnalysis<'view, 'owner, 'descriptor, 'program, 'arena>, DecisionBuildError> {
     let file = exposure.file();
     if !file.is_complete() {
         return Err(DecisionBuildError::IncompleteFile);

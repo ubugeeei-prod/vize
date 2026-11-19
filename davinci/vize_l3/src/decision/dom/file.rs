@@ -1,7 +1,7 @@
 //! Sole-file analysis retains genuine scopes without assigning runtime access.
 
 use super::{DomFacts, LiteralExpressions, vue::policy::NoReads};
-use crate::decision::{DecisionBuildError, DecisionTables, DecisionAnalysis, TargetPolicy, build};
+use crate::decision::{DecisionAnalysis, DecisionBuildError, DecisionTables, TargetPolicy, build};
 use vize_l2::{
     artifact::Artifact,
     file::{FileArtifact, FileResolution, ScopeId},

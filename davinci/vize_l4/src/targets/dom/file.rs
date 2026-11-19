@@ -27,9 +27,7 @@ use crate::write::{LinkSink, Writer};
 /// use vize_l4::{targets::dom::emit_file, write::NoLinks};
 /// fn substitute(analysis: &DecisionAnalysis<'_, '_>) { let _ = emit_file::<NoLinks>(analysis); }
 /// ```
-pub fn emit_file<L: LinkSink>(
-    analysis: &FileAnalysis<'_, '_>,
-) -> Result<Writer<L>, DomError> {
+pub fn emit_file<L: LinkSink>(analysis: &FileAnalysis<'_, '_>) -> Result<Writer<L>, DomError> {
     encode(
         analysis.artifact().source(),
         analysis.policy(),

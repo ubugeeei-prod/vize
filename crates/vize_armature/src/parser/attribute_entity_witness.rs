@@ -190,7 +190,7 @@ fn assert_original_options(options: &ParserOptions, expected_in_tag_comments: bo
         whitespace,
         delimiters,
         is_pre_tag,
-        is_platform_tag,
+        is_native_tag,
         is_custom_element,
         custom_renderer,
         is_void_tag,
@@ -207,7 +207,7 @@ fn assert_original_options(options: &ParserOptions, expected_in_tag_comments: bo
     assert_eq!(*whitespace, defaults.whitespace);
     assert_eq!(delimiters, &defaults.delimiters);
     assert!(core::ptr::fn_addr_eq(*is_pre_tag, defaults.is_pre_tag));
-    assert!(is_platform_tag.is_none());
+    assert!(is_native_tag.is_none());
     assert!(is_custom_element.is_none());
     assert!(!*custom_renderer);
     assert!(core::ptr::fn_addr_eq(*is_void_tag, defaults.is_void_tag));

@@ -171,8 +171,7 @@ impl fmt::Debug for TemplateDomOutputFailure<'_, '_> {
 /// ```
 pub fn emit_template_output<'owner, 'arena>(
     analysis: TemplateDomAnalysis<'owner, 'arena>,
-) -> Result<TemplateDomOutput<'owner, 'arena>, TemplateDomOutputFailure<'owner, 'arena>>
-{
+) -> Result<TemplateDomOutput<'owner, 'arena>, TemplateDomOutputFailure<'owner, 'arena>> {
     match record(&analysis) {
         Ok((block, document, helpers)) => Ok(TemplateDomOutput {
             analysis,

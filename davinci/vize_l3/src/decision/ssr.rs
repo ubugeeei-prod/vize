@@ -13,18 +13,18 @@ mod file;
 mod model;
 mod scoped;
 mod setup;
+mod template;
 #[cfg(test)]
 mod tests;
-mod template;
 pub use file::{SsrFileAnalysis, build_ssr_file_decisions};
 pub use model::SsrFileModel;
-pub use template::{SsrTemplateBuildError, TemplateSsrAnalysis, build_template_ssr_decisions};
 pub use scoped::{TemplateScopedSsrAnalysis, build_scoped_template_ssr_decisions};
 use setup::SsrSetupAccess;
 pub use setup::{
     SelectedSetupSsrAnalysis, SsrSetupExpression, SsrSetupRead, SsrSetupReadKind,
     build_selected_setup_ssr_decisions,
 };
+pub use template::{SsrTemplateBuildError, TemplateSsrAnalysis, build_template_ssr_decisions};
 
 /// A whole SSR view retains unsupported locations instead of partial output.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

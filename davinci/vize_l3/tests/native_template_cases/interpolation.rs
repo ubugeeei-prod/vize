@@ -30,9 +30,8 @@ fn original_root_literal_retains_file_input_and_resolution_in_the_existing_sole_
         walk.complete().map_err(|_| "normal original root end")?;
     }
     let output = core::hint::black_box(original.finish());
-    let analysis =
-        build_template_dom_decisions(output.view().map_err(|_| "genuine native view")?)
-            .map_err(|_| "existing sole L3 walk")?;
+    let analysis = build_template_dom_decisions(output.view().map_err(|_| "genuine native view")?)
+        .map_err(|_| "existing sole L3 walk")?;
     check(core::ptr::eq(analysis.owner(), &output))?;
     let file = analysis.file();
     check(core::ptr::eq(file, output.file().ok_or("same File")?))?;

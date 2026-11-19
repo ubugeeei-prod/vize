@@ -139,8 +139,7 @@ pub(super) fn capture(
             && target.same_owner(binding),
         "{id}: primitive target value policy and exact original named coordinates"
     );
-    let analysis =
-        build_selected_setup_dom_decisions(setup).map_err(|error| cstr!("{error:?}"))?;
+    let analysis = build_selected_setup_dom_decisions(setup).map_err(|error| cstr!("{error:?}"))?;
     let dom = analysis.dom().ok_or("DOM decisions")?;
     let model_row = dom
         .file_model(node)

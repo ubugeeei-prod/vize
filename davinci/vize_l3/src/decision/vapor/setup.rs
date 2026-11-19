@@ -1,7 +1,7 @@
 //! Genuine original setup custody specializes Vapor's one canonical walk.
 
 use super::VaporFacts;
-use crate::decision::{DecisionBuildError, DecisionTables, DecisionAnalysis, build};
+use crate::decision::{DecisionAnalysis, DecisionBuildError, DecisionTables, build};
 use vize_l2::{
     artifact::Artifact,
     file::FileArtifact,

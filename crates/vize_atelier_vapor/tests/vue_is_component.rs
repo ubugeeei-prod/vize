@@ -182,7 +182,7 @@ fn custom_renderer_classifies_static_casts_without_promoting_unknown_native_tags
             source,
             vize_atelier_core::options::ParserOptions {
                 custom_renderer: true,
-                is_platform_tag: Some(vize_l0::is_platform_tag),
+                is_native_tag: Some(vize_l0::is_platform_tag),
                 ..Default::default()
             },
         );

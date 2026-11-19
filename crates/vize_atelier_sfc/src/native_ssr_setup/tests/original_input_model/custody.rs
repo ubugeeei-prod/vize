@@ -138,8 +138,7 @@ pub(super) fn capture(
             && target.same_owner(binding),
         "{id}: primitive target value policy and exact original named coordinates"
     );
-    let analysis =
-        build_selected_setup_ssr_decisions(setup).map_err(|error| cstr!("{error:?}"))?;
+    let analysis = build_selected_setup_ssr_decisions(setup).map_err(|error| cstr!("{error:?}"))?;
     let facts = analysis.ssr().ok_or("SSR decisions")?;
     let [
         SsrPart::Open {

@@ -183,7 +183,7 @@ fn original_class_retains_complete_rows_for_all_admitted_targets() -> Test {
     let arena = Allocator::default();
     let source = r#"<template><div class="a&amp;amp;b">x</div></template>"#;
     let original = completed(&arena, source)?;
-    let dom = native::build_template_dom_decisions(original.view().map_err(|_| "view")?)
+    let dom = template::build_template_dom_decisions(original.view().map_err(|_| "view")?)
         .map_err(|_| "DOM original rows")?;
     check(dom.dom().ok_or("DOM facts")?.unsupported().is_empty())?;
     check(dom.original_attributes().ok_or("original row")?.len() == 1)?;

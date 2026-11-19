@@ -202,7 +202,7 @@ pub fn compile_vdom(input: &str, options: &TestOptions) -> String {
 
     let parser_opts = ParserOptions {
         is_void_tag: vize_l0::is_void_tag,
-        is_platform_tag: Some(vize_l0::is_platform_tag),
+        is_native_tag: Some(vize_l0::is_platform_tag),
         is_pre_tag: |tag| tag == "pre",
         get_namespace: get_dom_namespace,
         ..Default::default()

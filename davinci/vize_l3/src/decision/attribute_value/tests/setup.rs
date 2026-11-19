@@ -22,7 +22,7 @@ fn every_actual_setup_target_preserves_its_own_context_and_original_value_cursor
             let setup = selected.setup();
             let file = setup.file();
             let actual = element(file, 0)?;
-            let dom = native::build_selected_setup_dom_decisions(setup)
+            let dom = template::build_selected_setup_dom_decisions(setup)
                 .map_err(|_| "actual DOM setup context")?;
             let ssr = ssr::build_selected_setup_ssr_decisions(setup)
                 .map_err(|_| "actual SSR setup context")?;

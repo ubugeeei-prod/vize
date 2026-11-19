@@ -47,8 +47,8 @@ struct LiteralContextDemand;
 impl FactConsumer for LiteralContextDemand {
     const NAME: &'static str = "native-textarea-literal-context";
     const DEMAND: Demand = Demand::NONE
-        .with(ids::NATIVE_LINT_HEADERS)
-        .with(ids::NATIVE_LINT_ATTRIBUTES);
+        .with(ids::ORIGINAL_LINT_HEADERS)
+        .with(ids::ORIGINAL_LINT_ATTRIBUTES);
 }
 
 impl NativeChildFacts<'_, '_, '_> {

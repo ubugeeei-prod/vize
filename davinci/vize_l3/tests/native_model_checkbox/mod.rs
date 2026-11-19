@@ -12,8 +12,8 @@ use vize_l2::{
     resolution::Usage,
 };
 use vize_l3::decision::{
-    template::build_selected_setup_dom_decisions,
     ssr::build_selected_setup_ssr_decisions,
+    template::build_selected_setup_dom_decisions,
     vapor::{VaporPart, build_selected_setup_vapor_decisions},
 };
 
@@ -90,8 +90,8 @@ fn original_checkbox_type_and_real_mutable_binding_reach_all_three_consumers() -
             value.attribute().ok_or("actual slot")?,
             attribute
         ));
-        let dom = build_selected_setup_dom_decisions(setup)
-            .map_err(|error| format!("{error:?}"))?;
+        let dom =
+            build_selected_setup_dom_decisions(setup).map_err(|error| format!("{error:?}"))?;
         let dom_facts = dom.dom().ok_or("DOM facts")?;
         assert!(
             dom_facts.unsupported().is_empty(),
@@ -99,8 +99,8 @@ fn original_checkbox_type_and_real_mutable_binding_reach_all_three_consumers() -
             dom_facts.unsupported()
         );
         let dom_model = dom_facts.file_model(node).ok_or("DOM Model")?;
-        let ssr = build_selected_setup_ssr_decisions(setup)
-            .map_err(|error| format!("{error:?}"))?;
+        let ssr =
+            build_selected_setup_ssr_decisions(setup).map_err(|error| format!("{error:?}"))?;
         assert!(ssr.ssr().ok_or("SSR facts")?.unsupported().is_empty());
         let ssr_model = ssr
             .model(element_node, element)
@@ -112,8 +112,8 @@ fn original_checkbox_type_and_real_mutable_binding_reach_all_three_consumers() -
                 .reads()
                 .is_empty()
         );
-        let vapor = build_selected_setup_vapor_decisions(setup)
-            .map_err(|error| format!("{error:?}"))?;
+        let vapor =
+            build_selected_setup_vapor_decisions(setup).map_err(|error| format!("{error:?}"))?;
         let facts = vapor.vapor().ok_or("Vapor facts")?;
         assert!(facts.unsupported().is_empty(), "{:?}", facts.unsupported());
         let [root] = facts.roots() else {

@@ -7,9 +7,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
-use vize_l3::decision::ssr::{
-    SsrTemplateBuildError, SsrUnsupported, build_template_ssr_decisions,
-};
+use vize_l3::decision::ssr::{SsrTemplateBuildError, SsrUnsupported, build_template_ssr_decisions};
 use vize_l4::{
     module::{ModuleParts, RenderFunctionName, assemble, assemble_template},
     runtime::{Runtime, vocabulary},

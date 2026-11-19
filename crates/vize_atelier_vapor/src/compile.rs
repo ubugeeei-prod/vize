@@ -94,7 +94,7 @@ use inner::{compile_vapor_inner, compile_vapor_inner_scoped, compile_vapor_inner
 pub(crate) fn parser_options(options: &VaporCompilerOptions) -> ParserOptions {
     ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
-        is_platform_tag: Some(vize_carton::is_platform_tag),
+        is_native_tag: Some(vize_carton::is_platform_tag),
         custom_renderer: options.custom_renderer,
         experimental_in_tag_comments: options.experimental_in_tag_comments,
         is_pre_tag: |tag| tag == "pre",

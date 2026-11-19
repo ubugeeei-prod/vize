@@ -1,7 +1,7 @@
 //! Same original setup/template owner specializes the sole canonical DOM walk.
 
 use crate::decision::{
-    DecisionBuildError, DecisionTables, DecisionAnalysis, build,
+    DecisionAnalysis, DecisionBuildError, DecisionTables, build,
     dom::{
         DomFacts, LiteralExpressions,
         vue::{VueReadKind, VueRenderExpression, policy::FileReads},

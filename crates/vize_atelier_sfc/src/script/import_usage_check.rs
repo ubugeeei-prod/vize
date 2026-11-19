@@ -9,8 +9,8 @@ use vize_atelier_core::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
 use vize_carton::{
-    FxHashSet, String, ToCompactString, camelize, capitalize, is_builtin_directive, is_platform_tag,
-    is_simple_identifier,
+    FxHashSet, String, ToCompactString, camelize, capitalize, is_builtin_directive,
+    is_platform_tag, is_simple_identifier,
 };
 use vize_croquis::builtins::is_builtin_component;
 

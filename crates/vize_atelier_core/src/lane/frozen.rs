@@ -116,7 +116,7 @@ mod tests {
             &arena,
             source,
             crate::options::ParserOptions {
-                is_platform_tag: Some(vize_l0::is_platform_tag),
+                is_native_tag: Some(vize_l0::is_platform_tag),
                 ..Default::default()
             },
         )

@@ -7,7 +7,7 @@ use vize_l0::Allocator;
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind as LowerKind;
 use vize_l2::lang::js::NativeScopedTemplateIssueKind;
 use vize_l3::decision::ssr::{
-    SsrTemplateBuildError, SsrPart, build_scoped_template_ssr_decisions,
+    SsrPart, SsrTemplateBuildError, build_scoped_template_ssr_decisions,
     build_template_ssr_decisions,
 };
 use vize_l4::module::AssemblyError;

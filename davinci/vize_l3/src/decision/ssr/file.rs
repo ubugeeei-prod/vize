@@ -2,7 +2,7 @@
 
 use super::SsrFacts;
 use crate::decision::{
-    DecisionBuildError, DecisionTables, DecisionAnalysis, build_decisions, policy::TargetPolicy,
+    DecisionAnalysis, DecisionBuildError, DecisionTables, build_decisions, policy::TargetPolicy,
 };
 use vize_l2::{artifact::Artifact, file::FileArtifact};
 

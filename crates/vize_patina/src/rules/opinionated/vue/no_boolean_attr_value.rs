@@ -83,7 +83,8 @@ impl NoBooleanAttrValue {
 
     fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
         let tag = element.tag();
-        if element.is_component() || !element.is_unqualified_tag_exact(tag) || !is_platform_tag(tag) {
+        if element.is_component() || !element.is_unqualified_tag_exact(tag) || !is_platform_tag(tag)
+        {
             return;
         }
 
