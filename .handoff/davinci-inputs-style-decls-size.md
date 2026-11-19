@@ -46,3 +46,24 @@ rebased PR (onto main 9c7d4cba55) plus two perf commits:
    + A/A (`pr-performance-observation.yml --ref bench/davinci-inputs-style-lane`) and the PR
    observation. Then push to the PR branch with the tables and arm auto-merge.
 3. Delete the temp branches `bench/sd2-*`.
+
+## Update (per-site inlining, maintainer decision: no metric trade-offs)
+- Candidates pushed, all on top of `sd2-cB1` (warn + registered_sfc pin, no global hints), and
+  compile-checked. Each splits `walk_children` / `walk_attributes` / `walk_modifier_ranges` into
+  the plain public fn and an `#[inline(always)] pub(crate) fn *_inlined`. The public fn calls
+  `*_inlined`, so the walk body is unchanged. Only the three rule sites call `*_inlined`:
+  `html/no_consecutive_br`, `vue/no_deprecated_slot_attribute` and
+  `vue/no_deprecated_v_on_native_modifier`.
+  - `bench/sd2-p1` f5110f3827: all three walks.
+  - `bench/sd2-p5` 96148d57bc: p1 without the `walk_children` site.
+  - `bench/sd2-p6` 7d25172d15: p1 without the registered_sfc pin.
+- Not measured yet: the CI queue stayed at 100-150 (> 40) from 09:30 to 10:10 UTC. Dispatch when it
+  drops:
+  - `gh workflow run pr-performance-observation.yml --ref bench/davinci-style-decls-size -f shas="9c7d4cba558cf7f7dbab6d92b47f939ce1b664a3 f5110f38274f418cb9df4a2b9094cf5d561ddd48 96148d57bcb300b474319124e71d05e6f4ca0897 7d25172d15f226e36f67634ec1180e75512ffb1c"` (lint Ir lanes)
+  - `gh workflow run level-instruction-counts.yml --ref perf/pb-driver -f release=true -f roles='["base=9c7d4cba558cf7f7dbab6d92b47f939ce1b664a3","p1=f5110f38274f418cb9df4a2b9094cf5d561ddd48","p5=96148d57bcb300b474319124e71d05e6f4ca0897","p6=7d25172d15f226e36f67634ec1180e75512ffb1c"]'` (rows + release size)
+  - Markup-bench callgrind diff, now with the harness guest env (driver fixed at 71d2801bdd):
+    `gh workflow run level-instruction-counts.yml --ref bench/sd2-cgb -f shas="base=9c7d4cba558cf7f7dbab6d92b47f939ce1b664a3 cB1=4061e9b0676d350efb8e82835eb29b2c703c1e60 cB2=f8d83cb58c8cb3c7dc9dc76444bc1c8a21ffd18e"`.
+    Diff its `*.cg*.txt` with
+    `/private/tmp/claude-501/-Users-nishimura-Source-github-com-ubugeeei-prod-vize/90a0aa1d-5403-4093-b702-6ace0f463fd6/scratchpad/pb/style/cgdiff.py`
+    (it expects `<role>-<lane>.txt` names; adapt for `<role>.cg.<n>.txt`).
+- Remaining temp branches: `bench/sd2-{cB1,cB2,cg,cgb,p1,p5,p6}`.
