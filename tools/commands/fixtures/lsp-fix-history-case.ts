@@ -74,7 +74,11 @@ function loadSpec(file: string): Spec {
   const kinds = [spec.cases, spec.existing, spec.noResponse].filter(Boolean).length;
   assert.equal(kinds, 1, `${file}: exactly one of cases, existing, noResponse`);
   for (const item of spec.cases ?? [])
-    validateHistoryCase({ version: 1, commit: spec.commit, ...(item as HistoryCase) });
+    validateHistoryCase({
+      version: 1,
+      commit: spec.commit,
+      ...(item as Omit<HistoryCase, "version" | "commit">),
+    });
   if (spec.noResponse) {
     assert(spec.noResponse.reason.length > 0 && spec.noResponse.coveredBy.length > 0);
   }
@@ -109,7 +113,11 @@ async function main() {
   if (command === "print") {
     for (const spec of specs)
       for (const item of spec.cases ?? []) {
-        const data = { version: 1 as const, commit: spec.commit, ...(item as HistoryCase) };
+        const data = {
+          version: 1 as const,
+          commit: spec.commit,
+          ...(item as Omit<HistoryCase, "version" | "commit">),
+        };
         const { records, stderr } = await runHistoryCase(data, binary, { capture: true });
         console.log(`== ${item.id}\n${json(records)}`);
         if (process.env.LSP_HISTORY_STDERR) console.log(stderr);
@@ -134,7 +142,11 @@ async function main() {
     }
     const ids: string[] = [];
     for (const item of spec.cases ?? []) {
-      const data: HistoryCase = { version: 1, commit: spec.commit, ...(item as HistoryCase) };
+      const data: HistoryCase = {
+        version: 1,
+        commit: spec.commit,
+        ...(item as Omit<HistoryCase, "version" | "commit">),
+      };
       const previous = manifest.cases.find((entry) => entry.id === data.id);
       assert(!previous || previous.commit === spec.commit, `${data.id} belongs to another fix`);
       const records = await capture(data);

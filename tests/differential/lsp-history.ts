@@ -26,6 +26,7 @@ import {
   pickLabels,
   positionOf,
 } from "./lsp-history-values.ts";
+import type { LspRange } from "./lsp-history-values.ts";
 
 export { applyChange, normalize, pickLabels, positionOf };
 

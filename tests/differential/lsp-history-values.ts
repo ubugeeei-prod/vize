@@ -80,8 +80,8 @@ export function pickLabels(result: unknown, labels: string[]) {
   };
 }
 
-type LspPosition = { line: number; character: number };
-type LspRange = { start: LspPosition; end: LspPosition };
+export type LspPosition = { line: number; character: number };
+export type LspRange = { start: LspPosition; end: LspPosition };
 
 /** UTF-16 offset of an LSP position (clamped like the server's line table). */
 function offsetAt(text: string, position: LspPosition) {
