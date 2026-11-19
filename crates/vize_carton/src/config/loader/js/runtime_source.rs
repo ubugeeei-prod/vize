@@ -142,9 +142,11 @@ fn append_module(
 /// The end (after the newline) of the import statement at the start of `text`.
 fn import_end(text: &str) -> Option<usize> {
     text.find(";\n").map(|index| index + 2).or_else(|| {
-        text.strip_suffix(';')
-            .map(|_| text.len())
-            .filter(|_| !text.contains('\n'))
+        text.find(";\r\n").map(|index| index + 3).or_else(|| {
+            text.strip_suffix(';')
+                .map(|_| text.len())
+                .filter(|_| !text.contains('\n'))
+        })
     })
 }
 

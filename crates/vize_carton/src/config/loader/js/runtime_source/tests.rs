@@ -99,6 +99,16 @@ fn owned_modules_share_one_scope_and_plugin_modules_load_lazily() {
     );
 }
 
+#[test]
+fn windows_crlf_product_runtime_assembles_like_the_lf_source() {
+    let lf = super::super::VITE_RUNTIME;
+    let crlf = lf.replace('\n', "\r\n");
+    assert_eq!(
+        super::assemble(&crlf, false).unwrap().replace("\r\n", "\n"),
+        super::assemble(lf, false).unwrap()
+    );
+}
+
 fn run(script: &str) -> serde_json::Value {
     let project = tempfile::tempdir().unwrap();
     let runtime = super::super::runtime_file::NodeRuntimeFile::new(script).unwrap();
