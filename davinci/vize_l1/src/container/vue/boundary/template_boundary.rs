@@ -37,6 +37,7 @@ const BOUNDED_INTERPOLATION_SCAN_WINDOW: usize = 4096;
 /// scan for it stays here. Anything else takes [`find_nested_template_end`].
 /// Keeping that scan out of line keeps this path's registers independent of
 /// the scanner's: its code no longer moves with unrelated code layout.
+#[inline]
 pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockParseResult<'a> {
     let Some((content_end, end_pos)) =
         find_flat_template_end(search.bytes, search.content_start, search.bytes.len())
