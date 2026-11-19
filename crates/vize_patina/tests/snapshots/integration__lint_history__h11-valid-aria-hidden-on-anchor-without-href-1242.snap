@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-valid-aria-hidden-on-anchor-without-href-1242",
+    history: "84c7f8636c5c8b8c925649adfb27d0f520cd028e",
+    source: "<a aria-hidden=\"true\">decorative</a>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/no-aria-hidden-on-focusable",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-no-unsafe-template-binding-reports-event-stateme-329",
+    history: "f957ca660096160dd02f2287cb30d7dcc2ad66d9",
+    source: "<script setup lang=\"ts\">\nconst safe = () => {}\nconst anyHandler: any = () => {}\n</script>\n\n<template>\n  <button @click=\"safe(); anyHandler()\">Save</button>\n</template>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-unsafe-template-binding",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "type/no-unsafe-template-binding",
+                severity: Warning,
+                message: "Template event handler calls a value with an unsafe `any` or `unknown` type",
+                start: 128,
+                end: 138,
+                help: Some(
+                    "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "type/no-unsafe-template-binding",
+                    severity: Warning,
+                    message: "Template event handler calls a value with an unsafe `any` or `unknown` type",
+                    start: 128,
+                    end: 138,
+                    help: Some(
+                        "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

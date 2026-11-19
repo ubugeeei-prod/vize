@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-click-key-kebab-component-300",
+    history: "43524c6d1546ed6b0936b5592ae58bf1c7c82ace",
+    source: "<a-button type=\"primary\" @click=\"handleClick\">Click</a-button>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/click-events-have-key-events",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-name-casing-camel-filename-control-939",
+    history: "695e0c4777a0a3dcbbde8a2b48f6b81cc942cb6e",
+    source: "<div>Content</div>",
+    filename: "myComponent.vue",
+    entry: "template",
+    rule: "vue/component-definition-name-casing",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "myComponent.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/component-definition-name-casing",
+                severity: Warning,
+                message: "Component file name 'myComponent' should be PascalCase or kebab-case",
+                start: 0,
+                end: 0,
+                help: Some(
+                    "Rename the file to PascalCase or kebab-case:\n```\nmyComponent.vue  -> MyComponent.vue\nmy-Component.vue -> my-component.vue\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "myComponent.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/component-definition-name-casing",
+                    severity: Warning,
+                    message: "Component file name 'myComponent' should be PascalCase or kebab-case",
+                    start: 0,
+                    end: 0,
+                    help: Some(
+                        "Rename the file to PascalCase or kebab-case:\n```\nmyComponent.vue  -> MyComponent.vue\nmy-Component.vue -> my-component.vue\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

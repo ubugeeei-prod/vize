@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-handled-template-finally-chains-are-ignored-257",
+    history: "f2c345a5e7039f055235ae2786bd1b63020aea73",
+    source: "<script setup lang=\"ts\">\nasync function save(): Promise<void> {}\nfunction cleanup() {}\nfunction report(error: unknown) {\n  console.error(error)\n}\n</script>\n\n<template>\n  <button @click=\"save().catch(report).finally(cleanup)\">Save</button>\n</template>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-floating-promises",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

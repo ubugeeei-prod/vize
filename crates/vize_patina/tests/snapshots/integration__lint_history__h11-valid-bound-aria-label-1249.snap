@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-valid-bound-aria-label-1249",
+    history: "6cde87fcedbaecccb2ec56515fc14a3356abaef7",
+    source: "<h1 :aria-label=\"title\"></h1>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/heading-has-content",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/heading-has-content",
+                severity: Warning,
+                message: "<h1> elements must have accessible content",
+                start: 0,
+                end: 24,
+                help: Some(
+                    "**Why:** Empty headings confuse screen reader users and break document structure.\n\n**Fix:**\n```vue\n<!-- Add text content -->\n<h2>Section Title</h2>\n\n<!-- Or use aria-label for dynamic content -->\n<h2 aria-label=\"Loading...\"><Spinner /></h2>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/heading-has-content",
+                    severity: Warning,
+                    message: "<h1> elements must have accessible content",
+                    start: 0,
+                    end: 24,
+                    help: Some(
+                        "**Why:** Empty headings confuse screen reader users and break document structure.\n\n**Fix:**\n```vue\n<!-- Add text content -->\n<h2>Section Title</h2>\n\n<!-- Or use aria-label for dynamic content -->\n<h2 aria-label=\"Loading...\"><Spinner /></h2>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

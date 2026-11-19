@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-reactivity-loss-direct-destructure-control-1515",
+    history: "49e5531b2c7e9e77647d35c87e795134e5205477",
+    source: "<script setup lang=\"ts\">\nconst { count } = defineProps<{ count: number }>()\n</script>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-reactivity-loss",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

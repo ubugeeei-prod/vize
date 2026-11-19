@@ -1,0 +1,71 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-v-if-with-v-for-substring-identifier-is-not-a-re-982",
+    history: "b67e1cfb4ab8ece295482e19a8c6d20a539e6900",
+    source: "<div v-for=\"item in items\" v-if=\"itemCount > 0\">{{ item }}</div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-use-v-if-with-v-for",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-use-v-if-with-v-for",
+                severity: Warning,
+                message: "Avoid using v-if with v-for on the same element. The v-if condition does not have access to v-for scope variables",
+                start: 27,
+                end: 47,
+                help: Some(
+                    "**Problem:** `v-for` has higher priority than `v-if`, causing the entire list to iterate before filtering.\n\n**Solution 1:** Use a computed property:\n```vue\n<script setup>\nconst activeUsers = computed(() => \n  users.filter(u => u.isActive)\n)\n</script>\n<template>\n  <li v-for=\"user in activeUsers\" :key=\"user.id\">\n</template>\n```\n\n**Solution 2:** Wrap with `<template>`:\n```vue\n<template v-for=\"user in users\" :key=\"user.id\">\n  <li v-if=\"user.isActive\">{{ user.name }}</li>\n</template>\n```",
+                ),
+                labels: [
+                    Label {
+                        message: "v-for is here",
+                        start: 5,
+                        end: 26,
+                    },
+                ],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-use-v-if-with-v-for",
+                    severity: Warning,
+                    message: "Avoid using v-if with v-for on the same element. The v-if condition does not have access to v-for scope variables",
+                    start: 27,
+                    end: 47,
+                    help: Some(
+                        "**Problem:** `v-for` has higher priority than `v-if`, causing the entire list to iterate before filtering.\n\n**Solution 1:** Use a computed property:\n```vue\n<script setup>\nconst activeUsers = computed(() => \n  users.filter(u => u.isActive)\n)\n</script>\n<template>\n  <li v-for=\"user in activeUsers\" :key=\"user.id\">\n</template>\n```\n\n**Solution 2:** Wrap with `<template>`:\n```vue\n<template v-for=\"user in users\" :key=\"user.id\">\n  <li v-if=\"user.isActive\">{{ user.name }}</li>\n</template>\n```",
+                    ),
+                    labels: [
+                        Label {
+                            message: "v-for is here",
+                            start: 5,
+                            end: 26,
+                        },
+                    ],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}
