@@ -496,13 +496,20 @@ const historicalPins =
 
 /**
  * Holders that pin the current bytes of only some files and the bytes of past revisions of
- * others, with the files whose pins they re-record: the compiler manifest and the Vapor style API
- * fixtures pin the current JSX, Vapor and SSR inputs and witnesses, and historical source pairs.
+ * others, with the files whose pins they re-record.
  */
 const scopedPins: readonly (readonly [holder: RegExp, pins: RegExp])[] = [
+  // The registry pins current runtime packs, but its JSX child producer pairs pin the JSX sources
+  // at their admitted revision.
   [
-    /^(?:tests\/_fixtures\/differential\/compiler\/manifest\.json|tools\/support\/compat\/github\/vapor-style-api-fixtures\.ts)$/u,
-    /^crates\/vize_atelier_(?:jsx\/|vapor\/tests\/|ssr\/tests\/)/u,
+    /^tests\/_fixtures\/differential\/compiler\/manifest\.json$/u,
+    /^(?!crates\/vize_atelier_jsx\/src\/)/u,
+  ],
+  // The JSX child and Vapor style admissions pin current inputs and witnesses (tests and the
+  // 10749 admission records); their producer source pairs pin past revisions.
+  [
+    /^tools\/support\/compat\/github\/(?:jsx-child-api|vapor-style-api)-fixtures\.ts$/u,
+    /^(?:crates\/vize_atelier_(?:jsx|vapor|ssr)\/tests\/|tests\/_fixtures\/differential\/compiler\/vapor-literal-object-styles-10749\/)/u,
   ],
 ];
 
