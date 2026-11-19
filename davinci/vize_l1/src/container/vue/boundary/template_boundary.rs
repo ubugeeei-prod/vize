@@ -32,10 +32,61 @@ const BOUNDED_INTERPOLATION_SCAN_WINDOW: usize = 4096;
 
 /// Find the structural end of a root `<template>` block.
 ///
-/// The slow path jumps between `<`/`{` candidates and skips actual HTML tags as
-/// a unit, so template-shaped text in attributes, comments, raw-text elements,
-/// and Vue interpolations cannot mutate nesting depth.
+/// A flat template (no nested `<template>`, comment, raw-text element or
+/// interpolation that could hide markup) ends at its first `</template>`; the
+/// scan for it stays here. Anything else takes [`find_nested_template_end`].
+/// Keeping that scan out of line keeps this path's registers independent of
+/// the scanner's: its code no longer moves with unrelated code layout.
 pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockParseResult<'a> {
+    let Some((content_end, end_pos)) =
+        find_flat_template_end(search.bytes, search.content_start, search.bytes.len())
+    else {
+        return find_nested_template_end(search);
+    };
+    let BlockEndSearch {
+        bytes,
+        source,
+        tag_name,
+        content_start,
+        start_line,
+        start_column,
+        initial_last_newline,
+        attrs,
+        ..
+    } = search;
+    let mut line = start_line;
+    let mut last_newline = initial_last_newline;
+    advance_line(
+        bytes.get(content_start..content_end).unwrap_or_default(),
+        content_start,
+        &mut line,
+        &mut last_newline,
+    );
+    let col = if line == start_line {
+        start_column + content_end - content_start
+    } else {
+        content_end - last_newline
+    };
+    let content = Cow::Borrowed(source.get(content_start..content_end).unwrap_or_default());
+    Ok(Some((
+        tag_name,
+        attrs,
+        content,
+        content_start,
+        content_end,
+        end_pos,
+        line,
+        col,
+    )))
+}
+
+/// The structural end of a template the flat scan could not settle.
+///
+/// This scan jumps between `<`/`{` candidates and skips actual HTML tags as a
+/// unit, so template-shaped text in attributes, comments, raw-text elements,
+/// and Vue interpolations cannot mutate nesting depth.
+#[inline(never)]
+fn find_nested_template_end<'a>(search: BlockEndSearch<'a>) -> BlockParseResult<'a> {
     let BlockEndSearch {
         bytes,
         source,
@@ -59,31 +110,6 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
     // per occurrence).
     let mut interpolation_close_exhausted = false;
     let mut failed_interpolation_scans = 0usize;
-
-    if let Some((content_end, end_pos)) = find_flat_template_end(bytes, content_start, len) {
-        advance_line(
-            bytes.get(content_start..content_end).unwrap_or_default(),
-            content_start,
-            &mut line,
-            &mut last_newline,
-        );
-        let col = if line == start_line {
-            start_column + content_end - content_start
-        } else {
-            content_end - last_newline
-        };
-        let content = Cow::Borrowed(source.get(content_start..content_end).unwrap_or_default());
-        return Ok(Some((
-            tag_name,
-            attrs,
-            content,
-            content_start,
-            content_end,
-            end_pos,
-            line,
-            col,
-        )));
-    }
 
     while pos < len {
         let Some(candidate_offset) = memchr2(b'<', b'{', bytes.get(pos..).unwrap_or_default())
