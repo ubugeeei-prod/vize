@@ -16,6 +16,7 @@ import {
   authenticateInstructionMeasurementSource,
   verifyRepositoryInstructionBudgets,
 } from "../../tools/benchmarks/scripts/instruction-methodology-transition.mjs";
+import { renamePath, renameWord } from "../../tools/support/levels/rename-codenames.ts";
 
 // The reviewed Rust 1.99.1 to 1.100.0 instruction re-baseline. The 1.98, 1.99.0
 // and 1.99.1 steps stay in instruction-methodology-transition.test.mjs.
@@ -54,10 +55,12 @@ function rebase1100(family: Family) {
   const old = loadBudgets(path.join(fixture, `${family.name}-rust1991.toml`));
   const registry = new Set(Object.keys(old.instruction));
   const active = loadBudgets(path.join(root, "docs/davinci/plan", family.active));
-  for (const [id, row] of Object.entries<any>(old.instruction)) {
+  for (const [archivedId, row] of Object.entries<any>(old.instruction)) {
+    // The archive predates the level rename; its ids and input paths match through it.
+    const id = active.instruction[archivedId] ? archivedId : renameWord(archivedId);
     const now = active.instruction[id];
     assert.ok(now, `${id}: active row removed`);
-    assert.equal(now.fixture, row.fixture, `${id}: active fixture changed`);
+    assert.equal(now.fixture, renamePath(row.fixture), `${id}: active fixture changed`);
     assert.equal(now.window, row.window, `${id}: active window changed`);
     assert.ok(
       now.instructions <= Math.max(row.instructions, raises1100[id] ?? 0),

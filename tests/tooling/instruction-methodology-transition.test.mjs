@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -18,6 +19,11 @@ import {
   instructionSuiteSource,
   levelInstructionSuites,
 } from "../../tools/benchmarks/scripts/instruction-counts-suites.mjs";
+import {
+  renamePath,
+  renameWord,
+  rewriteText,
+} from "../../tools/support/levels/rename-codenames.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const fixture = path.join(root, "tests/_fixtures/tooling/instruction-methodology-transition");
@@ -68,13 +74,15 @@ function benchSources(family) {
 // to the digest of the one committed bench that declares the probe (a bench
 // edit re-pins its synthetic input).
 function verifyActiveRows(family, active, archived) {
-  for (const [id, row] of Object.entries(archived)) {
+  for (const [archivedId, row] of Object.entries(archived)) {
+    // The archive predates the level rename; its ids and input paths match through it.
+    const id = active[archivedId] ? archivedId : renameWord(archivedId);
     const now = active[id];
     assert.ok(now, `${id}: active row removed`);
-    assert.equal(now.fixture, row.fixture, `${id}: active fixture changed`);
+    assert.equal(now.fixture, renamePath(row.fixture), `${id}: active fixture changed`);
     assert.equal(now.window, row.window, `${id}: active window changed`);
     assert.ok(
-      now.instructions <= Math.max(row.instructions, raises1100[id] ?? 0),
+      now.instructions <= Math.max(row.instructions, raises1100[id] ?? raises1100[archivedId] ?? 0),
       `${id}: active cap raised`,
     );
     if (now.fixture_sha256 !== row.fixture_sha256) {
@@ -104,6 +112,20 @@ function rebase(family) {
   return { old, current, report, registry };
 }
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
+// Archived reports predate the level rename; replay them under the renamed ids so a refusal
+// comes from their source or rows, not their spelling.
+function renamedArchive(name) {
+  const archived = path.join(fixture, name);
+  const renamed = path.join(
+    fs.mkdtempSync(path.join(os.tmpdir(), "vize-instruction-archive-")),
+    name,
+  );
+  fs.writeFileSync(
+    renamed,
+    rewriteText(path.relative(root, archived), fs.readFileSync(archived, "utf8")),
+  );
+  return renamed;
+}
 const cli = (args) =>
   spawnSync(process.execPath, ["tools/benchmarks/scripts/instruction-counts.mjs", ...args], {
     cwd: root,
@@ -278,7 +300,7 @@ for (const family of families) {
       ...mode,
       "--check",
       "--measurement",
-      path.join(fixture, `${family.name}-rust1100.json`),
+      renamedArchive(`${family.name}-rust1100.json`),
     ]);
     assert.equal(replay.status, 1);
     assert.match(replay.stderr, /measurement source is not current checkout/);
@@ -286,7 +308,7 @@ for (const family of families) {
       ...mode,
       "--check",
       "--measurement",
-      path.join(fixture, `${family.name}-rust1991.json`),
+      renamedArchive(`${family.name}-rust1991.json`),
     ]);
     assert.equal(historical.status, 1);
     assert.match(
@@ -339,6 +361,7 @@ for (const family of families) {
     const active = loadBudgets(path.join(root, "docs/davinci/plan", family.active)).instruction;
     verifyActiveRows(family, active, old.instruction);
     const ids = Object.keys(old.instruction);
+    const live = (id) => (active[id] ? id : renameWord(id));
     const check = (change) => {
       const rows = structuredClone(active);
       change(rows);
@@ -346,24 +369,24 @@ for (const family of families) {
     };
     const [first] = ids;
     check((rows) => {
-      rows[first].instructions -= 1;
+      rows[live(first)].instructions -= 1;
     })();
     assert.throws(
       check((rows) => {
-        rows[first].instructions = old.instruction[first].instructions + 1;
+        rows[live(first)].instructions = old.instruction[first].instructions + 1;
       }),
       /active cap raised/,
     );
     assert.throws(
       check((rows) => {
-        delete rows[first];
+        delete rows[live(first)];
       }),
       /active row removed/,
     );
     for (const id of ids) {
       assert.throws(
         check((rows) => {
-          rows[id].fixture_sha256 = "0".repeat(64);
+          rows[live(id)].fixture_sha256 = "0".repeat(64);
         }),
         /identity changed without/,
         id,
