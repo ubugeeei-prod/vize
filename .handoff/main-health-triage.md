@@ -64,3 +64,67 @@ Commit 0652aae9d0 `ci: open a tracking issue while the full Check on main is red
    (editor-host-smoke, differential-lsp-history shard).
 6. v1 matrix: maintainer decision.
 Scratch logs (machine-local, may be gone): the session scratchpad `mh/` directory.
+
+## Fork findings that arrived at the pause (partial, nothing bisected to the end)
+
+**vue-parity**
+- typecheck-errors digest: red since 11-13 (43412308841). Culprit #12935 (8b2095e36d), which
+  deliberately renamed `__DefineProps<__LooseRequired<…>>` to `DefineProps<LooseRequired<…>>`.
+  The committed `typecheck-errors-check.snap:59` still has the old text, and the file and
+  error counts are unchanged. **Stale pin.** Regenerate it, then update `diagnosticSha256` and
+  `snapshotSha256` in `currentReceipt`.
+- The 3 check snapshots: setup verbatim, constructor NoInfer and `__vizeFallthroughSource`
+  are missing from all committed snaps. **Likely stale.** Regenerate (the update env var is in
+  `tests/_helpers/snapshot.ts`) and confirm that only `virtualTs` changes, never diagnostics.
+
+**coverage `array with as const`**
+- Red since 11-11 (43006471918; 11-10 42804054033 was green). Likely culprit #12639
+  (0f9027744e), "align setup binding kinds with Vue"; other candidates #12699, #12847, #12839.
+- Expected output: `tests/expected/sfc/script-setup.snap:1947`. Fixture:
+  `tests/fixtures/sfc/script-setup.pkl:879`.
+- Still open whether this is a regression or intentional. Diff the actual output first.
+
+**full-js-original-project**
+- Red since 11-09 (42608482666). Culprit #12082 (73e378751d), which moved `npm/oxlint/` to
+  `npm/linter/oxlint/`. The historical commit e742ca8ee7 only has `npm/oxlint/`.
+- **Test bug.** Fix: set `prefix` back to `"npm/oxlint/"` in
+  `npm/linter/oxlint/scripts/n8n-reference-source.mjs:54` and `packagePrefix` in
+  `npm/linter/oxlint/scripts/n8n-preparation-overlap.mjs:41`, with a comment that these
+  are historical paths.
+
+**source-coverage**
+- (a) vize_l2 `vue_setup_*` corpus tests, since 11-12. `davinci/vize_l2/tests/support/vue_setup.rs`
+  walks the generated, gitignored `npm/ui/registry/files/**` (5563 vs 3187 sources).
+  **Test bug.** Collect only git-tracked files and do not re-pin the counts.
+- (b) `diagnostic_digest_hints_cli` 2 tests, since 11-18. Culprit #13248 (f5626ed856): ANSI
+  colour under `vp run`. **Test bug.** Add `NO_COLOR=1` and remove
+  `CLICOLOR_FORCE`/`FORCE_COLOR` in both helpers, as `check_text_diagnostics_cli.rs:71` does.
+
+**Tooling shards (8 files)**
+- **Likely real regressions**:
+  - `lsp-completion-resolve`, since ≤11-12: generated helpers (`__vizeDirective`,
+    `__vize_defineProps`, …) are offered as script completions.
+  - `lsp-script-completion-boundary`, since ≤11-16: candidate `data` is lost and the setup
+    `defineProps` snippet is missing. Probably the same root cause.
+  - `lsp-call-hierarchy-vue-exports`, since ≤11-13: outgoing-call `range` is now the name only
+    instead of the whole declaration. That breaks the LSP rule that `range` encloses the body.
+  - All three: bisect maestro/canon commits from 11-11 to 11-13 and land `fix(lsp)` with pinned
+    lsp fixtures.
+- **Behaviour change, undecided**: `lsp-template-completion::component prop completion tracks
+  unsaved child edits`. A new `script/define-props-destructuring` warning shows in the editor.
+  Was a preset change deliberate?
+- **Stale baselines**, from the per-rule docs page move (`docs/content/rules/reference/*.md`):
+  `css-engine-boundary` (6 linter cells, 84 vs 90) and `lint-ssr-script-setup` (+36 B ×3). Route
+  the expectations through `tests/tooling/support/current-rule-documentation.ts`; never
+  hand-edit them.
+- **Stale pin of a deliberate, Vue-matching change**: `differential-compiler-api-execution`.
+  `vue` imports now bind as `setup-const`. Regenerate the `currentReference` successors in
+  `sfc-fix-history.manifest.json` with the fixture tool, and diff the 2 rows not yet compared.
+- **Test bug**: `differential-formatter-api-execution`. #12976 (df752d6395) overwrote the shared
+  `crates/vize_glyph/tests/snapshots/history_template_dynamic_attribute_barriers.snap.txt`. The
+  formatter output still matches the pinned sha. Give the Rust test its own snapshot file and
+  restore the 154 B reference.
+- The docs-render-concurrency-browser shard's real failure is `lsp-script-completion-boundary`.
+
+Fork scratch (machine-local): scratchpad `mh/` and `mhB/`, plus `scripts/drift*.py` and
+`scripts/snapdiff.py`.
