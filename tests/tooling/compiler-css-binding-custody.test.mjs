@@ -21,6 +21,7 @@ import {
   failingProducts,
   legacyProducts,
 } from "../../tools/support/compat/github/report-legacy-fix-fixtures.ts";
+import { rewriteText } from "../../tools/support/levels/rename-codenames.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const manifestPath = "tests/_fixtures/differential/compiler/manifest.json";
@@ -40,6 +41,8 @@ const baseline = "3a3c8460f966fddbd8e1be4c083d460b24202f90",
   fixed = "91c25c1b4a2ea842705e4db321b6e92d2b70ba42";
 const before = JSON.parse(from(baseline, manifestPath)),
   current = JSON.parse(read(manifestPath));
+// Rows of the historical manifest name paths of that time; compare them through the level rename.
+const renamedBefore = JSON.parse(rewriteText(manifestPath, JSON.stringify(before)));
 // Keep the entire original envelope: future independent registrations cannot
 // become part of the historical CSS-only source permission.
 const cssOnly = Buffer.from(JSON.stringify({ ...before, cssApiCases: current.cssApiCases }));
@@ -116,7 +119,7 @@ await test("binding registration preserves every previous compiler row and pins 
     newCss = current.cssApiCases;
   // Preserve actual existing rows while allowing independent compiler campaigns
   // to append their own genuine cases and runtime packs.
-  for (const row of before.cases) {
+  for (const row of renamedBefore.cases) {
     const currentRow = current.cases.find((candidate) => candidate.id === row.id);
     if (compilerRetiredRows.has(row.id)) assert.equal(currentRow, undefined);
     else assertPreservedCompilerCase(currentRow, row);
@@ -128,7 +131,7 @@ await test("binding registration preserves every previous compiler row and pins 
   assert.throws(() =>
     assertPreservedCompilerCase(
       scoped,
-      before.cases.find((row) => row.id === scoped.id),
+      renamedBefore.cases.find((row) => row.id === scoped.id),
     ),
   );
   // A re-pinned row still keeps every field but its reference hash.
@@ -138,11 +141,11 @@ await test("binding registration preserves every previous compiler row and pins 
     assert.throws(() =>
       assertPreservedCompilerCase(
         repinned,
-        before.cases.find((row) => row.id === id),
+        renamedBefore.cases.find((row) => row.id === id),
       ),
     );
   }
-  for (const pack of before.runtimePacks)
+  for (const pack of renamedBefore.runtimePacks)
     assert.deepEqual(
       current.runtimePacks.find((candidate) => candidate.path === pack.path),
       pack,
