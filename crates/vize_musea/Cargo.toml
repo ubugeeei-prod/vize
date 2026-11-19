@@ -27,7 +27,7 @@ name = "art_parse"
 harness = false
 
 [[bench]]
-name = "level_art"
+name = "davinci_art"
 harness = false
 
 [lints]

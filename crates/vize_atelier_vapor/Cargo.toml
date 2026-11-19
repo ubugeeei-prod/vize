@@ -60,7 +60,7 @@ name = "level_vapor_native_budget"
 harness = false
 
 [[bench]]
-name = "levels"
+name = "davinci"
 harness = false
 
 [package.metadata.cargo-semver-checks.lints]

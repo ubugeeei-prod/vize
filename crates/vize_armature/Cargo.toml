@@ -38,7 +38,7 @@ level_harness = { workspace = true }
 level_test_support = { workspace = true }
 
 [[bench]]
-name = "levels"
+name = "davinci"
 harness = false
 
 [[test]]

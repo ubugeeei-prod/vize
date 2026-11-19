@@ -62,7 +62,7 @@ criterion.workspace = true
 level_harness.workspace = true
 
 [[bench]]
-name = "levels"
+name = "davinci"
 harness = false
 
 # The P1-6 differential lane's corpus-runnable entry; skipped unless the lane
