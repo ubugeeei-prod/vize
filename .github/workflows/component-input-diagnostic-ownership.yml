@@ -72,6 +72,7 @@ on:
       - "tests/tooling/emit-overload-transition-fixture.ts"
       - "tests/tooling/fixtures/emit-overload-transition/**"
       - "tests/tooling/component-input-diagnostic-ownership-workflow.test.ts"
+      - "tests/tooling/component-input-diagnostic-ownership-scripts.test.ts"
       - ".github/scripts/component-input-diagnostic-ownership/**"
       - "tests/tooling/callback-owner-certificate.test.ts"
       - "tests/tooling/aria-component-attrs.test.ts"

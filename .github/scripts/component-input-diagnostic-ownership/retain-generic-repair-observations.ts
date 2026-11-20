@@ -16,14 +16,16 @@ const messages = readFileSync(`${capture}/build.jsonl`, "utf8")
   .split("\n")
   .filter(Boolean)
   .map((line) => JSON.parse(line) as CargoMessage);
-assert.equal(messages.at(-1).reason, "build-finished");
-assert.equal(messages.at(-1).success, true);
+const finalMessage = messages.at(-1);
+assert.ok(finalMessage);
+assert.equal(finalMessage.reason, "build-finished");
+assert.equal(finalMessage.success, true);
 
 const targets = messages.filter(
   (message): message is CargoMessage & { executable: string } =>
     message.reason === "compiler-artifact" &&
     message.target?.name === "integration" &&
-    message.target.kind.join() === "test" &&
+    message.target?.kind.join() === "test" &&
     typeof message.executable === "string",
 );
 assert.equal(targets.length, 1);
