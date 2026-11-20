@@ -365,3 +365,28 @@ from main `92f77f13514d93edc98ce58b5318fa0264098b1a` independently passed both
 allocations. That first allocation run rejected the then-pinned value of one;
 656 is the corrected exact allocation witness. No existing allocation or
 instruction ceiling is raised.
+
+## JSX compile entry rows (#6885)
+
+The JSX/TSX compiler had no row, so the JSX lowering slices of
+[#6885](https://github.com/ubugeeei-prod/vize/issues/6885) could move its cost
+without a measurement. `crates/vize_atelier_jsx/benches/levels.rs` adds three
+stage windows over one pinned module,
+`crates/vize_atelier_jsx/benches/fixtures/compile-slices.jsx`: one public
+`compile_jsx` call each for native VDOM, Babel-compatible VDOM and native
+Vapor. The arena is built before the window and the output is dropped after
+it. The module's roots cover what the shared L2 lowering admits and what the
+next slices move: `&&` over values, non-element ternary arms, `_` modifiers,
+mixed text and slot functions returning values. JSX nested inside other
+expressions is left out, because Vapor refuses it today. SSR is left out too,
+because it refuses expression-bodied VDOM components. Each of those gets its
+row when its slice lands.
+
+The suite joins both populations: the instruction gate has 104 level rows
+and the memory comparison has 14 suites, 108 rows and 648 observations.
+Paired dispatch runs measured base `e0e4d5a656` in run `44466205784` and the
+candidate in run `44466173180`. The 101 existing rows are identical across
+the two runs, and every new row repeated exactly three times:
+`atelier_jsx_compile_vdom_slices` 1,261,006, `atelier_jsx_compile_babel_slices`
+1,150,321 and `atelier_jsx_compile_vapor_slices` 2,056,922 instructions. The
+exact allocation counts, 399, 338 and 531, come from the local quick sweep.

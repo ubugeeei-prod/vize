@@ -282,6 +282,18 @@ test("helper-rich L2 emit witness gates exact allocations", () => {
   assert.equal(budgets.bench[id]?.allocs, 656);
 });
 
+test("JSX compile entry rows gate exact allocations per configuration", () => {
+  for (const [id, allocs] of [
+    ["atelier_jsx_compile_vdom_slices", 399],
+    ["atelier_jsx_compile_babel_slices", 338],
+    ["atelier_jsx_compile_vapor_slices", 531],
+  ] as const) {
+    assert.equal(budgets.bench[id]?.wall_p50_ns, 0);
+    assert.equal(budgets.bench[id]?.wall_tolerance, 0.05);
+    assert.equal(budgets.bench[id]?.allocs, allocs);
+  }
+});
+
 test("toml-lite parses inline tables and rejects malformed ones", () => {
   assert.deepEqual(parseTomlLite("[bench]\na = { x = 1, y = 0.5 }\n"), {
     bench: { a: { x: 1, y: 0.5 } },

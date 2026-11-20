@@ -242,12 +242,12 @@ export function sourceJudgeFixture(t) {
     fs.readFileSync(path.join(repo, "docs/davinci/plan/budgets.toml"), "utf8"),
   );
   const levelIds = [...authority.planes.level.registry];
-  const suiteIndex = new Map(levelIds.map((id, index) => [id, index % 12]));
-  for (const id of authority.planes.formatter.registry) suiteIndex.set(id, 12);
+  const suiteIndex = new Map(levelIds.map((id, index) => [id, index % 13]));
+  for (const id of authority.planes.formatter.registry) suiteIndex.set(id, 13);
   function save() {
     for (const name of ["base", "head"])
       for (let n = 1; n <= 3; n++)
-        for (let index = 0; index < 13; index++) {
+        for (let index = 0; index < 14; index++) {
           const arm = arms[name],
             directory = path.join(out, name, `run-${n}`, `suite-${index}`);
           const rows = Object.fromEntries(

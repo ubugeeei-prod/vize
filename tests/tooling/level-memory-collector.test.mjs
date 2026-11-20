@@ -148,7 +148,7 @@ const originalFormatterRegistry = loadRegistry(
   path.join(repository, "docs/davinci/plan/formatter-instruction-registry.toml"),
 );
 
-await test("both original source registries and thirteen providers supply the complete population", () => {
+await test("both original source registries and fourteen providers supply the complete population", () => {
   const { authority, rows } = originalPopulation();
   assert.deepEqual(authority.planes.level.registry, originalLevelRegistry);
   assert.deepEqual(authority.planes.formatter.registry, originalFormatterRegistry);
