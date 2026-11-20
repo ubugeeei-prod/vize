@@ -1,0 +1,38 @@
+set -euo pipefail
+
+[[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+[[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
+capture="$RUNNER_TEMP/component-input-parity"
+baseline="$RUNNER_TEMP/component-input-base"
+mkdir -p "$capture"
+base_revision="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
+git worktree add --detach "$baseline" "$base_revision"
+printf '%s\n' "$base_revision" > "$capture/base-revision.txt"
+observer=crates/vize_canon/tests/constructor_emission_projection.rs
+cp "$observer" "$baseline/$observer"
+cmp "$observer" "$baseline/$observer"
+git -C "$baseline" diff --exit-code -- crates/vize_canon/src
+
+export CARGO_TARGET_DIR="$RUNNER_TEMP/component-input-base-target"
+(
+  cd "$baseline"
+  VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/base-legacy.json" \
+    cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection \
+      complete_constructor_projection_packets -- --exact --nocapture
+) > "$capture/base-legacy.log" 2>&1
+(
+  cd "$baseline"
+  VIZE_CONSTRUCTOR_SHARE_TYPES=1 VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/base.json" \
+    cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection \
+      complete_constructor_projection_packets -- --exact --nocapture
+) > "$capture/base.log" 2>&1
+
+export CARGO_TARGET_DIR="$RUNNER_TEMP/component-input-head-target"
+VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/head-legacy.json" \
+  cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection \
+    complete_constructor_projection_packets -- --exact --nocapture \
+    > "$capture/head-legacy.log" 2>&1
+VIZE_CONSTRUCTOR_SHARE_TYPES=1 VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/head.json" \
+  cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection \
+    complete_constructor_projection_packets -- --exact --nocapture \
+    > "$capture/head.log" 2>&1

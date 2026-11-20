@@ -15,7 +15,12 @@ import {
 import { assertJoinedVerbatimRunCustody } from "./support/callback-owner-packet-custody.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const workflowScriptRoot = path.join(root, ".github/scripts/component-input-diagnostic-ownership");
 const historicalBefore = "78719553cf550bcffbf1d0fb891fda642f42de3a";
+
+function readWorkflowScript(name: string): string {
+  return fs.readFileSync(path.join(workflowScriptRoot, name), "utf8");
+}
 const comparatorInputs = [
   "tools/support/compat/content-mapper/canonical-helper-transition.ts",
   "tools/support/compat/content-mapper/producer-unmapped-ignores.ts",
@@ -57,6 +62,22 @@ test("the comparator dependencies and packed-consumer refusal test remain select
       () => assertComparatorInputsSelected(source.replace(`      - "${file}"\n`, "")),
       assert.AssertionError,
     );
+  }
+});
+
+test("workflow logic stays in checked-in scripts instead of multiline YAML blocks", () => {
+  const source = fs.readFileSync(
+    path.join(root, ".github/workflows/component-input-diagnostic-ownership.yml"),
+    "utf8",
+  );
+  assert.doesNotMatch(source, /^\s+run:\s*\|/mu);
+  const scripts = [...source.matchAll(/^\s+run: bash (\.github\/scripts\/[^\s]+\.sh)$/gmu)].map(
+    (match) => match[1],
+  );
+  assert.equal(scripts.length, 12);
+  assert.equal(new Set(scripts).size, scripts.length);
+  for (const script of scripts) {
+    assert.ok(fs.statSync(path.join(root, script)).isFile(), script);
   }
 });
 
@@ -347,7 +368,10 @@ test("callback certificate is covered by exact-head materialization and producer
   assert.ok(workflow.includes('"tools/support/compat/content-mapper/callback-owner*.ts"'));
   assert.ok(path.basename(file).startsWith("callback-owner"));
   assert.ok(workflow.includes('ref: "${{ github.event.pull_request.head.sha }}"'));
-  assert.ok(workflow.includes("node tools/support/compat/content-mapper/callback-owner-audit.ts"));
+  const auditProgram = readWorkflowScript("audit-callback-order.sh");
+  assert.ok(
+    auditProgram.includes("node tools/support/compat/content-mapper/callback-owner-audit.ts"),
+  );
   const audit = fs.readFileSync(
     path.join(root, "tools/support/compat/content-mapper/callback-owner-audit.ts"),
     "utf8",
@@ -393,22 +417,15 @@ test("callback certificate is covered by exact-head materialization and producer
 });
 
 function assertAuthenticatedBaseComparison(source: string): void {
-  const start = source.indexOf("  published-sdk-packets:");
-  const end = source.indexOf("  unchanged-projection-packets:");
-  assert.ok(start >= 0 && end > start);
-  const job = source.slice(start, end);
-  assert.match(job, /BASE_SHA: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/u);
-  assert.match(job, /SOURCE_SHA: \$\{\{ github\.event\.pull_request\.head\.sha \}\}/u);
-  assert.match(job, new RegExp(`HISTORICAL_CALLBACK_BEFORE: ${historicalBefore}`, "u"));
-  assert.match(job, /\[\[ "\$BASE_SHA" =~ \^\[0-9a-f\]\{40\}\$ \]\]/u);
-  assert.match(
-    job,
-    /\[\[ "\$\(git -C "\$RUNNER_TEMP\/callback-cfa-base" rev-parse HEAD\)" == "\$BASE_SHA" \]\]/u,
-  );
-  assert.match(job, /--comparison-source-sha "\$BASE_SHA"/u);
-  assert.match(job, /--historical-comparison-source-sha "\$HISTORICAL_CALLBACK_BEFORE"/u);
-  assert.match(job, /--comparison-role pull-request-base/u);
-  assert.doesNotMatch(job, /--comparison-source-sha 78719553cf550bcffbf1d0fb891fda642f42de3a/u);
+  assert.match(source, /BASE_SHA: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/u);
+  assert.match(source, /SOURCE_SHA: \$\{\{ github\.event\.pull_request\.head\.sha \}\}/u);
+  assert.match(source, new RegExp(`HISTORICAL_CALLBACK_BEFORE: ${historicalBefore}`, "u"));
+  assert.match(source, /\[\[ "\$BASE_SHA" =~ \^\[0-9a-f\]\{40\}\$ \]\]/u);
+  assert.match(source, /\[\[ "\$\(git -C "\$baseline" rev-parse HEAD\)" == "\$BASE_SHA" \]\]/u);
+  assert.match(source, /--comparison-source-sha "\$BASE_SHA"/u);
+  assert.match(source, /--historical-comparison-source-sha "\$HISTORICAL_CALLBACK_BEFORE"/u);
+  assert.match(source, /--comparison-role pull-request-base/u);
+  assert.doesNotMatch(source, /--comparison-source-sha 78719553cf550bcffbf1d0fb891fda642f42de3a/u);
 }
 
 function assertConstructorPacketCustody(source: string): void {
@@ -428,10 +445,18 @@ function assertConstructorPacketCustody(source: string): void {
 }
 
 test("callback packet custody binds the comparison CLI to the exact PR base", () => {
-  const source = fs.readFileSync(
+  const workflow = fs.readFileSync(
     path.join(root, ".github/workflows/component-input-diagnostic-ownership.yml"),
     "utf8",
   );
+  const start = workflow.indexOf("  published-sdk-packets:");
+  const end = workflow.indexOf("  unchanged-projection-packets:");
+  assert.ok(start >= 0 && end > start);
+  const source = [
+    workflow.slice(start, end),
+    readWorkflowScript("build-authenticated-base.sh"),
+    readWorkflowScript("retain-callback-packets.sh"),
+  ].join("\n");
   assertAuthenticatedBaseComparison(source);
 
   for (const tampered of [
@@ -439,10 +464,7 @@ test("callback packet custody binds the comparison CLI to the exact PR base", ()
       "BASE_SHA: ${{ github.event.pull_request.base.sha }}",
       `BASE_SHA: ${"0".repeat(40)}`,
     ),
-    source.replace(
-      '[[ "$(git -C "$RUNNER_TEMP/callback-cfa-base" rev-parse HEAD)" == "$BASE_SHA" ]]',
-      "true",
-    ),
+    source.replace('[[ "$(git -C "$baseline" rev-parse HEAD)" == "$BASE_SHA" ]]', "true"),
     source.replace(
       '--comparison-source-sha "$BASE_SHA"',
       `--comparison-source-sha ${historicalBefore}`,
@@ -453,10 +475,15 @@ test("callback packet custody binds the comparison CLI to the exact PR base", ()
 });
 
 test("constructor packet custody delegates certified changes to complete parity", () => {
-  const source = fs.readFileSync(
+  const workflow = fs.readFileSync(
     path.join(root, ".github/workflows/component-input-diagnostic-ownership.yml"),
     "utf8",
   );
+  const source = [
+    workflow,
+    readWorkflowScript("capture-projection-packets.sh"),
+    readWorkflowScript("prove-constructor-projection.sh"),
+  ].join("\n");
   assertConstructorPacketCustody(source);
   assertConstructorPacketCustody(`${source}\n  # cmp only describes the observer\n`);
   assert.throws(
