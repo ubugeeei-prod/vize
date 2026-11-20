@@ -1,10 +1,5 @@
 //! Art variant hovers keep imported signatures after the diagnostics pass
 //! moves the native session onto the canonical project (#13383).
-#![allow(
-    clippy::expect_used,
-    reason = "native fixture failures require context"
-)]
-
 use tower_lsp::lsp_types::{HoverContents, Url};
 
 use super::DiagnosticService;
