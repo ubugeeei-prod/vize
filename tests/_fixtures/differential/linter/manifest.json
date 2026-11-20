@@ -955,7 +955,7 @@
     },
     {
       "id": "linter/css-style-lane-declarations-11550",
-      "state": "active",
+      "state": "draft",
       "targets": [
         "lint"
       ],

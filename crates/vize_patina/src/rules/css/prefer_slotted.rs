@@ -23,12 +23,13 @@
 //! </style>
 //! ```
 
+use cssparser::{Parser, ParserInput, Token};
 use vize_l0::Span;
 use vize_l1::css::StyleSheet;
 
 use crate::diagnostic::Severity;
 
-use super::style_rule::{all_rule_preludes, without_comments};
+use super::style_rule::{all_rule_preludes, masked, skip_block};
 use super::{CssLintResult, CssRuleMeta, StyleRule};
 
 static META: CssRuleMeta = CssRuleMeta {
@@ -37,9 +38,144 @@ static META: CssRuleMeta = CssRuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// Deprecated deep-selector spellings, each followed by whitespace or the
-/// end of the selector.
 const DEPRECATED_DEEP: [&str; 3] = [">>>", "/deep/", "::v-deep"];
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum SelectorToken {
+    Separator,
+    Comma,
+    Colon,
+    Delim(char),
+    Slot,
+    Deep,
+    VDeep,
+    Other,
+}
+
+#[derive(Clone, Copy)]
+struct SpannedToken {
+    kind: SelectorToken,
+    span: Span,
+}
+
+struct SelectorScan {
+    tokens: Vec<SpannedToken>,
+    slotted: bool,
+}
+
+fn scan_selector(sheet: &StyleSheet<'_>, prelude: Span) -> SelectorScan {
+    // `masked` preserves terminated block comments as tokens. Ignoring those
+    // tokens keeps `./**/slot` in one compound while line comments remain
+    // byte-for-byte blanks and therefore preserve authored offsets.
+    let text = masked(sheet, prelude);
+    let mut input = ParserInput::new(&text);
+    let mut parser = Parser::new(&mut input);
+    let mut tokens = Vec::new();
+    let mut slotted = false;
+    while !parser.is_exhausted() {
+        let start = parser.position().byte_index();
+        let Ok(token) = parser.next_including_whitespace_and_comments() else {
+            break;
+        };
+        let kind = match token {
+            Token::WhiteSpace(_) => SelectorToken::Separator,
+            Token::Comment(_) => continue,
+            Token::Comma => SelectorToken::Comma,
+            Token::Colon => SelectorToken::Colon,
+            Token::Delim(value) => SelectorToken::Delim(*value),
+            Token::Ident(value) if value.eq_ignore_ascii_case("slot") => SelectorToken::Slot,
+            Token::Ident(value) if value.eq_ignore_ascii_case("deep") => SelectorToken::Deep,
+            Token::Ident(value) if value.eq_ignore_ascii_case("v-deep") => SelectorToken::VDeep,
+            Token::Function(value) => {
+                if value.eq_ignore_ascii_case("slotted") || value.eq_ignore_ascii_case("v-slotted")
+                {
+                    slotted = true;
+                }
+                skip_block(&mut parser);
+                SelectorToken::Other
+            }
+            Token::ParenthesisBlock | Token::SquareBracketBlock | Token::CurlyBracketBlock => {
+                skip_block(&mut parser);
+                SelectorToken::Other
+            }
+            _ => SelectorToken::Other,
+        };
+        let end = parser.position().byte_index();
+        tokens.push(SpannedToken {
+            kind,
+            span: Span::new(prelude.start + start as u32, prelude.start + end as u32),
+        });
+    }
+    SelectorScan { tokens, slotted }
+}
+
+fn warn_deprecated_deep(scan: &SelectorScan, result: &mut CssLintResult) {
+    const PATTERNS: [[SelectorToken; 3]; 3] = [
+        [
+            SelectorToken::Delim('>'),
+            SelectorToken::Delim('>'),
+            SelectorToken::Delim('>'),
+        ],
+        [
+            SelectorToken::Delim('/'),
+            SelectorToken::Deep,
+            SelectorToken::Delim('/'),
+        ],
+        [
+            SelectorToken::Colon,
+            SelectorToken::Colon,
+            SelectorToken::VDeep,
+        ],
+    ];
+    let mut index = 0;
+    while index < scan.tokens.len() {
+        let Some(span) = PATTERNS
+            .iter()
+            .find_map(|pattern| adjacent_pattern(&scan.tokens, index, pattern))
+        else {
+            index += 1;
+            continue;
+        };
+        result.warn(
+            META.name,
+            "Deprecated deep selector syntax",
+            "Use :deep(.class) or ::v-deep(.class) with parentheses in Vue 3",
+            span.start,
+            span.end,
+        );
+        index += 3;
+    }
+}
+
+fn adjacent_pattern(
+    tokens: &[SpannedToken],
+    index: usize,
+    pattern: &[SelectorToken; 3],
+) -> Option<Span> {
+    let window = tokens.get(index..index + pattern.len())?;
+    let [first, second, third] = window else {
+        return None;
+    };
+    (window
+        .iter()
+        .zip(pattern)
+        .all(|(token, expected)| token.kind == *expected)
+        && first.span.end == second.span.start
+        && second.span.end == third.span.start)
+        .then(|| Span::new(first.span.start, third.span.end))
+}
+
+fn slot_starts_type_selector(tokens: &[SpannedToken], index: usize) -> bool {
+    index == 0
+        || tokens.get(index - 1).is_some_and(|token| {
+            matches!(
+                token.kind,
+                SelectorToken::Separator
+                    | SelectorToken::Comma
+                    | SelectorToken::Delim('>' | '+' | '~')
+            )
+        })
+}
 
 /// It reads every rule's selector in the L1 structure, in every style
 /// language, with comments masked. The deprecated deep combinators are not
@@ -52,75 +188,44 @@ impl StyleRule for PreferSlotted {
     }
 
     fn check(&self, sheet: &StyleSheet<'_>, result: &mut CssLintResult) {
-        // Masking only blanks bytes, so a selector without one of the
-        // patterns in its authored text has none once masked either.
         let candidate = |text: &str| {
             text.contains("slot") || DEPRECATED_DEEP.iter().any(|deep| text.contains(deep))
         };
-        // Whether the block uses `::v-slotted`/`:slotted`, read only once a
-        // `slot` selector needs it.
         let mut slotted: Option<bool> = None;
         for prelude in all_rule_preludes(sheet) {
             if !candidate(sheet.text(prelude)) {
                 continue;
             }
-            let text = without_comments(sheet, prelude);
-            let bytes = text.as_bytes();
-            let at = |offset: usize, len: usize| {
-                Span::new(
-                    prelude.start + offset as u32,
-                    prelude.start + (offset + len) as u32,
-                )
-            };
-            for pattern in DEPRECATED_DEEP {
-                for (offset, _) in text.match_indices(pattern) {
-                    let next = bytes.get(offset + pattern.len());
-                    if next.is_none_or(u8::is_ascii_whitespace) {
-                        let span = at(offset, pattern.len());
-                        result.warn(
-                            META.name,
-                            "Deprecated deep selector syntax",
-                            "Use :deep(.class) or ::v-deep(.class) with parentheses in Vue 3",
-                            span.start,
-                            span.end,
-                        );
-                    }
-                }
-            }
-            if !text.contains("slot") {
+            let scan = scan_selector(sheet, prelude);
+            warn_deprecated_deep(&scan, result);
+            if !scan
+                .tokens
+                .iter()
+                .any(|token| token.kind == SelectorToken::Slot)
+            {
                 continue;
             }
             let slotted = *slotted.get_or_insert_with(|| {
-                let whole = Span::new(
-                    sheet.nodes().first().map_or(0, |node| node.span().start),
-                    sheet.nodes().last().map_or(0, |node| node.span().end),
-                );
-                let code = without_comments(sheet, whole);
-                code.contains("::v-slotted") || code.contains(":slotted")
+                all_rule_preludes(sheet).any(|prelude| {
+                    candidate(sheet.text(prelude)) && scan_selector(sheet, prelude).slotted
+                })
             });
             if slotted {
                 continue;
             }
-            for (offset, _) in text.match_indices("slot") {
-                let before = offset
-                    .checked_sub(1)
-                    .and_then(|previous| bytes.get(previous));
-                let after = bytes.get(offset + 4);
-                let starts =
-                    before.is_none_or(|byte| matches!(byte, b' ' | b'\n' | b'\t' | b',' | b'>'));
-                let ends = after.is_none_or(|byte| {
-                    matches!(byte, b' ' | b'\n' | b'\t' | b'.' | b'[' | b'>' | b',')
-                });
-                if starts && ends {
-                    let span = at(offset, 4);
-                    result.warn(
-                        META.name,
-                        "Consider using ::v-slotted() to style slot content in scoped styles",
-                        "Use `::v-slotted(selector)` to explicitly target content passed to slots",
-                        span.start,
-                        span.end,
-                    );
+            for (index, token) in scan.tokens.iter().enumerate() {
+                if token.kind != SelectorToken::Slot
+                    || !slot_starts_type_selector(&scan.tokens, index)
+                {
+                    continue;
                 }
+                result.warn(
+                    META.name,
+                    "Consider using ::v-slotted() to style slot content in scoped styles",
+                    "Use `::v-slotted(selector)` to explicitly target content passed to slots",
+                    token.span.start,
+                    token.span.end,
+                );
             }
         }
     }
@@ -214,5 +319,45 @@ mod tests {
         // Valid CSS that uses slot element directly
         let result = linter.lint("slot .content { color: red; }", 0);
         assert!(result.warning_count >= 1);
+    }
+
+    #[test]
+    fn test_tokenizes_deep_and_slot_selectors() {
+        let linter = create_linter();
+        let source = r#"
+[data-label="before >>> after"] { color: red; }
+.a>>>.b { color: red; }
+slot+.label { color: red; }
+slot-label { color: red; }
+./**/slot { color: red; }
+"#;
+        let reported: Vec<_> = linter
+            .lint(source, 0)
+            .diagnostics
+            .iter()
+            .map(|diagnostic| &source[diagnostic.start as usize..diagnostic.end as usize])
+            .collect();
+        assert_eq!(reported, [">>>", "slot"]);
+    }
+
+    #[test]
+    fn test_only_actual_slotted_selector_suppresses_slot_warning() {
+        use vize_l1::css::lang::StyleLanguage;
+
+        let linter = create_linter();
+        let declarations_only = "slot { color: red; } .demo::before { content: \":slotted\"; }";
+        assert_eq!(
+            linter
+                .lint_block(declarations_only, 0, StyleLanguage::Scss, true)
+                .warning_count,
+            1
+        );
+        let actual = "slot { color: red; } ::v-slotted(.demo) { color: blue; }";
+        assert_eq!(
+            linter
+                .lint_block(actual, 0, StyleLanguage::Scss, true)
+                .warning_count,
+            0
+        );
     }
 }

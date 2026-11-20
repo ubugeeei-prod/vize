@@ -43,7 +43,7 @@ pub(super) fn classify(text: &str, colon: Option<usize>, block: bool, lexis: &Le
         return Shape::AtRule { name: (1, end) };
     }
     if let Some(colon) = colon {
-        let name = trimmed(bytes, 0, colon);
+        let name = name_before_trailing_comments(bytes, trimmed(bytes, 0, colon), lexis);
         let after = bytes.get(colon + 1);
         if is_property_name(bytes, name, lexis)
             && (!block || after.is_none_or(u8::is_ascii_whitespace))
@@ -61,6 +61,45 @@ pub(super) fn classify(text: &str, colon: Option<usize>, block: bool, lexis: &Le
         }
     }
     if block { Shape::Rule } else { Shape::Other }
+}
+
+/// Keep a property identifier's authored span when only whitespace and block
+/// comments separate it from the colon (`color/**/: red`). Comments are not
+/// identifier bytes, and invalid text after the first comment must not be
+/// joined into a declaration name.
+fn name_before_trailing_comments(
+    bytes: &[u8],
+    original: (usize, usize),
+    lexis: &Lexis,
+) -> (usize, usize) {
+    let (start, end) = original;
+    let mut cursor = start;
+    while cursor < end {
+        if bytes.get(cursor).is_some_and(u8::is_ascii_whitespace)
+            || matches!(lex(bytes, cursor, lexis, true), Lexeme::Comment { .. })
+        {
+            break;
+        }
+        cursor = match lex(bytes, cursor, lexis, true) {
+            Lexeme::Opaque { end, .. } | Lexeme::Interpolation { end, .. } => end,
+            _ => cursor + 1,
+        };
+    }
+    let name = (start, cursor);
+    if !is_property_name(bytes, name, lexis) {
+        return original;
+    }
+    while cursor < end {
+        if bytes.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+            cursor += 1;
+            continue;
+        }
+        match lex(bytes, cursor, lexis, true) {
+            Lexeme::Comment { end, .. } => cursor = end,
+            _ => return original,
+        }
+    }
+    name
 }
 
 fn declaration(text: &str, name: (usize, usize), value_start: usize) -> Shape {

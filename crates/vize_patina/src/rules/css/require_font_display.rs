@@ -6,7 +6,7 @@ use vize_l1::css::{StyleNodeKind, StyleSheet};
 
 use crate::diagnostic::Severity;
 
-use super::style_rule::in_style_scope;
+use super::style_rule::{identifier_eq, in_style_scope};
 use super::{CssLintResult, CssRuleMeta, StyleRule};
 
 static META: CssRuleMeta = CssRuleMeta {
@@ -31,7 +31,7 @@ impl StyleRule for RequireFontDisplay {
                 continue;
             };
             if node.block().is_none()
-                || !sheet.text(name).eq_ignore_ascii_case("font-face")
+                || !identifier_eq(sheet.text(name), "font-face")
                 || !in_style_scope(sheet, node)
             {
                 continue;
@@ -46,7 +46,7 @@ impl StyleRule for RequireFontDisplay {
                 .any(|child| {
                     child.parent() == Some(index)
                         && matches!(sheet.kind(child), StyleNodeKind::Declaration { name, .. }
-                        if sheet.text(name).eq_ignore_ascii_case("font-display"))
+                        if identifier_eq(sheet.text(name), "font-display"))
                 });
             if !has_font_display {
                 result.warn(
@@ -96,6 +96,13 @@ mod tests {
     fn test_no_font_face() {
         let linter = create_linter();
         let result = linter.lint(".button { color: red; }", 0);
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_accepts_escaped_font_display() {
+        let linter = create_linter();
+        let result = linter.lint("@font-face { font-\\64isplay: swap; }", 0);
         assert_eq!(result.warning_count, 0);
     }
 }

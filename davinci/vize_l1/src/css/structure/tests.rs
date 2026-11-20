@@ -127,6 +127,18 @@ fn scss_reads_nested_properties_variables_and_interpolated_names() {
 }
 
 #[test]
+fn comments_before_a_declaration_colon_do_not_extend_the_name() {
+    assert_eq!(
+        read(Css, ".a { color/**/: red; margin-left /**/: 1px; }"),
+        ["rule .a {}", "  decl[color|red]", "  decl[margin-left|1px]"]
+    );
+    assert_eq!(
+        read(Css, ".a { color/**/suffix: red; }"),
+        ["rule .a {}", "  other color/**/suffix: red"]
+    );
+}
+
+#[test]
 fn less_reads_variables_detached_rulesets_and_mixin_calls() {
     assert_eq!(
         read(

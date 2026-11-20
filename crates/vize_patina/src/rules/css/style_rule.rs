@@ -13,6 +13,34 @@ use vize_l1::css::{StyleNode, StyleNodeKind, StyleSheet};
 
 use super::{CssLintResult, CssRuleMeta};
 
+/// Whether one authored CSS identifier decodes to `expected`.
+///
+/// The fast path covers ordinary names without constructing a parser. Escaped
+/// names use cssparser so rules compare CSS values while retaining the
+/// authored span for diagnostics.
+pub(super) fn identifier_eq(text: &str, expected: &str) -> bool {
+    if !text.as_bytes().contains(&b'\\') {
+        return text.eq_ignore_ascii_case(expected);
+    }
+    let mut input = ParserInput::new(text);
+    let mut parser = Parser::new(&mut input);
+    parser
+        .expect_ident()
+        .is_ok_and(|name| name.eq_ignore_ascii_case(expected))
+        && parser.is_exhausted()
+}
+
+/// The decoded value of one authored CSS identifier.
+pub(super) fn decoded_identifier(text: &str) -> Option<String> {
+    if !text.as_bytes().contains(&b'\\') {
+        return Some(String::from(text));
+    }
+    let mut input = ParserInput::new(text);
+    let mut parser = Parser::new(&mut input);
+    let name = parser.expect_ident_cloned().ok()?;
+    parser.is_exhausted().then(|| String::from(name.as_ref()))
+}
+
 /// A `css/*` rule over the L1 structure of one style block.
 pub trait StyleRule: Send + Sync {
     /// Get rule metadata.
@@ -161,16 +189,6 @@ pub(super) fn key_compound_ids(sheet: &StyleSheet<'_>, prelude: Span) -> Vec<Spa
 /// compound. Comments are in document order, so only those overlapping
 /// `span` are visited.
 pub(super) fn masked(sheet: &StyleSheet<'_>, span: Span) -> String {
-    mask_comments(sheet, span, false)
-}
-
-/// The text of `span` with every comment of the block, a terminated
-/// `/* … */` included, replaced by spaces of the same byte length.
-pub(super) fn without_comments(sheet: &StyleSheet<'_>, span: Span) -> String {
-    mask_comments(sheet, span, true)
-}
-
-fn mask_comments(sheet: &StyleSheet<'_>, span: Span, terminated: bool) -> String {
     let mut text = String::from(sheet.text(span));
     let comments = sheet.comments();
     let first = comments.partition_point(|comment| comment.span().end <= span.start);
@@ -182,7 +200,7 @@ fn mask_comments(sheet: &StyleSheet<'_>, span: Span, terminated: bool) -> String
         .take_while(|comment| comment.start < span.end);
     for comment in inside {
         let body = sheet.text(comment);
-        if !terminated && body.starts_with("/*") && body.len() >= 4 && body.ends_with("*/") {
+        if body.starts_with("/*") && body.len() >= 4 && body.ends_with("*/") {
             continue;
         }
         let from = comment.start.max(span.start) - span.start;
@@ -250,7 +268,7 @@ pub(super) fn important_flags(sheet: &StyleSheet<'_>, value: Span) -> Vec<Span> 
 /// After a function or bracketed block token, its contents are read with
 /// the next token unless consumed now, which would record that token's
 /// start inside the block. Call it only right after such a token.
-fn skip_block(parser: &mut Parser<'_, '_>) {
+pub(super) fn skip_block(parser: &mut Parser<'_, '_>) {
     let _: Result<(), cssparser::ParseError<'_, ()>> = parser.parse_nested_block(|nested| {
         while nested.next_including_whitespace_and_comments().is_ok() {}
         Ok(())

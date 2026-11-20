@@ -2,12 +2,15 @@
 //!
 //! Recommend using CSS logical properties for better internationalization.
 
-use vize_l1::css::{StyleNodeKind, StyleSheet};
+use vize_carton::String;
+use vize_l1::css::{StyleNode, StyleNodeKind, StyleSheet};
 
 use crate::diagnostic::Severity;
 
-use super::style_rule::in_style_scope;
+use super::style_rule::{decoded_identifier, identifier_eq, in_style_scope};
 use super::{CssLintResult, CssRuleMeta, StyleRule};
+
+mod lightning;
 
 static META: CssRuleMeta = CssRuleMeta {
     name: "css/prefer-logical-properties",
@@ -44,7 +47,9 @@ impl StyleRule for PreferLogicalProperties {
             let text = sheet.text(name);
             if !PHYSICAL
                 .iter()
-                .any(|(physical, _)| text.eq_ignore_ascii_case(physical))
+                .any(|(physical, _)| identifier_eq(text, physical))
+                && !nested_property_name(sheet, node)
+                    .is_some_and(|name| physical_property(&name).is_some())
                 || !in_style_scope(sheet, node)
             {
                 continue;
@@ -58,6 +63,41 @@ impl StyleRule for PreferLogicalProperties {
             );
         }
     }
+}
+
+fn physical_property(name: &str) -> Option<(&'static str, &'static str)> {
+    PHYSICAL
+        .iter()
+        .copied()
+        .find(|(physical, _)| name.eq_ignore_ascii_case(physical))
+}
+
+/// Resolve a static nested Sass declaration such as
+/// `border: { left-width: 1px }` to `border-left-width`.
+fn nested_property_name(sheet: &StyleSheet<'_>, node: &StyleNode) -> Option<String> {
+    let nodes = sheet.nodes();
+    let mut parts = Vec::new();
+    let StyleNodeKind::Declaration { name, .. } = sheet.kind(node) else {
+        return None;
+    };
+    parts.push(decoded_identifier(sheet.text(name))?);
+    let mut parent = node.parent();
+    while let Some(index) = parent {
+        let ancestor = nodes.get(index)?;
+        let StyleNodeKind::Declaration { name, .. } = sheet.kind(ancestor) else {
+            break;
+        };
+        if ancestor.is_interpolated() {
+            return None;
+        }
+        parts.push(decoded_identifier(sheet.text(name))?);
+        parent = ancestor.parent();
+    }
+    if parts.len() == 1 {
+        return None;
+    }
+    parts.reverse();
+    Some(parts.join("-").into())
 }
 
 #[cfg(test)]
@@ -101,5 +141,32 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint(".card { .title { margin-left: 10px; } }", 0);
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_warns_escaped_and_nested_physical_properties() {
+        use vize_l1::css::lang::StyleLanguage;
+
+        let linter = create_linter();
+        let scss = ".a { m\\61rgin-left: 1px; border: { left-width: 2px; } }";
+        let result = linter.lint_block(scss, 0, StyleLanguage::Scss, true);
+        let reported: Vec<_> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| &scss[diagnostic.start as usize..diagnostic.end as usize])
+            .collect();
+        assert_eq!(reported, ["m\\61rgin-left", "left-width"]);
+    }
+
+    #[test]
+    fn test_remains_compatible_with_add_rule() {
+        let mut linter = CssLinter::new();
+        linter.add_rule(Box::new(PreferLogicalProperties));
+        assert_eq!(
+            linter
+                .lint(".button { margin-left: 10px; }", 0)
+                .warning_count,
+            1
+        );
     }
 }
