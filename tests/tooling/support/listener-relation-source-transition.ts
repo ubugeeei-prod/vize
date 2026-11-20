@@ -26,6 +26,31 @@ const shippedDeclarationSkipLibCheckTransition: Transition = {
   edits: [{ before: "", after: '        "skipLibCheck",\n' }],
 };
 
+const entryPackageExportsTransition: Transition = {
+  before: {
+    bytes: 4_522,
+    sha256: "54f3c69dcae1a2a2263bd599fa3057ddf2eea6adab125c66ecbb59476130e87b",
+  },
+  after: {
+    bytes: 4_747,
+    sha256: "835515952fb317caaa9403f566efee0bc66d44dc6150170595237de2192919a8",
+  },
+  edits: [
+    {
+      before: "",
+      after:
+        '    "./cli": {\n' +
+        '      "import": "./dist/cli.mjs",\n' +
+        '      "default": "./dist/cli.mjs"\n' +
+        "    },\n" +
+        '    "./content-mapper-cli": {\n' +
+        '      "import": "./dist/content-mapper-cli.mjs",\n' +
+        '      "default": "./dist/content-mapper-cli.mjs"\n' +
+        "    },\n",
+    },
+  ],
+};
+
 const publicExport = `
 import type * as __vizeListenerTypes from "./virtual-ts-listeners.js" with {
   "resolution-mode": "import",
@@ -369,6 +394,16 @@ function inverse(current: string, transition: Transition, context: string): stri
 
 /** Restore only the authenticated pre-listener-relation source image. */
 export function beforeSharedListenerRelationSource(path: string, current: string): string {
+  if (
+    path === "npm/cli/package.json" &&
+    identity(current).sha256 === entryPackageExportsTransition.after.sha256
+  ) {
+    current = inverse(
+      current,
+      entryPackageExportsTransition,
+      "selected emit gate producer: entry package exports",
+    );
+  }
   if (
     path === "npm/cli/package.json" &&
     identity(current).sha256 === shippedDeclarationSkipLibCheckTransition.after.sha256
