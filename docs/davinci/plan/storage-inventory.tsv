@@ -490,7 +490,7 @@ l4	emit	davinci/vize_l4/src/targets/vue2/tests.rs	1	6	1	2	0	0	0	0
 l4	emit	davinci/vize_l4/src/write/document/escape.rs	1	2	0	0	0	0	0	0
 l4	emit	davinci/vize_l4/src/write/document/expression_links.rs	1	2	1	1	0	0	0	0
 l4	-	davinci/vize_l4/src/write/document/tests.rs	0	0	1	1	0	0	0	0
-l4	emit	davinci/vize_l4/src/write/document.rs	1	6	1	13	0	0	0	0
+l4	emit	davinci/vize_l4/src/write/document.rs	1	6	1	12	0	0	0	0
 l4	emit	davinci/vize_l4/src/write/rewrite_spans.rs	1	2	0	0	0	0	0	0
 l4	-	davinci/vize_l4/src/write/source_map/vlq.rs	0	0	1	1	0	0	0	0
 l4	emit	davinci/vize_l4/src/write/source_map.rs	1	9	1	6	0	0	0	0
