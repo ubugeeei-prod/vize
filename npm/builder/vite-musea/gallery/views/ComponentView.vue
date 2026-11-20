@@ -251,7 +251,7 @@ onUnmounted(() => {
         <a
           v-if="designLink"
           class="meta-tag"
-          :href="toSafeUrl(designLink.url) ?? undefined"
+          :href="toSafeUrl(designLink.url)"
           target="_blank"
           rel="noopener noreferrer"
         >
