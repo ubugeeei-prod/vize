@@ -13,7 +13,7 @@ use crate::db::{ResidentDatabase, SourceFile};
 /// `budgets.toml`, whose `[resource]` section holds the cache policy.
 const BUDGETS: &[u8] = include_str!("../../../docs/davinci/plan/budgets.toml").as_bytes();
 /// Where the `[resource]` section starts in [`BUDGETS`].
-const RESOURCE_START: usize = section_start(BUDGETS, b"\n[resource]\n");
+const RESOURCE_START: usize = section_start(BUDGETS, b"\n[resource]");
 /// The `[resource]` section to the end of the file, copied at compile time.
 /// Only these bytes reach the binary: the benchmark registry above them grows
 /// with every benchmark row and is never read here.
@@ -293,5 +293,27 @@ impl ResidentDatabase {
     /// Intern a declaration name for the current revision.
     pub fn declaration_name(&self, name: &str) -> DeclarationName<'_> {
         DeclarationName::new(self, String::from(name))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::section_start;
+
+    #[test]
+    fn resource_heading_preserves_lf_and_crlf_after_the_heading() {
+        for (source, expected) in [
+            (
+                b"[bench]\nvalue = 1\n[resource]\nvalue = 2\n".as_slice(),
+                b"[resource]\nvalue = 2\n".as_slice(),
+            ),
+            (
+                b"[bench]\r\nvalue = 1\r\n[resource]\r\nvalue = 2\r\n".as_slice(),
+                b"[resource]\r\nvalue = 2\r\n".as_slice(),
+            ),
+        ] {
+            let start = section_start(source, b"\n[resource]");
+            assert_eq!(&source[start..], expected);
+        }
     }
 }
