@@ -162,6 +162,7 @@ export function parseStaticJsonExpression(source: string): unknown {
   while (ts.isParenthesizedExpression(expression)) expression = expression.expression;
 
   const read = (node: TypeScript.Expression): unknown => {
+    if (ts.isParenthesizedExpression(node)) return read(node.expression);
     if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return node.text;
     if (ts.isNumericLiteral(node)) return Number(node.text);
     if (node.kind === ts.SyntaxKind.TrueKeyword) return true;

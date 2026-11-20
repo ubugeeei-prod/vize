@@ -2,11 +2,15 @@ import { parseStaticCallArgument } from "../native-loader.js";
 import type { NativeBinding } from "../native-loader.js";
 import type { ArtMetadata } from "../types/index.js";
 
+function maskInactiveMarkup(source: string): string {
+  const mask = (value: string): string => " ".repeat(value.length);
+  return source
+    .replace(/<!--[\s\S]*?-->/gu, mask)
+    .replace(/<(script|style)\b(?:[^>"']|"[^"]*"|'[^']*')*>[\s\S]*?<\/\1\s*>/giu, mask);
+}
+
 function extractArtTagAttributes(source: string): Record<string, string | true> {
-  const structuralSource = source.replace(
-    /<(script|style)\b(?:[^>"']|"[^"]*"|'[^']*')*>[\s\S]*?<\/\1\s*>/giu,
-    "",
-  );
+  const structuralSource = maskInactiveMarkup(source);
   const artTagMatch = structuralSource.match(/<art\b((?:[^>"']|"[^"]*"|'[^']*')*)>/iu);
   if (!artTagMatch) return {};
 
@@ -57,9 +61,10 @@ export function extractCustomArtMetadata(
 }
 
 export function sourceWithOptionalArtTitle(source: string): string {
-  const match = source.match(/<art\b((?:[^>"']|"[^"]*"|'[^']*')*)>/iu);
+  const match = /<art\b((?:[^>"']|"[^"]*"|'[^']*')*)>/iu.exec(maskInactiveMarkup(source));
   if (!match || /\btitle\s*=/iu.test(match[1] ?? "")) return source;
-  return source.replace(/<art\b/iu, '<art title=""');
+  const start = match.index;
+  return `${source.slice(0, start)}<art title=""${source.slice(start + "<art".length)}`;
 }
 
 export type MuseaArtMeta = {

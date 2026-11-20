@@ -79,6 +79,13 @@ void test("defineArt metadata preserves nested parameters from both public macro
     extractDefineArtMeta(`defineArt(Button, { parameters: ${JSON.stringify(parameters)} })`),
     { parameters },
   );
+  assert.deepEqual(
+    extractDefineArtMeta(
+      `defineArtMeta({ parameters: ((({ design: (({ type: ("figma"), url: ("https://www.figma.com/design/example") })) }))) })`,
+    ),
+    { parameters },
+  );
+  assert.deepEqual(extractDefineArtMeta(`defineArtMeta({ parameters: createParameters() })`), {});
 });
 
 void test("defineArt metadata warns about unknown keys and statuses", () => {
@@ -102,13 +109,13 @@ void test("processMuseaArtFile infers a missing title from the art filename", as
     await fs.promises.mkdir(path.dirname(artPath), { recursive: true });
     await fs.promises.writeFile(
       artPath,
-      '<art><variant name="Default"><div /></variant></art>',
+      '<!-- <art status="deprecated"><variant name="Old"><div /></variant></art> -->\n<art status="ready"><variant name="Default"><div /></variant></art>',
       "utf8",
     );
 
     const art = await processMuseaArtFile(artPath, { root: tempDir, command: "build" });
     assert.equal(art?.metadata.title, "Broken");
-    assert.equal(art?.metadata.status, undefined);
+    assert.equal(art?.metadata.status, "ready");
   } finally {
     await fs.promises.rm(tempDir, { recursive: true, force: true });
   }
