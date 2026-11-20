@@ -3,12 +3,11 @@
 //! Recommend using CSS logical properties for better internationalization.
 
 use lightningcss::stylesheet::StyleSheet as LightningStyleSheet;
-use vize_carton::String;
-use vize_l1::css::{StyleNode, StyleNodeKind, StyleSheet};
+use vize_l1::css::{StyleNodeKind, StyleSheet};
 
 use crate::diagnostic::Severity;
 
-use super::style_rule::{decoded_identifier, identifier_eq, in_style_scope};
+use super::style_rule::{identifier_eq, in_style_scope, nested_declaration_name};
 use super::{CssLintResult, CssRule, CssRuleMeta, StyleRule};
 
 mod lightning;
@@ -64,13 +63,20 @@ impl StyleRule for PreferLogicalProperties {
                 continue;
             };
             let text = sheet.text(name);
-            if !PHYSICAL
-                .iter()
-                .any(|(physical, _)| identifier_eq(text, physical))
-                && !nested_property_name(sheet, node)
-                    .is_some_and(|name| physical_property(&name).is_some())
-                || !in_style_scope(sheet, node)
-            {
+            let nested = node.parent().is_some_and(|parent| {
+                sheet.nodes().get(parent).is_some_and(|parent| {
+                    matches!(sheet.kind(parent), StyleNodeKind::Declaration { .. })
+                })
+            });
+            let physical = if nested {
+                nested_declaration_name(sheet, node)
+                    .is_some_and(|(name, _)| physical_property(&name).is_some())
+            } else {
+                PHYSICAL
+                    .iter()
+                    .any(|(physical, _)| identifier_eq(text, physical))
+            };
+            if !physical || !in_style_scope(sheet, node) {
                 continue;
             }
             result.warn(
@@ -89,34 +95,6 @@ fn physical_property(name: &str) -> Option<(&'static str, &'static str)> {
         .iter()
         .copied()
         .find(|(physical, _)| name.eq_ignore_ascii_case(physical))
-}
-
-/// Resolve a static nested Sass declaration such as
-/// `border: { left-width: 1px }` to `border-left-width`.
-fn nested_property_name(sheet: &StyleSheet<'_>, node: &StyleNode) -> Option<String> {
-    let nodes = sheet.nodes();
-    let mut parts = Vec::new();
-    let StyleNodeKind::Declaration { name, .. } = sheet.kind(node) else {
-        return None;
-    };
-    parts.push(decoded_identifier(sheet.text(name))?);
-    let mut parent = node.parent();
-    while let Some(index) = parent {
-        let ancestor = nodes.get(index)?;
-        let StyleNodeKind::Declaration { name, .. } = sheet.kind(ancestor) else {
-            break;
-        };
-        if ancestor.is_interpolated() {
-            return None;
-        }
-        parts.push(decoded_identifier(sheet.text(name))?);
-        parent = ancestor.parent();
-    }
-    if parts.len() == 1 {
-        return None;
-    }
-    parts.reverse();
-    Some(parts.join("-").into())
 }
 
 #[cfg(test)]
@@ -167,14 +145,29 @@ mod tests {
         use vize_l1::css::lang::StyleLanguage;
 
         let linter = create_linter();
-        let scss = ".a { m\\61rgin-left: 1px; border: { left-width: 2px; } }";
+        let scss = ".a { m\\61 rgin-left: 1px; border: { left-width: 2px; } }";
         let result = linter.lint_block(scss, 0, StyleLanguage::Scss, true);
         let reported: Vec<_> = result
             .diagnostics
             .iter()
             .map(|diagnostic| &scss[diagnostic.start as usize..diagnostic.end as usize])
             .collect();
-        assert_eq!(reported, ["m\\61rgin-left", "left-width"]);
+        assert_eq!(reported, ["m\\61 rgin-left", "left-width"]);
+    }
+
+    #[test]
+    fn test_matches_only_the_effective_nested_property_name() {
+        use vize_l1::css::lang::StyleLanguage;
+
+        let linter = create_linter();
+        let scss = ".a { border: { left: { width: 1px; } } #{$side}: { left: 2px; } }";
+        let result = linter.lint_block(scss, 0, StyleLanguage::Scss, true);
+        let reported: Vec<_> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| &scss[diagnostic.start as usize..diagnostic.end as usize])
+            .collect();
+        assert_eq!(reported, ["width"]);
     }
 
     #[test]

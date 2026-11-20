@@ -75,6 +75,13 @@ fn name_before_trailing_comments(
     let (start, end) = original;
     let mut cursor = start;
     while cursor < end {
+        if bytes.get(cursor) == Some(&b'\\') {
+            let Some(escape_end) = css_escape_end(bytes, cursor, end) else {
+                return original;
+            };
+            cursor = escape_end;
+            continue;
+        }
         if bytes.get(cursor).is_some_and(u8::is_ascii_whitespace)
             || matches!(lex(bytes, cursor, lexis, true), Lexeme::Comment { .. })
         {
@@ -129,11 +136,7 @@ fn is_property_name(bytes: &[u8], (start, end): (usize, usize), lexis: &Lexis) -
     };
     let starts =
         first.is_ascii_alphabetic() || matches!(first, b'-' | b'_' | b'\\') || !first.is_ascii();
-    if starts
-        && name
-            .iter()
-            .skip(offset)
-            .all(|&byte| is_name_byte(byte) || byte == b'\\')
+    if starts && !name.contains(&b'\\') && name.iter().skip(offset).all(|&byte| is_name_byte(byte))
     {
         return true;
     }
@@ -150,10 +153,17 @@ fn is_property_name(bytes: &[u8], (start, end): (usize, usize), lexis: &Lexis) -
             }
             continue;
         }
+        if byte == b'\\' {
+            let Some(end) = css_escape_end(bytes, index, end) else {
+                return false;
+            };
+            index = end;
+            continue;
+        }
         let valid = if index == start + offset {
-            byte.is_ascii_alphabetic() || matches!(byte, b'-' | b'_' | b'\\') || !byte.is_ascii()
+            byte.is_ascii_alphabetic() || matches!(byte, b'-' | b'_') || !byte.is_ascii()
         } else {
-            is_name_byte(byte) || byte == b'\\'
+            is_name_byte(byte)
         };
         if !valid {
             return false;
@@ -161,4 +171,37 @@ fn is_property_name(bytes: &[u8], (start, end): (usize, usize), lexis: &Lexis) -
         index += 1;
     }
     index == end
+}
+
+/// End of one valid CSS escape. A hex escape consumes one to six digits and
+/// one optional whitespace terminator; a CRLF pair is one terminator.
+fn css_escape_end(bytes: &[u8], slash: usize, limit: usize) -> Option<usize> {
+    let first = slash.checked_add(1)?;
+    let byte = *bytes.get(first..limit)?.first()?;
+    if byte.is_ascii_hexdigit() {
+        let mut end = first;
+        while end < limit && end - first < 6 && bytes.get(end).is_some_and(u8::is_ascii_hexdigit) {
+            end += 1;
+        }
+        if bytes.get(end).is_some_and(u8::is_ascii_whitespace) {
+            if bytes.get(end) == Some(&b'\r') && bytes.get(end + 1) == Some(&b'\n') {
+                return Some(end + 2);
+            }
+            end += 1;
+        }
+        return Some(end);
+    }
+    if matches!(byte, b'\n' | b'\r' | 0x0c) {
+        return None;
+    }
+    let width = if byte < 0x80 {
+        1
+    } else if byte < 0xe0 {
+        2
+    } else if byte < 0xf0 {
+        3
+    } else {
+        4
+    };
+    (first + width <= limit).then_some(first + width)
 }

@@ -41,6 +41,47 @@ pub(super) fn decoded_identifier(text: &str) -> Option<String> {
     parser.is_exhausted().then(|| String::from(name.as_ref()))
 }
 
+/// Resolve a nested declaration such as `border: { left-width: 1px }` to
+/// `border-left-width`. The returned owner is the first non-declaration
+/// ancestor. Interpolated names stay unknown rather than falling back to one
+/// authored fragment.
+pub(super) fn nested_declaration_name(
+    sheet: &StyleSheet<'_>,
+    node: &StyleNode,
+) -> Option<(String, Option<usize>)> {
+    let nodes = sheet.nodes();
+    let parent = node.parent()?;
+    if !matches!(
+        sheet.kind(nodes.get(parent)?),
+        StyleNodeKind::Declaration { .. }
+    ) {
+        return None;
+    }
+
+    let mut parts = Vec::new();
+    let mut current = node;
+    loop {
+        let StyleNodeKind::Declaration { name, .. } = sheet.kind(current) else {
+            return None;
+        };
+        if current.is_interpolated() {
+            return None;
+        }
+        parts.push(decoded_identifier(sheet.text(name))?);
+
+        let Some(parent) = current.parent() else {
+            parts.reverse();
+            return Some((parts.join("-").into(), None));
+        };
+        let ancestor = nodes.get(parent)?;
+        if !matches!(sheet.kind(ancestor), StyleNodeKind::Declaration { .. }) {
+            parts.reverse();
+            return Some((parts.join("-").into(), Some(parent)));
+        }
+        current = ancestor;
+    }
+}
+
 /// A `css/*` rule over the L1 structure of one style block.
 pub trait StyleRule: Send + Sync {
     /// Get rule metadata.

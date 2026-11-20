@@ -8,8 +8,8 @@ use lightningcss::properties::PropertyId;
 use lightningcss::rules::CssRule as LightningRule;
 
 use super::{META, PreferLogicalProperties};
-use crate::rules::css::declaration_positions::DeclarationPositions;
 use crate::rules::css::CssLintResult;
+use crate::rules::css::declaration_positions::DeclarationPositions;
 
 impl PreferLogicalProperties {
     pub(super) fn check_lightning_rule(

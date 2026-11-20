@@ -72,6 +72,16 @@ fn scan_selector(sheet: &StyleSheet<'_>, prelude: Span) -> SelectorScan {
     let mut parser = Parser::new(&mut input);
     let mut tokens = Vec::new();
     let mut slotted = false;
+    scan_selector_tokens(&mut parser, prelude, &mut tokens, &mut slotted);
+    SelectorScan { tokens, slotted }
+}
+
+fn scan_selector_tokens(
+    parser: &mut Parser<'_, '_>,
+    prelude: Span,
+    tokens: &mut Vec<SpannedToken>,
+    slotted: &mut bool,
+) {
     while !parser.is_exhausted() {
         let start = parser.position().byte_index();
         let Ok(token) = parser.next_including_whitespace_and_comments() else {
@@ -89,13 +99,39 @@ fn scan_selector(sheet: &StyleSheet<'_>, prelude: Span) -> SelectorScan {
             Token::Function(value) => {
                 if value.eq_ignore_ascii_case("slotted") || value.eq_ignore_ascii_case("v-slotted")
                 {
-                    slotted = true;
+                    *slotted = true;
+                    skip_block(parser);
+                    SelectorToken::Other
+                } else if selector_function(value) {
+                    let boundary = Span::new(
+                        prelude.start + parser.position().byte_index() as u32,
+                        prelude.start + parser.position().byte_index() as u32,
+                    );
+                    tokens.push(SpannedToken {
+                        kind: SelectorToken::Separator,
+                        span: boundary,
+                    });
+                    let _: Result<(), cssparser::ParseError<'_, ()>> =
+                        parser.parse_nested_block(|nested| {
+                            scan_selector_tokens(nested, prelude, tokens, slotted);
+                            Ok(())
+                        });
+                    let boundary = Span::new(
+                        prelude.start + parser.position().byte_index() as u32,
+                        prelude.start + parser.position().byte_index() as u32,
+                    );
+                    tokens.push(SpannedToken {
+                        kind: SelectorToken::Separator,
+                        span: boundary,
+                    });
+                    continue;
+                } else {
+                    skip_block(parser);
+                    SelectorToken::Other
                 }
-                skip_block(&mut parser);
-                SelectorToken::Other
             }
             Token::ParenthesisBlock | Token::SquareBracketBlock | Token::CurlyBracketBlock => {
-                skip_block(&mut parser);
+                skip_block(parser);
                 SelectorToken::Other
             }
             _ => SelectorToken::Other,
@@ -106,7 +142,27 @@ fn scan_selector(sheet: &StyleSheet<'_>, prelude: Span) -> SelectorScan {
             span: Span::new(prelude.start + start as u32, prelude.start + end as u32),
         });
     }
-    SelectorScan { tokens, slotted }
+}
+
+fn selector_function(name: &str) -> bool {
+    [
+        "is",
+        "where",
+        "not",
+        "has",
+        "host",
+        "host-context",
+        "global",
+        "deep",
+    ]
+    .iter()
+    .any(|function| name.eq_ignore_ascii_case(function))
+}
+
+fn contains_slot(text: &str) -> bool {
+    text.as_bytes()
+        .windows(4)
+        .any(|window| window.eq_ignore_ascii_case(b"slot"))
 }
 
 fn warn_deprecated_deep(scan: &SelectorScan, result: &mut CssLintResult) {
@@ -189,7 +245,7 @@ impl StyleRule for PreferSlotted {
 
     fn check(&self, sheet: &StyleSheet<'_>, result: &mut CssLintResult) {
         let candidate = |text: &str| {
-            text.contains("slot") || DEPRECATED_DEEP.iter().any(|deep| text.contains(deep))
+            contains_slot(text) || DEPRECATED_DEEP.iter().any(|deep| text.contains(deep))
         };
         let mut slotted: Option<bool> = None;
         for prelude in all_rule_preludes(sheet) {
@@ -319,6 +375,19 @@ mod tests {
         // Valid CSS that uses slot element directly
         let result = linter.lint("slot .content { color: red; }", 0);
         assert!(result.warning_count >= 1);
+    }
+
+    #[test]
+    fn test_warns_case_insensitive_and_function_argument_slot_selectors() {
+        let linter = create_linter();
+        let source = "slot, SLOT, :is(slot, .fallback), [data-value='slot'] { color: red; }";
+        let reported: Vec<_> = linter
+            .lint(source, 0)
+            .diagnostics
+            .iter()
+            .map(|diagnostic| &source[diagnostic.start as usize..diagnostic.end as usize])
+            .collect();
+        assert_eq!(reported, ["slot", "SLOT", "slot"]);
     }
 
     #[test]
