@@ -1,0 +1,1 @@
+export function imported(value: number, radix: number): string { return value.toString(radix) }

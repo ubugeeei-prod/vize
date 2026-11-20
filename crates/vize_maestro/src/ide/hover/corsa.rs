@@ -243,39 +243,30 @@ impl HoverService {
             && let Some(template) = virtual_docs.art_template(info.variant_index)
             && let Some(vts_offset) = template.source_map.to_generated(ctx.offset)
         {
-            let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
-
-            // Open/update virtual document
+            // Open in the canonical native project the diagnostics pass uses,
+            // so the variant's imports keep resolving once that project owns
+            // the session (#13383).
             if bridge.is_initialized() {
-                let vdoc_uri = crate::ide::corsa_support::art_template_request_path(
-                    ctx.uri,
+                let Some(query) = crate::ide::corsa_support::open_art_template_query(
+                    ctx,
+                    &bridge,
                     info.variant_index,
-                );
-                let Ok(uri) = bridge
-                    .open_or_update_virtual_document(&vdoc_uri, &template.content)
-                    .await
+                    template,
+                    vts_offset,
+                )
+                .await
                 else {
                     return Self::hover_template(ctx);
                 };
 
-                // Request hover from Corsa.
-                if let Ok(Some(hover)) = bridge.hover(&uri, line, character).await {
-                    let mapped_range = hover.range.as_ref().and_then(|range| {
-                        crate::ide::corsa_support::map_virtual_range(
-                            ctx,
-                            template,
-                            &Range {
-                                start: tower_lsp::lsp_types::Position {
-                                    line: range.start.line,
-                                    character: range.start.character,
-                                },
-                                end: tower_lsp::lsp_types::Position {
-                                    line: range.end.line,
-                                    character: range.end.character,
-                                },
-                            },
-                        )
-                    });
+                if let Ok(Some(hover)) = bridge
+                    .hover(&query.request_uri, query.line, query.character)
+                    .await
+                {
+                    let mapped_range = hover
+                        .range
+                        .as_ref()
+                        .and_then(|range| query.authored_range(ctx, range));
                     let mut converted = Self::convert_lsp_hover(hover);
                     converted.range = mapped_range;
                     return Some(converted);
