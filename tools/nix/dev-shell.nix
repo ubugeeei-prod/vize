@@ -12,6 +12,22 @@
     let
       nodejs = pkgs.nodejs_24;
       pnpm = pkgs.pnpm;
+      gauche =
+        assert lib.assertMsg (
+          pkgs.gauche.version == "0.9.15"
+        ) "Update the qualified Gauche version and tooling tests together";
+        pkgs.gauche;
+
+      gaucheToolingCheck =
+        pkgs.runCommand "vize-gauche-tooling"
+          {
+            nativeBuildInputs = [ gauche ];
+          }
+          ''
+            cd ${../..}
+            gosh -I tools/scheme tools/scheme/tests/process.scm
+            touch "$out"
+          '';
 
       # A Nix-provided Darwin stdenv has no Xcode behind it. Answer the two
       # queries the toolchain actually makes and defer the rest to the host
@@ -51,6 +67,7 @@
           config.packages.vp
           rustDevToolchain
           pkgs.git
+          gauche
           pkgs.rust-analyzer
           pkgs.wasm-pack
           pkgs.wasm-bindgen-cli
@@ -79,7 +96,7 @@
           ''}
 
           echo "Vize dev shell ready."
-          echo "Nix provides Node, pnpm, Rust, wasm-pack, wasm-bindgen, and binaryen."
+          echo "Nix provides Node, pnpm, Gauche, Rust, wasm-pack, wasm-bindgen, and binaryen."
           echo "Run: vp install --frozen-lockfile"
           echo "Local defaults: vp check / vp fmt / vp dev / vp build / vp test / vp lint"
         '';
@@ -138,6 +155,9 @@
         parallel-frontend = parallelFrontendDevShell;
       };
 
-      checks.shell = devShell.inputDerivation;
+      checks = {
+        gauche-tooling = gaucheToolingCheck;
+        shell = devShell.inputDerivation;
+      };
     };
 }
