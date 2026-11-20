@@ -1,6 +1,6 @@
 //! Qualify the lockfile importers for the focused entry packages.
 
-use super::{bound, json, support, Checked, Value};
+use super::{Checked, Value, bound, json, support};
 
 const START: &str = "  npm/entry/compile:\n";
 const END: &str = "  npm/formatter/prettier:\n";
