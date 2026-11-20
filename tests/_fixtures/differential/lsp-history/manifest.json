@@ -906,13 +906,6 @@
       "expectedSha256": "00184fc8b5f7e30636171c957d22071585d5dce5e797e01b7335b785f2639642"
     },
     {
-      "id": "lsp/fix-history/native-root-required-props-13385",
-      "commit": "09b4ddde76ed21942c0e302e7b2d4d8da289eaf1",
-      "case": "native-root-required-props-13385/case.json",
-      "sha256": "e6cb12922c21e5ca78256588405a1631a82a64d7326faf8860405b9c8523a14b",
-      "expectedSha256": "1ce826a6c363720506a161e251aa0bb177dcc24008c8d2f5ec35be03179a7385"
-    },
-    {
       "id": "lsp/fix-history/native-template-navigation-2558",
       "commit": "7794b09d8ec9c73103b469d66778150be0385ec5",
       "case": "native-template-navigation-2558/case.json",
