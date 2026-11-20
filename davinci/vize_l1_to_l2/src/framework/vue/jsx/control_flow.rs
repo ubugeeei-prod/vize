@@ -3,7 +3,10 @@
 //!
 //! [`is_structural`] recognizes the shapes; a recognized shape either lowers
 //! completely or refuses, so an unrecognized one is always the caller's value
-//! child. `&&` over a value that is not provably boolean waits for `ui.and`.
+//! child. `&&` over a value that is not provably boolean waits for `ui.and`:
+//! the shipped output spells its falsy `left` as text or a comment, which the
+//! level emitter's `left && …` does not reproduce. A ternary arm that is a
+//! value, not markup, renders as text, as the template's interpolation does.
 
 use oxc_ast::ast::{
     CallExpression, ConditionalExpression, Expression, FormalParameters, LogicalExpression,
@@ -13,10 +16,10 @@ use oxc_span::GetSpan;
 use vize_l0::{Box, Span, String, Vec};
 use vize_l2::artifact::OpFamily;
 use vize_l2::expr::ExprRef;
-use vize_l2::op::{ForBinding, ForOp, IfBranch, IfOp, Op, Region};
+use vize_l2::op::{ForBinding, ForOp, IfBranch, IfOp, InterpolationOp, Op, Region};
 use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
 
-use super::children::element;
+use super::children::{contains_jsx, element};
 use super::{Cx, Depth, JsxRefusal, span};
 
 /// Lower an expression child at `at` (its container, or the expression itself
@@ -168,15 +171,37 @@ fn map_call<'a>(
     )))
 }
 
-/// A ternary arm: an element, or nested control flow at the arm itself.
-/// Other arms (values, fragments) wait for `ui.jsx-child` in branches.
+/// A ternary arm: an element, nested control flow at the arm itself, or a
+/// value rendered as text. A fragment, or a value holding markup, waits for
+/// its region op.
 fn branch_region<'a>(cx: &mut Cx<'a, '_>, arm: &Expression<'_>) -> Result<Region<'a>, JsxRefusal> {
     let inner = unwrap_parens(arm);
     if let Expression::JSXElement(_) = inner {
         return render_region(cx, inner);
     }
-    let op = control_flow(cx, inner, inner.span())?.ok_or(JsxRefusal::Child)?;
-    Ok(single(cx, op))
+    if let Some(op) = control_flow(cx, inner, inner.span())? {
+        return Ok(single(cx, op));
+    }
+    value_arm(cx, inner)
+}
+
+/// A value arm as text. Kept out of line: element arms, the common case,
+/// never reach it.
+#[inline(never)]
+fn value_arm<'a>(cx: &mut Cx<'a, '_>, value: &Expression<'_>) -> Result<Region<'a>, JsxRefusal> {
+    if contains_jsx(value) {
+        return Err(JsxRefusal::Child);
+    }
+    cx.mint();
+    let text = Op::Interpolation(Box::new_in(
+        InterpolationOp {
+            expression: cx.expr(value.span())?,
+            raw_html: false,
+            span: span(value.span()),
+        },
+        &cx.allocator,
+    ));
+    Ok(single(cx, text))
 }
 
 /// What an `&&` right side or a `.map` callback returns: an element or

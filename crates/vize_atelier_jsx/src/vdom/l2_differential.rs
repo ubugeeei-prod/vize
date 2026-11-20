@@ -38,6 +38,36 @@ fn l2_vdom_admitted_cases_match_relief_codegen() {
             JsxLang::Jsx,
         ),
         (
+            "ternary string arm",
+            "const A = () => <p>{busy ? \"Loading\" : <i class=\"idle\" />}</p>;",
+            JsxLang::Jsx,
+        ),
+        (
+            "ternary value arm after a sibling",
+            "const A = () => <p><i />{busy ? label : <i class=\"idle\" />}</p>;",
+            JsxLang::Jsx,
+        ),
+        (
+            "ternary chain with value arms",
+            "const A = () => <p>{a ? x : (b) ? <b /> : null}</p>;",
+            JsxLang::Jsx,
+        ),
+        (
+            "ternary template and sequence arms",
+            "const A = () => <p>{a ? (x, y) : <i />}{a ? `t${n}` : <b />}</p>;",
+            JsxLang::Jsx,
+        ),
+        (
+            "component ternary value arm",
+            "const A = () => <Card>{n ? 'none' : <i />}</Card>;",
+            JsxLang::Jsx,
+        ),
+        (
+            "tsx ternary value arm",
+            "const A = () => <p>{(ok as boolean) ? (n as number) : <i />}</p>;",
+            JsxLang::Tsx,
+        ),
+        (
             "fragment root",
             "const A = () => <><i/><b/></>;",
             JsxLang::Jsx,
@@ -285,8 +315,31 @@ fn l2_vdom_admitted_cases_match_relief_codegen() {
     }
 }
 
+#[test]
+fn jsx_entity_value_arm_keeps_authored_javascript_on_relief_route() {
+    let source = "const A = () => <p>{ok ? \"&#34;\" : <i />}</p>;";
+    let natural = compile_case(source, JsxLang::Jsx, EmitRoute::Natural);
+    let relief = compile_case(source, JsxLang::Jsx, EmitRoute::ForceRelief);
+
+    assert_eq!(natural.preamble, relief.preamble);
+    assert_eq!(natural.code, relief.code);
+    assert_eq!(
+        natural.code,
+        r#"export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("p", null, [
+    (ok)
+      ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
+        _createTextVNode(_toDisplayString("&#34;"), 1 /* TEXT */)
+      ], 64 /* STABLE_FRAGMENT */))
+      : (_openBlock(), _createElementBlock("i", { key: 1 }))
+  ]))
+}"#,
+    );
+}
+
 #[derive(Clone, Copy)]
 enum EmitRoute {
+    Natural,
     ForceL2,
     ForceRelief,
 }
@@ -307,6 +360,7 @@ fn compile_case(source: &str, lang: JsxLang, route: EmitRoute) -> Output {
     assert!(lowered.roots.is_empty(), "expected exactly one JSX root");
 
     match route {
+        EmitRoute::Natural => {}
         EmitRoute::ForceL2 => root.root.children.clear(),
         EmitRoute::ForceRelief => root.l2 = Err(L2Refusal::UnsupportedChild),
     }

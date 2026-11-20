@@ -1,5 +1,9 @@
 name: Complete Level Memory Comparison
 
+# Paired runs require a base after the 104-row registry landed. The base and
+# head registry and budget files must be byte-identical; the collector rejects
+# an earlier or mismatched baseline before measuring.
+
 on:
   workflow_call:
     inputs:
