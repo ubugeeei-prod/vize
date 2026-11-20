@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, useTemplateRef } from "vue";
 import { RouterLink, useRoute } from "vue-router";
-import { mdiViewGrid, mdiFolder, mdiChevronUp, mdiChevronDown } from "@mdi/js";
+import { mdiViewGrid, mdiFolder, mdiChevronUp, mdiChevronDown, mdiOpenInNew } from "@mdi/js";
 import { useArts } from "../composables/useArts";
 import { useActions } from "../composables/useActions";
 import { useEventCapture } from "../composables/useEventCapture";
@@ -53,6 +53,24 @@ const variantSectionElements = new Map<string, Element>();
 
 const artPath = computed(() => route.params.path as string);
 const art = computed(() => getArt(artPath.value));
+
+function toSafeUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.href : null;
+  } catch {
+    return null;
+  }
+}
+
+const designLink = computed(() => {
+  const design = art.value?.metadata.parameters?.design;
+  if (!design || typeof design !== "object" || Array.isArray(design)) return null;
+  const { type, url } = design as Record<string, unknown>;
+  if (typeof url !== "string") return null;
+  const safeUrl = toSafeUrl(url);
+  return safeUrl ? { type: typeof type === "string" ? type : "design", url: safeUrl } : null;
+});
 
 // Get the currently selected variant
 const selectedVariant = computed(() => {
@@ -216,7 +234,7 @@ onUnmounted(() => {
     <div class="component-header">
       <div class="component-title-row">
         <h1 class="component-title">{{ art.metadata.title }}</h1>
-        <StatusBadge :status="art.metadata.status" />
+        <StatusBadge v-if="art.metadata.status" :status="art.metadata.status" />
       </div>
       <p v-if="art.metadata.description" class="component-description">
         {{ art.metadata.description }}
@@ -230,6 +248,16 @@ onUnmounted(() => {
           <MdiIcon :path="mdiFolder" :size="12" />
           {{ art.metadata.category }}
         </span>
+        <a
+          v-if="designLink"
+          class="meta-tag"
+          :href="toSafeUrl(designLink.url)"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <MdiIcon :path="mdiOpenInNew" :size="12" />
+          {{ designLink.type }}
+        </a>
         <span v-for="tag in art.metadata.tags" :key="tag" class="meta-tag"> #{{ tag }} </span>
       </div>
     </div>

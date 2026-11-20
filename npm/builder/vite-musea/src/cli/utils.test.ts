@@ -30,7 +30,7 @@ function writeArtFile(root: string, source: string): string {
   return artPath;
 }
 
-void test("parseArtFile reports native draft for unknown art status", async () => {
+void test("parseArtFile warns and omits unknown art status from gallery metadata", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-musea-parse-wip-"));
   const warnings: string[] = [];
   const warn = console.warn;
@@ -49,7 +49,7 @@ void test("parseArtFile reports native draft for unknown art status", async () =
 `,
     );
     const parsed = await parseArtFile(artPath);
-    assert.equal(parsed?.metadata.status, "draft");
+    assert.equal(parsed?.metadata.status, undefined);
     assert.deepEqual(warnings, [
       `[musea] ${artPath}: unknown status "wip"; falling back to "draft" (expected "draft" | "ready" | "deprecated")`,
     ]);

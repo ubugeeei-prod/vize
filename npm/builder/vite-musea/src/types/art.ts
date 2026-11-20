@@ -7,8 +7,10 @@ export interface ArtMetadata {
   component?: string;
   category?: string;
   tags: string[];
-  status: "draft" | "ready" | "deprecated";
+  status?: "draft" | "ready" | "deprecated";
   order?: number;
+  /** Statically serializable project metadata available to gallery integrations. */
+  parameters?: Record<string, unknown>;
   /** Additional DOM events to capture in the Actions panel, e.g. ["mousemove"] */
   actionEvents?: string[];
 }
