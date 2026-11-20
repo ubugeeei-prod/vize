@@ -1,6 +1,11 @@
 [
   {
     "step": 1,
+    "version": 1,
+    "diagnostics": []
+  },
+  {
+    "step": 2,
     "result": {
       "contents": {
         "kind": "markdown",
@@ -19,7 +24,7 @@
     }
   },
   {
-    "step": 2,
+    "step": 3,
     "result": {
       "contents": {
         "kind": "markdown",
@@ -38,7 +43,7 @@
     }
   },
   {
-    "step": 3,
+    "step": 4,
     "result": {
       "contents": {
         "kind": "markdown",
@@ -57,7 +62,7 @@
     }
   },
   {
-    "step": 4,
+    "step": 5,
     "result": {
       "contents": {
         "kind": "markdown",

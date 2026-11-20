@@ -19,6 +19,9 @@
       "open": "src/Button.art.vue"
     },
     {
+      "diagnostics": "src/Button.art.vue"
+    },
+    {
       "request": "textDocument/hover",
       "uri": "src/Button.art.vue",
       "at": {

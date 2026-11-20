@@ -10,7 +10,7 @@
 use oxc_span::SourceType;
 use tower_lsp::lsp_types::{Position, Range};
 use vize_canon::{CorsaBridge, CorsaScriptVirtualDocumentRequest, ImportSourceMap, LspRange};
-use vize_l0::String;
+use vize_l0::{String, cstr};
 
 use crate::ide::{IdeContext, offset_to_position, position_to_offset};
 use crate::virtual_code::VirtualDocument;
@@ -54,6 +54,9 @@ pub(crate) async fn open_art_template_query<'a>(
     generated_offset: usize,
 ) -> Option<ArtTemplateQuery<'a>> {
     let request_path = super::art_template_request_path(ctx.uri, variant_index);
+    let mut source_path = ctx.uri.to_file_path().ok()?;
+    let source_suffix = cstr!(".art_variant_{variant_index}.template.ts");
+    source_path.as_mut_os_string().push(source_suffix.as_str());
     let cached_overlays = ctx.state.corsa_overlays();
     let overlays = cached_overlays
         .iter()
@@ -62,7 +65,7 @@ pub(crate) async fn open_art_template_query<'a>(
     let virtual_ts_options = ctx.state.virtual_ts_options();
     let opened = bridge
         .open_script_virtual_document_with_vue_dependencies(CorsaScriptVirtualDocumentRequest {
-            source_path: std::path::Path::new(request_path.as_str()),
+            source_path: &source_path,
             request_path: &request_path,
             code: &document.content,
             source_type: SourceType::ts(),

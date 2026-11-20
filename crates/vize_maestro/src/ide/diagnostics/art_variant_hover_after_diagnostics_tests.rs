@@ -38,7 +38,9 @@ fn art_variant_hover_resolves_imports_after_diagnostics() {
     };
     crate::runtime::block_on(async {
         let project = crate::test_support::tempdir().expect("project dir");
-        let root = project.path();
+        let project_with_encoded_uri = project.path().join("encoded project");
+        std::fs::create_dir(&project_with_encoded_uri).expect("encoded project dir");
+        let root = project_with_encoded_uri.as_path();
         std::fs::create_dir_all(root.join("src")).expect("src dir");
         std::fs::write(
             root.join("tsconfig.json"),
