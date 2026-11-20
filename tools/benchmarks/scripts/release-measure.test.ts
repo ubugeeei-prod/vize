@@ -1,24 +1,45 @@
 import assert from "node:assert/strict";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 import {
   assertTwin,
   foldRuns,
+  measurePair,
   movedRows,
   renderReport,
   validateSha,
   type Side,
 } from "./release-measure.ts";
 
+const methodology = { profile: "release-profile-test" };
+const row = (instructions: number) => ({
+  instructions,
+  fixture_sha256: "a".repeat(64),
+  window: "routine-return",
+  methodology,
+});
 const side = (rows: Record<string, number>, cli = 100, napi = 50): Side => ({
-  rows,
+  rows: Object.fromEntries(
+    Object.entries(rows).map(([id, instructions]) => [id, row(instructions)]),
+  ),
   sizes: { "`vize` CLI (stripped)": cli, "`vize_vitrine` N-API library": napi },
 });
 
 void test("foldRuns keeps one count per row and rejects disagreeing executions", () => {
-  const run = { a: { instructions: 5 }, b: { instructions: 7 } };
-  assert.deepEqual(foldRuns({ runs: [run, run, run] }), { a: 5, b: 7 });
+  const identified = (instructions: number) => ({
+    instructions,
+    fixture_sha256: "a".repeat(64),
+    window: "routine-return",
+  });
+  const run = { a: identified(5), b: identified(7) };
+  assert.deepEqual(foldRuns({ methodology, runs: [run, run, run] }), {
+    a: row(5),
+    b: row(7),
+  });
   assert.throws(
-    () => foldRuns({ runs: [run, { a: { instructions: 6 }, b: { instructions: 7 } }] }),
+    () => foldRuns({ methodology, runs: [run, { a: identified(6), b: identified(7) }] }),
     /disagree/,
   );
 });
@@ -32,6 +53,12 @@ void test("assertTwin requires reproducible counts and binary sizes", () => {
   assert.doesNotThrow(() => assertTwin("base", primary, side({ a: 1, b: 2 })));
   assert.throws(() => assertTwin("base", primary, side({ a: 1, b: 3 })), /instruction counts/);
   assert.throws(() => assertTwin("base", primary, side({ a: 1, b: 2 }, 101)), /binary sizes/);
+});
+
+void test("instruction comparison rejects a changed workload identity", () => {
+  const changed = side({ a: 1 });
+  changed.rows.a!.fixture_sha256 = "b".repeat(64);
+  assert.throws(() => movedRows(side({ a: 1 }), changed), /workload identity changed/);
 });
 
 void test("validateSha accepts only exact lowercase commit IDs", () => {
@@ -72,4 +99,30 @@ void test("renderReport works without twins", () => {
   });
   assert.match(markdown, /\*\*0 moved, 0 up, 1 identical\*\* of 1 rows\./);
   assert.doesNotMatch(markdown, /A\/A:/);
+});
+
+void test("measurePair never overwrites an existing pair", () => {
+  const root = mkdtempSync(join(tmpdir(), "release-measure-"));
+  const out = join(root, "out");
+  const measured = side({ a: 1 });
+  const fakeMeasure = (_source: string, target: string, label: string) => {
+    const directory = join(target, label);
+    mkdirSync(directory, { recursive: true });
+    writeFileSync(join(directory, "side.json"), `${JSON.stringify(measured)}\n`);
+    return measured;
+  };
+  try {
+    measurePair("base", "head", out, root, false, fakeMeasure, (dir) =>
+      dir === "base" ? "a".repeat(40) : "b".repeat(40),
+    );
+    const first = readFileSync(join(out, "pair.json"), "utf8");
+    assert.throws(
+      () =>
+        measurePair("new-base", "new-head", out, root, false, fakeMeasure, () => "c".repeat(40)),
+      /refusing to reuse measurement output/,
+    );
+    assert.equal(readFileSync(join(out, "pair.json"), "utf8"), first);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

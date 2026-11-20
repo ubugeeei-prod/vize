@@ -23,6 +23,13 @@ const qualificationActions = new Map([
   ],
 ]);
 const performanceRecoveryAction = "./driver/.github/actions/setup-wild-http-recovery";
+const shippedMeasureActions = new Map([
+  [
+    "./driver/.github/actions/setup-cargo-zigbuild",
+    ".github/actions/setup-cargo-zigbuild/action.yml",
+  ],
+  [performanceRecoveryAction, ".github/actions/setup-wild-http-recovery/action.yml"],
+]);
 const appAction = "./.github/actions/app-e2e-row";
 const appFile = ".github/actions/app-e2e-row/action.yml";
 const docsFile = ".github/workflows/build-docs.yml";
@@ -258,6 +265,10 @@ export function verifyDocsWasmConsumers(root) {
               file === ".github/workflows/pr-performance-observation.yml" &&
               job === "observe" &&
               source.has(".github/actions/setup-wild-http-recovery/action.yml")) ||
+            (file === ".github/workflows/shipped-profile-measure.yml" &&
+              job === "measure" &&
+              shippedMeasureActions.has(step.uses) &&
+              source.has(shippedMeasureActions.get(step.uses))) ||
             (step.uses.startsWith("./.github/actions/") &&
               path.split("/").every((part) => part && part !== "." && part !== "..") &&
               (source.has(`${path}/action.yml`) || source.has(`${path}/action.yaml`))),
