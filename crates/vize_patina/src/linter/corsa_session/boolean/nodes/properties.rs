@@ -16,6 +16,7 @@ pub(in crate::linter) mod kind {
     pub const PROPERTY_SIGNATURE: u32 = 172;
     pub const PROPERTY_DECLARATION: u32 = 173;
     pub const GET_ACCESSOR: u32 = 178;
+    pub const TYPE_LITERAL: u32 = 188;
     pub const MAPPED_TYPE: u32 = 201;
     pub const VARIABLE_DECLARATION: u32 = 261;
     pub const SOURCE_FILE: u32 = 307;
