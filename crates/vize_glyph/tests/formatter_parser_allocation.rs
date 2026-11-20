@@ -37,3 +37,35 @@ fn valid_formatter_generics_keep_the_original_source() {
     assert!(parsed.diagnostics.is_empty());
     assert_eq!(parsed.program.source_text, source);
 }
+
+#[test]
+fn l1_formatter_profile_is_the_parse_the_printer_requires() {
+    use vize_l1::embed::syntax::format::{FORMAT_PARSE_OPTIONS, format_source_type};
+    assert_eq!(FORMAT_PARSE_OPTIONS, oxc_formatter::format_parse_options());
+    for source in [
+        "export const value = f<Array<{ name: string }>>();",
+        "const view = <a>{b}</a>;",
+        "const = ;",
+    ] {
+        for source_type in [
+            SourceType::mjs(),
+            SourceType::cjs(),
+            SourceType::jsx(),
+            SourceType::ts(),
+            SourceType::tsx(),
+            SourceType::d_ts(),
+        ] {
+            let allocator = Allocator::default();
+            let stock = parse_for_format(&allocator, source, source_type);
+            let arena = vize_l0::Allocator::default();
+            let profiled =
+                vize_l1::embed::syntax::parse_program_for_format(&arena, source, source_type);
+            assert_eq!(
+                stock.program.source_type.is_jsx(),
+                format_source_type(source_type).is_jsx()
+            );
+            assert_eq!(profiled.program.source_type, stock.program.source_type);
+            assert_eq!(profiled.diagnostics.len(), stock.diagnostics.len());
+        }
+    }
+}

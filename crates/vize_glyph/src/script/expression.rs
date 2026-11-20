@@ -7,7 +7,7 @@ use crate::template::literal_lines::Representation;
 use crate::template::literal_spans::ValueLines;
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast::{Expression, Statement};
-use oxc_formatter::{QuoteStyle, format_program, parse_for_format};
+use oxc_formatter::{QuoteStyle, format_program};
 use oxc_span::SourceType;
 use unicode_width::UnicodeWidthStr;
 use vize_l0::{String, ToCompactString};
@@ -26,6 +26,10 @@ pub(crate) fn trim_expression(expression: &str) -> &str {
     }
 }
 
+// Only a removed generated group that spans lines reaches this; keep its
+// literal ownership walk out of the per-expression formatter frame.
+#[cold]
+#[inline(never)]
 fn strip_generated_group_indent(expression: &str, options: &FormatOptions) -> String {
     let expression = trim_expression(expression);
     let separator = if options.end_of_line == crate::EndOfLine::Cr {
@@ -224,7 +228,7 @@ fn format_expression_with_layout(
         wrapped.truncate("void (".len());
         wrapped.push_str(trimmed);
         wrapped.push(')');
-        let parsed = parse_for_format(oxc_allocator, wrapped.as_str(), source_type);
+        let parsed = super::parse_for_print(oxc_allocator, wrapped.as_str(), source_type);
 
         if !parsed.diagnostics.is_empty() {
             return None;

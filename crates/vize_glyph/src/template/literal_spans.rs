@@ -6,13 +6,10 @@
 //! parser's spans decide that exactly, so a backtick inside a string or comment
 //! is never mistaken for a literal (#9583). Values that are not JavaScript on
 //! their own (`v-for` aliases, partial or invalid code) keep the lexical
-//! ownership of [`LiteralLineState`].
+//! ownership of [`LiteralLineState`]. The spans are L1's
+//! ([`literal_line_starts`]); Glyph only decodes attribute references first.
 
-use oxc_allocator::Allocator;
-use oxc_ast::ast::{StringLiteral, TemplateElement, TemplateLiteral};
-use oxc_ast_visit::Visit;
-use oxc_parser::Parser;
-use oxc_span::SourceType;
+use vize_l1::embed::syntax::{LiteralLineOptions, literal_line_starts};
 use vize_l1::markup::entity::{EntityContext, decode_one};
 
 use super::literal_lines::{LiteralLineState, Representation};
@@ -94,42 +91,30 @@ fn parsed_raw_lines_with_separator<const NEWLINE: u8>(
     if !value.contains(char::from(NEWLINE)) {
         return None;
     }
+    multi_line_raw_lines::<NEWLINE>(value, representation)
+}
+
+/// The parse behind [`parsed_raw_lines`], out of line from its one-line check.
+#[inline(never)]
+fn multi_line_raw_lines<const NEWLINE: u8>(
+    value: &str,
+    representation: Representation,
+) -> Option<Vec<bool>> {
     let decoded = match representation {
         Representation::Html => decode_attribute(value)?,
         Representation::JavaScript | Representation::JavaScriptInterpolation => value.into(),
     };
-    let allocator = Allocator::default();
-    let source_type = SourceType::ts();
-    // Directive printers keep a whole literal, substitutions included, as the
-    // expression formatter laid it out; interpolations own only the quasis.
-    let mut spans = LiteralSpans {
-        spans: Vec::new(),
-        whole_templates: !matches!(representation, Representation::JavaScriptInterpolation),
-    };
-    match Parser::new(&allocator, &decoded, source_type).parse_expression() {
-        Ok(expression) => spans.visit_expression(&expression),
-        Err(_) if !matches!(representation, Representation::JavaScriptInterpolation) => {
-            let parsed = Parser::new(&allocator, &decoded, source_type).parse();
-            if !parsed.diagnostics.is_empty() || parsed.panicked {
-                return None;
-            }
-            spans.visit_program(&parsed.program);
-        }
-        Err(_) => return None,
-    }
-    let mut raw = vec![false];
-    for (index, byte) in decoded.bytes().enumerate() {
-        if byte == NEWLINE {
-            let start = (index + 1) as u32;
-            raw.push(
-                spans
-                    .spans
-                    .iter()
-                    .any(|&(span_start, span_end)| span_start < start && start <= span_end),
-            );
-        }
-    }
-    Some(raw)
+    literal_line_starts(
+        &decoded,
+        LiteralLineOptions {
+            newline: NEWLINE,
+            // Directive printers keep a whole literal, substitutions included,
+            // as the expression formatter laid it out; interpolations own only
+            // the quasis.
+            whole_templates: !matches!(representation, Representation::JavaScriptInterpolation),
+            statements: !matches!(representation, Representation::JavaScriptInterpolation),
+        },
+    )
 }
 
 /// Decode attribute character references; a reference that decodes to a line
@@ -160,29 +145,4 @@ fn decode_attribute(value: &str) -> Option<vize_l0::String> {
     }
     decoded.push_str(rest);
     Some(decoded)
-}
-
-struct LiteralSpans {
-    spans: Vec<(u32, u32)>,
-    whole_templates: bool,
-}
-
-impl<'a> Visit<'a> for LiteralSpans {
-    fn visit_template_literal(&mut self, it: &TemplateLiteral<'a>) {
-        if self.whole_templates {
-            self.spans
-                .push((it.span.start, it.span.end.saturating_sub(1)));
-        } else {
-            oxc_ast_visit::walk::walk_template_literal(self, it);
-        }
-    }
-
-    fn visit_template_element(&mut self, it: &TemplateElement<'a>) {
-        self.spans.push((it.span.start, it.span.end));
-    }
-
-    fn visit_string_literal(&mut self, it: &StringLiteral<'a>) {
-        self.spans
-            .push((it.span.start, it.span.end.saturating_sub(1)));
-    }
 }
