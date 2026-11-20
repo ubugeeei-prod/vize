@@ -139,26 +139,26 @@ jobs:
             cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}",
           }
       - name: Build the exact source CLI
-        run: bash .github/scripts/component-input-diagnostic-ownership/build-source-cli.sh
+        run: source .github/scripts/component-input-diagnostic-ownership/build-source-cli.sh
       - name: Prove actual root scope admission and complete callback mapping laws
-        run: bash .github/scripts/component-input-diagnostic-ownership/prove-root-scope.sh
+        run: source .github/scripts/component-input-diagnostic-ownership/prove-root-scope.sh
       - name: Build the exact authenticated PR base separately
-        run: bash .github/scripts/component-input-diagnostic-ownership/build-authenticated-base.sh
+        run: source .github/scripts/component-input-diagnostic-ownership/build-authenticated-base.sh
       - name: Install exact published SDK and baseline packages
-        run: bash .github/scripts/component-input-diagnostic-ownership/install-sdk-packages.sh
+        run: source .github/scripts/component-input-diagnostic-ownership/install-sdk-packages.sh
       - name: Build and retain the exact source SDK
-        run: bash .github/scripts/component-input-diagnostic-ownership/build-source-sdk.sh
+        run: source .github/scripts/component-input-diagnostic-ownership/build-source-sdk.sh
       - name: Compare all complete packets on all three physical SDKs
-        run: bash .github/scripts/component-input-diagnostic-ownership/compare-sdk-packets.sh
+        run: source .github/scripts/component-input-diagnostic-ownership/compare-sdk-packets.sh
       - name: Retain all 144 unchanged generic repair observations
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/component-input-d6c4/tsgo
           VIZE_TEST_CONTENT_MAPPER_VUE: ${{ runner.temp }}/component-input-consumer/node_modules/vue
-        run: bash .github/scripts/component-input-diagnostic-ownership/retain-generic-repair-observations.sh
+        run: source .github/scripts/component-input-diagnostic-ownership/retain-generic-repair-observations.sh
       - name: Retain every callback-CFA base, head and independent reference packet
-        run: bash .github/scripts/component-input-diagnostic-ownership/retain-callback-packets.sh
+        run: source .github/scripts/component-input-diagnostic-ownership/retain-callback-packets.sh
       - name: Audit callback creation order without waiving the separate event frontier
-        run: bash .github/scripts/component-input-diagnostic-ownership/audit-callback-order.sh
+        run: source .github/scripts/component-input-diagnostic-ownership/audit-callback-order.sh
       # The bounded CFA discovery batch is preserved under #10738/#10739.
       # Its manual harness remains available; it is not an acceptance gate.
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -205,13 +205,13 @@ jobs:
         with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Capture exact base and head through the identical observation harness
         shell: bash
-        run: bash .github/scripts/component-input-diagnostic-ownership/capture-projection-packets.sh
+        run: source .github/scripts/component-input-diagnostic-ownership/capture-projection-packets.sh
       - name: Prove complete packets under the exact canonical helper relocation
         shell: bash
-        run: bash .github/scripts/component-input-diagnostic-ownership/prove-constructor-projection.sh
+        run: source .github/scripts/component-input-diagnostic-ownership/prove-constructor-projection.sh
       - name: Observe actual mapper generation and gated parser allocations
         shell: bash
-        run: bash .github/scripts/component-input-diagnostic-ownership/observe-generation-profile.sh
+        run: source .github/scripts/component-input-diagnostic-ownership/observe-generation-profile.sh
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

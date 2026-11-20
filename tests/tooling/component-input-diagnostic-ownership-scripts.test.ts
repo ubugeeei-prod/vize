@@ -28,7 +28,7 @@ function assertAuthenticatedBaseComparison(source: string): void {
 test("workflow logic stays in checked-in scripts instead of multiline YAML blocks", () => {
   const source = fs.readFileSync(workflowPath, "utf8");
   assert.doesNotMatch(source, /^\s+run:\s*\|/mu);
-  const scripts = [...source.matchAll(/^\s+run: bash (\.github\/scripts\/[^\s]+\.sh)$/gmu)].map(
+  const scripts = [...source.matchAll(/^\s+run: source (\.github\/scripts\/[^\s]+\.sh)$/gmu)].map(
     (match) => match[1],
   );
   assert.equal(scripts.length, 12);
