@@ -12,6 +12,7 @@ fn strict_template_globals_keep_template_scope_aliases() {
             "nested-v-for-aliases",
             "slot-props",
             "undeclared-names-in-template-scope",
+            "undeclared-attribute-bindings-13376",
         ],
     );
 }

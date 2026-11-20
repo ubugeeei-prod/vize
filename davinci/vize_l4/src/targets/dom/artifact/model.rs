@@ -122,14 +122,14 @@ pub(super) fn first_runtime_model<'a>(element: &'a ElementOp<'a>) -> Option<&'a 
     })
 }
 
-pub(super) fn emit_native_entry(
+pub(super) fn emit_element_entry(
     cx: &mut EmitCx<'_>,
     element: &ElementOp<'_>,
     model: &ModelOp<'_>,
 ) -> Result<(), EmitError> {
-    let helper = native_helper(element);
-    let source = RawJs::Owned(native_read_source(cx, model)?);
-    let modifiers = native_modifiers(model);
+    let helper = element_helper(element);
+    let source = RawJs::Owned(element_read_source(cx, model)?);
+    let modifiers = element_modifiers(model);
     cx.buf.use_helper(helper);
     if modifiers.is_empty() {
         cx.buf.push("  [");
@@ -183,7 +183,7 @@ fn emit_modified_entry(
     cx.buf.push("  ]");
 }
 
-fn native_helper(element: &ElementOp<'_>) -> Helper {
+fn element_helper(element: &ElementOp<'_>) -> Helper {
     match element.tag {
         "select" => Helper::VModelSelect,
         "textarea" => Helper::VModelText,
@@ -224,7 +224,7 @@ pub(super) fn value_source(
 /// inside the quotes (`v-model=" msg "` → `[_vModelText,  msg ]`); the
 /// component `modelValue` value is trimmed by the shipped transform and
 /// stays on [`value_source`].
-fn native_read_source(cx: &EmitCx<'_>, model: &ModelOp<'_>) -> Result<String, EmitError> {
+fn element_read_source(cx: &EmitCx<'_>, model: &ModelOp<'_>) -> Result<String, EmitError> {
     let raw = js_source(model)?;
     if cx.prefixing() {
         return cx.prefixed_expr(&model.contract.read, Site::Expression);
@@ -294,7 +294,7 @@ fn component_modifiers<'a>(model: &'a ModelOp<'a>) -> StdVec<&'a str> {
         .collect()
 }
 
-fn native_modifiers<'a>(model: &'a ModelOp<'a>) -> StdVec<&'a str> {
+fn element_modifiers<'a>(model: &'a ModelOp<'a>) -> StdVec<&'a str> {
     component_modifiers(model)
         .into_iter()
         .filter(|modifier| matches!(*modifier, "lazy" | "number" | "trim"))

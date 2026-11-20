@@ -11,6 +11,7 @@ const generator = "tools/support/compat/davinci/generated-ledgers.ts";
 const names = [
   "analysis-consumption-summary.md",
   "consumer-migration-summary.md",
+  "lint-substrate.md",
   "rule-parity.md",
   "sourcelocation-summary.md",
   "storage-summary.md",

@@ -18,7 +18,7 @@ use super::{
 /// Original authored header fact group, scoped to one genuine element.
 pub struct NativeLintHeaders;
 impl FactGroup for NativeLintHeaders {
-    const ID: AnalysisId = ids::NATIVE_LINT_HEADERS;
+    const ID: AnalysisId = ids::ORIGINAL_LINT_HEADERS;
     const NAME: &'static str = "native-lint-headers";
     const STRATUM: u8 = 0;
     const DEPENDS: Demand = Demand::NONE;
@@ -41,7 +41,7 @@ impl WitnessGroup for NativeLintHeaders {
 /// Checked original authored attributes, with their real attribute ordinals.
 pub struct NativeLintAttributes;
 impl FactGroup for NativeLintAttributes {
-    const ID: AnalysisId = ids::NATIVE_LINT_ATTRIBUTES;
+    const ID: AnalysisId = ids::ORIGINAL_LINT_ATTRIBUTES;
     const NAME: &'static str = "native-lint-attributes";
     const STRATUM: u8 = 0;
     const DEPENDS: Demand = Demand::NONE;
@@ -62,12 +62,12 @@ impl WitnessGroup for NativeLintAttributes {
 /// Authored rule counterexamples, derived solely from genuine header and attrs.
 pub struct NativeUnsupportedAria;
 impl FactGroup for NativeUnsupportedAria {
-    const ID: AnalysisId = ids::NATIVE_UNSUPPORTED_ARIA;
+    const ID: AnalysisId = ids::ORIGINAL_UNSUPPORTED_ARIA;
     const NAME: &'static str = "native-unsupported-aria";
     const STRATUM: u8 = 1;
     const DEPENDS: Demand = Demand::NONE
-        .with(ids::NATIVE_LINT_HEADERS)
-        .with(ids::NATIVE_LINT_ATTRIBUTES);
+        .with(ids::ORIGINAL_LINT_HEADERS)
+        .with(ids::ORIGINAL_LINT_ATTRIBUTES);
     type Key = u32;
     type Value = NativeUnsupportedAriaFact;
 }
@@ -130,9 +130,9 @@ pub struct UnsupportedAriaDemand;
 impl FactConsumer for UnsupportedAriaDemand {
     const NAME: &'static str = "a11y/aria-unsupported-elements";
     const DEMAND: Demand = Demand::NONE
-        .with(ids::NATIVE_LINT_HEADERS)
-        .with(ids::NATIVE_LINT_ATTRIBUTES)
-        .with(ids::NATIVE_UNSUPPORTED_ARIA);
+        .with(ids::ORIGINAL_LINT_HEADERS)
+        .with(ids::ORIGINAL_LINT_ATTRIBUTES)
+        .with(ids::ORIGINAL_UNSUPPORTED_ARIA);
 }
 
 pub(super) static REGISTRY: FactRegistry<Evidence> = FactRegistry::new(&[

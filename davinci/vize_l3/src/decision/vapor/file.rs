@@ -2,7 +2,7 @@
 
 use super::VaporFacts;
 use crate::decision::{
-    DecisionBuildError, DecisionTables, NativeAnalysis, build_decisions, policy::TargetPolicy,
+    DecisionAnalysis, DecisionBuildError, DecisionTables, build_decisions, policy::TargetPolicy,
 };
 use vize_l2::{artifact::Artifact, file::FileArtifact};
 
@@ -10,8 +10,8 @@ use vize_l2::{artifact::Artifact, file::FileArtifact};
 ///
 /// A caller cannot substitute an independently supplied analysis:
 /// ```compile_fail
-/// use vize_l3::decision::vapor::NativeVaporFileAnalysis;
-/// fn detach(view: NativeVaporFileAnalysis<'_, '_>) { let _ = view.analysis; }
+/// use vize_l3::decision::vapor::VaporFileAnalysis;
+/// fn detach(view: VaporFileAnalysis<'_, '_>) { let _ = view.analysis; }
 /// ```
 /// Original ownership remains live through the borrowed output:
 /// ```compile_fail
@@ -23,12 +23,12 @@ use vize_l2::{artifact::Artifact, file::FileArtifact};
 ///     let _ = analysis.file();
 /// }
 /// ```
-pub struct NativeVaporFileAnalysis<'owner, 'arena> {
+pub struct VaporFileAnalysis<'owner, 'arena> {
     file: &'owner FileArtifact<'arena>,
-    analysis: NativeAnalysis<'owner, 'arena>,
+    analysis: DecisionAnalysis<'owner, 'arena>,
 }
 
-impl<'owner, 'arena> NativeVaporFileAnalysis<'owner, 'arena> {
+impl<'owner, 'arena> VaporFileAnalysis<'owner, 'arena> {
     #[must_use]
     pub const fn file(&self) -> &'owner FileArtifact<'arena> {
         self.file
@@ -58,23 +58,23 @@ impl<'owner, 'arena> NativeVaporFileAnalysis<'owner, 'arena> {
 /// This is completed File admission, not whole SFC custody or product parity.
 pub fn build_vapor_file_decisions<'owner, 'arena>(
     file: &'owner FileArtifact<'arena>,
-) -> Result<NativeVaporFileAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<VaporFileAnalysis<'owner, 'arena>, DecisionBuildError> {
     if !file.is_complete() {
         return Err(DecisionBuildError::IncompleteFile);
     }
     let analysis = build_decisions(file.artifact(), TargetPolicy::Vapor)?;
-    Ok(NativeVaporFileAnalysis { file, analysis })
+    Ok(VaporFileAnalysis { file, analysis })
 }
 
 // Called only after the real selected template entry derives its own File.
 pub(in crate::decision) fn build_original_file_decisions<'owner, 'arena>(
     file: &'owner FileArtifact<'arena>,
-) -> Result<NativeVaporFileAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<VaporFileAnalysis<'owner, 'arena>, DecisionBuildError> {
     let analysis = crate::decision::build::build_with_original(
         file,
         TargetPolicy::Vapor,
         &crate::decision::dom::LiteralExpressions,
         &crate::decision::dom::vue::policy::NoReads,
     )?;
-    Ok(NativeVaporFileAnalysis { file, analysis })
+    Ok(VaporFileAnalysis { file, analysis })
 }

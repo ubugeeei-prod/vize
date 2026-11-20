@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const key = 'translate'
+</script>
+
+<template>
+  <div>{{ plugin.translate }} {{ plugin["translate"] }} {{ plugin[key] }} {{ (plugin).translate }}</div>
+</template>

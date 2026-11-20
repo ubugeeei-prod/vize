@@ -20,7 +20,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             self.handler_binding(id, binding, on);
             return;
         }
-        if R::NATIVE_SETUP
+        if R::SELECTED_SETUP
             && let BindingOp::Model(model) = binding
         {
             self.model_binding(id, binding, model);

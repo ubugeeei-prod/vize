@@ -1,0 +1,70 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-src-alias-imported-type-props-786",
+    history: "ab456f2bfc1cd5ca3a3c5b1baa4d9dc318fe4a07",
+    source: "<template>\n  <MkPagination\n    :paginator=\"paginator\"\n    :direction=\"direction\"\n    :autoLoad=\"autoLoad\"\n    :pullToRefresh=\"pullToRefresh\"\n    :withControl=\"withControl\"\n    :forceDisableInfiniteScroll=\"forceDisableInfiniteScroll\"\n  />\n</template>\n\n<script setup lang=\"ts\" generic=\"T\">\nimport type { MkPaginationOptions } from '@/components/MkPagination.vue';\nimport MkPagination from '@/components/MkPagination.vue';\n\nconst props = withDefaults(defineProps<MkPaginationOptions & {\n  paginator: T;\n  noGap?: boolean;\n}>(), {\n  autoLoad: true,\n  direction: 'down',\n  pullToRefresh: true,\n  withControl: true,\n  forceDisableInfiniteScroll: false,\n});\n</script>",
+    filename: "packages/frontend/src/components/MkNotesTimeline.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        no_project_config: Some(
+            true,
+        ),
+    },
+    files: {
+        "packages/frontend/src/components/MkPagination.vue": "<script lang=\"ts\">\nexport type MkPaginationOptions = {\n  autoLoad?: boolean;\n  direction?: 'up' | 'down' | 'both';\n  pullToRefresh?: boolean;\n  withControl?: boolean;\n  forceDisableInfiniteScroll?: boolean;\n};\n</script>",
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nimport MkPagination from '@/components/MkPagination.vue'\n\n\nexport default {\n  __name: 'MkNotesTimeline',\n  props: {\n    autoLoad: { type: Boolean, required: false, default: true },\n    direction: { type: String, required: false, default: \"down\" },\n    pullToRefresh: { type: Boolean, required: false, default: true },\n    withControl: { type: Boolean, required: false, default: true },\n    forceDisableInfiniteScroll: { type: Boolean, required: false, default: false },\n    paginator: { type: null, required: true },\n    noGap: { type: Boolean, required: false }\n  },\n  setup(__props) {\n\nconst props = __props\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createBlock(MkPagination, {\n    paginator: __props.paginator,\n    direction: __props.direction,\n    autoLoad: __props.autoLoad,\n    pullToRefresh: __props.pullToRefresh,\n    withControl: __props.withControl,\n    forceDisableInfiniteScroll: __props.forceDisableInfiniteScroll\n  }, null, 8 /* PROPS */, [\"paginator\", \"direction\", \"autoLoad\", \"pullToRefresh\", \"withControl\", \"forceDisableInfiniteScroll\"]))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "direction": Props,
+                        "pullToRefresh": Props,
+                        "props": SetupConst,
+                        "paginator": Props,
+                        "forceDisableInfiniteScroll": Props,
+                        "autoLoad": Props,
+                        "MkPagination": SetupConst,
+                        "withControl": Props,
+                        "noGap": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [
+                "$PROJECT/packages/frontend/src/components/MkPagination.vue",
+                "$PROJECT/packages/frontend/src/components/tsconfig.json",
+                "$PROJECT/packages/frontend/src/tsconfig.json",
+                "$PROJECT/packages/frontend/tsconfig.json",
+                "$PROJECT/packages/tsconfig.json",
+                "$PROJECT/tsconfig.json",
+            ],
+        },
+    ),
+)

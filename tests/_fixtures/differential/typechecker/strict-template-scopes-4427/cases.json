@@ -96,6 +96,37 @@
           "message": "Property 'missingFooter' does not exist on type '$StrictTemplateContext'."
         }
       ]
+    },
+    {
+      "id": "undeclared-attribute-bindings-13376",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "undeclared-attributes.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 10,
+          "column": 13,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingKey' does not exist on type '$StrictTemplateContext'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 12,
+          "column": 36,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingTitle' does not exist on type '$StrictTemplateContext'."
+        }
+      ]
     }
   ]
 }

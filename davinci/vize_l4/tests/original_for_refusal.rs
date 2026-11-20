@@ -13,7 +13,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{lang::js::NativeTemplateOwner, op::Op};
-use vize_l3::decision::{dom::DomUnsupported, native::build_native_dom_file_decisions};
+use vize_l3::decision::{dom::DomUnsupported, template::build_template_dom_decisions};
 use vize_l4::{
     targets::dom::{DomErrorKind, emit_template},
     write::Recorded,
@@ -54,7 +54,7 @@ fn authentic_whole_head_still_returns_typed_dom_operation_refusal_before_output(
         walk.complete().unwrap();
     }
     let owner = owner.finish();
-    let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
+    let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
     let [Op::OriginalFor(original)] = analysis.artifact().root().ops.as_slice() else {
         panic!("original")
     };

@@ -1,7 +1,7 @@
 use super::super::{DescriptorIssueCode as Code, policy::Policy};
 use super::Vue2DescriptorObservation;
 use crate::container::{Vue, vue::DescriptorOptions};
-use crate::dialect::vue2::surface::parse_component_block;
+use crate::framework::vue::version::v2::surface::parse_component_block;
 use vize_l0::{Allocator, Span};
 
 impl Vue {

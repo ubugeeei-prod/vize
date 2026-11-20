@@ -3,7 +3,7 @@
 use serde::Deserialize;
 use vize_glyph::native_doc::{LineEnding, PrintOptions, print, vue2_text_document};
 use vize_l0::{Allocator, String};
-use vize_l1::dialect::vue2::surface;
+use vize_l1::framework::vue::version::v2::surface;
 
 mod custody;
 mod refusals;

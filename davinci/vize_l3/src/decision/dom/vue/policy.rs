@@ -8,7 +8,7 @@ use vize_l2::{
 
 pub(in crate::decision) trait FileReads<'owner, 'arena> {
     const RECORD: bool;
-    const NATIVE_SETUP: bool = false;
+    const SELECTED_SETUP: bool = false;
     const ORIGINAL_FOR: bool = false;
     fn classify(
         &self,

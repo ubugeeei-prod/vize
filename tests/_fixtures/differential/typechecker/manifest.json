@@ -55853,7 +55853,7 @@
       },
       "packReference": {
         "path": "strict-nuxt-template-globals-4423/cases.json",
-        "sha256": "d6042238fff09d293850af03ac5c73ccf1f98bc9ad843faabc9456083f0d3179"
+        "sha256": "75098646049a0c1bda4c00341d0cb121cab1b90ed2cbea4e792b2fc8e9984ab5"
       },
       "inputs": [
         {
@@ -55912,7 +55912,7 @@
       },
       "packReference": {
         "path": "strict-nuxt-template-globals-4423/cases.json",
-        "sha256": "d6042238fff09d293850af03ac5c73ccf1f98bc9ad843faabc9456083f0d3179"
+        "sha256": "75098646049a0c1bda4c00341d0cb121cab1b90ed2cbea4e792b2fc8e9984ab5"
       },
       "inputs": [
         {
@@ -55971,7 +55971,7 @@
       },
       "packReference": {
         "path": "strict-nuxt-template-globals-4423/cases.json",
-        "sha256": "d6042238fff09d293850af03ac5c73ccf1f98bc9ad843faabc9456083f0d3179"
+        "sha256": "75098646049a0c1bda4c00341d0cb121cab1b90ed2cbea4e792b2fc8e9984ab5"
       },
       "inputs": [
         {
@@ -56030,7 +56030,7 @@
       },
       "packReference": {
         "path": "strict-nuxt-template-globals-4423/cases.json",
-        "sha256": "d6042238fff09d293850af03ac5c73ccf1f98bc9ad843faabc9456083f0d3179"
+        "sha256": "75098646049a0c1bda4c00341d0cb121cab1b90ed2cbea4e792b2fc8e9984ab5"
       },
       "inputs": [
         {
@@ -56047,6 +56047,65 @@
           "file": "src/App.vue",
           "path": "strict-nuxt-template-globals-4423/literals.App.vue.txt",
           "sha256": "1217aaaacee27a79e10d316942abedc8aee1c180e7a45a5cdf4d18f4884fc99e"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/strict-nuxt-template-globals-4423/unknown-member-root-13376",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "strict-nuxt-template-globals-4423",
+      "case": "unknown-member-root-13376",
+      "test": "fix_history_cases::strict_nuxt_template_globals_4423::strict_nuxt_template_globals_read_declared_surfaces",
+      "regressionCommit": "d197098cb7a3d4d414a8225dda2a97267b253f82",
+      "sourceRevision": "d197098cb7a3d4d414a8225dda2a97267b253f82",
+      "checkerOptions": {
+        "strictInstanceGlobals": true,
+        "autoImportStubs": [
+          "declare const currentUser: { name: string };",
+          "declare const getPreferences: () => { theme: string };"
+        ]
+      },
+      "packReference": {
+        "path": "strict-nuxt-template-globals-4423/cases.json",
+        "sha256": "75098646049a0c1bda4c00341d0cb121cab1b90ed2cbea4e792b2fc8e9984ab5"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "strict-nuxt-template-globals-4423/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "path": "strict-nuxt-template-globals-4423/plugins.d.ts.txt",
+          "sha256": "aa594d59daaf5582d2c96bbcacadec816ec0b665c1c0f85e279bb4778a9162de"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "strict-nuxt-template-globals-4423/unknown-member-root-13376.App.vue.txt",
+          "sha256": "21dea84852afa70d5f002510ada4bd2c7034e89b89422eecb8df54d64da5d1df"
         }
       ],
       "dialectCoverage": {
@@ -56707,7 +56766,7 @@
       },
       "packReference": {
         "path": "strict-template-scopes-4427/cases.json",
-        "sha256": "f021a9f0a90512f76dd873226d3334237516de60fdd64d7be354001f47ab66ea"
+        "sha256": "62676da17b2bd7386e9b480dc9cc11a7bb250ab6470394510866194c70d661d2"
       },
       "inputs": [
         {
@@ -56757,7 +56816,7 @@
       },
       "packReference": {
         "path": "strict-template-scopes-4427/cases.json",
-        "sha256": "f021a9f0a90512f76dd873226d3334237516de60fdd64d7be354001f47ab66ea"
+        "sha256": "62676da17b2bd7386e9b480dc9cc11a7bb250ab6470394510866194c70d661d2"
       },
       "inputs": [
         {
@@ -56807,7 +56866,7 @@
       },
       "packReference": {
         "path": "strict-template-scopes-4427/cases.json",
-        "sha256": "f021a9f0a90512f76dd873226d3334237516de60fdd64d7be354001f47ab66ea"
+        "sha256": "62676da17b2bd7386e9b480dc9cc11a7bb250ab6470394510866194c70d661d2"
       },
       "inputs": [
         {
@@ -56862,7 +56921,7 @@
       },
       "packReference": {
         "path": "strict-template-scopes-4427/cases.json",
-        "sha256": "f021a9f0a90512f76dd873226d3334237516de60fdd64d7be354001f47ab66ea"
+        "sha256": "62676da17b2bd7386e9b480dc9cc11a7bb250ab6470394510866194c70d661d2"
       },
       "inputs": [
         {
@@ -56874,6 +56933,56 @@
           "file": "src/App.vue",
           "path": "strict-template-scopes-4427/undeclared.App.vue.txt",
           "sha256": "c4e3e256cc97cc030d08b4ac750fd6204c9ec491981899e472f94b1b25f82404"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/strict-template-scopes-4427/undeclared-attribute-bindings-13376",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "strict-template-scopes-4427",
+      "case": "undeclared-attribute-bindings-13376",
+      "test": "fix_history_cases::strict_template_scopes_4427::strict_template_globals_keep_template_scope_aliases",
+      "regressionCommit": "eb489b2579e9a9d92e5e7260c7eef32e2d701f56",
+      "sourceRevision": "eb489b2579e9a9d92e5e7260c7eef32e2d701f56",
+      "checkerOptions": {
+        "strictInstanceGlobals": true
+      },
+      "packReference": {
+        "path": "strict-template-scopes-4427/cases.json",
+        "sha256": "62676da17b2bd7386e9b480dc9cc11a7bb250ab6470394510866194c70d661d2"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "strict-template-scopes-4427/tsconfig.json.txt",
+          "sha256": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "strict-template-scopes-4427/undeclared-attributes.App.vue.txt",
+          "sha256": "3d3fcfc26c61534d607e2c8525104e33caef747e41a1d8352a3ee7b8e05471be"
         }
       ],
       "dialectCoverage": {
@@ -69899,6 +70008,50 @@
               "ts"
             ],
             "selector": "content_mapper_tsgo_cli::tsx_script_syntax::standard_tsgo_checks_ts_only_generic_arrows_and_assertions; input-only registration, source/native/public qualification remains independent"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/v-slot-parameter-default-13415/semantic-diagnostics-survive",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::v_slot_parameter_default::defaulted_v_slot_pattern_preserves_the_project_semantic_pass",
+      "sourceRevision": "df5cadb7a70b8d9175bf343295e7e23dc31b9682",
+      "inputs": [
+        {
+          "file": "A.vue",
+          "path": "v-slot-parameter-default-13415/A.vue.txt",
+          "role": "reported-v-slot-whole-parameter-default",
+          "sha256": "746a1548ce8dff287bb2a735c7ada3b3ed6b67260c4410e0546dfef773264391"
+        },
+        {
+          "file": "semantic.ts",
+          "path": "v-slot-parameter-default-13415/semantic.ts.txt",
+          "role": "semantic-pass-survival-control",
+          "sha256": "c6a52603ebb94adc0d98f6e64b0bbf1683472440db085bf008d6dd972490fcf2"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "v-slot-parameter-default-13415/tsconfig.json.txt",
+          "role": "reported-tsrs-content-mapper-config",
+          "sha256": "8771ec9fbfb5a2207069943ae717fa189757cf71f65c1643966acb7d46554ae0"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "defaulted_v_slot_pattern_preserves_the_project_semantic_pass; reported defaulted destructuring stays parseable while a separate semantic error remains visible. Input-only registration; no native parity claim."
           }
         ]
       }

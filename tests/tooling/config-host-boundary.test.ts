@@ -63,7 +63,7 @@ test("the config facade is allowed only at the existing CLI compatibility facade
   const facade = "pub use vize_carton::config::*;";
   assert.match(withoutHostRuntimeReferences(facade, hostFiles[1]), forbiddenCartonStorage);
   assert.match(
-    withoutHostRuntimeReferences(facade, "davinci/vize_l1/src/dialect/vue.rs"),
+    withoutHostRuntimeReferences(facade, "davinci/vize_l1/src/framework/vue/quirks.rs"),
     forbiddenCartonStorage,
   );
 });

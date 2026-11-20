@@ -244,6 +244,29 @@ export const cacheInputs = {
     "README.md",
     "crates/vize/tests/fixtures/content_mapper_project/**",
   ],
+  // Release contracts without product execution (tooling-test-scopes.ts), audited
+  // 2026-11-19 (#6830): release-owned scripts, fixtures, workflows and manifests.
+  // Their import closures and literally named paths still select them too.
+  toolingReleaseSurfaces: [
+    "package.json",
+    ...taskConfigInputs,
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    ".github/**",
+    ".cargo/**",
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain.toml",
+    "crates/*/Cargo.toml",
+    "davinci/*/Cargo.toml",
+    "npm/**/package.json",
+    "editors/**/package.json",
+    "tools/support/release/**",
+    "tools/commands/release/**",
+    "tests/tooling/release/**",
+    "tests/_fixtures/release/**",
+    "docs/release/**",
+  ],
   rust: [
     "package.json",
     ...taskConfigInputs,

@@ -8,8 +8,8 @@
 )]
 
 use vize_l0::{Allocator, SourceRoot};
-use vize_l1::dialect::LegacyVueVersion;
-use vize_l1::dialect::vue2::surface::{self, TextChildren, TextRefusal, TextView};
+use vize_l1::framework::vue::LegacyVueVersion;
+use vize_l1::framework::vue::version::v2::surface::{self, TextChildren, TextRefusal, TextView};
 use vize_l1::markup::SurfaceChild;
 use vize_l1::markup::htmlish::render::check_fidelity;
 

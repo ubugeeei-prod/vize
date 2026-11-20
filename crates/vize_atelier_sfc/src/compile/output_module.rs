@@ -221,7 +221,7 @@ mod tests {
                 "component.render = render\nexport default component\n",
             ),
             (
-                RenderFunctionName::SfcRender,
+                RenderFunctionName::ComponentRender,
                 "component.render = _sfc_render\nexport default component\n",
             ),
             (

@@ -95,7 +95,7 @@ impl LowerPolicy {
 pub(super) fn directive_values_are_clauses(
     cx: &cx::Cx<'_, impl vize_l2::provenance::ProvenanceSink>,
 ) -> bool {
-    cx.caps.directive_arg_style == vize_l1::dialect::DirectiveArgStyle::Clause
+    cx.caps.directive_arg_style == vize_l1::framework::vue::DirectiveArgStyle::Clause
 }
 
 /// The canonical L2 artifact one lowering produces, beside the conversion

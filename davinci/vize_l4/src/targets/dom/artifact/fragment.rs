@@ -19,15 +19,15 @@ use super::children::{
 };
 use super::helper::Helper;
 use super::prefix::Site;
-use super::sfc_style;
 use super::slots::is_whitespace_text;
+use super::style_carrier;
 use super::vnode;
 
 pub(super) fn root_needs_fragment(root: &Region<'_>) -> bool {
     let mut count = 0u32;
     let mut compound = false;
     for op in root.ops.iter() {
-        if sfc_style::is_carrier(op) || super::annotations::is_annotation(op) {
+        if style_carrier::is_carrier(op) || super::annotations::is_annotation(op) {
             continue;
         }
         if is_whitespace_text(op) {
@@ -58,9 +58,9 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), Em
             continue;
         }
         if let Op::Element(element) = op
-            && sfc_style::is_carrier_element(element)
+            && style_carrier::is_carrier_element(element)
         {
-            sfc_style::skip_carrier(cx, element);
+            style_carrier::skip_carrier(cx, element);
             continue;
         }
         if is_whitespace_text(op) {
@@ -160,9 +160,9 @@ fn emit_fragment(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError
             continue;
         }
         if let Op::Element(element) = op
-            && sfc_style::is_carrier_element(element)
+            && style_carrier::is_carrier_element(element)
         {
-            sfc_style::skip_carrier(cx, element);
+            style_carrier::skip_carrier(cx, element);
             index += 1;
             continue;
         }
@@ -336,7 +336,7 @@ fn meaningful_bounds(root: &Region<'_>) -> Option<(usize, usize)> {
     let mut first = None;
     let mut last = None;
     for (index, op) in root.ops.iter().enumerate() {
-        if sfc_style::is_carrier(op)
+        if style_carrier::is_carrier(op)
             || is_whitespace_text(op)
             || super::annotations::is_annotation(op)
         {

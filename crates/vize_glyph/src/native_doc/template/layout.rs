@@ -1,7 +1,7 @@
 //! Shared opening/closing layout, retaining original attribute and token bytes.
 
 use vize_l0::{Allocator, SourceRoot, Vec};
-use vize_l1::dialect::vue3::VueDirectives;
+use vize_l1::framework::vue::version::v3::VueDirectives;
 use vize_l1::markup::DirectiveSyntax;
 use vize_l1::markup::{Attribute, Element, ElementClose};
 

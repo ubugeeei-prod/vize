@@ -93,7 +93,7 @@ fn walk_element(
     // `<router-view>` resolves the same binding as `<RouterView>`. Inside
     // `<svg>` a non-native tag such as `<Swatch>` still resolves a component.
     if element.tag_type == ElementType::Component
-        || (element.tag_type == ElementType::Element && !vize_l0::is_native_tag(element.tag))
+        || (element.tag_type == ElementType::Element && !vize_l0::is_platform_tag(element.tag))
     {
         note_component_tag(element.tag, uses);
     }

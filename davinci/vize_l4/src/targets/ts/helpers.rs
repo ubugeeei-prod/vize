@@ -6,10 +6,10 @@
 //! an unpublished helper is refused until the helper-asset change lands.
 
 /// Checks one bound native element prop: `<Tag, Prop>(value)`.
-pub const NATIVE_ELEMENT_PROP: &str = "__vizeNativeElementProp";
+pub const ELEMENT_PROP: &str = "__vizeNativeElementProp";
 
 /// Every ambient helper the target writes.
-pub const HELPERS: &[&str] = &[NATIVE_ELEMENT_PROP];
+pub const HELPERS: &[&str] = &[ELEMENT_PROP];
 
 /// The value type of a re-render root, from Vue's public types.
 pub const RE_RENDER_ROOT: &str = "import(\"vue\").VNode";

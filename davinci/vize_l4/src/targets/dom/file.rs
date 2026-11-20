@@ -2,7 +2,7 @@
 
 use vize_l0::id::NodeId;
 use vize_l2::{expr::ExprRef, file::FileArtifact, resolution::Occurrence};
-use vize_l3::decision::{NativeFileAnalysis, dom::DomFacts, native::NativeTemplateDomAnalysis};
+use vize_l3::decision::{FileAnalysis, dom::DomFacts, template::TemplateDomAnalysis};
 
 use super::expression::ExpressionWriter;
 use super::{DomError, DomErrorKind, encode};
@@ -23,13 +23,11 @@ use crate::write::{LinkSink, Writer};
 ///
 /// A caller cannot substitute a bare analysis or supply a context policy:
 /// ```compile_fail
-/// use vize_l3::decision::NativeAnalysis;
+/// use vize_l3::decision::DecisionAnalysis;
 /// use vize_l4::{targets::dom::emit_file, write::NoLinks};
-/// fn substitute(analysis: &NativeAnalysis<'_, '_>) { let _ = emit_file::<NoLinks>(analysis); }
+/// fn substitute(analysis: &DecisionAnalysis<'_, '_>) { let _ = emit_file::<NoLinks>(analysis); }
 /// ```
-pub fn emit_file<L: LinkSink>(
-    analysis: &NativeFileAnalysis<'_, '_>,
-) -> Result<Writer<L>, DomError> {
+pub fn emit_file<L: LinkSink>(analysis: &FileAnalysis<'_, '_>) -> Result<Writer<L>, DomError> {
     encode(
         analysis.artifact().source(),
         analysis.policy(),
@@ -52,14 +50,14 @@ pub fn emit_file<L: LinkSink>(
 ///
 /// A neutral File analysis cannot stand in for selected-root completion:
 /// ```compile_fail
-/// use vize_l3::decision::NativeFileAnalysis;
+/// use vize_l3::decision::FileAnalysis;
 /// use vize_l4::{targets::dom::emit_template, write::NoLinks};
-/// fn substitute(analysis: &NativeFileAnalysis<'_, '_>) {
+/// fn substitute(analysis: &FileAnalysis<'_, '_>) {
 ///     let _ = emit_template::<NoLinks>(analysis);
 /// }
 /// ```
 pub fn emit_template<L: LinkSink>(
-    analysis: &NativeTemplateDomAnalysis<'_, '_>,
+    analysis: &TemplateDomAnalysis<'_, '_>,
 ) -> Result<Writer<L>, DomError> {
     encode(
         analysis.artifact().source(),

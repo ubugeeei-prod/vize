@@ -159,7 +159,7 @@ mod tests {
         let arena = Allocator::default();
         let source = "<div id='x'>text</div>";
         let options = DomEmitOptions::DEFAULT;
-        let expected = crate::targets::dom::artifact::emit_dom_source_sfc_with_options(
+        let expected = crate::targets::dom::artifact::emit_dom_source_strict_slots_with_options(
             &arena,
             source,
             LegacyCaps::VUE3,

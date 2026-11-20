@@ -2,7 +2,7 @@
 
 use vize_l0::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
 use vize_l0::{CompactString, Span, cstr};
-use vize_l1::markup::directive::{DirectivePrefix, DirectiveSyntax, VueDirectives};
+use vize_l1::framework::vue::directive::{DirectivePrefix, DirectiveSyntax, VueDirectives};
 use vize_l1::markup::{Element, ElementClose, Interpolation, SurfaceChild, SurfaceTree, Token};
 use vize_relief::SourceLocation;
 

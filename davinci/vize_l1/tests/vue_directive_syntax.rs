@@ -1,8 +1,8 @@
 //! Independent source-coordinate goldens for the ordinary native library build.
 
 use vize_l0::{Span, String, cstr};
-use vize_l1::dialect::vue3::directive::MAX_DIRECTIVE_DELIMITER_RUNS;
-use vize_l1::markup::directive::DirectiveNameError;
+use vize_l1::framework::vue::directive::DirectiveNameError;
+use vize_l1::framework::vue::version::v3::directive::MAX_DIRECTIVE_DELIMITER_RUNS;
 use vize_l1::markup::{ArgSyntax, DirectiveName, DirectivePrefix, DirectiveSyntax, VueDirectives};
 
 fn shifted(span: Span, offset: u32) -> Span {
@@ -330,8 +330,8 @@ fn vue_attribute_states_accept_repeated_and_alternating_delimiters_without_a_js_
 
 #[test]
 fn transitional_public_paths_resolve_the_same_native_provider() {
-    let provider: vize_l1::dialect::vue3::VueDirectives = VueDirectives;
-    let alias: vize_l1::markup::directive::VueDirectives = provider;
+    let provider: vize_l1::framework::vue::version::v3::VueDirectives = VueDirectives;
+    let alias: vize_l1::framework::vue::directive::VueDirectives = provider;
     assert_eq!(
         alias.decompose("v-pre.foo", 0),
         VueDirectives.decompose("v-pre.foo", 0)

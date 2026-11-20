@@ -1,0 +1,61 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-re-exported-sfc-interface-props-945",
+    history: "4d4f036515bfd64c82ac2491f389c32072773610",
+    source: "<script lang=\"ts\">\nimport type { ReExportedBaseProps } from \"./re-exported\";\n\nexport interface ReExportedParentWidgetProps extends ReExportedBaseProps {}\n</script>\n\n<script setup lang=\"ts\">\nimport ReExportedChild from \"./ReExportedChild.vue\";\n\nconst props = defineProps<ReExportedParentWidgetProps>();\n</script>\n\n<template>\n  <ReExportedChild :as=\"as\" :as-child=\"props.asChild\" />\n</template>\n",
+    filename: "ReExportedParentWidget.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    files: {
+        "ReExportedBase.vue": "<script lang=\"ts\">\nexport interface ReExportedBaseProps {\n  as?: string;\n  asChild?: boolean;\n}\n</script>\n\n<template>\n  <div />\n</template>\n",
+        "ReExportedChild.vue": "<script setup lang=\"ts\">\ndefineProps<{\n  as?: string;\n  asChild?: boolean;\n}>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+        "re-exported.ts": "export { type ReExportedBaseProps } from \"./ReExportedBase.vue\";\n",
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nimport ReExportedChild from './ReExportedChild.vue'\n\nexport {};\n\nexport default {\n  __name: 'ReExportedParentWidget',\n  props: {\n    as: { type: String, required: false },\n    asChild: { type: Boolean, required: false }\n  },\n  setup(__props) {\n\nconst props = __props;\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createBlock(ReExportedChild, {\n    as: __props.as,\n    \"as-child\": props.asChild\n  }, null, 8 /* PROPS */, [\"as\", \"as-child\"]))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "asChild": Props,
+                        "props": SetupReactiveConst,
+                        "ReExportedChild": SetupConst,
+                        "as": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [
+                "$PROJECT/ReExportedBase.vue",
+                "$PROJECT/re-exported.ts",
+                "$PROJECT/tsconfig.json",
+            ],
+        },
+    ),
+)

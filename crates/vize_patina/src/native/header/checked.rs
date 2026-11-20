@@ -2,7 +2,7 @@
 
 use vize_l0::Span;
 use vize_l1::{
-    dialect::vue3::VueDirectives,
+    framework::vue::version::v3::VueDirectives,
     markup::{
         ArgSyntax, AttributeView, DirectiveName, DirectivePrefix, DirectiveSyntax, ElementView,
     },

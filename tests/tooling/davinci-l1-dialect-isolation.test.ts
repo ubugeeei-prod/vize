@@ -58,18 +58,18 @@ test("generic lexer and profile policy mutations fail without rejecting dialect 
     "markup/htmlish/lex/compat.rs",
     "markup/htmlish/lex/nested/token.rs",
   ];
-  for (const relative of ["markup.rs", "markup/directive.rs", ...genericMarkupFiles]) {
+  for (const relative of ["markup.rs", "markup/grammar.rs", ...genericMarkupFiles]) {
     const file = path.join(root, relative);
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(
       file,
-      genericMarkupFiles.includes(relative) ? "fn generic() {}" : "use crate::dialect;",
+      genericMarkupFiles.includes(relative) ? "fn generic() {}" : "use crate::framework::vue;",
     );
   }
   assertGenericIsolation(root);
   for (const relative of genericMarkupFiles) {
     const file = path.join(root, relative);
-    fs.writeFileSync(file, "use crate::dialect::LegacyCaps;");
+    fs.writeFileSync(file, "use crate::framework::vue::LegacyCaps;");
     assert.throws(
       () => assertGenericIsolation(root),
       (error) => error instanceof assert.AssertionError && error.message.includes(file),

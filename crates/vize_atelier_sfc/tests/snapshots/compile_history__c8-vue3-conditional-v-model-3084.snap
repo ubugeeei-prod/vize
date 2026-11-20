@@ -1,0 +1,48 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-vue3-conditional-v-model-3084",
+    history: "0a3641d18e59ec215e291a8c73b75517fe7d8c25",
+    source: "<el-input v-model=\"multiple ? presentText : inputValue\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: InvalidExpression,
+            message: "Error parsing JavaScript expression: Cannot assign to this expression",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 10,
+                        end: 55,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_el_input = _resolveComponent(\"el-input\")\n  \n  return (_openBlock(), _createBlock(_component_el_input, {\n    modelValue: _ctx.multiple ? _ctx.presentText : _ctx.inputValue,\n    \"onUpdate:modelValue\": $event => ($event => ($event => ((multiple ? presentText : inputValue) = $event)))\n  }, null, 8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\"]))\n}",
+    map: None,
+}

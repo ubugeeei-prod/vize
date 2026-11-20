@@ -2,7 +2,7 @@
 use serde_json::{Value, json};
 use vize_l0::{Allocator, Span};
 use vize_l2::lang::js::{NativeTemplateIssue, NativeTemplateIssueKind};
-use vize_l3::decision::vapor::{VaporUnsupported, build_native_vapor_file_decisions};
+use vize_l3::decision::vapor::{VaporUnsupported, build_template_vapor_decisions};
 use vize_l4::{
     targets::vapor::{VaporErrorKind, emit_template},
     write::{NoLinks, Recorded},
@@ -19,7 +19,7 @@ fn static_class_whitespace_entities_and_original_root_flags_emit_whole_modules()
         let arena = Allocator::default();
         let source = row["source"].as_str().unwrap();
         let owner = crate::original(&arena, source);
-        let analysis = build_native_vapor_file_decisions(owner.view().unwrap()).unwrap();
+        let analysis = build_template_vapor_decisions(owner.view().unwrap()).unwrap();
         assert!(core::ptr::eq(analysis.owner(), &owner));
         assert!(core::ptr::eq(analysis.artifact().source(), source));
         assert_eq!(analysis.vapor().unwrap().unsupported(), [], "{}", row["id"]);
@@ -143,7 +143,7 @@ fn static_class_never_authorizes_nul_ordinary_cr_style_duplicates_or_dynamic_hea
             continue;
         }
         assert_eq!(refusal, None, "{}", row["id"]);
-        let analysis = build_native_vapor_file_decisions(owner.view().unwrap()).unwrap();
+        let analysis = build_template_vapor_decisions(owner.view().unwrap()).unwrap();
         let expected = match row["requiredRefusal"].as_str().unwrap() {
             "DuplicateAttribute" => VaporUnsupported::DuplicateAttribute,
             "AttributeSemantics" => VaporUnsupported::AttributeSemantics,

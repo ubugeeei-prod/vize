@@ -11,7 +11,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceChild, SurfaceParseOptions},
 };
 use vize_l2::lang::js::NativeTemplateOwner;
-use vize_l3::decision::native::build_native_dom_file_decisions;
+use vize_l3::decision::template::build_template_dom_decisions;
 use vize_l4::{
     module::assemble_template,
     runtime::{Runtime, vocabulary},
@@ -110,7 +110,7 @@ fn whole_selected_condensed_root_modules_maps_and_links_match_pinned_packets()
             walk.complete().map_err(|_| "complete original root")?;
         }
         let output = core::hint::black_box(original.finish());
-        let analysis = build_native_dom_file_decisions(output.view().map_err(|_| "completion")?)
+        let analysis = build_template_dom_decisions(output.view().map_err(|_| "completion")?)
             .map_err(|_| "genuine selected L3")?;
         assert!(core::ptr::eq(analysis.owner(), &output));
         assert!(core::ptr::eq(
