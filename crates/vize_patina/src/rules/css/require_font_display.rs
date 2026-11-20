@@ -18,6 +18,10 @@ static META: CssRuleMeta = CssRuleMeta {
     default_severity: Severity::Warning,
 };
 
+// The built-in path is `StyleRule`; retain the public `CssRule` implementation
+// for existing callers of `CssLinter::add_rule`.
+const _CSS_RULE_COMPATIBILITY: () = ();
+
 /// It reads every `@font-face` in the L1 structure, in every style language,
 /// and reports it at its `@font-face` keyword.
 pub struct RequireFontDisplay;

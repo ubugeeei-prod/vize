@@ -37,10 +37,10 @@ css/no-id-selectors	L1 css	style-l1	native	-	-	css/no_id_selectors.rs
 css/no-important	L1 css	style-l1	native	-	-	css/no_important.rs
 css/no-utility-classes	L1 css	css-lightningcss	legacy-engine	-	-	css/no_utility_classes.rs
 css/no-v-bind-performance	L1 css	css-lightningcss	legacy-engine	-	-	css/no_v_bind_performance.rs
-css/prefer-logical-properties	L1 css	css-lightningcss	legacy-engine	-	-	css/prefer_logical_properties.rs
+css/prefer-logical-properties	L1 css	style-l1	native	-	-	css/prefer_logical_properties.rs
 css/prefer-nested-selectors	L1 css	css-lightningcss	legacy-engine	-	-	css/prefer_nested_selectors.rs
-css/prefer-slotted	L1 css	css-lightningcss	legacy-engine	-	-	css/prefer_slotted.rs
-css/require-font-display	L1 css	css-lightningcss	legacy-engine	-	-	css/require_font_display.rs
+css/prefer-slotted	L1 css	style-l1	native	-	-	css/prefer_slotted.rs
+css/require-font-display	L1 css	style-l1	native	-	-	css/require_font_display.rs
 ecosystem/nuxt-prefer-nuxt-link	L1 syntax	markup-l2	legacy-rule	relief	-	ecosystem/nuxt_prefer_nuxt_link.rs
 ecosystem/pinia-prefer-store-to-refs	L1 script	script-oxc	legacy-engine	-	-	script/pinia_prefer_store_to_refs.rs
 ecosystem/router-link-require-to	L2 semantic	markup-l2	legacy-rule	relief	-	ecosystem/router_link_require_to.rs

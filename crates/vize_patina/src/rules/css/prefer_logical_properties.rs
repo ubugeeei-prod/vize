@@ -18,6 +18,10 @@ static META: CssRuleMeta = CssRuleMeta {
     default_severity: Severity::Warning,
 };
 
+// The built-in path is `StyleRule`; retain the public `CssRule` implementation
+// for existing callers of `CssLinter::add_rule`.
+const _CSS_RULE_COMPATIBILITY: () = ();
+
 /// Physical properties and the logical property each one maps to.
 const PHYSICAL: [(&str, &str); 8] = [
     ("margin-left", "margin-inline-start"),
