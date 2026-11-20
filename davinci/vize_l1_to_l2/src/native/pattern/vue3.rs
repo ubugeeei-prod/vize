@@ -2,7 +2,7 @@
 
 use super::{ConstructionFactory, Context, Directive, NativeHoleKind, Pattern};
 use vize_l1::embed::prepare_attribute_value;
-use vize_l1::markup::directive::{ArgSyntax, DirectiveName, DirectivePrefix};
+use vize_l1::framework::vue::directive::{ArgSyntax, DirectiveName, DirectivePrefix};
 
 pub(super) struct Patterns<'a, R>(core::marker::PhantomData<(&'a (), R)>);
 

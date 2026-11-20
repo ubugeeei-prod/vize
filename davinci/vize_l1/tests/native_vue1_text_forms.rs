@@ -1,7 +1,7 @@
 //! Original expression-only forms mirrored by the complete pinned Vue 1 oracle.
 
 use vize_l0::Allocator;
-use vize_l1::dialect::vue1::surface;
+use vize_l1::framework::vue::version::v1::surface;
 use vize_l1::markup::{SurfaceChild, check_fidelity};
 
 #[test]

@@ -1,6 +1,6 @@
 use super::*;
-use vize_l1::dialect::vue2::text::TextBoundaryKind;
 use vize_l1::embed::syntax::EmbedHole;
+use vize_l1::framework::vue::version::v2::text::TextBoundaryKind;
 
 #[test]
 fn same_buffer_reparse_copied_source_and_other_occurrences_cannot_supply_foreign_children() {

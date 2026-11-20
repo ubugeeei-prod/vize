@@ -8,8 +8,8 @@ use super::{
     RetainedExpression, RetainedSlotParams, Shape, SourceError, admission,
     coordinates::Coordinates, parse_once,
 };
-pub use crate::dialect::vue3::for_head::ForKeyword;
-use crate::dialect::vue3::for_head::{SplitError, split};
+pub use crate::framework::vue::version::v3::for_head::ForKeyword;
+use crate::framework::vue::version::v3::for_head::{SplitError, split};
 mod validation;
 pub use parse::{AdmittedDenseForHead, ForInput, ForInputError, ForRefusal, RejectedForInput};
 mod view;

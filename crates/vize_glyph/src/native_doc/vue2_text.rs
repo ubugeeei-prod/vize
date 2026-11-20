@@ -1,7 +1,7 @@
 //! One original Vue 2 interpolation, with authored filter gaps kept verbatim.
 
 use vize_l0::{Allocator, SourceBlock, Span, Vec};
-use vize_l1::{dialect::vue2::surface::TextView, embed::syntax::EmbedSyntax};
+use vize_l1::{embed::syntax::EmbedSyntax, framework::vue::version::v2::surface::TextView};
 
 use super::{Doc, ExpressionRefusal, expression::borrowed_document};
 
@@ -28,7 +28,7 @@ pub enum Vue2TextDocumentRefusal {
 /// ```
 /// use vize_glyph::native_doc::{PrintOptions, print, vue2_text_document};
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue2::surface;
+/// use vize_l1::framework::vue::version::v2::surface;
 /// let arena = Allocator::default();
 /// let owner = surface::parse_component(&arena, "{{ left+right | upper () }}").unwrap();
 /// let view = owner.text_for(owner.children().next().unwrap()).unwrap();
@@ -39,7 +39,7 @@ pub enum Vue2TextDocumentRefusal {
 ///
 /// ```compile_fail,E0451
 /// use vize_glyph::native_doc::{Doc, Vue2TextDocument};
-/// use vize_l1::dialect::vue2::surface::TextView;
+/// use vize_l1::framework::vue::version::v2::surface::TextView;
 /// fn forge<'o, 'a>(original: TextView<'o, 'a>, document: Doc<'a>) -> Vue2TextDocument<'o, 'a> {
 ///     Vue2TextDocument { original, document }
 /// }
@@ -53,7 +53,7 @@ pub enum Vue2TextDocumentRefusal {
 /// ```compile_fail,E0515
 /// use vize_glyph::native_doc::{Vue2TextDocument, vue2_text_document};
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue2::surface::ComponentParse;
+/// use vize_l1::framework::vue::version::v2::surface::ComponentParse;
 /// fn escape<'a>(owner: ComponentParse<'a>, arena: &'a Allocator) -> Vue2TextDocument<'a, 'a> {
 ///     vue2_text_document(owner.text_for(owner.children().next().unwrap()).unwrap(), arena).unwrap()
 /// }
@@ -61,7 +61,7 @@ pub enum Vue2TextDocumentRefusal {
 /// ```compile_fail,E0505
 /// use vize_glyph::native_doc::{PrintOptions, print, vue2_text_document};
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue2::surface;
+/// use vize_l1::framework::vue::version::v2::surface;
 /// let arena = Allocator::default();
 /// let owner = surface::parse_component(&arena, "{{ item }}").unwrap();
 /// let document = vue2_text_document(owner.text_for(owner.children().next().unwrap()).unwrap(), &arena).unwrap();
@@ -71,7 +71,7 @@ pub enum Vue2TextDocumentRefusal {
 /// ```compile_fail
 /// use vize_glyph::native_doc::{PrintOptions, print, vue2_text_document};
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue2::surface;
+/// use vize_l1::framework::vue::version::v2::surface;
 /// let doc_arena = Allocator::default();
 /// let owner = {
 ///     let original_arena = Allocator::default();
@@ -83,7 +83,7 @@ pub enum Vue2TextDocumentRefusal {
 /// ```compile_fail,E0505
 /// use vize_glyph::native_doc::vue2_text_document;
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue2::surface;
+/// use vize_l1::framework::vue::version::v2::surface;
 /// let arena = Allocator::default();
 /// let owner = surface::parse_component(&arena, "{{ item }}").unwrap();
 /// let document = vue2_text_document(owner.text_for(owner.children().next().unwrap()).unwrap(), &arena).unwrap();
@@ -94,7 +94,7 @@ pub enum Vue2TextDocumentRefusal {
 /// ```compile_fail
 /// use vize_glyph::native_doc::{PrintOptions, print, vue2_text_document};
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue2::surface;
+/// use vize_l1::framework::vue::version::v2::surface;
 /// let arena = Allocator::default();
 /// let owner = {
 ///     let source = String::from("{{ item }}");
@@ -106,7 +106,7 @@ pub enum Vue2TextDocumentRefusal {
 /// ```compile_fail
 /// use vize_glyph::native_doc::{PrintOptions, print, vue2_text_document};
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue2::surface;
+/// use vize_l1::framework::vue::version::v2::surface;
 /// let arena = Allocator::default();
 /// let owner = surface::parse_component(&arena, "{{ item }}").unwrap();
 /// let document = {
@@ -218,7 +218,7 @@ mod tests {
 
     use super::*;
     use crate::native_doc::{Line, document::Kind};
-    use vize_l1::dialect::vue2::surface;
+    use vize_l1::framework::vue::version::v2::surface;
 
     #[derive(Debug, PartialEq, Eq)]
     enum Tree<'a> {

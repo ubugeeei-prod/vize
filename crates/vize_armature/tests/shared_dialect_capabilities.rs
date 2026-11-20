@@ -7,12 +7,12 @@ fn parser_exports_are_the_shared_l1_types() {
     use vize_l0::config::VueVersion;
 
     for version in VueVersion::ALL {
-        let parser_caps: vize_l1::dialect::LegacyDialectCapabilities =
+        let parser_caps: vize_l1::framework::vue::LegacyDialectCapabilities =
             LegacyDialectCapabilities::for_dialect(version);
-        let lowering_caps: vize_l1::dialect::LegacyCaps =
-            vize_l1::dialect::LegacyCaps::for_version(version);
+        let lowering_caps: vize_l1::framework::vue::LegacyCaps =
+            vize_l1::framework::vue::LegacyCaps::for_version(version);
         assert_eq!(parser_caps, lowering_caps);
     }
-    let _: vize_l1::dialect::LegacyVueVersion = LegacyVueVersion::V2;
-    let _: vize_l1::dialect::DirectiveArgStyle = DirectiveArgStyle::Colon;
+    let _: vize_l1::framework::vue::LegacyVueVersion = LegacyVueVersion::V2;
+    let _: vize_l1::framework::vue::DirectiveArgStyle = DirectiveArgStyle::Colon;
 }
