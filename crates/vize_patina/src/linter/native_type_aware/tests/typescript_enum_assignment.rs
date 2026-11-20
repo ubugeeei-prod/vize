@@ -163,6 +163,100 @@ void [combined, arrow, described, plain, Holder, Derived];
     );
 }
 
+/// #13404: an enum-typed key can index an inferred object whose computed
+/// members are declared with values from that same enum. The individual
+/// member keys are narrower than the key, but they still share its enum.
+#[test]
+fn inferred_computed_enum_members_accept_their_own_enum() {
+    if !corsa_available() {
+        return;
+    }
+    let source = r#"<script setup lang="ts">
+enum State {
+  None,
+  Active,
+  Paused,
+  Max,
+}
+type ActiveState = Exclude<State, State.None | State.Max>;
+interface Item {
+  state: State;
+}
+const labels = {
+  [State.None]: "none",
+  [State.Active]: "active",
+  [State.Paused]: "paused",
+  [State.Max]: "max",
+} as const satisfies Record<State, string>;
+const activeLabels = {
+  [State.Active]: "active",
+  [State.Paused]: "paused",
+} satisfies Record<ActiveState, string>;
+declare const state: State;
+declare const activeState: ActiveState;
+declare const items: Item[];
+labels[state];
+activeLabels[activeState];
+items.map((item) => labels[item.state]);
+</script>
+"#;
+    assert_eq!(packets(source), Vec::<Packet>::new());
+}
+
+/// #13404: the same inferred-key boundary holds when both the enum and the
+/// object are imported and the key is a subset of the enum's members.
+#[test]
+fn imported_inferred_computed_enum_members_accept_their_enum_subset() {
+    if !corsa_available() {
+        return;
+    }
+    let enums = r#"export enum State {
+  None,
+  Active,
+  Paused,
+  Max,
+}
+export type ActiveState = Exclude<State, State.None | State.Max>;
+export const stateLabels = {
+  [State.Active]: "active",
+  [State.Paused]: "paused",
+} as const satisfies Record<ActiveState, string>;
+"#;
+    let source = r#"<script setup lang="ts">
+import { State, type ActiveState, stateLabels } from "./enums";
+const states: readonly ActiveState[] = [State.Active, State.Paused];
+const rows = states.map((value) => ({ value, label: stateLabels[value] }));
+</script>
+"#;
+    let workspace = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target/vize-tests");
+    std::fs::create_dir_all(&workspace).expect("test workspace");
+    let project = tempfile::Builder::new()
+        .prefix("enum-inferred-keys-13404-")
+        .tempdir_in(workspace)
+        .expect("temporary project");
+    let source_dir = project.path().join("src");
+    std::fs::create_dir(&source_dir).expect("source directory");
+    std::fs::write(
+        project.path().join("tsconfig.json"),
+        r#"{"compilerOptions":{"module":"ESNext","moduleResolution":"Bundler","strict":true,"target":"ESNext","noEmit":true},"include":["src/**/*.ts","src/**/*.vue"]}"#,
+    )
+    .expect("tsconfig");
+    std::fs::write(source_dir.join("enums.ts"), enums).expect("enum module");
+    let path = source_dir.join("Imported.vue");
+    std::fs::write(&path, source).expect("component");
+    let linter =
+        Linter::with_preset(LintPreset::Opinionated).with_enabled_rules(Some(vec![RULE.into()]));
+    let result = lint_sfc_with_corsa(&linter, source, path.to_str().expect("UTF-8 path"));
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != RULE),
+        "unexpected diagnostics: {:?}",
+        result.diagnostics
+    );
+}
+
 /// The #12994 comment's component: a form object handed to a typed service,
 /// and numbers given to `(() => Chip) | Chip` and `Chip | Chip[]`. Each flow
 /// is reported once, where typescript-eslint reports it: an object literal
