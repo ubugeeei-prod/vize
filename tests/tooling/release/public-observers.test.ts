@@ -134,6 +134,14 @@ function currentCore(file: (typeof files)[number], before: Workflow): Workflow {
     const anchorPath = "tests/tooling/release-jsr-workflow.test.ts";
     assert.equal(paths.filter((entry) => entry === anchorPath).length, 1);
     paths.splice(paths.indexOf(anchorPath) + 1, 0, "tests/tooling/jsr-fresh-provenance.test.ts");
+    const pluginPath = "tests/tooling/davinci-plugin-sdk-release.test.ts";
+    assert.equal(paths.filter((entry) => entry === pluginPath).length, 1);
+    paths.splice(
+      paths.indexOf(pluginPath) + 1,
+      0,
+      "tests/tooling/entry-packages.test.ts",
+      "npm/entry/**",
+    );
     const unit = job(expected, "contracts").steps.find((step) =>
       step.run?.includes("tests/tooling/release-jsr-workflow.test.ts"),
     );
@@ -141,6 +149,9 @@ function currentCore(file: (typeof files)[number], before: Workflow): Workflow {
     const anchor = "tests/tooling/release-jsr-workflow.test.ts ";
     assert.equal(unit.run.split(anchor).length, 2);
     unit.run = unit.run.replace(anchor, anchor + "tests/tooling/jsr-fresh-provenance.test.ts ");
+    const pluginTest = "tests/tooling/davinci-plugin-sdk-release.test.ts";
+    assert.equal(unit.run.split(pluginTest).length, 2);
+    unit.run = unit.run.replace(pluginTest, pluginTest + " tests/tooling/entry-packages.test.ts");
   }
   return expected;
 }
