@@ -28,6 +28,7 @@ type Observations = Vec<(PathBuf, FileStamp)>;
 pub struct Project {
     pub(crate) config: PathBuf,
     pub(crate) revision: [u8; 32],
+    configured: bool,
     root: PathBuf,
     base_url: Option<PathBuf>,
     aliases: Vec<(String, Vec<String>)>,
@@ -37,6 +38,19 @@ pub struct Project {
 }
 
 impl Project {
+    /// Select the absence of a project config without performing discovery.
+    /// This preserves config-free module resolution while preventing an
+    /// unrelated ancestor config from becoming the authority.
+    pub fn without_config(root: &Path) -> Result<Arc<Self>, String> {
+        let mut project = build(
+            &normalize_path_lexically(&root.join("tsconfig.json")),
+            FlattenedCompilerOptions::default(),
+            Vec::new(),
+        )?;
+        project.configured = false;
+        Ok(Arc::new(project))
+    }
+
     /// Build a project from options captured by the host's existing authority.
     /// The host owns freshness; construction performs no filesystem reads.
     pub fn from_flattened(
@@ -60,6 +74,10 @@ impl Project {
 
     pub(crate) fn inputs(&self) -> &[PathBuf] {
         &self.inputs
+    }
+
+    pub(crate) fn is_configured(&self) -> bool {
+        self.configured
     }
 
     /// Watched discovery candidates include absent nearer configs so hosts can
@@ -436,6 +454,7 @@ fn build(
     Ok(Project {
         config: config.to_path_buf(),
         revision: Sha256::digest(bytes).into(),
+        configured: true,
         root: root.to_path_buf(),
         base_url,
         aliases,
