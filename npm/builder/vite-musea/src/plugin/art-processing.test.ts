@@ -129,7 +129,7 @@ void test("processMuseaArtFile ignores comment markers in scripts and reads unqu
     await fs.promises.mkdir(path.dirname(artPath), { recursive: true });
     await fs.promises.writeFile(
       artPath,
-      '<!-- <script> is text -->\n<script setup>const marker = "<!--"</script>\n<art data-marker="<!--" status=ready><variant name="Default"><div /></variant></art>\n<!-- inactive -->',
+      '<!-- <script> is text -->\n<script>const marker = "<!--"</script>\n<art data-marker="<!--" status=ready><variant name="Default"><div /></variant></art>\n<!-- inactive -->',
       "utf8",
     );
 
