@@ -44,6 +44,7 @@ fn restore(current: &str, transition: &Value) -> String {
 /// preamble source, the SDK generator and both published copies). Older
 /// images pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::forwarded_slot_exports::source_edits_before(path, current);
     let current = super::template_ref_targets::source_before(path, current);
     let record = record();
     match record["files"]
@@ -81,6 +82,7 @@ mod tests {
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
             let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::forwarded_slot_exports::source_edits_before(path, current);
             let current = super::super::template_ref_targets::source_before(path, current);
             assert!(is_after(&current, file), "{path}");
             let previous = source_before(path, current.clone());
