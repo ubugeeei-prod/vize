@@ -1,0 +1,124 @@
+import { parseStaticCallArgument } from "../native-loader.js";
+import type { NativeBinding } from "../native-loader.js";
+import type { ArtMetadata } from "../types/index.js";
+
+function extractArtTagAttributes(source: string): Record<string, string | true> {
+  const structuralSource = source.replace(
+    /<(script|style)\b(?:[^>"']|"[^"]*"|'[^']*')*>[\s\S]*?<\/\1\s*>/giu,
+    "",
+  );
+  const artTagMatch = structuralSource.match(/<art\b((?:[^>"']|"[^"]*"|'[^']*')*)>/iu);
+  if (!artTagMatch) return {};
+
+  const attributes: Record<string, string | true> = {};
+  const attributePattern = /([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'))?/g;
+  for (const match of artTagMatch[1].matchAll(attributePattern)) {
+    const name = match[1];
+    if (name && name !== "/") attributes[name] = match[2] ?? match[3] ?? true;
+  }
+  return attributes;
+}
+
+function parseActionEvents(value: string | true | undefined): string[] | undefined {
+  if (typeof value !== "string") return undefined;
+  const events = value
+    .split(",")
+    .map((eventName) => eventName.trim().toLowerCase())
+    .filter(Boolean);
+  return events.length > 0 ? [...new Set(events)] : undefined;
+}
+
+const ART_STATUSES = new Set(["draft", "ready", "deprecated"]);
+
+export function isArtStatus(value: unknown): value is NonNullable<ArtMetadata["status"]> {
+  return typeof value === "string" && ART_STATUSES.has(value);
+}
+
+export function extractCustomArtMetadata(
+  source: string,
+): Pick<ArtMetadata, "actionEvents" | "status"> {
+  const attrs = extractArtTagAttributes(source);
+  const actionEvents = new Set(parseActionEvents(attrs["action-events"]) ?? []);
+  const captureMousemove = attrs["capture-mousemove"];
+  const authoredStatus = attrs.status;
+  const status = isArtStatus(authoredStatus)
+    ? authoredStatus
+    : attrs.draft === true
+      ? "draft"
+      : attrs.deprecated === true
+        ? "deprecated"
+        : undefined;
+
+  if (captureMousemove === true || captureMousemove === "true") actionEvents.add("mousemove");
+  return {
+    actionEvents: actionEvents.size > 0 ? [...actionEvents] : undefined,
+    status,
+  };
+}
+
+export function sourceWithOptionalArtTitle(source: string): string {
+  const match = source.match(/<art\b((?:[^>"']|"[^"]*"|'[^']*')*)>/iu);
+  if (!match || /\btitle\s*=/iu.test(match[1] ?? "")) return source;
+  return source.replace(/<art\b/iu, '<art title=""');
+}
+
+export type MuseaArtMeta = {
+  title: string;
+  description: string;
+  category: string;
+  tags: string[];
+  status: string;
+  order: number;
+  actionEvents: string[];
+  parameters: Record<string, unknown>;
+};
+
+export function extractDefineArtMeta(source: string): Partial<MuseaArtMeta> {
+  const value =
+    parseStaticCallArgument(source, "defineArtMeta", 0) ??
+    parseStaticCallArgument(source, "defineArt", 1);
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Partial<MuseaArtMeta>)
+    : {};
+}
+
+const DEFINE_ART_META_KEYS = new Set<keyof MuseaArtMeta>([
+  "title",
+  "description",
+  "category",
+  "tags",
+  "status",
+  "order",
+  "actionEvents",
+  "parameters",
+]);
+
+export function reportDefineArtMetaWarnings(
+  metadata: Partial<MuseaArtMeta>,
+  filename: string,
+  warn: (message: string) => void = console.warn,
+): void {
+  for (const key of Object.keys(metadata)) {
+    if (!DEFINE_ART_META_KEYS.has(key as keyof MuseaArtMeta)) {
+      warn(
+        `[musea] ${filename}: unknown defineArt metadata key ${JSON.stringify(key)}; ignoring it`,
+      );
+    }
+  }
+  if (metadata.status !== undefined && !isArtStatus(metadata.status)) {
+    warn(
+      `[musea] ${filename}: unknown status ${JSON.stringify(metadata.status)}; ignoring it (expected "draft" | "ready" | "deprecated")`,
+    );
+  }
+}
+
+export function reportArtStatusWarnings(
+  binding: Pick<NativeBinding, "parseArtStatusWarnings">,
+  source: string,
+  filename: string,
+  warn: (message: string) => void = console.warn,
+): void {
+  const warnings = binding.parseArtStatusWarnings?.(source, { filename });
+  if (warnings == null) return;
+  for (const warning of warnings) warn(`[musea] ${warning}`);
+}
