@@ -1,12 +1,14 @@
 //! Qualify the lockfile importers for the focused entry packages.
 
-use super::{Checked, Value, bound, json, support};
+use super::{bound, json, support, Checked, Value};
 
 const START: &str = "  npm/entry/compile:\n";
 const END: &str = "  npm/formatter/prettier:\n";
 const INSERTION_BYTES: usize = 1_784;
 const INSERTION_SHA: &str = "1f68c66ca35cb7d589b49edae5c8090c241f7ccfaa4c6eb1daa63219b9d0f793";
+const WORKSPACE_ENTRY_PREDECESSOR: &[u8] = b"  - \"npm/formatter/*\"\n";
 const WORKSPACE_ENTRY: &[u8] = b"  - \"npm/entry/*\"\n";
+const WORKSPACE_ENTRY_SUCCESSOR: &[u8] = b"  - \"npm/compose/*\"\n";
 const IMPORTERS: [&str; 11] = [
     "compile",
     "compile-jsx",
@@ -72,6 +74,17 @@ pub(super) fn reconstruct_workspace_predecessor(workspace: &[u8]) -> Checked<Vec
     let end = offset
         .checked_add(WORKSPACE_ENTRY.len())
         .ok_or("bounded entry package workspace end")?;
+    let predecessor_start = offset
+        .checked_sub(WORKSPACE_ENTRY_PREDECESSOR.len())
+        .ok_or("entry package workspace predecessor position")?;
+    let successor_end = end
+        .checked_add(WORKSPACE_ENTRY_SUCCESSOR.len())
+        .ok_or("entry package workspace successor position")?;
+    if workspace.get(predecessor_start..offset) != Some(WORKSPACE_ENTRY_PREDECESSOR)
+        || workspace.get(end..successor_end) != Some(WORKSPACE_ENTRY_SUCCESSOR)
+    {
+        return Err("entry package workspace pattern position");
+    }
     let mut predecessor = workspace.to_vec();
     predecessor.drain(offset..end);
     Ok(predecessor)
@@ -171,5 +184,8 @@ mod tests {
         let mut duplicated = workspace.clone();
         duplicated.extend_from_slice(&workspace);
         assert!(reconstruct_workspace_predecessor(&duplicated).is_err());
+        let mut prepended = WORKSPACE_ENTRY.to_vec();
+        prepended.extend_from_slice(&previous_workspace);
+        assert!(reconstruct_workspace_predecessor(&prepended).is_err());
     }
 }
