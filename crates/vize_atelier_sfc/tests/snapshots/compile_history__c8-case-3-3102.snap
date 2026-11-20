@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-case-3-3102",
+    history: "56eb250acdeb21309affcf166a71144c9a125b9f",
+    source: "<script setup lang=\"ts\">\nconst props = defineProps<{ itemKey: (item: string) => PropertyKey }>();\n</script>\n\n<template>\n  <li v-for=\"item in ['a']\" :key=\"props.itemKey(item)\" />\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { createFor as _createFor, template as _template } from 'vue';\n\nconst t0 = _template(\"<li></li>\")\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = _createFor(() => (['a']), (_for_item0) => {\n    const n2 = t0()\n    return n2\n  }, (item) => (_ctx.props.itemKey(item)), 8 /* IS_SINGLE_NODE */)\n  return n0\n}\nconst __vaporRender = render\n\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'History',\n  props: {\n    itemKey: { type: Function, required: true }\n  },\n  render: __vaporRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst props = __props;\n\nconst __returned__ = { props }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "props": SetupReactiveConst,
+                        "itemKey": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

@@ -1,54 +1,6 @@
 name: Nuxt 3 module build
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - .github/workflows/nuxt3-module-build.yml
-      - npm/framework/nuxt/**
-      - npm/framework/nuxt-lint-config/**
-      - npm/linter/oxlint/**
-      - npm/builder/vite/**
-      - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
-      - tools/support/compat/nuxt/nuxt3-module-build.ts
-      - tools/support/compat/nuxt/fixtures/nuxt-component-modes/**
-      - tools/support/compat/nuxt/nuxt-component-modes*
-      - tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/**
-      - tools/support/compat/nuxt/nuxt5-runtime-build.ts
-      - tests/tooling/nuxt5-runtime.test.ts
-      - tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/**
-      - tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts
-      - tools/support/compat/nuxt/development-response.ts
-      - tools/support/compat/nuxt/development-processes.ts
-      - tools/support/compat/nuxt/host-types.ts
-      - tools/support/json-value.ts
-      - tests/tooling/nuxt5-dev-runtime.test.ts
-      - tools/support/compat/nuxt/source-binding*
-      - tools/support/compat/nuxt/prefetch-manifest-*
-      - tools/support/compat/nuxt/lint-config-*
-      - tools/support/compat/nuxt/compiler-defaults-*
-      - tools/support/compat/nuxt/javascript-workspace-*
-      - tests/_fixtures/differential/compat/javascript-workspace-products/**
-      - tests/tooling/support/lsp/javascript-workspace.ts
-      - tools/support/compat/nuxt/relative-glob-*
-      - tools/support/compat/nuxt/fixtures/vite-relative-glob/**
-      - tests/_fixtures/differential/compiler/vite-relative-glob/**
-      - tests/tooling/vite-relative-glob.test.ts
-      - tests/_fixtures/differential/compiler/nuxt-compiler-defaults/**
-      - tests/tooling/nuxt-compiler-defaults.test.mjs
-      - tests/_fixtures/differential/linter/nuxt-oxlint-config-root/**
-      - tests/tooling/nuxt-oxlint-config-root.test.mjs
-      - tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**
-      - tests/_fixtures/differential/compiler/nuxt-prefetch-manifest/**
-      - tests/tooling/nuxt-prefetch-manifest.test.ts
-      - tests/tooling/nuxt-source-binding.test.mjs
-      - tests/tooling/vue-config-nuxt-host-context.test.ts
-      - tests/_fixtures/differential/config/nuxt-elk-host-options/**
-      - npm/native/**
-      - crates/**
-      - davinci/**
-      - Cargo.toml
-      - Cargo.lock
-      - .cargo/**
+  # #6830: off the PR tier; merge candidates call it and main runs it per commit.
   push:
     branches: [main]
     paths:

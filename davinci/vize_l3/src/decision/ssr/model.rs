@@ -1,6 +1,6 @@
 //! A dedicated SSR value view of the actual original mutable Model target.
 
-use super::{NativeSelectedSetupSsrAnalysis, SsrSetupAccess, SsrSetupExpression, SsrUnsupported};
+use super::{SelectedSetupSsrAnalysis, SsrSetupAccess, SsrSetupExpression, SsrUnsupported};
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
     file::{BindingRef, FileResolution, NativeFileModel, NativeFileModelState},
@@ -50,7 +50,7 @@ pub(super) fn classify<'owner, 'arena>(
     })
 }
 
-impl<'owner, 'arena> NativeSelectedSetupSsrAnalysis<'_, 'owner, 'arena> {
+impl<'owner, 'arena> SelectedSetupSsrAnalysis<'_, 'owner, 'arena> {
     /// Derive a Model only from its canonical role and original opening owner.
     /// A missing/mismatched Model is an error, never a static-output fallback.
     pub fn model(

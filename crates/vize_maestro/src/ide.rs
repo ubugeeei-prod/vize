@@ -209,7 +209,7 @@ fn push_unique_name(names: &mut Vec<String>, candidate: String) {
 /// Check if a tag name is a component (starts with uppercase or contains hyphen).
 #[inline]
 pub fn is_component_tag(name: &str) -> bool {
-    if name.is_empty() || vize_l0::is_native_tag(name) {
+    if name.is_empty() || vize_l0::is_platform_tag(name) {
         return false;
     }
     let Some(first) = name.chars().next() else {

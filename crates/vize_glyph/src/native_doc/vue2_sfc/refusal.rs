@@ -1,5 +1,5 @@
 use vize_l0::{SourceFrameError, Span};
-use vize_l1::dialect::vue2::{surface::TextRefusal, text::TextBoundaryKind};
+use vize_l1::framework::vue::version::v2::{surface::TextRefusal, text::TextBoundaryKind};
 
 use super::super::{TemplateRefusal, Vue2TextDocumentRefusal};
 

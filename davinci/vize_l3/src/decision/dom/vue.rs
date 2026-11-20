@@ -1,7 +1,7 @@
 //! Genuine setup membership and reads, without claiming template custody.
 
 use super::{DomFacts, LiteralExpressions, ValueKind};
-use crate::decision::{DecisionBuildError, DecisionTables, NativeAnalysis, TargetPolicy, build};
+use crate::decision::{DecisionAnalysis, DecisionBuildError, DecisionTables, TargetPolicy, build};
 use alloc::vec::Vec;
 use vize_l0::id::NodeId;
 use vize_l2::{
@@ -98,8 +98,8 @@ impl<'owner, 'arena> VueRenderExpression<'owner, 'arena> {
 /// There is no conversion into a bare artifact or neutral file analysis.
 ///
 /// ```compile_fail
-/// use vize_l3::decision::dom::vue::NativeVueRenderAnalysis;
-/// fn clone(view: NativeVueRenderAnalysis<'_, '_, '_, '_, '_>) { let _ = view.clone(); }
+/// use vize_l3::decision::dom::vue::VueRenderAnalysis;
+/// fn clone(view: VueRenderAnalysis<'_, '_, '_, '_, '_>) { let _ = view.clone(); }
 /// ```
 /// ```compile_fail
 /// use vize_l3::decision::dom::vue::VueRenderRead;
@@ -117,16 +117,16 @@ impl<'owner, 'arena> VueRenderExpression<'owner, 'arena> {
 /// ```
 /// The checked access rows have no mutable or neutral conversion:
 /// ```compile_fail
-/// use vize_l3::decision::{NativeFileAnalysis, dom::vue::NativeVueRenderAnalysis};
-/// fn discard<'v,'f,'d,'p,'a>(result: NativeVueRenderAnalysis<'v,'f,'d,'p,'a>)
-///     -> NativeFileAnalysis<'f,'a> { result.analysis }
+/// use vize_l3::decision::{FileAnalysis, dom::vue::VueRenderAnalysis};
+/// fn discard<'v,'f,'d,'p,'a>(result: VueRenderAnalysis<'v,'f,'d,'p,'a>)
+///     -> FileAnalysis<'f,'a> { result.analysis }
 /// ```
-pub struct NativeVueRenderAnalysis<'view, 'owner, 'descriptor, 'program, 'arena> {
+pub struct VueRenderAnalysis<'view, 'owner, 'descriptor, 'program, 'arena> {
     exposure: &'view VueExposure<'owner, 'descriptor, 'program, 'arena>,
-    analysis: NativeAnalysis<'owner, 'arena>,
+    analysis: DecisionAnalysis<'owner, 'arena>,
 }
 
-impl<'owner, 'arena> NativeVueRenderAnalysis<'_, 'owner, '_, '_, 'arena> {
+impl<'owner, 'arena> VueRenderAnalysis<'_, 'owner, '_, '_, 'arena> {
     #[must_use]
     pub fn file(&self) -> &'owner FileArtifact<'arena> {
         self.exposure.file()
@@ -162,8 +162,7 @@ impl<'owner, 'arena> NativeVueRenderAnalysis<'_, 'owner, '_, '_, 'arena> {
 /// A raw File, role, binding list or caller access policy cannot select this path.
 pub fn build_vue_render_decisions<'view, 'owner, 'descriptor, 'program, 'arena>(
     exposure: &'view VueExposure<'owner, 'descriptor, 'program, 'arena>,
-) -> Result<NativeVueRenderAnalysis<'view, 'owner, 'descriptor, 'program, 'arena>, DecisionBuildError>
-{
+) -> Result<VueRenderAnalysis<'view, 'owner, 'descriptor, 'program, 'arena>, DecisionBuildError> {
     let file = exposure.file();
     if !file.is_complete() {
         return Err(DecisionBuildError::IncompleteFile);
@@ -175,5 +174,5 @@ pub fn build_vue_render_decisions<'view, 'owner, 'descriptor, 'program, 'arena>(
         Some(file),
         &policy::ExposureReads(exposure),
     )?;
-    Ok(NativeVueRenderAnalysis { exposure, analysis })
+    Ok(VueRenderAnalysis { exposure, analysis })
 }

@@ -8,6 +8,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use sha2::{Digest, Sha256};
 use vize_l0::{SourceRoot, Span, String, cstr, line_index::LineBreaks};
+use vize_l2::query::Model;
 use vize_l2::{file::DeclarationKind, lang::js::JsxFileProducer};
 use vize_l4::targets::ts::{ProgramProjection, SourceKind};
 
@@ -158,7 +159,7 @@ fn configured_original_typed_parameter_ts_tsx_preserve_whole_raw_reports_and_rel
                 cstr!("{source}\n;\nexport {{}};\n")
             );
             let name = case["binding"].as_str().unwrap();
-            let binding = file
+            let binding = Model::new(&file)
                 .binding_at_offset(source.rfind(name).unwrap() as u32)
                 .unwrap()
                 .unwrap();

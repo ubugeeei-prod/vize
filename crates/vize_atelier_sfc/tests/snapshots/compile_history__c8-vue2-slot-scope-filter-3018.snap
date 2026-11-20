@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-vue2-slot-scope-filter-3018",
+    history: "ff43d1aff38cadb946dedd0157fe1a126187deb5",
+    source: "<template><Child><template slot=\"row\" slot-scope=\"scope\"><span>{{ scope.row.id | formatStatus }}</span></template></Child></template>\n<script>\nexport default {\n  filters: {\n    formatStatus(value) { return String(value) }\n  }\n}\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: Some(
+            "2",
+        ),
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "\nconst _sfc_main = {\n  filters: {\n    formatStatus(value) { return String(value) }\n  }\n}\n\nimport { resolveComponent as _resolveComponent, resolveFilter as _resolveFilter, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from \"vue\"\n\nfunction _sfc_render(_ctx, _cache) {\n  const _component_Child = _resolveComponent(\"Child\")\n  const _filter_formatStatus = _resolveFilter(\"formatStatus\")\n  \n  return (_openBlock(), _createBlock(_component_Child, null, {\n    row: _withCtx((scope) => [\n      _createElementVNode(\"span\", null, _toDisplayString(_filter_formatStatus(scope.row.id)), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}\n_sfc_main.render = _sfc_render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

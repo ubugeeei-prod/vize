@@ -3,7 +3,7 @@
 use vize_glyph::native_doc::{LineEnding, PrintOptions, TemplateRefusal, print, template_document};
 use vize_l0::{Allocator, String};
 use vize_l1::{
-    dialect::vue3::surface::parse_component,
+    framework::vue::version::v3::surface::parse_component,
     markup::{SurfaceChild, check_fidelity},
 };
 
@@ -152,7 +152,7 @@ fn incomplete_or_noncontiguous_dynamic_heads_keep_original_observations() {
 
 #[test]
 fn deep_vue_attribute_arguments_preserve_complete_output_and_source_custody() {
-    use vize_l1::dialect::vue3::directive::MAX_DIRECTIVE_DELIMITER_RUNS;
+    use vize_l1::framework::vue::version::v3::directive::MAX_DIRECTIVE_DELIMITER_RUNS;
 
     for count in [
         MAX_DIRECTIVE_DELIMITER_RUNS - 1,

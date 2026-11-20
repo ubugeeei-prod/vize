@@ -2,7 +2,7 @@
 
 use super::{DescriptorIssue, DescriptorOptions, TemplateSelection};
 use crate::container::{Container, ContainerError};
-use crate::dialect::vue2::surface::ComponentParse;
+use crate::framework::vue::version::v2::surface::ComponentParse;
 use vize_l0::{FileDialect, SourceRoot, Vec};
 
 mod observe;

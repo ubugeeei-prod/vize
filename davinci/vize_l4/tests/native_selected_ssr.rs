@@ -7,9 +7,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
-use vize_l3::decision::ssr::{
-    NativeSsrBuildError, SsrUnsupported, build_native_ssr_file_decisions,
-};
+use vize_l3::decision::ssr::{SsrTemplateBuildError, SsrUnsupported, build_template_ssr_decisions};
 use vize_l4::{
     module::{ModuleParts, RenderFunctionName, assemble, assemble_template},
     runtime::{Runtime, vocabulary},
@@ -59,7 +57,7 @@ fn original_receipts_emit_nine_complete_pinned_modules_and_whole_source_maps() {
         let owner = completed(&arena, source);
         let file = owner.file().unwrap();
         let original = file.artifact().provenance().to_vec();
-        let receipt = build_native_ssr_file_decisions(owner.view().unwrap()).unwrap();
+        let receipt = build_template_ssr_decisions(owner.view().unwrap()).unwrap();
         assert!(core::ptr::eq(receipt.owner(), &owner));
         assert!(core::ptr::eq(receipt.file(), file));
         assert!(core::ptr::eq(receipt.artifact().source(), source));
@@ -119,7 +117,7 @@ fn original_receipts_emit_nine_complete_pinned_modules_and_whole_source_maps() {
     ] {
         let arena = Allocator::default();
         let owner = completed(&arena, source);
-        let receipt = build_native_ssr_file_decisions(owner.view().unwrap()).unwrap();
+        let receipt = build_template_ssr_decisions(owner.view().unwrap()).unwrap();
         let error = emit_template::<Recorded>(&receipt).unwrap_err();
         assert_eq!(
             error.kind,
@@ -141,8 +139,8 @@ fn original_receipts_emit_nine_complete_pinned_modules_and_whole_source_maps() {
     ] {
         let arena = Allocator::default();
         let owner = completed(&arena, source);
-        let Err(NativeSsrBuildError::StyledSource { span }) =
-            build_native_ssr_file_decisions(owner.view().unwrap())
+        let Err(SsrTemplateBuildError::StyledSource { span }) =
+            build_template_ssr_decisions(owner.view().unwrap())
         else {
             panic!("styled source cannot mint output authority");
         };

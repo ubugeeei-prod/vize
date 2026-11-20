@@ -1,0 +1,68 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-comment-rewriter-unterminated-quote-3951",
+    history: "cd8e92e1828a361a7b7b30bcd0e70d5cae05770a",
+    source: "<script setup lang=\"ts\">\nconst x = 1\n</script>\n<template><p>{{ x + ' // still a string }}</p></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "\n\nconst x = 1;\n\nexport default {\n  __name: 'History',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nreturn { x }\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [
+                SfcError {
+                    message: "Template compilation errors: [CompilerError { code: InvalidExpression, message: \"Error parsing JavaScript expression: Unterminated string\", loc: Some(SourceLocation { start: Position { offset: 6, line: 1, column: 7 }, end: Position { offset: 29, line: 1, column: 30 }, source: \"x + ' // still a string\" }) }]",
+                    code: Some(
+                        "TEMPLATE_ERROR",
+                    ),
+                    loc: Some(
+                        BlockLocation {
+                            start: 57,
+                            end: 93,
+                            tag_start: 47,
+                            tag_end: 104,
+                            start_line: 4,
+                            start_column: 11,
+                            end_line: 4,
+                            end_column: 47,
+                        },
+                    ),
+                },
+            ],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "x": LiteralConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

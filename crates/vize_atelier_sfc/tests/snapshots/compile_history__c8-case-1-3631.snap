@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-case-1-3631",
+    history: "4ed90a55eb09ae1a8af7af940056965061c00993",
+    source: "<template\n  lang=\"html\"\n>\n  <p>ok</p>\n</template>\n\n<script\n  lang=\"ts\"\n>\nexport default {}\n</script>\n\n<script\n  setup\n  lang=\"ts\"\n>\nconst x = 1\n</script>\n\n<style\n  scoped\n>\n.a { color: red }\n</style>\n\n<docs\n  kind=\"usage\"\n>\nusage notes\n</docs>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nconst __default__ = {};\n\nexport default /*@__PURE__*/Object.assign(__default__, {\n  __name: 'History',\n  setup(__props) {\n\nconst x = 1;\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"p\", null, \"ok\"))\n}\n}\n\n})",
+            css: Some(
+                ".a[data-v-4045eae1]{ color: red }\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "x": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

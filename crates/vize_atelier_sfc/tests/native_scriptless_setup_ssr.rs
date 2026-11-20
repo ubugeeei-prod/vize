@@ -1,6 +1,6 @@
 use vize_atelier_sfc::{NativeSsrSfcCompileOptions, compile_native_setup_ssr_sfc};
 use vize_l0::Allocator;
-use vize_l3::decision::ssr::build_native_selected_setup_ssr_decisions;
+use vize_l3::decision::ssr::build_selected_setup_ssr_decisions;
 
 mod native_setup_ssr;
 use native_setup_ssr::{refusals, rows};
@@ -39,7 +39,7 @@ fn whole_original_setup_program_and_ssr_reads_keep_full_modules_and_maps() {
         let admitted = observation.admitted().unwrap();
         assert!(core::ptr::eq(admitted.observation(), observation));
         let setup = admitted.setup();
-        let analysis = build_native_selected_setup_ssr_decisions(setup).unwrap();
+        let analysis = build_selected_setup_ssr_decisions(setup).unwrap();
         assert!(core::ptr::eq(analysis.setup(), setup));
         assert!(core::ptr::eq(
             analysis.owner(),

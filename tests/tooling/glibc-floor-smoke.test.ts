@@ -1,11 +1,16 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import {
   containerScript,
   parseContainerSmokeArguments,
 } from "../../tools/commands/release/npm/smoke-glibc-floor-containers.ts";
 import { roundOrder, summarize } from "../../tools/support/github/glibc-floor-bench.ts";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 test("container smoke arguments require a GNU platform, a mode, and images", () => {
   assert.deepEqual(
@@ -61,6 +66,17 @@ test("each container mode runs the artifact it names", () => {
   assert.equal(
     packages.split("\n").at(-1),
     "node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks npm/native npm/native/npm/* npm/cli npm/builder/unplugin npm/builder/vite",
+  );
+});
+
+test("the package floor builds every JavaScript package it packs", () => {
+  const workflow = fs.readFileSync(
+    path.join(root, ".github/workflows/release-glibc-floor.yml"),
+    "utf8",
+  );
+  assert.match(
+    workflow,
+    /vp run --filter '\.\/npm\/cli' build\n\s+vp run --filter '\.\/npm\/builder\/unplugin' build\n\s+vp run --filter '\.\/npm\/builder\/vite' build/u,
   );
 });
 

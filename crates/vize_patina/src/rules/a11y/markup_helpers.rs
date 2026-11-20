@@ -234,7 +234,7 @@ pub(crate) fn is_component_like_markup_element(element: &MarkupElement<'_>) -> b
     matches!(
         element.kind(),
         MarkupElementKind::Component | MarkupElementKind::Slot | MarkupElementKind::Template
-    ) || !vize_l0::is_native_tag(element.tag())
+    ) || !vize_l0::is_platform_tag(element.tag())
 }
 
 /// `role="presentation"` / `role="none"` opts the element out.

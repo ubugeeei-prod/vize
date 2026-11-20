@@ -194,10 +194,23 @@ export const toolingTestScopes = [
       "tests/tooling/release/release-smoke-runtime-oracle.test.ts",
     ],
   },
-  // Release contracts not yet reviewed into the scope above keep every
-  // tooling input until their owners audit what they read.
+  // Audited 2026-11-19 (#6830): these release tests execute the source CLI or
+  // native addon, so product sources stay their inputs.
   {
     input: "tooling",
+    tests: [
+      "tests/tooling/release/computed-event-release.test.ts",
+      "tests/tooling/release/published-vite-startup.test.ts",
+      "tests/tooling/release/release-editor-host-workflow.test.ts",
+      "tests/tooling/release/release-smoke-musl.test.ts",
+      "tests/tooling/release/rolling-quota-ownership.test.ts",
+    ],
+  },
+  // The other release contracts read release scripts, workflows, manifests and
+  // fixtures, not Rust sources. Literal paths they name still select them, and
+  // nightly Full qualification (`--tier merge`) runs every release test.
+  {
+    input: "toolingReleaseSurfaces",
     tests: ["tests/tooling/release/**"],
   },
   {

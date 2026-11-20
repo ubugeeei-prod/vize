@@ -55,7 +55,7 @@ pub(super) fn assert_current(class: &crate::NativeSelectedSetupSfcDomCompilation
         panic!("whole original body text");
     };
     assert_eq!(text.content, "fixed");
-    let analysis = build_native_selected_setup_dom_decisions(setup).unwrap();
+    let analysis = build_selected_setup_dom_decisions(setup).unwrap();
     assert!(core::ptr::eq(analysis.owner(), owner));
     assert!(core::ptr::eq(analysis.setup(), setup));
     assert!(core::ptr::eq(analysis.file(), file));

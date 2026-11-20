@@ -1,6 +1,6 @@
 //! Element transformation functions.
 
-use vize_l0::{Box, String, Vec, capitalize, is_builtin_directive, is_native_tag};
+use vize_l0::{Box, String, Vec, capitalize, is_builtin_directive, is_platform_tag};
 
 use crate::codegen::{escape_js_string, is_dynamic_component, is_valid_js_identifier};
 use crate::errors::ErrorCode;
@@ -80,7 +80,7 @@ fn maybe_promote_element_to_component(
         return;
     }
 
-    if is_native_tag(el.tag) {
+    if is_platform_tag(el.tag) {
         return;
     }
 

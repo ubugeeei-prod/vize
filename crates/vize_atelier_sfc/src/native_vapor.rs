@@ -9,7 +9,7 @@ use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::{
     NativeSelectedSfcIssue, NativeSelectedSfcObservation, lower_selected_sfc_native,
 };
-use vize_l3::decision::{DecisionBuildError, vapor::build_native_vapor_file_decisions};
+use vize_l3::decision::{DecisionBuildError, vapor::build_template_vapor_decisions};
 use vize_l4::{
     targets::vapor::{VaporError, emit_component},
     write::{EmitDocument, LinkSink, NoLinks, Recorded},
@@ -130,7 +130,7 @@ fn emit<L: LinkSink>(
     let selected = observation
         .admitted()
         .ok_or(NativeVaporSfcCompileError::Orchestration)?;
-    let analysis = build_native_vapor_file_decisions(selected.into_template_view())
+    let analysis = build_template_vapor_decisions(selected.into_template_view())
         .map_err(NativeVaporSfcCompileError::Analysis)?;
     let document = emit_component::<L>(&analysis, options.runtime_version)
         .map_err(NativeVaporSfcCompileError::Vapor)?

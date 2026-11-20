@@ -12,7 +12,7 @@ use crate::{
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{expr::ExprRef, op::Op, walk::NodeRef};
 use vize_l3::decision::{
-    NativeAnalysis,
+    DecisionAnalysis,
     dom::{DomChild, DomFacts, DomRootKind, DomUnsupported},
     policy::TargetPolicy,
 };
@@ -54,7 +54,7 @@ pub enum Vue2ErrorKind {
 /// inferred to be an instance property from its spelling or missing facts.
 /// Static subtree caching and whole-SFC assembly are separate capabilities.
 pub fn emit<L: LinkSink>(
-    analysis: &NativeAnalysis<'_, '_>,
+    analysis: &DecisionAnalysis<'_, '_>,
     expressions: ResolvedExpressions<'_, '_>,
     access: &Vue2Access<'_>,
 ) -> Result<Writer<L>, Vue2Error> {

@@ -69,7 +69,7 @@ fn generic_and_neutral_same_mutable_owner_keep_operation_refusal() {
         else {
             panic!("normally attached original interpolation");
         };
-        let selected = build_native_selected_setup_dom_decisions(view.setup()).unwrap();
+        let selected = build_selected_setup_dom_decisions(view.setup()).unwrap();
         assert!(selected.dom().unwrap().unsupported().is_empty());
         let row = selected.expression(node).unwrap();
         let table = row.resolution().table().unwrap();
@@ -95,7 +95,7 @@ fn generic_and_neutral_same_mutable_owner_keep_operation_refusal() {
             generic.dom().unwrap().unsupported()[0].reason,
             DomUnsupported::Operation
         );
-        let neutral = vize_l3::decision::native::build_native_dom_file_decisions(
+        let neutral = vize_l3::decision::template::build_template_dom_decisions(
             compiled
                 .observation()
                 .admitted()

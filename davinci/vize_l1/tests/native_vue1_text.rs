@@ -2,9 +2,9 @@
 
 use oxc_span::GetSpan;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l1::dialect::vue1::surface::{self, TextRefusal};
-use vize_l1::dialect::vue1::text::{TextBinding, TextBoundaryKind};
 use vize_l1::embed::{Grammar, Lang, Shape, syntax::EmbedHole};
+use vize_l1::framework::vue::version::v1::surface::{self, TextRefusal};
+use vize_l1::framework::vue::version::v1::text::{TextBinding, TextBoundaryKind};
 use vize_l1::markup::{SurfaceChild, check_fidelity};
 
 #[test]

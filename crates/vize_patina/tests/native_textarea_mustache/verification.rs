@@ -137,7 +137,7 @@ fn declared_sdk_views_reject_undeclared_access_and_group_type_aliases() {
     }
     struct WrongHeaderType;
     impl FactGroup for WrongHeaderType {
-        const ID: AnalysisId = ids::NATIVE_LINT_HEADERS;
+        const ID: AnalysisId = ids::ORIGINAL_LINT_HEADERS;
         const NAME: &'static str = "native-child-fixture-wrong-type";
         const STRATUM: u8 = 0;
         const DEPENDS: Demand = Demand::NONE;

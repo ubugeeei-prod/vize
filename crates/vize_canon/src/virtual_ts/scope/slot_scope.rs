@@ -32,7 +32,8 @@ use super::explicit_generics::ExplicitGenerics;
 use crate::virtual_ts::component_reference::component_binding_reference_with_provider;
 
 use super::emit::{
-    emit_slot_annotation_check, emit_slot_function_open, split_slot_pattern_annotation,
+    emit_slot_annotation_check, emit_slot_function_open, slot_parameter,
+    split_slot_pattern_annotation,
 };
 use super::slot_outlet_props::generate_scope_slot_outlet_checks;
 
@@ -212,6 +213,7 @@ pub(super) fn generate_v_slot_scope(
     let scope_id = scope.id.as_u32();
     append!(*ts, "\n{indent}// v-slot scope: #{}\n", data.name);
     let props_pattern = slot_props_pattern(data, scope_id);
+    let binding_pattern = slot_parameter(props_pattern.as_str()).pattern.text;
     let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
     let slot_types = slot_payload_type(
         ts,
@@ -237,7 +239,6 @@ pub(super) fn generate_v_slot_scope(
         scope,
         data,
     );
-    let function_gen_start = ts.len();
     let capture_slots = ctx.slot_outlets.captures_scope(ctx.summary, scope.id);
     let function_name = if capture_slots {
         cstr!("__vize_slot_scope_{scope_id}")
@@ -252,15 +253,15 @@ pub(super) fn generate_v_slot_scope(
         props_pattern.as_str(),
         &slot_types.payload,
         capture_slots,
-        |ts| {
+        |ts, generated_parts| {
             map_slot_props_pattern(
                 mappings,
                 scope,
                 pattern_offset,
                 ctx.template_offset,
                 props_pattern.as_str(),
-                function_gen_start,
                 ts,
+                generated_parts,
             );
             // Only this pass checks the annotation; the props pass replays
             // the same scope and would report it twice.
@@ -277,8 +278,13 @@ pub(super) fn generate_v_slot_scope(
                 );
             }
             if data.prop_names.is_empty() {
-                // Simple identifier (no destructuring)
-                vize_l0::emit_ts!(ts, "{inner_indent}void {props_pattern};\n");
+                // A retained complex pattern can have no extracted names when
+                // its defaults exceed the binding extractor. Re-emitting that
+                // pattern as an expression would turn destructuring defaults
+                // into an invalid object literal.
+                if oxc_syntax::identifier::is_identifier_name(binding_pattern) {
+                    vize_l0::emit_ts!(ts, "{inner_indent}void {binding_pattern};\n");
+                }
             } else {
                 // Destructured: void each extracted prop name
                 for prop_name in data.prop_names.iter() {
@@ -339,6 +345,7 @@ pub(super) fn generate_v_slot_props_scope(
 ) {
     let scope_id = scope.id.as_u32();
     let props_pattern = slot_props_pattern(data, scope_id);
+    let binding_pattern = slot_parameter(props_pattern.as_str()).pattern.text;
     let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
     append!(
         *ts,
@@ -388,10 +395,12 @@ pub(super) fn generate_v_slot_props_scope(
         props_pattern.as_str(),
         &props_type,
         false,
-        |ts| {
+        |ts, _| {
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {
-                vize_l0::emit_ts!(ts, "{inner_indent}void {props_pattern};\n");
+                if oxc_syntax::identifier::is_identifier_name(binding_pattern) {
+                    vize_l0::emit_ts!(ts, "{inner_indent}void {binding_pattern};\n");
+                }
             } else {
                 for prop_name in data.prop_names.iter() {
                     vize_l0::emit_ts!(ts, "{inner_indent}void {prop_name};\n");

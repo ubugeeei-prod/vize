@@ -180,7 +180,7 @@ fn eight_whole_original_root_if_text_components_and_raw_maps_are_captured() -> R
                     if_node != text_node && !core::ptr::eq(condition.ast, expression.ast),
                     "{id}: genuinely distinct condition and body occurrences, including same binding"
                 );
-                let analysis = build_native_selected_setup_dom_decisions(setup)
+                let analysis = build_selected_setup_dom_decisions(setup)
                     .map_err(|error| cstr!("{id}: {error:?}"))?;
                 let dom = analysis.dom().ok_or("DOM")?;
                 require!(

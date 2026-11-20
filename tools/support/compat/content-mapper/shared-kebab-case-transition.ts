@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeJsxSharedHelpersSource } from "./jsx-shared-helpers-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Hunk = { before: string; after: string };
@@ -31,6 +32,7 @@ const identity = (text: string): Identity => ({
 
 /** The exact predecessor of a recorded shared `KebabCase` source image. */
 export function beforeSharedKebabCaseSource(file: string, current: string): string {
+  current = beforeJsxSharedHelpersSource(file, current);
   const transition = record.files.find((candidate) => candidate.path === file);
   if (!transition) return current;
   const now = identity(current);

@@ -7,6 +7,12 @@ fn strict_nuxt_template_globals_read_declared_surfaces() {
         "fix_history_cases::strict_nuxt_template_globals_4423::strict_nuxt_template_globals_read_declared_surfaces",
         "d197098cb7a3d4d414a8225dda2a97267b253f82",
         Some(4423),
-        &["auto-imports", "unknown-globals", "member-root", "literals"],
+        &[
+            "auto-imports",
+            "unknown-globals",
+            "member-root",
+            "literals",
+            "unknown-member-root-13376",
+        ],
     );
 }

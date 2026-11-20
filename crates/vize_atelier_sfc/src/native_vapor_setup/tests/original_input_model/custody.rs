@@ -7,7 +7,7 @@ use vize_l2::{
     op::{BindingOp, Op},
     resolution::Usage,
 };
-use vize_l3::decision::vapor::{VaporPart, build_native_selected_setup_vapor_decisions};
+use vize_l3::decision::vapor::{VaporPart, build_selected_setup_vapor_decisions};
 
 pub(super) fn capture(
     compilation: &NativeVaporSetupSfcCompilation<'_>,
@@ -140,7 +140,7 @@ pub(super) fn capture(
         "{id}: bounded primitive target and original named coordinates"
     );
     let analysis =
-        build_native_selected_setup_vapor_decisions(setup).map_err(|error| cstr!("{error:?}"))?;
+        build_selected_setup_vapor_decisions(setup).map_err(|error| cstr!("{error:?}"))?;
     let facts = analysis.vapor().ok_or("Vapor facts")?;
     let [root] = facts.roots() else {
         return Err(cstr!("{id}: one original Vapor root"));

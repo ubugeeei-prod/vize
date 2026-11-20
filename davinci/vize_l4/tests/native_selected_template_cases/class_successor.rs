@@ -2,7 +2,7 @@
 use crate::{check, completed, equal};
 use vize_l0::Allocator;
 use vize_l2::op::Op;
-use vize_l3::decision::native::build_native_dom_file_decisions;
+use vize_l3::decision::template::build_template_dom_decisions;
 use vize_l4::{
     module::assemble_template,
     runtime::{Runtime, vocabulary},
@@ -17,7 +17,7 @@ pub(super) fn assert_current(arena: &Allocator, source: &str) -> Result<(), &'st
     )?;
     let owner = completed(arena, source)?;
     let analysis =
-        build_native_dom_file_decisions(owner.view().map_err(|_| "complete original view")?)
+        build_template_dom_decisions(owner.view().map_err(|_| "complete original view")?)
             .map_err(|_| "complete original L3")?;
     check(core::ptr::eq(analysis.owner(), &owner))?;
     let file = analysis.file();

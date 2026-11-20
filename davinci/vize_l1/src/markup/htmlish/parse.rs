@@ -11,14 +11,14 @@ use namespace::NamespaceSink;
 use vize_l0::{Allocator, Vec};
 use vize_l0::{ErrorCode, TemplateSyntaxMode};
 
-use crate::dialect::LegacyCaps;
+use crate::framework::vue::LegacyCaps;
 use crate::markup::htmlish::build::build;
 use crate::markup::htmlish::event::{Event, Recorder};
 use crate::markup::htmlish::render::check_fidelity;
 use crate::markup::htmlish::surface::{SurfaceChild, SurfaceTree, Token};
 
 // The dialect-owned component surface provider.
-pub use crate::dialect::vue3::surface::{
+pub use crate::framework::vue::version::v3::surface::{
     ComponentParse, ComponentSourceError, DirectiveAdmission, parse_component,
     parse_component_with_authored, parse_component_with_options,
 };

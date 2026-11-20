@@ -86,7 +86,7 @@ impl<'a> NativeComponent<'a> {
         Ok(Self {
             allocator,
             block,
-            component: crate::dialect::vue3::surface::parse_component_with_tag_facts(
+            component: crate::framework::vue::version::v3::surface::parse_component_with_tag_facts(
                 allocator,
                 block.source(),
             )?,

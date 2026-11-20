@@ -348,7 +348,9 @@ impl ScriptCompileContext {
         } else {
             None
         };
-        let project = selected.or(discovered.as_deref());
+        let project = selected
+            .filter(|project| project.is_configured())
+            .or(discovered.as_deref());
 
         let mut visited = FxHashSet::default();
         let mut traversed = FxHashSet::default();

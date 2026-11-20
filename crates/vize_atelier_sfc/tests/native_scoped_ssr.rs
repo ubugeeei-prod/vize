@@ -7,8 +7,8 @@ use vize_l0::Allocator;
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind as LowerKind;
 use vize_l2::lang::js::NativeScopedTemplateIssueKind;
 use vize_l3::decision::ssr::{
-    NativeSsrBuildError, SsrPart, build_native_scoped_ssr_file_decisions,
-    build_native_ssr_file_decisions,
+    SsrPart, SsrTemplateBuildError, build_scoped_template_ssr_decisions,
+    build_template_ssr_decisions,
 };
 use vize_l4::module::AssemblyError;
 
@@ -110,7 +110,7 @@ fn three_whole_original_scoped_ssr_modules_css_maps_and_file_custody_match() {
             view.style_syntax(),
             observation.style_syntax().unwrap()
         ));
-        let analysis = build_native_scoped_ssr_file_decisions(view).unwrap();
+        let analysis = build_scoped_template_ssr_decisions(view).unwrap();
         assert!(core::ptr::eq(analysis.file(), file));
         assert!(core::ptr::eq(
             analysis.scoped().style_syntax(),
@@ -227,8 +227,8 @@ fn original_style_refusals_do_not_grant_partial_scoped_product() {
     let compilation = compile_native_scoped_ssr_sfc(&arena, source, Options::default());
     let lower = compilation.observation().original();
     assert!(matches!(
-        build_native_ssr_file_decisions(lower.template().unwrap().view().unwrap()),
-        Err(NativeSsrBuildError::StyledSource { .. })
+        build_template_ssr_decisions(lower.template().unwrap().view().unwrap()),
+        Err(SsrTemplateBuildError::StyledSource { .. })
     ));
     let old = compile_native_ssr_sfc(&arena, source, NativeSsrSfcCompileOptions::default());
     assert!(old.result().is_err());

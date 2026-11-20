@@ -5,7 +5,7 @@ use lightningcss::selector::{Component, PseudoClass, Selector};
 use vize_l0::{
     FxHashSet, Namespace, String, ToCompactString, is_html_tag, is_math_ml_tag, is_svg_tag,
 };
-use vize_l1::markup::directive::{DirectivePrefix, DirectiveSyntax, VueDirectives};
+use vize_l1::framework::vue::directive::{DirectivePrefix, DirectiveSyntax, VueDirectives};
 use vize_l1::markup::{Attribute, Element, SurfaceChild, SurfaceTree};
 
 #[derive(Default)]

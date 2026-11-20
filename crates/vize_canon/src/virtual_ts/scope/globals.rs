@@ -27,7 +27,7 @@ pub(crate) use strict_candidate::is_strict_template_context_candidate;
 use {
     member_root::{is_call_root_occurrence, is_member_root_occurrence},
     strict_expression::generate_strict_expression_refs,
-    template_scope::is_visible_template_binding,
+    template_scope::{is_inside_template_scope, is_visible_template_binding},
 };
 
 /// Handle undefined references from template.
@@ -173,6 +173,22 @@ pub(super) fn generate_undefined_refs(
                 && strict_ref_shape;
         let on_public_instance =
             resolve_on_public_instance && unknown_to_scope && !on_strict_template_context;
+        // A scoped bare read is a strict-context read too: the strict
+        // expression scan below emits it and hoists the one declaration the
+        // authored expression resolves through. A lexical fallback here would
+        // report the same occurrence a second time (#13376).
+        if options.virtual_ts_options.strict_instance_globals
+            && !resolve_on_instance
+            && !on_instance
+            && !on_strict_template_context
+            && !script_declared
+            && !context_declared
+            && !keyed
+            && !strict_ref_shape
+            && is_inside_template_scope(summary, undef.offset)
+        {
+            continue;
+        }
 
         // Interpolations are checked as authored expressions in their lexical
         // scope. A duplicate read would escape their authored TS directives.
@@ -192,7 +208,9 @@ pub(super) fn generate_undefined_refs(
                 continue;
             }
             let keyed = options.keyed_prop_bindings.contains(name);
-            let already_declared = member_root || keyed || !seen_names.insert(String::from(name));
+            // The first read hoists the declaration the authored expression
+            // resolves through, so only the strict read reports (#13376).
+            let already_declared = keyed || !seen_names.insert(String::from(name));
             emit_header(ts, &mut emitted_header);
             emit_strict_template_context_ref(
                 ts,

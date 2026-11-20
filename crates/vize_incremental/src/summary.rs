@@ -10,6 +10,70 @@ use vize_l2::summary::{AlphaPages, Facet, Fingerprint, SfcSummary, SummaryError}
 
 use crate::db::{ResidentDatabase, SourceFile};
 
+/// `budgets.toml`, whose `[resource]` section holds the cache policy.
+const BUDGETS: &[u8] = include_str!("../../../docs/davinci/plan/budgets.toml").as_bytes();
+/// Where the `[resource]` section starts in [`BUDGETS`].
+const RESOURCE_START: usize = section_start(BUDGETS, b"\n[resource]");
+/// The `[resource]` section to the end of the file, copied at compile time.
+/// Only these bytes reach the binary: the benchmark registry above them grows
+/// with every benchmark row and is never read here.
+static RESOURCE: [u8; BUDGETS.len() - RESOURCE_START] = tail(BUDGETS);
+
+/// The offset just after the newline that opens `heading` in `bytes`. A
+/// missing section fails the build.
+#[expect(
+    clippy::panic,
+    reason = "evaluated at compile time: a missing section is a build error"
+)]
+const fn section_start(bytes: &[u8], heading: &[u8]) -> usize {
+    let mut offset = 0;
+    let mut rest = bytes;
+    while let [_, tail @ ..] = rest {
+        if starts_with(rest, heading) {
+            return offset + 1;
+        }
+        rest = tail;
+        offset += 1;
+    }
+    panic!("budgets.toml has no [resource] section")
+}
+
+const fn starts_with(bytes: &[u8], prefix: &[u8]) -> bool {
+    let (mut bytes, mut prefix) = (bytes, prefix);
+    loop {
+        match (bytes, prefix) {
+            (_, []) => return true,
+            ([byte, bytes_rest @ ..], [expected, prefix_rest @ ..]) if *byte == *expected => {
+                bytes = bytes_rest;
+                prefix = prefix_rest;
+            }
+            _ => return false,
+        }
+    }
+}
+
+/// The last `N` bytes of `bytes`.
+#[expect(
+    clippy::indexing_slicing,
+    reason = "evaluated at compile time: `index` stays below `N` by construction"
+)]
+const fn tail<const N: usize>(bytes: &[u8]) -> [u8; N] {
+    let mut out = [0; N];
+    let mut rest = bytes;
+    while rest.len() > N {
+        if let [_, tail @ ..] = rest {
+            rest = tail;
+        }
+    }
+    let mut index = 0;
+    while let [byte, tail @ ..] = rest {
+        out[index] = *byte;
+        rest = tail;
+        index += 1;
+    }
+    out
+}
+
 /// Bounded memo capacities in the selected `[resource.<preset>]` entry.
 /// These are entry counts, not an RSS proof: P5-4b still needs its synthetic
 /// 10k-file session to establish the process-level memory ceiling.
@@ -24,7 +88,9 @@ pub struct SummaryCachePolicy {
 impl SummaryCachePolicy {
     /// Read the policy bundled in `budgets.toml [resource]`.
     pub fn from_resource_preset(preset: &str) -> Result<Self, String> {
-        let budgets: toml::Table = include_str!("../../../docs/davinci/plan/budgets.toml")
+        let resource = core::str::from_utf8(&RESOURCE)
+            .map_err(|_| String::from("budgets.toml [resource] is not UTF-8"))?;
+        let budgets: toml::Table = resource
             .parse()
             .map_err(|error: toml::de::Error| cstr!("{error}"))?;
         let cache = budgets
@@ -227,5 +293,27 @@ impl ResidentDatabase {
     /// Intern a declaration name for the current revision.
     pub fn declaration_name(&self, name: &str) -> DeclarationName<'_> {
         DeclarationName::new(self, String::from(name))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::section_start;
+
+    #[test]
+    fn resource_heading_preserves_lf_and_crlf_after_the_heading() {
+        for (source, expected) in [
+            (
+                b"[bench]\nvalue = 1\n[resource]\nvalue = 2\n".as_slice(),
+                b"[resource]\nvalue = 2\n".as_slice(),
+            ),
+            (
+                b"[bench]\r\nvalue = 1\r\n[resource]\r\nvalue = 2\r\n".as_slice(),
+                b"[resource]\r\nvalue = 2\r\n".as_slice(),
+            ),
+        ] {
+            let start = section_start(source, b"\n[resource]");
+            assert_eq!(&source[start..], expected);
+        }
     }
 }

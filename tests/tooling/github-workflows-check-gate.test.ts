@@ -134,12 +134,13 @@ test("source gates cover iteration events while full qualification runs on sched
     (step) => step.name === "Check Davinci source inventories",
   );
   assert.equal(validate?.run, "node tools/support/compat/davinci/source-inventories.ts");
-  // The same five checks, in the same order within each dependent lane.
+  // The same six checks, in the same order within each dependent lane.
   assert.deepEqual(
     sourceInventoryLanes.flat().map((args) => `node ${args.join(" ")}`),
     [
       "node tools/support/compat/davinci/croquis-consumers.ts --check",
       "node tools/support/compat/davinci/consumer-migration-surfaces.ts --check",
+      "node tools/support/compat/davinci/lint-substrate.ts --check",
       "node --test tests/tooling/davinci-storage-policy.test.ts",
       "node tools/support/compat/davinci/generated-ledgers.ts --write",
       "node tools/support/compat/davinci/generated-ledgers.ts --check",

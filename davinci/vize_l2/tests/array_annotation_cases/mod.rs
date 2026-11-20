@@ -1,10 +1,9 @@
 use oxc_parser::{Parser, ProgramObservation};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceBlock, SourceRoot, String, cstr};
-use vize_l2::file::{
-    FileArtifact, FileIssueKind, InitializerKind, Namespace, PositionQueryError, ScriptUnit,
-};
+use vize_l2::file::{FileArtifact, FileIssueKind, InitializerKind, Namespace, ScriptUnit};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l2::query::PositionQueryError;
 
 fn lower<'a>(
     arena: &'a Allocator,

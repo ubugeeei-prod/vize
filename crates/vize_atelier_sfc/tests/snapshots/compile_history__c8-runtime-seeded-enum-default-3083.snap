@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-runtime-seeded-enum-default-3083",
+    history: "e34e7aa51b5932a27d05a308d0af7f7d929715b3",
+    source: "<script setup lang=\"ts\">\n\nconst seed = runtime()\nenum Step { Name = seed }\nconst props = withDefaults(defineProps<{ step?: Step }>(), { step: Step.Name })\n\n</script>\n<template><p>{{ props.step }}</p></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "`withDefaults()` in <script setup> cannot reference locally declared variable `Step` because its arguments are hoisted outside setup(). Move the initialization to a normal <script> block or import it from another module.",
+            code: Some(
+                "SCRIPT_SETUP_MACRO_SCOPE",
+            ),
+            loc: Some(
+                BlockLocation {
+                    start: 142,
+                    end: 146,
+                    tag_start: 142,
+                    tag_end: 146,
+                    start_line: 5,
+                    start_column: 68,
+                    end_line: 5,
+                    end_column: 72,
+                },
+            ),
+        },
+    ),
+)

@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-typed-slot-outlet-payload-4495",
+    history: "8ab7fd93f0072880f46ea7fce8ac9f998922feed",
+    source: "<script setup lang=\"ts\">\ndefineSlots<{ default(props: { item: string }): any }>()\nconst item = 'x'\n</script>\n<template><slot :item=\"item\" /></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { renderSlot as _renderSlot } from \"vue\"\n\nconst item = \"x\";\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return _renderSlot(_ctx.$slots, \"default\", { item: item })\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "item": LiteralConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

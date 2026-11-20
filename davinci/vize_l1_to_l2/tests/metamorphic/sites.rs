@@ -158,7 +158,7 @@ fn walk_children(
                     v_pre: flags.v_pre || has_attr_named(element, "v-pre"),
                 };
                 let child_parent = Parent {
-                    component: !vize_l0::is_native_tag(tag),
+                    component: !vize_l0::is_platform_tag(tag),
                     slot_template: tag == "template" && has_slot_attr(element),
                 };
                 walk_children(

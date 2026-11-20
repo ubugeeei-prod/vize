@@ -29,6 +29,7 @@ mod input_channels;
 mod instance_input_keys;
 mod integrated_source;
 mod jsx_exact_keys;
+mod jsx_shared_helpers;
 mod lib_type_qualification;
 mod lib_type_qualification_listeners;
 mod lib_type_shadowing_audit;

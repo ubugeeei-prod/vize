@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-statement-handler-identifiers-4765",
+    history: "ca95ba9be51a2a8bf3a148a392ef85fc8c6d8908",
+    source: "<script setup lang=\"ts\">\nfunction close() {}\nfunction modifyInventory() {}\nfunction toggle() {}\nconst active = true\n</script>\n<template><button @click=\"close();modifyInventory()\">a</button><button @click=\"$emit('selected', $event); close()\">b</button><button @click=\"if (active) toggle(); close()\">c</button></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n\nconst active = true;\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nfunction close() {}\nfunction modifyInventory() {}\nfunction toggle() {}\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"button\", {\n      onClick: _cache[0] || (_cache[0] = $event => {close();modifyInventory()})\n    }, \"a\"),\n    _createElementVNode(\"button\", {\n      onClick: _cache[1] || (_cache[1] = $event => {_ctx.$emit('selected', $event); close()})\n    }, \"b\"),\n    _createElementVNode(\"button\", {\n      onClick: _cache[2] || (_cache[2] = $event => {if (active) toggle(); close()})\n    }, \"c\")\n  ], 64 /* STABLE_FRAGMENT */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "close": SetupConst,
+                        "active": LiteralConst,
+                        "toggle": SetupConst,
+                        "modifyInventory": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

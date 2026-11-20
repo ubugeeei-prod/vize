@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-with-defaults-setup-local-reference-3074",
+    history: "0f835fead61e71a3efb6cdcdbf84b5fa38121cbd",
+    source: "<script setup lang=\"ts\">\nconst items = []\n\nwithDefaults(defineProps<{\n  items?: string[]\n}>(), { items })\n</script>\n\n<template>{{ items.join() }}</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "`withDefaults()` in <script setup> cannot reference locally declared variable `items` because its arguments are hoisted outside setup(). Move the initialization to a normal <script> block or import it from another module.",
+            code: Some(
+                "SCRIPT_SETUP_MACRO_SCOPE",
+            ),
+            loc: Some(
+                BlockLocation {
+                    start: 97,
+                    end: 102,
+                    tag_start: 97,
+                    tag_end: 102,
+                    start_line: 6,
+                    start_column: 9,
+                    end_line: 6,
+                    end_column: 14,
+                },
+            ),
+        },
+    ),
+)

@@ -1,8 +1,8 @@
 //! Independent source goldens for the version-owned Vue 1 surface carrier.
 
 use vize_l0::{Allocator, cstr};
-use vize_l1::dialect::LegacyVueVersion;
-use vize_l1::dialect::vue1::surface::{
+use vize_l1::framework::vue::LegacyVueVersion;
+use vize_l1::framework::vue::version::v1::surface::{
     SyntaxBoundaryKind, parse_component, parse_component_with_authored,
 };
 use vize_l1::markup::{Element, Interpolation, OpenTag, SurfaceChild, Token, check_fidelity};
@@ -149,10 +149,12 @@ fn historical_line_separators_are_refused_while_line_feed_stays_admitted() {
         );
         assert_eq!(
             parsed.unsupported(),
-            [vize_l1::dialect::vue1::surface::SyntaxBoundary {
-                span: vize_l0::Span::new(0, source.len() as u32),
-                kind: SyntaxBoundaryKind::HistoricalLineSeparator,
-            }]
+            [
+                vize_l1::framework::vue::version::v1::surface::SyntaxBoundary {
+                    span: vize_l0::Span::new(0, source.len() as u32),
+                    kind: SyntaxBoundaryKind::HistoricalLineSeparator,
+                }
+            ]
         );
     }
     let allocator = Allocator::new();

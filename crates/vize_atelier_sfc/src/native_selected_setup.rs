@@ -5,7 +5,7 @@ use vize_l0::Allocator;
 use vize_l1_to_l2::native_file::{
     NativeSelectedSetupSfcObservation, lower_selected_setup_sfc_native,
 };
-use vize_l3::decision::{DecisionBuildError, native::build_native_selected_setup_dom_decisions};
+use vize_l3::decision::{DecisionBuildError, template::build_selected_setup_dom_decisions};
 use vize_l4::{
     module::{
         AssemblyError, ModuleParts, RenderFunctionName, ScriptPart, assemble,
@@ -62,7 +62,7 @@ pub enum NativeSelectedSetupSfcDomError {
 /// ```compile_fail
 /// use vize_l0::Allocator;
 /// use vize_l2::op::Op;
-/// use vize_l3::decision::native::build_native_selected_setup_dom_decisions;
+/// use vize_l3::decision::template::build_selected_setup_dom_decisions;
 /// use vize_atelier_sfc::{compile_native_selected_setup_sfc_dom, NativeSelectedSfcDomOptions};
 /// fn discard_for() {
 ///     let arena = Allocator::default();
@@ -70,7 +70,7 @@ pub enum NativeSelectedSetupSfcDomError {
 ///         "<script setup>let count=2</script><template><i v-for='item in count'>fixed</i></template>",
 ///         NativeSelectedSfcDomOptions::default());
 ///     let view = compiled.observation().admitted().unwrap();
-///     let analysis = build_native_selected_setup_dom_decisions(view.setup()).unwrap();
+///     let analysis = build_selected_setup_dom_decisions(view.setup()).unwrap();
 ///     let Op::OriginalFor(original) = &view.setup().file().artifact().root().ops[0] else { return };
 ///     let row = analysis.dom().unwrap().file_for_head(original.id().node()).unwrap();
 ///     drop(compiled);
@@ -164,7 +164,7 @@ fn emit<L: LinkSink>(
         .admitted()
         .ok_or(NativeSelectedSetupSfcDomError::Observation)?;
     let source = admitted.observation().original().descriptor().source();
-    let analysis = build_native_selected_setup_dom_decisions(admitted.setup())
+    let analysis = build_selected_setup_dom_decisions(admitted.setup())
         .map_err(NativeSelectedSetupSfcDomError::Analysis)?;
     let mut parts =
         ModuleParts::for_runtime(Runtime::VueDom, options.runtime_version, COMPONENT_BINDING)
