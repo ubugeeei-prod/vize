@@ -4,7 +4,7 @@ use crate::file::{Scope, ScopeId, ScriptProfile, ScriptUnit};
 use oxc_parser::{AdmittedProgram, ParseOptions};
 use vize_l1::{
     embed::{Lang, syntax::EmbedSyntax},
-    markup::{NativeTemplateComponent, ScriptSelection},
+    markup::{ScriptSelection, SelectedTemplateComponent},
 };
 
 pub(super) struct Joined<'owner, 'arena> {
@@ -13,7 +13,7 @@ pub(super) struct Joined<'owner, 'arena> {
     pub(super) unit: &'owner ScriptUnit,
 }
 pub(super) fn checked<'owner, 'arena>(
-    component: &'owner NativeTemplateComponent<'arena>,
+    component: &'owner SelectedTemplateComponent<'arena>,
     syntax: &'owner EmbedSyntax<'arena>,
     units: &'owner [ScriptUnit],
     scopes: &[Scope],

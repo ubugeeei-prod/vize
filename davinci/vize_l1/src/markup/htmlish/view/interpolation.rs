@@ -4,7 +4,7 @@ use alloc::boxed::Box;
 use oxc_parser::AdmittedExpression;
 use vize_l0::Span;
 
-use super::{ChildView, NativeTemplateComponent, TemplateGrammar};
+use super::{ChildView, SelectedTemplateComponent, TemplateGrammar};
 use crate::embed::syntax::{EmbedSyntax, RetainedExpression, parse_once};
 use crate::embed::{Embed, Grammar, Lang, Shape, SourceError, prepare_vue_interpolation_in};
 use crate::markup::{ElementClose, SurfaceChild};
@@ -59,7 +59,7 @@ pub struct InterpolationOperand<'a> {
     syntax: RetainedExpression<'a>,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> SelectedTemplateComponent<'a> {
     /// Replace source preparation and parsing at this same original body visit.
     /// Authored HTML whitespace and text entities use the existing decoder once.
     /// The stock expression parse uses this selected owner's Module JS/TS role.
@@ -151,7 +151,7 @@ impl<'a> InterpolationOperand<'a> {
     /// Reborrow at the same original body child; syntax holes cannot admit.
     pub fn admitted_for<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s SelectedTemplateComponent<'a>,
         child: ChildView<'s, 'a>,
     ) -> Option<InterpolationView<'s, 'a>> {
         if !self.origin.matches(selected, &child) {
@@ -174,12 +174,12 @@ impl<'a> InterpolationOperand<'a> {
 /// Short original interpolation/operand join, not a completed body or File.
 pub struct InterpolationView<'s, 'a> {
     owner: &'s InterpolationOperand<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
+    selected: &'s SelectedTemplateComponent<'a>,
     child: ChildView<'s, 'a>,
 }
 impl<'s, 'a> InterpolationView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s SelectedTemplateComponent<'a> {
         self.selected
     }
     #[must_use]

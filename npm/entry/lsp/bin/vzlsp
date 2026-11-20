@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+// `vzlsp <args>` is `vize lsp <args>` from the CLI release this package pins.
+process.argv.splice(2, 0, "lsp");
+import("vize/cli");

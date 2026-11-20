@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+// `vzdoctor <args>` is `vize doctor <args>` from the CLI release this package pins.
+process.argv.splice(2, 0, "doctor");
+import("vize/cli");

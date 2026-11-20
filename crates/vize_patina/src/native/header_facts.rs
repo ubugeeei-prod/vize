@@ -12,7 +12,7 @@ use vize_l0::{
     },
     fact::{FactConsumer, FactError, FactManager, FactTable, FactView},
 };
-use vize_l1::markup::{Element, ElementView, NativeTemplateComponent};
+use vize_l1::markup::{Element, ElementView, SelectedTemplateComponent};
 
 use super::{NativeLintRefusal, header, header_rules};
 
@@ -64,14 +64,14 @@ struct Evidence {
 /// cloneable::<NativeHeaderFacts<'static, 'static>>();
 /// ```
 pub struct NativeHeaderFacts<'o, 'a> {
-    owner: &'o NativeTemplateComponent<'a>,
+    owner: &'o SelectedTemplateComponent<'a>,
     original: &'o Element<'a>,
     manager: FactManager<'static, Evidence>,
 }
 
 impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
     pub(super) fn new(
-        owner: &'o NativeTemplateComponent<'a>,
+        owner: &'o SelectedTemplateComponent<'a>,
         element: &ElementView<'o, 'a>,
     ) -> Result<Self, NativeHeaderFactError> {
         let header_key =
@@ -135,7 +135,7 @@ impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
 
     /// Returns the original selected template that owns this header.
     #[must_use]
-    pub fn owner(&self) -> &'o NativeTemplateComponent<'a> {
+    pub fn owner(&self) -> &'o SelectedTemplateComponent<'a> {
         self.owner
     }
 

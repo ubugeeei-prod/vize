@@ -1,6 +1,6 @@
 //! Default Vue 3 whitespace at a genuinely selected original root text event.
 
-use super::{ChildView, NativeTemplateComponent, TemplateGrammar};
+use super::{ChildView, SelectedTemplateComponent, TemplateGrammar};
 use crate::markup::SurfaceChild;
 use vize_l0::{SourceBlock, Span, StringBuilder};
 
@@ -51,7 +51,7 @@ struct Origin<'a> {
     span: Span,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> SelectedTemplateComponent<'a> {
     /// Derive default Vue 3 condense from this same original root visit.
     /// Nested pre/RCDATA ancestry and text-entity decoding remain unavailable.
     pub fn prepare_condensed_root_text(
@@ -138,7 +138,7 @@ fn omit_blank(
         && raw.bytes().any(|byte| matches!(byte, b'\n' | b'\r')))
 }
 
-fn condense<'a>(selected: &NativeTemplateComponent<'a>, raw: &'a str) -> &'a str {
+fn condense<'a>(selected: &SelectedTemplateComponent<'a>, raw: &'a str) -> &'a str {
     let mut previous_whitespace = false;
     let changed = raw.bytes().any(|byte| {
         let current = whitespace(byte);
@@ -194,7 +194,7 @@ impl<'a> RootText<'a> {
     /// Same-byte reparses and different original slots cannot join.
     pub fn admitted_for_root_at<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s SelectedTemplateComponent<'a>,
         ordinal: usize,
     ) -> Option<RootTextView<'s, 'a>> {
         let child = selected.component().root_child_at(ordinal)?;
@@ -219,11 +219,11 @@ impl<'a> RootText<'a> {
 /// Readonly same-original-root join; this is not whole-body/File completion.
 pub struct RootTextView<'s, 'a> {
     owner: &'s RootText<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
+    selected: &'s SelectedTemplateComponent<'a>,
 }
 impl<'s, 'a> RootTextView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s SelectedTemplateComponent<'a> {
         self.selected
     }
     #[must_use]

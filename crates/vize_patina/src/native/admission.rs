@@ -1,7 +1,7 @@
 //! One original child traversal for the bounded complete parser-output profile.
 
 use vize_l0::{SmallVec, Span, is_html_tag, is_math_ml_tag, is_svg_tag};
-use vize_l1::markup::{ChildrenView, NativeComponent, SurfaceChild, TagFactsKind, Token};
+use vize_l1::markup::{ChildrenView, OwnedComponent, SurfaceChild, TagFactsKind, Token};
 
 use super::{
     attribute, header, header_rules,
@@ -15,7 +15,7 @@ use super::{
 mod select;
 mod textarea;
 
-pub(in crate::native) fn component(component: &NativeComponent<'_>) -> Result<(), Refusal> {
+pub(in crate::native) fn component(component: &OwnedComponent<'_>) -> Result<(), Refusal> {
     carrier(component, 0)?;
     let block = component.block();
     if block.start() != 0 || !core::ptr::eq(block.source(), block.root_source()) {
@@ -27,12 +27,12 @@ pub(in crate::native) fn component(component: &NativeComponent<'_>) -> Result<()
 /// Only the authentic selected constructor can supply this origin. The SFC
 /// host additionally owns and validates its exact original Descriptor frames.
 pub(in crate::native) fn selected_component(
-    selected: &vize_l1::markup::NativeTemplateComponent<'_>,
+    selected: &vize_l1::markup::SelectedTemplateComponent<'_>,
 ) -> Result<(), Refusal> {
     carrier(selected.component(), selected.component().block().start())
 }
 
-fn carrier(component: &NativeComponent<'_>, base: u32) -> Result<(), Refusal> {
+fn carrier(component: &OwnedComponent<'_>, base: u32) -> Result<(), Refusal> {
     let carrier = component.carrier();
     if let Some(error) = carrier.errors.first() {
         let offset = base
@@ -49,7 +49,7 @@ fn carrier(component: &NativeComponent<'_>, base: u32) -> Result<(), Refusal> {
     Ok(())
 }
 
-fn checked_token(component: &NativeComponent<'_>, token: &Token<'_>) -> Result<Span, Refusal> {
+fn checked_token(component: &OwnedComponent<'_>, token: &Token<'_>) -> Result<Span, Refusal> {
     attribute::token(component.block(), token)?;
     let span = attribute::span(component.block(), token.text)?;
     if !token
@@ -63,7 +63,7 @@ fn checked_token(component: &NativeComponent<'_>, token: &Token<'_>) -> Result<S
 }
 
 pub(in crate::native) fn children<'o, 'a>(
-    component: &'o NativeComponent<'a>,
+    component: &'o OwnedComponent<'a>,
     children: ChildrenView<'o, 'a>,
     profile: NativeTemplateAttributeProfile,
     visit_element: &mut impl FnMut(&NativeTemplateElement<'o, 'a>) -> Result<(), Refusal>,
@@ -81,7 +81,7 @@ pub(in crate::native) fn children<'o, 'a>(
 }
 
 pub(in crate::native) fn children_with_text_profile<'o, 'a>(
-    component: &'o NativeComponent<'a>,
+    component: &'o OwnedComponent<'a>,
     children: ChildrenView<'o, 'a>,
     profile: NativeTemplateAttributeProfile,
     text_profile: NativeTemplateTextProfile,
@@ -98,7 +98,7 @@ pub(in crate::native) fn children_with_text_profile<'o, 'a>(
 }
 
 pub(in crate::native) fn children_with_owner_profile<'o, 'a>(
-    component: &'o NativeComponent<'a>,
+    component: &'o OwnedComponent<'a>,
     children: ChildrenView<'o, 'a>,
     profile: NativeTemplateAttributeProfile,
     text_profile: NativeTemplateTextProfile,
@@ -118,7 +118,7 @@ pub(in crate::native) fn children_with_owner_profile<'o, 'a>(
 }
 
 fn walk<'o, 'a>(
-    component: &'o NativeComponent<'a>,
+    component: &'o OwnedComponent<'a>,
     children: ChildrenView<'o, 'a>,
     profile: NativeTemplateAttributeProfile,
     text_profile: NativeTemplateTextProfile,

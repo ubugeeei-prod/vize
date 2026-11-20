@@ -4,7 +4,7 @@ use super::support::{
 };
 use std::{borrow::Cow, cell::Cell};
 use vize_l0::{Allocator, cstr, diag::MessageLookup};
-use vize_l1::markup::{NativeComponent, TemplateGrammar, check_fidelity};
+use vize_l1::markup::{OwnedComponent, TemplateGrammar, check_fidelity};
 use vize_patina::{
     Linter,
     native::{NativeLintRefusal, NativeSyntaxLint},
@@ -18,7 +18,7 @@ fn equal_foreign_owners_and_raw_parses_refuse_before_lookup_with_source_custody_
     let second = selected(&arena, source);
     let other_arena = Allocator::default();
     let third = selected(&other_arena, source);
-    let raw = NativeComponent::parse_in(&arena, first.component().block()).unwrap();
+    let raw = OwnedComponent::parse_in(&arena, first.component().block()).unwrap();
     let lint = NativeSyntaxLint::new(&first).unwrap();
     for component in [second.component(), third.component(), &raw] {
         let element = component.children().next().unwrap().into_element().unwrap();

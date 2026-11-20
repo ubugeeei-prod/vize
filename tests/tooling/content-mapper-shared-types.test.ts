@@ -75,6 +75,7 @@ function generatorFixture() {
   const cwd = mkdtempSync(path.join(tmpdir(), "vize-slot-export-generator-"));
   const files = [
     "npm/cli/scripts/generate-content-mapper-types.ts",
+    "npm/cli/scripts/slot-family-exports.ts",
     "npm/cli/scripts/slot-payload-exports.ts",
     "npm/cli/scripts/emit-inference-exports.ts",
     "npm/cli/scripts/listener-argument-exports.ts",

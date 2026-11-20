@@ -16,6 +16,7 @@ use docs_metadata::{
     DocsMetadataQualificationGraph, MANIFEST as DOCS_METADATA_MANIFEST,
     update as docs_metadata_update, verify as verify_docs_metadata_update,
 };
+mod entry_packages;
 mod eslint_vue_scorecard;
 mod fixture_updates;
 use fixture_updates::{
@@ -24,6 +25,11 @@ use fixture_updates::{
 };
 mod js_tooling_refresh;
 mod node_forge_security;
+mod oracle_importer;
+use oracle_importer::{
+    MANIFEST as JSX_ORACLE, PREVIOUS_PROVIDER, UPDATE_BINDING as ORACLE_UPDATE_BINDING,
+    verify as verify_oracle_update,
+};
 mod picomatch_security;
 mod runtime_security;
 mod strict_checker;
@@ -39,86 +45,20 @@ use tooling::{
     tooling_update, verify_tooling_update,
 };
 
-const PREVIOUS_PROVIDER: &str = "ad428607e450f807b15e9301d429fcbee7fe67729b52130f2d7e63c2f0cf1e0f";
-const ORACLE_UPDATE_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-oracle-importer-update-11172.json";
 const LOCKFILE_UPDATE_BINDING: &str = "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-qualification-lockfile-update-11542.json";
 const PARCEL_MANIFEST: &str = "npm/builder/parcel-native/package.json";
 const CARGO_WORKSPACE: &str = "Cargo.toml";
 const CARGO_LOCK: &str = "Cargo.lock";
-const JSX_ORACLE: &str = "tests/tooling/jsx-vapor-oracle/package.json";
 const SETUP_AWAIT_ORACLE: &str = "tests/tooling/vue-setup-await-oracle/package.json";
 const WORKSPACE: &str = "pnpm-workspace.yaml";
 const TESTS_PACKAGE: &str = "tests/package.json";
 const SETUP_AWAIT_SUPPORT: &str = "tests/tooling/support/setup-scope-await.mjs";
-const ADDED: &str =
-    "      '@playwright/test':\n        specifier: catalog:testing\n        version: 1.62.1\n";
-const PREFIX: &str = "  tests/tooling/jsx-vapor-oracle:\n    devDependencies:\n      '@babel/core':\n        specifier: catalog:babel-jsx-oracle\n        version: 7.29.0(supports-color@10.2.2)\n";
 const SETUP_AWAIT_IMPORTER: &str = "  tests/tooling/vue-setup-await-oracle:\n    devDependencies:\n      '@vue/server-renderer':\n        specifier: 3.5.38\n        version: 3.5.38(vue@3.5.38(typescript@6.0.3))\n      vue:\n        specifier: 3.5.38\n        version: 3.5.38(typescript@6.0.3)\n";
 
 fn bound(binding: &Value, path: &str, body: &[u8]) -> bool {
     binding["path"] == path
         && binding["bytes"] == json!(body.len())
         && binding["sha256"] == support::hash(body)
-}
-
-fn verify_oracle_update(
-    previous: &Value,
-    update: &Value,
-    lock: &[u8],
-    package: &[u8],
-    oracle: &[u8],
-) -> Checked<()> {
-    if update["previousProviderRecord"]["sha256"] != PREVIOUS_PROVIDER
-        || update["previousQualificationLock"] != previous["finalQualificationLock"]
-        || update["finalQualificationPackage"] != previous["finalQualificationPackage"]
-    {
-        return Err("exact frozen qualification predecessor");
-    }
-    if !bound(&update["finalQualificationLock"], "pnpm-lock.yaml", lock)
-        || !bound(
-            &update["finalQualificationPackage"],
-            "package.json",
-            package,
-        )
-        || !bound(&update["oracleImporter"], JSX_ORACLE, oracle)
-    {
-        return Err("exact current qualification and oracle bytes");
-    }
-    let oracle: Value = serde_json::from_slice(oracle).map_err(|_| "complete oracle manifest")?;
-    if oracle["devDependencies"]["@playwright/test"] != "catalog:testing" {
-        return Err("the declared catalog oracle dependency");
-    }
-    let insertion = &update["insertion"];
-    if insertion["addedUtf8"] != ADDED {
-        return Err("only the three declared catalog importer lines");
-    }
-    if insertion["precedingUtf8"] != PREFIX {
-        return Err("only the declared oracle importer");
-    }
-    let offset = insertion["offset"]
-        .as_u64()
-        .and_then(|value| usize::try_from(value).ok())
-        .ok_or("bounded insertion offset")?;
-    let end = offset
-        .checked_add(ADDED.len())
-        .ok_or("bounded insertion end")?;
-    let prefix = insertion["precedingUtf8"]
-        .as_str()
-        .ok_or("complete importer prefix")?;
-    let prefix_start = offset
-        .checked_sub(prefix.len())
-        .ok_or("bounded importer prefix")?;
-    if lock.get(offset..end) != Some(ADDED.as_bytes())
-        || lock.get(prefix_start..offset) != Some(prefix.as_bytes())
-    {
-        return Err("exact positioned oracle importer insertion");
-    }
-    let before = lock.get(..offset).ok_or("bounded original prefix")?;
-    let after = lock.get(end..).ok_or("bounded original suffix")?;
-    let inverse = [before, after].concat();
-    std::str::from_utf8(&inverse).map_err(|_| "whole UTF-8 predecessor")?;
-    final_graph(previous, &inverse, package)
-        .map_err(|_| "complete original qualification graph reconstruction")
 }
 
 struct QualificationGraph<'a> {
@@ -322,6 +262,20 @@ fn verify_parcel_update(
 }
 
 pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checked<Option<Value>> {
+    if let Ok(previous_lock) = entry_packages::reconstruct_lock_predecessor(lock) {
+        let previous_update = authorize(previous, &previous_lock, package)?
+            .ok_or("entry packages require a qualification predecessor")?;
+        let workspace = fs::read(support::repository().join(WORKSPACE))
+            .map_err(|_| "complete workspace manifest")?;
+        return entry_packages::authorize_successor(
+            &previous_update,
+            &previous_lock,
+            lock,
+            package,
+            &workspace,
+        )
+        .map(Some);
+    }
     if final_graph(previous, lock, package).is_ok() {
         return Ok(None);
     }
@@ -337,6 +291,8 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
     let predecessor = lockfile_update();
     let current_workspace = fs::read(support::repository().join(WORKSPACE))
         .map_err(|_| "complete workspace manifest")?;
+    let current_workspace = entry_packages::reconstruct_workspace_predecessor(&current_workspace)
+        .unwrap_or(current_workspace);
     let picomatch_predecessor =
         picomatch_security::reconstruct_workspace_predecessor(&current_workspace)
             .unwrap_or_else(|_| current_workspace.clone());

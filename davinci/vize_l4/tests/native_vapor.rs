@@ -10,7 +10,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
 use vize_l3::decision::vapor::{VaporUnsupported, build_template_vapor_decisions};
@@ -29,7 +29,7 @@ fn original<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a>
             template: SurfaceParseOptions::default(),
         },
     );
-    let selected = NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    let selected = SelectedTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
     let mut owner = NativeTemplateOwner::new(selected)
@@ -158,7 +158,7 @@ fn unsupported_original_lower_events_cannot_authorize_the_target() {
                 template: SurfaceParseOptions::default(),
             },
         );
-        let selected = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
+        let selected = SelectedTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
             .unwrap()
             .unwrap();
         let mut owner = NativeTemplateOwner::new(selected)
@@ -215,7 +215,7 @@ fn whole_component_assembly_never_omits_original_scripts_or_styles() {
             },
         );
         let admitted = descriptor.admitted().unwrap();
-        let selected = NativeTemplateComponent::parse_in(&arena, admitted)
+        let selected = SelectedTemplateComponent::parse_in(&arena, admitted)
             .unwrap()
             .unwrap();
         let mut owner = NativeTemplateOwner::new(selected)

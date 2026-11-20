@@ -1,4 +1,4 @@
-use super::NativeComponent;
+use super::OwnedComponent;
 use alloc::vec::Vec;
 use vize_l0::{Allocator, SourceRoot};
 
@@ -7,7 +7,7 @@ fn projections_retain_original_parent_order_and_complete_values() {
     let arena = Allocator::default();
     let source = "<div a=\"one\" :b=\"two\"><p c='three'>text</p><!--kept--></div><span/>";
     let component =
-        NativeComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block()).unwrap();
+        OwnedComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block()).unwrap();
     let mut roots = component.children();
     assert_eq!(roots.len(), 2);
     let div = roots.next().unwrap().into_element().unwrap();
@@ -54,7 +54,7 @@ fn projections_retain_original_parent_order_and_complete_values() {
 fn empty_original_owner_moves_without_address_or_empty_vec_identity() {
     let arena = Allocator::default();
     let block = SourceRoot::new("").unwrap().whole_block();
-    let component = NativeComponent::parse_in(&arena, block).unwrap();
+    let component = OwnedComponent::parse_in(&arena, block).unwrap();
     assert_eq!(component.children().len(), 0);
     let moved = core::hint::black_box(component);
     assert_eq!(moved.children().len(), 0);

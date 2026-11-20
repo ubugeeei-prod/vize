@@ -76,8 +76,9 @@ Rust の最低対応バージョン（MSRV）は、`Cargo.toml` の `[workspace.
 | 互換性プレビュー | `@vizejs/unplugin`、`@vizejs/rspack-plugin`、`@vizejs/nuxt`、`@vizejs/nuxt-lint-config`、`@vizejs/musea-nuxt` | 一般的な構成での動作を想定するが、フレームワークとの互換性は変化する可能性がある |
 | 実験的 | `oxlint-plugin-vize`、`@vizejs/vite-plugin-musea`、`@vizejs/musea-mcp-server`、`@vizejs/wasm` | 公開済みだが、API・コマンド・生成結果・ワークフローはアルファ版の間に変わる可能性がある |
 | 実験的 | `@vizejs/composable`、`@vizejs/ui`、`@vizejs/marquette` | 公開ライブラリだが、API の構成と生成されるリファレンスデータは変わる可能性がある |
+| 実験的 | `@vizejs/lint`、`@vizejs/fmt`、`@vizejs/typecheck`、`@vizejs/content-mapper`、`@vizejs/compile`、`@vizejs/compile-jsx`、`@vizejs/compile-tsrx`、`@vizejs/doctor`、`@vizejs/curator`、`@vizejs/lsp` | `vize` の各機能に絞った入り口。コマンドは `vize` と同じだが、パッケージ構成と依存関係はアルファ版の間に変わる可能性がある |
 | 実験的（ワークスペース内のみ） | `@vizejs/data`、`@vizejs/devtools`、`@vizejs/router`、`@vizejs/state` | リポジトリ内に実装があるが npm には未公開。レジストリからはインストールできない |
-| 開発初期 | `@vizejs/fresco`、`@vizejs/fresco-native`、エディター拡張 | 開発と評価に使えるが、v1 アルファ版の本番対応対象には含まれない |
+| 開発初期 | `@vizejs/fresco`、`@vizejs/tui`、`@vizejs/fresco-native`、エディター拡張 | 開発と評価に使えるが、v1 アルファ版の本番対応対象には含まれない |
 
 ## Rust クレートのサポート区分
 

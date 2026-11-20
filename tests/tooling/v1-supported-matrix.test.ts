@@ -15,8 +15,8 @@ const root = path.resolve(import.meta.dirname, "../..");
 const output = path.join(root, "docs/release/v1-supported-matrix.json");
 const matrix = buildV1SupportMatrix(root);
 
-void test("the committed v1 support manifest is generated from the audited inventories", () => {
-  assert.equal(readFileSync(output, "utf8"), renderV1SupportMatrix(root));
+void test("the committed v1 support manifest is generated from the audited inventories", async () => {
+  assert.equal(readFileSync(output, "utf8"), await renderV1SupportMatrix(root));
   assert.equal(matrix.schema, "vize.v1-qualification-manifest.v1");
   assert.equal(matrix.counts.declaredCombinations, matrix.combinations.length);
   assert.equal(matrix.counts.caseObligations, matrix.combinations.length * V1_CASES.length);

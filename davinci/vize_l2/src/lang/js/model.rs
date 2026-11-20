@@ -6,7 +6,7 @@ use crate::expr::{
 };
 use vize_l0::Span;
 use vize_l1::embed::syntax::EmbedHole;
-use vize_l1::markup::{AttributeModelExpression, AttributeView, NativeTemplateComponent};
+use vize_l1::markup::{AttributeModelExpression, AttributeView, SelectedTemplateComponent};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeModelInputError {
@@ -75,7 +75,7 @@ impl<'a> NativeModelInput<'a> {
     /// they are never manufactured by parsing a generated assignment.
     pub fn admitted_for<'s>(
         &'s mut self,
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s SelectedTemplateComponent<'a>,
         attribute: AttributeView<'s, 'a>,
     ) -> Result<&'a JsExpr<'a>, NativeModelInputError> {
         let syntax = self.operand.syntax();

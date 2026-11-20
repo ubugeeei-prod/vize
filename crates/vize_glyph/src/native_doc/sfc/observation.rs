@@ -3,7 +3,7 @@
 use vize_l1::container::vue::DescriptorObservation;
 use vize_l1::markup::{
     AttributeBindingExpression, AttributeExpression, AttributeExpressionFailure,
-    InterpolationFailure, InterpolationOperand, NativeTemplateComponent,
+    InterpolationFailure, InterpolationOperand, SelectedTemplateComponent,
 };
 
 use super::super::{Doc, print};
@@ -27,7 +27,7 @@ pub(super) enum Outcome<'a> {
 /// ```
 pub struct NativeSfcObservation<'a> {
     pub(super) descriptor: DescriptorObservation<'a>,
-    pub(super) selected: Option<NativeTemplateComponent<'a>>,
+    pub(super) selected: Option<SelectedTemplateComponent<'a>>,
     pub(super) operands: std::vec::Vec<InterpolationOperand<'a>>,
     pub(super) interpolation_failure: Option<InterpolationFailure<'a>>,
     pub(super) attributes: std::vec::Vec<AttributeExpression<'a>>,
@@ -73,7 +73,7 @@ impl<'a> NativeSfcObservation<'a> {
         &self.descriptor
     }
     /// Borrow the original selected template, if selection succeeded.
-    pub fn selected(&self) -> Option<&NativeTemplateComponent<'a>> {
+    pub fn selected(&self) -> Option<&SelectedTemplateComponent<'a>> {
         self.selected.as_ref()
     }
     /// Borrow interpolation operands observed before completion or refusal.

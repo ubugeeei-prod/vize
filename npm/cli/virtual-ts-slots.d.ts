@@ -23,7 +23,7 @@ declare function __vizeFunctionalSlots<P, C, R>(
   : NonNullable<C> extends { slots: infer S }
     ? S
     : any;
-type $NativeSlotsFactory<C> = [C] extends [new (...args: any[]) => any]
+export type $NativeSlotsFactory<C> = [C] extends [new (...args: any[]) => any]
   ? (component: C) => (props: any) => $SlotHostSlots<C>
   : C extends (...args: any[]) => any
     ? typeof __vizeFunctionalSlots
@@ -38,12 +38,12 @@ export type $SlotsFactory<C> =
       : [C] extends [{ readonly __vizeComponentMarker: true }]
         ? (component: C) => (props: any) => $SlotHostSlots<C>
         : $NativeSlotsFactory<C>;
-type $HasSlotResolver<C> = C extends { __vizeResolveSlots?: infer F }
+export type $HasSlotResolver<C> = C extends { __vizeResolveSlots?: infer F }
   ? F extends (...args: any[]) => any
     ? true
     : false
   : false;
-type $DirectSlotConstructor<C> =
+export type $DirectSlotConstructor<C> =
   $IsAny<C> extends true
     ? never
     : $HasSlotResolver<C> extends true
@@ -56,7 +56,7 @@ type $DirectSlotConstructor<C> =
 export type $SlotConstructor<C> = [$DirectSlotConstructor<C>] extends [never]
   ? new (props: any, ...args: any[]) => { $slots: never }
   : $DirectSlotConstructor<C>;
-type $SlotConstructorArgumentLists<C> = C extends {
+export type $SlotConstructorArgumentLists<C> = C extends {
   new (...args: infer A1): any;
   new (...args: infer A2): any;
   new (...args: infer A3): any;
@@ -70,7 +70,7 @@ type $SlotConstructorArgumentLists<C> = C extends {
   : C extends new (...args: infer A) => any
     ? A
     : [unknown];
-type $SlotConstructorHasArguments<C> =
+export type $SlotConstructorHasArguments<C> =
   $SlotConstructorArgumentLists<C> extends infer A ? (A extends [] ? never : true) : never;
 export type $SlotConstructorWithoutArguments<C> = C extends new () => any
   ? C & ([$SlotConstructorHasArguments<C>] extends [never] ? unknown : new () => { $slots: never })

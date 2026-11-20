@@ -77,7 +77,8 @@ Tarball 在 NPM 包发布前安装烟雾。运行时烟雾检查`vize --version`
 | Alpha支持  | `vize`，`@vizejs/native`，`@vizejs/vite-plugin`                                               | 旨在早期生产试验，配合发布说明支持的破坏性变更。                      |
 | 兼容性预览 | `@vizejs/unplugin`，`@vizejs/rspack-plugin`，`@vizejs/nuxt`，`@vizejs/musea-nuxt`             | 预计适用于常见的主机配置，但主机与框架的兼容性可能会迅速变化。        |
 | 实验       | `oxlint-plugin-vize`，`@vizejs/vite-plugin-musea`，`@vizejs/musea-mcp-server`，`@vizejs/wasm` | 公开包，但 API、命令、输出和工作流形状在 alpha 阶段可能会发生变化。   |
-| 孵化       | `@vizejs/fresco`、`@vizejs/fresco-native`、编辑器扩展包                                       | 对开发和反馈很有用，但尚未成为v1 alpha Ready Production目标的一部分。 |
+| 实验性 | `@vizejs/lint`、`@vizejs/fmt`、`@vizejs/typecheck`、`@vizejs/content-mapper`、`@vizejs/compile`、`@vizejs/compile-jsx`、`@vizejs/compile-tsrx`、`@vizejs/doctor`、`@vizejs/curator`、`@vizejs/lsp` | 聚焦于 `vize` 各功能的入口包；命令与 `vize` 相同，但包结构和依赖在 alpha 期间可能变化。 |
+| 孵化       | `@vizejs/fresco`、`@vizejs/tui`、`@vizejs/fresco-native`、编辑器扩展包                                       | 对开发和反馈很有用，但尚未成为v1 alpha Ready Production目标的一部分。 |
 
 ## 锈箱支撑等级
 

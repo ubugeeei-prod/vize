@@ -10,8 +10,8 @@ use vize_l0::{
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{
-        ChildrenView, NativeTemplateComponent, SurfaceParseOptions, TagFactsKind, TagFactsRefusal,
-        check_fidelity,
+        ChildrenView, SelectedTemplateComponent, SurfaceParseOptions, TagFactsKind,
+        TagFactsRefusal, check_fidelity,
     },
 };
 use vize_patina::{
@@ -80,7 +80,7 @@ impl MarkupRule for ObserveRegisteredRule {
     }
 }
 
-fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+fn selected<'a>(arena: &'a Allocator, source: &'a str) -> SelectedTemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -90,7 +90,7 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
             template: SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    SelectedTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap()
 }
@@ -136,7 +136,7 @@ fn registered(source: &str, locale: Locale) -> LintResult {
 fn observed(
     source: &str,
     locale: Locale,
-    owner: &NativeTemplateComponent<'_>,
+    owner: &SelectedTemplateComponent<'_>,
 ) -> (Vec<Observation>, LintResult) {
     let observations = Arc::new(Mutex::new(Vec::new()));
     let mut registry = RuleRegistry::new();
@@ -167,7 +167,7 @@ fn native_kind(kind: TagFactsKind) -> MarkupElementKind {
 }
 
 fn native_observations<'a>(
-    owner: &NativeTemplateComponent<'a>,
+    owner: &SelectedTemplateComponent<'a>,
     children: ChildrenView<'_, 'a>,
     output: &mut Vec<Observation>,
 ) {

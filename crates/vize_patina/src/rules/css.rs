@@ -96,6 +96,21 @@ impl CssLintResult {
         }
         self.diagnostics.push(diagnostic);
     }
+
+    /// Add a warning of `rule` over `start..end` with `help`. Every `css/*`
+    /// rule reports through this one out-of-line constructor instead of
+    /// inlining its own.
+    #[inline(never)]
+    pub(crate) fn warn(
+        &mut self,
+        rule: &'static str,
+        message: &'static str,
+        help: &'static str,
+        start: u32,
+        end: u32,
+    ) {
+        self.add_diagnostic(LintDiagnostic::warn(rule, message, start, end).with_help(help));
+    }
 }
 
 /// Trait for CSS lint rules
@@ -332,16 +347,19 @@ impl CssLinter {
     pub fn with_all_rules() -> Self {
         Self {
             rules: vec![
-                Box::new(PreferLogicalProperties),
-                Box::new(RequireFontDisplay),
                 Box::new(PreferNestedSelectors),
                 Box::new(NoDisplayNone),
                 Box::new(NoVBindPerformance),
                 Box::new(NoHardcodedValues::default()),
                 Box::new(NoUtilityClasses),
+            ],
+            style_rules: vec![
+                Box::new(NoImportant),
+                Box::new(NoIdSelectors),
+                Box::new(PreferLogicalProperties),
+                Box::new(RequireFontDisplay),
                 Box::new(PreferSlotted),
             ],
-            style_rules: vec![Box::new(NoImportant), Box::new(NoIdSelectors)],
         }
     }
 

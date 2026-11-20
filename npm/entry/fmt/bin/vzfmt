@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+// `vzfmt <args>` is `vize fmt <args>` from the CLI release this package pins.
+process.argv.splice(2, 0, "fmt");
+import("vize/cli");

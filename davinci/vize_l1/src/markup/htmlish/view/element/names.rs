@@ -1,6 +1,6 @@
 //! Authored tag names borrowed from one original Element CST projection.
 
-use super::{ElementView, NativeComponent, Parent};
+use super::{ElementView, OwnedComponent, Parent};
 use crate::markup::{Element, ElementClose, SurfaceChild, Token};
 use vize_l0::{SourceBlock, Span};
 
@@ -36,16 +36,16 @@ pub enum ElementNameRefusal {
 /// The actual original owner must remain alive:
 /// ```compile_fail
 /// use vize_l0::{Allocator, SourceRoot};
-/// use vize_l1::markup::NativeComponent;
+/// use vize_l1::markup::OwnedComponent;
 /// let arena = Allocator::default();
-/// let owner = NativeComponent::parse_in(&arena, SourceRoot::new("<p></p>").unwrap().whole_block()).unwrap();
+/// let owner = OwnedComponent::parse_in(&arena, SourceRoot::new("<p></p>").unwrap().whole_block()).unwrap();
 /// let element = owner.children().next().unwrap().into_element().unwrap();
 /// let names = element.names().unwrap();
 /// drop(owner);
 /// let _ = names.opening();
 /// ```
 pub struct ElementNames<'o, 'a> {
-    component: &'o NativeComponent<'a>,
+    component: &'o OwnedComponent<'a>,
     element: &'o Element<'a>,
     parent: Parent<'o, 'a>,
     ordinal: usize,
@@ -65,7 +65,7 @@ impl core::fmt::Debug for ElementNames<'_, '_> {
 
 impl<'o, 'a> ElementNames<'o, 'a> {
     #[must_use]
-    pub fn component(&self) -> &'o NativeComponent<'a> {
+    pub fn component(&self) -> &'o OwnedComponent<'a> {
         self.component
     }
     #[must_use]
@@ -227,14 +227,14 @@ mod tests {
     use super::{ElementClosingName as Closing, ElementNameRefusal as Refusal};
     use crate::container::{Vue, vue::DescriptorOptions};
     use crate::markup::{ElementClose, check_fidelity};
-    use crate::markup::{NativeComponent, NativeTemplateComponent};
+    use crate::markup::{OwnedComponent, SelectedTemplateComponent};
     use vize_l0::{
         Allocator, SourceRoot, Span,
         config::{VueDialect, VueVersion},
         line_index::LineBreaks,
     };
 
-    fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+    fn selected<'a>(arena: &'a Allocator, source: &'a str) -> SelectedTemplateComponent<'a> {
         let descriptor = Vue.observe_descriptor(
             arena,
             source,
@@ -244,7 +244,7 @@ mod tests {
                 template: crate::markup::SurfaceParseOptions::default(),
             },
         );
-        NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+        SelectedTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
             .unwrap()
             .unwrap()
     }
@@ -254,7 +254,7 @@ mod tests {
         let arena = Allocator::default();
         let source = "<Card><Card title=\"</Card>\">x</Card></Card>";
         let owner =
-            NativeComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
+            OwnedComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
                 .unwrap();
         let outer = owner.children().next().unwrap().into_element().unwrap();
         let inner = outer.children().next().unwrap().into_element().unwrap();
@@ -297,7 +297,7 @@ mod tests {
             ("<Widget></ Widget >", "Widget"),
         ] {
             let owner =
-                NativeComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
+                OwnedComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
                     .unwrap();
             let element = owner.children().next().unwrap().into_element().unwrap();
             let names = element.names().unwrap();
@@ -319,8 +319,8 @@ mod tests {
         let arena = Allocator::default();
         let source = "<p></p>";
         let block = SourceRoot::new(source).unwrap().whole_block();
-        let owner = NativeComponent::parse_in(&arena, block).unwrap();
-        let foreign = NativeComponent::parse_in(&arena, block).unwrap();
+        let owner = OwnedComponent::parse_in(&arena, block).unwrap();
+        let foreign = OwnedComponent::parse_in(&arena, block).unwrap();
         let element = owner.children().next().unwrap().into_element().unwrap();
         let other = foreign.children().next().unwrap().into_element().unwrap();
         let names = element.names().unwrap();
@@ -344,9 +344,9 @@ mod tests {
         let source = vize_l0::String::from("<p></p>");
         let other_source = vize_l0::String::from("<p></p>");
         let owner =
-            NativeComponent::parse_in(&arena, SourceRoot::new(&source).unwrap().whole_block())
+            OwnedComponent::parse_in(&arena, SourceRoot::new(&source).unwrap().whole_block())
                 .unwrap();
-        let foreign = NativeComponent::parse_in(
+        let foreign = OwnedComponent::parse_in(
             &arena,
             SourceRoot::new(&other_source).unwrap().whole_block(),
         )
@@ -361,7 +361,7 @@ mod tests {
         let arena = Allocator::default();
         let source = "<br><br/><Widget />";
         let owner =
-            NativeComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
+            OwnedComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
                 .unwrap();
         let names: alloc::vec::Vec<_> = owner
             .children()
@@ -382,7 +382,7 @@ mod tests {
             ("<a><a>inner</a></a>", Closing::Present(Span::new(17, 18))),
         ] {
             let owner =
-                NativeComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
+                OwnedComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
                     .unwrap();
             let element = owner.children().next().unwrap().into_element().unwrap();
             assert_eq!(element.names().unwrap().closing(), expected);
@@ -395,7 +395,7 @@ mod tests {
         let arena = Allocator::default();
         let source = "<p></p><div title='unterminated";
         let owner =
-            NativeComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
+            OwnedComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
                 .unwrap();
         let error = owner.carrier().errors.first().unwrap();
         let expected = Refusal::Recovered {
@@ -429,7 +429,7 @@ mod tests {
         let arena = Allocator::default();
         let source = "<p></p><Widget></Widget>";
         let owner =
-            NativeComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
+            OwnedComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
                 .unwrap();
         let owner = core::hint::black_box(owner);
         let before = arena.allocated_bytes();
@@ -456,7 +456,7 @@ mod tests {
         let arena = Allocator::default();
         let source = "<div><p>text</div>";
         let owner =
-            NativeComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
+            OwnedComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
                 .unwrap();
         let root = owner.children().next().unwrap().into_element().unwrap();
         let child = root.children().next().unwrap().into_element().unwrap();

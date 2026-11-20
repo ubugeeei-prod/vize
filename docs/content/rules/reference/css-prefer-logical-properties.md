@@ -11,7 +11,7 @@ Recommend CSS logical properties for better i18n support.
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | No | None |
 
-Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped).
+Applies to: CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed). Within one Stylus block, use either braced or indented syntax consistently; mixed syntax is read as braced Stylus.
 
 ## Bad
 

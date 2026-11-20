@@ -3,7 +3,7 @@
 use vize_l0::{Allocator, SourceFrameError, Span, Vec};
 use vize_l1::container::Vue;
 use vize_l1::container::vue::{AdmittedDescriptor, DescriptorObservation};
-use vize_l1::markup::NativeTemplateComponent;
+use vize_l1::markup::SelectedTemplateComponent;
 
 use super::super::{Doc, NativeTemplateValuePolicy, observed_native_template_document_with_policy};
 use super::observation::Outcome;
@@ -69,7 +69,7 @@ fn build<'a>(
         .ok_or(NativeSfcRefusal::MissingTemplate)?;
     let index = template.container_index();
     let content = template.block().span();
-    observation.selected = NativeTemplateComponent::parse_in(allocator, admitted)
+    observation.selected = SelectedTemplateComponent::parse_in(allocator, admitted)
         .map_err(NativeSfcRefusal::Component)?;
     let selected = observation
         .selected
@@ -164,7 +164,7 @@ fn refuse_other_roles(
 
 fn frame<'a>(
     descriptor: &DescriptorObservation<'a>,
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     index: usize,
     content: Span,
     template: Doc<'a>,

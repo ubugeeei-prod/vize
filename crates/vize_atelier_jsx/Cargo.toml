@@ -40,6 +40,7 @@ oxc_sourcemap = { workspace = true }
 
 [dev-dependencies]
 criterion = { workspace = true }
+davinci_harness = { workspace = true }
 insta = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -56,6 +57,10 @@ legacy = ["vize_atelier_sfc/legacy", "vize_atelier_ssr/legacy"]
 
 [[bench]]
 name = "jsx_compile"
+harness = false
+
+[[bench]]
+name = "levels"
 harness = false
 
 [lints]

@@ -1,6 +1,6 @@
 //! A bare default Vue 3 component parsed with tag facts, without Descriptor selection.
 
-use super::{ChildrenView, NativeComponent};
+use super::{ChildrenView, OwnedComponent};
 use crate::markup::ComponentSourceError;
 use vize_l0::{Allocator, SourceBlock};
 
@@ -18,8 +18,8 @@ use vize_l0::{Allocator, SourceBlock};
 /// ```
 /// It cannot substitute for Descriptor selection:
 /// ```compile_fail
-/// use vize_l1::markup::{ComponentTagFacts, NativeTemplateComponent};
-/// fn selected<'a>(bare: ComponentTagFacts<'a>) -> NativeTemplateComponent<'a> {
+/// use vize_l1::markup::{ComponentTagFacts, SelectedTemplateComponent};
+/// fn selected<'a>(bare: ComponentTagFacts<'a>) -> SelectedTemplateComponent<'a> {
 ///     bare.into()
 /// }
 /// ```
@@ -30,7 +30,7 @@ use vize_l0::{Allocator, SourceBlock};
 /// cloneable::<ComponentTagFacts<'static>>();
 /// ```
 pub struct ComponentTagFacts<'a> {
-    component: NativeComponent<'a>,
+    component: OwnedComponent<'a>,
 }
 
 impl core::fmt::Debug for ComponentTagFacts<'_> {
@@ -50,12 +50,12 @@ impl<'a> ComponentTagFacts<'a> {
         block: SourceBlock<'a>,
     ) -> Result<Self, ComponentSourceError> {
         Ok(Self {
-            component: NativeComponent::parse_tag_facts_in(allocator, block)?,
+            component: OwnedComponent::parse_tag_facts_in(allocator, block)?,
         })
     }
 
     #[must_use]
-    pub fn component(&self) -> &NativeComponent<'a> {
+    pub fn component(&self) -> &OwnedComponent<'a> {
         &self.component
     }
 

@@ -1,7 +1,7 @@
 //! Original attribute-value preparation without expression or target admission.
 
 use super::origin::Origin;
-use super::{AttributeOperandError, AttributeView, NativeTemplateComponent};
+use super::{AttributeOperandError, AttributeView, SelectedTemplateComponent};
 use crate::embed::{EmbedSource, prepare_attribute_value};
 use vize_l0::Span;
 
@@ -33,7 +33,7 @@ pub struct AttributeValueOperand<'a> {
     source: EmbedSource<'a>,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> SelectedTemplateComponent<'a> {
     /// Prepare the complete value during this actual opening-header visit.
     /// Original membership, recovery and complete token geometry are checked
     /// before the existing attribute-context decoder is called exactly once.
@@ -98,7 +98,7 @@ impl<'a> AttributeValueOperand<'a> {
     /// Equal authored bytes, ranges or copied source maps cannot mint this view.
     pub fn admitted_for<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s SelectedTemplateComponent<'a>,
         attribute: AttributeView<'s, 'a>,
     ) -> Option<AttributeValueView<'s, 'a>> {
         self.origin
@@ -120,12 +120,12 @@ impl<'a> AttributeValueOperand<'a> {
 /// The borrowed join has no File, Element factory or target eligibility authority.
 pub struct AttributeValueView<'s, 'a> {
     owner: &'s AttributeValueOperand<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
+    selected: &'s SelectedTemplateComponent<'a>,
     attribute: AttributeView<'s, 'a>,
 }
 impl<'s, 'a> AttributeValueView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s SelectedTemplateComponent<'a> {
         self.selected
     }
     #[must_use]

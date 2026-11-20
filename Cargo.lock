@@ -4658,6 +4658,7 @@ name = "vize_atelier_jsx"
 version = "0.474.0"
 dependencies = [
  "criterion",
+ "davinci_harness",
  "insta",
  "oxc_allocator",
  "oxc_ast",

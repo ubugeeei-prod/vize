@@ -1,6 +1,6 @@
 use super::*;
 
-fn contexts<'a>(owner: &NativeTemplateComponent<'a>) -> Vec<(&'a str, bool)> {
+fn contexts<'a>(owner: &SelectedTemplateComponent<'a>) -> Vec<(&'a str, bool)> {
     fn collect<'a>(children: ChildrenView<'_, 'a>, output: &mut Vec<(&'a str, bool)>) {
         for child in children {
             if let Some(element) = child.into_element() {
@@ -38,7 +38,7 @@ fn original_live_table_context_is_retained_without_moving_authored_elements() {
             ("html", false)
         ]
     );
-    let original = NativeComponent::parse_in(&arena, owner.component().block()).unwrap();
+    let original = OwnedComponent::parse_in(&arena, owner.component().block()).unwrap();
     assert_eq!(
         cstr!("{:?}", owner.component().carrier().tree.children),
         cstr!("{:?}", original.carrier().tree.children)

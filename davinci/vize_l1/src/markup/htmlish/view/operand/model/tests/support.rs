@@ -1,10 +1,10 @@
 use crate::container::Vue;
 use crate::container::vue::DescriptorOptions;
-use crate::markup::{AttributeModelExpression, NativeTemplateComponent};
+use crate::markup::{AttributeModelExpression, SelectedTemplateComponent};
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, Span};
 
-pub(super) fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+pub(super) fn selected<'a>(arena: &'a Allocator, source: &'a str) -> SelectedTemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -14,7 +14,7 @@ pub(super) fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTempl
             template: crate::markup::SurfaceParseOptions::default(),
         },
     );
-    let selected = NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    let selected = SelectedTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
     assert!(core::ptr::eq(
@@ -26,7 +26,7 @@ pub(super) fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTempl
 }
 
 pub(super) fn observe<'a>(
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     ordinal: usize,
 ) -> AttributeModelExpression<'a> {
     let element = selected.children().next().unwrap().into_element().unwrap();
@@ -40,7 +40,7 @@ pub(super) fn observe<'a>(
 
 pub(super) fn assert_original<'a>(
     operand: &AttributeModelExpression<'a>,
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     ordinal: usize,
 ) {
     let element = selected.children().next().unwrap().into_element().unwrap();

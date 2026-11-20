@@ -37,10 +37,10 @@ fn registered() -> BTreeMap<&'static str, Severity> {
         StyleRule::meta(&NoImportant),
         CssRule::meta(&NoUtilityClasses),
         CssRule::meta(&NoVBindPerformance),
-        CssRule::meta(&PreferLogicalProperties),
+        StyleRule::meta(&PreferLogicalProperties),
         CssRule::meta(&PreferNestedSelectors),
-        CssRule::meta(&PreferSlotted),
-        CssRule::meta(&RequireFontDisplay),
+        StyleRule::meta(&PreferSlotted),
+        StyleRule::meta(&RequireFontDisplay),
     ];
     let css_names: Vec<&str> = css.iter().map(|meta| meta.name).collect();
     let mut expected_css = crate::linter::css_rules::all_builtin_css_rule_names().to_vec();

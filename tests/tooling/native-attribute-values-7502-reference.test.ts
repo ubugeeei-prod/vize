@@ -27,6 +27,7 @@ import {
   transition7502,
   unchangedRows7502,
 } from "./support/native-attribute-values-7502-inputs.ts";
+import { spellForwardText } from "./support/evidence-renames.ts";
 import { mandatory7502Paths } from "./support/native-attribute-values-7502-judge.ts";
 import { coordinate7502, maps7502 } from "./support/native-attribute-values-7502-maps.ts";
 import {
@@ -124,6 +125,19 @@ test("mandatory hosted paths reject absent capture instead of using fixture nati
       history: "/evidence/history-receipt.json",
     },
   );
+});
+
+test("a capture spelled with today's names meets the pinned V3 through the rename map", () => {
+  const file =
+    "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output_v3.json";
+  const text = readFileSync(outputUrl7502, "utf8");
+  const frozen = JSON.parse(text);
+  const today = JSON.parse(spellForwardText(text, file)).capture;
+  assert.notDeepEqual(today, frozen.capture, "the rename changes the recorded Debug text");
+  requireReviewed7502(today, frozen);
+  unchangedRows7502(today);
+  today.rows[0].observation.file.nodeCount++;
+  assert.throws(() => requireReviewed7502(today, frozen), /must equal frozen output/);
 });
 
 test("the named successor retains every original byte and every unaffected whole row", () => {

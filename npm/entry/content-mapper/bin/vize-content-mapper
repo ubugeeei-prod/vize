@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+
+// The CLI's launcher answers TypeScript's `initialize` before the native addon loads.
+import("vize/content-mapper-cli");

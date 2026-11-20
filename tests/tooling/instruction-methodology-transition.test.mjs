@@ -271,7 +271,7 @@ for (const family of families) {
     assert.match(
       verified.stdout,
       new RegExp(
-        `${family.name === "level" ? 101 : family.count} pinned ceilings and ratchet verified`,
+        `${family.name === "level" ? 104 : family.count} pinned ceilings and ratchet verified`,
       ),
     );
     const replay = cli([
@@ -281,7 +281,12 @@ for (const family of families) {
       path.join(fixture, `${family.name}-rust1100.json`),
     ]);
     assert.equal(replay.status, 1);
-    assert.match(replay.stderr, /measurement source is not current checkout/);
+    assert.match(
+      replay.stderr,
+      family.name === "level"
+        ? /missing \[atelier_jsx_compile_vdom_slices, atelier_jsx_compile_babel_slices, atelier_jsx_compile_vapor_slices\]/
+        : /measurement source is not current checkout/,
+    );
     const historical = cli([
       ...mode,
       "--check",
@@ -292,7 +297,7 @@ for (const family of families) {
     assert.match(
       historical.stderr,
       family.name === "level"
-        ? /missing \[s1_to_s2_emit_helper_rich_large\]/
+        ? /missing \[s1_to_s2_emit_helper_rich_large, atelier_jsx_compile_vdom_slices,/
         : /instruction budget compiler mismatch/,
     );
   });

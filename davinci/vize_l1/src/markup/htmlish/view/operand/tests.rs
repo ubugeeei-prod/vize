@@ -2,7 +2,7 @@ use super::{AttributeOperandError, ConditionKind};
 use crate::container::Vue;
 use crate::container::vue::DescriptorOptions;
 use crate::embed::{Lang, syntax::EmbedHole};
-use crate::markup::{NativeTemplateComponent, TemplateGrammar};
+use crate::markup::{SelectedTemplateComponent, TemplateGrammar};
 use oxc_span::GetSpan;
 use vize_l0::{
     Allocator,
@@ -12,7 +12,7 @@ use vize_l0::{
 fn selected<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateComponent<'a>, &'static str> {
+) -> Result<SelectedTemplateComponent<'a>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -25,7 +25,7 @@ fn selected<'a>(
     let admitted = descriptor
         .admitted()
         .map_err(|_| "fixture descriptor refused")?;
-    NativeTemplateComponent::parse_in(arena, admitted)
+    SelectedTemplateComponent::parse_in(arena, admitted)
         .map_err(|_| "fixture component parse failed")?
         .ok_or("fixture has no selected template")
 }

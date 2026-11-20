@@ -276,6 +276,7 @@ fn original_specs(
         ("vize_atelier_dom", "davinci"),
         ("vize_atelier_vapor", "davinci"),
         ("vize_atelier_ssr", "davinci"),
+        ("vize_atelier_jsx", "levels"),
         ("vize_l0", "pass_runtime"),
         ("vize_l0", "fact_runtime"),
         ("vize_l1_to_l2", "l1_to_l2_storage"),
@@ -554,7 +555,7 @@ fn arm(out: &Path, measurement: &Value, name: &str, head_root: &Path) -> Result<
     let binaries = binaries
         .as_array()
         .ok_or("source harness: missing provider images")?;
-    require!(binaries.len() == 13, "original13 provider images required");
+    require!(binaries.len() == 14, "complete14 provider images required");
     let mut protocol = BTreeMap::new();
     let registry_path = "tools/benchmarks/scripts/instruction-counts-suites.mjs";
     protocol.insert(registry_path.into(), source(&root, &tree, registry_path)?);
@@ -991,8 +992,8 @@ pub fn load(
     );
     let measurement = json(&measurement_file)?;
     require!(
-        measurement["observations_complete"] == true && level_ids.len() == 101,
-        "complete630 and complete101 required"
+        measurement["observations_complete"] == true && level_ids.len() == 104,
+        "complete648 and complete104 required"
     );
     for side in ["base", "head"] {
         let revision = text(&measurement["source"], side)?;
@@ -1091,7 +1092,7 @@ pub fn load(
             let reports = super::load_reports(&run.join("reports"), "memory").map_err(|e| e.0)?;
             require!(
                 reports.keys().cloned().collect::<BTreeSet<_>>() == ids,
-                "incomplete raw105 reports"
+                "incomplete raw108 reports"
             );
             for (id, row) in object {
                 fields(
@@ -1157,7 +1158,7 @@ pub fn load(
                 super::load_reports(&run.join("level-reports"), "memory-level").map_err(|e| e.0)?;
             require!(
                 level.keys().cloned().collect::<BTreeSet<_>>() == *level_ids,
-                "wrong complete101 judge plane"
+                "wrong complete104 judge plane"
             );
             for id in level_ids {
                 require!(

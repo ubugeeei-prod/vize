@@ -47,7 +47,7 @@ void test("instruction inputs retain all three complete original formatter bench
   }
 });
 
-void test("formatter collection is separate from the unchanged twelve-suite level gate", () => {
+void test("formatter collection is separate from the thirteen-suite level gate", () => {
   assert.deepEqual(formatterInstructionSuites(), [["vize_glyph", "formatter_instructions"]]);
   assert.deepEqual(
     levelInstructionSuites(root).map(([pkg, bench]) => [
@@ -62,6 +62,7 @@ void test("formatter collection is separate from the unchanged twelve-suite leve
       ["vize_atelier_dom", "davinci"],
       ["vize_atelier_vapor", "davinci"],
       ["vize_atelier_ssr", "davinci"],
+      ["vize_atelier_jsx", "levels"],
       ["vize_l0", "pass_runtime"],
       ["vize_l0", "fact_runtime"],
       ["vize_l1_to_l2", "l1_to_l2_storage"],

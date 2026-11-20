@@ -219,6 +219,12 @@ export function presetList(values: readonly string[], locale: RuleLocale) {
 }
 
 /** English scope; other locales translate this exact text. */
+const mixedStylusScopeRules = new Set([
+  "css/prefer-logical-properties",
+  "css/prefer-slotted",
+  "css/require-font-display",
+]);
+
 export function scopeLabel(rule: RuleMetadata, example: RuleExample, ja: boolean) {
   if (example.standaloneScript)
     return ja ? "Nuxt 設定ファイル（nuxt.config.ts）" : "Nuxt configuration files (nuxt.config.ts)";
@@ -226,6 +232,14 @@ export function scopeLabel(rule: RuleMetadata, example: RuleExample, ja: boolean
     return ja
       ? "petite-vue と判定された HTML 文書。通常の Vue SFC は対象外です。"
       : "HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.";
+  if (
+    rule.metaType === "CssRuleMeta" &&
+    rule.everyStyleLanguage &&
+    mixedStylusScopeRules.has(rule.name)
+  )
+    return ja
+      ? "CSS・SCSS・Sass・Less・Stylus の style ブロック（書かれたまま。プリプロセッサは実行しません）。1 つの Stylus ブロックでは波括弧構文かインデント構文のどちらかに統一してください。混在する場合は波括弧構文として読み取ります。"
+      : "CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed). Within one Stylus block, use either braced or indented syntax consistently; mixed syntax is read as braced Stylus.";
   if (rule.metaType === "CssRuleMeta" && rule.everyStyleLanguage)
     return ja
       ? "CSS・SCSS・Sass・Less・Stylus の style ブロック（書かれたまま。プリプロセッサは実行しません）"

@@ -7,7 +7,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{ChildrenView, NativeTemplateComponent, SurfaceParseOptions},
+    markup::{ChildrenView, SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_patina::{
     LintDiagnostic, Linter, RuleRegistry,
@@ -15,7 +15,7 @@ use vize_patina::{
     rules::a11y::{IframeHasTitle, ImgAlt, TabindexNoPositive},
 };
 
-pub fn owner<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+pub fn owner<'a>(arena: &'a Allocator, source: &'a str) -> SelectedTemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -25,7 +25,7 @@ pub fn owner<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateCompone
             template: SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    SelectedTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap()
 }

@@ -165,7 +165,10 @@ fn c3() -> Value {
 fn physical() -> Vec<String> {
     PATHS
         .iter()
-        .map(|path| fs::read_to_string(support::repository().join(path)).unwrap())
+        .map(|path| {
+            let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            super::forwarded_slot_exports::source_before(path, current)
+        })
         .collect()
 }
 
@@ -194,8 +197,9 @@ fn authenticate(bodies: &[String], update: &Value) {
     {
         let path = support::relative(record["path"].as_str().unwrap());
         let body = fs::read_to_string(support::repository().join(path)).unwrap();
-        let current =
-            super::public_base_keys::source_before(record["path"].as_str().unwrap(), body);
+        let path = record["path"].as_str().unwrap();
+        let body = super::forwarded_slot_exports::source_before(path, body);
+        let current = super::public_base_keys::source_before(path, body);
         image(&current, record);
     }
 }

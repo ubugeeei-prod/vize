@@ -8,7 +8,9 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{ChildrenView, NativeTemplateComponent, SurfaceParseOptions, check_fidelity, render},
+    markup::{
+        ChildrenView, SelectedTemplateComponent, SurfaceParseOptions, check_fidelity, render,
+    },
 };
 use vize_patina::{
     LintResult, Linter, RuleRegistry,
@@ -20,7 +22,7 @@ pub const FILENAME: &str = "native-aria.vue";
 pub const RULE: &str = "a11y/aria-unsupported-elements";
 pub const LOCALES: [Locale; 3] = [Locale::En, Locale::Ja, Locale::Zh];
 
-pub fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+pub fn selected<'a>(arena: &'a Allocator, source: &'a str) -> SelectedTemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -30,7 +32,7 @@ pub fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComp
             template: SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    SelectedTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap()
 }

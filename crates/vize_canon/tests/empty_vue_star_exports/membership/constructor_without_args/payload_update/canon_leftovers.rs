@@ -1,6 +1,7 @@
 //! Invert only the #11499 helper and emit-overload successor.
 use super::support;
 use serde_json::{Value, json};
+use std::fs;
 
 const RECEIPT_BYTES: &[u8] = include_bytes!("canon_leftovers_11499.json");
 const RECEIPT_SHA: &str = "250e01138d163f77a5d98b20bc97f562a663ebb924c17c810b9d9cf02280128e";
@@ -59,6 +60,7 @@ fn forward(previous: &str, transition: &Value) -> String {
 }
 
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::forwarded_slot_exports::source_edits_before(path, current);
     let current = super::instance_input_keys::source_before(path, current);
     let current = super::projection_text_buffer::source_before(path, current);
     let receipt = receipt();
@@ -77,14 +79,18 @@ pub(super) fn preamble_before(current: &str) -> String {
     )
 }
 
+fn current_source(path: &str) -> String {
+    let current = fs::read_to_string(support::repository().join(path)).unwrap();
+    let current = super::forwarded_slot_exports::source_before(path, current);
+    let current = super::instance_input_keys::source_before(path, current);
+    super::projection_text_buffer::source_before(path, current)
+}
+
 pub(super) fn retain_provenance(manifest: &mut Value) {
     let receipt = receipt();
     for transition in receipt["files"].as_array().unwrap() {
         let path = transition["path"].as_str().unwrap();
-        let current = super::instance_input_keys::source_before(
-            path,
-            super::projection_text_buffer::read_current(path),
-        );
+        let current = current_source(path);
         identity(&current, &transition["after"]);
         inverse(&current, transition);
     }
@@ -104,10 +110,7 @@ mod tests {
         let receipt = receipt();
         for transition in receipt["files"].as_array().unwrap() {
             let path = transition["path"].as_str().unwrap();
-            let current = super::super::instance_input_keys::source_before(
-                path,
-                super::super::projection_text_buffer::read_current(path),
-            );
+            let current = current_source(path);
             let previous = inverse(&current, transition);
             assert_eq!(forward(&previous, transition), current);
         }
@@ -134,10 +137,7 @@ mod tests {
                 )
             } else {
                 let path = transition["path"].as_str().unwrap();
-                super::super::instance_input_keys::source_before(
-                    path,
-                    super::super::projection_text_buffer::read_current(path),
-                )
+                current_source(path)
             };
             for mutated in [
                 format!("{current}\n"),

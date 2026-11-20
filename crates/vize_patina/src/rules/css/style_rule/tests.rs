@@ -1,6 +1,8 @@
 use vize_l1::css::lang::StyleLanguage;
 
-use super::super::{CssLinter, NoIdSelectors, NoImportant, StyleRule};
+use super::super::{
+    CssLinter, NoIdSelectors, NoImportant, PreferLogicalProperties, RequireFontDisplay, StyleRule,
+};
 
 /// The `!important` flags `css/no-important` reports in a block at offset 10.
 fn flags(language: StyleLanguage, source: &str) -> Vec<String> {
@@ -159,4 +161,88 @@ fn preprocessor_selectors_report_ids_as_written() {
     // A line comment in an SCSS selector is masked, so it ends the compound.
     let scss = "#a // note\n.b { color: red; }";
     assert_eq!(ids(StyleLanguage::Scss, scss), Vec::<String>::new());
+}
+
+#[test]
+fn physical_properties_are_reported_at_their_names_in_every_language() {
+    let logical = |language, source| findings(Box::new(PreferLogicalProperties), language, source);
+    assert_eq!(
+        logical(
+            StyleLanguage::Css,
+            ".a { MARGIN-LEFT: 1px; margin-inline-start: 1px; right: 0 }"
+        ),
+        ["MARGIN-LEFT", "right"]
+    );
+    assert_eq!(
+        logical(
+            StyleLanguage::Scss,
+            ".a { $left: 1px; margin-#{$side}: 1px; padding-right: $left; }"
+        ),
+        ["padding-right"]
+    );
+    assert_eq!(
+        logical(
+            StyleLanguage::Less,
+            ".a { @margin-left: 1px; left: @margin-left; }"
+        ),
+        ["left"]
+    );
+    assert_eq!(
+        logical(StyleLanguage::Sass, ".a\n  border-left-width: 1px\n"),
+        ["border-left-width"]
+    );
+    assert_eq!(
+        logical(StyleLanguage::Stylus, ".a\n  margin-right 4px\n"),
+        ["margin-right"]
+    );
+}
+
+#[test]
+fn font_faces_without_font_display_are_reported_at_the_keyword() {
+    let display = |language, source| findings(Box::new(RequireFontDisplay), language, source);
+    let css =
+        "@font-face { font-family: A; src: url(a.woff2); }\n@FONT-FACE { font-display: swap; }";
+    assert_eq!(display(StyleLanguage::Css, css), ["@font-face"]);
+    let nested = "@media print { @font-face { font-family: B; } }";
+    assert_eq!(display(StyleLanguage::Css, nested), ["@font-face"]);
+    assert_eq!(
+        display(
+            StyleLanguage::Scss,
+            "@font-face {\n  font-family: $f;\n  font-display: swap;\n}"
+        ),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        display(StyleLanguage::Sass, "@font-face\n  font-family: A\n"),
+        ["@font-face"]
+    );
+    assert_eq!(
+        display(StyleLanguage::Stylus, "@font-face\n  font-family A\n"),
+        ["@font-face"]
+    );
+}
+
+#[test]
+fn declarations_keep_the_scope_the_lightningcss_lane_checked() {
+    let logical = |source| {
+        findings(
+            Box::new(PreferLogicalProperties),
+            StyleLanguage::Css,
+            source,
+        )
+    };
+    // Keyframes, @font-face and @container blocks were not checked.
+    assert_eq!(
+        logical("@keyframes k { from { left: 0; } }\n@container (width > 1px) { .a { left: 0; } }"),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        logical("@media print { .a { .b { right: 0; } } }"),
+        ["right"]
+    );
+    let display = |source| findings(Box::new(RequireFontDisplay), StyleLanguage::Css, source);
+    assert_eq!(
+        display("@container (width > 1px) { @font-face { font-family: A; } }"),
+        Vec::<String>::new()
+    );
 }

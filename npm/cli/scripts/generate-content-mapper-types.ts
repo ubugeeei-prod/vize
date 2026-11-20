@@ -7,6 +7,12 @@ import { fileURLToPath } from "node:url";
 import { slotPayloadExports } from "./slot-payload-exports.ts";
 import { emitInferenceExports } from "./emit-inference-exports.ts";
 import { listenerArgumentExports } from "./listener-argument-exports.ts";
+import {
+  assertForwardedSlotExports,
+  deriveForwardedSlotAliases,
+  isExported,
+  renderSlotFamily,
+} from "./slot-family-exports.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const helperRoot = "crates/vize_canon/src/virtual_ts/helpers";
@@ -332,10 +338,6 @@ function identity(node: ts.Node, source: ts.SourceFile) {
     transformed.dispose();
   }
 }
-const isExported = (node: ts.Node) =>
-  ts.canHaveModifiers(node) &&
-  (ts.getModifiers(node)?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword) ??
-    false);
 const exportedNames = family.filter(isExported).map((node) => {
   assert.ok(ts.isTypeAliasDeclaration(node));
   return node.name.text;
@@ -347,6 +349,7 @@ const previousFamily = family.filter(
     !instanceAliases.slice(0, 3).some(([name]) => name === node.name.text),
 );
 assert.equal(previousFamily.length, 14, "all former implicit and explicit slot exports");
+const forwardedSlotAliases = deriveForwardedSlotAliases(previousFamily);
 function checkImport(node: ts.ImportDeclaration, target: string, names: readonly string[]) {
   assert.ok(ts.isStringLiteral(node.moduleSpecifier));
   assert.equal(node.moduleSpecifier.text, target);
@@ -383,24 +386,20 @@ for (const relativePath of slotFiles) {
       identity(canonical, sharedParsed),
       `${relativePath} complete slot statement ${index}`,
     );
-    assert.equal(
-      isExported(actual),
-      isExported(canonical),
-      `${relativePath} slot visibility ${index}`,
-    );
+    const desiredExport =
+      isExported(canonical) ||
+      (ts.isTypeAliasDeclaration(canonical) && forwardedSlotAliases.has(canonical.name.text));
+    assert.equal(isExported(actual), desiredExport, `${relativePath} slot visibility ${index}`);
   }
   const generatedSlots = await format(
     "virtual-ts-slots.d.ts",
     '// Generated from the canonical slot-constructor family. Do not edit.\nimport type { $IsAny } from "./generated/content-mapper-types.js" with { "resolution-mode": "import" };\n\n' +
-      family
-        .map(
-          (node) => (ts.isFunctionDeclaration(node) ? "declare " : "") + node.getText(sharedParsed),
-        )
-        .join("\n") +
+      renderSlotFamily(family, sharedParsed, forwardedSlotAliases) +
       "\n",
     { printWidth: 100 },
   );
   assert.deepEqual(generatedSlots.errors, []);
+  assertForwardedSlotExports(relativePath, generatedSlots.code, forwardedSlotAliases);
   outputs.set(relativePath, generatedSlots.code);
 }
 for (const extension of ["ts", "mts", "cts"]) {

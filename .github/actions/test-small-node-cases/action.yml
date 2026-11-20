@@ -27,6 +27,7 @@ runs:
             tests=(
               tests/tooling/node-engine-matrix.test.ts
               tests/tooling/package-manifests.test.ts
+              tests/tooling/entry-packages.test.ts
               tests/tooling/bundler-plugin-manifests.test.ts
               tests/tooling/dependency-security-compat.test.ts
               tests/tooling/comparison-base.test.ts
