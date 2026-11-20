@@ -21,10 +21,11 @@ use vize_atelier_sfc::vite_plugin::{
     rewrite_static_asset_urls, scope_css_for_pipeline,
 };
 use vize_atelier_sfc::{
-    CssCompileOptions, CssCompileResult, ScriptCompileOptions, SfcCompileOptions, SfcCompileResult,
-    SfcError, SfcParseOptions, SfcScriptOutputMode, StyleCompileOptions, TemplateCompileOptions,
-    compile_css, compile_sfc_for_adapter, compile_sfc_with_template_syntax, parse_css_ast,
-    parse_sfc, print_css_ast,
+    CssCompileOptions, CssCompileResult, ScriptCompileOptions, SfcCompileExperimentalOptions,
+    SfcCompileOptions, SfcCompileResult, SfcError, SfcParseOptions, SfcScriptOutputMode,
+    StyleCompileOptions, TemplateCompileOptions, compile_css, compile_sfc_for_adapter,
+    compile_sfc_for_adapter_with_project, compile_sfc_with_template_syntax, parse_css_ast,
+    parse_sfc, print_css_ast, script::SfcTypeProject,
 };
 use vize_l0::{Allocator, String, config::VueVersion};
 
@@ -309,6 +310,29 @@ fn compile_whole_sfc(case: &Case, project: Option<&Path>) -> Observation {
         "separate" => SfcScriptOutputMode::SeparateTemplate,
         mode => panic!("unknown fixture script output: {mode}"),
     };
+    if case.options.no_project_config.unwrap_or(false) {
+        let root = project.expect("no-config cases require a project");
+        let no_project = SfcTypeProject::without_config(root).expect("empty project authority");
+        let custom_elements = CustomElementMatcher::from_patterns(
+            case.options
+                .custom_elements
+                .iter()
+                .flatten()
+                .cloned()
+                .collect(),
+        );
+        return Observation::Sfc(compile_sfc_for_adapter_with_project(
+            &descriptor,
+            options,
+            template_syntax(case),
+            custom_elements,
+            CodegenOptions::default(),
+            script_output,
+            SfcCompileExperimentalOptions::default(),
+            false,
+            Some(&no_project),
+        ));
+    }
     if script_output == SfcScriptOutputMode::InlineTemplate
         && case.options.custom_elements.is_none()
     {
@@ -428,7 +452,7 @@ fn full_current_compile_results() {
             .expect("strict fixture schema");
     assert_eq!(
         cases.len(),
-        1737,
+        1738,
         "every reviewed case must remain registered"
     );
     // Every case runs before the error counts are judged, so one run reports
@@ -439,7 +463,7 @@ fn full_current_compile_results() {
         // Snapshot all public fields via Debug; the only rewrite is the
         // temporary project root of a multi-file case.
         let project = (!case.files.is_empty()).then(|| write_project(&case));
-        let root = project.as_ref().map(tempfile::TempDir::path);
+        let root = project.as_ref().map(|project| project.path());
         let first = observe(&case, root);
         let first_bytes = relocate(format!("{case:#?}\n{first:#?}"), root);
         let repeat = observe(&case, root);

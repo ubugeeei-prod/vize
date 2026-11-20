@@ -17216,5 +17216,22 @@
       "scriptOutput": "separate"
     },
     "errors": 0
+  },
+  {
+    "id": "c8-wildcard-exports-types-3843",
+    "history": "88fcf50776defe1e33b58a69f4161d57cea5b0b6",
+    "source": "<script setup lang=\"ts\">\nimport type { ButtonProps } from 'wild/button'\ndefineProps<ButtonProps>()\n</script>\n<template><div /></template>\n",
+    "filename": "src/App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "noProjectConfig": true
+    },
+    "files": {
+      "node_modules/wild/package.json": "{\"exports\":{\"./*\":{\"types\":\"./types/*.d.ts\",\"import\":\"./dist/*.mjs\"}}}",
+      "node_modules/wild/types/button.d.ts": "export type ButtonProps = { label: string }\n",
+      "node_modules/wild/dist/button.mjs": "export {}\n"
+    },
+    "errors": 0
   }
 ]
