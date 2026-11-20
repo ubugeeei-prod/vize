@@ -4,6 +4,7 @@ use oxc_parser::ParseOptions;
 use vize_l0::{Span, String};
 use vize_l2::file::FileIssueKind;
 use vize_l2::lang::js::{JsxFileProducer, ProgramInput};
+use vize_l2::query::Model;
 
 #[test]
 fn original_named_export_nonzero_unicode_crlf_keeps_exact_declaration_and_name_scope() {
@@ -56,10 +57,10 @@ fn original_named_export_nonzero_unicode_crlf_keeps_exact_declaration_and_name_s
     assert_eq!(file.references()[0].span.slice(source), "値");
     for _ in 0..2 {
         let at = row.span.start;
-        let queried = file.binding_at_offset(at).unwrap().unwrap();
+        let queried = Model::new(&file).binding_at_offset(at).unwrap().unwrap();
         assert_eq!(queried.id(), declared.id());
         assert!(core::ptr::eq(queried.file(), file.as_ref()));
-        let scope = file.scope_at_offset(at).unwrap().unwrap();
+        let scope = Model::new(&file).scope_at_offset(at).unwrap().unwrap();
         assert_eq!(scope.scope().id, root);
         assert!(core::ptr::eq(scope.file(), file.as_ref()));
     }
@@ -109,7 +110,7 @@ fn genuine_named_tsx_owner_move_and_requery_keep_actual_export_and_original_frag
     );
     assert!(owner.nodes().any(|node| node.source() == Some("<></>")));
     for _ in 0..2 {
-        let binding = file
+        let binding = Model::new(&file)
             .binding_at_offset(file.references()[0].span.start)
             .unwrap()
             .unwrap();
@@ -144,11 +145,11 @@ fn equal_source_foreign_arenas_and_nondefault_profiles_never_replace_named_expor
     ));
     let left = finish(&arena, &a).unwrap();
     let right = finish(&other, &b).unwrap();
-    let x = left
+    let x = Model::new(&left)
         .binding_at_offset(left.exports()[0].span.start)
         .unwrap()
         .unwrap();
-    let y = right
+    let y = Model::new(&right)
         .binding_at_offset(right.exports()[0].span.start)
         .unwrap()
         .unwrap();

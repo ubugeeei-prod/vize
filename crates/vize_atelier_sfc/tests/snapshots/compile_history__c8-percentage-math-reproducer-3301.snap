@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-percentage-math-reproducer-3301",
+    history: "4305480bbc70167ff562ebc0c6b3d9aea41cf9fa",
+    source: "\n@t (lch(sign(-50%);\n  mask-clipatenv5,",
+    filename: "History.vue",
+    entry: "css",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 2,
+}
+Css {
+    compiled: CssCompileResult {
+        code: "\n@t (lch(sign(-50%);\n  mask-clipatenv5,",
+        map: None,
+        css_vars: [],
+        errors: [
+            "CSS parse error: unsupported math function in a percentage context (upstream lightningcss defect; see vize issue #3295)",
+        ],
+        warnings: [],
+        exports: None,
+    },
+    ast_errors: [
+        "CSS parse error: unsupported math function in a percentage context (upstream lightningcss defect; see vize issue #3295)",
+    ],
+    printed: None,
+}

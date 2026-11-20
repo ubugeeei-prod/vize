@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-static-setup-enum-default-3083",
+    history: "e34e7aa51b5932a27d05a308d0af7f7d929715b3",
+    source: "<script setup lang=\"ts\">\n\nenum Step { Name, General = 1 + 1 }\ninterface Props { step?: Step }\nconst props = withDefaults(defineProps<Props>(), { step: Step.Name })\n\n</script>\n<template><p>{{ props.step }}</p></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nvar Step = /* @__PURE__ */ function(Step) {\n  Step[Step[\"Name\"] = 0] = \"Name\";\n  Step[Step[\"General\"] = 2] = \"General\";\n  return Step;\n}(Step || {});\n\n\nexport default {\n  __name: 'History',\n  props: {\n    step: { type: null, required: false, default: Step.Name }\n  },\n  setup(__props) {\n\nconst props = __props\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString(props.step), 1 /* TEXT */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "Step": LiteralConst,
+                        "props": SetupConst,
+                        "step": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

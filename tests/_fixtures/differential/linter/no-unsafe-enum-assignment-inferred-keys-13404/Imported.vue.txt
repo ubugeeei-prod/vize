@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { State, type ActiveState, stateLabels } from "./states";
+
+const states: readonly ActiveState[] = [State.Active, State.Paused];
+const rows = states.map((value) => ({ value, label: stateLabels[value] }));
+</script>
+
+<template><p>{{ rows.length }}</p></template>

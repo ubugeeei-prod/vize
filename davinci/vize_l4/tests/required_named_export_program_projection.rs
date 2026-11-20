@@ -8,6 +8,7 @@ use vize_l1::embed::{
     EmbedSource, Lang,
     syntax::{ProgramOptions, parse_program_once},
 };
+use vize_l2::query::Model;
 use vize_l2::{
     file::{DeclarationKind, Namespace},
     lang::js::{FileProducer, JsxFileProducer, ProgramInput, ProgramScope},
@@ -65,7 +66,7 @@ fn packet(case: &serde_json::Value, projection: &ProgramProjection<'_, '_>) -> s
     }
     let name = case["binding"].as_str().unwrap();
     let at = source.rfind(name).unwrap() as u32;
-    let binding = file.binding_at_offset(at).unwrap().unwrap();
+    let binding = Model::new(&file).binding_at_offset(at).unwrap().unwrap();
     assert!(core::ptr::eq(binding.file(), file));
     let declaration = binding.declaration().unwrap();
     assert_eq!(declaration.kind, DeclarationKind::Parameter);

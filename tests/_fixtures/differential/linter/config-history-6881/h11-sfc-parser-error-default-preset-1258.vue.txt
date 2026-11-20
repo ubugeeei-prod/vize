@@ -1,0 +1,2 @@
+<template>
+  <div v-html="userInput"></div>

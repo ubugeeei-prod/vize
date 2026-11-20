@@ -69904,6 +69904,50 @@
       }
     },
     {
+      "id": "typechecker/v-slot-parameter-default-13415/semantic-diagnostics-survive",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "batch::type_checker::tests::recent_issues::v_slot_parameter_default::defaulted_v_slot_pattern_preserves_the_project_semantic_pass",
+      "sourceRevision": "df5cadb7a70b8d9175bf343295e7e23dc31b9682",
+      "inputs": [
+        {
+          "file": "A.vue",
+          "path": "v-slot-parameter-default-13415/A.vue.txt",
+          "role": "reported-v-slot-whole-parameter-default",
+          "sha256": "746a1548ce8dff287bb2a735c7ada3b3ed6b67260c4410e0546dfef773264391"
+        },
+        {
+          "file": "semantic.ts",
+          "path": "v-slot-parameter-default-13415/semantic.ts.txt",
+          "role": "semantic-pass-survival-control",
+          "sha256": "c6a52603ebb94adc0d98f6e64b0bbf1683472440db085bf008d6dd972490fcf2"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "v-slot-parameter-default-13415/tsconfig.json.txt",
+          "role": "reported-tsrs-content-mapper-config",
+          "sha256": "8771ec9fbfb5a2207069943ae717fa189757cf71f65c1643966acb7d46554ae0"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "defaulted_v_slot_pattern_preserves_the_project_semantic_pass; reported defaulted destructuring stays parseable while a separate semantic error remains visible. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/vfor-const-listener-narrowing-11973",
       "state": "active",
       "targets": [

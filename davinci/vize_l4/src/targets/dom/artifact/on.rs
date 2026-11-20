@@ -115,7 +115,7 @@ pub(super) fn needs_hydration(key: &str, on: &OnOp<'_>) -> bool {
     if key == "onUpdate:modelValue" || key.starts_with("onVnode") {
         return false;
     }
-    if has_native_modifier(on) {
+    if listens_on_root_element(on) {
         return true;
     }
     key != "onClick" || classify(on).is_ok_and(|classified| !classified.keys.is_empty())
@@ -126,7 +126,7 @@ pub(super) fn forces_inline_on(on: &OnOp<'_>) -> bool {
         return super::on_dynamic::forces_inline(on);
     }
     classify(on).is_ok_and(|classified| {
-        has_native_modifier(on) || !classified.event.is_empty() || !classified.keys.is_empty()
+        listens_on_root_element(on) || !classified.event.is_empty() || !classified.keys.is_empty()
     })
 }
 
@@ -212,7 +212,7 @@ fn classify_modifier_buckets<'a>(
     }
 }
 
-fn has_native_modifier(on: &OnOp<'_>) -> bool {
+fn listens_on_root_element(on: &OnOp<'_>) -> bool {
     on.modifiers.contains(&"native")
 }
 

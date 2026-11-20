@@ -19,7 +19,7 @@ type Step = {
   "continue-on-error"?: boolean;
 };
 type Workflow = {
-  on: { pull_request: { paths: string[] }; push: { paths: string[] } };
+  on: { pull_request?: unknown; push: { paths: string[] } };
   jobs: Record<
     string,
     { "runs-on": string; "timeout-minutes": number; steps: Step[]; "continue-on-error"?: boolean }
@@ -115,7 +115,9 @@ void test("#11802 Nuxt 5 lazy hydration inputs and runtime oracle stay pinned", 
 });
 
 void test("Nuxt runtime ownership and frozen consumer inputs trigger the existing source lane", () => {
-  for (const trigger of [workflow.on.pull_request, workflow.on.push]) {
+  // #6830: main runs this lane per commit; merge candidates call it.
+  assert.equal(workflow.on.pull_request, undefined);
+  for (const trigger of [workflow.on.push]) {
     for (const file of [
       "npm/framework/nuxt/src/ssr-runtime.ts",
       "npm/framework/nuxt/src/ssr-runtime.test.ts",

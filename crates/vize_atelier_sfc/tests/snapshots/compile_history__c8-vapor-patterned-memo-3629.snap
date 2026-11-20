@@ -1,0 +1,63 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-vapor-patterned-memo-3629",
+    history: "a57137e9143c3fbbd2a8651e215aa14c03bba0c2",
+    source: "<template><div v-memo=\"[label]\"><ul v-match=\"status\"><li v-case=\"'ready'\">{{ label }}</li></ul></div></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, computed as _computed, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';\nconst t0 = _template(\"<li> </li>\")\nconst t1 = _template(\"<div><ul></ul></div>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n1 = t1()\n  const n0 = _child(n1)\n  _setInsertionState(n0)\n  const n2 = ((_for_item0) => {\n    const n4 = _createIf(() => (_for_item0.value[0] === 0), () => {\n      const n6 = t0()\n      const x6 = _txt(n6)\n      _renderEffect(() => _setText(x6, _toDisplayString(_ctx.label)))\n      return n6\n    })\n    return n4\n  })(_computed(() => (((__vize_match_0_0) => { a0: { if (__vize_match_0_0 !== 'ready') break a0; return [0]; } return [-1]; })(_ctx.status))))\n  return n1\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [
+                SfcError {
+                    message: "v-memo is not supported in Vapor mode and will be ignored.",
+                    code: Some(
+                        "VAPOR_TEMPLATE_WARNING",
+                    ),
+                    loc: Some(
+                        BlockLocation {
+                            start: 10,
+                            end: 101,
+                            tag_start: 0,
+                            tag_end: 112,
+                            start_line: 1,
+                            start_column: 11,
+                            end_line: 1,
+                            end_column: 102,
+                        },
+                    ),
+                },
+            ],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

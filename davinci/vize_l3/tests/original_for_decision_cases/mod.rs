@@ -22,7 +22,7 @@ fn nested_same_name_collection_borrows_parent_alias_before_child_shadowing() {
     let [BindingOp::On(on)] = span.bindings.as_slice() else {
         panic!("earlier original event")
     };
-    let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
+    let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
     let outer_row = analysis.for_head(outer.id().node()).unwrap();
     let inner_row = analysis.for_head(inner.id().node()).unwrap();
     let outer_alias = outer_row.head().value().unwrap();
@@ -110,7 +110,7 @@ fn moved_owner_and_many_genuine_siblings_keep_exact_head_and_parameter_storage()
         })
         .collect();
     let owner = core::hint::black_box(owner);
-    let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
+    let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
     for (op, pointers) in analysis.artifact().root().ops.iter().zip(pointers) {
         let Op::OriginalFor(original) = op else {
             panic!("For")

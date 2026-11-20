@@ -1,5 +1,5 @@
 use super::{
-    Allocator, NoLinks, Recorded, build_native_dom_file_decisions, completed, emit_template, on,
+    Allocator, NoLinks, Recorded, build_template_dom_decisions, completed, emit_template, on,
 };
 use vize_l3::decision::dom::DomUnsupported;
 use vize_l4::targets::dom::DomErrorKind;
@@ -61,7 +61,7 @@ fn syntax_access_name_and_header_order_refusals_keep_exact_original_windows() {
         let arena = Allocator::default();
         let source = format!("<!--雪🌸--><template><button {attribute}/></template>");
         let owner = completed(&arena, &source);
-        let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
+        let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
         let file = analysis.file();
         let original_on = on(file.artifact().root());
         let lower = file.handler_for(original_on).unwrap();

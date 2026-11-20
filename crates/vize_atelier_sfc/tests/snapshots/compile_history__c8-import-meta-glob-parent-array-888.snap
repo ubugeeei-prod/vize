@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-import-meta-glob-parent-array-888",
+    history: "6e259d0492f3b69e592938122287e98348cf03af",
+    source: "const a = import.meta.glob([\"../shared/*.ts\", \"!../shared/skip.ts\"]); const b = import.meta.glob(\"/abs/*.ts\");",
+    filename: "History.vue",
+    entry: "vite",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        vite_helper: Some(
+            "importMetaGlobBase",
+        ),
+    },
+    errors: 0,
+}
+PipelineCss(
+    "const a = import.meta.glob([\"/shared/*.ts\", \"!/shared/skip.ts\"]); const b = import.meta.glob(\"/abs/*.ts\");",
+)

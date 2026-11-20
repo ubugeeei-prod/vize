@@ -274,7 +274,7 @@ fn complete_original_comments_preserve_authored_content_in_setup_components() {
             let selected = observation.admitted().unwrap();
             let setup = selected.setup();
             assert!(setup.file().is_complete());
-            let analysis = build_native_selected_setup_vapor_decisions(setup).unwrap();
+            let analysis = build_selected_setup_vapor_decisions(setup).unwrap();
             let facts = analysis.vapor().unwrap();
             assert!(facts.unsupported().is_empty(), "genuine L3 admission");
             let span = facts

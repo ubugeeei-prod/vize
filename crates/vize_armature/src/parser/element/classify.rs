@@ -17,7 +17,7 @@ impl<'a> Parser<'a> {
             && !(self.options.is_void_tag)(element.tag)
             && !(self.frozen_elements.is_some()
                 && frozen
-                && !vize_l0::is_native_tag(element.tag)
+                && !vize_l0::is_platform_tag(element.tag)
                 && self.is_component(element))
     }
 

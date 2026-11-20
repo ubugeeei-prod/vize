@@ -1,5 +1,6 @@
 use super::{Allocator, InitializerKind, Namespace, Parser, SourceRoot, SourceType, lower};
 use oxc_ast::ast::{Statement, TSType};
+use vize_l2::query::Model;
 
 #[test]
 fn original_array_nodes_keep_authored_declarations_and_value_navigation() {
@@ -54,7 +55,7 @@ fn original_array_nodes_keep_authored_declarations_and_value_navigation() {
     assert!(file.lookup(scope, "items", Namespace::Type).is_none());
     assert_eq!(file.references().len(), 2);
     for (reference, name) in file.references().iter().zip(["seed", "items"]) {
-        let bound = file
+        let bound = Model::new(&file)
             .binding_at_offset(reference.span.start)
             .unwrap()
             .unwrap();
@@ -66,11 +67,16 @@ fn original_array_nodes_keep_authored_declarations_and_value_navigation() {
         );
     }
     let type_property = source.find("id: number").unwrap() as u32;
-    assert!(file.binding_at_offset(type_property).unwrap().is_none());
+    assert!(
+        Model::new(&file)
+            .binding_at_offset(type_property)
+            .unwrap()
+            .is_none()
+    );
     let declaration_id = items.id();
     let moved = Box::new(file);
     assert_eq!(
-        moved
+        Model::new(&moved)
             .binding_at_offset(source.rfind("items").unwrap() as u32)
             .unwrap()
             .unwrap()
@@ -104,7 +110,8 @@ fn original_import_rows_and_default_expression_do_not_gain_ordinary_eligibility(
     assert!(file.lookup(scope, "original", Namespace::Type).is_none());
     for reference in file.references() {
         assert!(
-            file.binding_at_offset(reference.span.start)
+            Model::new(&file)
+                .binding_at_offset(reference.span.start)
                 .unwrap()
                 .is_some()
         );

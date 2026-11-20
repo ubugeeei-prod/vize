@@ -1,42 +1,25 @@
 import assert from "node:assert/strict";
-import { matchesGlob } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 import {
   dedicatedPrToolingTests,
   localImportInputs,
+  planToolingTests,
 } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 const campaign = "tests/tooling/content-mapper-instance-globals-10617.test.ts";
 
-test("the dedicated PR workflow owns the campaign and all of its source inputs", () => {
+test("the campaign leaves the PR tier but still runs nightly and by dispatch", () => {
   const source = readRepoFile(".github", "workflows", "content-mapper-instance-globals.yml");
-  const workflow = parse(source) as {
-    on: { pull_request: { paths: string[] } };
-  };
-  const paths = workflow.on.pull_request.paths;
+  const workflow = parse(source) as { on: Record<string, unknown> };
+  // #6830: the dedicated workflow no longer runs on pull requests.
+  assert.deepEqual(Object.keys(workflow.on), ["workflow_dispatch"]);
   assert.ok(dedicatedPrToolingTests.includes(campaign));
-  const closure = localImportInputs(campaign);
-  assert.equal(closure.complete, true);
-  for (const file of closure.files)
-    assert.ok(
-      paths.some((pattern) => matchesGlob(file, pattern)),
-      file,
-    );
-  for (const sourceInput of [
-    ".github/**",
-    ".cargo/**",
-    "crates/**",
-    "davinci/**",
-    "npm/cli/**",
-    "tools/support/compat/github/source-cli*",
-    "vendor/**",
-    "Cargo.toml",
-    "Cargo.lock",
-    "rust-toolchain.toml",
-  ])
-    assert.ok(paths.includes(sourceInput), sourceInput);
+  assert.equal(localImportInputs(campaign).complete, true);
+  // Nightly Full qualification plans the merge tier, which includes it.
+  assert.ok(planToolingTests([], { tier: "merge" }).tests.includes(campaign));
+  assert.ok(!planToolingTests(["crates/vize_canon/src/lib.rs"]).tests.includes(campaign));
 });
 
 test("instance-global qualification requires all three source-bound hosts by default", () => {

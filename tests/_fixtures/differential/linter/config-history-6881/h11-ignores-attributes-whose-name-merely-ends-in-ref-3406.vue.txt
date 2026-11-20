@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+const root = ref(null)
+</script>
+
+<template>
+  <a href="root">x</a>
+  <div data-ref="root" />
+</template>

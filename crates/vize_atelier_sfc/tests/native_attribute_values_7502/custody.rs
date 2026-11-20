@@ -10,8 +10,8 @@ use vize_l2::{
     walk::NodeRef,
 };
 use vize_l3::decision::{
-    OriginalAttributeFacts, native::build_native_dom_file_decisions,
-    ssr::build_native_ssr_file_decisions, vapor::build_native_vapor_file_decisions,
+    OriginalAttributeFacts, ssr::build_template_ssr_decisions,
+    template::build_template_dom_decisions, vapor::build_template_vapor_decisions,
 };
 
 pub fn span(span: Span) -> Value {
@@ -153,7 +153,7 @@ pub fn l3(original: &NativeSelectedSfcObservation<'_>, target: Target) -> Value 
     let owner = original.template();
     let file = owner.and_then(|owner| owner.file());
     match target {
-        Target::Dom => match build_native_dom_file_decisions(admitted.into_template_view()) {
+        Target::Dom => match build_template_dom_decisions(admitted.into_template_view()) {
             Ok(analysis) => l3_receipt(
                 analysis.original_attributes(),
                 owner.is_some_and(|owner| core::ptr::eq(owner, analysis.owner())),
@@ -162,7 +162,7 @@ pub fn l3(original: &NativeSelectedSfcObservation<'_>, target: Target) -> Value 
             ),
             Err(error) => l3_failure("analysis-refusal", Some(cstr!("{error:?}"))),
         },
-        Target::Ssr => match build_native_ssr_file_decisions(admitted.into_template_view()) {
+        Target::Ssr => match build_template_ssr_decisions(admitted.into_template_view()) {
             Ok(analysis) => l3_receipt(
                 analysis.original_attributes(),
                 owner.is_some_and(|owner| core::ptr::eq(owner, analysis.owner())),
@@ -171,7 +171,7 @@ pub fn l3(original: &NativeSelectedSfcObservation<'_>, target: Target) -> Value 
             ),
             Err(error) => l3_failure("analysis-refusal", Some(cstr!("{error:?}"))),
         },
-        Target::Vapor => match build_native_vapor_file_decisions(admitted.into_template_view()) {
+        Target::Vapor => match build_template_vapor_decisions(admitted.into_template_view()) {
             Ok(analysis) => l3_receipt(
                 analysis.original_attributes(),
                 owner.is_some_and(|owner| core::ptr::eq(owner, analysis.owner())),

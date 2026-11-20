@@ -6,7 +6,7 @@ fn actual_constant_scope_uses_vnodes_and_rejects_a_counterfeit_mutable_access_ki
     struct WrongMode<'v, 'o, 'a>(&'v NativeSelectedSetup<'o, 'a>);
     impl<'o, 'a> FileReads<'o, 'a> for WrongMode<'_, 'o, 'a> {
         const RECORD: bool = true;
-        const NATIVE_SETUP: bool = true;
+        const SELECTED_SETUP: bool = true;
         const ORIGINAL_FOR: bool = true;
         fn classify(
             &self,
@@ -34,7 +34,7 @@ fn actual_constant_scope_uses_vnodes_and_rejects_a_counterfeit_mutable_access_ki
     let [root @ Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
         panic!("original");
     };
-    let valid = crate::decision::native::build_native_selected_setup_dom_decisions(setup).unwrap();
+    let valid = crate::decision::template::build_selected_setup_dom_decisions(setup).unwrap();
     let dom = valid.dom().unwrap();
     assert!(dom.unsupported().is_empty());
     let row = dom.file_for_head(original.id().node()).unwrap();
@@ -132,6 +132,6 @@ fn constant_enter_unwind_keeps_actual_collection_program_params_and_completed_fi
         parameter,
         resolution.value_declaration().parameter() as *const _
     );
-    let valid = crate::decision::native::build_native_selected_setup_dom_decisions(setup).unwrap();
+    let valid = crate::decision::template::build_selected_setup_dom_decisions(setup).unwrap();
     assert!(valid.dom().unwrap().unsupported().is_empty());
 }

@@ -5,7 +5,7 @@ use vize_l0::{Allocator, String};
 use vize_l1_to_l2::native_file::{
     NativeSelectedSetupSfcObservation, NativeSelectedSfcIssue, lower_selected_setup_sfc_native,
 };
-use vize_l3::decision::{DecisionBuildError, vapor::build_native_selected_setup_vapor_decisions};
+use vize_l3::decision::{DecisionBuildError, vapor::build_selected_setup_vapor_decisions};
 use vize_l4::{
     targets::vapor::{VaporError, emit_selected_setup_component},
     write::{EmitDocument, LinkSink, NoLinks, Recorded},
@@ -106,7 +106,7 @@ fn emit<L: LinkSink>(
     let selected = observation
         .admitted()
         .ok_or(NativeVaporSetupSfcCompileError::Orchestration)?;
-    let analysis = build_native_selected_setup_vapor_decisions(selected.setup())
+    let analysis = build_selected_setup_vapor_decisions(selected.setup())
         .map_err(NativeVaporSetupSfcCompileError::Analysis)?;
     let document = emit_selected_setup_component::<L>(&analysis, options.runtime_version)
         .map_err(NativeVaporSetupSfcCompileError::Vapor)?

@@ -3,7 +3,7 @@ use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
 use vize_l2::file::{Namespace, ReferenceTarget};
 use vize_l2::lang::js::JsxFileProducer;
-use vize_l3::jsx::{JsxDecisionKind as Kind, NativeJsxAnalysis, build_jsx_decisions};
+use vize_l3::jsx::{JsxAnalysis, JsxDecisionKind as Kind, build_jsx_decisions};
 use vize_l4::jsx::{JsxEmitErrorKind as Error, emit_js_module};
 use vize_l4::write::{NoLinks, Recorded};
 
@@ -11,7 +11,7 @@ fn analyze<'a>(
     arena: &'a Allocator,
     source: &'a str,
     profile: SourceType,
-) -> Result<NativeJsxAnalysis<'a>, &'static str> {
+) -> Result<JsxAnalysis<'a>, &'static str> {
     let block = SourceRoot::new(source).map_err(|_| "source")?.whole_block();
     let original = Parser::new(arena, source, profile).parse_observed();
     let mut producer =

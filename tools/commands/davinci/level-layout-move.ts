@@ -246,6 +246,92 @@ export const steps: Readonly<Record<string, Step>> = {
         "//! surfaces only that version reads.\n",
     },
   },
+  // L3 modules and items named by concept, not by migration status. The
+  // `native` decision routes are the template routes: decisions built from a
+  // selected template's File view (`TemplateView`) rather than from a bare File.
+  "l3-concepts": {
+    crate: "davinci/vize_l3",
+    name: "vize_l3",
+    moves: [
+      move("decision::native", "decision::template"),
+      move("decision::ssr::native", "decision::ssr::template"),
+      move("decision::dom::build::file::native", "decision::dom::build::file::refusal"),
+    ],
+    items: [],
+    parents: {},
+    identifiers: {
+      NATIVE_SETUP: "SELECTED_SETUP",
+      NativeAnalysis: "DecisionAnalysis",
+      NativeFileAnalysis: "FileAnalysis",
+      NativeJsxAnalysis: "JsxAnalysis",
+      NativeSelectedSetupDomAnalysis: "SelectedSetupDomAnalysis",
+      NativeSelectedSetupSsrAnalysis: "SelectedSetupSsrAnalysis",
+      NativeSelectedSetupVaporAnalysis: "SelectedSetupVaporAnalysis",
+      NativeSsrBuildError: "SsrTemplateBuildError",
+      NativeSsrFileAnalysis: "SsrFileAnalysis",
+      NativeTemplateDomAnalysis: "TemplateDomAnalysis",
+      NativeTemplateScopedSsrAnalysis: "TemplateScopedSsrAnalysis",
+      NativeTemplateSsrAnalysis: "TemplateSsrAnalysis",
+      NativeTemplateVaporAnalysis: "TemplateVaporAnalysis",
+      NativeVaporFileAnalysis: "VaporFileAnalysis",
+      NativeVueRenderAnalysis: "VueRenderAnalysis",
+      build_native_dom_file_decisions: "build_template_dom_decisions",
+      build_native_scoped_ssr_file_decisions: "build_scoped_template_ssr_decisions",
+      build_native_selected_setup_dom_decisions: "build_selected_setup_dom_decisions",
+      build_native_selected_setup_ssr_decisions: "build_selected_setup_ssr_decisions",
+      build_native_selected_setup_vapor_decisions: "build_selected_setup_vapor_decisions",
+      build_native_ssr_file_decisions: "build_template_ssr_decisions",
+      build_native_vapor_file_decisions: "build_template_vapor_decisions",
+      native_condition: "selected_setup_condition",
+      only_ssr_native_element_events_are_omitted: "only_ssr_element_events_are_omitted",
+    },
+  },
+  // L4 items named by concept: an element (not component) `v-model` and prop,
+  // the template-route DOM output, Vue 2's `.native` listener modifier, the
+  // style-block carriers, the component render binding and the strict-slot
+  // DOM entries.
+  "l4-concepts": {
+    crate: "davinci/vize_l4",
+    name: "vize_l4",
+    moves: [move("targets::dom::artifact::sfc_style", "targets::dom::artifact::style_carrier")],
+    items: [],
+    parents: {},
+    identifiers: {
+      NATIVE_ELEMENT_PROP: "ELEMENT_PROP",
+      SfcRender: "ComponentRender",
+      emit_dom_source_sfc_observed_with_options:
+        "emit_dom_source_strict_slots_observed_with_options",
+      emit_dom_source_sfc_with_options: "emit_dom_source_strict_slots_with_options",
+      NativeTemplateDomOutput: "TemplateDomOutput",
+      NativeTemplateDomOutputError: "TemplateDomOutputError",
+      NativeTemplateDomOutputFailure: "TemplateDomOutputFailure",
+      emit_native_entry: "emit_element_entry",
+      has_native_modifier: "listens_on_root_element",
+      native_binding: "element_binding",
+      native_helper: "element_helper",
+      native_modifiers: "element_modifiers",
+      native_prop: "element_prop",
+      native_read_source: "element_read_source",
+    },
+  },
+  // L0 items named by concept: platform (HTML/SVG/MathML) tags, lowercase DOM
+  // event props, and the original-route lint analysis ids.
+  "l0-concepts": {
+    crate: "davinci/vize_l0",
+    name: "vize_l0",
+    moves: [],
+    items: [],
+    parents: {},
+    identifiers: {
+      NATIVE_DIRECT_INTERPOLATIONS: "ORIGINAL_DIRECT_INTERPOLATIONS",
+      NATIVE_LINT_ATTRIBUTES: "ORIGINAL_LINT_ATTRIBUTES",
+      NATIVE_LINT_HEADERS: "ORIGINAL_LINT_HEADERS",
+      NATIVE_TEXTAREA_MUSTACHE: "ORIGINAL_TEXTAREA_MUSTACHE",
+      NATIVE_UNSUPPORTED_ARIA: "ORIGINAL_UNSUPPORTED_ARIA",
+      is_native_on: "is_dom_event_prop",
+      is_native_tag: "is_platform_tag",
+    },
+  },
 };
 
 const ident = "[A-Za-z_][A-Za-z0-9_]*";

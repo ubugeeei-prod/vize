@@ -18,7 +18,7 @@ use vize_l2::expr::ExprRef;
 use vize_l2::op::{BindOp, BindingOp, DynamicName, ElementOp, OnHandlerRef, OnOp, Op, Region};
 
 use super::control;
-use super::helpers::{NATIVE_ELEMENT_PROP, RE_RENDER_ROOT};
+use super::helpers::{ELEMENT_PROP, RE_RENDER_ROOT};
 use super::module::{Cx, JsxModuleRefusal};
 use super::output::LinkRole;
 
@@ -93,12 +93,12 @@ pub(super) fn element(
     items: &mut Items,
 ) -> Result<(), JsxModuleRefusal> {
     for binding in &element.bindings {
-        native_binding(cx, element.tag, binding, items)?;
+        element_binding(cx, element.tag, binding, items)?;
     }
     region(cx, &element.children, items)
 }
 
-fn native_binding(
+fn element_binding(
     cx: &mut Cx<'_>,
     tag: &str,
     binding: &BindingOp<'_>,
@@ -128,7 +128,7 @@ fn native_binding(
                     Ok(())
                 }),
                 Some(DynamicName::Static(name)) => cx.anchor(*span, LinkRole::Attribute, |cx| {
-                    native_prop(cx, tag, PropKey::Bound(name), value)
+                    element_prop(cx, tag, PropKey::Bound(name), value)
                 }),
                 Some(DynamicName::Dynamic(_)) => Err(unsupported),
             }
@@ -158,7 +158,7 @@ fn native_binding(
             };
             items.next(cx);
             cx.anchor(*span, LinkRole::Event, |cx| {
-                native_prop(cx, tag, PropKey::Listener(event), &handler)
+                element_prop(cx, tag, PropKey::Listener(event), &handler)
             })
         }
         BindingOp::Model(_)
@@ -185,13 +185,13 @@ enum PropKey<'n> {
     Listener(&'n str),
 }
 
-fn native_prop(
+fn element_prop(
     cx: &mut Cx<'_>,
     tag: &str,
     key: PropKey<'_>,
     value: &ExprRef<'_>,
 ) -> Result<(), JsxModuleRefusal> {
-    cx.out.push(NATIVE_ELEMENT_PROP);
+    cx.out.push(ELEMENT_PROP);
     cx.out.push("<");
     quoted(cx, "", tag)?;
     cx.out.push(", ");

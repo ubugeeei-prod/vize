@@ -11,7 +11,7 @@ fn original_primitive_string_refinements_preserve_const_collection_read_classifi
         );
         let owner = completed(&arena, &source);
         let original = first(&owner);
-        let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
+        let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
         let row = analysis.for_head(original.id().node()).unwrap();
         let read = row.collection_read().unwrap();
         assert_eq!(read.kind(), VueReadKind::SetupConst);
@@ -49,7 +49,7 @@ fn js_ts_const_let_and_var_classify_the_actual_retained_setup_collection_read() 
             let resolution = lower.resolution().unwrap();
             let actual = resolution.collection_occurrence();
             assert_eq!(*actual, resolution.collection());
-            let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
+            let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
             let row = analysis.for_head(original.id().node()).unwrap();
             let read = row.collection_read().unwrap();
             assert!(core::ptr::eq(read.occurrence(), actual));
@@ -101,7 +101,7 @@ fn same_name_alias_never_substitutes_for_the_original_enclosing_setup_read() {
         "<script setup>let item=2;</script><template><div v-for='item in item'/></template>",
     );
     let original = first(&owner);
-    let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
+    let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
     let row = analysis.for_head(original.id().node()).unwrap();
     let read = row.collection_read().unwrap();
     assert_eq!(read.kind(), VueReadKind::SetupLet);
@@ -129,7 +129,7 @@ fn a_parent_alias_retains_original_custody_and_gets_distinct_access_refusal() {
     let [Op::OriginalFor(inner)] = div.children.ops.as_slice() else {
         panic!("inner")
     };
-    let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
+    let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
     let outer_row = analysis.for_head(original.id().node()).unwrap();
     let inner_row = analysis.for_head(inner.id().node()).unwrap();
     assert_eq!(
@@ -172,8 +172,8 @@ fn foreign_equal_collection_occurrences_and_bindings_never_replace_the_read() {
         "<script setup>const items=2;</script><template><div v-for='item in items'/></template>";
     let owner = completed(&arena, source);
     let foreign = completed(&arena, source);
-    let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
-    let other = build_native_dom_file_decisions(foreign.view().unwrap()).unwrap();
+    let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
+    let other = build_template_dom_decisions(foreign.view().unwrap()).unwrap();
     let original = first(&owner);
     let row = analysis.for_head(original.id().node()).unwrap();
     let other_row = other.for_head(first(&foreign).id().node()).unwrap();
@@ -201,7 +201,7 @@ fn movement_preserves_the_normally_owned_occurrence_source_and_read_binding() {
     let original_collection = lower.resolution().unwrap().input().collection() as *const _;
     let binding_id = lower.resolution().unwrap().collection().binding;
     let owner = core::hint::black_box(owner);
-    let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
+    let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
     let row = analysis.for_head(first(&owner).id().node()).unwrap();
     let read = row.collection_read().unwrap();
     assert!(core::ptr::eq(read.occurrence(), pointer));

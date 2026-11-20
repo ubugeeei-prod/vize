@@ -3,7 +3,7 @@
 use vize_l0::{Allocator, String};
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::{NativeSelectedSfcObservation, lower_selected_sfc_native};
-use vize_l3::decision::{DecisionBuildError, native::build_native_dom_file_decisions};
+use vize_l3::decision::{DecisionBuildError, template::build_template_dom_decisions};
 use vize_l4::{
     module::{AssemblyError, ModuleParts, RenderFunctionName, assemble, setup::COMPONENT_BINDING},
     runtime::Runtime,
@@ -125,7 +125,7 @@ fn emit<L: LinkSink>(
         .admitted()
         .ok_or(NativeSelectedSfcDomError::Observation)?;
     let source = admitted.observation().descriptor().source();
-    let analysis = build_native_dom_file_decisions(admitted.into_template_view())
+    let analysis = build_template_dom_decisions(admitted.into_template_view())
         .map_err(NativeSelectedSfcDomError::Analysis)?;
     let mut parts =
         ModuleParts::for_runtime(Runtime::VueDom, options.runtime_version, COMPONENT_BINDING)

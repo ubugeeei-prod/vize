@@ -36,7 +36,7 @@ pub enum RenderFunctionName {
     /// A standalone client render function named `render`.
     Render,
     /// A client render function renamed for attachment to an SFC component.
-    SfcRender,
+    ComponentRender,
     /// A server render function named `ssrRender`.
     SsrRender,
 }
@@ -47,7 +47,7 @@ impl RenderFunctionName {
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::Render => "render",
-            Self::SfcRender => "_sfc_render",
+            Self::ComponentRender => "_sfc_render",
             Self::SsrRender => "ssrRender",
         }
     }
@@ -56,7 +56,7 @@ impl RenderFunctionName {
     #[must_use]
     pub const fn component_field(self) -> &'static str {
         match self {
-            Self::Render | Self::SfcRender => "render",
+            Self::Render | Self::ComponentRender => "render",
             Self::SsrRender => "ssrRender",
         }
     }
@@ -67,7 +67,7 @@ impl RenderFunctionName {
         RenderPlacement::Function {
             binding: self.as_str(),
             property: match self {
-                Self::Render | Self::SfcRender => RenderProperty::Render,
+                Self::Render | Self::ComponentRender => RenderProperty::Render,
                 Self::SsrRender => RenderProperty::SsrRender,
             },
         }

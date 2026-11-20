@@ -68,7 +68,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
     ) -> Option<FileResolution<'owner, 'arena>> {
         // Only the genuine selected setup specialization gets this separate
         // receipt. SelectedReads::classify continues to reject every write.
-        if !R::NATIVE_SETUP || self.root_count != 1 {
+        if !R::SELECTED_SETUP || self.root_count != 1 {
             return None;
         }
         let [(element_node, frame)] = self.frames.as_slice() else {

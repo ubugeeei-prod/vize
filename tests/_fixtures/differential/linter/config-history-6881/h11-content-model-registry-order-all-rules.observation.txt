@@ -1,0 +1,143 @@
+Case {
+    id: "h11-content-model-registry-order-all-rules",
+    history: "303521fc781c39ccb22faf4bea2e1599a5c867d4",
+    source_file: "h11-content-model-registry-order-all-rules.vue.txt",
+    filename: "All.vue",
+    entry: "sfc",
+    preset: "opinionated",
+    enabled_rules: None,
+    disabled_rules: [],
+    rule_severities: [],
+    disabled_categories: [],
+    category_severities: [],
+    rule_options: Object {},
+    diagnostics: 4,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "All.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/multi-word-component-names",
+                severity: Error,
+                message: "Component name \"All\" should be multi-word to avoid conflicts with HTML elements",
+                start: 0,
+                end: 0,
+                help: Some(
+                    "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "html/no-empty-palpable-content",
+                severity: Warning,
+                message: "<td> element is empty but expects visible content",
+                start: 21,
+                end: 36,
+                help: Some(
+                    "Add text content, child elements, or use aria-label for accessible content.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "html/no-empty-palpable-content",
+                severity: Warning,
+                message: "<td> element is empty but expects visible content",
+                start: 36,
+                end: 51,
+                help: Some(
+                    "Add text content, child elements, or use aria-label for accessible content.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "html/id-duplication",
+                severity: Error,
+                message: "Duplicate id=\"same\" found in template",
+                start: 40,
+                end: 49,
+                help: Some(
+                    "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById().",
+                ),
+                labels: [
+                    Label {
+                        message: "first defined here",
+                        start: 25,
+                        end: 34,
+                    },
+                ],
+                fix: None,
+            },
+        ],
+        error_count: 2,
+        warning_count: 2,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "All.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/multi-word-component-names",
+                    severity: Error,
+                    message: "Component name \"All\" should be multi-word to avoid conflicts with HTML elements",
+                    start: 0,
+                    end: 0,
+                    help: Some(
+                        "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "html/no-empty-palpable-content",
+                    severity: Warning,
+                    message: "<td> element is empty but expects visible content",
+                    start: 21,
+                    end: 36,
+                    help: Some(
+                        "Add text content, child elements, or use aria-label for accessible content.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "html/no-empty-palpable-content",
+                    severity: Warning,
+                    message: "<td> element is empty but expects visible content",
+                    start: 36,
+                    end: 51,
+                    help: Some(
+                        "Add text content, child elements, or use aria-label for accessible content.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "html/id-duplication",
+                    severity: Error,
+                    message: "Duplicate id=\"same\" found in template",
+                    start: 40,
+                    end: 49,
+                    help: Some(
+                        "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById().",
+                    ),
+                    labels: [
+                        Label {
+                            message: "first defined here",
+                            start: 25,
+                            end: 34,
+                        },
+                    ],
+                    fix: None,
+                },
+            ],
+            error_count: 2,
+            warning_count: 2,
+        },
+    ),
+}

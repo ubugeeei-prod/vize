@@ -13,8 +13,9 @@ use vize_l1::embed::{
     syntax::{ProgramOptions, parse_program_once},
 };
 use vize_l2::{
-    file::{BindingRef, FileArtifact, ReferenceTarget},
+    file::FileArtifact,
     lang::js::{FileProducer, ProgramInput, ProgramScope},
+    query::{BindingRef, Model},
 };
 
 mod highlights;
@@ -287,7 +288,7 @@ impl<'file, 'arena> RetainedNavigation<'file, 'arena> {
                 .binding_at_offset(offset)
                 .map_err(NavigationRefusal::NativeQuery);
         }
-        self.file
+        Model::new(self.file)
             .binding_at_offset(offset)
             .map_err(NavigationRefusal::Query)
     }
@@ -315,13 +316,8 @@ impl<'file, 'arena> RetainedNavigation<'file, 'arena> {
                 .for_each_reference_to(binding, |reference| spans.push(reference.span()))
                 .map_err(NavigationRefusal::NativeQuery)?;
         } else {
-            spans.extend(
-                self.file
-                    .references()
-                    .iter()
-                    .filter(|reference| reference.target == ReferenceTarget::Resolved(binding.id()))
-                    .map(|reference| reference.span),
-            );
+            Model::new(self.file)
+                .for_each_reference_to(binding, |reference| spans.push(reference.reference().span));
         }
         if include_declaration {
             spans.push(

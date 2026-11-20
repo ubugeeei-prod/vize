@@ -8,8 +8,6 @@ use alloc::vec::Vec;
 use vize_l0::id::NodeId;
 use vize_l2::{expr::JsExpr, file::Namespace};
 
-mod native;
-
 impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
     DomBuilder<'_, 'owner, 'arena, F, R>
 {
@@ -34,7 +32,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             self.reject(node, expression.span, DomUnsupported::FileScope);
             return None;
         };
-        if let Some(rejected) = native::refusal(file, node, expression, R::NATIVE_SETUP) {
+        if let Some(rejected) = refusal::refusal(file, node, expression, R::SELECTED_SETUP) {
             self.reject(rejected.node, rejected.span, rejected.reason);
             return None;
         }
@@ -121,3 +119,5 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         Some(value)
     }
 }
+
+mod refusal;

@@ -2,7 +2,7 @@
 //!
 //! Transforms element nodes and their props.
 
-use vize_l0::{String, capitalize, is_native_tag};
+use vize_l0::{String, capitalize, is_platform_tag};
 
 use crate::lane::TransformContext;
 use crate::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode};
@@ -30,7 +30,7 @@ pub fn resolve_element_type<'a>(
 
 /// Check if tag is a component
 fn is_component(ctx: &TransformContext<'_>, tag: &str, el: &ElementNode<'_>) -> bool {
-    if is_native_tag(tag) {
+    if is_platform_tag(tag) {
         return false;
     }
 
