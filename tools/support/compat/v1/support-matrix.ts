@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+import { format } from "oxfmt";
+
 import { PACKAGE_MANAGERS } from "../npm/smoke-release-init-managers.ts";
 import { FRESH_INIT_MATRIX } from "../npm/smoke-release-init-shapes.ts";
 import { editorReleasePlatforms } from "../../release/editor-platforms.ts";
@@ -934,6 +936,9 @@ export function buildV1SupportMatrix(root = process.cwd()) {
   };
 }
 
-export function renderV1SupportMatrix(root = process.cwd()): string {
-  return `${JSON.stringify(buildV1SupportMatrix(root), null, 2)}\n`;
+export async function renderV1SupportMatrix(root = process.cwd()): Promise<string> {
+  const source = `${JSON.stringify(buildV1SupportMatrix(root), null, 2)}\n`;
+  const result = await format("v1-supported-matrix.json", source);
+  if (result.errors.length > 0) throw new Error("v1 support matrix must remain formatable");
+  return result.code;
 }
