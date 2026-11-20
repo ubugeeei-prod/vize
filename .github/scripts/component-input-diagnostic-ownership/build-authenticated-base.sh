@@ -1,0 +1,25 @@
+set -euo pipefail
+
+[[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+[[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+[[ "$HISTORICAL_CALLBACK_BEFORE" == 78719553cf550bcffbf1d0fb891fda642f42de3a ]]
+[[ "$SOURCE_SHA" != "$BASE_SHA" ]]
+
+baseline="$RUNNER_TEMP/callback-cfa-base"
+capture="$RUNNER_TEMP/component-input-ownership/source-images"
+git fetch --no-tags https://github.com/ubugeeei-prod/vize.git "$BASE_SHA"
+git worktree add --detach "$baseline" "$BASE_SHA"
+[[ "$(git -C "$baseline" rev-parse HEAD)" == "$BASE_SHA" ]]
+mkdir -p "$capture"
+cp target/ci/vize "$capture/candidate-vize"
+(
+  cd "$baseline"
+  CARGO_TARGET_DIR="$RUNNER_TEMP/callback-cfa-base-target" \
+    cargo build --locked --profile ci -p vize --bin vize
+)
+cp "$RUNNER_TEMP/callback-cfa-base-target/ci/vize" "$capture/base-vize"
+git -C "$baseline" diff --exit-code
+sha256sum "$capture/"*-vize > "$capture/binaries.sha256"
+printf '%s\n' "$BASE_SHA" > "$capture/base.source"
+printf '%s\n' "$HISTORICAL_CALLBACK_BEFORE" > "$capture/historical-before.source"
+printf '%s\n' "$SOURCE_SHA" > "$capture/candidate.source"

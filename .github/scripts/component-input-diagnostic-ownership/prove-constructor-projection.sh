@@ -1,0 +1,9 @@
+set -euo pipefail
+
+node --test \
+  tests/tooling/constructor-projection-parity.test.ts \
+  tests/tooling/constructor-projection-emit-overload.test.ts
+node tools/support/compat/content-mapper/constructor-projection-parity.ts \
+  "$RUNNER_TEMP/component-input-parity" \
+  "$RUNNER_TEMP/component-input-base" \
+  "$GITHUB_WORKSPACE"
