@@ -81,6 +81,7 @@ jobs:
       - name: Build packed runtime packages
         run: |
           vp run --filter './npm/cli' build
+          vp run --filter './npm/builder/unplugin' build
           vp run --filter './npm/builder/vite' build
       - uses: ./.github/actions/smoke-glibc-floor-containers
         with: { platform: "${{ matrix.platform }}" }
