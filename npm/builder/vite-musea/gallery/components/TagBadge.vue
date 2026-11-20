@@ -17,7 +17,7 @@ const style = computed(() => {
     v-if="!presentation?.hidden"
     class="tag-badge"
     :class="`tag-${presentation?.variant ?? 'neutral'}`"
-    :style="style"
+    :style
   >
     #{{ presentation?.label ?? tag }}
   </span>

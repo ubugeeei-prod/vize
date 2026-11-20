@@ -60,7 +60,7 @@ const stats = computed(() => ({
               {{ art.variants.length }} variant{{ art.variants.length !== 1 ? "s" : "" }}
             </span>
             <div class="home-card-tags">
-              <TagBadge v-for="tag in visibleTags(art).slice(0, 3)" :key="tag" :tag="tag" />
+              <TagBadge v-for="tag in visibleTags(art).slice(0, 3)" :key="tag" :tag />
             </div>
           </div>
         </RouterLink>

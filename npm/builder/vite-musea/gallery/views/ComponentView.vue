@@ -261,7 +261,7 @@ onUnmounted(() => {
           <MdiIcon :path="mdiOpenInNew" :size="12" />
           {{ designLink.type }}
         </a>
-        <TagBadge v-for="tag in visibleTags(art)" :key="tag" :tag="tag" />
+        <TagBadge v-for="tag in visibleTags(art)" :key="tag" :tag />
       </div>
     </div>
 
