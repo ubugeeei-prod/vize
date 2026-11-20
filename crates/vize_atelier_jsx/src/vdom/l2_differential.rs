@@ -315,8 +315,20 @@ fn l2_vdom_admitted_cases_match_relief_codegen() {
     }
 }
 
+#[test]
+fn jsx_entity_value_arm_keeps_authored_javascript_on_relief_route() {
+    let source = "const A = () => <p>{ok ? \"&#34;\" : <i />}</p>;";
+    let natural = compile_case(source, JsxLang::Jsx, EmitRoute::Natural);
+    let relief = compile_case(source, JsxLang::Jsx, EmitRoute::ForceRelief);
+
+    assert_eq!(natural.preamble, relief.preamble);
+    assert_eq!(natural.code, relief.code);
+    assert!(natural.code.contains("&#34;"), "{}", natural.code);
+}
+
 #[derive(Clone, Copy)]
 enum EmitRoute {
+    Natural,
     ForceL2,
     ForceRelief,
 }
@@ -337,6 +349,7 @@ fn compile_case(source: &str, lang: JsxLang, route: EmitRoute) -> Output {
     assert!(lowered.roots.is_empty(), "expected exactly one JSX root");
 
     match route {
+        EmitRoute::Natural => {}
         EmitRoute::ForceL2 => root.root.children.clear(),
         EmitRoute::ForceRelief => root.l2 = Err(L2Refusal::UnsupportedChild),
     }

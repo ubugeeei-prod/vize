@@ -54,7 +54,8 @@ fn branch_region_is_supported(region: &Region<'_>) -> bool {
 #[cold]
 #[inline(never)]
 fn value_arm_is_supported(ops: &[Op<'_>]) -> bool {
-    matches!(ops, [Op::Interpolation(text)] if expr_is_js_or_raw_emittable(&text.expression))
+    matches!(ops, [Op::Interpolation(text)] if expr_is_js_or_raw_emittable(&text.expression)
+        && !text.expression.source().contains('&'))
 }
 
 fn expr_is_js_or_raw_emittable(expr: &ExprRef<'_>) -> bool {
