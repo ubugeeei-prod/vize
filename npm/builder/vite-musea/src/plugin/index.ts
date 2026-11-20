@@ -2,7 +2,7 @@ import { normalizeToolbar } from "../toolbar.js";
 import type { Plugin, ViteDevServer, ResolvedConfig } from "vite";
 import fs from "node:fs";
 import path from "node:path";
-import type { MuseaOptions, ArtFileInfo } from "../types/index.js";
+import type { MuseaOptions, ArtFileInfo, MuseaGalleryMetadataConfig } from "../types/index.js";
 
 import {
   shouldProcess,
@@ -46,6 +46,7 @@ import { resolveMuseaGalleryUrls } from "./gallery-url.js";
 import { transformPreprocessedArtStyle } from "../art-style-module.js";
 import { createRawArtInputOwner } from "./raw-input-owner.js";
 import { loadInlineArtCustomBlock } from "./inline-art-query.js";
+import { externalStatusForArt, resolveExternalStatuses } from "./metadata-config.js";
 
 export function musea(options: MuseaOptions = {}): Plugin[] {
   let include = options.include ?? ["**/*.art.vue"];
@@ -54,6 +55,8 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   let storybookCompat = options.storybookCompat ?? false;
   const storybookOutDir = options.storybookOutDir ?? ".storybook/stories";
   let inlineArt = options.inlineArt ?? false;
+  let tagConfig = options.tags;
+  let statusesSource = options.statuses;
   const tokensPath = options.tokensPath;
   let tokenPreviewConfig = options.tokenPreviews;
   const projectRootOption = options.projectRoot;
@@ -72,6 +75,10 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   let resolvedPreviewSetup: string | null = null;
   let scanRoots: string[] = [];
   let staticBuildEnabled = isMuseaStaticBuild();
+  let galleryMetadata: MuseaGalleryMetadataConfig = {};
+  let externalStatuses: Awaited<ReturnType<typeof resolveExternalStatuses>> = {
+    values: new Map(),
+  };
 
   const virtualState: VirtualModuleState = {
     basePath,
@@ -138,6 +145,9 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         if (options.storybookCompat === undefined && mc.storybookCompat !== undefined)
           storybookCompat = mc.storybookCompat;
         if (options.inlineArt === undefined && mc.inlineArt !== undefined) inlineArt = mc.inlineArt;
+        if (options.tags === undefined && mc.tags !== undefined) tagConfig = mc.tags;
+        if (options.statuses === undefined && mc.statuses !== undefined)
+          statusesSource = mc.statuses;
         if (options.tokenPreviews === undefined && mc.tokenPreviews !== undefined)
           tokenPreviewConfig = mc.tokenPreviews;
       }
@@ -147,6 +157,8 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         throw new Error("[musea] Global toolbar controls require Vue 3 or Vue 2.7");
       }
       staticBuildEnabled = shouldEmitMuseaStaticGallery(resolvedConfig.command, storybookCompat);
+      galleryMetadata = { tags: tagConfig };
+      externalStatuses = await resolveExternalStatuses(resolvedConfig.root, statusesSource);
 
       virtualState.basePath = basePath;
 
@@ -172,6 +184,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
     configureServer(devServer) {
       server = devServer;
       devServer.watcher.unwatch(path.resolve(config.root, ".vize/reports"));
+      if (externalStatuses.filePath) devServer.watcher.add(externalStatuses.filePath);
 
       registerMiddleware(devServer, {
         basePath,
@@ -197,6 +210,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
           resolvedPreviewCss,
           resolvedPreviewSetup,
           toolbar,
+          galleryMetadata,
           vrt: options.vrt,
           devSessionToken,
           processArtFile,
@@ -205,6 +219,12 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       );
 
       devServer.watcher.on("change", async (file) => {
+        if (externalStatuses.filePath && path.resolve(file) === externalStatuses.filePath) {
+          externalStatuses = await resolveExternalStatuses(config.root, statusesSource);
+          await Promise.all([...artFiles.keys()].map(processArtFile));
+          console.log(`[musea] Reloaded external statuses: ${path.relative(config.root, file)}`);
+          return;
+        }
         if (file.endsWith(".art.vue") && shouldProcess(file, include, exclude, config.root)) {
           await processArtFile(file);
           console.log(`[musea] Reloaded: ${path.relative(config.root, file)}`);
@@ -312,6 +332,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         devSessionToken,
         themeConfig,
         tokenPreviewConfig,
+        galleryMetadata,
       });
     },
     async transform(code, id) {
@@ -345,8 +366,11 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       root: config.root,
       command: config.command,
     });
-    if (info) artFiles.set(filePath, info);
-    else if (artFiles.get(filePath)?.isInline) artFiles.delete(filePath);
+    if (info) {
+      const externalStatus = externalStatusForArt(info, config.root, externalStatuses.values);
+      if (externalStatus) info.metadata.externalStatus = externalStatus;
+      artFiles.set(filePath, info);
+    } else if (artFiles.get(filePath)?.isInline) artFiles.delete(filePath);
   }
 
   const artStylePostTransform: Plugin = {

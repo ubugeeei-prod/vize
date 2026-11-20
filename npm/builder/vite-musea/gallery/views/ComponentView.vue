@@ -9,6 +9,7 @@ import MdiIcon from "../components/MdiIcon.vue";
 import VariantCard from "../components/VariantCard.vue";
 import VariantTabs from "../components/VariantTabs.vue";
 import StatusBadge from "../components/StatusBadge.vue";
+import TagBadge from "../components/TagBadge.vue";
 import PropsPanel from "../components/PropsPanel.vue";
 import DocumentationPanel from "../components/DocumentationPanel.vue";
 import A11yBadge from "../components/A11yBadge.vue";
@@ -22,9 +23,11 @@ import { getVariantSectionId } from "../utils/variantSections";
 import { useResizable } from "../composables/useResizable";
 import { createVariantNavigation } from "../utils/variantNavigation";
 import { MUSEA_PROPS_QUERY } from "../utils/propsPermalink";
+import { useGalleryMetadata } from "../composables/useGalleryMetadata";
 
 const route = useRoute();
 const { getArt, load } = useArts();
+const { visibleTags } = useGalleryMetadata();
 const {
   events,
   init: initActions,
@@ -258,7 +261,7 @@ onUnmounted(() => {
           <MdiIcon :path="mdiOpenInNew" :size="12" />
           {{ designLink.type }}
         </a>
-        <span v-for="tag in art.metadata.tags" :key="tag" class="meta-tag"> #{{ tag }} </span>
+        <TagBadge v-for="tag in visibleTags(art)" :key="tag" :tag="tag" />
       </div>
     </div>
 

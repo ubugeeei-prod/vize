@@ -1,22 +1,58 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 import { mdiHome, mdiPalette, mdiCheckCircleOutline, mdiChevronRight } from "@mdi/js";
 import type { ArtFileInfo } from "../../src/types/index.js";
 import MdiIcon from "./MdiIcon.vue";
+import { useGalleryMetadata } from "../composables/useGalleryMetadata";
+import type { MuseaExternalArtStatusName } from "../../src/types/index.js";
 
 const props = defineProps<{
   arts: ArtFileInfo[];
 }>();
 
 const route = useRoute();
+const { config } = useGalleryMetadata();
+type TagFilter = "include" | "exclude" | "neutral";
+const tagFilters = ref<Record<string, TagFilter>>({});
+const statusFilters = ref<Set<MuseaExternalArtStatusName>>(new Set());
+const externalStatusNames: MuseaExternalArtStatusName[] = [
+  "success",
+  "warning",
+  "error",
+  "pending",
+];
+
+watch(
+  () => config.value.tags,
+  (tags) => {
+    for (const [tag, presentation] of Object.entries(tags ?? {})) {
+      tagFilters.value[tag] ??= presentation.defaultFilter ?? "neutral";
+    }
+  },
+  { immediate: true },
+);
+
+const configuredTags = computed(() => Object.entries(config.value.tags ?? {}));
+const filteredArts = computed(() =>
+  props.arts.filter((art) => {
+    for (const [tag, filter] of Object.entries(tagFilters.value)) {
+      if (filter === "include" && !art.metadata.tags.includes(tag)) return false;
+      if (filter === "exclude" && art.metadata.tags.includes(tag)) return false;
+    }
+    return (
+      statusFilters.value.size === 0 ||
+      (art.metadata.externalStatus && statusFilters.value.has(art.metadata.externalStatus.status))
+    );
+  }),
+);
 
 // Track expanded categories
 const expandedCategories = ref<Set<string>>(new Set());
 
 const categoryList = computed(() => {
   const map = new Map<string, ArtFileInfo[]>();
-  for (const art of props.arts) {
+  for (const art of filteredArts.value) {
     const cat = art.metadata.category || "Components";
     if (!map.has(cat)) map.set(cat, []);
     map.get(cat)!.push(art);
@@ -40,6 +76,19 @@ function toggleCategory(category: string) {
 
 function isCategoryExpanded(category: string) {
   return expandedCategories.value.has(category);
+}
+
+function cycleTagFilter(tag: string) {
+  const current = tagFilters.value[tag] ?? "neutral";
+  tagFilters.value[tag] =
+    current === "neutral" ? "include" : current === "include" ? "exclude" : "neutral";
+}
+
+function toggleStatusFilter(status: MuseaExternalArtStatusName) {
+  const next = new Set(statusFilters.value);
+  if (next.has(status)) next.delete(status);
+  else next.add(status);
+  statusFilters.value = next;
 }
 </script>
 
@@ -74,6 +123,40 @@ function isCategoryExpanded(category: string) {
       </RouterLink>
     </div>
 
+    <div v-if="configuredTags.length > 0" class="sidebar-section filter-section">
+      <span class="filter-heading">Tags</span>
+      <button
+        v-for="[tag, presentation] in configuredTags"
+        :key="tag"
+        type="button"
+        class="filter-chip"
+        :class="`filter-${tagFilters[tag] ?? 'neutral'}`"
+        :aria-label="`${presentation.label ?? tag} tag filter: ${tagFilters[tag] ?? 'neutral'}`"
+        :title="`Filter ${tag}: ${tagFilters[tag] ?? 'neutral'}`"
+        @click="cycleTagFilter(tag)"
+      >
+        {{ presentation.label ?? tag }}
+      </button>
+    </div>
+
+    <div
+      v-if="arts.some((art) => art.metadata.externalStatus)"
+      class="sidebar-section filter-section"
+    >
+      <span class="filter-heading">Status</span>
+      <button
+        v-for="status in externalStatusNames"
+        :key="status"
+        type="button"
+        class="filter-chip status-filter"
+        :class="[`external-${status}`, { active: statusFilters.has(status) }]"
+        :aria-pressed="statusFilters.has(status)"
+        @click="toggleStatusFilter(status)"
+      >
+        {{ status }}
+      </button>
+    </div>
+
     <div v-for="[category, items] in categoryList" :key="category" class="sidebar-section">
       <button
         type="button"
@@ -94,13 +177,21 @@ function isCategoryExpanded(category: string) {
             :class="{ active: selectedPath === art.path }"
           >
             <span class="art-name">{{ art.metadata.title }}</span>
+            <span
+              v-if="art.metadata.externalStatus"
+              class="external-status"
+              :class="`external-${art.metadata.externalStatus.status}`"
+              role="img"
+              :aria-label="art.metadata.externalStatus.label ?? art.metadata.externalStatus.status"
+              :title="art.metadata.externalStatus.label ?? art.metadata.externalStatus.status"
+            ></span>
             <span class="art-variant-count">{{ art.variants.length }}</span>
           </RouterLink>
         </li>
       </ul>
     </div>
 
-    <div v-if="arts.length === 0" class="sidebar-empty">No components found</div>
+    <div v-if="filteredArts.length === 0" class="sidebar-empty">No components found</div>
   </aside>
 </template>
 
@@ -113,6 +204,66 @@ function isCategoryExpanded(category: string) {
 
 .sidebar-section {
   padding: 0.5rem 0.75rem;
+}
+
+.filter-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.filter-heading {
+  width: 100%;
+  color: var(--musea-text-muted);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.filter-chip {
+  padding: 0.1875rem 0.375rem;
+  border: 1px solid var(--musea-border);
+  border-radius: 4px;
+  color: var(--musea-text-muted);
+  background: transparent;
+  font: inherit;
+  font-size: 0.6875rem;
+  cursor: pointer;
+}
+
+.filter-include,
+.status-filter.active {
+  border-color: var(--musea-accent);
+  color: var(--musea-accent-hover);
+  background: var(--musea-accent-subtle);
+}
+
+.filter-exclude {
+  border-color: var(--musea-error);
+  color: var(--musea-error);
+  text-decoration: line-through;
+}
+
+.external-status {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: currentcolor;
+}
+
+.external-success {
+  color: var(--musea-success);
+}
+
+.external-warning,
+.external-pending {
+  color: var(--musea-warning);
+}
+
+.external-error {
+  color: var(--musea-error);
 }
 
 .sidebar-section {

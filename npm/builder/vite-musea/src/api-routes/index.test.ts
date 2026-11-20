@@ -106,6 +106,21 @@ async function invokeApi(
   });
 }
 
+void test("createApiMiddleware exposes project tag presentation as read-only config", async () => {
+  const ctx = createContext(process.cwd());
+  ctx.galleryMetadata = {
+    tags: {
+      "figma-changed": { label: "Figma changed", variant: "warning", defaultFilter: "include" },
+      "figma:node": { hidden: true },
+    },
+  };
+
+  const response = await invokeApi(ctx, { method: "GET", url: "/config" });
+
+  assert.equal(response.statusCode, 200);
+  assert.deepEqual(JSON.parse(response.body), ctx.galleryMetadata);
+});
+
 void test("createApiMiddleware returns 400 for malformed encoded art paths", async () => {
   const response = await invokeApi(createContext(process.cwd()), {
     method: "GET",

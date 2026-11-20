@@ -16,9 +16,11 @@ import MuseaSidebar from "./MuseaSidebar.vue";
 import SearchModal from "./SearchModal.vue";
 import MdiIcon from "./MdiIcon.vue";
 import { useResizable } from "../composables/useResizable";
+import { useGalleryMetadata } from "../composables/useGalleryMetadata";
 
 const router = useRouter();
 const { arts, load } = useArts();
+const { load: loadGalleryMetadata } = useGalleryMetadata();
 const { results } = useSearch(arts);
 const { currentTheme, cycleTheme } = useTheme();
 
@@ -106,7 +108,7 @@ function resizeSidebarWithKeyboard(event: KeyboardEvent) {
 }
 
 onMounted(() => {
-  load();
+  void Promise.all([load(), loadGalleryMetadata()]);
   document.addEventListener("keydown", handleKeydown);
   compactMedia = window.matchMedia("(max-width: 768px)");
   syncCompactLayout(compactMedia);

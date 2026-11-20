@@ -15,7 +15,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { ResolvedConfig } from "vite";
 import fs from "node:fs";
 
-import type { ArtFileInfo } from "../types/index.js";
+import type { ArtFileInfo, MuseaGalleryMetadataConfig } from "../types/index.js";
 import { sortedArts } from "../art-order.js";
 import {
   handleTokensUsage,
@@ -53,6 +53,7 @@ export interface ApiRoutesContext {
   resolvedPreviewCss: string[];
   resolvedPreviewSetup: string | null;
   toolbar?: ResolvedMuseaToolbarControl[];
+  galleryMetadata?: MuseaGalleryMetadataConfig;
   vrt?: import("../types/plugin.js").MuseaVrtOptions;
   devSessionToken: string;
   apiBodyLimit?: number;
@@ -100,6 +101,11 @@ export function createApiMiddleware(ctx: ApiRoutesContext) {
       // --- GET /api/arts ---
       if (url === "/arts" && req.method === "GET") {
         sendJson(sortedArts(ctx.artFiles.values()));
+        return;
+      }
+
+      if (url === "/config" && req.method === "GET") {
+        sendJson(ctx.galleryMetadata ?? {});
         return;
       }
 

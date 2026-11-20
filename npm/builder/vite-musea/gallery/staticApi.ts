@@ -1,4 +1,4 @@
-import type { ArtFileInfo } from "../src/types/index.js";
+import type { ArtFileInfo, MuseaGalleryMetadataConfig } from "../src/types/index.js";
 import type {
   AnalysisApiResponse,
   ArtSourceResponse,
@@ -21,6 +21,7 @@ export const isStaticGallery = Boolean(win.__MUSEA_STATIC__);
 
 export interface StaticGalleryPayload {
   arts: ArtFileInfo[];
+  config?: MuseaGalleryMetadataConfig;
   previews: Record<string, Record<string, string>>;
   details: Record<
     string,

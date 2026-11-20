@@ -3,6 +3,26 @@ import type { MuseaGlobals, MuseaToolbarControl } from "../toolbar.js";
 import type { CaptureConfig, CiConfig, ComparisonConfig, VrtOptions } from "./vrt.js";
 import type { A11yOptions } from "./api.js";
 import type { MuseaTokenPreviewConfig } from "../tokens/preview.js";
+import type { MuseaExternalArtStatus, MuseaExternalArtStatusName } from "./art.js";
+
+export type MuseaTagBadgeVariant = "neutral" | "info" | "success" | "warning" | "error";
+
+export interface MuseaTagConfig {
+  label?: string;
+  variant?: MuseaTagBadgeVariant;
+  /** CSS color used for the tag text and border. */
+  color?: string;
+  /** Keep service tags searchable while omitting them from cards and headers. */
+  hidden?: boolean;
+  /** Initial sidebar filter state. */
+  defaultFilter?: "include" | "exclude" | "neutral";
+}
+
+export type MuseaExternalStatusValue = MuseaExternalArtStatusName | MuseaExternalArtStatus;
+
+export interface MuseaGalleryMetadataConfig {
+  tags?: Record<string, MuseaTagConfig>;
+}
 
 export interface MuseaPreviewContext {
   /** Replaced whenever a project toolbar value changes. Watch this ref directly. */
@@ -78,6 +98,15 @@ export interface MuseaOptions {
    * @default ['node_modules/**', 'dist/**']
    */
   exclude?: string[];
+
+  /** Project-level tag presentation and default sidebar filters. */
+  tags?: Record<string, MuseaTagConfig>;
+
+  /**
+   * Per-Art statuses keyed by project-relative path, absolute path, or Art title.
+   * A string value is resolved as a JSON file relative to the Vite root.
+   */
+  statuses?: string | Record<string, MuseaExternalStatusValue>;
 
   /**
    * Base path for Musea gallery UI.

@@ -13,10 +13,11 @@ import {
 } from "./api-routes/handlers.js";
 import { sortedArts } from "./art-order.js";
 import type { ApiRoutesContext, SendError, SendJson } from "./api-routes/index.js";
-import type { ArtFileInfo } from "./types/index.js";
+import type { ArtFileInfo, MuseaGalleryMetadataConfig } from "./types/index.js";
 
 export interface StaticGalleryPayload {
   arts: ArtFileInfo[];
+  config: MuseaGalleryMetadataConfig;
   snapshotIdentityVersion: 1;
   snapshotIdentities: Record<string, string>;
   previews: Record<string, Record<string, string>>;
@@ -46,6 +47,7 @@ export interface StaticGalleryDataContext {
   resolvedPreviewCss: string[];
   resolvedPreviewSetup: string | null;
   devSessionToken: string;
+  galleryMetadata?: MuseaGalleryMetadataConfig;
 }
 
 export function staticPreviewId(artPath: string, variantName: string): string {
@@ -127,6 +129,7 @@ export async function createStaticGalleryPayload(
   const tokenUsage = await captureJson((sendJson) => handleTokensUsage(apiCtx, sendJson), {});
   return {
     arts,
+    config: ctx.galleryMetadata ?? {},
     snapshotIdentityVersion: 1,
     snapshotIdentities,
     previews,

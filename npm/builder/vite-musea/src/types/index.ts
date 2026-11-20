@@ -4,6 +4,10 @@ export type {
   MuseaOptions,
   MuseaVrtOptions,
   MuseaPreviewContext,
+  MuseaTagBadgeVariant,
+  MuseaTagConfig,
+  MuseaExternalStatusValue,
+  MuseaGalleryMetadataConfig,
 } from "./plugin.js";
 
 export type {
@@ -13,7 +17,15 @@ export type {
   ResolvedTokenPreview,
 } from "../tokens/preview.js";
 
-export type { ArtMetadata, ArtVariant, ArtStyleBlock, ArtFileInfo, CsfOutput } from "./art.js";
+export type {
+  ArtMetadata,
+  ArtVariant,
+  ArtStyleBlock,
+  ArtFileInfo,
+  CsfOutput,
+  MuseaExternalArtStatus,
+  MuseaExternalArtStatusName,
+} from "./art.js";
 
 export type {
   ViewportConfig,
