@@ -27,6 +27,7 @@ import {
 } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { glibcFloorTarget } from "../../support/github/glibc-floor.ts";
 
 /** Instruction suites and the instruction-counts.mjs flags that collect them. */
 export const SUITES: ReadonlyArray<readonly [string, readonly string[]]> = [
@@ -35,22 +36,31 @@ export const SUITES: ReadonlyArray<readonly [string, readonly string[]]> = [
   ["sfc", ["--sfc-parsing"]],
 ];
 
-/** One measured side: per-row instruction counts and binary sizes. */
+export interface InstructionRow {
+  instructions: number;
+  fixture_sha256: string;
+  window: string;
+  methodology: Record<string, string>;
+}
+
+/** One measured side: per-row instruction measurements and binary sizes. */
 export interface Side {
-  rows: Record<string, number>;
+  rows: Record<string, InstructionRow>;
   sizes: Record<string, number>;
 }
 
-/** Fold the three executions of one collect run into one count per row. */
-export function foldRuns(measurement: { runs: Array<Record<string, { instructions: number }>> }) {
-  const rows: Record<string, number> = {};
+/** Fold the three executions of one collect run into one identified measurement per row. */
+export function foldRuns(measurement: {
+  methodology: Record<string, string>;
+  runs: Array<Record<string, { instructions: number; fixture_sha256: string; window: string }>>;
+}) {
+  const rows: Record<string, InstructionRow> = {};
   for (const run of measurement.runs) {
     for (const [id, row] of Object.entries(run)) {
-      assert.ok(
-        rows[id] === undefined || rows[id] === row.instructions,
-        `${id}: executions disagree (${rows[id]} vs ${row.instructions})`,
-      );
-      rows[id] = row.instructions;
+      const measured = { ...row, methodology: measurement.methodology };
+      if (rows[id] !== undefined)
+        assert.deepEqual(measured, rows[id], `${id}: executions disagree`);
+      rows[id] = measured;
     }
   }
   return rows;
@@ -72,7 +82,25 @@ const count = (value: number | undefined) =>
 /** Rows whose counts differ between two sides. */
 export function movedRows(a: Side, b: Side) {
   const ids = [...new Set([...Object.keys(a.rows), ...Object.keys(b.rows)])].sort();
-  return ids.filter((id) => a.rows[id] !== b.rows[id]);
+  return ids.filter((id) => {
+    const left = a.rows[id];
+    const right = b.rows[id];
+    if (left === undefined || right === undefined) return true;
+    assert.deepEqual(
+      {
+        fixture_sha256: right.fixture_sha256,
+        window: right.window,
+        methodology: right.methodology,
+      },
+      {
+        fixture_sha256: left.fixture_sha256,
+        window: left.window,
+        methodology: left.methodology,
+      },
+      `${id}: instruction workload identity changed`,
+    );
+    return left.instructions !== right.instructions;
+  });
 }
 
 /** Reject a measurement whose independent rebuild changes any measured value. */
@@ -101,7 +129,9 @@ export function renderReport(input: {
   const { base, head, baseTwin, headTwin } = input;
   const moved = movedRows(base, head);
   const total = new Set([...Object.keys(base.rows), ...Object.keys(head.rows)]).size;
-  const up = moved.filter((id) => (head.rows[id] ?? Infinity) > (base.rows[id] ?? -Infinity));
+  const up = moved.filter(
+    (id) => (head.rows[id]?.instructions ?? Infinity) > (base.rows[id]?.instructions ?? -Infinity),
+  );
   const lines: string[] = [];
   lines.push("## Release-profile measurement (fat LTO, 1 codegen unit)", "");
   lines.push(`Base \`${input.baseSha.slice(0, 10)}\` · Head \`${input.headSha.slice(0, 10)}\``, "");
@@ -112,12 +142,13 @@ export function renderReport(input: {
     twinCols ? "| --- | ---: | ---: | ---: | ---: | ---: |" : "| --- | ---: | ---: | ---: |",
   );
   for (const id of moved) {
-    const b = base.rows[id];
-    const h = head.rows[id];
+    const b = base.rows[id]?.instructions;
+    const h = head.rows[id]?.instructions;
     const delta =
       b === undefined || h === undefined ? "added/removed" : `${signed(h - b)}${percent(h - b, b)}`;
     const cells = [`\`${id}\``, count(b), count(h), delta];
-    if (twinCols) cells.push(count(baseTwin.rows[id]), count(headTwin.rows[id]));
+    if (twinCols)
+      cells.push(count(baseTwin.rows[id]?.instructions), count(headTwin.rows[id]?.instructions));
     lines.push(`| ${cells.join(" | ")} |`);
   }
   lines.push(
@@ -135,7 +166,9 @@ export function renderReport(input: {
     const agrees =
       twinPair.length === moved.length &&
       twinPair.every(
-        (id) => headTwin.rows[id]! - baseTwin.rows[id]! === head.rows[id]! - base.rows[id]!,
+        (id) =>
+          headTwin.rows[id]!.instructions - baseTwin.rows[id]!.instructions ===
+          head.rows[id]!.instructions - base.rows[id]!.instructions,
       );
     lines.push(
       `A/A: base vs base twin ${aaBase} moved; head vs head twin ${aaHead} moved; ` +
@@ -181,7 +214,7 @@ export function measureSide(source: string, out: string, label: string, scratch:
     CARGO_PROFILE_CI_OPT_LTO: "fat",
     CARGO_PROFILE_CI_OPT_CODEGEN_UNITS: "1",
   };
-  const rows: Record<string, number> = {};
+  const rows: Record<string, InstructionRow> = {};
   for (const [suite, flags] of SUITES) {
     // instruction-counts.mjs keeps its guest links beside the out directory,
     // so every suite gets its own parent.
@@ -199,7 +232,13 @@ export function measureSide(source: string, out: string, label: string, scratch:
     }
   }
   const release = { ...env, VIZE_NATIVE_BUILD_TOKEN: "0".repeat(32) };
-  run("cargo", ["build", "--locked", "--release", "-p", "vize"], source, release);
+  const linuxTarget = "x86_64-unknown-linux-gnu";
+  run(
+    "cargo",
+    ["zigbuild", "--locked", "--release", "-p", "vize", "--target", glibcFloorTarget(linuxTarget)],
+    source,
+    release,
+  );
   run(
     "cargo",
     ["build", "--locked", "--release", "-p", "vize_vitrine", "--lib", "--features", "napi,legacy"],
@@ -207,7 +246,7 @@ export function measureSide(source: string, out: string, label: string, scratch:
     release,
   );
   const sizes = {
-    "`vize` CLI (stripped)": statSync(join(target, "release", "vize")).size,
+    "`vize` CLI (stripped)": statSync(join(target, linuxTarget, "release", "vize")).size,
     "`vize_vitrine` N-API library": statSync(join(target, "release", "libvize_vitrine.so")).size,
   };
   const result: Side = { rows, sizes };
@@ -254,21 +293,31 @@ function report(out: string) {
   }
 }
 
-function measurePair(base: string, head: string, out: string, scratch: string, twins: boolean) {
+export function measurePair(
+  base: string,
+  head: string,
+  out: string,
+  scratch: string,
+  twins: boolean,
+  measure: typeof measureSide = measureSide,
+  resolveHead: typeof gitHead = gitHead,
+) {
+  const pair = join(out, "pair.json");
+  assert.ok(!existsSync(pair), `refusing to reuse measurement output ${pair}`);
   mkdirSync(out, { recursive: true });
   writeFileSync(
-    join(out, "pair.json"),
-    JSON.stringify({ baseSha: gitHead(base), headSha: gitHead(head) }, null, 2) + "\n",
+    pair,
+    JSON.stringify({ baseSha: resolveHead(base), headSha: resolveHead(head) }, null, 2) + "\n",
   );
   // The first fat-LTO build on a fresh runner can differ from every subsequent
   // rebuild. Prime the toolchain and Cargo caches, then discard all its output.
-  measureSide(base, out, "warmup", scratch);
+  measure(base, out, "warmup", scratch);
   rmSync(join(out, "warmup"), { recursive: true, force: true });
-  measureSide(base, out, "base", scratch);
-  measureSide(head, out, "head", scratch);
+  measure(base, out, "base", scratch);
+  measure(head, out, "head", scratch);
   if (twins) {
-    measureSide(base, out, "base-twin", scratch);
-    measureSide(head, out, "head-twin", scratch);
+    measure(base, out, "base-twin", scratch);
+    measure(head, out, "head-twin", scratch);
   }
   report(out);
 }
