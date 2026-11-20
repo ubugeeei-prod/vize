@@ -2,11 +2,62 @@ import { parseStaticCallArgument } from "../native-loader.js";
 import type { NativeBinding } from "../native-loader.js";
 import type { ArtMetadata } from "../types/index.js";
 
+function findTagEnd(source: string, start: number): number {
+  let quote: '"' | "'" | undefined;
+  for (let index = start; index < source.length; index += 1) {
+    const character = source[index];
+    if (quote) {
+      if (character === quote) quote = undefined;
+    } else if (character === '"' || character === "'") {
+      quote = character;
+    } else if (character === ">") {
+      return index + 1;
+    }
+  }
+  return source.length;
+}
+
+function findRawTextEnd(source: string, start: number, tagName: string): number {
+  const closingTag = new RegExp(`</${tagName}\\s*>`, "giu");
+  closingTag.lastIndex = start;
+  const match = closingTag.exec(source);
+  return match ? match.index + match[0].length : source.length;
+}
+
 function maskInactiveMarkup(source: string): string {
-  const mask = (value: string): string => " ".repeat(value.length);
-  return source
-    .replace(/<(script|style)\b(?:[^>"']|"[^"]*"|'[^']*')*>[\s\S]*?<\/\1\s*>/giu, mask)
-    .replace(/<!--[\s\S]*?-->/gu, mask);
+  const openingRawTextTag = /<(script|style)(?=[\s/>])/iuy;
+  const parts: string[] = [];
+  let cursor = 0;
+  let searchFrom = 0;
+
+  while (searchFrom < source.length) {
+    const start = source.indexOf("<", searchFrom);
+    if (start < 0) break;
+
+    let end: number | undefined;
+    if (source.startsWith("<!--", start)) {
+      const commentEnd = source.indexOf("-->", start + 4);
+      end = commentEnd < 0 ? source.length : commentEnd + 3;
+    } else {
+      openingRawTextTag.lastIndex = start;
+      const match = openingRawTextTag.exec(source);
+      if (match) {
+        const openingTagEnd = findTagEnd(source, openingRawTextTag.lastIndex);
+        end = findRawTextEnd(source, openingTagEnd, match[1]);
+      }
+    }
+
+    if (end === undefined) {
+      searchFrom = start + 1;
+      continue;
+    }
+    parts.push(source.slice(cursor, start), " ".repeat(end - start));
+    cursor = end;
+    searchFrom = end;
+  }
+
+  parts.push(source.slice(cursor));
+  return parts.join("");
 }
 
 function extractArtTagAttributes(source: string): Record<string, string | true> {
