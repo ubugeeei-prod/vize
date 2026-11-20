@@ -22865,6 +22865,7 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
+              "html-template",
               "ts"
             ],
             "selector": "linter manifest pinned authored sources"
