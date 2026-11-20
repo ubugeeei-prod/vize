@@ -202,6 +202,33 @@ export function parseStaticJsonExpression(source: string): unknown {
   return read(expression);
 }
 
+/** Read one statically serializable argument from a named call without evaluating user code. */
+export function parseStaticCallArgument(
+  source: string,
+  callName: string,
+  argumentIndex: number,
+): unknown {
+  const ts = loadTypeScript();
+  const file = ts.createSourceFile("musea-static-call.ts", source, ts.ScriptTarget.Latest, true);
+  let result: unknown;
+
+  const visit = (node: TypeScript.Node): void => {
+    if (
+      result === undefined &&
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === callName
+    ) {
+      const argument = node.arguments[argumentIndex];
+      if (argument) result = parseStaticJsonExpression(argument.getText(file));
+    }
+    if (result === undefined) ts.forEachChild(node, visit);
+  };
+
+  visit(file);
+  return result;
+}
+
 /** Validate one authored TypeScript expression before embedding it in a generated setup block. */
 export function assertStaticExpression(source: string, label: string): string {
   const expression = source.trim();

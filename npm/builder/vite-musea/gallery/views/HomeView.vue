@@ -47,7 +47,7 @@ const stats = computed(() => ({
         >
           <div class="home-card-header">
             <span class="home-card-title">{{ art.metadata.title }}</span>
-            <StatusBadge :status="art.metadata.status" />
+            <StatusBadge v-if="art.metadata.status" :status="art.metadata.status" />
           </div>
           <p v-if="art.metadata.description" class="home-card-desc">
             {{ art.metadata.description }}

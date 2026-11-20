@@ -20,11 +20,17 @@ declare const Counter: new () => {
 };
 
 defineArt(Counter, { title: "Counter" });
-defineArtMeta({ category: "Input", status: "ready" });
+defineArtMeta({
+  category: "Input",
+  status: "ready",
+  parameters: { design: { type: "figma", url: "https://figma.com/file/example" } },
+});
 // @ts-expect-error defineArt only accepts a component value.
 defineArt("./Counter.vue", { title: "Counter" });
 // @ts-expect-error defineArtMeta status is a closed union.
 defineArtMeta({ status: "wip" });
+// @ts-expect-error Unknown metadata keys are rejected; use parameters for extensions.
+defineArtMeta({ figma: "1234:5678" });
 
 const props = { initial: 0, step: 1 } satisfies Partial<MuseaComponentProps<typeof Counter>>;
 const attrs = { "aria-label": "Counter" } satisfies MuseaComponentAttrs<typeof Counter>;

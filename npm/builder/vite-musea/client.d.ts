@@ -8,6 +8,7 @@ interface MuseaArtOptions {
   status?: MuseaArtStatus;
   order?: number;
   actionEvents?: string[];
+  parameters?: Record<string, unknown>;
 }
 
 type MuseaComponentProps<TComponent> = TComponent extends abstract new (...args: never[]) => {
@@ -82,7 +83,7 @@ type MuseaPlay = (context: MuseaPlayContext) => void | Promise<void>;
 declare function definePlay(play: MuseaPlay): MuseaPlay;
 
 /** Optional gallery metadata. The target component is inferred from variant templates. */
-declare function defineArtMeta<const TOptions extends MuseaArtOptions>(options: TOptions): void;
+declare function defineArtMeta(options: MuseaArtOptions): void;
 
 /** Explicit target escape hatch for Art files with multiple component candidates. */
 declare function defineArt<const TComponent extends MuseaComponent>(

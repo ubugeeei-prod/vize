@@ -8,7 +8,11 @@ import {
 } from "../art-module.js";
 import { resolveArtComponent } from "../art-component.js";
 import { artScopeAttribute, stampScopeAttribute } from "../art-style.js";
-import { loadNative, parseStaticJsonExpression } from "../native-loader.js";
+import {
+  loadNative,
+  parseStaticCallArgument,
+  parseStaticJsonExpression,
+} from "../native-loader.js";
 import type { NativeBinding } from "../native-loader.js";
 import type { ArtFileInfo, ArtMetadata } from "../types/index.js";
 
@@ -16,10 +20,15 @@ export interface ArtProcessingContext {
   root: string;
   command: string;
   onError?: (message: string) => void;
+  onWarn?: (message: string) => void;
 }
 
 function extractArtTagAttributes(source: string): Record<string, string | true> {
-  const artTagMatch = source.match(/<art\b((?:[^>"']|"[^"]*"|'[^']*')*)>/i);
+  const structuralSource = source.replace(
+    /<(script|style)\b(?:[^>"']|"[^"]*"|'[^']*')*>[\s\S]*?<\/\1\s*>/giu,
+    "",
+  );
+  const artTagMatch = structuralSource.match(/<art\b((?:[^>"']|"[^"]*"|'[^']*')*)>/iu);
   if (!artTagMatch) return {};
 
   const attributes: Record<string, string | true> = {};
@@ -219,10 +228,24 @@ function parseActionEvents(value: string | true | undefined): string[] | undefin
   return events.length > 0 ? [...new Set(events)] : undefined;
 }
 
-function extractCustomArtMetadata(source: string): Pick<ArtMetadata, "actionEvents"> {
+const ART_STATUSES = new Set(["draft", "ready", "deprecated"]);
+
+function isArtStatus(value: unknown): value is NonNullable<ArtMetadata["status"]> {
+  return typeof value === "string" && ART_STATUSES.has(value);
+}
+
+function extractCustomArtMetadata(source: string): Pick<ArtMetadata, "actionEvents" | "status"> {
   const attrs = extractArtTagAttributes(source);
   const actionEvents = new Set(parseActionEvents(attrs["action-events"]) ?? []);
   const captureMousemove = attrs["capture-mousemove"];
+  const authoredStatus = attrs.status;
+  const status = isArtStatus(authoredStatus)
+    ? authoredStatus
+    : attrs.draft === true
+      ? "draft"
+      : attrs.deprecated === true
+        ? "deprecated"
+        : undefined;
 
   if (captureMousemove === true || captureMousemove === "true") {
     actionEvents.add("mousemove");
@@ -230,6 +253,7 @@ function extractCustomArtMetadata(source: string): Pick<ArtMetadata, "actionEven
 
   return {
     actionEvents: actionEvents.size > 0 ? [...actionEvents] : undefined,
+    status,
   };
 }
 
@@ -239,10 +263,10 @@ export function sourceWithOptionalArtTitle(source: string): string {
   return source.replace(/<art\b/iu, '<art title=""');
 }
 
-function extractDefineArtMeta(source: string): Partial<MuseaArtMeta> {
-  const match = source.match(/\bdefineArtMeta\s*\(\s*(\{[\s\S]*?\})\s*\)/u);
-  if (!match?.[1]) return {};
-  const value = parseStaticJsonExpression(match[1]);
+export function extractDefineArtMeta(source: string): Partial<MuseaArtMeta> {
+  const value =
+    parseStaticCallArgument(source, "defineArtMeta", 0) ??
+    parseStaticCallArgument(source, "defineArt", 1);
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Partial<MuseaArtMeta>)
     : {};
@@ -253,10 +277,41 @@ type MuseaArtMeta = {
   description: string;
   category: string;
   tags: string[];
-  status: "draft" | "ready" | "deprecated";
+  status: string;
   order: number;
   actionEvents: string[];
+  parameters: Record<string, unknown>;
 };
+
+const DEFINE_ART_META_KEYS = new Set<keyof MuseaArtMeta>([
+  "title",
+  "description",
+  "category",
+  "tags",
+  "status",
+  "order",
+  "actionEvents",
+  "parameters",
+]);
+
+export function reportDefineArtMetaWarnings(
+  metadata: Partial<MuseaArtMeta>,
+  filename: string,
+  warn: (message: string) => void = console.warn,
+): void {
+  for (const key of Object.keys(metadata)) {
+    if (!DEFINE_ART_META_KEYS.has(key as keyof MuseaArtMeta)) {
+      warn(
+        `[musea] ${filename}: unknown defineArt metadata key ${JSON.stringify(key)}; ignoring it`,
+      );
+    }
+  }
+  if (metadata.status !== undefined && !isArtStatus(metadata.status)) {
+    warn(
+      `[musea] ${filename}: unknown status ${JSON.stringify(metadata.status)}; ignoring it (expected "draft" | "ready" | "deprecated")`,
+    );
+  }
+}
 
 function extractStyleBlocks(
   source: string,
@@ -332,7 +387,9 @@ export async function processMuseaArtFile(
     const parsed = binding.parseArt(sourceWithOptionalArtTitle(source), { filename: filePath });
     reportArtStatusWarnings(binding, source, filePath);
     const customMetadata = extractCustomArtMetadata(source);
-    const macroMetadata = extractDefineArtMeta(source);
+    const macroMetadata = extractDefineArtMeta(extractScriptSetupContent(source) ?? "");
+    reportDefineArtMetaWarnings(macroMetadata, filePath, ctx.onWarn);
+    const status = isArtStatus(macroMetadata.status) ? macroMetadata.status : customMetadata.status;
     const variantOptions = extractVariantRuntimeOptions(source);
 
     if (!parsed.variants || parsed.variants.length === 0) return null;
@@ -360,9 +417,9 @@ export async function processMuseaArtFile(
         component: isInline ? undefined : parsed.metadata.component,
         category: macroMetadata.category ?? parsed.metadata.category,
         tags: macroMetadata.tags ?? parsed.metadata.tags,
-        status:
-          macroMetadata.status ?? (parsed.metadata.status as "draft" | "ready" | "deprecated"),
+        status,
         order: macroMetadata.order ?? parsed.metadata.order,
+        parameters: macroMetadata.parameters,
       },
       variants: baseVariants,
       hasScriptSetup: !isInline && parsed.hasScriptSetup,
@@ -392,9 +449,9 @@ export async function processMuseaArtFile(
         component: isInline ? undefined : (parsed.metadata.component ?? component.componentSource),
         category: macroMetadata.category ?? parsed.metadata.category,
         tags: macroMetadata.tags ?? parsed.metadata.tags,
-        status:
-          macroMetadata.status ?? (parsed.metadata.status as "draft" | "ready" | "deprecated"),
+        status,
         order: macroMetadata.order ?? parsed.metadata.order,
+        parameters: macroMetadata.parameters,
         actionEvents:
           customMetadata.actionEvents ?? macroMetadata.actionEvents ?? parsed.metadata.actionEvents,
       },

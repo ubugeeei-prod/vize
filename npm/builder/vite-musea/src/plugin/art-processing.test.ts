@@ -6,10 +6,12 @@ import test from "node:test";
 
 import { artScopeAttribute } from "../art-style.js";
 import {
+  extractDefineArtMeta,
   extractTargetInputs,
   extractVariantRuntimeOptions,
   processMuseaArtFile,
   reportArtStatusWarnings,
+  reportDefineArtMetaWarnings,
 } from "./art-processing.js";
 
 void test("target inputs seed props and attrs from the authored component", () => {
@@ -63,6 +65,35 @@ void test("variant props and attrs reject executable discovery expressions", () 
   );
 });
 
+void test("defineArt metadata preserves nested parameters from both public macros", () => {
+  const parameters = {
+    design: { type: "figma", url: "https://www.figma.com/design/example" },
+  };
+  assert.deepEqual(
+    extractDefineArtMeta(
+      `defineArtMeta({ title: "Button", parameters: ${JSON.stringify(parameters)} })`,
+    ),
+    { title: "Button", parameters },
+  );
+  assert.deepEqual(
+    extractDefineArtMeta(`defineArt(Button, { parameters: ${JSON.stringify(parameters)} })`),
+    { parameters },
+  );
+});
+
+void test("defineArt metadata warns about unknown keys and statuses", () => {
+  const messages: string[] = [];
+  reportDefineArtMetaWarnings(
+    { status: "wip", figma: "1234:5678" } as never,
+    "Button.art.vue",
+    (message) => messages.push(message),
+  );
+  assert.deepEqual(messages, [
+    '[musea] Button.art.vue: unknown defineArt metadata key "figma"; ignoring it',
+    '[musea] Button.art.vue: unknown status "wip"; ignoring it (expected "draft" | "ready" | "deprecated")',
+  ]);
+});
+
 void test("processMuseaArtFile infers a missing title from the art filename", async () => {
   const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-bad-art-"));
   const artPath = path.join(tempDir, "stories", "Broken.art.vue");
@@ -77,6 +108,7 @@ void test("processMuseaArtFile infers a missing title from the art filename", as
 
     const art = await processMuseaArtFile(artPath, { root: tempDir, command: "build" });
     assert.equal(art?.metadata.title, "Broken");
+    assert.equal(art?.metadata.status, undefined);
   } finally {
     await fs.promises.rm(tempDir, { recursive: true, force: true });
   }
@@ -272,6 +304,7 @@ void test("inline Art retains the native custom-block index after another block"
           tags: [],
           status: "ready",
           order: undefined,
+          parameters: undefined,
           actionEvents: undefined,
         },
         variants: [{ name: "Default", template: "<Card />", isDefault: false, skipVrt: false }],
