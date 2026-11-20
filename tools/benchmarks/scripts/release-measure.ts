@@ -129,9 +129,11 @@ export function renderReport(input: {
   const { base, head, baseTwin, headTwin } = input;
   const moved = movedRows(base, head);
   const total = new Set([...Object.keys(base.rows), ...Object.keys(head.rows)]).size;
-  const up = moved.filter(
-    (id) => (head.rows[id]?.instructions ?? Infinity) > (base.rows[id]?.instructions ?? -Infinity),
-  );
+  const up = moved.filter((id) => {
+    const before = base.rows[id]?.instructions;
+    const after = head.rows[id]?.instructions;
+    return after !== undefined && (before === undefined || after > before);
+  });
   const lines: string[] = [];
   lines.push("## Release-profile measurement (fat LTO, 1 codegen unit)", "");
   lines.push(`Base \`${input.baseSha.slice(0, 10)}\` · Head \`${input.headSha.slice(0, 10)}\``, "");
@@ -163,13 +165,21 @@ export function renderReport(input: {
     const aaBase = movedRows(base, baseTwin).length;
     const aaHead = movedRows(head, headTwin).length;
     const twinPair = movedRows(baseTwin, headTwin);
+    const primaryMoved = new Set(moved);
     const agrees =
       twinPair.length === moved.length &&
-      twinPair.every(
-        (id) =>
-          headTwin.rows[id]!.instructions - baseTwin.rows[id]!.instructions ===
-          head.rows[id]!.instructions - base.rows[id]!.instructions,
-      );
+      twinPair.every((id) => {
+        if (!primaryMoved.has(id)) return false;
+        const primaryBefore = base.rows[id]?.instructions;
+        const primaryAfter = head.rows[id]?.instructions;
+        const twinBefore = baseTwin.rows[id]?.instructions;
+        const twinAfter = headTwin.rows[id]?.instructions;
+        if (primaryBefore === undefined || twinBefore === undefined)
+          return primaryBefore === twinBefore && primaryAfter === twinAfter;
+        if (primaryAfter === undefined || twinAfter === undefined)
+          return primaryAfter === twinAfter && primaryBefore === twinBefore;
+        return twinAfter - twinBefore === primaryAfter - primaryBefore;
+      });
     lines.push(
       `A/A: base vs base twin ${aaBase} moved; head vs head twin ${aaHead} moved; ` +
         `twin pair ${agrees ? "repeats every Δ above" : `moves ${twinPair.length} rows (differs from the primary pair)`}.`,
@@ -233,21 +243,35 @@ export function measureSide(source: string, out: string, label: string, scratch:
   }
   const release = { ...env, VIZE_NATIVE_BUILD_TOKEN: "0".repeat(32) };
   const linuxTarget = "x86_64-unknown-linux-gnu";
+  const linuxFloorTarget = glibcFloorTarget(linuxTarget);
   run(
     "cargo",
-    ["zigbuild", "--locked", "--release", "-p", "vize", "--target", glibcFloorTarget(linuxTarget)],
+    ["zigbuild", "--locked", "--release", "-p", "vize", "--target", linuxFloorTarget],
     source,
     release,
   );
   run(
     "cargo",
-    ["build", "--locked", "--release", "-p", "vize_vitrine", "--lib", "--features", "napi,legacy"],
+    [
+      "zigbuild",
+      "--locked",
+      "--release",
+      "-p",
+      "vize_vitrine",
+      "--lib",
+      "--features",
+      "napi,legacy",
+      "--target",
+      linuxFloorTarget,
+    ],
     source,
     release,
   );
   const sizes = {
     "`vize` CLI (stripped)": statSync(join(target, linuxTarget, "release", "vize")).size,
-    "`vize_vitrine` N-API library": statSync(join(target, "release", "libvize_vitrine.so")).size,
+    "`vize_vitrine` N-API library": statSync(
+      join(target, linuxTarget, "release", "libvize_vitrine.so"),
+    ).size,
   };
   const result: Side = { rows, sizes };
   writeFileSync(join(side, "side.json"), JSON.stringify(result, null, 2) + "\n");
