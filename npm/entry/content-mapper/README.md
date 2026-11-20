@@ -6,6 +6,8 @@ The Vize TypeScript content mapper on its own. Declare it in `tsconfig.json` and
 vp install -D @vizejs/content-mapper
 ```
 
+Requires TypeScript 7.1 beta or later. Check `tsc --version` before configuring a content mapper.
+
 ```json
 {
   "contentMappers": [
