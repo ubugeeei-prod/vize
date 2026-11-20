@@ -156,9 +156,9 @@ fn every_corpus_setup_binding_matches_croquis() {
             (cstr!("LiteralConst <- Some(SetupConst)"), 4),
             // Includes the two `{ default as X }` imports from a `.vue` file
             // (lsp/inactive-imports, lsp/named-sfc-value-hover-11953) and the
-            // imported Musea Art targets: setup constants in Vue, maybe-refs
-            // in Croquis.
-            (cstr!("SetupConst <- Some(SetupMaybeRef)"), 1_957),
+            // imported Musea Art targets and gallery metadata helpers: setup
+            // constants in Vue, maybe-refs in Croquis.
+            (cstr!("SetupConst <- Some(SetupMaybeRef)"), 1_959),
             (cstr!("SetupConst <- Some(SetupReactiveConst)"), 5),
             (cstr!("SetupMaybeRef <- Some(SetupConst)"), 19),
             (cstr!("SetupMaybeRef <- Some(SetupReactiveConst)"), 4),
@@ -447,7 +447,7 @@ fn every_corpus_reactive_source_matches_croquis() {
     eprintln!(
         "compared {sources} reactive sources (+{hydrated} in hydrated fixtures) in {compared} setup scripts"
     );
-    assert_eq!(sources, 3_188, "corpus reactive-source inventory changed");
+    assert_eq!(sources, 3_195, "corpus reactive-source inventory changed");
     assert_eq!(mismatches, Vec::<String>::new());
 }
 
