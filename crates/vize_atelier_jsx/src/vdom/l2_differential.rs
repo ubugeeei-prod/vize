@@ -323,7 +323,18 @@ fn jsx_entity_value_arm_keeps_authored_javascript_on_relief_route() {
 
     assert_eq!(natural.preamble, relief.preamble);
     assert_eq!(natural.code, relief.code);
-    assert!(natural.code.contains("&#34;"), "{}", natural.code);
+    assert_eq!(
+        natural.code,
+        r#"export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("p", null, [
+    (ok)
+      ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
+        _createTextVNode(_toDisplayString("&#34;"), 1 /* TEXT */)
+      ], 64 /* STABLE_FRAGMENT */))
+      : (_openBlock(), _createElementBlock("i", { key: 1 }))
+  ]))
+}"#,
+    );
 }
 
 #[derive(Clone, Copy)]
