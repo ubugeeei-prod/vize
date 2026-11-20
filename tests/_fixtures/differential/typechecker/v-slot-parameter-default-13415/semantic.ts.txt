@@ -1,0 +1,1 @@
+export const visible: string = 1;

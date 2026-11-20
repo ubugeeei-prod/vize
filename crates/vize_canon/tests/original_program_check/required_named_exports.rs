@@ -8,6 +8,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use sha2::{Digest, Sha256};
 use vize_l0::{SourceRoot, Span, String, cstr, line_index::LineBreaks};
+use vize_l2::query::Model;
 use vize_l2::{
     file::{DeclarationKind, Namespace},
     lang::js::JsxFileProducer,
@@ -184,7 +185,7 @@ fn configured_original_required_named_export_ts_tsx_preserve_whole_raw_reports_a
                 assert!(core::ptr::eq(local.file(), file));
             }
             let name = case["binding"].as_str().unwrap();
-            let binding = file
+            let binding = Model::new(&file)
                 .binding_at_offset(source.rfind(name).unwrap() as u32)
                 .unwrap()
                 .unwrap();

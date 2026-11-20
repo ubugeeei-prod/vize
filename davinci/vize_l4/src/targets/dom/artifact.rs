@@ -101,11 +101,11 @@ mod props_object_merge;
 mod props_static;
 mod props_value;
 mod run;
-mod sfc_style;
 mod slot_root;
 mod slots;
 mod static_cache;
 mod style;
+mod style_carrier;
 mod tpl;
 mod transform_expr;
 mod vfor;
@@ -135,7 +135,7 @@ pub use self::budget::{
     emit_dom_source_observed_with_options_captured_and_slot_scope,
     emit_dom_source_observed_with_options_captured_slot_scope_and_environment,
     emit_dom_source_observed_with_options_captured_slot_scope_environment_and_syntax,
-    emit_dom_source_sfc_observed_with_options, emit_dom_source_with_caps_observed,
+    emit_dom_source_strict_slots_observed_with_options, emit_dom_source_with_caps_observed,
     emit_dom_source_with_options_captured, emit_dom_source_with_options_captured_and_slot_scope,
     emit_dom_source_with_options_captured_slot_scope_and_environment,
     emit_dom_source_with_options_captured_slot_scope_environment_and_syntax,
@@ -151,7 +151,7 @@ pub use self::entity::{
     decode_html_attribute_entities, decode_html_entities, decode_ssr_static_text,
 };
 pub use self::entry::{
-    DomEmit, DomEmitSections, emit_dom_source, emit_dom_source_sfc_with_options,
+    DomEmit, DomEmitSections, emit_dom_source, emit_dom_source_strict_slots_with_options,
     emit_dom_source_with_caps, emit_dom_source_with_options,
 };
 pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};

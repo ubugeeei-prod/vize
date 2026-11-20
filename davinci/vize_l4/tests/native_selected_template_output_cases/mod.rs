@@ -9,7 +9,7 @@ use vize_l1::{
     markup::{SelectedTemplateComponent, SurfaceChild, SurfaceParseOptions},
 };
 use vize_l2::lang::js::{NativeInterpolationInput, NativeTemplateFile, NativeTemplateOwner};
-use vize_l4::targets::dom::NativeTemplateDomOutput;
+use vize_l4::targets::dom::TemplateDomOutput;
 
 #[track_caller]
 pub(super) fn check(condition: bool) -> Result<(), &'static str> {
@@ -71,7 +71,7 @@ pub(super) fn completed<'a>(
 // Decode serialized segments without using the production map builder or its
 // line table. Char iteration handles all JavaScript terminators and UTF-16.
 pub(super) fn map_positions(
-    output: &NativeTemplateDomOutput<'_, '_>,
+    output: &TemplateDomOutput<'_, '_>,
     filename: &str,
 ) -> Result<(), &'static str> {
     let map: serde_json::Value =

@@ -1,6 +1,8 @@
 //! Legacy storage compatibility and host-runtime integration.
 //! Portable storage identities are re-exported from `vize_l0`.
 pub use vize_l0::*;
+/// Vue's `isNativeTag` and `isNativeOn`, under the names the legacy crates use.
+pub use vize_l0::{is_dom_event_prop as is_native_on, is_platform_tag as is_native_tag};
 
 pub mod config;
 #[expect(

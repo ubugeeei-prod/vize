@@ -12,7 +12,7 @@
 use alloc::vec::Vec as StdVec;
 use vize_l2::artifact::OpFamily;
 
-use vize_l0::{Box, String, Vec, cstr, is_native_tag};
+use vize_l0::{Box, String, Vec, cstr, is_platform_tag};
 use vize_l1::markup::Element;
 
 use vize_l2::op::{Attribute, BindingOp, ComponentOp, ElementOp, Namespace, Op, Region};
@@ -291,7 +291,7 @@ pub(crate) fn element_core<'a>(
     let span = element_span(cx, element);
     let node = cx.mint_op();
     let component =
-        !frozen && (cast.is_some() || (!is_native_tag(tag) && !cx.is_custom_element(tag)));
+        !frozen && (cast.is_some() || (!is_platform_tag(tag) && !cx.is_custom_element(tag)));
 
     let open_end = cx.token_span(&element.open.gt).end;
     let open_slice = cx

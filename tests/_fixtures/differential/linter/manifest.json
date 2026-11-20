@@ -22832,6 +22832,48 @@
       }
     },
     {
+      "id": "linter/no-unsafe-enum-assignment-inferred-keys-13404",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-unsafe-enum-assignment-inferred-keys-13404",
+        "files": [
+          {
+            "path": "Inferred.vue.txt",
+            "role": "local-inferred-enum-key-reproduction",
+            "sha256": "cc058ee6872d6e0e602f78358275f5e4c6c4207d4391c261d335d0e25f8d5036"
+          },
+          {
+            "path": "Imported.vue.txt",
+            "role": "imported-inferred-enum-key-reproduction",
+            "sha256": "2b4c3862e775bf660215b5c6933b3933dc48ebd2357256fd50278f47b175186d"
+          },
+          {
+            "path": "states.ts.txt",
+            "role": "imported-enum-and-inferred-object-module",
+            "sha256": "fa53d8bb31fe89b4cc1562a6dd7a206acc92adc9f0e77b4c6d5693179a2e6787"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unsafe-enum-assignment-mapped-keys-13070",
       "state": "active",
       "targets": [

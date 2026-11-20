@@ -12,11 +12,9 @@ use crate::op::Attribute;
 use core::ops::DerefMut;
 use vize_l0::Vec;
 use vize_l1::{
-    dialect::vue3::VueDirectives,
-    markup::{
-        AttributeView, ConditionKind, ElementView, SelectedTemplateComponent,
-        directive::{DirectivePrefix, DirectiveSyntax},
-    },
+    framework::vue::directive::{DirectivePrefix, DirectiveSyntax},
+    framework::vue::version::v3::VueDirectives,
+    markup::{AttributeView, ConditionKind, ElementView, SelectedTemplateComponent},
 };
 
 pub(in crate::file::region::native) struct Header<'a> {

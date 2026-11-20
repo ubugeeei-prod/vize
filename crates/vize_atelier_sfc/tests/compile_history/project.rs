@@ -1,17 +1,33 @@
 //! Temporary projects for multi-file compile-history cases.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use vize_l0::String;
 
 use crate::Case;
 
-/// Write the case's project files and its own source into a fresh directory.
-/// A project without its own `tsconfig.json` gets an empty one, so config
-/// discovery stops at the project root instead of probing the machine's
-/// temporary-directory ancestors.
-pub(crate) fn write_project(case: &Case) -> tempfile::TempDir {
-    let project = tempfile::tempdir().expect("project directory");
+/// A fixture project nested below a controlled ancestor config.
+pub(crate) struct ProjectDir {
+    _ancestor: tempfile::TempDir,
+    path: PathBuf,
+}
+
+impl ProjectDir {
+    pub(crate) fn path(&self) -> &Path {
+        &self.path
+    }
+}
+
+/// Write the case below a controlled ancestor config. Ordinary projects get a
+/// root config; `noProjectConfig` cases exercise explicit absent authority.
+pub(crate) fn write_project(case: &Case) -> ProjectDir {
+    let ancestor = tempfile::tempdir().expect("project ancestor");
+    // This would change no-config cases if they performed ordinary discovery.
+    // Their explicit absent-project authority must make the result independent
+    // of configs owned by the host above the fixture root.
+    std::fs::write(ancestor.path().join("tsconfig.json"), "{}\n").expect("ancestor project config");
+    let project = ancestor.path().join("project");
+    std::fs::create_dir(&project).expect("project directory");
     let tsconfig: (String, String) = ("tsconfig.json".into(), "{}\n".into());
     let default_config = (!case.files.contains_key("tsconfig.json")
         && !case.options.no_project_config.unwrap_or(false))
@@ -22,13 +38,16 @@ pub(crate) fn write_project(case: &Case) -> tempfile::TempDir {
         .chain(default_config)
         .chain([(&case.filename, &case.source)]);
     for (relative, text) in files {
-        let path = project.path().join(relative.as_str());
+        let path = project.join(relative.as_str());
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent).expect("project directory tree");
         }
         std::fs::write(&path, text.as_bytes()).expect("project file");
     }
-    project
+    ProjectDir {
+        _ancestor: ancestor,
+        path: project,
+    }
 }
 
 /// Replace the temporary project root, in both its given and canonical

@@ -14,7 +14,7 @@ use vize_l2::{
     lang::js::{NativeTemplateFile, NativeTemplateOwner},
     op::{BindingOp, OnOp, Op, Region},
 };
-use vize_l3::decision::{dom::PropertyRole, native::build_native_dom_file_decisions};
+use vize_l3::decision::{dom::PropertyRole, template::build_template_dom_decisions};
 use vize_l4::{
     module::assemble_template,
     runtime::{Runtime, vocabulary},
@@ -71,7 +71,7 @@ fn five_original_click_modules_match_the_complete_pinned_compiler_bytes() {
         let arena = Allocator::default();
         let source = fixture["source"].as_str().unwrap();
         let owner = completed(&arena, source);
-        let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
+        let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
         let file = analysis.file();
         assert!(core::ptr::eq(analysis.owner(), &owner));
         assert!(core::ptr::eq(file.artifact().source(), source));

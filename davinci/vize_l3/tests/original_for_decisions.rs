@@ -19,7 +19,7 @@ use vize_l2::{
 use vize_l3::decision::{
     ControlKind, StaticLevel, build_dom_decisions, build_dom_file_decisions,
     dom::{DomUnsupported, LiteralExpressions},
-    native::build_native_dom_file_decisions,
+    template::build_template_dom_decisions,
 };
 
 mod original_for_decision_cases;
@@ -82,7 +82,7 @@ fn js_and_ts_receipts_retain_original_file_allocation_source_and_stock_parameter
         let original = first(&owner);
         let lower = file.for_head_for(original).unwrap();
         let facts = lower.resolution().unwrap();
-        let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
+        let analysis = build_template_dom_decisions(owner.view().unwrap()).unwrap();
         let row = analysis.for_head(original.id().node()).unwrap();
         assert!(core::ptr::eq(analysis.owner(), &owner));
         assert!(core::ptr::eq(row.head().file(), file));

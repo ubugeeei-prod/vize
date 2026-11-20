@@ -15,9 +15,7 @@ use vize_l2::{
 use vize_l3::decision::{
     build_decisions,
     policy::TargetPolicy,
-    vapor::{
-        VaporExpression, VaporPart, VaporUnsupported, build_native_selected_setup_vapor_decisions,
-    },
+    vapor::{VaporExpression, VaporPart, VaporUnsupported, build_selected_setup_vapor_decisions},
 };
 
 fn descriptor() -> DescriptorOptions {
@@ -45,8 +43,8 @@ fn original_models_retain_their_write_owner_and_neutral_analysis_cannot_promote_
         let setup = selected.setup();
         let file = setup.file();
         let before = file.artifact().provenance().to_vec();
-        let analysis = build_native_selected_setup_vapor_decisions(setup)
-            .map_err(|error| format!("{error:?}"))?;
+        let analysis =
+            build_selected_setup_vapor_decisions(setup).map_err(|error| format!("{error:?}"))?;
         let facts = analysis.vapor().ok_or("Vapor facts")?;
         assert!(
             facts.unsupported().is_empty(),
@@ -133,10 +131,10 @@ fn foreign_equal_roots_do_not_replace_original_model_ownership() -> Result<(), S
     let second_view = second.admitted().ok_or("second setup")?;
     let first_setup = first_view.setup();
     let second_setup = second_view.setup();
-    let first = build_native_selected_setup_vapor_decisions(first_setup)
-        .map_err(|error| format!("{error:?}"))?;
-    let second = build_native_selected_setup_vapor_decisions(second_setup)
-        .map_err(|error| format!("{error:?}"))?;
+    let first =
+        build_selected_setup_vapor_decisions(first_setup).map_err(|error| format!("{error:?}"))?;
+    let second =
+        build_selected_setup_vapor_decisions(second_setup).map_err(|error| format!("{error:?}"))?;
     let first_facts = first.vapor().ok_or("first facts")?;
     let second_facts = second.vapor().ok_or("second facts")?;
     let [first_root] = first_facts.roots() else {
@@ -177,8 +175,8 @@ fn ordinary_input_keeps_its_old_nonvoid_refusal_and_lexical_reads_stay_reads() -
         let observation = lower_selected_setup_sfc_native(&arena, &source, descriptor());
         let selected = observation.admitted().ok_or("actual setup")?;
         let setup = selected.setup();
-        let analysis = build_native_selected_setup_vapor_decisions(setup)
-            .map_err(|error| format!("{error:?}"))?;
+        let analysis =
+            build_selected_setup_vapor_decisions(setup).map_err(|error| format!("{error:?}"))?;
         let facts = analysis.vapor().ok_or("facts")?;
         let [root] = facts.roots() else {
             return Err("one root".into());

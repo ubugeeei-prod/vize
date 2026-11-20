@@ -1,5 +1,5 @@
 //! New source custody cannot bypass any existing original native entry.
-use crate::decision::{DecisionBuildError as Error, native, policy::TargetPolicy, ssr, vapor};
+use crate::decision::{DecisionBuildError as Error, policy::TargetPolicy, ssr, template, vapor};
 use vize_l0::{
     Allocator,
     config::{VueDialect, VueVersion},
@@ -63,17 +63,17 @@ fn complete_original_prepared_text_view_is_refused_by_each_existing_native_targe
     let file = original.file().ok_or("complete File")?;
     check(file.is_complete() && file.native_text_values().len() == 1)?;
     check(
-        native::build_native_dom_file_decisions(original.view().map_err(|_| "view")?).err()
+        template::build_template_dom_decisions(original.view().map_err(|_| "view")?).err()
             == Some(Error::PreparedTextProfile),
     )?;
     check(
-        ssr::build_native_ssr_file_decisions(original.view().map_err(|_| "view")?).err()
-            == Some(ssr::NativeSsrBuildError::Decision(
+        ssr::build_template_ssr_decisions(original.view().map_err(|_| "view")?).err()
+            == Some(ssr::SsrTemplateBuildError::Decision(
                 Error::PreparedTextProfile,
             )),
     )?;
     check(
-        vapor::build_native_vapor_file_decisions(original.view().map_err(|_| "view")?).err()
+        vapor::build_template_vapor_decisions(original.view().map_err(|_| "view")?).err()
             == Some(Error::PreparedTextProfile),
     )?;
     // All genuine context constructors converge on this same original-file
@@ -104,9 +104,9 @@ fn existing_condensed_owner_and_all_generic_none_routes_keep_their_exact_authori
             .native_text_values()
             .is_empty(),
     )?;
-    check(native::build_native_dom_file_decisions(old.view().map_err(|_| "old view")?).is_ok())?;
-    check(ssr::build_native_ssr_file_decisions(old.view().map_err(|_| "old view")?).is_ok())?;
-    check(vapor::build_native_vapor_file_decisions(old.view().map_err(|_| "old view")?).is_ok())?;
+    check(template::build_template_dom_decisions(old.view().map_err(|_| "old view")?).is_ok())?;
+    check(ssr::build_template_ssr_decisions(old.view().map_err(|_| "old view")?).is_ok())?;
+    check(vapor::build_template_vapor_decisions(old.view().map_err(|_| "old view")?).is_ok())?;
     let new = completed(&arena, "<template>&amp;lt;</template>", true)?;
     let file = new.file().ok_or("new File")?;
     // Generic diagnostic APIs intentionally retain their neutral None policy;

@@ -1,6 +1,6 @@
 //! Same original Program/SFC facts supply usage, never response-name scans.
 
-use super::{NavigationRefusal, ReferenceTarget, RetainedNavigation};
+use super::{Model, NavigationRefusal, RetainedNavigation};
 use tower_lsp::lsp_types::{DocumentHighlight, Position};
 
 impl RetainedNavigation<'_, '_> {
@@ -19,10 +19,10 @@ impl RetainedNavigation<'_, '_> {
                 })
                 .map_err(NavigationRefusal::NativeQuery)?;
         } else {
-            sites.extend(self.file.references().iter().filter_map(|site| {
-                (site.target == ReferenceTarget::Resolved(binding.id()))
-                    .then_some((site.span, Some(site.usage)))
-            }));
+            Model::new(self.file).for_each_reference_to(binding, |site| {
+                let row = site.reference();
+                sites.push((row.span, Some(row.usage)));
+            });
         }
         sites.push((
             binding

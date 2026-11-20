@@ -8,7 +8,7 @@ use vize_atelier_core::{
     ElementNode, ExpressionNode, PropNode, TemplateChildNode, get_slot_name, get_slot_props_string,
     has_v_slot, is_dynamic_slot,
 };
-use vize_l0::{String, is_native_tag};
+use vize_l0::{String, is_platform_tag};
 
 use super::slots::{PGroup, PName, POutlet, PUnit};
 
@@ -196,7 +196,7 @@ pub fn collect_old(
             TemplateChildNode::Element(el) => {
                 if el.tag == "slot" {
                     outlets.push(old_outlet(el, source));
-                } else if !is_native_tag(el.tag)
+                } else if !is_platform_tag(el.tag)
                     && (slot_dirs(el).next().is_some()
                         || el.children.iter().any(|child| {
                             matches!(child, TemplateChildNode::Element(inner) if is_slot_template(inner))

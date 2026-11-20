@@ -17,4 +17,4 @@ mod vue2;
 #[cfg(any())]
 mod vue3;
 
-pub use vize_l1::dialect::LegacyCaps;
+pub use vize_l1::framework::vue::LegacyCaps;

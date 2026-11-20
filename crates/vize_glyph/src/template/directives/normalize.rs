@@ -7,7 +7,7 @@ use super::{
 };
 use crate::options::FormatOptions;
 use vize_l0::{String, ToCompactString, cstr};
-use vize_l1::dialect::vue3::DirectiveKind;
+use vize_l1::framework::vue::version::v3::DirectiveKind;
 use vize_l1::markup::DirectivePrefix;
 
 pub(crate) fn normalize_attribute_with_vue_version(

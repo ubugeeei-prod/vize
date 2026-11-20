@@ -7,20 +7,20 @@ use crate::write::{LinkSink, Writer};
 use core::cell::Cell;
 use vize_l0::id::NodeId;
 use vize_l2::{op::InterpolationOp, resolution::Occurrence};
-use vize_l3::decision::ssr::{NativeSelectedSetupSsrAnalysis, SsrSetupExpression};
+use vize_l3::decision::ssr::{SelectedSetupSsrAnalysis, SsrSetupExpression};
 
 /// Only genuine original setup/template SSR analysis selects this entry.
 /// A caller cannot substitute DOM facts or choose a context access policy.
 /// The whole unsupported view returns no writer or partial SSR function.
 /// ```compile_fail
-/// use vize_l3::decision::native::NativeSelectedSetupDomAnalysis;
+/// use vize_l3::decision::template::SelectedSetupDomAnalysis;
 /// use vize_l4::{targets::ssr::emit_selected_setup_template, write::NoLinks};
-/// fn substitute(dom: &NativeSelectedSetupDomAnalysis<'_, '_, '_>) {
+/// fn substitute(dom: &SelectedSetupDomAnalysis<'_, '_, '_>) {
 ///     let _ = emit_selected_setup_template::<NoLinks>(dom);
 /// }
 /// ```
 pub fn emit_selected_setup_template<L: LinkSink>(
-    analysis: &NativeSelectedSetupSsrAnalysis<'_, '_, '_>,
+    analysis: &SelectedSetupSsrAnalysis<'_, '_, '_>,
 ) -> Result<Writer<L>, SsrError> {
     encode(
         analysis.artifact().source(),
@@ -32,7 +32,7 @@ pub fn emit_selected_setup_template<L: LinkSink>(
 
 pub(super) fn write<L: LinkSink>(
     writer: &mut Writer<L>,
-    analysis: &NativeSelectedSetupSsrAnalysis<'_, '_, '_>,
+    analysis: &SelectedSetupSsrAnalysis<'_, '_, '_>,
     node: NodeId,
     interpolation: &InterpolationOp<'_>,
 ) -> Result<(), SsrError> {

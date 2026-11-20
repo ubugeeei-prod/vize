@@ -96,7 +96,7 @@ pub fn emit_dom_source_with_options<'a>(
 
 /// SFC-only variant that refuses malformed slot parameters before assembly.
 #[doc(hidden)]
-pub fn emit_dom_source_sfc_with_options<'a>(
+pub fn emit_dom_source_strict_slots_with_options<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     caps: LegacyCaps,

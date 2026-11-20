@@ -1,6 +1,6 @@
 use vize_l0::{Span, String, cstr};
 use vize_l2::file::FileArtifact;
-use vize_l3::jsx::{JsxDecisionKind, NativeJsxAnalysis};
+use vize_l3::jsx::{JsxAnalysis, JsxDecisionKind};
 
 use super::{JsxEmitError, JsxEmitErrorKind};
 use crate::runtime::{Helper, Runtime, vocabulary};
@@ -17,7 +17,7 @@ pub(super) struct SelectedHelpers {
     pub text: Option<SelectedHelper>,
 }
 
-pub(super) fn selected(analysis: &NativeJsxAnalysis<'_>) -> Result<SelectedHelpers, JsxEmitError> {
+pub(super) fn selected(analysis: &JsxAnalysis<'_>) -> Result<SelectedHelpers, JsxEmitError> {
     let file = analysis.owner().file();
     let node = one(file, "createVNode")?;
     let text = analysis

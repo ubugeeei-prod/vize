@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { defineComponent } from 'vue'
+
+const Slotty = defineComponent({
+  props: { a: String },
+  slots: Object as any,
+  template: '<div/>',
+})
+</script>
+
+<template>
+  <Slotty v-slot="{ editor } = {}">{{ editor }}</Slotty>
+</template>

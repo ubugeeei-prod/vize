@@ -1,7 +1,7 @@
 //! One authentic Vue 1 escaped-text callback with checked historical printing.
 
 use vize_l0::{Allocator, SourceBlock, Span, String, Vec};
-use vize_l1::dialect::vue1::surface::TextView;
+use vize_l1::framework::vue::version::v1::surface::TextView;
 
 use super::{Doc, ExpressionRefusal, LineEnding, PrintOptions, expression::borrowed_document};
 
@@ -36,7 +36,7 @@ pub enum Vue1TextPrintRefusal {
 /// ```
 /// use vize_glyph::native_doc::{PrintOptions, vue1_text_document};
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue1::surface;
+/// use vize_l1::framework::vue::version::v1::surface;
 /// let printed = {
 ///     let arena = Allocator::default();
 ///     let source = String::from("{{ left+right }}");
@@ -51,7 +51,7 @@ pub enum Vue1TextPrintRefusal {
 ///
 /// ```compile_fail,E0451
 /// use vize_glyph::native_doc::{Doc, Vue1TextDocument};
-/// use vize_l1::dialect::vue1::surface::TextView;
+/// use vize_l1::framework::vue::version::v1::surface::TextView;
 /// fn forge<'o, 'a>(original: TextView<'o, 'a>, document: Doc<'a>) -> Vue1TextDocument<'o, 'a> {
 ///     Vue1TextDocument { original, document }
 /// }
@@ -65,7 +65,7 @@ pub enum Vue1TextPrintRefusal {
 /// ```compile_fail,E0515
 /// use vize_glyph::native_doc::{Vue1TextDocument, vue1_text_document};
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue1::surface::ComponentParse;
+/// use vize_l1::framework::vue::version::v1::surface::ComponentParse;
 /// fn escape<'a>(owner: ComponentParse<'a>, arena: &'a Allocator) -> Vue1TextDocument<'a, 'a> {
 ///     vue1_text_document(owner.text_for(owner.children().next().unwrap()).unwrap(), arena).unwrap()
 /// }
@@ -73,7 +73,7 @@ pub enum Vue1TextPrintRefusal {
 /// ```compile_fail,E0505
 /// use vize_glyph::native_doc::{PrintOptions, vue1_text_document};
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue1::surface;
+/// use vize_l1::framework::vue::version::v1::surface;
 /// let arena = Allocator::default();
 /// let owner = surface::parse_component(&arena, "{{ item }}").unwrap();
 /// let document = vue1_text_document(owner.text_for(owner.children().next().unwrap()).unwrap(), &arena).unwrap();
@@ -83,7 +83,7 @@ pub enum Vue1TextPrintRefusal {
 /// ```compile_fail,E0505
 /// use vize_glyph::native_doc::vue1_text_document;
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue1::surface;
+/// use vize_l1::framework::vue::version::v1::surface;
 /// let arena = Allocator::default();
 /// let owner = surface::parse_component(&arena, "{{ item }}").unwrap();
 /// let document = vue1_text_document(owner.text_for(owner.children().next().unwrap()).unwrap(), &arena).unwrap();
@@ -94,7 +94,7 @@ pub enum Vue1TextPrintRefusal {
 /// ```compile_fail
 /// use vize_glyph::native_doc::{PrintOptions, vue1_text_document};
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue1::surface;
+/// use vize_l1::framework::vue::version::v1::surface;
 /// let arena = Allocator::default();
 /// let owner = {
 ///     let source = String::from("{{ item }}");
@@ -106,7 +106,7 @@ pub enum Vue1TextPrintRefusal {
 /// ```compile_fail
 /// use vize_glyph::native_doc::{PrintOptions, vue1_text_document};
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue1::surface;
+/// use vize_l1::framework::vue::version::v1::surface;
 /// let doc_arena = Allocator::default();
 /// let owner = {
 ///     let original_arena = Allocator::default();
@@ -118,7 +118,7 @@ pub enum Vue1TextPrintRefusal {
 /// ```compile_fail
 /// use vize_glyph::native_doc::{PrintOptions, vue1_text_document};
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue1::surface;
+/// use vize_l1::framework::vue::version::v1::surface;
 /// let arena = Allocator::default();
 /// let owner = surface::parse_component(&arena, "{{ item }}").unwrap();
 /// let document = {
@@ -130,7 +130,7 @@ pub enum Vue1TextPrintRefusal {
 /// ```compile_fail,E0599
 /// use vize_glyph::native_doc::{LineEnding, PrintOptions, print, vue1_text_document};
 /// use vize_l0::Allocator;
-/// use vize_l1::dialect::vue1::surface;
+/// use vize_l1::framework::vue::version::v1::surface;
 /// let arena = Allocator::default();
 /// let owner = surface::parse_component(&arena, "{{ left+right }}").unwrap();
 /// let document = vue1_text_document(owner.text_for(owner.children().next().unwrap()).unwrap(), &arena).unwrap();
@@ -228,7 +228,7 @@ mod tests {
     use super::vue1_text_document;
     use crate::native_doc::{Doc, Line, PrintOptions, document::Kind};
     use vize_l0::Allocator;
-    use vize_l1::dialect::vue1::surface;
+    use vize_l1::framework::vue::version::v1::surface;
 
     #[derive(Debug, PartialEq, Eq)]
     enum Tree<'a> {

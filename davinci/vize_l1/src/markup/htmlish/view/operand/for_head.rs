@@ -5,11 +5,11 @@ use vize_l0::Span;
 
 use super::super::{AttributeView, SelectedTemplateComponent, TemplateGrammar};
 use super::{AttributeOperandError, origin::Origin};
-use crate::dialect::vue3::operand::for_head;
 use crate::embed::syntax::{
     AdmittedDenseForHead, ForHead, ForInput, ForInputError, RejectedForInput,
 };
 use crate::embed::{Lang, SourceError};
+use crate::framework::vue::version::v3::operand::for_head;
 
 /// Preparation failures keep any original rejected physical input intact.
 #[derive(Debug)]

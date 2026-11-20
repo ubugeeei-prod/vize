@@ -159,6 +159,19 @@ pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<V
 
 /** Later reviewed edits to an integrated source, removed before its law is checked. */
 function reviewedSourceSuccessor(file: string, bytes: Uint8Array): Uint8Array {
+  // The levels name the component render binding by concept (`_sfc_render` is
+  // unchanged): `RenderFunctionName::SfcRender` became `ComponentRender`.
+  if (
+    file === "crates/vize_atelier_sfc/src/compile.rs" &&
+    blob(bytes) === "b80c1e46486d2aaec325c748aae5b8791826daff"
+  ) {
+    const text = Buffer.from(bytes).toString("utf8");
+    const edit = "RenderFunctionName::ComponentRender";
+    assert.equal(text.split(edit).length, 2, "unique reviewed render-name edit");
+    const reference = Buffer.from(text.replace(edit, "RenderFunctionName::SfcRender"));
+    assert.equal(blob(reference), "54bc6c6b5137fe0df403883db93901970d8bc40a");
+    return reference;
+  }
   if (
     file !== "crates/vize_vitrine/src/napi/sfc/compile.rs" ||
     blob(bytes) !== "8ec4b58ac5b5fa47c2c1b3859368c08b8481152a"

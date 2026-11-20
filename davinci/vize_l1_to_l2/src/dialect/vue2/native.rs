@@ -3,7 +3,7 @@
 
 use alloc::vec::Vec;
 use vize_l0::{Allocator, Span, id::NodeId};
-use vize_l1::dialect::vue2::surface::{ComponentExpressionPool, RetainedTextRefusal};
+use vize_l1::framework::vue::version::v2::surface::{ComponentExpressionPool, RetainedTextRefusal};
 use vize_l2::artifact::{Artifact, ArtifactError, Builder, RejectedArtifact};
 
 #[cfg(any())]

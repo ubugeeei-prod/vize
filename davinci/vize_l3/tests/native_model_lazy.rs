@@ -15,9 +15,9 @@ use vize_l2::{
     resolution::Usage,
 };
 use vize_l3::decision::{
-    native::build_native_selected_setup_dom_decisions,
-    ssr::build_native_selected_setup_ssr_decisions,
-    vapor::{VaporPart, build_native_selected_setup_vapor_decisions},
+    ssr::build_selected_setup_ssr_decisions,
+    template::build_selected_setup_dom_decisions,
+    vapor::{VaporPart, build_selected_setup_vapor_decisions},
 };
 
 fn descriptor() -> DescriptorOptions {
@@ -87,8 +87,8 @@ fn original_lazy_tokens_and_write_bindings_are_shared_without_generic_read_promo
         assert_eq!(original.input().operand().trim_span(), None);
         assert!(core::ptr::eq(modifier.name, modifier.span.slice(source)));
 
-        let dom = build_native_selected_setup_dom_decisions(setup)
-            .map_err(|error| format!("{error:?}"))?;
+        let dom =
+            build_selected_setup_dom_decisions(setup).map_err(|error| format!("{error:?}"))?;
         let dom_facts = dom.dom().ok_or("DOM facts")?;
         assert!(
             dom_facts.unsupported().is_empty(),
@@ -96,8 +96,8 @@ fn original_lazy_tokens_and_write_bindings_are_shared_without_generic_read_promo
             dom_facts.unsupported()
         );
         let dom_model = dom_facts.file_model(node).ok_or("DOM model")?;
-        let ssr = build_native_selected_setup_ssr_decisions(setup)
-            .map_err(|error| format!("{error:?}"))?;
+        let ssr =
+            build_selected_setup_ssr_decisions(setup).map_err(|error| format!("{error:?}"))?;
         assert!(ssr.ssr().ok_or("SSR facts")?.unsupported().is_empty());
         let ssr_model = ssr
             .model(element_node, element)
@@ -109,8 +109,8 @@ fn original_lazy_tokens_and_write_bindings_are_shared_without_generic_read_promo
                 .reads()
                 .is_empty()
         );
-        let vapor = build_native_selected_setup_vapor_decisions(setup)
-            .map_err(|error| format!("{error:?}"))?;
+        let vapor =
+            build_selected_setup_vapor_decisions(setup).map_err(|error| format!("{error:?}"))?;
         let vapor_facts = vapor.vapor().ok_or("Vapor facts")?;
         assert!(vapor_facts.unsupported().is_empty());
         let [root] = vapor_facts.roots() else {

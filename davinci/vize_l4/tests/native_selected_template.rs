@@ -9,7 +9,7 @@ use vize_l1::{
     markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
-use vize_l3::decision::native::build_native_dom_file_decisions;
+use vize_l3::decision::template::build_template_dom_decisions;
 use vize_l4::{
     module::assemble_template,
     runtime::{Runtime, vocabulary},
@@ -111,7 +111,7 @@ fn complete_original_selected_templates_keep_custody_and_exact_output() -> Resul
             field(fixture, "template")?,
         )?;
         let analysis =
-            build_native_dom_file_decisions(original.view().map_err(|_| "completion view")?)
+            build_template_dom_decisions(original.view().map_err(|_| "completion view")?)
                 .map_err(|_| "same-owner L3")?;
         check(core::ptr::eq(analysis.artifact().source(), source))?;
         let recorded = assemble_template(

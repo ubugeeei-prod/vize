@@ -83,7 +83,11 @@ impl TypeSourceSnapshot {
         } else {
             None
         };
-        let project = self.project.as_deref().or(discovered.as_deref());
+        let project = self
+            .project
+            .as_deref()
+            .filter(|project| project.is_configured())
+            .or(discovered.as_deref());
         if !specifier.starts_with('.')
             && !Path::new(specifier).is_absolute()
             && let Some(project) = project
