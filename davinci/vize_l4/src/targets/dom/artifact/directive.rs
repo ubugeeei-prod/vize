@@ -163,7 +163,7 @@ fn wrap(
     cx.buf.newline();
     let mut first = true;
     if let Some((element, model)) = native {
-        super::model::emit_native_entry(cx, element, model)?;
+        super::model::emit_element_entry(cx, element, model)?;
         first = false;
     }
     for directive in runtime.iter() {

@@ -43,15 +43,15 @@ pub const PARTIAL_REGIONS: AnalysisId = AnalysisId::new(14);
 /// `PartialScopes` — scope names of those fragments (P5-10).
 pub const PARTIAL_SCOPES: AnalysisId = AnalysisId::new(15);
 /// Original selected authored lint headers, scoped to one genuine element.
-pub const NATIVE_LINT_HEADERS: AnalysisId = AnalysisId::new(16);
+pub const ORIGINAL_LINT_HEADERS: AnalysisId = AnalysisId::new(16);
 /// Original selected authored attributes, keyed by their genuine ordinals.
-pub const NATIVE_LINT_ATTRIBUTES: AnalysisId = AnalysisId::new(17);
+pub const ORIGINAL_LINT_ATTRIBUTES: AnalysisId = AnalysisId::new(17);
 /// Unsupported-ARIA counterexamples derived from original header/attribute facts.
-pub const NATIVE_UNSUPPORTED_ARIA: AnalysisId = AnalysisId::new(18);
+pub const ORIGINAL_UNSUPPORTED_ARIA: AnalysisId = AnalysisId::new(18);
 /// Closed original direct-child interpolation markers, keyed by actual ordinal.
-pub const NATIVE_DIRECT_INTERPOLATIONS: AnalysisId = AnalysisId::new(19);
+pub const ORIGINAL_DIRECT_INTERPOLATIONS: AnalysisId = AnalysisId::new(19);
 /// Textarea counterexamples derived from genuine header and marker facts.
-pub const NATIVE_TEXTAREA_MUSTACHE: AnalysisId = AnalysisId::new(20);
+pub const ORIGINAL_TEXTAREA_MUSTACHE: AnalysisId = AnalysisId::new(20);
 
 /// The first id tests and bench fixtures may use.
 pub const FIXTURE_BASE: u8 = 32;
@@ -73,11 +73,11 @@ pub const PRODUCTION: [AnalysisId; 20] = [
     PARTIAL_HOLES,
     PARTIAL_REGIONS,
     PARTIAL_SCOPES,
-    NATIVE_LINT_HEADERS,
-    NATIVE_LINT_ATTRIBUTES,
-    NATIVE_UNSUPPORTED_ARIA,
-    NATIVE_DIRECT_INTERPOLATIONS,
-    NATIVE_TEXTAREA_MUSTACHE,
+    ORIGINAL_LINT_HEADERS,
+    ORIGINAL_LINT_ATTRIBUTES,
+    ORIGINAL_UNSUPPORTED_ARIA,
+    ORIGINAL_DIRECT_INTERPOLATIONS,
+    ORIGINAL_TEXTAREA_MUSTACHE,
 ];
 
 // Unique, ascending, and below the fixture range.

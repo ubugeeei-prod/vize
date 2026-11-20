@@ -8,21 +8,21 @@ use crate::runtime::{Runtime, Vocabulary};
 use crate::write::{Emitted, LinkSink, Writer};
 use vize_l0::Span;
 use vize_l2::resolution::{Occurrence, Usage};
-use vize_l3::decision::vapor::{NativeSelectedSetupVaporAnalysis, VaporPart, VaporValueKind};
+use vize_l3::decision::vapor::{SelectedSetupVaporAnalysis, VaporPart, VaporValueKind};
 
 /// Keep original pure declarations inside actual Vapor setup in authored order.
 /// Only certified annotations are erased. This bounded placement preserves
 /// runtime semantics; it does not claim stock compiler const-hoisting bytes.
 /// There is no synthetic expose, public state object or separate render.
 /// ```compile_fail
-/// use vize_l3::decision::vapor::NativeTemplateVaporAnalysis;
+/// use vize_l3::decision::vapor::TemplateVaporAnalysis;
 /// use vize_l4::{targets::vapor::emit_selected_setup_component, write::NoLinks};
-/// fn substitute(analysis: &NativeTemplateVaporAnalysis<'_, '_>) {
+/// fn substitute(analysis: &TemplateVaporAnalysis<'_, '_>) {
 ///     let _ = emit_selected_setup_component::<NoLinks>(analysis, "3.6.0-rc.9");
 /// }
 /// ```
 pub fn emit_selected_setup_component<L: LinkSink>(
-    analysis: &NativeSelectedSetupVaporAnalysis<'_, '_, '_>,
+    analysis: &SelectedSetupVaporAnalysis<'_, '_, '_>,
     runtime_version: &str,
 ) -> Result<Emitted<L>, VaporError> {
     let selected = analysis.owner().selected();

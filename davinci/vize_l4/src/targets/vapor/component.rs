@@ -4,14 +4,14 @@ use crate::module::{ModuleParts, RenderFunctionName, ScriptPart, assemble};
 use crate::runtime::Runtime;
 use crate::write::{Emitted, LinkSink, Writer};
 use vize_l0::Span;
-use vize_l3::decision::vapor::NativeTemplateVaporAnalysis;
+use vize_l3::decision::vapor::TemplateVaporAnalysis;
 
 /// Emit a complete default-exported scriptless Vue Vapor component.
 /// The original selected owner supplies script/style presence; even a completed
 /// template with other SFC blocks cannot silently lose those semantics here.
 /// Vue source syntax and the audited VueVapor runtime are distinct policies.
 pub fn emit_component<L: LinkSink>(
-    analysis: &NativeTemplateVaporAnalysis<'_, '_>,
+    analysis: &TemplateVaporAnalysis<'_, '_>,
     runtime_version: &str,
 ) -> Result<Emitted<L>, VaporError> {
     let selected = analysis.owner().selected();

@@ -1,7 +1,7 @@
 //! SSR reads retain the normal original setup and its completed template File.
 
-use super::{NativeSsrBuildError, SsrFacts};
-use crate::decision::{DecisionTables, NativeAnalysis, build};
+use super::{SsrFacts, SsrTemplateBuildError};
+use crate::decision::{DecisionAnalysis, DecisionTables, build};
 use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::Artifact,
@@ -79,27 +79,27 @@ impl<'owner, 'arena> SsrSetupExpression<'owner, 'arena> {
 /// No neutral analysis, source, binding list or runtime policy can be paired.
 /// ```compile_fail
 /// use vize_l2::lang::js::{NativeSelectedSetup, NativeTemplateView};
-/// use vize_l3::decision::{NativeAnalysis, ssr::NativeSelectedSetupSsrAnalysis};
+/// use vize_l3::decision::{DecisionAnalysis, ssr::SelectedSetupSsrAnalysis};
 /// fn forge<'v,'o,'a>(setup: &'v NativeSelectedSetup<'o,'a>,
-///     template: NativeTemplateView<'o,'a>, analysis: NativeAnalysis<'o,'a>) {
-///     let _ = NativeSelectedSetupSsrAnalysis { setup, template, analysis };
+///     template: NativeTemplateView<'o,'a>, analysis: DecisionAnalysis<'o,'a>) {
+///     let _ = SelectedSetupSsrAnalysis { setup, template, analysis };
 /// }
 /// ```
 /// ```compile_fail
 /// use vize_l2::lang::js::NativeSelectedSetup;
-/// use vize_l3::decision::ssr::build_native_selected_setup_ssr_decisions;
+/// use vize_l3::decision::ssr::build_selected_setup_ssr_decisions;
 /// fn discard(setup: NativeSelectedSetup<'_, '_>) {
-///     let result = build_native_selected_setup_ssr_decisions(&setup).unwrap();
+///     let result = build_selected_setup_ssr_decisions(&setup).unwrap();
 ///     drop(setup);
 ///     let _ = result.setup();
 /// }
 /// ```
-pub struct NativeSelectedSetupSsrAnalysis<'view, 'owner, 'arena> {
+pub struct SelectedSetupSsrAnalysis<'view, 'owner, 'arena> {
     setup: &'view NativeSelectedSetup<'owner, 'arena>,
     template: NativeTemplateView<'owner, 'arena>,
-    analysis: NativeAnalysis<'owner, 'arena>,
+    analysis: DecisionAnalysis<'owner, 'arena>,
 }
-impl<'view, 'owner, 'arena> NativeSelectedSetupSsrAnalysis<'view, 'owner, 'arena> {
+impl<'view, 'owner, 'arena> SelectedSetupSsrAnalysis<'view, 'owner, 'arena> {
     #[must_use]
     pub fn setup(&self) -> &'view NativeSelectedSetup<'owner, 'arena> {
         self.setup
@@ -138,27 +138,27 @@ impl<'view, 'owner, 'arena> NativeSelectedSetupSsrAnalysis<'view, 'owner, 'arena
 
 /// Join original immutable reads in the existing sole canonical Enter stream.
 /// Scope roles retain their actual IDs, which share the current setup root.
-pub fn build_native_selected_setup_ssr_decisions<'view, 'owner, 'arena>(
+pub fn build_selected_setup_ssr_decisions<'view, 'owner, 'arena>(
     setup: &'view NativeSelectedSetup<'owner, 'arena>,
-) -> Result<NativeSelectedSetupSsrAnalysis<'view, 'owner, 'arena>, NativeSsrBuildError> {
+) -> Result<SelectedSetupSsrAnalysis<'view, 'owner, 'arena>, SsrTemplateBuildError> {
     let template = setup.owner().view().map_err(|_| {
-        NativeSsrBuildError::Decision(crate::decision::DecisionBuildError::IncompleteFile)
+        SsrTemplateBuildError::Decision(crate::decision::DecisionBuildError::IncompleteFile)
     })?;
     if template.owner().selected().has_styles() {
-        return Err(NativeSsrBuildError::StyledSource {
+        return Err(SsrTemplateBuildError::StyledSource {
             span: vize_l0::Span::new(0, setup.file().artifact().source().len() as u32),
         });
     }
-    let file = template.file().ok_or(NativeSsrBuildError::Decision(
+    let file = template.file().ok_or(SsrTemplateBuildError::Decision(
         crate::decision::DecisionBuildError::IncompleteFile,
     ))?;
     if !core::ptr::eq(file, setup.file()) {
-        return Err(NativeSsrBuildError::Decision(
+        return Err(SsrTemplateBuildError::Decision(
             crate::decision::DecisionBuildError::IncompleteFile,
         ));
     }
-    let analysis = build::build_with_ssr_setup(setup).map_err(NativeSsrBuildError::Decision)?;
-    Ok(NativeSelectedSetupSsrAnalysis {
+    let analysis = build::build_with_ssr_setup(setup).map_err(SsrTemplateBuildError::Decision)?;
+    Ok(SelectedSetupSsrAnalysis {
         setup,
         template,
         analysis,

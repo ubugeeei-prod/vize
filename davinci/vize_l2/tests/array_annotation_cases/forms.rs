@@ -1,6 +1,7 @@
 use super::{
     Allocator, FileIssueKind, Parser, PositionQueryError, SourceRoot, SourceType, cstr, lower,
 };
+use vize_l2::query::Model;
 
 #[test]
 fn self_contained_arrays_preserve_original_ts_and_tsx_profiles() {
@@ -86,7 +87,7 @@ fn named_recursive_and_nonflat_type_children_keep_whole_file_incomplete() {
             "{source}"
         );
         assert!(matches!(
-            file.binding_at_offset(source.rfind("value").unwrap() as u32),
+            Model::new(&file).binding_at_offset(source.rfind("value").unwrap() as u32),
             Err(PositionQueryError::IncompleteFile)
         ));
     }

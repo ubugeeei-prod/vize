@@ -13,6 +13,7 @@ const generators: readonly (readonly [name: string, generator: string])[] = [
   ["analysis-consumption-summary.md", "croquis-consumers.ts"],
   ["consumer-migration-summary.md", "consumer-migration-surfaces.ts"],
   ["sourcelocation-summary.md", "sourcelocation-inventory.ts"],
+  ["lint-substrate.md", "lint-substrate.ts"],
 ];
 const usage =
   "usage: node tools/support/compat/davinci/generated-ledgers.ts --write | --check [--out-dir <dir>]";

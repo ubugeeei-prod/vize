@@ -1,5 +1,5 @@
 use super::{BuildResult, JsxDecisionKind as Decision, JsxIssue, JsxIssueKind as Issue};
-use super::{NativeJsxAnalysis, RejectedJsxAnalysis};
+use super::{JsxAnalysis, RejectedJsxAnalysis};
 use alloc::{boxed::Box, vec::Vec};
 use vize_l2::file::{Namespace, ReferenceTarget};
 use vize_l2::lang::js::{JsxFile, JsxNode};
@@ -36,7 +36,7 @@ pub fn build_jsx_decisions(owner: JsxFile<'_>) -> BuildResult<'_> {
     if !issues.is_empty() {
         return Err(Box::new(RejectedJsxAnalysis { owner, issues }));
     }
-    Ok(NativeJsxAnalysis { owner, decisions })
+    Ok(JsxAnalysis { owner, decisions })
 }
 
 fn classify<'a>(node: JsxNode<'_, 'a>) -> Result<Decision<'a>, Issue> {

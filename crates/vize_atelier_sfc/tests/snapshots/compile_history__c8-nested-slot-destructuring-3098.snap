@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-nested-slot-destructuring-3098",
+    history: "70a8ea9a80d07ac9e72fec167a0938c4262ac3bd",
+    source: "<Comp v-slot=\"{ a: { b: { c: [d, { e }] } } }\">{{ d }}{{ e }}</Comp>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Comp = _resolveComponent(\"Comp\")\n  \n  return (_openBlock(), _createBlock(_component_Comp, null, {\n    default: _withCtx(({ a: { b: { c: [d, { e }] } } }) => [\n      _createTextVNode(_toDisplayString(d) + _toDisplayString(e), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

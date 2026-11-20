@@ -14,7 +14,7 @@ test("actual selected setup consumers require source-built whole-module runtime 
     "tests/tooling/native-selected-setup-sfc-dom-reference.test.ts",
     "tests/tooling/native-selected-setup-sfc-dom-capture-workflow.test.ts",
     "tests/tooling/support/native-selected-setup-sfc-dom-runtime.ts",
-    "davinci/vize_l3/src/decision/native/setup.rs",
+    "davinci/vize_l3/src/decision/template/setup.rs",
     "davinci/vize_l3/src/decision/dom/build.rs",
     "davinci/vize_l3/src/decision/dom/build/binding.rs",
     "davinci/vize_l3/src/decision/dom/dependencies.rs",

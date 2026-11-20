@@ -5,7 +5,7 @@ use vize_l2::{
     expr::ExprRef,
     op::{OnOp, OriginalForOp},
 };
-use vize_l3::decision::NativeAnalysis;
+use vize_l3::decision::DecisionAnalysis;
 
 use super::{DomError, DomErrorKind};
 use crate::expr::{AccessProvider, ResolvedExpressions};
@@ -47,7 +47,7 @@ pub(super) trait ExpressionWriter {
 // The previous bare-artifact contract remains distinct from the genuine file
 // entry. It never supplies runtime access to a file-owned analysis.
 pub(super) struct BareExpressions<'s, 'owner, 'arena, A: AccessProvider> {
-    pub analysis: &'s NativeAnalysis<'owner, 'arena>,
+    pub analysis: &'s DecisionAnalysis<'owner, 'arena>,
     pub expressions: ResolvedExpressions<'s, 'arena>,
     pub access: &'s A,
 }

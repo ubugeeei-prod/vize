@@ -18,7 +18,7 @@ fn key_heads_keep_static_empty_and_value_only_whole_for_shape_refusals() {
         let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
             panic!("one whole original For");
         };
-        let analysis = build_native_selected_setup_dom_decisions(view.setup()).unwrap();
+        let analysis = build_selected_setup_dom_decisions(view.setup()).unwrap();
         let dom = analysis.dom().unwrap();
         let [rejected] = dom.unsupported() else {
             panic!("one sticky original ForShape: {source}");
@@ -54,7 +54,7 @@ fn key_only_completion_does_not_admit_compound_mixed_grouped_nested_or_attribute
             alloc::format!("<script setup>let count=2</script><template>{template}</template>");
         let observation = lower_selected_setup_sfc_native(&arena, &source, options());
         let view = observation.admitted().unwrap();
-        let analysis = build_native_selected_setup_dom_decisions(view.setup()).unwrap();
+        let analysis = build_selected_setup_dom_decisions(view.setup()).unwrap();
         assert!(
             !analysis.dom().unwrap().unsupported().is_empty(),
             "{template}"

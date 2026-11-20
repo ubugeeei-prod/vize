@@ -12,7 +12,7 @@ use vize_l2::expr::ExprRef;
 use vize_l2::op::Op;
 use vize_l2::walk::NodeRef;
 use vize_l3::decision::dom::{DomFacts, DomRootKind, DomUnsupported};
-use vize_l3::decision::{DecisionTables, NativeAnalysis, policy::TargetPolicy};
+use vize_l3::decision::{DecisionAnalysis, DecisionTables, policy::TargetPolicy};
 
 use crate::expr::{AccessProvider, EmitError as ExpressionError, ResolvedExpressions};
 use crate::runtime::{Runtime, Vocabulary, vocabulary};
@@ -36,8 +36,7 @@ mod write;
 use expression::{BareExpressions, ExpressionWriter};
 pub use file::{emit_file, emit_template};
 pub use output::{
-    NativeTemplateDomOutput, NativeTemplateDomOutputError, NativeTemplateDomOutputFailure,
-    emit_template_output,
+    TemplateDomOutput, TemplateDomOutputError, TemplateDomOutputFailure, emit_template_output,
 };
 pub use vue::{emit_selected_setup_template, emit_selected_setup_template_with_mode, emit_vue};
 use write::{Helpers, helper, quoted};
@@ -85,7 +84,7 @@ pub enum DomErrorKind {
 /// retained ASTs. This target only consumes them. The module assembler imports
 /// helpers afterwards in the fragment's transform-compatible use order.
 pub fn emit<L: LinkSink>(
-    analysis: &NativeAnalysis<'_, '_>,
+    analysis: &DecisionAnalysis<'_, '_>,
     expressions: ResolvedExpressions<'_, '_>,
     access: &impl AccessProvider,
 ) -> Result<Writer<L>, DomError> {

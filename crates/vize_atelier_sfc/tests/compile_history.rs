@@ -16,14 +16,23 @@ use serde::Deserialize;
 use vize_atelier_core::options::CustomElementMatcher;
 use vize_atelier_core::{CodegenMode, CodegenOptions, CompilerError, TemplateSyntaxMode};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
-use vize_atelier_sfc::vite_plugin::scope_css_for_pipeline;
+use vize_atelier_sfc::vite_plugin::{
+    resolve_css_imports, rewrite_dynamic_template_imports, rewrite_import_meta_glob_base,
+    rewrite_static_asset_urls, scope_css_for_pipeline,
+};
 use vize_atelier_sfc::{
-    CssCompileOptions, CssCompileResult, ScriptCompileOptions, SfcCompileOptions, SfcCompileResult,
-    SfcError, SfcParseOptions, SfcScriptOutputMode, StyleCompileOptions, TemplateCompileOptions,
-    compile_css, compile_sfc_for_adapter, compile_sfc_with_template_syntax, parse_css_ast,
-    parse_sfc, print_css_ast,
+    CssCompileOptions, CssCompileResult, ScriptCompileOptions, SfcCompileExperimentalOptions,
+    SfcCompileOptions, SfcCompileResult, SfcError, SfcParseOptions, SfcScriptOutputMode,
+    StyleCompileOptions, TemplateCompileOptions, compile_css, compile_sfc_for_adapter,
+    compile_sfc_for_adapter_with_project, compile_sfc_with_template_syntax, parse_css_ast,
+    parse_sfc, print_css_ast, script::SfcTypeProject,
 };
 use vize_l0::{Allocator, String, config::VueVersion};
+
+mod compile_history {
+    pub(crate) mod project;
+}
+use compile_history::project::{relocate, write_project};
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -90,6 +99,13 @@ struct Options {
     scoped: Option<bool>,
     /// CSS: minify the output.
     minify: Option<bool>,
+    /// `vite` entry: `importMetaGlobBase`, `cssImports`, `staticAssetUrls`
+    /// or `dynamicTemplateImports`, with `/project/src/App.vue` as importer.
+    vite_helper: Option<String>,
+    /// Multi-file cases: no project `tsconfig.json`, so the fallback resolver
+    /// (`@/` src alias, `node_modules` package types) runs. Probes outside the
+    /// project are machine-specific and drop out of the oracle.
+    no_project_config: Option<bool>,
 }
 
 // The oracle prints every field the original cohort had; fields added for
@@ -126,7 +142,7 @@ impl core::fmt::Debug for Options {
             .field("template_syntax", &self.template_syntax)
             .field("custom_renderer", &self.custom_renderer)
             .field("vue_version", &self.vue_version);
-        let later: [(&str, &dyn core::fmt::Debug, bool); 6] = [
+        let later: [(&str, &dyn core::fmt::Debug, bool); 8] = [
             (
                 "script_output",
                 &self.script_output,
@@ -149,6 +165,12 @@ impl core::fmt::Debug for Options {
             ),
             ("scoped", &self.scoped, self.scoped.is_some()),
             ("minify", &self.minify, self.minify.is_some()),
+            ("vite_helper", &self.vite_helper, self.vite_helper.is_some()),
+            (
+                "no_project_config",
+                &self.no_project_config,
+                self.no_project_config.is_some(),
+            ),
         ];
         for (name, value, set) in later {
             if set {
@@ -288,6 +310,29 @@ fn compile_whole_sfc(case: &Case, project: Option<&Path>) -> Observation {
         "separate" => SfcScriptOutputMode::SeparateTemplate,
         mode => panic!("unknown fixture script output: {mode}"),
     };
+    if case.options.no_project_config.unwrap_or(false) {
+        let root = project.expect("no-config cases require a project");
+        let no_project = SfcTypeProject::without_config(root).expect("empty project authority");
+        let custom_elements = CustomElementMatcher::from_patterns(
+            case.options
+                .custom_elements
+                .iter()
+                .flatten()
+                .cloned()
+                .collect(),
+        );
+        return Observation::Sfc(compile_sfc_for_adapter_with_project(
+            &descriptor,
+            options,
+            template_syntax(case),
+            custom_elements,
+            CodegenOptions::default(),
+            script_output,
+            SfcCompileExperimentalOptions::default(),
+            false,
+            Some(&no_project),
+        ));
+    }
     if script_output == SfcScriptOutputMode::InlineTemplate
         && case.options.custom_elements.is_none()
     {
@@ -370,6 +415,21 @@ fn compile_standalone_css(case: &Case) -> Observation {
     }
 }
 
+/// The Vite plugin's module and CSS rewriting helpers.
+fn vite_helper(case: &Case) -> std::string::String {
+    let importer = "/project/src/App.vue";
+    let source = case.source.as_str();
+    match case.options.vite_helper.as_deref() {
+        Some("importMetaGlobBase") => {
+            rewrite_import_meta_glob_base(source, importer, "/project").into()
+        }
+        Some("cssImports") => resolve_css_imports(source, importer, &[], false, None).into(),
+        Some("staticAssetUrls") => rewrite_static_asset_urls(source, &[]).into(),
+        Some("dynamicTemplateImports") => rewrite_dynamic_template_imports(source, &[]).into(),
+        helper => panic!("unknown fixture Vite helper: {helper:?}"),
+    }
+}
+
 fn observe(case: &Case, project: Option<&Path>) -> Observation {
     match case.entry.as_str() {
         "sfc" => compile_whole_sfc(case, project),
@@ -380,46 +440,9 @@ fn observe(case: &Case, project: Option<&Path>) -> Observation {
                 .as_str()
                 .into(),
         ),
+        "vite" => Observation::PipelineCss(vite_helper(case).as_str().into()),
         entry => panic!("unknown fixture entry: {entry}"),
     }
-}
-
-/// Write the case's project files and its own source into a fresh directory.
-/// A project without its own `tsconfig.json` gets an empty one, so config
-/// discovery stops at the project root instead of probing the machine's
-/// temporary-directory ancestors.
-fn write_project(case: &Case) -> tempfile::TempDir {
-    let project = tempfile::tempdir().expect("project directory");
-    let tsconfig: (String, String) = ("tsconfig.json".into(), "{}\n".into());
-    let default_config =
-        (!case.files.contains_key("tsconfig.json")).then_some((&tsconfig.0, &tsconfig.1));
-    let files = case
-        .files
-        .iter()
-        .chain(default_config)
-        .chain([(&case.filename, &case.source)]);
-    for (relative, text) in files {
-        let path = project.path().join(relative.as_str());
-        if let Some(parent) = path.parent() {
-            std::fs::create_dir_all(parent).expect("project directory tree");
-        }
-        std::fs::write(&path, text.as_bytes()).expect("project file");
-    }
-    project
-}
-
-/// Replace the temporary project root, in both its given and canonical
-/// spellings, with `$PROJECT`.
-fn relocate(bytes: std::string::String, root: Option<&Path>) -> std::string::String {
-    let Some(root) = root else {
-        return bytes;
-    };
-    let canonical = root.canonicalize().expect("canonical project root");
-    let mut bytes = bytes;
-    for spelling in [canonical.as_path(), root] {
-        bytes = bytes.replace(spelling.to_string_lossy().as_ref(), "$PROJECT");
-    }
-    bytes
 }
 
 #[test]
@@ -429,7 +452,7 @@ fn full_current_compile_results() {
             .expect("strict fixture schema");
     assert_eq!(
         cases.len(),
-        1501,
+        1738,
         "every reviewed case must remain registered"
     );
     // Every case runs before the error counts are judged, so one run reports
@@ -440,7 +463,7 @@ fn full_current_compile_results() {
         // Snapshot all public fields via Debug; the only rewrite is the
         // temporary project root of a multi-file case.
         let project = (!case.files.is_empty()).then(|| write_project(&case));
-        let root = project.as_ref().map(tempfile::TempDir::path);
+        let root = project.as_ref().map(|project| project.path());
         let first = observe(&case, root);
         let first_bytes = relocate(format!("{case:#?}\n{first:#?}"), root);
         let repeat = observe(&case, root);

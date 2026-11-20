@@ -7,7 +7,7 @@
 
 use vize_l0::Span;
 use vize_l2::lang::js::JsxNode;
-use vize_l3::jsx::{JsxDecisionKind, NativeJsxAnalysis};
+use vize_l3::jsx::{JsxAnalysis, JsxDecisionKind};
 
 use crate::write::{Emitted, LinkSink, Writer};
 
@@ -51,9 +51,7 @@ impl JsxEmitError {
 /// Emit one complete JS module, with the same bytes for either link sink.
 ///
 /// A TSX owner is retained but refused; copying type syntax is not TS erasure.
-pub fn emit_js_module<L: LinkSink>(
-    analysis: &NativeJsxAnalysis<'_>,
-) -> Result<Emitted<L>, JsxEmitError> {
+pub fn emit_js_module<L: LinkSink>(analysis: &JsxAnalysis<'_>) -> Result<Emitted<L>, JsxEmitError> {
     admission::check(analysis)?;
     let helper = helpers::selected(analysis)?;
     let source = analysis.owner().file().artifact().source();
@@ -102,7 +100,7 @@ fn invalid(node: JsxNode<'_, '_>) -> JsxEmitError {
 }
 
 fn kind<'a>(
-    analysis: &NativeJsxAnalysis<'a>,
+    analysis: &JsxAnalysis<'a>,
     node: JsxNode<'_, 'a>,
 ) -> Result<JsxDecisionKind<'a>, JsxEmitError> {
     analysis

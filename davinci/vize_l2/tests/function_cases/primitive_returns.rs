@@ -8,6 +8,7 @@ use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot, cstr};
 use vize_l2::file::{DeclarationKind, Namespace, ReferenceTarget};
 use vize_l2::lang::js::JsxFileProducer;
+use vize_l2::query::Model;
 
 #[test]
 fn all_three_original_primitive_return_refusals_now_keep_complete_neutral_facts() {
@@ -196,7 +197,7 @@ fn genuine_tsx_owner_retains_each_original_keyword_return_and_fragment_on_move()
         assert!(core::ptr::eq(file.artifact().source(), source.as_str()));
         let at = source.find("return value").unwrap() as u32 + 7;
         for _ in 0..2 {
-            let queried = file.binding_at_offset(at).unwrap().unwrap();
+            let queried = Model::new(&file).binding_at_offset(at).unwrap().unwrap();
             assert_eq!(queried.id(), parameter.id());
             assert!(core::ptr::eq(queried.file(), file));
         }

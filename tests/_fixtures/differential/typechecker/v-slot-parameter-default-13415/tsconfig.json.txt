@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "preserve",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": [],
+    "lib": ["ES2023", "DOM"]
+  },
+  "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
+  "include": ["*.vue", "*.ts"]
+}

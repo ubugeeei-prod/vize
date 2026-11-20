@@ -228,9 +228,9 @@ export function readsProse(path, sources) {
 // a widely shared helper says nothing about what any one test exercises; the
 // same reference in a test or a narrow helper still selects it.
 export const SHARED_HELPER_IMPORTERS = 10;
-// These source-built campaigns have their own path-scoped PR workflows. Keep
-// their selector audits available without duplicating the campaign in the
-// general affected-tooling critical path.
+// These source-built campaigns run in nightly Full qualification (merge tier)
+// and in their own dispatchable workflows (#6830), not on the PR critical path.
+// Their selector audits stay available through `includeDedicated`.
 export const dedicatedPrToolingTests = [
   "tests/tooling/content-mapper-instance-globals-10617.test.ts",
 ];
@@ -253,6 +253,26 @@ const nativeBuildExemptTests = new Set([
   "tests/tooling/vscode-typescript-vue-plugin-types.test.ts",
 ]);
 const topLevelOnly = (reference) => !reference.replace(/\/[*/]*$/, "").includes("/");
+const globReference = (reference) => /[*?{}[\]]/u.test(reference);
+const namesFile = (reference) => /\.[A-Za-z0-9]+$/u.test(reference.split("/").at(-1) ?? "");
+// Third-party sources reached through a relative import (a vendored compiler,
+// a package entry) never encode which repository paths a test reads.
+const thirdPartySource = (member) => member.split("/").includes("node_modules");
+// Task configuration modules are data: their globs and directories describe
+// task inputs and commands, not files their importers read. Exact file names
+// in them still select.
+const configurationData = (member) => member.startsWith("tools/config/");
+
+/** Repository path references that can show what a closure member reads (#6830). */
+export function memberReferences(member, source, importers) {
+  if (thirdPartySource(member)) return [];
+  const found = proseReferences(source);
+  if (configurationData(member))
+    return found.filter((reference) => !globReference(reference) && namesFile(reference));
+  return importers > SHARED_HELPER_IMPORTERS
+    ? found.filter((reference) => !topLevelOnly(reference) && !globReference(reference))
+    : found;
+}
 
 export function planToolingTests(
   paths,
@@ -277,13 +297,8 @@ export function planToolingTests(
   const referenceCache = new Map();
   const references = (member) => {
     if (!referenceCache.has(member)) {
-      const found = proseReferences(readFileSync(join(cwd, member), "utf8"));
-      referenceCache.set(
-        member,
-        (importers.get(member) ?? 0) > SHARED_HELPER_IMPORTERS
-          ? found.filter((reference) => !topLevelOnly(reference))
-          : found,
-      );
+      const source = thirdPartySource(member) ? "" : readFileSync(join(cwd, member), "utf8");
+      referenceCache.set(member, memberReferences(member, source, importers.get(member) ?? 0));
     }
     return referenceCache.get(member);
   };
@@ -405,7 +420,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     );
   }
   const shards = toolingShards(plan).map(({ testMs }) => Math.round(testMs / 1000));
-  const message = `Tooling tests: ${plan.tests.length}/${plan.totalTests}; ${plan.deferredTests} deferred to T1; ${plan.dedicatedTests} delegated to path-scoped PR workflows; ${plan.reason}; ${shards.length} shard(s), estimated test seconds ${shards.join("/")}.\n`;
+  const message = `Tooling tests: ${plan.tests.length}/${plan.totalTests}; ${plan.deferredTests} deferred to T1; ${plan.dedicatedTests} run nightly in Full qualification; ${plan.reason}; ${shards.length} shard(s), estimated test seconds ${shards.join("/")}.\n`;
   process.stdout.write(message);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, message);
 }

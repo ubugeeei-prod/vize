@@ -1,7 +1,7 @@
 use super::*;
 use serde_json::Value;
 use vize_l0::{String, cstr, id::NodeId};
-use vize_l3::decision::{dom::vue::VueReadKind, native::build_native_selected_setup_dom_decisions};
+use vize_l3::decision::{dom::vue::VueReadKind, template::build_selected_setup_dom_decisions};
 
 pub(crate) mod current_model_outside;
 mod nested;
@@ -123,7 +123,7 @@ fn seven_whole_original_setup_components_and_maps_are_captured() -> Result<(), S
             "{id}: complete actual direct binding order"
         );
         let analysis =
-            build_native_selected_setup_dom_decisions(setup).map_err(|e| cstr!("{id}: {e:?}"))?;
+            build_selected_setup_dom_decisions(setup).map_err(|e| cstr!("{id}: {e:?}"))?;
         require!(
             analysis.dom().ok_or("dom")?.unsupported().is_empty(),
             "{id}: eligible target"

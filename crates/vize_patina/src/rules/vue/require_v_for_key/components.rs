@@ -1,13 +1,13 @@
 //! Classify repeated native leaves and custom component key ownership.
 
 use crate::markup::{MarkupBindingKind, MarkupElement};
-use vize_l0::is_native_tag;
+use vize_l0::is_platform_tag;
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 pub(in crate::rules::vue) fn markup_element_is_custom_component(
     element: &MarkupElement<'_>,
 ) -> bool {
-    if element.is_component() || !is_native_tag(element.tag()) || element.has_directive("is") {
+    if element.is_component() || !is_platform_tag(element.tag()) || element.has_directive("is") {
         return true;
     }
     let mut dynamic = false;
@@ -21,7 +21,7 @@ pub(in crate::rules::vue) fn markup_element_is_custom_component(
 }
 
 pub(in crate::rules::vue) fn relief_element_is_custom_component(element: &ElementNode<'_>) -> bool {
-    !is_native_tag(element.tag)
+    !is_platform_tag(element.tag)
         || element.props.iter().any(|prop| match prop {
             PropNode::Attribute(attribute) => attribute.name == "is",
             PropNode::Directive(directive) => directive.name == "is"

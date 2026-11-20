@@ -16,10 +16,12 @@ pub(super) async fn computed_receivers(
     sender: &TypeResponse,
 ) -> Option<EnumMismatch> {
     let mut receivers = mapped_keys(checker, object_node, object).await;
-    let apparent = checker.apparent(object).await;
-    for key in computed_keys(checker, &apparent).await {
-        if !receivers.iter().any(|known| known.id == key.id) {
-            receivers.push(key);
+    if receivers.is_empty() {
+        let apparent = checker.apparent(object).await;
+        let keys = computed_keys(checker, &apparent).await;
+        if keys.iter().any(can_hold_enum) && has_type_literal_annotation(checker, object_node).await
+        {
+            receivers.extend(keys);
         }
     }
     if receivers.is_empty() {
@@ -32,6 +34,54 @@ pub(super) async fn computed_receivers(
         }
     }
     results(checker, &receivers).await
+}
+
+/// Whether a type can contain an enum that `results` can name. Primitive
+/// index keys stop here, before their access asks for declaration syntax.
+fn can_hold_enum(ty: &TypeResponse) -> bool {
+    ty.flags & (flags::ENUM_LIKE | flags::UNION | flags::OBJECT | flags::INSTANTIABLE) != 0
+}
+
+/// typescript-eslint reads computed keys only from an accessed symbol's own
+/// type-literal annotation. Inferred object-literal members, named interfaces
+/// and `satisfies` constraints are not receiver declarations for this rule.
+async fn has_type_literal_annotation(
+    checker: &mut Checker<'_>,
+    object_node: Option<&NodeHandle>,
+) -> bool {
+    let Some(object_node) = object_node else {
+        return false;
+    };
+    let Some(symbol) = checker
+        .symbols_at(vec![object_node.clone()])
+        .await
+        .into_iter()
+        .next()
+        .flatten()
+    else {
+        return false;
+    };
+    for declaration in &symbol.declarations {
+        let Some(path) = declaration.declaring_path() else {
+            continue;
+        };
+        let is_type_literal = {
+            let Some(encoded) = checker.source_file(path.as_str()).await else {
+                continue;
+            };
+            CheckerSyntax::read(encoded.as_bytes())
+                .ok()
+                .and_then(|syntax| {
+                    let annotation = declaration_annotation(&syntax, declaration)?;
+                    syntax.kind(annotation)
+                })
+                == Some(syntax_kind::TYPE_LITERAL)
+        };
+        if is_type_literal {
+            return true;
+        }
+    }
+    false
 }
 
 /// typescript-eslint `getMappedKeyConstraintTypes`: the constraint of a
@@ -106,14 +156,7 @@ async fn mapped_keys(
 /// The constraint node of the mapped type annotating `declaration` (a getter,
 /// parameter, property or variable), as the encoder orders their children.
 fn mapped_constraint(syntax: &CheckerSyntax<'_>, declaration: &NodeHandle) -> Option<NodeHandle> {
-    let index = syntax.index_of(declaration)?;
-    let type_bit = match syntax.kind(index)? {
-        syntax_kind::VARIABLE_DECLARATION => 2,
-        syntax_kind::PROPERTY_SIGNATURE | syntax_kind::PROPERTY_DECLARATION => 3,
-        syntax_kind::PARAMETER | syntax_kind::GET_ACCESSOR => 4,
-        _ => return None,
-    };
-    let annotation = syntax.property(index, type_bit)?;
+    let annotation = declaration_annotation(syntax, declaration)?;
     if syntax.kind(annotation)? != syntax_kind::MAPPED_TYPE {
         return None;
     }
@@ -122,6 +165,17 @@ fn mapped_constraint(syntax: &CheckerSyntax<'_>, declaration: &NodeHandle) -> Op
         return None;
     }
     syntax.handle(syntax.property(parameter, 2)?)
+}
+
+fn declaration_annotation(syntax: &CheckerSyntax<'_>, declaration: &NodeHandle) -> Option<usize> {
+    let index = syntax.index_of(declaration)?;
+    let type_bit = match syntax.kind(index)? {
+        syntax_kind::VARIABLE_DECLARATION => 2,
+        syntax_kind::PROPERTY_SIGNATURE | syntax_kind::PROPERTY_DECLARATION => 3,
+        syntax_kind::PARAMETER | syntax_kind::GET_ACCESSOR => 4,
+        _ => return None,
+    };
+    syntax.property(index, type_bit)
 }
 
 /// The key types an object's computed access is checked against: its index

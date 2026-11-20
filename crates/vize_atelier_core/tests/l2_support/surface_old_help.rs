@@ -116,11 +116,11 @@ pub fn classifier_ambiguous(el: &ElementNode<'_>) -> bool {
     if has_is {
         return true;
     }
-    let native = vize_l0::is_native_tag(el.tag);
+    let native = vize_l0::is_platform_tag(el.tag);
     let legacy_component = el.tag == "component"
         || el.tag.chars().next().is_some_and(char::is_uppercase)
         || el.tag.contains('-');
-    // The L2 classifier is `!is_native_tag`; disagreement is exactly a
+    // The L2 classifier is `!is_platform_tag`; disagreement is exactly a
     // non-native tag the legacy default options leave as an element.
     !native && !legacy_component && el.tag != "template" && el.tag != "slot"
 }

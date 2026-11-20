@@ -1,6 +1,6 @@
 use super::options;
 use crate::decision::vapor::{
-    VaporPart, VaporUnsupported, VaporValueKind, build_native_selected_setup_vapor_decisions,
+    VaporPart, VaporUnsupported, VaporValueKind, build_selected_setup_vapor_decisions,
 };
 use crate::decision::{build_decisions, policy::TargetPolicy};
 use vize_l0::Allocator;
@@ -34,7 +34,7 @@ fn original_setup_reads_borrow_the_same_complete_file_and_occurrences() {
         assert_eq!(observation.original().issues(), [], "{source}");
         let selected = observation.admitted().unwrap();
         let setup = selected.setup();
-        let analysis = build_native_selected_setup_vapor_decisions(setup).unwrap();
+        let analysis = build_selected_setup_vapor_decisions(setup).unwrap();
         assert!(core::ptr::eq(analysis.file(), setup.file()));
         assert!(core::ptr::eq(analysis.owner(), setup.owner()));
         assert_eq!(
@@ -90,7 +90,7 @@ fn original_decoded_string_hazards_refuse_only_the_vapor_target() {
             assert_eq!(observation.original().issues(), [], "{source}");
             let selected = observation.admitted().unwrap();
             assert!(selected.setup().file().is_complete());
-            let analysis = build_native_selected_setup_vapor_decisions(selected.setup()).unwrap();
+            let analysis = build_selected_setup_vapor_decisions(selected.setup()).unwrap();
             assert_eq!(
                 analysis.vapor().unwrap().unsupported()[0].reason,
                 VaporUnsupported::StringNormalization
@@ -109,7 +109,7 @@ fn compound_and_escaped_original_reads_have_precise_target_refusals() {
         let observation = lower_selected_setup_sfc_native(&arena, &source, options());
         assert_eq!(observation.original().issues(), [], "{source}");
         let selected = observation.admitted().unwrap();
-        let analysis = build_native_selected_setup_vapor_decisions(selected.setup()).unwrap();
+        let analysis = build_selected_setup_vapor_decisions(selected.setup()).unwrap();
         assert_eq!(
             analysis.vapor().unwrap().unsupported()[0].reason,
             VaporUnsupported::Expression
@@ -137,7 +137,7 @@ fn genuine_completed_control_handler_and_nested_inputs_keep_vapor_target_refusal
         assert_eq!(observation.original().issues(), [], "{source}");
         let selected = observation.admitted().unwrap();
         assert!(selected.setup().file().is_complete());
-        let analysis = build_native_selected_setup_vapor_decisions(selected.setup()).unwrap();
+        let analysis = build_selected_setup_vapor_decisions(selected.setup()).unwrap();
         assert_eq!(analysis.vapor().unwrap().unsupported()[0].reason, reason);
     }
 }
@@ -150,8 +150,8 @@ fn equal_foreign_root_ids_cannot_substitute_original_setup_facts() {
     let second = lower_selected_setup_sfc_native(&arena, source, options());
     let first_view = first.admitted().unwrap();
     let second_view = second.admitted().unwrap();
-    let first_analysis = build_native_selected_setup_vapor_decisions(first_view.setup()).unwrap();
-    let second_analysis = build_native_selected_setup_vapor_decisions(second_view.setup()).unwrap();
+    let first_analysis = build_selected_setup_vapor_decisions(first_view.setup()).unwrap();
+    let second_analysis = build_selected_setup_vapor_decisions(second_view.setup()).unwrap();
     let first_facts = first_analysis.vapor().unwrap();
     let second_facts = second_analysis.vapor().unwrap();
     assert_eq!(

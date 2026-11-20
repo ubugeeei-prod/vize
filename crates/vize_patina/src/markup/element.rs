@@ -198,7 +198,7 @@ impl<'a> MarkupElement<'a> {
                     }
                     // A template classifies the way the lint-mode parse does: a
                     // component is active Vue syntax or a capitalized tag. L2's
-                    // element/component split is DOM resolution (`is_native_tag`),
+                    // element/component split is DOM resolution (`is_platform_tag`),
                     // which the lint lane's rules and snapshots are not written
                     // against.
                     _ if surface.is_some() => {

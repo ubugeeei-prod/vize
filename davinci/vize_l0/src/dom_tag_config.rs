@@ -131,7 +131,7 @@ pub fn is_boolean_attr(attr: &str) -> bool {
 
 /// Check if tag is a native tag (HTML, SVG, or MathML)
 #[inline]
-pub fn is_native_tag(tag: &str) -> bool {
+pub fn is_platform_tag(tag: &str) -> bool {
     is_html_tag(tag) || is_svg_tag(tag) || is_math_ml_tag(tag)
 }
 

@@ -13,7 +13,7 @@ use oxc_ast::ast::{
     Statement,
 };
 use oxc_span::GetSpan;
-use vize_l0::{String, cstr, is_native_tag};
+use vize_l0::{String, cstr, is_platform_tag};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, SimpleExpressionNode};
 
 static META: RuleMeta = RuleMeta {
@@ -85,7 +85,7 @@ fn is_custom_component(element: &ElementNode<'_>) -> bool {
             directive.name == "is"
                 || (directive.name == "bind" && static_argument(directive) == Some("is"))
         }
-    }) || !(is_native_tag(element.tag) || element.tag == "slot")
+    }) || !(is_platform_tag(element.tag) || element.tag == "slot")
 }
 
 fn update_event<'a>(directive: &'a DirectiveNode<'a>) -> Option<&'a str> {

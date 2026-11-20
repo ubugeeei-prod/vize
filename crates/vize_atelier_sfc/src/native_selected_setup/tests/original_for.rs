@@ -65,7 +65,7 @@ fn ten_whole_original_for_components_and_maps_are_captured() -> Result<(), Strin
         };
         let head = file.for_head_for(original).ok_or("attached original")?;
         let analysis =
-            build_native_selected_setup_dom_decisions(setup).map_err(|e| cstr!("{id}: {e:?}"))?;
+            build_selected_setup_dom_decisions(setup).map_err(|e| cstr!("{id}: {e:?}"))?;
         let dom = analysis.dom().ok_or("dom")?;
         require!(
             dom.unsupported().is_empty(),
@@ -201,7 +201,7 @@ fn foreign_original_for_and_bindings_never_join_equal_source_or_numeric_ids() {
     let [Op::OriginalFor(bo)] = bv.setup().file().artifact().root().ops.as_slice() else {
         panic!("For")
     };
-    let analysis = build_native_selected_setup_dom_decisions(av.setup()).unwrap();
+    let analysis = build_selected_setup_dom_decisions(av.setup()).unwrap();
     let row = analysis
         .dom()
         .unwrap()
