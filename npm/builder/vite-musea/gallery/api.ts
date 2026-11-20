@@ -1,6 +1,6 @@
 import { withGlobalsQuery } from "./composables/useGlobals";
 export { globalsDirective as vMuseaGlobals, withGlobalsQuery } from "./composables/useGlobals";
-import type { ArtFileInfo } from "../src/types/index.js";
+import type { ArtFileInfo, MuseaGalleryMetadataConfig } from "../src/types/index.js";
 import {
   emptyDocs,
   emptyPalette,
@@ -88,6 +88,11 @@ async function fetchJson<T>(url: string): Promise<T> {
 export async function fetchArts(): Promise<ArtFileInfo[]> {
   if (isStaticGallery) return (await fetchStaticPayload()).arts;
   return fetchJson<ArtFileInfo[]>("/api/arts");
+}
+
+export async function fetchGalleryMetadata(): Promise<MuseaGalleryMetadataConfig> {
+  if (isStaticGallery) return (await fetchStaticPayload()).config ?? {};
+  return fetchJson<MuseaGalleryMetadataConfig>("/api/config");
 }
 
 export async function fetchArt(artPath: string): Promise<ArtFileInfo> {

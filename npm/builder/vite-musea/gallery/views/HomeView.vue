@@ -3,8 +3,11 @@ import { computed } from "vue";
 import { RouterLink } from "vue-router";
 import { useArts } from "../composables/useArts";
 import StatusBadge from "../components/StatusBadge.vue";
+import TagBadge from "../components/TagBadge.vue";
+import { useGalleryMetadata } from "../composables/useGalleryMetadata";
 
 const { arts, categories } = useArts();
+const { visibleTags } = useGalleryMetadata();
 
 const categoryList = computed(() => Array.from(categories.value.entries()));
 
@@ -57,9 +60,7 @@ const stats = computed(() => ({
               {{ art.variants.length }} variant{{ art.variants.length !== 1 ? "s" : "" }}
             </span>
             <div class="home-card-tags">
-              <span v-for="tag in art.metadata.tags.slice(0, 3)" :key="tag" class="home-card-tag">
-                #{{ tag }}
-              </span>
+              <TagBadge v-for="tag in visibleTags(art).slice(0, 3)" :key="tag" :tag />
             </div>
           </div>
         </RouterLink>

@@ -11,8 +11,17 @@ export interface ArtMetadata {
   order?: number;
   /** Statically serializable project metadata available to gallery integrations. */
   parameters?: Record<string, unknown>;
+  /** Status supplied by project tooling without rewriting the Art source. */
+  externalStatus?: MuseaExternalArtStatus;
   /** Additional DOM events to capture in the Actions panel, e.g. ["mousemove"] */
   actionEvents?: string[];
+}
+
+export type MuseaExternalArtStatusName = "success" | "warning" | "error" | "pending";
+
+export interface MuseaExternalArtStatus {
+  status: MuseaExternalArtStatusName;
+  label?: string;
 }
 
 /**

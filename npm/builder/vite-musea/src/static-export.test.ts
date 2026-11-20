@@ -85,6 +85,9 @@ void test("emitStaticGallery packages browser-facing static output", async () =>
       resolvedPreviewSetup: null,
       devSessionToken: "static-test",
       themeConfig: undefined,
+      galleryMetadata: {
+        tags: { "figma-changed": { variant: "warning", defaultFilter: "include" } },
+      },
       tokenPreviewConfig: {
         rules: [{ pathIncludes: "elevation.overlay", kind: "zIndex" }],
       },
@@ -94,6 +97,7 @@ void test("emitStaticGallery packages browser-facing static output", async () =>
     const previewId = staticPreviewId(publicPath, "Default");
     const staticPayload = JSON.parse(assetText(assets, "__musea__/api/static.json")) as {
       arts: Array<{ path: string; metadata: { title: string }; variants: Array<{ name: string }> }>;
+      config: unknown;
       previews: Record<string, Record<string, string>>;
       snapshotIdentityVersion: number;
       snapshotIdentities: Record<string, string>;
@@ -101,6 +105,9 @@ void test("emitStaticGallery packages browser-facing static output", async () =>
     };
     assert.equal(staticPayload.snapshotIdentityVersion, 1);
     assert.deepEqual(staticPayload.snapshotIdentities, { [publicPath]: publicPath });
+    assert.deepEqual(staticPayload.config, {
+      tags: { "figma-changed": { variant: "warning", defaultFilter: "include" } },
+    });
     const artsPayload = JSON.parse(assetText(assets, "__musea__/api/arts")) as Array<{
       path: string;
       metadata: { title: string };
@@ -265,7 +272,6 @@ void test("emitStaticGallery prefixes browser URLs with Vite base without nestin
         Default: `${publicBasePath}/preview/${previewId}.html`,
       },
     });
-
     const galleryHtml = assetText(assets, "__musea__/index.html");
     assert.match(galleryHtml, /\/app\/aim\/aim-front\/design-system\/__musea__\//u);
     assert.doesNotMatch(galleryHtml, /"\/__musea__\//u);
