@@ -11,7 +11,7 @@ import {
 const script = fileURLToPath(import.meta.url);
 const root = path.resolve(path.dirname(script), "../../..");
 const output = path.join(root, "docs/release/v1-supported-matrix.json");
-const rendered = renderV1SupportMatrix(root);
+const rendered = await renderV1SupportMatrix(root);
 const matrix = buildV1SupportMatrix(root);
 
 if (process.argv.includes("--check")) {
