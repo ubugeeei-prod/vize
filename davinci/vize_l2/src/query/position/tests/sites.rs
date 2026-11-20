@@ -1,4 +1,5 @@
 use super::{Allocator, Namespace, SourceType, file, offset};
+use crate::query::Model;
 
 #[test]
 fn declaration_and_reference_keep_their_original_file_and_resolved_identity() {
@@ -6,11 +7,11 @@ fn declaration_and_reference_keep_their_original_file_and_resolved_identity() {
     let source = "const first = later; const later = 1; first;";
     let owner = file(&arena, source, SourceType::mjs());
     assert!(owner.is_complete());
-    let declaration = owner
+    let declaration = Model::new(&owner)
         .binding_at_offset(offset(source, "later ="))
         .unwrap()
         .unwrap();
-    let reference = owner
+    let reference = Model::new(&owner)
         .reference_at_offset(offset(source, "later;"))
         .unwrap()
         .unwrap();
@@ -20,21 +21,21 @@ fn declaration_and_reference_keep_their_original_file_and_resolved_identity() {
     assert_eq!(declaration.id(), reference.binding().unwrap().id());
     assert_eq!(
         declaration.id(),
-        owner
+        Model::new(&owner)
             .binding_at_offset(offset(source, "later;"))
             .unwrap()
             .unwrap()
             .id()
     );
     assert!(
-        owner
+        Model::new(&owner)
             .reference_at_offset(offset(source, "later ="))
             .unwrap()
             .is_none()
     );
 
     let second = file(&arena, source, SourceType::mjs());
-    let other = second
+    let other = Model::new(&second)
         .binding_at_offset(offset(source, "later ="))
         .unwrap()
         .unwrap();
@@ -48,14 +49,14 @@ fn import_and_export_aliases_use_local_sites_without_inventing_remote_bindings()
     let source = "import {remote as local} from 'dep'; export {local as publicName}; export {remote as external} from 'other'; local;";
     let owner = file(&arena, source, SourceType::mjs());
     assert!(owner.is_complete());
-    let local = owner
+    let local = Model::new(&owner)
         .binding_at_offset(offset(source, "local}"))
         .unwrap()
         .unwrap();
     let declaration = local.declaration().unwrap();
     assert_eq!(declaration.name, "local");
     assert_eq!(declaration.imported_name.as_deref(), Some("remote"));
-    let exported_use = owner
+    let exported_use = Model::new(&owner)
         .reference_at_offset(offset(source, "local as public"))
         .unwrap()
         .unwrap();
@@ -68,8 +69,17 @@ fn import_and_export_aliases_use_local_sites_without_inventing_remote_bindings()
         "'dep'",
     ] {
         let at = offset(source, needle);
-        assert!(owner.binding_at_offset(at).unwrap().is_none(), "{needle}");
-        assert!(owner.reference_at_offset(at).unwrap().is_none(), "{needle}");
+        assert!(
+            Model::new(&owner).binding_at_offset(at).unwrap().is_none(),
+            "{needle}"
+        );
+        assert!(
+            Model::new(&owner)
+                .reference_at_offset(at)
+                .unwrap()
+                .is_none(),
+            "{needle}"
+        );
     }
 }
 
@@ -79,18 +89,18 @@ fn type_only_imports_and_export_uses_preserve_the_original_namespace() {
     let source = "import type {Thing as Local} from 'types'; export type {Local as Public};";
     let owner = file(&arena, source, SourceType::ts().with_module(true));
     assert!(owner.is_complete());
-    let local = owner
+    let local = Model::new(&owner)
         .binding_at_offset(offset(source, "Local}"))
         .unwrap()
         .unwrap();
     assert_eq!(local.declaration().unwrap().namespace, Namespace::Type);
-    let reference = owner
+    let reference = Model::new(&owner)
         .reference_at_offset(offset(source, "Local as Public"))
         .unwrap()
         .unwrap();
     assert_eq!(reference.reference().namespace, Namespace::Type);
     assert_eq!(reference.binding().unwrap().id(), local.id());
-    let scope = owner
+    let scope = Model::new(&owner)
         .scope_at_offset(offset(source, "Local as Public"))
         .unwrap()
         .unwrap();
@@ -100,7 +110,7 @@ fn type_only_imports_and_export_uses_preserve_the_original_namespace() {
         local.id()
     );
     assert!(
-        owner
+        Model::new(&owner)
             .binding_at_offset(offset(source, "Public"))
             .unwrap()
             .is_none()
@@ -115,16 +125,16 @@ fn function_name_queries_retain_the_parent_while_parameters_and_body_use_the_chi
     let owner = file(&arena, source, SourceType::mjs());
     assert!(owner.is_complete());
     let root = owner.units()[0].scope;
-    let function_name = owner
+    let function_name = Model::new(&owner)
         .scope_at_offset(offset(source, "fnName"))
         .unwrap()
         .unwrap();
     assert_eq!(function_name.scope().id, root);
-    let parameter = owner
+    let parameter = Model::new(&owner)
         .binding_at_offset(offset(source, "value)"))
         .unwrap()
         .unwrap();
-    let child = owner
+    let child = Model::new(&owner)
         .scope_at_offset(offset(source, "value)"))
         .unwrap()
         .unwrap();
@@ -136,7 +146,7 @@ fn function_name_queries_retain_the_parent_while_parameters_and_body_use_the_chi
         parameter.id()
     );
     assert_eq!(
-        owner
+        Model::new(&owner)
             .scope_at_offset(offset(source, "const local"))
             .unwrap()
             .unwrap()
@@ -145,7 +155,7 @@ fn function_name_queries_retain_the_parent_while_parameters_and_body_use_the_chi
         child.scope().id
     );
     assert_eq!(
-        owner
+        Model::new(&owner)
             .scope_at_offset(offset(source, "return local"))
             .unwrap()
             .unwrap()
@@ -155,12 +165,17 @@ fn function_name_queries_retain_the_parent_while_parameters_and_body_use_the_chi
     );
     let after = offset(source, "} value") + 1;
     assert_eq!(
-        owner.scope_at_offset(after).unwrap().unwrap().scope().id,
+        Model::new(&owner)
+            .scope_at_offset(after)
+            .unwrap()
+            .unwrap()
+            .scope()
+            .id,
         root
     );
     let final_use = source.rfind("value").unwrap() as u32;
     assert_eq!(
-        owner
+        Model::new(&owner)
             .scope_at_offset(final_use)
             .unwrap()
             .unwrap()
@@ -169,7 +184,60 @@ fn function_name_queries_retain_the_parent_while_parameters_and_body_use_the_chi
         root
     );
     assert_ne!(
-        owner.binding_at_offset(final_use).unwrap().unwrap().id(),
+        Model::new(&owner)
+            .binding_at_offset(final_use)
+            .unwrap()
+            .unwrap()
+            .id(),
         parameter.id()
     );
+}
+
+#[test]
+fn scope_parents_and_reference_visits_stay_inside_the_queried_file() {
+    let arena = Allocator::default();
+    let source = "const value = 1; function run() { return value + value; } value;";
+    let owner = file(&arena, source, SourceType::mjs());
+    let model = Model::new(&owner);
+    let body = model
+        .scope_at_offset(offset(source, "return"))
+        .unwrap()
+        .unwrap();
+    let unit = body.parent().unwrap();
+    assert!(core::ptr::eq(unit.file(), &owner));
+    assert_eq!(unit.scope().id, owner.units()[0].scope);
+    let mut top = unit;
+    let mut steps = 0;
+    while let Some(parent) = top.parent() {
+        assert_eq!(Some(parent.scope().id), top.scope().parent);
+        top = parent;
+        steps += 1;
+        assert!(steps <= owner.scopes().len());
+    }
+    assert!(top.scope().parent.is_none());
+
+    let binding = model
+        .binding_at_offset(offset(source, "value ="))
+        .unwrap()
+        .unwrap();
+    let mut expected = source
+        .match_indices("value")
+        .skip(1)
+        .map(|(at, _)| at as u32);
+    let mut visits = 0;
+    model.for_each_reference_to(binding, |row| {
+        assert!(core::ptr::eq(row.file(), &owner));
+        assert_eq!(row.binding().unwrap().id(), binding.id());
+        assert_eq!(Some(row.reference().span.start), expected.next());
+        visits += 1;
+    });
+    assert_eq!((visits, expected.next()), (3, None));
+
+    let second = file(&arena, source, SourceType::mjs());
+    let foreign = Model::new(&second)
+        .binding_at_offset(offset(source, "value ="))
+        .unwrap()
+        .unwrap();
+    assert_eq!(foreign.id(), binding.id());
+    model.for_each_reference_to(foreign, |_| panic!("a foreign binding matched"));
 }

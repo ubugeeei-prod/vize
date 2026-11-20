@@ -3,10 +3,8 @@
 use super::NativeSfc;
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
-    file::{
-        BindingRef, FileArtifact, FileResolution, PositionQueryError, Reference, ReferenceTarget,
-        ScopeId,
-    },
+    file::{BindingRef, FileArtifact, FileResolution, Reference, ReferenceTarget, ScopeId},
+    query::{Model, PositionQueryError},
     resolution::{Occurrence, Usage},
 };
 
@@ -100,8 +98,7 @@ impl<'o, 'a> NativeSfc<'o, 'a> {
         &self,
         offset: u32,
     ) -> Result<Option<NativeReferenceRef<'o, 'a>>, NativePositionQueryError> {
-        self.file()
-            .file()
+        Model::new(self.file().file())
             .reference_at_offset(offset)
             .map_err(NativePositionQueryError::File)?;
         let mut found = None;
@@ -126,9 +123,7 @@ impl<'o, 'a> NativeSfc<'o, 'a> {
         &self,
         offset: u32,
     ) -> Result<Option<BindingRef<'o, 'a>>, NativePositionQueryError> {
-        let script = self
-            .file()
-            .file()
+        let script = Model::new(self.file().file())
             .binding_at_offset(offset)
             .map_err(NativePositionQueryError::File)?;
         let Some(reference) = self.reference_at_offset(offset)? else {

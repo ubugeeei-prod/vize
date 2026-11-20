@@ -8,6 +8,7 @@ use crate::artifact::ComponentFactory;
 use crate::expr::JsExpr;
 use crate::file::ScriptUnit;
 use crate::lang::js::{CallEvent, DeclaredEvent, FileObserver, ProgramInput, StatementEvent};
+use crate::query::Model;
 use crate::resolution::ResolutionErrorKind;
 use alloc::boxed::Box;
 use oxc_parser::Parser;
@@ -75,13 +76,13 @@ fn canonical_text_and_empty_original_units_do_not_create_name_or_scope_sites() {
     builder.text(source, Span::new(0, 4)).unwrap();
     let owner = builder.finish().unwrap();
     assert!(owner.is_complete());
-    assert!(owner.scope_at_offset(0).unwrap().is_none());
-    assert!(owner.binding_at_offset(0).unwrap().is_none());
-    assert!(owner.reference_at_offset(0).unwrap().is_none());
+    assert!(Model::new(&owner).scope_at_offset(0).unwrap().is_none());
+    assert!(Model::new(&owner).binding_at_offset(0).unwrap().is_none());
+    assert!(Model::new(&owner).reference_at_offset(0).unwrap().is_none());
     let empty = file(&arena, "", SourceType::mjs());
     assert!(empty.is_complete());
     assert_eq!(empty.units()[0].span, Span::new(0, 0));
-    assert!(empty.scope_at_offset(0).unwrap().is_none());
+    assert!(Model::new(&empty).scope_at_offset(0).unwrap().is_none());
 }
 
 #[test]
@@ -117,9 +118,24 @@ fn completed_template_occurrences_do_not_become_script_position_sites() {
         owner.expression(node).unwrap().scope(),
         Some(owner.units()[0].scope)
     );
-    assert!(owner.reference_at_offset(span.start).unwrap().is_none());
-    assert!(owner.binding_at_offset(span.start).unwrap().is_none());
-    assert!(owner.scope_at_offset(span.start).unwrap().is_none());
+    assert!(
+        Model::new(&owner)
+            .reference_at_offset(span.start)
+            .unwrap()
+            .is_none()
+    );
+    assert!(
+        Model::new(&owner)
+            .binding_at_offset(span.start)
+            .unwrap()
+            .is_none()
+    );
+    assert!(
+        Model::new(&owner)
+            .scope_at_offset(span.start)
+            .unwrap()
+            .is_none()
+    );
 }
 
 struct Interrupt;

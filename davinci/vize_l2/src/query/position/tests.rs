@@ -1,3 +1,4 @@
+use crate::query::Model;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span};
@@ -57,15 +58,15 @@ fn refused(owner: &FileArtifact<'_>) {
         u32::MAX,
     ] {
         assert!(matches!(
-            owner.scope_at_offset(at),
+            Model::new(&owner).scope_at_offset(at),
             Err(Error::IncompleteFile)
         ));
         assert!(matches!(
-            owner.binding_at_offset(at),
+            Model::new(&owner).binding_at_offset(at),
             Err(Error::IncompleteFile)
         ));
         assert!(matches!(
-            owner.reference_at_offset(at),
+            Model::new(&owner).reference_at_offset(at),
             Err(Error::IncompleteFile)
         ));
     }

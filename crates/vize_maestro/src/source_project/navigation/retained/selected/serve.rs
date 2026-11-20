@@ -56,12 +56,12 @@ pub(super) fn run(
                     let result = query.symbol(position).map(|symbol| {
                         let mut original = query.original.clone();
                         original.handler_body = symbol.and_then(|symbol| match symbol {
-                            vize_l2::file::TemplateSymbolRef::HandlerLocal(local) => {
+                            vize_l2::query::TemplateSymbolRef::HandlerLocal(local) => {
                                 local.handler().resolution().map(|resolution| {
                                     core::ptr::from_ref(resolution.input().body()) as usize
                                 })
                             }
-                            vize_l2::file::TemplateSymbolRef::File(_) => None,
+                            vize_l2::query::TemplateSymbolRef::File(_) => None,
                         });
                         original
                     });

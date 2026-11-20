@@ -1,7 +1,7 @@
 //! Queries over sealed attached Handler/OriginalFor rows, never bare coordinates.
 
-use super::{BindingRef, FileArtifact, PositionQueryError};
-use crate::file::{FileForHead, FileHandler, ScopeId};
+use super::{Model, PositionQueryError};
+use crate::file::{BindingRef, FileArtifact, FileForHead, FileHandler, ScopeId};
 use crate::resolution::{HandlerBinding, HandlerDeclaration, HandlerScopeId, Usage};
 use vize_l0::Span;
 
@@ -19,7 +19,7 @@ pub enum TemplateQueryError {
 /// The implicit `$event` has a binding but no authored declaration site.
 ///
 /// ```compile_fail
-/// use vize_l2::file::{FileHandler, HandlerLocalRef};
+/// use vize_l2::{file::FileHandler, query::HandlerLocalRef};
 /// use vize_l2::resolution::HandlerBinding;
 /// fn forge<'f, 'a>(handler: FileHandler<'f, 'a>, binding: &'f HandlerBinding<'a>) {
 ///     let _ = HandlerLocalRef { handler, binding };
@@ -101,9 +101,9 @@ enum Origin<'f, 'a> {
 /// One original declaration/use, borrowed with its actual immutable File owner.
 ///
 /// ```compile_fail
-/// use vize_l2::file::FileArtifact;
+/// use vize_l2::{file::FileArtifact, query::Model};
 /// fn discard(file: FileArtifact<'_>, offset: u32) {
-///     let site = file.template_symbol_at_offset(offset).unwrap().unwrap();
+///     let site = Model::new(&file).template_symbol_at_offset(offset).unwrap().unwrap();
 ///     drop(file);
 ///     let _ = site.symbol();
 /// }
@@ -155,19 +155,19 @@ impl<'f, 'a> TemplateSiteRef<'f, 'a> {
     }
 }
 
-impl<'a> FileArtifact<'a> {
+impl<'f, 'a> Model<'f, 'a> {
     /// Query original attached event-body and For collection/alias sites only.
-    /// Script and generic expression queries remain their separate actual APIs.
+    /// Script and generic expression queries remain their separate families.
     /// UTF-8 names are half-open. EOF, opaque text and the implicit event
     /// declaration return None; any overlapping observations refuse.
     pub fn template_symbol_at_offset(
-        &self,
+        self,
         offset: u32,
-    ) -> Result<Option<TemplateSiteRef<'_, 'a>>, TemplateQueryError> {
-        self.check_template_offset(offset)?;
+    ) -> Result<Option<TemplateSiteRef<'f, 'a>>, TemplateQueryError> {
+        check_template_offset(self.file, offset)?;
         let mut found = None;
         let mut ambiguous = false;
-        sites::visit(self, |site| {
+        sites::visit(self.file, |site| {
             if site.span.start <= offset && offset < site.span.end {
                 ambiguous |= found.is_some();
                 found = Some(site);
@@ -184,34 +184,34 @@ impl<'a> FileArtifact<'a> {
     /// Visit uses in these attached template families without parsing/allocation.
     /// Order is unspecified. A late refusal invalidates all previously visited
     /// work; callers must discard it before publishing a response.
-    pub fn for_each_template_reference_to<'f>(
-        &'f self,
+    pub fn for_each_template_reference_to(
+        self,
         symbol: TemplateSymbolRef<'_, '_>,
         mut visit: impl FnMut(TemplateSiteRef<'f, 'a>),
     ) -> Result<(), TemplateQueryError> {
-        if !core::ptr::eq(self, symbol.file()) {
+        if !core::ptr::eq(self.file, symbol.file()) {
             return Err(TemplateQueryError::ForeignSymbol);
         }
-        self.check_template_offset(0)?;
-        sites::visit(self, |site| {
+        check_template_offset(self.file, 0)?;
+        sites::visit(self.file, |site| {
             if site.usage.is_some() && site.symbol.same_symbol(symbol) {
                 visit(site);
             }
         })
     }
+}
 
-    fn check_template_offset(&self, offset: u32) -> Result<(), TemplateQueryError> {
-        let error = if !self.is_complete() {
-            Some(PositionQueryError::IncompleteFile)
-        } else if offset as usize > self.artifact().source().len() {
-            Some(PositionQueryError::OutOfBounds)
-        } else if !self.artifact().source().is_char_boundary(offset as usize) {
-            Some(PositionQueryError::NotCharBoundary)
-        } else {
-            None
-        };
-        error.map_or(Ok(()), |error| Err(TemplateQueryError::Position(error)))
-    }
+fn check_template_offset(file: &FileArtifact<'_>, offset: u32) -> Result<(), TemplateQueryError> {
+    let error = if !file.is_complete() {
+        Some(PositionQueryError::IncompleteFile)
+    } else if offset as usize > file.artifact().source().len() {
+        Some(PositionQueryError::OutOfBounds)
+    } else if !file.artifact().source().is_char_boundary(offset as usize) {
+        Some(PositionQueryError::NotCharBoundary)
+    } else {
+        None
+    };
+    error.map_or(Ok(()), |error| Err(TemplateQueryError::Position(error)))
 }
 
 #[cfg(test)]

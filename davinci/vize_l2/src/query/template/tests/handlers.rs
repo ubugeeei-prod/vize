@@ -2,6 +2,7 @@ use super::{
     Allocator, PositionQueryError, TemplateQueryError, TemplateSiteScope, TemplateSymbolRef, at,
     file, native, site, uses,
 };
+use crate::query::Model;
 
 #[test]
 fn original_handler_locals_keep_shadowing_and_actual_declaration_site_scopes() {
@@ -57,7 +58,8 @@ fn original_handler_entity_spelling_half_open_utf8_and_utf16_are_preserved() {
     assert_eq!(reference.span().slice(source), "caf&#233;");
     for byte in reference.span().start..reference.span().end {
         assert!(
-            file.template_symbol_at_offset(byte)
+            Model::new(&file)
+                .template_symbol_at_offset(byte)
                 .unwrap()
                 .unwrap()
                 .symbol()
@@ -65,23 +67,26 @@ fn original_handler_entity_spelling_half_open_utf8_and_utf16_are_preserved() {
         );
     }
     assert!(
-        file.template_symbol_at_offset(reference.span().end)
+        Model::new(&file)
+            .template_symbol_at_offset(reference.span().end)
             .unwrap()
             .is_none()
     );
     assert!(matches!(
-        file.template_symbol_at_offset(declaration.span().start + 4),
+        Model::new(&file).template_symbol_at_offset(declaration.span().start + 4),
         Err(TemplateQueryError::Position(
             PositionQueryError::NotCharBoundary
         ))
     ));
     assert!(
-        file.template_symbol_at_offset(source.len() as u32)
+        Model::new(&file)
+            .template_symbol_at_offset(source.len() as u32)
             .unwrap()
             .is_none()
     );
     assert!(
-        file.template_symbol_at_offset(at(source, "button"))
+        Model::new(&file)
+            .template_symbol_at_offset(at(source, "button"))
             .unwrap()
             .is_none()
     );

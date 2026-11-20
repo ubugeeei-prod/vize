@@ -1,17 +1,13 @@
 //! Borrowed script-family queries over original file-absolute UTF-8 sites.
 //!
 //! These scans use the existing completed observations, without parsing,
-//! indexing or allocation. Template occurrence tables remain a separate API.
+//! indexing or allocation. Template occurrence tables are a separate family.
 
-use super::{
+use super::Model;
+use crate::file::{
     BindingRef, FileArtifact, Namespace, Reference, ReferenceTarget, Scope, ScopeId, ScriptUnit,
 };
 use vize_l0::Span;
-
-mod template;
-pub use template::{
-    HandlerLocalRef, TemplateQueryError, TemplateSiteRef, TemplateSiteScope, TemplateSymbolRef,
-};
 
 /// A position query never treats structural `finish()` as semantic completion.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -26,15 +22,15 @@ pub enum PositionQueryError {
 /// An original use row and its actual File owner stay borrowed together.
 ///
 /// ```compile_fail
-/// use vize_l2::file::{FileArtifact, ReferenceRef};
+/// use vize_l2::{file::FileArtifact, query::ReferenceRef};
 /// fn substitute<'f, 'a>(file: &'f FileArtifact<'a>, row: ReferenceRef<'f, 'a>) {
 ///     let _ = ReferenceRef { file, reference: row.reference() };
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l2::file::FileArtifact;
+/// use vize_l2::{file::FileArtifact, query::Model};
 /// fn discard(file: FileArtifact<'_>, offset: u32) {
-///     let row = file.reference_at_offset(offset).unwrap().unwrap();
+///     let row = Model::new(&file).reference_at_offset(offset).unwrap().unwrap();
 ///     drop(file);
 ///     let _ = row.binding();
 /// }
@@ -69,7 +65,7 @@ impl<'file, 'arena> ReferenceRef<'file, 'arena> {
 /// A recorded scope with lookup constrained to the same completed File.
 ///
 /// ```compile_fail
-/// use vize_l2::file::{FileArtifact, ScopeRef};
+/// use vize_l2::{file::FileArtifact, query::ScopeRef};
 /// fn substitute<'f, 'a>(file: &'f FileArtifact<'a>, row: ScopeRef<'f, 'a>) {
 ///     let _ = ScopeRef { file, scope: row.scope() };
 /// }
@@ -91,13 +87,27 @@ impl<'file, 'arena> ScopeRef<'file, 'arena> {
         self.scope
     }
 
+    /// The recorded parent scope in the same File; the File root has none.
+    #[must_use]
+    pub fn parent(self) -> Option<Self> {
+        let scope = self
+            .file
+            .facts
+            .scopes
+            .get(self.scope.parent?.index() as usize)?;
+        Some(Self {
+            file: self.file,
+            scope,
+        })
+    }
+
     #[must_use]
     pub fn lookup(self, name: &str, namespace: Namespace) -> Option<BindingRef<'file, 'arena>> {
         self.file.lookup(self.scope.id, name, namespace)
     }
 }
 
-impl<'arena> FileArtifact<'arena> {
+impl<'f, 'a> Model<'f, 'a> {
     /// Find the unique original script use covering a file-absolute byte.
     ///
     /// All queries require actual `is_complete()` and a UTF-8 boundary first.
@@ -106,13 +116,13 @@ impl<'arena> FileArtifact<'arena> {
     /// are not synthesized into references. Multiple unit/site observations
     /// return `AmbiguousSite` independently of their recording order.
     pub fn reference_at_offset(
-        &self,
+        self,
         offset: u32,
-    ) -> Result<Option<ReferenceRef<'_, 'arena>>, PositionQueryError> {
-        let Some(unit) = self.query_unit(offset)? else {
+    ) -> Result<Option<ReferenceRef<'f, 'a>>, PositionQueryError> {
+        let Some(unit) = query_unit(self.file, offset)? else {
             return Ok(None);
         };
-        self.query_reference(unit, offset)
+        query_reference(self.file, unit, offset)
     }
 
     /// Find an original declaration, or the actual target of an original use.
@@ -122,14 +132,14 @@ impl<'arena> FileArtifact<'arena> {
     /// rows; an exported public alias or remote import spelling has no invented
     /// local target. Overlapping distinct sites are refused, never prioritized.
     pub fn binding_at_offset(
-        &self,
+        self,
         offset: u32,
-    ) -> Result<Option<BindingRef<'_, 'arena>>, PositionQueryError> {
-        let Some(unit) = self.query_unit(offset)? else {
+    ) -> Result<Option<BindingRef<'f, 'a>>, PositionQueryError> {
+        let Some(unit) = query_unit(self.file, offset)? else {
             return Ok(None);
         };
-        let declaration = self.query_declaration(unit, offset)?;
-        let reference = self.query_reference(unit, offset)?;
+        let declaration = query_declaration(self.file, unit, offset)?;
+        let reference = query_reference(self.file, unit, offset)?;
         match (declaration, reference) {
             (Some(_), Some(_)) => Err(PositionQueryError::AmbiguousSite),
             (Some(binding), None) => Ok(Some(binding)),
@@ -148,21 +158,22 @@ impl<'arena> FileArtifact<'arena> {
     /// Incomparable overlapping scopes are ambiguous. This script-family query
     /// does not invent a scope for template expressions or unparsed SFC blocks.
     pub fn scope_at_offset(
-        &self,
+        self,
         offset: u32,
-    ) -> Result<Option<ScopeRef<'_, 'arena>>, PositionQueryError> {
-        let Some(unit) = self.query_unit(offset)? else {
+    ) -> Result<Option<ScopeRef<'f, 'a>>, PositionQueryError> {
+        let file = self.file;
+        let Some(unit) = query_unit(file, offset)? else {
             return Ok(None);
         };
-        let declaration = self.query_declaration(unit, offset)?;
-        let reference = self.query_reference(unit, offset)?;
+        let declaration = query_declaration(file, unit, offset)?;
+        let reference = query_reference(file, unit, offset)?;
         let site_scope = match (declaration, reference) {
             (Some(_), Some(_)) => return Err(PositionQueryError::AmbiguousSite),
             (Some(binding), None) => binding.declaration().map(|row| row.scope),
             (None, Some(reference)) => Some(reference.reference.scope),
             (None, None) => None,
         };
-        let Some(mut scope) = self
+        let Some(mut scope) = file
             .facts
             .scopes
             .get(site_scope.unwrap_or(unit.scope).index() as usize)
@@ -170,91 +181,112 @@ impl<'arena> FileArtifact<'arena> {
             return Ok(None);
         };
         if site_scope.is_none() {
-            for candidate in &self.facts.scopes {
+            for candidate in &file.facts.scopes {
                 if !contains(candidate.span, offset)
-                    || !self.scope_descends(candidate.id, unit.scope)
+                    || !scope_descends(file, candidate.id, unit.scope)
                 {
                     continue;
                 }
-                if self.scope_descends(candidate.id, scope.id) {
+                if scope_descends(file, candidate.id, scope.id) {
                     scope = candidate;
-                } else if !self.scope_descends(scope.id, candidate.id) {
+                } else if !scope_descends(file, scope.id, candidate.id) {
                     return Err(PositionQueryError::AmbiguousSite);
                 }
             }
         }
-        Ok(Some(ScopeRef { file: self, scope }))
+        Ok(Some(ScopeRef { file, scope }))
     }
 
-    fn query_unit(&self, offset: u32) -> Result<Option<&ScriptUnit>, PositionQueryError> {
-        if !self.is_complete() {
-            return Err(PositionQueryError::IncompleteFile);
+    /// Visit the original script uses whose actual target is `binding`.
+    ///
+    /// Table order; no allocation. A binding of another File is never
+    /// reinterpreted by its numeric id: it matches nothing.
+    pub fn for_each_reference_to(
+        self,
+        binding: BindingRef<'_, '_>,
+        mut visit: impl FnMut(ReferenceRef<'f, 'a>),
+    ) {
+        if !core::ptr::eq(self.file, binding.file()) {
+            return;
         }
-        let source = self.artifact().source();
-        if offset as usize > source.len() {
-            return Err(PositionQueryError::OutOfBounds);
-        }
-        if !source.is_char_boundary(offset as usize) {
-            return Err(PositionQueryError::NotCharBoundary);
-        }
-        unique(
-            self.units()
-                .iter()
-                .filter(|unit| contains(unit.span, offset)),
-        )
-    }
-
-    fn query_reference(
-        &self,
-        unit: &ScriptUnit,
-        offset: u32,
-    ) -> Result<Option<ReferenceRef<'_, 'arena>>, PositionQueryError> {
-        unique(
-            self.references()
-                .iter()
-                .filter(|row| row.unit == unit.id && contains(row.span, offset)),
-        )
-        .map(|row| {
-            row.map(|reference| ReferenceRef {
-                file: self,
-                reference,
-            })
-        })
-    }
-
-    fn query_declaration(
-        &self,
-        unit: &ScriptUnit,
-        offset: u32,
-    ) -> Result<Option<BindingRef<'_, 'arena>>, PositionQueryError> {
-        unique(
-            self.facts
-                .declarations
-                .iter()
-                .filter(|row| row.unit == unit.id && contains(row.span, offset)),
-        )
-        .map(|row| row.and_then(|declaration| self.binding(declaration.id)))
-    }
-
-    fn scope_descends(&self, mut scope: ScopeId, ancestor: ScopeId) -> bool {
-        // Parents are recorded before their children by the existing factory.
-        // A bounded read also prevents malformed ancestry from looping.
-        for _ in 0..self.facts.scopes.len() {
-            if scope == ancestor {
-                return true;
+        let target = ReferenceTarget::Resolved(binding.id());
+        for reference in self.file.references() {
+            if reference.target == target {
+                visit(ReferenceRef {
+                    file: self.file,
+                    reference,
+                });
             }
-            let Some(parent) = self
-                .facts
-                .scopes
-                .get(scope.index() as usize)
-                .and_then(|row| row.parent)
-            else {
-                return false;
-            };
-            scope = parent;
         }
-        false
     }
+}
+
+fn query_unit<'f>(
+    file: &'f FileArtifact<'_>,
+    offset: u32,
+) -> Result<Option<&'f ScriptUnit>, PositionQueryError> {
+    if !file.is_complete() {
+        return Err(PositionQueryError::IncompleteFile);
+    }
+    let source = file.artifact().source();
+    if offset as usize > source.len() {
+        return Err(PositionQueryError::OutOfBounds);
+    }
+    if !source.is_char_boundary(offset as usize) {
+        return Err(PositionQueryError::NotCharBoundary);
+    }
+    unique(
+        file.units()
+            .iter()
+            .filter(|unit| contains(unit.span, offset)),
+    )
+}
+
+fn query_reference<'f, 'a>(
+    file: &'f FileArtifact<'a>,
+    unit: &ScriptUnit,
+    offset: u32,
+) -> Result<Option<ReferenceRef<'f, 'a>>, PositionQueryError> {
+    unique(
+        file.references()
+            .iter()
+            .filter(|row| row.unit == unit.id && contains(row.span, offset)),
+    )
+    .map(|row| row.map(|reference| ReferenceRef { file, reference }))
+}
+
+fn query_declaration<'f, 'a>(
+    file: &'f FileArtifact<'a>,
+    unit: &ScriptUnit,
+    offset: u32,
+) -> Result<Option<BindingRef<'f, 'a>>, PositionQueryError> {
+    unique(
+        file.facts
+            .declarations
+            .iter()
+            .filter(|row| row.unit == unit.id && contains(row.span, offset)),
+    )
+    .map(|row| row.and_then(|declaration| file.binding(declaration.id)))
+}
+
+fn scope_descends(file: &FileArtifact<'_>, mut scope: ScopeId, ancestor: ScopeId) -> bool {
+    // Parents are recorded before their children by the existing factory.
+    // A bounded read also prevents malformed ancestry from looping.
+    for _ in 0..file.facts.scopes.len() {
+        if scope == ancestor {
+            return true;
+        }
+        let Some(parent) = file
+            .facts
+            .scopes
+            .get(scope.index() as usize)
+            .and_then(|row| row.parent)
+        else {
+            return false;
+        };
+        scope = parent;
+    }
+    false
 }
 
 fn contains(span: Span, offset: u32) -> bool {
