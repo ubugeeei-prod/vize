@@ -4,7 +4,7 @@ use super::name_document;
 use crate::native_doc::{TemplateRefusal, UnsupportedSyntax, document::Kind};
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::{
-    dialect::vue3::VueDirectives,
+    framework::vue::version::v3::VueDirectives,
     markup::{DirectiveName, DirectivePrefix, DirectiveSyntax},
 };
 

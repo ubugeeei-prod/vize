@@ -376,7 +376,7 @@ pub fn compile<D: ExprDialect + Default>(
     }
     let hook = vize_l1_to_l2::ForeignDialect::new::<D>(lang)
         .ok_or_else(|| Error::new("a language id is a lowercase word", script_block.open_tag))?;
-    let caps = vize_l1::dialect::LegacyCaps::VUE3;
+    let caps = vize_l1::framework::vue::LegacyCaps::VUE3;
     let lowered = vize_l1_to_l2::lower_source_block_with_foreign_expressions(
         &allocator, &tree, &errors, frame, caps, hook,
     );

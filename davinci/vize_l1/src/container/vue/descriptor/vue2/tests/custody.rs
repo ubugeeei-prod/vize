@@ -37,7 +37,10 @@ fn whole_unicode_source_keeps_original_slot_frame_and_filter_ast() {
     ));
     let component = selected.component();
     assert!(core::ptr::eq(component, owner.component().unwrap()));
-    assert_eq!(component.version(), crate::dialect::LegacyVueVersion::V2);
+    assert_eq!(
+        component.version(),
+        crate::framework::vue::LegacyVueVersion::V2
+    );
     assert!(core::ptr::eq(
         component.tree().source,
         selected.block().source()

@@ -2,7 +2,7 @@
 
 use super::{Context, Vue2HoleKind};
 use vize_l0::Span;
-use vize_l1::dialect::vue2::surface::RetainedTextChildren;
+use vize_l1::framework::vue::version::v2::surface::RetainedTextChildren;
 use vize_l1::markup::{SurfaceChild, entity::EntityContext};
 use vize_l2::{artifact::RegionBuilder, expr::ExprRef};
 

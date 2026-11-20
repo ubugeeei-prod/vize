@@ -7,7 +7,7 @@ extern crate alloc;
 use alloc::vec::Vec;
 use std::{io::Write, time::Instant};
 use vize_l0::Allocator;
-use vize_l1::dialect::vue2::surface::parse_component;
+use vize_l1::framework::vue::version::v2::surface::parse_component;
 use vize_l1_to_l2::native_vue2::lower_vue2_component;
 use vize_l2::{
     artifact::Artifact,

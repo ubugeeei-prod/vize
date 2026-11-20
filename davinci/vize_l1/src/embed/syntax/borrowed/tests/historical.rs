@@ -2,8 +2,9 @@ use alloc::vec::Vec;
 use oxc_span::GetSpan;
 use vize_l0::{Allocator, SourceRoot, Span};
 
-use crate::dialect::{LegacyVueVersion, vue1, vue2};
 use crate::embed::{Grammar, Lang, Shape};
+use crate::framework::vue::LegacyVueVersion;
+use crate::framework::vue::version::{v1, v2};
 use crate::markup::htmlish::render::check_fidelity;
 
 #[test]
@@ -16,8 +17,8 @@ fn vue2_original_child_chain_borrows_every_existing_operand_without_storage_or_s
         .unwrap()
         .block(&root[start..end], start as u32)
         .unwrap();
-    let owner = vue2::surface::parse_component_with_authored_block(&arena, block);
-    let foreign = vue2::surface::parse_component_block(&arena, block);
+    let owner = v2::surface::parse_component_with_authored_block(&arena, block);
+    let foreign = v2::surface::parse_component_block(&arena, block);
     assert_eq!(owner.version(), LegacyVueVersion::V2);
     assert_eq!(check_fidelity(owner.tree()), Ok(()));
     assert_eq!(owner.bindings().len(), 1);
@@ -27,7 +28,7 @@ fn vue2_original_child_chain_borrows_every_existing_operand_without_storage_or_s
         owner
             .text_for(foreign.children().next().unwrap())
             .unwrap_err(),
-        vue2::surface::TextRefusal::ForeignComponent
+        v2::surface::TextRefusal::ForeignComponent
     );
     let child = owner.children().next().unwrap();
     let original_surface = core::ptr::from_ref(child.surface());
@@ -119,8 +120,8 @@ fn vue1_original_escaped_child_borrows_same_root_comments_and_complete_maps_with
         .unwrap()
         .block(&root[start..end], start as u32)
         .unwrap();
-    let owner = vue1::surface::parse_component_with_authored_block(&arena, block);
-    let foreign = vue1::surface::parse_component_block(&arena, block);
+    let owner = v1::surface::parse_component_with_authored_block(&arena, block);
+    let foreign = v1::surface::parse_component_block(&arena, block);
     assert_eq!(owner.version(), LegacyVueVersion::V1);
     assert_eq!(check_fidelity(owner.tree()), Ok(()));
     assert_eq!(owner.bindings().len(), 1);
@@ -128,7 +129,7 @@ fn vue1_original_escaped_child_borrows_same_root_comments_and_complete_maps_with
         owner
             .text_for(foreign.children().nth(1).unwrap())
             .unwrap_err(),
-        vue1::surface::TextRefusal::ForeignComponent
+        v1::surface::TextRefusal::ForeignComponent
     );
     let text = owner.text_for(owner.children().nth(1).unwrap()).unwrap();
     let original = text.binding().syntax().unwrap();

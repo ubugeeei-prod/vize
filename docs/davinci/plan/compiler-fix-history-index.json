@@ -46,7 +46,7 @@
   },
   "dispositions": {
     "path": "crates/vize_atelier_sfc/tests/fixtures/compile-history/dispositions.json",
-    "sha256": "ea602abd633eedcdfc18bbb1475efd246cea320a6396e9b8c807acca77d170d9"
+    "sha256": "9f56a01a3a6f9d49efab29dc30ee6dabcc8640e77fe7a47cd0733e6f9eddf2fb"
   },
   "wholeFixReviewedSubjects": 0,
   "wholeFixReviewPendingSubjects": 626,

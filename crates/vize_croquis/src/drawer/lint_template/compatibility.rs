@@ -4,7 +4,7 @@ use memchr::memchr;
 use oxc_allocator::CloneIn;
 use oxc_ast_visit::VisitMut;
 use vize_l0::{Box, Span};
-use vize_l1::markup::directive::{DirectivePrefix, DirectiveSyntax, VueDirectives};
+use vize_l1::framework::vue::directive::{DirectivePrefix, DirectiveSyntax, VueDirectives};
 use vize_l1::markup::entity::{EntityContext, decode_one};
 use vize_l1::markup::{AttrValue, Attribute, Element, Token};
 use vize_l2::expr::ExprRef;
@@ -259,7 +259,7 @@ pub(super) fn element_type(
     {
         return ElementType::Template;
     }
-    if vize_l1::dialect::vue3::is_component_tag(tag, true) {
+    if vize_l1::framework::vue::version::v3::is_component_tag(tag, true) {
         ElementType::Component
     } else {
         ElementType::Element
