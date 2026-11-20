@@ -25,6 +25,8 @@ export const portugueseShared: Record<string, string> = {
     "Grafo de componentes analisado e fatos suportados descritos abaixo",
   "CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed)":
     "Blocos style em CSS, SCSS, Sass, Less e Stylus, como escritos (sem pré-processador)",
+  "CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed). Within one Stylus block, use either braced or indented syntax consistently; mixed syntax is read as braced Stylus.":
+    "Blocos style em CSS, SCSS, Sass, Less e Stylus, como escritos (sem pré-processador). Em um mesmo bloco Stylus, use de forma consistente a sintaxe com chaves ou a sintaxe indentada; a sintaxe mista é lida como Stylus com chaves.",
   "Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)":
     "Blocos style em CSS puro (blocos scss, sass, less e stylus são ignorados)",
   "HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.":

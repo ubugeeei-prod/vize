@@ -11,8 +11,7 @@ Recomendar propriedades lógicas de CSS para melhorar o suporte à internacional
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | Não | Nenhuma |
 
-Aplicável a: Blocos style em CSS, SCSS, Sass, Less e Stylus, como escritos (sem pré-processador).
-Em um mesmo bloco Stylus, use de forma consistente a sintaxe com chaves ou a sintaxe indentada; a sintaxe mista é lida como Stylus com chaves.
+Aplicável a: Blocos style em CSS, SCSS, Sass, Less e Stylus, como escritos (sem pré-processador). Em um mesmo bloco Stylus, use de forma consistente a sintaxe com chaves ou a sintaxe indentada; a sintaxe mista é lida como Stylus com chaves.
 
 ## Incorreto
 
@@ -59,4 +58,4 @@ Depois, execute `vp run lint`.
 
 - [Regras CSS](../css.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L12)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L15)

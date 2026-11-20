@@ -11,8 +11,7 @@ description: "書字方向に対応する CSS の論理プロパティを使い�
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | なし | なし |
 
-適用範囲：CSS・SCSS・Sass・Less・Stylus の style ブロック（書かれたまま。プリプロセッサは実行しません）。
-1 つの Stylus ブロックでは波括弧構文かインデント構文のどちらかに統一してください。混在する場合は波括弧構文として読み取ります。
+適用範囲：CSS・SCSS・Sass・Less・Stylus の style ブロック（書かれたまま。プリプロセッサは実行しません）。1 つの Stylus ブロックでは波括弧構文かインデント構文のどちらかに統一してください。混在する場合は波括弧構文として読み取ります。
 
 ## 悪い例
 
@@ -59,4 +58,4 @@ export default defineConfig({}).withVue({
 
 - [CSS ルール](../css.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L12)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L15)

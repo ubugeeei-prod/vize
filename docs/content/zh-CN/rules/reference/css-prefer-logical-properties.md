@@ -11,8 +11,7 @@ description: "建议使用 CSS 逻辑属性，以更好地支持国际化。"
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | 不支持 | 无 |
 
-适用范围：CSS、SCSS、Sass、Less 和 Stylus 的 style 块，按原样读取（不运行预处理器）。
-同一个 Stylus 块内请统一使用花括号语法或缩进语法；混合语法会按花括号 Stylus 读取。
+适用范围：CSS、SCSS、Sass、Less 和 Stylus 的 style 块，按原样读取（不运行预处理器）。同一个 Stylus 块内请统一使用花括号语法或缩进语法；混合语法会按花括号 Stylus 读取。
 
 ## 错误示例
 
@@ -59,4 +58,4 @@ export default defineConfig({}).withVue({
 
 - [CSS 规则](../css.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L12)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L15)

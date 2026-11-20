@@ -34,6 +34,8 @@ export const frenchShared = {
     "Graphe de composants analysé et faits pris en charge décrits ci-dessous",
   "CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed)":
     "Blocs style CSS, SCSS, Sass, Less et Stylus, tels qu’écrits (sans préprocesseur)",
+  "CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed). Within one Stylus block, use either braced or indented syntax consistently; mixed syntax is read as braced Stylus.":
+    "Blocs style CSS, SCSS, Sass, Less et Stylus, tels qu’écrits (sans préprocesseur). Dans un même bloc Stylus, utilisez soit la syntaxe à accolades, soit la syntaxe indentée ; une syntaxe mixte est lue comme du Stylus à accolades.",
   "Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)":
     "Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés)",
   "HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.":

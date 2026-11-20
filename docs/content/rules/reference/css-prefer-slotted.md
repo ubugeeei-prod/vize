@@ -11,8 +11,7 @@ Recommend ::v-slotted() for styling slot content.
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | No | None |
 
-Applies to: CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed).
-Within one Stylus block, use either braced or indented syntax consistently; mixed syntax is read as braced Stylus.
+Applies to: CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed). Within one Stylus block, use either braced or indented syntax consistently; mixed syntax is read as braced Stylus.
 
 ## Bad
 
@@ -55,4 +54,4 @@ Then run `vp run lint`.
 
 - [CSS rules](../css.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_slotted.rs#L34)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_slotted.rs#L35)

@@ -11,8 +11,7 @@ Recommander les propriétés logiques CSS pour mieux prendre en charge l’inter
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | Non | Aucune |
 
-Champ d’application : Blocs style CSS, SCSS, Sass, Less et Stylus, tels qu’écrits (sans préprocesseur).
-Dans un même bloc Stylus, utilisez soit la syntaxe à accolades, soit la syntaxe indentée ; une syntaxe mixte est lue comme du Stylus à accolades.
+Champ d’application : Blocs style CSS, SCSS, Sass, Less et Stylus, tels qu’écrits (sans préprocesseur). Dans un même bloc Stylus, utilisez soit la syntaxe à accolades, soit la syntaxe indentée ; une syntaxe mixte est lue comme du Stylus à accolades.
 
 ## Mauvais
 
@@ -59,4 +58,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles CSS](../css.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L12)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L15)

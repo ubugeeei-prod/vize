@@ -11,8 +11,7 @@ Exiger font-display dans les règles @font-face.
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | Non | Aucune |
 
-Champ d’application : Blocs style CSS, SCSS, Sass, Less et Stylus, tels qu’écrits (sans préprocesseur).
-Dans un même bloc Stylus, utilisez soit la syntaxe à accolades, soit la syntaxe indentée ; une syntaxe mixte est lue comme du Stylus à accolades.
+Champ d’application : Blocs style CSS, SCSS, Sass, Less et Stylus, tels qu’écrits (sans préprocesseur). Dans un même bloc Stylus, utilisez soit la syntaxe à accolades, soit la syntaxe indentée ; une syntaxe mixte est lue comme du Stylus à accolades.
 
 ## Mauvais
 
