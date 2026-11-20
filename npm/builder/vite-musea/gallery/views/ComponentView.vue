@@ -53,18 +53,23 @@ const variantSectionElements = new Map<string, Element>();
 
 const artPath = computed(() => route.params.path as string);
 const art = computed(() => getArt(artPath.value));
+
+function toSafeUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.href : null;
+  } catch {
+    return null;
+  }
+}
+
 const designLink = computed(() => {
   const design = art.value?.metadata.parameters?.design;
   if (!design || typeof design !== "object" || Array.isArray(design)) return null;
   const { type, url } = design as Record<string, unknown>;
   if (typeof url !== "string") return null;
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return null;
-    return { type: typeof type === "string" ? type : "design", url: parsed.href };
-  } catch {
-    return null;
-  }
+  const safeUrl = toSafeUrl(url);
+  return safeUrl ? { type: typeof type === "string" ? type : "design", url: safeUrl } : null;
 });
 
 // Get the currently selected variant
@@ -246,7 +251,7 @@ onUnmounted(() => {
         <a
           v-if="designLink"
           class="meta-tag"
-          :href="designLink.url"
+          :href="toSafeUrl(designLink.url) ?? undefined"
           target="_blank"
           rel="noopener noreferrer"
         >
