@@ -2,7 +2,8 @@
 /**
  * Release-profile measurement of a base/head source pair: level instruction
  * counts (stages, formatter, SFC parsing) and the shipped `vize` CLI and
- * `vize_vitrine` N-API library sizes, with an independent A/A twin per side.
+ * `vize_vitrine` N-API library sizes, with a discarded warm-up and an exact
+ * independent A/A twin per side.
  *
  * The instruction benches build through `[profile.ci-opt]`, overridden to the
  * release codegen (fat LTO, one codegen unit) with Cargo's profile environment
@@ -15,7 +16,15 @@
  */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -64,6 +73,20 @@ const count = (value: number | undefined) =>
 export function movedRows(a: Side, b: Side) {
   const ids = [...new Set([...Object.keys(a.rows), ...Object.keys(b.rows)])].sort();
   return ids.filter((id) => a.rows[id] !== b.rows[id]);
+}
+
+/** Reject a measurement whose independent rebuild changes any measured value. */
+export function assertTwin(label: string, primary: Side, twin: Side) {
+  assert.deepEqual(
+    movedRows(primary, twin),
+    [],
+    `${label} instruction counts are not reproducible`,
+  );
+  assert.deepEqual(twin.sizes, primary.sizes, `${label} binary sizes are not reproducible`);
+}
+
+export function validateSha(label: string, value: string | undefined) {
+  assert.match(value ?? "", /^[0-9a-f]{40}$/, `${label} must be an exact commit SHA`);
 }
 
 /** The ready-to-paste markdown report. Twins are optional. */
@@ -223,31 +246,63 @@ function report(out: string) {
   });
   writeFileSync(join(out, "summary.md"), markdown);
   process.stdout.write(markdown);
+  const baseTwin = load(out, "base-twin");
+  const headTwin = load(out, "head-twin");
+  if (baseTwin && headTwin) {
+    assertTwin("base", base, baseTwin);
+    assertTwin("head", head, headTwin);
+  }
+}
+
+function measurePair(base: string, head: string, out: string, scratch: string, twins: boolean) {
+  mkdirSync(out, { recursive: true });
+  writeFileSync(
+    join(out, "pair.json"),
+    JSON.stringify({ baseSha: gitHead(base), headSha: gitHead(head) }, null, 2) + "\n",
+  );
+  // The first fat-LTO build on a fresh runner can differ from every subsequent
+  // rebuild. Prime the toolchain and Cargo caches, then discard all its output.
+  measureSide(base, out, "warmup", scratch);
+  rmSync(join(out, "warmup"), { recursive: true, force: true });
+  measureSide(base, out, "base", scratch);
+  measureSide(head, out, "head", scratch);
+  if (twins) {
+    measureSide(base, out, "base-twin", scratch);
+    measureSide(head, out, "head-twin", scratch);
+  }
+  report(out);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   const reportOnly = option(args, "--report");
-  if (reportOnly) {
+  const publish = option(args, "--publish");
+  if (args.includes("--validate-inputs")) {
+    validateSha("BASE_SHA", process.env.BASE_SHA);
+    validateSha("HEAD_SHA", process.env.HEAD_SHA);
+  } else if (publish) {
+    const summary = join(resolve(publish), "summary.md");
+    const destination = process.env.GITHUB_STEP_SUMMARY;
+    if (existsSync(summary) && destination) appendFileSync(destination, readFileSync(summary));
+  } else if (reportOnly) {
     report(resolve(reportOnly));
   } else {
-    const base = resolve(option(args, "--base") ?? assert.fail("--base <dir> is required"));
-    const head = resolve(option(args, "--head") ?? assert.fail("--head <dir> is required"));
-    const out = resolve(option(args, "--out") ?? assert.fail("--out <dir> is required"));
-    const scratch = resolve(option(args, "--scratch") ?? join(out, ".."));
-    const twins = !args.includes("--no-twins");
-    mkdirSync(out, { recursive: true });
-    writeFileSync(
-      join(out, "pair.json"),
-      JSON.stringify({ baseSha: gitHead(base), headSha: gitHead(head) }, null, 2) + "\n",
+    const actions = args.includes("--actions");
+    const runnerTemp = process.env.RUNNER_TEMP;
+    if (actions) assert.ok(runnerTemp, "RUNNER_TEMP is required in Actions");
+    const base = resolve(
+      actions ? "base" : (option(args, "--base") ?? assert.fail("--base <dir> is required")),
     );
-    // Interleaved: base, head, base twin, head twin.
-    measureSide(base, out, "base", scratch);
-    measureSide(head, out, "head", scratch);
-    if (twins) {
-      measureSide(base, out, "base-twin", scratch);
-      measureSide(head, out, "head-twin", scratch);
-    }
-    report(out);
+    const head = resolve(
+      actions ? "head" : (option(args, "--head") ?? assert.fail("--head <dir> is required")),
+    );
+    const out = resolve(
+      actions
+        ? join(runnerTemp!, "release-measure/out")
+        : (option(args, "--out") ?? assert.fail("--out <dir> is required")),
+    );
+    const scratch = resolve(option(args, "--scratch") ?? join(out, ".."));
+    const twins = actions ? process.env.TWINS !== "false" : !args.includes("--no-twins");
+    measurePair(base, head, out, scratch, twins);
   }
 }

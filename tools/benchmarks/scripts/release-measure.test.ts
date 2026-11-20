@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { foldRuns, movedRows, renderReport, type Side } from "./release-measure.ts";
+import {
+  assertTwin,
+  foldRuns,
+  movedRows,
+  renderReport,
+  validateSha,
+  type Side,
+} from "./release-measure.ts";
 
 const side = (rows: Record<string, number>, cli = 100, napi = 50): Side => ({
   rows,
@@ -18,6 +25,19 @@ void test("foldRuns keeps one count per row and rejects disagreeing executions",
 
 void test("movedRows lists rows that differ or exist on one side only", () => {
   assert.deepEqual(movedRows(side({ a: 1, b: 2 }), side({ a: 1, b: 3, c: 4 })), ["b", "c"]);
+});
+
+void test("assertTwin requires reproducible counts and binary sizes", () => {
+  const primary = side({ a: 1, b: 2 });
+  assert.doesNotThrow(() => assertTwin("base", primary, side({ a: 1, b: 2 })));
+  assert.throws(() => assertTwin("base", primary, side({ a: 1, b: 3 })), /instruction counts/);
+  assert.throws(() => assertTwin("base", primary, side({ a: 1, b: 2 }, 101)), /binary sizes/);
+});
+
+void test("validateSha accepts only exact lowercase commit IDs", () => {
+  assert.doesNotThrow(() => validateSha("BASE_SHA", "a".repeat(40)));
+  assert.throws(() => validateSha("BASE_SHA", "a".repeat(39)), /exact commit SHA/);
+  assert.throws(() => validateSha("BASE_SHA", "A".repeat(40)), /exact commit SHA/);
 });
 
 void test("renderReport tables every moved row, the identical rest, A/A and sizes", () => {

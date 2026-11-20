@@ -3,9 +3,10 @@ name: Shipped release-profile measure
 # Dispatch-only measurement of the shipped release profile (fat LTO, one codegen
 # unit) for an exact base/head source pair: every level instruction row (stages,
 # formatter, SFC parsing) and the shipped `vize` CLI and `vize_vitrine` N-API
-# library bytes. Each side builds in its own fresh target, interleaved base,
-# head, base twin, head twin, so the report carries its own A/A control. The
-# benches build through [profile.ci-opt] with Cargo's profile environment
+# library bytes. A discarded base build primes the fresh runner, then each side
+# builds in its own fresh target as base, head, base twin, head twin. The twins
+# must exactly reproduce their primary side. The benches build through
+# [profile.ci-opt] with Cargo's profile environment
 # overrides, so no temporary branch edits Cargo.toml. Never on PRs or the queue.
 on:
   workflow_dispatch:
@@ -42,11 +43,10 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 360
     steps:
-      - name: Validate the source pair
-        run: |
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { path: driver, persist-credentials: false }
+      - name: Validate the source pair
+        run: node driver/tools/benchmarks/scripts/release-measure.ts --validate-inputs
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { path: base, ref: "${{ inputs.base_sha }}", persist-credentials: false }
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -54,27 +54,20 @@ jobs:
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: driver/package.json, run-install: false }
       - name: Install pinned Rust and Callgrind
-        run: |
-          rustup toolchain install 1.100.0 --profile minimal
-          sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
+        run: rustup toolchain install 1.100.0 --profile minimal
+      - name: Install Callgrind
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
       - uses: ./driver/.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - name: Test the report renderer
         run: node --test driver/tools/benchmarks/scripts/release-measure.test.ts
-      - name: Measure base, head, base twin, head twin
+      - name: Warm up, then measure base, head and twins
         env:
           TWINS: ${{ inputs.twins }}
-        run: |
-          set -euo pipefail
-          args=(--base base --head head --out "$RUNNER_TEMP/release-measure/out" --scratch "$RUNNER_TEMP/release-measure")
-          if [[ "$TWINS" != true ]]; then args+=(--no-twins); fi
-          node driver/tools/benchmarks/scripts/release-measure.ts "${args[@]}"
+        run: node driver/tools/benchmarks/scripts/release-measure.ts --actions
       - name: Publish the report
         if: always()
-        run: |
-          if [[ -f "$RUNNER_TEMP/release-measure/out/summary.md" ]]; then
-            cat "$RUNNER_TEMP/release-measure/out/summary.md" >> "$GITHUB_STEP_SUMMARY"
-          fi
+        run: node driver/tools/benchmarks/scripts/release-measure.ts --publish "$RUNNER_TEMP/release-measure/out"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
