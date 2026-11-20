@@ -20,6 +20,7 @@ mod emit_overload_window;
 mod emit_overloads;
 mod emit_props_block_scope;
 mod emit_props_twins;
+mod entry_package_exports;
 mod extra_keys_policy;
 mod generic_event_specialization;
 mod generic_hoisted_alias;
@@ -237,6 +238,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     listener_relations::retain_provenance(manifest);
     dependency_ownership::retain_provenance(manifest);
     emit_member_infer::retain_provenance(manifest);
+    entry_package_exports::retain_provenance(manifest);
     props_fallback_segment::retain_provenance(manifest);
 }
 

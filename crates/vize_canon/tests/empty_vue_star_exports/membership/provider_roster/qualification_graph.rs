@@ -16,6 +16,7 @@ use docs_metadata::{
     DocsMetadataQualificationGraph, MANIFEST as DOCS_METADATA_MANIFEST,
     update as docs_metadata_update, verify as verify_docs_metadata_update,
 };
+mod entry_packages;
 mod eslint_vue_scorecard;
 mod fixture_updates;
 use fixture_updates::{
@@ -322,6 +323,20 @@ fn verify_parcel_update(
 }
 
 pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checked<Option<Value>> {
+    if let Ok(previous_lock) = entry_packages::reconstruct_lock_predecessor(lock) {
+        let previous_update = authorize(previous, &previous_lock, package)?
+            .ok_or("entry packages require a qualification predecessor")?;
+        let workspace = fs::read(support::repository().join(WORKSPACE))
+            .map_err(|_| "complete workspace manifest")?;
+        return entry_packages::authorize_successor(
+            &previous_update,
+            &previous_lock,
+            lock,
+            package,
+            &workspace,
+        )
+        .map(Some);
+    }
     if final_graph(previous, lock, package).is_ok() {
         return Ok(None);
     }
@@ -337,6 +352,8 @@ pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checke
     let predecessor = lockfile_update();
     let current_workspace = fs::read(support::repository().join(WORKSPACE))
         .map_err(|_| "complete workspace manifest")?;
+    let current_workspace = entry_packages::reconstruct_workspace_predecessor(&current_workspace)
+        .unwrap_or(current_workspace);
     let picomatch_predecessor =
         picomatch_security::reconstruct_workspace_predecessor(&current_workspace)
             .unwrap_or_else(|_| current_workspace.clone());

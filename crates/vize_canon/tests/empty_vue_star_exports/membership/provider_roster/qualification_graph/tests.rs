@@ -12,6 +12,16 @@ fn current_binding(path: &str, body: &[u8]) -> Value {
         "sha256": support::hash(body),
     })
 }
+
+fn current_lock_before_entry_packages() -> Vec<u8> {
+    let current = fs::read(support::repository().join("pnpm-lock.yaml")).unwrap();
+    entry_packages::reconstruct_lock_predecessor(&current).unwrap_or(current)
+}
+
+fn current_workspace_before_entry_packages() -> Vec<u8> {
+    let current = fs::read(support::repository().join(WORKSPACE)).unwrap();
+    entry_packages::reconstruct_workspace_predecessor(&current).unwrap_or(current)
+}
 #[test]
 fn historical_tooling_successor_remains_an_exact_predecessor() {
     let predecessor = tooling_update();
@@ -377,8 +387,8 @@ mod js_tooling_refresh_successor {
     }
 
     fn inputs() -> Inputs {
-        let current_lock = fs::read(support::repository().join("pnpm-lock.yaml")).unwrap();
-        let current_workspace = fs::read(support::repository().join(WORKSPACE)).unwrap();
+        let current_lock = current_lock_before_entry_packages();
+        let current_workspace = current_workspace_before_entry_packages();
         let runtime_predecessor = runtime_security::reconstruct_lock_predecessor(
             &picomatch_security::reconstruct_lock_predecessor(&current_lock).unwrap(),
         )

@@ -15,8 +15,8 @@ struct Inputs {
 }
 
 fn inputs() -> Inputs {
-    let current_lock = fs::read(support::repository().join("pnpm-lock.yaml")).unwrap();
-    let current_workspace = fs::read(support::repository().join(WORKSPACE)).unwrap();
+    let current_lock = current_lock_before_entry_packages();
+    let current_workspace = current_workspace_before_entry_packages();
     Inputs {
         predecessor: js_tooling_refresh::update(),
         predecessor_bytes: fs::read(support::corpus().join(js_tooling_refresh::UPDATE)).unwrap(),
