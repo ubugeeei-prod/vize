@@ -168,7 +168,7 @@ impl EmitDocument {
     }
 
     /// Append unlinked text.
-    #[inline]
+    #[inline(always)]
     pub fn push_str(&mut self, text: &str) {
         self.text.push_str(text);
     }

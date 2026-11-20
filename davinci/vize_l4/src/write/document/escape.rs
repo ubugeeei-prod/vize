@@ -24,9 +24,8 @@ impl EmitDocument {
     /// are ASCII and tried in order at each byte; a link boundary at an
     /// escaped byte lands before its replacement.
     ///
-    /// Only the text loop is inlined into callers; rebasing links runs out of
-    /// line, so a document that does not record pays for the text alone.
-    #[inline(always)]
+    /// Rebasing links runs out of line, so a document that does not record
+    /// (or a source without links) runs only the text loop.
     pub fn push_escaped(&mut self, other: &EmitDocument, escapes: &[(&str, &str)]) {
         if self.recording && !other.links.is_empty() {
             self.push_escaped_linked(other, escapes);
