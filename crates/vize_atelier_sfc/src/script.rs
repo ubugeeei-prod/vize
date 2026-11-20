@@ -34,7 +34,7 @@ pub use define_emits::{
     DefineEmitsResult, extract_runtime_emits, gen_runtime_emits, process_define_emits,
 };
 pub(crate) use define_model_metadata::{
-    add_model_to_croquis, define_model_metadata, define_model_name, define_model_prop_option_spans,
+    define_model_metadata, define_model_name, define_model_prop_option_spans,
 };
 pub use define_props_destructure::{
     PropsDestructureBinding, PropsDestructuredBindings, gen_props_access_exp,
@@ -66,8 +66,6 @@ pub use define_props::{DEFINE_PROPS, WITH_DEFAULTS};
 pub use define_slots::DEFINE_SLOTS;
 
 use crate::types::BindingMetadata;
-use vize_croquis::croquis::Croquis as CroquisSummary;
-use vize_croquis::script_parser::ScriptParseResult;
 
 /// Analyze script setup and extract bindings
 pub fn analyze_script_setup(content: &str) -> BindingMetadata {
@@ -81,26 +79,6 @@ pub fn extract_macros(content: &str) -> ScriptSetupMacros {
     let mut ctx = ScriptCompileContext::new(content);
     ctx.extract_all_macros();
     ctx.macros
-}
-
-// =============================================================================
-// vize_croquis Integration
-// =============================================================================
-
-/// Fast script setup analysis using vize_croquis OXC parser.
-///
-/// This provides a high-performance analysis path that returns
-/// a `ScriptParseResult` directly from vize_croquis.
-///
-/// Use this for:
-/// - Quick analysis in linter
-/// - Playground/editor integrations
-/// - When full macro transformation is not needed
-///
-/// For full compilation with macro transformations, use `ScriptCompileContext`.
-#[inline]
-pub fn analyze_script_setup_fast(content: &str) -> ScriptParseResult {
-    vize_croquis::script_parser::parse_script_setup(content)
 }
 
 /// Parse script text with `source_type`. A `lang="tsx"` or `"jsx"` block may
@@ -123,15 +101,4 @@ pub(crate) fn parse_script_text<'a>(
         }
     }
     parsed
-}
-
-/// Convert a full ScriptCompileContext analysis to Croquis.
-///
-/// This uses the full atelier_sfc analysis (which includes more detailed
-/// type resolution) and converts to the shared format.
-#[inline]
-pub fn analyze_script_setup_full(content: &str) -> CroquisSummary {
-    let mut ctx = ScriptCompileContext::new(content);
-    ctx.analyze();
-    ctx.to_analysis_summary()
 }
