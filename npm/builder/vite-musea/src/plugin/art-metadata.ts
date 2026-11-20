@@ -26,6 +26,7 @@ function findRawTextEnd(source: string, start: number, tagName: string): number 
 
 function maskInactiveMarkup(source: string): string {
   const openingRawTextTag = /<(script|style)(?=[\s/>])/iuy;
+  const markupTag = /<\/?[A-Za-z][A-Za-z0-9:-]*(?=[\s/>])/uy;
   const parts: string[] = [];
   let cursor = 0;
   let searchFrom = 0;
@@ -44,6 +45,12 @@ function maskInactiveMarkup(source: string): string {
       if (match) {
         const openingTagEnd = findTagEnd(source, openingRawTextTag.lastIndex);
         end = findRawTextEnd(source, openingTagEnd, match[1]);
+      } else {
+        markupTag.lastIndex = start;
+        if (markupTag.exec(source)) {
+          searchFrom = findTagEnd(source, markupTag.lastIndex);
+          continue;
+        }
       }
     }
 
