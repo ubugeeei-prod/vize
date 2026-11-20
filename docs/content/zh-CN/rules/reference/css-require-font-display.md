@@ -12,6 +12,7 @@ description: "要求 @font-face 规则具有 font-display。"
 | `warning` | `opinionated`, `nuxt` | 不支持 | 无 |
 
 适用范围：CSS、SCSS、Sass、Less 和 Stylus 的 style 块，按原样读取（不运行预处理器）。
+同一个 Stylus 块内请统一使用花括号语法或缩进语法；混合语法会按花括号 Stylus 读取。
 
 ## 错误示例
 

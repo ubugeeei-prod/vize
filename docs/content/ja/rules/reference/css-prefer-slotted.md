@@ -12,6 +12,7 @@ slot や子コンポーネントに対する scoped CSS のセレクターを検
 | `warning` | `opinionated`, `nuxt` | なし | なし |
 
 適用範囲：CSS・SCSS・Sass・Less・Stylus の style ブロック（書かれたまま。プリプロセッサは実行しません）。
+1 つの Stylus ブロックでは波括弧構文かインデント構文のどちらかに統一してください。混在する場合は波括弧構文として読み取ります。
 
 ## 悪い例
 

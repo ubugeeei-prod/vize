@@ -12,6 +12,7 @@ Require font-display in @font-face rules.
 | `warning` | `opinionated`, `nuxt` | No | None |
 
 Applies to: CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed).
+Within one Stylus block, use either braced or indented syntax consistently; mixed syntax is read as braced Stylus.
 
 ## Bad
 

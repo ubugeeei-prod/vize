@@ -12,6 +12,7 @@ Exigir font-display nas regras @font-face.
 | `warning` | `opinionated`, `nuxt` | Não | Nenhuma |
 
 Aplicável a: Blocos style em CSS, SCSS, Sass, Less e Stylus, como escritos (sem pré-processador).
+Em um mesmo bloco Stylus, use de forma consistente a sintaxe com chaves ou a sintaxe indentada; a sintaxe mista é lida como Stylus com chaves.
 
 ## Incorreto
 
