@@ -1,6 +1,6 @@
 //! Art variant hovers keep imported signatures after the diagnostics pass
 //! moves the native session onto the canonical project (#13383).
-#![expect(
+#![allow(
     clippy::expect_used,
     reason = "native fixture failures require context"
 )]
@@ -108,7 +108,7 @@ fn art_variant_hover_resolves_imports_after_diagnostics() {
             let end = crate::ide::position_to_offset(SOURCE, range.end.line, range.end.character)
                 .expect("range end");
             assert_eq!(
-                &SOURCE[start..end],
+                SOURCE.get(start..end).expect("hover range within source"),
                 word,
                 "hover range must cover the authored token"
             );
