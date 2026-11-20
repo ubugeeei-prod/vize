@@ -1,31 +1,39 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const capture = `${process.env.RUNNER_TEMP}/component-input-ownership/generic-regression`;
+interface CargoMessage {
+  reason: string;
+  success?: boolean;
+  target?: { kind: string[]; name: string };
+  executable?: string;
+}
+
 const messages = readFileSync(`${capture}/build.jsonl`, "utf8")
   .split("\n")
   .filter(Boolean)
-  .map((line) => JSON.parse(line));
+  .map((line) => JSON.parse(line) as CargoMessage);
 assert.equal(messages.at(-1).reason, "build-finished");
 assert.equal(messages.at(-1).success, true);
 
 const targets = messages.filter(
-  (message) =>
+  (message): message is CargoMessage & { executable: string } =>
     message.reason === "compiler-artifact" &&
-    message.target.name === "integration" &&
+    message.target?.name === "integration" &&
     message.target.kind.join() === "test" &&
-    message.executable,
+    typeof message.executable === "string",
 );
 assert.equal(targets.length, 1);
 
 const binary = realpathSync(targets[0].executable);
-const hash = (file) => createHash("sha256").update(readFileSync(file)).digest("hex");
+const hash = (file: string) => createHash("sha256").update(readFileSync(file)).digest("hex");
 const binarySha256 = hash(binary);
-const run = (name, args) => {
+const run = (name: string, args: string[]): SpawnSyncReturns<string> => {
   const result = spawnSync(binary, args, { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
+  const error = result.error as (Error & { code?: string }) | undefined;
   writeFileSync(`${capture}/${name}.stdout.raw`, result.stdout ?? "");
   writeFileSync(`${capture}/${name}.stderr.raw`, result.stderr ?? "");
   writeFileSync(
@@ -40,12 +48,12 @@ const run = (name, args) => {
         pid: result.pid,
         status: result.status,
         signal: result.signal,
-        error: result.error
+        error: error
           ? {
-              name: result.error.name,
-              message: result.error.message,
-              stack: result.error.stack,
-              code: result.error.code,
+              name: error.name,
+              message: error.message,
+              stack: error.stack,
+              code: error.code,
             }
           : null,
       },
@@ -91,16 +99,16 @@ const schemas = new Map([
   ["vize.quoted-generic-syntax-host-observation", 48],
   ["vize.generic-body-error-host-observation", 64],
 ]);
-const packets = [];
-const walk = (directory) => {
+const packets: Array<{ file: string; schema: string; sha256: string }> = [];
+const walk = (directory: string): void => {
   for (const item of readdirSync(directory, { withFileTypes: true })) {
     const file = path.join(directory, item.name);
     if (item.isDirectory()) {
       walk(file);
     } else if (item.isFile() && file.endsWith(".json")) {
       const bytes = readFileSync(file);
-      const packet = JSON.parse(bytes);
-      if (schemas.has(packet?.schema)) {
+      const packet = JSON.parse(bytes.toString()) as { schema?: string };
+      if (packet.schema && schemas.has(packet.schema)) {
         packets.push({
           file,
           schema: packet.schema,
