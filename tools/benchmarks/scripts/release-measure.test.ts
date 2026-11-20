@@ -101,6 +101,23 @@ void test("renderReport works without twins", () => {
   assert.doesNotMatch(markdown, /A\/A:/);
 });
 
+void test("renderReport compares reproducible added and removed rows with twins", () => {
+  const base = side({ kept: 1, removed: 2 });
+  const head = side({ kept: 1, added: 3 });
+  const markdown = renderReport({
+    baseSha: "a".repeat(40),
+    headSha: "b".repeat(40),
+    base,
+    head,
+    baseTwin: side({ kept: 1, removed: 2 }),
+    headTwin: side({ kept: 1, added: 3 }),
+  });
+  assert.match(markdown, /\| `added` \| — \| 3 \| added\/removed \| — \| 3 \|/);
+  assert.match(markdown, /\| `removed` \| 2 \| — \| added\/removed \| 2 \| — \|/);
+  assert.match(markdown, /\*\*2 moved, 1 up, 1 identical\*\* of 3 rows\./);
+  assert.match(markdown, /twin pair repeats every Δ above/);
+});
+
 void test("measurePair never overwrites an existing pair", () => {
   const root = mkdtempSync(join(tmpdir(), "release-measure-"));
   const out = join(root, "out");
