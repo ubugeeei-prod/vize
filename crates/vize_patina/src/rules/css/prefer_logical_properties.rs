@@ -2,13 +2,14 @@
 //!
 //! Recommend using CSS logical properties for better internationalization.
 
+use lightningcss::stylesheet::StyleSheet as LightningStyleSheet;
 use vize_carton::String;
 use vize_l1::css::{StyleNode, StyleNodeKind, StyleSheet};
 
 use crate::diagnostic::Severity;
 
 use super::style_rule::{decoded_identifier, identifier_eq, in_style_scope};
-use super::{CssLintResult, CssRuleMeta, StyleRule};
+use super::{CssLintResult, CssRule, CssRuleMeta, StyleRule};
 
 mod lightning;
 
@@ -33,6 +34,24 @@ const PHYSICAL: [(&str, &str); 8] = [
 /// It reads every declaration's name in the L1 structure, in every style
 /// language, and reports a physical property at its name.
 pub struct PreferLogicalProperties;
+
+impl CssRule for PreferLogicalProperties {
+    fn meta(&self) -> &'static CssRuleMeta {
+        &META
+    }
+
+    fn check<'i>(
+        &self,
+        source: &'i str,
+        stylesheet: &LightningStyleSheet<'i>,
+        offset: usize,
+        result: &mut CssLintResult,
+    ) {
+        for rule in &stylesheet.rules.0 {
+            self.check_lightning_rule(rule, source, offset, result);
+        }
+    }
+}
 
 impl StyleRule for PreferLogicalProperties {
     fn meta(&self) -> &'static CssRuleMeta {

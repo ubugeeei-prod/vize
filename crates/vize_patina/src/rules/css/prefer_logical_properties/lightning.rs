@@ -6,32 +6,13 @@
 use lightningcss::declaration::DeclarationBlock;
 use lightningcss::properties::PropertyId;
 use lightningcss::rules::CssRule as LightningRule;
-use lightningcss::stylesheet::StyleSheet;
 
 use super::{META, PreferLogicalProperties};
 use crate::rules::css::declaration_positions::DeclarationPositions;
-use crate::rules::css::{CssLintResult, CssRule, CssRuleMeta};
-
-impl CssRule for PreferLogicalProperties {
-    fn meta(&self) -> &'static CssRuleMeta {
-        &META
-    }
-
-    fn check<'i>(
-        &self,
-        source: &'i str,
-        stylesheet: &StyleSheet<'i>,
-        offset: usize,
-        result: &mut CssLintResult,
-    ) {
-        for rule in &stylesheet.rules.0 {
-            self.check_lightning_rule(rule, source, offset, result);
-        }
-    }
-}
+use crate::rules::css::CssLintResult;
 
 impl PreferLogicalProperties {
-    fn check_lightning_rule(
+    pub(super) fn check_lightning_rule(
         &self,
         rule: &LightningRule,
         source: &str,
