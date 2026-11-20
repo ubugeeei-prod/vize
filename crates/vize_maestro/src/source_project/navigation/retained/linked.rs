@@ -10,7 +10,7 @@ use super::super::{
 };
 use std::sync::{Arc, mpsc::Receiver};
 use vize_l0::Allocator;
-use vize_l1::{container::Vue, markup::NativeTemplateComponent};
+use vize_l1::{container::Vue, markup::SelectedTemplateComponent};
 mod query;
 mod serve;
 
@@ -50,7 +50,7 @@ pub(in crate::source_project::navigation) fn run(
     };
     // Both original owners are obtained from this same admitted Descriptor.
     // No receiver accepts caller-paired Descriptor/Component observations.
-    let selected = match NativeTemplateComponent::parse_in(&arena, admitted) {
+    let selected = match SelectedTemplateComponent::parse_in(&arena, admitted) {
         Ok(Some(selected)) => selected,
         // This lexical profile requires an original selected template.
         _ => return refused(receiver, &control, NavigationRefusal::TemplateNamesProducer),

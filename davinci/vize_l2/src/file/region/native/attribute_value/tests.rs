@@ -9,7 +9,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 
 mod interruption;
@@ -31,7 +31,7 @@ fn same<T: PartialEq>(actual: T, expected: T) -> Test {
 fn selected<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateComponent<'a>, &'static str> {
+) -> Result<SelectedTemplateComponent<'a>, &'static str> {
     let observation = Vue.observe_descriptor(
         arena,
         source,
@@ -41,7 +41,7 @@ fn selected<'a>(
             template: SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(arena, observation.admitted().map_err(|_| "descriptor")?)
+    SelectedTemplateComponent::parse_in(arena, observation.admitted().map_err(|_| "descriptor")?)
         .map_err(|_| "selected parse")?
         .ok_or("template")
 }

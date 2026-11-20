@@ -11,7 +11,7 @@ use vize_l1::{
         EmbedSource,
         syntax::{EmbedSyntax, ProgramOptions, parse_program_once},
     },
-    markup::{NativeTemplateComponent, SurfaceParseOptions, TemplateGrammar},
+    markup::{SelectedTemplateComponent, SurfaceParseOptions, TemplateGrammar},
 };
 use vize_l2::lang::js::{
     NativeTemplateIssue, NativeTemplateIssueKind as Kind, NativeTemplateOwner,
@@ -41,8 +41,8 @@ fn descriptor<'a>(arena: &'a Allocator, source: &'a str) -> DescriptorObservatio
 fn selected<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateComponent<'a>, &'static str> {
-    NativeTemplateComponent::parse_in(
+) -> Result<SelectedTemplateComponent<'a>, &'static str> {
+    SelectedTemplateComponent::parse_in(
         arena,
         descriptor(arena, source)
             .admitted()

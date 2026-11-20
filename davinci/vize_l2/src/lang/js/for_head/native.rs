@@ -5,7 +5,7 @@ use oxc_ast::ast::{Expression, FormalParameter};
 use vize_l0::Span;
 use vize_l1::embed::{SourceError, syntax::ForRefusal};
 use vize_l1::markup::{
-    AttributeForHead, AttributeForHeadView, AttributeView, NativeTemplateComponent,
+    AttributeForHead, AttributeForHeadView, AttributeView, SelectedTemplateComponent,
 };
 
 use super::ForReferenceSource;
@@ -46,10 +46,10 @@ impl core::fmt::Debug for RejectedNativeForInput<'_> {
 /// fn duplicate(input: NativeForInput<'_>) { let _ = input.clone(); }
 /// ```
 /// ```compile_fail
-/// use vize_l1::markup::{AttributeView, AttributeForHeadView, NativeTemplateComponent};
+/// use vize_l1::markup::{AttributeView, AttributeForHeadView, SelectedTemplateComponent};
 /// use vize_l2::lang::js::NativeForInput;
 /// fn escape<'h, 'a>(input: NativeForInput<'a>,
-///     selected: &'h NativeTemplateComponent<'a>, attribute: AttributeView<'h, 'a>)
+///     selected: &'h SelectedTemplateComponent<'a>, attribute: AttributeView<'h, 'a>)
 ///     -> AttributeForHeadView<'h, 'a> {
 ///     input.admitted_for(selected, attribute).unwrap()
 /// }
@@ -94,7 +94,7 @@ impl<'a> NativeForInput<'a> {
     }
     pub fn admitted_for<'h>(
         &'h self,
-        selected: &'h NativeTemplateComponent<'a>,
+        selected: &'h SelectedTemplateComponent<'a>,
         attribute: AttributeView<'h, 'a>,
     ) -> Option<AttributeForHeadView<'h, 'a>> {
         self.operand.admitted_for(selected, attribute)

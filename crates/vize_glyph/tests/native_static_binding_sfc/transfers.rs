@@ -6,7 +6,7 @@ use vize_glyph::native_doc::{
 };
 use vize_l0::{Allocator, Span};
 use vize_l1::markup::{
-    AttributeExpression, AttributeOperandError, InterpolationOperand, NativeTemplateComponent,
+    AttributeExpression, AttributeOperandError, InterpolationOperand, SelectedTemplateComponent,
 };
 
 #[test]
@@ -72,7 +72,7 @@ fn complete_named_document_transfer_keeps_all_three_original_families_and_old_fo
     )
     .unwrap();
     let (original, interpolations, attributes, document): (
-        &NativeTemplateComponent<'_>,
+        &SelectedTemplateComponent<'_>,
         Vec<InterpolationOperand<'_>>,
         Vec<AttributeExpression<'_>>,
         Doc<'_>,

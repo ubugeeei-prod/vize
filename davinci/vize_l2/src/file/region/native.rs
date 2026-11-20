@@ -8,7 +8,7 @@ use crate::lang::js::file::native::{
     NativeRouteState, NativeTemplateIssue, NativeTemplateIssueKind,
 };
 use vize_l0::id::NodeId;
-use vize_l1::markup::{ChildView, ChildrenView, NativeTemplateComponent, RootText, SurfaceChild};
+use vize_l1::markup::{ChildView, ChildrenView, RootText, SelectedTemplateComponent, SurfaceChild};
 
 mod attribute_value;
 mod body;
@@ -25,7 +25,7 @@ mod text_value;
 mod visibility;
 pub(crate) use visibility::NativeVisibility;
 pub struct NativeTemplateWalk<'s, 'a> {
-    selected: &'s NativeTemplateComponent<'a>,
+    selected: &'s SelectedTemplateComponent<'a>,
     root: RootRegion<'s, 'a, NativeVisibility>,
     state: &'s mut NativeRouteState,
     previous: TemplateWalk,
@@ -35,7 +35,7 @@ pub struct NativeTemplateWalk<'s, 'a> {
 }
 impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
     pub(crate) fn new(
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s SelectedTemplateComponent<'a>,
         builder: &'s mut FileBuilder<'a>,
         state: &'s mut NativeRouteState,
         setup: Option<ScriptUnitId>,
@@ -75,7 +75,7 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
     }
     /// Original immutable owner borrow is disjoint from mutable File fields.
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s SelectedTemplateComponent<'a> {
         self.selected
     }
     pub fn child(&mut self, child: ChildView<'_, 'a>) -> Result<NodeId, NativeTemplateIssue> {

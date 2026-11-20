@@ -4,7 +4,7 @@ use crate::expr::JsExpr;
 use crate::expr::js::JsCoordinateError;
 use vize_l1::embed::syntax::EmbedHole;
 use vize_l1::markup::{
-    ChildView, InterpolationOperand, InterpolationView, NativeTemplateComponent,
+    ChildView, InterpolationOperand, InterpolationView, SelectedTemplateComponent,
 };
 
 mod transfer;
@@ -63,7 +63,7 @@ impl<'a> NativeInterpolationInput<'a> {
     /// ordered cursor and attached same-File resolution before node admission.
     pub fn admitted_for<'s>(
         &'s mut self,
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s SelectedTemplateComponent<'a>,
         child: ChildView<'s, 'a>,
     ) -> Result<NativeInterpolationInputView<'s, 'a>, NativeInterpolationInputError> {
         if let Some(hole) = self.operand.syntax().hole() {
@@ -92,10 +92,10 @@ impl<'a> NativeInterpolationInput<'a> {
 /// A short genuine original join, not a neutral-body or completed File token.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::{ChildView, NativeTemplateComponent};
+/// use vize_l1::markup::{ChildView, SelectedTemplateComponent};
 /// use vize_l2::lang::js::{NativeInterpolationInput, NativeInterpolationInputView};
 /// fn escape<'a>(input: &mut NativeInterpolationInput<'a>,
-///     selected: &NativeTemplateComponent<'a>, child: ChildView<'_, 'a>)
+///     selected: &SelectedTemplateComponent<'a>, child: ChildView<'_, 'a>)
 ///     -> NativeInterpolationInputView<'static, 'a> {
 ///     match input.admitted_for(selected, child) {
 ///         Ok(view) => view,
@@ -104,10 +104,10 @@ impl<'a> NativeInterpolationInput<'a> {
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l1::markup::{ChildView, NativeTemplateComponent};
+/// use vize_l1::markup::{ChildView, SelectedTemplateComponent};
 /// use vize_l2::lang::js::NativeInterpolationInput;
 /// fn discard<'a>(mut input: NativeInterpolationInput<'a>,
-///     selected: &NativeTemplateComponent<'a>, child: ChildView<'_, 'a>) {
+///     selected: &SelectedTemplateComponent<'a>, child: ChildView<'_, 'a>) {
 ///     let view = match input.admitted_for(selected, child) {
 ///         Ok(view) => view,
 ///         Err(_) => return,

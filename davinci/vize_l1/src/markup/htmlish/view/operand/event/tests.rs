@@ -2,7 +2,7 @@ use super::{AttributeHandler, AttributeOperandError};
 use crate::container::Vue;
 use crate::container::vue::DescriptorOptions;
 use crate::embed::{Lang, Shape, syntax::EmbedHole};
-use crate::markup::{NativeTemplateComponent, TemplateGrammar};
+use crate::markup::{SelectedTemplateComponent, TemplateGrammar};
 use oxc_ast::ast::{Expression, Statement};
 use oxc_span::GetSpan;
 use vize_l0::{
@@ -10,7 +10,7 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 
-fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+fn selected<'a>(arena: &'a Allocator, source: &'a str) -> SelectedTemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -20,12 +20,12 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
             template: crate::markup::SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    SelectedTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap()
 }
 
-fn observe<'a>(owner: &NativeTemplateComponent<'a>, ordinal: usize) -> AttributeHandler<'a> {
+fn observe<'a>(owner: &SelectedTemplateComponent<'a>, ordinal: usize) -> AttributeHandler<'a> {
     let element = owner.children().next().unwrap().into_element().unwrap();
     owner
         .observe_attribute_handler(element.attributes().nth(ordinal).unwrap())

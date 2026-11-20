@@ -5,7 +5,7 @@ fn whole_original_file_handler_is_refused_before_expression_emission() {
     use vize_l0::config::{VueDialect, VueVersion};
     use vize_l1::{
         container::{Vue, vue::DescriptorOptions},
-        markup::{NativeTemplateComponent, SurfaceParseOptions},
+        markup::{SelectedTemplateComponent, SurfaceParseOptions},
     };
     use vize_l2::{
         lang::js::NativeTemplateOwner,
@@ -22,7 +22,7 @@ fn whole_original_file_handler_is_refused_before_expression_emission() {
             template: SurfaceParseOptions::default(),
         },
     );
-    let selected = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
+    let selected = SelectedTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
     let mut original =

@@ -9,7 +9,7 @@ use vize_l1::markup::{
     AttributeOperandError,
 };
 use vize_l1::markup::{
-    InterpolationError, InterpolationFailure, InterpolationOperand, NativeTemplateComponent,
+    InterpolationError, InterpolationFailure, InterpolationOperand, SelectedTemplateComponent,
 };
 
 use super::super::NativeTemplateRefusal;
@@ -60,7 +60,7 @@ pub enum ObservedNativeTemplateRefusal {
 /// Existing six-part transfer schema for interpolation/conditional custody.
 /// Added binding custody is released; use `into_binding_parts` to retain it.
 pub type ObservedNativeTemplateFailureParts<'p, 'a> = (
-    &'p NativeTemplateComponent<'a>,
+    &'p SelectedTemplateComponent<'a>,
     Vec<InterpolationOperand<'a>>,
     Vec<AttributeExpression<'a>>,
     ObservedNativeTemplateRefusal,
@@ -71,7 +71,7 @@ pub type ObservedNativeTemplateFailureParts<'p, 'a> = (
 /// No partial Doc is exposed. Successfully minted rejected operands remain in
 /// this owned prefix; an actual observer failure is retained separately.
 pub struct ObservedNativeTemplateFailure<'p, 'a> {
-    original: &'p NativeTemplateComponent<'a>,
+    original: &'p SelectedTemplateComponent<'a>,
     operands: Vec<InterpolationOperand<'a>>,
     refusal: ObservedNativeTemplateRefusal,
     interpolation_failure: Option<InterpolationFailure<'a>>,
@@ -98,7 +98,7 @@ impl core::fmt::Debug for ObservedNativeTemplateFailure<'_, '_> {
 
 impl<'p, 'a> ObservedNativeTemplateFailure<'p, 'a> {
     pub(super) fn new(
-        original: &'p NativeTemplateComponent<'a>,
+        original: &'p SelectedTemplateComponent<'a>,
         observations: Observed<'a>,
         refusal: ObservedNativeTemplateRefusal,
     ) -> Self {
@@ -116,7 +116,7 @@ impl<'p, 'a> ObservedNativeTemplateFailure<'p, 'a> {
         }
     }
     /// Borrow the original selected template component.
-    pub fn original(&self) -> &'p NativeTemplateComponent<'a> {
+    pub fn original(&self) -> &'p SelectedTemplateComponent<'a> {
         self.original
     }
     /// Borrow the successfully observed interpolation prefix.
@@ -206,7 +206,7 @@ impl<'p, 'a> ObservedNativeTemplateFailure<'p, 'a> {
     pub fn into_parts(
         self,
     ) -> (
-        &'p NativeTemplateComponent<'a>,
+        &'p SelectedTemplateComponent<'a>,
         Vec<InterpolationOperand<'a>>,
         ObservedNativeTemplateRefusal,
         Option<InterpolationFailure<'a>>,

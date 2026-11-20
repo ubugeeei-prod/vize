@@ -1,6 +1,6 @@
 use super::{
-    Attribute, AttributeOperandError, AttributeView, Element, NativeTemplateComponent, SourceBlock,
-    SourceError, Span, TemplateGrammar,
+    Attribute, AttributeOperandError, AttributeView, Element, SelectedTemplateComponent,
+    SourceBlock, SourceError, Span, TemplateGrammar,
 };
 use crate::markup::ElementClose;
 
@@ -19,7 +19,7 @@ pub(super) struct Origin<'a> {
 impl<'a> Origin<'a> {
     /// Preserve original membership/recovery/verbatim precedence before dialect selection.
     pub(super) fn check_original_header(
-        selected: &NativeTemplateComponent<'a>,
+        selected: &SelectedTemplateComponent<'a>,
         attribute: &AttributeView<'_, 'a>,
     ) -> Result<(), AttributeOperandError> {
         if !core::ptr::eq(attribute.component(), selected.component()) {
@@ -56,7 +56,7 @@ impl<'a> Origin<'a> {
     }
 
     pub(super) fn from_attribute(
-        selected: &NativeTemplateComponent<'a>,
+        selected: &SelectedTemplateComponent<'a>,
         attribute: &AttributeView<'_, 'a>,
     ) -> Result<Self, AttributeOperandError> {
         let surface = attribute.surface();
@@ -105,7 +105,7 @@ impl<'a> Origin<'a> {
     }
     pub(super) fn matches(
         &self,
-        selected: &NativeTemplateComponent<'a>,
+        selected: &SelectedTemplateComponent<'a>,
         attribute: &AttributeView<'_, 'a>,
     ) -> bool {
         let block = selected.component().block();

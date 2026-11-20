@@ -9,7 +9,7 @@ use crate::scope::{ScopeOrigin, ScopeTag};
 use vize_l0::{Allocator, Span, String, id::NodeId};
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 
 struct Enclosing;
@@ -30,7 +30,7 @@ fn original<'a>(arena: &'a Allocator, source: &'a str) -> (ForResolution<'a>, Sp
             template: SurfaceParseOptions::default(),
         },
     );
-    let selected = NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    let selected = SelectedTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
     let element = selected.children().next().unwrap().into_element().unwrap();

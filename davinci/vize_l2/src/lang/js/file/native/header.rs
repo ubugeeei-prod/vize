@@ -14,7 +14,7 @@ use vize_l0::Vec;
 use vize_l1::{
     framework::vue::directive::{DirectivePrefix, DirectiveSyntax},
     framework::vue::version::v3::VueDirectives,
-    markup::{AttributeView, ConditionKind, ElementView, NativeTemplateComponent},
+    markup::{AttributeView, ConditionKind, ElementView, SelectedTemplateComponent},
 };
 
 pub(in crate::file::region::native) struct Header<'a> {
@@ -28,7 +28,7 @@ pub(in crate::file::region::native) struct Header<'a> {
 
 pub(super) fn construct<'a: 'b, 'b, R>(
     original: &ElementView<'_, 'a>,
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<Header<'a>, Kind>
 where
@@ -39,7 +39,7 @@ where
 
 pub(in crate::file::region::native) fn construct_for_pair<'a: 'b, 'b, R>(
     original: &ElementView<'_, 'a>,
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<Header<'a>, Kind>
 where
@@ -50,7 +50,7 @@ where
 
 fn construct_with_policy<'a: 'b, 'b, R>(
     original: &ElementView<'_, 'a>,
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
     paired: bool,
 ) -> Result<Header<'a>, Kind>

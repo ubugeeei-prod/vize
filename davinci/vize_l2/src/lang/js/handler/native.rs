@@ -5,7 +5,7 @@ use oxc_ast::ast::FunctionBody;
 use vize_l0::Span;
 use vize_l1::embed::SourceError;
 use vize_l1::markup::{
-    AttributeHandler, AttributeHandlerView, AttributeView, NativeTemplateComponent,
+    AttributeHandler, AttributeHandlerView, AttributeView, SelectedTemplateComponent,
 };
 
 use super::{HandlerInputErrorKind, HandlerReferenceSource};
@@ -81,7 +81,7 @@ impl<'a> NativeHandlerInput<'a> {
     #[must_use]
     pub fn admitted_for<'h>(
         &'h self,
-        selected: &'h NativeTemplateComponent<'a>,
+        selected: &'h SelectedTemplateComponent<'a>,
         attribute: AttributeView<'h, 'a>,
     ) -> Option<AttributeHandlerView<'h, 'a>> {
         self.operand.admitted_for(selected, attribute)
@@ -122,11 +122,11 @@ mod tests {
         config::{VueDialect, VueVersion},
     };
     use vize_l1::container::{Vue, vue::DescriptorOptions};
-    use vize_l1::markup::NativeTemplateComponent;
+    use vize_l1::markup::SelectedTemplateComponent;
 
     use super::{HandlerInputErrorKind, NativeHandlerInput};
 
-    fn selected<'a>(allocator: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+    fn selected<'a>(allocator: &'a Allocator, source: &'a str) -> SelectedTemplateComponent<'a> {
         let descriptor = Vue.observe_descriptor(
             allocator,
             source,
@@ -136,7 +136,7 @@ mod tests {
                 template: vize_l1::markup::SurfaceParseOptions::default(),
             },
         );
-        NativeTemplateComponent::parse_in(allocator, descriptor.admitted().unwrap())
+        SelectedTemplateComponent::parse_in(allocator, descriptor.admitted().unwrap())
             .unwrap()
             .unwrap()
     }

@@ -2,7 +2,7 @@
 
 use super::{NativeTemplateAttributeKind, NativeTemplateElement, NativeTemplateLintRefusal};
 use vize_l0::Span;
-use vize_l1::markup::{Element, NativeComponent};
+use vize_l1::markup::{Element, OwnedComponent};
 
 /// Raw authored attribute syntax. `Absent` does not establish a text value.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -27,7 +27,7 @@ pub enum NativeTemplateOptionValue<'a> {
 /// The one walk creates only the first direct option's constant-size record.
 #[derive(Clone, Copy)]
 pub(in crate::native) struct NativeFirstOptionData<'o, 'a> {
-    pub(super) component: &'o NativeComponent<'a>,
+    pub(super) component: &'o OwnedComponent<'a>,
     pub(super) select: &'o Element<'a>,
     pub(super) opening: Span,
     pub(super) value: NativeTemplateOptionValue<'a>,

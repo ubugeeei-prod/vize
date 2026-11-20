@@ -2,7 +2,7 @@
 
 use vize_l0::{Allocator, Vec};
 use vize_l1::markup::SurfaceChild;
-use vize_l1::markup::{ChildView, ChildrenView, InterpolationOperand, NativeTemplateComponent};
+use vize_l1::markup::{ChildView, ChildrenView, InterpolationOperand, SelectedTemplateComponent};
 
 use super::super::template::{Cursor, close_element, open_element, verbatim};
 use super::input::Input;
@@ -12,7 +12,7 @@ use super::{
 };
 
 pub(super) struct Builder<'p, 'a, I> {
-    pub(super) selected: &'p NativeTemplateComponent<'a>,
+    pub(super) selected: &'p SelectedTemplateComponent<'a>,
     pub(super) input: I,
     pub(super) next: usize,
     pub(super) cursor: Cursor<'a>,

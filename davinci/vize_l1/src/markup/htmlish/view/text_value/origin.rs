@@ -1,4 +1,4 @@
-use super::{ChildView, NativeTemplateComponent, TextValueError as Kind};
+use super::{ChildView, SelectedTemplateComponent, TextValueError as Kind};
 use crate::markup::{Element, ElementClose, SurfaceChild, TemplateGrammar, Token};
 use vize_l0::{SourceBlock, Span};
 
@@ -15,7 +15,7 @@ pub(super) struct Origin<'a> {
 
 impl<'a> Origin<'a> {
     pub(super) fn original(
-        selected: &NativeTemplateComponent<'a>,
+        selected: &SelectedTemplateComponent<'a>,
         child: &ChildView<'_, 'a>,
     ) -> Result<(Self, Token<'a>), Kind> {
         if !core::ptr::eq(child.component(), selected.component()) {
@@ -84,7 +84,7 @@ impl<'a> Origin<'a> {
 
     pub(super) fn matches(
         &self,
-        selected: &NativeTemplateComponent<'a>,
+        selected: &SelectedTemplateComponent<'a>,
         child: &ChildView<'_, 'a>,
         original: &Token<'a>,
     ) -> bool {

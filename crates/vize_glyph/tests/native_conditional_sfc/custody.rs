@@ -9,10 +9,10 @@ use vize_glyph::native_doc::{
     observed_native_template_document_with_policy, print,
 };
 use vize_l0::{Allocator, Span};
-use vize_l1::markup::{AttributeExpression, NativeTemplateComponent};
+use vize_l1::markup::{AttributeExpression, SelectedTemplateComponent};
 
 fn first_attribute<'p, 'a>(
-    selected: &'p NativeTemplateComponent<'a>,
+    selected: &'p SelectedTemplateComponent<'a>,
 ) -> vize_l1::markup::AttributeView<'p, 'a> {
     selected
         .children()

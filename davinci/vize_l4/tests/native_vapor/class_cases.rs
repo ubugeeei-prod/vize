@@ -99,7 +99,7 @@ fn static_class_never_authorizes_nul_ordinary_cr_style_duplicates_or_dynamic_hea
                 template: vize_l1::markup::SurfaceParseOptions::default(),
             },
         );
-        let selected = vize_l1::markup::NativeTemplateComponent::parse_in(
+        let selected = vize_l1::markup::SelectedTemplateComponent::parse_in(
             &arena,
             descriptor.admitted().unwrap(),
         )
