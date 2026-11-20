@@ -24,8 +24,6 @@
     "davinci/vize_l4/src/targets/ts/control.rs",
     "davinci/vize_l4/src/targets/ts/module.rs",
     "davinci/vize_l4/src/targets/ts/ops.rs",
-    "ident:davinci/vize_l1/src/markup/htmlish/view.rs",
-    "ident:davinci/vize_l1/src/markup/htmlish/view/selected.rs",
     "ident:davinci/vize_l1_to_l2/src/dialect/vue2/native.rs",
     "ident:davinci/vize_l1_to_l2/src/dialect/vue3/native_file/selected_scoped.rs",
     "ident:davinci/vize_l1_to_l2/src/native.rs",

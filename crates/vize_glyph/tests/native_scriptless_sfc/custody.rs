@@ -10,7 +10,7 @@ use vize_l0::config::VueVersion;
 use vize_l1::container::ContainerErrorCode;
 use vize_l1::container::vue::DescriptorIssueCode;
 use vize_l1::markup::SurfaceChild;
-use vize_l1::markup::{ChildView, ChildrenView, NativeTemplateComponent};
+use vize_l1::markup::{ChildView, ChildrenView, SelectedTemplateComponent};
 
 fn options() -> NativeSfcOptions {
     let mut options = NativeSfcOptions::default();
@@ -20,7 +20,7 @@ fn options() -> NativeSfcOptions {
 }
 
 // Test-only inspection of the actual immutable body order, not a production pass count.
-fn interpolations<'s, 'a>(selected: &'s NativeTemplateComponent<'a>) -> Vec<ChildView<'s, 'a>> {
+fn interpolations<'s, 'a>(selected: &'s SelectedTemplateComponent<'a>) -> Vec<ChildView<'s, 'a>> {
     fn visit<'s, 'a>(children: ChildrenView<'s, 'a>, output: &mut Vec<ChildView<'s, 'a>>) {
         for child in children {
             match child.surface() {

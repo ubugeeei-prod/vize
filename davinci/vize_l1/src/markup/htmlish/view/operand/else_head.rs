@@ -1,8 +1,8 @@
 //! A valueless original Else header is an owner, never an empty expression.
 
 use super::{
-    Attribute, AttributeHead, AttributeOperandError, AttributeView, Element,
-    NativeTemplateComponent, Origin, TemplateGrammar,
+    Attribute, AttributeHead, AttributeOperandError, AttributeView, Element, Origin,
+    SelectedTemplateComponent, TemplateGrammar,
 };
 use crate::markup::{DirectivePrefix, ElementClose};
 use vize_l0::{SourceBlock, Span};
@@ -93,7 +93,7 @@ impl<'a> AttributeElse<'a> {
     /// Reborrow the exact original attribute, not equal text or caller spans.
     pub fn admitted_for<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s SelectedTemplateComponent<'a>,
         attribute: AttributeView<'s, 'a>,
     ) -> Option<AttributeElseView<'s, 'a>> {
         let block = selected.component().block();
@@ -125,7 +125,7 @@ impl<'a> AttributeElse<'a> {
 /// A short original header join, without whole branch or sibling authority.
 pub struct AttributeElseView<'s, 'a> {
     owner: &'s AttributeElse<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
+    selected: &'s SelectedTemplateComponent<'a>,
     attribute: AttributeView<'s, 'a>,
 }
 impl<'s, 'a> AttributeElseView<'s, 'a> {
@@ -134,7 +134,7 @@ impl<'s, 'a> AttributeElseView<'s, 'a> {
         self.owner
     }
     #[must_use]
-    pub const fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub const fn selected(&self) -> &'s SelectedTemplateComponent<'a> {
         self.selected
     }
     #[must_use]

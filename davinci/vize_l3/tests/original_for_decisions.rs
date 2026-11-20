@@ -10,7 +10,7 @@ use vize_l1::{
         EmbedSource,
         syntax::{ProgramOptions, parse_program_once},
     },
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{
     lang::js::{NativeTemplateFile, NativeTemplateOwner},
@@ -41,7 +41,7 @@ fn prepared<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateOwner<'a
         EmbedSource::authored(source, script.block().span()).unwrap(),
         ProgramOptions::module(script.lang()),
     );
-    let selected = NativeTemplateComponent::parse_in(arena, admitted)
+    let selected = SelectedTemplateComponent::parse_in(arena, admitted)
         .unwrap()
         .unwrap();
     let mut owner = NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));

@@ -10,7 +10,7 @@ use vize_l1::{
         EmbedSource,
         syntax::{ProgramOptions, parse_program_once},
     },
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::{lang::js::NativeTemplateOwner, op::Op};
 use vize_l3::decision::{dom::DomUnsupported, template::build_template_dom_decisions};
@@ -39,7 +39,7 @@ fn authentic_whole_head_still_returns_typed_dom_operation_refusal_before_output(
         EmbedSource::authored(source, script.block().span()).unwrap(),
         ProgramOptions::module(script.lang()),
     );
-    let selected = NativeTemplateComponent::parse_in(&arena, admitted)
+    let selected = SelectedTemplateComponent::parse_in(&arena, admitted)
         .unwrap()
         .unwrap();
     let mut owner = NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));

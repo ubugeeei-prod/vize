@@ -4,7 +4,7 @@ use std::{boxed::Box, vec::Vec};
 use vize_l0::Span;
 use vize_l1::markup::{
     AttributeBindingExpression, AttributeExpression, AttributeExpressionFailure,
-    InterpolationFailure, InterpolationOperand, NativeTemplateComponent,
+    InterpolationFailure, InterpolationOperand, SelectedTemplateComponent,
 };
 
 use super::Doc;
@@ -14,7 +14,7 @@ use super::failure::ObservedNativeTemplateRefusal;
 /// The selection borrow remains required; this grants no enclosing-SFC admission.
 pub struct ObservedNativeTemplateBindingParts<'p, 'a> {
     /// Original selected template that authorized the observations.
-    pub original: &'p NativeTemplateComponent<'a>,
+    pub original: &'p SelectedTemplateComponent<'a>,
     /// Interpolation observations in source order.
     pub operands: Vec<InterpolationOperand<'a>>,
     /// Conditional directive observations in source order.
@@ -29,7 +29,7 @@ pub struct ObservedNativeTemplateBindingParts<'p, 'a> {
 /// No partial Doc or completed-template/SFC authority is exposed.
 pub struct ObservedNativeTemplateBindingFailureParts<'p, 'a> {
     /// Original selected template that authorized the observations.
-    pub original: &'p NativeTemplateComponent<'a>,
+    pub original: &'p SelectedTemplateComponent<'a>,
     /// Successfully observed interpolation prefix.
     pub operands: Vec<InterpolationOperand<'a>>,
     /// Successfully observed conditional directive prefix.

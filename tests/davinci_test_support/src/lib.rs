@@ -4,6 +4,7 @@
 //! relative `#[path]` includes while preserving one source of truth.
 
 pub mod corpus;
+pub mod evidence_renames;
 pub mod schema;
 pub mod surface_fixture;
 

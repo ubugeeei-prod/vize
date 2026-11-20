@@ -3,11 +3,11 @@ use super::super::super::{NavigationRefusal, SourceSnapshot, coordinates};
 use tower_lsp::lsp_types::{LinkedEditingRanges, Position};
 use vize_l0::Span;
 use vize_l1::container::vue::TemplateFrameNames;
-use vize_l1::markup::{ElementClosingName, NativeTemplateComponent};
+use vize_l1::markup::{ElementClosingName, SelectedTemplateComponent};
 
 pub(super) struct TemplateNames<'o, 'a> {
     pub(super) snapshot: &'o SourceSnapshot,
-    pub(super) selected: &'o NativeTemplateComponent<'a>,
+    pub(super) selected: &'o SelectedTemplateComponent<'a>,
     pub(super) frame: TemplateFrameNames<'o, 'a>,
     pub(super) lines: &'o [usize],
     #[cfg(test)]
@@ -134,7 +134,7 @@ mod tests {
             );
             let admitted = descriptor.admitted().unwrap();
             let frame = admitted.template().unwrap().frame_names().unwrap();
-            let selected = NativeTemplateComponent::parse_in(&arena, admitted)
+            let selected = SelectedTemplateComponent::parse_in(&arena, admitted)
                 .unwrap()
                 .unwrap();
             let lines = vize_l0::line_index::LineBreaks::Lsp
@@ -191,7 +191,7 @@ mod tests {
         );
         let admitted = descriptor.admitted().unwrap();
         let frame = admitted.template().unwrap().frame_names().unwrap();
-        let selected = NativeTemplateComponent::parse_in(&arena, admitted)
+        let selected = SelectedTemplateComponent::parse_in(&arena, admitted)
             .unwrap()
             .unwrap();
         let lines = vize_l0::line_index::LineBreaks::Lsp

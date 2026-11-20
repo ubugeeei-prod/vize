@@ -32,7 +32,7 @@ fn caught_header_unwind_keeps_first_original_handler_and_cannot_revive_completio
             template: SurfaceParseOptions::default(),
         },
     );
-    let selected = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
+    let selected = SelectedTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
     let mut builder = FileBuilder::new(&arena, source).unwrap();

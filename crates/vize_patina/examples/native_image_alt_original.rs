@@ -9,7 +9,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{ChildrenView, NativeTemplateComponent, SurfaceParseOptions},
+    markup::{ChildrenView, SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_patina::native::{NativeLintFinding, NativeSyntaxLint};
 
@@ -47,7 +47,7 @@ fn main() -> Result<()> {
     let admitted = descriptor
         .admitted()
         .map_err(|error| failure(&vize_l0::cstr!("original descriptor refused: {error:?}")))?;
-    let original = NativeTemplateComponent::parse_in(&a, admitted)
+    let original = SelectedTemplateComponent::parse_in(&a, admitted)
         .map_err(|error| failure(&vize_l0::cstr!("original template refused: {error:?}")))?
         .ok_or_else(|| failure("missing selected original template"))?;
     let lint = NativeSyntaxLint::new(&original).map_err(|error| {

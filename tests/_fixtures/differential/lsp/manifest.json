@@ -1251,6 +1251,59 @@
       }
     },
     {
+      "id": "lsp/regression/art-variant-imported-hover-13383",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "art-variant-imported-hover-13383",
+        "files": [
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "7c6274704a8448bca44cb4135f01b201824728fb5cfa2a8234dce61fe7d0003f"
+          },
+          {
+            "path": "format.ts.txt",
+            "sha256": "f1da44b3efd7f9761927807a6fe9c65b603830132ed0df20e256f37dd5d74563"
+          },
+          {
+            "path": "Button.vue.txt",
+            "sha256": "b6f69255cad5b5433c5e4075df012f6f0b6075675b85774d79e79b61fdbbede9"
+          },
+          {
+            "path": "Button.art.vue.txt",
+            "sha256": "5ca824b3a0173f7c6639514e0554947e199804138067075d64bb002713bc9c69"
+          }
+        ]
+      },
+      "case": {
+        "path": "art-variant-imported-hover-13383/case.json",
+        "sha256": "c0dd9ff5314a71ccc6bcc8c4821707840cacbcc9cc20dc5aa75ee32230bff87f"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/art-variant-scopes-10451",
       "state": "active",
       "targets": [

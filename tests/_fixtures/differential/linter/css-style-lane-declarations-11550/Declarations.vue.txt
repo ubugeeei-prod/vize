@@ -1,0 +1,36 @@
+<template>
+  <div class="card"><slot /></div>
+</template>
+
+<style>
+@font-face { font-family: Brand; src: url(brand.woff2); }
+.card { margin-left: 4px; margin-inline-start: 4px; }
+@keyframes slide { from { left: 0; } to { left: 10px; } }
+.a >>> .b { color: red; }
+</style>
+
+<style lang="scss">
+$left: 1px;
+.card {
+  padding-right: $left;
+  margin-#{$side}: 1px;
+  .c /deep/ .d { color: red; }
+}
+</style>
+
+<style lang="less">
+@margin-left: 1px;
+.card { right: @margin-left; }
+</style>
+
+<style lang="sass">
+@font-face
+  font-family: Brand
+.card
+  border-left-width: 1px
+</style>
+
+<style lang="stylus">
+.card
+  margin-right 4px
+</style>

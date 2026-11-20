@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "id": "lsp/regression/art-variant-imported-hover-13383",
+  "provenance": {
+    "fixCommit": "0fd57ff91558f72568c34f401edd634de3fceced",
+    "issue": 13383,
+    "witnessPath": "crates/vize_maestro/src/ide/diagnostics/art_variant_hover_after_diagnostics_tests.rs",
+    "inputOrigin": "The exact #13383 workspace: an Art variant template using an imported callable and its alias",
+    "contractOrigin": "Complete stdio hovers after the on-open diagnostics pass; the checker signatures, not a `() => any` stand-in"
+  },
+  "files": [
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "7c6274704a8448bca44cb4135f01b201824728fb5cfa2a8234dce61fe7d0003f"
+    },
+    {
+      "source": "format.ts.txt",
+      "runtimePath": "src/format.ts",
+      "sha256": "f1da44b3efd7f9761927807a6fe9c65b603830132ed0df20e256f37dd5d74563"
+    },
+    {
+      "source": "Button.vue.txt",
+      "runtimePath": "src/Button.vue",
+      "sha256": "b6f69255cad5b5433c5e4075df012f6f0b6075675b85774d79e79b61fdbbede9"
+    },
+    {
+      "source": "Button.art.vue.txt",
+      "runtimePath": "src/Button.art.vue",
+      "sha256": "5ca824b3a0173f7c6639514e0554947e199804138067075d64bb002713bc9c69"
+    }
+  ],
+  "entry": "src/Button.art.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "01da30b2692a16212da586617ee0396224164b5e2130ae91b473f00b46b11acb"
+  },
+  "method": "textDocument/hover",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "scope": "Complete type-service-backed Art variant hovers; source-inspected input custody does not establish native whole-product parity"
+}

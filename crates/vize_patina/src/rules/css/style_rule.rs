@@ -13,6 +13,75 @@ use vize_l1::css::{StyleNode, StyleNodeKind, StyleSheet};
 
 use super::{CssLintResult, CssRuleMeta};
 
+/// Whether one authored CSS identifier decodes to `expected`.
+///
+/// The fast path covers ordinary names without constructing a parser. Escaped
+/// names use cssparser so rules compare CSS values while retaining the
+/// authored span for diagnostics.
+pub(super) fn identifier_eq(text: &str, expected: &str) -> bool {
+    if !text.as_bytes().contains(&b'\\') {
+        return text.eq_ignore_ascii_case(expected);
+    }
+    let mut input = ParserInput::new(text);
+    let mut parser = Parser::new(&mut input);
+    parser
+        .expect_ident()
+        .is_ok_and(|name| name.eq_ignore_ascii_case(expected))
+        && parser.is_exhausted()
+}
+
+/// The decoded value of one authored CSS identifier.
+pub(super) fn decoded_identifier(text: &str) -> Option<String> {
+    if !text.as_bytes().contains(&b'\\') {
+        return Some(String::from(text));
+    }
+    let mut input = ParserInput::new(text);
+    let mut parser = Parser::new(&mut input);
+    let name = parser.expect_ident_cloned().ok()?;
+    parser.is_exhausted().then(|| String::from(name.as_ref()))
+}
+
+/// Resolve a nested declaration such as `border: { left-width: 1px }` to
+/// `border-left-width`. The returned owner is the first non-declaration
+/// ancestor. Interpolated names stay unknown rather than falling back to one
+/// authored fragment.
+pub(super) fn nested_declaration_name(
+    sheet: &StyleSheet<'_>,
+    node: &StyleNode,
+) -> Option<(String, Option<usize>)> {
+    let nodes = sheet.nodes();
+    let parent = node.parent()?;
+    if !matches!(
+        sheet.kind(nodes.get(parent)?),
+        StyleNodeKind::Declaration { .. }
+    ) {
+        return None;
+    }
+
+    let mut parts = Vec::new();
+    let mut current = node;
+    loop {
+        let StyleNodeKind::Declaration { name, .. } = sheet.kind(current) else {
+            return None;
+        };
+        if current.is_interpolated() {
+            return None;
+        }
+        parts.push(decoded_identifier(sheet.text(name))?);
+
+        let Some(parent) = current.parent() else {
+            parts.reverse();
+            return Some((parts.join("-").into(), None));
+        };
+        let ancestor = nodes.get(parent)?;
+        if !matches!(sheet.kind(ancestor), StyleNodeKind::Declaration { .. }) {
+            parts.reverse();
+            return Some((parts.join("-").into(), Some(parent)));
+        }
+        current = ancestor;
+    }
+}
+
 /// A `css/*` rule over the L1 structure of one style block.
 pub trait StyleRule: Send + Sync {
     /// Get rule metadata.
@@ -78,6 +147,15 @@ pub(super) fn in_style_scope(sheet: &StyleSheet<'_>, node: &StyleNode) -> bool {
         parent = ancestor.parent();
     }
     true
+}
+
+/// Every rule's selector span, in any scope, in document order.
+pub(super) fn all_rule_preludes<'s>(sheet: &'s StyleSheet<'_>) -> impl Iterator<Item = Span> + 's {
+    sheet
+        .nodes()
+        .iter()
+        .filter(|node| sheet.kind(node) == StyleNodeKind::Rule)
+        .map(|node| node.prelude())
 }
 
 /// Every rule's selector span in the checked scope, in document order.
@@ -151,7 +229,7 @@ pub(super) fn key_compound_ids(sheet: &StyleSheet<'_>, prelude: Span) -> Vec<Spa
 /// stays a comment token, which separates nothing: `#a/**/.b` is one
 /// compound. Comments are in document order, so only those overlapping
 /// `span` are visited.
-fn masked(sheet: &StyleSheet<'_>, span: Span) -> String {
+pub(super) fn masked(sheet: &StyleSheet<'_>, span: Span) -> String {
     let mut text = String::from(sheet.text(span));
     let comments = sheet.comments();
     let first = comments.partition_point(|comment| comment.span().end <= span.start);
@@ -231,7 +309,7 @@ pub(super) fn important_flags(sheet: &StyleSheet<'_>, value: Span) -> Vec<Span> 
 /// After a function or bracketed block token, its contents are read with
 /// the next token unless consumed now, which would record that token's
 /// start inside the block. Call it only right after such a token.
-fn skip_block(parser: &mut Parser<'_, '_>) {
+pub(super) fn skip_block(parser: &mut Parser<'_, '_>) {
     let _: Result<(), cssparser::ParseError<'_, ()>> = parser.parse_nested_block(|nested| {
         while nested.next_including_whitespace_and_comments().is_ok() {}
         Ok(())

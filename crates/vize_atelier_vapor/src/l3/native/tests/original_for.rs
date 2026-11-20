@@ -11,7 +11,7 @@ use vize_l1::{
         EmbedSource,
         syntax::{ProgramOptions, parse_program_once},
     },
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SelectedTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::lang::js::NativeTemplateOwner;
 
@@ -35,7 +35,7 @@ fn actual_original_for_generic_graph_does_not_mint_native_vapor_admission() {
         EmbedSource::authored(source, setup.block().span()).unwrap(),
         ProgramOptions::module(setup.lang()),
     );
-    let selected = NativeTemplateComponent::parse_in(&arena, admitted)
+    let selected = SelectedTemplateComponent::parse_in(&arena, admitted)
         .unwrap()
         .unwrap();
     let mut owner = NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("actual owner"));

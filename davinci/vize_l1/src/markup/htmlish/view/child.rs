@@ -1,4 +1,4 @@
-use super::{ElementView, NativeComponent};
+use super::{ElementView, OwnedComponent};
 use crate::markup::{Element, SurfaceChild};
 
 #[derive(Clone, Copy)]
@@ -9,20 +9,20 @@ pub(super) enum Parent<'o, 'a> {
 
 /// Original direct-child iteration. No arbitrary membership constructor.
 pub struct ChildrenView<'o, 'a> {
-    component: &'o NativeComponent<'a>,
+    component: &'o OwnedComponent<'a>,
     parent: Parent<'o, 'a>,
     children: core::iter::Enumerate<core::slice::Iter<'o, SurfaceChild<'a>>>,
 }
 
 impl<'o, 'a> ChildrenView<'o, 'a> {
-    pub(super) fn root(component: &'o NativeComponent<'a>) -> Self {
+    pub(super) fn root(component: &'o OwnedComponent<'a>) -> Self {
         Self {
             component,
             parent: Parent::Root,
             children: component.component.tree.children.iter().enumerate(),
         }
     }
-    pub(super) fn element(component: &'o NativeComponent<'a>, element: &'o Element<'a>) -> Self {
+    pub(super) fn element(component: &'o OwnedComponent<'a>, element: &'o Element<'a>) -> Self {
         Self {
             component,
             parent: Parent::Element(element),
@@ -50,7 +50,7 @@ impl ExactSizeIterator for ChildrenView<'_, '_> {}
 
 /// Actual child, direct parent and ordinal; not a whole-body certificate.
 pub struct ChildView<'o, 'a> {
-    component: &'o NativeComponent<'a>,
+    component: &'o OwnedComponent<'a>,
     parent: Parent<'o, 'a>,
     ordinal: usize,
     child: &'o SurfaceChild<'a>,
@@ -68,7 +68,7 @@ impl<'o, 'a> ChildView<'o, 'a> {
         }
     }
     #[must_use]
-    pub fn component(&self) -> &'o NativeComponent<'a> {
+    pub fn component(&self) -> &'o OwnedComponent<'a> {
         self.component
     }
     #[must_use]

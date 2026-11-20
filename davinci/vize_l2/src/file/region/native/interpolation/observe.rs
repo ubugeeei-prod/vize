@@ -7,10 +7,10 @@ use crate::file::region::FileRegion;
 use crate::lang::js::{NativeInterpolationInput, NativeTemplateIssueKind as Kind};
 use core::ops::DerefMut;
 use vize_l0::{Span, id::NodeId};
-use vize_l1::markup::{ChildView, NativeTemplateComponent, SurfaceChild};
+use vize_l1::markup::{ChildView, SelectedTemplateComponent, SurfaceChild};
 
 pub(in crate::file::region::native) fn construct<'a: 'b, 'b, R>(
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     child: ChildView<'_, 'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
@@ -44,7 +44,7 @@ where
     })
 }
 
-fn full_span(selected: &NativeTemplateComponent<'_>, child: &ChildView<'_, '_>) -> Span {
+fn full_span(selected: &SelectedTemplateComponent<'_>, child: &ChildView<'_, '_>) -> Span {
     let block = selected.component().block();
     if let SurfaceChild::Interpolation(interpolation) = child.surface()
         && let Some(open) = block.span_of(interpolation.open.text)

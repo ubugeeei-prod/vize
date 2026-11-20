@@ -8,7 +8,7 @@ use vize_l1::{
         vue::{DescriptorObservation, DescriptorOptions, ScriptRole},
     },
     css::StyleSyntax,
-    markup::{ComponentSourceError, InterpolationFailure, NativeTemplateComponent},
+    markup::{ComponentSourceError, InterpolationFailure, SelectedTemplateComponent},
 };
 use vize_l2::{
     artifact::ArtifactError,
@@ -264,7 +264,7 @@ pub(super) fn observe<'a>(
     let span = descriptor
         .template()
         .map_or(whole, |template| template.block().span());
-    let selected = match NativeTemplateComponent::parse_in(allocator, descriptor) {
+    let selected = match SelectedTemplateComponent::parse_in(allocator, descriptor) {
         Ok(Some(selected)) => selected,
         Ok(None) => {
             observation.issues.push(NativeSelectedSfcIssue {

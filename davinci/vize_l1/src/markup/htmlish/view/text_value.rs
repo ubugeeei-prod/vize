@@ -1,6 +1,6 @@
 //! Original text source preparation, without whitespace or target admission.
 
-use super::{ChildView, NativeTemplateComponent};
+use super::{ChildView, SelectedTemplateComponent};
 use crate::{embed::EmbedSource, markup::Token};
 use vize_l0::Span;
 
@@ -39,8 +39,8 @@ pub enum TextValueError {
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l1::markup::{ChildView, NativeComponent};
-/// fn from_unselected(owner: &NativeComponent<'static>, child: ChildView<'_, 'static>) {
+/// use vize_l1::markup::{ChildView, OwnedComponent};
+/// fn from_unselected(owner: &OwnedComponent<'static>, child: ChildView<'_, 'static>) {
 ///     owner.observe_text_value(child);
 /// }
 /// ```
@@ -50,7 +50,7 @@ pub struct TextValue<'a> {
     source: EmbedSource<'a>,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> SelectedTemplateComponent<'a> {
     /// Call existing General/Text source preparation once at this original child.
     /// The lexer may already have decoded callbacks when constructing its raw
     /// surface; this is not a claim of one decoder call across the whole parse.
@@ -100,7 +100,7 @@ impl<'a> TextValue<'a> {
     /// Short join at the same original root or element child, without reparse.
     pub fn admitted_for<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s SelectedTemplateComponent<'a>,
         child: ChildView<'s, 'a>,
     ) -> Option<TextValueView<'s, 'a>> {
         self.origin
@@ -121,12 +121,12 @@ impl<'a> TextValue<'a> {
 /// Same original child/value join; no whitespace, File or target capability.
 pub struct TextValueView<'s, 'a> {
     owner: &'s TextValue<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
+    selected: &'s SelectedTemplateComponent<'a>,
     child: ChildView<'s, 'a>,
 }
 impl<'s, 'a> TextValueView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s SelectedTemplateComponent<'a> {
         self.selected
     }
     #[must_use]

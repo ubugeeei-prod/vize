@@ -1298,7 +1298,7 @@ css/prefer-logical-properties · lint ルール
 国際化に対応しやすい CSS 論理プロパティを推奨する
 
 精度: exact
-対象: declarations and selectors of <style> blocks as parsed by lightningcss
+対象: the authored structure of CSS, SCSS, Sass, Less and Stylus <style> blocks, as the L1 style reader reads it
 重大度: 警告
 カテゴリー: css
 自動修正: なし
@@ -1318,7 +1318,7 @@ css/prefer-slotted · lint ルール
 スロットの内容のスタイル指定には ::v-slotted() を推奨する
 
 精度: heuristic
-対象: declarations and selectors of <style> blocks as parsed by lightningcss
+対象: the authored structure of CSS, SCSS, Sass, Less and Stylus <style> blocks, as the L1 style reader reads it
 重大度: 警告
 カテゴリー: css
 自動修正: なし
@@ -1328,7 +1328,7 @@ css/require-font-display · lint ルール
 @font-face ルールで font-display を必須にする
 
 精度: exact
-対象: declarations and selectors of <style> blocks as parsed by lightningcss
+対象: the authored structure of CSS, SCSS, Sass, Less and Stylus <style> blocks, as the L1 style reader reads it
 重大度: 警告
 カテゴリー: css
 自動修正: なし

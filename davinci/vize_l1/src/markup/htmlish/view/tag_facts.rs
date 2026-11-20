@@ -3,7 +3,7 @@
 
 use vize_l0::Span;
 
-use super::{ElementView, NativeComponent};
+use super::{ElementView, OwnedComponent};
 use crate::markup::{Element, htmlish::surface::TagKindFact};
 
 /// The original default Vue 3 tag category; no runtime tag resolution is implied.
@@ -34,7 +34,7 @@ pub enum TagFactsRefusal {
 /// requires_clone::<TagFacts<'static, 'static>>();
 /// ```
 pub struct TagFacts<'o, 'a> {
-    component: &'o NativeComponent<'a>,
+    component: &'o OwnedComponent<'a>,
     element: &'o Element<'a>,
     kind: TagFactsKind,
     span: Span,
@@ -58,7 +58,7 @@ impl core::fmt::Debug for TagFacts<'_, '_> {
 
 impl<'o, 'a> TagFacts<'o, 'a> {
     #[must_use]
-    pub fn component(&self) -> &'o NativeComponent<'a> {
+    pub fn component(&self) -> &'o OwnedComponent<'a> {
         self.component
     }
     #[must_use]

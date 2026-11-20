@@ -5,7 +5,9 @@ use crate::expr::{
     js::{JsCoordinateError, JsCoordinates},
 };
 use vize_l1::embed::syntax::EmbedHole;
-use vize_l1::markup::{AttributeExpression, AttributeView, ConditionKind, NativeTemplateComponent};
+use vize_l1::markup::{
+    AttributeExpression, AttributeView, ConditionKind, SelectedTemplateComponent,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeConditionalInputError {
@@ -58,7 +60,7 @@ impl<'a> NativeConditionalInput<'a> {
     /// Authenticate the actual header before transferring its existing AST once.
     pub fn admitted_for<'s>(
         &'s mut self,
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s SelectedTemplateComponent<'a>,
         attribute: AttributeView<'s, 'a>,
     ) -> Result<&'a JsExpr<'a>, NativeConditionalInputError> {
         if self.operand.kind() != ConditionKind::If {

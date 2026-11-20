@@ -27,7 +27,7 @@ pub use operand::{
     AttributeOperandError, AttributeValueFailure, AttributeValueOperand, AttributeValueView,
     ConditionKind, ModelHead, StaticBindingHead,
 };
-pub use selected::{NativeTemplateComponent, ScriptSelection, TemplateGrammar};
+pub use selected::{ScriptSelection, SelectedTemplateComponent, TemplateGrammar};
 pub use tag_facts::{TagFacts, TagFactsKind, TagFactsRefusal};
 pub use tag_facts_component::ComponentTagFacts;
 pub use text::{RootText, RootTextError, RootTextProfile, RootTextView};
@@ -38,27 +38,27 @@ pub use text_value::{TextValue, TextValueError, TextValueFailure, TextValueView}
 /// A genuinely parsed arbitrary block is not proof of SFC template selection.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeComponent;
+/// use vize_l1::markup::OwnedComponent;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeComponent<'static>>();
+/// requires_clone::<OwnedComponent<'static>>();
 /// ```
-pub struct NativeComponent<'a> {
+pub struct OwnedComponent<'a> {
     allocator: &'a Allocator,
     block: SourceBlock<'a>,
     component: ComponentParse<'a>,
 }
 
-impl core::fmt::Debug for NativeComponent<'_> {
+impl core::fmt::Debug for OwnedComponent<'_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
-            .debug_struct("NativeComponent")
+            .debug_struct("OwnedComponent")
             .field("block", &self.block)
             .field("component", &self.component)
             .finish_non_exhaustive()
     }
 }
 
-impl<'a> NativeComponent<'a> {
+impl<'a> OwnedComponent<'a> {
     /// Call the existing native parser once for this exact block.
     pub fn parse_in(
         allocator: &'a Allocator,

@@ -18,7 +18,7 @@ use lightningcss::rules::CssRule as LCssRule;
 use lightningcss::selector::{Combinator, Component, PseudoClass, PseudoElement, Selector};
 use lightningcss::stylesheet::StyleSheet;
 
-use crate::diagnostic::{LintDiagnostic, Severity};
+use crate::diagnostic::Severity;
 
 use super::declaration_positions::DeclarationPositions;
 use super::{CssLintResult, CssRule, CssRuleMeta};
@@ -171,16 +171,12 @@ impl NoDisplayNone {
                 let Some((start, end)) = positions.take("display", offset) else {
                     return;
                 };
-                result.add_diagnostic(
-                    LintDiagnostic::warn(
-                        META.name,
-                        "Consider using v-show directive instead of display: none",
-                        start,
-                        end,
-                    )
-                    .with_help(
-                        "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
-                    ),
+                result.warn(
+                    META.name,
+                    "Consider using v-show directive instead of display: none",
+                    "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
+                    start,
+                    end,
                 );
             }
         }

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { spellBack } from "./evidence-renames.ts";
 
 export const hash7502 = (bytes: string | Buffer) =>
   createHash("sha256").update(bytes).digest("hex");
@@ -13,6 +14,7 @@ export const previousOutputUrl7502 = new URL("reviewed_output_v2.json", fixtureU
 export const previousOutputSha7502 =
   "4802cc3a776f7711cbe32893858bf770407123a2745c34be9f35e9ed3b880428";
 export const outputUrl7502 = new URL("reviewed_output_v3.json", fixtureUrl7502);
+const evidence7502 = "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502";
 export const archiveOutputSha7502 =
   "d32b8138113cbae60ea28b82c5653fa9b5fdb40a8b9f8a90ebd7e67a88b9a2cb";
 export const baseline7502 = {
@@ -58,7 +60,9 @@ export function previousCapture7502() {
   assert.equal(output.state, "reviewed");
   return output.capture;
 }
-export function unchangedRows7502(packet: any) {
+/** The current packet against V1 and V2, each read through the names it recorded. */
+export function unchangedRows7502(current: any) {
+  let packet = spellBack(current, `${evidence7502}/reviewed_output.json`);
   const archive = archivedCapture7502();
   assert.equal(packet.rows.length, archive.rows.length);
   for (const [index, row] of packet.rows.entries()) {
@@ -69,6 +73,7 @@ export function unchangedRows7502(packet: any) {
     if (row.id !== transition7502.input)
       assert.deepEqual(row, previous, "every unaffected original whole row remains exact");
   }
+  packet = spellBack(current, `${evidence7502}/reviewed_output_v2.json`);
   const previous = previousCapture7502();
   assert.equal(packet.rows.length, previous.rows.length);
   for (const [index, row] of packet.rows.entries()) {
@@ -156,7 +161,7 @@ export function requireReviewed7502(actual: any, frozen: any) {
     "complete reviewed capture required",
   );
   assert.deepEqual(
-    actual,
+    spellBack(actual, `${evidence7502}/reviewed_output_v3.json`),
     frozen.capture,
     "complete current native capture must equal frozen output",
   );

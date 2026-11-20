@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "commit": "0fd57ff91558f72568c34f401edd634de3fceced",
+  "id": "lsp/fix-history/art-variant-imported-callables-13383",
+  "requirement": "Art variant template hovers resolve local and imported script bindings through the typed script context: imported callables and their aliases keep their checker signatures instead of a `() => any` stand-in.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{\"compilerOptions\":{\"strict\":true,\"target\":\"ES2022\",\"module\":\"ESNext\",\"moduleResolution\":\"bundler\",\"noEmit\":true},\"include\":[\"src/**/*\"]}\n",
+    "src/format.ts": "export function imported(value: number, radix: number): string { return value.toString(radix) }\n",
+    "src/Button.vue": "<template><button /></template>\n",
+    "src/Button.art.vue": "<script setup lang=\"ts\">\nimport { imported, imported as importedAlias } from './format'\nconst simpleLabel: string = 'typed'\nfunction format(value: string, precision: number): string {\n  return value.repeat(precision)\n}\n</script>\n<art title=\"Button\" component=\"./Button.vue\">\n  <variant name=\"default\">\n    <p>ラベル → {{ simpleLabel }} ・ 桁 ✅ {{ format('art', 2) }} {{ imported(10, 16) }} {{ importedAlias(10, 16) }}</p>\n  </variant>\n</art>\n"
+  },
+  "steps": [
+    {
+      "open": "src/Button.art.vue"
+    },
+    {
+      "diagnostics": "src/Button.art.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "src/Button.art.vue",
+      "at": {
+        "find": "simpleLabel }}",
+        "delta": 2,
+        "nth": 0
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "src/Button.art.vue",
+      "at": {
+        "find": "format('art'",
+        "delta": 2,
+        "nth": 0
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "src/Button.art.vue",
+      "at": {
+        "find": "imported(10",
+        "delta": 2,
+        "nth": 0
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "src/Button.art.vue",
+      "at": {
+        "find": "importedAlias(10",
+        "delta": 2,
+        "nth": 0
+      },
+      "retry": true
+    }
+  ]
+}

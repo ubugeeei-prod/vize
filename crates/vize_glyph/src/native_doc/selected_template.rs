@@ -3,7 +3,7 @@
 use vize_l0::{Allocator, Span, Vec};
 use vize_l1::embed::syntax::EmbedHole;
 use vize_l1::markup::AttributeOperandError;
-use vize_l1::markup::{InterpolationOperand, NativeTemplateComponent};
+use vize_l1::markup::{InterpolationOperand, SelectedTemplateComponent};
 
 use super::template::Cursor;
 use super::{
@@ -166,7 +166,7 @@ impl From<TemplateRefusal> for NativeTemplateRefusal {
 /// Original selected owner and operands remain borrowed for the Doc's lifetime.
 /// The document covers only that template block, not its enclosing SFC.
 pub struct NativeTemplateDocument<'p, 'a> {
-    original: &'p NativeTemplateComponent<'a>,
+    original: &'p SelectedTemplateComponent<'a>,
     operands: &'p [&'p InterpolationOperand<'a>],
     document: Doc<'a>,
 }
@@ -184,7 +184,7 @@ impl core::fmt::Debug for NativeTemplateDocument<'_, '_> {
 
 impl<'p, 'a> NativeTemplateDocument<'p, 'a> {
     /// Borrow the original selected template component.
-    pub fn original(&self) -> &'p NativeTemplateComponent<'a> {
+    pub fn original(&self) -> &'p SelectedTemplateComponent<'a> {
         self.original
     }
     /// Borrow interpolation operands in their retained source order.
@@ -214,14 +214,14 @@ impl<'p, 'a> NativeTemplateDocument<'p, 'a> {
 /// ```compile_fail
 /// use vize_glyph::native_doc::native_template_document;
 /// use vize_l0::Allocator;
-/// use vize_l1::{embed::syntax::RetainedExpression, markup::NativeTemplateComponent};
-/// fn raw_cannot_admit<'a>(selected: &NativeTemplateComponent<'a>,
+/// use vize_l1::{embed::syntax::RetainedExpression, markup::SelectedTemplateComponent};
+/// fn raw_cannot_admit<'a>(selected: &SelectedTemplateComponent<'a>,
 ///     raw: &RetainedExpression<'a>, arena: &'a Allocator) {
 ///     let _ = native_template_document(selected, &[raw], arena);
 /// }
 /// ```
 pub fn native_template_document<'p, 'a>(
-    original: &'p NativeTemplateComponent<'a>,
+    original: &'p SelectedTemplateComponent<'a>,
     operands: &'p [&'p InterpolationOperand<'a>],
     allocator: &'a Allocator,
 ) -> Result<NativeTemplateDocument<'p, 'a>, NativeTemplateRefusal> {
@@ -260,7 +260,7 @@ pub fn native_template_document<'p, 'a>(
     })
 }
 
-fn check_selected(original: &NativeTemplateComponent<'_>) -> Result<(), NativeTemplateRefusal> {
+fn check_selected(original: &SelectedTemplateComponent<'_>) -> Result<(), NativeTemplateRefusal> {
     let carrier = original.component().carrier();
     if let Some(error) = carrier.errors.first() {
         return Err(TemplateRefusal::Recovered {

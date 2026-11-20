@@ -67,7 +67,7 @@ fn arbitrary_native_blocks_and_raw_compatibility_construction_cannot_mint_select
     let arena = Allocator::default();
     let owner = selected(&arena, source);
     let block = owner.component().block();
-    let arbitrary = NativeComponent::parse_in(&arena, block).unwrap();
+    let arbitrary = OwnedComponent::parse_in(&arena, block).unwrap();
     let arbitrary_div = arbitrary.children().next().unwrap().into_element().unwrap();
     assert!(matches!(
         arbitrary_div.tag_facts(),
@@ -117,7 +117,7 @@ fn incomplete_headers_refuse_without_erasing_recovery_or_claiming_body_completio
         owner.component().block().source()
     );
     let arbitrary =
-        NativeComponent::parse_in(&arena, SourceRoot::new("<div").unwrap().whole_block()).unwrap();
+        OwnedComponent::parse_in(&arena, SourceRoot::new("<div").unwrap().whole_block()).unwrap();
     let incomplete = arbitrary.children().next().unwrap().into_element().unwrap();
     assert!(matches!(
         incomplete.tag_facts(),
@@ -144,7 +144,7 @@ fn nested_anchor_keeps_ambiguous_authored_scope_and_original_observations() {
         "<template><a v-pre.foo><span><a></a></span></a><input :autofocus='outside' /></template>";
     let arena = Allocator::default();
     let owner = selected(&arena, source);
-    let arbitrary = NativeComponent::parse_in(&arena, owner.component().block()).unwrap();
+    let arbitrary = OwnedComponent::parse_in(&arena, owner.component().block()).unwrap();
     assert_eq!(
         cstr!("{:?}", owner.component().carrier().tree.children),
         cstr!("{:?}", arbitrary.carrier().tree.children)

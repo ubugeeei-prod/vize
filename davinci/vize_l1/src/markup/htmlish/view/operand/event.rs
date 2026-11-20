@@ -9,7 +9,7 @@ use alloc::boxed::Box;
 use oxc_parser::AdmittedHandlerBody;
 use vize_l0::Span;
 
-use super::super::{AttributeView, NativeTemplateComponent, TemplateGrammar};
+use super::super::{AttributeView, SelectedTemplateComponent, TemplateGrammar};
 use super::AttributeOperandError;
 use crate::embed::syntax::{EmbedSyntax, RetainedHandlerBody, parse_once};
 use crate::embed::{Embed, Grammar, Lang, Shape, SourceError, prepare_attribute_value};
@@ -53,7 +53,7 @@ pub struct AttributeHandler<'a> {
     syntax: RetainedHandlerBody<'a>,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> SelectedTemplateComponent<'a> {
     /// Replace the current header visit's source preparation and handler parse.
     /// This operation calls each once, deriving Module JS/TS from this selection.
     /// Handler syntax holes retain complete source/comments/diagnostics in the result.
@@ -142,7 +142,7 @@ impl<'a> AttributeHandler<'a> {
     /// Foreign/sibling/copied parses cannot confer the original event's origin.
     pub fn admitted_for<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s SelectedTemplateComponent<'a>,
         attribute: AttributeView<'s, 'a>,
     ) -> Option<AttributeHandlerView<'s, 'a>> {
         if !self.origin.matches(selected, &attribute) {
@@ -165,12 +165,12 @@ impl<'a> AttributeHandler<'a> {
 /// A short actual header/operand join, not a native body completion certificate.
 pub struct AttributeHandlerView<'s, 'a> {
     owner: &'s AttributeHandler<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
+    selected: &'s SelectedTemplateComponent<'a>,
     attribute: AttributeView<'s, 'a>,
 }
 impl<'s, 'a> AttributeHandlerView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s SelectedTemplateComponent<'a> {
         self.selected
     }
     #[must_use]

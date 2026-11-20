@@ -11,13 +11,13 @@ mod native_lint_tag {
     use vize_l1::{
         container::{Vue, vue::DescriptorOptions},
         markup::{
-            ChildrenView, Element, ElementClose, NativeComponent, NativeTemplateComponent, OpenTag,
-            SurfaceParseOptions, SurfaceTree, TagFactsKind as Kind, TagFactsRefusal as Refusal,
-            TemplateGrammar, Token, check_fidelity, render,
+            ChildrenView, Element, ElementClose, OpenTag, OwnedComponent,
+            SelectedTemplateComponent, SurfaceParseOptions, SurfaceTree, TagFactsKind as Kind,
+            TagFactsRefusal as Refusal, TemplateGrammar, Token, check_fidelity, render,
         },
     };
 
-    fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+    fn selected<'a>(arena: &'a Allocator, source: &'a str) -> SelectedTemplateComponent<'a> {
         let descriptor = Vue.observe_descriptor(
             arena,
             source,
@@ -27,7 +27,7 @@ mod native_lint_tag {
                 template: SurfaceParseOptions::default(),
             },
         );
-        NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+        SelectedTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
             .unwrap()
             .unwrap()
     }
@@ -39,7 +39,7 @@ mod native_lint_tag {
     }
 
     fn collect<'a>(
-        component: &NativeComponent<'a>,
+        component: &OwnedComponent<'a>,
         children: ChildrenView<'_, 'a>,
         output: &mut Vec<(&'a str, Result<Kind, Refusal>)>,
     ) {
@@ -64,7 +64,7 @@ mod native_lint_tag {
         }
     }
 
-    fn tags<'a>(owner: &NativeTemplateComponent<'a>) -> Vec<(&'a str, Result<Kind, Refusal>)> {
+    fn tags<'a>(owner: &SelectedTemplateComponent<'a>) -> Vec<(&'a str, Result<Kind, Refusal>)> {
         let component = owner.component();
         let before = rendered(&component.carrier().tree);
         let mut output = Vec::new();

@@ -1,5 +1,11 @@
 use super::{Test, check, inputs};
+use davinci_test_support::evidence_renames::spell_back;
 use serde_json::{Value, json};
+
+const V1: &str =
+    "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output.json";
+const V2: &str =
+    "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output_v2.json";
 use vize_l0::ToCompactString;
 
 pub fn transition() -> Value {
@@ -24,7 +30,9 @@ pub fn transition() -> Value {
     })
 }
 
-pub fn unchanged(packet: &Value) -> Test {
+/// The current packet against V1 and V2, each read through the names it recorded.
+pub fn unchanged(current_packet: &Value) -> Test {
+    let packet = &spell_back(current_packet, V1)?;
     let bytes = include_bytes!("../fixtures/native_attribute_values_7502/reviewed_output.json");
     check(
         inputs::sha256(bytes) == "d32b8138113cbae60ea28b82c5653fa9b5fdb40a8b9f8a90ebd7e67a88b9a2cb",
@@ -65,6 +73,8 @@ pub fn unchanged(packet: &Value) -> Test {
     let previous = reviewed["capture"]["rows"]
         .as_array()
         .ok_or("whole V2 rows")?;
+    let packet = &spell_back(current_packet, V2)?;
+    let current = packet["rows"].as_array().ok_or("current rows")?;
     check(current.len() == previous.len(), "whole V2 population")?;
     for (row, old) in current.iter().zip(previous) {
         if row["id"] == "original-regression-11" && row["target"] == "vapor" {

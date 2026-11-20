@@ -1,9 +1,9 @@
 use super::{Allocator, BindingPattern, ForRefusal, GetSpan, Lang, NativeForInput, Span};
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l1::container::{Vue, vue::DescriptorOptions};
-use vize_l1::markup::NativeTemplateComponent;
+use vize_l1::markup::SelectedTemplateComponent;
 
-fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+fn selected<'a>(arena: &'a Allocator, source: &'a str) -> SelectedTemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -13,7 +13,7 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
             template: vize_l1::markup::SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    SelectedTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap()
 }

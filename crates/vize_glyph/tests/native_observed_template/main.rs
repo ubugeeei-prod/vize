@@ -5,7 +5,7 @@ use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, String};
 use vize_l1::container::Vue;
 use vize_l1::container::vue::DescriptorOptions;
-use vize_l1::markup::{ChildrenView, InterpolationOperand, NativeTemplateComponent};
+use vize_l1::markup::{ChildrenView, InterpolationOperand, SelectedTemplateComponent};
 use vize_l1::markup::{SurfaceChild, SurfaceParseOptions};
 
 mod budgets;
@@ -18,7 +18,7 @@ mod refusals;
 const WIDTHS: [usize; 5] = [0, 1, 7, 80, 200];
 const SCRIPTS: [&str; 2] = ["", "<script setup lang=ts>let a=1</script>"];
 
-fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+fn selected<'a>(arena: &'a Allocator, source: &'a str) -> SelectedTemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -28,7 +28,7 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
             template: SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    SelectedTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap()
 }
@@ -73,9 +73,11 @@ fn assert_fixed(source: &str, script: &str) {
 }
 
 // A test-only control for the independent preobserved public receiver.
-fn preobserved<'a>(owner: &NativeTemplateComponent<'a>) -> std::vec::Vec<InterpolationOperand<'a>> {
+fn preobserved<'a>(
+    owner: &SelectedTemplateComponent<'a>,
+) -> std::vec::Vec<InterpolationOperand<'a>> {
     fn visit<'a>(
-        owner: &NativeTemplateComponent<'a>,
+        owner: &SelectedTemplateComponent<'a>,
         children: ChildrenView<'_, 'a>,
         output: &mut std::vec::Vec<InterpolationOperand<'a>>,
     ) {

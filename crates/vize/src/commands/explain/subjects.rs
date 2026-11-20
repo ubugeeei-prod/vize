@@ -132,10 +132,10 @@ pub(crate) fn rules() -> Vec<Rule> {
         StyleRule::meta(&NoImportant),
         CssRule::meta(&NoUtilityClasses),
         CssRule::meta(&NoVBindPerformance),
-        CssRule::meta(&PreferLogicalProperties),
+        StyleRule::meta(&PreferLogicalProperties),
         CssRule::meta(&PreferNestedSelectors),
-        CssRule::meta(&PreferSlotted),
-        CssRule::meta(&RequireFontDisplay),
+        StyleRule::meta(&PreferSlotted),
+        StyleRule::meta(&RequireFontDisplay),
     ];
     for meta in css {
         push(

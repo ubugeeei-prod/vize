@@ -1,10 +1,10 @@
 use crate::container::Vue;
 use crate::container::vue::DescriptorOptions;
-use crate::markup::{AttributeBindingExpression, NativeTemplateComponent};
+use crate::markup::{AttributeBindingExpression, SelectedTemplateComponent};
 use vize_l0::Allocator;
 use vize_l0::config::{VueDialect, VueVersion};
 
-fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+fn selected<'a>(arena: &'a Allocator, source: &'a str) -> SelectedTemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -14,7 +14,7 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
             template: crate::markup::SurfaceParseOptions::default(),
         },
     );
-    let selected = NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    let selected = SelectedTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
     assert!(core::ptr::eq(
@@ -26,7 +26,7 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
 }
 
 fn observe<'a>(
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     ordinal: usize,
 ) -> AttributeBindingExpression<'a> {
     let element = selected.children().next().unwrap().into_element().unwrap();
@@ -42,7 +42,7 @@ fn observe<'a>(
 
 fn assert_original<'a>(
     operand: &AttributeBindingExpression<'a>,
-    selected: &NativeTemplateComponent<'a>,
+    selected: &SelectedTemplateComponent<'a>,
     ordinal: usize,
 ) {
     let element = selected.children().next().unwrap().into_element().unwrap();

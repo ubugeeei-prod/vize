@@ -8,7 +8,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceChild, SurfaceParseOptions},
+    markup::{SelectedTemplateComponent, SurfaceChild, SurfaceParseOptions},
 };
 use vize_l2::lang::js::NativeTemplateOwner;
 use vize_l3::decision::template::build_template_dom_decisions;
@@ -60,7 +60,7 @@ fn whole_selected_condensed_root_modules_maps_and_links_match_pinned_packets()
                 template: SurfaceParseOptions::default(),
             },
         );
-        let selected = NativeTemplateComponent::parse_in(
+        let selected = SelectedTemplateComponent::parse_in(
             &arena,
             descriptor.admitted().map_err(|_| "descriptor admission")?,
         )

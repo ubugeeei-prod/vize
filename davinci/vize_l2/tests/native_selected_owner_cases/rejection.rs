@@ -58,7 +58,7 @@ fn absent_template_has_no_selected_owner_but_an_empty_template_does() -> Result<
     let arena = Allocator::default();
     let absent = descriptor(&arena, "<script setup>const value=1;</script>");
     check(
-        vize_l1::markup::NativeTemplateComponent::parse_in(
+        vize_l1::markup::SelectedTemplateComponent::parse_in(
             &arena,
             absent.admitted().map_err(|_| "descriptor")?,
         )

@@ -77,8 +77,6 @@ export const steps: Readonly<Record<string, Step>> = {
   },
   // Step 2c: L1 records neutral tag facts (it does not know about lint), and
   // its types and functions are named by concept, not by migration status.
-  // NativeComponent and NativeTemplateComponent keep their names for now: the
-  // reviewed #7502 attribute-value outputs pin their `Debug` text.
   "l1-tag-facts": {
     crate: "davinci/vize_l1",
     name: "vize_l1",
@@ -192,6 +190,20 @@ export const steps: Readonly<Record<string, Step>> = {
     ],
     items: [],
     parents: {},
+  },
+  // The parsed-component owners, named by what they own. The reviewed #7502
+  // attribute-value outputs pin their `Debug` text; the gates read them through
+  // `docs/davinci/plan/evidence-renames.json` (entry `l1-components`).
+  "l1-components": {
+    crate: "davinci/vize_l1",
+    name: "vize_l1",
+    moves: [],
+    items: [],
+    parents: {},
+    identifiers: {
+      NativeComponent: "OwnedComponent",
+      NativeTemplateComponent: "SelectedTemplateComponent",
+    },
   },
   // Step 3: one sibling per style language under `style/`, the shared readers
   // beside them, and Vue's CSS `v-bind()` in the Vue owner. The language

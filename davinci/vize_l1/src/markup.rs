@@ -55,8 +55,8 @@ pub use htmlish::view::{
     AttributeOperandError, AttributeValueFailure, AttributeValueOperand, AttributeValueView,
     AttributeView, AttributesView, ChildView, ChildrenView, ConditionKind, ElementClosingName,
     ElementNameRefusal, ElementNames, ElementView, InterpolationError, InterpolationFailure,
-    InterpolationOperand, InterpolationView, ModelHead, NativeComponent, NativeTemplateComponent,
-    RootText, RootTextError, RootTextProfile, RootTextView, ScriptSelection, StaticBindingHead,
+    InterpolationOperand, InterpolationView, ModelHead, OwnedComponent, RootText, RootTextError,
+    RootTextProfile, RootTextView, ScriptSelection, SelectedTemplateComponent, StaticBindingHead,
     TemplateGrammar, TextValue, TextValueError, TextValueFailure, TextValueView,
 };
 pub use profile::{Component, Document, Profile, ProfileKind};
