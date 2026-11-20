@@ -1,0 +1,15 @@
+<script setup lang="ts">
+interface Option { name: string, to: string, hide?: boolean, disabled?: boolean, tags: string[] }
+const { options } = defineProps<{ options: Option[] }>()
+</script>
+
+<template>
+  <div>
+    <template
+      v-for="(option, index) in options.filter(item => !item.hide)"
+      :key="missingKey || index"
+    >
+      <a :href="option.to" :title="missingTitle">{{ option.name }}</a>
+    </template>
+  </div>
+</template>
