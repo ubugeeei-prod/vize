@@ -5,8 +5,8 @@ import type { ArtMetadata } from "../types/index.js";
 function maskInactiveMarkup(source: string): string {
   const mask = (value: string): string => " ".repeat(value.length);
   return source
-    .replace(/<!--[\s\S]*?-->/gu, mask)
-    .replace(/<(script|style)\b(?:[^>"']|"[^"]*"|'[^']*')*>[\s\S]*?<\/\1\s*>/giu, mask);
+    .replace(/<(script|style)\b(?:[^>"']|"[^"]*"|'[^']*')*>[\s\S]*?<\/\1\s*>/giu, mask)
+    .replace(/<!--[\s\S]*?-->/gu, mask);
 }
 
 function extractArtTagAttributes(source: string): Record<string, string | true> {
@@ -15,10 +15,10 @@ function extractArtTagAttributes(source: string): Record<string, string | true> 
   if (!artTagMatch) return {};
 
   const attributes: Record<string, string | true> = {};
-  const attributePattern = /([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'))?/g;
+  const attributePattern = /([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
   for (const match of artTagMatch[1].matchAll(attributePattern)) {
     const name = match[1];
-    if (name && name !== "/") attributes[name] = match[2] ?? match[3] ?? true;
+    if (name && name !== "/") attributes[name] = match[2] ?? match[3] ?? match[4] ?? true;
   }
   return attributes;
 }

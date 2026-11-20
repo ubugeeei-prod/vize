@@ -121,6 +121,26 @@ void test("processMuseaArtFile infers a missing title from the art filename", as
   }
 });
 
+void test("processMuseaArtFile ignores comment markers in scripts and reads unquoted status", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-active-art-"));
+  const artPath = path.join(tempDir, "stories", "Active.art.vue");
+
+  try {
+    await fs.promises.mkdir(path.dirname(artPath), { recursive: true });
+    await fs.promises.writeFile(
+      artPath,
+      '<script setup>const marker = "<!--"</script>\n<art status=ready><variant name="Default"><div /></variant></art>\n<!-- inactive -->',
+      "utf8",
+    );
+
+    const art = await processMuseaArtFile(artPath, { root: tempDir, command: "build" });
+    assert.equal(art?.metadata.title, "Active");
+    assert.equal(art?.metadata.status, "ready");
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
 void test("processMuseaArtFile infers the target and reads optional defineArtMeta", async () => {
   const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-inferred-art-"));
   const artPath = path.join(tempDir, "Counter.art.vue");
