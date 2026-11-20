@@ -11,7 +11,7 @@ description: "書字方向に対応する CSS の論理プロパティを使い�
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | なし | なし |
 
-適用範囲：プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）。
+適用範囲：CSS・SCSS・Sass・Less・Stylus の style ブロック（書かれたまま。プリプロセッサは実行しません）。1 つの Stylus ブロックでは波括弧構文かインデント構文のどちらかに統一してください。混在する場合は波括弧構文として読み取ります。
 
 ## 悪い例
 

@@ -106,8 +106,11 @@ function cssEngine(ruleRel: string): string {
   const code = stripRust(readFileSync(path.join(RULES_DIR, ruleRel), "utf8"));
   const style = /\bimpl\b[^{;]*\bStyleRule\s+for\b/u.test(code);
   const css = /\bimpl\b[^{;]*\bCssRule\s+for\b/u.test(code);
-  if (style === css) {
-    throw new Error(`${ruleRel}: a css rule must implement exactly one of StyleRule/CssRule`);
+  if (!style && !css) {
+    throw new Error(`${ruleRel}: a css rule must implement StyleRule or CssRule`);
+  }
+  if (style && css && !/\b_CSS_RULE_COMPATIBILITY\b/u.test(code)) {
+    throw new Error(`${ruleRel}: a dual CSS engine needs an explicit compatibility marker`);
   }
   return style ? "style-l1" : "css-lightningcss";
 }

@@ -192,6 +192,17 @@ fn find(bytes: &[u8], from: usize, needle: &[u8]) -> Option<usize> {
         .map(|offset| from + offset)
 }
 
+#[cfg(test)]
+mod tests {
+    use super::stylus;
+
+    #[test]
+    fn mixed_stylus_uses_the_braced_reader() {
+        let profile = stylus(".legacy { color: red; }\nslot\n  color red\n");
+        assert!(!profile.indented);
+    }
+}
+
 /// `=name` and `+name` spell `@mixin` and `@include`.
 fn sass_construct(text: &str) -> Construct {
     let bytes = text.as_bytes();

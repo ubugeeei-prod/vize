@@ -11,7 +11,7 @@ Exiger font-display dans les règles @font-face.
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | Non | Aucune |
 
-Champ d’application : Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés).
+Champ d’application : Blocs style CSS, SCSS, Sass, Less et Stylus, tels qu’écrits (sans préprocesseur). Dans un même bloc Stylus, utilisez soit la syntaxe à accolades, soit la syntaxe indentée ; une syntaxe mixte est lue comme du Stylus à accolades.
 
 ## Mauvais
 
@@ -61,4 +61,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles CSS](../css.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L13)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L15)

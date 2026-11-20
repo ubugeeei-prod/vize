@@ -34,6 +34,8 @@ export const chineseShared: Record<string, string> = {
     "已分析的组件图，以及下方说明的受支持事实",
   "CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed)":
     "CSS、SCSS、Sass、Less 和 Stylus 的 style 块，按原样读取（不运行预处理器）",
+  "CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed). Within one Stylus block, use either braced or indented syntax consistently; mixed syntax is read as braced Stylus.":
+    "CSS、SCSS、Sass、Less 和 Stylus 的 style 块，按原样读取（不运行预处理器）。同一个 Stylus 块内请统一使用花括号语法或缩进语法；混合语法会按花括号 Stylus 读取。",
   "Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)":
     "纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）",
   "HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.":

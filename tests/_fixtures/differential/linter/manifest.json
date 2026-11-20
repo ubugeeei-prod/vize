@@ -1620,6 +1620,47 @@
       }
     },
     {
+      "id": "linter/css-style-lane-declarations-11550",
+      "state": "draft",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "css-style-lane-declarations-11550",
+        "files": [
+          {
+            "path": "Declarations.vue.txt",
+            "role": "deliberate-style-language-findings-and-controls",
+            "sha256": "4c9afde9bec28af6c4778c7c902abaf9bd87745eaef39dbb7fd16920cac8043c"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "0f7b6fac64ad61dae26fc7d8100bd05a2e4f6600caf93c2d969a2dbe53e8d9ce"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "scss-style",
+              "sass-style",
+              "less-style",
+              "stylus-style",
+              "js"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/anchor-bound-image-alt",
       "state": "active",
       "targets": [
@@ -20702,17 +20743,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "12185ced0cdad8269fba7f20ec34f03c54fe55c63255a1456faa10774d9410f5"
+            "sha256": "3011ca3f8bfaaf54de725f9dca2c8a114fb08637b7ed4774c61cb354f045b021"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "8fc38ca50a88408500a8f3aab0ca1448ff878960f56bc15ef73199697880065d"
+            "sha256": "5d1a9a8ebaea5651d01cff235067a137862d75fb96437a4a1acc8a8e6f6a24a6"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "18bf7945868f3202a8ce1ef72553f29f389d37c4ae5bab018760a0afdd84b723"
+            "sha256": "86dbfff49918a5722c5b6ea3c6abc76cc16424836e74c895f1aa60ff3372f9a5"
           }
         ]
       },
