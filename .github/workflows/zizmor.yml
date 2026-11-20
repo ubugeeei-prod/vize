@@ -5,7 +5,10 @@ on:
     branches: [main, davinci]
     paths:
       - ".github/**"
-  pull_request: {}
+  # #6830: PRs audit workflows only when they change them.
+  pull_request:
+    paths:
+      - ".github/**"
   release:
     types: [published]
   schedule:

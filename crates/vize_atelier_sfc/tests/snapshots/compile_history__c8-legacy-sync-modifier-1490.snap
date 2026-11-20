@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-legacy-sync-modifier-1490",
+    history: "a17b0809e5b241610f7aba7b5aebc420d13cb4b9",
+    source: "<MyComp :foo.sync=\"bar\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_MyComp = _resolveComponent(\"MyComp\")\n  \n  return (_openBlock(), _createBlock(_component_MyComp, { foo: _ctx.bar }, null, 8 /* PROPS */, [\"foo\"]))\n}",
+    map: None,
+}

@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2c-scoped-multiple-style-blocks-scope-attr-954",
+    history: "7b31e8b879397e315cadc923f209f2b8297604f4",
+    source: "<template>\n  <div class=\"a b\">Test</div>\n</template>\n\n<style>\n.a { color: red; }\n</style>\n\n<style scoped>\n.b { color: blue; }\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { class: \"a b\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, \"Test\"))\n}",
+            css: Some(
+                "\n.a { color: red; }\n\n.b[data-v-4045eae1]{ color: blue; }\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

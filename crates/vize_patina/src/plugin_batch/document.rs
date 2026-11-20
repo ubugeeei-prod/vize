@@ -110,7 +110,9 @@ impl PluginDocument {
         let Some(template) = descriptor.template else {
             return Ok(document);
         };
-        if template.lang.as_deref().is_some_and(|lang| lang != "html") || template.src.is_some() {
+        if !vize_l1::container::lang::is_html_template(template.lang.as_deref())
+            || template.src.is_some()
+        {
             return Err(HostError::Split(
                 "JS plugin visits require an inline HTML template; preprocess template dialects through their compiler integration"
                     .into(),
@@ -214,7 +216,7 @@ impl Walk {
                     node.value = Some(text.content.to_owned());
                 });
             }
-            Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
+            Op::Interpolation(interpolation) | Op::ChildValue(interpolation) => {
                 self.push(parent, op.mnemonic(), interpolation.span, |node| {
                     node.value = Some(interpolation.expression.source().to_owned());
                 });

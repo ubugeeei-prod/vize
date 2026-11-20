@@ -2,7 +2,7 @@
 
 use super::super::{AttributeExpressionFailure, AttributeOperandError, observe_expression_value};
 use super::{AttributeBindingExpression, AttributeHead};
-use crate::dialect::vue3::operand::static_binding_parts;
+use crate::framework::vue::version::v3::operand::static_binding_parts;
 use vize_l0::Span;
 
 /// A non-Clone short original selection, never a caller-assembled argument.

@@ -2,7 +2,7 @@
 
 use super::SsrFacts;
 use crate::decision::{
-    DecisionBuildError, DecisionTables, NativeAnalysis, build_decisions, policy::TargetPolicy,
+    DecisionAnalysis, DecisionBuildError, DecisionTables, build_decisions, policy::TargetPolicy,
 };
 use vize_l2::{artifact::Artifact, file::FileArtifact};
 
@@ -10,8 +10,8 @@ use vize_l2::{artifact::Artifact, file::FileArtifact};
 ///
 /// A foreign artifact or independent table cannot be attached:
 /// ```compile_fail
-/// use vize_l3::decision::ssr::NativeSsrFileAnalysis;
-/// fn detach(view: NativeSsrFileAnalysis<'_, '_>) { let _ = view.analysis; }
+/// use vize_l3::decision::ssr::SsrFileAnalysis;
+/// fn detach(view: SsrFileAnalysis<'_, '_>) { let _ = view.analysis; }
 /// ```
 /// The owner cannot be discarded while its result is live:
 /// ```compile_fail
@@ -23,12 +23,12 @@ use vize_l2::{artifact::Artifact, file::FileArtifact};
 ///     let _ = analysis.file();
 /// }
 /// ```
-pub struct NativeSsrFileAnalysis<'owner, 'arena> {
+pub struct SsrFileAnalysis<'owner, 'arena> {
     file: &'owner FileArtifact<'arena>,
-    analysis: NativeAnalysis<'owner, 'arena>,
+    analysis: DecisionAnalysis<'owner, 'arena>,
 }
 
-impl<'owner, 'arena> NativeSsrFileAnalysis<'owner, 'arena> {
+impl<'owner, 'arena> SsrFileAnalysis<'owner, 'arena> {
     #[must_use]
     pub const fn file(&self) -> &'owner FileArtifact<'arena> {
         self.file
@@ -58,23 +58,23 @@ impl<'owner, 'arena> NativeSsrFileAnalysis<'owner, 'arena> {
 /// This proves native file completion, not original SFC custody or product parity.
 pub fn build_ssr_file_decisions<'owner, 'arena>(
     file: &'owner FileArtifact<'arena>,
-) -> Result<NativeSsrFileAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<SsrFileAnalysis<'owner, 'arena>, DecisionBuildError> {
     if !file.is_complete() {
         return Err(DecisionBuildError::IncompleteFile);
     }
     let analysis = build_decisions(file.artifact(), TargetPolicy::Ssr)?;
-    Ok(NativeSsrFileAnalysis { file, analysis })
+    Ok(SsrFileAnalysis { file, analysis })
 }
 
 // Called only after the real selected template entry derives its own File.
 pub(in crate::decision) fn build_original_file_decisions<'owner, 'arena>(
     file: &'owner FileArtifact<'arena>,
-) -> Result<NativeSsrFileAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<SsrFileAnalysis<'owner, 'arena>, DecisionBuildError> {
     let analysis = crate::decision::build::build_with_original(
         file,
         TargetPolicy::Ssr,
         &crate::decision::dom::LiteralExpressions,
         &crate::decision::dom::vue::policy::NoReads,
     )?;
-    Ok(NativeSsrFileAnalysis { file, analysis })
+    Ok(SsrFileAnalysis { file, analysis })
 }

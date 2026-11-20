@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2a-v-memo-v-for-keyed-cached-el-760",
+    history: "6bc2496e304b4f9eaae67dd202e57df154b573b2",
+    source: "<div v-for=\"item in items\" :key=\"item.id\" v-memo=\"[item.selected]\">{{ item.name }}</div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, renderList as _renderList, withMemo as _withMemo, isMemoSame as _isMemoSame } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.items, (item, __, ___, _cached) => {\n    const _memo = ([item.selected])\n    if (_cached && _cached.el && _cached.key === item.id && _isMemoSame(_cached, _memo)) return _cached\n    const _item = (_openBlock(), _createElementBlock(\"div\", { key: item.id }, [\n      _createTextVNode(_toDisplayString(item.name), 1 /* TEXT */)\n    ]))\n    _item.memo = _memo\n    return _item\n  }, _cache, 0), 128 /* KEYED_FRAGMENT */))\n}",
+    map: None,
+}

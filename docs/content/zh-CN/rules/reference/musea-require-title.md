@@ -1,11 +1,11 @@
 ---
 title: "musea/require-title"
-description: "要求 &lt;art&gt; 块具有 title 属性。"
+description: "要求 &lt;art&gt; 块具有可解析的显示标题。"
 ---
 
 # `musea/require-title`
 
-要求 &lt;art&gt; 块具有 title 属性。
+要求 &lt;art&gt; 块具有可解析的显示标题。
 
 | 默认严重程度 | 预设 | 自动修复 | 选项 |
 | --- | --- | --- | --- |
@@ -15,25 +15,25 @@ description: "要求 &lt;art&gt; 块具有 title 属性。"
 
 ## 错误示例
 
-art 块标识了 Button.vue，却没有提供标题。
+art 块既没有显式元数据，也没有可推断标题的组件。
 
-```vue annotate="remove:1"
-<art component="./Button.vue">
-  <variant name="primary" />
+```vue annotate="remove:2"
+<art>
+  <variant name="primary"><div /></variant>
 </art>
 ```
 
 ## 正确示例
 
-defineArt 选项为 art 块提供 Button 标题。
+导入的 Button 目标提供推断出的显示标题。
 
-```vue annotate="add:1,2,3,4,5"
+```vue annotate="add:1,2,3,4,6"
 <script setup>
-defineArt("./Button.vue", { title: "Button" });
+import Button from "./Button.vue";
 </script>
 
 <art>
-  <variant name="primary" />
+  <variant name="primary"><Button /></variant>
 </art>
 ```
 
@@ -58,4 +58,4 @@ export default defineConfig({}).withVue({
 
 - [Musea 规则](../musea.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L31)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L32)

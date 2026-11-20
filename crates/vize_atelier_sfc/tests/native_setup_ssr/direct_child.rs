@@ -3,7 +3,7 @@ use vize_atelier_sfc::{
     NativeSetupSsrSfcCompileError, NativeSsrSfcCompileOptions, compile_native_setup_ssr_sfc,
 };
 use vize_l0::Allocator;
-use vize_l3::decision::ssr::build_native_selected_setup_ssr_decisions;
+use vize_l3::decision::ssr::build_selected_setup_ssr_decisions;
 use vize_l4::targets::ssr::SsrErrorKind;
 
 fn inputs() -> serde_json::Value {
@@ -41,7 +41,7 @@ fn module(fixture: &serde_json::Value) -> serde_json::Value {
     let setup = admitted.setup();
     let file = setup.file();
     assert!(file.is_complete());
-    let analysis = build_native_selected_setup_ssr_decisions(setup).unwrap();
+    let analysis = build_selected_setup_ssr_decisions(setup).unwrap();
     assert!(core::ptr::eq(analysis.file(), file));
     let facts = analysis.ssr().unwrap();
     assert!(facts.unsupported().is_empty());

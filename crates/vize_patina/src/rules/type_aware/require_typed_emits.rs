@@ -84,6 +84,10 @@ impl Rule for RequireTypedEmits {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE
+    }
+
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
         // Skip if no analysis available
         if !ctx.has_analysis() {

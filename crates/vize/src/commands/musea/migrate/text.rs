@@ -40,7 +40,7 @@ pub(super) fn quote_directive_expression(value: &str) -> Option<String> {
 }
 
 /// Escape a value for a double-quoted JavaScript/TypeScript string literal (used
-/// in the generated `defineArt("...", { ... })` call).
+/// in the generated component import inferred from the authored component tag).
 pub(super) fn escape_js_string(value: &str) -> String {
     let mut out = String::default();
     for ch in value.chars() {

@@ -278,4 +278,26 @@ const b = ctx.$listeners
             );
         assert_eq!(result.error_count, 1, "{:#?}", result.diagnostics);
     }
+
+    #[test]
+    fn test_invalid_template_dollar_listeners_in_multiline_object_assign() {
+        let result = Linter::new()
+            .with_enabled_rules(Some(vec![META.name.into()]))
+            .lint_sfc(
+                r#"<template>
+  <input
+    v-on="
+      Object.assign({}, {
+        input: handleInput,
+      }, $listeners)
+    "
+  />
+</template>
+<script>
+export default { methods: { handleInput() {} } };
+</script>"#,
+                "ButtonWithLabel.vue",
+            );
+        assert_eq!(result.error_count, 1, "{:#?}", result.diagnostics);
+    }
 }

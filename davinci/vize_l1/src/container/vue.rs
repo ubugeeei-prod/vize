@@ -43,6 +43,47 @@ impl Vue {
         descriptor::observe_template_only(source)
     }
 
+    /// The file-absolute span of the value of the last `name` attribute of
+    /// the open tag starting at `at` (the one the descriptor's attribute map
+    /// keeps), quotes excluded. `None` when there is no open tag at `at`, no
+    /// such attribute, or it has no value.
+    #[must_use]
+    pub fn open_tag_attr_value(&self, source: &str, at: usize, name: &str) -> Option<Span> {
+        let mut found = None;
+        scan::read_open_boundary(source, at, |attr| {
+            if attr.name == name {
+                found = Some(attr);
+            }
+        })
+        .ok()??;
+        let attr = found?;
+        let len = u32::try_from(attr.value?.len()).ok()?;
+        let bytes = source.as_bytes();
+        let end = attr.span.end;
+        let quote = bytes
+            .get(end.checked_sub(1)? as usize)
+            .copied()
+            .filter(|byte| matches!(byte, b'"' | b'\''));
+        let quoted = quote.is_some_and(|quote| {
+            end.checked_sub(len + 2)
+                .and_then(|open| bytes.get(open as usize))
+                == Some(&quote)
+        });
+        let end = if quoted { end - 1 } else { end };
+        Some(Span::new(end.checked_sub(len)?, end))
+    }
+
+    /// Whether the open tag starting at `at` has an attribute named in
+    /// `names` (valued or bare), or cannot be read as an open tag at all.
+    #[must_use]
+    pub fn open_tag_has_attr(&self, source: &str, at: usize, names: &[&str]) -> bool {
+        let mut found = false;
+        let read = scan::read_open_boundary(source, at, |attr| {
+            found |= names.contains(&attr.name);
+        });
+        found || !matches!(read, Ok(Some(_)))
+    }
+
     /// Observe original blocks and descriptor policy in the same splitter pass.
     /// Public capture records cannot be converted into an admitted descriptor.
     pub fn observe_descriptor<'a>(

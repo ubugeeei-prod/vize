@@ -94,7 +94,8 @@ void test("generateArtModule preserves multiline template literal indentation in
     ],
     hasScriptSetup: true,
     scriptSetupContent: [
-      `defineArt("./MarkdownView.vue", { title: "Markdown" });`,
+      `import MarkdownView from "./MarkdownView.vue";`,
+      `defineArt(MarkdownView, { title: "Markdown" });`,
       "const md = `# Title",
       "",
       "- a",
@@ -114,12 +115,13 @@ void test("generateArtModule preserves multiline template literal indentation in
   assert.doesNotMatch(variant, /`# Title\n    \n    - a\n    - b`/);
 });
 
-void test("parseScriptSetupForArt infers defineArt component source literals", () => {
+void test("parseScriptSetupForArt infers the target from its imported binding", () => {
   const parsed = parseScriptSetupForArt(
     `
 import { ref } from "vue"
+import BaseButton from "./base-button.vue"
 
-defineArt("./base-button.vue", { title: "Base Button" });
+defineArt(BaseButton, { title: "Base Button" });
 
 const count = ref(0)
 `.trim(),
@@ -127,10 +129,32 @@ const count = ref(0)
 
   assert.equal(parsed.defineArtComponentName, "BaseButton");
   assert.equal(parsed.defineArtComponentSource, "./base-button.vue");
+  assert.match(parsed.defineArtComponentImport ?? "", /import BaseButton/);
   assert.deepEqual(parsed.returnNames.sort(), ["count", "ref"].sort());
 });
 
-void test("generateArtModule can resolve component only from defineArt source", () => {
+void test("parseScriptSetupForArt erases target-free defineArtMeta", () => {
+  const parsed = parseScriptSetupForArt(`
+import Counter from "./Counter.vue"
+defineArtMeta({
+  title: "Interactive Counter",
+})
+const count = 0
+`);
+  assert.deepEqual(parsed.imports, ['import Counter from "./Counter.vue"']);
+  assert.doesNotMatch(parsed.setupBody.join("\n"), /defineArtMeta/u);
+  assert.match(parsed.setupBody.join("\n"), /const count = 0/u);
+  assert.equal(parsed.defineArtComponentName, undefined);
+});
+
+void test("parseScriptSetupForArt rejects legacy string targets", () => {
+  assert.throws(
+    () => parseScriptSetupForArt(`defineArt("./base-button.vue", { title: "Base Button" })`),
+    /Import the component and call defineArt\(Component/,
+  );
+});
+
+void test("generateArtModule resolves the imported component passed to defineArt", () => {
   const art: ArtFileInfo = {
     path: "/repo/components/BaseButton.art.vue",
     metadata: {
@@ -147,7 +171,7 @@ void test("generateArtModule can resolve component only from defineArt source", 
       },
     ],
     hasScriptSetup: true,
-    scriptSetupContent: `defineArt("./base-button.vue", { title: "Base Button" });`,
+    scriptSetupContent: `import BaseButton from "./base-button.vue";\ndefineArt(BaseButton, { title: "Base Button" });`,
     hasScript: false,
     styleCount: 0,
   };
@@ -161,8 +185,43 @@ void test("generateArtModule can resolve component only from defineArt source", 
     artFilePath: art.path,
     componentImportPath: "/repo/components/base-button.vue",
     componentBindingName: "BaseButton",
+    componentImportStatement: `import BaseButton from "./base-button.vue";`,
   });
   assert.match(variant, /import BaseButton from "\/repo\/components\/base-button\.vue"/);
+});
+
+void test("Vue 2 art modules register inline play expressions", () => {
+  const art: ArtFileInfo = {
+    path: "/repo/components/Counter.art.vue",
+    metadata: {
+      title: "Counter",
+      tags: [],
+      status: "ready",
+    },
+    variants: [
+      {
+        name: "Interactive",
+        template: "<Counter />",
+        isDefault: true,
+        skipVrt: false,
+        play: "async ({ canvas }) => canvas.getByText(label)",
+        props: { initial: 0 },
+        attrs: { "aria-label": "Counter example" },
+      },
+    ],
+    hasScriptSetup: true,
+    scriptSetupContent:
+      "import Counter from './Counter.vue'\ndefineArt(Counter, { title: 'Counter' })\nconst label = 'Increment'",
+    hasScript: false,
+    styleCount: 0,
+  };
+
+  const code = generateArtModule(art, art.path, { vueVersion: 2 });
+
+  assert.match(code, /const __museaVariantPlay = \(async \(\{ canvas \}\)/);
+  assert.match(code, /window\.__museaPlay = __museaVariantPlay/);
+  assert.match(code, /<Counter v-bind="__museaVariantBindings" \/>/);
+  assert.match(code, /"aria-label":"Counter example","initial":0/);
 });
 
 void test("generatePreviewModule relies on the art module's Vite CSS imports", () => {
@@ -191,6 +250,40 @@ void test("generatePreviewModule relies on the art module's Vite CSS imports", (
 
   assert.match(code, /import \* as artModule from "virtual:musea-art:/);
   assert.doesNotMatch(code, /ensureArtStyles|musea-art-styles-/);
+  assert.doesNotMatch(code, /__museaCreatePlayContext|__museaInitPlay/);
+});
+
+void test("generatePreviewModule includes the play bridge only for the selected play variant", () => {
+  const art: ArtFileInfo = {
+    path: "/repo/components/Counter.art.vue",
+    metadata: { title: "Counter", tags: [], status: "ready" },
+    variants: [
+      {
+        name: "Interactive",
+        template: "<button>Increment</button>",
+        isDefault: true,
+        skipVrt: false,
+        play: "increments",
+      },
+      {
+        name: "Static",
+        template: "<button>Increment</button>",
+        isDefault: false,
+        skipVrt: false,
+      },
+    ],
+    hasScriptSetup: true,
+    scriptSetupContent: "const increments = definePlay(async () => {})",
+    hasScript: false,
+    styleCount: 0,
+  };
+
+  const interactive = generatePreviewModule(art, "Interactive", "Interactive");
+  const staticPreview = generatePreviewModule(art, "Static", "Static");
+
+  assert.match(interactive, /function __museaCreatePlayContext/);
+  assert.match(interactive, /__museaInitPlay\(container, "Interactive"\)/);
+  assert.doesNotMatch(staticPreview, /__museaCreatePlayContext|__museaInitPlay/);
 });
 
 void test("generated modules quote dynamic specifiers", () => {
@@ -200,17 +293,17 @@ void test("generated modules quote dynamic specifiers", () => {
       title: "Card",
       tags: [],
       status: "ready",
-      component: `./MfCard';sideEffect().vue`,
     },
     variants: [
       {
         name: `default';sideEffect()`,
-        template: "<Self />",
+        template: "<MfCardSideEffect />",
         isDefault: true,
         skipVrt: false,
       },
     ],
-    hasScriptSetup: false,
+    hasScriptSetup: true,
+    scriptSetupContent: `import MfCardSideEffect from "./MfCard';sideEffect().vue";\ndefineArt(MfCardSideEffect, { title: "Card" });`,
     hasScript: false,
     styleCount: 0,
   };

@@ -5,13 +5,6 @@ defineProps<{
   size?: "sm" | "md" | "lg";
   disabled?: boolean;
 }>();
-
-defineArt("./MuseaButton.vue", {
-  title: "Button",
-  category: "Components",
-  tags: ["button", "action", "form"],
-  status: "ready",
-});
 </script>
 
 <template>
@@ -91,32 +84,32 @@ defineArt("./MuseaButton.vue", {
 }
 </style>
 
-<art>
+<art title="Button" category="Components" tags="button,action,form" status="ready">
   <variant name="Default" default>
-    <Self>Default Button</Self>
+    <MuseaButton>Default Button</MuseaButton>
   </variant>
   <variant name="Primary">
-    <Self variant="primary">Primary Button</Self>
+    <MuseaButton variant="primary">Primary Button</MuseaButton>
   </variant>
   <variant name="Secondary">
-    <Self variant="secondary">Secondary Button</Self>
+    <MuseaButton variant="secondary">Secondary Button</MuseaButton>
   </variant>
   <variant name="Disabled">
-    <Self disabled>Disabled Button</Self>
+    <MuseaButton disabled>Disabled Button</MuseaButton>
   </variant>
   <variant name="Sizes">
     <div style="display: flex; gap: 0.75rem; align-items: center">
-      <Self size="sm" variant="primary">Small</Self>
-      <Self size="md" variant="primary">Medium</Self>
-      <Self size="lg" variant="primary">Large</Self>
+      <MuseaButton size="sm" variant="primary">Small</MuseaButton>
+      <MuseaButton size="md" variant="primary">Medium</MuseaButton>
+      <MuseaButton size="lg" variant="primary">Large</MuseaButton>
     </div>
   </variant>
   <variant name="All Variants" skip-vrt>
     <div style="display: flex; gap: 1rem; flex-wrap: wrap">
-      <Self>Default</Self>
-      <Self variant="primary">Primary</Self>
-      <Self variant="secondary">Secondary</Self>
-      <Self disabled>Disabled</Self>
+      <MuseaButton>Default</MuseaButton>
+      <MuseaButton variant="primary">Primary</MuseaButton>
+      <MuseaButton variant="secondary">Secondary</MuseaButton>
+      <MuseaButton disabled>Disabled</MuseaButton>
     </div>
   </variant>
 </art>

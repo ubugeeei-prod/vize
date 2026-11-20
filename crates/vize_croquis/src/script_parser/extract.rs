@@ -17,8 +17,8 @@ mod with_defaults;
 pub use common::{extract_call_expression, get_binding_type_from_kind};
 pub(in crate::script_parser) use emits::extract_runtime_emit_payload_type;
 pub use exports::{process_invalid_export, process_type_export};
-pub(in crate::script_parser) use macros::extract_define_art;
 pub use macros::process_call_expression;
+pub(in crate::script_parser) use macros::{extract_define_art, extract_define_art_meta};
 pub use plain_values::{
     check_getter_call_extraction, check_reactive_plain_alias_extraction,
     check_reactive_plain_assignment_alias, check_reactive_plain_assignment_mutation,

@@ -1,0 +1,20 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "newText": "<template>\n  <div>😀</div>\n</template>\n\n<!-- 😀 -->\n",
+        "range": {
+          "end": {
+            "character": 11,
+            "line": 3
+          },
+          "start": {
+            "character": 0,
+            "line": 0
+          }
+        }
+      }
+    ]
+  }
+]

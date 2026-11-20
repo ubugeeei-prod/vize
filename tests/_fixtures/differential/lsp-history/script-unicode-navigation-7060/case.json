@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "commit": "370caeafee07cec57e78a7b0c75569b299ccd160",
+  "id": "lsp/fix-history/script-unicode-navigation-7060",
+  "requirement": "Hover and definition resolve a complete CJK script identifier at its declaration and its script use, with UTF-16 ranges.",
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nconst 名前 = \"x\";\nconst a = 名前;\n</script>\n<template>{{ 名前 }}</template>\n",
+    "tsconfig.json": "{\"compilerOptions\":{\"strict\":true,\"target\":\"ES2022\",\"module\":\"ESNext\",\"moduleResolution\":\"bundler\",\"noEmit\":true},\"include\":[\"*.vue\"]}"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "名前"
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "名前;",
+        "delta": 1
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "名前;",
+        "delta": 1
+      }
+    }
+  ]
+}

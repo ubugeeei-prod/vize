@@ -72,11 +72,11 @@ pub(super) fn variant(
     analysis
 }
 
-pub(super) fn report_unused(
-    linter: &Linter,
-    filename: &str,
-    descriptor: &SfcDescriptor<'_>,
-    summary: &Croquis,
+pub(super) fn report_unused<'a>(
+    linter: &'a Linter,
+    filename: &'a str,
+    descriptor: &'a SfcDescriptor<'a>,
+    summary: &'a Croquis,
 ) -> LintResult {
     let allocator = Allocator::default();
     let mut ctx = LintContext::with_locale(
@@ -85,9 +85,11 @@ pub(super) fn report_unused(
         filename,
         linter.locale,
     );
-    ctx.set_enabled_rules(linter.enabled_rules.clone());
-    ctx.set_config_disabled_rules(linter.disabled_rules.clone());
-    ctx.set_config_rule_severities(linter.severity_overrides.clone());
+    ctx.set_rule_config(
+        linter.enabled_rules.as_ref(),
+        &linter.disabled_rules,
+        &linter.severity_overrides,
+    );
     ctx.set_help_level(linter.help_level);
     ctx.set_no_inline_config(linter.no_inline_config);
     ctx.set_type_sources(linter.type_sources.as_ref());

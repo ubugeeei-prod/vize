@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "59134d67b93e3624c71bbc4e2d8600f54a8d7653",
+  "id": "lsp/fix-history/shared-canon-generator",
+  "requirement": "Editor virtual TS uses the shared generator: relative import bases, defineArt target binding and computed map value types check as in the CLI.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "lib/sum.ts": "export const sum = (a: number, b: number) => a + b\n",
+    "components/Calc.vue": "<script setup lang=\"ts\">\nimport { computed } from 'vue'\nimport { sum } from '../lib/sum'\nconst map = computed(() => new Map([['a', 1]]))\nconst v: string = map.value.get('a')\nconst s: number = sum(1, 2)\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "components/Calc.vue"
+    },
+    {
+      "diagnostics": "components/Calc.vue"
+    }
+  ]
+}

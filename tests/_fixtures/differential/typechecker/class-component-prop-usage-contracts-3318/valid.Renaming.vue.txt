@@ -1,0 +1,11 @@
+<script lang="ts">
+import { Vue, PropSync, Model, VModel } from 'vue-property-decorator'
+
+export default class Renaming extends Vue {
+  @PropSync('title') syncedTitle!: string;
+  @Model('change') modelValue!: string;
+  @VModel() selected!: string;
+}
+</script>
+
+<template><div>{{ syncedTitle }}{{ modelValue }}{{ selected }}</div></template>

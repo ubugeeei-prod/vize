@@ -1,0 +1,72 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 1184,
+        "message": "Modifiers cannot appear here.",
+        "range": {
+          "end": {
+            "character": 7,
+            "line": 16
+          },
+          "start": {
+            "character": 0,
+            "line": 16
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 1184,
+        "message": "Modifiers cannot appear here.",
+        "range": {
+          "end": {
+            "character": 7,
+            "line": 22
+          },
+          "start": {
+            "character": 0,
+            "line": 22
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 2322,
+        "message": "Type 'boolean | undefined' is not assignable to type 'boolean'.\n  Type 'undefined' is not assignable to type 'boolean'.",
+        "range": {
+          "end": {
+            "character": 15,
+            "line": 47
+          },
+          "start": {
+            "character": 6,
+            "line": 47
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 6133,
+        "message": "'openValue' is declared but its value is never read.",
+        "range": {
+          "end": {
+            "character": 15,
+            "line": 47
+          },
+          "start": {
+            "character": 6,
+            "line": 47
+          }
+        },
+        "severity": 4,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

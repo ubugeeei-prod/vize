@@ -452,11 +452,24 @@ impl ImportRewriter {
 }
 
 pub(crate) fn source_may_contain_relative_specifier(source: &str) -> bool {
-    [
-        "'./", "\"./", "'../", "\"../", "'.'", "\".\"", "'..'", "\"..\"",
-    ]
-    .iter()
-    .any(|needle| source.contains(needle))
+    let bytes = source.as_bytes();
+    let mut cursor = 0;
+    while let Some(next) = memchr::memchr2(b'\'', b'"', bytes.get(cursor..).unwrap_or_default()) {
+        let quote_at = cursor + next;
+        let Some(&quote) = bytes.get(quote_at) else {
+            break;
+        };
+        let rest = bytes.get(quote_at + 1..).unwrap_or_default();
+        if rest.starts_with(b"./")
+            || rest.starts_with(b"../")
+            || rest.starts_with(&[b'.', quote])
+            || rest.starts_with(&[b'.', b'.', quote])
+        {
+            return true;
+        }
+        cursor = quote_at + 1;
+    }
+    false
 }
 
 impl Default for ImportRewriter {
@@ -473,3 +486,6 @@ mod empty_vue_stars_tests;
 
 #[cfg(test)]
 mod empty_vue_star_capture_tests;
+
+#[cfg(test)]
+mod source_scan_tests;

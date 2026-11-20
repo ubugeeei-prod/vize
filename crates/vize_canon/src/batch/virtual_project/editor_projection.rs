@@ -48,6 +48,10 @@ impl VirtualProject {
         mut facts: Option<&mut ModuleSpecifierFactsCache>,
     ) -> Vec<PathBuf> {
         let aliases = self.dependency_alias_map();
+        let may_have_authored_vue_ts = self
+            .source_artifacts
+            .values()
+            .any(|artifacts| !artifacts.authored_vue_ts_specifiers.is_empty());
         let mut inputs = Vec::new();
         for file in self.virtual_files_sorted() {
             let Some(source) = self.pre_rewrite_code(file).or_else(|| {
@@ -66,7 +70,12 @@ impl VirtualProject {
                     .collect_all_specifier_occurrences(&source, source_type),
             };
             for (specifier, _) in occurrences {
-                let resolved = self.resolve_file_dependency_with_inputs(file, &specifier, &aliases);
+                let resolved = self.resolve_file_dependency_with_inputs(
+                    file,
+                    &specifier,
+                    &aliases,
+                    may_have_authored_vue_ts,
+                );
                 inputs.extend(resolved.1);
             }
         }
@@ -138,6 +147,10 @@ impl VirtualProject {
             return;
         }
         let aliases = self.dependency_alias_map();
+        let may_have_authored_vue_ts = self
+            .source_artifacts
+            .values()
+            .any(|artifacts| !artifacts.authored_vue_ts_specifiers.is_empty());
         let files = match only {
             Some(paths) => paths
                 .iter()
@@ -150,7 +163,12 @@ impl VirtualProject {
             .filter_map(|file| {
                 let source = self.module_source(file)?;
                 let resolver = |specifier: &str, _| {
-                    let path = self.resolve_file_dependency(file, specifier, &aliases)?;
+                    let path = self.resolve_file_dependency(
+                        file,
+                        specifier,
+                        &aliases,
+                        may_have_authored_vue_ts,
+                    )?;
                     let target =
                         self.find_by_original(&vize_carton::path::canonicalize_non_verbatim(&path));
                     if crate::batch::declaration_path::is_declaration_file(&path) {

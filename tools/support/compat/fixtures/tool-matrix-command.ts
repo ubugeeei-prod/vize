@@ -52,7 +52,10 @@ export function toolArgs(
   project: MatrixProject,
   tool: string,
   compilerOutputDir: string,
-  options: { readonly typecheckTsconfigPath?: string | null } = {},
+  options: {
+    readonly linterConfigPath?: string | null;
+    readonly typecheckTsconfigPath?: string | null;
+  } = {},
 ): string[] {
   if (tool === "compiler") {
     return [
@@ -69,7 +72,17 @@ export function toolArgs(
     ];
   }
   if (tool === "linter") {
-    return ["lint", ...project.vueGlobs, "--format", "json", "--preset", "all", "--no-config"];
+    return [
+      "lint",
+      ...project.vueGlobs,
+      "--format",
+      "json",
+      "--preset",
+      "all",
+      ...(options.linterConfigPath == null
+        ? ["--no-config"]
+        : ["--config", options.linterConfigPath]),
+    ];
   }
   if (tool === "typechecker") {
     // One `--tsconfig` cannot answer for sibling apps that `vueGlobs` still

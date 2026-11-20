@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "commit": "1197c785f5172c325be4b907f8af09da38356475",
+  "id": "lsp/fix-history/relative-vue-imports-editor-session-755",
+  "requirement": "Relative .vue imports resolve through the editor checker session: diagnostics and definition map back to authored files.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "components/Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ label: string }>()\n</script>\n<template><b /></template>\n",
+    "pages/Home.vue": "<script setup lang=\"ts\">\nimport Child from '../components/Child.vue'\n</script>\n<template><Child :label=\"1\" /></template>\n"
+  },
+  "steps": [
+    {
+      "open": "pages/Home.vue"
+    },
+    {
+      "diagnostics": "pages/Home.vue"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "pages/Home.vue",
+      "at": {
+        "find": "import Child",
+        "delta": 8,
+        "nth": 0
+      },
+      "retry": true
+    }
+  ]
+}

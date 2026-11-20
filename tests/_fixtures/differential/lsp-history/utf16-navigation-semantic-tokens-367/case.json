@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "commit": "8b3deb24cc89ec63ce5273aeecc8827b39c67a5c",
+  "id": "lsp/fix-history/utf16-navigation-semantic-tokens-367",
+  "requirement": "Definitions, references and semantic token positions/lengths are zero-based UTF-16 after astral text; semanticTokens/range returns only overlapping tokens.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nconst e = '😀'; const label = 'a'; label\n</script>\n<template><p :title=\"'😀' + label\">{{ label }}</p></template>\n<style>p { color: v-bind(label); }</style>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ label",
+        "delta": 3,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "App.vue",
+      "at": {
+        "find": "const label",
+        "delta": 6,
+        "nth": 0
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": true
+        }
+      }
+    },
+    {
+      "request": "textDocument/semanticTokens/full",
+      "uri": "App.vue"
+    },
+    {
+      "request": "textDocument/semanticTokens/range",
+      "uri": "App.vue",
+      "params": {
+        "range": {
+          "start": {
+            "line": 3,
+            "character": 0
+          },
+          "end": {
+            "line": 3,
+            "character": 40
+          }
+        }
+      }
+    }
+  ]
+}

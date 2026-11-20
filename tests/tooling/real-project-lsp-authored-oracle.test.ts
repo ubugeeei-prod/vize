@@ -126,6 +126,23 @@ test("authored LSP oracle compares a dependency repair with its complete publica
   }
 });
 
+test("authored LSP oracle ignores unrelated diagnostics while proving dependency repair", async () => {
+  const workspace = createFixtureWorkspace("vize-authored-lsp-unrelated-repair-");
+  const session = new FakeAuthoredLspSession(workspace);
+  session.unrelatedDependencyRepairDiagnostic = true;
+  try {
+    const result = await exerciseAuthoredLspOracle(session, workspace, fixtureOracle());
+    assert.deepEqual(result.dependencyCompletion, {
+      baselineContainsProbe: false,
+      changedContainsProbe: true,
+      repairedContainsProbe: false,
+    });
+    assert.deepEqual(session.openFiles, []);
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test("authored LSP oracle rejects a dependency repair that keeps probe-era diagnostics", async () => {
   const workspace = createFixtureWorkspace("vize-authored-lsp-stale-repair-");
   const session = new FakeAuthoredLspSession(workspace);

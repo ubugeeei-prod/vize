@@ -191,6 +191,144 @@
     "kind": "UnprovidedRule",
     "detail": "UnprovidedRule { rule: \"vue/no-unused-properties\" }"
   },
+  "current-api/h11-allows-script-setup-component-imports-938": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
+  },
+  "current-api/h11-boolean-prop-key-template-binding-6403": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-boolean-prop-template-binding-2475": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-catch-without-handler-reports-floating-promise-af80c05": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-fast-extract-nested-template-292": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-v-html\" }"
+  },
+  "current-api/h11-fast-extract-script-template-string-292": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-v-html\" }"
+  },
+  "current-api/h11-fast-extract-template-prefix-block-292": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-v-html\" }"
+  },
+  "current-api/h11-floating-promise-script-call-control-23f89a9": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-floating-promise-script-call-control-322": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-floating-promise-script-call-control-a1fee61": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-handled-finally-chains-are-ignored-257": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-handled-nested-template-promises-are-ignored-259": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-handled-template-finally-chains-are-ignored-257": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-ignores-style-string-literals-838": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-scoped-style\" }"
+  },
+  "current-api/h11-lint-sfc-allows-local-props-object-v-model-membe-326": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h11-lint-sfc-allows-local-v-model-names-that-start-l-323": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h11-lint-sfc-no-unused-components-allows-dynamic-com-940": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h11-lint-sfc-no-unused-components-reports-shadowed-d-940": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h11-lint-sfc-reports-destructured-prop-member-v-mode-323": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h11-lint-sfc-reports-dynamic-props-object-v-model-mu-327": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h11-lint-sfc-reports-nested-prop-v-model-mutation-323": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h11-lint-sfc-reports-template-parser-errors-at-sfc-o-1250": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-duplicate-attributes\" }"
+  },
+  "current-api/h11-lint-sfc-reports-unlisted-props-object-v-model-m-327": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
   "current-api/h11-logical-properties-repeated-declaration-2325": {
     "api": "--native-current-api",
     "entry": "sfc",
@@ -202,6 +340,24 @@
     "entry": "sfc",
     "kind": "UnprovidedRule",
     "detail": "UnprovidedRule { rule: \"css/prefer-logical-properties\" }"
+  },
+  "current-api/h11-malformed-template-event-expressions-skip-type-a-2afeaa4": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-malformed-template-interpolations-skip-type-awar-2afeaa4": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-narrowed-template-bindings-inside-v-if-are-ignor-333": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
   },
   "current-api/h11-nested-selectors-after-keyframes-2274": {
     "api": "--native-current-api",
@@ -244,6 +400,306 @@
     "entry": "sfc",
     "kind": "UnprovidedRule",
     "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h11-no-floating-promises-ignores-sync-computed-membe-322": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-no-floating-promises-ignores-sync-member-templat-a1fee61": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-no-floating-promises-reports-bare-template-event-af80c05": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-no-floating-promises-reports-computed-member-tem-322": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-no-floating-promises-reports-control-flow-calls-256": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-no-floating-promises-reports-finally-only-calls-257": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-no-floating-promises-reports-member-template-eve-a1fee61": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-no-floating-promises-reports-nested-template-eve-259": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-no-floating-promises-reports-nested-template-int-259": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-no-floating-promises-reports-optional-computed-m-322": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-no-floating-promises-reports-optional-member-tem-23f89a9": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-no-floating-promises-reports-template-event-stat-278": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-no-floating-promises-reports-template-finally-on-257": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-no-unsafe-template-binding-reports-computed-memb-325": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-no-unsafe-template-binding-reports-event-stateme-329": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-options-api-cdn-create-app-sfc-612": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"script/no-options-api\" }"
+  },
+  "current-api/h11-options-api-destructured-create-app-sfc-612": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"script/no-options-api\" }"
+  },
+  "current-api/h11-reactivity-loss-direct-destructure-control-1515": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-reactivity-loss-plain-alias-mutation-1515": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-reactivity-loss-props-composable-calls-1515": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-relative-imports-keep-template-bindings-typed-ac-2-6406": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-relative-imports-keep-template-bindings-typed-ac-6406": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-relative-source-path-typed-import-3159": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-rendered-outputs-interpolate-lint-message-placeh-864": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/multi-word-component-names\" }"
+  },
+  "current-api/h11-rendered-outputs-interpolate-lint-message-placeh-x-864": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unsafe-url\" }"
+  },
+  "current-api/h11-reports-real-style-block-once-with-style-string-838": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-scoped-style\" }"
+  },
+  "current-api/h11-reports-unimported-script-setup-component-938": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
+  },
+  "current-api/h11-require-typed-emits-accepts-quoted-colon-key-and-1014": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-require-typed-emits-accepts-quoted-colon-key-and-2-1014": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-slot-spread-calls-use-return-type-without-hiding-6411": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-template-then-without-rejection-handler-reports-af80c05": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-then-with-rejection-handler-is-ignored-af80c05": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-then-without-rejection-handler-reports-floating-af80c05": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-tsx-setup-template-binding-2475": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-typed-computed-template-members-are-ignored-325": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-typed-destructured-v-for-template-bindings-are-i-b10876e": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-typed-shorthand-binding-and-bare-event-handler-a-6409": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-typed-v-for-alias-template-bindings-are-ignored-332": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-typed-v-for-sources-use-the-inferred-iterable-ty-6411": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-unresolved-ref-prop-template-binding-6403": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-unsafe-binding-any-control-6403": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-unsafe-binding-script-setup-any-control-2529": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-unsafe-v-for-source-still-reports-6411": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h11-unused-components-kebab-usage-303": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h11-unused-components-literal-is-control-940": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h11-unused-components-local-pascal-constant-303": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h11-unused-components-options-alias-unused-303": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h11-unused-components-options-alias-used-303": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h11-unused-components-unused-vue-import-303": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h11-vue2-options-api-runtime-props-are-safe-template-2529": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
   },
   "current-api/h11-warn-custom-block-html-file-docs-2245": {
     "api": "--native-current-api",

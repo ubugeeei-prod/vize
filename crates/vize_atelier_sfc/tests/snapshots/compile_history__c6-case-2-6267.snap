@@ -1,0 +1,38 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-2-6267",
+    history: "91c0b74b33c8c3a8eb2b3678c6c8b04c329fe296",
+    source: "<template v-match=\"a\"><div v-when=\"{ const x }\"><template v-match=\"b\"><i v-when=\"{ const x }\" :[x]=\"x\"></i></template><b :[x]=\"x\"></b></div></template>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, normalizeProps as _normalizeProps, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (() => { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (__vize_match_0_0 == null) break a0; if (!(\"x\" in Object(__vize_match_0_0))) break a0; const __vize_match_0_1 = __vize_match_0_0[\"x\"]; { const x = __vize_match_0_1; return [0, x]; } } return [-1]; })(_ctx.a); return (__vize_match_0[0] === 0)\n    ? (() => { const [, x] = __vize_match_0; return (_openBlock(), _createElementBlock(\"div\", { key: 0 }, [\n      (() => { const __vize_match_1 = ((__vize_match_1_0) => { a0: { if (__vize_match_1_0 == null) break a0; if (!(\"x\" in Object(__vize_match_1_0))) break a0; const __vize_match_1_1 = __vize_match_1_0[\"x\"]; { const x = __vize_match_1_1; return [0, x]; } } return [-1]; })(_ctx.b); return (__vize_match_1[0] === 0)\n        ? (() => { const [, x] = __vize_match_1; return (_openBlock(), _createElementBlock(\"i\", {\n          key: 0,\n          [x || \"\"]: x\n        }, null, 16 /* FULL_PROPS */)) })()\n        : _createCommentVNode(\"v-if\", true) })(),\n      _createElementVNode(\"b\", _normalizeProps({ [x || \"\"]: x }), null, 16 /* FULL_PROPS */)\n    ])) })()\n    : _createCommentVNode(\"v-if\", true) })()\n}",
+    map: None,
+}

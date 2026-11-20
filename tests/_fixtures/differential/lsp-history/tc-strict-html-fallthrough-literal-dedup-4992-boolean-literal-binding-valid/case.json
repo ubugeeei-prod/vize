@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "13bcf1ba4ddb588b79296623f259c310a1bab2b5",
+  "id": "lsp/fix-history/tc-strict-html-fallthrough-literal-dedup-4992-boolean-literal-binding-valid",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack strict-html-fallthrough-literal-dedup-4992 (case boolean-literal-binding-valid) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/Toggle.vue": "<script setup lang=\"ts\">\ndefineProps<{ modelValue?: boolean }>()\n</script>\n\n<template>\n  <span>{{ modelValue }}</span>\n  <input type=\"checkbox\" />\n</template>\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport Toggle from './Toggle.vue'\n</script>\n\n<template>\n  <Toggle :model-value=\"true\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/Toggle.vue"
+    },
+    {
+      "diagnostics": "src/Toggle.vue"
+    }
+  ]
+}

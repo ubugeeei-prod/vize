@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1a-v-if-branch-mixed-children-text-vnode-114",
+    history: "538bd26c5dd1812db7137e46be5229c83a371b4f",
+    source: "<div><label v-if=\"show\">{{ msg }}<span v-if=\"required\">*</span></label></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (show)\n      ? (_openBlock(), _createElementBlock(\"label\", { key: 0 }, [\n        _createTextVNode(_toDisplayString(msg), 1 /* TEXT */),\n        (required)\n          ? (_openBlock(), _createElementBlock(\"span\", { key: 0 }, \"*\"))\n          : _createCommentVNode(\"v-if\", true)\n      ]))\n      : _createCommentVNode(\"v-if\", true)\n  ]))\n}",
+    map: None,
+}

@@ -1,0 +1,89 @@
+[
+  {
+    "step": 2,
+    "result": [
+      {
+        "containerName": "script setup",
+        "kind": 12,
+        "location": {
+          "range": {
+            "end": {
+              "character": 0,
+              "line": 1
+            },
+            "start": {
+              "character": 0,
+              "line": 1
+            }
+          },
+          "uri": "${workspace}/one/App.vue"
+        },
+        "name": "folderOneSymbol"
+      },
+      {
+        "containerName": "script setup",
+        "kind": 12,
+        "location": {
+          "range": {
+            "end": {
+              "character": 0,
+              "line": 1
+            },
+            "start": {
+              "character": 0,
+              "line": 1
+            }
+          },
+          "uri": "${workspace}/two/App.vue"
+        },
+        "name": "folderTwoSymbol"
+      }
+    ]
+  },
+  {
+    "step": 4,
+    "version": 1,
+    "diagnostics": []
+  },
+  {
+    "step": 6,
+    "result": [
+      {
+        "containerName": "script setup",
+        "kind": 12,
+        "location": {
+          "range": {
+            "end": {
+              "character": 0,
+              "line": 1
+            },
+            "start": {
+              "character": 0,
+              "line": 1
+            }
+          },
+          "uri": "${workspace}/one/App.vue"
+        },
+        "name": "folderOneSymbol"
+      },
+      {
+        "containerName": "script setup",
+        "kind": 12,
+        "location": {
+          "range": {
+            "end": {
+              "character": 0,
+              "line": 1
+            },
+            "start": {
+              "character": 0,
+              "line": 1
+            }
+          },
+          "uri": "${workspace}/two/App.vue"
+        },
+        "name": "folderTwoSymbol"
+      }
+    ]
+  }
+]

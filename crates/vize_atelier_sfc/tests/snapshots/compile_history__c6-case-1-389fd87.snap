@@ -1,0 +1,55 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-389fd87",
+    history: "389fd87223fa8d487dcb9d06e0157cd844f24d63",
+    source: "<script setup lang='ts'>import type { Public } from './types'; type Helper = boolean; defineProps<Public>()</script>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    files: {
+        "types.ts": "type Helper = string; export type Public = { value: Helper }\n",
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "\nexport default {\n  __name: 'History',\n  props: {\n    value: { type: Boolean, required: true }\n  },\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "value": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [
+                "$PROJECT/tsconfig.json",
+                "$PROJECT/types.ts",
+            ],
+        },
+    ),
+)

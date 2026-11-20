@@ -1,0 +1,36 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-children-6177-2",
+    history: "38151fd3384faebe7fb45cdf636baca00d3ee05e",
+    source: "<section class=\"shell\" :data-state=\"subject\" v-match=\"subject\"><p v-when=\"'ready'\">Ready</p><p v-when=\"_\">Other</p></section>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"section\", {\n    class: \"shell\",\n    \"data-state\": subject\n  }, [\n    (() => { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (__vize_match_0_0 !== 'ready') break a0; return [0]; } return [1]; })(subject); return (__vize_match_0[0] === 0)\n      ? (_openBlock(), _createElementBlock(\"p\", { key: 0 }, \"Ready\"))\n      : (__vize_match_0[0] === 1)\n        ? (_openBlock(), _createElementBlock(\"p\", { key: 1 }, \"Other\"))\n      : _createCommentVNode(\"v-if\", true) })()\n  ], 8 /* PROPS */, [\"data-state\"]))\n}",
+    map: None,
+}

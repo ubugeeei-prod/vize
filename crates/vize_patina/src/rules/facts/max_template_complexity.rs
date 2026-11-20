@@ -85,7 +85,9 @@ impl Rule for MaxTemplateComplexity {
         };
         // A foreign template dialect or an external `src` has no L1 tree
         // here; the rule stays silent rather than guess.
-        if template.src.is_some() || template.lang.as_deref().is_some_and(|lang| lang != "html") {
+        if template.src.is_some()
+            || !vize_l1::container::lang::is_html_template(template.lang.as_deref())
+        {
             return;
         }
         let (Ok(tag_start), Ok(start), Ok(end)) = (

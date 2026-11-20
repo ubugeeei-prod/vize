@@ -1,0 +1,38 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "newText": "<template>\n  <p>{{ message | format-date(\"en\") }}</p>\n</template>\n",
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 3
+          },
+          "start": {
+            "character": 0,
+            "line": 0
+          }
+        }
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": [
+      {
+        "newText": "\n  <p>{{ message | format-date(\"en\") }}</p>\n",
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 2
+          },
+          "start": {
+            "character": 10,
+            "line": 0
+          }
+        }
+      }
+    ]
+  }
+]

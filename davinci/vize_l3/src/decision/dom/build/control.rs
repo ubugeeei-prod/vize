@@ -43,7 +43,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
                 }
                 if index == 0
                     && let Some(value) = value
-                    && self.native_condition(id, owner, expression, value)
+                    && self.selected_setup_condition(id, owner, expression, value)
                 {
                     first_condition = value;
                 } else {
@@ -59,7 +59,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         })
     }
 
-    fn native_condition(
+    fn selected_setup_condition(
         &self,
         id: NodeId,
         owner: &IfOp<'arena>,
@@ -67,7 +67,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         value: ValueKind,
     ) -> bool {
         use crate::decision::dom::vue::VueReadKind;
-        if !R::NATIVE_SETUP
+        if !R::SELECTED_SETUP
             || !matches!(value, ValueKind::FileDependent | ValueKind::LiteralConstant)
         {
             return false;

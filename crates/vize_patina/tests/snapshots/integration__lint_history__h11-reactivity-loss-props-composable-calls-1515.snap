@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-reactivity-loss-props-composable-calls-1515",
+    history: "49e5531b2c7e9e77647d35c87e795134e5205477",
+    source: "<script setup lang=\"ts\">\nconst { count } = defineProps<{ count: number }>()\n\nuseMyComposable(count)\n\nconst ctx2 = useMyComposable(() => count)\nconst a = ctx2.count()\n</script>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-reactivity-loss",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "type/no-reactivity-loss",
+                severity: Warning,
+                message: "Passing 'count' to 'useMyComposable' cuts the reactive graph from 'count'",
+                start: 93,
+                end: 98,
+                help: Some(
+                    "Pass `Ref<T>` or `ComputedRef<T>` instead, for example `toRef(source, 'key')` or `computed(() => value)`.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "type/no-reactivity-loss",
+                severity: Warning,
+                message: "Assigning 'ctx2.count()' to 'a' stores a plain snapshot from 'count' returned by 'useMyComposable'",
+                start: 153,
+                end: 165,
+                help: Some(
+                    "Keep the getter lazy, wrap it in `computed(...)`, or have the composable return a ref-like value.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 2,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "type/no-reactivity-loss",
+                    severity: Warning,
+                    message: "Passing 'count' to 'useMyComposable' cuts the reactive graph from 'count'",
+                    start: 93,
+                    end: 98,
+                    help: Some(
+                        "Pass `Ref<T>` or `ComputedRef<T>` instead, for example `toRef(source, 'key')` or `computed(() => value)`.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "type/no-reactivity-loss",
+                    severity: Warning,
+                    message: "Assigning 'ctx2.count()' to 'a' stores a plain snapshot from 'count' returned by 'useMyComposable'",
+                    start: 153,
+                    end: 165,
+                    help: Some(
+                        "Keep the getter lazy, wrap it in `computed(...)`, or have the composable return a ref-like value.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 2,
+        },
+    ),
+}

@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-css-percentage-asin-4981",
+    history: "33b089ce4eb7fcd28041e59c654a54535bdebf2e",
+    source: "<template><div /></template>\n<style>\na{text-size-adjust:asin(5)}\na{text-size-adjust:calc(1 + 1)}\na{font-stretch:calc(5)}\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\"))\n}",
+            css: Some(
+                "\na{text-size-adjust:asin(5)}\na{text-size-adjust:calc(1 + 1)}\na{font-stretch:calc(5)}\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

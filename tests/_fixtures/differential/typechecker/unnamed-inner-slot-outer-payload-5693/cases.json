@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 5693,
+  "regressionCommit": "8e8ec535688244d062f15880e2e1295a862c8795",
+  "sourceRevision": "8e8ec535688244d062f15880e2e1295a862c8795",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "outer-slot-props-through-unnamed-inner-slot",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/List.vue",
+          "source": "List.vue.txt"
+        },
+        {
+          "file": "src/Card.vue",
+          "source": "Card.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "outer-slot-index-passed-as-string-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/List.vue",
+          "source": "List.vue.txt"
+        },
+        {
+          "file": "src/Card.vue",
+          "source": "Card.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 16,
+          "column": 41,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    }
+  ]
+}

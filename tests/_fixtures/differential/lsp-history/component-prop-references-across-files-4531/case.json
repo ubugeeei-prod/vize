@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "commit": "0b3e32318d609bae0e91839d9fff5707ca97acbc",
+  "id": "lsp/fix-history/component-prop-references-across-files-4531",
+  "requirement": "Prop references reach closed parent template usages and reject an unrelated component sharing the prop spelling.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "Card.vue": "<script setup lang=\"ts\">\nconst props = defineProps<{ title: string; titleColor?: string }>()\n</script>\n<template><h1 :style=\"{ color: props.titleColor }\">{{ props.title }}</h1></template>\n",
+    "Other.vue": "<script setup lang=\"ts\">\ndefineProps<{ title: string }>()\n</script>\n<template><p /></template>\n",
+    "Parent.vue": "<script setup lang=\"ts\">\nimport Card from './Card.vue'\nimport Other from './Other.vue'\nconst title = 'x'\n</script>\n<template>\n  <Card title=\"a\" title-color=\"red\" />\n  <Card :title=\"title\" />\n  <Other title=\"same spelling\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "Card.vue"
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "Card.vue",
+      "at": {
+        "find": "titleColor",
+        "delta": 0,
+        "nth": 0
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": true
+        }
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "Card.vue",
+      "at": {
+        "find": "title:",
+        "delta": 0,
+        "nth": 0
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": false
+        }
+      },
+      "retry": true
+    }
+  ]
+}

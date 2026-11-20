@@ -30,11 +30,11 @@ surfaces and are not routine CI-refactor targets.
 | ----- | -------------------------------------------------------------------------------------- | --------- |
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 22        |
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 37        |
-| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 41        |
+| 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 42        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 16        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 23        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 40        |
-| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 23        |
+| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 24        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
@@ -130,36 +130,37 @@ Wall time, allocation, instruction, memory, scaling, and reproducible benchmark 
 | 03.09 | Criterion Bench                                     | [`criterion-bench.yml`](./criterion-bench.yml)                                           |
 | 03.10 | Davinci Canon distinct-host scaling                 | [`davinci-canon-scaling.yml`](./davinci-canon-scaling.yml)                               |
 | 03.11 | Davinci resource budgets                            | [`davinci-resource-budgets.yml`](./davinci-resource-budgets.yml)                         |
-| 03.12 | Doctor filter benchmark                             | [`doctor-filter-bench.yml`](./doctor-filter-bench.yml)                                   |
-| 03.13 | Document snapshot source profile                    | [`document-snapshot-source-profile.yml`](./document-snapshot-source-profile.yml)         |
-| 03.14 | Fresco dimension benchmark                          | [`fresco-dimension-bench.yml`](./fresco-dimension-bench.yml)                             |
-| 03.15 | Expression slow unit 10401 profile                  | [`fuzz-expression-10401-profile.yml`](./fuzz-expression-10401-profile.yml)               |
-| 03.16 | glibc floor benchmark                               | [`glibc-floor-bench.yml`](./glibc-floor-bench.yml)                                       |
-| 03.17 | Level instruction counts                            | [`level-instruction-counts.yml`](./level-instruction-counts.yml)                         |
-| 03.18 | Complete Level Memory Comparison                    | [`level-memory-bench.yml`](./level-memory-bench.yml)                                     |
-| 03.19 | Same-wire LSP benchmark                             | [`lsp-dual-server-benchmark.yml`](./lsp-dual-server-benchmark.yml)                       |
-| 03.20 | LSP marker scan allocation and residency comparison | [`lsp-marker-scan-scale.yml`](./lsp-marker-scan-scale.yml)                               |
-| 03.21 | LSP source operations and allocations               | [`lsp-source-profile.yml`](./lsp-source-profile.yml)                                     |
-| 03.22 | Partition weight work                               | [`partition-weight-work.yml`](./partition-weight-work.yml)                               |
-| 03.23 | Persistent batch storage                            | [`persistent-batch-storage.yml`](./persistent-batch-storage.yml)                         |
-| 03.24 | Profile allocation thread law                       | [`profile-allocation-thread-law.yml`](./profile-allocation-thread-law.yml)               |
-| 03.25 | Rust frontend threads benchmark                     | [`rust-frontend-threads-bench.yml`](./rust-frontend-threads-bench.yml)                   |
-| 03.26 | Script recovery clone cost                          | [`script-recovery-clone-cost.yml`](./script-recovery-clone-cost.yml)                     |
-| 03.27 | Script recovery cost                                | [`script-recovery-cost.yml`](./script-recovery-cost.yml)                                 |
-| 03.28 | Setup binding anchor allocation profile             | [`setup-binding-anchor-profile.yml`](./setup-binding-anchor-profile.yml)                 |
-| 03.29 | Native SFC member phase comparison                  | [`sfc-member-profile.yml`](./sfc-member-profile.yml)                                     |
-| 03.30 | Source operation profile                            | [`source-operation-profile.yml`](./source-operation-profile.yml)                         |
-| 03.31 | String Storage Bench                                | [`string-storage-bench.yml`](./string-storage-bench.yml)                                 |
-| 03.32 | Text boundary benchmark                             | [`text-boundary-bench.yml`](./text-boundary-bench.yml)                                   |
-| 03.33 | Tool Benchmark                                      | [`tool-benchmark.yml`](./tool-benchmark.yml)                                             |
-| 03.34 | Type admission scale axes                           | [`type-admission-scale.yml`](./type-admission-scale.yml)                                 |
-| 03.35 | Type source snapshot benchmark                      | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                                   |
-| 03.36 | Type-check cold pair                                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                                   |
-| 03.37 | Type-check profile                                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                                       |
-| 03.38 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                                       |
-| 03.39 | VS Code startup bench                               | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)                                 |
-| 03.40 | Vue Benchmarks Current Qualification                | [`vue-benchmarks-current-qualification.yml`](./vue-benchmarks-current-qualification.yml) |
-| 03.41 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                               |
+| 03.12 | Diagnostic digest benchmark                         | [`diagnostic-digest-bench.yml`](./diagnostic-digest-bench.yml)                           |
+| 03.13 | Doctor filter benchmark                             | [`doctor-filter-bench.yml`](./doctor-filter-bench.yml)                                   |
+| 03.14 | Document snapshot source profile                    | [`document-snapshot-source-profile.yml`](./document-snapshot-source-profile.yml)         |
+| 03.15 | Fresco dimension benchmark                          | [`fresco-dimension-bench.yml`](./fresco-dimension-bench.yml)                             |
+| 03.16 | Expression slow unit 10401 profile                  | [`fuzz-expression-10401-profile.yml`](./fuzz-expression-10401-profile.yml)               |
+| 03.17 | glibc floor benchmark                               | [`glibc-floor-bench.yml`](./glibc-floor-bench.yml)                                       |
+| 03.18 | Level instruction counts                            | [`level-instruction-counts.yml`](./level-instruction-counts.yml)                         |
+| 03.19 | Complete Level Memory Comparison                    | [`level-memory-bench.yml`](./level-memory-bench.yml)                                     |
+| 03.20 | Same-wire LSP benchmark                             | [`lsp-dual-server-benchmark.yml`](./lsp-dual-server-benchmark.yml)                       |
+| 03.21 | LSP marker scan allocation and residency comparison | [`lsp-marker-scan-scale.yml`](./lsp-marker-scan-scale.yml)                               |
+| 03.22 | LSP source operations and allocations               | [`lsp-source-profile.yml`](./lsp-source-profile.yml)                                     |
+| 03.23 | Partition weight work                               | [`partition-weight-work.yml`](./partition-weight-work.yml)                               |
+| 03.24 | Persistent batch storage                            | [`persistent-batch-storage.yml`](./persistent-batch-storage.yml)                         |
+| 03.25 | Profile allocation thread law                       | [`profile-allocation-thread-law.yml`](./profile-allocation-thread-law.yml)               |
+| 03.26 | Rust frontend threads benchmark                     | [`rust-frontend-threads-bench.yml`](./rust-frontend-threads-bench.yml)                   |
+| 03.27 | Script recovery clone cost                          | [`script-recovery-clone-cost.yml`](./script-recovery-clone-cost.yml)                     |
+| 03.28 | Script recovery cost                                | [`script-recovery-cost.yml`](./script-recovery-cost.yml)                                 |
+| 03.29 | Setup binding anchor allocation profile             | [`setup-binding-anchor-profile.yml`](./setup-binding-anchor-profile.yml)                 |
+| 03.30 | Native SFC member phase comparison                  | [`sfc-member-profile.yml`](./sfc-member-profile.yml)                                     |
+| 03.31 | Source operation profile                            | [`source-operation-profile.yml`](./source-operation-profile.yml)                         |
+| 03.32 | String Storage Bench                                | [`string-storage-bench.yml`](./string-storage-bench.yml)                                 |
+| 03.33 | Text boundary benchmark                             | [`text-boundary-bench.yml`](./text-boundary-bench.yml)                                   |
+| 03.34 | Tool Benchmark                                      | [`tool-benchmark.yml`](./tool-benchmark.yml)                                             |
+| 03.35 | Type admission scale axes                           | [`type-admission-scale.yml`](./type-admission-scale.yml)                                 |
+| 03.36 | Type source snapshot benchmark                      | [`type-snapshot-bench.yml`](./type-snapshot-bench.yml)                                   |
+| 03.37 | Type-check cold pair                                | [`typecheck-cold-pair.yml`](./typecheck-cold-pair.yml)                                   |
+| 03.38 | Type-check profile                                  | [`typecheck-profile.yml`](./typecheck-profile.yml)                                       |
+| 03.39 | Type-check scaling                                  | [`typecheck-scaling.yml`](./typecheck-scaling.yml)                                       |
+| 03.40 | VS Code startup bench                               | [`vscode-startup-bench.yml`](./vscode-startup-bench.yml)                                 |
+| 03.41 | Vue Benchmarks Current Qualification                | [`vue-benchmarks-current-qualification.yml`](./vue-benchmarks-current-qualification.yml) |
+| 03.42 | Vue Benchmarks Replay                               | [`vue-benchmarks-replay.yml`](./vue-benchmarks-replay.yml)                               |
 
 ## 04 Type checking and content mapping
 
@@ -282,14 +283,15 @@ Davinci migration, Canon ownership, Level lowering, and cross-file graph contrac
 | 07.13 | Cross-file retained import updates            | [`cross-file-source-updates.yml`](./cross-file-source-updates.yml)             |
 | 07.14 | Cross-file WASM effect grammars               | [`cross-file-wasm-effects.yml`](./cross-file-wasm-effects.yml)                 |
 | 07.15 | Canonical Davinci corpus                      | [`davinci-canonical-corpus.yml`](./davinci-canonical-corpus.yml)               |
-| 07.16 | Davinci Incremental                           | [`davinci-incremental.yml`](./davinci-incremental.yml)                         |
-| 07.17 | Davinci Kani                                  | [`davinci-kani.yml`](./davinci-kani.yml)                                       |
-| 07.18 | Davinci Plugin SDK                            | [`davinci-plugin-sdk.yml`](./davinci-plugin-sdk.yml)                           |
-| 07.19 | Davinci reference backends                    | [`davinci-reference.yml`](./davinci-reference.yml)                             |
-| 07.20 | Davinci unused bindings                       | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                 |
-| 07.21 | Level deletion readiness                      | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)               |
-| 07.22 | Level dependencies                            | [`level-dependencies.yml`](./level-dependencies.yml)                           |
-| 07.23 | Level HTML content model                      | [`level-html-content-model.yml`](./level-html-content-model.yml)               |
+| 07.16 | Davinci Creusot                               | [`davinci-creusot.yml`](./davinci-creusot.yml)                                 |
+| 07.17 | Davinci Incremental                           | [`davinci-incremental.yml`](./davinci-incremental.yml)                         |
+| 07.18 | Davinci Kani                                  | [`davinci-kani.yml`](./davinci-kani.yml)                                       |
+| 07.19 | Davinci Plugin SDK                            | [`davinci-plugin-sdk.yml`](./davinci-plugin-sdk.yml)                           |
+| 07.20 | Davinci reference backends                    | [`davinci-reference.yml`](./davinci-reference.yml)                             |
+| 07.21 | Davinci unused bindings                       | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                 |
+| 07.22 | Level deletion readiness                      | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)               |
+| 07.23 | Level dependencies                            | [`level-dependencies.yml`](./level-dependencies.yml)                           |
+| 07.24 | Level HTML content model                      | [`level-html-content-model.yml`](./level-html-content-model.yml)               |
 
 ## 08 Builders and framework integrations
 

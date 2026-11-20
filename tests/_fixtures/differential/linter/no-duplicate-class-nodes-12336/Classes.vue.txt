@@ -1,0 +1,12 @@
+<template>
+  <a class="block flex transition-all transition-all duration-200">Post</a>
+  <div class="flex flex items-center gap-1" />
+  <div class="p-1" :class="cond ? 'p-1' : 'm-1'" />
+  <div
+    :class="[
+      'max-w-64 bg-background',
+      'max-w-64',
+      cond ? 'bg-background' : '',
+    ]"
+  />
+</template>

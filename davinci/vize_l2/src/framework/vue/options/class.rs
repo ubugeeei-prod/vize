@@ -1,8 +1,11 @@
 //! Class components (`vue-class-component`, `vue-property-decorator`): the
 //! options object of an `@Component({..})` or `@Options({..})` decorator, and
 //! the class's instance members. A method is a method, an accessor a
-//! computed, and a field data unless a member decorator makes it a prop or
-//! an injection.
+//! computed, and a field data unless a member decorator makes it a prop, a
+//! computed or an injection: `@Prop` and `@Model` declare the field as the
+//! prop itself, while `@PropSync`, `@ModelSync` and `@VModel` declare a prop
+//! of another name and make the field the computed wrapper over it, which
+//! the template reads through the instance.
 
 use super::OptionMemberKind;
 use super::read::{Authored, Entry, Reads, static_key, wrapped};
@@ -103,8 +106,10 @@ fn field(decorators: &[Decorator<'_>]) -> OptionMemberKind {
             name.is_some_and(|name| names.contains(&name))
         })
     };
-    if named(&["Prop", "PropSync", "Model", "ModelSync", "VModel"]) {
+    if named(&["Prop", "Model"]) {
         OptionMemberKind::Prop
+    } else if named(&["PropSync", "ModelSync", "VModel"]) {
+        OptionMemberKind::Computed
     } else if named(&["Inject", "InjectReactive"]) {
         OptionMemberKind::Inject
     } else {

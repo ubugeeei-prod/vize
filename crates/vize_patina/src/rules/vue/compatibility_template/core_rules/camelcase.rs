@@ -25,6 +25,10 @@ impl Rule for Camelcase {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::DIRECTIVE.union(crate::rule::RuleHooks::INTERPOLATION)
+    }
+
     fn check_interpolation<'a>(
         &self,
         ctx: &mut LintContext<'a>,

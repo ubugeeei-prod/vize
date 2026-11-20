@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_join_has_its_units_and_is_monotone": {
+        "prover": "alt-ergo",
+        "time": 0.061
+      }
+    }
+  }
+}

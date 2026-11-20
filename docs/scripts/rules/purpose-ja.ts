@@ -67,8 +67,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "musea/no-empty-variant": "内容のない variant ブロックを検出します。",
   "musea/prefer-design-tokens":
     "CSS に直接記述した値が登録済みのデザイントークンの値に一致する場合、対応する CSS 変数で表現します。",
-  "musea/require-component": "art ブロックに対象の component を指定します。",
-  "musea/require-title": "art ブロックに title を指定します。",
+  "musea/require-component": "art ブロックの対象 component を解決できるようにします。",
+  "musea/require-title": "art ブロックの表示 title を解決できるようにします。",
   "musea/unique-variant-names": "同じ Art ファイル内の variant 名を一意にします。",
   "musea/valid-variant": "variant ブロックに name を指定します。",
   "nuxt/no-nuxt-config-test-key":
@@ -297,6 +297,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/no-template-key": "v-for 用ではない template の key 指定を検出します。",
   "vue/no-template-lang": "template の lang 指定を避ける方針を示します。",
   "vue/no-template-shadow": "テンプレート変数が外側の名前を隠す箇所を検出します。",
+  "vue/prefer-pug-lang": "旧 jade 1.x の template と、pug 3 と意味が異なる記述を検出します。",
   "vue/no-template-target-blank": "target=_blank の外部リンクに適切な rel を指定します。",
   "vue/no-textarea-mustache": "textarea 内の mustache を検出し、v-model の使用を勧めます。",
   "vue/no-undefined-refs": "テンプレート内の未定義変数参照を検出します。",

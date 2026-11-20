@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "commit": "6951435b8399486326e749fecb305d32bfa48acb",
+  "id": "lsp/fix-history/reactive-bindings-listed-once-746",
+  "requirement": "Ref and computed setup bindings appear once in script and template completion.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nimport { ref, computed } from 'vue'\nconst st = ref(0)\nconst ts = computed(() => st.value * 2)\nst\n</script>\n<template>\n  <div>{{ st }}</div>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "st\n</script>",
+        "delta": 2,
+        "nth": 0
+      },
+      "labels": [
+        "st",
+        "ts"
+      ]
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "st }}",
+        "delta": 2,
+        "nth": 0
+      },
+      "labels": [
+        "st",
+        "ts"
+      ]
+    }
+  ]
+}

@@ -96,6 +96,10 @@ fn watched_project_inventory_shares_closed_text_and_invalidates_from_exact_event
         );
         let dirty = state.discover_workspace_project_source_snapshots().await;
         assert_eq!(dirty[0].1.as_ref(), "export const dirty = 3;");
+        assert!(Arc::ptr_eq(
+            &dirty[0].1,
+            &state.documents.text_snapshot(&uri).unwrap()
+        ));
         std::fs::write(&path, "export const final_saved = 4;").unwrap();
         state.invalidate_workspace_project_source_contents();
         assert_eq!(

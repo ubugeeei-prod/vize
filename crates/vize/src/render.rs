@@ -46,9 +46,11 @@
 //! identical byte for byte, which TS-53 checks on every snapshot.
 
 mod catalog;
+pub mod digest;
 mod excerpt;
 mod fix;
 mod frame;
+pub mod hints;
 mod paint;
 mod row;
 mod source;

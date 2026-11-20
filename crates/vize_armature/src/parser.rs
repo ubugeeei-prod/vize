@@ -36,6 +36,8 @@ mod svg_title_tests;
 mod table_component_tests;
 mod template_syntax;
 #[cfg(all(test, feature = "legacy"))]
+mod tokenizer_authored_structure_witness;
+#[cfg(all(test, feature = "legacy"))]
 mod tokenizer_contract_tests;
 #[cfg(all(test, feature = "legacy"))]
 mod tokenizer_empty_value_witness;

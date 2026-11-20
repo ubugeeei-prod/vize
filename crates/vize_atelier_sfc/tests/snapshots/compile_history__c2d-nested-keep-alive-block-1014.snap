@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2d-nested-keep-alive-block-1014",
+    history: "6ff5652a8a49c3d74b2212131b73166fbc8ec7a4",
+    source: "<div><KeepAlive><component :is=\"current\" /></KeepAlive></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock, KeepAlive as _KeepAlive } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (_openBlock(), _createBlock(_KeepAlive, null, [\n      (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.current)))\n    ], 1024 /* DYNAMIC_SLOTS */))\n  ]))\n}",
+    map: None,
+}

@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "commit": "0059ffb8da838f66e6376968745ae9d38eccd918",
+  "id": "lsp/fix-history/mathml-tag-references-2568",
+  "requirement": "MathML tag hovers use MathMLElementTagNameMap for known tags and the MathML fallback for unmapped ones.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<template>\n  <math><mi>x</mi><mfrac><mn>1</mn><mn>2</mn></mfrac><mfenced></mfenced></math>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "math",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "mi>",
+        "delta": 0,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "mfrac",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "mfenced",
+        "delta": 1,
+        "nth": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "commit": "c681035734fa84c223ee77395ea26bdd07297fb2",
+  "id": "lsp/fix-history/vue2-filter-formatting-6952",
+  "requirement": "Document, range and on-type formatting in a Vue 2 project keep explicit filter names and chains.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "formatting": true
+  },
+  "files": {
+    "vite.config.mjs": "export default { vue: {\"version\":\"2\",\"languageServer\":{\"formatting\":true}} };\n",
+    "App.vue": "<template>\n<p>{{message|format-date('en')}}</p>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/formatting",
+      "uri": "App.vue",
+      "params": {
+        "options": {
+          "tabSize": 2,
+          "insertSpaces": true
+        }
+      }
+    },
+    {
+      "request": "textDocument/rangeFormatting",
+      "uri": "App.vue",
+      "params": {
+        "range": {
+          "start": {
+            "line": 1,
+            "character": 0
+          },
+          "end": {
+            "line": 1,
+            "character": 35
+          }
+        },
+        "options": {
+          "tabSize": 2,
+          "insertSpaces": true
+        }
+      }
+    }
+  ]
+}

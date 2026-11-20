@@ -1,0 +1,217 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 952,
+  "regressionCommit": "80333546c87b9bbd40362926e61114551eb28f93",
+  "sourceRevision": "80333546c87b9bbd40362926e61114551eb28f93",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "with-defaults-direct-template-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/CounterButton.vue",
+          "source": "with-defaults.CounterButton.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "with-defaults-missing-default-keeps-undefined",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/CounterButton.vue",
+          "source": "with-defaults.no-default.CounterButton.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/CounterButton.vue",
+          "line": 18,
+          "column": 51,
+          "severity": 1,
+          "code": 18048,
+          "message": "'count' is possibly 'undefined'."
+        }
+      ]
+    },
+    {
+      "id": "reexported-vue-interface-template-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Base.vue",
+          "source": "reexport.Base.vue.txt"
+        },
+        {
+          "file": "src/index.ts",
+          "source": "reexport.index.ts.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "reexport.Child.vue.txt"
+        },
+        {
+          "file": "src/ParentWidget.vue",
+          "source": "reexport.ParentWidget.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "reexported-vue-interface-wrong-prop-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Base.vue",
+          "source": "reexport.Base.vue.txt"
+        },
+        {
+          "file": "src/index.ts",
+          "source": "reexport.index.ts.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "reexport.Child.vue.txt"
+        },
+        {
+          "file": "src/ParentWidget.vue",
+          "source": "reexport.wrong-prop.ParentWidget.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/ParentWidget.vue",
+          "line": 16,
+          "column": 6,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string | undefined' is not assignable to type 'boolean | undefined'.\nType 'string' is not assignable to type 'boolean | undefined'."
+        }
+      ]
+    },
+    {
+      "id": "mixed-reexported-vue-interface-template-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/primitive.ts",
+          "source": "mixed.primitive.ts.txt"
+        },
+        {
+          "file": "src/content/Content.vue",
+          "source": "mixed.Content.vue.txt"
+        },
+        {
+          "file": "src/content/index.ts",
+          "source": "mixed.content-index.ts.txt"
+        },
+        {
+          "file": "src/Wrapper.vue",
+          "source": "mixed.Wrapper.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "mixed-reexported-vue-interface-wrong-prop-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/primitive.ts",
+          "source": "mixed.primitive.ts.txt"
+        },
+        {
+          "file": "src/content/Content.vue",
+          "source": "mixed.Content.vue.txt"
+        },
+        {
+          "file": "src/content/index.ts",
+          "source": "mixed.content-index.ts.txt"
+        },
+        {
+          "file": "src/Wrapper.vue",
+          "source": "mixed.wrong-prop.Wrapper.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Wrapper.vue",
+          "line": 17,
+          "column": 6,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'AsTag | undefined' is not assignable to type 'boolean | undefined'.\nType '\"div\"' is not assignable to type 'boolean | undefined'."
+        }
+      ]
+    },
+    {
+      "id": "as-assertions-with-prop-named-as",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "as-assertion.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "as-assertion-bad-conversion-with-prop-named-as",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "as-assertion.bad-conversion.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 14,
+          "column": 19,
+          "severity": 1,
+          "code": 2352,
+          "message": "Conversion of type 'string' to type 'number' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first."
+        }
+      ]
+    }
+  ]
+}

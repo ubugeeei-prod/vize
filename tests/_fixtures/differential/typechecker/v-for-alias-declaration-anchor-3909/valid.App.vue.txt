@@ -1,0 +1,14 @@
+<script setup lang="ts">
+interface User {
+  id: number
+  name: string
+}
+
+const users: User[] = [{ id: 1, name: 'Ada' }]
+</script>
+
+<template>
+  <ul><li v-for="(it, index) in users" :key="it.id">{{ it.name }}</li></ul>
+  <ol><li v-for="({ id, name }, position) in users" :key="id">{{ position }}: {{ name }}</li></ol>
+  <p v-for="[first, ...rest] in [[1, 2, 3]]" :key="first">{{ first + rest.length }}</p>
+</template>

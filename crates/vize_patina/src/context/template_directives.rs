@@ -2,11 +2,13 @@
 
 use vize_l0::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
 use vize_l0::{CompactString, Span, cstr};
-use vize_l1::markup::directive::{DirectivePrefix, DirectiveSyntax, VueDirectives};
+use vize_l1::framework::vue::directive::{DirectivePrefix, DirectiveSyntax, VueDirectives};
 use vize_l1::markup::{Element, ElementClose, Interpolation, SurfaceChild, SurfaceTree, Token};
 use vize_relief::SourceLocation;
 
 use super::LintContext;
+
+mod expression_comments;
 
 struct CommentDirective<'a> {
     content: &'a str,
@@ -26,21 +28,29 @@ struct PendingForget {
 pub(crate) struct TemplateCommentDirectives<'t, 'a> {
     surface: &'t SurfaceTree<'a>,
     directives: Vec<CommentDirective<'a>>,
+    has_directive_marker: bool,
 }
 
 impl<'t, 'a> TemplateCommentDirectives<'t, 'a> {
     pub(crate) fn new(surface: &'t SurfaceTree<'a>) -> Self {
+        let has_directive_marker = source_may_contain_directive(surface.source);
         let mut directives = Vec::new();
-        collect_directives(surface.source, &surface.children, &mut directives);
-        directives.sort_unstable_by_key(|directive| directive.span.start);
+        if has_directive_marker {
+            collect_directives(surface.source, &surface.children, &mut directives);
+            directives.sort_unstable_by_key(|directive| directive.span.start);
+        }
         Self {
             surface,
             directives,
+            has_directive_marker,
         }
     }
 
     /// Register suppression-only effects before template-level callbacks run.
     pub(crate) fn prescan(&self, ctx: &mut LintContext<'_>) {
+        if !self.has_directive_marker {
+            return;
+        }
         self.prescan_children(ctx, &self.surface.children);
     }
 
@@ -85,6 +95,7 @@ impl<'t, 'a> TemplateCommentDirectives<'t, 'a> {
         child: &SurfaceChild<'a>,
         forget_next_child: &mut Vec<PendingForget>,
     ) {
+        self.register_expression_comments(ctx, child);
         match child {
             SurfaceChild::Comment(token) => {
                 let span = token_span(self.surface.source, token);
@@ -135,6 +146,39 @@ impl<'t, 'a> TemplateCommentDirectives<'t, 'a> {
         }
     }
 
+    /// Suppression pragmas in JavaScript comments of directive values and
+    /// interpolations, which eslint-plugin-vue reads like HTML comments.
+    fn register_expression_comments(&self, ctx: &mut LintContext<'_>, child: &SurfaceChild<'a>) {
+        let source = self.surface.source;
+        let mut register = |text: &str| {
+            if !text.contains("lint-") {
+                return;
+            }
+            let start = offset(source, text);
+            for (body, at) in expression_comments::comments(text) {
+                ctx.register_lint_comment(body, start + at as u32);
+            }
+        };
+        match child {
+            SurfaceChild::Element(element) => {
+                for attribute in element.open.attrs.iter() {
+                    let Some(value) = attribute.value.as_ref() else {
+                        continue;
+                    };
+                    let directive = VueDirectives
+                        .decompose(attribute.name.text, offset(source, attribute.name.text))
+                        .ok()
+                        .flatten();
+                    if directive.is_some() {
+                        register(value.content.text);
+                    }
+                }
+            }
+            SurfaceChild::Interpolation(interpolation) => register(interpolation.content.text),
+            _ => {}
+        }
+    }
+
     fn forgotten_element_targets(
         &self,
         siblings: &[SurfaceChild<'a>],
@@ -162,6 +206,14 @@ impl<'t, 'a> TemplateCommentDirectives<'t, 'a> {
         }
         targets
     }
+}
+
+/// Ordinary templates have no comment policy. Comment openers are checked
+/// first so their hot path scans the source once, not once per marker.
+fn source_may_contain_directive(source: &str) -> bool {
+    let has_lint_marker = source.contains("eslint-") || source.contains("oxlint-");
+    (source.contains("<!--") && (source.contains("@vize:") || has_lint_marker))
+        || (has_lint_marker && (source.contains("//") || source.contains("/*")))
 }
 
 fn collect_directives<'a>(
@@ -358,4 +410,34 @@ fn offset(source: &str, slice: &str) -> u32 {
     let offset = (slice.as_ptr() as usize).saturating_sub(source.as_ptr() as usize);
     debug_assert!(offset <= source.len() && offset <= u32::MAX as usize);
     offset as u32
+}
+
+#[cfg(test)]
+mod tests {
+    use super::source_may_contain_directive;
+
+    #[test]
+    fn directive_probe_rejects_ordinary_templates_and_comments() {
+        for source in [
+            "<main><p>Hello</p></main>",
+            "<main title='@vize:todo'>Hello</main>",
+            "<!-- ordinary comment --><main />",
+            "<main title='eslint-disable'>Hello</main>",
+        ] {
+            assert!(!source_may_contain_directive(source), "{source}");
+        }
+    }
+
+    #[test]
+    fn directive_probe_admits_each_supported_comment_marker() {
+        for source in [
+            "<!-- @vize:todo later -->",
+            "<!-- eslint-disable vue/no-v-html -->",
+            "<!-- oxlint-disable vue/no-v-html -->",
+            "<main :class=\"// eslint-disable-next-line vue/no-v-html\n value\" />",
+            "<main>{{ /* oxlint-disable vue/no-v-html */ value }}</main>",
+        ] {
+            assert!(source_may_contain_directive(source), "{source}");
+        }
+    }
 }

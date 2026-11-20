@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-with-defaults-literal-values-27f9968",
+    history: "27f9968e8690ba876095e821f4062d7d7ec57882",
+    source: "<script setup lang=\"ts\">\nwithDefaults(defineProps<{ count: number; label?: string }>(), { count: 41, label: 'ready' })\n</script>\n<template><div /></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nexport default {\n  __name: 'History',\n  props: {\n    count: { type: Number, required: true, default: 41 },\n    label: { type: String, required: false, default: \"ready\" }\n  },\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\"))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "label": Props,
+                        "count": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

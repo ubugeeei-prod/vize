@@ -66,6 +66,7 @@ jobs:
             template_compile,
             l1_lowering,
             l2_to_l3_lowering,
+            text_rebuild,
             folio_parse,
           ]
     steps:

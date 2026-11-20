@@ -8,7 +8,13 @@ mod dependency_refresh;
 mod dependency_update;
 mod qualification_graph;
 
+/// Every caller reads the same authenticated record; authenticate it once.
 fn load() -> Value {
+    static LOADED: std::sync::OnceLock<Value> = std::sync::OnceLock::new();
+    LOADED.get_or_init(load_uncached).clone()
+}
+
+fn load_uncached() -> Value {
     let bytes =
         fs::read(support::corpus().join("malformed-membership/provider-peer-update-20261031.json"))
             .unwrap();

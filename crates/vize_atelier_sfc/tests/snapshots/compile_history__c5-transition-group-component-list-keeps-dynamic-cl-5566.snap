@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-transition-group-component-list-keeps-dynamic-cl-5566",
+    history: "6f21c0432e32a51ae4f09a5d8df6f9ffcfb9a485",
+    source: "<transition-group tag=\"ul\" name=\"flip-list\"><b-list-group-item v-for=\"msg in messages\" :key=\"`console-${msg[2]}`\"><span :class=\"[`text-${msg[0]}`, 'text-monospace', 'small', 'd-block']\" style=\"white-space: pre-wrap;\">{{ msg[1] }}</span></b-list-group-item></transition-group>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList, TransitionGroup as _TransitionGroup, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_b_list_group_item = _resolveComponent(\"b-list-group-item\")\n  \n  return (_openBlock(), _createBlock(_TransitionGroup, {\n    tag: \"ul\",\n    name: \"flip-list\"\n  }, {\n    default: _withCtx(() => [\n      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(messages, (msg) => {\n        return (_openBlock(), _createBlock(_component_b_list_group_item, { key: `console-${msg[2]}` }, {\n          default: _withCtx(() => [\n            _createElementVNode(\"span\", {\n              class: _normalizeClass([`text-${msg[0]}`, 'text-monospace', 'small', 'd-block']),\n              style: \"white-space: pre-wrap;\"\n            }, _toDisplayString(msg[1]), 3 /* TEXT, CLASS */)\n          ]),\n          _: 2 /* DYNAMIC */\n        }, 1024 /* DYNAMIC_SLOTS */))\n      }), 128 /* KEYED_FRAGMENT */))\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

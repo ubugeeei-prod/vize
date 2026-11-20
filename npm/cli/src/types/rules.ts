@@ -325,6 +325,7 @@ export const LINT_RULE_NAMES = [
   "vue/prefer-const",
   "vue/prefer-prop-type-boolean-first",
   "vue/prefer-props-shorthand",
+  "vue/prefer-pug-lang",
   "vue/prefer-single-event-payload",
   "vue/prefer-template",
   "vue/prefer-true-attribute-shorthand",

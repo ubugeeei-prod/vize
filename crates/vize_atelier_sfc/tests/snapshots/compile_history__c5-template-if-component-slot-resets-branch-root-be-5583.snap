@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-template-if-component-slot-resets-branch-root-be-5583",
+    history: "e65a078d379e3e5d30d5e7afb3bc61bb3ee3f5b0",
+    source: "<Foo><template v-if=\"show\"><ClientOnly><template #fallback><span class=\"subtle\">(-)</span></template><span v-if=\"pending\">(<span class=\"spinner\"></span>)</span><span v-else-if=\"total !== null\"><span class=\"subtle\">(</span>{{ total }}<span class=\"subtle\">)</span></span><span v-else class=\"subtle\">(-)</span></ClientOnly></template></Foo>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_ClientOnly = _resolveComponent(\"ClientOnly\")\n  const _component_Foo = _resolveComponent(\"Foo\")\n  \n  return (_openBlock(), _createBlock(_component_Foo, null, {\n    default: _withCtx(() => [\n      (show)\n        ? (_openBlock(), _createBlock(_component_ClientOnly, { key: 0 }, {\n          fallback: _withCtx(() => [\n            _createElementVNode(\"span\", { class: \"subtle\" }, \"(-)\")\n          ]),\n          default: _withCtx(() => [\n            (pending)\n              ? (_openBlock(), _createElementBlock(\"span\", { key: 0 }, [\n                _createTextVNode(\"(\"),\n                _createElementVNode(\"span\", { class: \"spinner\" }),\n                _createTextVNode(\")\")\n              ]))\n              : (total !== null)\n                ? (_openBlock(), _createElementBlock(\"span\", { key: 1 }, [\n                  _createElementVNode(\"span\", { class: \"subtle\" }, \"(\"),\n                  _createTextVNode(_toDisplayString(total), 1 /* TEXT */),\n                  _createElementVNode(\"span\", { class: \"subtle\" }, \")\")\n                ]))\n              : (_openBlock(), _createElementBlock(\"span\", {\n                key: 2,\n                class: \"subtle\"\n              }, \"(-)\"))\n          ]),\n          _: 1 /* STABLE */\n        }))\n        : _createCommentVNode(\"v-if\", true)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

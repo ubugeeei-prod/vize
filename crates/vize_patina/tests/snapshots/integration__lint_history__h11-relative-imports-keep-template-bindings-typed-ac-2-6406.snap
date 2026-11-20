@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-relative-imports-keep-template-bindings-typed-ac-2-6406",
+    history: "3a2fd80a314ae1c644af30bed1419855b2133c1e",
+    source: "<script setup lang=\"ts\">\nimport { safe } from './model.ts'\n</script>\n<template><p>{{ safe.message }}</p></template>",
+    filename: "tests/fixtures/lint-history-projects/relative-imports-6406/src/second/Panel.vue",
+    entry: "sfc",
+    rule: "type/no-unsafe-template-binding",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "tests/fixtures/lint-history-projects/relative-imports-6406/src/second/Panel.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "tests/fixtures/lint-history-projects/relative-imports-6406/src/second/Panel.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

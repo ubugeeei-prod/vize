@@ -45,6 +45,10 @@
       "import": "./dist/vrt.mjs",
       "types": "./dist/vrt.d.mts"
     },
+    "./test": {
+      "import": "./dist/test-runner.mjs",
+      "types": "./dist/test-runner.d.mts"
+    },
     "./cli": {
       "import": "./dist/cli/index.mjs",
       "types": "./dist/cli/index.d.mts"

@@ -1,0 +1,61 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-6227",
+    history: "0dfe185cb89453abd87c72568e6c89d2bab34583",
+    source: "<p v-when=\"'ok'\">ok</p><p v-when=\"_\">other</p>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 2,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: ExtendPoint,
+            message: "`v-when` branches must be direct children of a `v-match` container.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 3,
+                        end: 16,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: ExtendPoint,
+            message: "`v-when` branches must be direct children of a `v-match` container.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 26,
+                        end: 36,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _directive_when = _resolveDirective(\"when\")\n  \n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _withDirectives(_createElementVNode(\"p\", null, \"ok\", 512 /* NEED_PATCH */), [\n      [_directive_when, 'ok']\n    ]),\n    _withDirectives(_createElementVNode(\"p\", null, \"other\", 512 /* NEED_PATCH */), [\n      [_directive_when, _]\n    ])\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    map: None,
+}

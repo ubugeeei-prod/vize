@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "commit": "48ed58698766af52d664c4da876b9a18d3a5b256",
+  "id": "lsp/fix-history/package-import-definitions-3001",
+  "requirement": "Definition on module specifiers resolves an unambiguous package types export, scoped wildcard declarations and relative declarations; conditional root candidates fail closed without the checker.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "node_modules/cond/package.json": "{ \"name\": \"cond\", \"exports\": { \"./blocked\": null, \"./feature/*\": { \"types\": \"./types/feature/*.d.ts\" }, \"./feature/special/*\": { \"types\": \"./types/special/*.d.ts\" }, \".\": { \"types\": \"./types/index.d.ts\", \"default\": \"./index.js\" } } }\n",
+    "node_modules/cond/types/index.d.ts": "export declare const root: number\n",
+    "node_modules/cond/types/feature/a.d.ts": "export declare const featureA: string\n",
+    "node_modules/cond/types/special/a.d.ts": "export declare const specialA: string\n",
+    "node_modules/cond/index.js": "export const root = 1\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport type { Route } from 'typed-only'\nimport { root } from 'cond'\nimport { featureA } from 'cond/feature/a'\nimport { specialA } from 'cond/feature/special/a'\nimport blocked from 'cond/blocked'\nimport escape from 'cond/../../outside'\nexport { local } from './local'\n</script>\n",
+    "local.d.ts": "export declare const local: 1\n",
+    "node_modules/typed-only/package.json": "{\"exports\":{\".\":{\"types\":\"./dist/index.d.ts\"}}}",
+    "node_modules/typed-only/dist/index.d.ts": "export interface Route {}\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "'cond'",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "'cond/feature/a'",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "'./local'",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "'typed-only'",
+        "delta": 1,
+        "nth": 0
+      }
+    }
+  ]
+}

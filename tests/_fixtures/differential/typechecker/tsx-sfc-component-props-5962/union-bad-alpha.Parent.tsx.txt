@@ -1,0 +1,12 @@
+import Alpha from './Alpha.vue'
+import Beta from './Beta.vue'
+
+declare const useAlpha: boolean
+declare const forwarded: { alpha: number; beta: number }
+
+const pick = () => useAlpha ? Alpha : Beta
+
+export default () => {
+  const Component = pick()
+  return <Component {...forwarded} />
+}

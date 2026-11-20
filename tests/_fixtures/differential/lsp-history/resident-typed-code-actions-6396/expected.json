@@ -1,0 +1,48 @@
+[
+  {
+    "step": 1,
+    "result": null
+  },
+  {
+    "step": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**count**\n\n_Template binding from script_\n\n```typescript\ncount: literal const\n```\n\nLiteral constant value, hoisted for optimization.\n\n**Source**\n\n`<script setup>`\n\n**Template behavior**\n- Ref values are automatically unwrapped in templates.\n- The binding is resolved from `<script setup>` analysis."
+      },
+      "range": {
+        "end": {
+          "character": 46,
+          "line": 3
+        },
+        "start": {
+          "character": 41,
+          "line": 3
+        }
+      }
+    }
+  },
+  {
+    "step": 4,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**count**\n\n_Template binding from script_\n\n```typescript\ncount: literal const\n```\n\nLiteral constant value, hoisted for optimization.\n\n**Source**\n\n`<script setup>`\n\n**Template behavior**\n- Ref values are automatically unwrapped in templates.\n- The binding is resolved from `<script setup>` analysis."
+      },
+      "range": {
+        "end": {
+          "character": 46,
+          "line": 4
+        },
+        "start": {
+          "character": 41,
+          "line": 4
+        }
+      }
+    }
+  },
+  {
+    "step": 5,
+    "result": null
+  }
+]

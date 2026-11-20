@@ -1,0 +1,35 @@
+<script setup lang="ts">
+enum State {
+  None,
+  Active,
+  Paused,
+  Max,
+}
+
+type ActiveState = Exclude<State, State.None | State.Max>;
+
+interface Item {
+  state: State;
+}
+
+const labels = {
+  [State.None]: "none",
+  [State.Active]: "active",
+  [State.Paused]: "paused",
+  [State.Max]: "max",
+} as const satisfies Record<State, string>;
+
+const activeLabels = {
+  [State.Active]: "active",
+  [State.Paused]: "paused",
+} satisfies Record<ActiveState, string>;
+
+declare const state: State;
+declare const activeState: ActiveState;
+declare const items: Item[];
+labels[state];
+activeLabels[activeState];
+items.map((item) => labels[item.state]);
+</script>
+
+<template><p>inferred enum keys</p></template>

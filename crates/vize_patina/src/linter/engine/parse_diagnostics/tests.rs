@@ -10,9 +10,24 @@ struct Observed {
     end: u32,
 }
 
+/// The preserved parser with the HTML tree construction a browser applies to
+/// an in-DOM template.
 fn legacy(source: &str) -> Vec<Observed> {
+    preserved(source, true)
+}
+
+/// The preserved parser on a Vue template, which it builds as written.
+fn legacy_component(source: &str) -> Vec<Observed> {
+    preserved(source, false)
+}
+
+fn preserved(source: &str, html_tree_construction: bool) -> Vec<Observed> {
     let allocator = Allocator::new();
-    let (_, errors) = vize_armature::Parser::new(&allocator, source).parse();
+    let options = vize_armature::ParserOptions {
+        html_tree_construction,
+        ..vize_armature::ParserOptions::default()
+    };
+    let (_, errors) = vize_armature::Parser::with_options(&allocator, source, options).parse();
     errors
         .iter()
         .filter(|error| !error.is_compatibility_notice())
@@ -45,8 +60,8 @@ fn legacy(source: &str) -> Vec<Observed> {
         .collect()
 }
 
-/// The preserved parser reads every template as a browser reads HTML; Vue
-/// builds a Vue template as written, so only an in-DOM template is fostered.
+/// Vue builds a Vue template as written, so only an in-DOM template is
+/// fostered.
 const FOSTER: &str = "Foster parenting moved this element before the nearest open table.";
 
 fn vue_error(message: &str, start: u32, end: u32) -> Observed {
@@ -205,14 +220,11 @@ fn a_vue_template_reports_what_vue_reports() {
 }
 
 #[test]
-fn a_duplicate_attribute_is_a_warning_only_in_the_vue_2_dialect() {
+fn a_duplicate_attribute_is_an_error_in_every_vue_dialect() {
     let source = "<div first=one FIRST=two></div>";
     let allocator = Allocator::new();
     let parsed = crate::markup::L2Template::lower(&allocator, source);
-    for (version, severity) in [
-        (None, Severity::Error),
-        (Some(vize_l0::config::VueVersion::V2), Severity::Warning),
-    ] {
+    for version in [None, Some(vize_l0::config::VueVersion::V2)] {
         let linter = Linter::new().with_vue_version(version);
         let result = linter.l1_template_parse_lint_result("diagnostics.vue", source, &parsed);
         let severities: Vec<_> = result
@@ -220,7 +232,16 @@ fn a_duplicate_attribute_is_a_warning_only_in_the_vue_2_dialect() {
             .iter()
             .map(|diagnostic| diagnostic.severity)
             .collect();
-        assert_eq!(severities, [severity], "{version:?}");
+        assert_eq!(severities, [Severity::Error], "{version:?}");
+    }
+}
+
+#[test]
+fn a_vue_template_matches_the_preserved_component_parse() {
+    // The compiler's parser builds a Vue template as written too, so lint and
+    // compile report the same parse diagnostics.
+    for source in CASES {
+        assert_eq!(l1(source), legacy_component(source), "{source:?}");
     }
 }
 

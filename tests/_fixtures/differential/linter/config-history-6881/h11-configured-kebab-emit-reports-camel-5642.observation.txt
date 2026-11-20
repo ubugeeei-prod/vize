@@ -1,0 +1,79 @@
+Case {
+    id: "h11-configured-kebab-emit-reports-camel-5642",
+    history: "5b82f9f6edd3cdbeb88d28f4a1b797cb4f36b540",
+    source_file: "h11-configured-kebab-emit-reports-camel-5642.vue.txt",
+    filename: "Emitter.vue",
+    entry: "sfc",
+    preset: "opinionated",
+    enabled_rules: Some(
+        [
+            "script/custom-event-name-casing",
+        ],
+    ),
+    disabled_rules: [],
+    rule_severities: [],
+    disabled_categories: [],
+    category_severities: [],
+    rule_options: Object {
+        "script/custom-event-name-casing": Object {
+            "casing": String("kebab-case"),
+        },
+    },
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Emitter.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/custom-event-name-casing",
+                severity: Error,
+                message: "Custom event name 'myEvent' is not kebab-case.",
+                start: 58,
+                end: 67,
+                help: Some(
+                    "Rename this emitted event to kebab-case (e.g. `my-event`).",
+                ),
+                labels: [
+                    Label {
+                        message: "expected kebab-case",
+                        start: 58,
+                        end: 67,
+                    },
+                ],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Emitter.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/custom-event-name-casing",
+                    severity: Error,
+                    message: "Custom event name 'myEvent' is not kebab-case.",
+                    start: 58,
+                    end: 67,
+                    help: Some(
+                        "Rename this emitted event to kebab-case (e.g. `my-event`).",
+                    ),
+                    labels: [
+                        Label {
+                            message: "expected kebab-case",
+                            start: 58,
+                            end: 67,
+                        },
+                    ],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

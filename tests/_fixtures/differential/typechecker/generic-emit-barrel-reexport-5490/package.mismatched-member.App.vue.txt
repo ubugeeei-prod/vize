@@ -1,0 +1,30 @@
+<script setup lang="ts">
+import { Dialog } from "@scope/dialogs";
+import { RegistrationType, type ParsedContentsInfoRaw, type ParsedQuestionItemRaw } from "@scope/dialogs/types";
+
+let isClosed = false;
+let opened = true;
+
+function onParsed({
+  contentsInfo,
+  questionItems,
+}: {
+  contentsInfo: ParsedContentsInfoRaw<RegistrationType.NormalOneto>;
+  questionItems: ParsedQuestionItemRaw<RegistrationType.NormalOneto>[];
+}) {
+  contentsInfo.normalId.toUpperCase();
+  questionItems[0]?.normalQuestionId.toUpperCase();
+}
+
+function cancel() {}
+</script>
+
+<template>
+  <Dialog
+    v-if="!isClosed"
+    v-model="opened"
+    :registration-type="RegistrationType.TextbookOneto"
+    @parsed="onParsed"
+    @cancel="cancel"
+  />
+</template>

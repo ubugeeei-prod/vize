@@ -4,13 +4,6 @@ defineProps<{
   variant?: "default" | "success" | "warning" | "error" | "info";
   size?: "sm" | "md" | "lg";
 }>();
-
-defineArt("./MuseaBadge.vue", {
-  title: "Badge",
-  category: "Components",
-  tags: ["badge", "tag", "label"],
-  status: "ready",
-});
 </script>
 
 <template>
@@ -69,24 +62,24 @@ defineArt("./MuseaBadge.vue", {
 }
 </style>
 
-<art>
+<art title="Badge" category="Components" tags="badge,tag,label" status="ready">
   <variant name="Default" default>
-    <Self>Default</Self>
+    <MuseaBadge>Default</MuseaBadge>
   </variant>
   <variant name="Variants">
     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center">
-      <Self>Default</Self>
-      <Self variant="success">Success</Self>
-      <Self variant="warning">Warning</Self>
-      <Self variant="error">Error</Self>
-      <Self variant="info">Info</Self>
+      <MuseaBadge>Default</MuseaBadge>
+      <MuseaBadge variant="success">Success</MuseaBadge>
+      <MuseaBadge variant="warning">Warning</MuseaBadge>
+      <MuseaBadge variant="error">Error</MuseaBadge>
+      <MuseaBadge variant="info">Info</MuseaBadge>
     </div>
   </variant>
   <variant name="Sizes">
     <div style="display: flex; gap: 0.5rem; align-items: center">
-      <Self size="sm" variant="info">Small</Self>
-      <Self size="md" variant="info">Medium</Self>
-      <Self size="lg" variant="info">Large</Self>
+      <MuseaBadge size="sm" variant="info">Small</MuseaBadge>
+      <MuseaBadge size="md" variant="info">Medium</MuseaBadge>
+      <MuseaBadge size="lg" variant="info">Large</MuseaBadge>
     </div>
   </variant>
 </art>

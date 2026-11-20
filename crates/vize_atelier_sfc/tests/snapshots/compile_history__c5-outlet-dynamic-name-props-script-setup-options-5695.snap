@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-outlet-dynamic-name-props-script-setup-options-5695",
+    history: "725b3313bcff8bb4679af5f455fdec9c75126439",
+    source: "<slot :name=\"slotName\" foo=\"bar\" :item=\"row\">fallback {{ msg }}</slot>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: Some(
+            true,
+        ),
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, renderSlot as _renderSlot, createTextVNode as _createTextVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return _renderSlot(_ctx.$slots, _ctx.slotName, { foo: \"bar\", item: _ctx.row }, () => [\n    _createTextVNode(\"fallback \" + _toDisplayString(_ctx.msg), 1 /* TEXT */)\n  ])\n}",
+    map: None,
+}

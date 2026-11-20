@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_join_is_a_least_upper_bound": {
+        "prover": "alt-ergo",
+        "time": 0.014
+      }
+    }
+  }
+}

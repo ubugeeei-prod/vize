@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "commit": "15b97c411d0b28062c921c9d7bb061fd16a77695",
+  "id": "lsp/fix-history/compile-error-suppresses-checker-709",
+  "requirement": "An SFC compile validation error publishes the compile diagnostic and suppresses checker diagnostics, like parser errors; the repaired document gets its checker diagnostics back.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "App.vue": "<script setup lang=\"ts\">\nconst items = []\nwithDefaults(defineProps<{\n  items?: string[]\n}>(), { items })\nconst bad: string = 1\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    },
+    {
+      "change": "App.vue",
+      "version": 2,
+      "contentChanges": [
+        {
+          "text": "<script setup lang=\"ts\">\nwithDefaults(defineProps<{\n  items?: string[]\n}>(), { items: () => [] })\nconst bad: string = 1\n</script>\n"
+        }
+      ]
+    },
+    {
+      "diagnostics": "App.vue"
+    }
+  ]
+}

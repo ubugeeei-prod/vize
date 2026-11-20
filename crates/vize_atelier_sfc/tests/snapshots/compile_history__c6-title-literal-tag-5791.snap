@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-title-literal-tag-5791",
+    history: "059809411e400c9237dc1bd8f6ded729bda5e2ca",
+    source: "<title><div /></title><p>{{ label }}</p>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    (_openBlock(), _createElementBlock(\"title\", null, \"<div />\")),\n    _createElementVNode(\"p\", null, _toDisplayString(label), 1 /* TEXT */)\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    map: None,
+}

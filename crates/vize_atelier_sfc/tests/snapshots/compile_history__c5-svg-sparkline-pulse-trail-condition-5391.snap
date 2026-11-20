@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-svg-sparkline-pulse-trail-condition-5391",
+    history: "e741ff65d18a19929157a17516773863b2e87bfb",
+    source: "<svg><g v-if=\"canRender\"><template v-for=\"(_, i) in TRAIL_LENGTH\"><circle v-if=\"i % 3 === 0 /* perf optimization */\" :key=\"`sparkline_dot_${i}_${pulsePathId}`\" :r=\"getRadius(i)\"></circle></template></g></svg>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"svg\", null, [\n    (canRender)\n      ? (_openBlock(), _createElementBlock(\"g\", { key: 0 }, [\n        (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(TRAIL_LENGTH, (_, i) => {\n          return (_openBlock(), _createElementBlock(_Fragment, null, [\n            (i % 3 === 0 /* perf optimization */)\n              ? (_openBlock(), _createElementBlock(\"circle\", {\n                key: `sparkline_dot_${i}_${pulsePathId}`,\n                r: getRadius(i)\n              }, null, 8 /* PROPS */, [\"r\"]))\n              : _createCommentVNode(\"v-if\", true)\n          ], 64 /* STABLE_FRAGMENT */))\n        }), 256 /* UNKEYED_FRAGMENT */))\n      ]))\n      : _createCommentVNode(\"v-if\", true)\n  ]))\n}",
+    map: None,
+}

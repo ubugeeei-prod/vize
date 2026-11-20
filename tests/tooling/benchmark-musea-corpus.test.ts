@@ -67,14 +67,14 @@ test("the corpus writes the same bytes into any directory it is given", () => {
 });
 
 test("the corpus exercises both metadata shapes and every generated variant", () => {
-  // The plugin reads metadata from the `defineArt` macro and from legacy
+  // The plugin reads metadata from the `defineArtMeta` macro and from legacy
   // `<art>` attributes through different code, and only `<art>` interaction
   // attributes reach `extractCustomArtMetadata`. A corpus that dropped any of
   // these would quietly stop measuring the branch it was written to cover.
   const describe = (index: number) => {
     const source = createArtFileSource(index);
     return [
-      /^defineArt\("\.\/BenchComponent\d+\.vue", \{$/m.test(source) ? "defineArt" : "legacy-attrs",
+      /^defineArtMeta\(\{$/m.test(source) ? "defineArtMeta" : "legacy-attrs",
       /<art[^>]*\baction-events="[^"]+"/.test(source) ? "interactive" : "static",
       source.match(/<variant\b/g)?.length ?? 0,
       source.match(/<style\b[^>]*>/g)?.length ?? 0,
@@ -86,20 +86,20 @@ test("the corpus exercises both metadata shapes and every generated variant", ()
   assert.deepEqual(
     Array.from({ length: 15 }, (_, index) => describe(index)),
     [
-      ["defineArt", "interactive", 2, 2],
-      ["defineArt", "static", 3, 2],
-      ["defineArt", "static", 4, 2],
-      ["defineArt", "interactive", 2, 2],
+      ["defineArtMeta", "interactive", 2, 2],
+      ["defineArtMeta", "static", 3, 2],
+      ["defineArtMeta", "static", 4, 2],
+      ["defineArtMeta", "interactive", 2, 2],
       ["legacy-attrs", "static", 3, 2],
-      ["defineArt", "static", 4, 2],
-      ["defineArt", "interactive", 2, 2],
-      ["defineArt", "static", 3, 2],
-      ["defineArt", "static", 4, 2],
+      ["defineArtMeta", "static", 4, 2],
+      ["defineArtMeta", "interactive", 2, 2],
+      ["defineArtMeta", "static", 3, 2],
+      ["defineArtMeta", "static", 4, 2],
       ["legacy-attrs", "interactive", 2, 2],
-      ["defineArt", "static", 3, 2],
-      ["defineArt", "static", 4, 2],
-      ["defineArt", "interactive", 2, 2],
-      ["defineArt", "static", 3, 2],
+      ["defineArtMeta", "static", 3, 2],
+      ["defineArtMeta", "static", 4, 2],
+      ["defineArtMeta", "interactive", 2, 2],
+      ["defineArtMeta", "static", 3, 2],
       ["legacy-attrs", "static", 4, 2],
     ],
   );

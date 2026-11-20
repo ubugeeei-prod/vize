@@ -52,6 +52,25 @@ pub(super) fn overlays(state: &ServerState) -> Vec<(PathBuf, String)> {
     overlays
 }
 
+#[test]
+fn overlay_snapshot_shares_the_document_revision_buffer() {
+    let state = ServerState::new();
+    let document_uri = uri("Shared.vue");
+    open(&state, "Shared.vue", "<template>shared</template>");
+
+    let resident = state.documents.text_snapshot(&document_uri).unwrap();
+    let overlays = state.corsa_overlays();
+    assert_eq!(overlays.len(), 1);
+    assert!(Arc::ptr_eq(&resident, &overlays[0].1));
+
+    rewrite(&state, "Shared.vue", "<template>changed</template>", 2);
+    let changed = state.documents.text_snapshot(&document_uri).unwrap();
+    let changed_overlays = state.corsa_overlays();
+    assert!(Arc::ptr_eq(&changed, &changed_overlays[0].1));
+    assert!(!Arc::ptr_eq(&resident, &changed_overlays[0].1));
+    assert_eq!(overlays[0].1.as_str(), "<template>shared</template>");
+}
+
 /// The stale-overlay guard: a wrong overlay makes Corsa type-check text the
 /// user never wrote, so the whole set is asserted after each step of a
 /// realistic editing session rather than spot-checked.

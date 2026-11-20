@@ -27,6 +27,7 @@ export const corpusTargets = [
   "template_compile",
   "l1_lowering",
   "l2_to_l3_lowering",
+  "text_rebuild",
   "folio_parse",
 ] as const;
 type CorpusTarget = (typeof corpusTargets)[number];
@@ -156,6 +157,7 @@ export function seedFuzzCorpus(arguments_: readonly string[]): number {
         "template_compile",
         "l1_lowering",
         "l2_to_l3_lowering",
+        "text_rebuild",
       ] as const) {
         writeSeed(directories[target], bytes);
       }
@@ -179,7 +181,7 @@ export function seedFuzzCorpus(arguments_: readonly string[]): number {
   }
 
   console.log(
-    `Seeded ${sfcCount} sfc_parse entries, ${templateCount} template entries (template_lexer/template_compile/l1_lowering/l2_to_l3_lowering), ${expressionCount} JS/TS expression entries, ${programCount} native Program sources in eight explicit profiles, ${styleCount} CSS entries, ${folioFiles.length} folio pages from ${vueFiles.length + folioFiles.length} fixtures, and ${loweringRegressionCount} retained l1_lowering regression entries.`,
+    `Seeded ${sfcCount} sfc_parse entries, ${templateCount} template entries (template_lexer/template_compile/l1_lowering/l2_to_l3_lowering/text_rebuild), ${expressionCount} JS/TS expression entries, ${programCount} native Program sources in eight explicit profiles, ${styleCount} CSS entries, ${folioFiles.length} folio pages from ${vueFiles.length + folioFiles.length} fixtures, and ${loweringRegressionCount} retained l1_lowering regression entries.`,
   );
   return 0;
 }

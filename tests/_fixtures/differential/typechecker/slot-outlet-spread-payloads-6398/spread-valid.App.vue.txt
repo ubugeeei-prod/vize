@@ -1,0 +1,20 @@
+<script setup lang="ts">
+const row = { item: { id: 1, label: 'ok' } };
+const wrong = { item: { id: 'wrong', label: 'bad' } };
+const callbacks = { format: (value: number) => value.toFixed() };
+const optional = undefined as unknown as { item?: { id: number; label: string } };
+defineSlots<{
+  row(props: { item: { id: number; label: string }; format: (value: number) => string }): unknown;
+  optional(props: { item?: { id: number; label: string } }): unknown;
+}>();
+</script>
+<template>
+  <slot name="row" v-bind="row" :format="value => value.toFixed()" />
+  <slot name="row" v-bind="callbacks" :item="row.item" />
+  <slot name="row" v-bind="wrong" :item="row.item" :format="callbacks.format" />
+  <slot name="row" v-bind="optional" :item="row.item" :format="callbacks.format" />
+  <slot name="row" v-bind="{ ...row, ...callbacks }" />
+  <slot name="row" v-bind="{ item: row.item, format: value => value.toFixed() }" />
+  <slot name="row" v-bind="{ item: row.item, format: (value: number) => value.toFixed() }" />
+  <slot name="optional" v-bind="optional" />
+</template>

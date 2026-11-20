@@ -1,0 +1,55 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-vue27-static-value-object-3815",
+    history: "ec660a80795c4853c723f71fc5cfe0c028deb987",
+    source: "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n\nconst OPTION = { text: 'Login info', value: 'LOGIN_INFO' } as const\nconst count = ref(0)\nconst wantsString = (value: string) => value\nconst wantsNumber = (value: number) => value\n</script>\n\n<template>\n  <div>{{ wantsString(OPTION.value) }} {{ wantsNumber(count) }}</div>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: Some(
+            "2.7",
+        ),
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nimport { ref } from 'vue'\n\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nconst OPTION = {\n  text: \"Login info\",\n  value: \"LOGIN_INFO\"\n};\nconst count = ref(0);\nconst wantsString = (value) => value;\nconst wantsNumber = (value) => value;\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(wantsString(OPTION.value)) + \" \" + _toDisplayString(wantsNumber(count.value)), 1 /* TEXT */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "wantsNumber": SetupConst,
+                        "ref": SetupConst,
+                        "count": SetupRef,
+                        "wantsString": SetupConst,
+                        "OPTION": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

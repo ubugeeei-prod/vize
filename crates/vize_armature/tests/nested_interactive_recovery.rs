@@ -1,4 +1,10 @@
-use vize_armature::{Allocator, CompilerError, ErrorCode, TemplateChildNode, parse};
+//! Nested `<a>`/`<button>` repair runs only under HTML tree construction
+//! (documents, Vapor); a Vue component template keeps the authored nesting.
+
+use vize_armature::{
+    Allocator, CompilerError, ErrorCode, RootNode, TemplateChildNode, options::ParserOptions,
+    parse_with_options,
+};
 
 const NESTED_ANCHOR_RECOVERY: &str =
     "Nested anchor start tag closed the previous anchor before inserting the new one.";
@@ -172,6 +178,14 @@ fn a_sibling_start_tag_does_not_invent_an_end_tag() {
             "{source}: the first interactive element has no end tag in the source: {errors:?}"
         );
     }
+}
+
+fn parse<'a>(allocator: &'a Allocator, source: &'a str) -> (RootNode<'a>, Vec<CompilerError>) {
+    let options = ParserOptions {
+        html_tree_construction: true,
+        ..ParserOptions::default()
+    };
+    parse_with_options(allocator, source, options)
 }
 
 fn invalid_end_tag_count(errors: &[CompilerError]) -> usize {

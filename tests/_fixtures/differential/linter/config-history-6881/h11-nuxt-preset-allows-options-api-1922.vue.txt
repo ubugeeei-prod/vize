@@ -1,0 +1,10 @@
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  name: 'AppLoader',
+  props: {
+    active: Boolean
+  }
+})
+</script>

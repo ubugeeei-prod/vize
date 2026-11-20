@@ -1,6 +1,8 @@
-//! Table foster parenting and implicit table section/row insertion. Sections
-//! and rows are implied only in document mode or when the caller asks for them
-//! (`ParserOptions::implied_table_sections`).
+//! Table foster parenting, implicit table section/row insertion and the
+//! closing of open table parts. They run only in document mode or when the
+//! caller asks for HTML tree construction
+//! (`ParserOptions::html_tree_construction`); a Vue component template keeps
+//! its authored table structure, as Vue's compiler does.
 
 use vize_l0::Vec;
 use vize_relief::ElementNode;
@@ -21,6 +23,7 @@ impl<'a> Parser<'a> {
 
     pub(super) fn should_foster_text(&self, content: &str) -> bool {
         !self.template_syntax.is_quirks()
+            && self.html_tree_construction()
             && self.open_table_count > 0
             && content
                 .chars()
@@ -30,6 +33,7 @@ impl<'a> Parser<'a> {
 
     pub(super) fn should_foster_start_tag(&self, tag: &str, is_html_element: bool) -> bool {
         !self.template_syntax.is_quirks()
+            && self.html_tree_construction()
             && is_html_element
             && self.open_table_count > 0
             && self.is_in_table_insertion_context()
@@ -76,7 +80,10 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn handle_in_table_start_tag(&mut self, tag: &str, offset: usize) {
-        if self.open_table_count == 0 || self.template_syntax.is_quirks() {
+        if self.open_table_count == 0
+            || self.template_syntax.is_quirks()
+            || !self.html_tree_construction()
+        {
             return;
         }
 
@@ -103,9 +110,7 @@ impl<'a> Parser<'a> {
                 let last = self.stack.len() - 1;
                 self.close_stack_element_at(last, false);
             }
-            if self.implies_table_sections() {
-                self.ensure_table_section(offset);
-            }
+            self.ensure_table_section(offset);
         } else if Self::tag_in(tag, &["td", "th"]) {
             if self
                 .stack
@@ -114,9 +119,6 @@ impl<'a> Parser<'a> {
             {
                 let last = self.stack.len() - 1;
                 self.close_stack_element_at(last, false);
-            }
-            if !self.implies_table_sections() {
-                return;
             }
             self.ensure_table_section(offset);
             let authored_section_parent = !self.document
@@ -127,12 +129,6 @@ impl<'a> Parser<'a> {
                 self.ensure_table_row(offset);
             }
         }
-    }
-
-    /// Whether direct rows and cells gain the owners the HTML parser inserts.
-    /// A Vue component template keeps authored rows, as Vue's compiler does.
-    fn implies_table_sections(&self) -> bool {
-        self.document || self.options.implied_table_sections
     }
 
     fn ensure_table_section(&mut self, offset: usize) {

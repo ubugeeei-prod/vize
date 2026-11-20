@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const value = 'hello'
+function handleUpdate(value: string) {
+  void value
+}
+</script>
+
+<template>
+  <my-widget :label="value" @update:model-value="handleUpdate" />
+</template>

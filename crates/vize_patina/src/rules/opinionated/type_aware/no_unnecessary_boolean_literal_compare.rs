@@ -18,4 +18,6 @@ impl Rule for NoUnnecessaryBooleanLiteralCompare {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
+
+    metadata_only_type_rule!();
 }

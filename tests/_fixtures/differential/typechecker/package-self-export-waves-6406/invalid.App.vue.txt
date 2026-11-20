@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import { label } from '@demo/kit'; const after: string = label
+</script>
+
+<template><p>{{ after }}</p></template>

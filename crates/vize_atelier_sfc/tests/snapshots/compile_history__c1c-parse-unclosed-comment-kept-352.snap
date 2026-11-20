@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1c-parse-unclosed-comment-kept-352",
+    history: "afe86f7d92ad136866d235153389d711cb53ccde",
+    source: "before<!-- open",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: Some(
+            true,
+        ),
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: EofInComment,
+            message: "Comment is missing its closing `-->`; preserving the unfinished comment so parsing can finish.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 6,
+                        end: 7,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "",
+    code: "",
+    map: None,
+}

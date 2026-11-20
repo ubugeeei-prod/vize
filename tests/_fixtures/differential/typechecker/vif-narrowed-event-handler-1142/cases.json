@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1142,
+  "regressionCommit": "4e8f5317fe371bb74dbd0731f28f78156db866a5",
+  "sourceRevision": "4e8f5317fe371bb74dbd0731f28f78156db866a5",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "same-element-vif-narrows-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/SameElementVifHandler.vue",
+          "source": "SameElementVifHandler.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "same-element-vif-wrong-branch",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/SameElementVifHandler.vue",
+          "source": "wrong-branch.SameElementVifHandler.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/SameElementVifHandler.vue",
+          "line": 8,
+          "column": 44,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'bSpecific' does not exist on type '{ type: \"a\"; }'."
+        }
+      ]
+    },
+    {
+      "id": "reserved-prop-guard-narrows-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/ReservedPropGuard.vue",
+          "source": "ReservedPropGuard.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "reserved-prop-guard-wrong-branch",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/ReservedPropGuard.vue",
+          "source": "wrong-branch.ReservedPropGuard.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/ReservedPropGuard.vue",
+          "line": 8,
+          "column": 50,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'bSpecific' does not exist on type '{ type: \"a\"; }'."
+        }
+      ]
+    }
+  ]
+}

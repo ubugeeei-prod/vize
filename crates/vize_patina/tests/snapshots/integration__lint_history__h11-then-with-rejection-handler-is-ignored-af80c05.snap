@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-then-with-rejection-handler-is-ignored-af80c05",
+    history: "af80c0587d81378a1bee60641f4d9eaf9fe9940e",
+    source: "<script setup lang=\"ts\">\nasync function loadData(): Promise<number> {\n  return 1\n}\nfunction report(error: unknown) {\n  console.error(error)\n}\n\nloadData().then((value) => console.log(value), report)\n</script>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-floating-promises",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

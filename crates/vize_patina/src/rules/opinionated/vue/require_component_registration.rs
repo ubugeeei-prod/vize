@@ -226,6 +226,10 @@ impl Rule for RequireComponentRegistration {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE
+    }
+
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         // Collect all custom components used in template
         let mut used_components: Vec<(String, u32, u32)> = Vec::new();

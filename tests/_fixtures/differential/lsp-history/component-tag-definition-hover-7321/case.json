@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "commit": "3924c20efaeb7865910509c0421477b661821c30",
+  "id": "lsp/fix-history/component-tag-definition-hover-7321",
+  "requirement": "Component-tag hover shows the child's declared typed props, emits, slots and models instead of the usage-only lists, including after an unsaved child edit.",
+  "files": {
+    "Parent.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nconst attrs = {}\n</script>\n<template>\n  <Child v-bind=\"attrs\" message=\"usage-only\" @save=\"() => {}\">\n    <template #provided>usage slot</template>\n  </Child>\n</template>\n",
+    "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ message: string; count?: number }>()\ndefineEmits<{ save: [value: number] }>()\ndefineSlots<{ item(props: { row: string; index: number }): any; empty(): any }>()\ndefineModel<string>('title')\n</script>\n<template><div><slot name=\"item\" :row=\"message\" :index=\"count\" /></div></template>\n",
+    "index.ts": "export { default as Child } from './Child.vue';"
+  },
+  "steps": [
+    {
+      "open": "Parent.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "Parent.vue",
+      "at": {
+        "find": "<Child",
+        "delta": 2
+      }
+    },
+    {
+      "open": "Child.vue",
+      "version": 2,
+      "text": "<script setup lang=\"ts\">\ndefineProps<{ message: string; count?: boolean }>()\ndefineEmits<{ save: [value: number] }>()\ndefineSlots<{ item(props: { row: number; index: number }): any; empty(): any }>()\ndefineModel<string>('title')\n</script>\n<template><div><slot name=\"item\" :row=\"message\" :index=\"count\" /></div></template>\n"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "Parent.vue",
+      "at": {
+        "find": "<Child",
+        "delta": 2
+      }
+    }
+  ]
+}

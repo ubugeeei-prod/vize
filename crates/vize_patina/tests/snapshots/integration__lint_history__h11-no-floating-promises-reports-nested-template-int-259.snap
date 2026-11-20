@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-no-floating-promises-reports-nested-template-int-259",
+    history: "63740292834a0123c5652de933b74780a581586e",
+    source: "<script setup lang=\"ts\">\nconst enabled = true\nasync function loadLabel(): Promise<string> {\n  return 'ready'\n}\n</script>\n\n<template>\n  <p>{{ enabled ? loadLabel() : 'idle' }}</p>\n</template>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-floating-promises",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "type/no-floating-promises",
+                severity: Warning,
+                message: "Template interpolation creates a Promise that is not awaited, returned, or explicitly ignored",
+                start: 151,
+                end: 162,
+                help: Some(
+                    "Resolve the Promise in `<script setup>` and expose settled state to the template instead of creating async work during render.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "type/no-floating-promises",
+                    severity: Warning,
+                    message: "Template interpolation creates a Promise that is not awaited, returned, or explicitly ignored",
+                    start: 151,
+                    end: 162,
+                    help: Some(
+                        "Resolve the Promise in `<script setup>` and expose settled state to the template instead of creating async work during render.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

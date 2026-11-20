@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "commit": "2ef58bb59aebd84bd69da6c32ded77a790ba76c2",
+  "id": "lsp/fix-history/svg-dom-attribute-mappings-2563",
+  "requirement": "SVG attribute hovers drop href entries without reflected DOM properties while reflected ones stay.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<template>\n  <svg><a href=\"#x\"><use href=\"#y\" xlink:href=\"#z\" /></a><image href=\"i.png\" /></svg>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "href",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "href",
+        "delta": 1,
+        "nth": 1
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "xlink:href",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "href=\"i",
+        "delta": 1,
+        "nth": 0
+      }
+    }
+  ]
+}

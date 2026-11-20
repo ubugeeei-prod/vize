@@ -2,7 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::{FxHashMap, String as CompactString};
+use vize_carton::{FxHashMap, FxHashSet, String as CompactString};
 
 use crate::batch::virtual_project::VirtualProject;
 use crate::batch::virtual_project::{
@@ -27,7 +27,7 @@ pub(super) struct RouteDiscovery<'a> {
     routes: &'a mut FxHashMap<(PathBuf, CompactString), crate::PackageRoute>,
     reachability: &'a mut FxHashMap<ReachabilityCacheKey, PackageRouteReachability>,
     bindings: &'a mut Vec<crate::PackageRouteBinding>,
-    inputs: &'a mut Vec<PathBuf>,
+    inputs: &'a mut FxHashSet<PathBuf>,
     aliases: &'a [CompilerAlias],
     /// Aliases and compiler options a session-cached scan was resolved with.
     scope: u64,
@@ -40,7 +40,7 @@ impl<'a> RouteDiscovery<'a> {
         routes: &'a mut FxHashMap<(PathBuf, CompactString), crate::PackageRoute>,
         reachability: &'a mut FxHashMap<ReachabilityCacheKey, PackageRouteReachability>,
         bindings: &'a mut Vec<crate::PackageRouteBinding>,
-        inputs: &'a mut Vec<PathBuf>,
+        inputs: &'a mut FxHashSet<PathBuf>,
         aliases: &'a [CompilerAlias],
     ) -> Self {
         let scope = {
@@ -59,6 +59,17 @@ impl<'a> RouteDiscovery<'a> {
             inputs,
             aliases,
             scope,
+        }
+    }
+
+    /// Every resolution consults the shared settings inputs, and a reachability
+    /// scan's inputs again for each importer that reaches the package, so most
+    /// paths arrive many times; each is kept once.
+    fn record_inputs<'p>(&mut self, paths: impl IntoIterator<Item = &'p PathBuf>) {
+        for path in paths {
+            if !self.inputs.contains(path) {
+                self.inputs.insert(path.clone());
+            }
         }
     }
 
@@ -82,10 +93,10 @@ impl<'a> RouteDiscovery<'a> {
         let watchable_negative = lookup.is_watchable_negative();
         let (route, consulted) = lookup.into_parts();
         if route.is_some() || watchable_negative {
-            self.inputs.extend(consulted.iter().cloned());
-            self.inputs
-                .extend(self.settings.input_paths().iter().cloned());
-            self.inputs.extend(context_inputs.iter().cloned());
+            let settings = self.settings;
+            self.record_inputs(consulted.iter());
+            self.record_inputs(settings.input_paths().iter());
+            self.record_inputs(context_inputs.iter());
         }
         let reachability = route
             .as_ref()
@@ -136,7 +147,7 @@ impl<'a> RouteDiscovery<'a> {
                 .as_ref()
                 .is_some_and(crate::PackageRoute::requires_workspace_source_shadow);
         let track_reachability = reachability.requires_tracking();
-        self.inputs.extend(reachability.inputs.iter().cloned());
+        self.record_inputs(reachability.inputs.iter());
         if needs_shadow && let Some(route) = route.as_ref() {
             self.routes.insert(
                 (logical_absolute(importer_dir), specifier.into()),
@@ -237,7 +248,7 @@ export const DecoratorBase = Vue;
         let mut routes = FxHashMap::default();
         let mut reachability = FxHashMap::default();
         let mut bindings = Vec::new();
-        let mut inputs = Vec::new();
+        let mut inputs = vize_carton::FxHashSet::default();
         let aliases = Vec::new();
         let mut discovery = RouteDiscovery::new(
             &settings,
@@ -369,7 +380,7 @@ export const DecoratorBase = Vue;
         let aliases = Vec::new();
         let discover = |resolver: &mut crate::PackageRouteResolver| {
             let (mut routes, mut reachability) = (FxHashMap::default(), FxHashMap::default());
-            let (mut bindings, mut inputs) = (Vec::new(), Vec::new());
+            let (mut bindings, mut inputs) = (Vec::new(), vize_carton::FxHashSet::default());
             let mut discovery = RouteDiscovery::new(
                 &settings,
                 resolver,

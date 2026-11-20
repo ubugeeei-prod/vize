@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-unused-components-options-alias-used-303",
+    history: "f6f692cad55299e155289c85964a17028c49c3f4",
+    source: "<script lang=\"ts\">\nimport Style from './style.vue'\nimport { defineComponent } from 'vue'\n\nexport default defineComponent({\n  components: {\n    FourStyle: Style,\n  },\n})\n</script>\n\n<template>\n  <four-style />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-components",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

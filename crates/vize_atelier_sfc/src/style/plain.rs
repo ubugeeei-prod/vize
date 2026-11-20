@@ -19,5 +19,5 @@ pub(super) fn plain_style_output(style: &SfcStyleBlock, options: &StyleCompileOp
 
 /// Preprocessor source is compiled by the bundler, not by plain CSS parsing.
 pub(super) fn is_preprocessor_lang(lang: Option<&str>) -> bool {
-    matches!(lang, Some("scss" | "sass" | "less" | "stylus" | "styl"))
+    vize_l1::container::lang::is_preprocessor_style(lang)
 }

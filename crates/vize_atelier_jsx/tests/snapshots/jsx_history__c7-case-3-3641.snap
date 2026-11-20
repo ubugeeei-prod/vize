@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-3-3641",
+    history: "25b3be78ad51e00ecb3d28a91f8ef1e3ad3fa8da",
+    source: "<use xlinkHref={href}/>",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: Some(
+            "babel",
+        ),
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n(() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"use\", { \"xlink:href\": href }, null, 8 /* PROPS */, [\"xlink:href\"]))\n})(undefined, [])\n})()",
+    module_map: None,
+    components: [
+        Component {
+            name: None,
+            mode: Vdom,
+            setup: None,
+            preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"use\", { \"xlink:href\": href }, null, 8 /* PROPS */, [\"xlink:href\"]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

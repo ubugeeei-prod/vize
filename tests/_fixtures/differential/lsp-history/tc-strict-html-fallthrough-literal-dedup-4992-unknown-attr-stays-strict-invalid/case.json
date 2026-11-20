@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "13bcf1ba4ddb588b79296623f259c310a1bab2b5",
+  "id": "lsp/fix-history/tc-strict-html-fallthrough-literal-dedup-4992-unknown-attr-stays-strict-invalid",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack strict-html-fallthrough-literal-dedup-4992 (case unknown-attr-stays-strict-invalid) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/Wrapper.vue": "<script setup lang=\"ts\">\ndefineProps<{ label?: string }>()\n</script>\n\n<template>\n  <label>{{ label }}</label>\n  <input />\n</template>\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport Wrapper from './Wrapper.vue'\n</script>\n\n<template>\n  <Wrapper id=\"password\" type=\"password\" accept=\".png\" />\n  <Wrapper aria-label=\"ok\" aria-activedescendant=\"x\" />\n  <Wrapper data-test-id=\"wrapped\" />\n  <Wrapper depressed />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2d-nested-teleport-block-1014",
+    history: "6ff5652a8a49c3d74b2212131b73166fbc8ec7a4",
+    source: "<div><Teleport to=\"body\"><span /></Teleport></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: ExtendPoint,
+            message: "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 25,
+                        end: 33,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createBlock as _createBlock, Teleport as _Teleport } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (_openBlock(), _createBlock(_Teleport, { to: \"body\" }, [\n      _createElementVNode(\"span\")\n    ]))\n  ]))\n}",
+    map: None,
+}

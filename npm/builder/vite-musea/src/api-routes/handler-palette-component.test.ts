@@ -53,9 +53,15 @@ void test("native Art palette preserves display titles and actual component tags
           createApiMiddleware(ctx)(req, res, () => reject(new Error("No route"))),
         ).catch(reject);
       });
+      const defaults: Record<string, string> = {
+        label: "Seed",
+        constructor: "Seed constructor",
+        hasOwnProperty: "Seed method",
+      };
       const controls = ["label", "constructor", "hasOwnProperty"].map((name) => ({
         name,
         control: "text",
+        default_value: defaults[name],
         required: false,
         options: [],
       }));

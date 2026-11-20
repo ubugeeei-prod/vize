@@ -1,0 +1,19 @@
+export enum RegistrationType {
+  NormalOneto = "NormalOneto",
+  TextbookOneto = "TextbookOneto",
+  CauseWeakOneto = "CauseWeakOneto",
+}
+
+export type ParsedContentsInfoRaw<T extends RegistrationType> =
+  T extends RegistrationType.NormalOneto
+    ? { normalId: string }
+    : T extends RegistrationType.TextbookOneto
+      ? { textbookId: number }
+      : { weakId: boolean };
+
+export type ParsedQuestionItemRaw<T extends RegistrationType> =
+  T extends RegistrationType.NormalOneto
+    ? { normalQuestionId: string }
+    : T extends RegistrationType.TextbookOneto
+      ? { textbookQuestionId: number }
+      : { weakQuestionId: boolean };

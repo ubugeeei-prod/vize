@@ -10,11 +10,11 @@ use vize_l2::{
     file::{NativeFileModelKind, NativeFileModelState},
     op::ElementOp,
 };
-use vize_l3::decision::ssr::{NativeSelectedSetupSsrAnalysis, SsrFileModel};
+use vize_l3::decision::ssr::{SelectedSetupSsrAnalysis, SsrFileModel};
 
 pub(super) fn prelude<L: LinkSink>(
     writer: &mut Writer<L>,
-    analysis: &NativeSelectedSetupSsrAnalysis<'_, '_, '_>,
+    analysis: &SelectedSetupSsrAnalysis<'_, '_, '_>,
 ) {
     let [original] = analysis.file().native_models() else {
         return;
@@ -30,7 +30,7 @@ pub(super) fn prelude<L: LinkSink>(
 
 pub(super) fn write<'owner, 'arena, L: LinkSink>(
     writer: &mut Writer<L>,
-    analysis: &NativeSelectedSetupSsrAnalysis<'_, 'owner, 'arena>,
+    analysis: &SelectedSetupSsrAnalysis<'_, 'owner, 'arena>,
     node: NodeId,
     element: &'owner ElementOp<'arena>,
 ) -> Result<bool, SsrError> {

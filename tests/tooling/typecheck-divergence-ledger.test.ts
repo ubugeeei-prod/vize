@@ -148,6 +148,47 @@ test("typecheck divergence cancels reviewed one-sided differences", () => {
   ]);
 });
 
+test("typecheck divergence cancels a reviewed Vize hint", () => {
+  const difference = {
+    project: "fixture",
+    file: "src/App.vue",
+    severity: "hint",
+    line: 7,
+    column: 11,
+    vize: { code: 6385, message: "'typescript' is deprecated." },
+    baseline: null,
+    issue: 13298,
+    reason:
+      "Vize preserves this language-service deprecation hint while the batch baseline omits it.",
+  };
+  const result = compare(
+    [
+      {
+        file: "src/App.vue",
+        diagnostics: ["hint:7:11 [TS6385] 'typescript' is deprecated."],
+      },
+    ],
+    "",
+    [difference],
+  );
+
+  assert.equal(result.summary.documentedDifferenceCount, 1);
+  assert.equal(result.summary.falsePositiveCount, 0);
+  assert.equal(result.summary.falseNegativeCount, 0);
+  assert.deepEqual(result.documentedDifferences, [
+    {
+      file: "src/App.vue",
+      severity: "hint",
+      line: 7,
+      column: 11,
+      vize: difference.vize,
+      baseline: null,
+      issue: 13298,
+      reason: difference.reason,
+    },
+  ]);
+});
+
 test("typecheck divergence keeps a documented difference that no longer reproduces", () => {
   const reworded = { code: 2552, message: "Cannot find name 'useRouter'." };
   for (const [difference, label] of [
@@ -173,7 +214,7 @@ test("typecheck divergence rejects an unreviewable documented difference", () =>
     [{ ...suggestionDifference, reason: "cosmetic" }, /reason must explain/],
     [{ ...suggestionDifference, issue: 0 }, /issue must be the tracking issue/],
     [{ ...suggestionDifference, project: "" }, /must name a project/],
-    [{ ...suggestionDifference, severity: "info" }, /severity must be error or warning/],
+    [{ ...suggestionDifference, severity: "info" }, /severity must be error, warning, or hint/],
     [{ ...suggestionDifference, line: 0 }, /line must be a positive safe integer/],
     [{ ...suggestionDifference, file: "src/App.ts" }, /must reference a \.vue file/],
     [{ ...suggestionDifference, file: "../App.vue" }, /stay inside/],

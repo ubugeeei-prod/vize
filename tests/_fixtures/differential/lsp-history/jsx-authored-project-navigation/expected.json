@@ -1,0 +1,113 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "range": {
+        "end": {
+          "character": 21,
+          "line": 2
+        },
+        "start": {
+          "character": 16,
+          "line": 2
+        }
+      },
+      "uri": "${workspace}/src/Label.tsx"
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "range": {
+        "end": {
+          "character": 27,
+          "line": 2
+        },
+        "start": {
+          "character": 14,
+          "line": 2
+        }
+      },
+      "uri": "${workspace}/src/App.tsx"
+    }
+  },
+  {
+    "step": 3,
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 14,
+            "line": 0
+          },
+          "start": {
+            "character": 9,
+            "line": 0
+          }
+        },
+        "uri": "${workspace}/src/App.tsx"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 21,
+            "line": 2
+          },
+          "start": {
+            "character": 16,
+            "line": 2
+          }
+        },
+        "uri": "${workspace}/src/Label.tsx"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 15,
+            "line": 5
+          },
+          "start": {
+            "character": 10,
+            "line": 5
+          }
+        },
+        "uri": "${workspace}/src/App.tsx"
+      }
+    ]
+  },
+  {
+    "step": 4,
+    "result": {
+      "changes": {
+        "${workspace}/src/App.tsx": [
+          {
+            "newText": "Label as Caption",
+            "range": {
+              "end": {
+                "character": 14,
+                "line": 0
+              },
+              "start": {
+                "character": 9,
+                "line": 0
+              }
+            }
+          },
+          {
+            "newText": "Caption",
+            "range": {
+              "end": {
+                "character": 15,
+                "line": 5
+              },
+              "start": {
+                "character": 10,
+                "line": 5
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+]

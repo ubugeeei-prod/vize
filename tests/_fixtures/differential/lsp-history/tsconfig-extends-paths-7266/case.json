@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "commit": "bfb7c96b81041903f4feb3164433fde717fc45b9",
+  "id": "lsp/fix-history/tsconfig-extends-paths-7266",
+  "requirement": "Editor tsconfig paths inherit an extends chain with baseUrl anchored at the declaring config, and an incomplete template expression keeps the sibling component import navigable.",
+  "files": {
+    "configs/tsconfig.base.json": "{\n  // JSONC comments and \"//\" inside strings stay intact\n  \"compilerOptions\": { \"baseUrl\": \"..\", \"paths\": { \"@/*\": [\"src/*\"], \"url\": [\"http://example.com/*\"] } }\n}\n",
+    "tsconfig.json": "{ \"extends\": \"./configs/tsconfig.base.json\", \"include\": [\"src/**/*\"] }\n",
+    "src/components/Child.vue": "<template><span /></template>\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport Child from '@/components/Child.vue'\n</script>\n<template><Child label=\"x\" />{{ foo. }}</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "src/App.vue",
+      "at": {
+        "find": "<Child",
+        "delta": 2
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "src/App.vue",
+      "at": {
+        "find": "@/components",
+        "delta": 3
+      }
+    }
+  ]
+}

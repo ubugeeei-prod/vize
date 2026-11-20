@@ -22,7 +22,7 @@ use crate::context::{ElementContext, LintContext};
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::drawer::{extract_identifier_refs_retained_only, parse_v_for_scope_expression};
-use vize_l0::{String, ToCompactString, is_native_tag};
+use vize_l0::{String, ToCompactString, is_platform_tag};
 use vize_relief::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode,
 };
@@ -59,7 +59,7 @@ impl ValidVSlot {
         // lowercase single-word registered components such as <draggable>.
         matches!(tag_type, Some(ElementType::Component))
             || tag == "component"
-            || !is_native_tag(tag)
+            || !is_platform_tag(tag)
     }
 
     fn count_slot_directives(element: &ElementNode) -> (usize, usize) {
@@ -93,6 +93,10 @@ impl ValidVSlot {
 impl Rule for ValidVSlot {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT.union(crate::rule::RuleHooks::DIRECTIVE)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
@@ -373,7 +377,7 @@ fn is_component_parent_context(parent: &ElementContext) -> bool {
         return true;
     }
     let tag = parent.tag.as_str();
-    !matches!(tag, "slot" | "template") && (tag == "component" || !is_native_tag(tag))
+    !matches!(tag, "slot" | "template") && (tag == "component" || !is_platform_tag(tag))
 }
 
 fn vue_is_attribute(element: &ElementNode) -> bool {
@@ -420,6 +424,10 @@ impl ValidVSlot {
 impl Rule for ConfiguredValidVSlot {
     fn meta(&self) -> &'static RuleMeta {
         ValidVSlot.meta()
+    }
+
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT.union(crate::rule::RuleHooks::DIRECTIVE)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

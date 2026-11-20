@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-native-param-arrow-with-ts-body-is-wrapped-5552",
+    history: "af800fd3996e05a0df0e0566267a7099d982963a",
+    source: "<button @input=\"(e) => updateColor(key, (e.target as HTMLInputElement).value)\"></button>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    onInput: $event => ((e) => updateColor(key, (e.target as HTMLInputElement).value))\n  }, null, 40 /* PROPS, NEED_HYDRATION */, [\"onInput\"]))\n}",
+    map: None,
+}

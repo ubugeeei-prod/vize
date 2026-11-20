@@ -75,7 +75,7 @@ pub fn is_on(key: &str) -> bool {
 
 /// Check if a key is a native event handler (starts with "on" + lowercase letter)
 #[inline]
-pub fn is_native_on(key: &str) -> bool {
+pub fn is_dom_event_prop(key: &str) -> bool {
     // "on" followed by a lowercase ASCII letter.
     matches!(key.as_bytes(), [b'o', b'n', third, ..] if third.is_ascii_lowercase())
 }

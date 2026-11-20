@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-6147",
+    history: "8c9e4642d4bef05d16b796ef04b7454d81fb95e5",
+    source: "<template><section><input v-model=\"value\"><output>{{ value }}</output></section></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, applyTextModel as _applyTextModel, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<section><input><output> </output></section>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n2 = t0()\n  const n0 = _child(n2)\n  const n1 = _next(n0)\n  const x1 = _txt(n1)\n  _applyTextModel(n0, () => (_ctx.value), _value => (_ctx.value = _value))\n  _renderEffect(() => _setText(x1, _toDisplayString(_ctx.value)))\n  return n2\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

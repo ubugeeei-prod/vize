@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "commit": "d4237c13e1674d45d50772b0ad9c5707cfbbc4ec",
+  "id": "lsp/fix-history/regex-literal-identifiers-314",
+  "requirement": "Regex-literal text in templates produces no undefined-binding diagnostics.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "App.vue": "<script setup lang=\"ts\">\nconst text = 'abc'\n</script>\n<template><p>{{ /ab+c\\/xyz/gi.test(text) }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    }
+  ]
+}

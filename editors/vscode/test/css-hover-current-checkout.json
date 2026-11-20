@@ -38,6 +38,420 @@
           }
         }
       ]
+    },
+    {
+      "name": "block-language-registry-13231",
+      "baseRevision": "d2e5698377ea327a9228036d2ba294f8b04597bb",
+      "reviewedRevision": "82da6ce388d916b595281ef7a51ac0faa5645ba0",
+      "changes": [
+        {
+          "path": "crates/vize_maestro/src/ide/style.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "80fb88cec40965a81ac4dc8cc70fafc7f0db2f25"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "47cb8b0ebeb4235061469e72a87bc25c352da18c"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/annotations/document_color.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "bdff217702dc931f39590da27b7440740af87ed9"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "b96d082313864ad825e3fe99e0fc56204866011b"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/annotations/document_color/hover.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/hover.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "9d4960a6e2cce8934b68b1c959f218a8a4cb7a1c"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/hover.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "c52f9fde9378f11d64efd5a9b997224eaa1aab60"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/annotations/document_color/scan/declarations.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/scan/declarations.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "98fa277b9f51a4282e0a33053d31675759dfb01c"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/scan/declarations.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "b7dd567035e22c0d037458eec43b1ca88a680c0b"
+          }
+        }
+      ]
+    },
+    {
+      "name": "css-catalog-u16-tables-13374",
+      "baseRevision": "9c7d4cba558cf7f7dbab6d92b47f939ce1b664a3",
+      "reviewedRevision": "87df7530dbd792eb027acded5020ac2699c027cd",
+      "changes": [
+        {
+          "path": "crates/vize_maestro/src/ide/style/completion.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/completion.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "0f78e2d05365f9eda0f234ae1a2402d9894741fb"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/completion.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "11aba3dfd7b5c94cf18e72faa799cc0cbcf4e152"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/css_catalog_custody.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/css_catalog_custody.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "124a62f2227ec5d44431411c137d2d71ddb26ec5"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/css_catalog_custody.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "ae6c5b6f6166eb8fe868a26a40aa4fa5742bf169"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/data.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "2ca470d60ff85ba0a3e30c03adade6cf489a228e"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/data.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "05f6f0a8b58e1955a93c4c71647ae07e04221dae"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/at_rules.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/data/at_rules.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "ddf9b369fb01deb3a139f99764e8520be4b1db52"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/at_rules_0.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/data/at_rules_0.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "49da3cc8e5a8fac19f9bc41d43e83c4d003201fb"
+          },
+          "after": null
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/at_rules_index.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/data/at_rules_index.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "82eb14bb0a416886b6467224c4309ee87caf6a04"
+          },
+          "after": null
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/baselines.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/data/baselines.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "7665066993cf6143644fcf02a56d118706399e82"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/colors.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/data/colors.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "72c932b54c766ec0d14ed8b8b5b77befac4d84f1"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/data/colors.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "5b72980d1a863810d9aff518606d7e30390bc1f6"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/descriptors.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/data/descriptors.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "7127cfe125c305b80821e7402bd2cb097b39cd31"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/lists.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/data/lists.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "221d70e2e500b96ff0fcbab04735cf6e60b791f8"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/properties.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/data/properties.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "b94eff67bda0cb4e694eaecaa17ee1e8d85a3db8"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/properties_0.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/data/properties_0.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "de76b37ad877ea7a091608711b621cdbe1db1665"
+          },
+          "after": null
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/properties_1.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/data/properties_1.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "34a1b66685007ea91fa7cd8161989a24bd2e4aa1"
+          },
+          "after": null
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/properties_2.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/data/properties_2.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "a6b035248d3d107e92564fbd37b9b2f23fbf9cdb"
+          },
+          "after": null
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/properties_3.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/data/properties_3.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "99d836c0aea7dd83893bcd04508a776ca87808c8"
+          },
+          "after": null
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/properties_index.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/data/properties_index.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "d76fa6e7bce77a5722d597fef8aa3f9f288b5ec2"
+          },
+          "after": null
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/pseudo_classes.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/data/pseudo_classes.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "1ab444b1e60015f855b03239e2ef03cafbdd3897"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/pseudo_classes_0.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/data/pseudo_classes_0.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "dddda7acba1729654510be174478a5f258f1c6b1"
+          },
+          "after": null
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/pseudo_classes_index.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/data/pseudo_classes_index.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "9629c5ad1170e228b214883372c1e0cf91685200"
+          },
+          "after": null
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/pseudo_elements.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/data/pseudo_elements.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "4b163dca34efd9845b072646d499d892905ba1de"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/pseudo_elements_0.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/data/pseudo_elements_0.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "ecab3e50f43be48a94f84fc971be77a55aa415a4"
+          },
+          "after": null
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/pseudo_elements_index.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/data/pseudo_elements_index.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "666534acb64b407e9aecda51bd34c46e230a9092"
+          },
+          "after": null
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/references.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/data/references.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "60c0ef74ba0680bd39b8e91948771c6006b48a0f"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/starts.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/data/starts.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "4ef499229a770d6681ea69c3682896754d929007"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/text.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/data/text.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "d5ff3b0dc8533e63b1402da4e5ce8160f0f9a6a4"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/data/values.rs",
+          "before": null,
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/data/values.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "e813b44587b7917167e24f49577c09fdaa2b7810"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/documentation.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/documentation.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "f1ac36836fda1d170ab8434fb5628e73930843bb"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/documentation.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "05484c46c42c3ae796f6b52a7bde6108219ac2e9"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/hover.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/hover.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "ba9563bac59d8ba6ee8ccc5a67fe5d503b2d89d7"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/hover.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "6b67e83da12cf04236d6bddd0ae42d3fe2e857ee"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/resolve.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/resolve.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "5ddd200bf3a2b6f1182d8b7c9726c99ec64f0e3c"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/resolve.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "63ce6a95d04a31b7739819ff36092d0cc8919d35"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/ide/style/values.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style/values.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "2f73719247e4e4259d7dda80f26cdbd8e1968e78"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style/values.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "f8fed1ba913e7d261c9d0a74992facf9fc9fa0df"
+          }
+        }
+      ]
     }
   ]
 }

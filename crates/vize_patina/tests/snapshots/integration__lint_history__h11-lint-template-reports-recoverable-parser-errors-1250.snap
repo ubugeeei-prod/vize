@@ -1,0 +1,79 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-lint-template-reports-recoverable-parser-errors-1250",
+    history: "cf2fe2e5408c530a0e673e872203b4b132d27b3c",
+    source: "<div id=\"a\" id=\"b\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-duplicate-attributes",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "parser/template",
+                severity: Error,
+                message: "Duplicate attribute `id`. Keeping the repeated attribute so parsing can continue.",
+                start: 12,
+                end: 14,
+                help: None,
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-duplicate-attributes",
+                severity: Error,
+                message: "Duplicate attribute 'id'",
+                start: 12,
+                end: 18,
+                help: Some(
+                    "Remove the duplicate attribute",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 2,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "parser/template",
+                    severity: Error,
+                    message: "Duplicate attribute `id`. Keeping the repeated attribute so parsing can continue.",
+                    start: 12,
+                    end: 14,
+                    help: None,
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-duplicate-attributes",
+                    severity: Error,
+                    message: "Duplicate attribute 'id'",
+                    start: 12,
+                    end: 18,
+                    help: Some(
+                        "Remove the duplicate attribute",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 2,
+            warning_count: 0,
+        },
+    ),
+}

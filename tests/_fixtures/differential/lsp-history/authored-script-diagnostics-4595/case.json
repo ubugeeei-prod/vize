@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "commit": "8befe402174caab7019c3cc4c17a86571af1a175",
+  "id": "lsp/fix-history/authored-script-diagnostics-4595",
+  "requirement": "Authored script-setup checker diagnostics publish even when the template reads nothing; importing a .vue file produces no generated extension diagnostics.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ title: string; count?: number }>()\nconst emit = defineEmits<{ save: [id: number]; 'update:title': [value: string] }>()\nconst model = defineModel<string>('label')\ndefineSlots<{ footer(props: { done: boolean }): any }>()\n</script>\n<template><footer><slot name=\"footer\" :done=\"true\" /></footer></template>\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nconst unused: number = 'x'\n</script>\n<template><div /></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    },
+    {
+      "change": "App.vue",
+      "version": 2,
+      "contentChanges": [
+        {
+          "text": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nconst unused: number = 1\n</script>\n<template><Child title=\"x\" /></template>\n"
+        }
+      ]
+    },
+    {
+      "diagnostics": "App.vue"
+    }
+  ]
+}

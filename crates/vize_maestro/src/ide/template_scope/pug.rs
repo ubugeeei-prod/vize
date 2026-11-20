@@ -5,7 +5,7 @@ use vize_atelier_sfc::croquis::{
     analyze_sfc_descriptor_with_context_options_api,
 };
 use vize_croquis::{Croquis, ScopeData, ScopeKind};
-use vize_l1_to_l2::lower::pug::{PugRendering, PugTemplate, derive_template_source_with};
+use vize_l1_to_l2::lower::pug::{PugRendering, PugTemplate, derive_template_source_profiled};
 
 use super::{TemplateScopeBinding, TemplateScopeBindingKind};
 use crate::ide::IdeContext;
@@ -23,9 +23,7 @@ pub(in crate::ide) fn is_pug(ctx: &IdeContext<'_>) -> bool {
             .and_then(|descriptor| descriptor.template.as_ref())
             .is_some_and(|template| {
                 template.src.is_none()
-                    && template.lang.as_deref().is_some_and(|lang| {
-                        lang.eq_ignore_ascii_case("pug") || lang.eq_ignore_ascii_case("jade")
-                    })
+                    && vize_l1::container::lang::is_pug_template(template.lang.as_deref())
             })
 }
 
@@ -37,9 +35,18 @@ fn scope<'a>(ctx: &'a IdeContext<'_>) -> Option<&'a PugScope> {
             }
             let descriptor = ctx.descriptor()?;
             let authored = descriptor.template.as_ref()?;
+            let vize_l1::container::lang::TemplateLang::Pug(profile) =
+                vize_l1::container::lang::template_lang(authored.lang.as_deref()).ok()?
+            else {
+                return None;
+            };
             let template = vize_l0::profile!(
                 "maestro.template_scope.pug.derive",
-                derive_template_source_with(&authored.content, PugRendering::AuthoredOrder)
+                derive_template_source_profiled(
+                    &authored.content,
+                    PugRendering::AuthoredOrder,
+                    profile
+                )
             );
             if template.has_errors() {
                 return None;

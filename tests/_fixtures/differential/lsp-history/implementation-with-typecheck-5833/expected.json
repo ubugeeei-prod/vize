@@ -1,0 +1,18 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "range": {
+        "end": {
+          "character": 36,
+          "line": 2
+        },
+        "start": {
+          "character": 32,
+          "line": 2
+        }
+      },
+      "uri": "${workspace}/App.vue"
+    }
+  }
+]

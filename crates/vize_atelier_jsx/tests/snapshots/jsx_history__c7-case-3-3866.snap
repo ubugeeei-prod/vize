@@ -1,0 +1,56 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-3-3866",
+    history: "d05141f8c89a38098acaaeb0b590a7553f66a3fb",
+    source: "\n        const Spread = ({ label, ...rest }) => {\n          const extra = rest;\n          return <div>{label}{extra}</div>;\n        };\n        ",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\n\n        const Spread = _defineComponent({\nname: \"Spread\",\nsetup({ label, ...rest }) {\n\n          const extra = rest;\n          return (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(label) + _toDisplayString(extra), 1 /* TEXT */))\n})\n})()\n}\n});\n        ",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "Spread",
+            ),
+            mode: Vdom,
+            setup: Some(
+                ComponentSetupSpan {
+                    declaration_start: 9,
+                    declaration_end: 134,
+                    params_start: 25,
+                    params_end: 43,
+                    type_params_start: 0,
+                    type_params_end: 0,
+                    is_async: false,
+                    destructured_props: [],
+                    setup_start: 49,
+                    setup_end: 90,
+                    render_start: 97,
+                    render_end: 122,
+                },
+            ),
+            preamble: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(label) + _toDisplayString(extra), 1 /* TEXT */))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

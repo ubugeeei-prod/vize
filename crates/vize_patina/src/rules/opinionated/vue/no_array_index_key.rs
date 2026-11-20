@@ -45,6 +45,10 @@ impl Rule for NoArrayIndexKey {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT.union(crate::rule::RuleHooks::DIRECTIVE)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Find the `v-for` index alias and the `:key` expression on this same
         // element. Both must be present for the anti-pattern to apply.

@@ -1,0 +1,18 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "range": {
+        "end": {
+          "character": 0,
+          "line": 0
+        },
+        "start": {
+          "character": 0,
+          "line": 0
+        }
+      },
+      "uri": "${workspace}/src/ui/Panel.vue"
+    }
+  }
+]

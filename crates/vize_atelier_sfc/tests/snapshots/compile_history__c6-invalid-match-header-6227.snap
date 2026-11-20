@@ -1,0 +1,85 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-invalid-match-header-6227",
+    history: "0dfe185cb89453abd87c72568e6c89d2bab34583",
+    source: "<template v-match.once=\"subject\"><p v-when=\"let value\"></p><p v-when=\"'ok'\" v-if=\"show\"></p><p v-when=\"_\"></p><p v-when=\"'late'\"></p></template>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 4,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: ExtendPoint,
+            message: "`v-match` does not accept directive arguments or modifiers.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 10,
+                        end: 32,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: ExtendPoint,
+            message: "Only const pattern bindings are supported.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 47,
+                        end: 53,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: ExtendPoint,
+            message: "v-when cannot share an element with v-if, v-else-if, v-else, v-for or v-match.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 62,
+                        end: 75,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: ExtendPoint,
+            message: "`v-when=\"_\"` fallback arms must be last and unique within a `v-match` block.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 113,
+                        end: 128,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"template\", null, [\n    _createElementVNode(\"p\"),\n    (show)\n      ? (_openBlock(), _createElementBlock(\"p\", { key: 0 }))\n      : _createCommentVNode(\"v-if\", true),\n    _createElementVNode(\"p\"),\n    _createElementVNode(\"p\")\n  ]))\n}",
+    map: None,
+}

@@ -2,7 +2,10 @@
 //!
 //! This is the subset of eslint-plugin-vue's `inferRuntimeType` that the
 //! reported defaults need: keywords, literals, unions, and a same-file alias
-//! or interface. A name that is not a native constructor is dropped.
+//! or interface. A same-file interface is an object. A reference the file
+//! cannot resolve (an import, a DOM interface such as `ScrollIntoViewOptions`,
+//! a type parameter) may be an object or anything else, so the prop is not
+//! checked rather than reported as `must be a boolean`.
 
 use oxc_ast::ast::{Declaration, Program, Statement, TSLiteral, TSSignature, TSType, TSTypeName};
 use vize_l0::CompactString;
@@ -19,9 +22,15 @@ pub(super) fn collect_type_props(
     props
 }
 
+/// Marks a type the same-file walk cannot resolve.
+const UNKNOWN: &str = "unknown";
+
 pub(super) fn infer_types(program: &Program<'_>, ty: &TSType<'_>) -> Vec<&'static str> {
     let mut types = Vec::new();
     infer_into(program, ty, 0, &mut Vec::new(), &mut types);
+    if types.contains(&UNKNOWN) {
+        return Vec::new();
+    }
     types.retain(|ty| super::super::NATIVE_TYPES.contains(ty));
     types
 }
@@ -173,6 +182,7 @@ fn infer_into<'a>(
         }
         TSType::TSTypeReference(reference) => {
             let TSTypeName::IdentifierReference(identifier) = &reference.type_name else {
+                push(types, UNKNOWN);
                 return;
             };
             match identifier.name.as_str() {
@@ -193,6 +203,10 @@ fn infer_into<'a>(
                     seen.push(name);
                     if let Some(alias) = named_alias(program, name) {
                         infer_into(program, alias, depth + 1, seen, types);
+                    } else if named_interface(program, name) {
+                        push(types, "Object");
+                    } else {
+                        push(types, UNKNOWN);
                     }
                     seen.pop();
                 }
@@ -215,6 +229,12 @@ fn named_alias<'a>(program: &'a Program<'a>, name: &str) -> Option<&'a TSType<'a
         }
     }
     None
+}
+
+fn named_interface(program: &Program<'_>, name: &str) -> bool {
+    program.body.iter().filter_map(statement_declaration).any(|declaration| {
+        matches!(declaration, Declaration::TSInterfaceDeclaration(interface) if interface.id.name == name)
+    })
 }
 
 fn statement_declaration<'a>(statement: &'a Statement<'a>) -> Option<&'a Declaration<'a>> {

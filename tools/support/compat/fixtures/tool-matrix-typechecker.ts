@@ -139,7 +139,7 @@ export function validateTypecheckerOutput(
   let transitiveAuthoredFiles: string[] = [];
   let transitiveDependencyFiles: string[] = [];
   if (expectedFiles != null) {
-    validateManifestInput(expectedFiles, "requested fixture inputs", isVueSfc);
+    validateManifestInput(expectedFiles, "requested fixture inputs", isTypecheckSource);
     validateManifestInput(authoredFiles, "authored fixture sources", isTypecheckSource);
     const authored: readonly string[] = authoredFiles ?? [];
     const checkedSet = new Set(checkedFiles);
@@ -200,7 +200,7 @@ export function summarizeTypecheckerCoverage(coverage: unknown) {
   const requested = validateManifest(
     coverage.requested,
     "typechecker coverage.requested",
-    isVueSfc,
+    isTypecheckSource,
   );
   const transitiveAuthored = validateManifest(
     coverage.transitiveAuthored,
@@ -280,10 +280,6 @@ function validateManifest(
 
 function byteSort(left: string, right: string): number {
   return Buffer.compare(Buffer.from(left), Buffer.from(right));
-}
-
-function isVueSfc(file: string): boolean {
-  return file.endsWith(".vue");
 }
 
 function isTypecheckSource(file: string): boolean {

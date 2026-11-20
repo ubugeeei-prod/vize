@@ -19,15 +19,15 @@ use super::children::{
 };
 use super::helper::Helper;
 use super::prefix::Site;
-use super::sfc_style;
 use super::slots::is_whitespace_text;
+use super::style_carrier;
 use super::vnode;
 
 pub(super) fn root_needs_fragment(root: &Region<'_>) -> bool {
     let mut count = 0u32;
     let mut compound = false;
     for op in root.ops.iter() {
-        if sfc_style::is_carrier(op) || super::annotations::is_annotation(op) {
+        if style_carrier::is_carrier(op) || super::annotations::is_annotation(op) {
             continue;
         }
         if is_whitespace_text(op) {
@@ -58,9 +58,9 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), Em
             continue;
         }
         if let Op::Element(element) = op
-            && sfc_style::is_carrier_element(element)
+            && style_carrier::is_carrier_element(element)
         {
-            sfc_style::skip_carrier(cx, element);
+            style_carrier::skip_carrier(cx, element);
             continue;
         }
         if is_whitespace_text(op) {
@@ -86,9 +86,9 @@ pub(super) fn emit_root(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), Em
 
 fn emit_unique(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
     match op {
-        Op::JsxChildValue(child) => {
+        Op::ChildValue(child) => {
             let _id = cx.walk.mint();
-            super::children::emit_jsx_child(cx, child)
+            super::children::emit_child_value(cx, child)
         }
         Op::Text(_) => emit_create_text_vnode(cx, core::slice::from_ref(op)),
         Op::Interpolation(interp) => {
@@ -160,9 +160,9 @@ fn emit_fragment(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError
             continue;
         }
         if let Op::Element(element) = op
-            && sfc_style::is_carrier_element(element)
+            && style_carrier::is_carrier_element(element)
         {
-            sfc_style::skip_carrier(cx, element);
+            style_carrier::skip_carrier(cx, element);
             index += 1;
             continue;
         }
@@ -236,10 +236,10 @@ fn emit_units(cx: &mut EmitCx<'_>, op: &Op<'_>, first: &mut bool) -> Result<(), 
             emit_create_text_vnode(cx, core::slice::from_ref(op))
         }
         Op::Interpolation(interp) => emit_interp(cx, interp, first),
-        Op::JsxChildValue(child) => {
+        Op::ChildValue(child) => {
             start_item(cx, first);
             let _id = cx.walk.mint();
-            super::children::emit_jsx_child(cx, child)
+            super::children::emit_child_value(cx, child)
         }
         Op::Comment(comment) => {
             start_item(cx, first);
@@ -336,7 +336,7 @@ fn meaningful_bounds(root: &Region<'_>) -> Option<(usize, usize)> {
     let mut first = None;
     let mut last = None;
     for (index, op) in root.ops.iter().enumerate() {
-        if sfc_style::is_carrier(op)
+        if style_carrier::is_carrier(op)
             || is_whitespace_text(op)
             || super::annotations::is_annotation(op)
         {

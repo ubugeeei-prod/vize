@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2339,
+        "message": "Property 'missing' does not exist on type '\"runtime\"'.",
+        "range": {
+          "end": {
+            "character": 69,
+            "line": 10
+          },
+          "start": {
+            "character": 62,
+            "line": 10
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

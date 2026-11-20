@@ -3,7 +3,7 @@
  *
  * `@vizejs/vite-plugin-musea` does its build-time work per art file, and every
  * branch it takes is decided by that file's shape: whether metadata arrives via
- * the `defineArt` macro or legacy `<art>` attributes, how many variants there
+ * the `defineArtMeta` macro or legacy `<art>` attributes, how many variants there
  * are, what the `<script setup>` block imports and destructures, and how many
  * `<style>` blocks survive the language filter. A corpus of one repeated file
  * would measure one path through the plugin and let the JIT specialise on it,
@@ -53,7 +53,7 @@ function artTagAttributes(index) {
 
 /**
  * One file in five keeps the legacy `<art title="..." component="...">` shape
- * instead of the `defineArt` macro. Both are supported and they reach the
+ * instead of the `defineArtMeta` macro. Both are supported and they reach the
  * metadata through different code, so both belong in the corpus.
  */
 function usesLegacyArtAttributes(index) {
@@ -69,8 +69,7 @@ function scriptSetupBlock(index) {
   const legacy = usesLegacyArtAttributes(index);
   const defineArtCall = legacy
     ? ""
-    : `defineArt("./${component}.vue", {
-  title: "${component}",
+    : `defineArtMeta({
   description: "Generated art file ${index} for the Musea benchmark lane.",
   category: "Bench",
   status: "${["ready", "draft", "deprecated"][index % 3]}",

@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-reports-unimported-script-setup-component-938",
+    history: "04cebe5bcb34c1b1fac1501b42137dafaf9b4a5d",
+    source: "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n\n<template>\n  <Child />\n  <MissingWidget />\n</template>\n",
+    filename: "ParentWidget.vue",
+    entry: "sfc",
+    rule: "vue/require-component-registration",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "ParentWidget.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/require-component-registration",
+                severity: Warning,
+                message: "Component is used but not explicitly imported",
+                start: 94,
+                end: 107,
+                help: Some(
+                    "Import the component in <script setup> or register it in components option",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "ParentWidget.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/require-component-registration",
+                    severity: Warning,
+                    message: "Component is used but not explicitly imported",
+                    start: 94,
+                    end: 107,
+                    help: Some(
+                        "Import the component in <script setup> or register it in components option",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

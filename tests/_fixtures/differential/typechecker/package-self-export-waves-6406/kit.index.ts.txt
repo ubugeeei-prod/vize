@@ -1,0 +1,1 @@
+export { label } from '@demo/kit/button'

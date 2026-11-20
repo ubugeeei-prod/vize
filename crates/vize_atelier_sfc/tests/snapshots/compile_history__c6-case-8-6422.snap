@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-8-6422",
+    history: "032162ce2225c187f43f589d515bae057cda768b",
+    source: "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nlet label = ref('ready')\nconst items = [1, 2]\n</script>\n<template><PageWithHeader><div v-if=\"items.length\">{{ label }}<TransitionGroup><div v-for=\"item in items\" :key=\"item\">{{ item }}</div></TransitionGroup></div><template #footer><Transition><div v-show=\"items.length\">{{ label }}</div></Transition></template></PageWithHeader></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, withDirectives as _withDirectives, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, unref as _unref, renderList as _renderList, withCtx as _withCtx, Transition as _Transition, vShow as _vShow, TransitionGroup as _TransitionGroup } from \"vue\"\n\nimport { ref } from 'vue'\n\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nlet label = ref(\"ready\");\nconst items = [1, 2];\n\nreturn (_ctx, _cache) => {\n  const _component_PageWithHeader = _resolveComponent(\"PageWithHeader\")\n\n  return (_openBlock(), _createBlock(_component_PageWithHeader, null, {\n    footer: _withCtx(() => [\n      _createVNode(_Transition, null, {\n        default: _withCtx(() => [\n          _withDirectives(_createElementVNode(\"div\", null, _toDisplayString(_unref(label)), 513 /* TEXT, NEED_PATCH */), [\n            [_vShow, items.length]\n          ])\n        ]),\n        _: 1 /* STABLE */\n      })\n    ]),\n    default: _withCtx(() => [\n      (items.length)\n        ? (_openBlock(), _createElementBlock(\"div\", { key: 0 }, [\n          _createTextVNode(_toDisplayString(_unref(label)), 1 /* TEXT */),\n          _createVNode(_TransitionGroup, null, {\n            default: _withCtx(() => [\n              (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => {\n                return (_openBlock(), _createElementBlock(\"div\", { key: item }, _toDisplayString(item), 1 /* TEXT */))\n              }), 128 /* KEYED_FRAGMENT */))\n            ]),\n            _: 1 /* STABLE */\n          })\n        ]))\n        : _createCommentVNode(\"v-if\", true)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "ref": SetupConst,
+                        "label": SetupLet,
+                        "items": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

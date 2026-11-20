@@ -1,0 +1,23 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "message": "Malformed <script> block: the closing tag is missing.",
+        "range": {
+          "end": {
+            "character": 19,
+            "line": 2
+          },
+          "start": {
+            "character": 0,
+            "line": 1
+          }
+        },
+        "severity": 1,
+        "source": "vize/sfc"
+      }
+    ]
+  }
+]

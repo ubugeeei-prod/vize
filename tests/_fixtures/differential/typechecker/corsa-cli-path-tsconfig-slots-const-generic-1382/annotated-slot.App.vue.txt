@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Draggable from './Draggable.vue'
+type Tag = { id: string }
+</script>
+
+<template>
+  <Draggable>
+    <template #item="{ element }: { element: Tag }">
+      <div>{{ element.id }}</div>
+    </template>
+  </Draggable>
+</template>

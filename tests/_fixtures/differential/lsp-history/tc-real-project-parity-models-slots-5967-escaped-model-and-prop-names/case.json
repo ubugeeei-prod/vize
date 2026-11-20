@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+  "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-escaped-model-and-prop-names",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack real-project-parity-models-slots-5967 (case escaped-model-and-prop-names) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/EscapedModel.vue": "<script setup lang=\"ts\">\nconst model = defineModel<string>(\"quote\\\"line\\u2028\")\nvoid model;\n</script>\n",
+    "src/EscapedProps.vue": "<script setup lang=\"ts\">\ndefineProps({ \"foo-bar\": String, \"quote\\\"line\\u2028\": Number })\n</script>\n",
+    "src/Parent.vue": "<script setup lang=\"ts\">\nimport EscapedModel from './EscapedModel.vue'\nimport EscapedProps from './EscapedProps.vue'\n</script>\n\n<template>\n  <EscapedModel />\n  <EscapedProps />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/EscapedModel.vue"
+    },
+    {
+      "diagnostics": "src/EscapedModel.vue"
+    }
+  ]
+}

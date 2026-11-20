@@ -13,7 +13,7 @@ fn constant_same_owner_generic_and_neutral_policies_still_refuse_operation() {
     );
     assert!(compiled.result().is_ok());
     let view = compiled.observation().admitted().unwrap();
-    let selected = build_native_selected_setup_dom_decisions(view.setup()).unwrap();
+    let selected = build_selected_setup_dom_decisions(view.setup()).unwrap();
     assert!(selected.dom().unwrap().unsupported().is_empty());
     let generic = vize_l3::decision::build_dom_file_decisions(view.setup().file()).unwrap();
     assert_eq!(
@@ -21,7 +21,7 @@ fn constant_same_owner_generic_and_neutral_policies_still_refuse_operation() {
         DomUnsupported::Operation
     );
     let neutral_view = compiled.observation().admitted().unwrap();
-    let neutral = vize_l3::decision::native::build_native_dom_file_decisions(
+    let neutral = vize_l3::decision::template::build_template_dom_decisions(
         neutral_view.into_template_view(),
     )
     .unwrap();

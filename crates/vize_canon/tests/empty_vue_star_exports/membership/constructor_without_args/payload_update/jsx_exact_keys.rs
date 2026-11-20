@@ -7,7 +7,13 @@ const RECORD: &str = include_str!(concat!(
     "/../../tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/source-transition.json"
 ));
 
+/// Every caller reads the same authenticated record; authenticate it once.
 fn load() -> Value {
+    static LOADED: std::sync::OnceLock<Value> = std::sync::OnceLock::new();
+    LOADED.get_or_init(load_uncached).clone()
+}
+
+fn load_uncached() -> Value {
     assert_eq!(
         support::hash(RECORD.as_bytes()),
         "c647fda7816e1684a864d015efde1fe8a4ada2f447e38f9930fce5e6833c6bcd"

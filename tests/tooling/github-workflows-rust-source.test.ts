@@ -379,8 +379,11 @@ function requireSplitRustRecipes(
   }
   for (const report of [source["rust-source-report"], products["rust-product-report"]]) {
     assert.equal(report.if, "${{ always() && !contains(needs.*.result, 'cancelled') }}");
+    const prefix = structuredClone(report.steps.slice(0, 3)); // + sparse checkout (#6830)
+    assert.equal(prefix[0].with?.["sparse-checkout-cone-mode"], false, "closure test pins paths");
+    delete prefix[0].with;
     assert.equal(
-      digest(report.steps.slice(0, 3)),
+      digest(prefix),
       "649b94e358e52ae35218f47ec18138006bbc76d571f9f8bbb0aa58af7156acc7",
     );
   }

@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1b-vapor-nested-v-for-key-current-alias-204",
+    history: "3a87d25f029f731be72705a19787743a996640eb",
+    source: "<template><div><template v-for=\"n in 4\" :key=\"`set-${n}`\"><span v-for=\"(icon, i) in icons\" :key=\"`${n}-${i}`\" :class=\"icon\">{{ icon }}</span></template></div></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';\nconst t0 = _template(\"<span> </span>\")\nconst t1 = _template(\"<div></div>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t1()\n  _setInsertionState(n0)\n  const n1 = _createFor(() => (4), (_for_item0) => {\n    const n3 = _createFor(() => (_ctx.icons), (_for_item1, _for_key1) => {\n      const n5 = t0()\n      const x5 = _txt(n5)\n      _renderEffect(() => {\n        _setClass(n5, _for_item1.value)\n        _setText(x5, _toDisplayString(_for_item1.value))\n      })\n      return n5\n    }, (icon, i) => (`${_for_item0.value}-${i}`), 8 /* IS_SINGLE_NODE */)\n    return n3\n  }, (n) => (`set-${n}`), 85 /* FAST_REMOVE, IS_FRAGMENT, ONCE, WRAPPED_ROWS */)\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

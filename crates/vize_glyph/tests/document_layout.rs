@@ -5,7 +5,7 @@ use vize_glyph::native_doc::{
     template_document,
 };
 use vize_l0::{Allocator, Vec};
-use vize_l1::dialect::vue3::surface::ComponentParse;
+use vize_l1::framework::vue::version::v3::surface::ComponentParse;
 
 const DOCUMENT_SOURCE: &str = include_str!("../src/native_doc/document.rs");
 const PRINTER_SOURCE: &str = include_str!("../src/native_doc/printer.rs");
@@ -43,7 +43,7 @@ fn document_ir_printer_and_l1_consumer_stay_separate() {
         imports(TEMPLATE_SOURCE),
         [
             "use vize_l0::{Allocator, Vec};",
-            "use vize_l1::dialect::vue3::surface::ComponentParse;",
+            "use vize_l1::framework::vue::version::v3::surface::ComponentParse;",
             "use vize_l1::markup::{Element, SurfaceChild};",
             "use super::{Doc, Line};",
         ],

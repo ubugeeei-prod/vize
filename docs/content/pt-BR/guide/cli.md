@@ -121,6 +121,7 @@ Principais opções:
 | `-j, --threads`               | Substituição da contagem de threads                                           |
 | `--profile`                   | Perfil de tempo de impressão                                                  |
 | `--continue-on-error`         | Continue compilando e reporte falhas no final                                 |
+| `--verbose` | Mostra cada erro de compilação por completo em vez de um bloco com dica por tipo |
 
 ## Formato
 

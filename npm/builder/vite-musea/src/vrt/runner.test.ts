@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 
 import type { ArtFileInfo, ViewportConfig } from "../types/index.ts";
-import { MuseaVrtRunner, normalizeVrtWorkerCount } from "./runner.ts";
+import { defaultVrtWorkerCount, MuseaVrtRunner, normalizeVrtWorkerCount } from "./runner.ts";
 import type { VrtResult } from "./types.ts";
 
 void test("beforeCapture remains optional and invalid runtime callbacks fail explicitly", () => {
@@ -24,7 +24,10 @@ void test("beforeCapture remains optional and invalid runtime callbacks fail exp
 });
 
 void test("worker count is normalized to a positive integer", () => {
-  assert.equal(normalizeVrtWorkerCount(undefined), 1);
+  assert.equal(defaultVrtWorkerCount(32), 8);
+  assert.equal(defaultVrtWorkerCount(3), 3);
+  assert.ok(normalizeVrtWorkerCount(undefined) >= 1);
+  assert.ok(normalizeVrtWorkerCount(undefined) <= 8);
   assert.equal(normalizeVrtWorkerCount(0), 1);
   assert.equal(normalizeVrtWorkerCount(-2), 1);
   assert.equal(normalizeVrtWorkerCount(Number.NaN), 1);

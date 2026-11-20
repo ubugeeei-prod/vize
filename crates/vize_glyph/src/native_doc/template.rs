@@ -1,7 +1,7 @@
 //! The supported Vue 3 surface-to-document path. No product parser is called.
 
 use vize_l0::{Allocator, Vec};
-use vize_l1::dialect::vue3::surface::ComponentParse;
+use vize_l1::framework::vue::version::v3::surface::ComponentParse;
 use vize_l1::markup::{Element, SurfaceChild};
 
 use super::{Doc, Line};

@@ -1,0 +1,40 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 1134,
+        "message": "Variable declaration expected.",
+        "range": {
+          "end": {
+            "character": 7,
+            "line": 3
+          },
+          "start": {
+            "character": 6,
+            "line": 3
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 1134,
+        "message": "Variable declaration expected.",
+        "range": {
+          "end": {
+            "character": 9,
+            "line": 3
+          },
+          "start": {
+            "character": 8,
+            "line": 3
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

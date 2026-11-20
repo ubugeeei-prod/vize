@@ -271,7 +271,7 @@ fn split_sfc(source: &str, path: &str) -> (SmallVec<[ScriptRange; 2]>, Option<(u
     let template = descriptor
         .template
         .as_ref()
-        .filter(|template| template.lang.as_deref().is_none_or(|lang| lang == "html"))
+        .filter(|template| vize_l1::container::lang::is_html_template(template.lang.as_deref()))
         .map(|template| (template.loc.start as u32, template.loc.end as u32));
     (scripts, template)
 }

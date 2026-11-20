@@ -1,0 +1,9 @@
+<script setup lang="ts">
+/// <reference types="nuxt" />
+import type { Differences } from './types'
+const count = 1
+</script>
+
+<template>
+  <Differences :count="count" />
+</template>

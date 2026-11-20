@@ -44,6 +44,12 @@ impl Rule for ValidVElse {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE
+            .union(crate::rule::RuleHooks::ELEMENT)
+            .union(crate::rule::RuleHooks::DIRECTIVE)
+    }
+
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         check_adjacent_if_chain(ctx, &root.children, None);
     }

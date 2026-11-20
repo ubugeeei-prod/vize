@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-invalid-bound-literal-checkbox-missing-checked-1231",
+    history: "de4c8f62d16e7bd403b946de03569b0ebbd35003",
+    source: "<div :role=\"'checkbox'\">Check</div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/role-has-required-aria-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/role-has-required-aria-props",
+                severity: Warning,
+                message: "Elements with role=\"checkbox\" must have the 'aria-checked' attribute",
+                start: 0,
+                end: 24,
+                help: Some(
+                    "**Role `checkbox` requires:** aria-checked\n\n**Example:**\n```vue\n<div role=\"checkbox\" aria-checked=\"...\">\n  Content\n</div>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/role-has-required-aria-props",
+                    severity: Warning,
+                    message: "Elements with role=\"checkbox\" must have the 'aria-checked' attribute",
+                    start: 0,
+                    end: 24,
+                    help: Some(
+                        "**Role `checkbox` requires:** aria-checked\n\n**Example:**\n```vue\n<div role=\"checkbox\" aria-checked=\"...\">\n  Content\n</div>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

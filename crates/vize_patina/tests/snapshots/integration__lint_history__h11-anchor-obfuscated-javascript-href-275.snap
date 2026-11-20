@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-anchor-obfuscated-javascript-href-275",
+    history: "895d6df1661c9c2abdbbd5d97fe18579de0f184a",
+    source: "<a href=\"java&#x0A;script:void(0)\">Link</a>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/anchor-is-valid",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/anchor-is-valid",
+                severity: Warning,
+                message: "<a> element has a javascript: href which is not recommended",
+                start: 3,
+                end: 34,
+                help: Some(
+                    "**Fix:**\n```vue\n<!-- Use a valid URL -->\n<a href=\"/about\">About</a>\n\n<!-- For click handlers, use <button> -->\n<button @click=\"handleClick\">Action</button>\n\n<!-- For dynamic URLs -->\n<a :href=\"url\">Link</a>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/anchor-is-valid",
+                    severity: Warning,
+                    message: "<a> element has a javascript: href which is not recommended",
+                    start: 3,
+                    end: 34,
+                    help: Some(
+                        "**Fix:**\n```vue\n<!-- Use a valid URL -->\n<a href=\"/about\">About</a>\n\n<!-- For click handlers, use <button> -->\n<button @click=\"handleClick\">Action</button>\n\n<!-- For dynamic URLs -->\n<a :href=\"url\">Link</a>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

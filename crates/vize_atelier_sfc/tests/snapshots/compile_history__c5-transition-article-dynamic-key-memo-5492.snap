@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-transition-article-dynamic-key-memo-5492",
+    history: "eca05a96f7f50e4ceba7a22f1fb8c461e7027bf8",
+    source: "<Transition><article v-memo=\"[path]\" :key=\"path\" class=\"docs-article\"><h1>{{ pageTitle }}</h1></article></Transition>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Transition as _Transition, withCtx as _withCtx, withMemo as _withMemo } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createBlock(_Transition, null, {\n    default: _withCtx(() => [\n      _withMemo([path], () => (_openBlock(), _createElementBlock(\"article\", {\n        key: path,\n        class: \"docs-article\"\n      }, [\n        _createElementVNode(\"h1\", null, _toDisplayString(pageTitle), 1 /* TEXT */)\n      ])), _cache, 0)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

@@ -1,0 +1,18 @@
+<script lang="ts">
+import { defineComponent } from "vue";
+import { useFetch } from "@nuxtjs/composition-api";
+
+export default defineComponent({
+  setup() {
+    const { $fetch } = useFetch(async () => {});
+    const refreshFromSetup = () => $fetch();
+    const extra = {};
+
+    return { refreshFromSetup, ...extra };
+  },
+});
+</script>
+
+<template>
+  <button @click="refreshFromSetup(1)">Refresh</button>
+</template>

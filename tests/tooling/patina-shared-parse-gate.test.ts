@@ -25,8 +25,6 @@ const LEDGER: Readonly<Record<string, number>> = {
   "linter/native_type_aware/typescript_eslint/tree.rs": 1,
   "linter/script_rules.rs": 1,
   "rules/musea.rs": 1,
-  "rules/musea/require_component.rs": 1,
-  "rules/musea/require_title.rs": 1,
   "rules/opinionated/vue/no_multiple_objects_in_class.rs": 1,
   "rules/opinionated/vue/require_component_registration.rs": 1,
   // #12878: template expressions are re-parsed with a parenthesized retry.

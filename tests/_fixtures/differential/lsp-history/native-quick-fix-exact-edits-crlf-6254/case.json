@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "commit": "0bd36715d4ecbb448630157c7ce233b60e142362",
+  "id": "lsp/fix-history/native-quick-fix-exact-edits-crlf-6254",
+  "requirement": "With lint off and typecheck on (crlf), the checker quick fix and Fix All apply exact authored edits across astral/CRLF text; an empty `only` filter returns null.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true,
+    "codeActions": true
+  },
+  "files": {
+    "tsconfig.json": "{\"compilerOptions\":{\"strict\":true,\"target\":\"ESNext\",\"module\":\"ESNext\",\"moduleResolution\":\"Bundler\",\"jsx\":\"preserve\"},\"include\":[\"**/*.vue\"]}",
+    "App.vue": "<!-- 😀 -->\r\n<script setup lang=\"ts\">\r\ninterface Greeting { greet(name: string): string; }\r\nclass Welcome implements Greeting {}\r\n</script>"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    },
+    {
+      "request": "textDocument/codeAction",
+      "uri": "App.vue",
+      "retry": true,
+      "params": {
+        "range": {
+          "start": {
+            "line": 3,
+            "character": 6
+          },
+          "end": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        "context": {
+          "diagnostics": [],
+          "only": [
+            "quickfix"
+          ]
+        }
+      }
+    },
+    {
+      "request": "textDocument/codeAction",
+      "uri": "App.vue",
+      "retry": true,
+      "params": {
+        "range": {
+          "start": {
+            "line": 3,
+            "character": 6
+          },
+          "end": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        "context": {
+          "diagnostics": [],
+          "only": [
+            "source"
+          ]
+        }
+      }
+    },
+    {
+      "request": "textDocument/codeAction",
+      "uri": "App.vue",
+      "retry": true,
+      "params": {
+        "range": {
+          "start": {
+            "line": 3,
+            "character": 6
+          },
+          "end": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        "context": {
+          "diagnostics": [],
+          "only": []
+        }
+      }
+    }
+  ]
+}

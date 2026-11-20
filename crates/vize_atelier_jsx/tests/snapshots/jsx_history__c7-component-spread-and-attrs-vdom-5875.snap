@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-component-spread-and-attrs-vdom-5875",
+    history: "8355c59869d5fe68122e01cbf9edcea8b2f984be",
+    source: "const A = () => <Foo id=\"x\" {...props} onClick={go} />;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { resolveComponent as _resolveComponent, mergeProps as _mergeProps, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  const _component_Foo = _resolveComponent(\"Foo\")\n  \n  return (_openBlock(), _createBlock(_component_Foo, _mergeProps({ id: \"x\" }, props, { onClick: go }), null, 16 /* FULL_PROPS */, [\"onClick\"]))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "A",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { resolveComponent as _resolveComponent, mergeProps as _mergeProps, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  const _component_Foo = _resolveComponent(\"Foo\")\n  \n  return (_openBlock(), _createBlock(_component_Foo, _mergeProps({ id: \"x\" }, props, { onClick: go }), null, 16 /* FULL_PROPS */, [\"onClick\"]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

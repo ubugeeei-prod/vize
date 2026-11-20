@@ -1,6 +1,6 @@
 //! Genuine original template completion retains its lower owner through L3.
 
-use super::{NativeVaporFileAnalysis, VaporFacts};
+use super::{VaporFacts, VaporFileAnalysis};
 use crate::decision::{DecisionBuildError, DecisionTables};
 use vize_l2::{
     artifact::Artifact,
@@ -12,17 +12,17 @@ use vize_l2::{
 ///
 /// Complete neutral File analysis cannot construct this capability:
 /// ```compile_fail
-/// use vize_l3::decision::vapor::{NativeVaporFileAnalysis, NativeTemplateVaporAnalysis};
-/// fn promote(analysis: NativeVaporFileAnalysis<'_, '_>) {
-///     let _ = NativeTemplateVaporAnalysis { analysis };
+/// use vize_l3::decision::vapor::{VaporFileAnalysis, TemplateVaporAnalysis};
+/// fn promote(analysis: VaporFileAnalysis<'_, '_>) {
+///     let _ = TemplateVaporAnalysis { analysis };
 /// }
 /// ```
 /// Its original lower owner remains live until the analysis is released:
 /// ```compile_fail
 /// use vize_l2::lang::js::NativeTemplateFile;
-/// use vize_l3::decision::vapor::build_native_vapor_file_decisions;
+/// use vize_l3::decision::vapor::build_template_vapor_decisions;
 /// fn discard(owner: NativeTemplateFile<'_>) {
-///     let analysis = build_native_vapor_file_decisions(owner.view().unwrap()).unwrap();
+///     let analysis = build_template_vapor_decisions(owner.view().unwrap()).unwrap();
 ///     drop(owner);
 ///     let _ = analysis.owner();
 /// }
@@ -30,15 +30,15 @@ use vize_l2::{
 /// A complete manually populated File is not original template completion:
 /// ```compile_fail
 /// use vize_l2::file::FileArtifact;
-/// use vize_l3::decision::vapor::build_native_vapor_file_decisions;
-/// fn forge(file: &FileArtifact<'_>) { let _ = build_native_vapor_file_decisions(file); }
+/// use vize_l3::decision::vapor::build_template_vapor_decisions;
+/// fn forge(file: &FileArtifact<'_>) { let _ = build_template_vapor_decisions(file); }
 /// ```
-pub struct NativeTemplateVaporAnalysis<'owner, 'arena> {
+pub struct TemplateVaporAnalysis<'owner, 'arena> {
     view: NativeTemplateView<'owner, 'arena>,
-    analysis: NativeVaporFileAnalysis<'owner, 'arena>,
+    analysis: VaporFileAnalysis<'owner, 'arena>,
 }
 
-impl<'owner, 'arena> NativeTemplateVaporAnalysis<'owner, 'arena> {
+impl<'owner, 'arena> TemplateVaporAnalysis<'owner, 'arena> {
     #[must_use]
     pub fn owner(&self) -> &'owner NativeTemplateFile<'arena> {
         self.view.owner()
@@ -69,10 +69,10 @@ impl<'owner, 'arena> NativeTemplateVaporAnalysis<'owner, 'arena> {
 
 /// Derive the File internally from the genuine non-cloneable lower completion.
 /// It runs the existing producer once; no second AST/tree walk is introduced.
-pub fn build_native_vapor_file_decisions<'owner, 'arena>(
+pub fn build_template_vapor_decisions<'owner, 'arena>(
     view: NativeTemplateView<'owner, 'arena>,
-) -> Result<NativeTemplateVaporAnalysis<'owner, 'arena>, DecisionBuildError> {
+) -> Result<TemplateVaporAnalysis<'owner, 'arena>, DecisionBuildError> {
     let file = view.file().ok_or(DecisionBuildError::IncompleteFile)?;
     let analysis = super::file::build_original_file_decisions(file)?;
-    Ok(NativeTemplateVaporAnalysis { view, analysis })
+    Ok(TemplateVaporAnalysis { view, analysis })
 }

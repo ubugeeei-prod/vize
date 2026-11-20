@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-component-default-element-wraps-slot-outlet-5504",
+    history: "6faca978381d1465fcaeeefa1b5f655082df21ea",
+    source: "<Section><label><div><slot name=\"label\">{{ fallback }}</slot></div><SelectTab /></label></Section>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, renderSlot as _renderSlot, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_SelectTab = _resolveComponent(\"SelectTab\")\n  const _component_Section = _resolveComponent(\"Section\")\n  \n  return (_openBlock(), _createBlock(_component_Section, null, {\n    default: _withCtx(() => [\n      _createElementVNode(\"label\", null, [\n        _createElementVNode(\"div\", null, [\n          _renderSlot(_ctx.$slots, \"label\", {}, () => [\n            _createTextVNode(_toDisplayString(fallback), 1 /* TEXT */)\n          ])\n        ]),\n        _createVNode(_component_SelectTab)\n      ])\n    ]),\n    _: 3 /* FORWARDED */\n  }))\n}",
+    map: None,
+}

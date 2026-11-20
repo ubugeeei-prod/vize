@@ -101,7 +101,7 @@ pub fn emit_dom_source_observed_with_options<'a>(
 
 /// SFC-only variant that refuses malformed slot parameters before assembly.
 #[doc(hidden)]
-pub fn emit_dom_source_sfc_observed_with_options<'a>(
+pub fn emit_dom_source_strict_slots_observed_with_options<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     caps: LegacyCaps,
@@ -251,6 +251,7 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
             SurfaceParseOptions {
                 experimental_in_tag_comments: options.experimental_in_tag_comments,
                 syntax,
+                html_tree_construction: false,
             },
             caps,
         );

@@ -36,6 +36,30 @@ fn class_join_moves_only_toward_less_stable_values() {
     );
 }
 
+/// The derived order is the chain the Creusot value-axis laws state through
+/// `join` (tests/formal/creusot/src/lattice.rs): `a <= b` exactly when
+/// joining `a` into `b` leaves `b`. The derive is outside the proof crate,
+/// so this oracle covers it for every pair.
+#[test]
+fn the_derived_order_is_the_join_order() {
+    const CLASSES: [ReactivityClass; 4] = [
+        ReactivityClass::Static,
+        ReactivityClass::PropsStable,
+        ReactivityClass::Reactive,
+        ReactivityClass::Unstable,
+    ];
+    for (i, a) in CLASSES.into_iter().enumerate() {
+        // The product's `rank` is the discriminant; the proof crate's `rank`
+        // is a match returning the chain position. They agree only if each
+        // discriminant is its position.
+        assert_eq!(usize::from(a as u8), i, "{a:?} discriminant");
+        for (j, b) in CLASSES.into_iter().enumerate() {
+            assert_eq!(a <= b, a.join(b) == b, "{a:?} <= {b:?}");
+            assert_eq!(a.cmp(&b), i.cmp(&j), "{a:?} cmp {b:?}");
+        }
+    }
+}
+
 #[test]
 fn effect_vocabulary_maps_to_the_lattice_floor() {
     assert_eq!(EffectSet::empty().class_floor(), ReactivityClass::Static);

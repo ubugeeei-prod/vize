@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-airi-loading-component-formats-nested-static-pro-5480",
+    history: "deb960cdbc90fc987e9ec9564121a226eb3def32",
+    source: "<div flex flex-col gap-2><div v-for=\"file in files\" :key=\"file.filename\" max-w-full flex flex-col gap=\"1 sm:2\"><div grid=\"~ cols-[85%_15%]\" justify-between text=\"xs sm:sm neutral-600 dark:neutral-400\"><div flex items-center gap-1>{{ file.filename }}</div></div></div></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    flex: \"\",\n    \"flex-col\": \"\",\n    \"gap-2\": \"\"\n  }, [\n    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(files, (file) => {\n      return (_openBlock(), _createElementBlock(\"div\", {\n        key: file.filename,\n        \"max-w-full\": \"\",\n        flex: \"\",\n        \"flex-col\": \"\",\n        gap: \"1 sm:2\"\n      }, [\n        _createElementVNode(\"div\", {\n          grid: \"~ cols-[85%_15%]\",\n          \"justify-between\": \"\",\n          text: \"xs sm:sm neutral-600 dark:neutral-400\"\n        }, [\n          _createElementVNode(\"div\", {\n            flex: \"\",\n            \"items-center\": \"\",\n            \"gap-1\": \"\"\n          }, _toDisplayString(file.filename), 1 /* TEXT */)\n        ])\n      ]))\n    }), 128 /* KEYED_FRAGMENT */))\n  ]))\n}",
+    map: None,
+}

@@ -1,6 +1,43 @@
 use vize_croquis::Scope;
 
+use super::super::emit::SlotParameterGeneratedParts;
 use crate::virtual_ts::types::VizeMapping;
+
+fn push_mapped_segment(
+    mappings: &mut Vec<VizeMapping>,
+    generated_start: usize,
+    source_start: usize,
+    len: usize,
+    binding_ranges: &[std::ops::Range<usize>],
+) {
+    let source_end = source_start + len;
+    let mut cursor = source_start;
+    for binding in binding_ranges {
+        let overlap_start = binding.start.max(source_start);
+        let overlap_end = binding.end.min(source_end);
+        if overlap_start >= overlap_end {
+            continue;
+        }
+        if cursor < overlap_start {
+            let relative = cursor - source_start;
+            mappings.push(VizeMapping {
+                gen_range: generated_start + relative
+                    ..generated_start + relative + overlap_start - cursor,
+                src_range: cursor..overlap_start,
+                sub_spans: Vec::new(),
+            });
+        }
+        cursor = cursor.max(overlap_end);
+    }
+    if cursor < source_end {
+        let relative = cursor - source_start;
+        mappings.push(VizeMapping {
+            gen_range: generated_start + relative..generated_start + len,
+            src_range: cursor..source_end,
+            sub_spans: Vec::new(),
+        });
+    }
+}
 
 pub(super) fn map_slot_props_pattern(
     mappings: &mut Vec<VizeMapping>,
@@ -8,18 +45,11 @@ pub(super) fn map_slot_props_pattern(
     pattern_offset: Option<u32>,
     template_offset: u32,
     props_pattern: &str,
-    function_gen_start: usize,
     ts: &str,
+    generated_parts: SlotParameterGeneratedParts,
 ) {
-    let function_text = ts.get(function_gen_start..).unwrap_or_default();
-    let pattern = pattern_offset.and_then(|source_offset| {
-        function_text.find(props_pattern).map(|generated_offset| {
-            (
-                function_gen_start + generated_offset,
-                (template_offset + source_offset) as usize,
-            )
-        })
-    });
+    let function_text = ts.get(generated_parts.function_start..).unwrap_or_default();
+    let parameter = super::super::emit::slot_parameter(props_pattern);
     let mut binding_ranges = Vec::new();
     for (prop_name, binding) in scope.bindings() {
         let Some(pattern_relative) =
@@ -34,8 +64,8 @@ pub(super) fn map_slot_props_pattern(
         };
         let src_start = binding.declaration_offset;
         mappings.push(VizeMapping {
-            gen_range: function_gen_start + generated_relative
-                ..function_gen_start + generated_relative + prop_name.len(),
+            gen_range: generated_parts.function_start + generated_relative
+                ..generated_parts.function_start + generated_relative + prop_name.len(),
             src_range: (template_offset + src_start) as usize
                 ..(template_offset + src_start) as usize + prop_name.len(),
             sub_spans: Vec::new(),
@@ -48,25 +78,29 @@ pub(super) fn map_slot_props_pattern(
     // the overlapping whole-pattern span, leaving that key unmapped (#12511).
     // Emit only the disjoint gaps around binding identifiers; together with
     // the identifier rows above, every authored byte has exactly one owner.
-    if let Some((generated_start, source_start)) = pattern {
+    if let Some(pattern_offset) = pattern_offset {
         binding_ranges.sort_by_key(|range| (range.start, range.end));
-        let mut cursor = 0;
-        for binding in binding_ranges {
-            if cursor < binding.start {
-                mappings.push(VizeMapping {
-                    gen_range: generated_start + cursor..generated_start + binding.start,
-                    src_range: source_start + cursor..source_start + binding.start,
-                    sub_spans: Vec::new(),
-                });
-            }
-            cursor = cursor.max(binding.end);
-        }
-        if cursor < props_pattern.len() {
-            mappings.push(VizeMapping {
-                gen_range: generated_start + cursor..generated_start + props_pattern.len(),
-                src_range: source_start + cursor..source_start + props_pattern.len(),
-                sub_spans: Vec::new(),
-            });
+        let authored_start = (template_offset + pattern_offset) as usize;
+        let absolute_binding_ranges = binding_ranges
+            .iter()
+            .map(|range| authored_start + range.start..authored_start + range.end)
+            .collect::<Vec<_>>();
+        for (part, generated_start) in [
+            Some((parameter.pattern, generated_parts.pattern_start)),
+            parameter.annotation.zip(generated_parts.annotation_start),
+            parameter.default.zip(generated_parts.default_start),
+        ]
+        .into_iter()
+        .flatten()
+        .filter(|(part, _)| !part.text.is_empty())
+        {
+            push_mapped_segment(
+                mappings,
+                generated_start,
+                authored_start + part.start,
+                part.text.len(),
+                &absolute_binding_ranges,
+            );
         }
     }
 }

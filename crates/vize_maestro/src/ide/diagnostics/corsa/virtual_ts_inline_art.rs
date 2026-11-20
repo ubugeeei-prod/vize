@@ -5,21 +5,32 @@ use vize_canon::virtual_ts::{
     VirtualTsOptions, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_legacy_vue2, generate_virtual_ts_with_offsets_options_api,
 };
+use vize_l0::cstr;
 
 use super::super::{DiagnosticService, VirtualTsResult};
 
-fn add_inline_self_component_binding(
+fn add_inline_host_component_binding(
     options: &mut VirtualTsOptions,
     summary: &vize_croquis::Croquis,
+    path: &str,
 ) {
+    let Some(stem) = std::path::Path::new(path)
+        .file_stem()
+        .and_then(|value| value.to_str())
+    else {
+        return;
+    };
+    let component_name = vize_croquis::naming::to_pascal_case(stem);
     if vize_croquis::facts::component_usage_list(summary)
         .iter()
-        .any(|usage| usage.name.as_str() == "Self")
+        .any(|usage| usage.name.as_str() == component_name.as_str())
     {
+        options.auto_import_stubs.push(cstr!(
+            "declare const {component_name}: {{ new (): {{ $props: Props }} }};"
+        ));
         options
-            .auto_import_stubs
-            .push("declare const Self: { new (): { $props: Props } };".into());
-        options.external_template_bindings.push("Self".into());
+            .external_template_bindings
+            .push(component_name.clone());
     }
 }
 
@@ -79,7 +90,11 @@ impl DiagnosticService {
                 let script_content = analysis.script_content.unwrap_or_default();
                 let script_offset = analysis.script_offset;
                 let mut virtual_ts_options = base_options.clone();
-                add_inline_self_component_binding(&mut virtual_ts_options, &analysis.croquis);
+                add_inline_host_component_binding(
+                    &mut virtual_ts_options,
+                    &analysis.croquis,
+                    uri.path(),
+                );
 
                 let generate_virtual_ts = if legacy_vue2 {
                     generate_virtual_ts_with_offsets_legacy_vue2

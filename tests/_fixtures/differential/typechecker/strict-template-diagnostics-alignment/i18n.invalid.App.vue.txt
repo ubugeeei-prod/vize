@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const key = 1
+</script>
+
+<template>
+  <p>{{ $t(key) }}</p>
+</template>

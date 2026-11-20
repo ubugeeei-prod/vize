@@ -1,0 +1,46 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-8-1a2c5f7",
+    history: "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    source: "export default (_openBlock: number) => <p/>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 1,
+}
+Observation {
+    module: "",
+    module_map: None,
+    components: [
+        Component {
+            name: None,
+            mode: Vdom,
+            setup: None,
+            preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"p\"))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [
+        JsxDiagnostic {
+            severity: Error,
+            message: "JSX authored binding `_openBlock` shadows a generated runtime helper; rename the binding",
+            start: 16,
+            end: 26,
+        },
+    ],
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": "ecosystem/vue-router-route-param",
+        "message": "Route param `slug` is not defined by this page file. Available params: id",
+        "range": {
+          "end": {
+            "character": 38,
+            "line": 3
+          },
+          "start": {
+            "character": 34,
+            "line": 3
+          }
+        },
+        "severity": 2,
+        "source": "vize/ecosystem"
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "version": 2,
+    "diagnostics": []
+  }
+]

@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "commit": "8e9ca8de9065ea6a896b6c832edf8dfe849d08a4",
+  "id": "lsp/fix-history/component-emit-completion-7087",
+  "requirement": "An imported component's emits complete once as @event at an empty attribute position and replace the typed @ prefix.",
+  "files": {
+    "Child.vue": "<script setup lang='ts'>defineEmits<{ select: [id: number] }>()</script>",
+    "Parent.vue": "<script setup lang='ts'>\nimport Child from './Child.vue'\n</script>\n<template>\n  <Child  />\n  <Child @s />\n</template>"
+  },
+  "steps": [
+    {
+      "open": "Parent.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "Parent.vue",
+      "at": {
+        "find": "<Child  />",
+        "delta": 7
+      },
+      "labels": [
+        "@select"
+      ]
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "Parent.vue",
+      "at": {
+        "find": "<Child @s />",
+        "delta": 9
+      },
+      "labels": [
+        "@select"
+      ]
+    }
+  ]
+}

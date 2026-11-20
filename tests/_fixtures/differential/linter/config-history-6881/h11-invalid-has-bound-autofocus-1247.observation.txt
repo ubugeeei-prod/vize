@@ -1,0 +1,63 @@
+Case {
+    id: "h11-invalid-has-bound-autofocus-1247",
+    history: "c3f6780cb9f7642503137ccf78797b3faf215725",
+    source_file: "h11-invalid-has-bound-autofocus-1247.html.txt",
+    filename: "History.vue",
+    entry: "template",
+    preset: "incremental",
+    enabled_rules: Some(
+        [
+            "a11y/no-autofocus",
+        ],
+    ),
+    disabled_rules: [],
+    rule_severities: [],
+    disabled_categories: [],
+    category_severities: [],
+    rule_options: Object {},
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/no-autofocus",
+                severity: Warning,
+                message: "The autofocus attribute should not be used. It can disrupt navigation for screen reader users",
+                start: 19,
+                end: 36,
+                help: Some(
+                    "Remove the autofocus attribute. Manage focus programmatically when needed using ref and focus()",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/no-autofocus",
+                    severity: Warning,
+                    message: "The autofocus attribute should not be used. It can disrupt navigation for screen reader users",
+                    start: 19,
+                    end: 36,
+                    help: Some(
+                        "Remove the autofocus attribute. Manage focus programmatically when needed using ref and focus()",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

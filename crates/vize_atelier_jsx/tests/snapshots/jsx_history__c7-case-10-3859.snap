@@ -1,0 +1,78 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-10-3859",
+    history: "4010fbbe1bd570a9ac2a628feb21a6cd9b4b54d0",
+    source: "\n        const Fallback = () => <i/>;\n        const App = ({ slot = <Fallback /> }) => {\n          const node = slot;\n          return <div>{node}</div>;\n        };\n        ",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { openBlock as _openBlock, createElementBlock as _createElementBlock, resolveDynamicComponent as _resolveDynamicComponent, createBlock as _createBlock, createElementVNode as _createElementVNode } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\n\n        const Fallback = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"i\"))\n})(undefined, [])\n})();\n        const App = _defineComponent({\nname: \"App\",\nprops: [\"slot\"],\nsetup({ slot = (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createBlock(_resolveDynamicComponent(Fallback)))\n})(undefined, [])\n})() }) {\n\n          const node = slot;\n          return (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"div\", null, [\n    node\n  ]))\n})\n})()\n}\n});\n        ",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "Fallback",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"i\"))\n}",
+            map: None,
+        },
+        Component {
+            name: Some(
+                "App",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createBlock(_resolveDynamicComponent(Fallback)))\n}",
+            map: None,
+        },
+        Component {
+            name: Some(
+                "App",
+            ),
+            mode: Vdom,
+            setup: Some(
+                ComponentSetupSpan {
+                    declaration_start: 46,
+                    declaration_end: 164,
+                    params_start: 59,
+                    params_end: 82,
+                    type_params_start: 0,
+                    type_params_end: 0,
+                    is_async: false,
+                    destructured_props: [
+                        "slot",
+                    ],
+                    setup_start: 88,
+                    setup_end: 128,
+                    render_start: 135,
+                    render_end: 152,
+                },
+            ),
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"div\", null, [\n    node\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

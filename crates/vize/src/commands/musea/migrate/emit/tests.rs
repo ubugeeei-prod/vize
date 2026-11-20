@@ -32,7 +32,9 @@ export const Mystery = { decorators: [withFoo] };
     assert_eq!(
         content,
         r#"<script setup lang="ts">
-defineArt("./AfButton.vue", {
+import AfButton from "./AfButton.vue";
+
+defineArtMeta({
   category: "Base",
   title: "AfButton",
 });
@@ -147,7 +149,9 @@ export const Big = { args: { size: "lg", count: 3, active: true } };
     assert_eq!(
         content,
         r#"<script setup lang="ts">
-defineArt("./AfButton.vue", {
+import AfButton from "./AfButton.vue";
+
+defineArtMeta({
   title: "AfButton",
 });
 </script>

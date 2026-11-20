@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "commit": "38be3a0c5fa0742e2dad00c6d753f56732ce7780",
+  "id": "lsp/fix-history/watched-declaration-revalidation-3798",
+  "requirement": "A watched declaration change revalidates open diagnostics; an out-of-order didChange version is rejected so the newest text stays authoritative.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "globals.d.ts": "declare const APP_VERSION: string\n",
+    "App.vue": "<script setup lang=\"ts\">\nconst v: number = APP_VERSION\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    },
+    {
+      "write": "globals.d.ts",
+      "text": "declare const APP_VERSION: number\n"
+    },
+    {
+      "notify": "workspace/didChangeWatchedFiles",
+      "params": {
+        "changes": [
+          {
+            "uri": "${workspace}/globals.d.ts",
+            "type": 2
+          }
+        ]
+      }
+    },
+    {
+      "diagnostics": "App.vue",
+      "version": null
+    },
+    {
+      "change": "App.vue",
+      "version": 3,
+      "contentChanges": [
+        {
+          "text": "<script setup lang=\"ts\">\nconst v: boolean = APP_VERSION\n</script>\n"
+        }
+      ]
+    },
+    {
+      "change": "App.vue",
+      "version": 2,
+      "contentChanges": [
+        {
+          "text": "<script setup lang=\"ts\">\nconst v: number = APP_VERSION\n</script>\n"
+        }
+      ]
+    },
+    {
+      "diagnostics": "App.vue",
+      "version": 3
+    }
+  ]
+}

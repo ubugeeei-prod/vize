@@ -17,10 +17,10 @@ mod template;
 #[cfg(test)]
 mod tests;
 pub use expression::{VaporExpression, VaporValueKind};
-pub use file::{NativeVaporFileAnalysis, build_vapor_file_decisions};
+pub use file::{VaporFileAnalysis, build_vapor_file_decisions};
 pub use model::VaporModel;
-pub use setup::{NativeSelectedSetupVaporAnalysis, build_native_selected_setup_vapor_decisions};
-pub use template::{NativeTemplateVaporAnalysis, build_native_vapor_file_decisions};
+pub use setup::{SelectedSetupVaporAnalysis, build_selected_setup_vapor_decisions};
+pub use template::{TemplateVaporAnalysis, build_template_vapor_decisions};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum VaporUnsupported {

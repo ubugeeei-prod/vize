@@ -14,7 +14,7 @@ function inlineArt(file: string): ArtFileInfo {
   return {
     path: file,
     metadata: { title: "Registered", tags: [], status: "ready" },
-    variants: [{ name: "Default", template: "<Self />", isDefault: true, skipVrt: false }],
+    variants: [{ name: "Default", template: "<Card />", isDefault: true, skipVrt: false }],
     hasScriptSetup: false,
     hasScript: false,
     styleCount: 0,

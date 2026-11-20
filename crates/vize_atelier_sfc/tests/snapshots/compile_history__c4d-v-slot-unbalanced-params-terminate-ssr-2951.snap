@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4d-v-slot-unbalanced-params-terminate-ssr-2951",
+    history: "9134569dab37612e4ca8c2a0746669c1881fd731",
+    source: "<template><Comp v-slot=\"(dep(, file)\">{{ file }}</Comp></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "Template compilation errors: [CompilerError { code: InvalidExpression, message: \"Error parsing JavaScript expression: mismatched expression delimiters\", loc: Some(SourceLocation { start: Position { offset: 14, line: 1, column: 15 }, end: Position { offset: 26, line: 1, column: 27 }, source: \"(dep(, file)\" }) }]",
+            code: Some(
+                "TEMPLATE_ERROR",
+            ),
+            loc: Some(
+                BlockLocation {
+                    start: 10,
+                    end: 55,
+                    tag_start: 0,
+                    tag_end: 66,
+                    start_line: 1,
+                    start_column: 11,
+                    end_line: 1,
+                    end_column: 56,
+                },
+            ),
+        },
+    ),
+)

@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1b-dotted-component-setup-member-dom",
+    history: "5fe51651dea8c38ee164ed6a955162758d7b034d",
+    source: "<script setup lang=\"ts\">\nimport { Form, Input } from 'ant-design-vue'\n</script>\n\n<template>\n  <Form.Item label=\"Teacher\">\n    <Input />\n  </Form.Item>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineComponent as _defineComponent } from 'vue'\nimport { createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, unref as _unref, withCtx as _withCtx } from \"vue\"\n\nimport { Form, Input } from 'ant-design-vue'\n\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'History',\n  setup(__props) {\n\n\nreturn (_ctx: any,_cache: any) => {\n  return (_openBlock(), _createBlock(_unref(Form).Item, { label: \"Teacher\" }, {\n    default: _withCtx(() => [\n      _createVNode(_unref(Input))\n    ]),\n    _: 1 /* STABLE */\n  }))\n}\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "Form": SetupMaybeRef,
+                        "Input": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

@@ -1,0 +1,4 @@
+import { café, Counter } from './App.vue';
+const value: number = café;
+const counter: Counter = new Counter();
+const precise: number = counter.value;

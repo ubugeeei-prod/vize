@@ -193,6 +193,145 @@ export const steps: Readonly<Record<string, Step>> = {
     items: [],
     parents: {},
   },
+  // Step 3: one sibling per style language under `style/`, the shared readers
+  // beside them, and Vue's CSS `v-bind()` in the Vue owner. The language
+  // dispatch (`css::lang`) and the CSS lexis join their parents, and the
+  // indented reader is split per language, by hand afterwards.
+  "l1-style": {
+    crate: "davinci/vize_l1",
+    name: "vize_l1",
+    moves: [
+      move("css::lang::nested", "style::nesting"),
+      move("css::lang::indented", "style::sass"),
+      move("css::lang::css", "style::css::lexis"),
+      move("css::lang", "style::language"),
+      move("css::bind", "framework::vue::style_bind"),
+      move("css::structure", "style::structure"),
+      move("css::classes", "style::classes"),
+      move("css", "style::css"),
+    ],
+    items: [],
+    parents: {
+      style:
+        "//! Style languages: one sibling per `<style lang>` over shared readers.\n" +
+        "//!\n" +
+        "//! Preprocessors themselves stay upstream. `structure` reads where rules,\n" +
+        "//! declarations and comments are in any language, `classes` reads selector\n" +
+        "//! preludes, and `nesting` resolves nested selectors. Each language module\n" +
+        "//! supplies its lexis; `css` also owns the one production cssparser parse.\n",
+    },
+  },
+  // Step 4: one Vue owner. The per-version tables become `version::v0..v3`,
+  // the shared capability model `quirks`, its composable features `feature`,
+  // the shared scope recovery `surface`, and directive decomposition
+  // `directive`. `dialect`'s re-exports join `framework::vue` by hand.
+  "l1-vue": {
+    crate: "davinci/vize_l1",
+    name: "vize_l1",
+    moves: [
+      move("dialect::vue::feature", "framework::vue::feature"),
+      move("dialect::vue::surface", "framework::vue::surface"),
+      move("dialect::vue", "framework::vue::quirks"),
+      move("dialect::vue0", "framework::vue::version::v0"),
+      move("dialect::vue1", "framework::vue::version::v1"),
+      move("dialect::vue2", "framework::vue::version::v2"),
+      move("dialect::vue3", "framework::vue::version::v3"),
+      move("markup::directive", "framework::vue::directive"),
+    ],
+    items: [],
+    parents: {
+      "framework::vue::version":
+        "//! Vue's per-version template syntax: one module per major version, each\n" +
+        "//! composing its capability table from [`super::feature`] and owning the\n" +
+        "//! surfaces only that version reads.\n",
+    },
+  },
+  // L3 modules and items named by concept, not by migration status. The
+  // `native` decision routes are the template routes: decisions built from a
+  // selected template's File view (`TemplateView`) rather than from a bare File.
+  "l3-concepts": {
+    crate: "davinci/vize_l3",
+    name: "vize_l3",
+    moves: [
+      move("decision::native", "decision::template"),
+      move("decision::ssr::native", "decision::ssr::template"),
+      move("decision::dom::build::file::native", "decision::dom::build::file::refusal"),
+    ],
+    items: [],
+    parents: {},
+    identifiers: {
+      NATIVE_SETUP: "SELECTED_SETUP",
+      NativeAnalysis: "DecisionAnalysis",
+      NativeFileAnalysis: "FileAnalysis",
+      NativeJsxAnalysis: "JsxAnalysis",
+      NativeSelectedSetupDomAnalysis: "SelectedSetupDomAnalysis",
+      NativeSelectedSetupSsrAnalysis: "SelectedSetupSsrAnalysis",
+      NativeSelectedSetupVaporAnalysis: "SelectedSetupVaporAnalysis",
+      NativeSsrBuildError: "SsrTemplateBuildError",
+      NativeSsrFileAnalysis: "SsrFileAnalysis",
+      NativeTemplateDomAnalysis: "TemplateDomAnalysis",
+      NativeTemplateScopedSsrAnalysis: "TemplateScopedSsrAnalysis",
+      NativeTemplateSsrAnalysis: "TemplateSsrAnalysis",
+      NativeTemplateVaporAnalysis: "TemplateVaporAnalysis",
+      NativeVaporFileAnalysis: "VaporFileAnalysis",
+      NativeVueRenderAnalysis: "VueRenderAnalysis",
+      build_native_dom_file_decisions: "build_template_dom_decisions",
+      build_native_scoped_ssr_file_decisions: "build_scoped_template_ssr_decisions",
+      build_native_selected_setup_dom_decisions: "build_selected_setup_dom_decisions",
+      build_native_selected_setup_ssr_decisions: "build_selected_setup_ssr_decisions",
+      build_native_selected_setup_vapor_decisions: "build_selected_setup_vapor_decisions",
+      build_native_ssr_file_decisions: "build_template_ssr_decisions",
+      build_native_vapor_file_decisions: "build_template_vapor_decisions",
+      native_condition: "selected_setup_condition",
+      only_ssr_native_element_events_are_omitted: "only_ssr_element_events_are_omitted",
+    },
+  },
+  // L4 items named by concept: an element (not component) `v-model` and prop,
+  // the template-route DOM output, Vue 2's `.native` listener modifier, the
+  // style-block carriers, the component render binding and the strict-slot
+  // DOM entries.
+  "l4-concepts": {
+    crate: "davinci/vize_l4",
+    name: "vize_l4",
+    moves: [move("targets::dom::artifact::sfc_style", "targets::dom::artifact::style_carrier")],
+    items: [],
+    parents: {},
+    identifiers: {
+      NATIVE_ELEMENT_PROP: "ELEMENT_PROP",
+      SfcRender: "ComponentRender",
+      emit_dom_source_sfc_observed_with_options:
+        "emit_dom_source_strict_slots_observed_with_options",
+      emit_dom_source_sfc_with_options: "emit_dom_source_strict_slots_with_options",
+      NativeTemplateDomOutput: "TemplateDomOutput",
+      NativeTemplateDomOutputError: "TemplateDomOutputError",
+      NativeTemplateDomOutputFailure: "TemplateDomOutputFailure",
+      emit_native_entry: "emit_element_entry",
+      has_native_modifier: "listens_on_root_element",
+      native_binding: "element_binding",
+      native_helper: "element_helper",
+      native_modifiers: "element_modifiers",
+      native_prop: "element_prop",
+      native_read_source: "element_read_source",
+    },
+  },
+  // L0 items named by concept: platform (HTML/SVG/MathML) tags, lowercase DOM
+  // event props, and the original-route lint analysis ids.
+  "l0-concepts": {
+    crate: "davinci/vize_l0",
+    name: "vize_l0",
+    moves: [],
+    items: [],
+    parents: {},
+    identifiers: {
+      NATIVE_DIRECT_INTERPOLATIONS: "ORIGINAL_DIRECT_INTERPOLATIONS",
+      NATIVE_LINT_ATTRIBUTES: "ORIGINAL_LINT_ATTRIBUTES",
+      NATIVE_LINT_HEADERS: "ORIGINAL_LINT_HEADERS",
+      NATIVE_TEXTAREA_MUSTACHE: "ORIGINAL_TEXTAREA_MUSTACHE",
+      NATIVE_UNSUPPORTED_ARIA: "ORIGINAL_UNSUPPORTED_ARIA",
+      is_native_on: "is_dom_event_prop",
+      is_native_tag: "is_platform_tag",
+    },
+  },
 };
 
 const ident = "[A-Za-z_][A-Za-z0-9_]*";
@@ -288,13 +427,18 @@ export function rewriteRust(
         const close = matchingBrace(out, open);
         if (close < 0) continue;
         const body = out.slice(open + 1, close);
-        const rewritten = rewriteGroupBody(body, base, step);
+        const leaving: string[] = [];
+        const rewritten = rewriteGroupBody(body, base, step, leaving);
         const newHere = relocate(step.moves, here);
         const reached = newHere.slice(0, newHere.length - depth);
         const newBase = relocate(step.moves, base);
-        if (rewritten === body && reached.join("::") === newBase.join("::")) continue;
+        if (rewritten === body && !leaving.length && reached.join("::") === newBase.join("::"))
+          continue;
         result +=
-          out.slice(last, match.index) + ["crate", ...newBase].join("::") + "::{" + rewritten + "}";
+          out.slice(last, match.index) +
+          (leaving.length
+            ? regroup("crate", newBase, rewritten, leaving)
+            : ["crate", ...newBase].join("::") + "::{" + rewritten + "}");
         last = close + 1;
         opener.lastIndex = close + 1;
       }
@@ -359,17 +503,44 @@ function rewriteGroups(source: string, root: string, step: Step): string {
     const open = match.index + match[0].length - 1;
     const close = matchingBrace(source, open);
     if (close < 0) continue;
-    result +=
-      source.slice(last, open + 1) +
-      rewriteGroupBody(source.slice(open + 1, close), prefix, step) +
-      "}";
+    const leaving: string[] = [];
+    const body = rewriteGroupBody(source.slice(open + 1, close), prefix, step, leaving);
+    result += leaving.length
+      ? source.slice(last, match.index) + regroup(root, prefix, body, leaving)
+      : source.slice(last, open + 1) + body + "}";
     last = close + 1;
     opener.lastIndex = close + 1;
   }
   return result + source.slice(last);
 }
 
-function rewriteGroupBody(inner: string, prefix: readonly string[], step: Step): string {
+/**
+ * `root::{prefix::{body}, leaving…}`: a group whose members moved out of its
+ * prefix keeps the members that stayed under it and names the others from the
+ * root.
+ */
+function regroup(
+  root: string,
+  prefix: readonly string[],
+  body: string,
+  leaving: readonly string[],
+): string {
+  const stayed = body.trim().replace(/,$/u, "");
+  const kept = !stayed ? [] : prefix.length ? [`${prefix.join("::")}::{${stayed}}`] : [stayed];
+  return `${root}::{${[...kept, ...leaving].join(", ")}}`;
+}
+
+/**
+ * Relocate each member of a group against its prefix. A member that moves out
+ * of the group's (relocated) prefix is removed and, root-relative, pushed onto
+ * `leaving`; without a `leaving` list that is an error.
+ */
+function rewriteGroupBody(
+  inner: string,
+  prefix: readonly string[],
+  step: Step,
+  leaving?: string[],
+): string {
   const members: string[] = [];
   let depth = 0;
   let start = 0;
@@ -383,8 +554,9 @@ function rewriteGroupBody(inner: string, prefix: readonly string[], step: Step):
     }
   }
   members.push(inner.slice(start));
+  const left = new Set<number>();
   return members
-    .map((member) => {
+    .map((member, index) => {
       const lead = /^\s*/u.exec(member)![0];
       const body = member.slice(lead.length);
       const head = new RegExp(`^((?:${ident}::)+)`, "u").exec(body);
@@ -400,16 +572,21 @@ function rewriteGroupBody(inner: string, prefix: readonly string[], step: Step):
           lead +
           head[1] +
           "{" +
-          rewriteGroupBody(rest.slice(1, close), original, step) +
+          rewriteGroupBody(rest.slice(1, close), original, step, leaving) +
           rest.slice(close)
         );
       }
       // A moved group prefix carries its members; only their own move shows.
       const newPrefix = relocate(step.moves, prefix);
-      if (!startsWith(relocated, newPrefix))
-        throw new Error(`a group member leaves its group: ${original.join("::")}`);
+      if (!startsWith(relocated, newPrefix)) {
+        if (!leaving) throw new Error(`a group member leaves its group: ${original.join("::")}`);
+        leaving.push(relocated.join("::") + "::" + rest.trim());
+        left.add(index);
+        return "";
+      }
       return lead + relocated.slice(newPrefix.length).join("::") + "::" + rest;
     })
+    .filter((_member, index) => !left.has(index))
     .join(",");
 }
 
@@ -689,7 +866,7 @@ export function rewritePaths(source: string, step: Step): string {
   for (const { from, to } of step.moves) {
     const old = moduleFiles(step.crate, from).dir;
     const next = moduleFiles(step.crate, to).dir;
-    out = out.replace(new RegExp(`${escape(old)}(?=\\.rs\\b|/)`, "gu"), next);
+    out = out.replace(new RegExp(`${escape(old)}(?=\\.rs\\b|/|(?![\\w.-]))`, "gu"), next);
     // The same path inside a regular expression literal (`a\/b`).
     const slashed = (text: string) => text.replaceAll("/", "\\/");
     out = out.replace(
@@ -741,10 +918,16 @@ function moveDeclarations(
 ) {
   // A parent that moves in the same step is edited where it is now.
   const current = (file: string) => [...renames].find(([, moved]) => moved === file)?.[0] ?? file;
-  const parentFile = (module: readonly string[]) =>
-    module.length === 1
-      ? path.posix.join(step.crate, "src/lib.rs")
-      : moduleFiles(step.crate, module.slice(0, -1)).file;
+  // A parent is `name.rs`, or `name/mod.rs` when only that exists.
+  const parentFile = (module: readonly string[]) => {
+    if (module.length === 1) return path.posix.join(step.crate, "src/lib.rs");
+    const parent = moduleFiles(step.crate, module.slice(0, -1));
+    const nested = path.posix.join(parent.dir, "mod.rs");
+    return !fs.existsSync(path.join(repoRoot, parent.file)) &&
+      fs.existsSync(path.join(repoRoot, nested))
+      ? nested
+      : parent.file;
+  };
   const added = new Map<string, string[]>();
   for (const { from, to } of step.moves) {
     const oldParent = parentFile(from);

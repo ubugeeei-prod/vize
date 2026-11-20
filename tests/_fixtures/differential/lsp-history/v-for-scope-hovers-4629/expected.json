@@ -1,0 +1,88 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**item**\n\n_v-for scope binding_\n\n```vue\n<span v-for=\"(item, index) in group.items\" :key=\"index\">\n```\n\nLoop value alias declared by the nearest `v-for` and available to this template scope.\n\n**Behavior**\n- Shadows outer template and script bindings with the same name.\n- Type-backed sessions should refine this with the iterable item type when the backend answers."
+      },
+      "range": {
+        "end": {
+          "character": 67,
+          "line": 6
+        },
+        "start": {
+          "character": 63,
+          "line": 6
+        }
+      }
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "range": {
+        "end": {
+          "character": 22,
+          "line": 6
+        },
+        "start": {
+          "character": 18,
+          "line": 6
+        }
+      },
+      "uri": "${workspace}/List.vue"
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "range": {
+        "end": {
+          "character": 24,
+          "line": 5
+        },
+        "start": {
+          "character": 22,
+          "line": 5
+        }
+      },
+      "uri": "${workspace}/List.vue"
+    }
+  },
+  {
+    "step": 4,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**index**\n\n_v-for scope binding_\n\n```vue\n<span v-for=\"(item, index) in group.items\" :key=\"index\">\n```\n\nLoop key/index alias declared by the nearest `v-for` and available to this template scope.\n\n**Behavior**\n- Shadows outer template and script bindings with the same name.\n- Type-backed sessions should refine this with the iterable item type when the backend answers."
+      },
+      "range": {
+        "end": {
+          "character": 58,
+          "line": 6
+        },
+        "start": {
+          "character": 53,
+          "line": 6
+        }
+      }
+    }
+  },
+  {
+    "step": 5,
+    "result": {
+      "range": {
+        "end": {
+          "character": 10,
+          "line": 2
+        },
+        "start": {
+          "character": 6,
+          "line": 2
+        }
+      },
+      "uri": "${workspace}/List.vue"
+    }
+  }
+]

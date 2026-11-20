@@ -1,0 +1,25 @@
+<script lang="ts">
+const DEFAULT_COUNT = 1;
+
+export type HelperOption = {
+  count?: number;
+};
+
+export interface HelperState {
+  count: number;
+}
+
+export function useHelper(options: HelperOption = {}): HelperState {
+  return {
+    count: options.count ?? DEFAULT_COUNT,
+  };
+}
+</script>
+
+<script setup lang="ts">
+defineProps<{ state?: HelperState }>();
+</script>
+
+<template>
+  <div>{{ state?.count }}</div>
+</template>

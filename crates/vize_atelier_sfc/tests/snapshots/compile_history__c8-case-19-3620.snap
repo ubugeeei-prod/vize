@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-case-19-3620",
+    history: "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    source: "<Comp><template #default=\"{ item, active }\">{{ item.id }}{{ active }}</template></Comp>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Comp = _resolveComponent(\"Comp\")\n  \n  return (_openBlock(), _createBlock(_component_Comp, null, {\n    default: _withCtx(({ item, active }) => [\n      _createTextVNode(_toDisplayString(item.id) + _toDisplayString(active), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

@@ -30,9 +30,11 @@ mod fixture {
         Ok(())
     }
 
-    fn strings(out: &mut impl Write, values: &[&str]) -> io::Result<()> {
-        count(out, values.len())?;
-        for value in values {
+    fn strings(out: &mut impl Write, values: data::CssStrings) -> io::Result<()> {
+        assert_eq!(values.is_empty(), values.iter().next().is_none());
+        count(out, values.iter().count())?;
+        for value in values.iter() {
+            assert!(values.contains(value));
             string(out, value)?;
         }
         Ok(())
@@ -49,39 +51,39 @@ mod fixture {
     }
 
     fn value(out: &mut impl Write, value: &data::CssValue) -> io::Result<()> {
-        string(out, value.name)?;
-        optional(out, value.description)?;
-        strings(out, value.browsers)?;
-        baseline(out, value.baseline)
+        string(out, value.name())?;
+        optional(out, value.description())?;
+        strings(out, value.browsers())?;
+        baseline(out, value.baseline())
     }
 
     fn entry(out: &mut impl Write, entry: &data::CssEntry) -> io::Result<()> {
-        string(out, entry.name)?;
-        optional(out, entry.description)?;
-        optional(out, entry.syntax)?;
-        count(out, entry.references.len())?;
-        for reference in entry.references {
-            string(out, reference.name)?;
-            string(out, reference.url)?;
+        string(out, entry.name())?;
+        optional(out, entry.description())?;
+        optional(out, entry.syntax())?;
+        count(out, entry.references().len())?;
+        for reference in entry.references() {
+            string(out, reference.name())?;
+            string(out, reference.url())?;
         }
-        count(out, entry.values.len())?;
-        for item in entry.values {
+        count(out, entry.values().len())?;
+        for item in entry.values() {
             value(out, item)?;
         }
-        optional(out, entry.at_rule)?;
-        optional(out, entry.status)?;
-        strings(out, entry.restrictions)?;
-        strings(out, entry.browsers)?;
-        baseline(out, entry.baseline)?;
-        out.write_all(&[u8::from(entry.relevance.is_some())])?;
-        if let Some(relevance) = entry.relevance {
+        optional(out, entry.at_rule())?;
+        optional(out, entry.status())?;
+        strings(out, entry.restrictions())?;
+        strings(out, entry.browsers())?;
+        baseline(out, entry.baseline())?;
+        out.write_all(&[u8::from(entry.relevance().is_some())])?;
+        if let Some(relevance) = entry.relevance() {
             out.write_all(&relevance.to_le_bytes())?;
         }
-        count(out, entry.descriptors.len())?;
-        for descriptor in entry.descriptors {
+        count(out, entry.descriptors().len())?;
+        for descriptor in entry.descriptors() {
             self::entry(out, descriptor)?;
         }
-        optional(out, entry.entry_type)
+        optional(out, entry.entry_type())
     }
 
     type Lookup = fn(&str) -> Option<&'static data::CssEntry>;
@@ -89,17 +91,17 @@ mod fixture {
     fn family(
         out: &mut impl Write,
         name: &str,
-        entries: &[&'static data::CssEntry],
+        entries: &'static [data::CssEntry],
         lookup: Lookup,
     ) -> io::Result<()> {
         string(out, name)?;
         count(out, entries.len())?;
-        assert!(entries.windows(2).all(|rows| rows[0].name < rows[1].name));
+        assert!(entries.windows(2).all(|rows| rows[0].name() < rows[1].name()));
         for row in entries {
-            assert!(std::ptr::eq(lookup(row.name).unwrap(), *row));
+            assert!(std::ptr::eq(lookup(row.name()).unwrap(), row));
             assert!(std::ptr::eq(
-                lookup(&row.name.to_ascii_uppercase()).unwrap(),
-                *row
+                lookup(&row.name().to_ascii_uppercase()).unwrap(),
+                row
             ));
             entry(out, row)?;
         }
@@ -128,13 +130,13 @@ mod fixture {
         count(&mut out, data::colors().len())?;
         assert!(
             data::colors().windows(2).all(|rows| {
-                rows[0].name.to_ascii_lowercase() < rows[1].name.to_ascii_lowercase()
+                rows[0].name().to_ascii_lowercase() < rows[1].name().to_ascii_lowercase()
             })
         );
         for row in data::colors() {
-            assert!(std::ptr::eq(data::color(row.name).unwrap(), row));
+            assert!(std::ptr::eq(data::color(row.name()).unwrap(), row));
             assert!(std::ptr::eq(
-                data::color(&row.name.to_ascii_uppercase()).unwrap(),
+                data::color(&row.name().to_ascii_uppercase()).unwrap(),
                 row
             ));
             value(&mut out, row)?;

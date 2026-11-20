@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4b-scoped-slot-default-expressions-prefix-module-2494",
+    history: "c407534af9b8fad49046490711397a5a36b5fd94",
+    source: "<Comp v-slot=\"{ item, active = item.active, label = fallback.label, meta = { text }, id = Math.random() }\">{{ active }}{{ label }}</Comp>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Comp = _resolveComponent(\"Comp\")\n  \n  return (_openBlock(), _createBlock(_component_Comp, null, {\n    default: _withCtx(({ item, active = item.active, label = _ctx.fallback.label, meta = { text: _ctx.text }, id = Math.random() }) => [\n      _createTextVNode(_toDisplayString(active) + _toDisplayString(label), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

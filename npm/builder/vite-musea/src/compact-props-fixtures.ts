@@ -36,7 +36,7 @@ export function compactPropsArtSource(vector: CompactPropsFixture["browserCases"
     : "";
   return `<script setup lang="ts">
 import { default as CompactProbe } from './${vector.filename}';
-defineArt(CompactProbe, { title: '${vector.title}' });
+defineArtMeta({ title: '${vector.title}' });
 </script>
-<art><variant name="Default"><Self label="Seed" constructor="Seed constructor" hasOwnProperty="Seed method" ${literal} /></variant></art>`;
+<art><variant name="Default"><CompactProbe label="Seed" constructor="Seed constructor" hasOwnProperty="Seed method" ${literal} /></variant></art>`;
 }

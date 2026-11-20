@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "commit": "dc7f298ee2f6093855b26fad644ec4da1e5920e0",
+  "id": "lsp/fix-history/import-alias-hops-3938",
+  "requirement": "Definition carries the exported name through renamed, default, namespace and star re-export hops to the authored declaration.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "a.ts": "export function original() { return 1 }\nexport default function fallback() { return 2 }\n",
+    "b.ts": "export { original as renamed } from './a'\nexport * from './a'\n",
+    "c.ts": "export * as ns from './a'\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport { renamed } from './b'\nimport main from './a'\nimport { ns } from './c'\nimport * as star from './b'\nrenamed(); main(); ns.original(); star.original()\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "{ renamed }",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "import main",
+        "delta": 7,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "{ ns }",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "renamed()",
+        "delta": 1,
+        "nth": 0
+      }
+    }
+  ]
+}

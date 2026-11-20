@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-i-3594-2",
+    history: "db36c4700f917d524cbf3dd4be45a02270753f47",
+    source: "const A = () => <div><><i/><b/></></div>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"i\"),\n    _createElementVNode(\"b\")\n  ]))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "A",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"i\"),\n    _createElementVNode(\"b\")\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

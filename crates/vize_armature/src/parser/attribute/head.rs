@@ -2,7 +2,7 @@
 
 use super::super::{CurrentDirective, Parser};
 use vize_l0::ErrorCode;
-use vize_l1::markup::directive::frozen_attribute_name;
+use vize_l1::framework::vue::directive::frozen_attribute_name;
 use vize_relief::{DirectiveNode, ElementNode, PropNode, SourceLocation, errors::CompilerError};
 
 impl<'a> Parser<'a> {
@@ -390,7 +390,15 @@ mod tests {
     #[test]
     fn an_ignored_nested_form_keeps_its_original_recovery_before_custody_checks() {
         let arena = Allocator::new();
-        let mut parser = Parser::new(&arena, "<form :id>");
+        // Only HTML tree construction ignores a nested form.
+        let mut parser = Parser::with_options(
+            &arena,
+            "<form :id>",
+            vize_relief::options::ParserOptions {
+                html_tree_construction: true,
+                ..vize_relief::options::ParserOptions::default()
+            },
+        );
         parser.frozen_elements = Some(vize_l0::Vec::new_in(&parser.allocator));
         parser.open_form_count = 1;
         parser.on_open_tag_name_impl(1, 5);

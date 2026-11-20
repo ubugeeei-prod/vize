@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-malformed-template-interpolations-skip-type-awar-2afeaa4",
+    history: "2afeaa4e063e10e6067d2b880b24f5e1143af415",
+    source: "<script setup lang=\"ts\">\nconst payload: any = { label: 'unsafe' }\n</script>\n\n<template>\n  <div>{{ payload. }}</div>\n</template>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-unsafe-template-binding",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

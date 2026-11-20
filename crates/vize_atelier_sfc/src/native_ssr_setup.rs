@@ -5,7 +5,7 @@ use vize_l0::Allocator;
 use vize_l1_to_l2::native_file::{
     NativeSelectedSetupSfcObservation, NativeSelectedSfcIssue, lower_selected_setup_sfc_native,
 };
-use vize_l3::decision::ssr::{NativeSsrBuildError, build_native_selected_setup_ssr_decisions};
+use vize_l3::decision::ssr::{SsrTemplateBuildError, build_selected_setup_ssr_decisions};
 use vize_l4::{
     module::{
         AssemblyError, ModuleParts, RenderFunctionName, ScriptPart, assemble,
@@ -20,7 +20,7 @@ use vize_l4::{
 pub enum NativeSetupSsrSfcCompileError {
     Lowering(NativeSelectedSfcIssue),
     Custody,
-    Analysis(NativeSsrBuildError),
+    Analysis(SsrTemplateBuildError),
     Setup(SetupEmitError),
     Ssr(SsrError),
     Assembly(AssemblyError),
@@ -101,7 +101,7 @@ fn emit<L: LinkSink>(
     let admitted = observation
         .admitted()
         .ok_or(NativeSetupSsrSfcCompileError::Custody)?;
-    let analysis = build_native_selected_setup_ssr_decisions(admitted.setup())
+    let analysis = build_selected_setup_ssr_decisions(admitted.setup())
         .map_err(NativeSetupSsrSfcCompileError::Analysis)?;
     let mut parts = ModuleParts::for_runtime(
         Runtime::VueServerRenderer,

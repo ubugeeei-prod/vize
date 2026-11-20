@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-svg-script-setup-options-5695",
+    history: "725b3313bcff8bb4679af5f455fdec9c75126439",
+    source: "<svg><path d=\"M0 0\" @click=\"a++\"/></svg>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: Some(
+            true,
+        ),
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"svg\", null, [\n    _createElementVNode(\"path\", {\n      d: \"M0 0\",\n      onClick: _cache[0] || (_cache[0] = $event => (_ctx.a++))\n    })\n  ]))\n}",
+    map: None,
+}

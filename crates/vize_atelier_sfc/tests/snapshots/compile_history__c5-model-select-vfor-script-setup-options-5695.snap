@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-model-select-vfor-script-setup-options-5695",
+    history: "725b3313bcff8bb4679af5f455fdec9c75126439",
+    source: "<select v-model=\"choice\"><option v-for=\"item in items\" :key=\"item.id\" :value=\"item.value\">{{ item.label }}</option></select>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: Some(
+            true,
+        ),
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { vModelSelect as _vModelSelect, withDirectives as _withDirectives, toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return _withDirectives((_openBlock(), _createElementBlock(\"select\", {\n    \"onUpdate:modelValue\": _cache[0] || (_cache[0] = $event => ((_ctx.choice) = $event))\n  }, [\n    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.items, (item) => {\n      return (_openBlock(), _createElementBlock(\"option\", {\n        key: item.id,\n        value: item.value\n      }, _toDisplayString(item.label), 9 /* TEXT, PROPS */, [\"value\"]))\n    }), 128 /* KEYED_FRAGMENT */))\n  ], 512 /* NEED_PATCH */)), [\n    [_vModelSelect, _ctx.choice]\n  ])\n}",
+    map: None,
+}

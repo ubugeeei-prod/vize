@@ -82,7 +82,7 @@ fn rewrite_ops<'a>(
                     facts,
                 );
             }
-            Op::JsxChildValue(child) => {
+            Op::ChildValue(child) => {
                 rewrite_expr(allocator, &mut child.expression, &mut facts.names);
             }
             Op::Interpolation(interp) => {

@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+  "id": "lsp/fix-history/tc-imported-runtime-define-props-5962-with-defaults-omitted-label-stays-optional",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack imported-runtime-define-props-5962 (case with-defaults-omitted-label-stays-optional) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"skipLibCheck\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/defaults.ts": "export interface MessageProps {\n  appendTo?: HTMLElement\n  label?: string\n  repeatNum?: number\n}\n\nconst mutable = <T extends object>(value: T): T => value\n\nexport const messageDefaults = mutable({\n  appendTo: document.body,\n  label: 'Ready',\n  repeatNum: 1,\n} as const)\n",
+    "src/omit.ts": "export function omit<T extends object, K extends keyof T>(value: T, ..._keys: K[]): Omit<T, K> {\n  return value as Omit<T, K>\n}\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport { messageDefaults, type MessageProps } from './defaults'\nimport { omit } from './omit'\n\nconst props = withDefaults(\n  defineProps<MessageProps>(),\n  omit(messageDefaults, 'appendTo', 'label')\n)\n\nconst repeat = props.repeatNum.toFixed()\nconst upper = props.label.toUpperCase()\n</script>\n\n<template>\n  <span>{{ repeatNum.toFixed() }} {{ label.toUpperCase() }} {{ repeat }} {{ upper }}</span>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    }
+  ]
+}

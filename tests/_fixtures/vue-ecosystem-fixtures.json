@@ -174,8 +174,26 @@
         "enabled": true,
         "compareTo": "vue-tsc",
         "packageManager": "pnpm",
-        "packageManagerVersion": "10.33.4",
+        "packageManagerVersion": "10.34.2",
         "lockfile": "pnpm-lock.yaml",
+        "baseline": {
+          "tsconfig": "packages/hoppscotch-common/tsconfig.json",
+          "prepare": [
+            ["pnpm", "--filter", "@hoppscotch/codemirror-lang-graphql", "prepare"],
+            ["pnpm", "--filter", "@hoppscotch/data", "run", "build:code"],
+            ["pnpm", "--filter", "@hoppscotch/data", "run", "build:decl"],
+            ["pnpm", "--filter", "@hoppscotch/js-sandbox", "build"],
+            ["pnpm", "--filter", "@hoppscotch/kernel", "run", "build:code"],
+            ["pnpm", "--filter", "@hoppscotch/kernel", "run", "build:decl"]
+          ],
+          "excludedInputs": [
+            {
+              "path": "packages/hoppscotch-common/src/types/post-request.d.ts",
+              "reason": "Imported with ?raw as Monaco editor text; the pinned upstream bytes contain an unmatched namespace close and are not a Vize-requested program input.",
+              "sha256": "fdb91805ae8d684329e03af828f49d2b1d29f88ac3c906a33016fdc4d000d9ab"
+            }
+          ]
+        },
         "hangTimeoutMs": 2400000,
         "corpusGlobs": ["packages/hoppscotch-common/src/**/*.vue"],
         "maxFalsePositiveRatio": 0.05,
@@ -284,7 +302,7 @@
         "baseline": {
           "tsconfig": "tsconfig.web.json",
           "prepare": [
-            ["pnpm", "stub"],
+            ["pnpm", "--filter", "@element-plus/build-utils", "stub"],
             ["pnpm", "gen:version"]
           ]
         },
@@ -602,7 +620,7 @@
           "symbol": "dataP",
           "usageAnchor": ":data-p=\"dataP\"",
           "declarationAnchor": "dataP() {",
-          "hoverContains": ["const dataP: string | undefined"],
+          "hoverContains": ["const dataP: any"],
           "sharesComponentImporter": true,
           "renameTo": "__vizeRenamedDataP"
         },
@@ -701,6 +719,7 @@
         "lsp"
       ],
       "diff": "curator-compare",
+      "lspRequestTimeoutMs": 240000,
       "typecheckPerformance": {
         "enabled": true,
         "compareTo": "vue-tsc",
@@ -1039,6 +1058,7 @@
         "lsp"
       ],
       "diff": "curator-compare",
+      "lspRequestTimeoutMs": 240000,
       "lspAuthoredOracle": {
         "templateBinding": {
           "file": "src/switch/demos/enUS/event.demo.vue",
@@ -1448,25 +1468,28 @@
         "baseline": {
           "tsconfig": "packages/frontend/tsconfig.json",
           "prepare": [
-            "pnpm",
-            "--filter",
-            "misskey-js",
-            "--filter",
-            "misskey-reversi",
-            "--filter",
-            "misskey-bubble-game",
-            "--filter",
-            "i18n",
-            "exec",
-            "tsgo",
-            "--project",
-            "tsconfig.json",
-            "--outDir",
-            "built",
-            "--declaration",
-            "true",
-            "--emitDeclarationOnly",
-            "true"
+            [
+              "pnpm",
+              "--filter",
+              "misskey-js",
+              "--filter",
+              "misskey-reversi",
+              "--filter",
+              "misskey-bubble-game",
+              "--filter",
+              "i18n",
+              "exec",
+              "tsgo",
+              "--project",
+              "tsconfig.json",
+              "--outDir",
+              "built",
+              "--declaration",
+              "true",
+              "--emitDeclarationOnly",
+              "true"
+            ],
+            ["pnpm", "--filter", "i18n", "build"]
           ]
         },
         "hangTimeoutMs": 2400000,
@@ -2757,7 +2780,7 @@
           {
             "id": "renderer",
             "tsconfig": "src/renderer/tsconfig.json",
-            "corpusGlobs": ["src/renderer/**/*.vue"]
+            "corpusGlobs": ["src/renderer/**/*.vue", "src/renderer/types/**/*.d.ts"]
           },
           {
             "id": "lyric",

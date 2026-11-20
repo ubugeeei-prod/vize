@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1a-forget-comment-children-template-88",
+    history: "b5b6f68fa4a43fdb1d23a0e9d9f7d967466c0806",
+    source: "<div>\n  <div v-if=\"show\">\n    <!-- @vize:forget branch note -->\n    <span>a</span>\n    <span>b</span>\n  </div>\n  <template v-else>\n    <!-- @vize:forget fragment note -->\n    <p>x</p>\n    <p>y</p>\n  </template>\n  <Card>\n    <!-- @vize:forget slot note -->\n    <span>slot</span>\n  </Card>\n  <Teleport v-if=\"show\" to=\"body\">\n    <!-- @vize:forget teleport note -->\n    <span>t1</span>\n    <span>t2</span>\n  </Teleport>\n</div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: Some(
+            true,
+        ),
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, withCtx as _withCtx, Teleport as _Teleport } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Card = _resolveComponent(\"Card\")\n  \n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (_ctx.show)\n      ? (_openBlock(), _createElementBlock(\"div\", { key: 0 }, [\n        _createElementVNode(\"span\", null, \"a\"),\n        _createElementVNode(\"span\", null, \"b\")\n      ]))\n      : (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [\n        _createElementVNode(\"p\", null, \"x\"),\n        _createElementVNode(\"p\", null, \"y\")\n      ], 64 /* STABLE_FRAGMENT */)),\n    _createVNode(_component_Card, null, {\n      default: _withCtx(() => [\n        ,\n        _createElementVNode(\"span\", null, \"slot\")\n      ]),\n      _: 1 /* STABLE */\n    }),\n    (_ctx.show)\n      ? (_openBlock(), _createBlock(_Teleport, {\n        key: 2,\n        to: \"body\"\n      }, [_createElementVNode(\"span\", null, \"t1\"),_createElementVNode(\"span\", null, \"t2\")]))\n      : _createCommentVNode(\"v-if\", true)\n  ]))\n}",
+    map: None,
+}

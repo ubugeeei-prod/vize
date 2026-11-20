@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3d-props-destructure-computed-member-key-1379",
+    history: "3d51d268e9bfbfa69328c7ff47070ee87d72fd2f",
+    source: "<script setup>\nimport { computed } from 'vue'\nconst DAY_PHASE_LABELS = { day: 'Day', night: 'Night' }\nconst { row } = defineProps(['row'])\nconst phaseLabel = computed(() => DAY_PHASE_LABELS[row.phaseSnapshot.phase])\n</script>\n\n<template>\n  <span>{{ phaseLabel }}</span>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nimport { computed } from 'vue'\n\n\nexport default {\n  __name: 'History',\n  props: ['row'],\n  setup(__props) {\n\nconst DAY_PHASE_LABELS = { day: 'Day', night: 'Night' }\nconst phaseLabel = computed(() => DAY_PHASE_LABELS[__props.row.phaseSnapshot.phase])\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"span\", null, _toDisplayString(phaseLabel.value), 1 /* TEXT */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "computed": SetupConst,
+                        "phaseLabel": SetupRef,
+                        "DAY_PHASE_LABELS": SetupConst,
+                        "row": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

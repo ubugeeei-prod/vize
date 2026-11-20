@@ -32,7 +32,7 @@ pub(crate) struct PreparedInitialApiDiagnostics {
     // Retain the exact projection, materialized source facts, source catalog and
     // native root captured while the existing request scope owned the world.
     opened: CorsaVueVirtualDocument,
-    content: String,
+    content: Arc<String>,
     sync: Vec<Diagnostic>,
     native_script_syntax: bool,
     configuration: Vec<Diagnostic>,
@@ -102,7 +102,7 @@ impl DiagnosticService {
         let Some((revision, content)) = state
             .documents
             .get(uri)
-            .map(|document| (document.revision(), document.text()))
+            .map(|document| (document.revision(), document.text_snapshot()))
         else {
             return Ok(None);
         };
@@ -120,7 +120,7 @@ impl DiagnosticService {
         let cached_overlays = state.corsa_overlays();
         let overlays = cached_overlays
             .iter()
-            .map(|(path, text)| (path.clone(), &**text))
+            .map(|(path, text)| (path.clone(), text.as_str()))
             .collect::<Vec<_>>();
         let options = CorsaVueVirtualDocumentOptions {
             options_api: state.options_api_enabled(),

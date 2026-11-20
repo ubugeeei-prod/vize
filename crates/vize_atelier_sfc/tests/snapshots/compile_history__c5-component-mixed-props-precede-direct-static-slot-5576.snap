@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-component-mixed-props-precede-direct-static-slot-5576",
+    history: "185d49ba9f16b87fd65e23e59cb232011b28a010",
+    source: "<DocSectionText v-bind=\"$attrs\"><p>Intro</p><p>More <a href=\"x\">link</a></p></DocSectionText><div class=\"card\"><Panel header=\"Header\" toggleable unstyled :pt=\"{ root: 'x', header: (options) => ({ id: 'myPanelHeader' }) }\"><p class=\"m-0\">Lorem ipsum</p></Panel></div><DocSectionCode :code=\"code\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_DocSectionText = _resolveComponent(\"DocSectionText\")\n  const _component_Panel = _resolveComponent(\"Panel\")\n  const _component_DocSectionCode = _resolveComponent(\"DocSectionCode\")\n  \n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createVNode(_component_DocSectionText, _normalizeProps(_guardReactiveProps($attrs)), {\n      default: _withCtx(() => [\n        _createElementVNode(\"p\", null, \"Intro\"),\n        _createElementVNode(\"p\", null, [\n          _createTextVNode(\"More \"),\n          _createElementVNode(\"a\", { href: \"x\" }, \"link\")\n        ])\n      ]),\n      _: 1 /* STABLE */\n    }, 16 /* FULL_PROPS */),\n    _createElementVNode(\"div\", { class: \"card\" }, [\n      _createVNode(_component_Panel, {\n        header: \"Header\",\n        toggleable: \"\",\n        unstyled: \"\",\n        pt: { root: 'x', header: (options) => ({ id: 'myPanelHeader' }) }\n      }, {\n        default: _withCtx(() => [\n          _createElementVNode(\"p\", { class: \"m-0\" }, \"Lorem ipsum\")\n        ]),\n        _: 1 /* STABLE */\n      }, 8 /* PROPS */, [\"pt\"])\n    ]),\n    _createVNode(_component_DocSectionCode, { code: code }, null, 8 /* PROPS */, [\"code\"])\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    map: None,
+}

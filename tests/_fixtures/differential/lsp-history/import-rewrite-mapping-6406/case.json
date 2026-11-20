@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "commit": "3a2fd80a314ae1c644af30bed1419855b2133c1e",
+  "id": "lsp/fix-history/import-rewrite-mapping-6406",
+  "requirement": "Internal import rewrites keep the following authored bytes exact: a type error after a rewritten .vue import on the same line maps to its authored range in a dual-script SFC.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true }, \"include\": [\"**/*.vue\", \"**/*.ts\"] }\n",
+    "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ label: string }>()\n</script>\n<template><span>{{ label }}</span></template>\n",
+    "App.vue": "<script lang=\"ts\">\nexport const shared: number = 1\n</script>\n<script setup lang=\"ts\">\nimport Child from './Child.vue'; const wrong: string = shared\ndefineEmits<{ save: [id: number] }>()\n</script>\n<template><Child label=\"x\" /></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    }
+  ]
+}

@@ -4,14 +4,13 @@ use super::super::apply_musea_art_globals;
 use super::generate_vue_content_mapper_transform;
 use crate::virtual_ts::VirtualTsOptions;
 
-const DEFINE_ART_STUB: &str =
-    "declare function defineArt(source: string, options?: Record<string, any>): void;";
-const SUBJECT_STUB: &str = r#"declare const MyCard: typeof import("./MyCard.vue").default;"#;
+const DEFINE_ART_STUB: &str = "declare function defineArt<T extends ((abstract new (...args: never[]) => { $props: unknown }) | ((...args: never[]) => unknown))>(component: T, options?: Record<string, unknown>): void;";
 
 #[test]
-fn musea_art_file_declares_define_art_and_types_its_implicit_component() {
+fn musea_art_file_declares_define_art_and_types_its_explicit_component() {
     let source = r#"<script setup lang="ts">
-defineArt("./MyCard.vue", { title: "MyCard" });
+import MyCard from "./MyCard.vue";
+defineArt(MyCard, { title: "MyCard" });
 </script>
 <art>
   <variant name="Default"><MyCard title="hello" /></variant>
@@ -34,10 +33,10 @@ defineArt("./MyCard.vue", { title: "MyCard" });
     assert_eq!(
         art.text
             .lines()
-            .filter(|line| *line == SUBJECT_STUB)
-            .count(),
-        1,
-        "the art subject must retain the component's real prop type:\n{}",
+            .filter_map(|line| line.strip_prefix("declare const MyCard:"))
+            .collect::<Vec<_>>(),
+        Vec::<&str>::new(),
+        "an imported Art subject must not gain a synthetic component binding:\n{}",
         art.text,
     );
     assert_eq!(

@@ -1,0 +1,1 @@
+<template><table><tr><td id="same"/><td id="same"/></tr></table><body/></template>

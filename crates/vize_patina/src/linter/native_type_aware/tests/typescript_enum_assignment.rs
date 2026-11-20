@@ -16,6 +16,15 @@ const MAPPED_KEYS_MODULE: &str = include_str!(
 const MAPPED_KEYS_COMPONENT: &str = include_str!(
     "../../../../../../tests/_fixtures/differential/linter/no-unsafe-enum-assignment-mapped-keys-13070/Keys.vue.txt"
 );
+const INFERRED_KEYS_COMPONENT: &str = include_str!(
+    "../../../../../../tests/_fixtures/differential/linter/no-unsafe-enum-assignment-inferred-keys-13404/Inferred.vue.txt"
+);
+const IMPORTED_INFERRED_KEYS_COMPONENT: &str = include_str!(
+    "../../../../../../tests/_fixtures/differential/linter/no-unsafe-enum-assignment-inferred-keys-13404/Imported.vue.txt"
+);
+const INFERRED_KEYS_MODULE: &str = include_str!(
+    "../../../../../../tests/_fixtures/differential/linter/no-unsafe-enum-assignment-inferred-keys-13404/states.ts.txt"
+);
 
 const ASSIGNMENT: &str =
     "The value assigned here does not have a shared enum type with the expected enum 'Fruit'.";
@@ -160,6 +169,57 @@ void [combined, arrow, described, plain, Holder, Derived];
             packet((37, 9), (37, 10), &flags(ARGUMENT)),
             packet((40, 11), (40, 12), ACCESS,),
         ]
+    );
+}
+
+/// #13404: an enum-typed key can index an inferred object whose computed
+/// members are declared with values from that same enum. The individual
+/// member keys are narrower than the key, but they still share its enum.
+#[test]
+fn inferred_computed_enum_members_accept_their_own_enum() {
+    if !corsa_available() {
+        return;
+    }
+    assert_eq!(packets(INFERRED_KEYS_COMPONENT), Vec::<Packet>::new());
+}
+
+/// #13404: the same inferred-key boundary holds when both the enum and the
+/// object are imported and the key is a subset of the enum's members.
+#[test]
+fn imported_inferred_computed_enum_members_accept_their_enum_subset() {
+    if !corsa_available() {
+        return;
+    }
+    let workspace = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target/vize-tests");
+    std::fs::create_dir_all(&workspace).expect("test workspace");
+    let project = tempfile::Builder::new()
+        .prefix("enum-inferred-keys-13404-")
+        .tempdir_in(workspace)
+        .expect("temporary project");
+    let source_dir = project.path().join("src");
+    std::fs::create_dir(&source_dir).expect("source directory");
+    std::fs::write(
+        project.path().join("tsconfig.json"),
+        r#"{"compilerOptions":{"module":"ESNext","moduleResolution":"Bundler","strict":true,"target":"ESNext","noEmit":true},"include":["src/**/*.ts","src/**/*.vue"]}"#,
+    )
+    .expect("tsconfig");
+    std::fs::write(source_dir.join("states.ts"), INFERRED_KEYS_MODULE).expect("enum module");
+    let path = source_dir.join("Imported.vue");
+    std::fs::write(&path, IMPORTED_INFERRED_KEYS_COMPONENT).expect("component");
+    let linter =
+        Linter::with_preset(LintPreset::Opinionated).with_enabled_rules(Some(vec![RULE.into()]));
+    let result = lint_sfc_with_corsa(
+        &linter,
+        IMPORTED_INFERRED_KEYS_COMPONENT,
+        path.to_str().expect("UTF-8 path"),
+    );
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != RULE),
+        "unexpected diagnostics: {:?}",
+        result.diagnostics
     );
 }
 

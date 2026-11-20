@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-ssr-parenthesized-typeof-document-guard-272",
+    history: "448dd6f24cba2118bd65f434373d3f544f58f6e2",
+    source: "<div :class=\"typeof (document) === 'undefined' ? 'ssr' : 'dom'\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "ssr/no-browser-globals-in-ssr",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

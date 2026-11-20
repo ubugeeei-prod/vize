@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4248,
+  "regressionCommit": "9687c6e64ec1b731e99dcb77053cbd3d893f5ef2",
+  "sourceRevision": "9687c6e64ec1b731e99dcb77053cbd3d893f5ef2",
+  "checkerOptions": {
+    "strictInstanceGlobals": true,
+    "autoImportStubs": [
+      "declare const useLocalePath: () => (path: string) => string;",
+      "declare const useLocale: () => { locale: string };"
+    ]
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "index",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "source": "plugins.d.ts.txt"
+        },
+        {
+          "file": "src/pages/index.vue",
+          "source": "index.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "undeclared-global",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "source": "plugins.d.ts.txt"
+        },
+        {
+          "file": "src/pages/undeclared-global.vue",
+          "source": "undeclared-global.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/pages/undeclared-global.vue",
+          "line": 2,
+          "column": 15,
+          "severity": 1,
+          "code": 2304,
+          "message": "Cannot find name 'notDeclaredAnywhere'."
+        },
+        {
+          "file": "src/pages/undeclared-global.vue",
+          "line": 6,
+          "column": 9,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property '$missing' does not exist on type '$StrictTemplateContext'."
+        },
+        {
+          "file": "src/pages/undeclared-global.vue",
+          "line": 7,
+          "column": 9,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property '$missing' does not exist on type '$StrictTemplateContext'."
+        },
+        {
+          "file": "src/pages/undeclared-global.vue",
+          "line": 8,
+          "column": 14,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property '$missing' does not exist on type '$StrictTemplateContext'."
+        },
+        {
+          "file": "src/pages/undeclared-global.vue",
+          "line": 9,
+          "column": 9,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property '$t' does not exist on type '$StrictTemplateContext'."
+        }
+      ]
+    },
+    {
+      "id": "wrong-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "source": "plugins.d.ts.txt"
+        },
+        {
+          "file": "src/pages/wrong-argument.vue",
+          "source": "wrong-argument.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/pages/wrong-argument.vue",
+          "line": 3,
+          "column": 31,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        },
+        {
+          "file": "src/pages/wrong-argument.vue",
+          "line": 7,
+          "column": 33,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    }
+  ]
+}

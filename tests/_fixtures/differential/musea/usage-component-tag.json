@@ -28,28 +28,28 @@
       "inline": false
     },
     {
-      "name": "source argument with display title",
+      "name": "explicit source alias with display title",
       "filename": "source.art.vue",
       "title": "Buttons / Source",
-      "scriptSetup": "defineArt('./base-button.vue', { title: 'Buttons / Source' });",
-      "componentTagName": "BaseButton",
+      "scriptSetup": "import SourceButton from './base-button.vue';\ndefineArt(SourceButton, { title: 'Buttons / Source' });",
+      "componentTagName": "SourceButton",
       "propsInterface": "ButtonsSource",
       "inline": false
     },
     {
-      "name": "component attribute with display title",
+      "name": "explicit attribute alias with display title",
       "filename": "attribute.art.vue",
       "title": "Buttons / Attribute",
-      "componentAttribute": "./base-button.vue",
-      "componentTagName": "BaseButton",
+      "scriptSetup": "import AttributeButton from './base-button.vue';\ndefineArt(AttributeButton, { title: 'Buttons / Attribute' });",
+      "componentTagName": "AttributeButton",
       "propsInterface": "ButtonsAttribute",
       "inline": false
     },
     {
-      "name": "inline Self with display title",
+      "name": "inline host component with display title",
       "filename": "InlineProbe.vue",
       "title": "Inline / Probe",
-      "componentTagName": "MuseaComponent",
+      "componentTagName": "InlineProbe",
       "propsInterface": "InlineProbe",
       "inline": true
     }

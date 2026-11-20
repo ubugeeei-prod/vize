@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2a-static-children-cached-with-hoisted-props-800",
+    history: "edcc36b39bf774ccaf864299b36aedc8a40cec95",
+    source: "<div class=\"wrapper\"><span>hello</span></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: Some(
+            "function",
+        ),
+        prefix_identifiers: None,
+        hoist_static: Some(
+            true,
+        ),
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue\n\nconst _hoisted_1 = { class: \"wrapper\" }\n",
+    code: "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, [...(_cache[0] || (_cache[0] = [\n    _createElementVNode(\"span\", null, \"hello\", -1 /* CACHED */)\n  ]))]))\n}",
+    map: None,
+}

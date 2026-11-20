@@ -270,7 +270,7 @@ function requiredFieldSources(file: string, text: string): string[] {
       ? source.replace(
           /^(\s*code: )("(?:[^"\\]|\\.)*")(,\s*)$/gmu,
           (_whole, prefix: string, literal: string, suffix: string) => {
-            const value: unknown = JSON.parse(literal);
+            const value: unknown = JSON.parse(rustDebugStringAsJson(literal));
             assert.equal(typeof value, "string", `${file}: complete generated code`);
             decoded.push(value as string);
             return `${prefix}""${suffix}`;
@@ -279,6 +279,20 @@ function requiredFieldSources(file: string, text: string): string[] {
       : source;
     return [packet, ...decoded];
   });
+}
+
+// Insta writes `code` as a Rust `Debug` string. Its escapes match JSON except
+// `\u{..}` (non-printable code points), `\'` and `\0`.
+function rustDebugStringAsJson(literal: string): string {
+  return literal.replace(
+    /\\(?:u\{([0-9a-fA-F]+)\}|(['0])|[^])/gu,
+    (whole, hex?: string, raw?: string) => {
+      if (hex) return JSON.stringify(String.fromCodePoint(Number.parseInt(hex, 16))).slice(1, -1);
+      if (raw === "'") return "'";
+      if (raw === "0") return "\\u0000";
+      return whole;
+    },
+  );
 }
 
 function requireIntersectionUses(uses: readonly string[]): void {

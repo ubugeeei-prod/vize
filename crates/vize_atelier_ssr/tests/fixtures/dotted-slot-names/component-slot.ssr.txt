@@ -1,0 +1,12 @@
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Comp"), _attrs, {
+    "row.top": _withCtx(({ r }, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`${_ssrInterpolate(r)}`)
+      } else {
+        return [_createTextVNode(_toDisplayString(r))]
+      }
+    }),
+    _: 1
+  }, _parent))
+}

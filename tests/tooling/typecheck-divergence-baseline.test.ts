@@ -70,6 +70,7 @@ test("an empty vue-tsc baseline is unusable, not a false-positive breach", () =>
         "Vize excluded non-Vue: 0",
         "vue-tsc excluded non-Vue: 0",
         "vue-tsc excluded support Vue: 0",
+        "vue-tsc generated Vue artifacts: 0",
         "vue-tsc excluded project-level: 0",
         "vue-tsc excluded external: 0",
         "vue-tsc configuration errors: 0",

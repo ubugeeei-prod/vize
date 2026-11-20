@@ -24,5 +24,5 @@ pub use payload::{
     serialize_agent_report, serialize_payload,
 };
 pub use product_capture::{
-    PRODUCT_STAGE_FEED_VERSION, ProductCaptureSource, product_capture_value,
+    PRODUCT_STAGE_FEED_VERSION, ProductCaptureSource, product_capture_value, sfc_authored_syntax,
 };

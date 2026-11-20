@@ -1,0 +1,112 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2420,
+        "message": "Class 'Welcome' incorrectly implements interface 'Greeting'.\n  Property 'greet' is missing in type 'Welcome' but required in type 'Greeting'.",
+        "range": {
+          "end": {
+            "character": 13,
+            "line": 3
+          },
+          "start": {
+            "character": 6,
+            "line": 3
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 6196,
+        "message": "'Welcome' is declared but never used.",
+        "range": {
+          "end": {
+            "character": 13,
+            "line": 3
+          },
+          "start": {
+            "character": 6,
+            "line": 3
+          }
+        },
+        "severity": 4,
+        "source": "vize/types"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": [
+      {
+        "edit": {
+          "documentChanges": [
+            {
+              "edits": [
+                {
+                  "newText": "\r\n    greet(name: string): string {\r\n        throw new Error('Method not implemented.');\r\n    }\r\n",
+                  "range": {
+                    "end": {
+                      "character": 35,
+                      "line": 3
+                    },
+                    "start": {
+                      "character": 35,
+                      "line": 3
+                    }
+                  }
+                }
+              ],
+              "textDocument": {
+                "uri": "${workspace}/App.vue",
+                "version": 1
+              }
+            }
+          ]
+        },
+        "kind": "quickfix",
+        "title": "Implement interface 'Greeting'"
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "result": [
+      {
+        "edit": {
+          "documentChanges": [
+            {
+              "edits": [
+                {
+                  "newText": "\r\n    greet(name: string): string {\r\n        throw new Error('Method not implemented.');\r\n    }\r\n",
+                  "range": {
+                    "end": {
+                      "character": 35,
+                      "line": 3
+                    },
+                    "start": {
+                      "character": 35,
+                      "line": 3
+                    }
+                  }
+                }
+              ],
+              "textDocument": {
+                "uri": "${workspace}/App.vue",
+                "version": 1
+              }
+            }
+          ]
+        },
+        "kind": "source.fixAll",
+        "title": "Fix All"
+      }
+    ]
+  },
+  {
+    "step": 4,
+    "result": null
+  }
+]

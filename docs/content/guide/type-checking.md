@@ -184,6 +184,12 @@ src/Counter.vue
 The exit code is non-zero when there are errors, so the command can gate CI as is. Use
 `--format json` for machine-readable output and `--max-warnings 0` to fail on warnings too.
 
+Template diagnostics that usually come in numbers — attributes a component neither declares nor
+forwards, attributes an HTML or SVG element does not define, and listeners for events a component
+does not declare — print as one block per kind: every location, one source frame, and a hint with
+the fix and the exact `tsconfig.json` setting that turns the check off. `--verbose` prints each of
+them in full instead. The totals, the exit code and `--format json` always include every diagnostic.
+
 ## What gets checked
 
 | Area                                                               | Checked by default | Turn off with                       |

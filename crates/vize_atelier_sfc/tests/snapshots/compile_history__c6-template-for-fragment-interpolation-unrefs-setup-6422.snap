@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-template-for-fragment-interpolation-unrefs-setup-6422",
+    history: "032162ce2225c187f43f589d515bae057cda768b",
+    source: "<template v-for=\"(row, r) in msg\"><span v-for=\"cell in row\">{{ cell }}</span>{{ r === msg.length - 1 ? 'a' : 'b' }}</template>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(msg, (row, r) => {\n    return (_openBlock(), _createElementBlock(_Fragment, null, [\n      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(row, (cell) => {\n        return (_openBlock(), _createElementBlock(\"span\", null, _toDisplayString(cell), 1 /* TEXT */))\n      }), 256 /* UNKEYED_FRAGMENT */)),\n      _createTextVNode(_toDisplayString(r === msg.length - 1 ? 'a' : 'b'), 1 /* TEXT */)\n    ], 64 /* STABLE_FRAGMENT */))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+    map: None,
+}

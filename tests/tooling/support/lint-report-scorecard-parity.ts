@@ -66,7 +66,9 @@ export function registerScorecardParityTests({
         });
         const { file, ...message } = entry.finding;
         const expectedNegatives = object(referenceFixtures).reviewedUnrelatedFalseNegatives;
-        const falseNegatives = object(expectedNegatives)[entry.id];
+        const falseNegatives =
+          object(expectedNegatives)[entry.id] ??
+          object(expectedNegatives)[entry.id.replace(/-scorecard$/u, "")];
         assert.ok(Array.isArray(falseNegatives));
         for (const count of [1, 0, 2]) {
           input.configure([project], {

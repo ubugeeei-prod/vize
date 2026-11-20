@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1512,
+  "regressionCommit": "4d95a2ddda5f33550cd408b5fa759e80bf9b68d4",
+  "sourceRevision": "4d95a2ddda5f33550cd408b5fa759e80bf9b68d4",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "tuple-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "tuple-valid.App.vue.txt"
+        },
+        {
+          "file": "src/Test.vue",
+          "source": "Test.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "second-parameter-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "second-invalid.App.vue.txt"
+        },
+        {
+          "file": "src/Test.vue",
+          "source": "Test.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 18,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value1: string, value2: string) => void' is not assignable to type '(value1: string, value2: number) => any'.\nTypes of parameters 'value2' and 'value2' are incompatible.\nType 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 90,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "first-parameter-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "first-invalid.App.vue.txt"
+        },
+        {
+          "file": "src/Test.vue",
+          "source": "Test.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 18,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value1: number, value2: number) => void' is not assignable to type '(value1: string, value2: number) => any'.\nTypes of parameters 'value1' and 'value1' are incompatible.\nType 'string' is not assignable to type 'number'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 82,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string' is not assignable to parameter of type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "native-single-event-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "native-valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "native-single-event-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "native-invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 27,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '(event: string) => void' is not assignable to parameter of type '(_e: PointerEvent) => unknown'.\nTypes of parameters 'event' and '_e' are incompatible.\nType 'PointerEvent' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

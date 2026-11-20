@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2332,
+  "regressionCommit": "695976764435b7d68addf0d440fe79c2a43bdb5e",
+  "sourceRevision": "695976764435b7d68addf0d440fe79c2a43bdb5e",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "type-only-import-keeps-global-component",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/nuxt/package.json",
+          "source": "nuxt.package.json.txt"
+        },
+        {
+          "file": "node_modules/nuxt/index.d.ts",
+          "source": "nuxt.index.d.ts.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/components.d.ts",
+          "source": "components.d.ts.txt"
+        },
+        {
+          "file": "src/components/Differences.vue",
+          "source": "Differences.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "type-only-import-global-component-wrong-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/nuxt/package.json",
+          "source": "nuxt.package.json.txt"
+        },
+        {
+          "file": "node_modules/nuxt/index.d.ts",
+          "source": "nuxt.index.d.ts.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/components.d.ts",
+          "source": "components.d.ts.txt"
+        },
+        {
+          "file": "src/components/Differences.vue",
+          "source": "Differences.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "wrong-count.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 17,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

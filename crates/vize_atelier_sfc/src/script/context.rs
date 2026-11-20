@@ -12,10 +12,8 @@ pub use batch_epoch::{TypeResolutionBatchGuard, begin_type_resolution_batch};
 pub use external_types::resolution::project::Project as SfcTypeProject;
 pub use source_snapshot::TypeSourceSnapshot;
 
-use crate::types::{BindingMetadata, BindingType};
-use vize_carton::{CompactString, String, ToCompactString};
-use vize_croquis::croquis::Croquis;
-use vize_croquis::macros::{EmitDefinition, PropDefinition};
+use crate::types::BindingMetadata;
+use vize_carton::{String, ToCompactString};
 
 use super::ScriptSetupMacros;
 
@@ -120,74 +118,6 @@ impl ScriptCompileContext {
         self.process_program(program, source, false);
         // ScriptCompileContext is always used for <script setup>
         self.bindings.is_script_setup = true;
-    }
-
-    /// Convert to an Croquis for use in transforms and linting.
-    ///
-    /// This bridges the atelier script context to the shared croquis analysis format.
-    pub fn to_analysis_summary(&self) -> Croquis {
-        let mut summary = Croquis::new();
-
-        // Convert bindings
-        summary.bindings.is_script_setup = true;
-        for (name, binding_type) in &self.bindings.bindings {
-            summary.bindings.add(name.as_str(), *binding_type);
-        }
-
-        // Convert props aliases
-        for (local, key) in &self.bindings.props_aliases {
-            summary
-                .bindings
-                .props_aliases
-                .insert(CompactString::new(local), CompactString::new(key));
-        }
-
-        // Convert props from macros
-        if let Some(ref props_call) = self.macros.define_props {
-            for (name, binding_type) in &self.bindings.bindings {
-                if matches!(binding_type, BindingType::Props) {
-                    summary.macros.add_prop(PropDefinition {
-                        name: CompactString::new(name),
-                        required: false, // We don't track this in the current implementation
-                        prop_type: None,
-                        default_value: props_call.binding_name.clone().map(CompactString::new),
-                    });
-                }
-            }
-        }
-
-        // Convert emits
-        if let Some(ref emits_call) = self.macros.define_emits {
-            // Parse emits from the macro call args if available
-            let trimmed = emits_call.args.trim();
-            if let Some(inner) = trimmed.strip_prefix('[').and_then(|s| s.strip_suffix(']')) {
-                // Array syntax: ['click', 'update']
-                for part in inner.split(',') {
-                    let part = part.trim();
-                    let quoted = |quote: char| part.strip_prefix(quote)?.strip_suffix(quote);
-                    if let Some(name) = quoted('\'').or_else(|| quoted('"')) {
-                        summary.macros.add_emit(EmitDefinition {
-                            name: CompactString::new(name),
-                            payload_type: None,
-                        });
-                    }
-                }
-            }
-        }
-
-        // Convert models
-        for model_call in &self.macros.define_models {
-            if let Some(ref binding_name) = model_call.binding_name {
-                super::add_model_to_croquis(
-                    &mut summary,
-                    self.source.as_str(),
-                    model_call,
-                    binding_name,
-                );
-            }
-        }
-
-        summary
     }
 
     /// Extract all macros from the source

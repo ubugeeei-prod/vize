@@ -12,6 +12,7 @@
 use std::borrow::Cow;
 
 use vize_croquis::sfc::{SfcParseOptions, parse_sfc};
+use vize_l0::compiler_error::ErrorCode;
 use vize_l0::config::VueVersion;
 use vize_l0::diag::Diagnostic;
 use vize_l0::key::{ArtifactKey, source_block_key};
@@ -19,7 +20,6 @@ use vize_l0::{Allocator, FxHashMap, String};
 use vize_l1_to_l2::key::SurfacePage;
 use vize_l1_to_l2::{LegacyCaps, lower_style_block, lower_with_caps};
 use vize_l2::dump::Page as L2Page;
-use vize_relief::ErrorCode;
 
 /// The kind of an SFC block, as its identity in the database sees it.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -259,7 +259,7 @@ fn slot(
 fn is_html_template(source: &BlockSource) -> bool {
     source.kind == BlockKind::Template
         && source.attr("src").is_none()
-        && source.attr("lang").is_none_or(|lang| lang == "html")
+        && vize_l1::container::lang::is_html_template(source.attr("lang"))
 }
 
 /// The L1 artifact of a block: `Some` for an HTML template block.

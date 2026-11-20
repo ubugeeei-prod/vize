@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2d-scoped-render-props-no-scope-attr-1020",
+    history: "c3f7cea96d81e7694ecde835f9d381c50feeb57d",
+    source: "<template>\n  <div :class=\"[]\">Hoge</div>\n  <Test :x=\"1\" />\n</template>\n\n<script setup>\nconst marker = true\n</script>\n\n<style scoped lang=\"scss\">\ndiv {\n  color: red;\n}\n</style>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n\nconst marker = true\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  const _component_Test = _resolveComponent(\"Test\")\n\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"div\", {\n      class: _normalizeClass([])\n    }, \"Hoge\"),\n    _createVNode(_component_Test, { x: 1 })\n  ], 64 /* STABLE_FRAGMENT */))\n}\n}\n\n}",
+            css: Some(
+                "div[data-v-4045eae1]{\n  color: red;\n}\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "marker": LiteralConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

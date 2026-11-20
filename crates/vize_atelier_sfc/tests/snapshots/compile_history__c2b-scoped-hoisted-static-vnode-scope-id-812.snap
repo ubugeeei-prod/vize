@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2b-scoped-hoisted-static-vnode-scope-id-812",
+    history: "5d43e5e70b11617f7fc8edd25c05b6f08ff368c2",
+    source: "<script setup>\nimport { ref } from 'vue'\nconst active = ref(false)\n</script>\n<template>\n    <div class=\"fixture-body\">\n    <div class=\"wrapper\" :class=\"{ active }\">\n      <svg><rect class=\"marker\" x=\"1\" y=\"1\" /></svg>\n    </div>\n  </div>\n</template>\n<style scoped>.marker{fill:black}</style>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { class: \"fixture-body\" }\nconst _hoisted_2 = /*#__PURE__*/ _createElementVNode(\"svg\", { \"data-v-4045eae1\": \"\" }, [_createElementVNode(\"rect\", { class: \"marker\", x: \"1\", y: \"1\", \"data-v-4045eae1\": \"\" })])\n\nimport { ref } from 'vue'\n\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nconst active = ref(false)\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, [\n    _createElementVNode(\"div\", {\n      class: _normalizeClass([\"wrapper\", { active: active.value }])\n    }, [\n      _hoisted_2\n    ], 2 /* CLASS */)\n  ]))\n}\n}\n\n}",
+            css: Some(
+                ".marker[data-v-4045eae1]{fill:black}",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "active": SetupRef,
+                        "ref": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

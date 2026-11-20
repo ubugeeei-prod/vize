@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "commit": "a8caf919aef4dc2a52f9735d146c2fd018a45636",
+  "id": "lsp/fix-history/semantic-script-bindings-2794",
+  "requirement": "Destructured script-setup bindings used in templates are exported to the template checker (no false unknown-name errors; ref values unwrap).",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst { a, b: [c] } = { a: 1, b: [2] }\nconst [first, ...rest] = [1, 2, 3]\nconst count = ref(0)\n</script>\n<template><p>{{ a }} {{ c }} {{ first }} {{ rest.length }} {{ count.toFixed() }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    }
+  ]
+}

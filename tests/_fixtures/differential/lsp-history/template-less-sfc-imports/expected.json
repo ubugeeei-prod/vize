@@ -1,0 +1,40 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2322,
+        "message": "Type 'number' is not assignable to type 'string'.",
+        "range": {
+          "end": {
+            "character": 18,
+            "line": 2
+          },
+          "start": {
+            "character": 13,
+            "line": 2
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": {
+      "range": {
+        "end": {
+          "character": 19,
+          "line": 0
+        },
+        "start": {
+          "character": 13,
+          "line": 0
+        }
+      },
+      "uri": "${workspace}/util.ts"
+    }
+  }
+]

@@ -93,9 +93,9 @@ As opções compartilhadas são `include`, `exclude`, `basePath`, `storybookComp
 ```art-vue
 <script setup lang="ts">
 import { ref } from "vue";
+import MyButton from "./MyButton.vue";
 
-defineArt("./MyButton.vue", {
-  title: "MyButton",
+defineArtMeta({
   category: "Components",
   status: "ready",
   tags: ["button", "ui", "input"],
@@ -115,9 +115,7 @@ const pressed = ref(false);
 </art>
 ```
 
-`defineArt(source, options)` é uma macro de compilador. Ele declara o componente que o Musea deve carregar, além de metadados que antes permaneciam em `<art>`. Prefere uma cadeia de caminho de componente relativa, como `defineArt("./MyButton.vue", { title: "MyButton" })`; O Musea importa esse componente em código gerado em tempo de execução e o servidor de linguagem usa a mesma fonte para inferência de prop e slot. A cadeia de origem participa da conclusão de caminhos, diagnósticos de arquivos não resolvidos, links de documentos e go-to-definition.
-
-`<art title="..." component="...">` ainda funciona para compatibilidade, e atributos explícitos `<art>` sobrepor `defineArt` metadados quando ambos estão presentes.
+O componente alvo é inferido da tag importada compartilhada por todas as variantes. Assim, o Vue verifica props, eventos e slots como em um SFC comum. `defineArtMeta()` é opcional e só precisa ser usado para substituir metadados inferidos. `title` também é opcional: por padrão usa o nome do binding do componente, ou o nome do arquivo quando nenhum alvo é inferido. Para uma composição intencionalmente ambígua, use `defineArt(MyButton, metadata?)` para indicar o alvo explicitamente.
 
 ### Estado variante-local
 
@@ -126,8 +124,7 @@ O estado da `<script setup>` raiz é isolado por padrão por variante. Cada vari
 ```art-vue
 <script setup lang="ts">
 import { computed, ref } from "vue";
-
-defineArt("./Counter.vue", { title: "Counter" });
+import Counter from "./Counter.vue";
 
 const count = ref(0);
 const doubled = computed(() => count.value * 2);
@@ -148,8 +145,7 @@ Use `<script setup isolate="false">` apenas quando o arquivo de arte precisar in
 ```art-vue
 <script setup lang="ts" isolate="false">
 import { ref } from "vue";
-
-defineArt("./Counter.vue", { title: "Counter" });
+import Counter from "./Counter.vue";
 
 const sharedCount = ref(0);
 </script>
@@ -159,18 +155,20 @@ const sharedCount = ref(0);
 
 | Elemento / Macro                 | Propósito                                                  |
 | -------------------------------- | ---------------------------------------------------------- |
-| `defineArt(source, options)`     | Metadados de componente alvo e arte                        |
-| `defineArt(...).title`           | Nome de exibição                                           |
-| `defineArt(...).category`        | Agrupamento na barra lateral                               |
-| `defineArt(...).status`          | Distintivo de status opcional                              |
-| `defineArt(...).tags`            | Tags de busca e filtragem                                  |
+| Tag de componente importada      | Alvo inferido e tipado pelo Vue                            |
+| `defineArtMeta(options)`         | Metadados opcionais da galeria                             |
+| `defineArtMeta(...).title`       | Substituição opcional do nome de exibição                  |
+| `defineArtMeta(...).category`    | Agrupamento na barra lateral                               |
+| `defineArtMeta(...).status`      | Distintivo de status opcional                              |
+| `defineArtMeta(...).tags`        | Tags de busca e filtragem                                  |
+| `defineArt(component, options?)` | Alvo explícito para um Art ambíguo                         |
 | `<script setup>`                 | Estado de configuração local variante por padrão           |
 | `<script setup isolate="false">` | Estado compartilhado de configuração em todas as variantes |
 | `<art>`                          | Bloco de variantes raiz                                    |
-| `<art title component ...>`      | Atributos de metadados de compatibilidade                  |
 | `<variant>`                      | Variação de componentes nomeados                           |
 | `default`                        | Marca a variante padrão                                    |
-| `args`, `viewport`, `skip-vrt`   | Configuração variante opcional                             |
+| `play`                           | Teste de interação tipado                                  |
+| `viewport`, `skip-vrt`           | Configuração opcional de teste visual                      |
 
 Mantenha os arquivos de arte próximos ao componente quando variantes fizerem parte do contrato do componente:
 
@@ -197,7 +195,7 @@ musea({
 });
 ```
 
-Dentro da arte em linha, use `<Self>` para renderizar o componente host.
+Na arte inline, use o nome SFC normal do componente host, por exemplo `<Button>` em `Button.vue`.
 
 ## Recursos da Galeria
 

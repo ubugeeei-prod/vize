@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 18048,
+        "message": "'props.raw' is possibly 'undefined'.",
+        "range": {
+          "end": {
+            "character": 48,
+            "line": 3
+          },
+          "start": {
+            "character": 39,
+            "line": 3
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

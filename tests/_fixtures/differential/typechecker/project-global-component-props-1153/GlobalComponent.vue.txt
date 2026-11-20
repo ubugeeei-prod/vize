@@ -1,0 +1,13 @@
+<template>
+  <div></div>
+</template>
+
+<script setup lang="ts">
+defineProps<{
+  thisWantsString?: string
+}>()
+
+defineEmits<{
+  someEvent: [eventArg: string]
+}>()
+</script>

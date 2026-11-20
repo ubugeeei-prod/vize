@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineSlots<{ default(props: { count: number }): unknown }>()
+const slotProps = undefined as unknown
+</script>
+
+<template>
+  <slot v-bind="slotProps" :count="1" />
+</template>

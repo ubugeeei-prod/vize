@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 6430,
+  "regressionCommit": "8d5a60647d265c898efca2c3597ff59071df9e18",
+  "sourceRevision": "8d5a60647d265c898efca2c3597ff59071df9e18",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "terminated-multibyte-leading-comments",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "terminated.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "terminated-multibyte-comment-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "terminated.wrong-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 53,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type '\"ready\"'. Did you mean 'fixed'?"
+        }
+      ]
+    },
+    {
+      "id": "ascii-comments-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ascii-comments.wrong-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 55,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type '\"ready\"'. Did you mean 'fixed'?"
+        },
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 81,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type '\"ready\"'. Did you mean 'fixed'?"
+        }
+      ]
+    },
+    {
+      "id": "unterminated-multibyte-comment-attribute",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unterminated-attr.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 17,
+          "severity": 1,
+          "code": 1109,
+          "message": "Expression expected."
+        }
+      ]
+    },
+    {
+      "id": "unterminated-multibyte-comment-interpolation",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unterminated-interpolation.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 27,
+          "severity": 1,
+          "code": 1109,
+          "message": "Expression expected."
+        }
+      ]
+    }
+  ]
+}

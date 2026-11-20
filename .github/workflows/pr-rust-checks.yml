@@ -188,10 +188,19 @@ jobs:
     # A superseded run reports nothing: its required check fails in test-report.
     if: ${{ always() && !contains(needs.*.result, 'cancelled') }}
     needs: [merge-rust-differential, pr-rust-build]
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 1
+          # The report gate needs only its script closure and the bootstrap action.
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /.github/actions/cache-vp-bootstrap/
+            /tools/support/compat/github/require-rust-tier.ts
+            /tools/support/compat/github/require-needs-success.ts
       - uses: ./.github/actions/cache-vp-bootstrap
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+interface Option { name: string, to: string, hide?: boolean, disabled?: boolean, tags: string[] }
+const { options } = defineProps<{ options: Option[] }>()
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child v-slot="{ item }">{{ item.name }} {{ options.length }}</Child>
+</template>

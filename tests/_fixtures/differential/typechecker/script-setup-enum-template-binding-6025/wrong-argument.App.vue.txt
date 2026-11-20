@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+enum Status { Idle, Ready }
+const status = ref<Status>(Status.Idle)
+const accept = (_: Status) => {}
+</script>
+
+<template>
+  <div>{{ accept(Status.Ready) }}{{ accept('Ready') }}</div>
+</template>

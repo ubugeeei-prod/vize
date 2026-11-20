@@ -1,0 +1,40 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst Child: VueComponent &\n{\n  props: { title: string };\n}\n```\n\nVue component: Child.vue"
+      },
+      "range": {
+        "end": {
+          "character": 16,
+          "line": 5
+        },
+        "start": {
+          "character": 11,
+          "line": 5
+        }
+      }
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\n(alias) interface Shape\n```"
+      },
+      "range": {
+        "end": {
+          "character": 19,
+          "line": 2
+        },
+        "start": {
+          "character": 14,
+          "line": 2
+        }
+      }
+    }
+  }
+]

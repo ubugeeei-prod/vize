@@ -1747,7 +1747,7 @@ valid:
   }
 === musea/require-component
 musea/require-component · lint rule
-Require component attribute in <art> block
+Require a resolvable target component for an <art> block
 
 tier: exact
 domain: <art> and <variant> blocks of .art.vue files
@@ -1757,7 +1757,7 @@ autofix: no
 docs: docs/content/rules/reference/musea-require-component.md
 === musea/require-title
 musea/require-title · lint rule
-Require title attribute in <art> block
+Require a resolvable display title for an <art> block
 
 tier: exact
 domain: <art> and <variant> blocks of .art.vue files
@@ -1767,16 +1767,17 @@ autofix: no
 docs: docs/content/rules/reference/musea-require-title.md
 
 invalid:
-  <art component="./Button.vue">
+  <art>
     <!-- missing title -->
   </art>
 
 valid:
   <script setup>
-  defineArt("./Button.vue", { title: "Button" });
+  import Button from "./Button.vue";
   </script>
   
   <art>
+    <variant name="Default"><Button /></variant>
   </art>
 
 help:
@@ -6410,6 +6411,30 @@ valid:
 
 help:
   Use shorthand prop syntax
+=== vue/prefer-pug-lang
+vue/prefer-pug-lang · lint rule
+Prefer lang="pug" over the legacy jade 1.x template language
+
+tier: exact
+domain: a lang="jade" template's lang value and the jade 1.x constructs the pug lowering reads under the jade profile
+severity: warning
+category: recommended
+autofix: yes
+docs: docs/content/rules/reference/vue-prefer-pug-lang.md
+
+invalid:
+  <template lang="jade">
+  ul
+    - each item in items
+      li= item
+  </template>
+
+valid:
+  <template lang="pug">
+  ul
+    each item in items
+      li= item
+  </template>
 === vue/prefer-single-event-payload
 vue/prefer-single-event-payload · lint rule
 Enforce passing a single argument to custom event emissions

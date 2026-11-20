@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-component-object-on-modifiers-5210",
+    history: "5f55dc16afa28134d5c16f143602789b5619662e",
+    source: "<Foo v-on.once.capture=\"handlers\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toHandlers as _toHandlers, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Foo = _resolveComponent(\"Foo\")\n  \n  return (_openBlock(), _createBlock(_component_Foo, _toHandlers(handlers), null, 16 /* FULL_PROPS */))\n}",
+    map: None,
+}

@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const count = ref(0)
+</script>
+
+<template>
+  <button @click="payload => payload.preventDefault()">Bare</button>
+  <button @click="async (payload) => payload.stopPropagation()">Async</button>
+  <button @click="function (payload) { payload.preventDefault() }">Function</button>
+  <button @click="() => count++">Empty</button>
+</template>

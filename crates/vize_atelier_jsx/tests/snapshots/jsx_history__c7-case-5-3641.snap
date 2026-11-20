@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-5-3641",
+    history: "25b3be78ad51e00ecb3d28a91f8ef1e3ad3fa8da",
+    source: "const C = () => <Comp xlinkHref=\"#c\"/>;\n",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: Some(
+            "babel",
+        ),
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nconst C = () => (() => {\nreturn ((_ctx, _cache) => {\n  const _component_Comp = _resolveComponent(\"Comp\")\n  \n  return (_openBlock(), _createBlock(_component_Comp, { \"xlink:href\": \"#c\" }))\n})(undefined, [])\n})();\n",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "C",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  const _component_Comp = _resolveComponent(\"Comp\")\n  \n  return (_openBlock(), _createBlock(_component_Comp, { \"xlink:href\": \"#c\" }))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

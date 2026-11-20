@@ -65,7 +65,12 @@ pub(crate) fn build<'a>(
         crate::slice::from(source, builder.cursor),
         crate::slice::from(source, source.len()),
     );
-    PugTree { source, nodes, eof }
+    PugTree {
+        source,
+        nodes,
+        eof,
+        profile: super::PugProfile::Pug3,
+    }
 }
 
 impl<'a> Builder<'a, '_> {

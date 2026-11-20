@@ -1,11 +1,11 @@
 ---
 title: "musea/require-title"
-description: "art ブロックに title を指定します。"
+description: "art ブロックの表示 title を解決できるようにします。"
 ---
 
 # `musea/require-title`
 
-art ブロックに title を指定します。
+art ブロックの表示 title を解決できるようにします。
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
@@ -15,25 +15,25 @@ art ブロックに title を指定します。
 
 ## 悪い例
 
-art に Button.vue の指定はありますが、title がありません。
+art に明示 metadata も推論できる component title もありません。
 
-```vue annotate="remove:1"
-<art component="./Button.vue">
-  <variant name="primary" />
+```vue annotate="remove:2"
+<art>
+  <variant name="primary"><div /></variant>
 </art>
 ```
 
 ## 良い例
 
-defineArt のオプションで title を Button にし、art ブロックのタイトルを指定します。
+import した Button を対象にすることで表示 title を推論します。
 
-```vue annotate="add:1,2,3,4,5"
+```vue annotate="add:1,2,3,4,6"
 <script setup>
-defineArt("./Button.vue", { title: "Button" });
+import Button from "./Button.vue";
 </script>
 
 <art>
-  <variant name="primary" />
+  <variant name="primary"><Button /></variant>
 </art>
 ```
 
@@ -58,4 +58,4 @@ export default defineConfig({}).withVue({
 
 - [Musea ルール](../musea.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L31)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L32)

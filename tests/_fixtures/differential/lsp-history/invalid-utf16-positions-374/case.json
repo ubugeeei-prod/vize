@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "commit": "26db417d55ee75e9876ae65ec507df8ba5d1b296",
+  "id": "lsp/fix-history/invalid-utf16-positions-374",
+  "requirement": "Hover, completion, definition, references, code action, prepareRename and rename reject a position inside a surrogate pair or past the line end.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false,
+    "codeActions": true
+  },
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nconst x = 1\nconst label = 'a'\n</script>\n<template><p>😀{{ label }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "params": {
+        "position": {
+          "line": 4,
+          "character": 4
+        }
+      }
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "params": {
+        "position": {
+          "line": 4,
+          "character": 4
+        }
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "params": {
+        "position": {
+          "line": 4,
+          "character": 4
+        }
+      }
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "App.vue",
+      "params": {
+        "position": {
+          "line": 4,
+          "character": 4
+        },
+        "context": {
+          "includeDeclaration": true
+        }
+      }
+    },
+    {
+      "request": "textDocument/prepareRename",
+      "uri": "App.vue",
+      "params": {
+        "position": {
+          "line": 4,
+          "character": 4
+        }
+      }
+    },
+    {
+      "request": "textDocument/rename",
+      "uri": "App.vue",
+      "params": {
+        "position": {
+          "line": 4,
+          "character": 4
+        },
+        "newName": "z"
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "params": {
+        "position": {
+          "line": 4,
+          "character": 400
+        }
+      }
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "params": {
+        "position": {
+          "line": 4,
+          "character": 400
+        }
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "params": {
+        "position": {
+          "line": 4,
+          "character": 400
+        }
+      }
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "App.vue",
+      "params": {
+        "position": {
+          "line": 4,
+          "character": 400
+        },
+        "context": {
+          "includeDeclaration": true
+        }
+      }
+    },
+    {
+      "request": "textDocument/prepareRename",
+      "uri": "App.vue",
+      "params": {
+        "position": {
+          "line": 4,
+          "character": 400
+        }
+      }
+    },
+    {
+      "request": "textDocument/rename",
+      "uri": "App.vue",
+      "params": {
+        "position": {
+          "line": 4,
+          "character": 400
+        },
+        "newName": "z"
+      }
+    },
+    {
+      "request": "textDocument/codeAction",
+      "uri": "App.vue",
+      "params": {
+        "range": {
+          "start": {
+            "line": 4,
+            "character": 4
+          },
+          "end": {
+            "line": 4,
+            "character": 4
+          }
+        },
+        "context": {
+          "diagnostics": []
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\n(property) label: string\n```"
+      },
+      "range": {
+        "end": {
+          "character": 48,
+          "line": 5
+        },
+        "start": {
+          "character": 43,
+          "line": 5
+        }
+      }
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nfunction pick(id: number): {\n    id: number;\n    label: string;\n} | undefined\n```"
+      },
+      "range": {
+        "end": {
+          "character": 59,
+          "line": 5
+        },
+        "start": {
+          "character": 55,
+          "line": 5
+        }
+      }
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst items: Ref<{\n    id: number;\n    label: string;\n}[], {\n    id: number;\n    label: string;\n}[] | {\n    id: number;\n    label: string;\n}[]>\n```"
+      },
+      "range": {
+        "end": {
+          "character": 11,
+          "line": 2
+        },
+        "start": {
+          "character": 6,
+          "line": 2
+        }
+      }
+    }
+  }
+]

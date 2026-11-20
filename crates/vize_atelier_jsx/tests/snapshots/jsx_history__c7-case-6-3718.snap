@@ -1,0 +1,45 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-6-3718",
+    history: "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    source: "const A = (MyEl) => <MyEl foo={1}/>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: Some(
+            "babel",
+        ),
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: Some(
+            "My",
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nconst A = (MyEl) => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createBlock(_resolveDynamicComponent(MyEl), { foo: 1 }))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "A",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createBlock(_resolveDynamicComponent(MyEl), { foo: 1 }))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

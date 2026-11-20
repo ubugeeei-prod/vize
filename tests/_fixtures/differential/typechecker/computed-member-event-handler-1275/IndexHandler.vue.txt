@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const arr = [(event: PointerEvent) => event.preventDefault()]
+</script>
+
+<template>
+  <button @click="arr[0]">Good</button>
+</template>

@@ -1,7 +1,7 @@
 use super::super::{Allocator, NoLinks, Recorded, check, owner};
 use vize_l0::id::NodeId;
 use vize_l2::lang::js::NativeInterpolationInput;
-use vize_l3::decision::{dom::DomUnsupported, native::build_native_dom_file_decisions};
+use vize_l3::decision::{dom::DomUnsupported, template::build_template_dom_decisions};
 use vize_l4::targets::dom::{DomErrorKind, emit_template};
 
 #[test]
@@ -37,7 +37,7 @@ fn original_selected_legacy_and_regexp_refusals_return_no_partial_writer()
             walk.complete().map_err(|_| "normal root end")?;
         }
         let output = core::hint::black_box(original.finish());
-        let analysis = build_native_dom_file_decisions(output.view().map_err(|_| "native view")?)
+        let analysis = build_template_dom_decisions(output.view().map_err(|_| "native view")?)
             .map_err(|_| "existing sole L3 visit")?;
         let file = analysis.file();
         check(file.is_complete())?;

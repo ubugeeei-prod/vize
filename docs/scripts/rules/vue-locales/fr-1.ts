@@ -54,6 +54,11 @@ export const frenchVue1 = {
     "Le template sélectionne Pug avec lang. Il s’agit d’une convention souhaitée limitant les templates au HTML ; le traitement SFC actuel n’émet pas de diagnostic pour cet identifiant du catalogue.",
     "Un template HTML ordinaire omet lang et utilise directement le paragraphe. Cela illustre la convention sans prétendre qu’un diagnostic SFC est actuellement émis.",
   ],
+  "vue/prefer-pug-lang": [
+    'Préférer lang="pug" au langage de template jade 1.x hérité',
+    "Le template nomme jade, que Vue rend avec l’ancien paquet jade 1.x, et utilise le each précédé d’un tiret propre à jade.",
+    "Le template nomme pug et écrit la boucle avec le mot-clé each de pug 3.",
+  ],
   "vue/no-template-shadow": [
     "Interdire les noms de variables qui masquent des variables d’une portée externe",
     "Le v-for interne déclare à nouveau item et masque la liaison item externe dans la boucle imbriquée.",

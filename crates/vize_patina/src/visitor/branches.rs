@@ -9,13 +9,14 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     #[inline]
     pub(super) fn visit_if(&mut self, if_node: &vize_relief::IfNode<'a>) {
         // Run if checks
-        let keep_mask = self.keep_mask;
+        let selection = self.selection;
         profile!("patina.rules.check_if", {
             Self::callback_rules(
                 self.ctx,
                 self.rules,
                 self.rule_names,
-                keep_mask,
+                selection,
+                &self.indexed_plans.if_node,
                 CallbackSite::Conditional(if_node.loc.span.start),
                 |_, rule, ctx| rule.check_if(ctx, if_node),
             );
@@ -32,13 +33,14 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     #[inline]
     pub(super) fn visit_for(&mut self, for_node: &vize_relief::ForNode<'a>) {
         // Run for checks
-        let keep_mask = self.keep_mask;
+        let selection = self.selection;
         profile!("patina.rules.check_for", {
             Self::callback_rules(
                 self.ctx,
                 self.rules,
                 self.rule_names,
-                keep_mask,
+                selection,
+                &self.indexed_plans.for_node,
                 CallbackSite::List(for_node.loc.span.start),
                 |_, rule, ctx| rule.check_for(ctx, for_node),
             );

@@ -1,0 +1,61 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-1-8ba5ae5",
+    history: "8ba5ae5e00b01abb5a8670ee7f05e65c8adbbbef",
+    source: "\n        export const InspectTable = () => <table>{rows}</table>;\n        const LabelContent = () => <span>{label}</span>;\n        export const InspectTableRow = () => <tr>{row}</tr>;\n        ",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { createElementVNode as _createElementVNode } from \"vue\"\n\n\n        export const InspectTable = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"table\", null, [\n    rows\n  ]))\n})(undefined, [])\n})();\n        const LabelContent = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"span\", null, [\n    label\n  ]))\n})(undefined, [])\n})();\n        export const InspectTableRow = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"tr\", null, [\n    row\n  ]))\n})(undefined, [])\n})();\n        ",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "InspectTable",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"table\", null, [\n    rows\n  ]))\n}",
+            map: None,
+        },
+        Component {
+            name: Some(
+                "LabelContent",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"span\", null, [\n    label\n  ]))\n}",
+            map: None,
+        },
+        Component {
+            name: Some(
+                "InspectTableRow",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"tr\", null, [\n    row\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

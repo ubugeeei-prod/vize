@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "commit": "aba27dd9e8c1bbcc6db1cb96b2785ab7cc659609",
+  "id": "lsp/fix-history/formatting-authored-eof-no-trailing-newline",
+  "requirement": "The whole-document formatting edit ends at the authored EOF (no-trailing-newline).",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "formatting": true
+  },
+  "files": {
+    "App.vue": "<template>\n<div>x</div>\n</template>"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/formatting",
+      "uri": "App.vue",
+      "params": {
+        "options": {
+          "tabSize": 2,
+          "insertSpaces": true
+        }
+      }
+    }
+  ]
+}

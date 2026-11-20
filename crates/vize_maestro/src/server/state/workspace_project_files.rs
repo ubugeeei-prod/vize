@@ -34,23 +34,23 @@ pub(super) struct Inventory {
 struct CachedPaths {
     generation: u64,
     roots: Vec<PathBuf>,
-    uris: Vec<Url>,
+    uris: Arc<[Url]>,
 }
 
 struct CachedSources {
     generation: u64,
     content_generation: u64,
     roots: Vec<PathBuf>,
-    sources: Arc<[(Url, Arc<str>)]>,
+    sources: Arc<[(Url, Arc<String>)]>,
 }
 
 impl Inventory {
-    fn cached_paths(&self, roots: &[PathBuf], generation: u64) -> Option<Vec<Url>> {
+    fn cached_paths(&self, roots: &[PathBuf], generation: u64) -> Option<Arc<[Url]>> {
         self.paths
             .read()
             .as_ref()
             .filter(|cached| cached.generation == generation && cached.roots == roots)
-            .map(|cached| cached.uris.clone())
+            .map(|cached| Arc::clone(&cached.uris))
     }
 
     fn cached_sources(
@@ -58,7 +58,7 @@ impl Inventory {
         roots: &[PathBuf],
         generation: u64,
         content_generation: u64,
-    ) -> Option<Vec<(Url, Arc<str>)>> {
+    ) -> Option<Vec<(Url, Arc<String>)>> {
         self.sources
             .read()
             .as_ref()
@@ -71,7 +71,7 @@ impl Inventory {
     }
 }
 
-fn read_sources(uris: &[Url], retired: &[PathBuf]) -> (Vec<(Url, Arc<str>)>, bool) {
+fn read_sources(uris: &[Url], retired: &[PathBuf]) -> (Vec<(Url, Arc<String>)>, bool) {
     let mut complete = true;
     let sources = uris
         .iter()
@@ -81,7 +81,7 @@ fn read_sources(uris: &[Url], retired: &[PathBuf]) -> (Vec<(Url, Arc<str>)>, boo
                 return None;
             }
             match std::fs::read_to_string(path) {
-                Ok(source) => Some((uri.clone(), Arc::from(source))),
+                Ok(source) => Some((uri.clone(), Arc::new(source))),
                 Err(_) => {
                     complete = false;
                     None
@@ -123,6 +123,10 @@ impl ServerState {
         self.workspace_project_files
             .generation
             .fetch_add(1, Ordering::AcqRel);
+        // Membership changes can retire arbitrary directory subtrees. Drop
+        // text-free disk indexes eagerly so deleted namespaces cannot
+        // accumulate; open buffers rebuild lazily from their resident Arcs.
+        self.workspace_symbol_cache.clear();
         self.invalidate_workspace_project_source_contents();
     }
 
@@ -147,7 +151,9 @@ impl ServerState {
             .collect()
     }
 
-    pub(crate) async fn discover_workspace_project_source_snapshots(&self) -> Vec<(Url, Arc<str>)> {
+    pub(crate) async fn discover_workspace_project_source_snapshots(
+        &self,
+    ) -> Vec<(Url, Arc<String>)> {
         let inventory = &self.workspace_project_files;
         let sources = loop {
             let roots = self.project_source_roots();
@@ -217,7 +223,7 @@ impl ServerState {
                 *inventory.paths.write() = Some(CachedPaths {
                     generation,
                     roots: roots.clone(),
-                    uris,
+                    uris: Arc::from(uris),
                 });
             }
             if reuse_sources && walk_complete && reads_complete {
@@ -237,7 +243,7 @@ impl ServerState {
                 .is_ok_and(|path| is_project_source(&path))
                 && let Some(source) = self.documents.text_snapshot(uri)
             {
-                sources.insert(uri.clone(), Arc::from(source.as_str()));
+                sources.insert(uri.clone(), source);
             }
         }
         let mut sources = sources.into_iter().collect::<Vec<_>>();
@@ -279,7 +285,7 @@ impl ServerState {
         roots: &[PathBuf],
         generation: u64,
         content_generation: u64,
-        sources: &[(Url, Arc<str>)],
+        sources: &[(Url, Arc<String>)],
     ) {
         if !self.project_source_content_snapshot_current(roots, generation, content_generation) {
             return;
@@ -294,11 +300,11 @@ impl ServerState {
 
     async fn read_current_project_sources(
         &self,
-        uris: Vec<Url>,
+        uris: Arc<[Url]>,
         roots: &[PathBuf],
         generation: u64,
         content_generation: u64,
-    ) -> Option<(Vec<(Url, Arc<str>)>, bool)> {
+    ) -> Option<(Vec<(Url, Arc<String>)>, bool)> {
         let retired = self.workspace_project_files.retired.read().clone();
         let sources = background(move || read_sources(&uris, &retired))
             .await

@@ -5,7 +5,7 @@ description: "Todas as regras do linter do Vize, agrupadas por categoria. Abra u
 
 # Todas as regras de lint
 
-## Regras Vue (169)
+## Regras Vue (170)
 
 | Regra | O que verifica | Predefinição | Correção automática |
 | --- | --- | --- | --- |
@@ -128,6 +128,7 @@ description: "Todas as regras do linter do Vize, agrupadas por categoria. Abra u
 | <span id="vue-prefer-const"></span>[`vue/prefer-const`](./reference/vue-prefer-const.md) | Exigir const para vínculos que o script e o template nunca reatribuem. | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | Exige `Boolean` na primeira posição da lista de construtores de tipo das props. | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Recomendar sintaxe abreviada para props (Vue 3.4+). | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-prefer-pug-lang"></span>[`vue/prefer-pug-lang`](./reference/vue-prefer-pug-lang.md) | Preferir lang="pug" à linguagem de template legada jade 1.x. | `happy-path` | ✓ |
 | <span id="vue-prefer-single-event-payload"></span>[`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | Exige um único argumento de payload ao emitir eventos personalizados. | — |  |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | Prefere template literals à concatenação de strings. | — |  |
 | <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | Preferir a forma abreviada para um atributo booleano vinculado a `true`. | `nuxt`, `opinionated` |  |
@@ -413,8 +414,8 @@ description: "Todas as regras do linter do Vize, agrupadas por categoria. Abra u
 | --- | --- | --- | --- |
 | <span id="musea-no-empty-variant"></span>[`musea/no-empty-variant`](./reference/musea-no-empty-variant.md) | Proibir blocos &lt;variant&gt; vazios. | — |  |
 | <span id="musea-prefer-design-tokens"></span>[`musea/prefer-design-tokens`](./reference/musea-prefer-design-tokens.md) | Preferir variáveis CSS de tokens de design a valores primitivos fixos escritos diretamente. | — |  |
-| <span id="musea-require-component"></span>[`musea/require-component`](./reference/musea-require-component.md) | Exigir o atributo component no bloco &lt;art&gt;. | — |  |
-| <span id="musea-require-title"></span>[`musea/require-title`](./reference/musea-require-title.md) | Exigir o atributo title no bloco &lt;art&gt;. | — |  |
+| <span id="musea-require-component"></span>[`musea/require-component`](./reference/musea-require-component.md) | Exigir um componente de destino resolvível no bloco &lt;art&gt;. | — |  |
+| <span id="musea-require-title"></span>[`musea/require-title`](./reference/musea-require-title.md) | Exigir um título de exibição resolvível no bloco &lt;art&gt;. | — |  |
 | <span id="musea-unique-variant-names"></span>[`musea/unique-variant-names`](./reference/musea-unique-variant-names.md) | Exigir nomes de variante únicos. | — |  |
 | <span id="musea-valid-variant"></span>[`musea/valid-variant`](./reference/musea-valid-variant.md) | Exigir o atributo name nos blocos &lt;variant&gt;. | — |  |
 

@@ -1,0 +1,3 @@
+<template>
+  <el-badge><template #content="{ value }">{{ value.label }}</template></el-badge>
+</template>

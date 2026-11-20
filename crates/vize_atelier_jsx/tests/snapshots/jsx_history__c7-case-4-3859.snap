@@ -1,0 +1,58 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-4-3859",
+    history: "4010fbbe1bd570a9ac2a628feb21a6cd9b4b54d0",
+    source: "\n        const GenericList = <T extends string,>({ items }: { items: Array<T> }) => {\n          const first = items[0];\n          return <ul>{first}</ul>;\n        };\n\n        export default GenericList;\n        ",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { createElementVNode as _createElementVNode } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\n\n        const GenericList = _defineComponent({\nname: \"GenericList\",\nprops: [\"items\"],\nsetup<T extends string>({ items }: { items: Array<T> }) {\n\n          const first = items[0];\n          return (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"ul\", null, [\n    first\n  ]))\n})\n})()\n}\n});\n\n        export default GenericList;\n        ",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "GenericList",
+            ),
+            mode: Vdom,
+            setup: Some(
+                ComponentSetupSpan {
+                    declaration_start: 9,
+                    declaration_end: 165,
+                    params_start: 49,
+                    params_end: 79,
+                    type_params_start: 30,
+                    type_params_end: 46,
+                    is_async: false,
+                    destructured_props: [
+                        "items",
+                    ],
+                    setup_start: 85,
+                    setup_end: 130,
+                    render_start: 137,
+                    render_end: 153,
+                },
+            ),
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"ul\", null, [\n    first\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-unclosed-interpolation-rescan-3305",
+    history: "e2d509476a3c76efa9cadd5259bb293d4c5c82ea",
+    source: "<template><p>{{ { }} {{ '</template>' }}</p><i>after</i></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "Template compilation errors: [CompilerError { code: InvalidExpression, message: \"Error parsing JavaScript expression: mismatched expression delimiters\", loc: Some(SourceLocation { start: Position { offset: 6, line: 1, column: 7 }, end: Position { offset: 7, line: 1, column: 8 }, source: \"{\" }) }]",
+            code: Some(
+                "TEMPLATE_ERROR",
+            ),
+            loc: Some(
+                BlockLocation {
+                    start: 10,
+                    end: 56,
+                    tag_start: 0,
+                    tag_end: 67,
+                    start_line: 1,
+                    start_column: 11,
+                    end_line: 1,
+                    end_column: 57,
+                },
+            ),
+        },
+    ),
+)

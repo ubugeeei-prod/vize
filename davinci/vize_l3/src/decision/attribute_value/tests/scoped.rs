@@ -18,7 +18,7 @@ fn genuine_styled_ssr_view_consumes_the_same_original_value_slots() -> Test {
     let file = selected.file().ok_or("complete original File")?;
     let style = original.style_syntax().ok_or("normal original style")?;
     let view = original.admitted().ok_or("genuine styled envelope")?;
-    let analysis = ssr::build_native_scoped_ssr_file_decisions(view.into_scoped_template_view())
+    let analysis = ssr::build_scoped_template_ssr_decisions(view.into_scoped_template_view())
         .map_err(|_| "scoped original cursor")?;
     check(core::ptr::eq(analysis.owner(), selected))?;
     check(core::ptr::eq(analysis.file(), file))?;
@@ -49,8 +49,8 @@ fn genuine_styled_ssr_view_consumes_the_same_original_value_slots() -> Test {
     let generic = ssr::build_ssr_file_decisions(file).map_err(|_| "generic styled File")?;
     check(generic.original_attributes().is_none())?;
     check(matches!(
-        ssr::build_native_ssr_file_decisions(selected.view().map_err(|_| "plain view")?),
-        Err(ssr::NativeSsrBuildError::StyledSource { .. })
+        ssr::build_template_ssr_decisions(selected.view().map_err(|_| "plain view")?),
+        Err(ssr::SsrTemplateBuildError::StyledSource { .. })
     ))?;
     Ok(())
 }

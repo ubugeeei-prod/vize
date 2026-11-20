@@ -1,0 +1,27 @@
+---
+source: crates/vize/tests/diagnostic_digest_hints_cli.rs
+expression: normalize_build(&output.stderr)
+---
+
+[31m✗ 3 error(s) occurred:[0m
+
+error[template-syntax/self-closing]: 3 errors in 2 files: non-void HTML elements written as self-closing
+  src/Card.vue:3:5 div, 5:5 i
+  src/List.vue:7:43 span
+ --> src/Card.vue:3:5
+  |
+3 |     <div class="icon" />
+  |     ^^^^^^^^^^^^^^^^^^^^ `<div />` is not valid HTML, and strict template syntax rejects it
+  |
+hint: Write an explicit end tag: `<div></div>`.
+      To accept them and compile them as empty elements (the default `standard` mode):
+        vite.config.ts  vue: { compiler: { templateSyntax: "standard" } }
+        command line    --template-syntax standard
+      docs: https://vizejs.dev/guide/troubleshooting#template-syntax-modes
+      --verbose prints each finding with its full message.
+
+  [31mCompile errors (1):[0m
+    [1msrc/Mixed.vue[0m
+      Template compilation errors: [CompilerError { code: UnexpectedSolidusInTag, message: "Invalid self-closing syntax on non-void HTML element.", loc: Some(SourceLocation { start: Position { offset: 3, line: 2, column: 3 }, end: Position { offset: 10, line: 2, column: 10 }, source: "<div />" }) }, CompilerError { code: MissingEndTag, message: "Element is missing end tag.", loc: Some(SourceLocation { start: Position { offset: 13, line: 3, column: 3 }, end: Position { offset: 22, line: 3, column: 12 }, source: "<section>" }) }]
+
+[31m✗ 3 file(s) failed[0m, 0 compiled in <TIME>s

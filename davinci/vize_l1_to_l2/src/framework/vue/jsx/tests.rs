@@ -87,7 +87,7 @@ fn describe(op: &Op<'_>, out: &mut vize_l0::String) {
             write!(out, "{:?} ", text.content).unwrap();
             return;
         }
-        Op::JsxChildValue(child) => {
+        Op::ChildValue(child) => {
             write!(out, "{{{}}} ", child.expression.source()).unwrap();
             return;
         }

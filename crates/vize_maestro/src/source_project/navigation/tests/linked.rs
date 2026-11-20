@@ -118,7 +118,6 @@ fn original_utf8_crlf_non_bmp_and_authored_case_keep_exact_utf16_names() {
 fn original_missing_implicit_void_and_self_closing_do_not_guess_a_second_name() {
     for source in [
         "<template><p></template>",
-        "<template><a><a>inner</a></a></template>",
         "<template><br><Child/></template>",
     ] {
         let (_, project) = project(source);
@@ -127,6 +126,13 @@ fn original_missing_implicit_void_and_self_closing_do_not_guess_a_second_name() 
             Ok(None)
         );
     }
+    // A Vue template keeps a nested `<a>` as written, so the outer one pairs
+    // with the last end tag.
+    let (_, project) = project("<template><a><a>inner</a></a></template>");
+    assert_eq!(
+        block_on(project.linked_editing(&uri(), Position::new(0, 11))),
+        Ok(ranges((0, 11, 12), (0, 27, 28)))
+    );
 }
 #[test]
 fn actual_recovery_descriptor_and_language_refusals_are_sticky_without_other_parsers() {

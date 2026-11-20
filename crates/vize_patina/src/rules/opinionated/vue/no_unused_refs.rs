@@ -87,6 +87,10 @@ impl Rule for NoUnusedRefs {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE
+    }
+
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
         let Some(descriptor) = ctx.sfc_descriptor() else {
             return;

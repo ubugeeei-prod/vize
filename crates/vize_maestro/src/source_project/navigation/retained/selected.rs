@@ -8,7 +8,8 @@ use std::sync::{Arc, mpsc::Receiver};
 use tower_lsp::lsp_types::{Location, Position};
 use vize_l0::{Allocator, Span};
 use vize_l1_to_l2::native_file::lower_selected_sfc_native;
-use vize_l2::file::{FileArtifact, TemplateSymbolRef};
+use vize_l2::file::FileArtifact;
+use vize_l2::query::{Model, TemplateSymbolRef};
 
 use super::super::{
     NavigationRefusal, SourceSnapshot, coordinates,
@@ -93,7 +94,7 @@ impl<'f, 'a> SelectedNavigation<'f, 'a> {
     ) -> Result<Option<TemplateSymbolRef<'f, 'a>>, NavigationRefusal> {
         let offset = coordinates::offset(self.snapshot.source(), self.lines, position)?;
         let offset = u32::try_from(offset).map_err(|_| NavigationRefusal::Position)?;
-        self.file
+        Model::new(self.file)
             .template_symbol_at_offset(offset)
             .map(|site| site.map(|site| site.symbol()))
             .map_err(NavigationRefusal::TemplateQuery)
@@ -157,7 +158,7 @@ impl<'f, 'a> SelectedNavigation<'f, 'a> {
         let mut spans = Vec::new();
         // A provider refusal invalidates every partial callback span before
         // any location/publication is constructed.
-        self.file
+        Model::new(self.file)
             .for_each_template_reference_to(symbol, |site| spans.push(site.span()))
             .map_err(NavigationRefusal::TemplateQuery)?;
         if include {

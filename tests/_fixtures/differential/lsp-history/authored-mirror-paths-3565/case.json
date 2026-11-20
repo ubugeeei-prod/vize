@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "commit": "5fda5ef7efbaf3ac62b2daf8bea25936aaba7b8b",
+  "id": "lsp/fix-history/authored-mirror-paths-3565",
+  "requirement": "Checker messages restore internal .vue mirror spellings to authored specifiers, while an authored .vue.ts module name stays intact.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "util.vue.ts": "export const fromMirrorName = 1\n",
+    "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ n: number }>()\n</script>\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nimport { fromMirrorName } from './util.vue'\nimport Missing from './Missing.vue'\nconst bad: string = Child\nconst also: string = fromMirrorName\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "count": 46,
+      "items": [
+        {
+          "detail": " (const)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Const**\n\nConstant binding (function, class, or literal)."
+          },
+          "kind": 21,
+          "label": "emit",
+          "labelDetails": {
+            "detail": " (const)"
+          },
+          "sortText": "0emit"
+        },
+        {
+          "detail": " (reactive)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Reactive**\n\nReactive object. Direct access without `.value`."
+          },
+          "kind": 6,
+          "label": "props",
+          "labelDetails": {
+            "detail": " (reactive)"
+          },
+          "sortText": "0props"
+        },
+        {
+          "detail": "prop: string",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Prop** `title`\n\n```typescript\ntitle: string\n```\n\n"
+          },
+          "kind": 10,
+          "label": "title",
+          "labelDetails": {
+            "detail": ": string"
+          },
+          "sortText": "0title"
+        },
+        {
+          "detail": "prop: number",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Prop** `count`\n\n```typescript\ncount: number // optional\n```\n\n"
+          },
+          "kind": 10,
+          "label": "count",
+          "labelDetails": {
+            "detail": ": number?"
+          },
+          "sortText": "0count"
+        }
+      ]
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "count": 45,
+      "items": [
+        {
+          "detail": " (const)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Const**\n\nConstant binding (function, class, or literal)."
+          },
+          "kind": 21,
+          "label": "emit",
+          "labelDetails": {
+            "detail": " (const)"
+          },
+          "sortText": "0emit"
+        },
+        {
+          "detail": " (reactive)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Reactive**\n\nReactive object. Direct access without `.value`."
+          },
+          "kind": 6,
+          "label": "props",
+          "labelDetails": {
+            "detail": " (reactive)"
+          },
+          "sortText": "0props"
+        },
+        {
+          "detail": "prop: string",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Prop** `title`\n\n```typescript\ntitle: string\n```\n\n"
+          },
+          "kind": 10,
+          "label": "title",
+          "labelDetails": {
+            "detail": ": string"
+          },
+          "sortText": "0title"
+        },
+        {
+          "detail": "prop: number",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Prop** `count`\n\n```typescript\ncount: number // optional\n```\n\n"
+          },
+          "kind": 10,
+          "label": "count",
+          "labelDetails": {
+            "detail": ": number?"
+          },
+          "sortText": "0count"
+        }
+      ]
+    }
+  }
+]

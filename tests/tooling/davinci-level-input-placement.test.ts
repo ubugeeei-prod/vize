@@ -35,7 +35,7 @@ const l1TopLevel = new Set([
   "slice",
 ]);
 const l1Children: Record<string, Set<string>> = {
-  markup: new Set(["token", "profile", "grammar", "entity", "html", "pug", "tsrx"]),
+  markup: new Set(["token", "profile", "grammar", "entity", "htmlish", "pug", "tsrx"]),
   style: new Set([
     "structure",
     "classes",

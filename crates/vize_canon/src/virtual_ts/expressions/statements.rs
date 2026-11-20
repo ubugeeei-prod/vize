@@ -29,6 +29,7 @@ use vize_croquis::drawer::{
     strip_js_comments_with_offsets,
 };
 
+mod comment_spans;
 mod giant_interpolations;
 use giant_interpolations::{generate_isolated_interpolations, should_isolate_interpolations};
 
@@ -315,6 +316,9 @@ fn emit_expression_statement(
     };
     let trimmed_expression = expression.as_ref().trim();
     if trimmed_expression.is_empty() {
+        if matches!(expression, Cow::Owned(_)) {
+            comment_spans::emit_unterminated_comment(ts, mappings, expr, src_start, indent);
+        }
         return;
     }
     let statement_expression =
@@ -461,10 +465,24 @@ fn emit_expression_statement(
         Some(start..start + mapped_bounds.1)
     };
     if let Some(gen_range) = gen_expr_range {
+        // Only verbatim stripped text keeps a byte-for-byte authored relation.
+        let sub_spans = if matches!(expression, Cow::Owned(_))
+            && rewritten_expression.is_none()
+            && !isolated_expression.is_owned()
+        {
+            comment_spans::stripped_comment_sub_spans(
+                expr.content.as_str(),
+                src_start,
+                generated_expression,
+                gen_range.start,
+            )
+        } else {
+            Vec::new()
+        };
         mappings.push(VizeMapping {
             gen_range,
             src_range: src_start..src_end,
-            sub_spans: Vec::new(),
+            sub_spans,
         });
     }
     append!(*ts, "{indent}// @vize-map: expr -> {src_start}:{src_end}\n",);

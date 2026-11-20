@@ -88,12 +88,36 @@ void test("actual native Art analysis and palette retain complete compact type-l
           ).catch(reject);
         });
         observed[endpoint] = { body, parsed: JSON.parse(body) };
+        const expectedPalette = expectations.get(vector.name) as Record<string, unknown>;
+        const authoredDefaults: Record<string, string> = {
+          label: "Seed",
+          constructor: "Seed constructor",
+          hasOwnProperty: "Seed method",
+        };
+        const expectedControls = (expectedPalette.controls as Array<Record<string, unknown>>).map(
+          (control) => {
+            if (!Object.hasOwn(authoredDefaults, control.name as string)) return control;
+            const { name, control: kind, ...metadata } = control;
+            return {
+              name,
+              control: kind,
+              default_value: authoredDefaults[name as string],
+              ...metadata,
+            };
+          },
+        );
         assert.deepEqual(
           JSON.parse(body),
           endpoint === "analysis"
             ? vector.expected
             : {
-                ...(expectations.get(vector.name) as Record<string, unknown>),
+                ...expectedPalette,
+                controls: expectedControls,
+                json: JSON.stringify(
+                  { title: expectedPalette.title, controls: expectedControls },
+                  null,
+                  2,
+                ),
                 ...(vector.expected.props.some((prop) => prop.name === "__proto__")
                   ? { unsupportedProps: ["__proto__"] }
                   : {}),

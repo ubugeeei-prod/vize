@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "commit": "051048725ec8ed52ae0e0518738e6365d5e5c3e5",
+  "id": "lsp/fix-history/directive-semantic-edges-447",
+  "requirement": "Semantic tokens cover dynamic shorthand arguments and unquoted directive values without treating literal names as code.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nconst key = 'title'\nconst v = 1\n</script>\n<template><p :[key]=v @click=v v-bind:title=v data-x=static>{{ v }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/semanticTokens/full",
+      "uri": "App.vue"
+    }
+  ]
+}

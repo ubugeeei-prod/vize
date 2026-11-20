@@ -16,7 +16,7 @@ use vize_l2::walk::PageWalk;
 use super::buf::Buf;
 use super::helper::Helper;
 use super::options::BindingTable;
-use super::{builtin, directive, sfc_style, slots};
+use super::{builtin, directive, slots, style_carrier};
 use slot_order::{
     component_slot_content, direct_slot_carrier_precedes_slot_outlet,
     explicit_transition_slot_with_implicit_transition_group, has_slot_outlet,
@@ -125,7 +125,7 @@ fn prefer_op_helpers(
     unref::note_op(cx, op, visit);
     buf.set_prefer_visit(visit);
     match op {
-        Op::Element(element) if sfc_style::is_carrier_element(element) => {
+        Op::Element(element) if style_carrier::is_carrier_element(element) => {
             walk.skip(element.bindings.len())
         }
         Op::Element(element) => {
@@ -206,7 +206,7 @@ fn prefer_op_helpers(
         Op::OriginalFor(for_op) => {
             prefer_region_helpers(buf, cx, walk, &for_op.region, slot_context, false);
         }
-        Op::JsxChildValue(_) => {}
+        Op::ChildValue(_) => {}
         Op::Text(_) => buf.prefer(Helper::CreateText),
         Op::Comment(_) => buf.prefer(Helper::CreateComment),
         Op::Interpolation(interpolation) => {

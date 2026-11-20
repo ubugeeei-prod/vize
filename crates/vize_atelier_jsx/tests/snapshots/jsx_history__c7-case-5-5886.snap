@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-5-5886",
+    history: "bd9412f75c523e90548dea3b72f0b428d6688dd3",
+    source: "const App = () => <div v-show:display={visible} />",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, vShow as _vShow } from \"vue\"\n\nconst App = () => (() => {\nreturn ((_ctx, _cache) => {\n  return _withDirectives((_openBlock(), _createElementBlock(\"div\", null, null, 512 /* NEED_PATCH */)), [\n    [_vShow, visible]\n  ])\n})(undefined, [])\n})()",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "App",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, vShow as _vShow } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return _withDirectives((_openBlock(), _createElementBlock(\"div\", null, null, 512 /* NEED_PATCH */)), [\n    [_vShow, visible]\n  ])\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

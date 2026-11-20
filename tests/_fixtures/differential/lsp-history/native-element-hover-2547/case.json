@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "commit": "6e920da1b4330ba92070099cf687d6cc76aae128",
+  "id": "lsp/fix-history/native-element-hover-2547",
+  "requirement": "Known native HTML/SVG elements hover with DOM metadata; Vue builtins and custom elements are not treated as native tags.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<template>\n  <section><button>x</button><svg><rect /></svg><Transition><span /></Transition><x-widget /><component is=\"div\" /></section>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "<section",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "<button",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "<rect",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "<Transition",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "<x-widget",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "<component",
+        "delta": 2,
+        "nth": 0
+      }
+    }
+  ]
+}

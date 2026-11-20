@@ -193,11 +193,9 @@ impl<'a> GlobalComponentPlan<'a> {
                 syntactic_type_only_imported_names,
                 name,
             );
-            let art_source = art_component_source(summary, name);
             if let Some(diagnostics) = diagnostics.as_mut().filter(|_| {
                 !is_self
                     && !registered
-                    && art_source.is_none()
                     && !crate::virtual_ts::scope::is_owned_named_dynamic_component(
                         self.template_ast,
                         usage,
@@ -228,7 +226,6 @@ impl<'a> GlobalComponentPlan<'a> {
             // their own owners even when they share a spelling with a key.
             if !self.legacy_vue2
                 && !is_self
-                && art_source.is_none()
                 && !usage.slots.is_empty()
                 && !crate::virtual_ts::scope::is_owned_dynamic_component_alias(
                     self.template_ast,
@@ -270,13 +267,6 @@ impl<'a> GlobalComponentPlan<'a> {
                     *ts,
                     "declare const {component_ref}: typeof __vize_component__;\n"
                 );
-            } else if let Some(source) = art_source {
-                let mut source_literal = crate::virtual_ts::TextBuf::default();
-                push_ts_string_literal(&mut source_literal, source);
-                append!(
-                    *ts,
-                    "declare const {component_ref}: typeof import({source_literal}).default;\n"
-                );
             } else {
                 let keys = if self.legacy_vue2 {
                     [name, pascal_name.as_str(), pascal_name.as_str()]
@@ -287,19 +277,6 @@ impl<'a> GlobalComponentPlan<'a> {
             }
         }
     }
-}
-
-/// Musea binds the component named by a string-literal `defineArt()` source
-/// into `<variant>` markup. Resolve that binding from the authored module
-/// rather than the ambient component registry, where an unregistered story
-/// subject would otherwise become `any`.
-fn art_component_source<'a>(summary: &'a Croquis, usage_name: &str) -> Option<&'a str> {
-    let art = summary.macros.define_art()?;
-    let source = art.component_source.as_deref()?;
-    let authored_name = art.component_name.as_str();
-    let usage_pascal = capitalize(&camelize(usage_name));
-    let authored_pascal = capitalize(&camelize(authored_name));
-    (usage_name == authored_name || usage_pascal == authored_pascal).then_some(source)
 }
 
 fn append_global_component_stub(

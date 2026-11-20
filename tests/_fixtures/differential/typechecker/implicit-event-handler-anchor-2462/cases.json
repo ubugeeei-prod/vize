@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2462,
+  "regressionCommit": "b34acb9e2a3a27ea3b4981c41ed64c42367447c2",
+  "sourceRevision": "b34acb9e2a3a27ea3b4981c41ed64c42367447c2",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "implicit-handler-accepts-event",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/WrongEventHandler.vue",
+          "source": "valid.WrongEventHandler.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "implicit-handler-parameter-mismatch",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/WrongEventHandler.vue",
+          "source": "WrongEventHandler.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/WrongEventHandler.vue",
+          "line": 12,
+          "column": 19,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '(name: string) => void' is not assignable to parameter of type '(_e: PointerEvent) => unknown'.\nTypes of parameters 'name' and '_e' are incompatible.\nType 'PointerEvent' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

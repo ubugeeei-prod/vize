@@ -1,0 +1,20 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "newText": "<script setup lang=\"ts\">\nconst a = { b: 1, c: [1, 2, 3] };\nfunction f(x) {\n  return x;\n}\n</script>\n",
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 6
+          },
+          "start": {
+            "character": 0,
+            "line": 0
+          }
+        }
+      }
+    ]
+  }
+]

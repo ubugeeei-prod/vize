@@ -1,11 +1,11 @@
 ---
 title: "musea/require-component"
-description: "Exigir o atributo component no bloco &lt;art&gt;."
+description: "Exigir um componente de destino resolvível no bloco &lt;art&gt;."
 ---
 
 # `musea/require-component`
 
-Exigir o atributo component no bloco &lt;art&gt;.
+Exigir um componente de destino resolvível no bloco &lt;art&gt;.
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
@@ -17,23 +17,23 @@ Aplicável a: Blocos art, variant e style de arquivos .art.vue do Musea.
 
 O bloco art fornece um título, mas não identifica o componente exibido na prévia.
 
-```vue annotate="remove:1"
+```vue annotate="remove:1,2"
 <art title="Button">
-  <variant name="primary" />
+  <variant name="primary"><div /></variant>
 </art>
 ```
 
 ## Correto
 
-defineArt fornece ./Button.vue como o componente do bloco art.
+A variante renderiza o Button importado e identifica o destino do art.
 
-```vue annotate="add:1,2,3,4,5"
+```vue annotate="add:1,2,3,4,5,6"
 <script setup>
-defineArt("./Button.vue", { title: "Button" });
+import Button from "./Button.vue";
 </script>
 
 <art>
-  <variant name="primary" />
+  <variant name="primary"><Button /></variant>
 </art>
 ```
 

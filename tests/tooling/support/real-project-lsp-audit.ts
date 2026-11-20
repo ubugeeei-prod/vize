@@ -38,7 +38,7 @@ export { normalizeDiagnostics } from "./real-project-lsp-authored-utils.ts";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const registryPath = path.join(root, "tests", "_fixtures", "vue-ecosystem-fixtures.json");
 const defaultShardTimeoutMs = 600_000;
-const diagnosticsTimeoutMs = 120_000;
+const defaultRequestTimeoutMs = 120_000;
 const probeName = "__vize_fixture_lsp_probe__";
 const fixedProbeSource = `<script setup lang="ts">
 const ${probeName}: number = 1
@@ -107,10 +107,11 @@ export async function runRealProjectLspAudit(
       if (project.lspAuthoredOracle != null) {
         assertOracleFilesAreInCorpus(project, files, project.lspAuthoredOracle);
       }
+      const requestTimeoutMs = projectLspRequestTimeoutMs(project, timeoutMs);
       const remainingMs = () => {
         const remaining = deadline - now();
         assert.ok(remaining > 0, `LSP fixture shard exceeded ${timeoutMs}ms`);
-        return Math.min(remaining, diagnosticsTimeoutMs);
+        return Math.min(remaining, requestTimeoutMs);
       };
       const session = dependencies.createSession?.() ?? new LspSession();
       // #3952: publish peak RSS and process count of the whole server tree.
@@ -155,7 +156,7 @@ export async function exerciseLspLifecycle(
   session: LspAuditSession,
   workspaceDir: string,
   actualFile: string | null,
-  timeoutMs: () => number = () => diagnosticsTimeoutMs,
+  timeoutMs: () => number = () => defaultRequestTimeoutMs,
   authoredOracle?: LspAuthoredOracle,
 ) {
   const openUris: string[] = [];
@@ -272,6 +273,21 @@ export async function exerciseLspLifecycle(
   if (shutdownError != null) throw shutdownError;
   assert.ok(result);
   return result;
+}
+
+export function projectLspRequestTimeoutMs(
+  project: FixtureProject,
+  shardTimeoutMs: number,
+): number {
+  const timeoutMs = positiveInteger(
+    String(project.lspRequestTimeoutMs ?? defaultRequestTimeoutMs),
+    `${project.id}.lspRequestTimeoutMs`,
+  );
+  assert.ok(
+    timeoutMs <= shardTimeoutMs,
+    `${project.id}.lspRequestTimeoutMs must not exceed the shard timeout`,
+  );
+  return timeoutMs;
 }
 
 function openDocument(

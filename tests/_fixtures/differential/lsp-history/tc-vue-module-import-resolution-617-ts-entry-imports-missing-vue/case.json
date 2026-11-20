@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "2e884f7b2df816c675f1473bba681b4429a4f458",
+  "id": "lsp/fix-history/tc-vue-module-import-resolution-617-ts-entry-imports-missing-vue",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack vue-module-import-resolution-617 (case ts-entry-imports-missing-vue) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/main.ts": "import App from './Missing.vue';\nvoid App;\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nconst title = \"app\";\n</script>\n\n<template>\n  <h1>{{ title }}</h1>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/main.ts"
+    },
+    {
+      "diagnostics": "src/main.ts"
+    }
+  ]
+}

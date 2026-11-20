@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import type { ComponentPublicInstance } from "vue"
+
+type MenuInstance = ComponentPublicInstance & { focus(): void }
+const refs: unknown[] = []
+</script>
+<template>
+  <el-cascader-menu :ref="(item) => refs.push(item as MenuInstance)" />
+</template>

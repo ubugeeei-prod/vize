@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-then-without-rejection-handler-reports-floating-af80c05",
+    history: "af80c0587d81378a1bee60641f4d9eaf9fe9940e",
+    source: "<script setup lang=\"ts\">\nasync function loadData(): Promise<number> {\n  return 1\n}\n\nloadData().then((value) => console.log(value))\n</script>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-floating-promises",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "type/no-floating-promises",
+                severity: Warning,
+                message: "Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+                start: 84,
+                end: 130,
+                help: Some(
+                    "Add `await`, return the Promise, or prefix it with `void` when the fire-and-forget behavior is intentional.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "type/no-floating-promises",
+                    severity: Warning,
+                    message: "Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+                    start: 84,
+                    end: 130,
+                    help: Some(
+                        "Add `await`, return the Promise, or prefix it with `void` when the fire-and-forget behavior is intentional.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

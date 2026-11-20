@@ -1,0 +1,22 @@
+<template>
+  <a-select>
+    <div slot="dropdownRender" slot-scope="menu">
+      <v-nodes :vnodes="menu" />
+    </div>
+  </a-select>
+</template>
+
+<script lang="ts">
+import { Vue, Component } from 'vue-property-decorator'
+
+@Component({
+  name: 'ThemeBasicSetting',
+  components: {
+    VNodes: {
+      functional: true,
+      render: (h: any, ctx: any) => ctx.props.vnodes,
+    },
+  },
+})
+export default class BasicSetting extends Vue {}
+</script>

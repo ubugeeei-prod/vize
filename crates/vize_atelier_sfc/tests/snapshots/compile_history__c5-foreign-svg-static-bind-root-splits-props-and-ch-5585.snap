@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-foreign-svg-static-bind-root-splits-props-and-ch-5585",
+    history: "7fad0210b5aa9c8e9341c43954cf79cc1e841c76",
+    source: "<Handle><svg viewBox=\"0 0 16 16\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" :width=\"10\" :height=\"10\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"hotpink\" /></svg></Handle>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Handle = _resolveComponent(\"Handle\")\n  \n  return (_openBlock(), _createBlock(_component_Handle, null, {\n    default: _withCtx(() => [\n      (_openBlock(), _createElementBlock(\"svg\", {\n        viewBox: \"0 0 16 16\",\n        fill: \"none\",\n        xmlns: \"http://www.w3.org/2000/svg\",\n        width: 10,\n        height: 10\n      }, [\n        _createElementVNode(\"circle\", {\n          cx: \"8\",\n          cy: \"8\",\n          r: \"7\",\n          fill: \"hotpink\"\n        })\n      ]))\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

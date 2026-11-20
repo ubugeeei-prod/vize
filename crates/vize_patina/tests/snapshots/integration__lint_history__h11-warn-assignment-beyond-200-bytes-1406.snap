@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-warn-assignment-beyond-200-bytes-1406",
+    history: "2c9665f76d5c4b568552addc0e6c174a2a14f164",
+    source: "\nconst doubled = ref(0)\nwatch(count, function (val) {\n  doubled.value = val * 2\n})\n",
+    filename: "history.ts",
+    entry: "script",
+    rule: "script/prefer-computed",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "history.ts",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/prefer-computed",
+                severity: Warning,
+                message: "Consider using computed() instead of watch() for derived state",
+                start: 24,
+                end: 29,
+                help: Some(
+                    "If the watch callback only assigns to a ref based on the watched value, use computed() instead: `const derived = computed(() => source.value * 2)`",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "history.ts",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/prefer-computed",
+                    severity: Warning,
+                    message: "Consider using computed() instead of watch() for derived state",
+                    start: 24,
+                    end: 29,
+                    help: Some(
+                        "If the watch callback only assigns to a ref based on the watched value, use computed() instead: `const derived = computed(() => source.value * 2)`",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { typecheckUnits } from "../../tools/support/compat/fixtures/typecheck-targets.ts";
 import {
   type JsonRecord,
   type LintProjectReport,
@@ -131,11 +132,11 @@ function validateMatrixEvidence(matrix: FixtureToolMatrix, sourceRevision: strin
   assert(integer(machine.totalMemoryBytes, "matrix.evidence.machine.totalMemoryBytes") > 0);
 }
 
-function expectedMatrixSummary(matrix: FixtureToolMatrix): JsonRecord {
+function expectedMatrixSummary(matrix: FixtureToolMatrix, projectCount: number): JsonRecord {
   const runs = matrix.projects.flatMap((project) => project.runs);
   const count = (status: string): number => runs.filter((run) => run.status === status).length;
   return {
-    projectCount: matrix.projects.length,
+    projectCount,
     toolCount: matrix.command.tools.length,
     runCount: runs.length,
     okRuns: count("ok"),
@@ -193,11 +194,26 @@ export function validateFixtureToolMatrix(
   assert.equal(matrix.command.shardIndex, shardIndex);
   assert.equal(matrix.command.shardCount, shardCount);
   assert(Array.isArray(matrix.projects));
+  const units = selected.flatMap((project) => typecheckUnits(project)),
+    selectedIds = new Set(selected.map((project) => project.id));
   exactIds(
     matrix.projects.map((project) => project.id),
-    selected.map((project) => project.id),
+    units.map((project) => project.id),
     "matrix projects",
   );
+  for (const unit of units.filter((project) => !selectedIds.has(project.id))) {
+    const target = matrix.projects.find((project) => project.id === unit.id);
+    assert(target, `${unit.id}: matrix typecheck target is missing`);
+    exactKeys(target, ["id", "revision", "fixturePath", "runs"], `${target.id}.matrix`);
+    assert.equal(target.revision ?? null, unit.revision ?? null);
+    assert.equal(target.fixturePath, unit.fixturePath);
+    assert.equal(target.runs.length, 1, `${target.id}: exactly one target run is required`);
+    assert.equal(target.runs[0].tool, "typechecker", `${target.id}: target must be typecheck-only`);
+    assert(
+      matrixStatuses.includes(target.runs[0].status),
+      `${target.id}/typechecker: invalid matrix status`,
+    );
+  }
   const runs = new Map<string, MatrixRun>();
   for (const registryProject of selected) {
     const project = matrix.projects.find((entry) => entry.id === registryProject.id);
@@ -257,7 +273,7 @@ export function validateFixtureToolMatrix(
     ],
     "matrix.summary",
   );
-  assert.deepEqual(matrix.summary, expectedMatrixSummary(matrix));
+  assert.deepEqual(matrix.summary, expectedMatrixSummary(matrix, selected.length));
   return runs;
 }
 

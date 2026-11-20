@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 24,
+        "message": "Element is missing end tag.",
+        "range": {
+          "end": {
+            "character": 14,
+            "line": 4
+          },
+          "start": {
+            "character": 8,
+            "line": 4
+          }
+        },
+        "severity": 1,
+        "source": "vize/template"
+      }
+    ]
+  }
+]

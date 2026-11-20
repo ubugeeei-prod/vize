@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { useHelper, type HelperOption } from "~/Helper.vue";
+
+const option: HelperOption = {};
+const state = useHelper(option);
+</script>
+
+<template>
+  <Helper :state="state" />
+</template>

@@ -302,7 +302,7 @@ fn compile_sfc_inner(
                     } else if is_vapor {
                         RenderFunctionName::Render
                     } else {
-                        RenderFunctionName::SfcRender
+                        RenderFunctionName::ComponentRender
                     };
                     append_component_render_export(
                         &mut code,

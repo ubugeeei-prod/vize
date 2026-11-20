@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "commit": "d87ae35bf83652a4ae3bdffb1a71f76ddfd4e620",
+  "id": "lsp/fix-history/inline-template-code-actions-crlf-6174",
+  "requirement": "Template lint quick fix and suppression for an inline template (crlf) keep authored columns, UTF-16 prefixes, CRLF and indentation.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false,
+    "codeActions": true
+  },
+  "files": {
+    "Inline.vue": "<!-- 😀 -->\r\n<template>\r\n\t<div title=\"😀\"  class=\"a\">text</div>\r\n</template>\r\n"
+  },
+  "steps": [
+    {
+      "open": "Inline.vue"
+    },
+    {
+      "diagnostics": "Inline.vue"
+    },
+    {
+      "request": "textDocument/codeAction",
+      "uri": "Inline.vue",
+      "params": {
+        "range": {
+          "start": {
+            "line": 2,
+            "character": 16
+          },
+          "end": {
+            "line": 2,
+            "character": 18
+          }
+        },
+        "context": {
+          "diagnostics": [],
+          "only": [
+            "quickfix"
+          ]
+        }
+      }
+    }
+  ]
+}

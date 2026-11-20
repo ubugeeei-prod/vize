@@ -1,0 +1,55 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1a-withdefaults-proptype-56",
+    history: "45b9e92a1f507c4d42f2eabdf1f71dbeb17bd470",
+    source: "<script setup lang=\"ts\">\ninterface Props {\n  outlined?: boolean;\n  disabled?: boolean;\n  on?: Object;\n  height?: number | string;\n  color?: string;\n}\n\nwithDefaults(defineProps<Props>(), {\n  outlined: false,\n  disabled: false,\n  on: undefined,\n  height: '2rem',\n  color: 'primary'\n});\n</script>\n\n<template>\n  <button :disabled=\"disabled\">Click</button>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineComponent as _defineComponent } from 'vue'\nimport { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\ninterface Props {\n  outlined?: boolean;\n  disabled?: boolean;\n  on?: Object;\n  height?: number | string;\n  color?: string;\n}\n\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'History',\n  props: {\n    outlined: { type: Boolean, required: false, default: false },\n    disabled: { type: Boolean, required: false, default: false },\n    on: { type: Object, required: false, default: undefined },\n    height: { type: [Number, String], required: false, default: '2rem' },\n    color: { type: String, required: false, default: 'primary' }\n  },\n  setup(__props: any) {\n\n\nreturn (_ctx: any,_cache: any) => {\n  return (_openBlock(), _createElementBlock(\"button\", { disabled: __props.disabled }, \"Click\", 8 /* PROPS */, [\"disabled\"]))\n}\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "outlined": Props,
+                        "height": Props,
+                        "disabled": Props,
+                        "color": Props,
+                        "on": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

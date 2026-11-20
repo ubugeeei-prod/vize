@@ -1,0 +1,9 @@
+<script setup lang="ts">
+function handleName(name: MouseEvent): void {
+  console.log(name)
+}
+</script>
+
+<template>
+  <button @click="handleName">Click me</button>
+</template>

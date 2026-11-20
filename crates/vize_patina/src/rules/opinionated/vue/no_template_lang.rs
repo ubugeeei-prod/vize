@@ -27,6 +27,10 @@ impl Rule for NoTemplateLang {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::NONE
+    }
+
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
         let owned_descriptor;
         let descriptor = if let Some(descriptor) = ctx.sfc_descriptor() {
@@ -51,13 +55,10 @@ impl Rule for NoTemplateLang {
         let Some(template) = descriptor.template.as_ref() else {
             return;
         };
-        let is_preprocessor = template.lang.as_deref().is_some_and(|lang| {
-            matches!(
-                lang.to_ascii_lowercase().as_str(),
-                "pug" | "jade" | "slm" | "haml"
-            )
-        });
-        if !is_preprocessor {
+        // Every lang the block-language registry does not resolve to the HTML
+        // grammar is a preprocessor: pug and jade, and haml, slm or any other
+        // engine `@vue/compiler-sfc` would hand the block to.
+        if vize_l1::container::lang::is_html_template(template.lang.as_deref()) {
             return;
         }
 

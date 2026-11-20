@@ -1,11 +1,11 @@
 ---
 title: "musea/require-title"
-description: "Require title attribute in <art> block."
+description: "Require a resolvable display title for an <art> block."
 ---
 
 # `musea/require-title`
 
-Require title attribute in &lt;art&gt; block.
+Require a resolvable display title for an &lt;art&gt; block.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
@@ -15,25 +15,25 @@ Applies to: Musea .art.vue art, variant, and style blocks.
 
 ## Bad
 
-The art block identifies Button.vue but supplies no title.
+The art block has neither explicit metadata nor an inferable component title.
 
-```vue annotate="remove:1"
-<art component="./Button.vue">
-  <variant name="primary" />
+```vue annotate="remove:2"
+<art>
+  <variant name="primary"><div /></variant>
 </art>
 ```
 
 ## Good
 
-The defineArt options supply the Button title for the art block.
+The imported Button target supplies the inferred display title.
 
-```vue annotate="add:1,2,3,4,5"
+```vue annotate="add:1,2,3,4,6"
 <script setup>
-defineArt("./Button.vue", { title: "Button" });
+import Button from "./Button.vue";
 </script>
 
 <art>
-  <variant name="primary" />
+  <variant name="primary"><Button /></variant>
 </art>
 ```
 
@@ -58,4 +58,4 @@ Then run `vp run lint`.
 
 - [Musea rules](../musea.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L31)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L32)

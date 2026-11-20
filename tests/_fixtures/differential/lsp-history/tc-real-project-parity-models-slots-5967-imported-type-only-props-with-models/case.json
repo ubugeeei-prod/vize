@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "commit": "4b889011a1f6cdea06aac9ef1779a048d2518b74",
+  "id": "lsp/fix-history/tc-real-project-parity-models-slots-5967-imported-type-only-props-with-models",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack real-project-parity-models-slots-5967 (case imported-type-only-props-with-models) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/types.ts": "export interface Props<T = { id: number }> {\n  items: T[]\n}\n",
+    "src/ImportedProps.vue": "<script setup lang=\"ts\">\nimport type { Props } from \"./types\";\n\ndefineProps<Props>();\ndefineModel<string>();\n</script>\n",
+    "src/OtherProps.vue": "<script setup lang=\"ts\">\nimport type { Props } from \"./types\";\ntype Other = { count: number };\n\ndefineProps<Other>();\ndefineModel<string>();\n</script>\n",
+    "src/GenericProps.vue": "<script setup lang=\"ts\">\nimport type { Props } from \"./types\";\ntype Item = { id: string };\n\ndefineProps<Props<Item>>();\ndefineModel<string>();\n</script>\n",
+    "src/Parent.vue": "<script setup lang=\"ts\">\nimport ImportedProps from './ImportedProps.vue'\nimport OtherProps from './OtherProps.vue'\nimport GenericProps from './GenericProps.vue'\n</script>\n\n<template>\n  <ImportedProps :items=\"[{ id: 1 }]\" model-value=\"x\" />\n  <OtherProps :count=\"1\" model-value=\"y\" />\n  <GenericProps :items=\"[{ id: 'a' }]\" model-value=\"z\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/types.ts"
+    },
+    {
+      "diagnostics": "src/types.ts"
+    }
+  ]
+}

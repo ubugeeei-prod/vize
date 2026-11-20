@@ -1,0 +1,29 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2551,
+        "message": "Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?",
+        "range": {
+          "end": {
+            "character": 42,
+            "line": 2
+          },
+          "start": {
+            "character": 35,
+            "line": 2
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  },
+  {
+    "step": 4,
+    "version": 1,
+    "diagnostics": []
+  }
+]

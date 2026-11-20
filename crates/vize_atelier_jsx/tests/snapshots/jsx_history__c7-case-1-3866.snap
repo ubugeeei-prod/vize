@@ -1,0 +1,59 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-1-3866",
+    history: "d05141f8c89a38098acaaeb0b590a7553f66a3fb",
+    source: "\n        const Counter = ({ label = \"TSX\", step }) => {\n          const next = step;\n          return <button>{label}{next}</button>;\n        };\n        ",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nimport { defineComponent as _defineComponent } from \"vue\"\n\n        const Counter = _defineComponent({\nname: \"Counter\",\nprops: [\"label\", \"step\"],\nsetup({ label = \"TSX\", step }) {\n\n          const next = step;\n          return (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"button\", null, _toDisplayString(label) + _toDisplayString(next), 1 /* TEXT */))\n})\n})()\n}\n});\n        ",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "Counter",
+            ),
+            mode: Vdom,
+            setup: Some(
+                ComponentSetupSpan {
+                    declaration_start: 9,
+                    declaration_end: 144,
+                    params_start: 26,
+                    params_end: 49,
+                    type_params_start: 0,
+                    type_params_end: 0,
+                    is_async: false,
+                    destructured_props: [
+                        "label",
+                        "step",
+                    ],
+                    setup_start: 55,
+                    setup_end: 95,
+                    render_start: 102,
+                    render_end: 132,
+                },
+            ),
+            preamble: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"button\", null, _toDisplayString(label) + _toDisplayString(next), 1 /* TEXT */))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

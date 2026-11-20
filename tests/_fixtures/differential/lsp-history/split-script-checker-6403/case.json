@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "commit": "beb84df46db611f6bf017fa6803af8cf84e6d59e",
+  "id": "lsp/fix-history/split-script-checker-6403",
+  "requirement": "A split normal + setup script SFC keeps both script blocks and their mappings in the checker: bindings from each block type-check and errors land in the authoring block.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true }, \"include\": [\"**/*.vue\", \"**/*.ts\"] }\n",
+    "Split.vue": "<script lang=\"ts\">\nexport interface Item { id: number }\nexport const fromNormal: Item = { id: 'x' }\n</script>\n<script setup lang=\"ts\">\nconst item: Item = { id: 1 }\nconst bad: string = item.id\n</script>\n<template><p>{{ item.id }} {{ fromNormal.id }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "Split.vue"
+    },
+    {
+      "diagnostics": "Split.vue"
+    }
+  ]
+}

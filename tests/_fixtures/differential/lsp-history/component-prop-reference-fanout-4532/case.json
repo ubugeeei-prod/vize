@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "commit": "4bd6ca589ee3ee07d58fdbc721f0ebb076fd3aa4",
+  "id": "lsp/fix-history/component-prop-reference-fanout-4532",
+  "requirement": "Component prop reference fanout deduplicates native identities across repeated usages and reads external declaration spans exactly.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "Card.vue": "<script setup lang=\"ts\">\nconst props = defineProps<{ title: string; titleColor?: string }>()\n</script>\n<template><h1 :style=\"{ color: props.titleColor }\">{{ props.title }}</h1></template>\n",
+    "Other.vue": "<script setup lang=\"ts\">\ndefineProps<{ title: string }>()\n</script>\n<template><p /></template>\n",
+    "Parent.vue": "<script setup lang=\"ts\">\nimport Card from './Card.vue'\nimport Other from './Other.vue'\nconst title = 'x'\n</script>\n<template>\n  <Card title=\"a\" title-color=\"red\" />\n  <Card :title=\"title\" />\n  <Other title=\"same spelling\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "Parent.vue"
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "Parent.vue",
+      "at": {
+        "find": ":title=",
+        "delta": 1,
+        "nth": 0
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": true
+        }
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "Parent.vue",
+      "at": {
+        "find": "title-color",
+        "delta": 2,
+        "nth": 0
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": true
+        }
+      },
+      "retry": true
+    }
+  ]
+}

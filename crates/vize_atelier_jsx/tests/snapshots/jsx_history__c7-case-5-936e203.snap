@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-5-936e203",
+    history: "936e2032c70c9a7f5364555e495d18fc8553a70c",
+    source: "import { ref } from 'vue'; const App = () => <p/>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nimport { ref } from 'vue'; const App = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"p\"))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "App",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"p\"))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

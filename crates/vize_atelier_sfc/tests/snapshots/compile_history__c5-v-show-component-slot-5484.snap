@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-v-show-component-slot-5484",
+    history: "c3439135411fda3223971ead60a531f384626ead",
+    source: "<Dialog v-show=\"open\"><span>Body</span></Dialog>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, vShow as _vShow, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Dialog = _resolveComponent(\"Dialog\")\n  \n  return _withDirectives((_openBlock(), _createBlock(_component_Dialog, null, {\n    default: _withCtx(() => [\n      _createElementVNode(\"span\", null, \"Body\")\n    ]),\n    _: 1 /* STABLE */\n  }, 512 /* NEED_PATCH */)), [\n    [_vShow, open]\n  ])\n}",
+    map: None,
+}

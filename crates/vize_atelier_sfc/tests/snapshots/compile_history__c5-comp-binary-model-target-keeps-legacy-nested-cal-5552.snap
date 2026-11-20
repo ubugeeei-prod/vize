@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-comp-binary-model-target-keeps-legacy-nested-cal-5552",
+    history: "af800fd3996e05a0df0e0566267a7099d982963a",
+    source: "<Dialog v-model:open=\"confirmDeleteKey !== null\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Dialog = _resolveComponent(\"Dialog\")\n  \n  return (_openBlock(), _createBlock(_component_Dialog, {\n    open: confirmDeleteKey !== null,\n    \"onUpdate:open\": $event => ($event => ($event => ((confirmDeleteKey !== null) = $event)))\n  }, null, 8 /* PROPS */, [\"open\", \"onUpdate:open\"]))\n}",
+    map: None,
+}

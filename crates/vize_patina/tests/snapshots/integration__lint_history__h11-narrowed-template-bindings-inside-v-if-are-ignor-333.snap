@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-narrowed-template-bindings-inside-v-if-are-ignor-333",
+    history: "cd25c7802352d6600b86200bc084473a8391b7ae",
+    source: "<script setup lang=\"ts\">\nconst payload: unknown = 'safe'\n</script>\n\n<template>\n  <p v-if=\"typeof payload === 'string'\">{{ payload.toUpperCase() }}</p>\n</template>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-unsafe-template-binding",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

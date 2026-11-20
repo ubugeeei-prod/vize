@@ -9,7 +9,9 @@ const VITE: &str = include_str!("fixtures/config-init/vite.config.mjs");
 const BUTTON: &str = include_str!("fixtures/config-init/button.ts");
 const REGISTRY: &str = include_str!("fixtures/config-init/registry.json");
 const STORY: &str = r#"<script setup lang="ts">
-defineArt("../src/Button.vue", {
+import Button from "../src/Button.vue";
+
+defineArtMeta({
   title: "Button",
   category: "Components",
   tags: ["button", "ui"],

@@ -1,5 +1,5 @@
-//! The component named by a string-literal `defineArt()` source is an implicit
-//! binding inside `<variant>` markup (#9854).
+//! An imported component inferred from variant markup has the same prop
+//! diagnostics as an explicit `defineArt(Component)` target (#9854).
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 
@@ -22,7 +22,8 @@ defineProps<{ title: string; elevated?: boolean }>();
             (
                 "src/MyCard.art.vue",
                 r#"<script setup lang="ts">
-defineArt("./MyCard.vue", { title: "MyCard" });
+import MyCard from "./MyCard.vue";
+
 </script>
 <art>
   <variant name="Wrong"><MyCard :title="123" /></variant>
@@ -34,7 +35,7 @@ defineArt("./MyCard.vue", { title: "MyCard" });
                 "src/MyCardExplicit.art.vue",
                 r#"<script setup lang="ts">
 import MyCard from "./MyCard.vue";
-defineArt("./MyCard.vue", { title: "MyCard" });
+defineArt(MyCard, { title: "MyCard" });
 </script>
 <art>
   <variant name="Wrong"><MyCard :title="123" /></variant>
@@ -64,7 +65,7 @@ defineArt("./MyCard.vue", { title: "MyCard" });
         (
             &*implicit_wrong.0,
             implicit_wrong.1,
-            diagnostic_body(&implicit_wrong.2, "5:34:"),
+            diagnostic_body(&implicit_wrong.2, "6:34:"),
         ),
         ("src/MyCard.art.vue", Some(2322), wrong_type)
     );
@@ -86,7 +87,7 @@ defineArt("./MyCard.vue", { title: "MyCard" });
     );
 
     let implicit_missing =
-        normalize_native_attribute_pretty_print(diagnostic_body(&implicit_missing.2, "6:28:"));
+        normalize_native_attribute_pretty_print(diagnostic_body(&implicit_missing.2, "7:28:"));
     let explicit_missing =
         normalize_native_attribute_pretty_print(diagnostic_body(&explicit_missing.2, "7:28:"));
     let missing_title = concat!(

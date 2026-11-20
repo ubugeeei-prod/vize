@@ -1,0 +1,54 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-case-1-separate-4517",
+    history: "0d704f543da04637e5697e9bc50757f7e8e1ac28",
+    source: "<script setup>\nimport { computed } from 'vue'\n\nconst nodes = [1, 2, 3]\nconst flattenTree = computed(() => nodes)\n\ndefineExpose({ nodes })\n</script>\n\n<template>\n  <div v-for=\"node in flattenTree\" :key=\"node\">{{ node }}</div>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        script_output: Some(
+            "separate",
+        ),
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.flattenTree, (node) => {\n    return (_openBlock(), _createElementBlock(\"div\", { key: node }, _toDisplayString(node), 1 /* TEXT */))\n  }), 128 /* KEYED_FRAGMENT */))\n}\nimport { computed } from 'vue'\n\n\nexport default {\n  __name: 'History',\n  render: _sfc_render,\n  setup(__props, { expose: __expose }) {\n\nconst nodes = [1, 2, 3]\nconst flattenTree = computed(() => nodes)\n__expose({ nodes })\n\nconst __returned__ = { computed, nodes, flattenTree }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "computed": SetupConst,
+                        "nodes": SetupConst,
+                        "flattenTree": SetupRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

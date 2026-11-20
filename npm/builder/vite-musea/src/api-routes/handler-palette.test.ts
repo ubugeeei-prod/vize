@@ -80,7 +80,7 @@ defineProps<{
 
 <art title="Inline Input">
   <variant name="Default">
-    <Self model-value="Seed" tone="brand" :disabled="true" />
+    <InlineInput model-value="Seed" tone="brand" :disabled="true" />
   </variant>
 </art>
 `,
@@ -88,6 +88,15 @@ defineProps<{
     );
 
     const art = createArt(componentPath);
+    art.variants = [
+      {
+        name: "Default",
+        template: '<InlineInput model-value="Seed" tone="brand" :disabled="true" />',
+        isDefault: true,
+        skipVrt: false,
+        props: { modelValue: "Seed", tone: "brand", disabled: true },
+      },
+    ];
     const ctx = createContext(tempDir, new Map([[componentPath, art]]));
     const body = await invokeApi(ctx, `/arts/${encodeURIComponent(componentPath)}/palette`);
     const controls = JSON.parse(body).controls as Array<{
@@ -108,6 +117,9 @@ defineProps<{
     ]);
     assert.equal(byName.get("count")?.control, "number");
     assert.equal(byName.get("disabled")?.control, "boolean");
+    assert.equal(byName.get("modelValue")?.default_value, "Seed");
+    assert.equal(byName.get("tone")?.default_value, "brand");
+    assert.equal(byName.get("disabled")?.default_value, true);
   } finally {
     await fs.promises.rm(tempDir, { recursive: true, force: true });
   }
@@ -121,7 +133,7 @@ void test("script component art exposes runtime props in analysis and palette", 
   try {
     await fs.promises.writeFile(
       artPath,
-      `<script setup lang="ts">defineArt("./my-button.ts", { title: "MyButton" })</script>
+      `<script setup lang="ts">import MyButton from "./my-button.ts"; defineArt(MyButton, { title: "MyButton" })</script>
 <art><variant name="Default" default><MyButton label="Hello" /></variant></art>`,
     );
     await fs.promises.writeFile(

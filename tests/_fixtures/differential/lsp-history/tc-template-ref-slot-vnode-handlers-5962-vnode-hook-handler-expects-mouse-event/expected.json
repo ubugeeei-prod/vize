@@ -1,0 +1,62 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2717,
+        "message": "Subsequent property declarations must have the same type.  Property 'type' must be of type 'VNodeTypes', but here has type 'unknown'.",
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 4
+          },
+          "start": {
+            "character": 4,
+            "line": 4
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2322,
+        "message": "Type '(vnode: MouseEvent) => void' is not assignable to type '(vnode: VNode<RendererNode, RendererElement, { [key: string]: any; }>) => any'.\n  Types of parameters 'vnode' and 'vnode' are incompatible.\n    Type 'VNode<RendererNode, RendererElement, { [key: string]: any; }>' is missing the following properties from type 'MouseEvent': altKey, button, buttons, clientX, and 43 more.",
+        "range": {
+          "end": {
+            "character": 26,
+            "line": 9
+          },
+          "start": {
+            "character": 15,
+            "line": 9
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 6196,
+        "message": "'VNode' is declared but never used.",
+        "range": {
+          "end": {
+            "character": 19,
+            "line": 1
+          },
+          "start": {
+            "character": 14,
+            "line": 1
+          }
+        },
+        "severity": 4,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

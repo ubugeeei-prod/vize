@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "ce8eae99b0981377f73239429d6d65896b59f371",
+  "id": "lsp/fix-history/tc-component-slot-name-reference-4606-undeclared-slot-name",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack component-slot-name-reference-4606 (case undeclared-slot-name) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\"compilerOptions\":{\"lib\":[\"ES2022\",\"DOM\",\"DOM.Iterable\"],\"module\":\"ESNext\",\"moduleResolution\":\"bundler\",\"noEmit\":true,\"skipLibCheck\":true,\"strict\":true,\"target\":\"ES2022\"},\"include\":[\"src/**/*.vue\"]}",
+    "src/Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ label: string }>()\ndefineEmits<{ save: [value: string] }>()\ndefineSlots<{ default(props: { value: string }): unknown }>()\n</script>\n\n<template><slot :value=\"label\" /></template>\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport { computed, ref } from 'vue'\nimport Child from './Child.vue'\n\nconst count = ref(1)\nconst doubled = computed(() => count.value * 2)\nconst label: string = 'hello'\nfunction save(value: string) {\n  return value\n}\n</script>\n\n<template>\n  <button :title=\"label\">{{ count }} {{ doubled }}</button>\n  <Child :label=\"label\" @save=\"save\">\n    <template #footer=\"{ value }\">{{ value }}</template>\n  </Child>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    }
+  ]
+}

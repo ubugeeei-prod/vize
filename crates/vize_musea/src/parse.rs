@@ -71,16 +71,24 @@ pub fn parse_art<'a>(
     let (tree, _surface_errors) = vize_l1::markup::parse(allocator, frame.source());
     let art = art_block::art_element(&tree).ok_or(ArtParseError::NoArtBlock)?;
 
-    let define_art = blocks
+    let variants = variant::parse_variants(allocator, &art.children, frame)?;
+    let mut art_metadata = blocks
         .script_setup
         .as_ref()
-        .and_then(|script| parse_define_art_metadata(allocator, script.content));
+        .and_then(|script| parse_art_macro_metadata(allocator, script.content));
+    if art_metadata
+        .as_ref()
+        .is_none_or(|metadata| metadata.component.is_none())
+        && !blocks.is_inline
+        && attrs::attr_value(&art.open, "component").is_none()
+        && let Some(script) = blocks.script_setup.as_ref()
+    {
+        infer_art_target(allocator, script.content, &variants, &mut art_metadata)?;
+    }
 
     // Metadata from `<art>` attributes, with the defineArt() fallback.
     let (metadata, _warnings) =
-        art_block::parse_metadata(allocator, &art.open, define_art.as_ref(), filename)?;
-
-    let variants = variant::parse_variants(allocator, &art.children, frame)?;
+        art_block::parse_metadata(allocator, &art.open, art_metadata.as_ref(), filename)?;
 
     Ok(ArtDescriptor {
         filename,
@@ -91,6 +99,77 @@ pub fn parse_art<'a>(
         script: blocks.script,
         styles: blocks.styles,
     })
+}
+
+fn infer_art_target<'a>(
+    allocator: &'a Allocator,
+    script: &'a str,
+    variants: &[crate::types::ArtVariant<'a>],
+    metadata: &mut Option<DefineArtMetadata<'a>>,
+) -> Result<(), ArtParseError> {
+    if variants.is_empty() {
+        return Ok(());
+    }
+    let parsed = vize_croquis::script_parser::parse_script_setup(script);
+    let shared = parsed
+        .import_sources
+        .iter()
+        .filter(|(name, _)| {
+            variants
+                .iter()
+                .all(|variant| template_uses_component(variant.template, name.as_str()))
+        })
+        .collect::<std::vec::Vec<_>>();
+    let candidates = if shared.is_empty() {
+        parsed
+            .import_sources
+            .iter()
+            .filter(|(name, _)| {
+                variants
+                    .iter()
+                    .any(|variant| template_uses_component(variant.template, name.as_str()))
+            })
+            .collect::<std::vec::Vec<_>>()
+    } else {
+        shared
+    };
+    if candidates.len() > 1 {
+        let mut names = candidates
+            .iter()
+            .map(|(name, _)| name.as_str())
+            .collect::<std::vec::Vec<_>>();
+        names.sort_unstable();
+        return Err(ArtParseError::AmbiguousTarget {
+            candidates: names.join(", ").into(),
+        });
+    }
+    let Some((name, source)) = candidates.first().copied() else {
+        return Ok(());
+    };
+    let metadata = metadata.get_or_insert_with(|| DefineArtMetadata::new(allocator));
+    metadata.component_name = Some(allocator.alloc_str(name.as_str()));
+    metadata.component = Some(allocator.alloc_str(source.as_str()));
+    Ok(())
+}
+
+fn template_uses_component(template: &str, name: &str) -> bool {
+    let mut cursor = 0;
+    while let Some(relative) = template.get(cursor..).and_then(|rest| rest.find('<')) {
+        let start = cursor + relative + 1;
+        let Some(rest) = template.get(start..) else {
+            return false;
+        };
+        if rest.starts_with(name)
+            && rest
+                .as_bytes()
+                .get(name.len())
+                .is_some_and(|byte| byte.is_ascii_whitespace() || matches!(byte, b'/' | b'>'))
+        {
+            return true;
+        }
+        cursor = start;
+    }
+    false
 }
 
 /// Unknown-`status` warnings of the `<art>` attributes, or an empty list if
@@ -144,22 +223,51 @@ impl<'a> DefineArtMetadata<'a> {
     }
 }
 
-fn parse_define_art_metadata<'a>(
+fn parse_art_macro_metadata<'a>(
     allocator: &'a Allocator,
     script: &'a str,
 ) -> Option<DefineArtMetadata<'a>> {
     // Cheap pre-check: defineArt() can only return Some if the literal token
     // "defineArt" appears in the source (it is a compiler macro recognized by
     // name and cannot be aliased), so skip the OXC parse otherwise.
-    if !script.contains("defineArt") {
+    let has_define_art = contains_identifier(script, "defineArt");
+    let has_define_art_meta = contains_identifier(script, "defineArtMeta");
+    if !has_define_art && !has_define_art_meta {
         return None;
     }
 
     // The defineArt-only reader: one parse, none of the binding/scope
     // analysis the full `parse_script_setup` runs for other consumers, and
     // pinned equal to it by croquis's own differential battery.
-    let art = vize_croquis::script_parser::parse_define_art(script)?;
-    Some(define_art_metadata(allocator, &art))
+    let mut metadata = has_define_art
+        .then(|| vize_croquis::script_parser::parse_define_art(script))
+        .flatten()
+        .as_ref()
+        .map(|art| define_art_metadata(allocator, art))
+        .unwrap_or_else(|| DefineArtMetadata::new(allocator));
+    let found_define_art = metadata.component_name.is_some() || metadata.component.is_some();
+    if let Some(meta) = has_define_art_meta
+        .then(|| vize_croquis::script_parser::parse_define_art_meta(script))
+        .flatten()
+    {
+        apply_art_metadata(allocator, &mut metadata, &meta);
+        return Some(metadata);
+    }
+    found_define_art.then_some(metadata)
+}
+
+fn contains_identifier(source: &str, name: &str) -> bool {
+    source.match_indices(name).any(|(start, _)| {
+        let bytes = source.as_bytes();
+        let identifier = |byte: u8| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$');
+        !start
+            .checked_sub(1)
+            .and_then(|before| bytes.get(before))
+            .is_some_and(|byte| identifier(*byte))
+            && !bytes
+                .get(start + name.len())
+                .is_some_and(|byte| identifier(*byte))
+    })
 }
 
 /// The descriptor-side copy of a `defineArt()` call's metadata.
@@ -169,7 +277,8 @@ pub(crate) fn define_art_metadata<'a>(
 ) -> DefineArtMetadata<'a> {
     let mut meta = DefineArtMetadata::new(allocator);
 
-    meta.component_name = Some(allocator.alloc_str(art.component_name.as_str()));
+    meta.component_name =
+        (!art.component_name.is_empty()).then(|| allocator.alloc_str(art.component_name.as_str()));
     meta.component = art
         .component_source
         .as_ref()
@@ -195,6 +304,34 @@ pub(crate) fn define_art_metadata<'a>(
         meta.tags.push(allocator.alloc_str(tag.as_str()));
     }
     meta
+}
+
+fn apply_art_metadata<'a>(
+    allocator: &'a Allocator,
+    meta: &mut DefineArtMetadata<'a>,
+    art: &vize_croquis::macros::ArtDefinition,
+) {
+    if let Some(value) = &art.title {
+        meta.title = Some(allocator.alloc_str(value.as_str()));
+    }
+    if let Some(value) = &art.description {
+        meta.description = Some(allocator.alloc_str(value.as_str()));
+    }
+    if let Some(value) = &art.category {
+        meta.category = Some(allocator.alloc_str(value.as_str()));
+    }
+    if let Some(value) = &art.status {
+        meta.status = Some(allocator.alloc_str(value.as_str()));
+    }
+    if let Some(order) = art.order {
+        meta.order = Some(order);
+    }
+    if !art.tags.is_empty() {
+        meta.tags.clear();
+        for tag in &art.tags {
+            meta.tags.push(allocator.alloc_str(tag.as_str()));
+        }
+    }
 }
 
 /// Source location of `[start, end)`; the line and column are computed from

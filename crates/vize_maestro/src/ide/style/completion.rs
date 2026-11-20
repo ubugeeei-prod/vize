@@ -19,7 +19,7 @@ pub(crate) fn complete(ctx: &IdeContext<'_>, index: usize) -> Vec<CompletionItem
             let edit_range = super::range(ctx, base, span);
             for entry in data::properties()
                 .iter()
-                .filter(|entry| super::starts_with(entry.name, prefix))
+                .filter(|entry| super::starts_with(entry.name(), prefix))
             {
                 push(
                     &mut items,
@@ -39,9 +39,9 @@ pub(crate) fn complete(ctx: &IdeContext<'_>, index: usize) -> Vec<CompletionItem
             if let Some(property) = data::property(property) {
                 let edit_range = super::range(ctx, base, span);
                 for value in property
-                    .values
+                    .values()
                     .iter()
-                    .filter(|value| super::starts_with(value.name, prefix))
+                    .filter(|value| super::starts_with(value.name(), prefix))
                 {
                     push(
                         &mut items,
@@ -53,7 +53,10 @@ pub(crate) fn complete(ctx: &IdeContext<'_>, index: usize) -> Vec<CompletionItem
                 }
                 for value in values::WIDE.iter().filter(|value| {
                     super::starts_with(value.name, prefix)
-                        && !property.values.iter().any(|owned| owned.name == value.name)
+                        && !property
+                            .values()
+                            .iter()
+                            .any(|owned| owned.name() == value.name)
                 }) {
                     push(
                         &mut items,
@@ -65,8 +68,11 @@ pub(crate) fn complete(ctx: &IdeContext<'_>, index: usize) -> Vec<CompletionItem
                 }
                 if values::accepts_colors(property) {
                     for value in data::colors().iter().filter(|value| {
-                        super::starts_with(value.name, prefix)
-                            && !property.values.iter().any(|owned| owned.name == value.name)
+                        super::starts_with(value.name(), prefix)
+                            && !property
+                                .values()
+                                .iter()
+                                .any(|owned| owned.name() == value.name())
                     }) {
                         push(
                             &mut items,
@@ -97,7 +103,7 @@ pub(crate) fn complete(ctx: &IdeContext<'_>, index: usize) -> Vec<CompletionItem
             for entry in data::pseudo_classes()
                 .iter()
                 .chain(data::pseudo_elements())
-                .filter(|entry| super::starts_with(entry.name, prefix))
+                .filter(|entry| super::starts_with(entry.name(), prefix))
             {
                 push(
                     &mut items,
@@ -116,7 +122,7 @@ pub(crate) fn complete(ctx: &IdeContext<'_>, index: usize) -> Vec<CompletionItem
     let prefix = content.get(span.0..ctx.offset - base).unwrap_or_default();
     for entry in candidates
         .iter()
-        .filter(|entry| super::starts_with(entry.name, prefix))
+        .filter(|entry| super::starts_with(entry.name(), prefix))
     {
         push(
             &mut items,
@@ -195,7 +201,7 @@ fn push(
         ..CompletionItem::default()
     };
     if let Selected::Entry("property", entry) = selected
-        && let Some(relevance) = entry.relevance
+        && let Some(relevance) = entry.relevance()
     {
         // Rank only new catalog properties; the four authored Vue items are untouched.
         let rank = 100u16.saturating_sub(relevance);

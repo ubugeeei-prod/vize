@@ -10,6 +10,12 @@ use vize_l4::write::{EmitDocument, LinkSink};
 
 use super::NativeSfcCompileError;
 
+/// Whether an authored `lang` attribute value selects plain CSS. A bare
+/// `lang` (no value) is refused like any other unproven attribute.
+pub(super) fn is_css_lang_value(value: Option<&str>) -> bool {
+    value.is_some_and(|value| vize_l1::container::lang::is_css_style(Some(value)))
+}
+
 /// Private evidence that this original style needs no unavailable transform.
 struct PlainStyle<'o, 'a> {
     original: StyleView<'o, 'a>,
@@ -20,7 +26,7 @@ impl<'o, 'a> PlainStyle<'o, 'a> {
         if original
             .attrs()
             .iter()
-            .any(|attr| attr.name != "lang" || attr.value != Some("css"))
+            .any(|attr| attr.name != "lang" || !is_css_lang_value(attr.value))
         {
             return Err(NativeSfcCompileError::StyleCompilationUnavailable {
                 container_index: original.container_index(),

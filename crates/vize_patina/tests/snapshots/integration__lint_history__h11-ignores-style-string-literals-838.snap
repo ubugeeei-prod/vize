@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-ignores-style-string-literals-838",
+    history: "4beda71d71dedfc15d0ea8eacb4a587f43ecd606",
+    source: "<script setup lang=\"ts\">\nconst ssrStyles = computed(() => `<style>${styles}</style>`);\n</script>\n\n<template><div>Hello</div></template>\n",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "vue/require-scoped-style",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

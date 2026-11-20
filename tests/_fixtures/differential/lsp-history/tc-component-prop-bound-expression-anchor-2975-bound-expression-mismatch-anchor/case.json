@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "fa98cd8e728c94c923429d56e3b8326bd5f22eac",
+  "id": "lsp/fix-history/tc-component-prop-bound-expression-anchor-2975-bound-expression-mismatch-anchor",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack component-prop-bound-expression-anchor-2975 (case bound-expression-mismatch-anchor) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/Child.vue": "<script setup lang=\"ts\">\ndefineProps<{\n  code: number\n}>()\n</script>\n\n<template>\n  <span>{{ code }}</span>\n</template>\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\"\nconst benchmarkMirror = 1\n</script>\n\n<template>\n  <Child :code=\"String(benchmarkMirror)\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    }
+  ]
+}

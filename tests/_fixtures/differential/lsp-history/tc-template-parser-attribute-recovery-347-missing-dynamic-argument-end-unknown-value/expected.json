@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 26,
+        "message": "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary.",
+        "range": {
+          "end": {
+            "character": 34,
+            "line": 8
+          },
+          "start": {
+            "character": 33,
+            "line": 8
+          }
+        },
+        "severity": 1,
+        "source": "vize/template"
+      }
+    ]
+  }
+]

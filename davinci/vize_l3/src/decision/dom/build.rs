@@ -71,7 +71,7 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
                 file_for_heads: SideTable::new(),
                 vue_expressions: SideTable::new(),
                 unsupported: Vec::new(),
-                jsx_child_values: false,
+                child_values: false,
             },
         }
     }
@@ -105,9 +105,9 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
                     .is_some_and(ValueKind::is_dynamic);
                 Some(dynamic)
             }
-            Op::JsxChildValue(child) => {
+            Op::ChildValue(child) => {
                 self.value(id, child.expression);
-                self.facts.jsx_child_values = true;
+                self.facts.child_values = true;
                 self.demand(DomDependency::NativeElementValue);
                 None
             }
@@ -217,7 +217,7 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
             self.complete_conditional(id, NodeRef::Op(frame.node.op).span(), conditional)?;
         }
         self.complete_for_body(id, &mut frame);
-        if self.facts.jsx_child_values {
+        if self.facts.child_values {
             frame.node.block_eligible = false;
         }
         frame.node.children = if frame.children.is_empty() {
@@ -258,7 +258,7 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
             [] => DomRootKind::Empty,
             [DomChild::Node(id)] => {
                 if let Some(node) = self.facts.nodes.get_mut(*id) {
-                    node.block_eligible = !self.facts.jsx_child_values
+                    node.block_eligible = !self.facts.child_values
                         && (matches!(node.op, Op::Element(_))
                             || (matches!(node.op, Op::OriginalFor(_)) && node.block_eligible));
                 }

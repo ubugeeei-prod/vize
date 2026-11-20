@@ -1,5 +1,6 @@
 //! The vize integration tests, linked as one binary instead of one per file.
 
+mod block_language_matrix_cli;
 mod build_cli;
 mod build_custom_elements_cli;
 mod build_declaration_emit_cli;
@@ -169,6 +170,7 @@ mod custom_directive_original_cli;
 mod davinci_reduce_cli;
 mod davinci_repro_cli;
 mod davinci_ts40_projection_cli;
+mod diagnostic_digest_hints_cli;
 mod diagnostic_render;
 mod doctor_barrel_props_cli;
 mod doctor_browser_origin_cli;
@@ -216,6 +218,7 @@ mod inspector_art_cli;
 mod inspector_cli;
 mod inspector_compare_cli;
 mod inspector_empty_json_cli;
+mod jade_profile_cli;
 mod lib_cli;
 mod lib_real_registry_cli;
 mod lint_attribute_hyphenation_ignore;

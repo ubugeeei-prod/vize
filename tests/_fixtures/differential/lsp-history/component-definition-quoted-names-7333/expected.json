@@ -1,0 +1,21 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst Child: VueComponent &\n{\n  props: { \"font-size\": number };\n  emits: { \"update:title\": unknown[] };\n  slots: { 'header-title'(props: { value: string }): unknown };\n  model: { \"quoted\\\"model\": boolean };\n}\n```\n\nVue component: Child.vue"
+      },
+      "range": {
+        "end": {
+          "character": 8,
+          "line": 5
+        },
+        "start": {
+          "character": 3,
+          "line": 5
+        }
+      }
+    }
+  }
+]

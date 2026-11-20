@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "commit": "2c0c078b803b517687deadecfc24a5c959d61145",
+  "id": "lsp/fix-history/isolated-rename-sessions-4132",
+  "requirement": "Checker renames of an event and a named model keep authored casing and update: prefixes across the child and parent template.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "Field.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits<{ 'update-value': [v: number] }>()\nconst model = defineModel<number>('amount')\n</script>\n<template><button @click=\"emit('update-value', 1)\">{{ model }}</button></template>\n",
+    "Parent.vue": "<script setup lang=\"ts\">\nimport Field from './Field.vue'\nconst amount = 1\n</script>\n<template><Field @update-value=\"() => {}\" v-model:amount=\"amount\" /></template>\n"
+  },
+  "steps": [
+    {
+      "open": "Field.vue"
+    },
+    {
+      "open": "Parent.vue"
+    },
+    {
+      "request": "textDocument/rename",
+      "uri": "Field.vue",
+      "at": {
+        "find": "'update-value'",
+        "delta": 1,
+        "nth": 0
+      },
+      "params": {
+        "newName": "change-value"
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/rename",
+      "uri": "Parent.vue",
+      "at": {
+        "find": "v-model:amount",
+        "delta": 8,
+        "nth": 0
+      },
+      "params": {
+        "newName": "total"
+      },
+      "retry": true
+    }
+  ]
+}

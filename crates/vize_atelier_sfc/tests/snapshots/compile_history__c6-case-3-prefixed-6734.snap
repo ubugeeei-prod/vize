@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-3-prefixed-6734",
+    history: "6c4c964e67ce797ac26253aaa3917647531475f8",
+    source: "<div v-if=\"show\" v-on=\"handlers\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { mergeProps as _mergeProps, toHandlers as _toHandlers, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_ctx.show)\n    ? (_openBlock(), _createElementBlock(\"div\", _mergeProps({ key: 0 }, _toHandlers(_ctx.handlers, true)), null, 16 /* FULL_PROPS */))\n    : _createCommentVNode(\"v-if\", true)\n}",
+    map: None,
+}

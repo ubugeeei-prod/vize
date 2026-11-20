@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-named-slot-empty-params-2299a21",
+    history: "2299a2114a370278f2b7bf90cafd3d20fe6b3367",
+    source: "<Foo><template #header=\"\">x</template></Foo>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Foo = _resolveComponent(\"Foo\")\n  \n  return (_openBlock(), _createBlock(_component_Foo, null, {\n    header: _withCtx(() => [\n      _createTextVNode(\"x\")\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

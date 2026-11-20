@@ -1,0 +1,38 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4b-empty-sfc-missing-block-2267",
+    history: "dfd378575309c42bc1ce77fa4a889d26e1146a89",
+    source: "",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "At least one <template> or <script> is required in a single file component.",
+            code: Some(
+                "SFC_MISSING_BLOCK",
+            ),
+            loc: None,
+        },
+    ),
+)

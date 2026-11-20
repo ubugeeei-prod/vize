@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 5724,
+  "regressionCommit": "9bf9ee47adb4da3a29eb049c18588d4f917a440c",
+  "sourceRevision": "9bf9ee47adb4da3a29eb049c18588d4f917a440c",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "with-defaults-keeps-untouched-boolean-normalized",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "Foo.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "with-defaults-boolean-read-into-string-ref",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "accepts-string.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Foo.vue",
+          "line": 19,
+          "column": 16,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'ComputedRef<boolean>' is not assignable to parameter of type 'ComputedRef<string>'.\nType 'boolean' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "with-defaults-boolean-props-in-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "with-template.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

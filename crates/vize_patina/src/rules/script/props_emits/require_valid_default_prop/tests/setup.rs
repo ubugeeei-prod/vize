@@ -222,3 +222,80 @@ const label = defineModel<string>({ default: 123 })
 "#;
     assert_eq!(findings(sfc), Vec::<(String, String)>::new());
 }
+
+/// A same-file interface is an object; a type the file cannot resolve may be
+/// one, so its prop is not checked.
+#[test]
+fn a_reference_in_the_union_is_an_object_or_unchecked() {
+    let sfc = r#"<script setup lang="ts">
+interface Gap { offset: number }
+const props = withDefaults(defineProps<{
+  gap?: boolean | Gap
+  wide?: boolean | Gap
+  scroll?: boolean | ScrollIntoViewOptions
+  plain?: boolean
+}>(), {
+  gap: () => ({ offset: 6 }),
+  wide: 'wide',
+  scroll: () => ({ block: 'center' }),
+  plain: () => ({}),
+})
+</script>
+"#;
+    assert_eq!(
+        findings(sfc),
+        [
+            (
+                "'wide'".to_string(),
+                "Type of the default value for 'wide' prop must be a boolean or function."
+                    .to_string(),
+            ),
+            (
+                "() => ({})".to_string(),
+                "Type of the default value for 'plain' prop must be a boolean.".to_string(),
+            ),
+        ]
+    );
+}
+
+#[test]
+fn an_imported_reference_uses_its_resolved_shape() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("types.ts"),
+        "export interface GapOptions { offset: number }\nexport type Size = 'small' | 'large'\nexport interface TourProps {\n  scrollIntoViewOptions?: boolean | ScrollIntoViewOptions;\n  gap?: boolean | GapOptions;\n  size?: Size;\n  count?: number;\n  tabs: {\n    label: string;\n  }[];\n  onPick?: (value: string) => string[];\n}\n",
+    )
+    .unwrap();
+    let source = r#"<script setup lang="ts">
+import type { TourProps } from "./types";
+
+const props = withDefaults(defineProps<TourProps>(), {
+  scrollIntoViewOptions: () => ({ block: 'center' }),
+  gap: 'wide',
+  size: 1,
+  count: () => ({}),
+  tabs: () => [],
+  onPick: () => [],
+});
+</script>
+"#;
+    let filename = dir.path().join("Tour.vue");
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec![RULE.into()]))
+        .lint_sfc(source, filename.to_str().unwrap());
+    let mut messages: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == RULE)
+        .map(|diagnostic| diagnostic.message.as_str())
+        .collect();
+    messages.sort_unstable();
+    assert_eq!(
+        messages,
+        [
+            "Type of the default value for 'count' prop must be a number.",
+            "Type of the default value for 'gap' prop must be a boolean or function.",
+            "Type of the default value for 'size' prop must be a string.",
+        ]
+    );
+}

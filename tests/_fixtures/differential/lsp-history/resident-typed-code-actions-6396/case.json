@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "commit": "ce3a418977252b87cc7262b857fe640d35158c97",
+  "id": "lsp/fix-history/resident-typed-code-actions-6396",
+  "requirement": "Code actions, hover and ecosystem consumers reuse the resident descriptor over a CRLF/astral SFC and keep authored edits across a revision.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false,
+    "codeActions": true,
+    "ecosystem": true
+  },
+  "files": {
+    "Context.vue": "<script setup>\r\nconst count = 1\r\n</script>\r\n<template><div title=\"雪😀\"  class=\"a\">{{ count }}</div></template>"
+  },
+  "steps": [
+    {
+      "open": "Context.vue"
+    },
+    {
+      "request": "textDocument/codeAction",
+      "uri": "Context.vue",
+      "params": {
+        "range": {
+          "start": {
+            "line": 3,
+            "character": 29
+          },
+          "end": {
+            "line": 3,
+            "character": 29
+          }
+        },
+        "context": {
+          "diagnostics": []
+        }
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "Context.vue",
+      "at": {
+        "find": "{{ count",
+        "delta": 4
+      }
+    },
+    {
+      "change": "Context.vue",
+      "version": 2,
+      "contentChanges": [
+        {
+          "text": "<script setup>\r\nconst count = 2\r\nconst extra = 3\r\n</script>\r\n<template><div title=\"雪😀\"  class=\"a\">{{ count }}</div></template>"
+        }
+      ]
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "Context.vue",
+      "at": {
+        "find": "{{ count",
+        "delta": 4
+      }
+    },
+    {
+      "request": "textDocument/codeAction",
+      "uri": "Context.vue",
+      "params": {
+        "range": {
+          "start": {
+            "line": 4,
+            "character": 29
+          },
+          "end": {
+            "line": 4,
+            "character": 29
+          }
+        },
+        "context": {
+          "diagnostics": []
+        }
+      }
+    }
+  ]
+}

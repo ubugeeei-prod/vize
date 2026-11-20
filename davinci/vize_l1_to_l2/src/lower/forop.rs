@@ -7,6 +7,8 @@
 
 mod bindings;
 
+pub(crate) use bindings::visit_bindings;
+
 #[cfg(test)]
 mod tests;
 

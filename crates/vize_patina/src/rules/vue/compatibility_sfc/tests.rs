@@ -33,6 +33,37 @@ fn reports_style_mode_and_content_outside_blocks() {
     assert_eq!(chunks.warning_count, 2, "{:?}", chunks.diagnostics);
 }
 
+/// The rule covers text content only: an element compiler-sfc drops, such as
+/// a void `<link>` or an empty custom block, is not content.
+#[test]
+fn content_outside_blocks_reports_text_nodes_only() {
+    let texts = |source: &str| {
+        lint(Box::new(NoContentOutsideBlock), source)
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/no-content-outside-block")
+            .filter_map(|diagnostic| source.get(diagnostic.start as usize..diagnostic.end as usize))
+            .map(str::to_owned)
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        texts(
+            "<script src=\"https://unpkg.com/x\"></script>\n<link rel=\"stylesheet\" href=\"x.css\">\n"
+        ),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        texts(
+            "<template><div /></template>\n<docs></docs>\nlead <br/> tail\n<Foo a=\">\" />\n</bar>end\n"
+        ),
+        ["lead", "tail", "end"]
+    );
+    assert_eq!(
+        texts("<template><div /></template>\n<docs>\nnever closed\n"),
+        Vec::<String>::new()
+    );
+}
+
 #[test]
 fn style_attribute_reports_the_first_denied_style_element() {
     let ranges = |rule: EnforceStyleAttribute, source: &str| {
@@ -244,7 +275,11 @@ fn props_shadow_reads_type_props_and_value_bindings() {
     );
 
     let declare = "<script setup lang=\"ts\">\ndefineProps({ label: String })\ndeclare const label: string\n</script>\n<template />";
-    assert_eq!(reported(Box::new(NoPropsShadow), declare), ["label"]);
+    // ESTree identifiers span their type annotation.
+    assert_eq!(
+        reported(Box::new(NoPropsShadow), declare),
+        ["label: string"]
+    );
 
     let type_only = "<script setup lang=\"ts\">\nimport type { label } from './label'\ntype tone = string\ninterface mode { Dark: string }\ndefineProps({ label: String, tone: String, mode: String })\n</script>\n<template />";
     assert!(

@@ -26,7 +26,7 @@ defineProps<{ label: string }>()
 </style>
 `;
 const ART = `<script setup lang="ts">
-defineArt("./Swatch.vue", { title: "Swatch" });
+import Swatch from "./Swatch.vue";
 </script>
 
 <art>

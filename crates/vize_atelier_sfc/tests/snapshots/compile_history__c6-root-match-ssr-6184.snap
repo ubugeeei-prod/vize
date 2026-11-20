@@ -1,0 +1,44 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-root-match-ssr-6184",
+    history: "1649cd0a40ec22aa887f15b1509a27de007ccf88",
+    source: "<template v-match=\"result\"><p v-when=\"{ kind: 'ok', const data }\">{{ data }}</p><i v-when=\"_\">other</i></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (__vize_match_0_0 == null) break a0; if (!(\"kind\" in Object(__vize_match_0_0))) break a0; const __vize_match_0_1 = __vize_match_0_0[\"kind\"]; if (__vize_match_0_1 !== 'ok') break a0; if (!(\"data\" in Object(__vize_match_0_0))) break a0; const __vize_match_0_2 = __vize_match_0_0[\"data\"]; { const data = __vize_match_0_2; return [0, data]; } } return [1]; })(_ctx.result)\n    if (__vize_match_0[0] === 0) {\n      { const [, data] = __vize_match_0\n        _push(`<p${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(data)}</p>`)\n      }\n    } else if (__vize_match_0[0] === 1) {\n      _push(`<i${_ssrRenderAttrs(_attrs)}>other</i>`)\n    } else {\n      _push(`<!---->`)\n    }\n  }\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

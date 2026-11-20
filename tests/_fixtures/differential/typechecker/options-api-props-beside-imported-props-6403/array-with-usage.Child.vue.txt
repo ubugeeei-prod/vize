@@ -1,0 +1,13 @@
+<script lang="ts">
+import type { Props } from "./types";
+import Widget from "./Widget.vue";
+
+export default {
+  components: { Widget },
+  props: ["initial", "label"],
+};
+</script>
+
+<template>
+  <Widget />
+</template>

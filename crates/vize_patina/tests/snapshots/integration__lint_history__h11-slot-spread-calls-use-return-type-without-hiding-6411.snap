@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-slot-spread-calls-use-return-type-without-hiding-6411",
+    history: "816db89fa9a95d479894d690c7faa63f9276c962",
+    source: "<script setup lang=\"ts\">\ndefineSlots<{ default(props: { label: string }): unknown }>()\nfunction typed(): { label: string } { return { label: 'safe' } }\nfunction unsafe(): any { return { label: 'unsafe' } }\n</script>\n<template>\n  <slot v-bind=\"typed()\" />\n  <slot v-bind=\"unsafe()\" />\n</template>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-unsafe-template-binding",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "type/no-unsafe-template-binding",
+                severity: Warning,
+                message: "Template binding resolves to an unsafe `any` or `unknown` type",
+                start: 271,
+                end: 279,
+                help: Some(
+                    "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "type/no-unsafe-template-binding",
+                    severity: Warning,
+                    message: "Template binding resolves to an unsafe `any` or `unknown` type",
+                    start: 271,
+                    end: 279,
+                    help: Some(
+                        "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

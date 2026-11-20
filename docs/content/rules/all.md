@@ -5,7 +5,7 @@ description: "Every rule Vize's linter ships, grouped by category. Open a rule t
 
 # All lint rules
 
-## Vue rules (169)
+## Vue rules (170)
 
 | Rule | What it checks | Preset | Auto-fix |
 | --- | --- | --- | --- |
@@ -128,6 +128,7 @@ description: "Every rule Vize's linter ships, grouped by category. Open a rule t
 | <span id="vue-prefer-const"></span>[`vue/prefer-const`](./reference/vue-prefer-const.md) | Require const for bindings the script and template never reassign. | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | Enforce `Boolean` comes first in component prop types. | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Recommend shorthand syntax for props (Vue 3.4+). | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-prefer-pug-lang"></span>[`vue/prefer-pug-lang`](./reference/vue-prefer-pug-lang.md) | Prefer lang="pug" over the legacy jade 1.x template language. | `happy-path` | ✓ |
 | <span id="vue-prefer-single-event-payload"></span>[`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | Enforce passing a single argument to custom event emissions. | — |  |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | Prefer template literals in template expressions. | — |  |
 | <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | Prefer the shorthand for a boolean attribute bound to `true`. | `nuxt`, `opinionated` |  |
@@ -413,8 +414,8 @@ description: "Every rule Vize's linter ships, grouped by category. Open a rule t
 | --- | --- | --- | --- |
 | <span id="musea-no-empty-variant"></span>[`musea/no-empty-variant`](./reference/musea-no-empty-variant.md) | Disallow empty &lt;variant&gt; blocks. | — |  |
 | <span id="musea-prefer-design-tokens"></span>[`musea/prefer-design-tokens`](./reference/musea-prefer-design-tokens.md) | Prefer design token CSS variables over hardcoded primitive values. | — |  |
-| <span id="musea-require-component"></span>[`musea/require-component`](./reference/musea-require-component.md) | Require component attribute in &lt;art&gt; block. | — |  |
-| <span id="musea-require-title"></span>[`musea/require-title`](./reference/musea-require-title.md) | Require title attribute in &lt;art&gt; block. | — |  |
+| <span id="musea-require-component"></span>[`musea/require-component`](./reference/musea-require-component.md) | Require a resolvable target component for an &lt;art&gt; block. | — |  |
+| <span id="musea-require-title"></span>[`musea/require-title`](./reference/musea-require-title.md) | Require a resolvable display title for an &lt;art&gt; block. | — |  |
 | <span id="musea-unique-variant-names"></span>[`musea/unique-variant-names`](./reference/musea-unique-variant-names.md) | Require unique variant names. | — |  |
 | <span id="musea-valid-variant"></span>[`musea/valid-variant`](./reference/musea-valid-variant.md) | Require name attribute in &lt;variant&gt; blocks. | — |  |
 

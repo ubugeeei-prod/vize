@@ -282,7 +282,15 @@ fn emit_event_name_checks(
     component_ref: &str,
     indent: &str,
 ) {
-    if !usage.events.iter().any(|event| !event.name_is_dynamic) {
+    // A vnode hook is a `VNodeProps` key every component accepts, not an
+    // event the component declares.
+    let declared_event = |event: &&EventListener| !super::event_scope::is_vnode_hook(&event.name);
+    if !usage
+        .events
+        .iter()
+        .filter(declared_event)
+        .any(|event| !event.name_is_dynamic)
+    {
         return;
     }
     let component_events = crate::virtual_ts::helpers::shared_types::COMPONENT_EVENTS
@@ -295,7 +303,7 @@ fn emit_event_name_checks(
         "{indent}const __vize_event_keys_{idx}: {{ [K in keyof {component_events}<typeof {component_ref}> & string as `on${{{capitalize}<$ComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
     );
     let mut emitted_names = FxHashSet::default();
-    for event in &usage.events {
+    for event in usage.events.iter().filter(declared_event) {
         let Some(source_range) = event_navigation_source_range(ctx, event) else {
             continue;
         };

@@ -79,6 +79,13 @@ export const vue1Explanations: readonly ExplanationRecord[] = [
     "lang を指定せず、通常の HTML の p を直接記述します。",
   ],
   [
+    "vue/prefer-pug-lang",
+    "The template names jade, which Vue renders with the legacy jade 1.x package, and uses the jade-only dashed each.",
+    "The template names pug and writes the loop with the pug 3 each keyword.",
+    "template の lang に jade を指定しています。Vue は旧 jade 1.x パッケージで描画し、jade だけの - each も使っています。",
+    "lang を pug にし、ループを pug 3 の each で記述します。",
+  ],
+  [
     "vue/no-template-shadow",
     "The inner v-for declares item again and hides the outer item binding inside the nested loop.",
     "The inner loop declares child, leaving item available for the outer row and child for the nested row.",

@@ -18,20 +18,30 @@ use oxc_ast::ast::{
 };
 use oxc_span::SourceType;
 
-use super::extract::{extract_call_expression, extract_define_art};
+use super::extract::{extract_call_expression, extract_define_art, extract_define_art_meta};
 use super::recovery::parse_program_for_analysis;
-use crate::macros::{ArtDefinition, DEFINE_ART, MacroKind};
+use crate::macros::{ArtDefinition, DEFINE_ART, DEFINE_ART_META, MacroKind};
 use vize_carton::{CompactString, FxHashMap};
 
 /// The `defineArt()` metadata of script-setup `source`, exactly as
 /// `parse_script_setup(source).macros.define_art()` reports it.
 #[must_use]
 pub fn parse_define_art(source: &str) -> Option<ArtDefinition> {
+    read_art_macros(source).art
+}
+
+/// The `defineArtMeta()` metadata of script-setup `source`.
+#[must_use]
+pub fn parse_define_art_meta(source: &str) -> Option<ArtDefinition> {
+    read_art_macros(source).meta
+}
+
+fn read_art_macros(source: &str) -> Reader {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
     let ret = parse_program_for_analysis(&allocator, source, source_type);
     if ret.panicked {
-        return None;
+        return Reader::default();
     }
     let mut reader = Reader::default();
     for statement in ret.program.body.iter() {
@@ -66,13 +76,14 @@ pub fn parse_define_art(source: &str) -> Option<ArtDefinition> {
             _ => {}
         }
     }
-    reader.art
+    reader
 }
 
 #[derive(Default)]
 struct Reader {
     import_sources: FxHashMap<CompactString, CompactString>,
     art: Option<ArtDefinition>,
+    meta: Option<ArtDefinition>,
 }
 
 impl Reader {
@@ -116,6 +127,11 @@ impl Reader {
                     self.art = Some(art);
                 }
             }
+            Some(MacroKind::Custom) if name == DEFINE_ART_META => {
+                if let Some(meta) = extract_define_art_meta(call) {
+                    self.meta = Some(meta);
+                }
+            }
             Some(MacroKind::WithDefaults) => {
                 if let Some(Argument::CallExpression(inner)) = call.arguments.first() {
                     self.visit_call(inner);
@@ -132,7 +148,7 @@ mod tests {
     //! statement shape — the ones that register `defineArt()` and the ones that
     //! do not.
 
-    use super::parse_define_art;
+    use super::{parse_define_art, parse_define_art_meta};
     use crate::script_parser::parse_script_setup;
 
     const BATTERY: &[&str] = &[
@@ -207,5 +223,21 @@ mod tests {
             ("Panel", Some("@/ui"), Some("P"), vec!["x"])
         );
         assert_eq!(parse_define_art("const { a } = defineArt(B);"), None);
+    }
+
+    #[test]
+    fn reads_target_free_art_metadata() {
+        let meta = parse_define_art_meta(
+            "defineArtMeta({ title: 'Counter', category: 'Input', tags: ['fast'] });",
+        )
+        .expect("metadata");
+        assert_eq!(meta.component_name.as_str(), "");
+        assert_eq!(meta.component_source, None);
+        assert_eq!(meta.title.as_deref(), Some("Counter"));
+        assert_eq!(meta.category.as_deref(), Some("Input"));
+        assert_eq!(
+            meta.tags.iter().map(|tag| tag.as_str()).collect::<Vec<_>>(),
+            vec!["fast"]
+        );
     }
 }

@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-scoped-slot-component-static-bind-props-wait-for-7a50327",
+    history: "7a5032784bdce8e806f1cd8171179acf87bb8c71",
+    source: "<a-tree><template #title=\"{ key }\"><a-dropdown :trigger=\"['contextmenu']\"><template #overlay><a-menu><a-menu-item key=\"1\">one</a-menu-item><a-menu-item key=\"2\">two</a-menu-item></a-menu></template><span>{{ key }}</span></a-dropdown></template></a-tree>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_a_menu_item = _resolveComponent(\"a-menu-item\")\n  const _component_a_menu = _resolveComponent(\"a-menu\")\n  const _component_a_dropdown = _resolveComponent(\"a-dropdown\")\n  const _component_a_tree = _resolveComponent(\"a-tree\")\n  \n  return (_openBlock(), _createBlock(_component_a_tree, null, {\n    title: _withCtx(({ key }) => [\n      _createVNode(_component_a_dropdown, { trigger: ['contextmenu'] }, {\n        overlay: _withCtx(() => [\n          _createVNode(_component_a_menu, null, {\n            default: _withCtx(() => [\n              _createVNode(_component_a_menu_item, { key: \"1\" }, {\n                default: _withCtx(() => [\n                  _createTextVNode(\"one\")\n                ]),\n                _: 1 /* STABLE */\n              }),\n              _createVNode(_component_a_menu_item, { key: \"2\" }, {\n                default: _withCtx(() => [\n                  _createTextVNode(\"two\")\n                ]),\n                _: 1 /* STABLE */\n              })\n            ]),\n            _: 1 /* STABLE */\n          })\n        ]),\n        default: _withCtx(() => [\n          _createElementVNode(\"span\", null, _toDisplayString(key), 1 /* TEXT */)\n        ]),\n        _: 2 /* DYNAMIC */\n      }, 1024 /* DYNAMIC_SLOTS */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

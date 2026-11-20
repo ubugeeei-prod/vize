@@ -39,7 +39,7 @@ pub struct ArtDescriptor<'a> {
 /// Art metadata extracted from `<art>` block attributes.
 #[derive(Debug)]
 pub struct ArtMetadata<'a> {
-    /// Display title (required) - borrowed from source
+    /// Display title borrowed from source; empty when the consumer must infer it from the filename.
     pub title: &'a str,
 
     /// Description text - borrowed from source
@@ -169,11 +169,17 @@ pub type ArtParseResult<'a> = Result<ArtDescriptor<'a>, ArtParseError>;
 /// Error type for Art parsing.
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum ArtParseError {
+    /// Legacy error retained for API compatibility. Optional titles no longer emit it.
     #[error("Missing required 'title' attribute in <art> block")]
     MissingTitle,
 
     #[error("Missing required 'name' attribute in <variant> block at line {line}")]
     MissingVariantName { line: u32 },
+
+    #[error(
+        "Cannot infer one Musea target component ({candidates}); add defineArt(Target) to select it explicitly"
+    )]
+    AmbiguousTarget { candidates: String },
 
     #[error("No <art> block found in file")]
     NoArtBlock,

@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "commit": "b34acb9e2a3a27ea3b4981c41ed64c42367447c2",
+  "id": "lsp/fix-history/tc-implicit-event-handler-anchor-2462-implicit-handler-accepts-event",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack implicit-event-handler-anchor-2462 (case implicit-handler-accepts-event) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/WrongEventHandler.vue": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\n\nfunction handleName(event: MouseEvent): void {\n  console.log(event);\n}\n\nconst count = ref(0);\n</script>\n\n<template>\n  <button @click=\"handleName\">Click me</button>\n  <span>{{ count }}</span>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/WrongEventHandler.vue"
+    },
+    {
+      "diagnostics": "src/WrongEventHandler.vue"
+    }
+  ]
+}

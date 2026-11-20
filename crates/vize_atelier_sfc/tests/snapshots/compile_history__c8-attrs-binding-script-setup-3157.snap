@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-attrs-binding-script-setup-3157",
+    history: "1a1be34d8de06f178c316b9afa9f12e541e3a286",
+    source: "<script setup lang=\"ts\">\nconst visible = true\n</script>\n<template><div v-if=\"visible\" v-bind=\"$attrs\">{{ $attrs.id }}</div></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString, normalizeProps as _normalizeProps, mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n\nconst visible = true;\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (visible)\n    ? (_openBlock(), _createElementBlock(\"div\", _normalizeProps(_mergeProps({ key: 0 }, _ctx.$attrs)), _toDisplayString(_ctx.$attrs.id), 17 /* TEXT, FULL_PROPS */))\n    : _createCommentVNode(\"v-if\", true)\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "visible": LiteralConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

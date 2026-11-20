@@ -46,7 +46,7 @@ pub(super) fn private_setup_rename_declaration(
         || setup.src.is_some()
         || setup.attrs.contains_key("generic")
         || template.src.is_some()
-        || template.lang.as_deref().is_some_and(|lang| lang != "html")
+        || !vize_l1::container::lang::is_html_template(template.lang.as_deref())
         || ctx.content.get(setup.loc.start..setup.loc.end)? != setup.content.as_ref()
     {
         return None;

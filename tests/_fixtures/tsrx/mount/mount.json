@@ -51,7 +51,7 @@
       "id": "loops/nested",
       "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
       "component": "Nested",
-      "expected": "#13142",
+      "expected": "docs/davinci/decisions/2026-11-18-tsrx-node-identity.md",
       "props": { "rows": [{ "id": 1, "text": "a" }, { "id": 2, "text": "b" }, { "id": 3, "text": "c" }] },
       "steps": [
         { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 1, "text": "a" }, { "id": 2, "text": "b" }] } },
@@ -227,7 +227,7 @@
       "id": "nested/recount",
       "file": "tests/_fixtures/tsrx/mount/nested.tsrx",
       "component": "Guard",
-      "expected": "#13176",
+      "expected": "docs/davinci/decisions/2026-11-18-tsrx-node-identity.md",
       "props": { "count": 1, "label": "x" },
       "steps": [{ "props": { "count": 2 } }]
     },
@@ -284,7 +284,7 @@
       "id": "empty/toggle",
       "file": "tests/_fixtures/tsrx/mount/empty.tsrx",
       "component": "List",
-      "expected": "#13180",
+      "expected": "docs/davinci/decisions/2026-11-18-tsrx-node-identity.md",
       "props": { "items": [] },
       "steps": [{ "props": { "items": ["a", "b"] } }, { "props": { "items": [] } }]
     },
@@ -292,7 +292,7 @@
       "id": "empty/update",
       "file": "tests/_fixtures/tsrx/mount/empty.tsrx",
       "component": "List",
-      "expected": "#13180",
+      "expected": "docs/davinci/decisions/2026-11-18-tsrx-node-identity.md",
       "props": { "items": ["a", "b"] },
       "steps": [{ "props": { "items": ["b", "a", "c"] } }]
     },
@@ -328,7 +328,7 @@
       "id": "map/update",
       "file": "tests/_fixtures/tsrx/mount/map.tsrx",
       "component": "Items",
-      "expected": "#13176",
+      "expected": "docs/davinci/decisions/2026-11-18-tsrx-node-identity.md",
       "props": { "items": ["a", "b"] },
       "steps": [{ "props": { "items": ["a", "b", "c"] } }]
     },
@@ -350,7 +350,7 @@
       "id": "and/recount",
       "file": "tests/_fixtures/tsrx/mount/and.tsrx",
       "component": "Count",
-      "expected": "#13176",
+      "expected": "docs/davinci/decisions/2026-11-18-tsrx-node-identity.md",
       "props": { "n": 0, "label": "x" },
       "steps": [{ "props": { "n": 1 } }, { "props": { "n": 2 } }]
     },
@@ -407,7 +407,7 @@
       "id": "branches/blocks",
       "file": "tests/_fixtures/tsrx/mount/branches.tsrx",
       "component": "Blocks",
-      "expected": "#13180",
+      "expected": "docs/davinci/decisions/2026-11-18-tsrx-node-identity.md",
       "props": { "a": false, "b": false },
       "steps": [{ "props": { "a": true } }, { "props": { "b": true } }, { "props": { "a": false } }, { "props": { "a": true } }]
     },

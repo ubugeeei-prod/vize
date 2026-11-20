@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-implicit-slot-element-if-space-before-component-5519",
+    history: "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    source: "<NuxtLink><span v-if=\"mark.hasMark(item.newId)\" class=\"bubble\"></span> <Icon :name=\"item.icon\" />{{ item.label }}</NuxtLink>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Icon = _resolveComponent(\"Icon\")\n  const _component_NuxtLink = _resolveComponent(\"NuxtLink\")\n  \n  return (_openBlock(), _createBlock(_component_NuxtLink, null, {\n    default: _withCtx(() => [\n      (mark.hasMark(item.newId))\n        ? (_openBlock(), _createElementBlock(\"span\", {\n          key: 0,\n          class: \"bubble\"\n        }))\n        : _createCommentVNode(\"v-if\", true),\n      _createTextVNode(\" \"),\n      _createVNode(_component_Icon, { name: item.icon }, null, 8 /* PROPS */, [\"name\"]),\n      _createTextVNode(_toDisplayString(item.label), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

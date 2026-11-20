@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-conditional-for-static-text-sibling-stays-inline-5582",
+    history: "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    source: "<section><p v-if=\"loading\">loading</p><div v-for=\"group in groups\" v-else :key=\"group.id\" class=\"card\"><p><strong>Leader: </strong><a v-if=\"group.leader\">{{ group.leader }}</a></p></div></section>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    (loading)\n      ? (_openBlock(), _createElementBlock(\"p\", { key: 0 }, \"loading\"))\n      : (_openBlock(true), _createElementBlock(_Fragment, { key: 1 }, _renderList(groups, (group) => {\n        return (_openBlock(), _createElementBlock(\"div\", {\n          key: group.id,\n          class: \"card\"\n        }, [\n          _createElementVNode(\"p\", null, [\n            _createElementVNode(\"strong\", null, \"Leader: \"),\n            (group.leader)\n              ? (_openBlock(), _createElementBlock(\"a\", { key: 0 }, _toDisplayString(group.leader), 1 /* TEXT */))\n              : _createCommentVNode(\"v-if\", true)\n          ])\n        ]))\n      }), 128 /* KEYED_FRAGMENT */))\n  ]))\n}",
+    map: None,
+}

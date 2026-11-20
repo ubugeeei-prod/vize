@@ -70,6 +70,8 @@ pub(super) fn check<'a>(
     let resolved_type_world = sfc.resolved_type_world;
     let mut setup_result = ScriptLintResult::default();
     let mut declared_props = FxHashSet::default();
+    // Setup bindings already reported against a prop.
+    let mut reported_bindings = FxHashSet::default();
     // Every props-object reference and `defineProps` call also derives a model binding.
     let mut model_sources = Vec::new();
     let mut model_calls = Vec::new();
@@ -112,6 +114,7 @@ pub(super) fn check<'a>(
                 if derived_from_props(semantic, symbol, &prop_symbols, candidate.call.span, &name) {
                     continue;
                 }
+                reported_bindings.insert(symbol);
                 report(semantic, symbol, &name, offset, &mut setup_result);
             } else if let (Some(semantic), NoDupeKeysModuleScript::Parsed { offset, .. }) =
                 (module_semantic, module)
@@ -125,7 +128,20 @@ pub(super) fn check<'a>(
         for (model, pattern) in model_candidates(program) {
             let (name, name_span) = model_name(model);
             if !declared_props.insert(name.clone()) {
-                report_span(&name, name_span, offset, &mut setup_result);
+                // `const modelValue = defineModel()` beside a `modelValue` prop:
+                // eslint-plugin-vue reports the key once, on the binding.
+                let binding_reported = pattern.is_some_and(|pattern| {
+                    pattern.get_binding_identifiers().iter().any(|id| {
+                        id.name == name.as_str()
+                            && id
+                                .symbol_id
+                                .get()
+                                .is_some_and(|symbol| reported_bindings.contains(&symbol))
+                    })
+                });
+                if !binding_reported {
+                    report_span(&name, name_span, offset, &mut setup_result);
+                }
                 continue;
             }
             if let Some(symbol) = root_value(semantic, &name) {

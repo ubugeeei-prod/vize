@@ -1,0 +1,74 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "newText": "<template>\n  <div>hello</div>\n</template>\n",
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 3
+          },
+          "start": {
+            "character": 0,
+            "line": 0
+          }
+        }
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "result": [
+      {
+        "newText": "\n  <div class=\"x\">{{ a }}</div>\n",
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 7
+          },
+          "start": {
+            "character": 10,
+            "line": 5
+          }
+        }
+      }
+    ]
+  },
+  {
+    "step": 4,
+    "result": [
+      {
+        "newText": "\nconst a = 1;\nconst b = 2;\n",
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 3
+          },
+          "start": {
+            "character": 24,
+            "line": 0
+          }
+        }
+      }
+    ]
+  },
+  {
+    "step": 6,
+    "result": [
+      {
+        "newText": "<template>\n  <span>a</span><b>b</b>text<i>c</i>\n</template>\n",
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 1
+          },
+          "start": {
+            "character": 0,
+            "line": 0
+          }
+        }
+      }
+    ]
+  }
+]

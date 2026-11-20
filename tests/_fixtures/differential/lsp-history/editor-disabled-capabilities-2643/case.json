@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "commit": "d960802d31919aa9e7f2394fbd97621868d06a6e",
+  "id": "lsp/fix-history/editor-disabled-capabilities-2643",
+  "requirement": "editor=false advertises no editor providers.",
+  "initializationOptions": {
+    "editor": false,
+    "lint": false,
+    "typecheck": false
+  },
+  "recordInitialize": true,
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nconst id = 1\n</script>\n<template>\n  <input :value=\"id\" disabled\n    :title=\"id > 1\n      ? 'a' : 'b'\" data-x=\"y>z\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": ":value",
+        "delta": 3,
+        "nth": 0
+      }
+    }
+  ]
+}

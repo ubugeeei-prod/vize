@@ -1,0 +1,47 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-089bc31",
+    history: "089bc31caba83e6c21c97e25a199433aed17e4fc",
+    source: "<script setup lang='ts'>withDefaults(defineProps<{ 0x2a?: number; 1.50?: number; 1e20?: number; 1e21?: number; 1e-6?: number; 1e-7?: number; 0?: number }>(), { 0x2a: 1, 1.50: 2, 1e20: 3, 1e21: 4, 1e-6: 5, 1e-7: 6, 0: 7 })</script>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "\nexport default {\n  __name: 'History',\n  props: {\n    \"42.0\": { type: Number, required: false, default: 1 },\n    \"1.5\": { type: Number, required: false, default: 2 },\n    \"1e+20\": { type: Number, required: false, default: 3 },\n    \"1e+21\": { type: Number, required: false, default: 4 },\n    \"1e-6\": { type: Number, required: false, default: 5 },\n    \"1e-7\": { type: Number, required: false, default: 6 },\n    \"0.0\": { type: Number, required: false, default: 7 }\n  },\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {},
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

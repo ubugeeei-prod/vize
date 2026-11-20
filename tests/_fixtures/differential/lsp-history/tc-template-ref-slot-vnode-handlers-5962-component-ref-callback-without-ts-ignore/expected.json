@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2339,
+        "message": "Property '$el' does not exist on type 'Element | ComponentPublicInstance'.\n  Property '$el' does not exist on type 'Element'.",
+        "range": {
+          "end": {
+            "character": 29,
+            "line": 12
+          },
+          "start": {
+            "character": 26,
+            "line": 12
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

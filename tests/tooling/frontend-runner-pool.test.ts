@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 import { restoreReviewedCheckout } from "./support/frontend-checkout-contract.ts";
+import { plannedRunnerCondition } from "./support/planned-runner.ts";
 import {
   restoreCheckJsCasePacket,
   restoreHistoryToolchainSelection,
@@ -78,12 +80,33 @@ function context(event: string, dependencies: string, cancelled: boolean) {
   };
 }
 
-function restoreMaximumRunner(job: Job, original: Job) {
-  if (job["runs-on"] === original["runs-on"]) return false;
+// Zero-compute plan and report jobs moved back to hosted Ubuntu so they skip the
+// 32-vCPU queue; every other field of these jobs stays reviewed below.
+const hostedZeroComputeJobs = new Set([
+  "iteration-plan",
+  "test-report",
+  "pr-source-plan",
+  "affected-tooling-report",
+  "source-report",
+]);
+
+function restoreMaximumRunner(file: string, id: string, job: Job, original: Job) {
+  if (job["runs-on"] === original["runs-on"]) return 0;
+  // #6830: a planner-selected skip runs hosted; the selected path keeps the maximum runner.
+  if (plannedRunnerCondition(file, id, job["runs-on"]) !== undefined) {
+    assert.equal(original["runs-on"], maximumRunner, id);
+    job["runs-on"] = original["runs-on"];
+    return 0;
+  }
+  if (hostedZeroComputeJobs.has(id) && job["runs-on"] === hosted) {
+    assert.equal(original["runs-on"], maximumRunner);
+    job["runs-on"] = original["runs-on"];
+    return 0;
+  }
   assert.equal(original["runs-on"], hosted);
   assert.equal(job["runs-on"], maximumRunner);
   job["runs-on"] = original["runs-on"];
-  return true;
+  return 1;
 }
 
 const providerStep = {
@@ -161,7 +184,12 @@ test("maximum non-release runners preserve every original job contract", () => {
     for (const [id, original] of Object.entries(before.jobs)) {
       const current = restored.jobs[id];
       assert(current, id);
-      restoredHostedJobs += Number(restoreMaximumRunner(current, original));
+      restoredHostedJobs += restoreMaximumRunner(
+        path.basename(specification.file),
+        id,
+        current,
+        original,
+      );
     }
     let restoredWildSteps = 0;
     if (specification.name === "check") {
@@ -190,6 +218,11 @@ test("maximum non-release runners preserve every original job contract", () => {
         before.jobs["pr-source-plan"],
         "pr-source-plan",
       );
+      restoreReviewedCheckout(
+        restored.jobs["source-report"],
+        before.jobs["source-report"],
+        "source-report",
+      );
       restoreHistoryToolchainSelection(
         restored.jobs["ci-selection-tests"],
         before.jobs["ci-selection-tests"],
@@ -213,7 +246,14 @@ test("maximum non-release runners preserve every original job contract", () => {
         target = restored.jobs[id];
       assert(original && updated && target, id);
       assert.equal(original["runs-on"], maximumRunner);
-      assert.equal(updated["runs-on"], maximumRunner);
+      assert.equal(
+        updated["runs-on"],
+        hostedZeroComputeJobs.has(id)
+          ? hosted
+          : plannedRunnerCondition(path.basename(specification.file), id, updated["runs-on"])
+            ? updated["runs-on"]
+            : maximumRunner,
+      );
       selectedJobs += 1;
     }
     for (const [id, job] of Object.entries(before.jobs)) {
@@ -233,7 +273,7 @@ test("maximum non-release runners preserve every original job contract", () => {
   }
   assert.equal(selectedJobs, 7);
   assert.equal(protectedJobs, 25);
-  assert.equal(restoredHostedJobs, 4);
+  assert.equal(restoredHostedJobs, 1);
 });
 
 test("history selection refuses missing, duplicate, moved and unknown command changes", () => {

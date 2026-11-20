@@ -211,6 +211,7 @@ impl<'t> Emitter<'t> {
                         let PugAttrItem::Attr(attr) = item else {
                             continue;
                         };
+                        self.jade_attribute(attr);
                         let key = attr.key();
                         let span = self.span(&attr.name);
                         // Synthesized bytes map to the whole `name=value`.

@@ -16,7 +16,10 @@
 //! as its first argument (`emit('change')`). An event declared but never emitted
 //! through that function is reported. Passing, storing, or returning the
 //! function escapes it to code this rule cannot inspect, so all declarations
-//! are treated as potentially used. Calls are counted from the macro declaration
+//! are treated as potentially used. So does a computed event name
+//! (`emit(eventName)`): the rule cannot prove any event unused. A name it can
+//! still resolve (a static template literal, a conditional between literals,
+//! a top-level `const` or `const` object key) marks exactly those events. Calls are counted from the macro declaration
 //! onward, matching eslint-plugin-vue's source-order visitor. When
 //! the `defineEmits` return value is not assigned to a binding (e.g. a bare
 //! `defineEmits([...])`), only template `$emit(...)` calls can use declarations.
@@ -26,8 +29,8 @@
 //! raw `<template>` source (see [`super::template_emits`]): the captured
 //! binding invoked from an event handler (`@click='emit("save")'`, including
 //! handlers nested in `v-for` / `v-if`) and the built-in `$emit` helper
-//! (`@click="$emit('save')"`) both count as usage (#3209). Dynamic event names
-//! stay untracked in the template exactly as in the script.
+//! (`@click="$emit('save')"`) both count as usage (#3209). A dynamic event
+//! name in a template call treats every declaration as potentially used.
 //!
 //! Port of [`vue/no-unused-emit-declarations`](https://eslint.vuejs.org/rules/no-unused-emit-declarations.html).
 //!
@@ -72,9 +75,10 @@ use vize_l0::{CompactString, FxHashSet};
 use super::super::vue_object::VueObjects;
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use super::require_explicit_emits::setup_context;
-use super::template_emits::collect_template_emitted_events;
+use super::template_emits::{collect_template_emitted_events, template_emit_escapes};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
+mod event_names;
 mod keys;
 
 use keys::property_key_name;
@@ -125,9 +129,11 @@ impl ScriptRule for NoUnusedEmitDeclarations {
             let mut used = FxHashSet::default();
             let mut escaped = false;
             if let Some(binding) = declaration.binding {
+                let consts = event_names::ConstEventNames::of(program);
                 let mut collector = EmittedCollector {
                     emit_name: binding,
                     used: &mut used,
+                    consts: &consts,
                     after: declaration.start,
                     escaped: false,
                     direct_call_callee: None,
@@ -136,15 +142,18 @@ impl ScriptRule for NoUnusedEmitDeclarations {
                 escaped = collector.escaped;
             }
             collect_define_model_events(program, &mut used);
+            // `getCurrentInstance()` hands out the instance, whose `emit` any
+            // module can call.
+            let mut instance = InstanceAccess::default();
+            instance.visit_program(program);
+            escaped |= instance.found;
 
             // Top-level `<script setup>` bindings are template-visible, so emit
             // calls in template expressions count as usage too (#3209).
             if let Some(template) = sfc.template_source {
-                collect_template_emitted_events(
-                    template,
-                    declaration.binding.unwrap_or(""),
-                    &mut used,
-                );
+                let binding = declaration.binding.unwrap_or("");
+                collect_template_emitted_events(template, binding, &mut used);
+                escaped |= template_emit_escapes(template, binding);
             }
 
             for event in &declaration.events {
@@ -354,6 +363,7 @@ include!("no_unused_emit_declarations/type_events.rs");
 struct EmittedCollector<'a, 'set> {
     emit_name: &'a str,
     used: &'set mut FxHashSet<CompactString>,
+    consts: &'set event_names::ConstEventNames,
     after: u32,
     escaped: bool,
     /// Span of a bare `emit(...)` callee while its call is being walked.
@@ -370,9 +380,13 @@ impl<'a> Visit<'a> for EmittedCollector<'_, '_> {
             _ => None,
         };
         if direct_emit_callee.is_some()
-            && let Some(Argument::StringLiteral(literal)) = it.arguments.first()
+            && let Some(argument) = it.arguments.first()
         {
-            self.used.insert(CompactString::new(literal.value.as_str()));
+            // A computed name (`emit(eventName)`) may be any declared event.
+            match self.consts.argument(argument) {
+                Some(names) => self.used.extend(names),
+                None => self.escaped = true,
+            }
         }
 
         let previous_callee = self.direct_call_callee;
@@ -403,6 +417,25 @@ impl<'a> Visit<'a> for EmittedCollector<'_, '_> {
             return;
         }
         self.escaped = true;
+    }
+}
+
+/// Whether the program calls `getCurrentInstance()`.
+#[derive(Default)]
+struct InstanceAccess {
+    found: bool,
+}
+
+impl<'a> Visit<'a> for InstanceAccess {
+    fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
+        if matches!(
+            &it.callee,
+            Expression::Identifier(callee) if callee.name.as_str() == "getCurrentInstance"
+        ) {
+            self.found = true;
+            return;
+        }
+        walk_call_expression(self, it);
     }
 }
 

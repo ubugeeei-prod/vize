@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { useMouse } from '@vueuse/core'
+
+const { x, y } = useMouse()
+</script>
+
+<template>
+  <div>
+    Mouse position: {{ x.toUpperCase() }}, {{ y }}
+  </div>
+</template>

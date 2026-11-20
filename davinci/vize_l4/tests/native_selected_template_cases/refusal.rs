@@ -6,7 +6,7 @@ use vize_l2::{
     op::Op,
     resolution::ResolutionErrorKind,
 };
-use vize_l3::decision::native::build_native_dom_file_decisions;
+use vize_l3::decision::template::build_template_dom_decisions;
 
 #[test]
 fn late_original_header_refusals_never_reach_template_emission() -> Result<(), &'static str> {
@@ -58,7 +58,7 @@ fn late_original_header_refusals_never_reach_template_emission() -> Result<(), &
         }
         let output = original.finish();
         equal(
-            output.view().map(build_native_dom_file_decisions).err(),
+            output.view().map(build_template_dom_decisions).err(),
             Some(refusal),
         )?;
         let original = output
@@ -159,7 +159,7 @@ fn nested_header_refusal_retains_parent_header_and_actual_prefix_without_an_emit
     }
     let output = original.finish();
     equal(
-        output.view().map(build_native_dom_file_decisions).err(),
+        output.view().map(build_template_dom_decisions).err(),
         Some(refusal),
     )?;
     let file = output.file().ok_or("same partial File")?;
@@ -238,7 +238,7 @@ fn dropped_forgotten_and_unwound_root_completion_cannot_be_replaced_by_complete_
         let output = original.finish();
         let refusal = output
             .view()
-            .map(build_native_dom_file_decisions)
+            .map(build_template_dom_decisions)
             .err()
             .ok_or("no original completion view")?;
         equal(refusal.kind, Kind::Interrupted)?;

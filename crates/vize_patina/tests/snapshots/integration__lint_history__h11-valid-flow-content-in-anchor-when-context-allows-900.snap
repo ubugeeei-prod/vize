@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-valid-flow-content-in-anchor-when-context-allows-900",
+    history: "6db3e13ad90095cc455a8ab688911439bcc633c9",
+    source: "<main><a href=\"#\"><h2>Documentation</h2><div>Read the guide</div></a></main>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/permitted-contents",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

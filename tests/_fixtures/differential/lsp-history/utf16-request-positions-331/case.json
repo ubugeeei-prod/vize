@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "commit": "0f38177dd9ba5390c62a762c4e708805029d38d2",
+  "id": "lsp/fix-history/utf16-request-positions-331",
+  "requirement": "Request positions and incremental edit ranges count UTF-16 units after astral characters.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nconst e = '😀'; const label = 1\n</script>\n<template><p>😀{{ label }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ label",
+        "delta": 3,
+        "nth": 0
+      }
+    },
+    {
+      "change": "App.vue",
+      "version": 2,
+      "contentChanges": [
+        {
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 15
+            },
+            "end": {
+              "line": 3,
+              "character": 15
+            }
+          },
+          "text": "😀"
+        }
+      ]
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ label",
+        "delta": 3,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ label",
+        "delta": 3,
+        "nth": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+import 'vue'
+
+declare module 'vue' {
+  export interface VNode {
+    type: unknown
+  }
+}

@@ -1,0 +1,48 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3b-v-model-on-v-slot-pattern-scope-rejected",
+    history: "7a27316b4ef4245c943ce570658862b2b5356625",
+    source: "<MyComponent v-slot=\"{ item }\"><input v-model=\"item\" /></MyComponent>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: VModelOnScope,
+            message: "v-model cannot be used on v-for or v-slot scope variables.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 38,
+                        end: 52,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_MyComponent = _resolveComponent(\"MyComponent\")\n  \n  return (_openBlock(), _createBlock(_component_MyComponent, null, {\n    default: _withCtx(({ item }) => [\n      _createElementVNode(\"input\")\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

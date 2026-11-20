@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ height?: number; start?: string; end?: string }>();
+</script>
+<template><svg /></template>

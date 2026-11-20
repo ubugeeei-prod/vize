@@ -5,9 +5,65 @@ import path from "node:path";
 import test from "node:test";
 
 import { artScopeAttribute } from "../art-style.js";
-import { processMuseaArtFile, reportArtStatusWarnings } from "./art-processing.js";
+import {
+  extractTargetInputs,
+  extractVariantRuntimeOptions,
+  processMuseaArtFile,
+  reportArtStatusWarnings,
+} from "./art-processing.js";
 
-void test("processMuseaArtFile forwards parser diagnostics during build", async () => {
+void test("target inputs seed props and attrs from the authored component", () => {
+  assert.deepEqual(
+    extractTargetInputs(
+      `<Counter :initial="0" step="2" disabled aria-label="Counter example" data-state="ready" />`,
+      "Counter",
+    ),
+    {
+      props: { initial: 0, step: "2", disabled: true },
+      attrs: { "aria-label": "Counter example", "data-state": "ready" },
+    },
+  );
+  assert.deepEqual(extractTargetInputs(`<Counter :initial="count" />`, "Counter"), {});
+  assert.deepEqual(extractTargetInputs(`<Counter /><Counter />`, "Counter"), {});
+});
+
+void test("variant runtime attributes retain inline play, props, attrs and viewport", () => {
+  assert.deepEqual(
+    extractVariantRuntimeOptions(`<art title="Button">
+      <variant name="Primary" :play="async ({ canvas }) => canvas.getByText('Save')" :props="{ label: 'Save', count: 2, enabled: true }" :attrs="{ 'aria-label': 'Save button', inert: false }" viewport="375x667@2"><button /></variant>
+      <variant name="No test"><button /></variant>
+    </art>`),
+    [
+      {
+        name: "Primary",
+        play: "async ({ canvas }) => canvas.getByText('Save')",
+        props: { label: "Save", count: 2, enabled: true },
+        attrs: { "aria-label": "Save button", inert: false },
+        viewport: { width: 375, height: 667, deviceScaleFactor: 2 },
+      },
+      { name: "No test" },
+    ],
+  );
+});
+
+void test("variant props and attrs reject executable discovery expressions", () => {
+  assert.throws(
+    () =>
+      extractVariantRuntimeOptions(
+        `<art><variant name="Unsafe" :props="makeProps()"><button /></variant></art>`,
+      ),
+    /:props must be a statically serializable object literal/,
+  );
+  assert.throws(
+    () =>
+      extractVariantRuntimeOptions(
+        `<art><variant name="Unsafe" attrs="[]"><button /></variant></art>`,
+      ),
+    /attrs must be a JSON object/,
+  );
+});
+
+void test("processMuseaArtFile infers a missing title from the art filename", async () => {
   const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-bad-art-"));
   const artPath = path.join(tempDir, "stories", "Broken.art.vue");
 
@@ -19,15 +75,39 @@ void test("processMuseaArtFile forwards parser diagnostics during build", async 
       "utf8",
     );
 
-    await assert.rejects(
-      processMuseaArtFile(artPath, { root: tempDir, command: "build" }),
-      (error) => {
-        const message = error instanceof Error ? error.message : String(error);
-        assert.match(message, /\[musea\] Failed to process stories\/Broken\.art\.vue/);
-        assert.match(message, /Missing required 'title' attribute in <art> block/);
-        return true;
-      },
+    const art = await processMuseaArtFile(artPath, { root: tempDir, command: "build" });
+    assert.equal(art?.metadata.title, "Broken");
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+void test("processMuseaArtFile infers the target and reads optional defineArtMeta", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-inferred-art-"));
+  const artPath = path.join(tempDir, "Counter.art.vue");
+  const componentPath = path.join(tempDir, "Counter.vue");
+  try {
+    await fs.promises.writeFile(componentPath, "<template><button /></template>", "utf8");
+    await fs.promises.writeFile(
+      artPath,
+      `<script setup lang="ts">
+import Counter from "./Counter.vue"
+defineArtMeta({ title: "Interactive Counter", category: "Input" })
+</script>
+<art>
+  <variant name="Default" default>
+    <Counter :initial="0" step="2" aria-label="Counter example" />
+  </variant>
+</art>`,
+      "utf8",
     );
+    const art = await processMuseaArtFile(artPath, { root: tempDir, command: "build" });
+    assert.ok(art);
+    assert.equal(art.metadata.title, "Interactive Counter");
+    assert.equal(art.metadata.category, "Input");
+    assert.equal(art.metadata.component, "./Counter.vue");
+    assert.deepEqual(art.variants[0].props, { initial: 0, step: "2" });
+    assert.deepEqual(art.variants[0].attrs, { "aria-label": "Counter example" });
   } finally {
     await fs.promises.rm(tempDir, { recursive: true, force: true });
   }
@@ -76,7 +156,8 @@ void test("processMuseaArtFile keeps arrow functions intact under a scoped style
     await fs.promises.writeFile(
       artPath,
       `<script setup lang="ts">
-defineArt("./PressButton.vue", { title: "With scoped style" });
+import PressButton from "./PressButton.vue";
+defineArt(PressButton, { title: "With scoped style" });
 </script>
 
 <style scoped>
@@ -167,7 +248,7 @@ void test("inline Art retains the native custom-block index after another block"
       `<script setup>const label = '<art title="script text" />';</script>
 <template><div>{{ label }}</div></template>
 <docs>Owned by another plugin.</docs>
-<art title="Registered" status="ready"><variant name="Default"><Self /></variant></art>`,
+<art title="Registered" status="ready"><variant name="Default"><Card /></variant></art>`,
     );
     const art = await processMuseaArtFile(file, { root, command: "build" });
     assert.ok(art);
@@ -193,7 +274,7 @@ void test("inline Art retains the native custom-block index after another block"
           order: undefined,
           actionEvents: undefined,
         },
-        variants: [{ name: "Default", template: "<Self />", isDefault: false, skipVrt: false }],
+        variants: [{ name: "Default", template: "<Card />", isDefault: false, skipVrt: false }],
       },
     );
   } finally {

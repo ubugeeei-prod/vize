@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-vize-expected-suppresses-run-on-template-diagnos-982",
+    history: "b67e1cfb4ab8ece295482e19a8c6d20a539e6900",
+    source: "<!-- @vize:expected -->\n<div v-if=\"a\"></div><div v-else-if=\"a\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-dupe-v-else-if",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

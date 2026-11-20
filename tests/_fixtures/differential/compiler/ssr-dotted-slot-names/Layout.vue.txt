@@ -1,0 +1,7 @@
+<template>
+  <Comp>
+    <template #item.alpha="{ x }"><b>{{ x }}</b></template>
+    <template #a.b.c>abc</template>
+    <template v-if="ok" #row.top>row</template>
+  </Comp>
+</template>

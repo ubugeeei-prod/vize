@@ -1,0 +1,45 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "message": "Malformed <script> block: the closing tag is missing.",
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 4
+          },
+          "start": {
+            "character": 0,
+            "line": 0
+          }
+        },
+        "severity": 1,
+        "source": "vize/sfc"
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2322,
+        "message": "Type 'number' is not assignable to type 'string'.",
+        "range": {
+          "end": {
+            "character": 7,
+            "line": 1
+          },
+          "start": {
+            "character": 6,
+            "line": 1
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

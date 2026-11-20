@@ -244,7 +244,7 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
     ),
     (
         "musea/require-component.description",
-        "Require component attribute in <art> block",
+        "Require a resolvable target component for an <art> block",
         "<art> ブロックに component 属性を必須にする",
         "要求 <art> 块带有 component 属性",
     ),
@@ -319,6 +319,12 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "Discourage lang attribute on template block",
         "template ブロックでの lang 属性を非推奨とする",
         "不建议在 template 块上使用 lang 属性",
+    ),
+    (
+        "vue/prefer-pug-lang.description",
+        "Prefer lang=\"pug\" over the legacy jade 1.x template language",
+        "旧 jade 1.x のテンプレート言語より lang=\"pug\" を優先する",
+        "优先使用 lang=\"pug\"，而不是旧版 jade 1.x 模板语言",
     ),
     (
         "vue/no-unused-components.description",

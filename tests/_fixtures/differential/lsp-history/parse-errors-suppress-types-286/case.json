@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "commit": "2a2b08f909d13831025d2f6f7c1891969e3ad0fc",
+  "id": "lsp/fix-history/parse-errors-suppress-types-286",
+  "requirement": "A malformed SFC publishes parser diagnostics only (no lint/type leak); a parseable SFC keeps its type diagnostics.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "Bad.vue": "<script setup lang=\"ts\">\nconst a: string = 1\n</script\n<template><li v-for=\"i in [1]\">{{ i }}</li></template>\n",
+    "Good.vue": "<script setup lang=\"ts\">\nconst a: string = 1\n</script>\n<template><p>{{ a }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "Bad.vue"
+    },
+    {
+      "diagnostics": "Bad.vue"
+    },
+    {
+      "open": "Good.vue"
+    },
+    {
+      "diagnostics": "Good.vue"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+<template>
+  <form @submit.prevent="save">
+    <form @submit.prevent="search"><button>Search</button></form>
+  </form>
+  <a href="/outer"><a href="/inner">inner</a></a>
+  <button @click="outer"><button @click="inner">{{ label }}</button></button>
+  <p><ul><li>{{ item }}</li></ul></p>
+  <p>one<div>two</div><p>three</p></p>
+  <table><div>{{ note }}</div></table>
+</template>

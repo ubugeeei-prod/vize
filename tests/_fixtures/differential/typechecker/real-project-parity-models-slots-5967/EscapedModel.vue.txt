@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const model = defineModel<string>("quote\"line\u2028")
+void model;
+</script>

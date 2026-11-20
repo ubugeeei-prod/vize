@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "commit": "91754f691b70884a7b1723fb723388485b2ed54b",
+  "id": "lsp/fix-history/tc-with-defaults-macro-inference-5763-with-defaults-props-readonly",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack with-defaults-macro-inference-5763 (case with-defaults-props-readonly) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/LinkBase.vue": "<script setup lang=\"ts\">\nconst props = withDefaults(\n  defineProps<{\n    disabled?: boolean;\n    type?: never;\n    variant?: 'button-primary' | 'button-secondary' | 'link';\n    size?: 'sm' | 'md';\n    to?: string;\n  }>(),\n  { variant: 'link', size: 'md' },\n);\n\nprops.to = '/';\nprops.variant;\nprops.size;\n</script>\n\n<template>\n  {{ props.to }} {{ props.variant }} {{ props.size }}\n</template>"
+  },
+  "steps": [
+    {
+      "open": "src/LinkBase.vue"
+    },
+    {
+      "diagnostics": "src/LinkBase.vue"
+    }
+  ]
+}

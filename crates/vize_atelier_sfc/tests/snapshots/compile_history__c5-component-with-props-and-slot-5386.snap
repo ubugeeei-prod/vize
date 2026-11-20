@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-component-with-props-and-slot-5386",
+    history: "2c5465d94764e6688c7ab9090d78856539158ada",
+    source: "<Foo v-once :title=\"title\"><span>x</span></Foo>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, setBlockTracking as _setBlockTracking, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Foo = _resolveComponent(\"Foo\")\n  \n  return _cache[0] || (\n    _setBlockTracking(-1, true),\n    (_cache[0] = _createVNode(_component_Foo, { title: title }, {\n      default: _withCtx(() => [\n        _createElementVNode(\"span\", null, \"x\")\n      ]),\n      _: 1 /* STABLE */\n    }, 8 /* PROPS */, [\"title\"])).cacheIndex = 0,\n    _setBlockTracking(1),\n    _cache[0]\n  )\n}",
+    map: None,
+}

@@ -9,6 +9,8 @@
  */
 
 import { escapeHtml } from "./utils.js";
+import { assertStaticExpression } from "./native-loader.js";
+import { serializeScriptValue } from "./security.js";
 
 export function escapeTemplateLiteral(str: string): string {
   return str.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$/g, "\\$");
@@ -25,6 +27,9 @@ export type LegacyVariantContext = {
   isolatedSetup: boolean;
   setupReturn: string;
   importDeclaresName: (statement: string, name: string) => boolean;
+  play?: string;
+  props?: Record<string, unknown>;
+  attrs?: Record<string, unknown>;
 };
 
 export function emitLegacyVariant(context: LegacyVariantContext): string {
@@ -39,9 +44,30 @@ export function emitLegacyVariant(context: LegacyVariantContext): string {
     isolatedSetup,
     setupReturn,
     importDeclaresName,
+    play,
+    props,
+    attrs,
   } = context;
+  const playExpression = play ? assertStaticExpression(play, "play") : undefined;
+  const isolatedPlay = play
+    ? `    const __museaVariantPlay = (${playExpression});\n    if (typeof window !== "undefined") window.__museaPlay = __museaVariantPlay;\n`
+    : "";
+  const sharedPlay = play
+    ? `    const { ${scriptSetup?.returnNames.join(", ") ?? ""} } = __museaSharedSetup;\n    const __museaVariantPlay = (${playExpression});\n    if (typeof window !== "undefined") window.__museaPlay = __museaVariantPlay;\n`
+    : "";
+  const hasBindings = Boolean(props || attrs);
+  const variantBindings = hasBindings
+    ? `    const __museaVariantBindings = ${serializeScriptValue({ ...attrs, ...props })};\n`
+    : "";
+  const isolatedReturn = hasBindings
+    ? `Object.assign(${setupReturn}, { __museaVariantBindings })`
+    : setupReturn;
+  const sharedReturn = hasBindings
+    ? `{ ...__museaSharedSetup, __museaVariantBindings }`
+    : "__museaSharedSetup";
 
-  const escapedTemplate = escapeTemplateLiteral(template);
+  const boundTemplate = injectVariantBindings(template, componentTagName, hasBindings);
+  const escapedTemplate = escapeTemplateLiteral(boundTemplate);
   const escapedVariantName = escapeTemplateLiteral(escapeHtml(variantName));
   const fullTemplate = `<div data-variant="${escapedVariantName}">${escapedTemplate}</div>`;
 
@@ -67,7 +93,7 @@ export const ${variantComponentName} = __museaDefineComponent({
   name: '${variantComponentName}',
 ${components}  setup() {
 ${scriptSetup.setupBody.join("\n")}
-    return ${setupReturn};
+${variantBindings}${isolatedPlay}    return ${isolatedReturn};
   },
   template: \`${fullTemplate}\`,
 });
@@ -78,10 +104,21 @@ ${scriptSetup.setupBody.join("\n")}
 export const ${variantComponentName} = __museaDefineComponent({
   name: '${variantComponentName}',
 ${components}  setup() {
-    return __museaSharedSetup;
+${variantBindings}${sharedPlay}    return ${sharedReturn};
   },
   template: \`${fullTemplate}\`,
 });
+`;
+  }
+  if (play || hasBindings) {
+    return `
+export const ${variantComponentName} = {
+  name: '${variantComponentName}',
+${components}  setup() {
+${variantBindings}${isolatedPlay}    return ${hasBindings ? "{ __museaVariantBindings }" : "{}"};
+  },
+  template: \`${fullTemplate}\`,
+};
 `;
   }
   // Without a setup block `components` is empty unless a component tag was
@@ -92,4 +129,17 @@ export const ${variantComponentName} = {
 ${components}  template: \`${fullTemplate}\`,
 };
 `;
+}
+
+function injectVariantBindings(
+  template: string,
+  componentTagName: string | undefined,
+  hasBindings: boolean,
+): string {
+  if (!componentTagName || !hasBindings) return template;
+  const escaped = componentTagName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return template.replace(
+    new RegExp(`<${escaped}(?=[\\s/>])`),
+    `<${componentTagName} v-bind="__museaVariantBindings"`,
+  );
 }

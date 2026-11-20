@@ -29,6 +29,7 @@ mod input_channels;
 mod instance_input_keys;
 mod integrated_source;
 mod jsx_exact_keys;
+mod jsx_shared_helpers;
 mod lib_type_qualification;
 mod lib_type_qualification_listeners;
 mod lib_type_shadowing_audit;
@@ -70,7 +71,13 @@ const PATHS: [&str; 11] = [
     "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-payload.d.ts.txt",
 ];
 
+/// Every caller reads the same authenticated record; authenticate it once.
 fn load() -> Value {
+    static LOADED: std::sync::OnceLock<Value> = std::sync::OnceLock::new();
+    LOADED.get_or_init(load_uncached).clone()
+}
+
+fn load_uncached() -> Value {
     let bytes = fs::read(support::corpus().join(RECORD)).unwrap();
     assert_eq!(
         support::hash(&bytes),
@@ -151,9 +158,24 @@ fn previous(current: &str, record: &Value) -> String {
     previous
 }
 
+/// Each path walks every inverse layer once per process; the chain is a pure
+/// function of the checked-out file and the authenticated records.
+pub(super) fn source_before(path: &str) -> String {
+    type Bodies = std::sync::Mutex<std::collections::HashMap<String, String>>;
+    static BEFORE: std::sync::OnceLock<Bodies> = std::sync::OnceLock::new();
+    let bodies = BEFORE.get_or_init(Bodies::default);
+    if let Some(body) = bodies.lock().unwrap().get(path) {
+        return body.clone();
+    }
+    // Compute without the lock: inverse layers may reach other paths.
+    let body = source_before_uncached(path);
+    bodies.lock().unwrap().insert(path.to_owned(), body.clone());
+    body
+}
+
 /// Only the eleven named files can be projected; every other source-cone
 /// member is read unchanged and remains subject to its existing frozen hash.
-pub(super) fn source_before(path: &str) -> String {
+fn source_before_uncached(path: &str) -> String {
     let actual = fs::read_to_string(support::repository().join(path)).unwrap();
     let Some(index) = PATHS.iter().position(|candidate| *candidate == path) else {
         return emit_overloads::source_before(path, actual);

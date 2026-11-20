@@ -1,0 +1,16 @@
+<script setup lang="ts">
+type Log =
+  | { type: 't0'; info: { value0: string } }
+  | { type: 't1'; info: { value1: string } }
+  | { type: 't2'; info: { value2: string } }
+
+defineProps<{ log: Log }>()
+</script>
+
+<template>
+  <div>
+  <span v-if="log.type === 't0'">{{ log.info.value0 }}</span>
+  <span v-else-if="log.type === 't1'">{{ log.info.value0 }}</span>
+  <span v-else-if="log.type === 't2'">{{ log.info.value2 }}</span>
+</div>
+</template>

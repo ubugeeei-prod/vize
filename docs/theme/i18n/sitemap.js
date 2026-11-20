@@ -84,11 +84,18 @@
     "/guide/musea-hosting",
     "/guide/doctor",
   ]);
+  const englishOnly = new Set(["/guide/musea-testing"]);
   const section = (key, paths) => {
-    const common = paths.filter((path) => !englishAndJapaneseOnly.has(path));
+    const common = paths.filter(
+      (path) => !englishAndJapaneseOnly.has(path) && !englishOnly.has(path),
+    );
     return common.length === paths.length
       ? { key, paths }
-      : { key, paths: common, pathsByLocale: { en: paths, ja: paths } };
+      : {
+          key,
+          paths: common,
+          pathsByLocale: { en: paths, ja: paths.filter((path) => !englishOnly.has(path)) },
+        };
   };
 
   // One collapsible sidebar section per rule category. A rule page belongs to
@@ -210,6 +217,7 @@
     // The MCP server serves Musea's component metadata to assistants.
     section("components", [
       "/guide/musea",
+      "/guide/musea-testing",
       "/guide/musea-globals",
       "/guide/musea-capture",
       "/guide/musea-snapshots",
