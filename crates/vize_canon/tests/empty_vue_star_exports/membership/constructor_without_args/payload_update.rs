@@ -22,6 +22,7 @@ mod emit_props_block_scope;
 mod emit_props_twins;
 mod entry_package_exports;
 mod extra_keys_policy;
+mod forwarded_slot_exports;
 mod generic_event_specialization;
 mod generic_hoisted_alias;
 mod generic_slot_payload;
@@ -217,6 +218,7 @@ pub(super) fn retain_current(manifest: &mut Value, members: &mut [Value], curren
     ]);
     manifest["provenance"]["currentSlotProviderPayloadUpdate"] = update;
     canon_leftovers::retain_provenance(manifest);
+    forwarded_slot_exports::retain_provenance(manifest);
     public_instance::retain_provenance(manifest);
     emit_overloads::retain_provenance(manifest);
     emit_overload_stall::retain_provenance(manifest);
