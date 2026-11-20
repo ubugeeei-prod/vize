@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-branch-child-dynamic-text-parent-keeps-icon-inli-5506",
+    history: "78232a56f504fe4bf203b945e357baf432269722",
+    source: "<div v-if=\"isCorsError\"><div class=\"flex items-center gap-2\"><div i-solar:shield-warning-bold-duotone></div>{{ t('settings.pages.providers.provider.comfyui.settings.cors.title') }}</div></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (isCorsError)\n    ? (_openBlock(), _createElementBlock(\"div\", { key: 0 }, [\n      _createElementVNode(\"div\", { class: \"flex items-center gap-2\" }, [\n        _createElementVNode(\"div\", { \"i-solar:shield-warning-bold-duotone\": \"\" }),\n        _createTextVNode(_toDisplayString(t('settings.pages.providers.provider.comfyui.settings.cors.title')), 1 /* TEXT */)\n      ])\n    ]))\n    : _createCommentVNode(\"v-if\", true)\n}",
+    map: None,
+}

@@ -9,7 +9,6 @@ import { sendMessage } from "../composables/usePostMessage";
 const props = defineProps<{
   artPath: string;
   variant: ArtVariant;
-  componentName?: string;
 }>();
 
 const emit = defineEmits<{
@@ -118,14 +117,7 @@ watch(
   },
 );
 
-function resolveSelfReferences(template: string): string {
-  if (!props.componentName) return template;
-  return template
-    .replace(/<Self(\s|>|\/)/g, `<${props.componentName}$1`)
-    .replace(/<\/Self>/g, `</${props.componentName}>`);
-}
-
-const resolvedTemplate = computed(() => resolveSelfReferences(props.variant.template));
+const resolvedTemplate = computed(() => props.variant.template);
 
 const copied = ref(false);
 

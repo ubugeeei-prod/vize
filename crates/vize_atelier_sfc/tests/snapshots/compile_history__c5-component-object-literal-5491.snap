@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-component-object-literal-5491",
+    history: "0c2395e68c5183b7ecad6bae4e067ccd095cdef5",
+    source: "<WindowRoot :style=\"{ left: '50%', top: '72px' }\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_WindowRoot = _resolveComponent(\"WindowRoot\")\n  \n  return (_openBlock(), _createBlock(_component_WindowRoot, {\n    style: { left: '50%', top: '72px' }\n  }))\n}",
+    map: None,
+}

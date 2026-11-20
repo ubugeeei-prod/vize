@@ -36,6 +36,7 @@
       "/guide/content-mapper": "Content Mapper",
       "/guide/compiler-inspector": "Inspetor do compilador",
       "/guide/experimentals": "Recursos experimentais",
+      "/guide/musea-testing": "Testes de interação do Musea",
       "/guide/musea-globals": "Controles globais de visualização",
       "/guide/musea-capture": "Capturas estáveis",
       "/guide/musea-snapshots": "Migração de snapshots",

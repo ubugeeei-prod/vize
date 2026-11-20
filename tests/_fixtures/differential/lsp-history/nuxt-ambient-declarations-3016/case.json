@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "commit": "1dda271d36a977f1965088fecd841145e6a6d36d",
+  "id": "lsp/fix-history/nuxt-ambient-declarations-3016",
+  "requirement": "Nuxt generated ambient declarations feed the template checker: the auto-import resolves and its return type is checked.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"extends\": \"./.nuxt/tsconfig.json\" }\n",
+    ".nuxt/tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true }, \"include\": [\"../**/*.vue\", \"./nuxt.d.ts\"] }\n",
+    ".nuxt/nuxt.d.ts": "declare global { const useAppTitle: () => string }\nexport {}\n",
+    "nuxt.config.ts": "export default {}\n",
+    "app.vue": "<script setup lang=\"ts\">\nconst title: number = useAppTitle()\n</script>\n<template><p>{{ title }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "app.vue"
+    },
+    {
+      "diagnostics": "app.vue"
+    }
+  ]
+}

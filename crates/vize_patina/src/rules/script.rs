@@ -4,6 +4,7 @@
 mod after_await;
 mod component_options;
 mod component_options_name_casing;
+mod composition_api;
 mod custom_event_name_casing;
 mod define_emits_declaration;
 mod define_macros_order;

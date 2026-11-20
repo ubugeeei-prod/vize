@@ -56,8 +56,8 @@ fn no_duplicate_class_template() {
         ),
         (
             r#"<div class="a a b b">x</div>"#,
-            2,
-            "two distinct duplicate tokens",
+            1,
+            "one value lists its distinct duplicate tokens in one finding",
         ),
         (
             r#"<div class="x x x">x</div>"#,
@@ -108,8 +108,8 @@ fn no_duplicate_class_template() {
         ),
         (
             r#"<div class="foo foo Foo Foo">x</div>"#,
-            2,
-            "case-distinct duplicate tokens report independently",
+            1,
+            "case-distinct duplicate tokens are listed separately in one finding",
         ),
         (
             r#"<div v-bind="{ class: 'btn btn' }">x</div>"#,

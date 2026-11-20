@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "commit": "23ab8ad05731d7100207337730e75d2bf6a09dd0",
+  "id": "lsp/fix-history/vue-authoring-support-2642",
+  "requirement": "Native attribute and event-shorthand completion, directive hover and multiline directive bindings follow the template context without duplicate binding items.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nconst handler = () => {}\nconst count = 1\n</script>\n<template>\n  <button @cl></button>\n  <input ty />\n  <p v-if=\"count >\n    0\">{{ count }}</p>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "@cl",
+        "delta": 3,
+        "nth": 0
+      },
+      "labels": [
+        "@click",
+        "@click.stop"
+      ]
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": " ty",
+        "delta": 3,
+        "nth": 0
+      },
+      "labels": [
+        "type"
+      ]
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "v-if",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "0\">",
+        "delta": 0,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "    0",
+        "delta": 4,
+        "nth": 0
+      },
+      "labels": [
+        "count",
+        "handler"
+      ]
+    }
+  ]
+}

@@ -42,7 +42,7 @@ export interface VrtOptions {
 
   /**
    * Number of variants/viewports to capture concurrently.
-   * @default 1
+   * Defaults to the available CPU parallelism, capped at 8.
    */
   workers?: number;
 }

@@ -6,6 +6,8 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   COHORT,
+  COHORTS,
+  JSX_COHORT,
   DISPOSITIONS,
   readCohort,
   readDispositions,
@@ -62,12 +64,16 @@ void test("current-API compiler oracles and dispositions match the history index
   const references = columns.indexOf("fixture_references");
   const indexed = new Map(rows.map((line) => line.split("\t")).map((row) => [row[sha], row]));
   const cohort = readCohort(root);
-  const pinned = new Set(cohort.map((fixture) => fixture.history));
-  for (const fixture of cohort) {
-    const row = indexed.get(fixture.history);
-    assert(row, fixture.id);
-    assert(row[references].split(";").includes(`compiler/current-api/${fixture.id}@${COHORT}`));
-  }
+  const jsxCohort = readCohort(root, JSX_COHORT);
+  const pinned = new Set([...cohort, ...jsxCohort].map((fixture) => fixture.history));
+  for (const cohortPath of COHORTS)
+    for (const fixture of readCohort(root, cohortPath)) {
+      const row = indexed.get(fixture.history);
+      assert(row, fixture.id);
+      assert(
+        row[references].split(";").includes(`compiler/current-api/${fixture.id}@${cohortPath}`),
+      );
+    }
   const reviewed = "fixture-linked;bounded-semantic-scope-reviewed;whole-fix-review-pending";
   for (const [commit, row] of indexed) {
     if (row[status] === "current-api-pinned") assert(pinned.has(commit), commit);
@@ -85,6 +91,10 @@ void test("current-API compiler oracles and dispositions match the history index
     path: COHORT,
     sha256: digest(fs.readFileSync(path.join(root, COHORT), "utf8")),
   });
+  assert.deepEqual(receipt.jsxApiCohort, {
+    path: JSX_COHORT,
+    sha256: digest(fs.readFileSync(path.join(root, JSX_COHORT), "utf8")),
+  });
   assert.deepEqual(receipt.dispositions, {
     path: DISPOSITIONS,
     sha256: digest(fs.readFileSync(path.join(root, DISPOSITIONS), "utf8")),
@@ -99,4 +109,12 @@ void test("current-API compiler oracles and dispositions match the history index
     "utf8",
   );
   assert.equal(Number(/assert_eq!\(\s*cases\.len\(\),\s*(\d+),/.exec(runner)?.[1]), cohort.length);
+  const jsxRunner = fs.readFileSync(
+    path.join(root, "crates/vize_atelier_jsx/tests/jsx_history.rs"),
+    "utf8",
+  );
+  assert.equal(
+    Number(/assert_eq!\(\s*cases\.len\(\),\s*(\d+),/.exec(jsxRunner)?.[1]),
+    jsxCohort.length,
+  );
 });

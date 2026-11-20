@@ -82,6 +82,10 @@ impl Rule for NoChildContent {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         if let Some(directive_name) = Self::has_v_html_or_v_text(element)
             && Self::has_child_content(element)

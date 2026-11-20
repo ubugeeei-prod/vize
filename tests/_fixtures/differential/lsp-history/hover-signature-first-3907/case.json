@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "commit": "791a5a002a9e93ac1fb01b193dc06a6869272f3e",
+  "id": "lsp/fix-history/hover-signature-first-3907",
+  "requirement": "Checker hovers open with the signature (then documentation) and spell the authored var/let/const keyword.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "App.vue": "<script setup lang=\"ts\">\n/** Adds numbers. */\nfunction add(a: number, b: number) { return a + b }\nvar legacy = 1\nlet mutable = 'x'\nconst total = add(1, legacy)\n</script>\n<template>{{ total }} {{ mutable }}</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "add(1",
+        "delta": 1,
+        "nth": 0
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "var legacy",
+        "delta": 5,
+        "nth": 0
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ mutable",
+        "delta": 4,
+        "nth": 0
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ total",
+        "delta": 4,
+        "nth": 0
+      },
+      "retry": true
+    }
+  ]
+}

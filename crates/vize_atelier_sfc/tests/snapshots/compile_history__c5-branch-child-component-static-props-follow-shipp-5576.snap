@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-branch-child-component-static-props-follow-shipp-5576",
+    history: "185d49ba9f16b87fd65e23e59cb232011b28a010",
+    source: "<div v-if=\"show\"><BranchRatio :ratio=\"16 / 9\"><img class=\"Image\" src=\"x\" alt=\"y\"></BranchRatio></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_BranchRatio = _resolveComponent(\"BranchRatio\")\n  \n  return (show)\n    ? (_openBlock(), _createElementBlock(\"div\", { key: 0 }, [\n      _createVNode(_component_BranchRatio, { ratio: 16 / 9 }, {\n        default: _withCtx(() => [\n          _createElementVNode(\"img\", {\n            class: \"Image\",\n            src: \"x\",\n            alt: \"y\"\n          })\n        ]),\n        _: 1 /* STABLE */\n      }, 8 /* PROPS */, [\"ratio\"])\n    ]))\n    : _createCommentVNode(\"v-if\", true)\n}",
+    map: None,
+}

@@ -61,7 +61,7 @@ pub(super) fn cached_component_metadata(
             return Some(entry.metadata.clone());
         }
         (
-            std::fs::read_to_string(resolved).ok()?,
+            Arc::new(std::fs::read_to_string(resolved).ok()?),
             len,
             modified,
             None,
@@ -104,7 +104,7 @@ pub(super) fn cached_component_metadata(
     Some(metadata)
 }
 
-fn open_component(ctx: &IdeContext<'_>, resolved: &Path) -> Option<(String, u64, i32, u64)> {
+fn open_component(ctx: &IdeContext<'_>, resolved: &Path) -> Option<(Arc<String>, u64, i32, u64)> {
     if let Ok(uri) = tower_lsp::lsp_types::Url::from_file_path(resolved)
         && let Some(document) = ctx.state.documents.get(&uri)
     {
@@ -118,8 +118,8 @@ fn open_component(ctx: &IdeContext<'_>, resolved: &Path) -> Option<(String, u64,
     })
 }
 
-fn open_stamp(document: &crate::document::Document) -> (String, u64, i32, u64) {
-    let content = document.text();
+fn open_stamp(document: &crate::document::Document) -> (Arc<String>, u64, i32, u64) {
+    let content = document.text_snapshot();
     let hash = vize_l0::hash::hash_str(&content);
     (content, document.byte_len() as u64, document.version, hash)
 }
@@ -134,7 +134,7 @@ mod tests {
         reason = "test fixtures build owned source text with to_string"
     )]
 
-    use super::cached_component_metadata;
+    use super::{cached_component_metadata, open_component};
     use crate::{ide::IdeContext, server::ServerState};
     use std::sync::Arc;
     use tower_lsp::lsp_types::Url;
@@ -198,6 +198,9 @@ mod tests {
             2,
             "vue".to_string(),
         );
+        let resident = state.documents.text_snapshot(&component_uri).unwrap();
+        let (opened, _, _, _) = open_component(&ctx, &component).unwrap();
+        assert!(Arc::ptr_eq(&resident, &opened));
         let body = cached_component_metadata(&ctx, &component).unwrap();
         assert!(Arc::ptr_eq(&first, &body));
         let body_stats = state.resident.take_interface_stats();

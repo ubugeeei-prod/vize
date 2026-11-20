@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "commit": "5b82f9f6edd3cdbeb88d28f4a1b797cb4f36b540",
+  "id": "lsp/fix-history/configured-casing-rule-options-5642",
+  "requirement": "Editor lint applies configured casing rule options (kebab-case component names in templates).",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false
+  },
+  "files": {
+    "vite.config.mjs": "export default { vue: { linter: { rules: { \"vue/component-name-in-template-casing\": \"warn\" }, ruleOptions: { \"vue/component-name-in-template-casing\": { casing: \"kebab-case\" } } } } };\n",
+    "Child.vue": "<template><span /></template>\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport FancyChild from './Child.vue'\n</script>\n<template>\n  <FancyChild />\n  <fancy-child />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    }
+  ]
+}

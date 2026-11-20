@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-v-else-with-value-uses-legacy-else-if-condition-5585",
+    history: "7fad0210b5aa9c8e9341c43954cf79cc1e841c76",
+    source: "<div v-if=\"disabled\">disabled</div><span v-else=\"enabled\">enabled</span>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (disabled)\n    ? (_openBlock(), _createElementBlock(\"div\", { key: 0 }, \"disabled\"))\n    : (enabled)\n      ? (_openBlock(), _createElementBlock(\"span\", { key: 1 }, \"enabled\"))\n    : _createCommentVNode(\"v-if\", true)\n}",
+    map: None,
+}

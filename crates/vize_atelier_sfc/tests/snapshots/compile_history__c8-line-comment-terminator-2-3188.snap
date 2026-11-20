@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-line-comment-terminator-2-3188",
+    history: "34f5f7852fa16cd936db848242b6051cbfba21dd",
+    source: "{{ //x\u{2028}((((((((((((((((((((((((((((((((((((((((( }}",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return _toDisplayString(/* x */\u{2028}((((((((((((((((((((((((((((((((((((((((()\n}",
+    map: None,
+}

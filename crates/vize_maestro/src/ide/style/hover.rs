@@ -40,9 +40,9 @@ pub(crate) fn hover(ctx: &IdeContext<'_>, index: usize) -> Option<Hover> {
             let property = data::property(property)?;
             let name = content.get(span.0..span.1)?;
             let selected = if let Some(value) = property
-                .values
+                .values()
                 .iter()
-                .find(|value| value.name.eq_ignore_ascii_case(name))
+                .find(|value| value.name().eq_ignore_ascii_case(name))
             {
                 Selected::Value(property, value)
             } else if let Some(value) = values::lookup(&values::WIDE, name) {

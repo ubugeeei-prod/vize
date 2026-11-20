@@ -1,0 +1,105 @@
+[
+  {
+    "step": 1,
+    "result": []
+  },
+  {
+    "step": 2,
+    "result": [
+      {
+        "collapsedText": "template",
+        "endLine": 7,
+        "kind": "region",
+        "startLine": 5
+      },
+      {
+        "collapsedText": "script setup",
+        "endLine": 3,
+        "kind": "region",
+        "startLine": 0
+      }
+    ]
+  },
+  {
+    "step": 5,
+    "result": null
+  },
+  {
+    "step": 6,
+    "result": [
+      {
+        "kind": 2,
+        "name": "template",
+        "range": {
+          "end": {
+            "character": 11,
+            "line": 8
+          },
+          "start": {
+            "character": 0,
+            "line": 5
+          }
+        },
+        "selectionRange": {
+          "end": {
+            "character": 9,
+            "line": 5
+          },
+          "start": {
+            "character": 1,
+            "line": 5
+          }
+        }
+      },
+      {
+        "detail": "ts",
+        "kind": 2,
+        "name": "script setup",
+        "range": {
+          "end": {
+            "character": 9,
+            "line": 4
+          },
+          "start": {
+            "character": 0,
+            "line": 0
+          }
+        },
+        "selectionRange": {
+          "end": {
+            "character": 7,
+            "line": 0
+          },
+          "start": {
+            "character": 1,
+            "line": 0
+          }
+        }
+      },
+      {
+        "kind": 2,
+        "name": "style[0]",
+        "range": {
+          "end": {
+            "character": 36,
+            "line": 9
+          },
+          "start": {
+            "character": 0,
+            "line": 9
+          }
+        },
+        "selectionRange": {
+          "end": {
+            "character": 6,
+            "line": 9
+          },
+          "start": {
+            "character": 1,
+            "line": 9
+          }
+        }
+      }
+    ]
+  }
+]

@@ -61,6 +61,16 @@ test("authored LSP feature oracles are explicit and ratcheted", () => {
     ["vue-vben-admin", "misskey"],
     "LSP incremental-budget owners must stay explicit so authored-oracle coverage can ratchet",
   );
+  assert.deepEqual(
+    registry.projects
+      .filter((project) => project.lspRequestTimeoutMs != null)
+      .map((project) => ({ id: project.id, timeoutMs: project.lspRequestTimeoutMs })),
+    [
+      { id: "primevue-volt", timeoutMs: 240_000 },
+      { id: "naive-ui", timeoutMs: 240_000 },
+    ],
+    "only observed large-project LSP requests may extend the default deadline",
+  );
   const authoredProjectIds = new Set(configured.map((project) => project.id));
   for (const id of budgetOwnerIds) {
     assert.ok(

@@ -1,0 +1,44 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-root-match-call-subject-6184",
+    history: "1649cd0a40ec22aa887f15b1509a27de007ccf88",
+    source: "<template v-match=\"readSubject()\"><p v-when=\"'ready'\">Ready</p><p v-when=\"_\">Other</p></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (() => { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (__vize_match_0_0 !== 'ready') break a0; return [0]; } return [1]; })(_ctx.readSubject()); return (__vize_match_0[0] === 0)\n    ? (_openBlock(), _createElementBlock(\"p\", { key: 0 }, \"Ready\"))\n    : (__vize_match_0[0] === 1)\n      ? (_openBlock(), _createElementBlock(\"p\", { key: 1 }, \"Other\"))\n    : _createCommentVNode(\"v-if\", true) })()\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

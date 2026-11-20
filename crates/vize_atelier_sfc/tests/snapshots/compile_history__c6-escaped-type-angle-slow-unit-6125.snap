@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-escaped-type-angle-slow-unit-6125",
+    history: "dbb3d7e4aaf78255bc569ebbba911efa692fb2d2",
+    source: "{{ opni\\oS\\U\\ki$n<umdiagnost\\\\tatc\\\\\\\\<umdumdiiagnosticsEmpt<lopni\\oS\\U\\ki$n<u\\\\\\\\\\sta<fis.s\\\\\\on.\\\\\\\\wta<fisn<nnnnnnsn<na<(re=h\\\\\\\\\\\\\\\\\\\\aft<\\sis.s\\\\\\on.\\\\\\\\wta<fisnnnnnnsn<na<(re=h\\\\\\\\\\\\\\\\\\\\\\swi\n\n\n>>\n\\\\\\\\stannnnnsn<na<(re=h\\\\\\\\\\\\\\\\\\\\\\sta<fis.s\\\\\\on.\\\\\\\\wta<fi<(re=h\\\\\\\\\\\\\\\\\\\\\\sta\n\n\n>>\n\\\\\\\\sta<fisow.rigow.ow.rigow.righte ??w.risn<na<(re=h\\\\\\\\\\\\\\\\\\\\aft<\\sis.s\\\\\\on.\\\\\\\\wta<fisnnnnnnsn<na<(re=h\\\\\\\\\\\\\\\\\\\\\\swi\n\n\n>>\n\\\\\\\\stannnnnsn<na<(re=h\\\\\\\\\\\\\\\\\\\\\\sta<fis.s\\\\\\on.\\\\\\\\wta<fi<(re=h\\\\\\\\\\\\\\\\\\\\\\sta\n\n\n>>\n\\\\\\\\sta<fisow.rigow.ow.rigow.righte ??w.right.ri\\\\\\\\\\\\\\\\a\n\n\n>>\n\\\\\\\\stannnnnsn<na<(re=h\\\\\\\\\\\\\\\\\\\\\\sta<eis.s\\\\eocf\\\\\\\\wta<fisnnnnnnsn<na<(re=h\\\\\0\0\0\0\0\0\0\0\\\\\\\\\\\\\\\\\\sta\n\n\n>>\n\\\\\\\\sta<fisow.rigow.ow.rigow.righte ??w.right.riw.rsgow.ow.rigow.riA\0\0\0\0\0\0\0h.ng\"\non.tas3<%\u{1}\0\0\0).s\\\\\\on.sin\\\\\\a2stat:)<\0fisow.rigori\\<umdtas2<%\u{1}\0\0\0).s\\\\\\onpt.sin\\\\\\as2tat:)\0<frigow.rigght.righ.ng\"\non.tas2<%\u{1}\0\0\0).s\\\\\\on.sin\\\\\\as2tat<\\Qc\\els:)Em\0sbght.ri\\\\\\\\\\\\\\\\a\n\n\n>>\n\\\\\\\\stannnnnsn<na<(re=h\\\\\\\\\\\\\\\\\\\\\\sta<eis.s\\\\\\on*\\\\\\\\wta<fisnnnnnnsn<na<(re=h\\\\\0\0\0\0\0\0\0\0\\\\\\\\\\\\\\\\\\sta\n\n\n>>\n\\\\\\\\sta<fisow.rigow.ow.rigow.righte ??w.right.riw.rsgow.ow.rigow.riA\0\0\0\0\0\0\0h.ng\"\non.tas3<%\u{1}\0\0\0).s\\\\\\on.sin\\\\\\a2stat:)\0<fisow.rigori\\<umdtas2<%\u{1}\0\0\0).s\\\\\\onpt.sin\\\\\\as2tat:)\0<frigow.rigght.righ.ng\"\non.tas2<%\u{1}\0\0\0).s\\\\\\on.sin\\\\\\as2tat<\\Qc\\els:)Em\0sbzps }}",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return _toDisplayString(opni\\oS\\U\\ki$n<umdiagnost\\\\tatc\\\\\\\\<umdumdiiagnosticsEmpt<lopni\\oS\\U\\ki$n<u\\\\\\\\\\sta<fis.s\\\\\\on.\\\\\\\\wta<fisn<nnnnnnsn<na<(re=h\\\\\\\\\\\\\\\\\\\\aft<\\sis.s\\\\\\on.\\\\\\\\wta<fisnnnnnnsn<na<(re=h\\\\\\\\\\\\\\\\\\\\\\swi\n\n\n>>\n\\\\\\\\stannnnnsn<na<(re=h\\\\\\\\\\\\\\\\\\\\\\sta<fis.s\\\\\\on.\\\\\\\\wta<fi<(re=h\\\\\\\\\\\\\\\\\\\\\\sta\n\n\n>>\n\\\\\\\\sta<fisow.rigow.ow.rigow.righte ??w.risn<na<(re=h\\\\\\\\\\\\\\\\\\\\aft<\\sis.s\\\\\\on.\\\\\\\\wta<fisnnnnnnsn<na<(re=h\\\\\\\\\\\\\\\\\\\\\\swi\n\n\n>>\n\\\\\\\\stannnnnsn<na<(re=h\\\\\\\\\\\\\\\\\\\\\\sta<fis.s\\\\\\on.\\\\\\\\wta<fi<(re=h\\\\\\\\\\\\\\\\\\\\\\sta\n\n\n>>\n\\\\\\\\sta<fisow.rigow.ow.rigow.righte ??w.right.ri\\\\\\\\\\\\\\\\a\n\n\n>>\n\\\\\\\\stannnnnsn<na<(re=h\\\\\\\\\\\\\\\\\\\\\\sta<eis.s\\\\eocf\\\\\\\\wta<fisnnnnnnsn<na<(re=h\\\\\0\0\0\0\0\0\0\0\\\\\\\\\\\\\\\\\\sta\n\n\n>>\n\\\\\\\\sta<fisow.rigow.ow.rigow.righte ??w.right.riw.rsgow.ow.rigow.riA\0\0\0\0\0\0\0h.ng\"\non.tas3<%\u{1}\0\0\0).s\\\\\\on.sin\\\\\\a2stat:)<\0fisow.rigori\\<umdtas2<%\u{1}\0\0\0).s\\\\\\onpt.sin\\\\\\as2tat:)\0<frigow.rigght.righ.ng\"\non.tas2<%\u{1}\0\0\0).s\\\\\\on.sin\\\\\\as2tat<\\Qc\\els:)Em\0sbght.ri\\\\\\\\\\\\\\\\a\n\n\n>>\n\\\\\\\\stannnnnsn<na<(re=h\\\\\\\\\\\\\\\\\\\\\\sta<eis.s\\\\\\on*\\\\\\\\wta<fisnnnnnnsn<na<(re=h\\\\\0\0\0\0\0\0\0\0\\\\\\\\\\\\\\\\\\sta\n\n\n>>\n\\\\\\\\sta<fisow.rigow.ow.rigow.righte ??w.right.riw.rsgow.ow.rigow.riA\0\0\0\0\0\0\0h.ng\"\non.tas3<%\u{1}\0\0\0).s\\\\\\on.sin\\\\\\a2stat:)\0<fisow.rigori\\<umdtas2<%\u{1}\0\0\0).s\\\\\\onpt.sin\\\\\\as2tat:)\0<frigow.rigght.righ.ng\"\non.tas2<%\u{1}\0\0\0).s\\\\\\on.sin\\\\\\as2tat<\\Qc\\els:)Em\0sbzps)\n}",
+    map: None,
+}

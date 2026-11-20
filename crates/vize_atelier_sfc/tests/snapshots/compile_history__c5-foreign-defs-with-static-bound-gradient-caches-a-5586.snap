@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-foreign-defs-with-static-bound-gradient-caches-a-5586",
+    history: "c17902442d98f8b7e4b0c87df223f89e2ba65375",
+    source: "<svg class=\"va-icon-vuestic\"><defs><linearGradient :id=\"'ORIGINAL'\" x1=\"0%\" y1=\"50%\" y2=\"50%\"><stop offset=\"0%\" stop-color=\"#4AE387\" /><stop offset=\"100%\" stop-color=\"#C8EA13\" /></linearGradient></defs><path :fill=\"textColor\" /></svg>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"svg\", { class: \"va-icon-vuestic\" }, [\n    _createElementVNode(\"defs\", null, [\n      _createElementVNode(\"linearGradient\", {\n        id: 'ORIGINAL',\n        x1: \"0%\",\n        y1: \"50%\",\n        y2: \"50%\"\n      }, [\n        _createElementVNode(\"stop\", {\n          offset: \"0%\",\n          \"stop-color\": \"#4AE387\"\n        }),\n        _createElementVNode(\"stop\", {\n          offset: \"100%\",\n          \"stop-color\": \"#C8EA13\"\n        })\n      ])\n    ]),\n    _createElementVNode(\"path\", { fill: textColor }, null, 8 /* PROPS */, [\"fill\"])\n  ]))\n}",
+    map: None,
+}

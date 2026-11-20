@@ -35,6 +35,48 @@ void test("linter preflight binds Matrix diagnostics but remains deletion-blocke
   assert.doesNotThrow(() => validateLinterDeletionArtifact(artifact));
 });
 
+void test("linter preflight validates later typecheck targets without treating them as lint projects", () => {
+  const input = control(),
+    project = input.registryProjects[0],
+    target = {
+      id: `${project.id}@docs`,
+      revision: project.revision ?? null,
+      fixturePath: project.fixturePath,
+      runs: [
+        {
+          tool: "typechecker",
+          status: "configuration",
+          command: "target/ci/vize typechecker",
+          cwd: project.fixturePath,
+          outputPath: `real-project-results/shard-0/${project.id}@docs-typechecker.json`,
+          durationMs: 1,
+          exitCode: 1,
+          fileCount: 2,
+          coverage: null,
+        },
+      ],
+    };
+  project.typecheckPerformance = {
+    targets: [
+      { id: "app", tsconfig: "tsconfig.json", corpusGlobs: ["src/**/*.vue"] },
+      { id: "docs", tsconfig: "docs/tsconfig.json", corpusGlobs: ["docs/**/*.vue"] },
+    ],
+  };
+  input.matrix.value.projects.splice(1, 0, target);
+  const runCount = input.matrix.value.summary.runCount;
+  const configurationRuns = input.matrix.value.summary.configurationRuns;
+  assert(typeof runCount === "number");
+  assert(typeof configurationRuns === "number");
+  input.matrix.value.summary.runCount = runCount + 1;
+  input.matrix.value.summary.configurationRuns = configurationRuns + 1;
+
+  const artifact = assessLinterDeletionShard(input);
+  assert.deepEqual(
+    artifact.projects.map((entry) => entry.id),
+    ["with-vue", "without-vue"],
+  );
+});
+
 void test("linter preflight retains explicitly excluded Matrix-only Vue files", () => {
   const input = control(),
     project = input.registryProjects.find((entry) => entry.id === "with-vue")!,

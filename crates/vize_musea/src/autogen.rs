@@ -59,7 +59,7 @@ fn render_art_file(
     output.push_str("<script setup lang=\"ts\">\n");
     append!(
         output,
-        "defineArt(\"{component_path_literal}\", {{\n  title: \"{component_name_literal}\",\n}});\n"
+        "import {component_name} from \"{component_path_literal}\";\n\ndefineArtMeta({{\n  title: \"{component_name_literal}\",\n}});\n"
     );
     output.push_str("</script>\n\n");
 

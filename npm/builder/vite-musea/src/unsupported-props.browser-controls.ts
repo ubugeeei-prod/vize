@@ -9,12 +9,16 @@ export async function currentUnsupportedProps(page: Page) {
 }
 
 export async function waitUnsupportedProps(page: Page, expected: Record<string, string>) {
-  await page.waitForFunction(
-    (serialized) => {
-      return document.querySelector(".props-json-code code")?.textContent === serialized;
-    },
-    JSON.stringify(expected, null, 2),
-  );
+  try {
+    await page.waitForFunction(
+      (serialized) => {
+        return document.querySelector(".props-json-code code")?.textContent === serialized;
+      },
+      JSON.stringify(expected, null, 2),
+    );
+  } catch {
+    assert.deepEqual(await currentUnsupportedProps(page), expected);
+  }
   assert.deepEqual(await currentUnsupportedProps(page), expected);
 }
 

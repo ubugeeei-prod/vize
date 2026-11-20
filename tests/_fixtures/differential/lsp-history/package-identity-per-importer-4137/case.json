@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "commit": "fa66155b296d9011b98c7855a9024dd6abc3f641",
+  "id": "lsp/fix-history/package-identity-per-importer-4137",
+  "requirement": "Package identities resolve through the importer's package exports (types condition): definition targets the authored declaration and diagnostics use the package type.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "node_modules/shared-ui/package.json": "{ \"name\": \"shared-ui\", \"exports\": { \".\": { \"types\": \"./index.d.ts\", \"default\": \"./index.js\" } } }\n",
+    "node_modules/shared-ui/index.d.ts": "export declare const tone: 'light' | 'dark'\n",
+    "node_modules/shared-ui/index.js": "export const tone = 'light'\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport { tone } from 'shared-ui'\nconst mode: number = tone\n</script>\n<template>{{ tone }}</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "{ tone }",
+        "delta": 2,
+        "nth": 0
+      },
+      "retry": true
+    }
+  ]
+}

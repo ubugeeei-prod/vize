@@ -1,0 +1,364 @@
+[
+  {
+    "step": "initialize",
+    "capabilities": {
+      "callHierarchyProvider": true,
+      "codeActionProvider": {
+        "codeActionKinds": [
+          "quickfix",
+          "source.organizeImports",
+          "source.sortImports",
+          "source.removeUnusedImports",
+          "source.fixAll"
+        ],
+        "resolveProvider": false
+      },
+      "codeLensProvider": {
+        "resolveProvider": false
+      },
+      "colorProvider": true,
+      "completionProvider": {
+        "resolveProvider": true,
+        "triggerCharacters": [
+          "\"",
+          "'",
+          ":",
+          "@",
+          ".",
+          "<",
+          "=",
+          "/",
+          ">",
+          "+",
+          "^",
+          "*",
+          "(",
+          ")",
+          "#",
+          "[",
+          "]",
+          "$",
+          "-",
+          "{",
+          "}"
+        ]
+      },
+      "declarationProvider": true,
+      "definitionProvider": true,
+      "documentFormattingProvider": true,
+      "documentHighlightProvider": true,
+      "documentLinkProvider": {
+        "resolveProvider": false
+      },
+      "documentOnTypeFormattingProvider": {
+        "firstTriggerCharacter": ";",
+        "moreTriggerCharacter": [
+          "}",
+          "\n"
+        ]
+      },
+      "documentRangeFormattingProvider": true,
+      "documentSymbolProvider": true,
+      "experimental": {
+        "vize": {
+          "jsxTypecheck": true
+        }
+      },
+      "foldingRangeProvider": true,
+      "hoverProvider": true,
+      "implementationProvider": true,
+      "inlayHintProvider": true,
+      "linkedEditingRangeProvider": true,
+      "monikerProvider": true,
+      "referencesProvider": true,
+      "renameProvider": {
+        "prepareProvider": true
+      },
+      "selectionRangeProvider": true,
+      "semanticTokensProvider": {
+        "full": true,
+        "legend": {
+          "tokenModifiers": [
+            "declaration",
+            "definition",
+            "readonly",
+            "static",
+            "deprecated",
+            "abstract",
+            "async",
+            "modification",
+            "documentation",
+            "defaultLibrary"
+          ],
+          "tokenTypes": [
+            "namespace",
+            "type",
+            "class",
+            "enum",
+            "interface",
+            "struct",
+            "typeParameter",
+            "parameter",
+            "variable",
+            "property",
+            "enumMember",
+            "event",
+            "function",
+            "method",
+            "macro",
+            "keyword",
+            "modifier",
+            "comment",
+            "string",
+            "number",
+            "regexp",
+            "operator",
+            "decorator"
+          ]
+        },
+        "range": true
+      },
+      "signatureHelpProvider": {
+        "retriggerCharacters": [
+          ")"
+        ],
+        "triggerCharacters": [
+          "(",
+          ",",
+          "<"
+        ]
+      },
+      "textDocumentSync": {
+        "change": 2,
+        "openClose": true,
+        "save": {
+          "includeText": false
+        },
+        "willSave": false,
+        "willSaveWaitUntil": false
+      },
+      "typeDefinitionProvider": true,
+      "workspace": {
+        "fileOperations": {
+          "didCreate": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.d.{ts,mts,cts}",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*.vue",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          },
+          "didDelete": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.d.{ts,mts,cts}",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*.vue",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          },
+          "didRename": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          },
+          "willRename": {
+            "filters": [
+              {
+                "pattern": {
+                  "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                  "matches": "file"
+                },
+                "scheme": "file"
+              },
+              {
+                "pattern": {
+                  "glob": "**/*",
+                  "matches": "folder"
+                },
+                "scheme": "file"
+              }
+            ]
+          }
+        },
+        "workspaceFolders": {
+          "changeNotifications": true,
+          "supported": true
+        }
+      },
+      "workspaceSymbolProvider": true
+    }
+  },
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2420,
+        "message": "Class 'Welcome' incorrectly implements interface 'Greeting'.\n  Property 'greet' is missing in type 'Welcome' but required in type 'Greeting'.",
+        "range": {
+          "end": {
+            "character": 110,
+            "line": 0
+          },
+          "start": {
+            "character": 103,
+            "line": 0
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 6133,
+        "message": "'marker' is declared but its value is never read.",
+        "range": {
+          "end": {
+            "character": 36,
+            "line": 0
+          },
+          "start": {
+            "character": 30,
+            "line": 0
+          }
+        },
+        "severity": 4,
+        "source": "vize/types"
+      },
+      {
+        "code": 6196,
+        "message": "'Welcome' is declared but never used.",
+        "range": {
+          "end": {
+            "character": 110,
+            "line": 0
+          },
+          "start": {
+            "character": 103,
+            "line": 0
+          }
+        },
+        "severity": 4,
+        "source": "vize/types"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": [
+      {
+        "edit": {
+          "documentChanges": [
+            {
+              "edits": [
+                {
+                  "newText": "\n    greet(name: string): string {\n        throw new Error('Method not implemented.');\n    }\n",
+                  "range": {
+                    "end": {
+                      "character": 132,
+                      "line": 0
+                    },
+                    "start": {
+                      "character": 132,
+                      "line": 0
+                    }
+                  }
+                }
+              ],
+              "textDocument": {
+                "uri": "${workspace}/App.vue",
+                "version": 1
+              }
+            }
+          ]
+        },
+        "kind": "quickfix",
+        "title": "Implement interface 'Greeting'"
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "result": [
+      {
+        "edit": {
+          "documentChanges": [
+            {
+              "edits": [
+                {
+                  "newText": "\n    greet(name: string): string {\n        throw new Error('Method not implemented.');\n    }\n",
+                  "range": {
+                    "end": {
+                      "character": 132,
+                      "line": 0
+                    },
+                    "start": {
+                      "character": 132,
+                      "line": 0
+                    }
+                  }
+                }
+              ],
+              "textDocument": {
+                "uri": "${workspace}/App.vue",
+                "version": 1
+              }
+            }
+          ]
+        },
+        "kind": "source.fixAll",
+        "title": "Fix All"
+      }
+    ]
+  },
+  {
+    "step": 4,
+    "result": null
+  }
+]

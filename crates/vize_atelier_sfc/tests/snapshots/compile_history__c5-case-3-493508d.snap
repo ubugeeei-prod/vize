@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-case-3-493508d",
+    history: "493508d535b1c7d09c881b9d758e5d6c211ab345",
+    source: "\n<template>\n  <div :[prefix+suffix]=\"value\" @[prefix+suffix]=\"handler\"></div>\n</template>\n\n<script>\nexport default {\n  data() {\n    return { prefix: 'data-', suffix: 'id', value: 42 }\n  },\n  methods: {\n    handler() {}\n  }\n}\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "\nconst _sfc_main = {\n  data() {\n    return { prefix: 'data-', suffix: 'id', value: 42 }\n  },\n  methods: {\n    handler() {}\n  }\n}\n\nimport { normalizeProps as _normalizeProps, toHandlerKey as _toHandlerKey, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", _normalizeProps({\n    [$data.prefix+$data.suffix || \"\"]: $data.value,\n    [_toHandlerKey($data.prefix+$data.suffix)]: (...args) => (_ctx.handler && _ctx.handler(...args))\n  }), null, 16 /* FULL_PROPS */))\n}\n_sfc_main.render = _sfc_render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

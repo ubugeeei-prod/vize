@@ -64,7 +64,9 @@ pub(super) fn check_program<'a>(
 
 fn is_vue_import(import: &ImportDeclaration<'_>) -> bool {
     !import.import_kind.is_type()
-        && matches!(import.source.value.as_str(), "vue" | "@vue/composition-api")
+        && crate::rules::script::composition_api::is_composition_api_module(
+            import.source.value.as_str(),
+        )
 }
 
 impl<'a> Visit<'a> for Bindings<'_> {

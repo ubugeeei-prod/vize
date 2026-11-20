@@ -5,12 +5,13 @@ use vize_atelier_core::{
 };
 use vize_atelier_sfc::{SfcDescriptor, script::resolve_template_used_identifiers};
 use vize_carton::{Allocator, FxHashSet, String as CompactString};
-use vize_croquis::macros::DEFINE_ART;
+use vize_croquis::macros::{DEFINE_ART, DEFINE_ART_META};
 
 use crate::virtual_ts::{VirtualTsOptions, extract_declared_name};
 
-const MUSEA_DEFINE_ART_STUB: &str =
-    "declare function defineArt(source: string, options?: Record<string, any>): void;";
+const MUSEA_DEFINE_ART_STUB: &str = "declare function defineArt<T extends ((abstract new (...args: never[]) => { $props: unknown }) | ((...args: never[]) => unknown))>(component: T, options?: Record<string, unknown>): void;";
+const MUSEA_DEFINE_ART_META_STUB: &str =
+    "declare function defineArtMeta(options: Record<string, unknown>): void;";
 
 pub(super) fn is_musea_art_vue_path(path: &Path) -> bool {
     path.file_name()
@@ -22,13 +23,20 @@ pub(super) fn is_musea_art_vue_path(path: &Path) -> bool {
 /// file-kind contract. Batch projects materialize this declaration in their
 /// ambient stub file; a content mapper has to carry it in the returned module.
 pub(super) fn apply_musea_art_globals(path: &Path, options: &mut VirtualTsOptions) {
-    if is_musea_art_vue_path(path)
-        && !options
+    if !is_musea_art_vue_path(path) {
+        return;
+    }
+    for (name, stub) in [
+        (DEFINE_ART, MUSEA_DEFINE_ART_STUB),
+        (DEFINE_ART_META, MUSEA_DEFINE_ART_META_STUB),
+    ] {
+        if !options
             .auto_import_stubs
             .iter()
-            .any(|stub| extract_declared_name(stub) == Some(DEFINE_ART))
-    {
-        options.auto_import_stubs.push(MUSEA_DEFINE_ART_STUB.into());
+            .any(|existing| extract_declared_name(existing) == Some(name))
+        {
+            options.auto_import_stubs.push(stub.into());
+        }
     }
 }
 

@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "commit": "9cbec2ba41b4aa5dae7a7ce020f6cd8a0874543a",
+  "id": "lsp/fix-history/module-route-extensions-2590",
+  "requirement": "Route param inference treats module script extensions like the classic ones: page route params come from the file path.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "ecosystem": true
+  },
+  "files": {
+    "pages/users/[id].vue": "<script setup lang=\"ts\">\nimport { useRoute } from 'vue-router'\nconst route = useRoute()\nroute.params.id\nroute.params.slug\n</script>\n",
+    "pages/posts/[slug].mts": "export default {}\n",
+    "router.mts": "export default [{ path: '/users/:id' }]\n"
+  },
+  "steps": [
+    {
+      "open": "pages/users/[id].vue"
+    },
+    {
+      "diagnostics": "pages/users/[id].vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "pages/users/[id].vue",
+      "at": {
+        "find": "route.params.",
+        "delta": 13,
+        "nth": 0
+      },
+      "labels": [
+        "id",
+        "slug"
+      ]
+    }
+  ]
+}

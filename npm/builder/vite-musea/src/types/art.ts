@@ -21,6 +21,15 @@ export interface ArtVariant {
   template: string;
   isDefault: boolean;
   skipVrt: boolean;
+  /** Typed function expression invoked by the gallery and before VRT capture. */
+  play?: string;
+  /** Authored component props used to initialize the Props workspace. */
+  props?: Record<string, unknown>;
+  /** Authored fallthrough attributes applied alongside Props workspace values. */
+  attrs?: Record<string, unknown>;
+  /** Per-variant VRT viewport. */
+  viewport?: { width: number; height: number; deviceScaleFactor?: number };
+  /** @deprecated Use `props` and `viewport`. Retained for existing Art files. */
   args?: Record<string, unknown>;
 }
 

@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-rendered-outputs-interpolate-lint-message-placeh-x-864",
+    history: "58607afb8b9ec32db1f3a62f67745a142f660951",
+    source: "<script setup lang=\"ts\">\ndefineOptions({\n  name: \"Label\",\n})\n\nconst url = \"\"\n</script>\n\n<template>\n  <a :href=\"url\" />\n</template>\n",
+    filename: "Label.vue",
+    entry: "sfc",
+    rule: "vue/no-unsafe-url",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Label.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+                start: 104,
+                end: 115,
+                help: Some(
+                    "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Label.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+                    start: 104,
+                    end: 115,
+                    help: Some(
+                        "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

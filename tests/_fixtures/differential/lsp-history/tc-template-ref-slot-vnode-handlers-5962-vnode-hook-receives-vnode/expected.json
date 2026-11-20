@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2717,
+        "message": "Subsequent property declarations must have the same type.  Property 'type' must be of type 'VNodeTypes', but here has type 'unknown'.",
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 4
+          },
+          "start": {
+            "character": 4,
+            "line": 4
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

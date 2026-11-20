@@ -126,6 +126,11 @@ pub struct ServerState {
     /// `didOpen`/`didChange` write (#3377, same class as #3315/#3373).
     virtual_docs_cache: DashMap<Url, Arc<VirtualDocuments>>,
     binding_occurrences: DashMap<Url, Arc<binding_occurrences::CachedOccurrences>>,
+    /// Query-independent symbols for exact open revisions and watched disk
+    /// generations. Searches filter this text-free index instead of reparsing
+    /// scripts, styles, emits and slots for every typed query.
+    pub(crate) workspace_symbol_cache:
+        Arc<DashMap<Url, Arc<crate::ide::workspace_symbols::CachedDocumentSymbols>>>,
     /// Published lint diagnostics for the current document revision. Hover
     /// reads this instead of running the linter on every pointer movement.
     lint_hover_cache: DashMap<Url, (i32, Arc<Vec<Diagnostic>>)>,
@@ -285,6 +290,7 @@ impl ServerState {
 
     pub(crate) fn forget_closed_document(&self, uri: &Url) {
         self.lint_hover_cache.remove(uri);
+        self.workspace_symbol_cache.remove(uri);
         self.resident.close_document(uri);
         #[cfg(feature = "native")]
         {
@@ -298,6 +304,9 @@ impl ServerState {
     /// Rename a document while dropping the overlay cached under its old URI.
     pub(crate) fn rename_document(&self, old_uri: &Url, new_uri: Url) -> bool {
         let renamed = self.resident.rename(&self.documents, old_uri, new_uri);
+        if renamed {
+            self.workspace_symbol_cache.remove(old_uri);
+        }
         #[cfg(feature = "native")]
         if renamed {
             self.native_hover.remove(old_uri);

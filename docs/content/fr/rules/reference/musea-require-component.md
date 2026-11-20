@@ -1,11 +1,11 @@
 ---
 title: "musea/require-component"
-description: "Exiger l’attribut component dans le bloc &lt;art&gt;."
+description: "Exiger un composant cible résoluble pour le bloc &lt;art&gt;."
 ---
 
 # `musea/require-component`
 
-Exiger l’attribut component dans le bloc &lt;art&gt;.
+Exiger un composant cible résoluble pour le bloc &lt;art&gt;.
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
@@ -17,23 +17,23 @@ Champ d’application : Blocs art, variant et style des fichiers .art.vue de Mus
 
 Le bloc art fournit un titre, mais n’identifie pas le composant dont il présente l’aperçu.
 
-```vue annotate="remove:1"
+```vue annotate="remove:1,2"
 <art title="Button">
-  <variant name="primary" />
+  <variant name="primary"><div /></variant>
 </art>
 ```
 
 ## Bon
 
-defineArt fournit ./Button.vue comme composant du bloc art.
+Le variant affiche le Button importé et identifie ainsi la cible de l’art.
 
-```vue annotate="add:1,2,3,4,5"
+```vue annotate="add:1,2,3,4,5,6"
 <script setup>
-defineArt("./Button.vue", { title: "Button" });
+import Button from "./Button.vue";
 </script>
 
 <art>
-  <variant name="primary" />
+  <variant name="primary"><Button /></variant>
 </art>
 ```
 

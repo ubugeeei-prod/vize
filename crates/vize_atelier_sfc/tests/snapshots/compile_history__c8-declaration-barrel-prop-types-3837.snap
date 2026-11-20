@@ -1,0 +1,64 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-declaration-barrel-prop-types-3837",
+    history: "84b76a372057549964abd0faf4ab61393008db53",
+    source: "<script setup lang=\"ts\">\nimport type { PrimitiveProps } from 'some-ui'\ninterface Props extends PrimitiveProps { variant?: string }\ndefineProps<Props>()\n</script>\n<template><div /></template>\n",
+    filename: "src/Button.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        no_project_config: Some(
+            true,
+        ),
+    },
+    files: {
+        "node_modules/some-ui/dist/index.d.ts": "import { PrimitiveProps } from './index4.js'\nexport { PrimitiveProps }\n",
+        "node_modules/some-ui/dist/index4.d.ts": "export interface PrimitiveProps { asChild?: boolean; as?: string }\n",
+        "node_modules/some-ui/package.json": "{ \"name\": \"some-ui\", \"types\": \"./dist/index.d.ts\" }",
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nexport default {\n  __name: 'Button',\n  props: {\n    asChild: { type: Boolean, required: false },\n    as: { type: String, required: false },\n    variant: { type: String, required: false }\n  },\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\"))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "as": Props,
+                        "variant": Props,
+                        "asChild": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [
+                "$PROJECT/node_modules/some-ui/dist/index.d.ts",
+                "$PROJECT/node_modules/some-ui/dist/index4.d.ts",
+                "$PROJECT/src/tsconfig.json",
+                "$PROJECT/tsconfig.json",
+            ],
+        },
+    ),
+)

@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-5-1a2c5f7",
+    history: "1a2c5f7a88823ae933258cbd7c020e1d2a68968a",
+    source: "// 😀 日本語\r\nexport const marker = '保全';\r\nexport default (props: {label:string}) => <p title=\"😀\">{props.label}</p>;\r\nexport const Other = () => <i>{marker}</i>;\r\n",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { createElementVNode as _createElementVNode } from \"vue\"\n\n// 😀 日本語\r\nexport const marker = '保全';\r\nexport default (props: {label:string}) => (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"p\", { title: \"😀\" }, [\n    props.label\n  ]))\n})(undefined, [])\n})();\r\nexport const Other = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_createElementVNode(\"i\", null, [\n    marker\n  ]))\n})(undefined, [])\n})();\r\n",
+    module_map: None,
+    components: [
+        Component {
+            name: None,
+            mode: Vdom,
+            setup: None,
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"p\", { title: \"😀\" }, [\n    props.label\n  ]))\n}",
+            map: None,
+        },
+        Component {
+            name: Some(
+                "Other",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { createElementVNode as _createElementVNode } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  return (_createElementVNode(\"i\", null, [\n    marker\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

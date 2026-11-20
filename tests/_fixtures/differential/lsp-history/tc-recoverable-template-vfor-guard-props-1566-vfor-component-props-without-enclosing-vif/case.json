@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "beeb9d20faa6f952a8137b60f531cc37088deccd",
+  "id": "lsp/fix-history/tc-recoverable-template-vfor-guard-props-1566-vfor-component-props-without-enclosing-vif",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack recoverable-template-vfor-guard-props-1566 (case vfor-component-props-without-enclosing-vif) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport Test from \"./test.vue\";\nconst elems = { a: [1], b: [\"a\"] } as const;\nconst key = \"a\" as \"a\" | \"b\";\n</script>\n\n<template>\n<div>\n  <button v-for=\"value in elems[key]\" :key=\"value\">\n    <Test :value1=\"value\" />\n  </button>\n</div>\n</template>\n",
+    "src/test.vue": "<script setup lang=\"ts\">\ndefineProps<{ value1: string }>()\n</script>\n\n<template>\n  <span>{{ value1 }}</span>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    }
+  ]
+}

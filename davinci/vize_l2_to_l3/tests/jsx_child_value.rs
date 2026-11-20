@@ -13,7 +13,7 @@ fn opaque_child_is_dynamic_and_keeps_its_semantic_role_and_authored_expression()
     let span = Span::new(0, 11);
     let root = Region {
         ops: Vec::from_iter_in(
-            [Op::JsxChildValue(Box::new_in(
+            [Op::ChildValue(Box::new_in(
                 InterpolationOp {
                     expression: ExprRef::parse_js_in(&allocator, "state.value", span),
                     raw_html: false,

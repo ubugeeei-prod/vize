@@ -234,7 +234,6 @@ crates/vize_canon/src/virtual_ts/expressions/directive_values_tests.rs	10
 crates/vize_canon/src/virtual_ts/expressions/native_props_tests.rs	7
 crates/vize_canon/src/virtual_ts/expressions/prop_name_casing_tests.rs	6
 crates/vize_canon/src/virtual_ts/expressions/sequence_prop_tests.rs	3
-crates/vize_canon/src/virtual_ts/generator/global_components/tests.rs	8
 crates/vize_canon/src/virtual_ts/generator/global_components/tests/dynamic_props.rs	14
 crates/vize_canon/src/virtual_ts/generator/script_module/plain_exports/tests.rs	7
 crates/vize_canon/src/virtual_ts/interface_extends_tests.rs	1
@@ -242,7 +241,7 @@ crates/vize_canon/src/virtual_ts/mapping/tests.rs	2
 crates/vize_canon/src/virtual_ts/public_instance_guard_tests.rs	12
 crates/vize_canon/src/virtual_ts/strict_template_global_enum_tests.rs	2
 crates/vize_canon/src/virtual_ts/strict_template_global_fallback_tests.rs	3
-crates/vize_canon/src/virtual_ts/strict_template_globals_tests.rs	27
+crates/vize_canon/src/virtual_ts/strict_template_globals_tests.rs	26
 crates/vize_canon/src/virtual_ts/strict_template_scope_tests.rs	3
 crates/vize_canon/src/virtual_ts/tests.rs	88
 crates/vize_canon/src/virtual_ts/tests/auto_import_shadowing.rs	12
@@ -391,7 +390,6 @@ crates/vize_maestro/src/server/state/project_contexts/reference_tests.rs	1
 crates/vize_maestro/src/server/state/project_contexts/reference_tests/reference_reload_tests.rs	2
 crates/vize_maestro/src/server/state/tests.rs	1
 crates/vize_maestro/src/server/state/tests/virtual_docs.rs	18
-crates/vize_maestro/src/server/state/workspace_project_files/symbols/filtered_tests.rs	1
 crates/vize_maestro/src/server/workspace_files/config_watchers/tests.rs	2
 crates/vize_maestro/src/server/workspace_files/config_watchers/tests/protocol.rs	1
 crates/vize_maestro/src/server/workspace_files/tests.rs	1

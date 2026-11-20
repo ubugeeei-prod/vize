@@ -1,0 +1,6 @@
+declare module 'vue' {
+  interface ComponentCustomProperties {
+    $shout: (value: string) => string
+  }
+}
+export {}

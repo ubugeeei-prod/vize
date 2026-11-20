@@ -166,7 +166,7 @@ impl<'a> Roots<'a> {
                     if matches!(container.expression, JSXExpression::EmptyExpression(_)) {
                         continue;
                     }
-                    ops.push(Op::JsxChildValue(Box::new_in(
+                    ops.push(Op::ChildValue(Box::new_in(
                         InterpolationOp {
                             expression: self.expression(&container.expression)?,
                             raw_html: false,

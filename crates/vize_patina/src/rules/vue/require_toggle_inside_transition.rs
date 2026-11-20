@@ -43,7 +43,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::dom_tag_config::is_native_tag;
+use vize_l0::dom_tag_config::is_platform_tag;
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -157,6 +157,10 @@ impl Rule for RequireToggleInsideTransition {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Built-in `<transition>` / `<Transition>` wrapper (case-insensitive,
         // matching how Vue resolves the built-in component name).
@@ -184,7 +188,7 @@ impl Rule for RequireToggleInsideTransition {
         // whether or not the parser resolved it: `<router-view>`,
         // `<keep-alive>`, `<el-card>`, and the dynamic `<component>`. An `is`
         // attribute or binding re-targets a native tag the same way.
-        if !is_native_tag(child.tag) || Self::has_is(child) {
+        if !is_platform_tag(child.tag) || Self::has_is(child) {
             return;
         }
 

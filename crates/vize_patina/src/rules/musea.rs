@@ -157,10 +157,10 @@ impl MuseaLinter {
             return;
         };
         let tag_end = art_tag.len();
-        let define_art = define_art_rule_info(source);
+        let art_info = art_rule_info(source);
 
         // Check for title attribute
-        if self.check_require_title && !has_attribute(art_tag, b"title=") && !define_art.has_title {
+        if self.check_require_title && !has_attribute(art_tag, b"title=") && !art_info.has_title {
             result.add_diagnostic(
                 LintDiagnostic::error(
                     "musea/require-title",
@@ -175,7 +175,7 @@ impl MuseaLinter {
         // Check for component attribute
         if self.check_require_component
             && !has_attribute(art_tag, b"component=")
-            && !define_art.has_component
+            && !art_info.has_component
         {
             result.add_diagnostic(
                 LintDiagnostic::warn(
@@ -312,28 +312,59 @@ fn has_attribute(tag: &[u8], attr: &[u8]) -> bool {
 }
 
 #[derive(Default)]
-struct DefineArtRuleInfo {
+struct ArtRuleInfo {
     has_title: bool,
     has_component: bool,
 }
 
-fn define_art_rule_info(source: &str) -> DefineArtRuleInfo {
+fn art_rule_info(source: &str) -> ArtRuleInfo {
     let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, Default::default()) else {
-        return DefineArtRuleInfo::default();
+        return ArtRuleInfo::default();
     };
     let Some(script_setup) = descriptor.script_setup.as_ref() else {
-        return DefineArtRuleInfo::default();
+        return ArtRuleInfo::default();
     };
 
     let parsed = vize_croquis::script_parser::parse_script_setup(script_setup.content.as_ref());
-    let Some(art) = parsed.macros.define_art() else {
-        return DefineArtRuleInfo::default();
-    };
+    let art = parsed.macros.define_art();
+    let meta = vize_croquis::script_parser::parse_define_art_meta(script_setup.content.as_ref());
+    let art_source = source
+        .find("<art")
+        .and_then(|start| source.get(start..))
+        .unwrap_or("");
+    let inferred_targets = parsed
+        .import_sources
+        .keys()
+        .filter(|name| template_uses_component(art_source, name.as_str()))
+        .count();
+    let has_inferred_target = inferred_targets == 1;
 
-    DefineArtRuleInfo {
-        has_title: art.title.is_some() || !art.component_name.is_empty(),
-        has_component: art.component_source.is_some(),
+    ArtRuleInfo {
+        has_title: art.is_some_and(|art| art.title.is_some() || !art.component_name.is_empty())
+            || meta.as_ref().is_some_and(|meta| meta.title.is_some())
+            || has_inferred_target,
+        has_component: art.is_some_and(|art| art.component_source.is_some()) || has_inferred_target,
     }
+}
+
+fn template_uses_component(template: &str, name: &str) -> bool {
+    let mut cursor = 0;
+    while let Some(relative) = template.get(cursor..).and_then(|rest| rest.find('<')) {
+        let start = cursor + relative + 1;
+        let Some(rest) = template.get(start..) else {
+            return false;
+        };
+        if rest.starts_with(name)
+            && rest
+                .as_bytes()
+                .get(name.len())
+                .is_some_and(|byte| byte.is_ascii_whitespace() || matches!(byte, b'/' | b'>'))
+        {
+            return true;
+        }
+        cursor = start;
+    }
+    false
 }
 
 /// Extract the value of the name attribute from a tag (byte-level)

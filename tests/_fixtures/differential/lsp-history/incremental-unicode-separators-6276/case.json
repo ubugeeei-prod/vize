@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "commit": "a8b17f73b36814081df0fad7c2e8b1712f685aa9",
+  "id": "lsp/fix-history/incremental-unicode-separators-6276",
+  "requirement": "Incremental edits address authored LSP lines (CR, LF, CRLF only); U+2028, U+2029 and U+0085 stay inside a line and UTF-16 columns survive astral characters.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "formatting": true
+  },
+  "files": {
+    "App.vue": "<template>a 😀b\r\nc d</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "change": "App.vue",
+      "version": 2,
+      "contentChanges": [
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 14
+            },
+            "end": {
+              "line": 0,
+              "character": 15
+            }
+          },
+          "text": "Z"
+        }
+      ]
+    },
+    {
+      "change": "App.vue",
+      "version": 3,
+      "contentChanges": [
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 11
+            },
+            "end": {
+              "line": 0,
+              "character": 12
+            }
+          },
+          "text": ""
+        }
+      ]
+    },
+    {
+      "change": "App.vue",
+      "version": 4,
+      "contentChanges": [
+        {
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 1
+            },
+            "end": {
+              "line": 1,
+              "character": 1
+            }
+          },
+          "text": ""
+        }
+      ]
+    },
+    {
+      "request": "textDocument/formatting",
+      "uri": "App.vue",
+      "params": {
+        "options": {
+          "tabSize": 2,
+          "insertSpaces": true
+        }
+      }
+    },
+    {
+      "request": "textDocument/foldingRange",
+      "uri": "App.vue"
+    }
+  ]
+}

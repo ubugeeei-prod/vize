@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-model-component-dynamic-modifier-script-setup-op-5695",
+    history: "725b3313bcff8bb4679af5f455fdec9c75126439",
+    source: "<MyComp v-model:[field].trim=\"msg\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: Some(
+            true,
+        ),
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, normalizeProps as _normalizeProps, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_MyComp = _resolveComponent(\"MyComp\")\n  \n  return (_openBlock(), _createBlock(_component_MyComp, _normalizeProps({ [(_ctx.field)]: _ctx.msg,\n  [\"onUpdate:\" + (_ctx.field)]: $event => ((_ctx.msg) = $event),\n  [(_ctx.field) + \"Modifiers\"]: { trim: true } }), null, 16 /* FULL_PROPS */))\n}",
+    map: None,
+}

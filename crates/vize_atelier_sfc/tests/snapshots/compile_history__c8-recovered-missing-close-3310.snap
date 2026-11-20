@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-recovered-missing-close-3310",
+    history: "3c6e6362133dbd59843f5b4e2630812a1ab23909",
+    source: "<template><div><span v-for=\"(item, index) in items\">{{ item }}</span></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "Template compilation errors: [CompilerError { code: MissingEndTag, message: \"Element is missing end tag.\", loc: Some(SourceLocation { start: Position { offset: 0, line: 1, column: 1 }, end: Position { offset: 5, line: 1, column: 6 }, source: \"<div>\" }) }]",
+            code: Some(
+                "TEMPLATE_ERROR",
+            ),
+            loc: Some(
+                BlockLocation {
+                    start: 10,
+                    end: 69,
+                    tag_start: 0,
+                    tag_end: 80,
+                    start_line: 1,
+                    start_column: 11,
+                    end_line: 1,
+                    end_column: 70,
+                },
+            ),
+        },
+    ),
+)

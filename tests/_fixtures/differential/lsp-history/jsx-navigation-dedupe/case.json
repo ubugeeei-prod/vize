@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "commit": "f364b97274eba467295e2dbf1007018be6b4ffd1",
+  "id": "lsp/fix-history/jsx-navigation-dedupe",
+  "requirement": "JSX references, declaration and implementation list each mapped authored location once while keeping distinct target ranges in order.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"jsx\": \"preserve\", \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true }, \"include\": [\"src/**/*\"] }\n",
+    "src/Label.tsx": "export function Label(props: { text: string }) {\n  return <span>{props.text}</span>;\n}\n",
+    "src/App.tsx": "import { Label } from './Label';\n\nexport function App() {\n  return (\n    <div>\n      <Label text=\"a\" />\n      <Label text=\"b\" />\n    </div>\n  );\n}\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.tsx"
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "src/App.tsx",
+      "at": {
+        "find": "<Label",
+        "delta": 2
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": true
+        }
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/declaration",
+      "uri": "src/App.tsx",
+      "at": {
+        "find": "<Label",
+        "delta": 2
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/implementation",
+      "uri": "src/App.tsx",
+      "at": {
+        "find": "<Label",
+        "delta": 2
+      },
+      "retry": true
+    }
+  ]
+}

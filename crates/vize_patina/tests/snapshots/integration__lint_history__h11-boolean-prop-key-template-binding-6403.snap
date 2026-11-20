@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-boolean-prop-key-template-binding-6403",
+    history: "beb84df46db611f6bf017fa6803af8cf84e6d59e",
+    source: "<script setup lang=\"ts\">\nconst props = defineProps<{ open?: boolean; label: string }>()\n</script>\n\n<template>\n  <span v-if=\"props.open\">{{ props.label }}</span>\n</template>\n",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-unsafe-template-binding",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

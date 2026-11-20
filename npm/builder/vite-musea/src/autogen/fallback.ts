@@ -43,7 +43,9 @@ export function extractPropsSimple(source: string): PropDefinition[] {
  */
 export function generateMinimalArt(componentName: string, componentPath: string): string {
   return `<script setup lang="ts">
-defineArt(${JSON.stringify(componentPath)}, {
+import ${componentName} from ${JSON.stringify(componentPath)};
+
+defineArtMeta({
   title: ${JSON.stringify(componentName)},
 });
 </script>
@@ -170,7 +172,9 @@ function generateArtFileContent(
   const fixtureBlock = fixtureLines.length > 0 ? `${fixtureLines.join("\n")}\n\n` : "";
 
   return `<script setup lang="ts">
-${fixtureBlock}defineArt(${JSON.stringify(componentPath)}, {
+import ${componentName} from ${JSON.stringify(componentPath)};
+
+${fixtureBlock}defineArtMeta({
   title: ${JSON.stringify(componentName)},
 });
 </script>

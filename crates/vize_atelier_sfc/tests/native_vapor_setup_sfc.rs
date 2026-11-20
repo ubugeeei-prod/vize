@@ -3,7 +3,7 @@ use vize_atelier_sfc::{
     NativeVaporSetupSfcCompileError, NativeVaporSfcCompileOptions, compile_native_vapor_setup_sfc,
 };
 use vize_l0::Allocator;
-use vize_l3::decision::vapor::{VaporUnsupported, build_native_selected_setup_vapor_decisions};
+use vize_l3::decision::vapor::{VaporUnsupported, build_selected_setup_vapor_decisions};
 use vize_l4::{
     module::AssemblyError,
     targets::vapor::{VaporErrorKind, emit_selected_setup_component},
@@ -42,7 +42,7 @@ fn complete_original_setup_components_and_maps_match_independent_expectations() 
             setup.program().source(),
             setup.source().source()
         ));
-        let analysis = build_native_selected_setup_vapor_decisions(setup).unwrap();
+        let analysis = build_selected_setup_vapor_decisions(setup).unwrap();
         assert!(core::ptr::eq(analysis.owner(), setup.owner()));
         let recorded = emit_selected_setup_component::<Recorded>(&analysis, "3.6.0-rc.9").unwrap();
         let unrecorded = emit_selected_setup_component::<NoLinks>(&analysis, "3.6.0-rc.9").unwrap();

@@ -1,0 +1,6 @@
+<script setup lang="ts">
+</script>
+
+<template>
+  <div>{{ false }} {{ true }} {{ null }} {{ undefined }} {{ NaN }} {{ Infinity }} {{ Math.max(1, 2) }} {{ Date.now() }} {{ JSON.stringify({}) }}</div>
+</template>

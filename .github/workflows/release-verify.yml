@@ -148,6 +148,22 @@ jobs:
           OXLINT_VIZE_PUBLIC_VERSION: ${{ inputs.version }}
         run: node --test npm/linter/oxlint/src/windows-json-config.test.ts
 
+  # Exact published-package reproduction for the JavaScript-config regression in #13357.
+  verify-windows-js-config:
+    name: Verify Windows JavaScript config
+    needs: verify-npm
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ inputs.tag }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: "package.json", package-manager-cache: false }
+      - name: Install and run the reported JavaScript-config command from public npm
+        env:
+          VIZE_PUBLIC_VERSION: ${{ inputs.version }}
+        run: node --test tests/tooling/release/windows-js-config-public.test.ts
+
   # Gates nothing: Musea VRT from the published plugin in Chromium on Linux.
   verify-musea-vrt:
     name: Verify Musea VRT

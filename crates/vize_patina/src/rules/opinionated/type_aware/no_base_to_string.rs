@@ -18,4 +18,6 @@ impl Rule for NoBaseToString {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
+
+    metadata_only_type_rule!();
 }

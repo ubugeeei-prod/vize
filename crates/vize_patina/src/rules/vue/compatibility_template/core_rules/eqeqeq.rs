@@ -25,6 +25,10 @@ impl Rule for Eqeqeq {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::DIRECTIVE.union(crate::rule::RuleHooks::INTERPOLATION)
+    }
+
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
         check_sfc_styles(ctx, CoreKind::Eqeqeq);
     }

@@ -161,6 +161,34 @@ fn same_element_v_if_still_cannot_read_v_for_alias() {
     }
 }
 
+/// A scoped bare read in an attribute binding is a strict-context read. Its
+/// authored expression resolves through the one hoisted declaration, so only
+/// the strict read reports, once per use, like an interpolation (#13376).
+#[test]
+fn scoped_attribute_bindings_report_only_through_the_strict_context() {
+    let template = "<div>\n    <template\n      v-for=\"(option, index) in options.filter(item => !item.hide)\"\n      :key=\"missingKey || index\"\n    >\n      <a :href=\"option.to\" :title=\"missingTitle\">{{ missingBody }}</a>\n    </template>\n  </div>";
+    let code = strict_virtual_ts(template, Some(SCRIPT));
+    for name in ["missingKey", "missingTitle", "missingBody"] {
+        assert_eq!(
+            code.matches(&format!("var {name}: any = undefined; void ({name});"))
+                .count(),
+            1,
+            "{name} must be declared once:\n{code}"
+        );
+        assert_eq!(
+            code.matches(&format!("__vize_strict_template_context.{name})"))
+                .count(),
+            1,
+            "{name} must be read once on the strict context:\n{code}"
+        );
+        assert_eq!(
+            code.matches(&format!("\n  void ({name});\n")).count(),
+            0,
+            "{name} must not keep an undeclared lexical fallback:\n{code}"
+        );
+    }
+}
+
 /// An imported props alias in an intersection hides its members from the
 /// analyzer, so the props projection declares them as keyed locals. The typed
 /// props object, not the strict instance context, then decides whether a

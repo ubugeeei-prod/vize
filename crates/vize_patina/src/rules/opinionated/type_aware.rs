@@ -1,3 +1,11 @@
+macro_rules! metadata_only_type_rule {
+    () => {
+        fn template_hooks(&self) -> crate::rule::RuleHooks {
+            crate::rule::RuleHooks::NONE
+        }
+    };
+}
+
 mod await_thenable;
 mod no_array_delete;
 mod no_base_to_string;
@@ -132,4 +140,22 @@ pub(crate) fn register(registry: &mut RuleRegistry) {
     registry.register(Box::new(ReturnAwait));
     registry.register(Box::new(UnboundMethod));
     registry.register(Box::new(UseUnknownInCatchCallbackVariable));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::register;
+    use crate::rule::{RuleHooks, RuleRegistry};
+
+    #[test]
+    fn preset_entries_have_no_legacy_template_callbacks() {
+        let mut registry = RuleRegistry::new();
+        register(&mut registry);
+        assert!(
+            registry
+                .rules()
+                .iter()
+                .all(|rule| rule.template_hooks() == RuleHooks::NONE)
+        );
+    }
 }

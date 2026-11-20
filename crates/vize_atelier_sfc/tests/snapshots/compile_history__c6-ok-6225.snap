@@ -1,0 +1,36 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-ok-6225",
+    history: "5628b75a43444e4e7a2ae9d99ec88ca964ddf4f6",
+    source: "<template v-match=\"subject\"><p v-when=\"{ field: 1, ...const rest } if (remember(rest))\">{{ inspectRest(rest) }}</p><p v-when=\"_\">other</p></template>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (() => { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (__vize_match_0_0 == null) break a0; if (!(\"field\" in Object(__vize_match_0_0))) break a0; const __vize_match_0_1 = __vize_match_0_0[\"field\"]; if (__vize_match_0_1 !== 1) break a0; const __vize_match_0_2 = {}; for (const __vize_match_0_3 of Object.getOwnPropertyNames(Object(__vize_match_0_0)).concat(Object.getOwnPropertySymbols(Object(__vize_match_0_0)))) { if (![\"field\"].includes(__vize_match_0_3) && Object.prototype.propertyIsEnumerable.call(__vize_match_0_0, __vize_match_0_3)) Object.defineProperty(__vize_match_0_2, __vize_match_0_3, { value: __vize_match_0_0[__vize_match_0_3], enumerable: true, configurable: true, writable: true }); } { const rest = __vize_match_0_2; if (!(remember(rest))) break a0; return [0, rest]; } } return [1]; })(subject); return (__vize_match_0[0] === 0)\n    ? (() => { const [, rest] = __vize_match_0; return (_openBlock(), _createElementBlock(\"p\", { key: 0 }, _toDisplayString(inspectRest(rest)), 1 /* TEXT */)) })()\n    : (__vize_match_0[0] === 1)\n      ? (_openBlock(), _createElementBlock(\"p\", { key: 1 }, \"other\"))\n    : _createCommentVNode(\"v-if\", true) })()\n}",
+    map: None,
+}

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "commit": "d7e2bbc44b4ee6f9b34ac2e690f37fb7b00ad4cb",
+  "id": "lsp/fix-history/diagnostic-range-ends-3010",
+  "requirement": "Checker diagnostic range ends keep the exclusive authored end (identifier at end of line and before the closing tag).",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "App.vue": "<script setup lang=\"ts\">\nconst n: number = 'abc'\nconst m: string = missingName</script>\n<template>{{ unknownAtEnd }}</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    }
+  ]
+}

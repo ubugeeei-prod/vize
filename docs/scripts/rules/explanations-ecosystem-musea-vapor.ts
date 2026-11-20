@@ -81,16 +81,16 @@ export const ecosystemMuseaVaporExplanations: readonly ExplanationRecord[] = [
   [
     "musea/require-component",
     "The art block supplies a title but does not identify the component being previewed.",
-    "defineArt supplies ./Button.vue as the component for the art block.",
+    "The imported Button rendered by the variant identifies the art target.",
     "art に title はありますが、プレビューする component の指定がありません。",
-    "defineArt で ./Button.vue を art の component として指定します。",
+    "variant で import した Button を描画し、art の対象を特定します。",
   ],
   [
     "musea/require-title",
-    "The art block identifies Button.vue but supplies no title.",
-    "The defineArt options supply the Button title for the art block.",
-    "art に Button.vue の指定はありますが、title がありません。",
-    "defineArt のオプションで title を Button にし、art ブロックのタイトルを指定します。",
+    "The art block has neither explicit metadata nor an inferable component title.",
+    "The imported Button target supplies the inferred display title.",
+    "art に明示 metadata も推論できる component title もありません。",
+    "import した Button を対象にすることで表示 title を推論します。",
   ],
   [
     "musea/unique-variant-names",

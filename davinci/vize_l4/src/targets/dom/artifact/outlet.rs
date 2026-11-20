@@ -38,7 +38,7 @@ fn op_forwards(op: &Op<'_>) -> bool {
         Op::And(and) => has_forwarded_outlet(&and.region),
         Op::For(for_op) => has_forwarded_outlet(&for_op.region),
         Op::OriginalFor(for_op) => has_forwarded_outlet(&for_op.region),
-        Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => false,
+        Op::Text(_) | Op::Interpolation(_) | Op::ChildValue(_) | Op::Comment(_) => false,
     }
 }
 
@@ -229,7 +229,7 @@ fn emit_fallback_units(
         | Op::And(_)
         | Op::For(_)
         | Op::Slot(_)
-        | Op::JsxChildValue(_) => {
+        | Op::ChildValue(_) => {
             start_fallback_item(cx, compact, first);
             emit_array_child(cx, op, false, false)
         }
@@ -396,6 +396,6 @@ fn skip_op(cx: &mut EmitCx<'_>, op: &Op<'_>) {
             cx.walk.skip(slot.bindings.len());
             skip_region(cx, &slot.fallback);
         }
-        Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => {}
+        Op::Text(_) | Op::Interpolation(_) | Op::ChildValue(_) | Op::Comment(_) => {}
     }
 }

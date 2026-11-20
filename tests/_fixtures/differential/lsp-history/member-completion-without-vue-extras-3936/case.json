@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "commit": "831ba3528ee0b8056bca31e32cb9b110938a747c",
+  "id": "lsp/fix-history/member-completion-without-vue-extras-3936",
+  "requirement": "Checker member completions after . and ?. (with a typed prefix) list the receiver's members only, without Composition API or macro extras; identifier positions keep those extras.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "App.vue": "<script setup lang=\"ts\">\nconst user = { name: 'x', age: 1 }\nuser.\n</script>\n<template>{{ user. }}</template>\n",
+    "Opt.vue": "<script setup lang=\"ts\">\nconst user = { name: 'x', age: 1 }\nuser?.na\n</script>\n",
+    "Ident.vue": "<script setup lang=\"ts\">\nconst user = { name: 'x', age: 1 }\nconst x = us\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "user.\n",
+        "delta": 5,
+        "nth": 0
+      },
+      "labels": [
+        "name",
+        "age",
+        "ref",
+        "defineProps",
+        "computed"
+      ],
+      "retry": true
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "{{ user.",
+        "delta": 8,
+        "nth": 0
+      },
+      "labels": [
+        "name",
+        "age",
+        "ref"
+      ],
+      "retry": true
+    },
+    {
+      "open": "Opt.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "Opt.vue",
+      "at": {
+        "find": "user?.na",
+        "delta": 8,
+        "nth": 0
+      },
+      "labels": [
+        "name",
+        "age",
+        "ref",
+        "defineProps"
+      ],
+      "retry": true
+    },
+    {
+      "open": "Ident.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "Ident.vue",
+      "at": {
+        "find": "= us",
+        "delta": 4,
+        "nth": 0
+      },
+      "labels": [
+        "user",
+        "ref",
+        "defineProps"
+      ],
+      "retry": true
+    }
+  ]
+}

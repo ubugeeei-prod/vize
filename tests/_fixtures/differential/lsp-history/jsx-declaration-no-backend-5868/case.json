@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "commit": "6769bfb5bbd1d30df0cc76c45508718386920993",
+  "id": "lsp/fix-history/jsx-declaration-no-backend-5868",
+  "requirement": "Without the checker, JSX go-to-declaration returns null instead of a guessed location.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "src/Label.tsx": "export const Label = (props: { text: string }) => <span>{props.text}</span>;\n",
+    "src/App.tsx": "import { Label } from './Label';\n\nexport function App() {\n  return <Label text=\"hi\" />;\n}\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.tsx"
+    },
+    {
+      "request": "textDocument/declaration",
+      "uri": "src/App.tsx",
+      "at": {
+        "find": "<Label",
+        "delta": 2,
+        "nth": 0
+      }
+    }
+  ]
+}

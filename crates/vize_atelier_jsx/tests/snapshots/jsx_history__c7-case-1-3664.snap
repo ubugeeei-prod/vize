@@ -1,0 +1,45 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-1-3664",
+    history: "a8baf7bfaceb3a9ba4680a07b6a63b40b2386138",
+    source: "const A = () => <div>{ok ? <i/> : <b/>}</div>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: Some(
+            "babel",
+        ),
+        pragma: Some(
+            "Vue.h",
+        ),
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { createCommentVNode as _createCommentVNode } from \"vue\"\nconst _openBlock = () => {}\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), Vue.h(\"div\", null, [\n    (ok)\n      ? (_openBlock(), Vue.h(\"i\", { key: 0 }))\n      : (_openBlock(), Vue.h(\"b\", { key: 1 }))\n  ]))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "A",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { createCommentVNode as _createCommentVNode } from \"vue\"\nconst _openBlock = () => {}\n",
+            code: "export function render(_ctx, _cache) {\n  return (_openBlock(), Vue.h(\"div\", null, [\n    (ok)\n      ? (_openBlock(), Vue.h(\"i\", { key: 0 }))\n      : (_openBlock(), Vue.h(\"b\", { key: 1 }))\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

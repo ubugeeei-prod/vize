@@ -60,7 +60,7 @@ fn exhausted_editor_route_keeps_native_spelling_and_invalidation_inputs() {
     let mut routes = FxHashMap::default();
     let mut reachability = FxHashMap::default();
     let mut bindings = Vec::new();
-    let mut inputs = Vec::new();
+    let mut inputs = vize_carton::FxHashSet::default();
     let mut discovery = RouteDiscovery::new(
         &settings,
         &mut resolver,
@@ -99,7 +99,7 @@ fn reachability_cache_separates_importer_and_resolution_context() {
     let mut routes = FxHashMap::default();
     let mut reachability = FxHashMap::default();
     let mut bindings = Vec::new();
-    let mut inputs = Vec::new();
+    let mut inputs = vize_carton::FxHashSet::default();
     let mut discovery = RouteDiscovery::new(
         &settings,
         &mut resolver,

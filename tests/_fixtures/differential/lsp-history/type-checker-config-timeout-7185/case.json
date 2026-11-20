@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "commit": "d15a41f5d30eae45df29a6ec82292890f69756b9",
+  "id": "lsp/fix-history/type-checker-config-timeout-7185",
+  "requirement": "A workspace typeChecker.lspRequestTimeoutMs literal is accepted from one evaluated config snapshot and the type pass still publishes the checker diagnostics.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "vize.config.json": "{ \"typeChecker\": { \"strict\": true, \"lspRequestTimeoutMs\": 90000 } }\n",
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true }, \"include\": [\"*.vue\"] }\n",
+    "App.vue": "<script setup lang=\"ts\">\nconst label: string = 42\n</script>\n<template><p>{{ label }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    }
+  ]
+}

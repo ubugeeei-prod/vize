@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "9193b13ca62af15076609a3a8d7e2405b5df98d1",
+  "id": "lsp/fix-history/tc-vue27-render-h-sfc-constructors-6020-imported-sfc-static-wrong-member",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack vue27-render-h-sfc-constructors-6020 (case imported-sfc-static-wrong-member) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true,
+    "legacyVue2": true
+  },
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/ReproComponent.vue": "<script setup lang=\"ts\">\ndefineProps<{ label?: string }>()\n</script>\n\n<template>\n  <div>{{ label }}</div>\n</template>\n",
+    "src/main.ts": "import Vue from 'vue';\nimport ReproComponent from './ReproComponent.vue';\n\nexport default Vue.extend({\n  render: (h) => h(ReproComponent),\n});\n\nReproComponent.version.toFixed();\n",
+    "node_modules/vue/package.json": "{\"name\":\"vue\",\"version\":\"2.7.16\",\"types\":\"types/index.d.ts\"}",
+    "node_modules/vue/types/index.d.ts": "export interface VNode {}\nexport interface VNodeData {}\nexport interface ComponentOptions<V extends Vue = Vue> {\n  render?: (h: CreateElement) => VNode | null | void;\n}\nexport interface Vue {\n  readonly $data: Record<string, any>;\n  readonly $props: Record<string, any>;\n  readonly $el: Element;\n  readonly $options: Record<string, any>;\n  readonly $parent: Vue;\n  readonly $root: Vue;\n  readonly $children: Vue[];\n  readonly $refs: Record<string, any>;\n  readonly $slots: Record<string, VNode[] | undefined>;\n  readonly $scopedSlots: Record<string, unknown>;\n  readonly $isServer: boolean;\n  readonly $attrs: Record<string, string>;\n  readonly $listeners: Record<string, Function | Function[]>;\n  readonly $vnode: VNode;\n  readonly $ssrContext: any;\n  $mount(...args: any[]): this;\n  $forceUpdate(): void;\n  $destroy(): void;\n  $set(...args: any[]): any;\n  $delete(...args: any[]): any;\n  $watch(...args: any[]): any;\n  $on(...args: any[]): this;\n  $once(...args: any[]): this;\n  $off(...args: any[]): this;\n  $emit(...args: any[]): this;\n  $nextTick(...args: any[]): Promise<void>;\n  $createElement: CreateElement;\n}\nexport interface VueConstructor<V extends Vue = Vue> {\n  new (...args: any[]): V;\n  extend(options?: ComponentOptions<V>): VueConstructor<V>;\n  nextTick(...args: any[]): Promise<void>;\n  set(...args: any[]): any;\n  delete(...args: any[]): any;\n  directive(...args: any[]): any;\n  filter(...args: any[]): any;\n  component(...args: any[]): any;\n  use(...args: any[]): this;\n  mixin(...args: any[]): this;\n  compile(...args: any[]): any;\n  observable<T>(obj: T): T;\n  util: { warn(...args: any[]): void };\n  config: Record<string, any>;\n  version: string;\n}\ndeclare const Vue: VueConstructor;\nexport default Vue;\nexport { Vue };\nexport type FunctionalComponentOptions<Props = Record<string, any>> = (props: Props) => VNode;\nexport type DefineComponent<Props = Record<string, any>> = ComponentOptions<Vue> & {\n  readonly __props?: Props;\n};\nexport type Component = typeof Vue | FunctionalComponentOptions<any> | ComponentOptions<any> | DefineComponent<any>;\nexport type AsyncComponent = () => Promise<Component>;\nexport interface CreateElement {\n  (tag?: string | Component | AsyncComponent | (() => Component), children?: any): VNode;\n  (tag?: string | Component | AsyncComponent | (() => Component), data?: VNodeData, children?: any): VNode;\n}\n"
+  },
+  "steps": [
+    {
+      "open": "src/main.ts"
+    },
+    {
+      "diagnostics": "src/main.ts"
+    }
+  ]
+}

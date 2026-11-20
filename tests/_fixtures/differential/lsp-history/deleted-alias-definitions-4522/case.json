@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "commit": "6579045311b7d4d00d2e8b0e5378466c18091b10",
+  "id": "lsp/fix-history/deleted-alias-definitions-4522",
+  "requirement": "A deleted path-alias import target has no definition; reopening it as an unsaved buffer makes it navigable again.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"baseUrl\": \".\", \"paths\": { \"@/*\": [\"src/*\"] } }, \"include\": [\"src/**/*\"] }\n",
+    "src/components/Badge.vue": "<template><b /></template>\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport Badge from '@/components/Badge.vue'\n</script>\n<template><Badge /></template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "src/App.vue",
+      "at": {
+        "find": "<Badge",
+        "delta": 2,
+        "nth": 0
+      }
+    },
+    {
+      "remove": "src/components/Badge.vue"
+    },
+    {
+      "notify": "workspace/didChangeWatchedFiles",
+      "params": {
+        "changes": [
+          {
+            "uri": "${workspace}/src/components/Badge.vue",
+            "type": 3
+          }
+        ]
+      }
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "src/App.vue",
+      "at": {
+        "find": "<Badge",
+        "delta": 2,
+        "nth": 0
+      },
+      "retry": true
+    },
+    {
+      "open": "src/components/Badge.vue",
+      "text": "<template><i /></template>\n"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "src/App.vue",
+      "at": {
+        "find": "<Badge",
+        "delta": 2,
+        "nth": 0
+      },
+      "retry": true
+    }
+  ]
+}

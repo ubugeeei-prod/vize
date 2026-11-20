@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-hydration-import-meta-env-1234",
+    history: "dc52682b235458680031a94b38c3b8887660db69",
+    source: "<div>{{ import.meta.env.MODE }}</div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "ssr/no-hydration-mismatch",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "ssr/no-hydration-mismatch",
+                severity: Warning,
+                message: "'import.meta.env' may cause hydration mismatch between server and client",
+                start: 5,
+                end: 31,
+                help: Some(
+                    "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "ssr/no-hydration-mismatch",
+                    severity: Warning,
+                    message: "'import.meta.env' may cause hydration mismatch between server and client",
+                    start: 5,
+                    end: 31,
+                    help: Some(
+                        "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

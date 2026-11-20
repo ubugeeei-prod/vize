@@ -1,6 +1,7 @@
 //! Reusable paths only; source consumers choose their buffer lifetime.
 
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::sync::atomic::Ordering;
 
 use tower_lsp::lsp_types::Url;
@@ -10,7 +11,7 @@ use super::{CachedPaths, ServerState, background, discover_paths};
 pub(super) struct ProjectPaths {
     pub(super) generation: u64,
     pub(super) roots: Vec<PathBuf>,
-    pub(super) uris: Vec<Url>,
+    pub(super) uris: Arc<[Url]>,
 }
 
 impl ServerState {
@@ -44,13 +45,14 @@ impl ServerState {
             if !self.project_source_snapshot_current(&roots, generation) {
                 continue;
             }
+            let uris = Arc::from(uris);
             // A partial walk still returns all available sources, but must
             // retry discovery next time even without a file event.
             if complete {
                 *inventory.paths.write() = Some(CachedPaths {
                     generation,
                     roots: roots.clone(),
-                    uris: uris.clone(),
+                    uris: Arc::clone(&uris),
                 });
             }
             return ProjectPaths {

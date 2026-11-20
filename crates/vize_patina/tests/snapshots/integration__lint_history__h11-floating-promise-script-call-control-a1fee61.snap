@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-floating-promise-script-call-control-a1fee61",
+    history: "a1fee61d1433ad5d0883df597c95751135aabefd",
+    source: "<script setup lang=\"ts\">\nasync function save(): Promise<void> {}\nsave()\n</script>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-floating-promises",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "type/no-floating-promises",
+                severity: Warning,
+                message: "Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+                start: 65,
+                end: 71,
+                help: Some(
+                    "Add `await`, return the Promise, or prefix it with `void` when the fire-and-forget behavior is intentional.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "type/no-floating-promises",
+                    severity: Warning,
+                    message: "Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+                    start: 65,
+                    end: 71,
+                    help: Some(
+                        "Add `await`, return the Promise, or prefix it with `void` when the fire-and-forget behavior is intentional.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "commit": "1d21728c43103aff81708279db4a9be6553eb248",
+  "id": "lsp/fix-history/template-component-props-2221",
+  "requirement": "Imported component prop completions survive checker merging; prop hover and definition navigate the child declaration.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ title: string; maxCount?: number }>()\ndefineEmits<{ select: [id: number] }>()\n</script>\n<template><p>{{ title }}</p></template>\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n<template><Child :max-count=\"1\" ti /></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": " ti",
+        "delta": 3,
+        "nth": 0
+      },
+      "labels": [
+        "title",
+        ":title"
+      ],
+      "retry": true
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": ":max-count",
+        "delta": 2,
+        "nth": 0
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": ":max-count",
+        "delta": 2,
+        "nth": 0
+      },
+      "retry": true
+    }
+  ]
+}

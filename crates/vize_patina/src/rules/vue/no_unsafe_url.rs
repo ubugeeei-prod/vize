@@ -49,7 +49,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::Expression;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_l0::is_native_tag;
+use vize_l0::is_platform_tag;
 use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -68,7 +68,7 @@ pub struct NoUnsafeUrl;
 /// Component props have no known DOM destination, and image/media resource
 /// attributes do not execute `javascript:` URLs.
 fn is_unsafe_url_sink(name: &str, element: &ElementNode<'_>) -> bool {
-    if element.tag_type != ElementType::Element || !is_native_tag(element.tag) {
+    if element.tag_type != ElementType::Element || !is_platform_tag(element.tag) {
         return false;
     }
 
@@ -207,6 +207,10 @@ fn static_string_literal_prefix(value: &str) -> Option<(&str, &str)> {
 impl Rule for NoUnsafeUrl {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT.union(crate::rule::RuleHooks::DIRECTIVE)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

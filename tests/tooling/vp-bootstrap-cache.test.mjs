@@ -8,6 +8,7 @@ import {
   bootstrapCachePrefix,
   bootstrapCacheWrite,
 } from "../../.github/actions/cache-vp-bootstrap/cache-key.ts";
+import { plannedRunner, plannedRunnerJobs } from "./support/planned-runner.ts";
 
 const root = new URL("../../", import.meta.url);
 const workflow = (path) => parse(readFileSync(new URL(path, root), "utf8"));
@@ -174,8 +175,12 @@ const dependencyConsumers = [
 
 const frontendConsumerRunners = new Map([
   ["check.yml/check-js", "blacksmith-32vcpu-ubuntu-2404"],
-  ["check.yml/security-audit", "blacksmith-32vcpu-ubuntu-2404"],
-  ["check.yml/node-engine-compat", "blacksmith-32vcpu-ubuntu-2404"],
+  // #6830: a planner-selected skip runs hosted; selected work keeps the maximum runner.
+  ["check.yml/security-audit", plannedRunner(plannedRunnerJobs["check.yml"]["security-audit"])],
+  [
+    "check.yml/node-engine-compat",
+    plannedRunner(plannedRunnerJobs["check.yml"]["node-engine-compat"]),
+  ],
 ]);
 
 function assertDependencyConsumer(
@@ -217,8 +222,10 @@ void test("Linux source consumers retain the same dependency identity without ca
   assert.equal(dependencyConsumers.length, 11, "ten ordinary jobs plus the differential seed");
   for (const [file, name, runtime] of dependencyConsumers) {
     const job = workflow(`.github/workflows/${file}`).jobs[name];
+    const planned = plannedRunnerJobs[file]?.[name];
     const runner =
-      frontendConsumerRunners.get(file + "/" + name) ?? "blacksmith-32vcpu-ubuntu-2404";
+      frontendConsumerRunners.get(file + "/" + name) ??
+      (planned ? plannedRunner(planned) : "blacksmith-32vcpu-ubuntu-2404");
     const setup = assertDependencyConsumer(job, runtime, runner);
     assert.equal(
       setup.with["run-install"],

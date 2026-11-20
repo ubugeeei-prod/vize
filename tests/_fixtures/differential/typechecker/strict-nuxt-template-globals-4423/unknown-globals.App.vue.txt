@@ -1,0 +1,6 @@
+<script setup lang="ts">
+</script>
+
+<template>
+  <div>{{ currentUser.missing }} {{ $shout(1) }} {{ $unknownPlugin('x') }}</div>
+</template>

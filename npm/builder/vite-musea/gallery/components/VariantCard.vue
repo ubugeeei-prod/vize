@@ -12,19 +12,11 @@ import MdiIcon from "./MdiIcon.vue";
 const props = defineProps<{
   artPath: string;
   variant: ArtVariant;
-  componentName?: string;
 }>();
 
 const copied = ref(false);
 
-function resolveSelfReferences(template: string): string {
-  if (!props.componentName) return template;
-  return template
-    .replace(/<Self(\s|>|\/)/g, `<${props.componentName}$1`)
-    .replace(/<\/Self>/g, `</${props.componentName}>`);
-}
-
-const resolvedTemplate = computed(() => resolveSelfReferences(props.variant.template));
+const resolvedTemplate = computed(() => props.variant.template);
 
 async function copyTemplate() {
   try {

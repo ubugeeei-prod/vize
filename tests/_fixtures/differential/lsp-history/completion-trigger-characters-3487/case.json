@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "commit": "55a6b949d217080b986acda36a835719907dc09c",
+  "id": "lsp/fix-history/completion-trigger-characters-3487",
+  "requirement": "Completion advertises the reference server's ordered trigger characters plus a single quote; a bound-value `=` offers script bindings while a static `=` does not.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "recordInitialize": true,
+  "files": {
+    "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ title: string; count?: number }>()\n</script>\n<template><p>{{ title }}</p></template>\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nconst heading = 'x'\n</script>\n<template><Child :title= title= /></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": ":title=",
+        "delta": 7,
+        "nth": 0
+      },
+      "labels": [
+        "heading",
+        "Child"
+      ]
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": " title=",
+        "delta": 7,
+        "nth": 0
+      },
+      "labels": [
+        "heading",
+        "Child"
+      ]
+    }
+  ]
+}

@@ -49,6 +49,10 @@ impl Rule for NoUnusedScriptVars {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE
+    }
+
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         if ctx.sfc_descriptor().is_none() {
             return;

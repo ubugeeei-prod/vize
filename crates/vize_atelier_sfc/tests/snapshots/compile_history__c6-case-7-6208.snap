@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-7-6208",
+    history: "60656df799a4c879268eb9a25d2a086ec8c96cdd",
+    source: "<template><div>{{ state.label }}<Child :label=\"state.label\"/>{{ state.label }}</div></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, nthChild as _nthChild, setInsertionState as _setInsertionState, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div> <!----> </div>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n1 = t0()\n  const n2 = _next(_child(n1))\n  const n3 = _nthChild(n1, 2)\n  const x1 = _txt(n1)\n  _renderEffect(() => _setText(x1, _toDisplayString(_ctx.state.label)))\n  const _component_Child = _resolveComponent(\"Child\")\n  _setInsertionState(n1, n2)\n  const n0 = _createComponentWithFallback(_component_Child, { label: () => (_ctx.state.label) }, null, false)\n  _renderEffect(() => _setText(n3, _toDisplayString(_ctx.state.label)))\n  return n1\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

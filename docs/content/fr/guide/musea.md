@@ -93,9 +93,9 @@ Les options partagées sont `include`, `exclude`, `basePath`, `storybookCompat` 
 ```art-vue
 <script setup lang="ts">
 import { ref } from "vue";
+import MyButton from "./MyButton.vue";
 
-defineArt("./MyButton.vue", {
-  title: "MyButton",
+defineArtMeta({
   category: "Components",
   status: "ready",
   tags: ["button", "ui", "input"],
@@ -115,9 +115,7 @@ const pressed = ref(false);
 </art>
 ```
 
-`defineArt(source, options)` est une macro de compilation. Il déclare le composant que Musea doit charger, plus les métadonnées qui vivaient autrefois sur `<art>`. On préfère une chaîne de chemin à composante relative telle que `defineArt("./MyButton.vue", { title: "MyButton" })`; Musea importe ce composant dans du code généré à l’exécution et le serveur de langage utilise la même source pour l’inférence prop et slot. La chaîne source participe à la complétion de chemin, au diagnostic des fichiers non résolus, aux liens de documents et à go-to-definition.
-
-`<art title="..." component="...">` fonctionne toujours pour la compatibilité, et les attributs explicites de `<art>` `defineArt` outrepasser les métadonnées lorsque les deux sont présents.
+Le composant cible est déduit de la balise importée commune à toutes les variantes. Vue vérifie donc les props, les événements et les slots comme dans un SFC ordinaire. `defineArtMeta()` est facultatif et ne sert qu’à remplacer les métadonnées déduites. `title` est également facultatif : il utilise le nom de la liaison du composant, ou le nom du fichier si aucune cible n’est déduite. Pour une composition volontairement ambiguë, utilisez `defineArt(MyButton, metadata?)` afin de préciser la cible.
 
 ### État variant local
 
@@ -126,8 +124,7 @@ L’état racine `<script setup>` est isolé par variante par défaut. Chaque va
 ```art-vue
 <script setup lang="ts">
 import { computed, ref } from "vue";
-
-defineArt("./Counter.vue", { title: "Counter" });
+import Counter from "./Counter.vue";
 
 const count = ref(0);
 const doubled = computed(() => count.value * 2);
@@ -148,8 +145,7 @@ Utilisez `<script setup isolate="false">` uniquement lorsque le fichier d’art 
 ```art-vue
 <script setup lang="ts" isolate="false">
 import { ref } from "vue";
-
-defineArt("./Counter.vue", { title: "Counter" });
+import Counter from "./Counter.vue";
 
 const sharedCount = ref(0);
 </script>
@@ -159,18 +155,20 @@ const sharedCount = ref(0);
 
 | Élément / Macro                  | Objectif                                                 |
 | -------------------------------- | -------------------------------------------------------- |
-| `defineArt(source, options)`     | Composant cible et métadonnées artistiques               |
-| `defineArt(...).title`           | Nom d’affichage                                          |
-| `defineArt(...).category`        | Regroupement dans la barre latérale                      |
-| `defineArt(...).status`          | Insigne de statut optionnel                              |
-| `defineArt(...).tags`            | Balises de recherche et de filtrage                      |
+| Balise de composant importée     | Cible déduite et typée par Vue                           |
+| `defineArtMeta(options)`         | Métadonnées facultatives de la galerie                   |
+| `defineArtMeta(...).title`       | Remplacement facultatif du nom d’affichage               |
+| `defineArtMeta(...).category`    | Regroupement dans la barre latérale                      |
+| `defineArtMeta(...).status`      | Insigne de statut optionnel                              |
+| `defineArtMeta(...).tags`        | Balises de recherche et de filtrage                      |
+| `defineArt(component, options?)` | Cible explicite pour un Art ambigu                       |
 | `<script setup>`                 | État de configuration variant local par défaut           |
 | `<script setup isolate="false">` | État partagé de configuration entre toutes les variantes |
 | `<art>`                          | Bloc des variantes racines                               |
-| `<art title component ...>`      | Attributs de métadonnées de compatibilité                |
 | `<variant>`                      | Variation des composantes nommées                        |
 | `default`                        | Marque la variante par défaut                            |
-| `args`, `viewport`, `skip-vrt`   | Configuration variante optionnelle                       |
+| `play`                           | Test d’interaction typé                                  |
+| `viewport`, `skip-vrt`           | Configuration facultative des tests visuels              |
 
 Gardez les fichiers d’art près du composant lorsque les variantes font partie du contrat du composant :
 
@@ -197,7 +195,7 @@ musea({
 });
 ```
 
-Dans l’art en ligne, utilisez `<Self>` pour rendre le composant hôte.
+Dans l’art en ligne, utilisez le nom SFC normal du composant hôte, par exemple `<Button>` dans `Button.vue`.
 
 ## Caractéristiques de la galerie
 

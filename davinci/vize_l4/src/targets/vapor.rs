@@ -5,7 +5,7 @@
 //! ordered roots; L4 writes complete JavaScript and linked literals once.
 
 use vize_l0::{Span, ToCompactString, id::NodeId};
-use vize_l3::decision::vapor::{NativeTemplateVaporAnalysis, VaporUnsupported};
+use vize_l3::decision::vapor::{TemplateVaporAnalysis, VaporUnsupported};
 
 use crate::module::{AssemblyError, assemble_template_with_prelude};
 use crate::runtime::{Runtime, vocabulary};
@@ -53,7 +53,7 @@ pub struct VaporError {
 /// }
 /// ```
 pub fn emit_template<L: LinkSink>(
-    analysis: &NativeTemplateVaporAnalysis<'_, '_>,
+    analysis: &TemplateVaporAnalysis<'_, '_>,
 ) -> Result<Emitted<L>, VaporError> {
     let (prelude, render) = fragments(analysis)?;
     assemble_template_with_prelude(prelude, render, vocabulary(Runtime::VueVapor))
@@ -70,7 +70,7 @@ fn error(kind: VaporErrorKind) -> VaporError {
 
 /// Reuse the same single encoding of genuine L3 facts for both module surfaces.
 fn fragments<L: LinkSink>(
-    analysis: &NativeTemplateVaporAnalysis<'_, '_>,
+    analysis: &TemplateVaporAnalysis<'_, '_>,
 ) -> Result<(Writer<L>, Writer<L>), VaporError> {
     let facts = analysis
         .vapor()

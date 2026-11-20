@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "commit": "044e518c22a7d72fb6b3ccc3d0c8361f816019a9",
+  "id": "lsp/fix-history/panic-free-server-routing-malformed",
+  "requirement": "Server routing, colors and folding over a malformed document fail safely and the server keeps answering after a racing edit.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "Edge.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst 名前 = ref(\nconst props = defineProps<{ 'a-b': string; café: number }>()\n</script>\n<template>\n  <div :class=\"{ 'x': 名前 \" @click=\">{{ café. }}<Comp v-bind=\"props\" :café=\" /><span v-for=\"(é, i) in\" />\n  <p :title=\"'unterminated>😀 {{ props.café }}</p>\n</template>\n<style>.a { color: v-bind( }</style>\n"
+  },
+  "steps": [
+    {
+      "open": "Edge.vue"
+    },
+    {
+      "request": "textDocument/documentColor",
+      "uri": "Edge.vue"
+    },
+    {
+      "request": "textDocument/foldingRange",
+      "uri": "Edge.vue"
+    },
+    {
+      "change": "Edge.vue",
+      "version": 2,
+      "contentChanges": [
+        {
+          "range": {
+            "start": {
+              "line": 2,
+              "character": 0
+            },
+            "end": {
+              "line": 2,
+              "character": 0
+            }
+          },
+          "text": "😀"
+        }
+      ]
+    },
+    {
+      "change": "Edge.vue",
+      "version": 3,
+      "contentChanges": [
+        {
+          "range": {
+            "start": {
+              "line": 400,
+              "character": 0
+            },
+            "end": {
+              "line": 401,
+              "character": 0
+            }
+          },
+          "text": "x"
+        }
+      ]
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "Edge.vue",
+      "at": {
+        "find": "名前",
+        "delta": 0,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/documentSymbol",
+      "uri": "Edge.vue"
+    }
+  ]
+}

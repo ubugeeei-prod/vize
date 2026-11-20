@@ -5,13 +5,13 @@ use vize_l2::{
     lang::js::NativeTemplateFile,
     op::{ElementOp, Namespace, Op},
 };
-use vize_l3::decision::{StaticLevel, dom::DomChanges, native::NativeTemplateDomAnalysis};
+use vize_l3::decision::{StaticLevel, dom::DomChanges, template::TemplateDomAnalysis};
 use vize_l4::write::EmitDocument;
 
 pub(crate) fn inspect<'owner, 'a>(
     id: &str,
     original: &'owner NativeTemplateFile<'a>,
-    analysis: &NativeTemplateDomAnalysis<'owner, 'a>,
+    analysis: &TemplateDomAnalysis<'owner, 'a>,
     document: &EmitDocument,
 ) -> Result<(u32, u32), &'static str> {
     let file = original.file().ok_or("original File")?;
@@ -61,7 +61,7 @@ pub(crate) fn inspect<'owner, 'a>(
 fn children<'owner, 'a>(
     original: ChildrenView<'owner, 'a>,
     canonical: &'owner [Op<'a>],
-    analysis: &NativeTemplateDomAnalysis<'owner, 'a>,
+    analysis: &TemplateDomAnalysis<'owner, 'a>,
     document: &EmitDocument,
     expected: &[Span],
     counts: &mut (u32, u32),
@@ -132,7 +132,7 @@ fn children<'owner, 'a>(
 fn element_projection<'owner, 'a>(
     original: ChildView<'owner, 'a>,
     element: &'owner ElementOp<'a>,
-    analysis: &NativeTemplateDomAnalysis<'owner, 'a>,
+    analysis: &TemplateDomAnalysis<'owner, 'a>,
     document: &EmitDocument,
     expected: &[Span],
     counts: &mut (u32, u32),

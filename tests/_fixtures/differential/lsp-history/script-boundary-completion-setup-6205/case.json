@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "9ff23eb19c0f22bc1b449bd7eb5c2fcdda74f57d",
+  "id": "lsp/fix-history/script-boundary-completion-setup-6205",
+  "requirement": "Completion at the end of a setup body (immediately before </script>) is classified as script and offers script bindings.",
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\r\nconst label = '雪😀';\r\nconst other = 1\r\nlab</script>\r\n<template><p /></template>\r\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "lab</script>",
+        "delta": 3,
+        "nth": 0
+      },
+      "labels": [
+        "label",
+        "other"
+      ]
+    }
+  ]
+}

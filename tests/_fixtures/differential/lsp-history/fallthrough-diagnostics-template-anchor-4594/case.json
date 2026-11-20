@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "commit": "36cea242982dcc54da2728ee896df3d06e3c4c48",
+  "id": "lsp/fix-history/fallthrough-diagnostics-template-anchor-4594",
+  "requirement": "Fallthrough-attribute checker diagnostics anchor on the authored template root with zero-based UTF-16 positions after astral text.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "MultiRoot.vue": "<script setup lang=\"ts\">\nconst marker = '😀';\n</script>\n\n<template>\n  <header :class=\"$attrs.class\">top</header>\n  <main>body</main>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "MultiRoot.vue"
+    },
+    {
+      "diagnostics": "MultiRoot.vue"
+    }
+  ]
+}

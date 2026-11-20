@@ -34,7 +34,7 @@ fn op_keyword(op: &Op<'_>) -> &'static str {
         Op::Component(_) => "ui.component",
         Op::Text(_) => "ui.text",
         Op::Interpolation(_) => "ui.interpolation",
-        Op::JsxChildValue(_) => "ui.jsx-child",
+        Op::ChildValue(_) => "ui.jsx-child",
         Op::Comment(_) => "ui.comment",
         Op::If(_) => "ui.if",
         Op::And(_) => "ui.and",
@@ -129,7 +129,7 @@ fn every_op<'a>(allocator: &'a Allocator) -> Vec<'a, Op<'a>> {
                 },
                 &allocator,
             )),
-            Op::JsxChildValue(Box::new_in(
+            Op::ChildValue(Box::new_in(
                 InterpolationOp {
                     expression: expr,
                     raw_html: false,

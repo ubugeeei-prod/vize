@@ -105,7 +105,7 @@ impl ServerState {
                 );
                 continue;
             }
-            let source = document.map(|document| String::from(document.text()));
+            let source = document.map(|document| document.text_snapshot());
             missing.push((path.clone(), stamp, source));
         }
         if !missing.is_empty() {
@@ -116,8 +116,9 @@ impl ServerState {
                     let parsed = missing
                         .into_iter()
                         .filter_map(|(path, stamp, source)| {
-                            let source = source
-                                .or_else(|| fs::read_to_string(&path).ok().map(String::from))?;
+                            let source = source.or_else(|| {
+                                fs::read_to_string(&path).ok().map(std::sync::Arc::new)
+                            })?;
                             let names = declared_names(&source);
                             Some((path, CachedNames { stamp, names }))
                         })

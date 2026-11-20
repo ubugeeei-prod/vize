@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-nested-conditional-for-slot-carrier-props-stay-i-5582",
+    history: "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    source: "<div><div v-for=\"row in rows\" v-if=\"row.show\" :key=\"row.id\"><div v-for=\"item in row.items\" :key=\"item.id\"><Mount><span slot=\"popoverContent\"><h4>{{ item.name }}</h4></span></Mount></div></div></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, renderList as _renderList, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Mount = _resolveComponent(\"Mount\")\n  \n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (row.show)\n      ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList(rows, (row) => {\n        return (_openBlock(), _createElementBlock(\"div\", { key: row.id }, [\n          (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(row.items, (item) => {\n            return (_openBlock(), _createElementBlock(\"div\", { key: item.id }, [\n              _createVNode(_component_Mount, null, {\n                default: _withCtx(() => [\n                  _createElementVNode(\"span\", { slot: \"popoverContent\" }, [\n                    _createElementVNode(\"h4\", null, _toDisplayString(item.name), 1 /* TEXT */)\n                  ])\n                ]),\n                _: 2 /* DYNAMIC */\n              }, 1024 /* DYNAMIC_SLOTS */)\n            ]))\n          }), 128 /* KEYED_FRAGMENT */))\n        ]))\n      }), 128 /* KEYED_FRAGMENT */))\n      : _createCommentVNode(\"v-if\", true)\n  ]))\n}",
+    map: None,
+}

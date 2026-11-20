@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "commit": "9150b60adddfe60515e79bde6d02824da55ff5fe",
+  "id": "lsp/fix-history/template-unicode-semantic-tokens-7057",
+  "requirement": "Template semantic tokens keep complete Unicode identifier names with UTF-16 start/length.",
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nconst 値 = 2;\nconst ñandú = 3;\nconst café = 1;\nconst total = 0;\n</script>\n<template>\n  <p>{{ 値 }}{{ total }}</p>\n  <p>{{ ñandú }}</p>\n  <p>{{ café }}</p>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/semanticTokens/full",
+      "uri": "App.vue"
+    }
+  ]
+}

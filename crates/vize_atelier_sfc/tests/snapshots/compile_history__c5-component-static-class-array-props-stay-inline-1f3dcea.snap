@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-component-static-class-array-props-stay-inline-1f3dcea",
+    history: "1f3dcea8d6b549e00a01239c371c54c983f4bc65",
+    source: "<section><Menu><Content align=\"end\" side=\"top\" :side-offset=\"8\" :class=\"['z-50', 'bg-white']\"><Item /></Content></Menu><button><div class=\"i-stop\"></div></button><button><div class=\"i-trash\"></div></button></section>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Item = _resolveComponent(\"Item\")\n  const _component_Content = _resolveComponent(\"Content\")\n  const _component_Menu = _resolveComponent(\"Menu\")\n  \n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    _createVNode(_component_Menu, null, {\n      default: _withCtx(() => [\n        _createVNode(_component_Content, {\n          align: \"end\",\n          side: \"top\",\n          \"side-offset\": 8,\n          class: _normalizeClass(['z-50', 'bg-white'])\n        }, {\n          default: _withCtx(() => [\n            _createVNode(_component_Item)\n          ]),\n          _: 1 /* STABLE */\n        })\n      ]),\n      _: 1 /* STABLE */\n    }),\n    _createElementVNode(\"button\", null, [\n      _createElementVNode(\"div\", { class: \"i-stop\" })\n    ]),\n    _createElementVNode(\"button\", null, [\n      _createElementVNode(\"div\", { class: \"i-trash\" })\n    ])\n  ]))\n}",
+    map: None,
+}

@@ -102,7 +102,7 @@ fn nine_whole_original_key_sources_capture_real_bindings_and_maps() -> Result<()
                     && setup.binding(key).is_err(),
                 "{id}: actual key identity is neither value nor outer ScriptUnit"
             );
-            let analysis = build_native_selected_setup_dom_decisions(setup)
+            let analysis = build_selected_setup_dom_decisions(setup)
                 .map_err(|error| cstr!("{id}: {error:?}"))?;
             let dom = analysis.dom().ok_or("DOM")?;
             require!(

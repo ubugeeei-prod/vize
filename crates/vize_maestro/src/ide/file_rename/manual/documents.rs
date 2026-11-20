@@ -53,7 +53,7 @@ pub(in crate::ide::file_rename) fn rename_open_documents(
             state.remove_virtual_docs(old_uri);
 
             if let Some(document) = state.documents.get(&new_uri) {
-                let content = document.text();
+                let content = document.text_snapshot();
                 drop(document);
                 state.update_virtual_docs(&new_uri, &content);
             }

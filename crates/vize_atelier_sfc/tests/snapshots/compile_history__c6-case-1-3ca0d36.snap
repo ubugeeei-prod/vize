@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-3ca0d36",
+    history: "3ca0d36d7374019c762b7f7a6c5bdb1788e08185",
+    source: "<script setup lang=\"ts\">\nimport { Item } from './types'\nimport ItemTab from './ItemTab.vue'\nconst { item = {} as Item } = defineProps<{ item?: Item }>()\n</script>\n<template><ItemTab :label=\"item.label ?? 'none'\" /></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nimport ItemTab from './ItemTab.vue'\n\n\nexport default {\n  __name: 'History',\n  props: {\n    item: { type: null, required: false, default: () => ({}) }\n  },\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createBlock(ItemTab, { label: __props.item.label ?? 'none' }, null, 8 /* PROPS */, [\"label\"]))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "ItemTab": SetupConst,
+                        "item": Props,
+                        "Item": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

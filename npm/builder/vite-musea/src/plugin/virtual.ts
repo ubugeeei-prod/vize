@@ -188,6 +188,9 @@ export function createLoad(state: VirtualModuleState) {
             root: state.getConfigRoot(),
             scanRoots: state.getScanRoots(),
             sharedBindings: shared,
+            play: variant.play,
+            props: variant.props,
+            attrs: variant.attrs,
           });
           if (compiled.errors.length > 0) {
             throw new Error(

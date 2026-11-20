@@ -120,14 +120,14 @@ export const chineseRules1: Record<string, readonly [string, string, string]> = 
     "样式引用此示例配置的令牌 --color-primary。",
   ],
   "musea/require-component": [
-    "要求 &lt;art&gt; 块具有 component 属性",
+    "要求 &lt;art&gt; 块具有可解析的目标组件",
     "art 块提供了标题，却未标识要预览的组件。",
-    "defineArt 将 ./Button.vue 指定为 art 块的组件。",
+    "variant 渲染导入的 Button，从而标识 art 的目标。",
   ],
   "musea/require-title": [
-    "要求 &lt;art&gt; 块具有 title 属性",
-    "art 块标识了 Button.vue，却没有提供标题。",
-    "defineArt 选项为 art 块提供 Button 标题。",
+    "要求 &lt;art&gt; 块具有可解析的显示标题",
+    "art 块既没有显式元数据，也没有可推断标题的组件。",
+    "导入的 Button 目标提供推断出的显示标题。",
   ],
   "musea/unique-variant-names": [
     "要求 variant 名称唯一",

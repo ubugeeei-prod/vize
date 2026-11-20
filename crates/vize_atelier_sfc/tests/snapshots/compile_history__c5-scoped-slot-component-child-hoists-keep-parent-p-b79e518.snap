@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-scoped-slot-component-child-hoists-keep-parent-p-b79e518",
+    history: "b79e518f6956bda75d4157cc04d352ba73d4fb89",
+    source: "<CursorMomentum v-slot=\"{ currentValue }\"><Volumed :perspective=\"800\" transform=\"rotateX(45deg) translateY(3px)\"><TestDummyMarkerFlat :style=\"{ transform: `rotate(${currentValue}deg)` }\" /></Volumed></CursorMomentum>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createVNode as _createVNode, normalizeStyle as _normalizeStyle, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_TestDummyMarkerFlat = _resolveComponent(\"TestDummyMarkerFlat\")\n  const _component_Volumed = _resolveComponent(\"Volumed\")\n  const _component_CursorMomentum = _resolveComponent(\"CursorMomentum\")\n  \n  return (_openBlock(), _createBlock(_component_CursorMomentum, null, {\n    default: _withCtx(({ currentValue }) => [\n      _createVNode(_component_Volumed, {\n        perspective: 800,\n        transform: \"rotateX(45deg) translateY(3px)\"\n      }, {\n        default: _withCtx(() => [\n          _createVNode(_component_TestDummyMarkerFlat, {\n            style: _normalizeStyle({ transform: `rotate(${currentValue}deg)` })\n          }, null, 8 /* PROPS */, [\"style\"])\n        ]),\n        _: 2 /* DYNAMIC */\n      }, 1024 /* DYNAMIC_SLOTS */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

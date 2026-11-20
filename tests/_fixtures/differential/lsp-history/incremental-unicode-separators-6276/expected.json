@@ -1,0 +1,24 @@
+[
+  {
+    "step": 4,
+    "result": [
+      {
+        "newText": "<template>\n  a😀Z\n  c d\n</template>\n",
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 2
+          },
+          "start": {
+            "character": 0,
+            "line": 0
+          }
+        }
+      }
+    ]
+  },
+  {
+    "step": 5,
+    "result": null
+  }
+]

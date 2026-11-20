@@ -1,38 +1,7 @@
 name: Consumer instance globals capture
 
 on:
-  pull_request:
-    paths:
-      - .github/**
-      - .cargo/**
-      - crates/**
-      - davinci/**
-      - tests/fixtures/typechecker/undeclared-instance-globals-10617/**
-      - tests/_helpers/realworld-patch.ts
-      - tests/differential/build-receipt.ts
-      - tests/differential/sha256.ts
-      - tests/tooling/content-mapper-instance-globals-10617.test.ts
-      - tests/tooling/content-mapper-instance-globals-packet-authority.test.ts
-      - tests/tooling/support/content-mapper-instance-globals*.ts
-      - tests/tooling/support/content-mapper-parenthesis-mappings-11675.ts
-      - tests/tooling/support/helper-abi-source-admission-11809.ts
-      - tests/tooling/support/lsp/launch.ts
-      - tests/tooling/support/lsp/paths.ts
-      - tests/tooling/support/vue-config-fixture.ts
-      - npm/cli/**
-      - tools/support/compat/github/plan-tooling-tests.mjs
-      - tools/support/compat/github/source-cli*
-      - tools/support/compat/github/tooling-product-inputs.ts
-      - tools/support/compat/content-mapper/**
-      - tools/support/json-value.ts
-      - tools/support/release/computed_event_custody.ts
-      - vendor/**
-      - Cargo.toml
-      - Cargo.lock
-      - rust-toolchain.toml
-      - package.json
-      - pnpm-lock.yaml
-      - pnpm-workspace.yaml
+  # #6830: off the PR tier; its campaign test runs in nightly Full qualification.
   workflow_dispatch:
     inputs:
       expected-source-sha:

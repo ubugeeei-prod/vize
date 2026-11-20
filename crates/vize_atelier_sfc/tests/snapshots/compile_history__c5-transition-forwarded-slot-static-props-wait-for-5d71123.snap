@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-transition-forwarded-slot-static-props-wait-for-5d71123",
+    history: "5d711236917debc459cda09056c76461ac119b77",
+    source: "<div class=\"container\"><svg><path d=\"M0 0z\" /></svg><Transition name=\"fade\"><div v-if=\"open\" class=\"content\"><slot /></div></Transition></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, renderSlot as _renderSlot, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, Transition as _Transition, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"container\" }, [\n    (_openBlock(), _createElementBlock(\"svg\", null, [\n      _createElementVNode(\"path\", { d: \"M0 0z\" })\n    ])),\n    _createVNode(_Transition, { name: \"fade\" }, {\n      default: _withCtx(() => [\n        (open)\n          ? (_openBlock(), _createElementBlock(\"div\", {\n            key: 0,\n            class: \"content\"\n          }, [\n            _renderSlot(_ctx.$slots, \"default\")\n          ]))\n          : _createCommentVNode(\"v-if\", true)\n      ]),\n      _: 3 /* FORWARDED */\n    })\n  ]))\n}",
+    map: None,
+}

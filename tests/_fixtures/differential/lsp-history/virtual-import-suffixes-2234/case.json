@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "commit": "8e424b91ac3fa4a8832907836ce4c3db2f20563c",
+  "id": "lsp/fix-history/virtual-import-suffixes-2234",
+  "requirement": "Checker messages restore internal .vue.ts/.vue.tsx suffixes to the authored .vue imports while value hints stay.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "Child.vue": "<script setup lang=\"ts\">\ndefineProps<{ n: number }>()\n</script>\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nimport Missing from './Missing.vue'\nconst wrong: string = Child\n</script>\n<template><Child :n=\"'x'\" /></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    }
+  ]
+}

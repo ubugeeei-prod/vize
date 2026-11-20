@@ -1,0 +1,30 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-1-0642abb",
+    history: "0642abbf95ea6e7410ecea098270916241a67927",
+    source: "// 😀 保全\r\nimport type { Ref } from 'vue';\r\nexport interface Props { label: Ref<string> }\r\nexport const label: string = 'retained';\r\nexport default label;\r\n",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "// 😀 保全\r\nimport type { Ref } from 'vue';\r\nexport interface Props { label: Ref<string> }\r\nexport const label: string = 'retained';\r\nexport default label;\r\n",
+    module_map: None,
+    components: [],
+    diagnostics: [],
+}

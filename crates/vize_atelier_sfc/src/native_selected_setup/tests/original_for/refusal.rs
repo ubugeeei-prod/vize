@@ -164,7 +164,7 @@ fn constant_full_capture_generic_and_zero_occurrence_literal_preserve_distinct_p
         );
         assert!(mutable.result().is_ok(), "{declaration}");
         let view = mutable.observation().admitted().unwrap();
-        let selected = build_native_selected_setup_dom_decisions(view.setup()).unwrap();
+        let selected = build_selected_setup_dom_decisions(view.setup()).unwrap();
         assert!(selected.dom().unwrap().unsupported().is_empty());
         let generic = vize_l3::decision::build_dom_file_decisions(view.setup().file()).unwrap();
         assert_eq!(

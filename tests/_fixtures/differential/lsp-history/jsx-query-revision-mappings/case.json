@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "commit": "d59acf245cb52694df5f8e8536b223a705d732d6",
+  "id": "lsp/fix-history/jsx-query-revision-mappings",
+  "requirement": "Cross-root JSX navigation keeps authored coordinates of the other live root after a later revision of the querying document.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"jsx\": \"preserve\", \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true }, \"include\": [\"src/**/*\"] }\n",
+    "src/Label.tsx": "export function Label(props: { text: string }) {\n  return <span>{props.text}</span>;\n}\n",
+    "src/App.tsx": "import { Label } from './Label';\n\nexport function App() {\n  return <Label text=\"hi\" />;\n}\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.tsx"
+    },
+    {
+      "open": "src/Label.tsx"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "src/App.tsx",
+      "at": {
+        "find": "<Label",
+        "delta": 2
+      },
+      "retry": true
+    },
+    {
+      "change": "src/App.tsx",
+      "version": 2,
+      "contentChanges": [
+        {
+          "text": "// revised\n// twice\nimport { Label } from './Label';\n\nexport function App() {\n  return <Label text=\"hi\" />;\n}\n"
+        }
+      ]
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "src/App.tsx",
+      "at": {
+        "find": "<Label",
+        "delta": 2
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "src/App.tsx",
+      "at": {
+        "find": "<Label",
+        "delta": 2
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": true
+        }
+      },
+      "retry": true
+    }
+  ]
+}

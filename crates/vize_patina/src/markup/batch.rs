@@ -47,19 +47,53 @@ impl<'r> RankedMarkupRule<'r> {
 /// through this one walk, so adding a rule adds hook calls, never a walk.
 /// Each rule receives exactly the callbacks its own
 /// [`MarkupRule::traversal`] keeps.
-#[derive(Clone, Copy)]
 pub struct MarkupRules<'r> {
     rules: &'r [RankedMarkupRule<'r>],
-    bindings: bool,
+    elements_and_bindings: SmallVec<[&'r RankedMarkupRule<'r>; 64]>,
+    attributes_and_lists: SmallVec<[&'r RankedMarkupRule<'r>; 8]>,
+    text_and_exits: SmallVec<[&'r RankedMarkupRule<'r>; 8]>,
+    interpolations: SmallVec<[&'r RankedMarkupRule<'r>; 8]>,
+    directives: SmallVec<[&'r RankedMarkupRule<'r>; 8]>,
+    conditionals: SmallVec<[&'r RankedMarkupRule<'r>; 8]>,
+    has_bindings: bool,
 }
 
 impl<'r> MarkupRules<'r> {
     /// Rules in rank order; hooks forward in slice order.
     pub fn new(rules: &'r [RankedMarkupRule<'r>]) -> Self {
-        Self {
+        let mut batch = Self {
             rules,
-            bindings: rules.iter().any(|rule| rule.traversal.enters_bindings()),
+            elements_and_bindings: SmallVec::new(),
+            attributes_and_lists: SmallVec::new(),
+            text_and_exits: SmallVec::new(),
+            interpolations: SmallVec::new(),
+            directives: SmallVec::new(),
+            conditionals: SmallVec::new(),
+            has_bindings: false,
+        };
+        for entry in rules {
+            let traversal = entry.traversal;
+            if traversal.enters_elements() || traversal.enters_bindings() {
+                batch.elements_and_bindings.push(entry);
+            }
+            if traversal.keeps_attributes_and_lists() {
+                batch.attributes_and_lists.push(entry);
+            }
+            if traversal.keeps_text_and_exits() {
+                batch.text_and_exits.push(entry);
+            }
+            if traversal.enters_interpolations() {
+                batch.interpolations.push(entry);
+            }
+            if traversal.enters_directives() {
+                batch.directives.push(entry);
+            }
+            if traversal.enters_conditionals() {
+                batch.conditionals.push(entry);
+            }
+            batch.has_bindings |= traversal.enters_bindings();
         }
+        batch
     }
 
     /// Whether no rule is selected.
@@ -73,15 +107,13 @@ impl<'r> MarkupRules<'r> {
     fn each<'a>(
         &self,
         ctx: &mut MarkupContext<'_, 'a>,
-        keeps: fn(MarkupTraversal) -> bool,
+        entries: &[&'r RankedMarkupRule<'r>],
         mut hook: impl FnMut(&RankedMarkupRule<'r>, &mut MarkupContext<'_, 'a>),
     ) {
-        for entry in self.rules {
-            if keeps(entry.traversal) {
-                ctx.lint().set_callback_rule(entry.rank);
-                ctx.lint().current_rule = entry.name;
-                hook(entry, ctx);
-            }
+        for &entry in entries {
+            ctx.lint().set_callback_rule(entry.rank);
+            ctx.lint().current_rule = entry.name;
+            hook(entry, ctx);
         }
     }
 }
@@ -91,17 +123,33 @@ impl MarkupRule for MarkupRules<'_> {
         ""
     }
 
+    fn traversal(&self) -> MarkupTraversal {
+        if self.elements_and_bindings.is_empty()
+            && self.attributes_and_lists.is_empty()
+            && self.text_and_exits.is_empty()
+            && self.interpolations.is_empty()
+            && self.directives.is_empty()
+            && self.conditionals.is_empty()
+        {
+            MarkupTraversal::Document
+        } else if self.conditionals.is_empty() {
+            MarkupTraversal::Batch
+        } else {
+            MarkupTraversal::BatchWithConditionals
+        }
+    }
+
     fn shares_element_reads(&self) -> bool {
         true
     }
 
     fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {
         ctx.lint().replay_callback_site(CallbackSite::Template);
-        self.each(
-            ctx,
-            |_| true,
-            |entry, ctx| entry.rule.enter_document(ctx, document),
-        );
+        for entry in self.rules {
+            ctx.lint().set_callback_rule(entry.rank);
+            ctx.lint().current_rule = entry.name;
+            entry.rule.enter_document(ctx, document);
+        }
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
@@ -110,21 +158,44 @@ impl MarkupRule for MarkupRules<'_> {
         // One binding walk per element, not per rule. Each rule still reports
         // its attributes beside its element, before the next rule runs.
         let mut bindings: SmallVec<[MarkupBinding<'a>; 8]> = SmallVec::new();
-        if self.bindings {
+        if self.has_bindings {
             element.walk_bindings(&mut |binding| bindings.push(binding));
         }
-        for entry in self.rules {
-            if entry.traversal.enters_elements() {
-                ctx.lint().set_callback_rule(entry.rank);
-                ctx.lint().current_rule = entry.name;
-                entry.rule.enter_element(ctx, element);
-            }
-            if entry.traversal.enters_bindings() {
-                for binding in &bindings {
+        for &entry in &self.elements_and_bindings {
+            match entry.traversal {
+                MarkupTraversal::Full => {
                     ctx.lint().set_callback_rule(entry.rank);
                     ctx.lint().current_rule = entry.name;
-                    entry.rule.enter_binding(ctx, element, binding);
+                    entry.rule.enter_element(ctx, element);
+                    for binding in &bindings {
+                        ctx.lint().set_callback_rule(entry.rank);
+                        ctx.lint().current_rule = entry.name;
+                        entry.rule.enter_binding(ctx, element, binding);
+                    }
                 }
+                MarkupTraversal::Elements
+                | MarkupTraversal::ElementsAndText
+                | MarkupTraversal::ElementsAndInterpolations
+                | MarkupTraversal::ElementsAndDirectives => {
+                    ctx.lint().set_callback_rule(entry.rank);
+                    ctx.lint().current_rule = entry.name;
+                    entry.rule.enter_element(ctx, element);
+                }
+                MarkupTraversal::Bindings => {
+                    for binding in &bindings {
+                        ctx.lint().set_callback_rule(entry.rank);
+                        ctx.lint().current_rule = entry.name;
+                        entry.rule.enter_binding(ctx, element, binding);
+                    }
+                }
+                MarkupTraversal::Directives
+                | MarkupTraversal::AttributesAndLists
+                | MarkupTraversal::Batch
+                | MarkupTraversal::BatchWithConditionals
+                | MarkupTraversal::Document => debug_assert!(
+                    false,
+                    "element dispatch plan contains a traversal without element or binding hooks"
+                ),
             }
         }
     }
@@ -132,19 +203,15 @@ impl MarkupRule for MarkupRules<'_> {
     fn enter_attributes<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         ctx.lint()
             .replay_callback_site(CallbackSite::Attributes(element.range().start));
-        self.each(
-            ctx,
-            MarkupTraversal::keeps_attributes_and_lists,
-            |entry, ctx| {
-                entry.rule.enter_attributes(ctx, element);
-            },
-        );
+        self.each(ctx, &self.attributes_and_lists, |entry, ctx| {
+            entry.rule.enter_attributes(ctx, element);
+        });
     }
 
     fn exit_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
         ctx.lint()
             .replay_callback_site(CallbackSite::ExitElement(element.range().start));
-        self.each(ctx, MarkupTraversal::keeps_text_and_exits, |entry, ctx| {
+        self.each(ctx, &self.text_and_exits, |entry, ctx| {
             entry.rule.exit_element(ctx, element);
         });
     }
@@ -159,7 +226,7 @@ impl MarkupRule for MarkupRules<'_> {
             element.range().start,
             directive.range().start,
         ));
-        self.each(ctx, MarkupTraversal::enters_directives, |entry, ctx| {
+        self.each(ctx, &self.directives, |entry, ctx| {
             entry.rule.enter_directive(ctx, element, directive);
         });
     }
@@ -171,7 +238,7 @@ impl MarkupRule for MarkupRules<'_> {
     ) {
         ctx.lint()
             .replay_callback_site(CallbackSite::Conditional(conditional.range().start));
-        self.each(ctx, MarkupTraversal::enters_conditionals, |entry, ctx| {
+        self.each(ctx, &self.conditionals, |entry, ctx| {
             entry.rule.enter_conditional(ctx, conditional);
         });
     }
@@ -179,19 +246,15 @@ impl MarkupRule for MarkupRules<'_> {
     fn enter_list<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, list: &MarkupList<'a>) {
         ctx.lint()
             .replay_callback_site(CallbackSite::List(list.range().start));
-        self.each(
-            ctx,
-            MarkupTraversal::keeps_attributes_and_lists,
-            |entry, ctx| {
-                entry.rule.enter_list(ctx, list);
-            },
-        );
+        self.each(ctx, &self.attributes_and_lists, |entry, ctx| {
+            entry.rule.enter_list(ctx, list);
+        });
     }
 
     fn enter_text<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, text: &MarkupText<'a>) {
         ctx.lint()
             .replay_callback_site(CallbackSite::Text(text.range().start));
-        self.each(ctx, MarkupTraversal::keeps_text_and_exits, |entry, ctx| {
+        self.each(ctx, &self.text_and_exits, |entry, ctx| {
             entry.rule.enter_text(ctx, text);
         });
     }
@@ -199,7 +262,7 @@ impl MarkupRule for MarkupRules<'_> {
     fn enter_interpolation(&self, ctx: &mut MarkupContext<'_, '_>, range: ByteRange) {
         ctx.lint()
             .replay_callback_site(CallbackSite::Interpolation(range.start));
-        self.each(ctx, MarkupTraversal::enters_interpolations, |entry, ctx| {
+        self.each(ctx, &self.interpolations, |entry, ctx| {
             entry.rule.enter_interpolation(ctx, range);
         });
     }

@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-slot-element-compound-with-quoted-interp-5396",
+    history: "f80bbb5d3786f5014b73da0899102a9f1f1a8826",
+    source: "<Foo><div v-if=\"searchValue.length\"><span>Add \"{{ searchValue }}\" as a new Client</span></div></Foo>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Foo = _resolveComponent(\"Foo\")\n  \n  return (_openBlock(), _createBlock(_component_Foo, null, {\n    default: _withCtx(() => [\n      (searchValue.length)\n        ? (_openBlock(), _createElementBlock(\"div\", { key: 0 }, [\n          _createElementVNode(\"span\", null, \"Add \\\"\" + _toDisplayString(searchValue) + \"\\\" as a new Client\", 1 /* TEXT */)\n        ]))\n        : _createCommentVNode(\"v-if\", true)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

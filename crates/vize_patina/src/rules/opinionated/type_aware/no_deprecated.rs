@@ -18,4 +18,6 @@ impl Rule for NoDeprecated {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
+
+    metadata_only_type_rule!();
 }

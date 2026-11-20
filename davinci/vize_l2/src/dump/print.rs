@@ -186,9 +186,9 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &Op, depth: usize, mode: Style) -> 
             quoted(w, text.content.as_str())?;
             end_line(w, text.span, mode)
         }
-        Op::Interpolation(interpolation) | Op::JsxChildValue(interpolation) => {
+        Op::Interpolation(interpolation) | Op::ChildValue(interpolation) => {
             indent(w, depth)?;
-            w.write_str(if matches!(op, Op::JsxChildValue(_)) {
+            w.write_str(if matches!(op, Op::ChildValue(_)) {
                 "ui.jsx-child "
             } else {
                 "ui.interpolation "

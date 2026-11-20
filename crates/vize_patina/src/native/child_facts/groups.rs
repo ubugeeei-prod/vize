@@ -21,13 +21,13 @@ impl FactProducer<Evidence> for NativeLintHeaders {
 pub(super) struct HeaderDemand;
 impl FactConsumer for HeaderDemand {
     const NAME: &'static str = "native-direct-child-header";
-    const DEMAND: Demand = Demand::NONE.with(ids::NATIVE_LINT_HEADERS);
+    const DEMAND: Demand = Demand::NONE.with(ids::ORIGINAL_LINT_HEADERS);
 }
 
 /// Fact group containing closed interpolation markers from one direct child.
 pub struct NativeDirectInterpolations;
 impl FactGroup for NativeDirectInterpolations {
-    const ID: AnalysisId = ids::NATIVE_DIRECT_INTERPOLATIONS;
+    const ID: AnalysisId = ids::ORIGINAL_DIRECT_INTERPOLATIONS;
     const NAME: &'static str = "native-direct-interpolations";
     const STRATUM: u8 = 0;
     const DEPENDS: Demand = Demand::NONE;
@@ -48,12 +48,12 @@ impl WitnessGroup for NativeDirectInterpolations {
 /// Fact group containing textarea interpolation counterexamples.
 pub struct NativeTextareaMustache;
 impl FactGroup for NativeTextareaMustache {
-    const ID: AnalysisId = ids::NATIVE_TEXTAREA_MUSTACHE;
+    const ID: AnalysisId = ids::ORIGINAL_TEXTAREA_MUSTACHE;
     const NAME: &'static str = "native-textarea-mustache";
     const STRATUM: u8 = 1;
     const DEPENDS: Demand = Demand::NONE
-        .with(ids::NATIVE_LINT_HEADERS)
-        .with(ids::NATIVE_DIRECT_INTERPOLATIONS);
+        .with(ids::ORIGINAL_LINT_HEADERS)
+        .with(ids::ORIGINAL_DIRECT_INTERPOLATIONS);
     type Key = u32;
     type Value = NativeTextareaMustacheFact;
 }
@@ -97,9 +97,9 @@ pub struct TextareaMustacheDemand;
 impl FactConsumer for TextareaMustacheDemand {
     const NAME: &'static str = "vue/no-textarea-mustache";
     const DEMAND: Demand = Demand::NONE
-        .with(ids::NATIVE_LINT_HEADERS)
-        .with(ids::NATIVE_DIRECT_INTERPOLATIONS)
-        .with(ids::NATIVE_TEXTAREA_MUSTACHE);
+        .with(ids::ORIGINAL_LINT_HEADERS)
+        .with(ids::ORIGINAL_DIRECT_INTERPOLATIONS)
+        .with(ids::ORIGINAL_TEXTAREA_MUSTACHE);
 }
 pub(super) static REGISTRY: FactRegistry<Evidence> = FactRegistry::new(&[
     ProducerEntry::of::<NativeLintHeaders>(),

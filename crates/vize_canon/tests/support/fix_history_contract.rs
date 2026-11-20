@@ -52,6 +52,32 @@ pub(crate) struct CheckerOptions {
     #[serde(default)]
     pub(crate) legacy_vue2: bool,
     pub(crate) virtual_ts_checks: Option<VirtualTsChecks>,
+    /// `VirtualTsOptions` the `vize check` Nuxt detection derives from a
+    /// project's generated declaration graph.
+    #[serde(default)]
+    pub(crate) strict_instance_globals: bool,
+    #[serde(default)]
+    pub(crate) auto_import_stubs: Vec<String>,
+    /// Package routes `vize check` installs, as `(importer, specifier)` pairs.
+    #[serde(default)]
+    pub(crate) package_routes: Vec<PackageRoute>,
+    /// Workspace packages linked into `node_modules`, as `(package, link)`.
+    #[serde(default)]
+    pub(crate) workspace_links: Vec<WorkspaceLink>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(crate) struct WorkspaceLink {
+    pub(crate) package: String,
+    pub(crate) link: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(crate) struct PackageRoute {
+    pub(crate) importer: String,
+    pub(crate) specifier: String,
 }
 
 /// `BatchTypeChecker::set_virtual_ts_checks` as the original test called it.

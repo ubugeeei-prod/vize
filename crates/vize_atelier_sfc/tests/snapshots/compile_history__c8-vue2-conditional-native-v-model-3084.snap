@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-vue2-conditional-native-v-model-3084",
+    history: "0a3641d18e59ec215e291a8c73b75517fe7d8c25",
+    source: "<input v-model=\"enabled ? primary : fallback.value\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: Some(
+            "quirks",
+        ),
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return _withDirectives((_openBlock(), _createElementBlock(\"input\", {\n    \"onUpdate:modelValue\": $event => (_ctx.enabled ? _ctx.primary : _ctx.fallback.value = $event)\n  }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"])), [\n    [_vModelText, _ctx.enabled ? _ctx.primary : _ctx.fallback.value]\n  ])\n}",
+    map: None,
+}

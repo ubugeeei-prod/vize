@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-mathml-5778",
+    history: "8f3d843c1aff1f1d034946ab7a244ae8a655ce07",
+    source: "<math><msub :data-depth=\"depth\"><mi>x</mi></msub></math>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"math\", null, [\n    _createElementVNode(\"msub\", { \"data-depth\": depth }, [\n      _createElementVNode(\"mi\", null, \"x\")\n    ], 8 /* PROPS */, [\"data-depth\"])\n  ]))\n}",
+    map: None,
+}

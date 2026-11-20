@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+  "id": "lsp/fix-history/tc-template-ref-slot-vnode-handlers-5962-vnode-hook-receives-vnode",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack template-ref-slot-vnode-handlers-5962 (case vnode-hook-receives-vnode) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/vue-shim.d.ts": "import 'vue'\n\ndeclare module 'vue' {\n  export interface VNode {\n    type: unknown\n  }\n}\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport type { VNode } from 'vue'\n\nfunction handleVNodeMounted(vnode: VNode) {\n  vnode.type\n}\n</script>\n\n<template>\n  <transition @vue:mounted=\"handleVNodeMounted\">\n    <span />\n  </transition>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "src/vue-shim.d.ts"
+    },
+    {
+      "diagnostics": "src/vue-shim.d.ts"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-source-order-default-if-before-late-named-slot-k-5552",
+    history: "af800fd3996e05a0df0e0566267a7099d982963a",
+    source: "<PublicView><form><Notice v-if=\"done\">{{ ok }}</Notice><Notice v-if=\"error\">{{ error }}</Notice></form><template #notice><Icon /> {{ msg }}</template></PublicView>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Notice = _resolveComponent(\"Notice\")\n  const _component_Icon = _resolveComponent(\"Icon\")\n  const _component_PublicView = _resolveComponent(\"PublicView\")\n  \n  return (_openBlock(), _createBlock(_component_PublicView, null, {\n    notice: _withCtx(() => [\n      _createVNode(_component_Icon),\n      _createTextVNode(\" \" + _toDisplayString(msg), 1 /* TEXT */)\n    ]),\n    default: _withCtx(() => [\n      _createElementVNode(\"form\", null, [\n        (done)\n          ? (_openBlock(), _createBlock(_component_Notice, { key: 0 }, {\n            default: _withCtx(() => [\n              _createTextVNode(_toDisplayString(ok), 1 /* TEXT */)\n            ]),\n            _: 1 /* STABLE */\n          }))\n          : _createCommentVNode(\"v-if\", true),\n        (error)\n          ? (_openBlock(), _createBlock(_component_Notice, { key: 1 }, {\n            default: _withCtx(() => [\n              _createTextVNode(_toDisplayString(error), 1 /* TEXT */)\n            ]),\n            _: 1 /* STABLE */\n          }))\n          : _createCommentVNode(\"v-if\", true)\n      ])\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

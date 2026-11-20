@@ -7,6 +7,12 @@ import { fileURLToPath } from "node:url";
 
 import { expectedCompilerOutputs } from "./tool-matrix-compiler-paths.ts";
 import {
+  matrixRuleOptions,
+  matrixVueVersion,
+  writeMatrixConfig,
+} from "../../fixtures/lint_divergence/matrix_rule_options.ts";
+import { isolationRoot, mirrorFixture } from "../../fixtures/lint_divergence/isolation.ts";
+import {
   displayCommand,
   toolArgs,
   typecheckCorpusGlobs,
@@ -26,6 +32,13 @@ import {
 } from "./tool-matrix-typechecker.ts";
 import { typecheckerRunStatus, typecheckerSetupFailure } from "./typechecker-qualification.ts";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
+const lintRuleMap = JSON.parse(
+  readFileSync(join(repoRoot, "tests", "_fixtures", "patina-eslint-vue-rule-map.json"), "utf8"),
+);
+const compatibilityLedger = JSON.parse(
+  readFileSync(join(repoRoot, "tests", "_fixtures", "fixture-compatibility-ledger.json"), "utf8"),
+);
+const lintMatrixRuleOptions = matrixRuleOptions(repoRoot, lintRuleMap);
 export function runTool(project, tool, args, launch, outputDir) {
   const prepared = prepareToolRun(project, tool, args, launch, outputDir);
   if (prepared.run != null) return prepared.run;
@@ -66,8 +79,8 @@ export async function runToolWithHeartbeat(project, tool, args, launch, outputDi
 }
 
 function prepareToolRun(project, tool, args, launch, outputDir) {
-  const cwd = resolve(repoRoot, project.fixturePath);
-  const fixtureExists = existsSync(cwd);
+  const fixtureCwd = resolve(repoRoot, project.fixturePath);
+  const fixtureExists = existsSync(fixtureCwd);
   const compilerOutputDir =
     tool === "compiler" && !args.dryRun && fixtureExists
       ? mkdtempSync(join(tmpdir(), "vize-fixture-compiler-"))
@@ -76,19 +89,21 @@ function prepareToolRun(project, tool, args, launch, outputDir) {
     project,
     tool,
     args,
-    cwd,
+    fixtureCwd,
     fixtureExists,
   );
+  const linterMatrixConfig = prepareLinterMatrixConfig(project, tool, args, fixtureExists);
   const commandArgs = [
     ...launch.prefix,
     ...toolArgs(project, tool, compilerOutputDir ?? "<compiler-output>", {
+      linterConfigPath: linterMatrixConfig?.commandPath,
       typecheckTsconfigPath: typecheckerFixtureTsconfig?.relativePath,
     }),
   ];
   const base = {
     tool,
     command: displayCommand(launch.command, commandArgs),
-    cwd: relative(repoRoot, cwd),
+    cwd: relative(repoRoot, fixtureCwd),
     durationMs: 0,
     fileCount: null,
     exitCode: null,
@@ -97,6 +112,9 @@ function prepareToolRun(project, tool, args, launch, outputDir) {
   };
   if (args.dryRun) return { run: { ...base, status: "planned" } };
   if (!fixtureExists) return { run: { ...base, status: "missing-fixture" } };
+  const isolatedLinterCwd =
+    tool === "linter" ? prepareIsolatedLinterCwd(fixtureCwd, project) : null;
+  const cwd = isolatedLinterCwd ?? fixtureCwd;
   const formatterStateBefore =
     tool === "formatter" ? snapshotFormatterInputs(cwd, project.vueGlobs) : null;
   const expectedToolFiles =
@@ -113,8 +131,10 @@ function prepareToolRun(project, tool, args, launch, outputDir) {
     cwd,
     expectedToolFiles,
     formatterStateBefore,
+    isolatedLinterCwd,
     outputDir,
     project,
+    linterMatrixConfig,
     typecheckerFixtureTsconfig,
     tool,
   };
@@ -127,6 +147,34 @@ function cleanupToolRun(prepared) {
   if (prepared.typecheckerFixtureTsconfig?.absolutePath != null) {
     rmSync(prepared.typecheckerFixtureTsconfig.absolutePath, { force: true });
   }
+  if (prepared.linterMatrixConfig?.absolutePath != null) {
+    rmSync(dirname(prepared.linterMatrixConfig.absolutePath), { recursive: true, force: true });
+  }
+  if (prepared.isolatedLinterCwd != null) {
+    rmSync(prepared.isolatedLinterCwd, { recursive: true, force: true });
+  }
+}
+
+function prepareIsolatedLinterCwd(fixtureCwd, project) {
+  const mirror = mkdtempSync(join(isolationRoot(), `${fixtureProjectId(project)}-`));
+  try {
+    mirrorFixture(fixtureCwd, mirror);
+    return mirror;
+  } catch (error) {
+    rmSync(mirror, { recursive: true, force: true });
+    throw error;
+  }
+}
+
+function prepareLinterMatrixConfig(project, tool, args, fixtureExists) {
+  if (tool !== "linter") return null;
+  const vueVersion = matrixVueVersion(compatibilityLedger, project.fixturePath);
+  if (lintMatrixRuleOptions.length === 0 && vueVersion === null) return null;
+  if (args.dryRun || !fixtureExists) {
+    return { absolutePath: null, commandPath: "<linter-matrix-config>" };
+  }
+  const absolutePath = writeMatrixConfig(lintMatrixRuleOptions, vueVersion);
+  return absolutePath === null ? null : { absolutePath, commandPath: absolutePath };
 }
 
 function prepareTypecheckerFixtureTsconfig(project, tool, args, cwd, fixtureExists) {

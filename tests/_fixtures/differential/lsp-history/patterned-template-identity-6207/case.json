@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "commit": "8fd82f7e75d5eea334e767303fe762948b77c067",
+  "id": "lsp/fix-history/patterned-template-identity-6207",
+  "requirement": "With patterned templates enabled and no checker, references and rename on pattern-affected names fail closed (null) instead of merging the arm binding with the same-named script binding; unaffected symbols keep ordinary references and completion lists the arm and loop bindings.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "vite.config.mjs": "export default { vue: {\"experimentals\":{\"patternedTemplate\":true}} };\n",
+    "App.vue": "<script setup lang=\"ts\">\nconst ordinary = 1\nconst rows = 'outer'\nconst result = { rows: [1, 2] }\n</script>\n<template>\n  <section v-match=\"result\">\n    <template v-when=\"{ const rows } if (rows.length > 0)\">\n      <p v-for=\"row in rows\">{{ row.toFixed() }}{{ rows.length }}</p>\n    </template>\n    <p v-when=\"_\"/>\n  </section>\n  <p>{{ ordinary }}</p>\n</template>"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "App.vue",
+      "at": {
+        "find": "rows.length > 0",
+        "delta": 0,
+        "nth": 0
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": true
+        }
+      }
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "App.vue",
+      "at": {
+        "find": "rows =",
+        "delta": 0,
+        "nth": 0
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": true
+        }
+      }
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "App.vue",
+      "at": {
+        "find": "ordinary }}",
+        "delta": 0,
+        "nth": 0
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": true
+        }
+      }
+    },
+    {
+      "request": "textDocument/rename",
+      "uri": "App.vue",
+      "at": {
+        "find": "rows.length }}",
+        "delta": 0,
+        "nth": 0
+      },
+      "params": {
+        "newName": "items"
+      }
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "row.toFixed",
+        "delta": 0,
+        "nth": 0
+      },
+      "labels": [
+        "row",
+        "rows",
+        "ordinary",
+        "result"
+      ]
+    }
+  ]
+}

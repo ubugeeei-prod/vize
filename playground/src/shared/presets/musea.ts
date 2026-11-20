@@ -2,7 +2,8 @@
  * Musea Playground Preset
  *
  * This preset demonstrates the Musea story format:
- * - defineArt() for component documentation and target resolution
+ * - imported component tags for typed target inference
+ * - optional defineArtMeta() for gallery metadata
  * - Multiple <variant> blocks for different component states
  * - CSS custom properties for design tokens
  *
@@ -13,8 +14,9 @@
  */
 
 export const ART_PRESET = `<script setup lang="ts">
-defineArt('./Button.vue', {
-  title: 'Button',
+import Button from './Button.vue'
+
+defineArtMeta({
   description: 'A versatile action control for forms, dialogs, and toolbar workflows.',
   category: 'Components',
   tags: ['button', 'action', 'form'],

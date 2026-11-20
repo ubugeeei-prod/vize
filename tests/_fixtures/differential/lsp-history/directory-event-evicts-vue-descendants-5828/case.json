@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "commit": "9c4486bdb6ab0fa4800c7ab856a31bc5c4c84aad",
+  "id": "lsp/fix-history/directory-event-evicts-vue-descendants-5828",
+  "requirement": "A deleted directory event evicts only the tracked Vue files under it from workspace symbols; siblings stay.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "src/Main.vue": "<script setup lang=\"ts\">\nfunction mainEvictionSymbol() {}\n</script>\n",
+    "src/legacy/Old.vue": "<script setup lang=\"ts\">\nfunction legacyEvictionSymbol() {}\n</script>\n",
+    "src/legacy/deep/Older.vue": "<script setup lang=\"ts\">\nfunction deepEvictionSymbol() {}\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "src/Main.vue"
+    },
+    {
+      "request": "workspace/symbol",
+      "params": {
+        "query": "EvictionSymbol"
+      },
+      "retry": true
+    },
+    {
+      "remove": "src/legacy"
+    },
+    {
+      "notify": "workspace/didChangeWatchedFiles",
+      "params": {
+        "changes": [
+          {
+            "uri": "${workspace}/src/legacy",
+            "type": 3
+          }
+        ]
+      }
+    },
+    {
+      "request": "workspace/symbol",
+      "params": {
+        "query": "EvictionSymbol"
+      },
+      "retry": true
+    }
+  ]
+}

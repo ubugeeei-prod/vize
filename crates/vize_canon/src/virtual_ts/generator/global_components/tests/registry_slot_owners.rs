@@ -126,11 +126,6 @@ fn real_values_self_art_autoimports_and_vue2_keep_their_existing_owners() {
             false,
             VirtualTsOptions::default(),
         ),
-        (
-            "defineArt('./RegistryChild.vue', {});",
-            false,
-            VirtualTsOptions::default(),
-        ),
         ("", true, VirtualTsOptions::default()),
         (
             "",
@@ -155,6 +150,23 @@ fn real_values_self_art_autoimports_and_vue2_keep_their_existing_owners() {
             "{script}, legacy={legacy}"
         );
     }
+    assert_eq!(
+        owners(
+            "defineArt('./RegistryChild.vue', {});",
+            template,
+            false,
+            VirtualTsOptions::default(),
+        ),
+        [(
+            0,
+            [
+                "RegistryChild".into(),
+                "RegistryChild".into(),
+                "RegistryChild".into(),
+            ],
+        )],
+        "legacy string targets must not synthesize an Art component owner",
+    );
     assert_eq!(
         owners(
             "",

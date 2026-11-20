@@ -2,12 +2,45 @@ import path from "node:path";
 import {
   componentRegistrationBaselineIntentionalReason,
   componentRegistrationPatinaIntentionalReason,
+  decoratorRegisteredCasingReason,
 } from "./component_registration_intentional.ts";
+import {
+  classFragmentReason,
+  gluedFragmentDuplicate,
+  identifierKeyClassReason,
+  identifierKeyDuplicate,
+} from "./duplicate_class_intentional.ts";
+import {
+  heritageOnlyProp,
+  heritageOnlyPropReason,
+  inheritedPropMember,
+  inheritedPropMemberReason,
+  redeclaredDerivedPropMember,
+  redeclaredDerivedPropMemberReason,
+} from "./inherited_prop_members.ts";
+import {
+  booleanDefaultFromImportedContract,
+  duplicateKeyFromImportedContract,
+  importedSetupPropCollision,
+  importedSetupPropCollisionReason,
+  importedPropCollisionReason,
+  importedPropContractReason,
+  propFindingFromImportedContract,
+  templateShadowFromImportedContract,
+} from "./imported_prop_contract.ts";
+import {
+  importedEmitContractReason,
+  importedSlotContractReason,
+  emitFindingFromImportedContract,
+  undeclaredSlotFromImportedContract,
+} from "./imported_macro_contract.ts";
+import { baselineParserIntentionalReason } from "./parser_intentional.ts";
 import {
   indexRealProjectLocationSource,
   realProjectLocationDivergence,
   type RealProjectLocationSource,
 } from "./real_project_locations.ts";
+import { unusedEmitPatinaReading } from "./unused_emit_names.ts";
 import {
   byteOrder,
   get,
@@ -195,13 +228,82 @@ export function groupByIdentity(records: LintRecord[]): Map<string, LintRecord[]
   return groups;
 }
 const quotedName = (message: string): string | undefined => /'([^']*)'/.exec(message)?.[1];
+/** Vue's `isSVGTag` list (shared/domTagConfig): native wherever they appear. */
+const vueSvgTags = new Set(
+  "svg,animate,animateMotion,animateTransform,circle,clipPath,color-profile,defs,desc,discard,ellipse,feBlend,feColorMatrix,feComponentTransfer,feComposite,feConvolveMatrix,feDiffuseLighting,feDisplacementMap,feDistantLight,feDropShadow,feFlood,feFuncA,feFuncB,feFuncG,feFuncR,feGaussianBlur,feImage,feMerge,feMergeNode,feMorphology,feOffset,fePointLight,feSpecularLighting,feSpotLight,feTile,feTurbulence,filter,foreignObject,g,hatch,hatchpath,image,line,linearGradient,marker,mask,mesh,meshgradient,meshpatch,meshrow,metadata,mpath,path,pattern,polygon,polyline,radialGradient,rect,set,solidcolor,stop,switch,symbol,text,textPath,title,tspan,unknown,use,view".split(
+    ",",
+  ),
+);
 export function baselineIntentionalReason(
   finding: LintRecord,
   source?: string | null,
 ): string | null {
   if (source !== undefined && source !== null) {
+    const parser = baselineParserIntentionalReason(finding, source);
+    if (parser !== null) return parser;
     const componentRegistration = componentRegistrationBaselineIntentionalReason(finding, source);
     if (componentRegistration !== null) return componentRegistration;
+  }
+  if (
+    finding.ruleId === "vue/custom-event-name-casing" &&
+    /^Custom event name 'update:[^']+'/u.test(finding.message)
+  )
+    return "Patina keeps the model prop name after update: unchecked (#9879, restored in #12592 for #12587), the name defineModel() emits and v-model listens for; eslint-plugin-vue checks every :-separated segment.";
+  if (
+    finding.ruleId === "vue/no-duplicate-class-names" &&
+    source !== undefined &&
+    source !== null
+  ) {
+    const offset = findingOffset(finding, source);
+    if (offset !== null && gluedFragmentDuplicate(finding.message, offset, source))
+      return classFragmentReason;
+  }
+  if (
+    finding.ruleId === "vue/no-unused-emit-declarations" &&
+    source !== undefined &&
+    source !== null
+  ) {
+    const reason = unusedEmitUpstreamMiss(finding.message, source);
+    if (reason !== null) return reason;
+  }
+  if (
+    finding.ruleId === "vue/no-unused-emit-declarations" &&
+    source !== undefined &&
+    source !== null &&
+    setupCallsGetCurrentInstance(source)
+  )
+    return "Patina treats every declared event as possibly emitted once <script setup> calls getCurrentInstance(): the instance's emit can be called from code the rule cannot inspect. eslint-plugin-vue still reports the events it does not see emitted.";
+  if (
+    finding.ruleId === "vue/no-unused-emit-declarations" &&
+    source !== undefined &&
+    source !== null
+  ) {
+    const event = /^`([^`]+)` is defined as emit but never used\.$/u.exec(finding.message)?.[1];
+    const reading = event === undefined ? null : unusedEmitPatinaReading(event, source);
+    if (reading !== null) return reading;
+  }
+  if (finding.ruleId === "vue/v-if-else-key") {
+    const tag = /repeated component '([^']+)'/u.exec(finding.message)?.[1];
+    if (tag !== undefined && vueSvgTags.has(tag))
+      return "Vue's compiler treats this SVG element as native wherever it appears; eslint-plugin-vue parses it outside an <svg> ancestor as an HTML-namespace custom component and asks for a key.";
+  }
+  if (
+    finding.ruleId === "vue/v-on-handler-style" &&
+    finding.message.startsWith("Prefer method handler over inline handler in v-on.") &&
+    source !== undefined &&
+    source !== null &&
+    assertedMethodHandler(finding, source)
+  )
+    return "Vue's compiler unwraps parentheses and TypeScript `as`/`satisfies`/`!` when it decides a v-on value is a method handler, so `(handleKeyDown as any)` is passed as the method itself; eslint-plugin-vue reads the wrapped expression as an inline handler.";
+  if (
+    finding.ruleId === "vue/require-explicit-slots" &&
+    finding.message === "Slots must be explicitly defined." &&
+    source !== undefined &&
+    source !== null
+  ) {
+    const offset = findingOffset(finding, source);
+    if (offset !== null && undeclaredSlotFromImportedContract(offset, source))
+      return importedSlotContractReason;
   }
   if (finding.ruleId === "vue/no-shared-component-data")
     return "Patina intentionally merges vue/no-shared-component-data and vue/no-deprecated-data-object-declaration into one diagnostic for the same invalid data option.";
@@ -484,6 +586,7 @@ const patinaIntentionalRuleIds = new Set([
   "script/no-deprecated-dollar-listeners-api",
   "script/no-deprecated-dollar-scopedslots-api",
   "script/no-deprecated-events-api",
+  "script/no-dupe-keys",
   "script/no-ref-as-operand",
   "script/no-side-effects-in-computed-properties",
   "script/one-component-per-file",
@@ -492,15 +595,29 @@ const patinaIntentionalRuleIds = new Set([
   "script/require-prop-types",
   "script/require-valid-default-prop",
   "script/return-in-computed-property",
+  "vue/component-name-in-template-casing",
   "vue/multi-word-component-names",
   "vue/no-bare-strings-in-template",
   "vue/no-mutating-props",
   "vue/no-reserved-component-names",
   "vue/no-setup-props-reactivity-loss",
   "vue/no-static-inline-styles",
+  "vue/no-template-shadow",
+  "vue/no-shadow-native-events",
+  "script/no-required-prop-with-default",
+  "vue/prop-name-casing",
+  "script/no-unused-emit-declarations",
   "vue/no-unused-components",
   "vue/no-unused-vars",
+  "vue/next-tick-style",
+  "html/no-duplicate-class",
+  "vue/prefer-single-event-payload",
+  "script/require-typed-ref",
+  "vue/require-prop-comment",
+  "vue/no-props-shadow",
+  "vue/no-template-shadow",
   "vue/require-v-for-key",
+  "script/valid-next-tick",
   "vue/v-slot-style",
 ]);
 export function patinaIntentionalReason(
@@ -515,6 +632,12 @@ export function patinaIntentionalReason(
     if (componentReason !== null) return componentReason;
   }
   if (!patinaIntentionalRuleIds.has(finding.ruleId)) return null;
+  const casing = decoratorRegisteredCasingReason(
+    finding.ruleId,
+    source.slice(findingOffset(finding, source) ?? source.length),
+    source,
+  );
+  if (casing !== null) return casing;
   if (finding.ruleId === "vue/no-setup-props-reactivity-loss")
     return "Patina's complete contract follows root-scope prop values through nested containers, call arguments, and assignments that eslint-plugin-vue does not inspect.";
   if (
@@ -557,6 +680,57 @@ export function patinaIntentionalReason(
   )
     return "Patina resolves optional props inherited through local interface heritage or intersections; eslint-plugin-vue does not expand that composed prop contract.";
   if (
+    ["script/no-boolean-default", "script/require-default-prop", "vue/no-mutating-props"].includes(
+      finding.ruleId,
+    ) &&
+    definePropsUsesPartialContract(source)
+  )
+    return "Patina expands a defineProps contract wrapped in TypeScript's Partial utility; eslint-plugin-vue does not extract props through that mapped type.";
+  const importedContract = importedPropContractFinding(finding, source);
+  if (importedContract !== null) return importedContract;
+  if (
+    finding.ruleId === "script/no-dupe-keys" &&
+    importedSetupPropCollision(finding.message, source)
+  )
+    return importedSetupPropCollisionReason;
+  if (
+    finding.ruleId === "script/require-default-prop" &&
+    inlineExtensionBesideDefaultsSpread(finding, source)
+  )
+    return "Patina keeps checking a prop the file appends in an inline intersection member (`type Props = Imported & { local?: T }`) when withDefaults spreads imported defaults (#12069): the spread covers the imported contract. eslint-plugin-vue skips every prop once the defaults object holds a spread.";
+  const shadowed =
+    finding.ruleId === "vue/no-props-shadow"
+      ? /Declaration of `([^`]+)` shadows the prop/u.exec(finding.message)?.[1]
+      : finding.ruleId === "vue/no-template-shadow"
+        ? /Variable '([^']+)' shadows/u.exec(finding.message)?.[1]
+        : undefined;
+  if (
+    shadowed !== undefined &&
+    heritageOnlyProp(shadowed, source) &&
+    (finding.ruleId === "vue/no-props-shadow" || !scriptDeclares(shadowed, source))
+  )
+    return heritageOnlyPropReason;
+  if (finding.ruleId === "vue/require-prop-comment") {
+    const offset = findingOffset(finding, source);
+    if (offset !== null) {
+      if (inheritedPropMember(offset, source)) return inheritedPropMemberReason;
+      if (redeclaredDerivedPropMember(offset, source)) return redeclaredDerivedPropMemberReason;
+    }
+  }
+  if (finding.ruleId === "vue/next-tick-style" && findingInScriptSetup(finding, source))
+    return "Patina also checks <script setup>, as requested in #12450 and kept in #12670; eslint-plugin-vue's defineVueVisitor only visits component option objects.";
+  if (finding.ruleId === "vue/next-tick-style" && usesWrappedOptionsApi(source))
+    return "Patina recognizes the component options passed through the project's local component factory; eslint-plugin-vue's Vue visitor does not enter that wrapper.";
+  if (finding.ruleId === "script/require-typed-ref" && refCallUnderTypeAssertion(finding, source))
+    return "Patina requires a type argument even when a type assertion follows the ref call (#12069): `ref(null) as unknown as Ref<T>` is an unchecked cast, while eslint-plugin-vue counts any as/satisfies assertion as typed.";
+  if (finding.ruleId === "html/no-duplicate-class") {
+    const offset = findingOffset(finding, source);
+    if (offset !== null && identifierKeyDuplicate(finding.message, offset, source))
+      return identifierKeyClassReason;
+  }
+  if (finding.ruleId === "script/valid-next-tick" && findingInScriptSetup(finding, source))
+    return "Patina applies vue/valid-next-tick in <script setup> as well as component options (#12794); eslint-plugin-vue's defineVueVisitor only visits component option objects.";
+  if (
     finding.ruleId === "script/no-boolean-default" &&
     findingInsideSameFileDefaultsSpread(finding, source)
   )
@@ -593,7 +767,9 @@ export function patinaIntentionalReason(
   )
     return "Patina resolves a local runtime props object referenced by the component's props option; eslint-plugin-vue does not follow that identifier, so this is additional sound prop-contract coverage.";
   if (
-    finding.ruleId === "script/custom-event-name-casing" &&
+    (finding.ruleId === "script/custom-event-name-casing" ||
+      (finding.ruleId === "vue/prefer-single-event-payload" &&
+        findingInsideScriptBlock(finding, source))) &&
     findingPrecedesDefineEmits(finding, source)
   )
     return "Patina resolves the defineEmits binding before visiting calls; eslint-plugin-vue misses calls authored before the macro declaration because its visitor records the binding later.";
@@ -716,6 +892,20 @@ function registeredComponentIsProvablyAbsent(finding: LintRecord, source: string
   return !new RegExp(`<\\s*(?:${escaped}|${escapedKebab})(?=[\\s/>])`, "iu").test(executable);
 }
 
+/** A `getCurrentInstance()` call in the `<script setup>` block, outside comments. */
+function setupCallsGetCurrentInstance(source: string): boolean {
+  for (const open of source.matchAll(/<script\b([^>]*)>/gu)) {
+    if (!/\ssetup(?:[\s=/]|$)/u.test(open[1] ?? "")) continue;
+    const start = (open.index ?? 0) + open[0].length;
+    const end = source.indexOf("</script>", start);
+    const body = source
+      .slice(start, end < 0 ? source.length : end)
+      .replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/gu, " ");
+    if (/(?<![\w$.])getCurrentInstance\s*\(/u.test(body)) return true;
+  }
+  return false;
+}
+
 function hasModuleAndSetupScripts(source: string): boolean {
   return (
     /<script\b(?=[^>]*>)(?![^>]*\bsetup\b)[^>]*>/iu.test(source) &&
@@ -766,7 +956,22 @@ function usesAutoImportedComputed(source: string): boolean {
 }
 
 function usesWrappedOptionsApi(source: string): boolean {
-  return /\bexport\s+default\s+new\s+[A-Z_$][\w$]*\s*\(\s*\{[\s\S]*?\bcomputed\s*:/u.test(source);
+  const wrapper =
+    /\bexport\s+default\s+(?:new\s+)?([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\s*\(\s*\{/u.exec(
+      source,
+    )?.[1];
+  return wrapper !== undefined && !["defineComponent", "Vue.extend"].includes(wrapper);
+}
+
+function definePropsUsesPartialContract(source: string): boolean {
+  const argument = /\bdefineProps\s*<\s*([A-Za-z_$][\w$]*)/u.exec(source)?.[1];
+  if (argument === undefined) return false;
+  if (argument === "Partial") return true;
+  const escaped = argument.replace(/[$]/gu, "\\$");
+  return new RegExp(
+    `\\btype\\s+${escaped}\\b(?:\\s*<[^;={}]*>)?\\s*=\\s*(?:Readonly\\s*<\\s*)?Partial\\s*<`,
+    "u",
+  ).test(source);
 }
 
 function mismatchedCaseClosingTag(finding: LintRecord, source: string): boolean {
@@ -880,6 +1085,30 @@ function localTypeDependsOn(source: string, root: string, target: string): boole
   return false;
 }
 
+/**
+ * The finding is a member of an inline `{ ... }` operand of a
+ * `type X = A & { ... }` alias, and the file's withDefaults object
+ * spreads another value: Patina's `prop_is_inline_intersection_extension`.
+ */
+function inlineExtensionBesideDefaultsSpread(finding: LintRecord, source: string): boolean {
+  const offset = findingOffset(finding, source);
+  if (offset === null) return false;
+  const prefix = source.slice(0, offset);
+  const open = prefix.lastIndexOf("{");
+  const typeStart = prefix.lastIndexOf("type ", open);
+  if (open < 0 || typeStart < 0) return false;
+  const header = source.slice(typeStart, open);
+  const close = source.indexOf("}", offset);
+  return (
+    /^type\s+[A-Za-z_$][\w$]*(?:\s*<[^=]*>)?\s*=[^{};]*&\s*$/u.test(header) &&
+    close > offset &&
+    !source.slice(open + 1, offset).includes("{") &&
+    /\bwithDefaults\s*\(\s*defineProps\s*<[^]*?>\s*\(\s*\)\s*,\s*\{[^}]*?\.\.\.[A-Za-z_$]/u.test(
+      source,
+    )
+  );
+}
+
 function findingInsideSameFileDefaultsSpread(finding: LintRecord, source: string): boolean {
   const offset = findingOffset(finding, source);
   if (offset === null) return false;
@@ -923,6 +1152,149 @@ function findingInsideScriptBlock(finding: LintRecord, source: string): boolean 
   const content = source.indexOf(">", open) + 1;
   const close = source.indexOf("</script>", content);
   return content > 0 && content <= offset && (close < 0 || offset < close);
+}
+
+/** The reported `ref(...)` call, through wrapping parentheses, is the operand of `as` or `satisfies`. */
+function refCallUnderTypeAssertion(finding: LintRecord, source: string): boolean {
+  const findingStart = findingOffset(finding, source),
+    findingEnd = findingEndOffset(finding, source);
+  if (
+    findingStart === null ||
+    findingEnd === null ||
+    !/^(?:ref|shallowRef)\b/u.test(source.slice(findingStart, findingEnd))
+  )
+    return false;
+  let start: number = findingStart,
+    end: number = findingEnd;
+  for (;;) {
+    const after: number = /^\s*/u.exec(source.slice(end))?.[0].length ?? 0;
+    if (/^(?:as|satisfies)\s/u.test(source.slice(end + after))) return true;
+    const before = source.slice(0, start).trimEnd();
+    // Grouping parentheses only: `cast(ref())` is a call argument.
+    if (
+      !before.endsWith("(") ||
+      /[\w$)\]>]$/u.test(before.slice(0, -1).trimEnd()) ||
+      source[end + after] !== ")"
+    )
+      return false;
+    start = before.length - 1;
+    end = end + after + 1;
+  }
+}
+
+/**
+ * Two eslint-plugin-vue blind spots in vue/no-unused-emit-declarations, for
+ * the `const <binding> = defineEmits(...)` of the file:
+ * - it sees the binding only as a bare identifier, not through a type
+ *   assertion (`(emit as any)('apply')`, `useVModel(props, 'modelValue', emits as any)`);
+ * - it learns the binding at the macro, so a call written above it
+ *   (`emit("edit-environment")` in an earlier function) does not count.
+ */
+function unusedEmitUpstreamMiss(message: string, source: string): string | null {
+  const event = /^`([^`]+)` is defined as emit but never used\.$/u.exec(message)?.[1];
+  const declaration = /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*defineEmits\b/u.exec(source);
+  const binding = declaration?.[1];
+  if (event === undefined || declaration === null || binding === undefined) return null;
+  const name = binding.replace(/\$/gu, "\\$");
+  if (new RegExp(`[(,]\\s*${name}\\s*(?:as\\s|satisfies\\s|!)`, "u").test(source))
+    return "Patina follows the emit function through a type assertion, as in `(emit as any)('apply')` or `useVModel(props, 'modelValue', emits as any)`; eslint-plugin-vue recognizes only a bare identifier, so it misses those emits.";
+  const escaped = event.replace(/[.*+?^${}()|[\]\\]/gu, (character) => `\\${character}`);
+  const call = new RegExp(`\\b${name}\\s*\\(\\s*(['"\`])${escaped}\\1`, "u").exec(source);
+  if (call !== null && call.index < declaration.index)
+    return "Patina resolves the defineEmits binding before visiting calls; eslint-plugin-vue misses calls authored before the macro declaration because its visitor records the binding later.";
+  if (new RegExp(`(?<![\\w$.])${name}\\s*\\.\\s*(?:bind|call|apply)\\s*\\(`, "u").test(source))
+    return "Patina counts `emit.bind(null, 'toggleSave')` (or call/apply) as handing the emit function on, so any declared event may be emitted; eslint-plugin-vue sees only direct calls and call arguments.";
+  return null;
+}
+
+/**
+ * vue/no-parsing-error reports a zero-width point; Patina ranges the token.
+ * The point must sit on the same line within Patina's range, and the error
+ * code must name Patina's message (`missing-whitespace-between-attributes`
+ * for "Missing whitespace between attributes"). An expression error has no
+ * code and pairs with Patina's expression error.
+ */
+function parseErrorPointInRange(positive: LintRecord, negative: LintRecord): boolean {
+  const code = /^Parsing error: (?:x-)?([a-z]+(?:-[a-z]+)+)\.$/u.exec(negative.message)?.[1];
+  const pointInRange = negative.column >= positive.column && negative.column <= positive.endColumn;
+  const controlCharacterPrecedesRange =
+    code === "control-character-in-input-stream" && Number(negative.column) + 1 === positive.column;
+  if (
+    negative.line !== negative.endLine ||
+    negative.column !== negative.endColumn ||
+    positive.line !== negative.line ||
+    positive.endLine !== positive.line ||
+    (!pointInRange && !controlCharacterPrecedesRange)
+  )
+    return false;
+  const patina = positive.message.replace(/^\[[^\]]*\]\s*/u, "").toLowerCase();
+  return code === undefined
+    ? negative.message.startsWith("Parsing error: ") &&
+        patina.startsWith("error parsing javascript expression")
+    : patina.startsWith(code.replaceAll("-", " "));
+}
+
+/** A script declares `name` as a binding, which no-template-shadow would also see. */
+function scriptDeclares(name: string, source: string): boolean {
+  const escaped = name.replace(/\$/gu, "\\$");
+  return new RegExp(
+    `\\b(?:(?:const|let|var|function|class)\\s+${escaped}(?![\\w$])|import\\s+(?:type\\s+)?(?:${escaped}\\s*[,\\s]|[^;{}]*\\{[^{}]*(?<![\\w$.])${escaped}(?![\\w$]|\\s+as\\b)[^{}]*\\})[^;{}]*?\\bfrom\\b)|\\b(?:const|let|var)\\s*\\{[^}]*(?<![\\w$.])${escaped}(?![\\w$]|\\s*:)[^}]*\\}`,
+    "u",
+  ).test(source);
+}
+
+/** The reported v-on value is a member path under a TypeScript assertion. */
+function assertedMethodHandler(finding: LintRecord, source: string): boolean {
+  const text = authoredFindingText(finding, source)?.trim();
+  if (text === undefined) return false;
+  const path = String.raw`[A-Za-z_$][\w$]*(?:\s*\.\s*[A-Za-z_$][\w$]*)*`;
+  const asserted = new RegExp(`^\\(*\\s*${path}\\s*(?:(?:as|satisfies)\\s+[^()]+|!)\\s*\\)*$`, "u");
+  const opens = text.split("(").length - 1,
+    closes = text.split(")").length - 1;
+  return opens === closes && asserted.test(text);
+}
+
+function findingInScriptSetup(finding: LintRecord, source: string): boolean {
+  const offset = findingOffset(finding, source);
+  if (offset === null) return false;
+  const open = source.lastIndexOf("<script", offset);
+  const tagEnd = open < 0 ? -1 : source.indexOf(">", open);
+  const close = source.indexOf("</script>", open);
+  return (
+    tagEnd >= 0 &&
+    tagEnd < offset &&
+    (close < 0 || offset < close) &&
+    /\ssetup(?:[\s=>/]|$)/u.test(source.slice(open, tagEnd))
+  );
+}
+
+function importedPropContractFinding(finding: LintRecord, source: string): string | null {
+  const start = findingOffset(finding, source),
+    end = findingEndOffset(finding, source);
+  if (start === null || end === null || end < start) return null;
+  const accepted = [
+    "script/require-default-prop",
+    "script/no-required-prop-with-default",
+    "vue/prop-name-casing",
+  ].includes(finding.ruleId)
+    ? propFindingFromImportedContract(finding.message, start, end, source)
+    : finding.ruleId === "script/no-boolean-default"
+      ? booleanDefaultFromImportedContract(start, end, source)
+      : null;
+  if (accepted !== null) return accepted ? importedPropContractReason : null;
+  if (
+    ["vue/no-shadow-native-events", "script/no-unused-emit-declarations"].includes(
+      finding.ruleId,
+    ) &&
+    emitFindingFromImportedContract(finding.message, start, end, source)
+  )
+    return importedEmitContractReason;
+  const collides =
+    finding.ruleId === "script/no-dupe-keys"
+      ? duplicateKeyFromImportedContract(finding.message, start, end, source)
+      : finding.ruleId === "vue/no-template-shadow" &&
+        templateShadowFromImportedContract(finding.message, start, source);
+  return collides ? importedPropCollisionReason : null;
 }
 
 function findingOffset(finding: LintRecord, source: string): number | null {
@@ -1254,6 +1626,15 @@ export function pairRuleLocationDivergences(
           subject: `button:${positive.line}:${negative.column}`,
           reason:
             "patina reports the complete button opening element while eslint-plugin-vue reports only the invalid type attribute value.",
+        };
+        break;
+      }
+      if (positive.ruleId === "parser/template" && parseErrorPointInRange(positive, negative)) {
+        match = {
+          index,
+          subject: `parse-error:${negative.line}:${negative.column}`,
+          reason:
+            "both tools report the same template parse error; eslint-plugin-vue reports a zero-width point inside the token Patina ranges.",
         };
         break;
       }

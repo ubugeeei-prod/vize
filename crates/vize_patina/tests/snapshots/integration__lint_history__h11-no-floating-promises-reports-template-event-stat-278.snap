@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-no-floating-promises-reports-template-event-stat-278",
+    history: "066d77fce0c90be9cad9eb65c19224f353f9ce3d",
+    source: "<script setup lang=\"ts\">\nconst enabled = true\nasync function save(): Promise<void> {}\n</script>\n\n<template>\n  <button @click=\"if (enabled) { save() }\">Save</button>\n</template>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-floating-promises",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "type/no-floating-promises",
+                severity: Warning,
+                message: "Template event handler creates a Promise that is not awaited, returned, or explicitly ignored",
+                start: 141,
+                end: 147,
+                help: Some(
+                    "Move async work into a named handler and `await` it, or prefix the call with `void` when fire-and-forget behavior is intentional.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "type/no-floating-promises",
+                    severity: Warning,
+                    message: "Template event handler creates a Promise that is not awaited, returned, or explicitly ignored",
+                    start: 141,
+                    end: 147,
+                    help: Some(
+                        "Move async work into a named handler and `await` it, or prefix the call with `void` when fire-and-forget behavior is intentional.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

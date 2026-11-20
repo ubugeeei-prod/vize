@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "commit": "788000753c5c6bab73faedebc979a18d6db735e2",
+  "id": "lsp/fix-history/tc-imported-runtime-define-props-5962-imported-runtime-props-reach-script-and-template",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack imported-runtime-define-props-5962 (case imported-runtime-props-reach-script-and-template) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"baseUrl\": \".\",\n    \"paths\": { \"@element-plus/hooks\": [\"packages/hooks/index.ts\"] },\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true },\n  \"include\": [\"src/**/*\", \"packages/**/*\"]\n}",
+    "packages/hooks/index.ts": "export * from './use-empty-values'\n",
+    "packages/hooks/use-empty-values/index.ts": "export const useEmptyValuesProps = {\n  emptyValues: Array,\n  valueOnClear: { type: [String, Boolean], default: undefined },\n} as const\n",
+    "src/shared.ts": "export const sharedProps = {\n  title: { type: String, default: 'Ready' },\n  disabled: Boolean,\n} as const\n\nexport const layoutProps = {\n  singlePanel: Boolean,\n} as const\n",
+    "src/props.ts": "import { useEmptyValuesProps } from '@element-plus/hooks'\nimport { layoutProps, sharedProps } from './shared'\n\nfunction buildProps<T extends Record<string, unknown>>(props: T): T {\n  return props\n}\n\nfunction useAriaProps<const T extends string>(names: readonly T[]) {\n  return {} as { readonly [K in T]: { readonly type: StringConstructor } }\n}\n\nexport const importedProps = buildProps({\n  ...sharedProps,\n  ...layoutProps,\n  ...useEmptyValuesProps,\n  ...useAriaProps(['ariaLabel']),\n  pageCount: { type: Number, required: true },\n  pagerCount: { type: Number, default: 7 },\n} as const)\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nimport { importedProps } from './props'\n\nconst props = defineProps(importedProps)\n\nfunction acceptsBoolean(value: boolean) {\n  return value\n}\n\nfunction acceptsNumber(value: number) {\n  return value\n}\n\nconst ariaLabel: string | undefined = props.ariaLabel\nconst emptyCount = props.emptyValues?.length ?? 0\nconst valueOnClear: unknown = props.valueOnClear\n\nacceptsBoolean(props.disabled)\nacceptsBoolean(props.singlePanel)\nacceptsNumber(props.pageCount)\nacceptsNumber(props.pagerCount)\nvoid valueOnClear\n</script>\n\n<template>\n  <button :aria-label=\"ariaLabel\" :disabled=\"disabled\">{{ singlePanel ? title.toUpperCase() : title }} {{ pageCount + pagerCount + emptyCount }}</button>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "packages/hooks/index.ts"
+    },
+    {
+      "diagnostics": "packages/hooks/index.ts"
+    }
+  ]
+}

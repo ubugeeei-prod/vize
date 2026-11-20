@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-5-3728",
+    history: "de4329271a6153359b3dc2ade26dfb736f5b2567",
+    source: "const A = () => <B>{getSlots()}</B>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: Some(
+            "babel",
+        ),
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, isVNode as _isVNode } from \"vue\"\nfunction _isSlot(s) {\nreturn typeof s === 'function' || Object.prototype.toString.call(s) === '[object Object]' && !_isVNode(s);\n}\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  const _component_B = _resolveComponent(\"B\")\n  \n  return (_openBlock(), _createBlock(_component_B, null, (_slot => _isSlot(_slot) ? _slot : { default: () => [_slot] })(getSlots()), 1024 /* DYNAMIC_SLOTS */))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "A",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\nimport { isVNode as _isVNode } from \"vue\"\nfunction _isSlot(s) {\n  return typeof s === 'function' || Object.prototype.toString.call(s) === '[object Object]' && !_isVNode(s);\n}\n",
+            code: "export function render(_ctx, _cache) {\n  const _component_B = _resolveComponent(\"B\")\n  \n  return (_openBlock(), _createBlock(_component_B, null, (_slot => _isSlot(_slot) ? _slot : { default: () => [_slot] })(getSlots()), 1024 /* DYNAMIC_SLOTS */))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "commit": "f647dbb6698c3125e95c12ed1c5d947d08f600b0",
+  "id": "lsp/fix-history/tc-with-defaults-undefined-boolean-vmodel-wrong-open-default-value",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack with-defaults-undefined-boolean-vmodel (case wrong-open-default-value) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/Foo.vue": "<script setup lang=\"ts\" generic=\"T\">\ninterface Props<T> {\n  modelValue?: T | T[];\n  defaultValue?: T | T[];\n  open?: boolean;\n  defaultOpen?: boolean;\n  multiple?: boolean;\n}\n\ntype Ref<T> = { value: T };\ntype UseVModelOptions<T, Passive extends boolean = false> = {\n  passive?: Passive;\n  defaultValue?: T;\n  deep?: boolean;\n};\n\ndeclare function useVModel<P extends object, K extends keyof P, Name extends string>(\n  props: P,\n  key?: K,\n  emit?: (name: Name, ...args: any[]) => void,\n  options?: UseVModelOptions<P[K], false>,\n): Ref<P[K]>;\ndeclare function useVModel<P extends object, K extends keyof P, Name extends string>(\n  props: P,\n  key?: K,\n  emit?: (name: Name, ...args: any[]) => void,\n  options?: UseVModelOptions<P[K], true>,\n): Ref<P[K]>;\n\nconst props = withDefaults(defineProps<Props<T>>(), {\n  modelValue: undefined,\n  open: undefined,\n});\nconst emit = defineEmits<{\n  \"update:modelValue\": [value: T];\n  \"update:open\": [value: boolean];\n}>();\n\nuseVModel(props, \"modelValue\", emit, {\n  defaultValue: props.defaultValue ?? (props.multiple ? [] : undefined),\n  passive: (props.modelValue === undefined) as false,\n  deep: true,\n});\nuseVModel(props, \"open\", emit, {\n  defaultValue: \"open\",\n  passive: (props.open === undefined) as false,\n});\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "src/Foo.vue"
+    },
+    {
+      "diagnostics": "src/Foo.vue"
+    }
+  ]
+}

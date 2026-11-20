@@ -154,7 +154,7 @@ fn attribute<'a>(
         return Ok(());
     }
     if name == "class" {
-        cx.observe(OpFamily::JsxClass);
+        cx.observe(OpFamily::RuntimeClass);
     }
     out.bindings.push(bind(
         cx,

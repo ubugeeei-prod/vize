@@ -9,7 +9,6 @@ const COLORS = new URL("../../data/css/named-colors.json", import.meta.url);
 const OUTPUT = new URL("../../../crates/vize_maestro/src/ide/style/data/", import.meta.url);
 const SNAPSHOT_SHA = "7f228ab474664fe2a565fd88a2835fb6dda57a31da03aead96b14b965a5e205f";
 const COLORS_SHA = "af6ce64a9eab7e00dbd09a104ee3e4d79477e3a05f5db88e75ac1e2dc74389e0";
-const CHUNK_SIZE = 225;
 const FAMILIES = [
   ["properties", "properties", 888],
   ["atDirectives", "at_rules", 25],
@@ -80,44 +79,102 @@ function quote(value: unknown): string {
   return result + '"';
 }
 
-function optional(value: unknown): string {
-  return value === undefined ? "None" : `Some(${quote(value)})`;
+/** The `NONE` id of an absent optional text (`data.rs`). */
+const NONE = 0xffff;
+/** Generated files stay well inside the 350-line review budget. */
+const MAX_LINES = 340;
+
+/**
+ * The catalog as pointer-free tables: every text is a `u16` id into one
+ * string table, every list a `Run(start, len)` of a flat table, so the
+ * compiled catalog needs no relocations.
+ */
+class Tables {
+  readonly texts: string[] = [];
+  private readonly textIds = new Map<string, number>();
+  readonly lists: number[] = [];
+  private readonly listRuns = new Map<string, string>();
+  readonly baselines: string[] = [];
+  private readonly baselineIds = new Map<string, number>();
+  readonly references: string[] = [];
+  readonly values: string[] = [];
+  readonly descriptors: string[] = [];
+
+  id(value: unknown): number {
+    const key = text(value);
+    let id = this.textIds.get(key);
+    if (id === undefined) {
+      id = this.texts.length;
+      assert.ok(id < NONE, "Catalog text ids must fit below NONE");
+      this.texts.push(key);
+      this.textIds.set(key, id);
+    }
+    return id;
+  }
+
+  optional(value: unknown): number {
+    return value === undefined ? NONE : this.id(value);
+  }
+
+  /** Identical string lists share one run. */
+  strings(value: unknown): string {
+    if (value === undefined) return "Run(0, 0)";
+    const ids = array(value).map((item) => this.id(item));
+    if (ids.length === 0) return "Run(0, 0)";
+    const key = ids.join(",");
+    let run = this.listRuns.get(key);
+    if (run === undefined) {
+      run = Tables.run(this.lists.length, ids.length);
+      this.lists.push(...ids);
+      this.listRuns.set(key, run);
+    }
+    return run;
+  }
+
+  baseline(value: unknown): number {
+    if (value === undefined) return NONE;
+    record(value);
+    fields(value, new Set(["status", "baseline_low_date", "baseline_high_date"]));
+    assert.ok(["high", "low", "false"].includes(text(value.status)));
+    const row = `Baseline(${this.id(value.status)}, ${this.optional(value.baseline_low_date)}, ${this.optional(value.baseline_high_date)})`;
+    let id = this.baselineIds.get(row);
+    if (id === undefined) {
+      id = this.baselines.length;
+      assert.ok(id < NONE);
+      this.baselines.push(row);
+      this.baselineIds.set(row, id);
+    }
+    return id;
+  }
+
+  /** Append `rows` as one contiguous run of `table`. */
+  static append(table: string[], rows: readonly string[]): string {
+    if (rows.length === 0) return "Run(0, 0)";
+    const run = Tables.run(table.length, rows.length);
+    table.push(...rows);
+    return run;
+  }
+
+  static run(start: number, length: number): string {
+    assert.ok(start + length <= 0x10000 && length <= 0xffff, "Catalog runs must fit u16");
+    return `Run(${start}, ${length})`;
+  }
 }
 
-function strings(value: unknown): string {
-  return value === undefined ? "&[]" : `&[${array(value).map(quote).join(", ")}]`;
+function referenceRows(tables: Tables, value: unknown): readonly string[] {
+  if (value === undefined) return [];
+  return array(value).map((reference) => {
+    record(reference);
+    fields(reference, new Set(["name", "url"]));
+    assert.ok(text(reference.url).startsWith("https://"), "Reference must retain an HTTPS URL");
+    return `CssReference { name: ${tables.id(reference.name)}, url: ${tables.id(reference.url)} }`;
+  });
 }
 
-function baseline(value: unknown): string {
-  if (value === undefined) return "None";
-  record(value);
-  fields(value, new Set(["status", "baseline_low_date", "baseline_high_date"]));
-  assert.ok(["high", "low", "false"].includes(text(value.status)));
-  return `Some(CssBaseline { status: ${quote(value.status)}, low_date: ${optional(value.baseline_low_date)}, high_date: ${optional(value.baseline_high_date)} })`;
-}
-
-function references(value: unknown): string {
-  if (value === undefined) return "&[]";
-  return `&[${array(value)
-    .map((reference) => {
-      record(reference);
-      fields(reference, new Set(["name", "url"]));
-      assert.ok(text(reference.url).startsWith("https://"), "Reference must retain an HTTPS URL");
-      return `CssReference { name: ${quote(reference.name)}, url: ${quote(reference.url)} }`;
-    })
-    .join(", ")}]`;
-}
-
-function values(value: unknown): string {
-  if (value === undefined) return "&[]";
-  // Every owned value stays in original order, including original duplicate rows.
-  return `&[${array(value)
-    .map((item) => {
-      record(item);
-      fields(item, VALUE_FIELDS);
-      return `CssValue { name: ${quote(named(item))}, description: ${optional(item.description)}, browsers: ${strings(item.browsers)}, baseline: ${baseline(item.baseline)} }`;
-    })
-    .join(", ")}]`;
+function valueRow(tables: Tables, item: unknown): string {
+  record(item);
+  fields(item, VALUE_FIELDS);
+  return `CssValue { name: ${tables.id(named(item))}, description: ${tables.optional(item.description)}, browsers: ${tables.strings(item.browsers)}, baseline: ${tables.baseline(item.baseline)} }`;
 }
 
 function relevance(value: unknown): string {
@@ -128,16 +185,23 @@ function relevance(value: unknown): string {
   return `Some(${value.toString()})`;
 }
 
-function entry(value: unknown): string {
+function entry(tables: Tables, value: unknown): string {
   record(value);
   fields(value, ENTRY_FIELDS);
   const name = named(value);
   assert.equal(name, name.toLowerCase(), "Index keys must be lowercase ASCII");
-  const descriptors =
+  // Nested descriptors are appended first so this entry's own run is contiguous.
+  const descriptorRows =
     value.descriptors === undefined
-      ? "&[]"
-      : `&[${array(value.descriptors).map(entry).join(", ")}]`;
-  return `CssEntry { name: ${quote(name)}, description: ${optional(value.description)}, syntax: ${optional(value.syntax)}, references: ${references(value.references)}, values: ${values(value.values)}, at_rule: ${optional(value.atRule)}, status: ${optional(value.status)}, restrictions: ${strings(value.restrictions)}, browsers: ${strings(value.browsers)}, baseline: ${baseline(value.baseline)}, relevance: ${relevance(value.relevance)}, descriptors: ${descriptors}, entry_type: ${optional(value.type)} }`;
+      ? []
+      : array(value.descriptors).map((descriptor) => entry(tables, descriptor));
+  const descriptors = Tables.append(tables.descriptors, descriptorRows);
+  // Every owned value stays in original order, including original duplicate rows.
+  const valueRows =
+    value.values === undefined ? [] : array(value.values).map((item) => valueRow(tables, item));
+  const references = Tables.append(tables.references, referenceRows(tables, value.references));
+  const values = Tables.append(tables.values, valueRows);
+  return `CssEntry { name: ${tables.id(name)}, description: ${tables.optional(value.description)}, syntax: ${tables.optional(value.syntax)}, references: ${references}, values: ${values}, at_rule: ${tables.optional(value.atRule)}, status: ${tables.optional(value.status)}, restrictions: ${tables.strings(value.restrictions)}, browsers: ${tables.strings(value.browsers)}, baseline: ${tables.baseline(value.baseline)}, relevance: ${relevance(value.relevance)}, descriptors: ${descriptors}, entry_type: ${tables.optional(value.type)} }`;
 }
 
 function uniqueOriginal(entries: readonly unknown[]): readonly unknown[] {
@@ -150,7 +214,7 @@ function uniqueOriginal(entries: readonly unknown[]): readonly unknown[] {
   });
 }
 
-function colorTable(): string {
+function colorRows(tables: Tables): readonly string[] {
   const raw = readFileSync(COLORS);
   assert.equal(createHash("sha256").update(raw).digest("hex"), COLORS_SHA);
   const source: unknown = JSON.parse(raw.toString("utf8"));
@@ -169,13 +233,51 @@ function colorTable(): string {
     })
     .sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1));
   assert.equal(new Set(colors.map(({ name }) => name.toLowerCase())).size, 150);
-  const body = colors
-    .map(
-      ({ name, description }) =>
-        `    CssValue { name: ${quote(name)}, description: Some(${quote(description)}), browsers: &[], baseline: None },`,
-    )
-    .join("\n");
-  return `${HEADER}\nuse super::CssValue;\n\n#[rustfmt::skip]\npub(super) static VALUES: [CssValue; 150] = [\n${body}\n];\n`;
+  return colors.map(
+    ({ name, description }) =>
+      `CssValue { name: ${tables.id(name)}, description: ${tables.id(description)}, browsers: Run(0, 0), baseline: ${NONE} }`,
+  );
+}
+
+/** Rows packed onto at most `MAX_LINES` lines. */
+function packed(rows: readonly string[], separator = ", "): string {
+  const perLine = Math.max(1, Math.ceil(rows.length / MAX_LINES));
+  const lines: string[] = [];
+  for (let i = 0; i < rows.length; i += perLine) {
+    lines.push(`    ${rows.slice(i, i + perLine).join(separator)},`);
+  }
+  return lines.join("\n");
+}
+
+function table(name: string, type: string, rows: readonly string[], imports: string): string {
+  // rustfmt spells a single import without braces.
+  const path = imports.includes(",") ? `{${imports}}` : imports;
+  const use = imports === "" ? "" : `use super::${path};\n\n`;
+  return `${HEADER}\n${use}#[rustfmt::skip]\npub(super) static ${name}: [${type}; ${rows.length}] = [\n${packed(rows)}\n];\n`;
+}
+
+/** The string table: UTF-8 texts back to back, cut at character boundaries. */
+function textTable(texts: readonly string[]): string {
+  const joined = texts.join("");
+  // Code points, not graphemes: a Rust literal only has to stay valid UTF-8.
+  const characters = Array.from(joined);
+  const perLine = Math.ceil(characters.length / MAX_LINES);
+  const lines: string[] = [];
+  for (let i = 0; i < characters.length; i += perLine) {
+    lines.push(`    ${quote(characters.slice(i, i + perLine).join(""))},`);
+  }
+  return `${HEADER}\n\n#[rustfmt::skip]\npub(super) static TEXT: &str = concat!(\n${lines.join("\n")}\n);\n`;
+}
+
+function startTable(texts: readonly string[]): string {
+  const starts = [0];
+  let end = 0;
+  for (const value of texts) {
+    end += Buffer.byteLength(value, "utf8");
+    starts.push(end);
+  }
+  assert.ok(end <= 0xffffffff);
+  return table("STARTS", "u32", starts.map(String), "");
 }
 
 export function generatedCatalogFiles(): Map<string, string> {
@@ -186,12 +288,14 @@ export function generatedCatalogFiles(): Map<string, string> {
   fields(source, new Set(["version", ...FAMILIES.map(([sourceName]) => sourceName)]));
   assert.equal(source.version, 1.1);
   const generated = new Map<string, string>();
+  const tables = new Tables();
   let ownedValueCount = 0;
   for (const [sourceName, outputName, expectedCount] of FAMILIES) {
     const original = array(source[sourceName]);
     assert.equal(original.length, expectedCount);
     // Validate even rows shadowed by the upstream first-name-wins policy.
-    for (const item of original) entry(item);
+    const validation = new Tables();
+    for (const item of original) entry(validation, item);
     if (sourceName === "properties") {
       for (const item of original) {
         record(item);
@@ -206,33 +310,27 @@ export function generatedCatalogFiles(): Map<string, string> {
     const count =
       sourceName === "pseudoClasses" ? 110 : sourceName === "pseudoElements" ? 88 : expectedCount;
     assert.equal(effective.length, count);
-    const index: string[] = [];
-    for (let start = 0; start < effective.length; start += CHUNK_SIZE) {
-      const chunk = effective.slice(start, start + CHUNK_SIZE);
-      const chunkName = `${outputName}_${Math.floor(start / CHUNK_SIZE)}`;
-      const body = chunk.map((item) => `    ${entry(item)},`).join("\n");
-      const imports = ["CssBaseline", "CssEntry", "CssReference", "CssValue"]
-        .filter((name) => body.includes(`${name} {`))
-        .join(", ");
-      generated.set(
-        `${chunkName}.rs`,
-        `${HEADER}\nuse super::{${imports}};\n\n#[rustfmt::skip]\npub(super) static ENTRIES: [CssEntry; ${chunk.length}] = [\n${body}\n];\n`,
-      );
-      for (let offset = 0; offset < chunk.length; offset++) {
-        index.push(`&super::${chunkName}::ENTRIES[${offset}]`);
-      }
-    }
-    const lines: string[] = [];
-    for (let i = 0; i < index.length; i += 8)
-      lines.push(`    ${index.slice(i, i + 8).join(", ")},`);
-    generated.set(
-      `${outputName}_index.rs`,
-      `${HEADER}\nuse super::CssEntry;\n\n#[rustfmt::skip]\npub(super) static ENTRIES: [&CssEntry; ${effective.length}] = [\n${lines.join("\n")}\n];\n`,
-    );
+    const rows = effective.map((item) => entry(tables, item));
+    generated.set(`${outputName}.rs`, table("ENTRIES", "CssEntry", rows, "CssEntry, Run"));
   }
   assert.equal(ownedValueCount, 2148);
-  generated.set("colors.rs", colorTable());
-  for (const [name, content] of generated) assert.ok(content.split("\n").length <= 350, name);
+  generated.set("colors.rs", table("VALUES", "CssValue", colorRows(tables), "CssValue, Run"));
+  generated.set("values.rs", table("VALUES", "CssValue", tables.values, "CssValue, Run"));
+  generated.set(
+    "descriptors.rs",
+    table("DESCRIPTORS", "CssEntry", tables.descriptors, "CssEntry, Run"),
+  );
+  generated.set(
+    "references.rs",
+    table("REFERENCES", "CssReference", tables.references, "CssReference"),
+  );
+  generated.set("baselines.rs", table("BASELINES", "Baseline", tables.baselines, "Baseline"));
+  generated.set("lists.rs", table("LISTS", "u16", tables.lists.map(String), ""));
+  generated.set("starts.rs", startTable(tables.texts));
+  generated.set("text.rs", textTable(tables.texts));
+  for (const [name, content] of generated) {
+    assert.ok(content.split("\n").length <= 350, name);
+  }
   return generated;
 }
 

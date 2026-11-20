@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-vfor-nested-if-keeps-v-show-root-5552",
+    history: "af800fd3996e05a0df0e0566267a7099d982963a",
+    source: "<template v-for=\"item in items\"><div v-if=\"item.ok\" v-show=\"item.ok\" :key=\"item.id\"></div></template>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, renderList as _renderList, vShow as _vShow } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => {\n    return (_openBlock(), _createElementBlock(_Fragment, null, [\n      (item.ok)\n        ? _withDirectives((_openBlock(), _createElementBlock(\"div\", { key: item.id }, null, 512 /* NEED_PATCH */)), [\n          [_vShow, item.ok]\n        ])\n        : _createCommentVNode(\"v-if\", true)\n    ], 64 /* STABLE_FRAGMENT */))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+    map: None,
+}

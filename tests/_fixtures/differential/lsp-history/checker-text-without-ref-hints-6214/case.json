@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "commit": "cf02a0debca63d5119e3bbd2b1bda9a692f194be",
+  "id": "lsp/fix-history/checker-text-without-ref-hints-6214",
+  "requirement": "Checker diagnostic text is published as reported, without speculative `.value` hints for missing properties or Ref assignments.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\"] }\n",
+    "App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst el = document.createElement('div')\nel.toFixed()\nconst count = ref(1)\nconst plain: number = count\n</script>\n<template><div /></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    }
+  ]
+}

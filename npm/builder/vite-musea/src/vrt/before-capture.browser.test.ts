@@ -28,6 +28,50 @@ const art: ArtFileInfo = {
 const viewport = { width: 160, height: 120, name: "small" };
 
 void test(
+  "a colocated play function runs before the VRT screenshot",
+  { skip: process.env.VIZE_MUSEA_BROWSER_TESTS !== "1" },
+  async () => {
+    await mkdir(output, { recursive: true });
+    const snapshotDir = await mkdtemp(path.join(output, "play-"));
+    const server = createServer((_request, response) => {
+      response.setHeader("Content-Type", "text/html");
+      response.end(`<style>html,body{margin:0}#state{width:160px;height:120px;background:#f00}</style>
+        <main class="musea-variant"><output id="state">Initial</output></main>
+        <script>window.__museaRunPlay=async()=>{await new Promise(r=>setTimeout(r,20));const state=document.querySelector('#state');state.textContent='Played';state.style.background='#00f'};window.postMessage({type:'musea:ready'},location.origin);</script>`);
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address();
+    assert.ok(address && typeof address !== "string");
+    const runner = new MuseaVrtRunner({
+      snapshotDir,
+      viewports: [viewport],
+      capture: { waitForNetwork: false, settleTime: 0 },
+    });
+    const playArt: ArtFileInfo = {
+      ...art,
+      variants: [{ ...art.variants[0], play: "submittedPlay" }],
+    };
+    try {
+      await runner.init();
+      const result = await runner.captureAndCompare(
+        playArt,
+        "Submitted",
+        viewport,
+        `http://127.0.0.1:${address.port}`,
+      );
+      assert.equal(result.error, undefined);
+      const png = PNG.sync.read(await readFile(result.currentPath!));
+      assert.deepEqual([...png.data.subarray(4, 8)], [0, 0, 255, 255]);
+    } finally {
+      await runner.close();
+      await new Promise<void>((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      );
+    }
+  },
+);
+
+void test(
   "authored capture interactions are awaited, isolated, and fail before screenshot or baseline updates",
   {
     skip: process.env.VIZE_MUSEA_BROWSER_TESTS !== "1",

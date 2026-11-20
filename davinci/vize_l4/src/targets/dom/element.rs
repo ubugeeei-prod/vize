@@ -21,7 +21,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         if model.is_some() {
             self.model_start(node)?;
         }
-        let block = fact.block_eligible && !self.facts.has_jsx_child_values();
+        let block = fact.block_eligible && !self.facts.has_child_values();
         if block {
             self.writer.push("(");
             spell(&mut self.writer, self.vocabulary, self.helpers.open_block);

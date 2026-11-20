@@ -9,7 +9,7 @@ use vize_l1::container::vue::DescriptorOptions;
 use vize_l1_to_l2::native_file::{
     NativeSelectedScopedSfcObservation, NativeSelectedSfcIssue, lower_selected_scoped_sfc_native,
 };
-use vize_l3::decision::ssr::{NativeSsrBuildError, build_native_scoped_ssr_file_decisions};
+use vize_l3::decision::ssr::{SsrTemplateBuildError, build_scoped_template_ssr_decisions};
 use vize_l4::{
     module::{
         AssemblyError, ModuleParts, RenderFunctionName, ScopeId, assemble, setup::COMPONENT_BINDING,
@@ -47,7 +47,7 @@ impl Default for NativeScopedSsrSfcCompileOptions<'static> {
 pub enum NativeScopedSsrSfcCompileError {
     Lowering(NativeSelectedSfcIssue),
     Custody,
-    Analysis(NativeSsrBuildError),
+    Analysis(SsrTemplateBuildError),
     Ssr(SsrError),
     Assembly(AssemblyError),
     Style(NativeSfcCompileError),
@@ -170,7 +170,7 @@ fn emit<L: LinkSink>(
         options.style_trim,
     )
     .map_err(Error::Style)?;
-    let receipt = build_native_scoped_ssr_file_decisions(view).map_err(Error::Analysis)?;
+    let receipt = build_scoped_template_ssr_decisions(view).map_err(Error::Analysis)?;
     let mut parts = ModuleParts::for_runtime(
         Runtime::VueServerRenderer,
         options.runtime_version,

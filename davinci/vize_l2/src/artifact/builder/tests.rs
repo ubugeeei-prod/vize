@@ -304,7 +304,7 @@ fn conditional_branches_child_values_and_spreads_seal_canonical_ops() {
     ));
     assert!(matches!(
         element.children.ops.as_slice(),
-        [Op::JsxChildValue(_)]
+        [Op::ChildValue(_)]
     ));
     assert_eq!(
         Artifact::try_new(artifact.into_parts())

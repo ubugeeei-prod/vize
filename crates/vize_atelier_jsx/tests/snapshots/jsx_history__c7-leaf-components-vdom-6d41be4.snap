@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-leaf-components-vdom-6d41be4",
+    history: "6d41be4a703c3e8c91a4c436918935b88e9eddda",
+    source: "const A = () => <div><Foo /><Bar title=\"x\" /></div>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { resolveComponent as _resolveComponent, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  const _component_Foo = _resolveComponent(\"Foo\")\n  const _component_Bar = _resolveComponent(\"Bar\")\n  \n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createVNode(_component_Foo),\n    _createVNode(_component_Bar, { title: \"x\" })\n  ]))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "A",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { resolveComponent as _resolveComponent, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  const _component_Foo = _resolveComponent(\"Foo\")\n  const _component_Bar = _resolveComponent(\"Bar\")\n  \n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createVNode(_component_Foo),\n    _createVNode(_component_Bar, { title: \"x\" })\n  ]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

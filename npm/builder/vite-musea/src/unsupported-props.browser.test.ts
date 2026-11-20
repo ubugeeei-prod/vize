@@ -246,14 +246,16 @@ for (const mode of ["dev", "static"] as const) {
         await waitUnsupportedProps(page, readded);
         observed.readdedRendered = await waitUnsupportedPreview(page, readded);
         await page.locator(".props-reset").click();
-        const empty = Object.fromEntries(vector.names.map((name) => [name, ""]));
-        await waitUnsupportedProps(page, empty);
-        observed.resetRendered = await waitUnsupportedPreview(page, empty);
+        const reset = Object.fromEntries(
+          palette.controls.map((control) => [control.name, control.default_value ?? ""]),
+        );
+        await waitUnsupportedProps(page, reset);
+        observed.resetRendered = await waitUnsupportedPreview(page, reset);
         assert.equal(await page.evaluate((key) => localStorage.getItem(key), storageKey), null);
         await openProps();
-        await waitUnsupportedProps(page, empty);
+        await waitUnsupportedProps(page, reset);
         observed.resetReloaded = await rawEditorPrototype(page);
-        observed.resetReloadRendered = await waitUnsupportedPreview(page, empty);
+        observed.resetReloadRendered = await waitUnsupportedPreview(page, reset);
         await page.screenshot({ path: path.join(output, "supported.png"), fullPage: true });
         await openProps(rawTitle);
         await waitUnsupportedProps(page, {});

@@ -22,9 +22,15 @@ test("Nix isolates the pinned Blacksmith CLI from the default dev shell", () => 
   )?.[1];
   // Every artifact the flake pins, not just Blacksmith's: a moving `latest`
   // URL anywhere would let a fixed-output derivation change under the lock.
+  // Subflakes (tools/nix/creusot) included.
   const sourceUrls = fs
-    .readdirSync(path.join(repoRoot, "tools/nix"))
-    .flatMap((entry) => [...readRepoFile(`tools/nix/${entry}`).matchAll(/url = "([^"]+)";/g)])
+    .readdirSync(path.join(repoRoot, "tools/nix"), { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".nix"))
+    .flatMap((entry) => [
+      ...fs
+        .readFileSync(path.join(entry.parentPath, entry.name), "utf8")
+        .matchAll(/url = "([^"]+)";/g),
+    ])
     .map((match) => match[1]);
 
   assert.ok(defaultShell, "default dev shell");

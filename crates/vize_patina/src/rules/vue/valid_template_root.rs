@@ -67,6 +67,10 @@ impl Rule for ValidTemplateRoot {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::NONE
+    }
+
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
         let owned_descriptor;
         let descriptor = if let Some(descriptor) = ctx.sfc_descriptor() {

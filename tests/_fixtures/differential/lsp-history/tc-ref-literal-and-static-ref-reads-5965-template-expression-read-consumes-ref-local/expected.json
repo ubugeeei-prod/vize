@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 6133,
+        "message": "'decoy' is declared but its value is never read.",
+        "range": {
+          "end": {
+            "character": 11,
+            "line": 2
+          },
+          "start": {
+            "character": 6,
+            "line": 2
+          }
+        },
+        "severity": 2,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

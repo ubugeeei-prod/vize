@@ -90,6 +90,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "coverageStderrSha256",
       "coverageStdoutSha256",
       "durationMs",
+      "excludedInputs",
       "exitCode",
       "runError",
       "sourceConfigSha256",
@@ -97,6 +98,7 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
       "stdoutSha256",
       "version",
     ]);
+    assert.deepEqual(artifact.baseline.excludedInputs, []);
     assert.equal(artifact.baseline.exitCode, 2);
     assert.equal(artifact.baseline.coverageExitCode, 0);
     assert.equal(artifact.baseline.runError, null);
@@ -216,6 +218,40 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
     assert.match(markdown, /vue-tsc excluded project-level: 0/);
     assert.match(markdown, /Seeded mutation oracle: passed \(src\/App\.vue:3:1\)/);
     assert.match(markdown, new RegExp(`Digest: ${artifact.divergence.sha256}`));
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("typecheck divergence report records and applies source-pinned ambient exclusions", () => {
+  const fixture = setup();
+  try {
+    const relativeInput = "src/editor-types.d.ts";
+    const inputPath = path.join(fixture.fixtureRoot, relativeInput);
+    fs.writeFileSync(inputPath, "declare namespace Broken {\n}}\n");
+    const excludedInput = {
+      path: relativeInput,
+      reason: "loaded as editor text rather than a TypeScript program input",
+      sha256: createHash("sha256").update(fs.readFileSync(inputPath)).digest("hex"),
+    };
+    updateJson(fixture.registryPath, (registry) => {
+      registry.projects[0].typecheckPerformance.baseline = {
+        tsconfig: "tsconfig.json",
+        excludedInputs: [excludedInput],
+      };
+    });
+
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const artifact = readJson(path.join(fixture.reportDir, "fixture-typecheck-divergence.json"));
+    const observations = readJson(
+      path.join(fixture.reportDir, "fixture-typecheck-observations.json"),
+    );
+    const baselineConfig = readJson(path.join(fixture.reportDir, "fixture-vue-tsc.tsconfig.json"));
+    assert.deepEqual(artifact.baseline.excludedInputs, [excludedInput]);
+    assert.deepEqual(observations.baseline.excludedInputs, [excludedInput]);
+    assert.ok(!baselineConfig.files.some((file: string) => file.endsWith("/editor-types.d.ts")));
+    assert.ok(baselineConfig.exclude.includes("../src/editor-types.d.ts"));
   } finally {
     cleanup(fixture);
   }

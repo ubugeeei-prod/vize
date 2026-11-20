@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "commit": "4f8cef915cd56e662b5ecce19bad20a1b1f0c39b",
+  "id": "lsp/fix-history/jsx-authored-project-navigation",
+  "requirement": "JSX definition, type definition, references and rename target the real authored project files through the shared canonical mappings.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"jsx\": \"preserve\", \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true }, \"include\": [\"src/**/*\"] }\n",
+    "src/types.ts": "export interface LabelProps {\n  text: string;\n}\n",
+    "src/Label.tsx": "import type { LabelProps } from './types';\n\nexport function Label(props: LabelProps) {\n  return <span>{props.text}</span>;\n}\n",
+    "src/App.tsx": "import { Label } from './Label';\n\nconst props = { text: 'x' };\n\nexport function App() {\n  return <Label {...props} />;\n}\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.tsx"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "src/App.tsx",
+      "at": {
+        "find": "<Label",
+        "delta": 2
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/typeDefinition",
+      "uri": "src/App.tsx",
+      "at": {
+        "find": "const props",
+        "delta": 7
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/references",
+      "uri": "src/App.tsx",
+      "at": {
+        "find": "<Label",
+        "delta": 2
+      },
+      "params": {
+        "context": {
+          "includeDeclaration": true
+        }
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/rename",
+      "uri": "src/App.tsx",
+      "at": {
+        "find": "<Label",
+        "delta": 2
+      },
+      "params": {
+        "newName": "Caption"
+      },
+      "retry": true
+    }
+  ]
+}

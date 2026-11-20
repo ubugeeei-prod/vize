@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-component-v-for-dynamic-template-literal-local-5192",
+    history: "1090e7e4d8c2bfb52025751b34c9485d1bab271a",
+    source: "<Foo v-for=\"item in items\" :[`data-${item.id}`]=\"item.value\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Foo = _resolveComponent(\"Foo\")\n  \n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => {\n    return (_openBlock(), _createBlock(_component_Foo, { [(`data-${item.id}`) || \"\"]: item.value }, null, 16 /* FULL_PROPS */))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+    map: None,
+}

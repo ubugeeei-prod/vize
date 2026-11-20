@@ -1,5 +1,6 @@
 use super::*;
-use vize_l2::file::{FileIssueKind, PositionQueryError};
+use vize_l2::file::FileIssueKind;
+use vize_l2::query::{Model, PositionQueryError};
 
 #[test]
 fn optional_named_exports_keep_full_genuine_refusals_with_and_without_keyword_return() {
@@ -47,7 +48,7 @@ fn optional_named_exports_keep_full_genuine_refusals_with_and_without_keyword_re
         );
         assert_eq!(file.references()[0].target, ReferenceTarget::Unresolved);
         assert!(matches!(
-            file.binding_at_offset(file.exports()[0].span.start),
+            Model::new(&file).binding_at_offset(file.exports()[0].span.start),
             Err(PositionQueryError::IncompleteFile)
         ));
         assert_eq!(file.references().len(), references);

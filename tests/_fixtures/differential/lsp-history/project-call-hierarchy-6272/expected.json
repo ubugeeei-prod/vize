@@ -1,0 +1,207 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "kind": 12,
+        "name": "caller",
+        "range": {
+          "end": {
+            "character": 15,
+            "line": 2
+          },
+          "start": {
+            "character": 9,
+            "line": 2
+          }
+        },
+        "selectionRange": {
+          "end": {
+            "character": 15,
+            "line": 2
+          },
+          "start": {
+            "character": 9,
+            "line": 2
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": [
+      {
+        "fromRanges": [
+          {
+            "end": {
+              "character": 34,
+              "line": 2
+            },
+            "start": {
+              "character": 27,
+              "line": 2
+            }
+          }
+        ],
+        "to": {
+          "kind": 12,
+          "name": "library",
+          "range": {
+            "end": {
+              "character": 49,
+              "line": 1
+            },
+            "start": {
+              "character": 0,
+              "line": 1
+            }
+          },
+          "selectionRange": {
+            "end": {
+              "character": 23,
+              "line": 1
+            },
+            "start": {
+              "character": 16,
+              "line": 1
+            }
+          },
+          "uri": "${workspace}/Library.ts"
+        }
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "result": [
+      {
+        "fromRanges": [
+          {
+            "end": {
+              "character": 36,
+              "line": 1
+            },
+            "start": {
+              "character": 35,
+              "line": 1
+            }
+          }
+        ],
+        "to": {
+          "kind": 12,
+          "name": "葉",
+          "range": {
+            "end": {
+              "character": 57,
+              "line": 1
+            },
+            "start": {
+              "character": 0,
+              "line": 0
+            }
+          },
+          "selectionRange": {
+            "end": {
+              "character": 17,
+              "line": 1
+            },
+            "start": {
+              "character": 16,
+              "line": 1
+            }
+          },
+          "uri": "${workspace}/leaf.ts"
+        }
+      }
+    ]
+  },
+  {
+    "step": 4,
+    "result": [
+      {
+        "from": {
+          "kind": 12,
+          "name": "caller",
+          "range": {
+            "end": {
+              "character": 15,
+              "line": 2
+            },
+            "start": {
+              "character": 9,
+              "line": 2
+            }
+          },
+          "selectionRange": {
+            "end": {
+              "character": 15,
+              "line": 2
+            },
+            "start": {
+              "character": 9,
+              "line": 2
+            }
+          },
+          "uri": "${workspace}/App.vue"
+        },
+        "fromRanges": [
+          {
+            "end": {
+              "character": 34,
+              "line": 2
+            },
+            "start": {
+              "character": 27,
+              "line": 2
+            }
+          }
+        ]
+      },
+      {
+        "from": {
+          "kind": 12,
+          "name": "closedCaller",
+          "range": {
+            "end": {
+              "character": 21,
+              "line": 2
+            },
+            "start": {
+              "character": 9,
+              "line": 2
+            }
+          },
+          "selectionRange": {
+            "end": {
+              "character": 21,
+              "line": 2
+            },
+            "start": {
+              "character": 9,
+              "line": 2
+            }
+          },
+          "uri": "${workspace}/Closed.vue"
+        },
+        "fromRanges": [
+          {
+            "end": {
+              "character": 40,
+              "line": 2
+            },
+            "start": {
+              "character": 33,
+              "line": 2
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step": 5,
+    "result": []
+  }
+]

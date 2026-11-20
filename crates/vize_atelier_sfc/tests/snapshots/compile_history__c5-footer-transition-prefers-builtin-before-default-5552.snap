@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-footer-transition-prefers-builtin-before-default-5552",
+    history: "af800fd3996e05a0df0e0566267a7099d982963a",
+    source: "<PageWithHeader><div><TransitionGroup><template v-for=\"item in timeline\" :key=\"item.id\"><Message :message=\"item\" /></template></TransitionGroup></div><template #footer><Transition name=\"fade\"><div v-show=\"showIndicator\"></div></Transition></template></PageWithHeader>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, withDirectives as _withDirectives, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList, withCtx as _withCtx, Transition as _Transition, vShow as _vShow, TransitionGroup as _TransitionGroup } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Message = _resolveComponent(\"Message\")\n  const _component_PageWithHeader = _resolveComponent(\"PageWithHeader\")\n  \n  return (_openBlock(), _createBlock(_component_PageWithHeader, null, {\n    footer: _withCtx(() => [\n      _createVNode(_Transition, { name: \"fade\" }, {\n        default: _withCtx(() => [\n          _withDirectives(_createElementVNode(\"div\", null, null, 512 /* NEED_PATCH */), [\n            [_vShow, showIndicator]\n          ])\n        ]),\n        _: 1 /* STABLE */\n      })\n    ]),\n    default: _withCtx(() => [\n      _createElementVNode(\"div\", null, [\n        _createVNode(_TransitionGroup, null, {\n          default: _withCtx(() => [\n            (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(timeline, (item) => {\n              return (_openBlock(), _createBlock(_component_Message, {\n                key: item.id,\n                message: item\n              }, null, 8 /* PROPS */, [\"message\"]))\n            }), 128 /* KEYED_FRAGMENT */))\n          ]),\n          _: 1 /* STABLE */\n        })\n      ])\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

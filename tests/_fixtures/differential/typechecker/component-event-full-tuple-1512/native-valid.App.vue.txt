@@ -1,0 +1,7 @@
+<script setup lang="ts">
+function handleClick(event: PointerEvent) {
+  void event
+}
+</script>
+
+<template><button @click="handleClick">Click</button></template>

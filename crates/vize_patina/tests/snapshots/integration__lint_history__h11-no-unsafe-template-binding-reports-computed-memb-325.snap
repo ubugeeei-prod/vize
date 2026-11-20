@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-no-unsafe-template-binding-reports-computed-memb-325",
+    history: "994ae6314c7e3f2e3804b45fb956b1fff1e42cec",
+    source: "<script setup lang=\"ts\">\nconst key = 'label' as const\nconst payload: Record<string, any> = { label: 'unsafe' }\n</script>\n\n<template>\n  <div>{{ payload[key] }}</div>\n</template>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-unsafe-template-binding",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "type/no-unsafe-template-binding",
+                severity: Warning,
+                message: "Template interpolation resolves to an unsafe `any` or `unknown` type",
+                start: 143,
+                end: 155,
+                help: Some(
+                    "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "type/no-unsafe-template-binding",
+                    severity: Warning,
+                    message: "Template interpolation resolves to an unsafe `any` or `unknown` type",
+                    start: 143,
+                    end: 155,
+                    help: Some(
+                        "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

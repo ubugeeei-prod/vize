@@ -1,0 +1,67 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**accesskey on <div>**\n\n_HTML attribute_\n\n```typescript\naccessKey: HTMLElementTagNameMap[\"div\"][\"accessKey\"]\n```\n\nNative DOM attribute recognized by the Vue template compiler. Vue patches it on the platform element rather than resolving it as a component prop.\n\n**Runtime surface**\n\nDOM reflected attribute\n\n**Editor behavior**\n- Hover and go-to-definition use the DOM library type for the reflected property when the type service is available.\n- Component prop lookup is skipped because the enclosing tag is a native element.\n\n**Example**\n\n```vue\n<template>\n  <div accesskey=\"...\">...</div>\n</template>\n```\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/accesskey)"
+      },
+      "range": {
+        "end": {
+          "character": 16,
+          "line": 1
+        },
+        "start": {
+          "character": 7,
+          "line": 1
+        }
+      }
+    }
+  },
+  {
+    "step": 2,
+    "result": null
+  },
+  {
+    "step": 3,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**inert on <div>**\n\n_HTML attribute_\n\n```typescript\ninert: HTMLElementTagNameMap[\"div\"][\"inert\"]\n```\n\nNative DOM attribute recognized by the Vue template compiler. Vue patches it on the platform element rather than resolving it as a component prop.\n\n**Runtime surface**\n\nBoolean HTML attribute\n\n**Editor behavior**\n- Hover and go-to-definition use the DOM library type for the reflected property when the type service is available.\n- Component prop lookup is skipped because the enclosing tag is a native element.\n\n**Example**\n\n```vue\n<template>\n  <div inert>...</div>\n</template>\n```\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/inert)"
+      },
+      "range": {
+        "end": {
+          "character": 39,
+          "line": 1
+        },
+        "start": {
+          "character": 34,
+          "line": 1
+        }
+      }
+    }
+  },
+  {
+    "step": 4,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**enterkeyhint on <div>**\n\n_HTML attribute_\n\n```typescript\nenterKeyHint: HTMLElementTagNameMap[\"div\"][\"enterKeyHint\"]\n```\n\nNative DOM attribute recognized by the Vue template compiler. Vue patches it on the platform element rather than resolving it as a component prop.\n\n**Runtime surface**\n\nDOM reflected attribute\n\n**Editor behavior**\n- Hover and go-to-definition use the DOM library type for the reflected property when the type service is available.\n- Component prop lookup is skipped because the enclosing tag is a native element.\n\n**Example**\n\n```vue\n<template>\n  <div enterkeyhint=\"...\">...</div>\n</template>\n```\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/enterkeyhint)"
+      },
+      "range": {
+        "end": {
+          "character": 52,
+          "line": 1
+        },
+        "start": {
+          "character": 40,
+          "line": 1
+        }
+      }
+    }
+  },
+  {
+    "step": 5,
+    "result": null
+  }
+]

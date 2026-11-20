@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-branch-component-static-props-stay-inline-before-5576",
+    history: "185d49ba9f16b87fd65e23e59cb232011b28a010",
+    source: "<Form v-if=\"show\" action=\"/dump/post\" method=\"post\"><input type=\"text\" name=\"name\" id=\"name\" value=\"John\" /></Form>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Form = _resolveComponent(\"Form\")\n  \n  return (show)\n    ? (_openBlock(), _createBlock(_component_Form, {\n      key: 0,\n      action: \"/dump/post\",\n      method: \"post\"\n    }, {\n      default: _withCtx(() => [\n        _createElementVNode(\"input\", {\n          type: \"text\",\n          name: \"name\",\n          id: \"name\",\n          value: \"John\"\n        })\n      ]),\n      _: 1 /* STABLE */\n    }))\n    : _createCommentVNode(\"v-if\", true)\n}",
+    map: None,
+}

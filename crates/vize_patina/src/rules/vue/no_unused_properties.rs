@@ -141,6 +141,10 @@ impl Rule for NoUnusedProperties {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE
+    }
+
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         if !self.check_props || !ctx.has_analysis() {
             return;

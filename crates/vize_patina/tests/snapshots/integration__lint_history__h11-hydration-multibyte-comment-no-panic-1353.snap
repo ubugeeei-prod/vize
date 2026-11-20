@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-hydration-multibyte-comment-no-panic-1353",
+    history: "51d09e41414254b548603dbfcdc9330c17d82a58",
+    source: "<div :class=\"[\n\t// 行が選択されているときは範囲選択色の適用を行側に任せる\n\tcell.row,\n]\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "ssr/no-hydration-mismatch",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

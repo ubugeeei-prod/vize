@@ -1,0 +1,36 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-absent-6177",
+    history: "38151fd3384faebe7fb45cdf636baca00d3ee05e",
+    source: "<template v-match=\"subject\"><p v-when=\"{ length: 3 }\">three</p><p v-when=\"{ nested: { field: _ } }\">nested</p><p v-when=\"_\">other</p></template>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (() => { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (__vize_match_0_0 == null) break a0; if (!(\"length\" in Object(__vize_match_0_0))) break a0; const __vize_match_0_1 = __vize_match_0_0[\"length\"]; if (__vize_match_0_1 !== 3) break a0; return [0]; } a1: { if (__vize_match_0_0 == null) break a1; if (!(\"nested\" in Object(__vize_match_0_0))) break a1; const __vize_match_0_2 = __vize_match_0_0[\"nested\"]; if (__vize_match_0_2 == null) break a1; if (!(\"field\" in Object(__vize_match_0_2))) break a1; return [1]; } return [2]; })(subject); return (__vize_match_0[0] === 0)\n    ? (_openBlock(), _createElementBlock(\"p\", { key: 0 }, \"three\"))\n    : (__vize_match_0[0] === 1)\n      ? (_openBlock(), _createElementBlock(\"p\", { key: 1 }, \"nested\"))\n    : (__vize_match_0[0] === 2)\n      ? (_openBlock(), _createElementBlock(\"p\", { key: 2 }, \"other\"))\n    : _createCommentVNode(\"v-if\", true) })()\n}",
+    map: None,
+}

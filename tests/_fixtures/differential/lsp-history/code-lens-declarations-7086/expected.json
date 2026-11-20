@@ -1,0 +1,60 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "command": {
+          "command": "vize.findReferences",
+          "title": "2 template/style references"
+        },
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 1
+          },
+          "start": {
+            "character": 0,
+            "line": 1
+          }
+        }
+      },
+      {
+        "command": {
+          "command": "vize.findReferences",
+          "title": "2 template/style references"
+        },
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 2
+          },
+          "start": {
+            "character": 0,
+            "line": 2
+          }
+        }
+      }
+    ]
+  },
+  {
+    "step": 3,
+    "result": [
+      {
+        "command": {
+          "command": "vize.findReferences",
+          "title": "1 template/style reference"
+        },
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 3
+          },
+          "start": {
+            "character": 0,
+            "line": 3
+          }
+        }
+      }
+    ]
+  }
+]

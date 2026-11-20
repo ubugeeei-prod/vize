@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-css-imports-utf8-blank-lines-1244",
+    history: "0dd1f9a9df1814ca797c3a8509b448f0b46bf5ca",
+    source: ".icon::before { content: \"→\"; }\n\n\n.日本語 { color: red; }",
+    filename: "History.vue",
+    entry: "vite",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        vite_helper: Some(
+            "cssImports",
+        ),
+    },
+    errors: 0,
+}
+PipelineCss(
+    ".icon::before { content: \"→\"; }\n\n.日本語 { color: red; }",
+)

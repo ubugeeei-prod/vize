@@ -1,0 +1,45 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-12-3718",
+    history: "e39ff7493b623fbac16f8bf32f51d70be528b60c",
+    source: "const D = () => <Fragment/>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: Some(
+            "babel",
+        ),
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: Some(
+            "My",
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nconst D = () => (() => {\nreturn ((_ctx, _cache) => {\n  const _component_Fragment = _resolveComponent(\"Fragment\")\n  \n  return (_openBlock(), _createBlock(_component_Fragment))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "D",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  const _component_Fragment = _resolveComponent(\"Fragment\")\n  \n  return (_openBlock(), _createBlock(_component_Fragment))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

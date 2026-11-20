@@ -1,0 +1,78 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**codebase on <object>**\n\n_HTML attribute_\n\n```typescript\ncodeBase: HTMLElementTagNameMap[\"object\"][\"codeBase\"]\n```\n\nNative DOM attribute recognized by the Vue template compiler. Vue patches it on the platform element rather than resolving it as a component prop.\n\n**Runtime surface**\n\nDOM reflected attribute\n\n**Editor behavior**\n- Hover and go-to-definition use the DOM library type for the reflected property when the type service is available.\n- Component prop lookup is skipped because the enclosing tag is a native element.\n\n**Example**\n\n```vue\n<template>\n  <object codebase=\"...\">...</object>\n</template>\n```\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/codebase)"
+      },
+      "range": {
+        "end": {
+          "character": 18,
+          "line": 1
+        },
+        "start": {
+          "character": 10,
+          "line": 1
+        }
+      }
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**codetype on <object>**\n\n_HTML attribute_\n\n```typescript\ncodeType: HTMLElementTagNameMap[\"object\"][\"codeType\"]\n```\n\nNative DOM attribute recognized by the Vue template compiler. Vue patches it on the platform element rather than resolving it as a component prop.\n\n**Runtime surface**\n\nDOM reflected attribute\n\n**Editor behavior**\n- Hover and go-to-definition use the DOM library type for the reflected property when the type service is available.\n- Component prop lookup is skipped because the enclosing tag is a native element.\n\n**Example**\n\n```vue\n<template>\n  <object codetype=\"...\">...</object>\n</template>\n```\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/codetype)"
+      },
+      "range": {
+        "end": {
+          "character": 31,
+          "line": 1
+        },
+        "start": {
+          "character": 23,
+          "line": 1
+        }
+      }
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**archive on <object>**\n\n_HTML attribute_\n\n```typescript\narchive: HTMLElementTagNameMap[\"object\"][\"archive\"]\n```\n\nNative DOM attribute recognized by the Vue template compiler. Vue patches it on the platform element rather than resolving it as a component prop.\n\n**Runtime surface**\n\nDOM reflected attribute\n\n**Editor behavior**\n- Hover and go-to-definition use the DOM library type for the reflected property when the type service is available.\n- Component prop lookup is skipped because the enclosing tag is a native element.\n\n**Example**\n\n```vue\n<template>\n  <object archive=\"...\">...</object>\n</template>\n```\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/archive)"
+      },
+      "range": {
+        "end": {
+          "character": 43,
+          "line": 1
+        },
+        "start": {
+          "character": 36,
+          "line": 1
+        }
+      }
+    }
+  },
+  {
+    "step": 4,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**declare on <object>**\n\n_HTML attribute_\n\n```typescript\ndeclare: HTMLElementTagNameMap[\"object\"][\"declare\"]\n```\n\nNative DOM attribute recognized by the Vue template compiler. Vue patches it on the platform element rather than resolving it as a component prop.\n\n**Runtime surface**\n\nBoolean HTML attribute\n\n**Editor behavior**\n- Hover and go-to-definition use the DOM library type for the reflected property when the type service is available.\n- Component prop lookup is skipped because the enclosing tag is a native element.\n\n**Example**\n\n```vue\n<template>\n  <object declare>...</object>\n</template>\n```\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/declare)"
+      },
+      "range": {
+        "end": {
+          "character": 55,
+          "line": 1
+        },
+        "start": {
+          "character": 48,
+          "line": 1
+        }
+      }
+    }
+  }
+]

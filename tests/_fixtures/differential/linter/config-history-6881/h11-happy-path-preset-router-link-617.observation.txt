@@ -1,0 +1,33 @@
+Case {
+    id: "h11-happy-path-preset-router-link-617",
+    history: "2e884f7b2df816c675f1473bba681b4429a4f458",
+    source_file: "h11-happy-path-preset-router-link-617.vue.txt",
+    filename: "test.vue",
+    entry: "sfc",
+    preset: "happy-path",
+    enabled_rules: None,
+    disabled_rules: [],
+    rule_severities: [],
+    disabled_categories: [],
+    category_severities: [],
+    rule_options: Object {},
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "test.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "test.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

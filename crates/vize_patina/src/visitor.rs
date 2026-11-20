@@ -5,7 +5,8 @@
 use crate::context::{
     CallbackSite, ElementContext, LintContext, TemplateCommentDirectives, process_vize_directive,
 };
-use crate::rule::Rule;
+use crate::rule::{IndexedRulePlans, Rule};
+use std::borrow::Cow;
 use vize_l0::{CompactString, profile};
 use vize_relief::{ElementNode, PropNode, TemplateChildNode};
 
@@ -18,18 +19,25 @@ mod branches;
 mod dispatch;
 mod root;
 
+#[derive(Clone, Copy)]
+pub(super) enum RuleSelection<'rules> {
+    All,
+    Mask(&'rules [bool]),
+    Indices(&'rules [usize]),
+}
+
 /// Visit the AST and run all rules
 pub struct LintVisitor<'a, 'ctx, 'rules> {
     ctx: &'ctx mut LintContext<'a>,
     rules: &'rules [Box<dyn Rule>],
     rule_names: &'rules [&'static str],
     run_exit_element_rules: bool,
-    /// Optional per-rule keep mask, parallel to `rules`. When `Some`, a rule is
-    /// dispatched only where its entry is `true`. Used by the JSX/TSX fallback
-    /// lowering pass to skip rules already handled by the zero-cost markup IR
-    /// pass, so a migrated rule never reports twice. `None` (the common
-    /// template path) runs every rule with no extra work.
-    keep_mask: Option<&'rules [bool]>,
+    /// Rule ranks to dispatch. The SFC split stores its smaller legacy side as
+    /// compact ranks so every callback skips facade rules without scanning the
+    /// full registry. JSX retains its existing boolean partition.
+    selection: RuleSelection<'rules>,
+    /// Callback masks keyed by registry rank for the legacy subset.
+    indexed_plans: Cow<'rules, IndexedRulePlans>,
     track_aria_hidden_inert: bool,
     template_directives: Option<&'ctx TemplateCommentDirectives<'ctx, 'a>>,
 }
@@ -48,7 +56,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             rules,
             rule_names,
             run_exit_element_rules,
-            keep_mask: None,
+            selection: RuleSelection::All,
+            indexed_plans: Cow::Owned(IndexedRulePlans::default()),
             track_aria_hidden_inert: rule_names.contains(&"a11y/no-aria-hidden-on-focusable"),
             template_directives: None,
         }
@@ -73,11 +82,60 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             rules,
             rule_names,
             run_exit_element_rules,
-            keep_mask: Some(keep_mask),
+            selection: RuleSelection::Mask(keep_mask),
+            indexed_plans: Cow::Owned(IndexedRulePlans::default()),
             track_aria_hidden_inert: rule_names.iter().enumerate().any(|(index, name)| {
                 *name == "a11y/no-aria-hidden-on-focusable"
-                    && Self::rule_active(Some(keep_mask), index)
+                    && Self::rule_active(RuleSelection::Mask(keep_mask), index)
             }),
+            template_directives: None,
+        }
+    }
+
+    /// Create a visitor over an ordered subset of registry ranks.
+    #[inline]
+    pub(crate) fn with_rule_indices(
+        ctx: &'ctx mut LintContext<'a>,
+        rules: &'rules [Box<dyn Rule>],
+        rule_names: &'rules [&'static str],
+        run_exit_element_rules: bool,
+        indices: &'rules [usize],
+    ) -> Self {
+        let indexed_plans = IndexedRulePlans::new(rules, indices);
+        Self {
+            ctx,
+            rules,
+            rule_names,
+            run_exit_element_rules,
+            selection: RuleSelection::Indices(indices),
+            indexed_plans: Cow::Owned(indexed_plans),
+            track_aria_hidden_inert: indices
+                .iter()
+                .any(|&index| rule_names.get(index) == Some(&"a11y/no-aria-hidden-on-focusable")),
+            template_directives: None,
+        }
+    }
+
+    /// Create a visitor over a registry-owned subset and its cached masks.
+    #[inline]
+    pub(crate) fn with_rule_plan(
+        ctx: &'ctx mut LintContext<'a>,
+        rules: &'rules [Box<dyn Rule>],
+        rule_names: &'rules [&'static str],
+        run_exit_element_rules: bool,
+        indices: &'rules [usize],
+        indexed_plans: &'rules IndexedRulePlans,
+    ) -> Self {
+        Self {
+            ctx,
+            rules,
+            rule_names,
+            run_exit_element_rules,
+            selection: RuleSelection::Indices(indices),
+            indexed_plans: Cow::Borrowed(indexed_plans),
+            track_aria_hidden_inert: indices
+                .iter()
+                .any(|&index| rule_names.get(index) == Some(&"a11y/no-aria-hidden-on-focusable")),
             template_directives: None,
         }
     }
@@ -90,17 +148,13 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         self
     }
 
-    /// Whether the rule at `index` is active under the current [`Self::keep_mask`].
-    ///
-    /// Hot path: with no mask (the common template path) this is a constant
-    /// `true`; the JSX fallback pass uses it to skip rules the markup IR pass
-    /// already handled. Reads only `keep_mask`, so it does not conflict with the
-    /// `&mut self.ctx` the dispatch loops hold.
+    /// Whether the rule at `index` is active under `selection`.
     #[inline]
-    fn rule_active(keep_mask: Option<&[bool]>, index: usize) -> bool {
-        match keep_mask {
-            Some(mask) => mask.get(index).copied().unwrap_or(false),
-            None => true,
+    fn rule_active(selection: RuleSelection<'_>, index: usize) -> bool {
+        match selection {
+            RuleSelection::All => true,
+            RuleSelection::Mask(mask) => mask.get(index).copied().unwrap_or(false),
+            RuleSelection::Indices(indices) => indices.binary_search(&index).is_ok(),
         }
     }
 
@@ -118,13 +172,14 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 // Coalesce all interpolation rule callbacks into one span for
                 // the same reason as template-level checks: callback dispatch is
                 // hot and individual rule spans add measurable overhead.
-                let keep_mask = self.keep_mask;
+                let selection = self.selection;
                 profile!("patina.rules.check_interpolation", {
                     Self::callback_rules(
                         self.ctx,
                         self.rules,
                         self.rule_names,
-                        keep_mask,
+                        selection,
+                        &self.indexed_plans.interpolation,
                         CallbackSite::Interpolation(interp.loc.span.start),
                         |_, rule, ctx| rule.check_interpolation(ctx, interp),
                     );
@@ -158,19 +213,27 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     }
 
     fn visit_element(&mut self, el: &ElementNode<'a>) {
-        // Check for v-for, v-if, and v-slot directives using iterators (no allocation)
-        let has_v_for = el
-            .props
-            .iter()
-            .any(|p| matches!(p, PropNode::Directive(d) if d.name == "for"));
-        let has_v_if = el
-            .props
-            .iter()
-            .any(|p| matches!(p, PropNode::Directive(d) if d.name == "if" || d.name == "else-if"));
-        let has_v_slot = el
-            .props
-            .iter()
-            .any(|p| matches!(p, PropNode::Directive(d) if d.name == "slot"));
+        // Derive the element's cheap facts in one property pass. They used to
+        // rescan the opening tag independently before every callback batch.
+        let (mut has_v_for, mut has_v_if, mut has_v_slot, mut vue_is_component) =
+            (false, false, false, false);
+        for prop in el.props.iter() {
+            match prop {
+                PropNode::Directive(directive) => match directive.name {
+                    "for" => has_v_for = true,
+                    "if" | "else-if" => has_v_if = true,
+                    "slot" => has_v_slot = true,
+                    _ => {}
+                },
+                PropNode::Attribute(attribute) => {
+                    vue_is_component |= attribute.name.eq_ignore_ascii_case("is")
+                        && attribute
+                            .value
+                            .as_ref()
+                            .is_some_and(|value| value.content.starts_with("vue:"));
+                }
+            }
+        }
 
         // Extract scope variables (only allocates if directives exist).
         let mut v_for_vars = if has_v_for {
@@ -183,11 +246,6 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         }
 
         // Build element context with CompactString tag (efficient for small strings)
-        let vue_is_component = el.props.iter().any(|prop| {
-            matches!(prop, PropNode::Attribute(attr)
-                if attr.name.eq_ignore_ascii_case("is")
-                    && attr.value.as_ref().is_some_and(|value| value.content.starts_with("vue:")))
-        });
         let elem_ctx = ElementContext {
             tag: CompactString::from(el.tag),
             has_v_for,
@@ -209,13 +267,14 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Enter element - run rules. Element/directive/exit/branch callbacks
         // follow the same coalesced-span pattern as root/interpolation checks:
         // one guard around the rule batch, not one guard per rule.
-        let keep_mask = self.keep_mask;
+        let selection = self.selection;
         profile!("patina.rules.enter_element", {
             Self::callback_rules(
                 self.ctx,
                 self.rules,
                 self.rule_names,
-                keep_mask,
+                selection,
+                &self.indexed_plans.element,
                 CallbackSite::Element(el.loc.span.start),
                 |_, rule, ctx| rule.enter_element(ctx, el),
             );
@@ -231,7 +290,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                         self.ctx,
                         self.rules,
                         self.rule_names,
-                        keep_mask,
+                        selection,
+                        &self.indexed_plans.directive,
                         CallbackSite::Directive(el.loc.span.start, dir.loc.span.start),
                         |_, rule, ctx| rule.check_directive(ctx, el, dir),
                     );
@@ -251,7 +311,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                     self.ctx,
                     self.rules,
                     self.rule_names,
-                    keep_mask,
+                    selection,
+                    &self.indexed_plans.exit,
                     CallbackSite::ExitElement(el.loc.span.start),
                     |_, rule, ctx| rule.exit_element(ctx, el),
                 );

@@ -55,16 +55,16 @@ export function usageScript(content?: string, isolated = true): string {
   const lines = content.split("\n");
   const componentName = extractDefineArtComponentName(content);
   const kept: string[] = [];
-  let defineArtBalance = 0;
+  let artMacroBalance = 0;
 
   for (const line of lines) {
     const trimmed = line.trim();
-    if (defineArtBalance > 0) {
-      defineArtBalance += parenBalance(line);
+    if (artMacroBalance > 0) {
+      artMacroBalance += parenBalance(line);
       continue;
     }
-    if (/\bdefineArt\s*\(/.test(trimmed)) {
-      defineArtBalance = Math.max(0, parenBalance(line));
+    if (/\b(?:defineArt|defineArtMeta)\s*\(/u.test(trimmed)) {
+      artMacroBalance = Math.max(0, parenBalance(line));
       continue;
     }
     if (isolated && componentName && importDeclaresName(line, componentName)) {

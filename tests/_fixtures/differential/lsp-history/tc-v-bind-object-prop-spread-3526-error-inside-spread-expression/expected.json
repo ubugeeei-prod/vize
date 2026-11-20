@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2339,
+        "message": "Property 'missing' does not exist on type '{ count: number; }'.",
+        "range": {
+          "end": {
+            "character": 28,
+            "line": 6
+          },
+          "start": {
+            "character": 21,
+            "line": 6
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

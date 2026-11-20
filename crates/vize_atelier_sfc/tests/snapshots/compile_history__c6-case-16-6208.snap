@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-16-6208",
+    history: "60656df799a4c879268eb9a25d2a086ec8c96cdd",
+    source: "<script setup>import Child from './Child.vue'; import { state, makeHandler } from './fixture';</script>\n<template><Child :label=\"state.label\" :onExample=\"makeHandler()\" :only=\"state.label.toUpperCase()\" /></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { createComponentWithFallback as _createComponentWithFallback } from 'vue';\n\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const _component_Child = _ctx.Child\n  const n0 = _createComponentWithFallback(_component_Child, {\n    label: () => (_ctx.state.label),\n    onExample: () => (_ctx.makeHandler()),\n    only: () => (_ctx.state.label.toUpperCase())\n  }, null, true)\n  return n0\n}\nconst __vaporRender = render\nimport Child from './Child.vue'\nimport { state, makeHandler } from './fixture'\n\n\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'History',\n  render: __vaporRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = { Child, state, makeHandler }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "Child": SetupConst,
+                        "state": SetupMaybeRef,
+                        "makeHandler": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

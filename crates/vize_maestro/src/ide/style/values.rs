@@ -57,13 +57,13 @@ pub(super) fn lookup(
 }
 
 pub(super) fn accepts_colors(property: &super::data::CssEntry) -> bool {
-    property.restrictions.contains(&"color")
+    property.restrictions().contains("color")
 }
 
 pub(super) fn accepts_calc(property: &super::data::CssEntry) -> bool {
-    property.restrictions.iter().any(|restriction| {
+    property.restrictions().iter().any(|restriction| {
         matches!(
-            *restriction,
+            restriction,
             "length" | "percentage" | "number" | "integer" | "angle" | "time" | "frequency"
         )
     })

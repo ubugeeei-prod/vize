@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-for-component-root-slot-static-props-stay-inline-5565",
+    history: "07ac91d6024c4b9ca584d718ac06e2772bcae7c8",
+    source: "<ListItem v-for=\"entry in entries\" label=\"fixed\" v-slot=\"{ value }\">{{ value }}</ListItem>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, renderList as _renderList, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_ListItem = _resolveComponent(\"ListItem\")\n  \n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(entries, (entry) => {\n    return (_openBlock(), _createBlock(_component_ListItem, { label: \"fixed\" }, {\n      default: _withCtx(({ value }) => [\n        _createTextVNode(_toDisplayString(value), 1 /* TEXT */)\n      ]),\n      _: 2 /* DYNAMIC */\n    }, 1024 /* DYNAMIC_SLOTS */))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+    map: None,
+}

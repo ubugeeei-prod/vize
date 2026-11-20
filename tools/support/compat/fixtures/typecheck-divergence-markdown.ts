@@ -6,6 +6,7 @@ type MarkdownSummary = BudgetArtifact["divergence"]["summary"] & {
   readonly baselineExcludedSupportVueCount: number;
   readonly baselineExcludedProjectCount: number;
   readonly baselineExcludedExternalCount: number;
+  readonly baselineGeneratedArtifactCount: number;
 };
 
 interface MarkdownCoverage {
@@ -83,6 +84,7 @@ export function renderMarkdown(artifact: TypecheckMarkdownArtifact): string {
     `vue-tsc excluded support Vue: ${summary.baselineExcludedSupportVueCount}`,
     `vue-tsc excluded project-level: ${summary.baselineExcludedProjectCount}`,
     `vue-tsc excluded external: ${summary.baselineExcludedExternalCount}`,
+    `vue-tsc generated Vue artifacts: ${summary.baselineGeneratedArtifactCount}`,
     `vue-tsc configuration errors: ${artifact.baseline.configuration.errorCount}`,
     `vue-tsc ambient environment: ${describeAmbient(artifact.baseline.ambient)}`,
     `Vize Vue files: ${coverage.vizeVueFileCount}`,

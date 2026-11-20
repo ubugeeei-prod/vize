@@ -1,0 +1,143 @@
+Case {
+    id: "h11-content-model-registry-order-table-ids",
+    history: "303521fc781c39ccb22faf4bea2e1599a5c867d4",
+    source_file: "h11-content-model-registry-order-table-ids.vue.txt",
+    filename: "Mixed.vue",
+    entry: "sfc",
+    preset: "happy-path",
+    enabled_rules: None,
+    disabled_rules: [],
+    rule_severities: [],
+    disabled_categories: [],
+    category_severities: [],
+    rule_options: Object {},
+    diagnostics: 4,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Mixed.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "html/id-duplication",
+                severity: Error,
+                message: "Duplicate id=\"same\" found in template",
+                start: 54,
+                end: 63,
+                help: Some(
+                    "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById().",
+                ),
+                labels: [
+                    Label {
+                        message: "first defined here",
+                        start: 39,
+                        end: 48,
+                    },
+                ],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "html/deprecated-attr",
+                severity: Warning,
+                message: "The \"bgcolor\" attribute on <table> is deprecated",
+                start: 17,
+                end: 30,
+                help: Some(
+                    "Use CSS `background-color` instead.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "html/no-empty-palpable-content",
+                severity: Warning,
+                message: "<td> element is empty but expects visible content",
+                start: 35,
+                end: 50,
+                help: Some(
+                    "Add text content, child elements, or use aria-label for accessible content.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "html/no-empty-palpable-content",
+                severity: Warning,
+                message: "<td> element is empty but expects visible content",
+                start: 50,
+                end: 65,
+                help: Some(
+                    "Add text content, child elements, or use aria-label for accessible content.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 3,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Mixed.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "html/id-duplication",
+                    severity: Error,
+                    message: "Duplicate id=\"same\" found in template",
+                    start: 54,
+                    end: 63,
+                    help: Some(
+                        "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById().",
+                    ),
+                    labels: [
+                        Label {
+                            message: "first defined here",
+                            start: 39,
+                            end: 48,
+                        },
+                    ],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "html/deprecated-attr",
+                    severity: Warning,
+                    message: "The \"bgcolor\" attribute on <table> is deprecated",
+                    start: 17,
+                    end: 30,
+                    help: Some(
+                        "Use CSS `background-color` instead.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "html/no-empty-palpable-content",
+                    severity: Warning,
+                    message: "<td> element is empty but expects visible content",
+                    start: 35,
+                    end: 50,
+                    help: Some(
+                        "Add text content, child elements, or use aria-label for accessible content.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "html/no-empty-palpable-content",
+                    severity: Warning,
+                    message: "<td> element is empty but expects visible content",
+                    start: 50,
+                    end: 65,
+                    help: Some(
+                        "Add text content, child elements, or use aria-label for accessible content.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 3,
+        },
+    ),
+}

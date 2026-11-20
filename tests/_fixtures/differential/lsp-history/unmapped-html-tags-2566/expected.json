@@ -1,0 +1,33 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**<div>**\n\n_HTML element_\n\n```typescript\nconst element: HTMLElementTagNameMap[\"div\"]\n```\n\nGroups content without adding a specific semantic meaning.\n\n**Editor behavior**\n- Go-to-definition uses TypeScript DOM lib data when the type service is available.\n- Component resolution is skipped for this tag because it is part of the platform DOM surface.\n\n**Example**\n\n```vue\n<template>\n  <div>...</div>\n</template>\n```\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/div)\n\n[HTML Living Standard](https://html.spec.whatwg.org/multipage/grouping-content.html#the-div-element)"
+      },
+      "range": {
+        "end": {
+          "character": 6,
+          "line": 1
+        },
+        "start": {
+          "character": 3,
+          "line": 1
+        }
+      }
+    }
+  },
+  {
+    "step": 2,
+    "result": null
+  },
+  {
+    "step": 3,
+    "result": null
+  },
+  {
+    "step": 4,
+    "result": null
+  }
+]

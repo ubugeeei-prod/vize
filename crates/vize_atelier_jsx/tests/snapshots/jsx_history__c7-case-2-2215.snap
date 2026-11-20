@@ -1,0 +1,39 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-2-2215",
+    history: "c2e8e29813137ec235e78b6e9d5573b27c7a0d82",
+    source: "const a = <Stepper v-model:current-step-index={value}/>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nconst a = (() => {\nreturn ((_ctx, _cache) => {\n  const _component_Stepper = _resolveComponent(\"Stepper\")\n  \n  return (_openBlock(), _createBlock(_component_Stepper, {\n    \"current-step-index\": value,\n    \"onUpdate:currentStepIndex\": $event => ((value) = $event)\n  }, null, 8 /* PROPS */, [\"current-step-index\", \"onUpdate:currentStepIndex\"]))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: None,
+            mode: Vdom,
+            setup: None,
+            preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  const _component_Stepper = _resolveComponent(\"Stepper\")\n  \n  return (_openBlock(), _createBlock(_component_Stepper, {\n    \"current-step-index\": value,\n    \"onUpdate:currentStepIndex\": $event => ((value) = $event)\n  }, null, 8 /* PROPS */, [\"current-step-index\", \"onUpdate:currentStepIndex\"]))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

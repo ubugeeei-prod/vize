@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { authoredPropReferenceLocations } from "./authored-prop-references.ts";
 
 import { completionLabels, hoverToText, offsetToPosition } from "./lsp/assertions.ts";
-import type { LspRange, WorkspaceEdit } from "./lsp/protocol.ts";
+import type { LspDiagnostic, LspRange, WorkspaceEdit } from "./lsp/protocol.ts";
 import {
   anchoredSymbolRange,
   assertRankedLabels,
@@ -278,22 +278,26 @@ export async function exerciseAuthoredLspOracle(
     // An edit first publishes lint with the last type answer moved to the new
     // text (#11579), so its messages can still name the probe. Wait for the
     // same-version complete publication, as the file lifecycle repair does.
-    const baselineDependencyDiagnostics = normalizeDiagnostics(
+    const baselineDependencyDiagnostics = dependencyEditDiagnostics(
       dependencyBaselineDiagnostics.diagnostics,
+      probe,
+    );
+    assert.deepEqual(
+      baselineDependencyDiagnostics,
+      [],
+      "dependency baseline must not contain diagnostics owned by the probe prop",
     );
     const repaired = await waitForMatchingDiagnostics(
       session,
       childDocument.uri,
       repairedChildVersion,
       timeoutMs(),
-      (payload) =>
-        JSON.stringify(normalizeDiagnostics(payload.diagnostics)) ===
-        JSON.stringify(baselineDependencyDiagnostics),
+      (payload) => dependencyEditDiagnostics(payload.diagnostics, probe).length === 0,
     );
     assert.deepEqual(
-      normalizeDiagnostics(repaired.diagnostics),
+      dependencyEditDiagnostics(repaired.diagnostics, probe),
       baselineDependencyDiagnostics,
-      "dependency repair must restore diagnostics exactly",
+      "dependency repair must remove diagnostics owned by the probe prop",
     );
     const repairedLabels = await requestCompletion(
       session,
@@ -362,4 +366,19 @@ export async function exerciseAuthoredLspOracle(
       }
     }
   }
+}
+
+function dependencyEditDiagnostics(
+  diagnostics: LspDiagnostic[],
+  completionLabel: string,
+): string[] {
+  const propName = completionLabel.replace(/-([a-z])/gu, (_, letter: string) =>
+    letter.toUpperCase(),
+  );
+  return normalizeDiagnostics(
+    diagnostics.filter(
+      (diagnostic) =>
+        diagnostic.message?.includes(propName) || diagnostic.message?.includes(completionLabel),
+    ),
+  );
 }

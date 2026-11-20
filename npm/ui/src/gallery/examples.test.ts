@@ -130,8 +130,9 @@ test("the Musea gallery gets one story per family with one variant per example",
   assert.equal(switchStory.file, "selection/switch.art.vue");
   assert.match(
     switchStory.source,
-    /defineArt\("\.\.\/\.\.\/\.\.\/src\/families\/selection\/switch\/switch-control\.vue"/,
+    /import SwitchControl from "\.\.\/\.\.\/\.\.\/src\/families\/selection\/switch\/switch-control\.vue"/,
   );
+  assert.match(switchStory.source, /defineArt\(SwitchControl, \{/);
   assert.match(switchStory.source, /<variant name="Basic" default>\n {4}<SwitchBasicExample \/>/);
   const variants = stories.reduce((count, story) => count + story.examples.length, 0);
   assert.equal(variants, examples.length);

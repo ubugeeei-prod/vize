@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-template-for-if-component-uses-branch-key-withou-86889f7",
+    history: "86889f7487bca8f5eb398a96b8ceb6dbd8f4168d",
+    source: "<Menu><template v-for=\"m in menus\"><template v-if=\"m.children\"><MenuGroup :key=\"m.order\" :title=\"m.title\" /></template><template v-else><MenuItem :key=\"m.path\" /></template></template></Menu>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, renderList as _renderList, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_MenuGroup = _resolveComponent(\"MenuGroup\")\n  const _component_MenuItem = _resolveComponent(\"MenuItem\")\n  const _component_Menu = _resolveComponent(\"Menu\")\n  \n  return (_openBlock(), _createBlock(_component_Menu, null, {\n    default: _withCtx(() => [\n      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(menus, (m) => {\n        return (_openBlock(), _createElementBlock(_Fragment, null, [\n          (m.children)\n            ? (_openBlock(), _createBlock(_component_MenuGroup, {\n              key: 0,\n              title: m.title\n            }, null, 8 /* PROPS */, [\"title\"]))\n            : (_openBlock(), _createBlock(_component_MenuItem, { key: 1 }))\n        ], 64 /* STABLE_FRAGMENT */))\n      }), 256 /* UNKEYED_FRAGMENT */))\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

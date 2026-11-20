@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-allows-script-setup-component-imports-938",
+    history: "04cebe5bcb34c1b1fac1501b42137dafaf9b4a5d",
+    source: "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nimport { NamedWidget } from './widgets'\nimport { LibraryWidget as RenamedWidget } from '@example/widgets'\n</script>\n\n<template>\n  <Child />\n  <NamedWidget />\n  <renamed-widget />\n</template>\n",
+    filename: "ParentWidget.vue",
+    entry: "sfc",
+    rule: "vue/require-component-registration",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "ParentWidget.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "ParentWidget.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

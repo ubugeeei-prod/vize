@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-cached-static-child-space-uses-empty-create-text-5519",
+    history: "6714a00b7151a09c67ca4e2250389e55cecc8a81",
+    source: "<div class=\"root\">{{ msg }}<span><kbd>Ctrl</kbd> <kbd>K</kbd></span></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"root\" }, [\n    _createTextVNode(_toDisplayString(msg), 1 /* TEXT */),\n    _createElementVNode(\"span\", null, [\n      _createElementVNode(\"kbd\", null, \"Ctrl\"),\n      _createTextVNode(),\n      _createElementVNode(\"kbd\", null, \"K\")\n    ])\n  ]))\n}",
+    map: None,
+}

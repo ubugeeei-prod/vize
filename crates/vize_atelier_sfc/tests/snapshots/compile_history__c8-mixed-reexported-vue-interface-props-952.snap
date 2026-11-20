@@ -1,0 +1,64 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-mixed-reexported-vue-interface-props-952",
+    history: "80333546c87b9bbd40362926e61114551eb28f93",
+    source: "<script lang=\"ts\">\nimport type { ContentProps } from './content'\n\nexport interface WrapperProps extends ContentProps {}\n</script>\n\n<script setup lang=\"ts\">\nimport { Content } from './content'\n\nconst props = defineProps<WrapperProps>()\n</script>\n\n<template>\n  <Content\n    :as-child=\"props.asChild\"\n    :as=\"as\"\n    :force-mount=\"props.forceMount\"\n  />\n</template>\n",
+    filename: "src/Wrapper.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    files: {
+        "src/content/Content.vue": "<script lang=\"ts\">\nimport type { PrimitiveProps } from '../primitive'\n\nexport interface ContentProps extends PrimitiveProps {\n  forceMount?: boolean\n}\n</script>\n\n<script setup lang=\"ts\">\ndefineProps<ContentProps>()\n</script>\n\n<template><div /></template>\n",
+        "src/content/index.ts": "export {\n  default as Content,\n  type ContentProps,\n} from './Content.vue'\n",
+        "src/primitive.ts": "export type AsTag = 'div' | 'span' | ({} & string)\n\nexport interface PrimitiveProps {\n  asChild?: boolean\n  as?: AsTag\n}\n",
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { openBlock as _openBlock, createBlock as _createBlock, unref as _unref } from \"vue\"\n\nimport { Content } from './content'\n\nexport {};\n\nexport default {\n  __name: 'Wrapper',\n  props: {\n    asChild: { type: Boolean, required: false },\n    as: { type: String, required: false },\n    forceMount: { type: Boolean, required: false }\n  },\n  setup(__props) {\n\nconst props = __props\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createBlock(_unref(Content), {\n    \"as-child\": props.asChild,\n    as: __props.as,\n    \"force-mount\": props.forceMount\n  }, null, 8 /* PROPS */, [\"as-child\", \"as\", \"force-mount\"]))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "Content": SetupMaybeRef,
+                        "asChild": Props,
+                        "props": SetupReactiveConst,
+                        "forceMount": Props,
+                        "as": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [
+                "$PROJECT/src/content/Content.vue",
+                "$PROJECT/src/content/index.ts",
+                "$PROJECT/src/primitive.ts",
+                "$PROJECT/src/tsconfig.json",
+                "$PROJECT/tsconfig.json",
+            ],
+        },
+    ),
+)

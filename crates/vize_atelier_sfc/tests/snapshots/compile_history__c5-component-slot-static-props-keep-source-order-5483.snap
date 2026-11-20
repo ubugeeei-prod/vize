@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-component-slot-static-props-keep-source-order-5483",
+    history: "e68650b99a89e51482dadc61f526683d43e2fdc8",
+    source: "<div class=\"not-prose\">\n  <TooltipRoot v-for=\"{ name, avatar } of contributors\" :key=\"name\">\n    <TooltipTrigger as-child>\n      <AvatarRoot as-child>\n        <a :href=\"`https://github.com/${name}`\">\n          <div class=\"h-12 w-12\">\n            <AvatarImage :src=\"avatar\" />\n            <AvatarFallback class=\"text-center text-sm font-semibold uppercase\" :delay-ms=\"1000\">\n              {{ name }}\n            </AvatarFallback>\n          </div>\n        </a>\n      </AvatarRoot>\n    </TooltipTrigger>\n    <TooltipContent class=\"border border-muted rounded bg-card px-2 py-1 text-xs font-semibold\" side=\"bottom\">\n      {{ name }}\n    </TooltipContent>\n  </TooltipRoot>\n</div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, renderList as _renderList, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_AvatarImage = _resolveComponent(\"AvatarImage\")\n  const _component_AvatarFallback = _resolveComponent(\"AvatarFallback\")\n  const _component_AvatarRoot = _resolveComponent(\"AvatarRoot\")\n  const _component_TooltipTrigger = _resolveComponent(\"TooltipTrigger\")\n  const _component_TooltipContent = _resolveComponent(\"TooltipContent\")\n  const _component_TooltipRoot = _resolveComponent(\"TooltipRoot\")\n  \n  return (_openBlock(), _createElementBlock(\"div\", { class: \"not-prose\" }, [\n    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(contributors, ({ name, avatar }) => {\n      return (_openBlock(), _createBlock(_component_TooltipRoot, { key: name }, {\n        default: _withCtx(() => [\n          _createVNode(_component_TooltipTrigger, { \"as-child\": \"\" }, {\n            default: _withCtx(() => [\n              _createVNode(_component_AvatarRoot, { \"as-child\": \"\" }, {\n                default: _withCtx(() => [\n                  _createElementVNode(\"a\", { href: `https://github.com/${name}` }, [\n                    _createElementVNode(\"div\", { class: \"h-12 w-12\" }, [\n                      _createVNode(_component_AvatarImage, { src: avatar }, null, 8 /* PROPS */, [\"src\"]),\n                      _createVNode(_component_AvatarFallback, {\n                        class: \"text-center text-sm font-semibold uppercase\",\n                        \"delay-ms\": 1000\n                      }, {\n                        default: _withCtx(() => [\n                          _createTextVNode(_toDisplayString(name), 1 /* TEXT */)\n                        ]),\n                        _: 2 /* DYNAMIC */\n                      }, 1024 /* DYNAMIC_SLOTS */)\n                    ])\n                  ], 8 /* PROPS */, [\"href\"])\n                ]),\n                _: 2 /* DYNAMIC */\n              }, 1024 /* DYNAMIC_SLOTS */)\n            ]),\n            _: 2 /* DYNAMIC */\n          }, 1024 /* DYNAMIC_SLOTS */),\n          _createVNode(_component_TooltipContent, {\n            class: \"border border-muted rounded bg-card px-2 py-1 text-xs font-semibold\",\n            side: \"bottom\"\n          }, {\n            default: _withCtx(() => [\n              _createTextVNode(_toDisplayString(name), 1 /* TEXT */)\n            ]),\n            _: 2 /* DYNAMIC */\n          }, 1024 /* DYNAMIC_SLOTS */)\n        ]),\n        _: 2 /* DYNAMIC */\n      }, 1024 /* DYNAMIC_SLOTS */))\n    }), 128 /* KEYED_FRAGMENT */))\n  ]))\n}",
+    map: None,
+}

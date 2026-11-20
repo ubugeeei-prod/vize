@@ -1,0 +1,36 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-c-6225",
+    history: "5628b75a43444e4e7a2ae9d99ec88ca964ddf4f6",
+    source: "<template v-match=\"readSubject(), 'selected'\"><template v-when=\"'selected'\"></template><p v-when=\"_\">other</p></template>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (() => { const __vize_match_0 = ((__vize_match_0_0) => { a0: { if (__vize_match_0_0 !== 'selected') break a0; return [0]; } return [1]; })((readSubject(), 'selected')); return (__vize_match_0[0] === 0)\n    ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, null, 64 /* STABLE_FRAGMENT */))\n    : (__vize_match_0[0] === 1)\n      ? (_openBlock(), _createElementBlock(\"p\", { key: 1 }, \"other\"))\n    : _createCommentVNode(\"v-if\", true) })()\n}",
+    map: None,
+}

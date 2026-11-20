@@ -347,7 +347,7 @@ pub fn advance_ops(ops: &[DumpOp], next: &mut u32) {
             }
             DumpOp::Text(_)
             | DumpOp::Interpolation(_)
-            | DumpOp::JsxChildValue(_)
+            | DumpOp::ChildValue(_)
             | DumpOp::Comment(_) => *next += 1,
         }
     }

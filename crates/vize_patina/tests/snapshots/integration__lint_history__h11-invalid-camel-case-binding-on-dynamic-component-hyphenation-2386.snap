@@ -1,0 +1,61 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-invalid-camel-case-binding-on-dynamic-component-hyphenation-2386",
+    history: "09ea69f6aac94cd15307eff77bb1f3769f067422",
+    source: "<component :is=\"tagName\" :myProp=\"value\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/attribute-hyphenation",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/attribute-hyphenation",
+                severity: Warning,
+                message: "Attribute should be hyphenated",
+                start: 25,
+                end: 40,
+                help: Some(
+                    "Use kebab-case for attribute names",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Use kebab-case for attribute names",
+                        edits: [
+                            TextEdit {
+                                start: 26,
+                                end: 32,
+                                new_text: "my-prop",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<component :is=\"tagName\" :my-prop=\"value\" />",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-unicode-identifier-suffix-does-not-reorder-helpe-5566",
+    history: "6f21c0432e32a51ae4f09a5d8df6f9ffcfb9a485",
+    source: "<div :class=\"classes\" :style=\"é_normalizeStyle() ? styles : fallback\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass(classes),\n    style: _normalizeStyle(é_normalizeStyle() ? styles : fallback)\n  }, null, 6 /* CLASS, STYLE */))\n}",
+    map: None,
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-vue2-options-api-runtime-props-are-safe-template-2529",
+    history: "a37bf2c5117909847c2ab6aaa99ccf098a274aac",
+    source: "<template>\n  <v-dialog :value=\"isOpened\" :width=\"width\">\n    <span>{{ title }}</span>\n  </v-dialog>\n</template>\n\n<script lang=\"ts\">\nimport { defineComponent } from '@nuxtjs/composition-api';\n\nexport default defineComponent({\n  props: {\n    isOpened: { type: Boolean, required: true },\n    title: { type: String, default: '' },\n    width: { type: String, default: '1024px' },\n  },\n});\n</script>",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "type/no-unsafe-template-binding",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

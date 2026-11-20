@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3b-v-model-on-v-for-pattern-key-and-default-valid",
+    history: "7a27316b4ef4245c943ce570658862b2b5356625",
+    source: "<div v-for=\"{ item: row = draft } in items\"><input v-model=\"item\" /><input v-model=\"draft\" /><input v-model=\"row.value\" /></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { vModelText as _vModelText, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.items, ({ item: row = _ctx.draft }) => {\n    return (_openBlock(), _createElementBlock(\"div\", null, [\n      _withDirectives(_createElementVNode(\"input\", {\n        \"onUpdate:modelValue\": $event => ((_ctx.item) = $event)\n      }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"]), [\n        [_vModelText, _ctx.item]\n      ]),\n      _withDirectives(_createElementVNode(\"input\", {\n        \"onUpdate:modelValue\": $event => ((_ctx.draft) = $event)\n      }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"]), [\n        [_vModelText, _ctx.draft]\n      ]),\n      _withDirectives(_createElementVNode(\"input\", {\n        \"onUpdate:modelValue\": $event => ((row.value) = $event)\n      }, null, 8 /* PROPS */, [\"onUpdate:modelValue\"]), [\n        [_vModelText, row.value]\n      ])\n    ]))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+    map: None,
+}

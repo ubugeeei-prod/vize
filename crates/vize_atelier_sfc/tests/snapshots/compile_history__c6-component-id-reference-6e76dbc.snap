@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-component-id-reference-6e76dbc",
+    history: "6e76dbcffcd8a1d70a9b8ab719924393c6299ee0",
+    source: "<div><label for=\"name\">Name</label><MyInput id=\"name\" /><p aria-labelledby=\"name\">x</p></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_MyInput = _resolveComponent(\"MyInput\")\n  \n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"label\", { for: \"name\" }, \"Name\"),\n    _createVNode(_component_MyInput, { id: \"name\" }),\n    _createElementVNode(\"p\", { \"aria-labelledby\": \"name\" }, \"x\")\n  ]))\n}",
+    map: None,
+}

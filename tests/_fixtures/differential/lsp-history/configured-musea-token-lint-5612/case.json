@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "commit": "bea75982f417ea35b656fbe404f640653f462ee4",
+  "id": "lsp/fix-history/configured-musea-token-lint-5612",
+  "requirement": "Project-local rule options reach editor lint: restricted members report the configured message and the Musea design-token rule reports the configured token in an Art file.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false
+  },
+  "files": {
+    "vite.config.mjs": "export default { vue: { languageServer: { lint: true }, linter: { preset: \"incremental\", rules: { \"musea/prefer-design-tokens\": \"error\", \"script/no-restricted-members\": \"error\" }, ruleOptions: { \"script/no-restricted-members\": { members: [{ object: \"window\", property: \"localStorage\", message: \"Use appStorage.\" }] }, \"musea/prefer-design-tokens\": { tokens: [{ path: \"color.primary\", value: \"#3b82f6\" }] } } } } };\n",
+    "src/App.vue": "<script setup lang=\"ts\">\nwindow.localStorage.getItem(\"token\")\n</script>\n<template><main></main></template>\n",
+    "src/Button.art.vue": "<art title=\"Button\" component=\"./Button.vue\">\n  <variant name=\"default\"><button class=\"button\">Save</button></variant>\n</art>\n\n<style scoped>\n.button {\n  background: #3b82f6;\n}\n</style>\n"
+  },
+  "steps": [
+    {
+      "open": "src/App.vue"
+    },
+    {
+      "diagnostics": "src/App.vue"
+    },
+    {
+      "open": "src/Button.art.vue"
+    },
+    {
+      "diagnostics": "src/Button.art.vue"
+    }
+  ]
+}

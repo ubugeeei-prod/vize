@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-template-slot-carrier-imports-slot-before-elemen-5504",
+    history: "6faca978381d1465fcaeeefa1b5f655082df21ea",
+    source: "<Collapsible :default=\"expand\"><template #trigger=\"slotProps\"><button :class=\"['w-full']\"><slot name=\"title\"><div>{{ title }}</div></slot></button></template><div :class=\"innerClass\"><slot /></div></Collapsible>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, renderSlot as _renderSlot, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Collapsible = _resolveComponent(\"Collapsible\")\n  \n  return (_openBlock(), _createBlock(_component_Collapsible, { default: expand }, {\n    trigger: _withCtx((slotProps) => [\n      _createElementVNode(\"button\", {\n        class: _normalizeClass(['w-full'])\n      }, [\n        _renderSlot(_ctx.$slots, \"title\", {}, () => [\n          _createElementVNode(\"div\", null, _toDisplayString(title), 1 /* TEXT */)\n        ])\n      ])\n    ]),\n    default: _withCtx(() => [\n      _createElementVNode(\"div\", {\n        class: _normalizeClass(innerClass)\n      }, [\n        _renderSlot(_ctx.$slots, \"default\")\n      ], 2 /* CLASS */)\n    ]),\n    _: 3 /* FORWARDED */\n  }, 8 /* PROPS */, [\"default\"]))\n}",
+    map: None,
+}

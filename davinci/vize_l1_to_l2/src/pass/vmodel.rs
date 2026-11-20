@@ -26,8 +26,10 @@
 //! against the alias **texts** of enclosing `v-for` scopes and the
 //! enumerated prop names of enclosing `v-slot` scopes. The pass mirrors
 //! it structurally: a `ui.for` region opens a frame holding its
-//! value/key/index source texts (texts, not enumerated names — exactly
-//! what `enter_v_for_scope` registers), and a slot carrier (component,
+//! value/key/index source texts (exactly what `enter_v_for_scope`
+//! registers; a destructuring text also declares the names it binds,
+//! enumerated only when a model's read is spelled in it, as Vue's
+//! `addIdentifiers` registers them), and a slot carrier (component,
 //! or `template` element, with children and a params-bearing
 //! `ui.slot-content`) opens a frame over its children holding the
 //! params' simple-identifier name, or its destructuring pattern. A
@@ -199,7 +201,7 @@ fn visit<'a>(
                 region(walk, channels, env, &component.children.ops);
             });
         }
-        Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => {}
+        Op::Text(_) | Op::Interpolation(_) | Op::ChildValue(_) | Op::Comment(_) => {}
         Op::If(if_op) => {
             for branch in if_op.branches.iter() {
                 region(walk, channels, env, &branch.region.ops);
@@ -209,7 +211,8 @@ fn visit<'a>(
         Op::For(for_op) => {
             // The legacy `enter_v_for_scope` registers the alias texts
             // (value even when it is a pattern; key and index when
-            // authored) — mirrored as texts, never enumerated names.
+            // authored) — mirrored as texts; `check` enumerates a
+            // destructuring text lazily, so this arm stays unchanged.
             let before = env.len();
             let value = for_op.binding.value.source();
             if !value.is_empty() {
@@ -242,7 +245,8 @@ fn visit<'a>(
 
 /// One frame entry of the scope environment.
 pub(super) enum ScopeName<'a> {
-    /// A `v-for` alias text, or a simple-identifier slot-props name.
+    /// A `v-for` alias text, or a simple-identifier slot-props name. A
+    /// destructuring alias text is enumerated on demand like a pattern.
     Text(String),
     /// A destructuring slot-props pattern, enumerated on demand.
     Pattern(&'a str),

@@ -11,6 +11,7 @@ mod cases {
         syntax::{ProgramOptions, parse_program_once},
     };
     use vize_l2::lang::js::{FileProducer, JsxFileProducer, ProgramInput, ProgramScope};
+    use vize_l2::query::Model;
     use vize_l4::targets::ts::{
         ProgramProjection, SourceKind, project_jsx_program, project_program,
     };
@@ -36,7 +37,10 @@ mod cases {
                 "items"
             })
             .unwrap() as u32;
-        let binding = projection.file().binding_at_offset(at).unwrap().unwrap();
+        let binding = Model::new(projection.file())
+            .binding_at_offset(at)
+            .unwrap()
+            .unwrap();
         assert!(core::ptr::eq(binding.file(), projection.file()));
         for diagnostic in case["diagnostics"].as_array().unwrap() {
             let authored = projection

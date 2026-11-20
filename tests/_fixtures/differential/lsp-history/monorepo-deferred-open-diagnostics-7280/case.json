@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "commit": "c5eea8eed6cf316aaa6ff6daa9e2dabd47a13165",
+  "id": "lsp/fix-history/monorepo-deferred-open-diagnostics-7280",
+  "requirement": "A document inside a monorepo package resolves its owning package tsconfig; the deferred initial pass publishes lint feedback and then the full type pass for the latest open version, and lint hover reads the revision-bound lint diagnostics.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": true
+  },
+  "files": {
+    "package.json": "{ \"private\": true, \"workspaces\": [\"packages/*\"] }\n",
+    "pnpm-workspace.yaml": "packages:\n  - packages/*\n",
+    "packages/app/package.json": "{ \"name\": \"app\", \"private\": true }\n",
+    "packages/app/tsconfig.json": "{\n  \"compilerOptions\": { \"strict\": true, \"target\": \"ESNext\", \"module\": \"ESNext\", \"moduleResolution\": \"Bundler\" },\n  \"include\": [\"src/**/*.ts\", \"src/**/*.vue\"]\n}\n",
+    "packages/app/src/App.vue": "<script setup lang=\"ts\">\nconst count: number = 'not a number'\n</script>\n<template>\n  <div v-html=\"count\"></div>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "packages/app/src/App.vue"
+    },
+    {
+      "diagnostics": "packages/app/src/App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "packages/app/src/App.vue",
+      "at": {
+        "find": "v-html",
+        "delta": 1
+      }
+    }
+  ]
+}

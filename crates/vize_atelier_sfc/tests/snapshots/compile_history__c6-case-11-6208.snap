@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-11-6208",
+    history: "60656df799a4c879268eb9a25d2a086ec8c96cdd",
+    source: "<template><section><svg><g><circle r=\"2\"/></g></svg><textarea>&lt;span&gt;</textarea><p title=\"&lt;label&gt;\">&lt;em&gt;</p></section></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { template as _template } from 'vue';\nconst t0 = _template(\"<section><svg><g><circle r=\\\"2\\\"></circle></g></svg><textarea>&lt;span&gt;</textarea><p title=\\\"&lt;label&gt;\\\">&lt;em&gt;</p></section>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

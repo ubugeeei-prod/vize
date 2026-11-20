@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-repeated-speculative-type-arguments-6410",
+    history: "3c22a95a11207bfa669adce118a8d31fd78572b8",
+    source: "{{ st.ina<a<\\.\\maccePt<ss.instrttal<ts.nst<s<ts<(ak=MMMMM>>>kkkk<sids<ts<ts<(ak=MMMMM\t>>>kkks<(ak=MMM<ts.inst<s<ts<(ak=MMMMM>>>kkkk<sids<ts<ts<(ak=MMMMM>>>kkks<(ak=MMMMM>>>kkkk<sidspectb<ol>0xdfn<<stsittittal<l<ts.instrp<ts.inst<s<ttsfrtts<(aY=MMMMM>>>kk.inst<s<ttsfrtts<(aY=MMMMM>>>ssorkkkk<siimsss<st<(ak=M>>kkks<(ak=MMMMM>>>az%iodts.in\\a|sa<\\s.\\m,sgrttaikm%st< frsttixed),sfrtixed))MM>>>kkkk<sidspectb<ol>0,sgrtt\\.0aikm%st< fnaziodts..inad),sfrtixe)\0rsttixed1),sfrtidxed)))) }}",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return _toDisplayString(st.ina<a<\\.\\maccePt<ss.instrttal<ts.nst<s<ts<(ak=MMMMM>>>kkkk<sids<ts<ts<(ak=MMMMM\t>>>kkks<(ak=MMM<ts.inst<s<ts<(ak=MMMMM>>>kkkk<sids<ts<ts<(ak=MMMMM>>>kkks<(ak=MMMMM>>>kkkk<sidspectb<ol>0xdfn<<stsittittal<l<ts.instrp<ts.inst<s<ttsfrtts<(aY=MMMMM>>>kk.inst<s<ttsfrtts<(aY=MMMMM>>>ssorkkkk<siimsss<st<(ak=M>>kkks<(ak=MMMMM>>>az%iodts.in\\a|sa<\\s.\\m,sgrttaikm%st< frsttixed),sfrtixed))MM>>>kkkk<sidspectb<ol>0,sgrtt\\.0aikm%st< fnaziodts..inad),sfrtixe)\0rsttixed1),sfrtidxed)))))\n}",
+    map: None,
+}

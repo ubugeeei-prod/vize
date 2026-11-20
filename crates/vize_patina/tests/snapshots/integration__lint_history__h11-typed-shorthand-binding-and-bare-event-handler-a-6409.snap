@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-typed-shorthand-binding-and-bare-event-handler-a-6409",
+    history: "169210cd797d002e0459228e6bdf55fbc0d9b6b8",
+    source: "<script setup lang=\"ts\">\nconst name: string = 'ready'\nfunction onClick(event: MouseEvent): void { void event }\nconst unsafeValue: any = 'unsafe'\n</script>\n<template>\n  <button :name @click=\"onClick\">{{ unsafeValue }}</button>\n</template>",
+    filename: "ShorthandAndHandler.vue",
+    entry: "sfc",
+    rule: "type/no-unsafe-template-binding",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "ShorthandAndHandler.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "type/no-unsafe-template-binding",
+                severity: Warning,
+                message: "Template interpolation resolves to an unsafe `any` or `unknown` type",
+                start: 202,
+                end: 213,
+                help: Some(
+                    "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "ShorthandAndHandler.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "type/no-unsafe-template-binding",
+                    severity: Warning,
+                    message: "Template interpolation resolves to an unsafe `any` or `unknown` type",
+                    start: 202,
+                    end: 213,
+                    help: Some(
+                        "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-static-slot-hoist-keeps-inline-space-text-child-5505",
+    history: "4baf124dc4eb994d2c8dde958e96c87e93a4ff72",
+    source: "<Variant><div><span>Project</span> <span>AIRI</span></div></Variant>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Variant = _resolveComponent(\"Variant\")\n  \n  return (_openBlock(), _createBlock(_component_Variant, null, {\n    default: _withCtx(() => [\n      _createElementVNode(\"div\", null, [\n        _createElementVNode(\"span\", null, \"Project\"),\n        _createTextVNode(),\n        _createElementVNode(\"span\", null, \"AIRI\")\n      ])\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

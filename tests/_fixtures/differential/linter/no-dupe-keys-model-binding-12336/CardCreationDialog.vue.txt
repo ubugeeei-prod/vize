@@ -1,0 +1,13 @@
+<script setup lang="ts">
+interface Props {
+  modelValue: boolean
+  cardId?: string
+}
+
+const props = defineProps<Props>()
+const modelValue = defineModel<boolean>()
+</script>
+
+<template>
+  <dialog :open="modelValue">{{ props.cardId }}</dialog>
+</template>

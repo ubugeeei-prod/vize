@@ -1,0 +1,94 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 19,
+            "line": 1
+          },
+          "start": {
+            "character": 13,
+            "line": 1
+          }
+        },
+        "uri": "${workspace}/Plain.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 19,
+            "line": 2
+          },
+          "start": {
+            "character": 13,
+            "line": 2
+          }
+        },
+        "uri": "${workspace}/Plain.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 24,
+            "line": 4
+          },
+          "start": {
+            "character": 18,
+            "line": 4
+          }
+        },
+        "uri": "${workspace}/Plain.vue"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": {
+      "changes": {
+        "${workspace}/Plain.vue": [
+          {
+            "newText": "common",
+            "range": {
+              "end": {
+                "character": 19,
+                "line": 1
+              },
+              "start": {
+                "character": 13,
+                "line": 1
+              }
+            }
+          },
+          {
+            "newText": "common",
+            "range": {
+              "end": {
+                "character": 19,
+                "line": 2
+              },
+              "start": {
+                "character": 13,
+                "line": 2
+              }
+            }
+          },
+          {
+            "newText": "common",
+            "range": {
+              "end": {
+                "character": 24,
+                "line": 4
+              },
+              "start": {
+                "character": 18,
+                "line": 4
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+]

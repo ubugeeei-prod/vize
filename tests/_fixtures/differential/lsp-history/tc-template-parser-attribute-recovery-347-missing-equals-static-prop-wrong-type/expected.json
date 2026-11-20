@@ -1,0 +1,40 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 17,
+        "message": "Attribute name contains an invalid character; inferred the nearest attribute boundary and continued.",
+        "range": {
+          "end": {
+            "character": 15,
+            "line": 5
+          },
+          "start": {
+            "character": 14,
+            "line": 5
+          }
+        },
+        "severity": 1,
+        "source": "vize/template"
+      },
+      {
+        "code": 17,
+        "message": "Attribute name contains an invalid character; inferred the nearest attribute boundary and continued.",
+        "range": {
+          "end": {
+            "character": 28,
+            "line": 5
+          },
+          "start": {
+            "character": 27,
+            "line": 5
+          }
+        },
+        "severity": 1,
+        "source": "vize/template"
+      }
+    ]
+  }
+]

@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-root-match-unterminated-6184",
+    history: "1649cd0a40ec22aa887f15b1509a27de007ccf88",
+    source: "<template v-match",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        patterned_template: Some(
+            true,
+        ),
+    },
+    errors: 1,
+}
+ParseError(
+    SfcError {
+        message: "Malformed <template> block: the opening tag is incomplete.",
+        code: Some(
+            "MALFORMED_BLOCK",
+        ),
+        loc: Some(
+            BlockLocation {
+                start: 0,
+                end: 17,
+                tag_start: 0,
+                tag_end: 17,
+                start_line: 1,
+                start_column: 1,
+                end_line: 1,
+                end_column: 18,
+            },
+        ),
+    },
+)

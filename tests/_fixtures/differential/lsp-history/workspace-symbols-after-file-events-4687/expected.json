@@ -1,0 +1,66 @@
+[
+  {
+    "step": 1,
+    "result": [
+      {
+        "containerName": "script setup",
+        "kind": 12,
+        "location": {
+          "range": {
+            "end": {
+              "character": 0,
+              "line": 1
+            },
+            "start": {
+              "character": 0,
+              "line": 1
+            }
+          },
+          "uri": "${workspace}/A.vue"
+        },
+        "name": "alphaResponsiveSymbol"
+      }
+    ]
+  },
+  {
+    "step": 5,
+    "result": [
+      {
+        "containerName": "script setup",
+        "kind": 12,
+        "location": {
+          "range": {
+            "end": {
+              "character": 0,
+              "line": 1
+            },
+            "start": {
+              "character": 0,
+              "line": 1
+            }
+          },
+          "uri": "${workspace}/A.vue"
+        },
+        "name": "alphaRenamedResponsiveSymbol"
+      },
+      {
+        "containerName": "script setup",
+        "kind": 12,
+        "location": {
+          "range": {
+            "end": {
+              "character": 0,
+              "line": 1
+            },
+            "start": {
+              "character": 0,
+              "line": 1
+            }
+          },
+          "uri": "${workspace}/B.vue"
+        },
+        "name": "betaResponsiveSymbol"
+      }
+    ]
+  }
+]

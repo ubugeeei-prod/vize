@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-dom-template-asset-fragment-urls-2706",
+    history: "db9c0e954f5b9b4d91f79a5f82a584003940c9c1",
+    source: "<template><svg><use href=\"./icons.svg#home\"></use></svg><img src=\"./icons.svg\"><img src=\"./logo.png\"></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n\nconst _hoisted_1 = { src: \"./icons.svg\" }\nconst _hoisted_2 = { src: \"./logo.png\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    (_openBlock(), _createElementBlock(\"svg\", null, [...(_cache[0] || (_cache[0] = [\n      _createElementVNode(\"use\", { href: \"./icons.svg#home\" }, null, -1 /* CACHED */)\n    ]))])),\n    _createElementVNode(\"img\", _hoisted_1),\n    _createElementVNode(\"img\", _hoisted_2)\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

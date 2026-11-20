@@ -63,7 +63,7 @@ fn compile_scoped(
     let parser_opts = ParserOptions {
         whitespace,
         is_pre_tag: |tag| tag == "pre",
-        is_native_tag: Some(vize_l0::is_native_tag),
+        is_native_tag: Some(vize_l0::is_platform_tag),
         custom_renderer: opts.custom_renderer.unwrap_or(false),
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         ..Default::default()

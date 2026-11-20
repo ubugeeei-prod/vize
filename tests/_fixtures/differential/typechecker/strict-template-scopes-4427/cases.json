@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4427,
+  "regressionCommit": "eb489b2579e9a9d92e5e7260c7eef32e2d701f56",
+  "sourceRevision": "eb489b2579e9a9d92e5e7260c7eef32e2d701f56",
+  "checkerOptions": {
+    "strictInstanceGlobals": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "v-for-alias-before-script-length",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "v-for-alias.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "nested-v-for-aliases",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "nested-v-for.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "slot-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "slot-props.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "undeclared-names-in-template-scope",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "undeclared.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 12,
+          "column": 31,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingBody' does not exist on type '$StrictTemplateContext'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 12,
+          "column": 49,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingFooter' does not exist on type '$StrictTemplateContext'."
+        }
+      ]
+    },
+    {
+      "id": "undeclared-attribute-bindings-13376",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "undeclared-attributes.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 10,
+          "column": 13,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingKey' does not exist on type '$StrictTemplateContext'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 12,
+          "column": 36,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingTitle' does not exist on type '$StrictTemplateContext'."
+        }
+      ]
+    }
+  ]
+}

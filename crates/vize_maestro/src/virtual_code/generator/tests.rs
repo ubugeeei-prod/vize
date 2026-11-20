@@ -210,7 +210,7 @@ fn test_find_block_at_offset_detects_inline_art_variant_template() {
 
 <art>
   <variant name="Primary">
-    <Self variant="primary" />
+    <Button variant="primary" />
   </variant>
 </art>"#;
 
@@ -224,7 +224,7 @@ fn test_find_block_at_offset_detects_inline_art_variant_template() {
     };
 
     assert_eq!(info.variant_index, 0);
-    assert_eq!(info.template_start, source.find("<Self").unwrap());
+    assert_eq!(info.template_start, source.find("<Button").unwrap());
 }
 
 #[test]

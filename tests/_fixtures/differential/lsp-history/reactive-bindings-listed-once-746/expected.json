@@ -1,0 +1,72 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "count": 40,
+      "items": [
+        {
+          "detail": "Ref<number>",
+          "documentation": {
+            "kind": "markdown",
+            "value": "```typescript\nst: Ref<number>\n```\n\nAccess with `.value` in script."
+          },
+          "kind": 6,
+          "label": "st",
+          "labelDetails": {
+            "description": ".value",
+            "detail": "Ref<number>"
+          },
+          "sortText": "0st"
+        },
+        {
+          "detail": "ComputedRef<number>",
+          "documentation": {
+            "kind": "markdown",
+            "value": "```typescript\nts: ComputedRef<number>\n```\n\nAccess with `.value` in script."
+          },
+          "kind": 6,
+          "label": "ts",
+          "labelDetails": {
+            "description": ".value",
+            "detail": "ComputedRef<number>"
+          },
+          "sortText": "0ts"
+        }
+      ]
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "count": 45,
+      "items": [
+        {
+          "detail": " (ref)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Ref**\n\nReactive reference. Auto-unwrapped in template, needs `.value` in script."
+          },
+          "kind": 6,
+          "label": "st",
+          "labelDetails": {
+            "detail": " (ref)"
+          },
+          "sortText": "0st"
+        },
+        {
+          "detail": " (ref)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Ref**\n\nReactive reference. Auto-unwrapped in template, needs `.value` in script."
+          },
+          "kind": 6,
+          "label": "ts",
+          "labelDetails": {
+            "detail": " (ref)"
+          },
+          "sortText": "0ts"
+        }
+      ]
+    }
+  }
+]

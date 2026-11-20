@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-dialog-content-static-props-stay-inline-before-s-d2238c9",
+    history: "d2238c988dcf45826eb744040f634c93e3d37afe",
+    source: "<slot v-bind=\"{ hasPermissions }\" /><DialogRoot :open=\"showDialog\"><DialogPortal><DialogOverlay class=\"fixed inset-0\" /><DialogContent flex=\"~ col items-start gap-4\" class=\"fixed left-1/2 top-1/2\"><DialogTitle class=\"m-0 text-lg font-semibold\">{{ title }}</DialogTitle><DialogDescription>{{ body }}<ol mt-4 list-decimal pl-5 text-sm><li>one</li></ol></DialogDescription></DialogContent></DialogPortal></DialogRoot>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, renderSlot as _renderSlot, createElementVNode as _createElementVNode, createVNode as _createVNode, normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_DialogOverlay = _resolveComponent(\"DialogOverlay\")\n  const _component_DialogTitle = _resolveComponent(\"DialogTitle\")\n  const _component_DialogDescription = _resolveComponent(\"DialogDescription\")\n  const _component_DialogContent = _resolveComponent(\"DialogContent\")\n  const _component_DialogPortal = _resolveComponent(\"DialogPortal\")\n  const _component_DialogRoot = _resolveComponent(\"DialogRoot\")\n  \n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _renderSlot(_ctx.$slots, \"default\", _normalizeProps(_guardReactiveProps({ hasPermissions }))),\n    _createVNode(_component_DialogRoot, { open: showDialog }, {\n      default: _withCtx(() => [\n        _createVNode(_component_DialogPortal, null, {\n          default: _withCtx(() => [\n            _createVNode(_component_DialogOverlay, { class: \"fixed inset-0\" }),\n            _createVNode(_component_DialogContent, {\n              flex: \"~ col items-start gap-4\",\n              class: \"fixed left-1/2 top-1/2\"\n            }, {\n              default: _withCtx(() => [\n                _createVNode(_component_DialogTitle, { class: \"m-0 text-lg font-semibold\" }, {\n                  default: _withCtx(() => [\n                    _createTextVNode(_toDisplayString(title), 1 /* TEXT */)\n                  ]),\n                  _: 1 /* STABLE */\n                }),\n                _createVNode(_component_DialogDescription, null, {\n                  default: _withCtx(() => [\n                    _createTextVNode(_toDisplayString(body), 1 /* TEXT */),\n                    _createElementVNode(\"ol\", {\n                      \"mt-4\": \"\",\n                      \"list-decimal\": \"\",\n                      \"pl-5\": \"\",\n                      \"text-sm\": \"\"\n                    }, [\n                      _createElementVNode(\"li\", null, \"one\")\n                    ])\n                  ]),\n                  _: 1 /* STABLE */\n                })\n              ]),\n              _: 1 /* STABLE */\n            })\n          ]),\n          _: 1 /* STABLE */\n        })\n      ]),\n      _: 1 /* STABLE */\n    }, 8 /* PROPS */, [\"open\"])\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    map: None,
+}

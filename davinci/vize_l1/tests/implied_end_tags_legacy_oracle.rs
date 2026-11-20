@@ -9,7 +9,7 @@
 use vize_armature::{
     ParserOptions, TemplateChildNode, TemplateSyntaxMode, parse_with_options_and_template_syntax,
 };
-use vize_l0::{Allocator, is_native_tag};
+use vize_l0::{Allocator, is_platform_tag};
 use vize_l1::markup::{
     SurfaceChild, SurfaceParseOptions, SurfaceTree, check_fidelity, parse_with_authored,
     parse_with_options,
@@ -50,7 +50,7 @@ fn legacy<'a>(
         }
     }
     let options = ParserOptions {
-        is_native_tag: Some(is_native_tag),
+        is_native_tag: Some(is_platform_tag),
         html_tree_construction,
         ..ParserOptions::default()
     };

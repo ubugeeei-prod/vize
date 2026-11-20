@@ -1,0 +1,80 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": "vue/no-multi-spaces",
+        "codeDescription": {
+          "href": "https://eslint.vuejs.org/rules/no-multi-spaces.html"
+        },
+        "message": "Multiple consecutive spaces",
+        "range": {
+          "end": {
+            "character": 18,
+            "line": 2
+          },
+          "start": {
+            "character": 16,
+            "line": 2
+          }
+        },
+        "severity": 2,
+        "source": "vize/lint"
+      }
+    ]
+  },
+  {
+    "step": 2,
+    "result": [
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/Inline.vue": [
+              {
+                "newText": " ",
+                "range": {
+                  "end": {
+                    "character": 18,
+                    "line": 2
+                  },
+                  "start": {
+                    "character": 16,
+                    "line": 2
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": true,
+        "kind": "quickfix",
+        "title": "Fix: Replace multiple spaces with single space"
+      },
+      {
+        "edit": {
+          "changes": {
+            "${workspace}/Inline.vue": [
+              {
+                "newText": "\t<!-- @vize:forget vue/no-multi-spaces -->\r\n",
+                "range": {
+                  "end": {
+                    "character": 0,
+                    "line": 2
+                  },
+                  "start": {
+                    "character": 0,
+                    "line": 2
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "isPreferred": false,
+        "kind": "quickfix",
+        "title": "Suppress with @vize:forget (vue/no-multi-spaces)"
+      }
+    ]
+  }
+]

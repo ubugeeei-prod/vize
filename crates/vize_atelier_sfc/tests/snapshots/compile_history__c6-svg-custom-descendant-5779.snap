@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-svg-custom-descendant-5779",
+    history: "297e3f1e0ec8ac01c230f4b1e57879ea3ee0e32a",
+    source: "<svg><g><my-node><div /></my-node></g></svg>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_my_node = _resolveComponent(\"my-node\")\n  \n  return (_openBlock(), _createElementBlock(\"svg\", null, [\n    _createElementVNode(\"g\", null, [\n      _createVNode(_component_my_node, null, {\n        default: _withCtx(() => [\n          _createElementVNode(\"div\")\n        ]),\n        _: 1 /* STABLE */\n      })\n    ])\n  ]))\n}",
+    map: None,
+}

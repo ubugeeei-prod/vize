@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "commit": "00508c5b8b46387d7ce637768e7a6c48383d824c",
+  "id": "lsp/fix-history/html-attribute-dom-properties-2565",
+  "requirement": "HTML attribute hovers map dirname, fetchpriority and area properties to the real DOM property spelling.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<template>\n  <input dirname=\"d\" /><img src=\"a\" alt=\"\" fetchpriority=\"high\" /><area alt=\"\" href=\"#\" referrerpolicy=\"no-referrer\" />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "dirname",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "fetchpriority",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "referrerpolicy",
+        "delta": 1,
+        "nth": 0
+      }
+    }
+  ]
+}

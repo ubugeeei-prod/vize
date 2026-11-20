@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-invalid-bound-template-literal-role-1233",
+    history: "0833b4aebd5b9301e09eb8eba17c2755e706db4a",
+    source: "<div :role=\"`buton`\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/aria-role",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/aria-role",
+                severity: Error,
+                message: "'buton' is not a valid ARIA role",
+                start: 5,
+                end: 20,
+                help: Some(
+                    "**Invalid role:** `buton`\n\n**Did you mean:** `button`?\n\nRefer to the WAI-ARIA specification for a complete list of valid roles.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/aria-role",
+                    severity: Error,
+                    message: "'buton' is not a valid ARIA role",
+                    start: 5,
+                    end: 20,
+                    help: Some(
+                        "**Invalid role:** `buton`\n\n**Did you mean:** `button`?\n\nRefer to the WAI-ARIA specification for a complete list of valid roles.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

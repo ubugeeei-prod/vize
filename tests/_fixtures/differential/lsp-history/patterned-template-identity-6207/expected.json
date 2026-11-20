@@ -1,0 +1,107 @@
+[
+  {
+    "step": 1,
+    "result": null
+  },
+  {
+    "step": 2,
+    "result": null
+  },
+  {
+    "step": 3,
+    "result": [
+      {
+        "range": {
+          "end": {
+            "character": 14,
+            "line": 1
+          },
+          "start": {
+            "character": 6,
+            "line": 1
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 16,
+            "line": 12
+          },
+          "start": {
+            "character": 8,
+            "line": 12
+          }
+        },
+        "uri": "${workspace}/App.vue"
+      }
+    ]
+  },
+  {
+    "step": 4,
+    "result": null
+  },
+  {
+    "step": 5,
+    "result": {
+      "count": 45,
+      "items": [
+        {
+          "detail": "Local v-for binding",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Local** binding from `v-for` scope.\n\nVisible only inside the current `v-for` subtree."
+          },
+          "kind": 6,
+          "label": "row",
+          "labelDetails": {
+            "description": "local",
+            "detail": " (v-for)"
+          },
+          "sortText": "00row"
+        },
+        {
+          "detail": "Local v-when binding",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Local** binding from `v-when` scope.\n\nVisible only inside the current `v-when` subtree."
+          },
+          "kind": 6,
+          "label": "rows",
+          "labelDetails": {
+            "description": "local",
+            "detail": " (v-when)"
+          },
+          "sortText": "00rows"
+        },
+        {
+          "detail": " (literal)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Literal**\n\nLiteral constant value."
+          },
+          "kind": 21,
+          "label": "ordinary",
+          "labelDetails": {
+            "detail": " (literal)"
+          },
+          "sortText": "0ordinary"
+        },
+        {
+          "detail": " (const)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Const**\n\nConstant binding (function, class, or literal)."
+          },
+          "kind": 21,
+          "label": "result",
+          "labelDetails": {
+            "detail": " (const)"
+          },
+          "sortText": "0result"
+        }
+      ]
+    }
+  }
+]

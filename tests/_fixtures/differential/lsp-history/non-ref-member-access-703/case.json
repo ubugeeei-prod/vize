@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "commit": "d3c8f650b4f2fe5a2fc9e40cef79f682e503c52b",
+  "id": "lsp/fix-history/non-ref-member-access-703",
+  "requirement": "Without the checker, completion after a non-ref member access returns no unrelated setup bindings; decimal literals and inferable refs stay distinct.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst obj = { a: 1 }\nconst r = ref(1)\n</script>\n<template>{{ obj. }}{{ r. }}{{ 1. }}</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "obj.",
+        "delta": 4,
+        "nth": 0
+      },
+      "labels": [
+        "obj",
+        "r",
+        "a",
+        "value"
+      ]
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "r. }}",
+        "delta": 2,
+        "nth": 0
+      },
+      "labels": [
+        "obj",
+        "r",
+        "value"
+      ]
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "App.vue",
+      "at": {
+        "find": "1. }}",
+        "delta": 2,
+        "nth": 0
+      },
+      "labels": [
+        "obj",
+        "r"
+      ]
+    }
+  ]
+}

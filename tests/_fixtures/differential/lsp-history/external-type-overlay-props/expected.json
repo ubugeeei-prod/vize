@@ -1,0 +1,90 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "count": 38,
+      "items": [
+        {
+          "detail": "prop: string (required)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Prop `label`**\n\n_Required component prop_\n\n```typescript\ninterface Props {\n  label: string\n}\n```\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<Component label=\"...\" />\n<Component :label=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+          },
+          "insertText": "label=\"$1\"",
+          "insertTextFormat": 2,
+          "kind": 10,
+          "label": "label",
+          "labelDetails": {
+            "description": "required",
+            "detail": ": string"
+          },
+          "sortText": "00-prop-label"
+        }
+      ]
+    }
+  },
+  {
+    "step": 3,
+    "result": {
+      "count": 39,
+      "items": [
+        {
+          "detail": "prop: number (required)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Prop `label`**\n\n_Required component prop_\n\n```typescript\ninterface Props {\n  label: number\n}\n```\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<Component label=\"...\" />\n<Component :label=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+          },
+          "insertText": "label=\"$1\"",
+          "insertTextFormat": 2,
+          "kind": 10,
+          "label": "label",
+          "labelDetails": {
+            "description": "required",
+            "detail": ": number"
+          },
+          "sortText": "00-prop-label"
+        },
+        {
+          "detail": "prop: boolean (optional)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Prop `pending`**\n\n_Optional component prop_\n\n```typescript\ninterface Props {\n  pending: boolean\n}\n```\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<Component pending />\n<Component :pending=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+          },
+          "insertText": "pending",
+          "insertTextFormat": 2,
+          "kind": 10,
+          "label": "pending",
+          "labelDetails": {
+            "description": "optional",
+            "detail": ": boolean"
+          },
+          "sortText": "00-prop-pending"
+        }
+      ]
+    }
+  },
+  {
+    "step": 5,
+    "result": {
+      "count": 38,
+      "items": [
+        {
+          "detail": "prop: string (required)",
+          "documentation": {
+            "kind": "markdown",
+            "value": "**Prop `label`**\n\n_Required component prop_\n\n```typescript\ninterface Props {\n  label: string\n}\n```\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<Component label=\"...\" />\n<Component :label=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+          },
+          "insertText": "label=\"$1\"",
+          "insertTextFormat": 2,
+          "kind": 10,
+          "label": "label",
+          "labelDetails": {
+            "description": "required",
+            "detail": ": string"
+          },
+          "sortText": "00-prop-label"
+        }
+      ]
+    }
+  }
+]

@@ -16,6 +16,7 @@ import {
 import { loadNative, analyzeSfcFallback } from "../native-loader.js";
 import { analyzeScriptComponent } from "../script-component-analysis.js";
 import { decodeUrlComponent, HttpError, isVueSourcePath } from "../security.js";
+import { sourceWithOptionalArtTitle } from "../plugin/art-processing.js";
 
 function sendCaughtError(sendError: SendError, error: unknown): void {
   if (error instanceof HttpError) {
@@ -109,15 +110,10 @@ export async function handleArtDocs(
     const source = await fs.promises.readFile(readableArtPath, "utf-8");
     const binding = loadNative();
     if (binding.generateArtDoc) {
-      const doc = binding.generateArtDoc(source, {
+      const doc = binding.generateArtDoc(sourceWithOptionalArtTitle(source), {
         filename: readableArtPath,
       });
-      // Replace Self with component name and format indentation
       let markdown = doc.markdown || "";
-      const componentName = art.metadata.title || "Component";
-      markdown = markdown
-        .replace(/<Self(\s|>|\/)/g, `<${componentName}$1`)
-        .replace(/<\/Self>/g, `</${componentName}>`);
       // Fix indentation in code blocks
       markdown = markdown.replace(
         /```(\w*)\n([\s\S]*?)```/g,

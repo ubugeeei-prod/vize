@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const emit = defineEmits(["step-changed"])
+emit("step-changed")
+</script>

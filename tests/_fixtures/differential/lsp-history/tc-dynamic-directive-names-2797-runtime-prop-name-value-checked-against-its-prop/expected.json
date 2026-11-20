@@ -1,0 +1,24 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 2345,
+        "message": "Argument of type '{ someMessage: number; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\n  Type '{ someMessage: number; }' is not assignable to type '{ readonly someMessage: string; }'.\n    Types of property 'someMessage' are incompatible.\n      Type 'number' is not assignable to type 'string'.",
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 7
+          },
+          "start": {
+            "character": 3,
+            "line": 7
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

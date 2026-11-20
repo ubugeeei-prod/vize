@@ -54,6 +54,10 @@ impl Rule for NoNegatedVIfCondition {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE.union(crate::rule::RuleHooks::ELEMENT)
+    }
+
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         check_children(ctx, &root.children);
     }

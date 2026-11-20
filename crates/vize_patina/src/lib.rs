@@ -143,7 +143,7 @@ pub use output::{
     OutputFormat, format_results, format_summary, register_plugin_rule_docs, rule_docs_path,
 };
 pub use preset::LintPreset;
-pub use rule::{Rule, RuleCategory, RuleMeta, RuleRegistry};
+pub use rule::{Rule, RuleCategory, RuleHooks, RuleMeta, RuleRegistry};
 pub use rules::musea::builtin_musea_rules;
 pub use rules::opinionated::vue::{NUXT_BUILTIN_COMPONENTS, VUE_ROUTER_COMPONENTS};
 pub use style::{ParsedStyleSheet, StyleDocument, StyleSyntax};

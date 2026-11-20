@@ -115,14 +115,14 @@ export const portugueseRules1: Record<string, readonly [string, string, string]>
     "O estilo faz referência a --color-primary, o token configurado para este exemplo.",
   ],
   "musea/require-component": [
-    "Exigir o atributo component no bloco &lt;art&gt;",
+    "Exigir um componente de destino resolvível no bloco &lt;art&gt;",
     "O bloco art fornece um título, mas não identifica o componente exibido na prévia.",
-    "defineArt fornece ./Button.vue como o componente do bloco art.",
+    "A variante renderiza o Button importado e identifica o destino do art.",
   ],
   "musea/require-title": [
-    "Exigir o atributo title no bloco &lt;art&gt;",
-    "O bloco art identifica Button.vue, mas não fornece um título.",
-    "As opções de defineArt fornecem o título Button para o bloco art.",
+    "Exigir um título de exibição resolvível no bloco &lt;art&gt;",
+    "O bloco art não tem metadados explícitos nem um componente que permita inferir o título.",
+    "O destino Button importado fornece o título de exibição inferido.",
   ],
   "musea/unique-variant-names": [
     "Exigir nomes de variante únicos",

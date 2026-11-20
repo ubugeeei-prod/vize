@@ -114,6 +114,10 @@ impl Rule for HtmlEndTags {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::TEMPLATE
+    }
+
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         let limit = u32::try_from(ctx.source.len()).unwrap_or(u32::MAX);
         let _ = walk_children(ctx, &root.children, 0, limit);

@@ -93,9 +93,9 @@ export default defineConfig({
 ```art-vue
 <script setup lang="ts">
 import { ref } from "vue";
+import MyButton from "./MyButton.vue";
 
-defineArt("./MyButton.vue", {
-  title: "MyButton",
+defineArtMeta({
   category: "Components",
   status: "ready",
   tags: ["button", "ui", "input"],
@@ -115,9 +115,7 @@ const pressed = ref(false);
 </art>
 ```
 
-`defineArt(source, options)` 是一个编译器宏。它声明了 Musea 应加载的组件， 还有以前存在`<art>`的元数据。偏好使用相对分量路径串，如 `defineArt("./MyButton.vue", { title: "MyButton" })`;Musea会导入生成的组件 运行时代码和语言服务器在prop和slot推理中使用相同的源代码。 源字符串参与路径补全、未解析文件诊断、文档链接和 必看定义。
-
-`<art title="..." component="...">`仍然兼容，并且有明确的`<art>`属性 当两者同时存在时，覆盖`defineArt`元数据。
+目标组件会从所有变体共同使用的已导入标签中推断，因此 Vue 会像普通 SFC 一样检查 props、事件和 slots。`defineArtMeta()` 可以省略，只在需要覆盖推断出的元数据时使用。`title` 也可以省略：默认采用组件绑定名；无法推断目标时则采用文件名。对于有意包含多个组件的组合，可使用 `defineArt(MyButton, metadata?)` 明确指定目标。
 
 ### 变体地方国家
 
@@ -126,8 +124,7 @@ const pressed = ref(false);
 ```art-vue
 <script setup lang="ts">
 import { computed, ref } from "vue";
-
-defineArt("./Counter.vue", { title: "Counter" });
+import Counter from "./Counter.vue";
 
 const count = ref(0);
 const doubled = computed(() => count.value * 2);
@@ -148,8 +145,7 @@ const doubled = computed(() => count.value * 2);
 ```art-vue
 <script setup lang="ts" isolate="false">
 import { ref } from "vue";
-
-defineArt("./Counter.vue", { title: "Counter" });
+import Counter from "./Counter.vue";
 
 const sharedCount = ref(0);
 </script>
@@ -159,18 +155,20 @@ const sharedCount = ref(0);
 
 | 元素 / 宏                        | 目的                 |
 | -------------------------------- | -------------------- |
-| `defineArt(source, options)`     | 目标组件与艺术元数据 |
-| `defineArt(...).title`           | 显示名称             |
-| `defineArt(...).category`        | 侧边栏分组           |
-| `defineArt(...).status`          | 可选身份徽章         |
-| `defineArt(...).tags`            | 搜索和筛选标签       |
+| 已导入的组件标签                 | Vue 类型化的推断目标 |
+| `defineArtMeta(options)`         | 可选的画廊元数据     |
+| `defineArtMeta(...).title`       | 可选的显示名称覆盖   |
+| `defineArtMeta(...).category`    | 侧边栏分组           |
+| `defineArtMeta(...).status`      | 可选状态徽章         |
+| `defineArtMeta(...).tags`        | 搜索和筛选标签       |
+| `defineArt(component, options?)` | 为有歧义的 Art 指定目标 |
 | `<script setup>`                 | 变体本地设置状态默认 |
 | `<script setup isolate="false">` | 所有变体共享设置状态 |
 | `<art>`                          | 根变体块             |
-| `<art title component ...>`      | 兼容性元数据属性     |
 | `<variant>`                      | 命名分量变体         |
 | `default`                        | 标记默认变体         |
-| `args`，`viewport`，`skip-vrt`   | 可选变体配置         |
+| `play`                           | 类型安全的交互测试   |
+| `viewport`，`skip-vrt`           | 可选视觉测试配置     |
 
 当变体是组件合同的一部分时，保持美术文件靠近组件：
 
@@ -197,7 +195,7 @@ musea({
 });
 ```
 
-在内联艺术中，使用`<Self>`来渲染主机组件。
+在内联 Art 中，使用宿主组件的常规 SFC 名称，例如在 `Button.vue` 中写 `<Button>`。
 
 ## 画廊特色
 

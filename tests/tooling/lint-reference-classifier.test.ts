@@ -32,7 +32,7 @@ function fixture(index: number) {
 const noScan = () =>
   assert.fail("unrelated or unmeasured findings must not scan reference packets");
 
-for (let index = 0; index < 2; index++) {
+for (let index = 0; index < referenceCoverageCases().length; index++) {
   const { entry, context, source, rule, finding } = fixture(index);
   void test(`${entry.id}: exact original source and full finding remain required`, () => {
     const answer = classify(entry.project, context, finding, source, () => false);

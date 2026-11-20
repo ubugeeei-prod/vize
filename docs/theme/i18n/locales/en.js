@@ -37,6 +37,7 @@
       "/guide/content-mapper": "Content mapper",
       "/guide/compiler-inspector": "Compiler inspector",
       "/guide/experimentals": "Experimental features",
+      "/guide/musea-testing": "Musea interaction testing",
       "/guide/musea-globals": "Global preview controls",
       "/guide/musea-capture": "Stable screenshots",
       "/guide/musea-snapshots": "Snapshot migration",

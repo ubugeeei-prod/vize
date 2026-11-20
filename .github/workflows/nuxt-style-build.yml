@@ -1,7 +1,6 @@
 name: Nuxt scoped style build
 on:
-  pull_request:
-    branches: [main, davinci]
+  # #6830: off the PR tier; main runs it per commit and nightly.
   push:
     branches: [main, davinci]
   workflow_call:

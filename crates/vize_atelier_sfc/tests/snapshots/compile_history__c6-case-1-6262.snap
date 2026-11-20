@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-6262",
+    history: "c3b4680b46f612145042c453c5ce53a02b09c739",
+    source: "<div><button id=\"target\" @click=\"save($event.type, $event.target.id)\">{{ count }}</button><span>{{ $event.type }}</span></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"button\", {\n      id: \"target\",\n      onClick: $event => (save($event.type, $event.target.id))\n    }, _toDisplayString(count), 9 /* TEXT, PROPS */, [\"onClick\"]),\n    _createElementVNode(\"span\", null, _toDisplayString($event.type), 1 /* TEXT */)\n  ]))\n}",
+    map: None,
+}

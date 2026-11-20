@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "commit": "91754f691b70884a7b1723fb723388485b2ed54b",
+  "id": "lsp/fix-history/tc-with-defaults-macro-inference-5763-reka-generic-vmodel-unsuppressed",
+  "requirement": "Editor diagnostics reproduce the shared checker contract of typechecker fix-history pack with-defaults-macro-inference-5763 (case reka-generic-vmodel-unsuppressed) for the same fix: each authored file with checker findings publishes them through the LSP.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "packages": [
+    "vue"
+  ],
+  "files": {
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "src/form.ts": "export interface FormFieldProps {\n  name?: string;\n  required?: boolean;\n}\n",
+    "src/Foo.vue": "<script lang=\"ts\">\nimport type { FormFieldProps } from \"./form\";\n\ntype Ref<T> = { value: T };\ntype AcceptableValue = string | number | bigint | Record<string, any> | null;\n\nexport interface Props<T = AcceptableValue> extends FormFieldProps {\n  open?: boolean;\n  defaultOpen?: boolean;\n  defaultValue?: T | Array<T>;\n  modelValue?: T | Array<T>;\n  multiple?: boolean;\n}\n\nexport type Emits<T = AcceptableValue> = {\n  \"update:modelValue\": [value: T];\n  \"update:open\": [value: boolean];\n};\n\ntype UseVModelOptions<T, Passive extends boolean = false> = {\n  passive?: Passive;\n  defaultValue?: T;\n  deep?: boolean;\n};\n\ndeclare function useVModel<P extends object, K extends keyof P, Name extends string>(\n  props: P,\n  key?: K,\n  emit?: (name: Name, ...args: any[]) => void,\n  options?: UseVModelOptions<P[K], false>,\n): Ref<P[K]>;\ndeclare function useVModel<P extends object, K extends keyof P, Name extends string>(\n  props: P,\n  key?: K,\n  emit?: (name: Name, ...args: any[]) => void,\n  options?: UseVModelOptions<P[K], true>,\n): Ref<P[K]>;\n</script>\n\n<script setup lang=\"ts\" generic=\"T extends AcceptableValue = AcceptableValue\">\nconst props = withDefaults(defineProps<Props<T>>(), {\n  modelValue: undefined,\n  open: undefined,\n});\nconst emit = defineEmits<Emits<T>>();\nconst multiple = { value: props.multiple };\n\nuseVModel(props, \"modelValue\", emit, {\n  defaultValue: props.defaultValue ?? (multiple.value ? [] : undefined),\n  passive: (props.modelValue === undefined) as false,\n  deep: true,\n});\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "src/Foo.vue"
+    },
+    {
+      "diagnostics": "src/Foo.vue"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::WorkspaceSymbolsService;
+use tower_lsp::lsp_types::TextDocumentContentChangeEvent;
 use tower_lsp::lsp_types::{Position, Range, SymbolKind};
 
 #[test]
@@ -208,4 +209,54 @@ export interface CardProps { title: string }
             ("save-item".to_owned(), SymbolKind::EVENT, card(), 3, 32),
         ]
     );
+}
+
+#[test]
+fn open_document_index_is_query_independent_and_revision_exact() {
+    let state = crate::server::ServerState::new();
+    let uri = tower_lsp::lsp_types::Url::parse("file:///workspace/Indexed.vue").unwrap();
+    let before = "<script setup>\nconst alpha = 1\nconst beta = 2\n</script>";
+    state
+        .documents
+        .open(uri.clone(), before.into(), 1, "vue".into());
+
+    let alpha = WorkspaceSymbolsService::search(&state, "alpha");
+    assert_eq!(
+        alpha
+            .iter()
+            .map(|symbol| symbol.name.as_str())
+            .collect::<Vec<_>>(),
+        ["alpha"]
+    );
+    assert_eq!(state.workspace_symbol_cache.len(), 1);
+
+    let beta = WorkspaceSymbolsService::search(&state, "beta");
+    assert_eq!(
+        beta.iter()
+            .map(|symbol| symbol.name.as_str())
+            .collect::<Vec<_>>(),
+        ["beta"]
+    );
+    assert_eq!(state.workspace_symbol_cache.len(), 1);
+
+    let after = before.replace("alpha", "gamma");
+    assert!(state.documents.apply_changes(
+        &uri,
+        vec![TextDocumentContentChangeEvent {
+            range: None,
+            range_length: None,
+            text: after,
+        }],
+        2,
+    ));
+    assert!(WorkspaceSymbolsService::search(&state, "alpha").is_empty());
+    let gamma = WorkspaceSymbolsService::search(&state, "gamma");
+    assert_eq!(
+        gamma
+            .iter()
+            .map(|symbol| symbol.name.as_str())
+            .collect::<Vec<_>>(),
+        ["gamma"]
+    );
+    assert_eq!(state.workspace_symbol_cache.len(), 1);
 }

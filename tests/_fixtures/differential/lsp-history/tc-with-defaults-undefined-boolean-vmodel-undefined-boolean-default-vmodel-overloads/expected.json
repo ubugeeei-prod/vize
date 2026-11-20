@@ -1,0 +1,40 @@
+[
+  {
+    "step": 1,
+    "version": 1,
+    "diagnostics": [
+      {
+        "code": 1184,
+        "message": "Modifiers cannot appear here.",
+        "range": {
+          "end": {
+            "character": 7,
+            "line": 16
+          },
+          "start": {
+            "character": 0,
+            "line": 16
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      },
+      {
+        "code": 1184,
+        "message": "Modifiers cannot appear here.",
+        "range": {
+          "end": {
+            "character": 7,
+            "line": 22
+          },
+          "start": {
+            "character": 0,
+            "line": 22
+          }
+        },
+        "severity": 1,
+        "source": "vize/types"
+      }
+    ]
+  }
+]

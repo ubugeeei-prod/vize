@@ -7,11 +7,10 @@
 
 import path from "node:path";
 
-import { allowedSourceRoots, resolveComponentSourcePath } from "./component-source.js";
 import type { ArtFileInfo } from "./types/index.js";
 import { variantComponentNames } from "./variant-bindings.js";
 import { emitLegacyVariant } from "./art-module-vue2.js";
-import { componentNameFromSource, expandSelfTag } from "./art-component.js";
+import { resolveArtComponent } from "./art-component.js";
 import { artScopeAttribute } from "./art-style.js";
 import { artStyleRequestId } from "./art-style-module.js";
 
@@ -41,15 +40,25 @@ function resolveRelativeSpecifier(specifier: string, artDir: string): string {
 
 export function rewriteRelativeImportStatement(statement: string, artDir: string): string {
   const rewrittenFromImports = statement.replace(
-    /\bfrom\s+(['"])([^'"]+)\1/g,
-    (_match, quote: string, specifier: string) =>
-      `from ${quote}${resolveRelativeSpecifier(specifier, artDir)}${quote}`,
+    /\bfrom\s+(?:"([^"]+)"|'([^']+)')/g,
+    (_match, doubleQuoted: string | undefined, singleQuoted: string | undefined) => {
+      const quote = doubleQuoted === undefined ? "'" : '"';
+      return `from ${quote}${resolveRelativeSpecifier(doubleQuoted ?? singleQuoted ?? "", artDir)}${quote}`;
+    },
   );
 
   return rewrittenFromImports.replace(
-    /^(\s*import\s+)(['"])([^'"]+)\2(\s*;?\s*)$/s,
-    (_match, prefix: string, quote: string, specifier: string, suffix: string) =>
-      `${prefix}${quote}${resolveRelativeSpecifier(specifier, artDir)}${quote}${suffix}`,
+    /^(\s*import\s+)(?:"([^"]+)"|'([^']+)')(\s*;?\s*)$/s,
+    (
+      _match,
+      prefix: string,
+      doubleQuoted: string | undefined,
+      singleQuoted: string | undefined,
+      suffix: string,
+    ) => {
+      const quote = doubleQuoted === undefined ? "'" : '"';
+      return `${prefix}${quote}${resolveRelativeSpecifier(doubleQuoted ?? singleQuoted ?? "", artDir)}${quote}${suffix}`;
+    },
   );
 }
 
@@ -73,8 +82,8 @@ function isCompleteImportStatement(statement: string): boolean {
   }
 
   return (
-    /^import\s+[\s\S]+?\s+from\s+['"][^'"]+['"]\s*;?$/s.test(trimmed) ||
-    /^import\s+['"][^'"]+['"]\s*;?$/s.test(trimmed)
+    /^import\s+[\s\S]+?\s+from\s+(?:"[^"]+"|'[^']+')\s*;?$/s.test(trimmed) ||
+    /^import\s+(?:"[^"]+"|'[^']+')\s*;?$/s.test(trimmed)
   );
 }
 
@@ -115,7 +124,7 @@ function splitTopLevelCommaList(source: string): string[] {
 
 function collectImportedNames(statement: string, returnNames: Set<string>): void {
   const normalized = statement.replace(/\s+/g, " ").trim().replace(/;$/, "");
-  const fromMatch = normalized.match(/^import\s+(type\s+)?(.+?)\s+from\s+['"][^'"]+['"]$/);
+  const fromMatch = normalized.match(/^import\s+(type\s+)?(.+?)\s+from\s+(?:"[^"]+"|'[^']+')$/);
 
   if (!fromMatch) {
     return;
@@ -166,7 +175,7 @@ function collectImportedNames(statement: string, returnNames: Set<string>): void
   }
 }
 
-function importDeclaresName(statement: string, name: string): boolean {
+export function importDeclaresName(statement: string, name: string): boolean {
   const names = new Set<string>();
   collectImportedNames(statement, names);
   return names.has(name);
@@ -308,6 +317,7 @@ export function parseScriptSetupForArt(content: string): {
   returnNames: string[];
   defineArtComponentName?: string;
   defineArtComponentSource?: string;
+  defineArtComponentImport?: string;
 } {
   const lines = content.split("\n");
   const imports: string[] = [];
@@ -315,13 +325,13 @@ export function parseScriptSetupForArt(content: string): {
   const returnNames: Set<string> = new Set();
   let currentImport: string[] | null = null;
   const defineArtComponent = extractDefineArtComponent(content);
-  let defineArtBalance = 0;
+  let artMacroBalance = 0;
 
   for (const line of lines) {
     const trimmed = line.trim();
 
-    if (defineArtBalance > 0) {
-      defineArtBalance += countCharBalance(line, "(", ")");
+    if (artMacroBalance > 0) {
+      artMacroBalance += countCharBalance(line, "(", ")");
       continue;
     }
 
@@ -347,8 +357,8 @@ export function parseScriptSetupForArt(content: string): {
       continue;
     }
 
-    if (isDefineArtLine(trimmed)) {
-      defineArtBalance = Math.max(0, countCharBalance(line, "(", ")"));
+    if (isArtMacroLine(trimmed)) {
+      artMacroBalance = Math.max(0, countCharBalance(line, "(", ")"));
       continue;
     }
 
@@ -363,36 +373,58 @@ export function parseScriptSetupForArt(content: string): {
 
   collectTopLevelReturnNames(setupBody, returnNames);
 
+  if (/\bdefinePlay\s*\(/.test(content)) {
+    setupBody.unshift("const definePlay = (play) => play;");
+    returnNames.delete("definePlay");
+  }
+
   // Remove 'type' keyword imports and common Vue utilities that shouldn't be returned
   returnNames.delete("type");
   if (defineArtComponent.name) {
     returnNames.delete(defineArtComponent.name);
   }
 
+  if (defineArtComponent.legacySource) {
+    throw new Error(
+      `defineArt(${JSON.stringify(defineArtComponent.legacySource)}, …) is no longer supported. ` +
+        `Import the component and call defineArt(Component, …) instead.`,
+    );
+  }
+
+  const componentImport = defineArtComponent.name
+    ? imports.find((statement) => importDeclaresName(statement, defineArtComponent.name!))
+    : undefined;
+  if (defineArtComponent.name && !componentImport) {
+    throw new Error(
+      `defineArt(${defineArtComponent.name}, …) must receive a component imported in the same <script setup>.`,
+    );
+  }
+  const componentSource = componentImport
+    ?.replace(/\s+/g, " ")
+    .match(/\bfrom\s+(?:"([^"]+)"|'([^']+)')/);
+
   return {
     imports,
     setupBody,
     returnNames: [...returnNames],
     defineArtComponentName: defineArtComponent.name,
-    defineArtComponentSource: defineArtComponent.source,
+    defineArtComponentSource: componentSource?.[1] ?? componentSource?.[2],
+    defineArtComponentImport: componentImport,
   };
 }
 
-function extractDefineArtComponent(content: string): { name?: string; source?: string } {
+function extractDefineArtComponent(content: string): { name?: string; legacySource?: string } {
   const sourceMatch = content.match(/\bdefineArt\s*\(\s*(['"])([^'"]+)\1/);
   if (sourceMatch) {
-    return {
-      name: componentNameFromSource(sourceMatch[2]),
-      source: sourceMatch[2],
-    };
+    return { legacySource: sourceMatch[2] };
   }
 
   const identifierMatch = content.match(/\bdefineArt\s*\(\s*([A-Za-z_$][\w$]*)/);
   return { name: identifierMatch?.[1] };
 }
 
-function isDefineArtLine(trimmed: string): boolean {
-  return /\bdefineArt\s*\(/.test(trimmed);
+function isArtMacroLine(trimmed: string): boolean {
+  return /\b(?:defineArt|defineArtMeta)\s*\(/u.test(trimmed);
 }
 
 interface GenerateArtModuleOptions {
@@ -407,48 +439,14 @@ export function generateArtModule(
   filePath: string,
   options: GenerateArtModuleOptions = {},
 ): string {
-  let componentImportPath: string | undefined;
-  let componentTagName: string | undefined;
-  let componentBindingName = "__MuseaComponent";
   const scriptSetup = art.scriptSetupContent
     ? parseScriptSetupForArt(art.scriptSetupContent)
     : null;
-  const defineArtComponentName = scriptSetup?.defineArtComponentName;
-  const defineArtComponentSource = scriptSetup?.defineArtComponentSource;
-
-  if (art.isInline && art.componentPath) {
-    // Inline art: import the host .vue file itself as the component
-    componentImportPath = options.root
-      ? (resolveComponentSourcePath(
-          art,
-          filePath,
-          allowedSourceRoots(options.root, options.scanRoots ?? []),
-        ) ?? undefined)
-      : art.componentPath;
-    componentTagName = "MuseaComponent";
-  } else if (defineArtComponentSource || art.metadata.component) {
-    // .art.vue: resolve component from defineArt(source, ...) or the legacy component attribute.
-    const componentSource = defineArtComponentSource ?? art.metadata.component;
-    if (componentSource) {
-      const sourceArt =
-        componentSource === art.metadata.component
-          ? art
-          : { ...art, metadata: { ...art.metadata, component: componentSource } };
-      componentImportPath = options.root
-        ? (resolveComponentSourcePath(
-            sourceArt,
-            filePath,
-            allowedSourceRoots(options.root, options.scanRoots ?? []),
-          ) ?? undefined)
-        : path.isAbsolute(componentSource)
-          ? componentSource
-          : path.resolve(path.dirname(filePath), componentSource);
-    }
-    componentTagName =
-      defineArtComponentName ??
-      (art.metadata.component ? componentNameFromSource(art.metadata.component) : "MuseaComponent");
-    componentBindingName = componentTagName;
-  }
+  const component = resolveArtComponent(art, filePath, scriptSetup, {
+    root: options.root,
+    scanRoots: options.scanRoots,
+  });
+  const { componentImportPath, componentTagName, componentBindingName } = component;
 
   const hasSetupBody = scriptSetup?.setupBody.some((line) => line.trim().length > 0) ?? false;
   const hasSetup = !!scriptSetup && (hasSetupBody || scriptSetup.returnNames.length > 0);
@@ -517,8 +515,7 @@ ${scriptSetup.setupBody.join("\n")}
   for (const variant of art.variants) {
     const variantComponentName = bindings.get(variant.name)!;
 
-    // Replace <Self> with the actual component name (for inline art)
-    const template = expandSelfTag(variant.template, componentTagName);
+    const template = variant.template;
 
     // Vue 2 keeps the runtime-compiled `template:` string; see art-module-vue2.ts (#3857).
     if (options.vueVersion === 2) {
@@ -533,6 +530,9 @@ ${scriptSetup.setupBody.join("\n")}
         isolatedSetup,
         setupReturn,
         importDeclaresName,
+        play: variant.play,
+        props: variant.props,
+        attrs: variant.attrs,
       });
       continue;
     }

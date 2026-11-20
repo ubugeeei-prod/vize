@@ -6,6 +6,7 @@ use vize_l1::embed::syntax::{EmbedSyntax, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang, SourceError};
 use vize_l2::file::Namespace;
 use vize_l2::lang::js::{FileProducer, ModuleSourceKind, ProgramInput, ProgramScope};
+use vize_l2::query::Model;
 
 fn syntax<'a>(
     arena: &'a Allocator,
@@ -137,7 +138,7 @@ fn original_tsx_declaration_namespaces_remain_separate_from_jsx_component_reads(
     .unwrap();
     assert_eq!(visited, 3);
     assert_eq!(file.references().len(), 1);
-    let reference = file
+    let reference = Model::new(&file)
         .reference_at_offset(source.find("<Widget").unwrap() as u32 + 1)
         .unwrap()
         .unwrap();

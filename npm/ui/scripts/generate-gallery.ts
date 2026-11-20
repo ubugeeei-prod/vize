@@ -85,6 +85,7 @@ export function renderFamilyStory(
   const storyDirectory = path.dirname(path.join(storiesDirectory, file));
   const target =
     componentExports(path.join(packageRoot, entry.entryFile))[0]?.file ?? examples[0] ?? "";
+  const targetBinding = pascal(path.basename(target));
   const bindings = examples.map((example) => `${pascal(path.basename(example))}Example`);
   const meta = {
     title: entry.title,
@@ -104,8 +105,9 @@ export function renderFamilyStory(
       (example, index) =>
         `import ${bindings[index]} from ${JSON.stringify(posixRelative(storyDirectory, example))};`,
     ),
+    `import ${targetBinding} from ${JSON.stringify(posixRelative(storyDirectory, target))};`,
     "",
-    `defineArt(${JSON.stringify(posixRelative(storyDirectory, target))}, {`,
+    `defineArt(${targetBinding}, {`,
     `  title: ${JSON.stringify(meta.title)},`,
     `  category: ${JSON.stringify(meta.category)},`,
     `  status: ${JSON.stringify(meta.status)},`,

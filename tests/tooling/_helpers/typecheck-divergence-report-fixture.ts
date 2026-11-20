@@ -305,6 +305,10 @@ export function readJson(pathname: string) {
   return JSON.parse(fs.readFileSync(pathname, "utf8"));
 }
 
+export function preSemanticCommand(baselineCommand: string) {
+  return `${baselineCommand} --noCheck --composite false --declaration false --declarationMap false --emitDeclarationOnly false`;
+}
+
 /** Record-only preserves the whole observation even when its budget is unusable or breached. */
 export function assertRecordOnlyObservations(
   fixture: ReturnType<typeof setup>,
@@ -341,6 +345,7 @@ export function assertRecordOnlyObservations(
     baseline: {
       command: artifact.baseline.command,
       version: "3.3.4",
+      excludedInputs: [],
       exitCode: expected.baselineOutput === "" ? 0 : 2,
       runError: null,
       stdout: expected.baselineOutput,
@@ -352,7 +357,7 @@ export function assertRecordOnlyObservations(
       ? {}
       : {
           preSemantic: {
-            command: `${artifact.baseline.command} --noCheck`,
+            command: preSemanticCommand(artifact.baseline.command),
             providerVersion: "3.3.4",
             configSha256: sha256(config),
             exitCode: 0,

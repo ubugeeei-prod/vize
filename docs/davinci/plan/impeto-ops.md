@@ -82,7 +82,7 @@ can read canonical partition decisions without traversing L3 ops.
 | Component                                                      | `l3.create-component`  |
 | Text                                                           | `l3.set-text`          |
 | Interpolation                                                  | `l3.set-text`          |
-| JsxChildValue                                                  | `l3.set-child-value`   |
+| ChildValue                                                     | `l3.set-child-value`   |
 | Comment                                                        | `l3.insert-node`       |
 | If                                                             | `l3.if`                |
 | For                                                            | `l3.for`               |

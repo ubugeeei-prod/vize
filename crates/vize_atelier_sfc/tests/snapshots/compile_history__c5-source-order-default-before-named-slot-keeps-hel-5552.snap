@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-source-order-default-before-named-slot-keeps-hel-5552",
+    history: "af800fd3996e05a0df0e0566267a7099d982963a",
+    source: "<Page><Button><template #right><Icon v-if=\"ok\" /></template>{{ label }}</Button><template #notice><Icon /> {{ notice }}</template></Page>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Icon = _resolveComponent(\"Icon\")\n  const _component_Button = _resolveComponent(\"Button\")\n  const _component_Page = _resolveComponent(\"Page\")\n  \n  return (_openBlock(), _createBlock(_component_Page, null, {\n    notice: _withCtx(() => [\n      _createVNode(_component_Icon),\n      _createTextVNode(\" \" + _toDisplayString(notice), 1 /* TEXT */)\n    ]),\n    default: _withCtx(() => [\n      _createVNode(_component_Button, null, {\n        right: _withCtx(() => [\n          (ok)\n            ? (_openBlock(), _createBlock(_component_Icon, { key: 0 }))\n            : _createCommentVNode(\"v-if\", true)\n        ]),\n        default: _withCtx(() => [\n          _createTextVNode(_toDisplayString(label), 1 /* TEXT */)\n        ]),\n        _: 1 /* STABLE */\n      })\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

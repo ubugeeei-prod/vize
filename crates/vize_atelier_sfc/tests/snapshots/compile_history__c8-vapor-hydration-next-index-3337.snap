@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-vapor-hydration-next-index-3337",
+    history: "09e2504b412eb119979d4367eb132eb0299aee89",
+    source: "<template><div>\n  <svg role=\"presentation\"><use href=\"#x\" /></svg>\n  <h2><span>Title</span></h2>\n  <p><span>Sub</span></p>\n  <ul>\n    <li><a href=\"https://example.com\"><img :src=\"logo\" alt=\"\" /><span>A</span></a></li>\n    <li><a href=\"https://example.org\"><img :src=\"logo\" alt=\"\" /><span>B</span></a></li>\n  </ul>\n</div></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { child as _child, next as _next, setProp as _setProp, nthChild as _nthChild, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div><svg role=\\\"presentation\\\"><use href=\\\"#x\\\"></use></svg><h2><span>Title</span></h2><p><span>Sub</span></p><ul><li><a href=\\\"https://example.com\\\"><img alt=\\\"\\\"><span>A</span></a></li><li><a href=\\\"https://example.org\\\"><img alt=\\\"\\\"><span>B</span></a></li></ul></div>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n1 = t0()\n  const n0 = _nthChild(n1, 3)\n  const n2 = _child(n0)\n  const n4 = _child(n2)\n  const n5 = _child(n4)\n  const n3 = _next(n2)\n  const n6 = _child(n3)\n  const n7 = _child(n6)\n  _renderEffect(() => {\n    _setProp(n5, \"src\", _ctx.logo)\n    _setProp(n7, \"src\", _ctx.logo)\n  })\n  return n1\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

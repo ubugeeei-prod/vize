@@ -1,6 +1,7 @@
 import { loadNative } from "../native-loader.js";
 import { isTrustedSourcePath } from "../trusted-path.js";
 import { shouldProcess } from "../utils.js";
+import { sourceWithOptionalArtTitle } from "./art-processing.js";
 
 interface RawArtInputConfig {
   root: string;
@@ -31,7 +32,9 @@ export function createRawArtInputOwner(config: RawArtInputConfig) {
       if (!descriptor.customBlocks.some((block) => block.type === "art")) return false;
       // A malformed or empty Art file is not a successfully owned virtual input.
       // Parser/metadata errors propagate, so ownership cannot hide a failure.
-      return native.parseArt(source, { filename: file }).variants.length > 0;
+      return (
+        native.parseArt(sourceWithOptionalArtTitle(source), { filename: file }).variants.length > 0
+      );
     },
   });
 }

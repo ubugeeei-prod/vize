@@ -116,7 +116,7 @@ impl Linter {
     }
 
     fn lint_sfc_level<'a>(
-        &self,
+        &'a self,
         source: &'a str,
         filename: &str,
         shared: Option<(
@@ -155,9 +155,11 @@ impl Linter {
             )
         };
         let mut ctx = LintContext::with_locale(&allocator, source, filename, self.locale);
-        ctx.set_enabled_rules(self.enabled_rules.clone());
-        ctx.set_config_disabled_rules(self.disabled_rules.clone());
-        ctx.set_config_rule_severities(self.severity_overrides.clone());
+        ctx.set_rule_config(
+            self.enabled_rules.as_ref(),
+            &self.disabled_rules,
+            &self.severity_overrides,
+        );
         ctx.set_help_level(self.help_level);
         ctx.set_no_inline_config(self.no_inline_config);
         ctx.set_type_sources(self.type_sources.as_ref());

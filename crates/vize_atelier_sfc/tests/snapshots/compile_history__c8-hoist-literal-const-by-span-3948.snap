@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-hoist-literal-const-by-span-3948",
+    history: "c8ecde5a186e0b4454837cc0fec3b9e7ee5e23e8",
+    source: "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n\nconst fetched = ref({ width: 5 })\n\nfunction hover() {\n    const max = fetched.value.width\n    return max\n}\n\nconst max = 7\n</script>\n<template><p @mouseover=\"hover\">{{ max }}</p></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nimport { ref } from 'vue'\n\nconst max = 7;\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nconst fetched = ref({ width: 5 });\nfunction hover() {\n  const max = fetched.value.width;\n  return max;\n}\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"p\", { onMouseover: hover }, _toDisplayString(max), 32 /* NEED_HYDRATION */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "ref": SetupConst,
+                        "hover": SetupConst,
+                        "fetched": SetupRef,
+                        "max": LiteralConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

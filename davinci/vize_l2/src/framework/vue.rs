@@ -23,6 +23,8 @@ pub enum MacroKind {
     WithDefaults,
     /// Musea `defineArt(component, options)`.
     DefineArt,
+    /// Musea `defineArtMeta(options)`.
+    DefineArtMeta,
     /// vue-router `definePage`.
     DefinePage,
     /// Nuxt `definePageMeta`.
@@ -104,6 +106,12 @@ pub const MACROS: &[Macro] = &[
     ecosystem(
         "defineArt",
         MacroKind::DefineArt,
+        MacroLifecycle::AnalyzeAndErase,
+        None,
+    ),
+    ecosystem(
+        "defineArtMeta",
+        MacroKind::DefineArtMeta,
         MacroLifecycle::AnalyzeAndErase,
         None,
     ),

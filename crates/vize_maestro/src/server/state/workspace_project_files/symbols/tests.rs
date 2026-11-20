@@ -9,8 +9,9 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
 };
 
-use super::{FxHashMap, ServerState, Url, WorkspaceSymbolsService, collect_sources};
+use super::{ServerState, Url, WorkspaceSymbolsService, collect_sources};
 use crate::runtime::block_on;
+use tower_lsp::lsp_types::{FileChangeType, FileEvent};
 
 const WIDGET: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -37,7 +38,7 @@ fn complete_streamed_corpus_matches_original_objects_and_materialized_consumer()
     for query in ["", "internal", "café", "value", "missing"] {
         let actual = collect_sources(
             sources.iter().map(|(uri, _)| uri.clone()).collect(),
-            &FxHashMap::<Url, String>::default(),
+            &[],
             &[],
             query,
             |path| {
@@ -91,7 +92,7 @@ fn streaming_releases_each_closed_source_before_reading_the_next_and_ranks_once(
     uris.push(uris[0].clone());
     let live = Arc::new(AtomicUsize::new(0));
     let mut read_order = Vec::new();
-    let symbols = collect_sources(uris, &FxHashMap::default(), &[], "probe", |path| {
+    let symbols = collect_sources(uris, &[], &[], "probe", |path| {
         assert_eq!(
             live.fetch_add(1, Ordering::SeqCst),
             0,
@@ -341,5 +342,79 @@ fn failed_symbol_worker_preserves_complete_open_overlay_answer() {
             WorkspaceSymbolsService::search_sources(&open, "")
         );
         assert!(state.workspace_project_files.paths.read().is_some());
+    });
+}
+
+#[test]
+fn watched_disk_index_reuses_one_generation_and_rebuilds_after_change() {
+    block_on(async {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("disk.ts");
+        std::fs::write(&path, "export const oldSymbol = 1;").unwrap();
+        let uri = Url::from_file_path(&path).unwrap();
+        let state = ServerState::new();
+        state.set_workspace_root(root.path().to_owned());
+        state.set_corsa_disk_watcher_registered();
+
+        let old = state.search_workspace_project_symbols("oldSymbol").await;
+        assert_eq!(old.len(), 1);
+        let seeded = Arc::clone(state.workspace_symbol_cache.get(&uri).unwrap().value());
+
+        // The watcher contract makes this generation authoritative until its
+        // notification arrives, so another query must not touch the disk.
+        std::fs::write(&path, "export const newSymbol = 2;").unwrap();
+        let warm = state.search_workspace_project_symbols("oldSymbol").await;
+        assert_eq!(warm.len(), 1);
+        assert!(Arc::ptr_eq(
+            &seeded,
+            state.workspace_symbol_cache.get(&uri).unwrap().value()
+        ));
+
+        state.observe_workspace_project_file_events(&[FileEvent {
+            uri: uri.clone(),
+            typ: FileChangeType::CHANGED,
+        }]);
+        assert!(
+            state
+                .search_workspace_project_symbols("oldSymbol")
+                .await
+                .is_empty()
+        );
+        let changed = state.search_workspace_project_symbols("newSymbol").await;
+        assert_eq!(changed.len(), 1);
+        assert!(!Arc::ptr_eq(
+            &seeded,
+            state.workspace_symbol_cache.get(&uri).unwrap().value()
+        ));
+    });
+}
+
+#[test]
+fn unwatched_disk_search_keeps_fresh_read_semantics() {
+    block_on(async {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("disk.ts");
+        std::fs::write(&path, "export const before = 1;").unwrap();
+        let state = ServerState::new();
+        state.set_workspace_root(root.path().to_owned());
+
+        assert_eq!(
+            state.search_workspace_project_symbols("before").await.len(),
+            1
+        );
+        assert!(state.workspace_symbol_cache.is_empty());
+
+        std::fs::write(&path, "export const after = 2;").unwrap();
+        assert!(
+            state
+                .search_workspace_project_symbols("before")
+                .await
+                .is_empty()
+        );
+        assert_eq!(
+            state.search_workspace_project_symbols("after").await.len(),
+            1
+        );
+        assert!(state.workspace_symbol_cache.is_empty());
     });
 }

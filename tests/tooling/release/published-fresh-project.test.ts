@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { expectedNativePackage } from "../../../tools/support/release/verify_published/fresh_project.ts";
+import {
+  expectedNativePackage,
+  isKnownWindowsConfigRegression,
+} from "../../../tools/support/release/verify_published/fresh_project.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
 
 type Step = {
@@ -58,6 +61,28 @@ test("the public verifier starts npm without Windows command-shell ambiguity", (
   assert.match(verifier, /isReleaseVersion\(version\)/u);
 });
 
+test("only the exact historical Windows JavaScript-config regression is admitted", () => {
+  const failure =
+    "generated clean check exited 2\nstderr:\nError: failed to parse C:\\project\\vite.config.ts: unterminated import in the product runtime";
+  for (const version of ["0.773.0", "0.777.0", "0.781.0"])
+    assert.equal(isKnownWindowsConfigRegression(version, failure, "win32"), true);
+  for (const version of ["0.772.0", "0.782.0", "1.773.0"])
+    assert.equal(isKnownWindowsConfigRegression(version, failure, "win32"), false);
+  assert.equal(isKnownWindowsConfigRegression("0.781.0", failure, "linux"), false);
+  assert.equal(
+    isKnownWindowsConfigRegression(
+      "0.781.0",
+      failure.replace("unterminated import", "unreadable import"),
+      "win32",
+    ),
+    false,
+  );
+  assert.equal(
+    isKnownWindowsConfigRegression("0.781.0", failure.replace("exited 2", "exited 1"), "win32"),
+    false,
+  );
+});
+
 test("published fresh projects run from exact public versions on every release host", () => {
   assert.ok(published.on.pull_request.paths.includes(".github/workflows/release-verify.yml"));
   assert.ok(
@@ -106,4 +131,11 @@ test("release verification calls the public host matrix after npm propagation", 
     version: "${{ inputs.version }}",
     source_ref: "${{ inputs.tag }}",
   });
+  const windows = releaseVerify.jobs["verify-windows-js-config"]!;
+  assert.equal(windows.needs, "verify-npm");
+  assert.equal(windows["runs-on"], "windows-2025");
+  const command = windows.steps?.find((step) =>
+    step.run?.includes("windows-js-config-public.test.ts"),
+  );
+  assert.equal(command?.env?.VIZE_PUBLIC_VERSION, "${{ inputs.version }}");
 });

@@ -30,6 +30,8 @@ pub(crate) struct ArtBlocks<'a> {
     pub script_setup: Option<ArtScriptBlock<'a>>,
     pub script: Option<ArtScriptBlock<'a>>,
     pub styles: Vec<'a, ArtStyleBlock<'a>>,
+    /// A regular component with a colocated `<art>` block targets itself.
+    pub is_inline: bool,
 }
 
 /// Split `source` into its SFC blocks.
@@ -70,6 +72,7 @@ pub(crate) fn split_blocks<'a>(
             .as_ref()
             .map(|block| script_block(allocator, source, block)),
         styles,
+        is_inline: descriptor.template.is_some(),
     })
 }
 

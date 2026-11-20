@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "commit": "8f9f80d7a329c7d9e46c5dc0606efda357cc285f",
+  "id": "lsp/fix-history/global-attribute-docs-2569",
+  "requirement": "Global attribute hovers link the Element/HTMLElement documentation instead of a tag-specific URL.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "App.vue": "<template>\n  <section title=\"t\" hidden lang=\"en\" tabindex=\"0\">x</section>\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "title",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "hidden",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "lang",
+        "delta": 1,
+        "nth": 0
+      }
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "tabindex",
+        "delta": 1,
+        "nth": 0
+      }
+    }
+  ]
+}

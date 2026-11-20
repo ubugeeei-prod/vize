@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-18-3468",
+    history: "85e1af3ae2cc7911642a6dad614e1fa99443c911",
+    source: "const A = () => <B v-slots:x={{foo: () => <i/>}}/>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from \"vue\"\n\nconst A = () => (() => {\nreturn ((_ctx, _cache) => {\n  const _component_B = _resolveComponent(\"B\")\n  \n  return (_openBlock(), _createBlock(_component_B, null, {\n    foo: _withCtx(() => [\n      _createElementVNode(\"i\")\n    ]),\n    _: 1 /* STABLE */\n  }))\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: Some(
+                "A",
+            ),
+            mode: Vdom,
+            setup: None,
+            preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  const _component_B = _resolveComponent(\"B\")\n  \n  return (_openBlock(), _createBlock(_component_B, null, {\n    foo: _withCtx(() => [\n      _createElementVNode(\"i\")\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

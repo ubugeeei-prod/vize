@@ -1,0 +1,46 @@
+[
+  {
+    "step": 1,
+    "result": {
+      "count": 38,
+      "items": [
+        {
+          "detail": "event: [id: number]",
+          "insertText": "@select=\"$1\"",
+          "insertTextFormat": 2,
+          "kind": 23,
+          "label": "@select",
+          "sortText": "00-event-select"
+        }
+      ]
+    }
+  },
+  {
+    "step": 2,
+    "result": {
+      "count": 3,
+      "items": [
+        {
+          "detail": "event: [id: number]",
+          "insertTextFormat": 2,
+          "kind": 23,
+          "label": "@select",
+          "sortText": "00-event-select",
+          "textEdit": {
+            "newText": "@select=\"$1\"",
+            "range": {
+              "end": {
+                "character": 11,
+                "line": 5
+              },
+              "start": {
+                "character": 9,
+                "line": 5
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+]

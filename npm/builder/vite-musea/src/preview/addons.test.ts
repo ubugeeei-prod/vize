@@ -4,7 +4,20 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { MUSEA_ADDONS_INIT_CODE } from "./addons.js";
+import { MUSEA_ADDONS_INIT_CODE, MUSEA_PLAY_INIT_CODE } from "./addons.js";
+import { MUSEA_PLAY_RUNTIME_CODE } from "./play.js";
+
+void test("the play runtime exposes scoped queries, interactions and assertions", () => {
+  assert.match(MUSEA_PLAY_RUNTIME_CODE, /function __museaCreatePlayContext/);
+  assert.match(MUSEA_PLAY_RUNTIME_CODE, /getByRole/);
+  assert.match(MUSEA_PLAY_RUNTIME_CODE, /userEvent/);
+  assert.match(MUSEA_PLAY_RUNTIME_CODE, /step:/);
+  assert.match(MUSEA_PLAY_RUNTIME_CODE, /kind: 'assertion'/);
+  assert.match(MUSEA_PLAY_RUNTIME_CODE, /toHaveTextContent/);
+  assert.match(MUSEA_PLAY_INIT_CODE, /musea:run-play/);
+  assert.match(MUSEA_PLAY_INIT_CODE, /musea:play-result/);
+  assert.match(MUSEA_PLAY_INIT_CODE, /report: context\.__museaReport/);
+});
 
 void test("the a11y runner rejects a vendor response that is not axe-core", () => {
   // axe-core is an optional peer, so a static export can ship without
@@ -69,6 +82,14 @@ void test("preview addon messages stay on the preview origin", () => {
     /postMessage\(\{ type: 'musea:event', payload \}, parentOrigin\)/,
   );
   assert.doesNotMatch(MUSEA_ADDONS_INIT_CODE, /postMessage\([^)]*,\s*['"]\*['"]\)/);
+});
+
+void test("preview readiness can be requested after iframe load", () => {
+  assert.match(MUSEA_ADDONS_INIT_CODE, /case 'musea:request-ready'/);
+  assert.match(
+    MUSEA_ADDONS_INIT_CODE,
+    /case 'musea:request-ready':[\s\S]*postMessage\(\{ type: 'musea:ready'/u,
+  );
 });
 
 void test("the a11y runner reports failures back to the gallery instead of throwing away the request", () => {

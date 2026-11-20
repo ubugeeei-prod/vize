@@ -35,9 +35,11 @@ impl Linter {
         } = input;
         let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
         ctx.enable_callback_order();
-        ctx.set_enabled_rules(self.enabled_rules.clone());
-        ctx.set_config_disabled_rules(self.disabled_rules.clone());
-        ctx.set_config_rule_severities(self.severity_overrides.clone());
+        ctx.set_rule_config(
+            self.enabled_rules.as_ref(),
+            &self.disabled_rules,
+            &self.severity_overrides,
+        );
         ctx.set_help_level(self.help_level);
         ctx.set_no_inline_config(self.no_inline_config);
         ctx.set_custom_elements(&self.custom_elements);

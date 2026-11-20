@@ -1,0 +1,17 @@
+# Deductive proofs of the Davinci laws (docs/davinci/decisions/2026-11-17-creusot.md).
+#
+# Creusot compiles these packages with its own pinned nightly
+# (tools/nix/creusot) and why3find replays the certificates under `verif/`.
+# Each package's library root sits next to the kernel it proves and includes
+# the shipped modules by ordinary module discovery, so the proofs are about
+# the exact source the product builds. This is its own workspace: the product
+# workspace, its lock and its stable toolchain never see it.
+[workspace]
+resolver = "3"
+members = ["lattice"]
+
+[workspace.dependencies]
+creusot-std = "=0.14.0"
+
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(creusot)', 'cfg(kani)'] }

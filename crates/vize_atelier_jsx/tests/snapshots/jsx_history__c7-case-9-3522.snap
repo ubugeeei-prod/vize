@@ -1,0 +1,39 @@
+---
+source: crates/vize_atelier_jsx/tests/jsx_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c7-case-9-3522",
+    history: "eacf5734a384cfdf4a6d2d8029aeae94d080d1a6",
+    source: "const a = <a v-custom={[...spread]}/>;",
+    filename: "History.tsx",
+    lang: "tsx",
+    mode: None,
+    options: Options {
+        compat: None,
+        pragma: None,
+        merge_props: None,
+        enable_object_slots: None,
+        transform_on: None,
+        custom_element_prefix: None,
+        hoist_static: None,
+        cache_handlers: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Observation {
+    module: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst a = (() => {\nreturn ((_ctx, _cache) => {\n  const _directive_custom = _resolveDirective(\"custom\")\n  \n  return _withDirectives((_openBlock(), _createElementBlock(\"a\", null, null, 512 /* NEED_PATCH */)), [\n    [_directive_custom, [...spread]]\n  ])\n})(undefined, [])\n})();",
+    module_map: None,
+    components: [
+        Component {
+            name: None,
+            mode: Vdom,
+            setup: None,
+            preamble: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            code: "export function render(_ctx, _cache) {\n  const _directive_custom = _resolveDirective(\"custom\")\n  \n  return _withDirectives((_openBlock(), _createElementBlock(\"a\", null, null, 512 /* NEED_PATCH */)), [\n    [_directive_custom, [...spread]]\n  ])\n}",
+            map: None,
+        },
+    ],
+    diagnostics: [],
+}

@@ -230,3 +230,40 @@ const e = props.e;"#;
         ]
     );
 }
+
+/// eslint-plugin-vue reports a model key once: on the binding when the
+/// binding repeats it, otherwise on the model name or call.
+#[test]
+fn a_model_named_like_its_colliding_binding_is_reported_once() {
+    let spans = |declaration: &str| {
+        let setup = format!(
+            "interface Props {{ modelValue: boolean; title?: string }}\nconst props = defineProps<Props>()\n{declaration}\n"
+        );
+        let allocator = Allocator::default();
+        let parsed = Parser::new(&allocator, &setup, script_source_type()).parse();
+        let mut result = ScriptLintResult::default();
+        NoDupeKeys.check_setup_with_module(
+            &parsed.program,
+            &setup,
+            0,
+            NoDupeKeysModuleScript::Absent,
+            Default::default(),
+            &mut result,
+        );
+        let at = setup.find(declaration).unwrap_or_default() as u32;
+        result
+            .diagnostics
+            .into_iter()
+            .map(|diagnostic| (diagnostic.start - at, diagnostic.end - at))
+            .collect::<Vec<_>>()
+    };
+
+    for (declaration, expected) in [
+        ("const modelValue = defineModel<boolean>()", (6, 41)),
+        ("const open = defineModel<boolean>()", (13, 35)),
+        ("const title = defineModel<string>('title')", (6, 42)),
+        ("const open = defineModel<string>('title')", (33, 40)),
+    ] {
+        assert_eq!(spans(declaration), [expected], "{declaration}");
+    }
+}

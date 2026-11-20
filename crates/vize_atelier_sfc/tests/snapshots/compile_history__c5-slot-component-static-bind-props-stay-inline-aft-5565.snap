@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-slot-component-static-bind-props-stay-inline-aft-5565",
+    history: "07ac91d6024c4b9ca584d718ac06e2772bcae7c8",
+    source: "<a-row class=\"list-row\" :gutter=\"24\"><a-col v-for=\"item in renderData\" :key=\"item.id\" class=\"list-col\" :xs=\"12\" :sm=\"12\" :md=\"12\" :lg=\"6\" :xl=\"6\" :xxl=\"6\"><CardWrap :loading=\"loading\" :title=\"item.title\" :description=\"item.description\"><template #skeleton><a-skeleton :animation=\"true\"><a-skeleton-line :widths=\"['50%', '100%']\" :rows=\"4\" /></a-skeleton></template></CardWrap></a-col></a-row>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_a_skeleton_line = _resolveComponent(\"a-skeleton-line\")\n  const _component_a_skeleton = _resolveComponent(\"a-skeleton\")\n  const _component_CardWrap = _resolveComponent(\"CardWrap\")\n  const _component_a_col = _resolveComponent(\"a-col\")\n  const _component_a_row = _resolveComponent(\"a-row\")\n  \n  return (_openBlock(), _createBlock(_component_a_row, {\n    class: \"list-row\",\n    gutter: 24\n  }, {\n    default: _withCtx(() => [\n      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(renderData, (item) => {\n        return (_openBlock(), _createBlock(_component_a_col, {\n          key: item.id,\n          class: \"list-col\",\n          xs: 12,\n          sm: 12,\n          md: 12,\n          lg: 6,\n          xl: 6,\n          xxl: 6\n        }, {\n          default: _withCtx(() => [\n            _createVNode(_component_CardWrap, {\n              loading: loading,\n              title: item.title,\n              description: item.description\n            }, {\n              skeleton: _withCtx(() => [\n                _createVNode(_component_a_skeleton, { animation: true }, {\n                  default: _withCtx(() => [\n                    _createVNode(_component_a_skeleton_line, {\n                      widths: ['50%', '100%'],\n                      rows: 4\n                    })\n                  ]),\n                  _: 2 /* DYNAMIC */\n                }, 1024 /* DYNAMIC_SLOTS */)\n              ]),\n              _: 2 /* DYNAMIC */\n            }, 1032 /* PROPS, DYNAMIC_SLOTS */, [\"loading\", \"title\", \"description\"])\n          ]),\n          _: 2 /* DYNAMIC */\n        }, 1024 /* DYNAMIC_SLOTS */))\n      }), 128 /* KEYED_FRAGMENT */))\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

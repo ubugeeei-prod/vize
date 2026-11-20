@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "commit": "427e3cd92ad3e5abaf6386803aacae3c8d82a869",
+  "id": "lsp/fix-history/workspace-emit-symbols-5758",
+  "requirement": "Workspace symbols for defineEmits events anchor on each quoted/bare authored declaration name instead of the script start.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": {
+    "Emitter.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits<{\n  'save-item': [id: number]\n  close: []\n}>()\nconst emitsRuntime = 1\n</script>\n"
+  },
+  "steps": [
+    {
+      "open": "Emitter.vue"
+    },
+    {
+      "request": "workspace/symbol",
+      "params": {
+        "query": "save"
+      },
+      "retry": true
+    },
+    {
+      "request": "workspace/symbol",
+      "params": {
+        "query": "close"
+      },
+      "retry": true
+    }
+  ]
+}

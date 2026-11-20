@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "commit": "049358b200baa82d99b04c40f95aa68d0e8fae7c",
+  "id": "lsp/fix-history/external-type-overlay-props",
+  "requirement": "An unsaved external type declaration refreshes the imported component's prop catalog, and closing it restores the disk contract.",
+  "files": {
+    "types.ts": "export interface Public { label: string }",
+    "Widget.vue": "<script setup lang='ts'>import type { Public } from './types'; defineProps<Public>()</script><template><slot name='footer'/></template>",
+    "Host.vue": "<script setup lang='ts'>\nimport Widget from './Widget.vue'\n</script>\n<template>\n  <Widget  />\n</template>\n"
+  },
+  "steps": [
+    {
+      "open": "Host.vue"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "Host.vue",
+      "at": {
+        "find": "<Widget  />",
+        "delta": 8
+      },
+      "labels": [
+        "label",
+        ":label",
+        "pending",
+        ":pending"
+      ]
+    },
+    {
+      "open": "types.ts",
+      "text": "export interface Public { label: number; pending?: boolean }"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "Host.vue",
+      "at": {
+        "find": "<Widget  />",
+        "delta": 8
+      },
+      "labels": [
+        "label",
+        ":label",
+        "pending",
+        ":pending"
+      ],
+      "retry": true
+    },
+    {
+      "close": "types.ts"
+    },
+    {
+      "request": "textDocument/completion",
+      "uri": "Host.vue",
+      "at": {
+        "find": "<Widget  />",
+        "delta": 8
+      },
+      "labels": [
+        "label",
+        ":label",
+        "pending",
+        ":pending"
+      ],
+      "retry": true
+    }
+  ]
+}

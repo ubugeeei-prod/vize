@@ -5,7 +5,7 @@ use crate::drawer::lint_template::CompatibilityRoot;
 use oxc_span::Span as JsSpan;
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::embed::syntax::{
-    ForHead, ForInput, RetainedHandlerBody, RetainedSlotParams, parse_once,
+    ForHead, ForInput, RetainedExpression, RetainedHandlerBody, RetainedSlotParams, parse_once,
 };
 use vize_l1::embed::{
     Embed, EmbedSource, Grammar, Lang, Shape, prepare_attribute_value, prepare_vue_interpolation_in,
@@ -24,6 +24,7 @@ pub(in crate::drawer) struct LintSyntaxFacts<'a> {
 
 enum LintSyntax<'a> {
     Expression(Option<&'a JsExpr<'a>>),
+    ParsedExpression(Box<RetainedExpression<'a>>),
     Slot(Option<Box<RetainedSlotParams<'a>>>),
     For(Box<ForHead<'a>>),
     HandlerExpression(&'a JsExpr<'a>),
@@ -210,7 +211,16 @@ impl<'a> LintSyntaxFacts<'a> {
         .filter(|source| source.text() == node.content);
         let syntax = match role {
             Role::Expression(_) => match source {
-                Some(_) => LintSyntax::Expression(projection.js_expression(authored, node.content)),
+                Some(source) => match projection.js_expression(authored, node.content) {
+                    Some(expression) => LintSyntax::Expression(Some(expression)),
+                    None => self
+                        .parse_special(projection.allocator(), source, Shape::Expr)
+                        .into_expression()
+                        .ok()
+                        .filter(|owner| owner.expression().is_some())
+                        .map(|owner| LintSyntax::ParsedExpression(Box::new(owner)))
+                        .unwrap_or(LintSyntax::Refused),
+                },
                 None => LintSyntax::Refused,
             },
             Role::Handler => match source {
@@ -302,6 +312,14 @@ impl<'a> SyntaxRecord<'a> for LintSyntaxRecord<'a> {
                     raw: expression.source,
                 }))
             }
+            LintSyntax::ParsedExpression(owner) => {
+                SyntaxKind::Expression(owner.expression().map(|expression| {
+                    vize_relief::JsExpression {
+                        ast: expression,
+                        raw: owner.source().text(),
+                    }
+                }))
+            }
             LintSyntax::Slot(owner) => SyntaxKind::SlotNative(owner.as_deref()),
             LintSyntax::For(owner) => SyntaxKind::For(owner),
             LintSyntax::HandlerExpression(expression) => {
@@ -326,6 +344,7 @@ impl<'a> SyntaxRecord<'a> for LintSyntaxRecord<'a> {
             | LintSyntax::HandlerExpression(expression) => expression
                 .ast_span_to_source(span)
                 .and_then(|span| expression.authored_span(span)),
+            LintSyntax::ParsedExpression(owner) => owner.authored_span(span).ok(),
             LintSyntax::Slot(Some(owner)) | LintSyntax::LegacySlot(owner) => {
                 owner.authored_span(span).ok()
             }

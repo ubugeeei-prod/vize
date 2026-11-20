@@ -42,6 +42,7 @@ pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
     "vue/no-implicit-coercion",
     "vue/no-irregular-whitespace",
     "vue/no-loss-of-precision",
+    "vue/no-multi-spaces",
     "vue/no-negated-condition",
     "vue/no-useless-concat",
     "vue/object-shorthand",

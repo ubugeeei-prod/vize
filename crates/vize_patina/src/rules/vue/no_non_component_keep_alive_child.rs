@@ -20,7 +20,7 @@ use oxc_ecmascript::{
     constant_evaluation::{ConstantEvaluation, ConstantEvaluationCtx, IsLiteralValue},
     side_effects::{MayHaveSideEffects, MayHaveSideEffectsContext, PropertyReadSideEffects},
 };
-use vize_l0::is_native_tag;
+use vize_l0::is_platform_tag;
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -37,6 +37,10 @@ pub struct NoNonComponentKeepAliveChild;
 impl Rule for NoNonComponentKeepAliveChild {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
@@ -87,7 +91,7 @@ fn check_element_child<'a>(ctx: &mut LintContext<'a>, element: &ElementNode<'a>)
     // The lint parse leaves kebab-case components such as `<n-layout>` as
     // elements; only a native tag is known to be a plain wrapper.
     if element.tag_type != ElementType::Element
-        || !is_native_tag(element.tag)
+        || !is_platform_tag(element.tag)
         || (has_v_show_only(element)
             && !contains_changing_component(&element.children, ctx.allocator().as_oxc()))
     {
@@ -213,7 +217,7 @@ fn contains_changing_component<'a>(
                     changing |= conditional;
                     let component = is_allowed_component_child(element)
                         || (element.tag_type == ElementType::Element
-                            && !is_native_tag(element.tag)
+                            && !is_platform_tag(element.tag)
                             && element.tag != "component"
                             && !is_keep_alive_transparent_wrapper(element.tag));
                     if component {

@@ -66,12 +66,18 @@ pub(super) fn check_model(
 /// Whether a scope frame entry declares `read`.
 fn declares(allocator: &Allocator, scope: &ScopeName<'_>, read: &str) -> bool {
     match scope {
-        ScopeName::Text(name) => name.as_str() == read,
+        ScopeName::Text(name) => {
+            // A `v-for` alias text that destructures also declares the
+            // names it binds; slot names here are simple identifiers.
+            name.as_str() == read
+                || (matches!(name.as_bytes().first(), Some(b'{' | b'['))
+                    && pattern_declares(allocator, name, read))
+        }
         ScopeName::Pattern(pattern) => pattern_declares(allocator, pattern, read),
     }
 }
 
-/// Whether the slot-props `pattern`, parsed as the slot's parameter goal,
+/// Whether the slot-props or `v-for` alias `pattern`, parsed as a parameter goal,
 /// declares `name` (the lowering's own walk: nested, default-valued and
 /// rest positions). A pattern that does not parse declares nothing.
 fn pattern_declares(allocator: &Allocator, pattern: &str, name: &str) -> bool {

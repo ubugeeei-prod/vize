@@ -1,0 +1,71 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-invalid-flow-content-in-anchor-when-outer-contex-900",
+    history: "6db3e13ad90095cc455a8ab688911439bcc633c9",
+    source: "<p><a href=\"#\"><div>block</div></a></p>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/permitted-contents",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/permitted-contents",
+                severity: Error,
+                message: "<div> closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template",
+                start: 15,
+                end: 19,
+                help: Some(
+                    "**Why:** the browser builds the DOM by re-parsing the rendered HTML (server-side rendering, static content inserted with `innerHTML`). Where this template disagrees with the HTML parser, the browser's DOM differs from the virtual DOM: hydration mismatches, and styles and scripts see a different tree.\n\n**Fix:** move the element to a place its parent accepts, or change the outer element (for example `<div>` instead of `<p>`, `<tbody>` around table rows).",
+                ),
+                labels: [
+                    Label {
+                        message: "<p> is open here",
+                        start: 0,
+                        end: 2,
+                    },
+                ],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/permitted-contents",
+                    severity: Error,
+                    message: "<div> closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template",
+                    start: 15,
+                    end: 19,
+                    help: Some(
+                        "**Why:** the browser builds the DOM by re-parsing the rendered HTML (server-side rendering, static content inserted with `innerHTML`). Where this template disagrees with the HTML parser, the browser's DOM differs from the virtual DOM: hydration mismatches, and styles and scripts see a different tree.\n\n**Fix:** move the element to a place its parent accepts, or change the outer element (for example `<div>` instead of `<p>`, `<tbody>` around table rows).",
+                    ),
+                    labels: [
+                        Label {
+                            message: "<p> is open here",
+                            start: 0,
+                            end: 2,
+                        },
+                    ],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

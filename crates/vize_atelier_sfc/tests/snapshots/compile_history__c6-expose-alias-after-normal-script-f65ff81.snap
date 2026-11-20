@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-expose-alias-after-normal-script-f65ff81",
+    history: "f65ff81259657e5ca5fa3f06283834ec925bfa08",
+    source: "<script lang=\"ts\">\nexport const shared = 1\n</script>\n<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst count = ref(0)\nconst alias = count\ndefineExpose({ alias })\n</script>\n<template><span>{{ count }}</span></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nimport { ref } from 'vue'\n\nexport const shared = 1;\n\nexport default {\n  __name: 'History',\n  setup(__props, { expose: __expose }) {\n\nconst count = ref(0);\nconst alias = count;\n__expose({ alias })\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"span\", null, _toDisplayString(count.value), 1 /* TEXT */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "shared": LiteralConst,
+                        "ref": SetupConst,
+                        "count": SetupRef,
+                        "alias": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

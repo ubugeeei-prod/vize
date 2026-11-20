@@ -134,7 +134,7 @@ test("an outside tuple plugin name is retargeted", () => {
   }
 });
 
-test("a package-name plugin is left for unique isolation", () => {
+test("a package-name plugin is pinned to the fixture package", () => {
   const { fixtureRoot, outer } = scaffold();
   try {
     writeLocalPug(fixtureRoot);
@@ -145,7 +145,45 @@ test("a package-name plugin is left for unique isolation", () => {
         vueCompilerOptions: { plugins: ["@vue/language-plugin-pug"] },
       })}\n`,
     );
-    assert.equal(rewriteOutsideVueCompilerOptions(fixtureRoot, sourcePath, fixtureRoot), null);
+    assert.deepEqual(rewriteOutsideVueCompilerOptions(fixtureRoot, sourcePath, fixtureRoot), {
+      plugins: ["./node_modules/@vue/language-plugin-pug"],
+    });
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test("an exported package subpath plugin is pinned to its concrete fixture file", () => {
+  const { fixtureRoot, outer } = scaffold();
+  try {
+    const local = path.join(fixtureRoot, "node_modules", "vue-router");
+    fs.mkdirSync(path.join(local, "dist", "volar"), { recursive: true });
+    fs.writeFileSync(
+      path.join(local, "dist", "volar", "sfc-route-blocks.cjs"),
+      "module.exports = {}\n",
+    );
+    fs.writeFileSync(
+      path.join(local, "package.json"),
+      `${JSON.stringify({
+        name: "vue-router",
+        exports: {
+          "./volar/sfc-route-blocks": {
+            types: "./dist/volar/sfc-route-blocks.d.cts",
+            default: "./dist/volar/sfc-route-blocks.cjs",
+          },
+        },
+      })}\n`,
+    );
+    const sourcePath = path.join(fixtureRoot, "tsconfig.json");
+    fs.writeFileSync(
+      sourcePath,
+      `${JSON.stringify({
+        vueCompilerOptions: { plugins: ["vue-router/volar/sfc-route-blocks"] },
+      })}\n`,
+    );
+    assert.deepEqual(rewriteOutsideVueCompilerOptions(fixtureRoot, sourcePath, fixtureRoot), {
+      plugins: ["./node_modules/vue-router/dist/volar/sfc-route-blocks.cjs"],
+    });
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });
   }

@@ -144,7 +144,7 @@ impl<'facts, 'r, 'a> Cx<'facts, 'r, 'a> {
                     Source::Interpolation(interpolation),
                 );
             }
-            l2::Op::JsxChildValue(child) => {
+            l2::Op::ChildValue(child) => {
                 let (_, fact) = self.consume_fact(child.span);
                 self.errors.push(SsrStringPlanError {
                     kind: SsrStringPlanErrorKind::UnsupportedClientChildValue,

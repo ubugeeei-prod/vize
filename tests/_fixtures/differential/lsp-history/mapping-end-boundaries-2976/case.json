@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "commit": "22a034cb99ff4ca109cee5286f50f1722e34b68d",
+  "id": "lsp/fix-history/mapping-end-boundaries-2976",
+  "requirement": "Diagnostic exclusive ends pick the right mapping at adjacent template expressions instead of jumping to the next mapping's start.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true, \"jsx\": \"preserve\", \"lib\": [\"ESNext\", \"DOM\"] }, \"include\": [\"**/*.vue\", \"**/*.ts\", \"**/*.tsx\"] }\n",
+    "App.vue": "<script setup lang=\"ts\">\nconst a = 1\n</script>\n<template><p :title=\"a.foo\" :id=\"a.bar\">{{ a.baz }}{{ a.qux }}</p></template>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    }
+  ]
+}

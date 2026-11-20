@@ -15,7 +15,13 @@ const PATHS: [&str; 5] = [
     "npm/cli/virtual-ts.d.cts",
 ];
 
+/// Every caller reads the same authenticated record; authenticate it once.
 pub(super) fn load() -> Value {
+    static LOADED: std::sync::OnceLock<Value> = std::sync::OnceLock::new();
+    LOADED.get_or_init(load_uncached).clone()
+}
+
+fn load_uncached() -> Value {
     let bytes = fs::read(support::corpus().join(RECORD)).unwrap();
     assert_eq!(
         support::hash(&bytes),

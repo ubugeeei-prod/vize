@@ -125,14 +125,14 @@ export const frenchRules1 = {
     "Le style référence --color-primary, le token configuré pour cet exemple.",
   ],
   "musea/require-component": [
-    "Exiger l’attribut component dans le bloc &lt;art&gt;",
+    "Exiger un composant cible résoluble pour le bloc &lt;art&gt;",
     "Le bloc art fournit un titre, mais n’identifie pas le composant dont il présente l’aperçu.",
-    "defineArt fournit ./Button.vue comme composant du bloc art.",
+    "Le variant affiche le Button importé et identifie ainsi la cible de l’art.",
   ],
   "musea/require-title": [
-    "Exiger l’attribut title dans le bloc &lt;art&gt;",
-    "Le bloc art identifie Button.vue, mais ne fournit aucun titre.",
-    "Les options de defineArt fournissent le titre Button pour le bloc art.",
+    "Exiger un titre d’affichage résoluble pour le bloc &lt;art&gt;",
+    "Le bloc art ne fournit ni métadonnées explicites ni composant permettant d’inférer un titre.",
+    "La cible Button importée fournit le titre d’affichage inféré.",
   ],
   "musea/unique-variant-names": [
     "Exiger des noms de variants uniques",

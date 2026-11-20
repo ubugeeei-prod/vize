@@ -10,6 +10,7 @@ use vize_canon::{
     BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, PackageResolutionMode,
     PackageRouteBinding, PackageRouteResolver, PackageSourceOptions,
     batch::{TsconfigOwnershipCache, TsconfigSourceKind},
+    virtual_ts::VirtualTsOptions,
 };
 
 pub(crate) fn native_fixture_runtime_disabled() -> bool {
@@ -265,6 +266,20 @@ pub(crate) fn check_pack_with_capture_policy(
                 assert!(check("tsconfig.a.json").diagnostics.is_empty());
             }
         }
+        // Workspace packages `vize check` sees through node_modules links.
+        for link in pack
+            .checker_options
+            .iter()
+            .flat_map(|options| &options.workspace_links)
+        {
+            let destination = project_root.join(safe_relative(&link.link));
+            std::fs::create_dir_all(destination.parent().expect("a link must have a parent"))
+                .expect("workspace link parents must be created");
+            link_vue(
+                &project_root.join(safe_relative(&link.package)),
+                &destination,
+            );
+        }
         if name == "workspace-package-import-alias-10175" {
             for (source, destination) in [
                 ("packages/ui", "node_modules/@demo/ui"),
@@ -283,6 +298,16 @@ pub(crate) fn check_pack_with_capture_policy(
         let options = BatchTypeCheckerOptions {
             virtual_ts_options: if name == "literal-reference-paths-10551" {
                 super::fix_history_reference_paths::options(&project_root)
+            } else if let Some(options) = &pack.checker_options {
+                VirtualTsOptions {
+                    strict_instance_globals: options.strict_instance_globals,
+                    auto_import_stubs: options
+                        .auto_import_stubs
+                        .iter()
+                        .map(|stub| stub.as_str().into())
+                        .collect(),
+                    ..Default::default()
+                }
             } else {
                 Default::default()
             },
@@ -326,45 +351,26 @@ pub(crate) fn check_pack_with_capture_policy(
                 )
                 .expect("the package must select its private persistent storage owner");
         }
-        if name == "workspace-package-import-alias-10175" {
-            let mut resolver = PackageRouteResolver::default();
-            let bindings = [
+        let routes: Vec<(&str, &str)> = if name == "workspace-package-import-alias-10175" {
+            vec![
                 ("src/main.ts", "#app"),
                 ("src/main.ts", "@demo/ui"),
                 ("packages/ui/src/MyButton.vue", "@demo/core"),
             ]
-            .into_iter()
-            .map(|(importer, specifier)| {
-                let importer = project_root.join(importer);
-                let (context, mut context_inputs) = resolver.resolution_context(
-                    &importer,
-                    PackageResolutionMode::Import,
-                    Some("bundler"),
-                    Some("esnext"),
-                    std::iter::empty::<&str>(),
-                );
-                let (route, mut invalidation_paths) = resolver
-                    .lookup_with_context(
-                        importer.parent().expect("the importer must have a parent"),
-                        specifier,
-                        PackageSourceOptions::new(false, false),
-                        context.clone(),
-                    )
-                    .into_parts();
-                invalidation_paths.append(&mut context_inputs);
-                PackageRouteBinding {
-                    importer_path: importer.clone(),
-                    specifier: specifier.into(),
-                    occurrence_mode: PackageResolutionMode::Import,
-                    context,
-                    route: Some(route.expect("the fixture package route must resolve")),
-                    invalidation_paths,
-                    shared_invalidation_paths: Vec::new(),
-                }
-            })
-            .collect::<Vec<_>>();
-            checker.set_package_route_resolver(resolver);
-            checker.set_package_routes(bindings);
+        } else {
+            pack.checker_options
+                .as_ref()
+                .map(|options| {
+                    options
+                        .package_routes
+                        .iter()
+                        .map(|route| (route.importer.as_str(), route.specifier.as_str()))
+                        .collect()
+                })
+                .unwrap_or_default()
+        };
+        if !routes.is_empty() {
+            install_package_routes(&mut checker, &project_root, &routes);
         }
         if pack
             .checker_options
@@ -445,4 +451,46 @@ pub(crate) fn check_pack_with_capture_policy(
     if let Some(capture) = capture {
         capture.finish(name, test, &fixture_pack);
     }
+}
+
+/// Install the package routes `vize check` resolves for each importer.
+fn install_package_routes(
+    checker: &mut BatchTypeChecker,
+    project_root: &Path,
+    routes: &[(&str, &str)],
+) {
+    let mut resolver = PackageRouteResolver::default();
+    let bindings = routes
+        .iter()
+        .map(|&(importer, specifier)| {
+            let importer = project_root.join(importer);
+            let (context, mut context_inputs) = resolver.resolution_context(
+                &importer,
+                PackageResolutionMode::Import,
+                Some("bundler"),
+                Some("esnext"),
+                std::iter::empty::<&str>(),
+            );
+            let (route, mut invalidation_paths) = resolver
+                .lookup_with_context(
+                    importer.parent().expect("the importer must have a parent"),
+                    specifier,
+                    PackageSourceOptions::new(false, false),
+                    context.clone(),
+                )
+                .into_parts();
+            invalidation_paths.append(&mut context_inputs);
+            PackageRouteBinding {
+                importer_path: importer.clone(),
+                specifier: specifier.into(),
+                occurrence_mode: PackageResolutionMode::Import,
+                context,
+                route: Some(route.expect("the fixture package route must resolve")),
+                invalidation_paths,
+                shared_invalidation_paths: Vec::new(),
+            }
+        })
+        .collect::<Vec<_>>();
+    checker.set_package_route_resolver(resolver);
+    checker.set_package_routes(bindings);
 }

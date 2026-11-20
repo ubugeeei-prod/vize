@@ -71,6 +71,10 @@ impl Rule for NoDeprecatedFunctionalTemplate {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::NONE
+    }
+
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
         // Only the default Vue 3 dialect removed functional SFC templates. SFCs
         // are always the Vue dialect (petite-vue uses standalone HTML, never a

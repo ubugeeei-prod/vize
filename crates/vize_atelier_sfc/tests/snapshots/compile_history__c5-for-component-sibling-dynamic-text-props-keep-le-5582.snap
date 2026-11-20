@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c5-for-component-sibling-dynamic-text-props-keep-le-5582",
+    history: "b6c6948a325402f4d48b55c8fa147e50b8f252b3",
+    source: "<div v-for=\"disk in disks\" :key=\"disk.id\" class=\"disk-row\"><PercentageChart :title=\"disk.name\" /><p class=\"info\"><b>{{ label }}</b>: {{ disk.free }} out of {{ disk.size }}</p><p class=\"info\"><b>{{ mountLabel }}</b>: {{ disk.mount }}</p></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_PercentageChart = _resolveComponent(\"PercentageChart\")\n  \n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(disks, (disk) => {\n    return (_openBlock(), _createElementBlock(\"div\", {\n      key: disk.id,\n      class: \"disk-row\"\n    }, [\n      _createVNode(_component_PercentageChart, { title: disk.name }, null, 8 /* PROPS */, [\"title\"]),\n      _createElementVNode(\"p\", { class: \"info\" }, [\n        _createElementVNode(\"b\", null, _toDisplayString(label), 1 /* TEXT */),\n        _createTextVNode(\": \" + _toDisplayString(disk.free) + \" out of \" + _toDisplayString(disk.size), 1 /* TEXT */)\n      ]),\n      _createElementVNode(\"p\", { class: \"info\" }, [\n        _createElementVNode(\"b\", null, _toDisplayString(mountLabel), 1 /* TEXT */),\n        _createTextVNode(\": \" + _toDisplayString(disk.mount), 1 /* TEXT */)\n      ])\n    ]))\n  }), 128 /* KEYED_FRAGMENT */))\n}",
+    map: None,
+}

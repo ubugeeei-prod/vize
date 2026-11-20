@@ -7,7 +7,7 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind;
-use vize_l3::decision::vapor::build_native_vapor_file_decisions;
+use vize_l3::decision::vapor::build_template_vapor_decisions;
 use vize_l4::{
     module::AssemblyError,
     targets::vapor::{VaporErrorKind, emit_component},
@@ -53,7 +53,7 @@ fn whole_original_components_and_maps_match_complete_independent_fixtures() {
             original.selected().component().block().root_source(),
             source
         ));
-        let analysis = build_native_vapor_file_decisions(
+        let analysis = build_template_vapor_decisions(
             compilation
                 .observation()
                 .admitted()
@@ -282,7 +282,7 @@ fn original_fragment_roots_refuse_whole_component_lifecycle_before_output() {
         let source = fixture["source"].as_str().unwrap();
         let compilation = compile_native_vapor_sfc(&arena, source, Default::default());
         assert!(compilation.observation().admitted().is_some());
-        let analysis = build_native_vapor_file_decisions(
+        let analysis = build_template_vapor_decisions(
             compilation
                 .observation()
                 .admitted()

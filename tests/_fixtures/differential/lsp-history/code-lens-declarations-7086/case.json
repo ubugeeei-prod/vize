@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "commit": "c1545ef05e0f9d78eec28506a98db87dd258739b",
+  "id": "lsp/fix-history/code-lens-declarations-7086",
+  "requirement": "Code lenses sit on the binding declarations and count template/style references only (singular and plural), excluding script uses; an edit refreshes counts and ranges.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false,
+    "codeLens": true
+  },
+  "files": {
+    "App.vue": "<script setup>\nconst count = 0\nconst label = 'x'\ncount + 1\n</script>\n<template>{{ count }} {{ count }} {{ label }}</template>\n<style>\n.a { color: v-bind(label); }\n</style>\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "request": "textDocument/codeLens",
+      "uri": "App.vue"
+    },
+    {
+      "change": "App.vue",
+      "version": 2,
+      "contentChanges": [
+        {
+          "text": "<script setup>\n\nconst count = 0\nconst label = 'x'\n</script>\n<template>{{ label }}</template>\n"
+        }
+      ]
+    },
+    {
+      "request": "textDocument/codeLens",
+      "uri": "App.vue"
+    }
+  ]
+}

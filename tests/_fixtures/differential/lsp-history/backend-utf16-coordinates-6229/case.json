@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "commit": "bd8fff6f6c186f3efd072eb7d81431e00e1a9994",
+  "id": "lsp/fix-history/backend-utf16-coordinates-6229",
+  "requirement": "Backend diagnostics and query positions follow LSP line terminators and UTF-16 after astral characters; a guard comment and an unsaved edit keep authored navigation and diagnostic anchors.",
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "files": {
+    "tsconfig.json": "{ \"compilerOptions\": { \"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"target\": \"ESNext\", \"noEmit\": true }, \"include\": [\"**/*.vue\", \"**/*.ts\"] }\n",
+    "App.vue": "<script setup lang=\"ts\">\r\nconst label: string = 'x'; const count: number = 1\r\nconst bad: string = count // guard comment 😀\r\n</script>\r\n<template><p>{{ label }}{{ count.toFixed() }}</p></template>\r\n"
+  },
+  "steps": [
+    {
+      "open": "App.vue"
+    },
+    {
+      "diagnostics": "App.vue"
+    },
+    {
+      "request": "textDocument/hover",
+      "uri": "App.vue",
+      "at": {
+        "find": "count.toFixed",
+        "delta": 6,
+        "nth": 0
+      },
+      "retry": true
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "count.toFixed",
+        "delta": 2,
+        "nth": 0
+      },
+      "retry": true
+    },
+    {
+      "change": "App.vue",
+      "version": 2,
+      "contentChanges": [
+        {
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 0
+            },
+            "end": {
+              "line": 1,
+              "character": 0
+            }
+          },
+          "text": "// 😀😀\r\n"
+        }
+      ]
+    },
+    {
+      "diagnostics": "App.vue"
+    },
+    {
+      "request": "textDocument/definition",
+      "uri": "App.vue",
+      "at": {
+        "find": "count.toFixed",
+        "delta": 2,
+        "nth": 0
+      },
+      "retry": true
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c6-case-1-6422",
+    history: "032162ce2225c187f43f589d515bae057cda768b",
+    source: "<button><div class=\"icon\"><template v-if=\"selected\"><span>selected</span></template><template v-else><svg><path d=\"M0 0\"/></svg></template></div></button>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"button\", null, [\n    _createElementVNode(\"div\", { class: \"icon\" }, [\n      (selected)\n        ? (_openBlock(), _createElementBlock(\"span\", { key: 0 }, \"selected\"))\n        : (_openBlock(), _createElementBlock(\"svg\", { key: 1 }, [\n          _createElementVNode(\"path\", { d: \"M0 0\" })\n        ]))\n    ])\n  ]))\n}",
+    map: None,
+}
