@@ -347,6 +347,23 @@ const previousFamily = family.filter(
     !instanceAliases.slice(0, 3).some(([name]) => name === node.name.text),
 );
 assert.equal(previousFamily.length, 14, "all former implicit and explicit slot exports");
+const forwardedSlotAliases = new Set(
+  previousFamily.filter(ts.isTypeAliasDeclaration).map((node) => node.name.text),
+);
+assert.deepEqual(
+  previousFamily
+    .filter(ts.isTypeAliasDeclaration)
+    .filter((node) => !isExported(node))
+    .map((node) => node.name.text),
+  [
+    "$NativeSlotsFactory",
+    "$HasSlotResolver",
+    "$DirectSlotConstructor",
+    "$SlotConstructorArgumentLists",
+    "$SlotConstructorHasArguments",
+  ],
+  "complete private slot aliases forwarded across the SDK module boundary",
+);
 function checkImport(node: ts.ImportDeclaration, target: string, names: readonly string[]) {
   assert.ok(ts.isStringLiteral(node.moduleSpecifier));
   assert.equal(node.moduleSpecifier.text, target);
@@ -383,24 +400,45 @@ for (const relativePath of slotFiles) {
       identity(canonical, sharedParsed),
       `${relativePath} complete slot statement ${index}`,
     );
-    assert.equal(
-      isExported(actual),
-      isExported(canonical),
-      `${relativePath} slot visibility ${index}`,
-    );
+    const desiredExport =
+      isExported(canonical) ||
+      (ts.isTypeAliasDeclaration(canonical) && forwardedSlotAliases.has(canonical.name.text));
+    assert.equal(isExported(actual), desiredExport, `${relativePath} slot visibility ${index}`);
   }
   const generatedSlots = await format(
     "virtual-ts-slots.d.ts",
     '// Generated from the canonical slot-constructor family. Do not edit.\nimport type { $IsAny } from "./generated/content-mapper-types.js" with { "resolution-mode": "import" };\n\n' +
       family
-        .map(
-          (node) => (ts.isFunctionDeclaration(node) ? "declare " : "") + node.getText(sharedParsed),
-        )
+        .map((node) => {
+          const declaration = node.getText(sharedParsed);
+          if (
+            ts.isTypeAliasDeclaration(node) &&
+            forwardedSlotAliases.has(node.name.text) &&
+            !isExported(node)
+          )
+            return `export ${declaration}`;
+          return (ts.isFunctionDeclaration(node) ? "declare " : "") + declaration;
+        })
         .join("\n") +
       "\n",
     { printWidth: 100 },
   );
   assert.deepEqual(generatedSlots.errors, []);
+  const generatedSlotModule = ts.createSourceFile(
+    relativePath,
+    generatedSlots.code,
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  const generatedAliases = new Map(
+    generatedSlotModule.statements
+      .filter(ts.isTypeAliasDeclaration)
+      .map((node) => [node.name.text, node]),
+  );
+  for (const name of forwardedSlotAliases) {
+    const declaration = generatedAliases.get(name);
+    assert.ok(declaration && isExported(declaration), `${relativePath} must export ${name}`);
+  }
   outputs.set(relativePath, generatedSlots.code);
 }
 for (const extension of ["ts", "mts", "cts"]) {
