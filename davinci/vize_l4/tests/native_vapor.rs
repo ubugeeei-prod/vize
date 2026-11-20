@@ -13,7 +13,7 @@ use vize_l1::{
     markup::{NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
-use vize_l3::decision::vapor::{VaporUnsupported, build_native_vapor_file_decisions};
+use vize_l3::decision::vapor::{VaporUnsupported, build_template_vapor_decisions};
 use vize_l4::{
     targets::vapor::{VaporErrorKind, emit_template},
     write::{NoLinks, Recorded},
@@ -56,7 +56,7 @@ fn twelve_original_modules_and_complete_maps_match_pinned_fixtures() {
         let arena = Allocator::default();
         let source = fixture["source"].as_str().unwrap();
         let owner = original(&arena, source);
-        let analysis = build_native_vapor_file_decisions(owner.view().unwrap()).unwrap();
+        let analysis = build_template_vapor_decisions(owner.view().unwrap()).unwrap();
         assert!(core::ptr::eq(analysis.owner(), &owner));
         assert!(core::ptr::eq(analysis.artifact().source(), source));
         assert_eq!(analysis.vapor().unwrap().unsupported(), []);
@@ -125,7 +125,7 @@ fn original_target_refusals_never_return_a_partial_module() {
         let arena = Allocator::default();
         let source = format!("<template>{template}</template>");
         let owner = original(&arena, &source);
-        let analysis = build_native_vapor_file_decisions(owner.view().unwrap()).unwrap();
+        let analysis = build_template_vapor_decisions(owner.view().unwrap()).unwrap();
         let recorded = emit_template::<Recorded>(&analysis).unwrap_err();
         let plain = emit_template::<NoLinks>(&analysis).unwrap_err();
         assert_eq!(recorded, plain);
@@ -247,7 +247,7 @@ fn whole_component_assembly_never_omits_original_scripts_or_styles() {
             walk.complete().unwrap();
         }
         let original = owner.finish();
-        let analysis = build_native_vapor_file_decisions(original.view().unwrap()).unwrap();
+        let analysis = build_template_vapor_decisions(original.view().unwrap()).unwrap();
         let recorded = emit_component::<Recorded>(&analysis, "3.6.0-rc.9").unwrap_err();
         assert_eq!(recorded.kind, expected);
         assert_eq!(

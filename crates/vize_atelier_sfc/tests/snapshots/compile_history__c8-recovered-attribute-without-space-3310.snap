@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-recovered-attribute-without-space-3310",
+    history: "3c6e6362133dbd59843f5b4e2630812a1ab23909",
+    source: "<template><div version=\"1.1\"class=\"x\"><span v-for=\"(item, index) in items\" :key=\"item\">{{ item }}</span></div></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "Template compilation errors: [CompilerError { code: MissingWhitespaceBetweenAttributes, message: \"Missing whitespace between attributes; inferred a new attribute boundary.\", loc: Some(SourceLocation { start: Position { offset: 18, line: 1, column: 19 }, end: Position { offset: 19, line: 1, column: 20 }, source: \"c\" }) }]",
+            code: Some(
+                "TEMPLATE_ERROR",
+            ),
+            loc: Some(
+                BlockLocation {
+                    start: 10,
+                    end: 110,
+                    tag_start: 0,
+                    tag_end: 121,
+                    start_line: 1,
+                    start_column: 11,
+                    end_line: 1,
+                    end_column: 111,
+                },
+            ),
+        },
+    ),
+)

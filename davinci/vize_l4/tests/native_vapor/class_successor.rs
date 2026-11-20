@@ -4,7 +4,7 @@ use vize_l0::{Span, id::NodeId};
 use vize_l1::markup::AttributeValueOperand;
 use vize_l2::file::FileArtifact;
 use vize_l2::{file::NativeFileAttributeValueState, lang::js::NativeTemplateFile, op::Op};
-use vize_l3::decision::vapor::build_native_vapor_file_decisions;
+use vize_l3::decision::vapor::build_template_vapor_decisions;
 use vize_l4::{
     targets::vapor::emit_template,
     write::{NoLinks, Recorded},
@@ -15,7 +15,7 @@ pub(crate) fn assert_current(owner: &NativeTemplateFile<'_>, source: &str) {
     let view = owner.view().unwrap();
     let file = view.file().unwrap();
     assert!(file.is_complete());
-    let analysis = build_native_vapor_file_decisions(view).unwrap();
+    let analysis = build_template_vapor_decisions(view).unwrap();
     assert!(core::ptr::eq(analysis.owner(), owner));
     assert!(core::ptr::eq(analysis.file(), file));
     assert!(core::ptr::eq(analysis.artifact(), file.artifact()));

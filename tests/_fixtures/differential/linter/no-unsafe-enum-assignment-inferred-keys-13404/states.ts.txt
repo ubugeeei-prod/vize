@@ -1,0 +1,13 @@
+export enum State {
+  None,
+  Active,
+  Paused,
+  Max,
+}
+
+export type ActiveState = Exclude<State, State.None | State.Max>;
+
+export const stateLabels = {
+  [State.Active]: "active",
+  [State.Paused]: "paused",
+} as const satisfies Record<ActiveState, string>;

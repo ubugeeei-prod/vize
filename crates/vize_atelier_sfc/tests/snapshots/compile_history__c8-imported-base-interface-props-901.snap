@@ -1,0 +1,58 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-imported-base-interface-props-901",
+    history: "a039f8f7ef3b85fb1b57750d10a2a0bf8fad2565",
+    source: "<script lang=\"ts\">\nimport type { PrimitiveProps } from './primitive'\n\nexport interface AppProps extends PrimitiveProps {\n  feature?: 'focusable' | 'hidden'\n}\n</script>\n\n<script setup lang=\"ts\">\nwithDefaults(defineProps<AppProps>(), {\n  as: 'span',\n  feature: 'focusable',\n})\n</script>\n\n<template>\n  <div\n    :data-as=\"as\"\n    :data-as-child=\"asChild\"\n    :data-feature=\"feature\"\n  />\n</template>\n",
+    filename: "src/App.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    files: {
+        "src/primitive.ts": "export interface PrimitiveProps {\n  asChild?: boolean\n  as?: string\n}\n",
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nexport {};\n\nexport default {\n  __name: 'App',\n  props: {\n    asChild: { type: Boolean, required: false },\n    as: { type: String, required: false, default: \"span\" },\n    feature: { type: String, required: false, default: \"focusable\" }\n  },\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    \"data-as\": __props.as,\n    \"data-as-child\": __props.asChild,\n    \"data-feature\": __props.feature\n  }, null, 8 /* PROPS */, [\"data-as\", \"data-as-child\", \"data-feature\"]))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "as": Props,
+                        "feature": Props,
+                        "asChild": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [
+                "$PROJECT/src/primitive.ts",
+                "$PROJECT/src/tsconfig.json",
+                "$PROJECT/tsconfig.json",
+            ],
+        },
+    ),
+)

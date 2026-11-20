@@ -1,7 +1,7 @@
 //! Genuine original setup custody specializes Vapor's one canonical walk.
 
 use super::VaporFacts;
-use crate::decision::{DecisionBuildError, DecisionTables, NativeAnalysis, build};
+use crate::decision::{DecisionAnalysis, DecisionBuildError, DecisionTables, build};
 use vize_l2::{
     artifact::Artifact,
     file::FileArtifact,
@@ -13,27 +13,27 @@ use vize_l2::{
 /// capability; original expression rows are joined by the sole event walk.
 /// ```compile_fail
 /// use vize_l2::lang::js::NativeSelectedSetup;
-/// use vize_l3::decision::vapor::NativeSelectedSetupVaporAnalysis;
+/// use vize_l3::decision::vapor::SelectedSetupVaporAnalysis;
 /// fn forge(setup: &NativeSelectedSetup<'_, '_>) {
-///     let _ = NativeSelectedSetupVaporAnalysis { setup };
+///     let _ = SelectedSetupVaporAnalysis { setup };
 /// }
 /// ```
 /// ```compile_fail
 /// use vize_l2::lang::js::NativeSelectedSetup;
-/// use vize_l3::decision::vapor::build_native_selected_setup_vapor_decisions;
+/// use vize_l3::decision::vapor::build_selected_setup_vapor_decisions;
 /// fn discard(setup: NativeSelectedSetup<'_, '_>) {
-///     let analysis = build_native_selected_setup_vapor_decisions(&setup).unwrap();
+///     let analysis = build_selected_setup_vapor_decisions(&setup).unwrap();
 ///     drop(setup);
 ///     let _ = analysis.setup();
 /// }
 /// ```
-pub struct NativeSelectedSetupVaporAnalysis<'view, 'owner, 'arena> {
+pub struct SelectedSetupVaporAnalysis<'view, 'owner, 'arena> {
     setup: &'view NativeSelectedSetup<'owner, 'arena>,
     template: NativeTemplateView<'owner, 'arena>,
-    analysis: NativeAnalysis<'owner, 'arena>,
+    analysis: DecisionAnalysis<'owner, 'arena>,
 }
 
-impl<'view, 'owner, 'arena> NativeSelectedSetupVaporAnalysis<'view, 'owner, 'arena> {
+impl<'view, 'owner, 'arena> SelectedSetupVaporAnalysis<'view, 'owner, 'arena> {
     #[must_use]
     pub fn setup(&self) -> &'view NativeSelectedSetup<'owner, 'arena> {
         self.setup
@@ -68,9 +68,9 @@ impl<'view, 'owner, 'arena> NativeSelectedSetupVaporAnalysis<'view, 'owner, 'are
 
 /// Derive both original File and template internally from the sealed setup.
 /// No parsing, declaration walk, name lookup or independent analysis is added.
-pub fn build_native_selected_setup_vapor_decisions<'view, 'owner, 'arena>(
+pub fn build_selected_setup_vapor_decisions<'view, 'owner, 'arena>(
     setup: &'view NativeSelectedSetup<'owner, 'arena>,
-) -> Result<NativeSelectedSetupVaporAnalysis<'view, 'owner, 'arena>, DecisionBuildError> {
+) -> Result<SelectedSetupVaporAnalysis<'view, 'owner, 'arena>, DecisionBuildError> {
     let template = setup
         .owner()
         .view()
@@ -80,7 +80,7 @@ pub fn build_native_selected_setup_vapor_decisions<'view, 'owner, 'arena>(
         return Err(DecisionBuildError::IncompleteFile);
     }
     let analysis = build::build_with_vapor_setup(setup)?;
-    Ok(NativeSelectedSetupVaporAnalysis {
+    Ok(SelectedSetupVaporAnalysis {
         setup,
         template,
         analysis,

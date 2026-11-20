@@ -183,7 +183,7 @@ jobs:
         run: node tools/commands/ci/github/check-semver.ts "${{ matrix.crate }}"
   security-audit:
     needs: iteration-plan
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ${{ needs.iteration-plan.outputs.dependencies == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 20
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -219,7 +219,7 @@ jobs:
         run: echo 'dependencies inputs are unchanged.' >> "$GITHUB_STEP_SUMMARY"
   node-engine-compat:
     needs: iteration-plan
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ${{ needs.iteration-plan.outputs.engines == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -255,7 +255,7 @@ jobs:
         if: ${{ needs.iteration-plan.outputs.engines != 'true' }}
         run: echo 'engines inputs are unchanged.' >> "$GITHUB_STEP_SUMMARY"
   check-vize-apps:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ${{ needs.iteration-plan.outputs.apps == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     needs: iteration-plan
     timeout-minutes: 20
     env:

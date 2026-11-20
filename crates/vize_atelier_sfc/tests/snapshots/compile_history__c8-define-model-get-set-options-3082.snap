@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-define-model-get-set-options-3082",
+    history: "3293f3fe557220c9be8d8afbc14da87546ef7f9a",
+    source: "<script setup lang=\"ts\">\n\nconst minimum = computed(() => 1)\nconst [model, modifiers] = defineModel<number>({\n  get(value) { return value ?? minimum.value },\n  set(value) { return modifiers.number ? Math.max(minimum.value, Number(value)) : value },\n})\n\n</script>\n<template><input v-model=\"model\"></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { useModel as _useModel } from 'vue'\nimport { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, unref as _unref, isRef as _isRef } from \"vue\"\n\n\nexport default {\n  __name: 'History',\n  props: {\n    \"modelValue\": { type: Number, ...{} },\n    \"modelModifiers\": {},\n  },\n  emits: [\"update:modelValue\"],\n  setup(__props) {\n\nconst [model, modifiers] = _useModel(__props, \"modelValue\", {\n  get(value) {\n    return value ?? minimum.value;\n  },\n  set(value) {\n    return modifiers.number ? Math.max(minimum.value, Number(value)) : value;\n  }\n})\nconst minimum = computed(() => 1);\n\nreturn (_ctx, _cache) => {\n  return _withDirectives((_openBlock(), _createElementBlock(\"input\", {\n    \"onUpdate:modelValue\": _cache[0] || (_cache[0] = $event => ((_isRef(model) ? (model.value) = $event : null)))\n  }, null, 512 /* NEED_PATCH */)), [\n    [_vModelText, _unref(model)]\n  ])\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "minimum": SetupMaybeRef,
+                        "model": SetupMaybeRef,
+                        "modifiers": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

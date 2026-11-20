@@ -4,6 +4,7 @@ use super::{
 };
 use oxc_parser::ParseOptions;
 use vize_l2::lang::js::{CallEvent, DeclaredEvent, FileObserver, StatementEvent};
+use vize_l2::query::Model;
 use vize_l2::resolution::ResolutionErrorKind;
 
 #[test]
@@ -102,7 +103,7 @@ fn interrupted_original_array_event_never_completes_the_file() {
     assert_eq!(file.interrupted_programs().count(), 1);
     assert_eq!(file.bindings().count(), 1);
     assert!(matches!(
-        file.binding_at_offset(source.find("items").unwrap() as u32),
+        Model::new(&file).binding_at_offset(source.find("items").unwrap() as u32),
         Err(PositionQueryError::IncompleteFile)
     ));
 }

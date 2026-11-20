@@ -129,6 +129,57 @@
         }
       ],
       "diagnostics": []
+    },
+    {
+      "id": "unknown-member-root-13376",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/plugins.d.ts",
+          "source": "plugins.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unknown-member-root-13376.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 11,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'plugin' does not exist on type '$StrictTemplateContext'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 34,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'plugin' does not exist on type '$StrictTemplateContext'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 60,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'plugin' does not exist on type '$StrictTemplateContext'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 79,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'plugin' does not exist on type '$StrictTemplateContext'."
+        }
+      ]
     }
   ]
 }

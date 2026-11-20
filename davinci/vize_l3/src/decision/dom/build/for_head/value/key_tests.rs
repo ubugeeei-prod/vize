@@ -1,6 +1,6 @@
 use super::*;
 use crate::decision::dom::{DomChild, DomChildren, DomUnsupported, LiteralExpressions};
-use crate::decision::native::build_native_selected_setup_dom_decisions;
+use crate::decision::template::build_selected_setup_dom_decisions;
 use vize_l0::{
     Allocator,
     config::{VueDialect, VueVersion},
@@ -24,7 +24,7 @@ fn options() -> DescriptorOptions {
 struct Reads<'view, 'owner, 'arena>(&'view NativeSelectedSetup<'owner, 'arena>);
 impl<'owner, 'arena> FileReads<'owner, 'arena> for Reads<'_, 'owner, 'arena> {
     const RECORD: bool = true;
-    const NATIVE_SETUP: bool = true;
+    const SELECTED_SETUP: bool = true;
     const ORIGINAL_FOR: bool = true;
 
     fn classify(
@@ -78,7 +78,7 @@ fn actual_key_role_keeps_its_original_parameter_scope_occurrence_and_canonical_r
         let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
             panic!("one authentic original For");
         };
-        let analysis = build_native_selected_setup_dom_decisions(setup).unwrap();
+        let analysis = build_selected_setup_dom_decisions(setup).unwrap();
         let dom = analysis.dom().unwrap();
         assert!(dom.unsupported().is_empty(), "{source}");
         assert!(dom.node(original.id().node()).unwrap().block_eligible);
@@ -166,7 +166,7 @@ fn key_receipt_refuses_equal_foreign_files_copied_occurrences_value_roles_and_fo
     let [body @ Op::Element(_)] = original.region.ops.as_slice() else {
         panic!("direct Element");
     };
-    let complete = build_native_selected_setup_dom_decisions(setup).unwrap();
+    let complete = build_selected_setup_dom_decisions(setup).unwrap();
     let dom = complete.dom().unwrap();
     let DomChildren::Array(children) = &dom.node(original.id().node()).unwrap().children else {
         panic!("carrier");

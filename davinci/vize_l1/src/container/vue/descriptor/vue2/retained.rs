@@ -3,7 +3,7 @@
 use super::super::{DescriptorIssue, DescriptorOptions, TemplateNamePair, TemplateSelection};
 use super::{Vue2DescriptorObservation, Vue2DescriptorRefusal};
 use crate::container::Container;
-use crate::dialect::vue2::surface::ComponentExpressionPool;
+use crate::framework::vue::version::v2::surface::ComponentExpressionPool;
 use vize_l0::{FileDialect, SourceBlock, SourceRoot, Span, Vec};
 
 /// The original complete envelope and Component, with owning expression slots.
@@ -25,7 +25,7 @@ use vize_l0::{FileDialect, SourceBlock, SourceRoot, Span, Vec};
 /// field here has its real type; private construction rejects this factory:
 /// ```compile_fail
 /// use vize_l0::{Allocator, SourceRoot, Vec, config::{VueDialect, VueVersion}};
-/// use vize_l1::{SurfaceParseOptions, dialect::vue2::surface,
+/// use vize_l1::{SurfaceParseOptions, framework::vue::version::v2::surface,
 ///     container::{ContainerFormat, Vue, vue::{DescriptorOptions, Vue2DescriptorExpressionPool}}};
 /// let arena = Allocator::default();
 /// let source = "<template>{{value}}</template>";

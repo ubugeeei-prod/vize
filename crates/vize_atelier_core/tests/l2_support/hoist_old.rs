@@ -16,7 +16,7 @@ use vize_atelier_core::codegen::is_constant_simple_expression;
 use vize_atelier_core::{
     ElementNode, ElementType, ExpressionNode, PropNode, SimpleExpressionNode, TemplateChildNode,
 };
-use vize_l0::{Allocator, Span, camelize, is_native_tag};
+use vize_l0::{Allocator, Span, camelize, is_platform_tag};
 use vize_l2::analysis::constant_expression::is_self_bound_constant;
 use vize_l2::expr::ExprRef;
 
@@ -88,7 +88,7 @@ pub fn scan_template(children: &[TemplateChildNode<'_>], scan: &mut TemplateScan
     for child in children {
         match child {
             TemplateChildNode::Element(el) => {
-                if el.tag_type == ElementType::Element && !is_native_tag(el.tag) {
+                if el.tag_type == ElementType::Element && !is_platform_tag(el.tag) {
                     scan.classifier = true;
                 }
                 if el.props.iter().any(const_rule_diverges) {

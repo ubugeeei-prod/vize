@@ -146,7 +146,7 @@ fn eighteen_whole_original_root_if_components_and_maps_are_captured() -> Result<
                             .is_some_and(|actual| core::ptr::eq(actual, condition)),
                     "{id}: genuine transferred header wrapper"
                 );
-                let analysis = build_native_selected_setup_dom_decisions(setup)
+                let analysis = build_selected_setup_dom_decisions(setup)
                     .map_err(|error| cstr!("{id}: {error:?}"))?;
                 let dom = analysis.dom().ok_or("DOM")?;
                 require!(

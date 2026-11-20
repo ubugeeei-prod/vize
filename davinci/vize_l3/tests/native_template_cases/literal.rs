@@ -3,7 +3,7 @@ use vize_l2::{
     expr::ExprRef,
     lang::js::{NativeInterpolationInput, NativeTemplateFile},
 };
-use vize_l3::decision::{dom::DomUnsupported, native::build_native_dom_file_decisions};
+use vize_l3::decision::{dom::DomUnsupported, template::build_template_dom_decisions};
 
 fn completed<'a>(
     arena: &'a Allocator,
@@ -43,7 +43,7 @@ fn original_primitive_receipts_join_real_file_ast_and_source_in_the_sole_l3_visi
     ] {
         let arena = Allocator::default();
         let output = completed(&arena, source)?;
-        let analysis = build_native_dom_file_decisions(output.view().map_err(|_| "view")?)
+        let analysis = build_template_dom_decisions(output.view().map_err(|_| "view")?)
             .map_err(|_| "sole original L3 visit")?;
         check(core::ptr::eq(analysis.owner(), &output))?;
         let file = analysis.file();
@@ -117,7 +117,7 @@ fn legacy_literals_and_regexp_retain_original_complete_file_and_full_span_refusa
     ] {
         let arena = Allocator::default();
         let output = completed(&arena, source)?;
-        let analysis = build_native_dom_file_decisions(output.view().map_err(|_| "view")?)
+        let analysis = build_template_dom_decisions(output.view().map_err(|_| "view")?)
             .map_err(|_| "sole L3 visit")?;
         let file = analysis.file();
         check(file.is_complete())?;

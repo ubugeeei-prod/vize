@@ -1,0 +1,46 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-case-4-3620",
+    history: "fba367f7b20ed76f68e1b544b94686c56c0ed395",
+    source: "<div class=\"checkbox\"><span class=\"icon\" :class=\"{ active: checked }\" /></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: ExtendPoint,
+            message: "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 22,
+                        end: 72,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"checkbox\" }, [\n    _createElementVNode(\"span\", {\n      class: _normalizeClass([\"icon\", { active: checked }])\n    }, null, 2 /* CLASS */)\n  ]))\n}",
+    map: None,
+}

@@ -1,0 +1,48 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-image-set-css-ast-528",
+    history: "fb0ede895d6365d23f28d2f0c024c5bca0e11594",
+    source: ".hero { background-image: image-set(url('./one.png') 1x, url('./two.png') 2x); }",
+    filename: "History.vue",
+    entry: "css",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Css {
+    compiled: CssCompileResult {
+        code: ".hero {\n  background-image: image-set(\"./one.png\" 1x, \"./two.png\" 2x);\n}\n",
+        map: None,
+        css_vars: [],
+        errors: [],
+        warnings: [],
+        exports: None,
+    },
+    ast_errors: [],
+    printed: Some(
+        CssCompileResult {
+            code: ".hero {\n  background-image: image-set(\"./one.png\" 1x, \"./two.png\" 2x);\n}\n",
+            map: None,
+            css_vars: [],
+            errors: [],
+            warnings: [],
+            exports: None,
+        },
+    ),
+}

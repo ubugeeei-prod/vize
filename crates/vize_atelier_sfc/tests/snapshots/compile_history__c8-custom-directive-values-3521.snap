@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-custom-directive-values-3521",
+    history: "375b0fb5b0d04af9014d81ef865d17dba02f3b0a",
+    source: "<script setup lang=\"ts\">\nimport type { Directive } from 'vue'\nconst vUntyped: Directive = () => {}\nconst vNotADirective = 42\n</script>\n\n<template>\n  <div v-global=\"'anything'\" />\n  <div v-untyped=\"'anything'\" />\n  <div v-not-a-directive=\"'anything'\" />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n\nconst vNotADirective = 42;\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nconst vUntyped = () => {};\n\nreturn (_ctx, _cache) => {\n  const _directive_global = _resolveDirective(\"global\")\n  const _directive_untyped = vUntyped\n  const _directive_not_a_directive = vNotADirective\n\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _withDirectives(_createElementVNode(\"div\", null, null, 512 /* NEED_PATCH */), [\n      [_directive_global, 'anything']\n    ]),\n    _withDirectives(_createElementVNode(\"div\", null, null, 512 /* NEED_PATCH */), [\n      [_directive_untyped, 'anything']\n    ]),\n    _withDirectives(_createElementVNode(\"div\", null, null, 512 /* NEED_PATCH */), [\n      [_directive_not_a_directive, 'anything']\n    ])\n  ], 64 /* STABLE_FRAGMENT */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "vNotADirective": LiteralConst,
+                        "vUntyped": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

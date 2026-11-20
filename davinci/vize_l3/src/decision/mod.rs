@@ -18,13 +18,13 @@ pub use attribute_value::OriginalAttributeFacts;
 mod build;
 pub mod dom;
 mod model;
-pub mod native;
 pub mod policy;
 pub mod ssr;
+pub mod template;
 pub mod vapor;
 
 pub use build::{DecisionBuildError, build_decisions, build_dom_decisions};
-pub use dom::{NativeFileAnalysis, build_dom_file_decisions};
+pub use dom::{FileAnalysis, build_dom_file_decisions};
 
 use policy::TargetPolicy;
 
@@ -38,15 +38,15 @@ use policy::TargetPolicy;
 /// Arbitrary complete tables cannot claim an owner's identity:
 /// ```compile_fail
 /// use vize_l2::artifact::Artifact;
-/// use vize_l3::decision::{DecisionTables, NativeAnalysis};
+/// use vize_l3::decision::{DecisionTables, DecisionAnalysis};
 /// fn forge<'o, 'a>(artifact: &'o Artifact<'a>, tables: DecisionTables) {
-///     let _ = NativeAnalysis { artifact, tables };
+///     let _ = DecisionAnalysis { artifact, tables };
 /// }
 /// ```
 /// Its tables cannot be modified through the analysis:
 /// ```compile_fail
-/// use vize_l3::decision::NativeAnalysis;
-/// fn edit(analysis: &mut NativeAnalysis<'_, '_>) {
+/// use vize_l3::decision::DecisionAnalysis;
+/// fn edit(analysis: &mut DecisionAnalysis<'_, '_>) {
 ///     analysis.tables().nodes.clear();
 /// }
 /// ```
@@ -60,7 +60,7 @@ use policy::TargetPolicy;
 ///     let _ = analysis.tables();
 /// }
 /// ```
-pub struct NativeAnalysis<'owner, 'arena> {
+pub struct DecisionAnalysis<'owner, 'arena> {
     artifact: &'owner Artifact<'arena>,
     tables: DecisionTables,
     original_attributes: Option<OriginalAttributeFacts<'owner, 'arena>>,
@@ -69,7 +69,7 @@ pub struct NativeAnalysis<'owner, 'arena> {
     vapor: Option<vapor::VaporFacts<'owner, 'arena>>,
 }
 
-impl<'owner, 'arena> NativeAnalysis<'owner, 'arena> {
+impl<'owner, 'arena> DecisionAnalysis<'owner, 'arena> {
     /// The exact sealed artifact used by the native producer.
     #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
@@ -177,7 +177,7 @@ pub struct ControlRegion {
 
 /// Mutable scratch records for native L3 decisions.
 ///
-/// Completed consumer input is [`NativeAnalysis`], which retains the actual
+/// Completed consumer input is [`DecisionAnalysis`], which retains the actual
 /// owner and exposes these tables read-only. An empty or independently built
 /// table cannot establish complete analysis or association with any artifact.
 /// Storage is the existing sparse side table; no storage-cost reduction is

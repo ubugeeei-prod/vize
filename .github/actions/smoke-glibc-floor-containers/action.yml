@@ -4,7 +4,8 @@ description: >-
   the Vercel build image and the Vercel Functions / AWS Lambda runtime),
   AlmaLinux 8 (glibc 2.28: the oldest glibc official Node.js 22+ runs on) and
   CentOS 7 (glibc 2.17: the documented floor itself). The caller lays out
-  npm/native/npm/<platform> and builds npm/cli and npm/builder/vite first.
+  npm/native/npm/<platform> and builds npm/cli, npm/builder/unplugin and
+  npm/builder/vite first.
 inputs:
   platform: { required: true, description: "linux-x64-gnu or linux-arm64-gnu" }
   cli:

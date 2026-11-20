@@ -1,35 +1,7 @@
 name: V1 qualification manifest
 
 on:
-  pull_request:
-    paths:
-      - .github/actions/setup-runtime-package-managers/action.yml
-      - .github/workflows/**
-      - .prettierignore
-      - crates/vize/**
-      - crates/vize_atelier_dom/**
-      - crates/vize_atelier_jsx/**
-      - crates/vize_atelier_vapor/**
-      - crates/vize_canon/**
-      - crates/vize_maestro/**
-      - crates/vize_patina/**
-      - docs/release/v1-supported-matrix.json
-      - editors/**
-      - npm/builder/vite/**
-      - npm/cli/package.json
-      - npm/framework/nuxt/**
-      - npm/linter/oxlint/**
-      - npm/native/package.json
-      - pnpm-workspace.yaml
-      - tools/commands/release/v1-support-matrix.ts
-      - tools/commands/release/v1-exact-candidate.ts
-      - tools/support/compat/v1/**
-      - tools/support/compat/npm/smoke-release-init-managers.ts
-      - tools/support/compat/npm/smoke-release-init-shapes.ts
-      - tools/support/github/release-platforms.ts
-      - tools/support/release/editor-platforms.ts
-      - tests/tooling/v1-supported-matrix.test.ts
-      - tests/tooling/v1-exact-candidate.test.ts
+  # #6830: off the PR tier; nightly Full qualification calls it.
   workflow_call:
     inputs:
       enforce_complete:

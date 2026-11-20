@@ -1,6 +1,6 @@
 name: Musea accessibility and capture
 on:
-  pull_request: {}
+  # #6830: off the PR tier; main runs it per commit and nightly.
   # Not a required check, so a queue run gated nothing while it competed with
   # every queue entry for runners. main gets a post-merge run per commit instead.
   push:

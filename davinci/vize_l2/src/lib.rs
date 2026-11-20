@@ -39,6 +39,8 @@
 //!   product vocabulary.
 //! - [`framework`] — framework meaning of script code (Vue macros), read by
 //!   L1→L2, L3, L4 and the products; core modules never import it.
+//! - [`query`] — [`query::Model`], the one semantic query surface products
+//!   read: position, resolution and scope chain over a completed File.
 //!
 //! The crate is `no_std + alloc` from birth so L2 artifacts print and parse
 //! on any target (wasm32-wasip2 included; P2-14 makes that lane required).
@@ -58,6 +60,7 @@ pub mod framework;
 pub mod lang;
 pub mod op;
 pub mod provenance;
+pub mod query;
 pub mod registry;
 pub mod resolution;
 pub mod scope;

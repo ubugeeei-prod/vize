@@ -2,7 +2,7 @@
 
 use vize_l0::{Allocator, SourceBlock, SourceFrameError, Span, Vec};
 use vize_l1::{
-    dialect::vue2::surface::{ComponentParse, TextChild, TextChildren},
+    framework::vue::version::v2::surface::{ComponentParse, TextChild, TextChildren},
     markup::SurfaceChild,
 };
 

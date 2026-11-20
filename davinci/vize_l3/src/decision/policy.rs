@@ -96,7 +96,7 @@ mod tests {
     }
 
     #[test]
-    fn only_ssr_native_element_events_are_omitted() {
+    fn only_ssr_element_events_are_omitted() {
         for policy in [TargetPolicy::Dom, TargetPolicy::Ssr, TargetPolicy::Vapor] {
             for owner in [
                 BindingOwner::Element,

@@ -1,4 +1,4 @@
-use crate::{Allocator, NodeId, Op, build_native_dom_file_decisions, check, owner};
+use crate::{Allocator, NodeId, Op, build_template_dom_decisions, check, owner};
 use serde_json::{Value, json};
 use vize_l1::markup::SurfaceChild;
 use vize_l3::decision::dom::DomChild;
@@ -43,7 +43,7 @@ fn all_twenty_four_pinned_static_root_packets_retain_complete_file_and_l3_order(
             walk.complete().map_err(|_| "complete original cursor")?;
         }
         let output = core::hint::black_box(original.finish());
-        let analysis = build_native_dom_file_decisions(output.view().map_err(|_| "view")?)
+        let analysis = build_template_dom_decisions(output.view().map_err(|_| "view")?)
             .map_err(|_| "genuine owner analysis")?;
         check(core::ptr::eq(analysis.owner(), &output))?;
         check(core::ptr::eq(

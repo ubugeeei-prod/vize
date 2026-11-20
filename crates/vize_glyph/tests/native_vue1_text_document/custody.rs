@@ -2,8 +2,8 @@
 
 use vize_glyph::native_doc::{PrintOptions, vue1_text_document};
 use vize_l0::{Allocator, SourceRoot, Span, String};
-use vize_l1::dialect::vue1::surface;
 use vize_l1::embed::{Grammar, source::DecodeSegmentKind, syntax::EmbedSyntax};
+use vize_l1::framework::vue::version::v1::surface;
 
 #[derive(Debug, PartialEq)]
 struct Facts {

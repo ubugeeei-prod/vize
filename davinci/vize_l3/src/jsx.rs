@@ -79,17 +79,17 @@ pub struct JsxIssue {
 ///
 /// ```compile_fail
 /// use vize_l2::lang::js::JsxFile;
-/// use vize_l3::jsx::NativeJsxAnalysis;
+/// use vize_l3::jsx::JsxAnalysis;
 /// fn forge<'a>(owner: JsxFile<'a>) {
-///     let _ = NativeJsxAnalysis { owner, decisions: vec![] };
+///     let _ = JsxAnalysis { owner, decisions: vec![] };
 /// }
 /// ```
-pub struct NativeJsxAnalysis<'a> {
+pub struct JsxAnalysis<'a> {
     owner: JsxFile<'a>,
     decisions: Vec<JsxDecisionKind<'a>>,
 }
 
-impl<'a> NativeJsxAnalysis<'a> {
+impl<'a> JsxAnalysis<'a> {
     #[must_use]
     pub fn owner(&self) -> &JsxFile<'a> {
         &self.owner
@@ -123,8 +123,8 @@ impl<'a> NativeJsxAnalysis<'a> {
 /// A completed decision borrows its exact node and original owner together.
 ///
 /// ```compile_fail
-/// use vize_l3::jsx::{JsxDecision, NativeJsxAnalysis};
-/// fn discard<'a>(analysis: NativeJsxAnalysis<'a>) {
+/// use vize_l3::jsx::{JsxDecision, JsxAnalysis};
+/// fn discard<'a>(analysis: JsxAnalysis<'a>) {
 ///     let decision = analysis.decisions().next().unwrap();
 ///     drop(analysis);
 ///     let _ = decision.node();
@@ -173,4 +173,4 @@ impl<'a> RejectedJsxAnalysis<'a> {
     }
 }
 
-type BuildResult<'a> = Result<NativeJsxAnalysis<'a>, Box<RejectedJsxAnalysis<'a>>>;
+type BuildResult<'a> = Result<JsxAnalysis<'a>, Box<RejectedJsxAnalysis<'a>>>;

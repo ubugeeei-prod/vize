@@ -6,7 +6,7 @@ use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::{file::DeclarationKind, resolution::Usage};
 use vize_l3::decision::ssr::{
-    SsrPart, SsrSetupReadKind, SsrUnsupported, build_native_selected_setup_ssr_decisions,
+    SsrPart, SsrSetupReadKind, SsrUnsupported, build_selected_setup_ssr_decisions,
 };
 
 fn descriptor() -> DescriptorOptions {
@@ -39,7 +39,7 @@ fn original_setup_reads_retain_actual_occurrences_bindings_and_scope_roles() {
         let setup = admitted.setup();
         let file = setup.file();
         let provenance = file.artifact().provenance().to_vec();
-        let analysis = build_native_selected_setup_ssr_decisions(setup).unwrap();
+        let analysis = build_selected_setup_ssr_decisions(setup).unwrap();
         assert!(core::ptr::eq(analysis.setup(), setup));
         assert!(core::ptr::eq(analysis.file(), file));
         assert!(core::ptr::eq(
@@ -111,7 +111,7 @@ fn original_primitive_literals_have_complete_same_file_resolution_without_reads(
             format!("<script setup>const unused=0</script><template>{{{{{value}}}}}</template>");
         let observation = lower_selected_setup_sfc_native(&arena, &source, descriptor());
         let admitted = observation.admitted().unwrap();
-        let analysis = build_native_selected_setup_ssr_decisions(admitted.setup()).unwrap();
+        let analysis = build_selected_setup_ssr_decisions(admitted.setup()).unwrap();
         let facts = analysis.ssr().unwrap();
         assert!(facts.unsupported().is_empty());
         let [SsrPart::Interpolation { node, .. }] = facts.parts() else {
@@ -149,7 +149,7 @@ fn complete_original_expressions_keep_the_exact_bounded_target_refusal() {
         let observation = lower_selected_setup_sfc_native(&arena, &source, descriptor());
         let admitted = observation.admitted().unwrap();
         assert!(admitted.setup().file().is_complete());
-        let analysis = build_native_selected_setup_ssr_decisions(admitted.setup()).unwrap();
+        let analysis = build_selected_setup_ssr_decisions(admitted.setup()).unwrap();
         let rejected = &analysis.ssr().unwrap().unsupported()[0];
         assert_eq!(rejected.reason, expected);
         assert!(

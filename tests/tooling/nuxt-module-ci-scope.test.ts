@@ -37,17 +37,21 @@ const campaigns = (event: string, source: Step[] = steps) =>
     .filter((step) => runsOn(step, event))
     .flatMap((step) => step.run?.match(/compat\/nuxt\/([\w-]+-build\.(?:mjs|ts))/)?.[1] ?? []);
 
-test("every affected PR retains source-built Nuxt 3 SSR, hydration and navigation", () => {
-  assert.ok(workflow.on.pull_request.paths?.includes("crates/**"));
-  assert.ok(workflow.on.pull_request.paths?.includes("davinci/**"));
-  assert.ok(workflow.on.pull_request.paths?.includes("npm/framework/nuxt/**"));
+test("main and merge candidates retain source-built Nuxt 3 SSR, hydration and navigation", () => {
+  // #6830: off the PR tier; merge candidates call it and main runs it per commit.
+  assert.equal(workflow.on.pull_request, undefined);
+  assert.ok(workflow.on.push.paths?.includes("crates/**"));
+  assert.ok(workflow.on.push.paths?.includes("davinci/**"));
+  assert.ok(workflow.on.push.paths?.includes("npm/framework/nuxt/**"));
   assert.equal(job.if, undefined);
   assert.notEqual(job["continue-on-error"], true);
-  assert.deepEqual(campaigns("pull_request"), [
+  for (const campaign of [
     "nuxt3-module-build.ts",
     "nuxt5-runtime-build.ts",
     "nuxt5-dev-runtime-build.ts",
-  ]);
+  ])
+    for (const event of ["merge_group", "push"])
+      assert.ok(campaigns(event).includes(campaign), `${event}: ${campaign}`);
   const native = steps.findIndex(
     (step) => step.name === "Build and capture the actual source native compiler",
   );

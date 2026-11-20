@@ -13,44 +13,28 @@ use crate::virtual_ts::expressions::{
 };
 use crate::virtual_ts::types::VizeMapping;
 
-/// Split a `v-slot` props expression that carries its own TypeScript
-/// annotation (`#item="{ element }: { element: Tag }"`) into the binding
-/// pattern and the annotation. Vue allows the annotation, so emitting the
-/// inferred slot type after the full expression would produce `pattern: A: B`
-/// — a syntax error that aborts Corsa's semantic pass for the whole project.
-/// A `:` separates the annotation only at the top nesting level.
-pub(super) fn split_slot_pattern_annotation(pattern: &str) -> Option<(&str, &str)> {
-    let mut depth = 0i32;
-    let mut quote: Option<char> = None;
-    let mut escaped = false;
+mod slot_parameter;
+pub(super) use slot_parameter::{slot_parameter, split_slot_pattern_annotation};
 
-    for (at, ch) in pattern.char_indices() {
-        if let Some(open) = quote {
-            if escaped {
-                escaped = false;
-            } else if ch == '\\' {
-                escaped = true;
-            } else if ch == open {
-                quote = None;
-            }
-            continue;
-        }
-        match ch {
-            '\'' | '"' | '`' => quote = Some(ch),
-            '{' | '[' | '(' | '<' => depth += 1,
-            '}' | ']' | ')' | '>' => depth -= 1,
-            ':' if depth == 0 => {
-                let (binding, annotation) = pattern.split_at_checked(at)?;
-                let annotation = annotation.get(1..)?.trim();
-                if annotation.is_empty() {
-                    return None;
-                }
-                return Some((binding.trim_end(), annotation));
-            }
-            _ => {}
-        }
-    }
-    None
+#[derive(Clone, Copy)]
+pub(super) struct SlotParameterPart<'a> {
+    pub(super) text: &'a str,
+    pub(super) start: usize,
+}
+
+#[derive(Clone, Copy)]
+pub(super) struct SlotParameter<'a> {
+    pub(super) pattern: SlotParameterPart<'a>,
+    pub(super) annotation: Option<SlotParameterPart<'a>>,
+    pub(super) default: Option<SlotParameterPart<'a>>,
+}
+
+#[derive(Clone, Copy)]
+pub(super) struct SlotParameterGeneratedParts {
+    pub(super) function_start: usize,
+    pub(super) pattern_start: usize,
+    pub(super) annotation_start: Option<usize>,
+    pub(super) default_start: Option<usize>,
 }
 
 /// Emit the opening of a v-slot scope function. The parameter is annotated
@@ -63,24 +47,39 @@ pub(super) fn emit_slot_function_open(
     props_pattern: &str,
     props_type: &String,
     capture: bool,
-    body: impl FnOnce(&mut crate::virtual_ts::TextBuf),
+    body: impl FnOnce(&mut crate::virtual_ts::TextBuf, SlotParameterGeneratedParts),
 ) {
     let declaration = if capture {
         cstr!("var {function_name} = function")
     } else {
         cstr!("void function {function_name}")
     };
-    let params = if let Some((pattern, annotation)) = split_slot_pattern_annotation(props_pattern) {
-        cstr!("{pattern}: {annotation}")
-    } else {
-        cstr!("{props_pattern}: {props_type}")
+    let parameter = slot_parameter(props_pattern);
+    let pattern = parameter.pattern.text;
+    let annotation = parameter
+        .annotation
+        .map_or(props_type.as_str(), |annotation| annotation.text);
+    let function_start = ts.len();
+    let pattern_start = function_start + indent.len() + declaration.len() + 1;
+    let emitted_annotation_start = pattern_start + pattern.len() + 2;
+    let generated_parts = SlotParameterGeneratedParts {
+        function_start,
+        pattern_start,
+        annotation_start: parameter.annotation.map(|_| emitted_annotation_start),
+        default_start: parameter
+            .default
+            .map(|_| emitted_annotation_start + annotation.len() + 3),
     };
+    let params = parameter.default.map_or_else(
+        || cstr!("{pattern}: {annotation}"),
+        |default| cstr!("{pattern}: {annotation} = {}", default.text),
+    );
     append!(*ts, "{indent}{declaration}({params})");
     // The `{` and `};` are one tight group, so the closer cannot drift.
     ts! { &mut *ts =>
         #(" ") {
             #("\n")
-            #{ body(__ts); }
+            #{ body(__ts, generated_parts); }
             #indent
         }
         #(";\n")

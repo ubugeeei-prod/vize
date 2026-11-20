@@ -8,7 +8,7 @@ use crate::{
 };
 use alloc::vec::Vec;
 use vize_l0::{Allocator, String};
-use vize_l1::dialect::vue2::surface::parse_component;
+use vize_l1::framework::vue::version::v2::surface::parse_component;
 use vize_l1_to_l2::native_vue2::lower_vue2_component;
 use vize_l2::{
     artifact::Artifact,

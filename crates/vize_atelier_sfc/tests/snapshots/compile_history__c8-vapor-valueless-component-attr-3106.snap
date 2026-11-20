@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-vapor-valueless-component-attr-3106",
+    history: "628ea1e7d2bde05ec9cfae225e32fd6be5a4395a",
+    source: "<template><MyComp data-probe /></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const _component_MyComp = _resolveComponent(\"MyComp\")\n  const n0 = _createComponentWithFallback(_component_MyComp, { \"data-probe\": () => (\"\") }, null, true)\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

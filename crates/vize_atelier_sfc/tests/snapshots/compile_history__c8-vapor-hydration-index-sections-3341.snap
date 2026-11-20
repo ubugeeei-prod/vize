@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c8-vapor-hydration-index-sections-3341",
+    history: "b829f91388e36a9f7047c96aaa5e6e68419b2a83",
+    source: "<template><div><section><p/><span :id=\"x\"><i/></span><span :id=\"y\"><i/></span></section><span :id=\"z\"><i/></span></div></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { child as _child, next as _next, setProp as _setProp, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div><section><p></p><span><i></i></span><span><i></i></span></section><span><i></i></span></div>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  const n1 = _child(n0)\n  const n2 = _next(_child(n1))\n  const n3 = _next(n2)\n  const n4 = _next(n1)\n  _renderEffect(() => {\n    _setProp(n2, \"id\", _ctx.x)\n    _setProp(n3, \"id\", _ctx.y)\n    _setProp(n4, \"id\", _ctx.z)\n  })\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)
