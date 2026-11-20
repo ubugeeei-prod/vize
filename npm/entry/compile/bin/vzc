@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+// `vzc <args>` is `vize build <args>` from the CLI release this package pins.
+process.argv.splice(2, 0, "build");
+import("vize/cli");

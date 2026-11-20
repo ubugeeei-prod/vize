@@ -1,0 +1,48 @@
+{
+  "name": "@vizejs/lsp",
+  "version": "0.474.0",
+  "description": "Vize language server for Vue, JSX and TSX",
+  "keywords": [
+    "editor",
+    "language-server",
+    "lsp",
+    "vize",
+    "vue"
+  ],
+  "homepage": "https://github.com/ubugeeei-prod/vize",
+  "bugs": {
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei-prod/vize",
+    "directory": "npm/entry/lsp"
+  },
+  "bin": {
+    "vzlsp": "bin/vzlsp"
+  },
+  "files": [
+    "README.md",
+    "bin"
+  ],
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "vize": "workspace:*"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "metadata": {
+    "vize": {
+      "stability": "experimental",
+      "stabilityDocs": "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#package-support-tiers"
+    }
+  }
+}

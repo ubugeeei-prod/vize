@@ -18,9 +18,9 @@ fn inputs() -> Inputs {
         predecessor: runtime_security::update(),
         predecessor_bytes: fs::read(support::corpus().join(runtime_security::UPDATE)).unwrap(),
         update: picomatch_security_update(),
-        lock: fs::read(support::repository().join("pnpm-lock.yaml")).unwrap(),
+        lock: current_lock_before_entry_packages(),
         package: fs::read(support::repository().join("package.json")).unwrap(),
-        workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
+        workspace: current_workspace_before_entry_packages(),
     }
 }
 

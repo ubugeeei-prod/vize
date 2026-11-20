@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+// `vzcurator <args>` is `vize curator <args>` from the CLI release this package pins.
+process.argv.splice(2, 0, "curator");
+import("vize/cli");
