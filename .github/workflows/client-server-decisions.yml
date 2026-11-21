@@ -17,8 +17,8 @@ on:
       - "davinci/vize_l4/src/targets/ssr*"
       - "davinci/vize_l4/src/targets/ssr/**"
       - "davinci/vize_l4/tests/fixtures/native-*"
-      - "tools/benchmarks/crates/davinci_harness/Cargo.toml"
-      - "tools/benchmarks/crates/davinci_harness/tests/client_server/**"
+      - "crates/vize_atelier_sfc/Cargo.toml"
+      - "crates/vize_atelier_sfc/tests/client_server_decisions/**"
 permissions: { contents: read }
 concurrency:
   group: client-server-decisions-${{ github.event.pull_request.number }}
@@ -47,7 +47,7 @@ jobs:
             cargo clippy "${flags[@]}" -p "$package" --features client-server-decisions --lib --no-deps -- -D warnings
           done
           cargo test "${flags[@]}" -p vize_l4 --features client-server-decisions --test native_dom_file --test native_ssr --test native_selected_ssr --test native_selected_root_text --test native_selected_template_output
-          suite=(-p davinci_harness --features client-server-decisions --test client_server)
+          suite=(-p vize_atelier_sfc --features vize_l4/client-server-decisions --test client_server_decisions)
           cargo clippy "${flags[@]}" "${suite[@]}" --no-deps -- -D warnings
           export VIZE_CLIENT_SERVER_INPUTS="$RUNNER_TEMP/target-sources"
           git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_CLIENT_SERVER_INPUTS"

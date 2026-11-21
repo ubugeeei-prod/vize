@@ -150,3 +150,8 @@ required-features = ["legacy-dom-differential"]
 
 [lints]
 workspace = true
+
+[[test]]
+name = "client_server_decisions"
+path = "tests/client_server_decisions/main.rs"
+required-features = ["vize_l4/client-server-decisions"]

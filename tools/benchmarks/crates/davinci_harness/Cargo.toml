@@ -11,8 +11,6 @@ autobenches = false
 metadata.vize.stability = "experimental"
 
 [features]
-# Qualify the optional paired L3 query against the actual L4 products.
-client-server-decisions = ["vize_l4/client-server-decisions"]
 # Diagnostic-only ownership ledger; never narrows process-global totals.
 allocation-window-diagnostics = []
 # Benchmark-only instrumentation; no production crate enables this feature.
@@ -41,13 +39,6 @@ vize_l0 = { workspace = true }
 vize_l1 = { workspace = true }
 vize_l1_to_l2 = { workspace = true }
 vize_l2 = { workspace = true }
-vize_l3 = { workspace = true }
-vize_l4 = { workspace = true }
-
-[[test]]
-name = "client_server"
-path = "tests/client_server/main.rs"
-required-features = ["client-server-decisions"]
 
 [[bench]]
 name = "selfcheck"

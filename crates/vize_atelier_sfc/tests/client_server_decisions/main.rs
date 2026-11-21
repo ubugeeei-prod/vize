@@ -195,7 +195,7 @@ fn original_attributes_target_specific_bindings_and_styled_refusals() {
 #[ignore = "NUL-delimited original Vue files"]
 fn tracked_originals() {
     let manifest = std::fs::read(std::env::var_os("VIZE_CLIENT_SERVER_INPUTS").unwrap()).unwrap();
-    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../..");
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let mut counts = Counts::default();
     let mut invalid = 0;
     for entry in manifest.split(|byte| *byte == 0).filter(|p| !p.is_empty()) {
