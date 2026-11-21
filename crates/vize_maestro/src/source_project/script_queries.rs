@@ -6,9 +6,9 @@
 
 use super::{SnapshotRefusal, SourceSnapshot};
 use crate::server::ServerState;
+use oxc_span::SourceType;
 use tower_lsp::lsp_types::DocumentSymbol;
 use vize_atelier_sfc::SfcScriptBlock;
-use vize_croquis::sfc::SfcDescriptor;
 use vize_l0::{Allocator, SourceFrameError, SourceRoot, Span, line_index::LineIndex};
 use vize_l1::embed::authored_program::AuthoredProgram;
 
@@ -32,6 +32,8 @@ pub enum ScriptQueryRefusal {
     Language,
     Frame(SourceFrameError),
     DescriptorSourceMismatch,
+    #[cfg(feature = "experimental-checker-script-queries")]
+    Checker(vize_canon::ScriptDiagnosticRefusal),
 }
 
 impl SourceSnapshot {
@@ -43,6 +45,21 @@ impl SourceSnapshot {
         &self,
         state: &ServerState,
     ) -> Result<Option<ScriptQueryProducts>, ScriptQueryRefusal> {
+        self.with_script_blocks(state, |products, root, name, block| {
+            products.read_script(root, name, block, None, |_| Ok(()))
+        })
+    }
+
+    fn with_script_blocks(
+        &self,
+        state: &ServerState,
+        mut read: impl FnMut(
+            &mut ScriptQueryProducts,
+            SourceRoot<'_>,
+            &'static str,
+            &SfcScriptBlock<'_>,
+        ) -> Result<(), ScriptQueryRefusal>,
+    ) -> Result<Option<ScriptQueryProducts>, ScriptQueryRefusal> {
         let parsed = self
             .with_current(&state.documents, |_| {
                 if self.language_id() != "vue" || crate::utils::is_jsx_path(self.uri().path()) {
@@ -51,10 +68,21 @@ impl SourceSnapshot {
                 Ok(state.sfc_descriptor(self.uri(), self.source()))
             })
             .map_err(ScriptQueryRefusal::Host)??;
-        let result = parsed
-            .as_deref()
-            .map(|descriptor| ScriptQueryProducts::from_descriptor(self.source(), descriptor))
-            .transpose()?;
+        let result = if let Some(descriptor) = parsed.as_deref() {
+            let root = SourceRoot::new(self.source()).map_err(ScriptQueryRefusal::Frame)?;
+            let mut products = ScriptQueryProducts::default();
+            for (name, block) in [
+                ("script", descriptor.script.as_ref()),
+                ("script setup", descriptor.script_setup.as_ref()),
+            ] {
+                if let Some(block) = block {
+                    read(&mut products, root, name, block)?;
+                }
+            }
+            Some(products)
+        } else {
+            None
+        };
         self.check_current(&state.documents)
             .map_err(ScriptQueryRefusal::Host)?;
         Ok(result)
@@ -62,29 +90,13 @@ impl SourceSnapshot {
 }
 
 impl ScriptQueryProducts {
-    fn from_descriptor(
-        source: &str,
-        descriptor: &SfcDescriptor<'_>,
-    ) -> Result<Self, ScriptQueryRefusal> {
-        let root = SourceRoot::new(source).map_err(ScriptQueryRefusal::Frame)?;
-        let roles = [
-            ("script", descriptor.script.as_ref()),
-            ("script setup", descriptor.script_setup.as_ref()),
-        ];
-        let mut out = Self::default();
-        for (name, block) in roles {
-            if let Some(block) = block {
-                out.read_script(root, name, block)?;
-            }
-        }
-        Ok(out)
-    }
-
     fn read_script(
         &mut self,
         root: SourceRoot<'_>,
         name: &'static str,
         block: &SfcScriptBlock<'_>,
+        additional_profile: Option<SourceType>,
+        mut observe: impl FnMut(&AuthoredProgram<'_>) -> Result<(), ScriptQueryRefusal>,
     ) -> Result<(), ScriptQueryRefusal> {
         let text = root
             .source()
@@ -98,12 +110,43 @@ impl ScriptQueryProducts {
             .source()
             .get(..block.loc.tag_end)
             .ok_or(ScriptQueryRefusal::DescriptorSourceMismatch)?;
+        let editor_type = Self::script_type(block.lang.as_deref());
         let symbol = {
-            let arena = Allocator::default();
-            let syntax =
-                AuthoredProgram::parse(&arena, frame, Self::script_type(block.lang.as_deref()));
-            let symbol = Self::script_symbol(name, block, &LineIndex::new(prefix), &syntax);
-            self.read_specifiers(&syntax);
+            let mut arena = Allocator::default();
+            let symbol = {
+                let syntax = AuthoredProgram::parse(&arena, frame, editor_type);
+                #[cfg(feature = "experimental-checker-script-queries")]
+                let symbol = if additional_profile.is_some() {
+                    Self::checker_script_symbol(name, block, prefix, &syntax)
+                } else {
+                    Self::script_symbol(name, block, &LineIndex::new(prefix), &syntax)
+                };
+                #[cfg(not(feature = "experimental-checker-script-queries"))]
+                let symbol = Self::script_symbol(name, block, &LineIndex::new(prefix), &syntax);
+                #[cfg(feature = "experimental-checker-script-queries")]
+                if additional_profile.is_some() {
+                    self.read_checker_specifiers(&syntax);
+                } else {
+                    self.read_specifiers(&syntax);
+                }
+                #[cfg(not(feature = "experimental-checker-script-queries"))]
+                self.read_specifiers(&syntax);
+                if additional_profile == Some(editor_type) {
+                    observe(&syntax)?;
+                }
+                symbol
+            };
+            if let Some(profile) = additional_profile.filter(|profile| *profile != editor_type) {
+                // OXC reset keeps only its last chunk. Reserve the observed size
+                // for the other grammar if that chunk could not hold the first AST.
+                let used = arena.allocated_bytes();
+                arena.reset();
+                if arena.as_oxc().capacity() < used {
+                    drop(arena);
+                    arena = Allocator::with_capacity(used);
+                }
+                observe(&AuthoredProgram::parse(&arena, frame, profile))?;
+            }
             symbol
         };
         self.symbols.push(symbol);
@@ -115,3 +158,6 @@ impl ScriptQueryProducts {
 mod profile;
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "experimental-checker-script-queries")]
+mod checker;

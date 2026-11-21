@@ -30,6 +30,10 @@ experimental-versioned-fixes = [
 experimental-resident-blocks = ["vize_incremental/open-block-queries"]
 # Read both the editor outline and import specifiers from each original script.
 experimental-script-queries = ["vize_l1/authored-script-queries"]
+experimental-checker-script-queries = [
+  "experimental-script-queries",
+  "vize_canon/authored-script-diagnostics",
+]
 # Opt-in same-file JS/TS/Vue queries from original retained native owners.
 experimental-source-navigation = ["experimental-source-project", "retained-program"]
 # Opt-in legacy Vue (v0.10 / v0.11 / v1 / v2) editor / LSP surface. Not enabled by the

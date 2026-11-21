@@ -223,3 +223,6 @@ impl CheckResult {
         self.diagnostics.push(diagnostic);
     }
 }
+
+#[cfg(feature = "authored-script-diagnostics")]
+pub use script_parse::observed::{ScriptDiagnosticProfile, ScriptDiagnosticRefusal};

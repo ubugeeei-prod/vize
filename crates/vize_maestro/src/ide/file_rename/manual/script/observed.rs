@@ -26,6 +26,41 @@ impl ScriptQueryProducts {
     }
 }
 
+#[cfg(feature = "experimental-checker-script-queries")]
+impl ScriptQueryProducts {
+    /// Static module declarations are already ordered by the Program. A clean
+    /// JavaScript tree can add nested literals only through dynamic import or
+    /// a call to require. Escaped identifiers and recovered trees keep the visitor.
+    pub(crate) fn read_checker_specifiers(&mut self, syntax: &AuthoredProgram<'_>) {
+        let parsed = syntax.parsed();
+        let bytes = syntax.block().source().as_bytes();
+        let static_only = parsed.diagnostics.is_empty()
+            && !parsed.panicked
+            && (memchr::memchr(b'(', bytes).is_none()
+                || (!syntax.source_type().is_typescript()
+                    && parsed.module_record.dynamic_imports.is_empty()
+                    && memchr::memmem::find(bytes, br"\u").is_none()
+                    && memchr::memmem::find(bytes, b"require").is_none()));
+        if !static_only {
+            self.read_specifiers(syntax);
+            return;
+        }
+        let base = syntax.block().start();
+        for statement in &parsed.program.body {
+            let Some(literal) = statement
+                .as_module_declaration()
+                .and_then(|decl| decl.source())
+            else {
+                continue;
+            };
+            self.module_specifiers.push(ScriptModuleSpecifier {
+                span: Span::new(base + literal.span.start + 1, base + literal.span.end - 1),
+                specifier: literal.value.as_str().into(),
+            });
+        }
+    }
+}
+
 #[cfg(test)]
 impl ScriptQueryProducts {
     pub(crate) fn reference_specifiers(

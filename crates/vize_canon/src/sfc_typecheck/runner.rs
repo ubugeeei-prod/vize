@@ -350,3 +350,17 @@ fn add_script_parse_diagnostics(
         });
     }
 }
+
+#[cfg(feature = "authored-script-diagnostics")]
+impl crate::ScriptDiagnosticProfile {
+    /// Project this block's syntax errors through the SFC checker's diagnostic
+    /// renderer. The byte range may include its established one-byte EOF marker.
+    pub fn diagnostics(
+        self,
+        syntax: &vize_l1::embed::authored_program::AuthoredProgram<'_>,
+    ) -> Result<Vec<SfcTypeDiagnostic>, crate::ScriptDiagnosticRefusal> {
+        let mut result = SfcTypeCheckResult::empty();
+        add_script_parse_diagnostics(self.read(syntax)?, &mut result);
+        Ok(result.diagnostics)
+    }
+}

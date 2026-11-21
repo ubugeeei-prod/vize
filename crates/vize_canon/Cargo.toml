@@ -10,6 +10,8 @@ metadata.vize.stability = "compatibility-preview"
 
 [features]
 default = ["native"]
+# Read checker syntax diagnostics from an original script with the checker grammar.
+authored-script-diagnostics = ["vize_l1/authored-script-queries"]
 # Explicit untimed observer; excluded from default/shipping artifacts.
 cache-custody = ["native"]
 profiling = ["native", "vize_l0/micro-profiling", "vize_carton/micro-profiling"]

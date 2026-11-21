@@ -149,23 +149,23 @@ test("editor script qualification runs the original readers and paired measureme
   const scriptRules = ["authored-script-rules"];
   invocation("clippy", "vize_patina", scriptRules, lint);
   invocation("test", "vize_patina", scriptRules, ["rules::script::authored"], "--doc");
-  const ruleCorpus = invocation(
-    "test",
-    "vize_patina",
-    scriptRules,
-    ["authored_script_rules"],
-    "--test",
-  );
-  assert.deepEqual(ruleCorpus.manifest, [...sources, ""]);
-  const ruleOptions = ruleCorpus.args.slice(ruleCorpus.args.indexOf("--") + 1);
-  for (const flag of ["--include-ignored", "--nocapture", "--test-threads=1"])
-    assert.ok(ruleOptions.includes(flag));
-  const corpus = invocation("test", "vize_maestro", editor, ["source_project::script_queries::"]);
-  assert.deepEqual(corpus.manifest, [...sources, ""]);
-  const options = corpus.args.slice(corpus.args.indexOf("--") + 1);
-  assert.ok(corpus.args.includes("--"));
-  for (const flag of ["--include-ignored", "--nocapture", "--test-threads=1"])
-    assert.ok(options.includes(flag));
+  const checker = ["authored-script-diagnostics"];
+  const combined = ["experimental-checker-script-queries", "micro-profiling"];
+  invocation("clippy", "vize_canon", checker, lint);
+  invocation("clippy", "vize_maestro", combined, lint);
+  for (const corpus of [
+    invocation("test", "vize_patina", scriptRules, ["authored_script_rules"], "--test"),
+    invocation("test", "vize_maestro", editor, ["source_project::script_queries::"]),
+    invocation("test", "vize_canon", checker, ["script_parse::"]),
+    invocation("test", "vize_maestro", combined, ["source_project::script_queries::"]),
+  ]) {
+    assert.deepEqual(corpus.manifest, [...sources, ""]);
+    assert.ok(corpus.args.includes("--"));
+    const options = corpus.args.slice(corpus.args.indexOf("--") + 1);
+    for (const flag of ["--include-ignored", "--nocapture", "--test-threads=1"]) {
+      assert.ok(options.includes(flag));
+    }
+  }
 });
 
 test("client and server target qualification exercises original inputs and serialized allocation windows", () => {

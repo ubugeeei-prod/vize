@@ -180,3 +180,6 @@ mod tests {
         assert!(script_source_type(Some("  tsx  ")).is_jsx());
     }
 }
+
+#[cfg(feature = "authored-script-diagnostics")]
+pub(crate) mod observed;
