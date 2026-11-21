@@ -18,6 +18,8 @@ metadata.vize.stability = "experimental"
 [features]
 # Prepare input-neutral modules for explicit analysis and projection.
 module-ir = []
+# Retain original callee and literal ranges for explicit component checks.
+component-sites = ["module-ir"]
 # Share one style block between structural rules and CSS class consumers.
 observed-styles = []
 # Arms the corpus-runnable TS-19 lane (`tests/surface_corpus.rs`),

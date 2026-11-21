@@ -69,6 +69,22 @@ fn region(
     let [op] = region.ops.as_slice() else {
         return Err(JsxModuleRefusal::Span);
     };
+    #[cfg(feature = "component-projection")]
+    if let Op::Component(component) = op
+        && cx.component_checks.is_some()
+    {
+        let span = component.span;
+        gap(cx, cursor, span.start, inner)?;
+        cx.anchor(span, LinkRole::Expression, |cx| {
+            cx.out.push("([");
+            super::component::write(cx, component, &mut Items::new())?;
+            cx.out.push("] as unknown as ");
+            cx.out.push(super::helpers::RE_RENDER_ROOT);
+            cx.out.push(")");
+            Ok(())
+        })?;
+        return Ok(span.end);
+    }
     let span = span_of(op)?;
     gap(cx, cursor, span.start, inner)?;
     match op {
@@ -97,7 +113,7 @@ fn span_of(op: &Op<'_>) -> Result<Span, JsxModuleRefusal> {
         Op::Element(element) => Ok(element.span),
         Op::If(conditional) => Ok(conditional.span),
         Op::For(each) => Ok(each.span),
-        // The owner-object helper for components is not published yet.
+        // The original projection profile refuses component values.
         Op::Component(_) => Err(JsxModuleRefusal::UnpublishedHelper(op.mnemonic())),
         _ => Err(JsxModuleRefusal::Unsupported(op.mnemonic())),
     }

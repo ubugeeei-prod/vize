@@ -9,6 +9,7 @@ on:
       - "davinci/vize_l1/Cargo.toml"
       - "davinci/vize_l1/src/embed.rs"
       - "davinci/vize_l1/src/embed/regions.rs"
+      - "davinci/vize_l1/src/embed/regions/**"
       - "davinci/vize_l1_to_l2/**"
       - "davinci/vize_l2/**"
       - "davinci/vize_l2_to_l3/**"
@@ -18,6 +19,8 @@ on:
       - "tests/tooling/jsx-authored-native-workflow-paths.test.ts"
       - "crates/vize_canon/src/**"
       - "crates/vize_canon/tests/jsx_child_expression_control.rs"
+      - "crates/vize_canon/tests/component_prop_projection/**"
+      - "crates/vize_canon/Cargo.toml"
       - "crates/vize_patina/src/**"
       - "crates/vize_patina/tests/jsx_child_expression_control.rs"
       - "crates/vize_patina/tests/main.rs"
@@ -101,6 +104,13 @@ jobs:
           export VIZE_MODULE_IR_MANIFEST="$RUNNER_TEMP/module-ir-paths"
           git ls-files -z '*.jsx' '*.tsx' '*.jsx.txt' '*.tsx.txt' > "$VIZE_MODULE_IR_MANIFEST"
           cargo test --locked --profile ci -p vize_l4 --features module-ir --test jsx_module_projection -- neutral_corpus::compare_modules_at_every_outcome --exact --ignored --nocapture
+      - name: Check lexical component props against the Canon TypeScript generator
+        env:
+          VIZE_MODULE_IR_MANIFEST: ${{ runner.temp }}/module-ir-paths
+        run: |
+          cargo test --locked --profile ci -p vize_canon --features component-projection-tests --test component_prop_projection
+          cargo run --locked --profile ci -p vize_canon --features component-projection-tests --example component_projection_alloc
+          cargo test --locked --profile ci -p vize_canon --features component-projection-tests --test component_prop_projection -- corpus::component_props_in_original_modules --exact --ignored --nocapture
       - name: Original VDOM child values and parent block ownership before and after
         env:
           INSTA_UPDATE: new
