@@ -197,6 +197,42 @@ fn attached_ids_and_mutable_pass_accounting_share_exact_page_order() {
             (10, "ui.text"),
         ]
     );
+    #[cfg(feature = "sparse-region-walk")]
+    {
+        let mut expected = all.iter();
+        artifact
+            .visit_markup_preorder(&mut |id, node| {
+                assert_eq!(expected.next(), Some(&(id.index(), node.mnemonic())));
+            })
+            .unwrap();
+        assert_eq!(expected.next(), None);
+        // Exhaust at each boundary, including attached bindings and descendants
+        // below structural operations. The failure must expose the same prefix.
+        for remaining in 0..=artifact.node_count() {
+            let mut original = PageWalk::new();
+            let mut sealed = PageWalk::new();
+            original.skip(u32::MAX as usize - remaining as usize);
+            sealed.skip(u32::MAX as usize - remaining as usize);
+            let mut prefix = [None; 11];
+            let mut slots = prefix.iter_mut();
+            let ops = &artifact.parts().root.ops;
+            let expected = crate::walk::visit_nodes(&mut original, ops, &mut |id, node| {
+                *slots.next().unwrap() = Some((id, node.mnemonic(), node.span()));
+            });
+            let mut original_nodes = prefix.iter().flatten();
+            let actual = crate::walk::visit_sealed_nodes(&mut sealed, ops, &mut |id, node| {
+                assert_eq!(
+                    original_nodes.next(),
+                    Some(&(id, node.mnemonic(), node.span()))
+                );
+            });
+            assert_eq!(actual, expected);
+            assert_eq!(original_nodes.next(), None);
+            assert_eq!(sealed.minted(), original.minted());
+            assert_eq!(sealed.visits(), original.visits());
+            assert_eq!(sealed.is_exhausted(), original.is_exhausted());
+        }
+    }
     assert_eq!(ops, old);
     let mut stack = OwnedVec::new();
     let mut enters = OwnedVec::new();

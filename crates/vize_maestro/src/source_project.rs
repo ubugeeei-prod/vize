@@ -15,6 +15,9 @@ pub use project::{ProjectQuery, ProjectQueryResult, SourceQueryProject};
 pub use query::{SourceQuery, SourceQueryResult};
 pub use snapshot::{SnapshotKey, SnapshotRefusal, SourceSnapshot, SourceSnapshotCache};
 
+#[cfg(feature = "experimental-resident-blocks")]
+pub mod blocks;
+
 #[cfg(feature = "experimental-source-project")]
 mod edit;
 #[cfg(feature = "experimental-source-project")]

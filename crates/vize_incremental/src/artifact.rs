@@ -326,3 +326,6 @@ pub fn compute_file_artifacts(text: &str, config: StageConfig) -> Vec<BlockArtif
         })
         .collect()
 }
+
+#[cfg(feature = "open-block-queries")]
+pub(crate) mod open;

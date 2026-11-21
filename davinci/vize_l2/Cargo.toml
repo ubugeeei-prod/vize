@@ -9,6 +9,8 @@ description = "L2 - the Davinci semantic IR (codename Disegno): the neutral op f
 metadata.vize.stability = "experimental"
 
 [features]
+# Traverse sealed markup preorder without entering leaf regions or recursing for a tail child.
+sparse-region-walk = []
 # Prepare input-neutral modules for explicit analysis and projection.
 module-ir = ["vize_l1/module-ir"]
 # Retain original callee and literal ranges for explicit component checks.

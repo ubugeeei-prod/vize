@@ -72,7 +72,7 @@ pub(super) struct Messages {
 }
 
 impl Messages {
-    pub(super) fn new(messages: &impl MessageLookup) -> Self {
+    pub(super) fn new(messages: &(impl MessageLookup + ?Sized)) -> Self {
         Self {
             message: messages.lookup("a11y/tabindex-no-positive.message"),
             help: messages.lookup("a11y/tabindex-no-positive.help"),
@@ -119,4 +119,11 @@ fn positive(value: &str) -> Result<bool, NativeLintRefusal> {
             .ok_or(NativeLintRefusal::SourceMismatch)?;
     }
     Ok(crate::attribute_policy::positive_tabindex(&decoded))
+}
+
+#[cfg(feature = "canonical-rule-group")]
+impl Messages {
+    pub(super) fn texts(&self) -> (&str, &str) {
+        (self.message.as_ref(), self.help.as_ref())
+    }
 }

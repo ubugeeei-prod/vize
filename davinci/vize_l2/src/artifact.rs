@@ -289,3 +289,16 @@ impl<'a> Artifact<'a> {
         self.parts
     }
 }
+
+#[cfg(feature = "sparse-region-walk")]
+impl<'a> Artifact<'a> {
+    /// Visit every numbered node in canonical preorder. Markup leaf regions
+    /// and tail children reuse the current frame. Structural control ops use
+    /// the shared nested event walker.
+    pub fn visit_markup_preorder<'s>(
+        &'s self,
+        visit: &mut impl FnMut(NodeId, NodeRef<'s, 'a>),
+    ) -> Result<(), NodeLimit> {
+        crate::walk::visit_sealed_nodes(&mut PageWalk::new(), &self.parts.root.ops, visit)
+    }
+}

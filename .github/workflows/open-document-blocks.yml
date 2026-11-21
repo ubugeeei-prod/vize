@@ -1,0 +1,50 @@
+name: Open document block queries
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/open-document-blocks.yml"
+      - "crates/vize_incremental/**"
+      - "crates/vize_maestro/Cargo.toml"
+      - "crates/vize_maestro/src/document/store*"
+      - "crates/vize_maestro/src/document/store/**"
+      - "crates/vize_maestro/src/server/state.rs"
+      - "crates/vize_maestro/src/server/state/resident*"
+      - "crates/vize_maestro/src/source_project.rs"
+      - "crates/vize_maestro/src/source_project/blocks*"
+      - "crates/vize_maestro/src/source_project/blocks/**"
+      - "crates/vize_maestro/src/source_project/snapshot.rs"
+      - "crates/vize_croquis/src/sfc/**"
+      - "davinci/vize_l1_to_l2/src/style*"
+permissions: { contents: read }
+concurrency:
+  group: open-document-blocks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  named-blocks:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0", components: clippy }
+      - name: Compare the original stages on each selected editor block and revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt)
+          stages=(-p vize_incremental --features open-block-queries)
+          editor=(-p vize_maestro --features experimental-resident-blocks)
+          cargo clippy "${flags[@]}" "${stages[@]}" --lib --example open_block_profile --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" "${editor[@]}" --lib --no-deps -- -D warnings
+          cargo test "${flags[@]}" "${stages[@]}" --lib block_query::
+          cargo test "${flags[@]}" "${stages[@]}" --test descriptor
+          cargo test "${flags[@]}" "${editor[@]}" --lib source_project::blocks::tests
+          export VIZE_BLOCK_QUERY_MANIFEST="$RUNNER_TEMP/named-block-originals"
+          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_BLOCK_QUERY_MANIFEST"
+          cargo test "${flags[@]}" "${editor[@]}" --lib source_project::blocks::tests::original_editor_documents -- --exact --ignored --nocapture
+          cargo run "${flags[@]}" "${stages[@]}" --example open_block_profile

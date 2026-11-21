@@ -26,6 +26,8 @@ experimental-versioned-fixes = [
   "vize_l1/diagnostic-edit-selection",
   "vize_l1/positioned-edits",
 ]
+# Read one explicitly requested block stage from the open editor revision.
+experimental-resident-blocks = ["vize_incremental/open-block-queries"]
 # Opt-in same-file JS/TS/Vue queries from original retained native owners.
 experimental-source-navigation = ["experimental-source-project", "retained-program"]
 # Opt-in legacy Vue (v0.10 / v0.11 / v1 / v2) editor / LSP surface. Not enabled by the
