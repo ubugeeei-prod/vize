@@ -5818,6 +5818,59 @@
       }
     },
     {
+      "id": "compiler/sfc/vapor-authored-attribute-quotes",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "vapor-authored-attribute-quotes",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "1c098c8a50cd1c559a1fc7c6a2577e2faa0a571c9ab6374d570460675507f245",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vapor-authored-attribute-quotes/module.expected.txt",
+        "sha256": "c2745d1a9a887bddeedd58b7c05d0b88ec2b34a9e43f790768e80a18a81a345d",
+        "source": "Baseline 4bac9d3d9e55876bace27198a8ff3b92158788d6, compiler-cli-ssr-v1 on Layout.vue. The native and retained Vapor test consumes the same fixture in crates/vize_atelier_vapor/src/tests_static_attribute_entities.rs."
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "The SSR CLI provides this whole-module reference. Native and retained Vapor compilation of the same attribute values is checked in the Rust API test, including source maps."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
       "id": "compiler/sfc/vapor-invalid-expression-control-11622",
       "state": "active",
       "targets": [
