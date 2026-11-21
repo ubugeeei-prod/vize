@@ -1,13 +1,13 @@
 //! Host discovery and evaluation of Vize configuration.
 
-#[cfg(feature = "lint-glob")]
+#[cfg(any(test, feature = "lint-glob"))]
 pub mod formatter_lint_plan;
 #[expect(
     clippy::disallowed_types,
     reason = "host config evaluation retains its existing std error and process strings"
 )]
 mod loader;
-#[cfg(feature = "lint-glob")]
+#[cfg(any(test, feature = "lint-glob"))]
 pub mod matcher;
 pub mod plugin_plan;
 mod project;
@@ -38,3 +38,6 @@ pub use loader::{
 };
 pub use project::ProjectModel;
 pub use vize_l0::config::*;
+
+#[cfg(any(test, feature = "project-file-policy"))]
+pub mod file_policy;
