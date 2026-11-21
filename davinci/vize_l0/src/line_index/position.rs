@@ -67,3 +67,84 @@ impl Position {
         }
     }
 }
+
+#[cfg(feature = "positioned-edits")]
+impl Range {
+    /// Locate the suffix beginning at `split` in a prefix whose first byte is
+    /// at `origin`. Both endpoints share a scan of the last line. A split
+    /// inside a scalar counts it, and a split beyond the prefix selects EOF.
+    #[inline]
+    pub fn suffix_of(origin: Position, prefix: &str, split: usize) -> Self {
+        use super::utf16::utf16_len;
+
+        if split == 0 {
+            return Self::new(origin, origin.after_text(prefix));
+        }
+        let split = prefix.ceil_char_boundary(split);
+        if split == prefix.len() {
+            let at = origin.after_text(prefix);
+            return Self::new(at, at);
+        }
+        let mut breaks = memchr::memchr_iter(b'\n', prefix.as_bytes());
+        let (line_origin, tail, in_line) = match breaks.next_back() {
+            None => (origin, prefix, split),
+            Some(last) => {
+                let line = origin.line + 1 + breaks.count() as u32;
+                let (_, tail) = prefix.split_at(last + 1);
+                if last >= split {
+                    let (before, _) = prefix.split_at(split);
+                    return Self::new(
+                        origin.after_text(before),
+                        Position::new(line, utf16_len(tail) as u32),
+                    );
+                }
+                (Position::new(line, 0), tail, split - (last + 1))
+            }
+        };
+        let (before, total) = if tail.is_ascii() {
+            (in_line, tail.len())
+        } else {
+            let (left, right) = tail.split_at(in_line);
+            let before = utf16_len(left);
+            (before, before + utf16_len(right))
+        };
+        Self::new(
+            Position::new(line_origin.line, line_origin.character + before as u32),
+            Position::new(line_origin.line, line_origin.character + total as u32),
+        )
+    }
+}
+
+#[cfg(all(test, feature = "positioned-edits"))]
+mod tests {
+    use super::{Position, Range};
+    use crate::line_index::offset_to_position;
+
+    #[test]
+    fn suffix_ranges_match_original_positions_at_every_split_and_start_line() {
+        for source in [
+            "\r\nα雪🍊x\n\r\n\u{2028}",
+            "first\nsecond\nthird",
+            "",
+            "abc",
+        ] {
+            for begin in (0..=source.len()).filter(|at| source.is_char_boundary(*at)) {
+                let origin = offset_to_position(source, begin);
+                for end in (begin..=source.len()).filter(|at| source.is_char_boundary(*at)) {
+                    let prefix = &source[begin..end];
+                    for split in 0..=prefix.len() + 1 {
+                        let expected = Range::new(
+                            offset_to_position(source, begin + split.min(prefix.len())),
+                            offset_to_position(source, end),
+                        );
+                        assert_eq!(Range::suffix_of(origin, prefix, split), expected);
+                    }
+                }
+            }
+        }
+        assert_eq!(
+            Range::suffix_of(Position::default(), "雪", usize::MAX),
+            Range::from_positions(0, 1, 0, 1)
+        );
+    }
+}

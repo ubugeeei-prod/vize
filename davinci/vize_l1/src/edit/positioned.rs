@@ -8,10 +8,11 @@ use vize_l0::{
 // Edit construction proves source order and both UTF-8 boundaries.
 #[inline]
 fn consume(source: &str, offset: u32, origin: Position, span: Span) -> (Range, &str) {
-    let (gap, tail) = source.split_at((span.start - offset) as usize);
-    let (replaced, tail) = tail.split_at((span.end - span.start) as usize);
-    let start = origin.after_text(gap);
-    (Range::new(start, start.after_text(replaced)), tail)
+    let (prefix, tail) = source.split_at((span.end - offset) as usize);
+    (
+        Range::suffix_of(origin, prefix, (span.start - offset) as usize),
+        tail,
+    )
 }
 
 impl<K: Copy + Eq> SpanEdit<'_, '_, K> {

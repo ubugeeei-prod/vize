@@ -41,8 +41,10 @@ jobs:
           set -euo pipefail
           flags=(--locked --profile ci-opt)
           suite=(-p vize_maestro --features experimental-versioned-fixes)
+          cargo clippy "${flags[@]}" -p vize_l0 --lib --features positioned-edits --no-deps -- -D warnings
           cargo clippy "${flags[@]}" -p vize_l1 --lib --features positioned-edits --no-deps -- -D warnings
           cargo clippy "${flags[@]}" "${suite[@]}" --test versioned_fix_publication --no-deps -- -D warnings
+          cargo test "${flags[@]}" -p vize_l0 --lib --features positioned-edits line_index::position::tests
           cargo test "${flags[@]}" -p vize_l1 --lib --features positioned-edits,diagnostic-edit-selection edit::
           cargo test "${flags[@]}" "${suite[@]}" --lib source_project::edit_tests
           cargo test "${flags[@]}" "${suite[@]}" --test versioned_fix_publication
