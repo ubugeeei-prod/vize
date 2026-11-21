@@ -1,4 +1,4 @@
-//! Legacy Vapor HTML attribute serialization regressions from #7502.
+//! Vapor HTML attribute serialization regressions, including #7502.
 
 use super::compile_vapor;
 use oxc_allocator::Allocator;
@@ -115,5 +115,67 @@ fn test_compile_static_attribute_entities_preserve_html_attribute_boundaries() {
             "{source}"
         );
         assert_parses_as_module(&result.code);
+    }
+}
+
+#[test]
+fn native_and_retained_templates_preserve_authored_double_quoted_attributes() {
+    use super::{
+        VaporCompilerExperimentalOptions, VaporCompilerOptions,
+        compile_vapor_with_sfc_context_and_capture,
+    };
+    use vize_atelier_core::{TemplateSyntaxMode, options::CustomElementMatcher};
+    use vize_l0::dump::capture::{CaptureOutcome, StageCapture};
+
+    for (source, html) in [
+        (
+            r#"<input placeholder="Example: 'something'">"#,
+            r#"<input placeholder="Example: 'something'">"#,
+        ),
+        (
+            r#"<div class = "['東京']"></div>"#,
+            r#"<div class="['東京']"></div>"#,
+        ),
+        (
+            r#"<div title="a < b > c"></div>"#,
+            r#"<div title="a < b > c"></div>"#,
+        ),
+        (
+            r#"<div title='a "b" <c>'></div>"#,
+            r#"<div title="a &quot;b&quot; &lt;c&gt;"></div>"#,
+        ),
+    ] {
+        for mapped in [false, true] {
+            let compile = |retained| {
+                let arena = vize_carton::Allocator::new();
+                let mut capture = StageCapture::new("vapor");
+                let (result, errors) = compile_vapor_with_sfc_context_and_capture(
+                    &arena,
+                    source,
+                    VaporCompilerOptions {
+                        prefix_identifiers: true,
+                        davinci_retained_lane: retained,
+                        ..Default::default()
+                    },
+                    TemplateSyntaxMode::Standard,
+                    CustomElementMatcher::default(),
+                    VaporCompilerExperimentalOptions {
+                        source_map: mapped,
+                        source_map_filename: Some("Attribute.vue".into()),
+                        ..Default::default()
+                    },
+                    None,
+                    &mut capture,
+                );
+                assert!(errors.is_empty(), "{source}: {errors:?}");
+                if !retained {
+                    assert_eq!(capture.outcome, CaptureOutcome::Accepted, "{source}");
+                }
+                assert_eq!(result.templates.as_slice(), [html], "{source}");
+                assert_eq!(result.map.is_some(), mapped, "{source}");
+                (result.code, result.map)
+            };
+            assert_eq!(compile(false), compile(true), "{source}");
+        }
     }
 }
