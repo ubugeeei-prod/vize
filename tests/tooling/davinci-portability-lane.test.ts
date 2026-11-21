@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { test } from "node:test";
 
+import { defaultLane, noDefaultLane, stagePackages } from "./support/davinci-portability.ts";
 import {
   checkWorkflowJobSources,
   readRepoFile,
@@ -13,20 +14,6 @@ import {
 // rust-clippy-portability. The same-name clippy-and-test aggregate requires
 // this producer together with allocations and native differential tests.
 // L0 remains the approved std foundation recorded in no-std-boundary.md.
-
-const portableStageCrates = [
-  ["vize_l0", "vize_l0"],
-  ["vize_l1", "vize_l1"],
-  ["vize_l2", "vize_l2"],
-  ["vize_l3", "vize_l3"],
-  ["vize_l4", "vize_l4"],
-  ["vize_l1_to_l2", "vize_l1_to_l2"],
-  ["vize_l2_to_l3", "vize_l2_to_l3"],
-] as const;
-
-const packageArgs = portableStageCrates.map(([packageName]) => `-p ${packageName}`).join(" ");
-const defaultLane = `cargo build ${packageArgs} --lib --target wasm32-wasip2`;
-const noDefaultLane = `${defaultLane} --no-default-features`;
 
 test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
   const workflow = checkWorkflowJobSources();
@@ -75,8 +62,8 @@ test("stage library sources pin unconditional no_std and L4’s non-test no_std 
   // proves they are honest (a `std::` path in either crate stops compiling).
   // A library joining the claim must appear here, in both lane commands above,
   // and in no-std-boundary.md's ledger.
-  for (const [packageName, crateDir] of portableStageCrates.slice(1)) {
-    const lib = readRepoFile("davinci", crateDir, "src", "lib.rs");
+  for (const packageName of stagePackages.slice(1)) {
+    const lib = readRepoFile("davinci", packageName, "src", "lib.rs");
     const boundary =
       packageName === "vize_l4" ? /^#!\[cfg_attr\(not\(test\), no_std\)\]$/m : /^#!\[no_std\]$/m;
     assert.match(lib, boundary, `${packageName} must keep its no_std boundary`);
