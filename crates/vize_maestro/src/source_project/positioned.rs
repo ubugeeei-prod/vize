@@ -45,22 +45,14 @@ impl SourceSnapshot {
             if let [only] = checked.edits()
                 && only.span().end <= 256
             {
-                let span = only.span();
-                let (prefix, _) = source.split_at(span.end as usize);
-                if memchr::memchr(b'\r', prefix.as_bytes()).is_some() {
-                    if let Some(range) = line_endings::single_range(source, span) {
-                        return Ok(
-                            self.document_change(document, vec![wire(range, only.replacement())])
-                        );
-                    }
-                    return Ok(self.document_change(
-                        document,
-                        line_endings::project(source, checked.edits()),
-                    ));
+                if let Some(range) = line_endings::single_range(source, only.span()) {
+                    return Ok(
+                        self.document_change(document, vec![wire(range, only.replacement())])
+                    );
                 }
-                if let Some((range, replacement)) = checked.single() {
-                    return Ok(self.document_change(document, vec![wire(range, replacement)]));
-                }
+                return Ok(
+                    self.document_change(document, line_endings::project(source, checked.edits()))
+                );
             }
             if line_endings::needs_projection(source, checked.edits()) {
                 return Ok(

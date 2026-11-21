@@ -23,25 +23,11 @@ pub(super) fn single_range(
     if inside_crlf(source.as_bytes(), start) || inside_crlf(source.as_bytes(), end) {
         return None;
     }
-    let advance = |mut position: Position, mut text: &str| {
-        while let Some(at) = memchr::memchr2(b'\r', b'\n', text.as_bytes()) {
-            let (_, tail) = text.split_at(at + 1);
-            text = if text.as_bytes().get(at) == Some(&b'\r') {
-                tail.strip_prefix('\n').unwrap_or(tail)
-            } else {
-                tail
-            };
-            position.line += 1;
-            position.character = 0;
-        }
-        position.character += utf16_len(text) as u32;
-        position
-    };
     let (before, _) = source.split_at(start);
-    let first = advance(Position::default(), before);
+    let first = Position::default().after_lsp_segment(before);
     Some(Range::new(
         first,
-        advance(first, between(source, start, end)),
+        first.after_lsp_segment(between(source, start, end)),
     ))
 }
 

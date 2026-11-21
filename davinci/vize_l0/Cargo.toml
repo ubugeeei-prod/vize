@@ -27,6 +27,7 @@ serde_json = { workspace = true, features = ["raw_value"] }
 once_cell = { workspace = true }
 smallvec = { workspace = true }
 memchr = { workspace = true }
+str_indices = { workspace = true, optional = true }
 simdutf8 = { workspace = true }
 stacker = { workspace = true }
 xxhash-rust = { workspace = true }
@@ -35,7 +36,7 @@ xxhash-rust = { workspace = true }
 # Reuse global UTF-16 positions across diagnostic requests.
 diagnostic-positions = []
 # Compose UTF-16 positions across validated source slices.
-positioned-edits = []
+positioned-edits = ["dep:str_indices"]
 default = []
 # Source operation instrumentation; absent from ordinary builds.
 micro-profiling = []

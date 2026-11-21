@@ -148,3 +148,21 @@ mod tests {
         );
     }
 }
+
+#[cfg(feature = "positioned-edits")]
+impl Position {
+    /// Advance over a complete LSP segment. CRLF is one break and its two
+    /// bytes must stay in the same segment.
+    #[inline]
+    pub fn after_lsp_segment(self, text: &str) -> Self {
+        use super::utf16::utf16_len;
+        let Some(last) = memchr::memrchr2(b'\r', b'\n', text.as_bytes()) else {
+            return Self::new(self.line, self.character + utf16_len(text) as u32);
+        };
+        let (lines, tail) = text.split_at(last + 1);
+        Self::new(
+            self.line + str_indices::lines_crlf::count_breaks(lines) as u32,
+            utf16_len(tail) as u32,
+        )
+    }
+}
