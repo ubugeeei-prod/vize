@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "vapor-sfc-history-hydration-sibling-element",
+    history: "8a6c88b343fa3dba948ea11bcd37d027d6ca473a",
+    source: "<template><div><h1>{{ a }}</h1><input v-model=\"q\"><p>{{ b }}</p></div></template>",
+    filename: "Original.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, applyTextModel as _applyTextModel, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div><h1> </h1><input><p> </p></div>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  const n1 = _child(n0)\n  const n2 = _next(n1)\n  const n3 = _next(n2)\n  const x1 = _txt(n1)\n  const x3 = _txt(n3)\n  _applyTextModel(n2, () => (_ctx.q), _value => (_ctx.q = _value))\n  _renderEffect(() => {\n    _setText(x1, _toDisplayString(_ctx.a))\n    _setText(x3, _toDisplayString(_ctx.b))\n  })\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

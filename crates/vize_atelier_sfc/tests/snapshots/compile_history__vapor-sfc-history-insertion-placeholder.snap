@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "vapor-sfc-history-insertion-placeholder",
+    history: "af1079858fe8b74f623f459483d3a676e9bbb74c",
+    source: "<template><div><span/><slot/><span/></div></template>",
+    filename: "Original.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createSlot as _createSlot, child as _child, next as _next, setInsertionState as _setInsertionState, template as _template } from 'vue';\nconst t0 = _template(\"<div><span></span><!----><span></span></div>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n1 = t0()\n  const n2 = _next(_child(n1))\n  _setInsertionState(n1, n2)\n  const n0 = _createSlot(\"default\")\n  return n1\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

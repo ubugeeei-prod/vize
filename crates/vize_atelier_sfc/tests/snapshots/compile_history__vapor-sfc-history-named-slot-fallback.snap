@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "vapor-sfc-history-named-slot-fallback",
+    history: "b7a657e126cc4c0cef92630f9c5626f3569616e2",
+    source: "<template><slot name=\"header\" :item=\"x\"><span>fallback</span></slot></template>",
+    filename: "Original.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createSlot as _createSlot, template as _template } from 'vue';\nconst t0 = _template(\"<span>fallback</span>\")\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = _createSlot(\"header\", { item: () => (_ctx.x) }, () => {\n    const n1 = t0()\n    return n1\n  })\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

@@ -17537,5 +17537,173 @@
       "sourceMap": true
     },
     "errors": 0
+  },
+  {
+    "id": "vapor-sfc-history-mounted-control-slot",
+    "history": "1679959a38f6170133111118a06dd29dffd8901c",
+    "source": "<template><section><p v-if=\"ready\">ready</p><slot name=\"body\"><span v-text=\"fallback\"></span></slot></section></template>",
+    "filename": "Original.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-sfc-history-delegated-if",
+    "history": "3b0400f76165e2bafa3f4b61e728cc7ae9769bc8",
+    "source": "<template><button v-if=\"ready\" @click=\"save\">save</button></template>",
+    "filename": "Original.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-sfc-history-delegated-loop",
+    "history": "3b0400f76165e2bafa3f4b61e728cc7ae9769bc8",
+    "source": "<template><button v-for=\"item in items\" :key=\"item\" @click=\"save\">{{ item }}</button></template>",
+    "filename": "Original.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-sfc-history-delegated-slot-fallback",
+    "history": "3b0400f76165e2bafa3f4b61e728cc7ae9769bc8",
+    "source": "<template><slot name=\"body\"><button @click=\"save\">save</button></slot></template>",
+    "filename": "Original.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-sfc-history-once-directive",
+    "history": "866be7b96ed336704bd1fd3a2f3dc2ad6e699151",
+    "source": "<template><div v-once>{{ msg }}</div></template>",
+    "filename": "Original.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-sfc-history-empty-memo",
+    "history": "866be7b96ed336704bd1fd3a2f3dc2ad6e699151",
+    "source": "<template><div v-memo=\"[]\">{{ msg }}</div></template>",
+    "filename": "Original.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-sfc-history-tracked-memo",
+    "history": "866be7b96ed336704bd1fd3a2f3dc2ad6e699151",
+    "source": "<template><div v-memo=\"[msg]\">{{ msg }}</div></template>",
+    "filename": "Original.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-sfc-history-hydration-sibling-element",
+    "history": "8a6c88b343fa3dba948ea11bcd37d027d6ca473a",
+    "source": "<template><div><h1>{{ a }}</h1><input v-model=\"q\"><p>{{ b }}</p></div></template>",
+    "filename": "Original.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-sfc-history-insertion-placeholder",
+    "history": "af1079858fe8b74f623f459483d3a676e9bbb74c",
+    "source": "<template><div><span/><slot/><span/></div></template>",
+    "filename": "Original.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-sfc-history-named-slot-fallback",
+    "history": "b7a657e126cc4c0cef92630f9c5626f3569616e2",
+    "source": "<template><slot name=\"header\" :item=\"x\"><span>fallback</span></slot></template>",
+    "filename": "Original.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-sfc-history-nested-slot-outlet",
+    "history": "d90df360f333eda938117bc46a271788720d0c81",
+    "source": "<template><div><slot :row=\"item\" :index=\"i\"></slot></div></template>",
+    "filename": "Original.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-sfc-history-root-document-order",
+    "history": "dfea039416f95ae63e1662344f7da0cf8c203e4d",
+    "source": "<template><Child/><p>A</p><Child/><p>B</p></template>",
+    "filename": "Original.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-sfc-history-directive-dynamic-argument",
+    "history": "faa404cc05004560db04dc088cd9cbcb13a3b999",
+    "source": "<template><div v-focus:[placement].lazy=\"handler\" /></template>",
+    "filename": "Original.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-sfc-history-builtin-cloak",
+    "history": "faa404cc05004560db04dc088cd9cbcb13a3b999",
+    "source": "<template><div v-cloak>{{ msg }}</div></template>",
+    "filename": "Original.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
   }
 ]
