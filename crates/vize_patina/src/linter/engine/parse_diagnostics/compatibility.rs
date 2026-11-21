@@ -2,7 +2,7 @@
 
 use super::{LintResult, Linter, TEMPLATE_PARSE_RULE};
 use crate::diagnostic::LintDiagnostic;
-use crate::markup::L2Template;
+use crate::markup::LintInput;
 use vize_atelier_sfc::SfcStyleBlock;
 use vize_l0::{Allocator, ErrorCode, FxHashSet, Span};
 use vize_l1::markup::entity::{EntityContext, decode_one};
@@ -19,7 +19,7 @@ fn append_entity_diagnostics(
     diagnostics: &mut Vec<LintDiagnostic>,
     error_count: &mut usize,
     source: &str,
-    template: &L2Template<'_>,
+    template: &LintInput<'_>,
 ) {
     let mut expression_spans = Vec::new();
     template.for_each_expression_span(|span| expression_spans.push(span));
@@ -117,7 +117,7 @@ fn append_entity_diagnostics(
     }
 }
 
-fn invalid_expression_spans(template: &L2Template<'_>) -> Vec<Span> {
+fn invalid_expression_spans(template: &LintInput<'_>) -> Vec<Span> {
     let mut seen = FxHashSet::default();
     let mut rejected = Vec::new();
     template.for_each_invalid_expression(|span, reason| {
@@ -173,7 +173,7 @@ impl Linter {
         &self,
         result: &mut LintResult,
         source: &str,
-        template: &L2Template<'_>,
+        template: &LintInput<'_>,
     ) {
         if !self.compatibility_template_parse_enabled() {
             return;
