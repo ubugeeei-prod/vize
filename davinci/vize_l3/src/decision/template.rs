@@ -137,3 +137,13 @@ pub fn build_template_dom_decisions<'owner, 'arena>(
     let analysis = super::dom::file::build_original_file_decisions(file)?;
     Ok(TemplateDomAnalysis { view, analysis })
 }
+
+#[cfg(feature = "client-server-decisions")]
+impl<'owner, 'arena> TemplateDomAnalysis<'owner, 'arena> {
+    pub(in crate::decision) fn from_pair(
+        target: crate::decision::build::paired::CompletedTarget<'owner, 'arena>,
+    ) -> Self {
+        let (view, analysis) = FileAnalysis::from_pair(target);
+        Self { view, analysis }
+    }
+}

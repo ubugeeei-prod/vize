@@ -9,6 +9,10 @@ description = "L3 - the Davinci reactivity IR (codename Impeto): flat scheduled 
 metadata.vize.stability = "experimental"
 readme = "README.md"
 
+[features]
+# Build both original client and server target analyses in one canonical walk.
+client-server-decisions = []
+
 [dependencies]
 oxc_ast = { workspace = true }
 vize_l0 = { workspace = true }

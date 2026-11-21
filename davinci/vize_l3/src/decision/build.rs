@@ -211,3 +211,6 @@ struct Frame {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "client-server-decisions")]
+pub(in crate::decision) mod paired;

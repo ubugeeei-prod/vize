@@ -157,3 +157,13 @@ pub(in crate::decision) fn build_original_file_decisions<'owner, 'arena>(
     )?;
     Ok(FileAnalysis { file, analysis })
 }
+
+#[cfg(feature = "client-server-decisions")]
+impl<'owner, 'arena> FileAnalysis<'owner, 'arena> {
+    pub(in crate::decision) fn from_pair(
+        target: crate::decision::build::paired::CompletedTarget<'owner, 'arena>,
+    ) -> (vize_l2::lang::js::NativeTemplateView<'owner, 'arena>, Self) {
+        let (view, file, analysis) = target.into_parts();
+        (view, Self { file, analysis })
+    }
+}
