@@ -127,7 +127,16 @@ fn native_and_retained_templates_preserve_authored_double_quoted_attributes() {
     use vize_atelier_core::{TemplateSyntaxMode, options::CustomElementMatcher};
     use vize_l0::dump::capture::{CaptureOutcome, StageCapture};
 
+    let fixture = include_str!("../../../tests/_fixtures/differential/compiler/vapor-authored-attribute-quotes/Layout.vue.txt")
+        .trim()
+        .strip_prefix("<template>")
+        .and_then(|value| value.strip_suffix("</template>"))
+        .unwrap();
     for (source, html) in [
+        (
+            fixture,
+            r#"<input class="['radio']" placeholder="Example: 'something'">"#,
+        ),
         (
             r#"<input placeholder="Example: 'something'">"#,
             r#"<input placeholder="Example: 'something'">"#,
