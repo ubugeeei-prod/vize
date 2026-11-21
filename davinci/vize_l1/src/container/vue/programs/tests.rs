@@ -76,12 +76,10 @@ fn absence_recovery_and_equal_text_keep_their_original_identity() {
                 programs.get(ScriptRole::Ordinary).unwrap()
             ));
         });
-    let first =
-        alloc::string::String::from("<script>const x=1</script><script setup>const x=1</script>");
-    let second = first.clone();
+    let text = "<script>const x=1</script><script setup>const x=1</script>";
     let owners = [
-        Vue.observe_descriptor(&arena, &first, options()),
-        Vue.observe_descriptor(&arena, &second, options()),
+        Vue.observe_descriptor(&arena, arena.alloc_str(text), options()),
+        Vue.observe_descriptor(&arena, arena.alloc_str(text), options()),
     ];
     let [left, right] = owners.each_ref().map(|d| d.admitted().unwrap());
     left.with_script_programs(&arena, |a| {
