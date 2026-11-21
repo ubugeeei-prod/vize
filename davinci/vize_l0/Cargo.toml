@@ -32,6 +32,8 @@ stacker = { workspace = true }
 xxhash-rust = { workspace = true }
 
 [features]
+# Reuse global UTF-16 positions across diagnostic requests.
+diagnostic-positions = []
 default = []
 # Source operation instrumentation; absent from ordinary builds.
 micro-profiling = []

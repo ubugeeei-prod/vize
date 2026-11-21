@@ -213,3 +213,8 @@ pub use module::{ModuleProjectionError, project_module};
 pub use helpers::COMPONENT_HELPERS;
 #[cfg(feature = "component-projection")]
 pub use module::project_module_with_component_checks;
+
+#[cfg(feature = "diagnostic-positions")]
+mod diagnostics;
+#[cfg(feature = "diagnostic-positions")]
+pub use diagnostics::DiagnosticMapper;

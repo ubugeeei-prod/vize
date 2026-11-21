@@ -117,6 +117,11 @@ pub fn offset_to_position(source: &str, offset: usize) -> Position {
     Position { line, character }
 }
 
+#[cfg(feature = "diagnostic-positions")]
+mod utf16_cursor;
+#[cfg(feature = "diagnostic-positions")]
+pub use utf16_cursor::Utf16Cursor;
+
 #[cfg(test)]
 mod tests {
     use super::{LineIndex, offset_to_line_col};

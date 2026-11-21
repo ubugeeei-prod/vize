@@ -19,6 +19,8 @@ metadata.vize.stability = "experimental"
 readme = "README.md"
 
 [features]
+# Reuse global UTF-16 positions across diagnostic requests.
+diagnostic-positions = ["vize_l0/diagnostic-positions"]
 # Prepare input-neutral modules for explicit analysis and projection.
 module-ir = ["vize_l1_to_l2/module-ir"]
 # Check lexical component calls in an explicitly requested prepared module.
@@ -54,3 +56,8 @@ davinci_test_support = { workspace = true, features = ["native-dom"] }
 
 [lints]
 workspace = true
+
+[[test]]
+name = "diagnostic_positions"
+path = "tests/diagnostic_positions/main.rs"
+required-features = ["diagnostic-positions"]
