@@ -38,8 +38,8 @@ fn same(before: &Products, after: &Products, filename: &str) {
     // LintResult's derived Debug includes the full labels, optional help, fix
     // edits, severities and both counts. The compiler result has structural Eq.
     assert_eq!(
-        format!("{:?}", before.0),
-        format!("{:?}", after.0),
+        vize_l0::cstr!("{:?}", before.0),
+        vize_l0::cstr!("{:?}", after.0),
         "{filename}"
     );
     assert_eq!(&before.1, &after.1, "{filename}");
@@ -85,7 +85,7 @@ fn all_readers_observe_the_same_host_expressions_and_original_product_refusals()
                         .with_help_level(HelpLevel::Full);
                     let actual = linter.lint_prepared_tsrx(&stages, "Same.tsrx");
                     let expected = linter.lint_tsrx(source, "Same.tsrx");
-                    assert_eq!(format!("{actual:?}"), format!("{expected:?}"));
+                    assert_eq!(vize_l0::cstr!("{actual:?}"), vize_l0::cstr!("{expected:?}"));
                 }
             }
             assert_eq!(

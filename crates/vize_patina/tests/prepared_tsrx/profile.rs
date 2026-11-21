@@ -17,7 +17,7 @@ fn original_request_costs() {
             use core::fmt::Write;
             writeln!(source, "export function List{i}({{ items }}: {{ items: string[] }}) @{{ <ul>{{items.map(x => <li><img src={{x}}/></li>)}}</ul> }}").unwrap();
         }
-        measure(&linter, &format!("generated-{roots}.tsrx"), &source);
+        measure(&linter, &vize_l0::cstr!("generated-{roots}.tsrx"), &source);
     }
 }
 
