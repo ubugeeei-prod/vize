@@ -82,7 +82,16 @@ fn providers_projection_and_completion_preserve_their_own_recovery_contracts() {
     }
     let result = separate(COMBINED);
     assert!(result.checker.reexports_vue_template_ref);
-    assert!(result.checker.typescript.contains("declare class"));
+    assert_eq!(
+        result.checker.typescript.as_str(),
+        concat!(
+            "interface Widgets { '雪-card': unknown; Base: any }\n",
+            "declare module 'vue' { interface GlobalComponents extends Widgets { Local: any } }\n",
+            "export { useTemplateRef } from 'vue';\n",
+            "declare class __vize_shipped_default_0<T> { value: T }\n",
+            "export default __vize_shipped_default_0;"
+        )
+    );
     assert_eq!(
         result.component_tags,
         ["Base", "Local", "雪-card"].map(String::from)
