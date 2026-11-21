@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "ssr-component-slot-parameter-nested",
+    history: "4819858579748608f8a3837b62ee6a2fb638d11e",
+    source: "<template><Outer><Comp v-slot=\"{ item: row }\"><Leaf :row=\"row\" :outer=\"label\"/></Comp></Outer></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { createVNode as _createVNode, resolveComponent as _resolveComponent, withCtx as _withCtx } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Outer\"), _attrs, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(_ssrRenderComponent(_resolveComponent(\"Comp\"), null, {\n          default: _withCtx(({ item: row }, _push, _parent, _scopeId) => {\n            if (_push) {\n              _push(_ssrRenderComponent(_resolveComponent(\"Leaf\"), { row: row, outer: _ctx.label }, null, _parent, _scopeId))\n            } else {\n              return [_createVNode(_resolveComponent(\"Leaf\"), { row: row, outer: _ctx.label }, null)]\n            }\n          }),\n          _: 1\n        }, _parent, _scopeId))\n      } else {\n        return [_createVNode(_resolveComponent(\"Comp\"), null, { default: _withCtx(({ item: row }) => [_createVNode(_resolveComponent(\"Leaf\"), { row: row, outer: _ctx.label }, null)]), _: 1 })]\n      }\n    }),\n    _: 1\n  }, _parent))\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

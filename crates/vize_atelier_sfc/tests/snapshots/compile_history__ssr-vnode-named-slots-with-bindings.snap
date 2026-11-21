@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "ssr-vnode-named-slots-with-bindings",
+    history: "49c9bcc2d19e1a1abfc2bcd0a372e16339a41ff6",
+    source: "<template><Outer><Inner><template #header=\"{ collapsed }\"><span>{{ collapsed }}</span></template><template #default=\"{ collapsed }\"><Leaf :collapsed=\"collapsed\" /></template></Inner></Outer></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { createVNode as _createVNode, createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, withCtx as _withCtx } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Outer\"), _attrs, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(_ssrRenderComponent(_resolveComponent(\"Inner\"), null, {\n          header: _withCtx(({ collapsed }, _push, _parent, _scopeId) => {\n            if (_push) {\n              _push(`<span>${_ssrInterpolate(collapsed)}</span>`)\n            } else {\n              return [_createElementVNode(\"span\", null, _toDisplayString(collapsed), 1 /* TEXT */)]\n            }\n          }),\n          default: _withCtx(({ collapsed }, _push, _parent, _scopeId) => {\n            if (_push) {\n              _push(_ssrRenderComponent(_resolveComponent(\"Leaf\"), { collapsed: collapsed }, null, _parent, _scopeId))\n            } else {\n              return [_createVNode(_resolveComponent(\"Leaf\"), { collapsed: collapsed }, null)]\n            }\n          }),\n          _: 1\n        }, _parent, _scopeId))\n      } else {\n        return [_createVNode(_resolveComponent(\"Inner\"), null, { header: _withCtx(({ collapsed }) => [_createElementVNode(\"span\", null, _toDisplayString(collapsed), 1 /* TEXT */)]), default: _withCtx(({ collapsed }) => [_createVNode(_resolveComponent(\"Leaf\"), { collapsed: collapsed }, null)]), _: 1 })]\n      }\n    }),\n    _: 1\n  }, _parent))\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)
