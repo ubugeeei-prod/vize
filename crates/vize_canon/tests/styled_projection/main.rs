@@ -11,8 +11,6 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_canon::{
     ImportRewriter, batch::generate_vue_document_virtual_ts, virtual_ts::VirtualTsOptions,
 };
-use vize_l0::config::{VueDialect, VueVersion};
-use vize_l1::container::vue::DescriptorOptions;
 
 use vize_l0::{Allocator, Span, line_index::utf16_len};
 use vize_l1_to_l2::native_file::{NativeSfcObservation, lower_sfc_native};
@@ -21,15 +19,8 @@ use vize_l4::targets::ts::vue::{
 };
 
 mod checker;
-mod profile;
-
-fn options() -> DescriptorOptions {
-    DescriptorOptions {
-        version: VueVersion::V3,
-        dialect: VueDialect::Vue,
-        template: Default::default(),
-    }
-}
+mod input;
+use input::options;
 
 #[derive(Default, Debug)]
 struct Counts {
@@ -47,7 +38,6 @@ struct Counts {
     style_bodies: usize,
     bindings: usize,
     incomplete: usize,
-    time: bool,
 }
 
 // Preserve byte offsets, CR/LF positions, and every authored script and template
@@ -170,9 +160,6 @@ fn qualify(source: &str, counts: &mut Counts) {
         counts.retained_errors += 1;
         return;
     };
-    if counts.time {
-        profile::paired(&obs, counts.sources);
-    }
     let masked = control_source(source, &obs);
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("original SFC parser");
     assert!(descriptor.css_vars.is_empty());
@@ -280,10 +267,7 @@ fn an_external_style_or_a_style_only_document_keeps_the_original_admission() {
 fn original_styled_files() {
     let manifest = fs::read(std::env::var_os("VIZE_STYLED_CHECKER_INPUTS").unwrap()).unwrap();
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let mut counts = Counts {
-        time: std::env::var_os("VIZE_STYLED_CHECKER_TIMINGS").is_some(),
-        ..Counts::default()
-    };
+    let mut counts = Counts::default();
     let mut checker_inputs = Vec::new();
     for path in manifest.split(|&b| b == 0).filter(|p| !p.is_empty()) {
         let file = fs::read(root.join(std::str::from_utf8(path).unwrap())).unwrap();

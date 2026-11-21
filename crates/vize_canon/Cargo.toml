@@ -128,6 +128,11 @@ required-features = ["component-projection-tests"]
 name = "styled_projection"
 required-features = ["styled-projection-tests"]
 
+[[example]]
+name = "styled_projection_profile"
+path = "tests/styled_projection/profile.rs"
+required-features = ["styled-projection-tests"]
+
 [[test]]
 name = "empty_vue_star_exports"
 required-features = ["native"]

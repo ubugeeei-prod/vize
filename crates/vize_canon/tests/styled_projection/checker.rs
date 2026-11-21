@@ -35,7 +35,10 @@ struct AuthoredDiagnostic<'a> {
 
 fn check(documents: Vec<Document<'_>>) -> Vec<Vec<Diagnostic>> {
     let mut node = Command::new("node")
-        .args(["--input-type=module", "-e", include_str!("checker.mjs")])
+        .arg(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/styled_projection/checker.ts"
+        ))
         .current_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

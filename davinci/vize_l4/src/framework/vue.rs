@@ -352,7 +352,12 @@ impl<'o, 'a> StyledVueInput<'o, 'a> {
             let block = style.original_block();
             let inline_css = style.attrs().iter().all(|attr| match attr.name {
                 "scoped" => attr.value.is_none(),
-                "lang" => attr.value == Some("css"),
+                "lang" => {
+                    attr.value
+                        == Some(vize_l1::container::lang::style_name(
+                            vize_l1::container::lang::StyleLanguage::Css,
+                        ))
+                }
                 _ => false,
             });
             if !inline_css
