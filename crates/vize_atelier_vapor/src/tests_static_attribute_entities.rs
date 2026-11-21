@@ -153,6 +153,7 @@ fn native_and_retained_templates_preserve_authored_double_quoted_attributes() {
             r#"<div title='a "b" <c>'></div>"#,
             r#"<div title="a &quot;b&quot; &lt;c&gt;"></div>"#,
         ),
+        (r#"<div :class="class"></div>"#, "<div></div>"),
     ] {
         for mapped in [false, true] {
             let compile = |retained| {
