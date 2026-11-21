@@ -39,7 +39,7 @@ pub(super) fn publish(
             },
         );
     }
-    // The exported name's authored counterpart is the SFC itself.
+    // The export assignment's authored counterpart is the SFC itself.
     if let Some(name) = component_export {
         mapping.push_with(
             VizeMapping::new(name, 0..0),
@@ -104,7 +104,10 @@ mod tests {
                 )
             })
             .collect::<Vec<_>>();
-        assert_eq!(exports, [(Some("Probe"), 0..0, 24)]);
+        assert_eq!(
+            exports,
+            [(Some("export default Probe as typeof Probe;"), 0..0, 24)]
+        );
     }
 
     #[test]

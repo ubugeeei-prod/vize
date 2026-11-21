@@ -65,7 +65,7 @@ fn echoed_assignment_keeps_only_its_name_visible() {
         "no per-usage input alias"
     );
     assert_eq!(
-        text.rsplit_once("\nexport default App;\n")
+        text.rsplit_once("\nexport default App as typeof App;\n")
             .map(|(_, tail)| tail),
         Some(attr_value_declaration(false)),
         "one module helper after the default export"

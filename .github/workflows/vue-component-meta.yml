@@ -1,0 +1,50 @@
+name: Vue component metadata
+on:
+  pull_request:
+    paths:
+      - crates/vize_canon/src/virtual_ts/generator/component_export*
+      - crates/vize_canon/src/virtual_ts/generator/component_constructors*
+      - tools/support/compat/content-mapper/fixtures/vue-component-meta/**
+      - .github/workflows/vue-component-meta.yml
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: vue-component-meta-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  metadata:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version-file: package.json, package-manager-cache: false }
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
+        with: { toolchain: "1.100.0" }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: component-meta, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - uses: ./.github/actions/setup-rust-script
+      - run: cargo build --locked --profile ci -p vize
+      - name: Read component metadata and check template diagnostics
+        run: |
+          cp -R tools/support/compat/content-mapper/fixtures/vue-component-meta "$RUNNER_TEMP/component-meta"
+          cd "$RUNNER_TEMP/component-meta"
+          npm install --no-audit --no-fund --legacy-peer-deps tsrs@7.1.0-beta.tsrs4 vue@3.5.46 vue-component-meta@4.0.0-alpha.3
+          mkdir -p node_modules/vize
+          cp -R "$GITHUB_WORKSPACE/npm/cli/"{package.json,*.d.*,generated} node_modules/vize/
+          node --input-type=module <<'JS'
+          import fs from "node:fs";
+          const file = "node_modules/vize/package.json";
+          const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+          manifest.typescript.contentMapper.exec = [process.env.GITHUB_WORKSPACE + "/target/ci/vize", "content-mapper"];
+          fs.writeFileSync(file, JSON.stringify(manifest));
+          JS
+          node check.ts
+      - name: Check component tag hover and go-to-definition
+        env:
+          VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/component-meta/node_modules/.bin/tsrs
+          VIZE_TEST_CONTENT_MAPPER_VUE: ${{ runner.temp }}/component-meta/node_modules/vue
+        run: cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_editor_accuracy::component_tags::
