@@ -73,30 +73,79 @@ test("check workflow uploads Davinci allocation bench reports", () => {
   );
 });
 
-test("editor script qualification runs the original readers and paired measurements on tracked inputs", () => {
+test("editor script qualification runs the original readers and paired measurements on tracked inputs", (t) => {
   const workflow = parse(readRepoFile(".github", "workflows", "editor-script-queries.yml")) as {
     jobs: Record<string, WorkflowJob>;
   };
-  const commands = workflow.jobs["editor-products"].steps?.find((step) =>
-    step.run?.includes("VIZE_SCRIPT_QUERY_INPUTS"),
-  )?.run;
-  assert.ok(commands);
-  assert.match(
-    commands,
-    /editor=\(-p vize_maestro --features experimental-script-queries,micro-profiling --lib\)/,
+  const root = mkdtempSync(join(tmpdir(), "vize-editor-script-queries-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  git(root, ["init", "-q"]);
+  const sources = ["App.vue", "two lines\nin this name.vue.txt"];
+  for (const name of [...sources, "notes.txt", "untracked.vue"])
+    writeFileSync(join(root, name), "");
+  git(root, ["add", "--", ...sources, "notes.txt"]);
+  const bin = join(root, "bin");
+  mkdirSync(bin);
+  const log = join(root, "cargo.jsonl");
+  writeFileSync(
+    join(bin, "cargo"),
+    [
+      "#!/usr/bin/env node",
+      "const fs = require('node:fs');",
+      "const input = process.env.VIZE_SCRIPT_QUERY_INPUTS;",
+      "const manifest = input && fs.readFileSync(input, 'utf8').split('\\0');",
+      "fs.appendFileSync(process.env.CARGO_INVOCATIONS, JSON.stringify({args:process.argv.slice(2),manifest})+'\\n');",
+    ].join("\n"),
+    { mode: 0o755 },
   );
-  assert.match(commands, /export VIZE_SCRIPT_QUERY_INPUTS="\$RUNNER_TEMP\/[^"]+"/);
-  assert.match(
-    commands,
-    /git ls-files -z -- '\*\.vue' '\*\.vue\.txt' > "\$VIZE_SCRIPT_QUERY_INPUTS"/,
-  );
-  for (const suite of ["server::document_structure::symbols::tests", "ide::file_rename::"]) {
-    assert.ok(commands.includes('cargo test "${flags[@]}" "${editor[@]}" ' + suite));
+  for (const step of workflow.jobs["editor-products"].steps ?? []) {
+    if (!step.run) continue;
+    const result = spawnSync("bash", ["-e", "-o", "pipefail", "-c", step.run], {
+      cwd: root,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        RUNNER_TEMP: root,
+        PATH: bin + delimiter + process.env.PATH,
+        CARGO_INVOCATIONS: log,
+        VIZE_SCRIPT_QUERY_INPUTS: "",
+      },
+    });
+    assert.equal(result.status, 0, result.stderr);
   }
-  assert.match(
-    commands,
-    /cargo test "\$\{flags\[@\]\}" "\$\{editor\[@\]\}" source_project::script_queries:: -- --include-ignored --nocapture --test-threads=1/,
-  );
+  const calls: { args: string[]; manifest?: string[] }[] = readFileSync(log, "utf8")
+    .trimEnd()
+    .split("\n")
+    .map((line) => JSON.parse(line));
+  function invocation(command: string, pkg: string, features: string[], required: string[]) {
+    const call = calls.find(({ args }) => {
+      const enabled = args[args.indexOf("--features") + 1]?.split(/[ ,]+/);
+      return (
+        args[0] === command &&
+        args[args.indexOf("-p") + 1] === pkg &&
+        features.every((feature) => enabled?.includes(feature)) &&
+        required.every((flag) => args.includes(flag))
+      );
+    });
+    assert.ok(call, JSON.stringify({ command, pkg, features, required }));
+    assert.ok(call.args.includes("--locked"));
+    assert.equal(call.args[call.args.indexOf("--profile") + 1], "ci-opt");
+    assert.ok(call.args.includes("--lib"));
+    return call;
+  }
+  const editor = ["experimental-script-queries", "micro-profiling"];
+  const lint = ["--no-deps", "-D", "warnings"];
+  invocation("clippy", "vize_l1", ["authored-script-queries"], lint);
+  invocation("clippy", "vize_maestro", editor, lint);
+  for (const suite of ["server::document_structure::symbols::tests", "ide::file_rename::"]) {
+    invocation("test", "vize_maestro", editor, [suite]);
+  }
+  const corpus = invocation("test", "vize_maestro", editor, ["source_project::script_queries::"]);
+  assert.deepEqual(corpus.manifest, [...sources, ""]);
+  const options = corpus.args.slice(corpus.args.indexOf("--") + 1);
+  assert.ok(corpus.args.includes("--"));
+  for (const flag of ["--include-ignored", "--nocapture", "--test-threads=1"])
+    assert.ok(options.includes(flag));
 });
 
 test("client and server target qualification exercises original inputs and serialized allocation windows", () => {
