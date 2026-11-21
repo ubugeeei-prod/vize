@@ -127,6 +127,7 @@ fn configured_facts_scopes_errors_and_report_positions_match() {
 
 fn originals(mut visit: impl FnMut(usize, &str, &str)) -> usize {
     let manifest = std::fs::read(std::env::var("VIZE_PLUGIN_TEMPLATE_INPUTS").unwrap()).unwrap();
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let mut invalid = 0;
     for (index, raw) in manifest
         .split(|b| *b == 0)
@@ -134,7 +135,7 @@ fn originals(mut visit: impl FnMut(usize, &str, &str)) -> usize {
         .enumerate()
     {
         let name = std::str::from_utf8(raw).unwrap();
-        let contents = std::fs::read(name).unwrap();
+        let contents = std::fs::read(root.join(name)).unwrap();
         if let Ok(source) = std::str::from_utf8(&contents) {
             visit(index, name, source);
         } else {
