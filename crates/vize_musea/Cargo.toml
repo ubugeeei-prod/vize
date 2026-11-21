@@ -8,6 +8,9 @@ repository.workspace = true
 description = "Musea - Component gallery and documentation for Vize Vue components"
 metadata.vize.stability = "experimental"
 
+[features]
+art-source-products = []
+
 [dependencies]
 vize_l0.workspace = true
 vize_l1.workspace = true
@@ -32,3 +35,7 @@ harness = false
 
 [lints]
 workspace = true
+
+[[test]]
+name = "art_source_products"
+required-features = ["art-source-products"]

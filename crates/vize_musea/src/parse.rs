@@ -373,3 +373,6 @@ fn prefix(source: &str, offset: u32) -> &[u8] {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "art-source-products")]
+pub(crate) mod products;

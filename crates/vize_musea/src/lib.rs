@@ -239,3 +239,6 @@ defineArtMeta({
         // Arena is dropped when allocator goes out of scope
     }
 }
+
+#[cfg(feature = "art-source-products")]
+pub use parse::products::{ArtSourceProducts, parse_art_products};
