@@ -20,6 +20,12 @@ experimental-source-folding = []
 experimental-sfc-folding = []
 # Optional genuine native edit and original Program observation adapters.
 experimental-source-project = []
+# Publish an explicitly selected diagnostic fix batch against its original open revision.
+experimental-versioned-fixes = [
+  "experimental-source-project",
+  "vize_l1/diagnostic-edit-selection",
+  "vize_l1/positioned-edits",
+]
 # Read one explicitly requested block stage from the open editor revision.
 experimental-resident-blocks = ["vize_incremental/open-block-queries"]
 # Opt-in same-file JS/TS/Vue queries from original retained native owners.
@@ -100,3 +106,7 @@ tempfile.workspace = true
 
 [lints]
 workspace = true
+
+[[test]]
+name = "versioned_fix_publication"
+required-features = ["experimental-versioned-fixes"]

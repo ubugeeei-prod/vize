@@ -237,3 +237,8 @@ mod tests {
         }
     }
 }
+
+#[cfg(feature = "positioned-edits")]
+mod ascii_lines;
+#[cfg(feature = "positioned-edits")]
+pub use ascii_lines::AsciiLineCursor;

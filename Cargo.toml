@@ -183,6 +183,7 @@ ecow = "=0.3.1"
 phf = { version = "=0.13.1", features = ["macros"] }
 memoffset = "=0.9.1"
 memchr = "=2.8.3"
+str_indices = "=0.4.4"
 simdutf8 = "=0.1.5"
 fast-float2 = "=0.2.4"
 regex = "=1.13.1"

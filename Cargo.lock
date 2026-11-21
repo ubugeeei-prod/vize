@@ -5058,6 +5058,7 @@ dependencies = [
  "simdutf8",
  "smallvec",
  "stacker",
+ "str_indices",
  "tempfile",
  "vize_atelier_sfc",
  "vize_carton",

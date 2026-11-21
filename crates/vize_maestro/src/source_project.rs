@@ -29,3 +29,6 @@ mod edit_tests;
 mod program_tests;
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "experimental-versioned-fixes")]
+mod positioned;
