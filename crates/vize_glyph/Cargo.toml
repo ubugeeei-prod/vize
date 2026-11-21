@@ -8,6 +8,10 @@ repository.workspace = true
 description = "Glyph - The beautiful letterforms for Vize code formatting"
 publish = false
 
+[features]
+# Share a formatting result for an observed program and immutable settings.
+retained-script = []
+
 [dependencies]
 # Internal crates
 vize_l0.workspace = true

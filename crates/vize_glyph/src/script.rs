@@ -272,3 +272,6 @@ mod tests {
         assert_eq!(result, Some(String::default()));
     }
 }
+
+#[cfg(feature = "retained-script")]
+pub(crate) mod snapshot;
