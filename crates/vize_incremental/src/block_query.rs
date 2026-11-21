@@ -9,6 +9,11 @@ use crate::{
 };
 use vize_l0::Span;
 
+#[cfg(feature = "open-block-queries")]
+pub(crate) mod open;
+#[cfg(feature = "open-block-queries")]
+pub use open::ParsedBlocks;
+
 /// A file-absolute offset cannot select a UTF-8 position in this revision.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum BlockPositionError {
