@@ -17465,5 +17465,77 @@
       "scriptOutput": "separate"
     },
     "errors": 0
+  },
+  {
+    "id": "vapor-loop-object-index-module",
+    "history": "0895f6324800ac945aaba3c375ef0dc239458f60",
+    "source": "<template><div v-for=\"(value, key, idx) in obj\" :key=\"idx\">{{ key }}: {{ value }}: {{ idx }}</div></template>",
+    "filename": "Loop.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-loop-object-index-setup",
+    "history": "0895f6324800ac945aaba3c375ef0dc239458f60",
+    "source": "<script setup>const obj = { first: 1, second: 2 }</script>\n<template><div v-for=\"(value, key, idx) in obj\" :key=\"idx\">{{ key }}: {{ value }}: {{ idx }}</div></template>",
+    "filename": "Loop.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-loop-destructured-aliases-module",
+    "history": "6812891ddaaf2404e71589d5cc57859646de5973",
+    "source": "<template><ul><li v-for=\"{ id: itemId, user: { name }, meta: { count: total = 0 } } in rows\" :key=\"itemId\" :title=\"name\">{{ total }}</li></ul></template>",
+    "filename": "Loop.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-loop-destructured-aliases-setup",
+    "history": "6812891ddaaf2404e71589d5cc57859646de5973",
+    "source": "<script setup>const rows = [{ id: 1, user: { name: 'Leaf' }, meta: {} }]</script>\n<template><ul><li v-for=\"{ id: itemId, user: { name }, meta: { count: total = 0 } } in rows\" :key=\"itemId\" :title=\"name\">{{ total }}</li></ul></template>",
+    "filename": "Loop.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-loop-destructured-key-module",
+    "history": "14a4ff375bc1a31dac829da5c650347353130331",
+    "source": "<template><div v-for=\"{ id, name } in items\" :key=\"id\">{{ name }}</div></template>",
+    "filename": "Loop.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "vapor-loop-destructured-key-setup",
+    "history": "14a4ff375bc1a31dac829da5c650347353130331",
+    "source": "<script setup>const items = [{ id: 1, name: 'Leaf' }]</script>\n<template><div v-for=\"{ id, name } in items\" :key=\"id\">{{ name }}</div></template>",
+    "filename": "Loop.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
   }
 ]
