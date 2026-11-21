@@ -50,7 +50,10 @@ on:
       - "tests/tooling/support/vue-vapor-release.mjs"
       - "tests/tooling/vapor-third-party-reports.test.mjs"
       - "davinci/vize_l0/**"
+      - "npm/cli/package.json"
+      - "npm/cli/virtual-ts-globals.d.ts"
       - "npm/ui/package.json"
+      - "tests/tooling/support/native-jsx-module-typescript.ts"
       - "pnpm-lock.yaml"
       - "Cargo.lock"
       - ".github/workflows/jsx-authored-native-modules.yml"
@@ -83,7 +86,7 @@ jobs:
           cache-save: false
           run-install: false
       - name: Install the committed native oracle dependencies
-        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './tests...' --filter './npm/ui...' --filter @vize/jsx-vapor-oracle
+        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './tests...' --filter './npm/ui...' --filter @vize/jsx-vapor-oracle --filter './npm/cli'
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
         with: { toolchain: "1.100.0" }
       - uses: ./.github/actions/setup-wild-http-recovery
