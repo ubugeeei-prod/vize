@@ -93,18 +93,21 @@ pub(super) fn project(
                 inserted + edit.replacement().len(),
             )
         });
-        let mut new_text = String::with_capacity(end - start - removed + inserted);
+        let mut wire = TextEdit::new(
+            Range::new(position(start), position(end)),
+            Default::default(),
+        );
+        wire.new_text
+            .reserve_exact(end - start - removed + inserted);
         for edit in group {
             let span = edit.span();
-            new_text.push_str(between(source, written, span.start as usize));
-            new_text.push_str(edit.replacement());
+            wire.new_text
+                .push_str(between(source, written, span.start as usize));
+            wire.new_text.push_str(edit.replacement());
             written = span.end as usize;
         }
-        new_text.push_str(between(source, written, end));
-        output.push(OneOf::Left(TextEdit {
-            range: Range::new(position(start), position(end)),
-            new_text,
-        }));
+        wire.new_text.push_str(between(source, written, end));
+        output.push(OneOf::Left(wire));
     }
     output
 }
