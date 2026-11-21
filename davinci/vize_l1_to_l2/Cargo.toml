@@ -120,6 +120,17 @@ name = "composed_template_alloc"
 harness = false
 
 [[test]]
+name = "expression_queries"
+path = "tests/expression_queries/main.rs"
+required-features = ["vize_l2/expression-queries", "vize_l2/position-index"]
+
+[[test]]
+name = "expression_query_alloc"
+path = "tests/expression_queries/alloc.rs"
+harness = false
+required-features = ["vize_l2/expression-queries", "vize_l2/position-index"]
+
+[[test]]
 name = "cfg_complexity_oracle"
 path = "tests/cfg_complexity_oracle/main.rs"
 

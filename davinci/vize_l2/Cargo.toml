@@ -13,6 +13,8 @@ metadata.vize.stability = "experimental"
 module-ir = ["vize_l1/module-ir"]
 # Build position indexes on explicit demand in resident analysis tools.
 position-index = []
+# Read the sealed occurrence tables for all admitted template expressions.
+expression-queries = []
 # Attach selected framework facts to the same original File.
 observed-queries = []
 # Compute compiler static facts and tooling complexity in a single requested traversal.

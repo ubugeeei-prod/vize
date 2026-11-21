@@ -46,7 +46,14 @@ impl<T> Intervals<T> {
     pub(in crate::query) fn try_from_sites<E>(
         collect: impl FnOnce(&mut dyn FnMut(Span, T)) -> Result<(), E>,
     ) -> Result<Self, E> {
-        let mut entries = Vec::new();
+        Self::try_from_sized_sites(0, collect)
+    }
+
+    pub(in crate::query) fn try_from_sized_sites<E>(
+        capacity: usize,
+        collect: impl FnOnce(&mut dyn FnMut(Span, T)) -> Result<(), E>,
+    ) -> Result<Self, E> {
+        let mut entries = Vec::with_capacity(capacity);
         collect(&mut |span, value| {
             if !span.is_empty() {
                 entries.push(Entry::new(span, value));
