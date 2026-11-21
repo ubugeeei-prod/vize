@@ -30,6 +30,23 @@ mod sources;
 pub(crate) struct ResidentCache(Mutex<ResidentDocuments>, Mutex<sources::SourceState>);
 
 impl ResidentCache {
+    #[cfg(feature = "experimental-resident-blocks")]
+    pub(crate) fn open_blocks<T>(
+        &self,
+        uri: &Url,
+        text: &str,
+        read: impl FnOnce(
+            Result<
+                vize_incremental::block_query::ParsedBlocks<'_>,
+                &vize_incremental::DescriptorParseError,
+            >,
+        ) -> T,
+    ) -> T {
+        self.0
+            .lock()
+            .with_document_blocks(uri.as_str(), uri.path(), text, read)
+    }
+
     /// The parse of document `key`'s `text`, including a rejection.
     pub(crate) fn parsed(&self, key: &str, filename: &str, text: &str) -> ParsedSfc {
         self.0.lock().parsed(key, filename, text)
