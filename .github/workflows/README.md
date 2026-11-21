@@ -33,7 +33,7 @@ surfaces and are not routine CI-refactor targets.
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 43        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 19        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 24        |
-| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 41        |
+| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 42        |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 24        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
@@ -247,26 +247,27 @@ SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctne
 | 06.19 | Native release token layout              | [`native-build-token-layout.yml`](./native-build-token-layout.yml)             |
 | 06.20 | Native checker CPU attribution           | [`native-checker-cpu-metadata.yml`](./native-checker-cpu-metadata.yml)         |
 | 06.21 | Native image-alt query source evidence   | [`native-image-alt-query.yml`](./native-image-alt-query.yml)                   |
-| 06.22 | Native operational incident trace        | [`native-ops-incident.yml`](./native-ops-incident.yml)                         |
-| 06.23 | SFC runtime option transport             | [`native-sfc-runtime-options.yml`](./native-sfc-runtime-options.yml)           |
-| 06.24 | SFC runtime version selection            | [`native-sfc-runtime-version.yml`](./native-sfc-runtime-version.yml)           |
-| 06.25 | Native Smoke                             | [`native-smoke.yml`](./native-smoke.yml)                                       |
-| 06.26 | Leading newline runtime                  | [`pre-textarea-first-newline.yml`](./pre-textarea-first-newline.yml)           |
-| 06.27 | Provide type assertion whole packets     | [`provide-type-assertion.yml`](./provide-type-assertion.yml)                   |
-| 06.28 | Recovery normal codegen                  | [`recovery-normal-codegen.yml`](./recovery-normal-codegen.yml)                 |
-| 06.29 | Scoped nesting specificity               | [`scoped-nesting-specificity.yml`](./scoped-nesting-specificity.yml)           |
-| 06.30 | Current native SFC lifecycle             | [`sfc-optional-lifecycle.yml`](./sfc-optional-lifecycle.yml)                   |
-| 06.31 | Native parsed SFC attributes             | [`sfc-parse-attributes.yml`](./sfc-parse-attributes.yml)                       |
-| 06.32 | Historical SFC Parse Replay              | [`sfc-parse-replay.yml`](./sfc-parse-replay.yml)                               |
-| 06.33 | Retained source-line replay              | [`source-symbolizer-retained.yml`](./source-symbolizer-retained.yml)           |
-| 06.34 | Source symbolizer smoke                  | [`source-symbolizer-smoke.yml`](./source-symbolizer-smoke.yml)                 |
-| 06.35 | Public mapper comparison                 | [`template-alias-paired-11822.yml`](./template-alias-paired-11822.yml)         |
-| 06.36 | Template expression queries              | [`template-expression-queries.yml`](./template-expression-queries.yml)         |
-| 06.37 | Template compiler global policy          | [`template-global-policy.yml`](./template-global-policy.yml)                   |
-| 06.38 | Typed context undefined contracts        | [`typed-context-undefined.yml`](./typed-context-undefined.yml)                 |
-| 06.39 | Unicode prop projection                  | [`unicode-prop-projection.yml`](./unicode-prop-projection.yml)                 |
-| 06.40 | Vapor literal object styles              | [`vapor-literal-object-styles.yml`](./vapor-literal-object-styles.yml)         |
-| 06.41 | Native Vue 2 IR template target          | [`vue2-ir-template.yml`](./vue2-ir-template.yml)                               |
+| 06.22 | Native navigation products               | [`native-navigation-products.yml`](./native-navigation-products.yml)           |
+| 06.23 | Native operational incident trace        | [`native-ops-incident.yml`](./native-ops-incident.yml)                         |
+| 06.24 | SFC runtime option transport             | [`native-sfc-runtime-options.yml`](./native-sfc-runtime-options.yml)           |
+| 06.25 | SFC runtime version selection            | [`native-sfc-runtime-version.yml`](./native-sfc-runtime-version.yml)           |
+| 06.26 | Native Smoke                             | [`native-smoke.yml`](./native-smoke.yml)                                       |
+| 06.27 | Leading newline runtime                  | [`pre-textarea-first-newline.yml`](./pre-textarea-first-newline.yml)           |
+| 06.28 | Provide type assertion whole packets     | [`provide-type-assertion.yml`](./provide-type-assertion.yml)                   |
+| 06.29 | Recovery normal codegen                  | [`recovery-normal-codegen.yml`](./recovery-normal-codegen.yml)                 |
+| 06.30 | Scoped nesting specificity               | [`scoped-nesting-specificity.yml`](./scoped-nesting-specificity.yml)           |
+| 06.31 | Current native SFC lifecycle             | [`sfc-optional-lifecycle.yml`](./sfc-optional-lifecycle.yml)                   |
+| 06.32 | Native parsed SFC attributes             | [`sfc-parse-attributes.yml`](./sfc-parse-attributes.yml)                       |
+| 06.33 | Historical SFC Parse Replay              | [`sfc-parse-replay.yml`](./sfc-parse-replay.yml)                               |
+| 06.34 | Retained source-line replay              | [`source-symbolizer-retained.yml`](./source-symbolizer-retained.yml)           |
+| 06.35 | Source symbolizer smoke                  | [`source-symbolizer-smoke.yml`](./source-symbolizer-smoke.yml)                 |
+| 06.36 | Public mapper comparison                 | [`template-alias-paired-11822.yml`](./template-alias-paired-11822.yml)         |
+| 06.37 | Template expression queries              | [`template-expression-queries.yml`](./template-expression-queries.yml)         |
+| 06.38 | Template compiler global policy          | [`template-global-policy.yml`](./template-global-policy.yml)                   |
+| 06.39 | Typed context undefined contracts        | [`typed-context-undefined.yml`](./typed-context-undefined.yml)                 |
+| 06.40 | Unicode prop projection                  | [`unicode-prop-projection.yml`](./unicode-prop-projection.yml)                 |
+| 06.41 | Vapor literal object styles              | [`vapor-literal-object-styles.yml`](./vapor-literal-object-styles.yml)         |
+| 06.42 | Native Vue 2 IR template target          | [`vue2-ir-template.yml`](./vue2-ir-template.yml)                               |
 
 ## 07 Davinci, Canon, and Level
 

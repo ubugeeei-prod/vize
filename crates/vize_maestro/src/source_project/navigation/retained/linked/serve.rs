@@ -29,6 +29,10 @@ pub(super) fn run(query: &TemplateNames<'_, '_>, receiver: Receiver<Command>, co
             Command::LinkedEditing(Request::Inspect(reply)) => {
                 let _ = reply.send(Ok(query.original.clone()));
             }
+            #[cfg(feature = "experimental-navigation-products")]
+            Command::Products(request) => {
+                let _ = request.reply.send(Err(NavigationRefusal::Language));
+            }
             Command::Highlights(request) => {
                 let _ = request.reply.send(Err(NavigationRefusal::Language));
             }

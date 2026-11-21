@@ -17,6 +17,10 @@ pub(in crate::source_project::navigation) fn refused(
             Command::ModuleLinks(request) => request.refuse(refusal.clone()),
             #[cfg(feature = "experimental-source-navigation")]
             Command::LinkedEditing(request) => request.refuse(refusal.clone()),
+            #[cfg(feature = "experimental-navigation-products")]
+            Command::Products(request) => {
+                let _ = request.reply.send(Err(refusal.clone()));
+            }
             Command::Highlights(request) => {
                 if !request.reply.is_canceled() {
                     let _ = request.reply.send(Err(refusal.clone()));

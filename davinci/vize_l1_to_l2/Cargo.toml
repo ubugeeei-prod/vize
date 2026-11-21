@@ -22,6 +22,7 @@ autotests = false
 metadata.vize.stability = "experimental"
 
 [features]
+native-navigation-products = []
 # Retain the source Program alongside its canonical region lowering.
 retained-tsrx = []
 # Prepare input-neutral modules for explicit analysis and projection.

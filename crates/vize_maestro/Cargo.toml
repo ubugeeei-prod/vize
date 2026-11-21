@@ -36,6 +36,11 @@ experimental-checker-script-queries = [
 ]
 # Opt-in same-file JS/TS/Vue queries from original retained native owners.
 experimental-source-navigation = ["experimental-source-project", "retained-program"]
+# Explicit definition, references and highlights on the same retained File.
+experimental-navigation-products = [
+  "experimental-source-navigation",
+  "vize_l1_to_l2/native-navigation-products",
+]
 # Opt-in legacy Vue (v0.10 / v0.11 / v1 / v2) editor / LSP surface. Not enabled by the
 # default Vue 3 build; turns on the type-checker-side legacy feature too.
 legacy = ["vize_canon/legacy"]

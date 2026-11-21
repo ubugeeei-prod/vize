@@ -225,3 +225,8 @@ impl Drop for NativeNavigationProject<'_> {
         self.retire();
     }
 }
+
+#[cfg(feature = "experimental-navigation-products")]
+mod products;
+#[cfg(feature = "experimental-navigation-products")]
+pub use products::SymbolNavigationProducts;
