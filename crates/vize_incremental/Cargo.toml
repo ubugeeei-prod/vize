@@ -17,6 +17,8 @@ metadata.vize.stability = "experimental"
 [features]
 # Borrow selected stage results for an explicitly requested document view.
 block-queries = []
+# Share a named open document's descriptor and its selected block stages.
+open-block-queries = ["block-queries"]
 # TS-42's seeded defect (P5-9): weakens the block firewall's equality so the
 # equivalence harness proves it catches the stale artifacts that follow.
 # Never enabled in a real build.
@@ -43,6 +45,11 @@ required-features = ["block-queries"]
 name = "resident_block_alloc"
 path = "tests/block_queries/alloc.rs"
 required-features = ["block-queries"]
+
+[[example]]
+name = "open_block_profile"
+path = "tests/block_queries/open_profile.rs"
+required-features = ["open-block-queries"]
 
 [lints]
 workspace = true

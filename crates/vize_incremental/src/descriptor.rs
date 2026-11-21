@@ -192,6 +192,8 @@ pub struct ResidentDocuments {
     pub(crate) interfaces: crate::interface::Interfaces,
     lookups: u32,
     parses: u32,
+    #[cfg(feature = "open-block-queries")]
+    open_block_files: vize_l0::FxHashSet<SourceFile>,
 }
 
 impl ResidentDocuments {
@@ -230,6 +232,10 @@ impl ResidentDocuments {
                 self.db.edit(file, "");
             }
             let _released = sfc_descriptor(&self.db, file);
+            #[cfg(feature = "open-block-queries")]
+            if self.open_block_files.remove(&file) {
+                crate::block_query::open::release(&self.db, file);
+            }
             if let Some(input) = interface {
                 crate::interface::release_alpha(&mut self.db, input);
             }
@@ -266,4 +272,24 @@ fn executions(accounting: &Accounting) -> u32 {
     accounting
         .get("sfc_descriptor")
         .map_or(0, |counts| counts.executed)
+}
+
+#[cfg(feature = "open-block-queries")]
+impl ResidentDocuments {
+    /// Read selected stages from the same source revision and descriptor as
+    /// other requests for `key`. `close` releases staged data for this file.
+    pub fn with_document_blocks<T>(
+        &mut self,
+        key: &str,
+        filename: &str,
+        text: &str,
+        read: impl FnOnce(Result<crate::block_query::ParsedBlocks<'_>, &DescriptorParseError>) -> T,
+    ) -> T {
+        let file = self.file(key, filename, text);
+        self.open_block_files.insert(file);
+        let result = read(crate::block_query::open::read(&self.db, file));
+        self.lookups += 1;
+        self.parses += executions(&self.db.take_accounting());
+        result
+    }
 }
