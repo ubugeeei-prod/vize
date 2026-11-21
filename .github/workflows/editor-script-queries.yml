@@ -13,6 +13,10 @@ on:
       - "crates/vize_patina/src/rules/script.rs"
       - "crates/vize_patina/src/rules/script/**"
       - "crates/vize_patina/tests/authored_script_rules/**"
+      - "crates/vize_canon/Cargo.toml"
+      - "crates/vize_canon/src/script_parse.rs"
+      - "crates/vize_canon/src/script_parse/**"
+      - "crates/vize_canon/src/sfc_typecheck/runner.rs"
       - "crates/vize_maestro/Cargo.toml"
       - "crates/vize_maestro/src/source_project.rs"
       - "crates/vize_maestro/src/source_project/snapshot*"
@@ -69,3 +73,14 @@ jobs:
           cargo test "${flags[@]}" --doc rules::script::authored
           export VIZE_SCRIPT_QUERY_INPUTS="$RUNNER_TEMP/editor-scripts"
           cargo test "${flags[@]}" --test authored_script_rules -- --include-ignored --nocapture --test-threads=1
+      - name: Compare the checker diagnostics and both editor products on the same source revision
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt)
+          checker=(-p vize_canon --features authored-script-diagnostics --lib)
+          editor=(-p vize_maestro --features experimental-checker-script-queries,micro-profiling --lib)
+          export VIZE_SCRIPT_QUERY_INPUTS="$RUNNER_TEMP/editor-scripts"
+          cargo clippy "${flags[@]}" "${checker[@]}" --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
+          cargo test "${flags[@]}" "${checker[@]}" script_parse:: -- --include-ignored --nocapture --test-threads=1
+          cargo test "${flags[@]}" "${editor[@]}" source_project::script_queries:: -- --include-ignored --nocapture --test-threads=1

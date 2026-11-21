@@ -4,6 +4,9 @@ use super::{DocumentSymbol, LineIndex, SfcScriptBlock, Statement, SymbolKind, co
 use crate::source_project::ScriptQueryProducts;
 use vize_l1::embed::authored_program::AuthoredProgram;
 
+#[cfg(feature = "experimental-checker-script-queries")]
+mod checker;
+
 impl ScriptQueryProducts {
     pub(crate) fn script_symbol(
         name: &str,
