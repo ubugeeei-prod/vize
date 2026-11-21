@@ -2,9 +2,6 @@ use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString, profile};
 use vize_croquis::script_parser::with_shared_parse;
 
-#[cfg(feature = "authored-script-diagnostics")]
-pub(crate) mod observed;
-
 pub(crate) fn is_typescript_lang(lang: &str) -> bool {
     matches!(lang, "ts" | "tsx" | "mts" | "cts")
 }
@@ -183,3 +180,6 @@ mod tests {
         assert!(script_source_type(Some("  tsx  ")).is_jsx());
     }
 }
+
+#[cfg(feature = "authored-script-diagnostics")]
+pub(crate) mod observed;

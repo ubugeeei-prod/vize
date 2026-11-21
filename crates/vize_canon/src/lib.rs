@@ -62,8 +62,6 @@ pub mod package_route;
 #[doc(hidden)]
 pub mod profiling;
 mod script_parse;
-#[cfg(feature = "authored-script-diagnostics")]
-pub use script_parse::observed::{ScriptDiagnosticProfile, ScriptDiagnosticRefusal};
 pub use script_parse::supports_native_script_syntax;
 mod sfc_diagnostics;
 pub mod sfc_typecheck;
@@ -225,3 +223,6 @@ impl CheckResult {
         self.diagnostics.push(diagnostic);
     }
 }
+
+#[cfg(feature = "authored-script-diagnostics")]
+pub use script_parse::observed::{ScriptDiagnosticProfile, ScriptDiagnosticRefusal};
