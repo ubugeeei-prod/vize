@@ -2,7 +2,7 @@
 use super::{EditError, EditSet, SpanEdit, VersionedSource};
 use vize_l0::{
     Span,
-    line_index::{Position, Range},
+    line_index::{AsciiLineCursor, Position, Range},
 };
 
 // Edit construction proves source order and both UTF-8 boundaries.
@@ -44,10 +44,23 @@ impl<'edits, 'source, 'replacement, K: Copy + Eq> EditSet<'edits, 'source, 'repl
     > {
         self.check_current(current)?;
         let mut remaining = self.snapshot.root().source();
+        let end = self.edits.last().map_or(0, |edit| edit.span.end as usize);
+        let (prefix, _) = remaining.split_at(end);
+        // A bounded prefix amortizes one ASCII check across nearby edits.
+        // Sparse edits in larger files skip whole lines with suffix_of.
+        let mut ascii = if end <= 256 {
+            AsciiLineCursor::new(prefix)
+        } else {
+            None
+        };
         let mut previous_end = 0;
         let mut position = Position::default();
         Ok(self.edits.iter().map(move |edit| {
             let span = edit.span();
+            if let Some(lines) = &mut ascii {
+                let range = Range::new(lines.position(span.start), lines.position(span.end));
+                return (range, edit.replacement());
+            }
             let (range, tail) = consume(remaining, previous_end, position, span);
             position = range.end;
             remaining = tail;
