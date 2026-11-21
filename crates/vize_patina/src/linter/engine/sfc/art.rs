@@ -1,6 +1,6 @@
 //! Template rules for Musea `<variant>` markup inside `<art>`.
 
-use crate::markup::L2Template;
+use crate::markup::LintInput;
 use vize_atelier_sfc::SfcDescriptor;
 use vize_croquis::Croquis;
 use vize_l0::{Allocator, SourceRoot};
@@ -85,7 +85,7 @@ impl Linter {
             return refused;
         };
         let allocator = Allocator::with_capacity((source.len() * 4).max(self.initial_capacity));
-        let l2 = L2Template::lower(&allocator, source);
+        let l2 = LintInput::lower(&allocator, source);
         let fatal = Self::has_fatal_l1_template_parse_errors(&l2);
         let analysis = summary
             .as_deref()
