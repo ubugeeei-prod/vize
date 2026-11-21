@@ -15,6 +15,7 @@ on:
       - "crates/vize_maestro/src/source_project.rs"
       - "crates/vize_maestro/src/source_project/edit*"
       - "crates/vize_maestro/src/source_project/positioned.rs"
+      - "crates/vize_maestro/src/source_project/positioned/**"
       - "crates/vize_maestro/src/source_project/snapshot.rs"
       - "crates/vize_maestro/tests/versioned_fix_publication/**"
       - "crates/vize_patina/tests/fixtures/issue-7905*/**"

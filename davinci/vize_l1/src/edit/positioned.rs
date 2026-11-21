@@ -18,43 +18,59 @@ fn consume(source: &str, offset: u32, origin: Position, span: Span) -> (Range, &
     )
 }
 
-impl<K: Copy + Eq> SpanEdit<'_, '_, K> {
-    /// Check the source, version and physical buffer, then locate a single fix.
-    #[inline]
-    pub fn positioned_range(self, current: VersionedSource<'_, K>) -> Result<Range, EditError> {
-        self.snapshot.check(current)?;
-        let source = self.snapshot.root().source();
-        let (prefix, _) = source.split_at(self.span.end as usize);
-        if (32..=SHORT_PREFIX).contains(&prefix.len())
-            && let Some(mut lines) = AsciiLineCursor::new(prefix)
-        {
-            return Ok(Range::new(
-                lines.position(self.span.start),
-                lines.position(self.span.end),
-            ));
-        }
-        Ok(Range::suffix_of(
-            Position::default(),
-            prefix,
-            self.span.start as usize,
-        ))
-    }
+/// An edit set checked once against the current key, version and physical buffer.
+pub struct PositionedEdits<'edits, 'source, 'replacement, K> {
+    source: &'source str,
+    edits: &'edits [SpanEdit<'source, 'replacement, K>],
 }
 
 impl<'edits, 'source, 'replacement, K: Copy + Eq> EditSet<'edits, 'source, 'replacement, K> {
-    /// Recheck the exact current source and stream authored edit ranges in their
-    /// existing order. One cursor spans the batch, including adjacent edits and
-    /// repeated insertions at the same position. Replacements stay borrowed.
+    /// Bind source-ordered edits to the exact current buffer before publication.
+    #[inline]
     pub fn positioned_edits(
         self,
         current: VersionedSource<'_, K>,
-    ) -> Result<
-        impl ExactSizeIterator<Item = (Range, &'replacement str)>
-        + use<'edits, 'source, 'replacement, K>,
-        EditError,
-    > {
+    ) -> Result<PositionedEdits<'edits, 'source, 'replacement, K>, EditError> {
         self.check_current(current)?;
-        let mut remaining = self.snapshot.root().source();
+        Ok(PositionedEdits {
+            source: self.snapshot.root().source(),
+            edits: self.edits,
+        })
+    }
+}
+
+impl<'edits, 'source, 'replacement, K: Copy + Eq>
+    PositionedEdits<'edits, 'source, 'replacement, K>
+{
+    #[must_use]
+    pub fn edits(&self) -> &'edits [SpanEdit<'source, 'replacement, K>] {
+        self.edits
+    }
+
+    /// Locate both endpoints directly when the validated selection contains one edit.
+    #[inline]
+    pub fn single(&self) -> Option<(Range, &'replacement str)> {
+        let [edit] = self.edits else {
+            return None;
+        };
+        let span = edit.span();
+        let (prefix, _) = self.source.split_at(span.end as usize);
+        let range = if (32..=SHORT_PREFIX).contains(&prefix.len())
+            && let Some(mut lines) = AsciiLineCursor::new(prefix)
+        {
+            Range::new(lines.position(span.start), lines.position(span.end))
+        } else {
+            Range::suffix_of(Position::default(), prefix, span.start as usize)
+        };
+        Some((range, edit.replacement()))
+    }
+
+    /// Locate ordered edits with shared line positions and borrowed replacements.
+    pub fn ranges(
+        self,
+    ) -> impl ExactSizeIterator<Item = (Range, &'replacement str)> + use<'edits, 'source, 'replacement, K>
+    {
+        let mut remaining = self.source;
         let end = self.edits.last().map_or(0, |edit| edit.span.end as usize);
         let (prefix, _) = remaining.split_at(end);
         // A bounded prefix amortizes one ASCII check across nearby edits.
@@ -66,7 +82,7 @@ impl<'edits, 'source, 'replacement, K: Copy + Eq> EditSet<'edits, 'source, 'repl
         };
         let mut previous_end = 0;
         let mut position = Position::default();
-        Ok(self.edits.iter().map(move |edit| {
+        self.edits.iter().map(move |edit| {
             let span = edit.span();
             if let Some(lines) = &mut ascii {
                 let range = Range::new(lines.position(span.start), lines.position(span.end));
@@ -77,7 +93,7 @@ impl<'edits, 'source, 'replacement, K: Copy + Eq> EditSet<'edits, 'source, 'repl
             remaining = tail;
             previous_end = span.end;
             (range, edit.replacement())
-        }))
+        })
     }
 }
 
@@ -93,7 +109,16 @@ mod tests {
         reason = "directed source and edit boundaries are checked"
     )]
     fn full_ranges_match_single_shot_positions_at_every_valid_byte_boundary() {
-        for source in ["", "x", "α😀\r\n\r\n雪\u{2028}z", "one\ntwo\rthree"] {
+        let long_ascii = "line\r\n".repeat(48);
+        let long_unicode = "雪😀\n".repeat(48);
+        for source in [
+            "",
+            "x",
+            "α😀\r\n\r\n雪\u{2028}z",
+            "one\ntwo\rthree",
+            &long_ascii,
+            &long_unicode,
+        ] {
             let frame = VersionedSource::new("source", 8, SourceRoot::new(source).unwrap());
             let offsets: Vec<_> = (0..=source.len())
                 .filter(|at| source.is_char_boundary(*at))
@@ -110,10 +135,14 @@ mod tests {
                 })
                 .collect();
             let set = EditSet::new(frame, &edits).unwrap();
-            let ranges = set.positioned_edits(frame).unwrap();
+            let ranges = set.positioned_edits(frame).unwrap().ranges();
             assert_eq!(ranges.len(), edits.len());
             for ((range, replacement), edit) in ranges.zip(&edits) {
-                assert_eq!(edit.positioned_range(frame), Ok(range));
+                let one = EditSet::new(frame, core::slice::from_ref(edit)).unwrap();
+                assert_eq!(
+                    one.positioned_edits(frame).unwrap().single(),
+                    Some((range, replacement))
+                );
                 assert_eq!(
                     range.start,
                     offset_to_position(source, edit.span.start as usize)

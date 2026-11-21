@@ -5,7 +5,10 @@ use tower_lsp::lsp_types::{
     AnnotatedTextEdit, DocumentChanges, OneOf, OptionalVersionedTextDocumentIdentifier, Position,
     Range, TextDocumentEdit, TextEdit, WorkspaceEdit,
 };
-use vize_l1::edit::EditSet;
+use vize_l0::SourceRoot;
+use vize_l1::edit::{EditSet, VersionedSource};
+
+mod line_endings;
 
 impl SourceSnapshot {
     /// Publish the same selection the CLI and Node bindings can apply. The
@@ -16,7 +19,18 @@ impl SourceSnapshot {
         edits: EditSet<'_, '_, '_, SnapshotKey<'_>>,
     ) -> Result<WorkspaceEdit, SourceEditRefusal> {
         self.with_current(documents, |_| {
-            let current = self.versioned_source().map_err(SourceEditRefusal::Frame)?;
+            let source = self.source();
+            let current = VersionedSource::new(
+                self.key(),
+                self.version(),
+                SourceRoot::new(source).map_err(SourceEditRefusal::Frame)?,
+            );
+            let checked = edits
+                .positioned_edits(current)
+                .map_err(SourceEditRefusal::Edit)?;
+            if line_endings::needs_projection(source, checked.edits()) {
+                return Ok(self.document_change(line_endings::project(source, checked.edits())));
+            }
             let wire = |range: vize_l0::line_index::Range, replacement: &str| {
                 OneOf::Left(TextEdit {
                     range: Range::new(
@@ -26,15 +40,10 @@ impl SourceSnapshot {
                     new_text: replacement.into(),
                 })
             };
-            if let [only] = edits.edits() {
-                let range = only
-                    .positioned_range(current)
-                    .map_err(SourceEditRefusal::Edit)?;
-                return Ok(self.document_change(vec![wire(range, only.replacement())]));
+            if let Some((range, replacement)) = checked.single() {
+                return Ok(self.document_change(vec![wire(range, replacement)]));
             }
-            let edits = edits
-                .positioned_edits(current)
-                .map_err(SourceEditRefusal::Edit)?;
+            let edits = checked.ranges();
             let mut text_edits = Vec::with_capacity(edits.len());
             for (range, replacement) in edits {
                 text_edits.push(wire(range, replacement));
@@ -44,6 +53,7 @@ impl SourceSnapshot {
         .map_err(SourceEditRefusal::Host)?
     }
 
+    #[inline]
     fn document_change(
         &self,
         text_edits: Vec<OneOf<TextEdit, AnnotatedTextEdit>>,

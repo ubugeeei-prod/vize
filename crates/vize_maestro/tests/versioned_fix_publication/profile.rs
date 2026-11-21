@@ -86,8 +86,12 @@ fn publication_cost() {
                             } else {
                                 i * (rows - 1) / (count - 1)
                             };
-                            let at =
-                                (row * line.len() + if at_end { line.len() - 2 } else { 0 }) as u32;
+                            let at = (row * line.len()
+                                + if at_end {
+                                    line.len() - 2 - width as usize
+                                } else {
+                                    0
+                                }) as u32;
                             (Span::new(at, at + width), "🛠")
                         });
                         let selected = frame.select_edits(candidates).unwrap().unwrap();

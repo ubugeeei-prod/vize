@@ -8,7 +8,10 @@
 use serde::Deserialize;
 use std::{fs, path::Path};
 use tower_lsp::lsp_types::{DocumentChanges, OneOf, Url, WorkspaceEdit};
-use vize_l0::{SourceRoot, Span, line_index::LineIndex};
+use vize_l0::{
+    SourceRoot, Span,
+    line_index::{LineBreaks, utf16_len, utf16_offset},
+};
 use vize_l1::edit::{EditError, VersionedSource};
 use vize_maestro::{
     document::DocumentStore,
@@ -17,6 +20,7 @@ use vize_maestro::{
 use vize_patina::{JsxLang, LintPreset, LintResult, Linter};
 
 mod profile;
+mod terminators;
 
 fn open(store: &DocumentStore, path: &str, source: &str) -> Url {
     let uri = Url::parse(path).unwrap();
@@ -43,7 +47,15 @@ fn apply_wire(source: &str, edits: &WorkspaceEdit, uri: &Url, version: i32) -> S
     };
     assert_eq!(&document.text_document.uri, uri);
     assert_eq!(document.text_document.version, Some(version));
-    let lines = LineIndex::new(source);
+    let starts: Vec<_> = LineBreaks::Lsp.line_starts(source).collect();
+    // Editors clamp columns beyond line content to the start of its terminator.
+    let offset = |position: tower_lsp::lsp_types::Position| {
+        let line = position.line as usize;
+        let from = starts[line];
+        let to = starts.get(line + 1).copied().unwrap_or(source.len());
+        let text = source[from..to].trim_end_matches(['\r', '\n']);
+        from + utf16_offset(text, position.character.min(utf16_len(text) as u32)).unwrap()
+    };
     let mut result = source.to_owned();
     for edit in document.edits.iter().rev() {
         let OneOf::Left(edit) = edit else {
@@ -51,10 +63,8 @@ fn apply_wire(source: &str, edits: &WorkspaceEdit, uri: &Url, version: i32) -> S
         };
         let start = edit.range.start;
         let end = edit.range.end;
-        let lo = lines
-            .line_col_to_offset(start.line, start.character)
-            .unwrap();
-        let hi = lines.line_col_to_offset(end.line, end.character).unwrap();
+        let lo = offset(start);
+        let hi = offset(end);
         result.replace_range(lo..hi, &edit.new_text);
     }
     result

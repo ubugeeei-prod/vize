@@ -258,3 +258,5 @@ mod tests;
 
 #[cfg(feature = "positioned-edits")]
 mod positioned;
+#[cfg(feature = "positioned-edits")]
+pub use positioned::PositionedEdits;
