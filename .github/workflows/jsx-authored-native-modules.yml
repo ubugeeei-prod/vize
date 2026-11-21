@@ -6,6 +6,9 @@ on:
       - "crates/vize_atelier_jsx/**"
       - "crates/vize_atelier_core/src/codegen/**"
       - "crates/vize_relief/src/relief/**"
+      - "davinci/vize_l1/Cargo.toml"
+      - "davinci/vize_l1/src/embed.rs"
+      - "davinci/vize_l1/src/embed/regions.rs"
       - "davinci/vize_l1_to_l2/**"
       - "davinci/vize_l2/**"
       - "davinci/vize_l2_to_l3/**"
@@ -87,6 +90,12 @@ jobs:
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Compare reusable module regions with the original checker projection
+        run: |
+          cargo test --locked --profile ci -p vize_l4 --features module-ir --test jsx_module_projection
+          export VIZE_MODULE_IR_MANIFEST="$RUNNER_TEMP/module-ir-paths"
+          git ls-files -z '*.jsx' '*.tsx' '*.jsx.txt' '*.tsx.txt' > "$VIZE_MODULE_IR_MANIFEST"
+          cargo test --locked --profile ci -p vize_l4 --features module-ir --test jsx_module_projection -- neutral_corpus::compare_modules_at_every_outcome --exact --ignored --nocapture
       - name: Original VDOM child values and parent block ownership before and after
         env:
           INSTA_UPDATE: new

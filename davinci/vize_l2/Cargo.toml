@@ -9,6 +9,8 @@ description = "L2 - the Davinci semantic IR (codename Disegno): the neutral op f
 metadata.vize.stability = "experimental"
 
 [features]
+# Prepare input-neutral modules for explicit analysis and projection.
+module-ir = ["vize_l1/module-ir"]
 # Build position indexes on explicit demand in resident analysis tools.
 position-index = []
 

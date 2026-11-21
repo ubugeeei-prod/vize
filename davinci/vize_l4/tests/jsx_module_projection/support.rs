@@ -36,8 +36,11 @@ pub fn lower<'a>(
     };
     let roots =
         lower_module(arena, source, &parsed.program, Some(&scoping), options).into_components()?;
-    Ok(Module {
+    let module = Module {
         program: parsed.program,
         roots,
-    })
+    };
+    #[cfg(feature = "module-ir")]
+    super::neutral::compare(arena, source, &module);
+    Ok(module)
 }

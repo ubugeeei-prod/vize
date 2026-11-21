@@ -19,6 +19,8 @@ metadata.vize.stability = "experimental"
 readme = "README.md"
 
 [features]
+# Prepare input-neutral modules for explicit analysis and projection.
+module-ir = ["vize_l1_to_l2/module-ir"]
 # The DOM emitter's `is_ts` lane erases types with oxc's transformer, whose
 # `Transformer::new` takes a `&std::path::Path`. Off by default so portability
 # builds link no `std`; with it off an `is_ts` emit refuses
