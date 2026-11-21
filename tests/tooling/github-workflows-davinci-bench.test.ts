@@ -117,7 +117,13 @@ test("editor script qualification runs the original readers and paired measureme
     .trimEnd()
     .split("\n")
     .map((line) => JSON.parse(line));
-  function invocation(command: string, pkg: string, features: string[], required: string[]) {
+  function invocation(
+    command: string,
+    pkg: string,
+    features: string[],
+    required: string[],
+    target = "--lib",
+  ) {
     const call = calls.find(({ args }) => {
       const enabled = args[args.indexOf("--features") + 1]?.split(/[ ,]+/);
       return (
@@ -130,7 +136,7 @@ test("editor script qualification runs the original readers and paired measureme
     assert.ok(call, JSON.stringify({ command, pkg, features, required }));
     assert.ok(call.args.includes("--locked"));
     assert.equal(call.args[call.args.indexOf("--profile") + 1], "ci-opt");
-    assert.ok(call.args.includes("--lib"));
+    assert.ok(call.args.includes(target));
     return call;
   }
   const editor = ["experimental-script-queries", "micro-profiling"];
@@ -140,6 +146,20 @@ test("editor script qualification runs the original readers and paired measureme
   for (const suite of ["server::document_structure::symbols::tests", "ide::file_rename::"]) {
     invocation("test", "vize_maestro", editor, [suite]);
   }
+  const scriptRules = ["authored-script-rules"];
+  invocation("clippy", "vize_patina", scriptRules, lint);
+  invocation("test", "vize_patina", scriptRules, ["rules::script::authored"], "--doc");
+  const ruleCorpus = invocation(
+    "test",
+    "vize_patina",
+    scriptRules,
+    ["authored_script_rules"],
+    "--test",
+  );
+  assert.deepEqual(ruleCorpus.manifest, [...sources, ""]);
+  const ruleOptions = ruleCorpus.args.slice(ruleCorpus.args.indexOf("--") + 1);
+  for (const flag of ["--include-ignored", "--nocapture", "--test-threads=1"])
+    assert.ok(ruleOptions.includes(flag));
   const corpus = invocation("test", "vize_maestro", editor, ["source_project::script_queries::"]);
   assert.deepEqual(corpus.manifest, [...sources, ""]);
   const options = corpus.args.slice(corpus.args.indexOf("--") + 1);

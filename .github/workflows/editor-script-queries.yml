@@ -9,6 +9,10 @@ on:
       - "davinci/vize_l1/Cargo.toml"
       - "davinci/vize_l1/src/embed.rs"
       - "davinci/vize_l1/src/embed/authored_program.rs"
+      - "crates/vize_patina/Cargo.toml"
+      - "crates/vize_patina/src/rules/script.rs"
+      - "crates/vize_patina/src/rules/script/**"
+      - "crates/vize_patina/tests/authored_script_rules/**"
       - "crates/vize_maestro/Cargo.toml"
       - "crates/vize_maestro/src/source_project.rs"
       - "crates/vize_maestro/src/source_project/snapshot*"
@@ -57,3 +61,11 @@ jobs:
           export VIZE_SCRIPT_QUERY_INPUTS="$RUNNER_TEMP/editor-scripts"
           git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_SCRIPT_QUERY_INPUTS"
           cargo test "${flags[@]}" "${editor[@]}" source_project::script_queries:: -- --include-ignored --nocapture --test-threads=1
+      - name: Compare configured script lint results on original Programs
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt -p vize_patina --features authored-script-rules)
+          cargo clippy "${flags[@]}" --lib --no-deps -- -D warnings
+          cargo test "${flags[@]}" --doc rules::script::authored
+          export VIZE_SCRIPT_QUERY_INPUTS="$RUNNER_TEMP/editor-scripts"
+          cargo test "${flags[@]}" --test authored_script_rules -- --include-ignored --nocapture --test-threads=1
