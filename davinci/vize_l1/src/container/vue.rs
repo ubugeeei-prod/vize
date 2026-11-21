@@ -394,3 +394,8 @@ mod tests {
         );
     }
 }
+
+#[cfg(feature = "script-queries")]
+mod programs;
+#[cfg(feature = "script-queries")]
+pub use programs::ScriptPrograms;

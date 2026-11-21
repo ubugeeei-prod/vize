@@ -11,6 +11,14 @@ on:
       - "crates/vize_glyph/src/options/**"
       - "crates/vize_glyph/src/sort_imports.rs"
       - "crates/vize_glyph/tests/program_snapshot/**"
+      - "crates/vize_glyph/tests/selected_script_programs/**"
+      - "davinci/vize_l1/Cargo.toml"
+      - "davinci/vize_l1/src/container/vue.rs"
+      - "davinci/vize_l1/src/container/vue/**"
+      - "davinci/vize_l1/src/embed/source.rs"
+      - "davinci/vize_l2/Cargo.toml"
+      - "davinci/vize_l2/src/query/vue.rs"
+      - "davinci/vize_l2/src/query/vue/**"
       - "davinci/vize_l1/src/embed/syntax.rs"
       - "davinci/vize_l1/src/embed/syntax/**"
       - "upstream/forks/oxc_formatter/**"
@@ -48,3 +56,17 @@ jobs:
           cargo test "${flags[@]}" --lib script::snapshot::tests::corpus::original_sources -- --exact --ignored --nocapture
           cargo test "${flags[@]}" --lib script::snapshot::tests::profile::paired_formatter_requests -- --exact --ignored --nocapture
           cargo test "${flags[@]}" --lib script::snapshot::tests::profile::corpus::original_formatter_requests -- --exact --ignored --nocapture
+      - name: Compare shared Vue Program inputs through semantic and formatter APIs
+        env:
+          VIZE_SCRIPT_PROGRAMS_MANIFEST: ${{ runner.temp }}/vue-script-inputs
+          VIZE_SCRIPT_PROGRAMS_SAMPLE: ${{ runner.temp }}/vue-script-inputs
+        run: |
+          set -euo pipefail
+          cargo test --locked --profile ci-opt -p vize_l1 --features script-queries --lib container::vue::programs::
+          cargo test --locked --profile ci-opt -p vize_l2 --features script-queries --lib query::vue::
+          flags=(--locked --profile ci-opt -p vize_glyph --features retained-script,vize_l2/script-queries --test selected_script_programs)
+          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_SCRIPT_PROGRAMS_MANIFEST"
+          cargo test "${flags[@]}"
+          cargo test "${flags[@]}" original_sources -- --exact --ignored --nocapture
+          cargo test "${flags[@]}" profile::shared_program_requests -- --exact --ignored --nocapture
+          cargo test "${flags[@]}" profile::corpus::original_program_requests -- --exact --ignored --nocapture

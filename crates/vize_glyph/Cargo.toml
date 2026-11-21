@@ -60,3 +60,7 @@ harness = false
 
 [lints]
 workspace = true
+
+[[test]]
+name = "selected_script_programs"
+required-features = ["retained-script", "vize_l2/script-queries"]
