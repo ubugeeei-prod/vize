@@ -113,22 +113,26 @@ impl<'s, 'a> Retained<'s, 'a> {
                 _ => None,
             };
             if let Some(value) = value {
-                self.insert(value, false);
+                // A named v-bind reads a single identifier from the Vue
+                // context, including property names such as `class`.
+                let static_bind = matches!(binding, BindingOp::Bind(_))
+                    && matches!(name, Some(DynamicName::Static(_)));
+                self.insert(value, static_bind);
             }
         }
     }
 
     fn insert(&mut self, expression: ExprRef<'s>, allow_identifier: bool) {
-        let supported_raw = vize_l4::targets::dom::artifact::parse_rejected_expression_is_raw_js(
-            &expression,
-            allow_identifier,
-        );
         match expression {
             ExprRef::Js(js) => {
                 self.source.insert((js.span.start, js.span.end), js);
             }
             ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::ParseRejected => {
-                self.invalid_parse_rejected |= !supported_raw;
+                self.invalid_parse_rejected |=
+                    !vize_l4::targets::dom::artifact::parse_rejected_expression_is_raw_js(
+                        &expression,
+                        allow_identifier,
+                    );
             }
             ExprRef::Foreign(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => {}
         }

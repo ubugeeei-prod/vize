@@ -54,6 +54,36 @@ fn parse_rejected_expressions_are_compiler_errors() {
     }
 }
 
+#[test]
+fn named_bind_reads_bare_keyword_properties_from_the_render_context() {
+    for keyword in ["class", "default", "switch", "if", "const"] {
+        let allocator = Allocator::new();
+        let source = vize_carton::cstr!("<div :class=\"{keyword}\"></div>");
+        let code = generated(
+            lower_source_for_vapor(&allocator, &source, options()),
+            &allocator,
+        );
+        assert!(
+            code.contains(&*vize_carton::cstr!("_setClass(n0, _ctx.{keyword})")),
+            "{code}"
+        );
+    }
+    for source in [
+        r#"<div :class="class +"></div>"#,
+        r#"<div :class="class.name"></div>"#,
+        r#"<div v-if="class +"></div>"#,
+    ] {
+        let allocator = Allocator::new();
+        assert!(
+            matches!(
+                lower_source_for_vapor(&allocator, source, options()),
+                VaporL3BridgeStatus::SourceError(_)
+            ),
+            "{source}"
+        );
+    }
+}
+
 pub(super) fn generated(
     status: VaporL3BridgeStatus<'_>,
     allocator: &Allocator,
