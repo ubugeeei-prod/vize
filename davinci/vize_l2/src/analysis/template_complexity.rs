@@ -226,3 +226,10 @@ pub fn run(root: &Region<'_>, node_count: u32) -> ComplexityFacts {
         .sort_unstable_by_key(Contribution::sort_key);
     facts
 }
+
+#[cfg(any(test, feature = "composed-template-analysis"))]
+pub(in crate::analysis) use expr::score;
+#[cfg(any(test, feature = "composed-template-analysis"))]
+pub(in crate::analysis) use regions::{
+    observed_bindings as owner_bindings, score_branch, score_structure,
+};

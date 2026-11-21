@@ -113,3 +113,6 @@ pub fn run_remarked<R: RemarkSink>(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(any(test, feature = "composed-template-analysis"))]
+pub(super) use lattice::composed;

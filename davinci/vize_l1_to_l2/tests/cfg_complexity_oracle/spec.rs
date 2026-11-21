@@ -18,7 +18,9 @@ use vize_l2::dump::{
 };
 
 use super::ast::expression_facts;
+use super::coordinates::Coordinates;
 use super::graph::Graph;
+use vize_l1::markup::entity::EntityContext;
 
 /// One breakdown row, comparable across both implementations.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -48,7 +50,8 @@ enum Frame {
     ScopedBody,
 }
 
-struct Eval {
+struct Eval<'s> {
+    file: &'s str,
     graph: Graph,
     frames: Vec<Frame>,
     rows: Vec<Row>,
@@ -57,8 +60,9 @@ struct Eval {
 }
 
 /// Evaluate the metric over one template's folio.
-pub fn evaluate(folio: &L2Page) -> Naive {
+pub fn evaluate(folio: &L2Page, file: &str) -> Naive {
     let mut eval = Eval {
+        file,
         graph: Graph::default(),
         frames: Vec::new(),
         rows: Vec::new(),
@@ -80,7 +84,7 @@ pub fn evaluate(folio: &L2Page) -> Naive {
     }
 }
 
-impl Eval {
+impl Eval<'_> {
     fn nesting(&self) -> u32 {
         self.frames.len() as u32
     }
@@ -139,7 +143,9 @@ impl Eval {
                 self.children(&component.children, scoped, cur)
             }
             DumpOp::Text(_) | DumpOp::Comment(_) => line,
-            DumpOp::Interpolation(interpolation) => self.expr(&interpolation.expression, id, line),
+            DumpOp::Interpolation(interpolation) => {
+                self.expr_in(&interpolation.expression, id, line, EntityContext::Text)
+            }
             DumpOp::ChildValue(child) => self.expr(&child.expression, id, line),
             DumpOp::If(if_op) => self.if_chain(if_op, id, line),
             // `left && <region>` decides like a one-branch `v-if`.
@@ -320,14 +326,37 @@ impl Eval {
         expr.map_or(cur, |expr| self.expr(expr, id, cur))
     }
 
-    fn expr(&mut self, expr: &DumpExpr, id: u32, mut cur: u32) -> u32 {
+    fn expr(&mut self, expr: &DumpExpr, id: u32, cur: u32) -> u32 {
+        self.expr_in(expr, id, cur, EntityContext::Attribute)
+    }
+
+    fn expr_in(&mut self, expr: &DumpExpr, id: u32, mut cur: u32, context: EntityContext) -> u32 {
         let n = self.nesting();
         let DumpExpr::Js { source, span } = expr else {
             self.row("unknown", span_of(expr), id, n, 0, 0);
             return cur;
         };
-        for fact in expression_facts(source.as_str()) {
-            let at = (span.start + fact.start, span.start + fact.end);
+        let facts = expression_facts(source.as_str());
+        if facts.is_empty() {
+            return cur;
+        }
+        let ranges =
+            Coordinates::from_folio(self.file, *span, source, context).and_then(|coordinates| {
+                facts
+                    .iter()
+                    .map(|fact| {
+                        Some((
+                            coordinates.offset(fact.start)?,
+                            coordinates.offset(fact.end)?,
+                        ))
+                    })
+                    .collect::<Option<Vec<_>>>()
+            });
+        let Some(ranges) = ranges else {
+            self.row("unknown", span_of(expr), id, n, 0, 0);
+            return cur;
+        };
+        for (fact, at) in facts.into_iter().zip(ranges) {
             let nesting = n + fact.enclosing_conditionals;
             let cognitive = if fact.kind == "conditional" {
                 1 + nesting

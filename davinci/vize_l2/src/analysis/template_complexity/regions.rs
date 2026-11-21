@@ -47,27 +47,19 @@ fn visit_region_guarded(
             Op::For(for_op) => {
                 // Rule `for`: one decision (continue or exit), a structure.
                 // The source evaluates once, outside the repeated body.
-                facts.push(Contribution {
-                    span: for_op.binding.source.span(),
-                    kind: DecisionKind::For,
-                    op: id,
-                    nesting: depth,
-                    cyclomatic: 1,
-                    cognitive: 1 + depth,
-                });
+                control::structure!(
+                    for_op.binding.source.span(),
+                    DecisionKind::For,
+                    id,
+                    depth,
+                    facts
+                );
                 score(for_op.binding.source, id, depth, facts);
                 visit_nested(walk, &for_op.region.ops, depth + 1, facts);
             }
             Op::OriginalFor(for_op) => {
                 // The original head remains File-qualified; score only real structure.
-                facts.push(Contribution {
-                    span: for_op.span,
-                    kind: DecisionKind::For,
-                    op: id,
-                    nesting: depth,
-                    cyclomatic: 1,
-                    cognitive: 1 + depth,
-                });
+                control::structure!(for_op.span, DecisionKind::For, id, depth, facts);
                 visit_nested(walk, &for_op.region.ops, depth + 1, facts);
             }
             Op::Slot(slot) => {
@@ -102,14 +94,7 @@ fn visit_and(
     depth: u32,
     facts: &mut ComplexityFacts,
 ) {
-    facts.push(Contribution {
-        span: and.left.span(),
-        kind: DecisionKind::If,
-        op: id,
-        nesting: depth,
-        cyclomatic: 1,
-        cognitive: 1 + depth,
-    });
+    control::structure!(and.left.span(), DecisionKind::If, id, depth, facts);
     score(and.left, id, depth, facts);
     visit_nested(walk, &and.region.ops, depth + 1, facts);
 }
@@ -125,33 +110,7 @@ fn visit_if(
     facts: &mut ComplexityFacts,
 ) {
     for (index, branch) in if_op.branches.iter().enumerate() {
-        match branch.condition {
-            Some(condition) => {
-                let (kind, cognitive) = if index == 0 {
-                    (DecisionKind::If, 1 + depth)
-                } else {
-                    (DecisionKind::ElseIf, 1)
-                };
-                facts.push(Contribution {
-                    span: condition.span(),
-                    kind,
-                    op: id,
-                    nesting: depth,
-                    cyclomatic: 1,
-                    cognitive,
-                });
-                // A condition evaluates before its branch is entered.
-                score(condition, id, depth, facts);
-            }
-            None => facts.push(Contribution {
-                span: branch.span,
-                kind: DecisionKind::Else,
-                op: id,
-                nesting: depth,
-                cyclomatic: 0,
-                cognitive: 1,
-            }),
-        }
+        control::branch!(branch, index, id, depth, facts);
         visit_nested(walk, &branch.region.ops, depth + 1, facts);
     }
 }
@@ -269,3 +228,19 @@ fn scoped_slot(
     });
     true
 }
+
+mod control;
+
+#[cfg(any(test, feature = "composed-template-analysis"))]
+#[inline(always)]
+pub(in crate::analysis) fn observed_bindings(
+    walk: &mut PageWalk,
+    bindings: &[BindingOp<'_>],
+    depth: u32,
+    facts: &mut ComplexityFacts,
+) -> u32 {
+    owner_bindings(walk, bindings, depth, facts)
+}
+
+#[cfg(any(test, feature = "composed-template-analysis"))]
+pub(in crate::analysis) use control::{score_branch, score_structure};
