@@ -131,18 +131,27 @@ impl<'o, 'a> VueProjection<'o, 'a> {
 pub fn project_vue<'o, 'a>(
     original: NativeSfc<'o, 'a>,
 ) -> Result<VueProjection<'o, 'a>, VueProjectionError> {
-    project::<Recorded>(original)
+    project::<Recorded>(
+        original,
+        #[cfg(feature = "vue-style-projection")]
+        None,
+    )
 }
 
 /// Byte-identical emission with mapping explicitly unavailable.
 pub fn project_vue_no_links<'o, 'a>(
     original: NativeSfc<'o, 'a>,
 ) -> Result<VueProjection<'o, 'a>, VueProjectionError> {
-    project::<NoLinks>(original)
+    project::<NoLinks>(
+        original,
+        #[cfg(feature = "vue-style-projection")]
+        None,
+    )
 }
 
 fn project<'o, 'a, L: LinkSink>(
     original: NativeSfc<'o, 'a>,
+    #[cfg(feature = "vue-style-projection")] omitted_style_bytes: Option<usize>,
 ) -> Result<VueProjection<'o, 'a>, VueProjectionError> {
     let observation = original.observation();
     if !crate::registry::TargetOptions::for_file(observation.descriptor().dialect())
@@ -155,6 +164,11 @@ fn project<'o, 'a, L: LinkSink>(
         .admitted()
         .map_err(|_| VueProjectionError::Custody)?;
     if descriptor.styles().len() != 0 {
+        #[cfg(feature = "vue-style-projection")]
+        if omitted_style_bytes.is_none() {
+            return Err(VueProjectionError::UnsupportedStyles);
+        }
+        #[cfg(not(feature = "vue-style-projection"))]
         return Err(VueProjectionError::UnsupportedStyles);
     }
     if original.file().ordinary().is_some() || observation.scripts().len() > 1 {
@@ -169,7 +183,12 @@ fn project<'o, 'a, L: LinkSink>(
     } else {
         SourceKind::JavaScript
     };
-    let mut writer = Writer::<L>::with_capacity(source.len());
+    let capacity = source.len();
+    #[cfg(feature = "vue-style-projection")]
+    let capacity = capacity
+        .checked_sub(omitted_style_bytes.unwrap_or(0))
+        .ok_or(VueProjectionError::Custody)?;
+    let mut writer = Writer::<L>::with_capacity(capacity);
     let script = observation
         .scripts()
         .first()
@@ -306,4 +325,66 @@ fn project<'o, 'a, L: LinkSink>(
         expressions,
         document: writer.finish().into_document(),
     })
+}
+
+/// Checker input whose original inline CSS has been verified once. Its style
+/// blocks contribute neither a CSS module nor a CSS binding expression.
+/// Recorded and silent projections share the same source and admission.
+#[cfg(feature = "vue-style-projection")]
+pub struct StyledVueInput<'o, 'a> {
+    original: &'o vize_l1_to_l2::native_file::NativeSfcObservation<'a>,
+    omitted_style_bytes: usize,
+}
+
+#[cfg(feature = "vue-style-projection")]
+impl<'o, 'a> StyledVueInput<'o, 'a> {
+    /// Inspect the original descriptor and style bodies. A module, preprocessor,
+    /// or binding opener requires additional checker semantics.
+    pub fn prepare(original: NativeSfc<'o, 'a>) -> Result<Self, VueProjectionError> {
+        let original = original.observation();
+        let descriptor = original
+            .descriptor()
+            .admitted()
+            .map_err(|_| VueProjectionError::Custody)?;
+        let styles = descriptor.styles();
+        let mut bytes = 0usize;
+        for style in styles {
+            let block = style.original_block();
+            let inline_css = style.attrs().iter().all(|attr| match attr.name {
+                "scoped" => attr.value.is_none(),
+                "lang" => attr.value == Some("css"),
+                _ => false,
+            });
+            if !inline_css
+                || vize_l1::css::bind::first_v_bind_start(style.block().source()).is_some()
+            {
+                return Err(VueProjectionError::UnsupportedStyles);
+            }
+            // The descriptor supplies disjoint whole-block spans in source order.
+            let span = block.authored_span();
+            bytes += (span.end - span.start) as usize;
+        }
+        Ok(Self {
+            original,
+            omitted_style_bytes: bytes,
+        })
+    }
+
+    /// Emit original script and template mappings for this complete source.
+    pub fn project(&self) -> Result<VueProjection<'o, 'a>, VueProjectionError> {
+        self.emit::<Recorded>()
+    }
+
+    /// Emit the same checker bytes with source-link recording disabled.
+    pub fn project_no_links(&self) -> Result<VueProjection<'o, 'a>, VueProjectionError> {
+        self.emit::<NoLinks>()
+    }
+
+    fn emit<L: LinkSink>(&self) -> Result<VueProjection<'o, 'a>, VueProjectionError> {
+        let owner = self
+            .original
+            .admitted()
+            .ok_or(VueProjectionError::Custody)?;
+        project::<L>(owner, Some(self.omitted_style_bytes))
+    }
 }

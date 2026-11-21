@@ -196,6 +196,20 @@ fn is_css_identifier_byte(byte: u8) -> bool {
     byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-')
 }
 
+/// Byte offset of the first authored Vue CSS binding opener. It also covers
+/// an unterminated call, where a checker cannot prove that the style is inert.
+/// Comments, strings and CSS identifier suffixes follow the same lexical rules
+/// as [`v_bind_calls`].
+#[cfg(feature = "style-bindings")]
+#[must_use]
+pub fn first_v_bind_start(css: &str) -> Option<usize> {
+    if css.contains("v-bind(") {
+        find_next_v_bind(css, 0)
+    } else {
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::v_bind_calls;

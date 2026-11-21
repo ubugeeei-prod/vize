@@ -31,7 +31,7 @@ surfaces and are not routine CI-refactor targets.
 | 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 22        |
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 37        |
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 43        |
-| 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 18        |
+| 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 19        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 23        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 41        |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 24        |
@@ -167,26 +167,27 @@ Wall time, allocation, instruction, memory, scaling, and reproducible benchmark 
 
 Typechecker, content-mapper, Corsa, and TypeScript-provider qualification.
 
-| ID    | Workflow                              | File                                                                                         |
-| ----- | ------------------------------------- | -------------------------------------------------------------------------------------------- |
-| 04.01 | Checker constructor emitter parity    | [`checker-constructor-emitter.yml`](./checker-constructor-emitter.yml)                       |
-| 04.02 | Checker diagnostic positions          | [`checker-diagnostic-positions.yml`](./checker-diagnostic-positions.yml)                     |
-| 04.03 | Component input diagnostic ownership  | [`component-input-diagnostic-ownership.yml`](./component-input-diagnostic-ownership.yml)     |
-| 04.04 | Component input projection packets    | [`component-input-projection-packets.yml`](./component-input-projection-packets.yml)         |
-| 04.05 | Content Mapper Conformance            | [`content-mapper-conformance.yml`](./content-mapper-conformance.yml)                         |
-| 04.06 | Consumer instance globals capture     | [`content-mapper-instance-globals.yml`](./content-mapper-instance-globals.yml)               |
-| 04.07 | Content mapper pair                   | [`content-mapper-pair.yml`](./content-mapper-pair.yml)                                       |
-| 04.08 | Content mapper replay                 | [`content-mapper-replay.yml`](./content-mapper-replay.yml)                                   |
-| 04.09 | Content Mapper Source Case Jobs       | [`content-mapper-reported-q16.yml`](./content-mapper-reported-q16.yml)                       |
-| 04.10 | Vue component metadata                | [`content-mapper-vue-component-meta.yml`](./content-mapper-vue-component-meta.yml)           |
-| 04.11 | Content Mapper worker stack           | [`content-mapper-worker-stack.yml`](./content-mapper-worker-stack.yml)                       |
-| 04.12 | Type-check corpus pair                | [`typecheck-corpus-pair.yml`](./typecheck-corpus-pair.yml)                                   |
-| 04.13 | Typecheck vs vue-tsc                  | [`typecheck-vs-vue-tsc.yml`](./typecheck-vs-vue-tsc.yml)                                     |
-| 04.14 | WSL2 type-check qualification         | [`typecheck-wsl2.yml`](./typecheck-wsl2.yml)                                                 |
-| 04.15 | Typechecker cache custody             | [`typechecker-cache-custody.yml`](./typechecker-cache-custody.yml)                           |
-| 04.16 | Type checker native backend phases    | [`typechecker-native-phases.yml`](./typechecker-native-phases.yml)                           |
-| 04.17 | Native syntax and semantic completion | [`typechecker-syntax-semantic-completion.yml`](./typechecker-syntax-semantic-completion.yml) |
-| 04.18 | Platform VSIX native projection       | [`typescript-provider-vsix.yml`](./typescript-provider-vsix.yml)                             |
+| ID    | Workflow                                  | File                                                                                         |
+| ----- | ----------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 04.01 | Checker constructor emitter parity        | [`checker-constructor-emitter.yml`](./checker-constructor-emitter.yml)                       |
+| 04.02 | Checker diagnostic positions              | [`checker-diagnostic-positions.yml`](./checker-diagnostic-positions.yml)                     |
+| 04.03 | Checker projections for inline Vue styles | [`checker-styled-projections.yml`](./checker-styled-projections.yml)                         |
+| 04.04 | Component input diagnostic ownership      | [`component-input-diagnostic-ownership.yml`](./component-input-diagnostic-ownership.yml)     |
+| 04.05 | Component input projection packets        | [`component-input-projection-packets.yml`](./component-input-projection-packets.yml)         |
+| 04.06 | Content Mapper Conformance                | [`content-mapper-conformance.yml`](./content-mapper-conformance.yml)                         |
+| 04.07 | Consumer instance globals capture         | [`content-mapper-instance-globals.yml`](./content-mapper-instance-globals.yml)               |
+| 04.08 | Content mapper pair                       | [`content-mapper-pair.yml`](./content-mapper-pair.yml)                                       |
+| 04.09 | Content mapper replay                     | [`content-mapper-replay.yml`](./content-mapper-replay.yml)                                   |
+| 04.10 | Content Mapper Source Case Jobs           | [`content-mapper-reported-q16.yml`](./content-mapper-reported-q16.yml)                       |
+| 04.11 | Vue component metadata                    | [`content-mapper-vue-component-meta.yml`](./content-mapper-vue-component-meta.yml)           |
+| 04.12 | Content Mapper worker stack               | [`content-mapper-worker-stack.yml`](./content-mapper-worker-stack.yml)                       |
+| 04.13 | Type-check corpus pair                    | [`typecheck-corpus-pair.yml`](./typecheck-corpus-pair.yml)                                   |
+| 04.14 | Typecheck vs vue-tsc                      | [`typecheck-vs-vue-tsc.yml`](./typecheck-vs-vue-tsc.yml)                                     |
+| 04.15 | WSL2 type-check qualification             | [`typecheck-wsl2.yml`](./typecheck-wsl2.yml)                                                 |
+| 04.16 | Typechecker cache custody                 | [`typechecker-cache-custody.yml`](./typechecker-cache-custody.yml)                           |
+| 04.17 | Type checker native backend phases        | [`typechecker-native-phases.yml`](./typechecker-native-phases.yml)                           |
+| 04.18 | Native syntax and semantic completion     | [`typechecker-syntax-semantic-completion.yml`](./typechecker-syntax-semantic-completion.yml) |
+| 04.19 | Platform VSIX native projection           | [`typescript-provider-vsix.yml`](./typescript-provider-vsix.yml)                             |
 
 ## 05 Language services and editors
 
