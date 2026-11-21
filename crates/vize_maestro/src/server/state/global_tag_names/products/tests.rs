@@ -116,6 +116,20 @@ fn source_contribution_matches_workspace_completion_for_unsaved_declarations() {
 }
 
 #[test]
+fn encoded_files_and_metadata_use_the_url_librarys_path() {
+    for (raw, supported) in [
+        ("file:///repo/types%2Ed%2Ets", true),
+        ("file:///repo/%E9%9B%AA.d.mts", true),
+        ("file:///repo/%2Egit/types.d.ts", false),
+        ("file:///repo/entry%2Ets", false),
+        ("https://example.test/repo/types.d.ts", false),
+    ] {
+        let uri = Url::parse(raw).unwrap();
+        assert_eq!(supported_declaration(&uri), supported, "{raw}");
+    }
+}
+
+#[test]
 fn host_refuses_closed_reopened_and_non_declaration_paths() {
     let state = ServerState::new();
     let cache = SourceSnapshotCache::default();
