@@ -133,18 +133,27 @@ impl SourceSnapshot {
     ) -> Result<WorkspaceEdit, SourceEditRefusal> {
         self.with_current(documents, |_| {
             let current = self.versioned_source().map_err(SourceEditRefusal::Frame)?;
-            let edits = edits
-                .positioned_edits(current)
-                .map_err(SourceEditRefusal::Edit)?;
-            let mut text_edits = Vec::with_capacity(edits.len());
-            for (range, replacement) in edits {
-                text_edits.push(OneOf::Left(TextEdit {
+            let wire = |range: vize_l0::line_index::Range, replacement: &str| {
+                OneOf::Left(TextEdit {
                     range: Range::new(
                         Position::new(range.start.line, range.start.character),
                         Position::new(range.end.line, range.end.character),
                     ),
                     new_text: replacement.into(),
-                }));
+                })
+            };
+            if let [only] = edits.edits() {
+                let range = only
+                    .positioned_range(current)
+                    .map_err(SourceEditRefusal::Edit)?;
+                return Ok(self.document_change(vec![wire(range, only.replacement())]));
+            }
+            let edits = edits
+                .positioned_edits(current)
+                .map_err(SourceEditRefusal::Edit)?;
+            let mut text_edits = Vec::with_capacity(edits.len());
+            for (range, replacement) in edits {
+                text_edits.push(wire(range, replacement));
             }
             Ok(self.document_change(text_edits))
         })

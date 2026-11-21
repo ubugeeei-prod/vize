@@ -1,6 +1,33 @@
 //! Project checked, source-ordered edits to the shared UTF-16 coordinate type.
-use super::{EditError, EditSet, VersionedSource};
-use vize_l0::line_index::{Position, Range};
+use super::{EditError, EditSet, SpanEdit, VersionedSource};
+use vize_l0::{
+    Span,
+    line_index::{Position, Range},
+};
+
+// Edit construction proves source order and both UTF-8 boundaries.
+#[inline]
+fn consume(source: &str, offset: u32, origin: Position, span: Span) -> (Range, &str) {
+    let (gap, tail) = source.split_at((span.start - offset) as usize);
+    let (replaced, tail) = tail.split_at((span.end - span.start) as usize);
+    let start = origin.after_text(gap);
+    (Range::new(start, start.after_text(replaced)), tail)
+}
+
+impl<K: Copy + Eq> SpanEdit<'_, '_, K> {
+    /// Check the source, version and physical buffer, then locate a single fix.
+    #[inline]
+    pub fn positioned_range(self, current: VersionedSource<'_, K>) -> Result<Range, EditError> {
+        self.snapshot.check(current)?;
+        Ok(consume(
+            self.snapshot.root().source(),
+            0,
+            Position::default(),
+            self.span,
+        )
+        .0)
+    }
+}
 
 impl<'edits, 'source, 'replacement, K: Copy + Eq> EditSet<'edits, 'source, 'replacement, K> {
     /// Recheck the exact current source and stream authored edit ranges in their
@@ -20,14 +47,11 @@ impl<'edits, 'source, 'replacement, K: Copy + Eq> EditSet<'edits, 'source, 'repl
         let mut position = Position::default();
         Ok(self.edits.iter().map(move |edit| {
             let span = edit.span();
-            // Construction proves source order and both UTF-8 boundaries.
-            let (gap, tail) = remaining.split_at((span.start - previous_end) as usize);
-            let (replaced, tail) = tail.split_at((span.end - span.start) as usize);
-            let start = position.after_text(gap);
-            position = start.after_text(replaced);
+            let (range, tail) = consume(remaining, previous_end, position, span);
+            position = range.end;
             remaining = tail;
             previous_end = span.end;
-            (Range::new(start, position), edit.replacement())
+            (range, edit.replacement())
         }))
     }
 }
@@ -64,6 +88,7 @@ mod tests {
             let ranges = set.positioned_edits(frame).unwrap();
             assert_eq!(ranges.len(), edits.len());
             for ((range, replacement), edit) in ranges.zip(&edits) {
+                assert_eq!(edit.positioned_range(frame), Ok(range));
                 assert_eq!(
                     range.start,
                     offset_to_position(source, edit.span.start as usize)
