@@ -27,14 +27,17 @@ impl NativeCanonicalLint<'_, '_> {
     /// Each rule retains its own first refusal. Catalog lookups have the same
     /// keys, count and order as requesting tabindex first and image-alt second.
     #[must_use]
-    pub fn accessibility(&self, messages: &dyn MessageLookup) -> AccessibilityFindings {
+    pub fn accessibility(&self, messages: &(impl MessageLookup + ?Sized)) -> AccessibilityFindings {
         vize_l0::profile!(
             "patina.native.canonical.accessibility",
             self.check_accessibility(messages)
         )
     }
 
-    fn check_accessibility(&self, messages: &dyn MessageLookup) -> AccessibilityFindings {
+    fn check_accessibility(
+        &self,
+        messages: &(impl MessageLookup + ?Sized),
+    ) -> AccessibilityFindings {
         if self.file.artifact().root().ops.is_empty() {
             return AccessibilityFindings {
                 tabindex_no_positive: Ok(Vec::new()),
@@ -87,7 +90,6 @@ fn render_findings(
     headline: &str,
     help: &str,
 ) -> Vec<NativeLintFinding> {
-    spans.sort_unstable_by_key(|span| (span.start, span.end));
     let header = |span| NativeLintFinding {
         rule_name,
         diagnostic: Diagnostic::new(Advisory::Warning, Stage::Surface, span, headline),
@@ -99,16 +101,17 @@ fn render_findings(
             help,
         ));
     };
+    let complete = |span| {
+        let mut finding = header(span);
+        add_help(&mut finding);
+        finding
+    };
+    if let [only] = spans.as_slice() {
+        return vec![complete(*only)];
+    }
+    spans.sort_unstable_by_key(|span| (span.start, span.end));
     if !spans.spilled() {
-        return spans
-            .iter()
-            .copied()
-            .map(|span| {
-                let mut finding = header(span);
-                add_help(&mut finding);
-                finding
-            })
-            .collect();
+        return spans.iter().copied().map(complete).collect();
     }
     // Drop the heap-backed spans before allocating structured help for every
     // diagnostic. The first pass has already built the final localized headers.

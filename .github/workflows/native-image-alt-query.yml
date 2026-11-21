@@ -215,6 +215,23 @@ jobs:
             test -s "$capture/$epoch-region-packets.txt"
           done
           cmp "$capture/base-region-packets.txt" "$capture/head-region-packets.txt"
+          # Repeat source-built processes in alternating order on the same runner.
+          # Cargo's artifact record identifies the executable for the requested target.
+          binary_filter='[.[] | select(.reason == "compiler-artifact" and .executable != null and .target.name == $name)] | last | .executable'
+          base_bin=$(cd "$baseline" && CARGO_TARGET_DIR="$base_target" cargo test "${base[@]}" --no-run --message-format=json | jq -ers --arg name ci_canonical_lint_probe "$binary_filter")
+          head_bin=$(cargo test "${head[@]}" --test canonical_rule_group --no-run --message-format=json | jq -ers --arg name canonical_rule_group "$binary_filter")
+          mkdir -p "$capture/repeated"
+          for round in 0 1 2 3 4 5; do
+            order=(base head)
+            if ((round % 2)); then order=(head base); fi
+            for epoch in "${order[@]}"; do
+              bin="$head_bin"
+              if [[ "$epoch" == base ]]; then bin="$base_bin"; fi
+              for query in profile::individual_lint_requests profile::paired_lint_requests profile::original_request_costs regions::original_region_events; do
+                "$bin" "$query" --exact --ignored --nocapture > "$capture/repeated/$epoch-$round-${query##*::}.log" 2>&1
+              done
+            done
+          done
           git -C "$baseline" diff --exit-code -- crates/vize_patina/src Cargo.lock
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
