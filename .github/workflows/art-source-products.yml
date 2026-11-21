@@ -16,6 +16,11 @@ concurrency:
   cancel-in-progress: true
 jobs:
   gallery-products:
+    name: Gallery ${{ matrix.suite }}
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [correctness, performance]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     env:
@@ -36,12 +41,22 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
           key: art-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
+      - name: Select original Vue and colocated gallery sources
+        run: git ls-files -z -- '*.vue' '*.vue.txt' > "$RUNNER_TEMP/gallery-sources"
       - name: Compare original gallery records, generated modules, Markdown and public warnings
+        if: matrix.suite == 'correctness'
         run: |
           set -euo pipefail
           flags=(--locked --profile ci-opt -p vize_musea)
           cargo test "${flags[@]}" --lib
           cargo clippy "${flags[@]}" --features art-source-products --lib --no-deps -- -D warnings
+          suite=(--features art-source-products --test art_source_products)
           export VIZE_ART_SOURCE_INPUTS="$RUNNER_TEMP/gallery-sources"
-          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_ART_SOURCE_INPUTS"
-          cargo test "${flags[@]}" --features art-source-products --test art_source_products -- --include-ignored --nocapture --test-threads=1
+          cargo test "${flags[@]}" "${suite[@]}"
+          cargo test "${flags[@]}" "${suite[@]}" descriptor_warnings_and_complete_gallery_products_on_original_files -- --ignored --nocapture --test-threads=1
+      - name: Measure descriptor and warning time, allocations and peak on an independent runner
+        if: matrix.suite == 'performance'
+        run: |
+          set -euo pipefail
+          export VIZE_ART_SOURCE_INPUTS="$RUNNER_TEMP/gallery-sources"
+          cargo test --locked --profile ci-opt -p vize_musea --features art-source-products --test art_source_products complete_responses_share_the_original_art_surface -- --ignored --nocapture --test-threads=1
