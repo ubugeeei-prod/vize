@@ -20,6 +20,18 @@ fn edits_on_either_half_of_a_crlf_replay_at_client_line_boundaries() {
             .collect();
         for (i, &a) in offsets.iter().enumerate() {
             for (j, &b) in offsets.iter().enumerate().skip(i) {
+                let selected = frame
+                    .select_edits([(Span::new(a as u32, b as u32), "🪴")])
+                    .unwrap()
+                    .unwrap();
+                let edit = selected.as_edit_set();
+                let wire = snapshot
+                    .workspace_edit_for_fixes(&store, request(&uri), edit)
+                    .unwrap();
+                assert_eq!(
+                    apply_wire(source, &wire, &uri, 7),
+                    snapshot.apply_edits(&store, edit).unwrap().as_str()
+                );
                 for &c in offsets.iter().skip(j) {
                     for replacement in ["", "x", "\r\n🪴"] {
                         let selected = frame
