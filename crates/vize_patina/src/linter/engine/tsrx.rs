@@ -105,3 +105,6 @@ fn unsupported(issue: &TsrxIssue) -> LintDiagnostic {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "retained-tsrx")]
+mod prepared;

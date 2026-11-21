@@ -1,0 +1,75 @@
+name: Retained TSRX module products
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/retained-tsrx.yml"
+      - "davinci/vize_l1/src/markup/tsrx*"
+      - "davinci/vize_l1/src/markup/tsrx/**"
+      - "davinci/vize_l1_to_l2/Cargo.toml"
+      - "davinci/vize_l1_to_l2/src/lower.rs"
+      - "davinci/vize_l1_to_l2/src/lower/tsrx.rs"
+      - "davinci/vize_l4/tests/tsrx_retained.rs"
+      - "davinci/vize_l2/Cargo.toml"
+      - "davinci/vize_l2/src/lang/tsrx*"
+      - "davinci/vize_l2/src/lang/tsrx/**"
+      - "davinci/vize_l4/Cargo.toml"
+      - "davinci/vize_l4/src/lang/tsrx*"
+      - "davinci/vize_l4/src/lang/tsrx/**"
+      - "crates/vize_patina/Cargo.toml"
+      - "crates/vize_patina/src/linter/engine/tsrx*"
+      - "crates/vize_patina/src/linter/engine/tsrx/**"
+      - "crates/vize_patina/tests/prepared_tsrx/**"
+      - "crates/vize_patina/src/markup/**"
+      - "tests/_fixtures/tsrx/**"
+      - "tests/tooling/tsrx-oracle/**"
+      - "tests/tooling/tsrx-oracle.test.ts"
+      - "tests/tooling/tsrx-mount.test.ts"
+      - "tests/tooling/jsx-vapor-oracle/tsrx-mount.ts"
+permissions: { contents: read }
+concurrency:
+  group: retained-tsrx-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  shared-regions:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
+        with:
+          {
+            version: latest,
+            node-version-file: package.json,
+            cache: true,
+            cache-save: false,
+            run-install: false,
+          }
+      - name: Install the pinned reference compiler and Vue mount oracle
+        run: node tools/support/github/vp-install.ts --filter @vize/tsrx-oracle --filter @vize/jsx-vapor-oracle --filter './tests'
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0", components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Compare retained and independent producers and the mounted reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt)
+          for modes in retained-tsrx retained-tsrx,typescript; do
+            cargo test "${flags[@]}" -p vize_l4 --features "$modes" --test tsrx_retained
+          done
+          cargo test "${flags[@]}" -p vize_l4 --features typescript --test tsrx_dom
+          node --test tests/tooling/tsrx-oracle.test.ts tests/tooling/tsrx-mount.test.ts
+          suite=(-p vize_patina --features retained-tsrx,vize_l4/retained-tsrx)
+          cargo clippy "${flags[@]}" "${suite[@]}" --lib --test prepared_tsrx --no-deps -- -D warnings
+          cargo test "${flags[@]}" "${suite[@]}" --lib linter::engine::tsrx::tests
+          cargo test "${flags[@]}" "${suite[@]}" --test prepared_tsrx
+          export VIZE_TSRX_INPUTS="$RUNNER_TEMP/tsrx-originals"
+          git ls-files -z -- '*.tsrx' '*.tsrx.txt' > "$VIZE_TSRX_INPUTS"
+          cargo test "${flags[@]}" "${suite[@]}" --test prepared_tsrx -- --ignored --nocapture --test-threads=1
