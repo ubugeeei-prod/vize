@@ -33,7 +33,8 @@ fn lexical<'a>(
 ) -> Option<FileArtifact<'a>> {
     let mut file = FileProducer::new(arena, block.root_source()).unwrap();
     file.program(
-        ProgramInput::checked(syntax.admitted_program()?, block, 0).ok()?,
+        ProgramInput::checked(syntax.admitted_program()?, block, 0)
+            .expect("an admitted script must bind to its exact authored block"),
         ProgramScope::Nested,
     )
     .unwrap();
