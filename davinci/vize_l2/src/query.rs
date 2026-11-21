@@ -48,3 +48,6 @@ impl<'f, 'a> Model<'f, 'a> {
         self.file
     }
 }
+
+#[cfg(any(test, feature = "position-index"))]
+pub use position::index::{IndexedModel, PositionIndex};

@@ -60,7 +60,11 @@ fn attempt<'a>(arena: &'a Allocator, source: &'a str, complete: bool) -> NativeT
         }
         assert_eq!(walk.complete().is_ok(), complete);
     }
-    core::hint::black_box(original.finish())
+    let output = core::hint::black_box(original.finish());
+    if let Some(file) = output.file() {
+        crate::query::position::index::tests::assert_equivalent(file);
+    }
+    output
 }
 
 fn file<'f, 'a>(output: &'f NativeTemplateFile<'a>) -> &'f FileArtifact<'a> {

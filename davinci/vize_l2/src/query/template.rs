@@ -216,3 +216,6 @@ fn check_template_offset(file: &FileArtifact<'_>, offset: u32) -> Result<(), Tem
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(any(test, feature = "position-index"))]
+pub(in crate::query) mod index;

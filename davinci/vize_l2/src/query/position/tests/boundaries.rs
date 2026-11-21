@@ -23,6 +23,7 @@ fn authored_utf8_boundaries_nonzero_origins_and_half_open_ends_are_checked() {
         ProgramScope::Nested,
     );
     let owner = producer.finish().unwrap();
+    crate::query::position::index::tests::assert_equivalent(&owner);
     assert!(owner.is_complete());
     let name = offset(source, "é =");
     let declaration = Model::new(&owner).binding_at_offset(name).unwrap().unwrap();
@@ -106,6 +107,7 @@ fn units_can_be_recorded_in_reverse_source_order_without_crossing_opaque_gaps() 
         );
     }
     let owner = producer.finish().unwrap();
+    crate::query::position::index::tests::assert_equivalent(&owner);
     assert!(owner.is_complete());
     for (needle, unit) in [("earlier =", 4), ("later =", 9)] {
         let binding = Model::new(&owner)
@@ -148,6 +150,7 @@ fn overlapping_original_unit_observations_are_ambiguous_even_on_a_non_name_byte(
         );
     }
     let owner = producer.finish().unwrap();
+    crate::query::position::index::tests::assert_equivalent(&owner);
     assert!(owner.is_complete());
     assert_eq!(owner.units().len(), 2);
     for at in [
