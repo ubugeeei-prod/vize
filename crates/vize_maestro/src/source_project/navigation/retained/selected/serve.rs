@@ -17,6 +17,10 @@ pub(super) fn run(
             Command::IntrinsicTag(request) => request.refuse(NavigationRefusal::Language),
             Command::ModuleLinks(request) => request.refuse(NavigationRefusal::Language),
             Command::LinkedEditing(request) => request.refuse(NavigationRefusal::Language),
+            #[cfg(feature = "experimental-navigation-products")]
+            Command::Products(request) => {
+                let _ = request.reply.send(Err(NavigationRefusal::Language));
+            }
             Command::Highlights(request) => {
                 if !request.reply.is_canceled() {
                     #[cfg(test)]

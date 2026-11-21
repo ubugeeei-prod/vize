@@ -23,6 +23,8 @@ pub(super) mod intrinsic;
 pub(super) mod linked;
 #[cfg(feature = "experimental-source-navigation")]
 pub(super) mod module_links;
+#[cfg(feature = "experimental-navigation-products")]
+pub(super) mod products;
 #[cfg(feature = "experimental-source-navigation")]
 pub(super) mod selected;
 
@@ -34,6 +36,8 @@ pub(super) enum Command {
     #[cfg(feature = "experimental-source-navigation")]
     ModuleLinks(module_links::Request),
     Highlights(highlights::Request),
+    #[cfg(feature = "experimental-navigation-products")]
+    Products(products::Request),
     #[cfg(feature = "experimental-source-navigation")]
     LinkedEditing(linked::Request),
     #[cfg(feature = "experimental-source-navigation")]

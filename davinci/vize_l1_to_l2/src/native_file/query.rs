@@ -236,3 +236,6 @@ impl<'o, 'a> NativeSfc<'o, 'a> {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "native-navigation-products")]
+mod navigation;

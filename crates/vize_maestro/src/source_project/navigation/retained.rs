@@ -24,6 +24,8 @@ mod intrinsic;
 pub(super) mod linked;
 #[cfg(feature = "experimental-source-navigation")]
 pub(super) mod module_links;
+#[cfg(feature = "experimental-navigation-products")]
+mod products;
 #[cfg(feature = "experimental-source-navigation")]
 pub(super) mod selected;
 #[cfg(feature = "experimental-source-navigation")]
@@ -182,6 +184,12 @@ fn serve(
             }
             #[cfg(feature = "experimental-source-navigation")]
             Command::LinkedEditing(request) => request.refuse(NavigationRefusal::Language),
+            #[cfg(feature = "experimental-navigation-products")]
+            Command::Products(request) => {
+                if !request.reply.is_canceled() {
+                    let _ = request.reply.send(query.symbol_sites(request.position));
+                }
+            }
             Command::Highlights(request) => {
                 if !request.reply.is_canceled() {
                     #[cfg(test)]
