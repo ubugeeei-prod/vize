@@ -54,6 +54,17 @@ fn paired(label: &str, language: StyleLanguage, source: &str) {
         shared.push(b);
         ratios.push(b as f64 / a as f64);
     }
+    for (pair, (a, b)) in baseline.iter().zip(&shared).enumerate() {
+        let first = if pair % 2 == 0 {
+            "independent"
+        } else {
+            "shared"
+        };
+        eprintln!(
+            "sample {label} pair={pair} first={first} iterations={iterations} independent_ns={a} shared_ns={b} shared_over_independent={:.6}",
+            *b as f64 / *a as f64
+        );
+    }
     baseline.sort_unstable();
     shared.sort_unstable();
     ratios.sort_by(f64::total_cmp);
