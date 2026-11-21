@@ -28,9 +28,6 @@ impl SourceSnapshot {
             let checked = edits
                 .positioned_edits(current)
                 .map_err(SourceEditRefusal::Edit)?;
-            if line_endings::needs_projection(source, checked.edits()) {
-                return Ok(self.document_change(line_endings::project(source, checked.edits())));
-            }
             let wire = |range: vize_l0::line_index::Range, replacement: &str| {
                 OneOf::Left(TextEdit {
                     range: Range::new(
@@ -40,6 +37,39 @@ impl SourceSnapshot {
                     new_text: replacement.into(),
                 })
             };
+            let raw = checked.edits();
+            if let Some(last) = raw.last() {
+                let end = last.span().end as usize;
+                if end <= 1
+                    && source.as_bytes().first() != Some(&b'\r')
+                    && let Some((range, replacement)) = checked.single()
+                {
+                    return Ok(self.document_change(vec![wire(range, replacement)]));
+                }
+                // Fixed-size masks classify CR, non-ASCII and all line starts
+                // together on x86-64. Other targets use the existing line cursor.
+                #[cfg(target_arch = "x86_64")]
+                if (2..=256).contains(&end)
+                    && let Some(lines) =
+                        vize_l0::line_index::ShortAsciiLines::new(source.split_at(end).0)
+                {
+                    let at = |edit: &vize_l1::edit::SpanEdit<'_, '_, SnapshotKey<'_>>| {
+                        let span = edit.span();
+                        let range = vize_l0::line_index::Range::new(
+                            lines.position(span.start),
+                            lines.position(span.end),
+                        );
+                        wire(range, edit.replacement())
+                    };
+                    if let [only] = raw {
+                        return Ok(self.document_change(vec![at(only)]));
+                    }
+                    return Ok(self.document_change(raw.iter().map(at).collect()));
+                }
+            }
+            if line_endings::needs_projection(source, checked.edits()) {
+                return Ok(self.document_change(line_endings::project(source, checked.edits())));
+            }
             if let Some((range, replacement)) = checked.single() {
                 return Ok(self.document_change(vec![wire(range, replacement)]));
             }

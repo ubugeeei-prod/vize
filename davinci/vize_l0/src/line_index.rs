@@ -242,3 +242,8 @@ mod tests {
 mod ascii_lines;
 #[cfg(feature = "positioned-edits")]
 pub use ascii_lines::AsciiLineCursor;
+
+#[cfg(feature = "positioned-edits")]
+mod short_ascii;
+#[cfg(feature = "positioned-edits")]
+pub use short_ascii::ShortAsciiLines;
