@@ -100,6 +100,8 @@ pub(crate) fn lower_attr<'a>(
             bindings.push(super::cloak::lower_cloak(cx, attr, directive));
         }
         Head::If | Head::ElseIf | Head::Else | Head::For => {
+            cx.surface_changes
+                .insert(super::SurfaceChanges::IGNORED_DIRECTIVE);
             // The structural pass consumed the first of each; a duplicate
             // is ignored under a record, never silently.
             cx.info(
@@ -128,6 +130,8 @@ pub(crate) fn defer(
     before: &str,
     message: String,
 ) {
+    cx.surface_changes
+        .insert(super::SurfaceChanges::IGNORED_DIRECTIVE);
     cx.info(span, message);
     cx.record(rule, None, before, String::default, span);
 }

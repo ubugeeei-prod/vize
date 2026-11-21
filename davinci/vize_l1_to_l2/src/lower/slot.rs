@@ -22,7 +22,7 @@ use vize_l2::artifact::OpFamily;
 use vize_l2::op::{Attribute, BindingOp, DynamicName, Namespace, Op, Region, SlotOp};
 use vize_l2::provenance::ProvenanceSink;
 
-use super::binding::{defer, lower_slot_content};
+use super::binding::lower_slot_content;
 use super::bindop::{RULE_SAME_NAME, lower_bind, lower_on};
 use super::cx::{Cx, attr_slice, attr_span, element_span};
 use super::directive::{Arg, AttrForm, Head};
@@ -81,6 +81,8 @@ pub(crate) fn lower_slot<'a>(
                                 Some(Arg::Static(text)) => text,
                                 _ => "name",
                             };
+                            cx.surface_changes
+                                .insert(super::SurfaceChanges::SAME_NAME_BINDING);
                             let expr =
                                 super::expr::expression_in(cx, arg_text, cx.span_of(arg_text));
                             cx.record(
@@ -136,16 +138,23 @@ pub(crate) fn lower_slot<'a>(
                         attr_span(cx, attr),
                     );
                 }
-                _ => defer(
-                    cx,
-                    "defer.slot-directive",
-                    attr_span(cx, attr),
-                    attr_slice(cx, attr),
-                    cstr!(
-                        "`{}` on a <slot> outlet has no L2 op; it stays with DOM realization (P2-11)",
-                        attr.name.text
-                    ),
-                ),
+                _ => {
+                    let span = attr_span(cx, attr);
+                    cx.info(
+                        span,
+                        cstr!(
+                            "`{}` on a <slot> outlet has no L2 op; it stays with DOM realization (P2-11)",
+                            attr.name.text
+                        ),
+                    );
+                    cx.record(
+                        "defer.slot-directive",
+                        None,
+                        attr_slice(cx, attr),
+                        String::default,
+                        span,
+                    );
+                }
             },
         }
     }

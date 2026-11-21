@@ -51,7 +51,7 @@ pub fn lower_source_block_with_foreign_expressions<'a>(
         None,
     );
     cx.foreign_dialect = Some(dialect);
-    lower_in_context(cx, tree, errors, block)
+    lower_in_context(cx, tree, errors, block).0
 }
 
 /// Binding positions use the dialect's one capability seam. A whole source

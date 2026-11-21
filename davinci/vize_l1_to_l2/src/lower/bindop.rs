@@ -123,6 +123,8 @@ pub(crate) fn lower_bind<'a>(
         // The synthesized text is not a source slice, so the
         // expression is admitted at the argument's own span.
         BindValue::SameName { text, arg } => {
+            cx.surface_changes
+                .insert(super::SurfaceChanges::SAME_NAME_BINDING);
             let expr = super::expr::expression_in(cx, text, cx.span_of(arg));
             cx.record(
                 RULE_SAME_NAME,

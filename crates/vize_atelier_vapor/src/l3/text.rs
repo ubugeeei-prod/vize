@@ -1,30 +1,19 @@
 //! Transfer L2's validated compound-text side facts into owned L3 operands.
 //! Opaque display strings are never parsed or treated as executable JavaScript.
 
-use oxc_allocator::HashMap;
 use vize_carton::Allocator;
-use vize_l2::analysis::text_facts::TextPart;
+use vize_l0::side_table::SideTable;
+use vize_l2::analysis::text_facts::{TextPart, TextParts};
 use vize_l3::operand::{OperandRole, OperandValue, ValueKind};
 
 use super::{AdmissionFailure, LegacyReason, native::validate::reference, retained::Retained};
 
 pub(super) fn capture<'a>(
     allocator: &'a Allocator,
-    s2: &vize_l1_to_l2::Lowered<'_>,
+    facts: &SideTable<TextParts>,
     s3: &mut vize_l2_to_l3::Lowered<'a>,
     retained: &mut Retained<'_, 'a>,
 ) -> Result<(), AdmissionFailure> {
-    let mut facts: HashMap<'_, (u32, u32), _> = HashMap::new_in(allocator.as_oxc());
-    facts.extend(
-        (s2.artifact.provenance.iter())
-            .filter(|record| record.rule == "lower.compound")
-            .filter_map(|record| {
-                s2.artifact
-                    .texts
-                    .get(record.node?)
-                    .map(|parts| ((record.span.start, record.span.end), parts))
-            }),
-    );
     if facts.is_empty() {
         return if s3.program.operands.iter().any(|operand| {
             operand.role == OperandRole::Text
@@ -48,12 +37,12 @@ pub(super) fn capture<'a>(
             operands.push(*operand);
             continue;
         }
-        let parts =
-            facts
-                .get(&(value.span.start, value.span.end))
-                .ok_or(AdmissionFailure::Invalid(
-                    "compound text lacks its L2 parts",
-                ))?;
+        let parts = s3
+            .source_node(operand.op)
+            .and_then(|node| facts.get(node))
+            .ok_or(AdmissionFailure::Invalid(
+                "compound text lacks its L2 parts",
+            ))?;
         if parts.parts.len() < 2
             || !parts.parts.iter().any(|part| part.dynamic)
             || parts
@@ -135,7 +124,13 @@ mod tests {
             let (tree, errors) = vize_l1::markup::parse(&scratch, SOURCE);
             let s2 = vize_l1_to_l2::lower(&scratch, &tree, &errors);
             let mut s3 = vize_l2_to_l3::lower(&allocator, &s2.artifact.root);
-            capture(&allocator, &s2, &mut s3, &mut Retained::new(&allocator)).unwrap();
+            capture(
+                &allocator,
+                &s2.artifact.texts,
+                &mut s3,
+                &mut Retained::new(&allocator),
+            )
+            .unwrap();
             s3
         };
         assert!(vize_l3::verify::verify(&s3.program).is_empty());
@@ -168,7 +163,7 @@ mod tests {
 
     #[test]
     fn stale_compound_facts_cannot_become_executable() {
-        for mutation in 0..5 {
+        for mutation in 0..6 {
             let scratch = Allocator::new();
             let allocator = Allocator::new();
             let (tree, errors) = vize_l1::markup::parse(&scratch, SOURCE);
@@ -180,14 +175,25 @@ mod tests {
                 1 => parts.parts[0].span.start += 1,
                 2 => parts.parts[1].span.start += 1,
                 3 => parts.parts.last_mut().unwrap().span.end -= 1,
-                _ => s2
-                    .artifact
-                    .provenance
-                    .retain(|record| record.rule != "lower.compound"),
+                4 => s2.artifact.texts.clear(),
+                _ => {
+                    let compound = s3
+                        .program
+                        .operands
+                        .iter_mut()
+                        .find(|operand| operand.value.qualifier == "compound")
+                        .unwrap();
+                    compound.op = vize_l3::op::OpId::new(0);
+                }
             }
             assert!(
                 matches!(
-                    capture(&allocator, &s2, &mut s3, &mut Retained::new(&allocator)),
+                    capture(
+                        &allocator,
+                        &s2.artifact.texts,
+                        &mut s3,
+                        &mut Retained::new(&allocator)
+                    ),
                     Err(AdmissionFailure::Invalid(_))
                 ),
                 "mutation {mutation}"

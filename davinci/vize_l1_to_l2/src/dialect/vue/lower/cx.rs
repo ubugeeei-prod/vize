@@ -44,6 +44,7 @@ pub(crate) struct Cx<'a, P> {
     pub diagnostics: Vec<Diagnostic>,
     /// Decisions, kept only when the consumer chose a recording sink.
     pub provenance: P,
+    pub surface_changes: super::SurfaceChanges,
     pub scopes: SideTable<ScopeFacts>,
     pub texts: SideTable<super::text::TextParts>,
     pub consumed_expressions: Vec<ExprRef<'a>>,
@@ -91,6 +92,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
             implied_table_sections: policy.implied_table_sections,
             diagnostics: Vec::new(),
             provenance: P::default(),
+            surface_changes: super::SurfaceChanges::empty(),
             scopes: SideTable::new(),
             texts: SideTable::new(),
             consumed_expressions: Vec::new(),
