@@ -63,7 +63,10 @@ The explicit `component-projection` feature adds
 and quoted literal range in the module-region walk. The projection checks
 the original component value and one ordered props object with the published
 component helpers. Registry lookups, explicit generic arguments and slot
-scopes return a typed refusal. The original projection API keeps its
+scopes return a typed refusal. A diagnostic on an empty props object uses
+Canon's two-byte highlight at the start of the tag. If that endpoint falls
+inside a UTF-8 character, as it does for `<雪山/>`, projection returns
+`ModuleProjectionError::Span`. The original projection API keeps its
 component refusal.
 
 Whole-component completeness, file If/For, broader DOM semantics and the SSR,
