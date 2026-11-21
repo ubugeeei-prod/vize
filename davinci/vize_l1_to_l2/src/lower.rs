@@ -54,3 +54,6 @@ mod vfor;
 mod vtext;
 
 include!("dialect/vue/lower.rs");
+
+#[cfg(feature = "retained-tsrx")]
+pub mod tsrx;

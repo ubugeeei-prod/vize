@@ -22,6 +22,8 @@ autotests = false
 metadata.vize.stability = "experimental"
 
 [features]
+# Retain the source Program alongside its canonical region lowering.
+retained-tsrx = []
 # Prepare input-neutral modules for explicit analysis and projection.
 module-ir = ["vize_l2/module-ir"]
 # Retain original callee and literal ranges for explicit component checks.

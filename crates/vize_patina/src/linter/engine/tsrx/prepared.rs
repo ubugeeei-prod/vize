@@ -6,7 +6,7 @@ use crate::{
     markup::{L2Markup, MarkupRules},
 };
 use vize_l0::ToCompactString;
-use vize_l2::lang::tsrx::prepared::{PreparedTsrx, RegionLowering};
+use vize_l1_to_l2::lower::tsrx::{PreparedTsrx, RegionLowering};
 
 impl Linter {
     /// Run this linter's configured TSRX markup rules over an existing lowering.

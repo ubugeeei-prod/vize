@@ -236,7 +236,77 @@ fn syntax(diagnostic: &oxc_diagnostics::OxcDiagnostic) -> Diagnostic {
 #[cfg(test)]
 mod tests;
 
+/// Emit from the same source and sealed regions that analysis tools have read.
+/// Syntax and region lowering take precedence over target and capability refusals.
 #[cfg(feature = "retained-tsrx")]
-mod prepared;
-#[cfg(feature = "retained-tsrx")]
-pub use prepared::compile_prepared;
+pub fn compile_prepared(
+    prepared: vize_l1_to_l2::lower::tsrx::PreparedTsrx<'_>,
+    options: &CompileOptions<'_>,
+) -> Result<Compiled, Failure> {
+    use vize_l1_to_l2::lower::tsrx::RegionLowering;
+
+    let module = prepared.module();
+    let arena = prepared.arena();
+    let artifacts = match prepared.into_regions() {
+        RegionLowering::Syntax => {
+            return Err(Failure {
+                diagnostics: module.diagnostics().iter().map(syntax).collect(),
+            });
+        }
+        RegionLowering::Refused(issues) => {
+            return Err(Failure {
+                diagnostics: issues
+                    .into_iter()
+                    .map(|issue| Diagnostic {
+                        code: Code::Lowering(issue.kind),
+                        message: cstr!("{:?} is not supported in TSRX modules yet", issue.kind),
+                        start: issue.span.start,
+                        end: issue.span.end,
+                    })
+                    .collect(),
+            });
+        }
+        RegionLowering::Ready(artifacts) => artifacts,
+    };
+    let whole = |code: Code, message: String| Diagnostic {
+        code,
+        message,
+        start: 0,
+        end: u32::try_from(module.program().source_text.len()).unwrap_or(u32::MAX),
+    };
+    let mut diagnostics = Vec::new();
+    if options.target != Target::Dom {
+        diagnostics.push(whole(
+            Code::Target(options.target),
+            cstr!(
+                "{:?} emission of TSRX modules is not supported yet",
+                options.target
+            ),
+        ));
+    }
+    if options.source_map {
+        diagnostics.push(whole(
+            Code::Emit(EmitIssue::SourceMap),
+            cstr!("source maps of TSRX modules are not supported yet"),
+        ));
+    }
+    if options.erase_types && !cfg!(feature = "typescript") {
+        diagnostics.push(whole(
+            Code::Emit(EmitIssue::TypeErasure),
+            cstr!("type erasure of TSRX modules needs the `typescript` feature"),
+        ));
+    }
+    if !diagnostics.is_empty() {
+        return Err(Failure { diagnostics });
+    }
+    let code = dom::module(arena, module, artifacts)?;
+    #[cfg(feature = "typescript")]
+    let code = if options.erase_types {
+        erase::erase(&code).map_err(|message| Failure {
+            diagnostics: alloc::vec![whole(Code::Emit(EmitIssue::TypeErasure), message)],
+        })?
+    } else {
+        code
+    };
+    Ok(Compiled { code, map: None })
+}

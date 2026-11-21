@@ -20,7 +20,7 @@ readme = "README.md"
 
 [features]
 # Explicit consumers of the same parsed TSRX module and sealed regions.
-retained-tsrx = ["vize_l2/retained-tsrx"]
+retained-tsrx = ["vize_l1_to_l2/retained-tsrx"]
 # Reuse global UTF-16 positions across diagnostic requests.
 diagnostic-positions = ["vize_l0/diagnostic-positions"]
 # Project inline Vue CSS whose original descriptor contributes no checker binding.

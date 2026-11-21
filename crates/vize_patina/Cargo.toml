@@ -11,7 +11,7 @@ autotests = false
 
 [features]
 # Explicit consumers of the same parsed TSRX module and sealed regions.
-retained-tsrx = ["vize_l2/retained-tsrx"]
+retained-tsrx = ["vize_l1_to_l2/retained-tsrx"]
 # Evaluate canonical markup accessibility rules in one explicit L2 traversal.
 canonical-rule-group = ["vize_l2/sparse-region-walk"]
 # Arms the TS-25 markup lane (`tests/davinci_markup_differential.rs`): the

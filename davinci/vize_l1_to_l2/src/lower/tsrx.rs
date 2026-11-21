@@ -1,8 +1,8 @@
 //! Retain the original host Program and its region lowering for multiple consumers.
-use super::{TsrxArtifacts, TsrxIssue, lower};
 use alloc::vec::Vec;
 use vize_l0::Allocator;
 use vize_l1::markup::tsrx::{self, TsrxModule};
+use vize_l2::lang::tsrx::{TsrxArtifacts, TsrxIssue, lower};
 
 /// State of the original region producer at this module's revision.
 pub enum RegionLowering<'a> {

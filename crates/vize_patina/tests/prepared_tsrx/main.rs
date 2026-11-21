@@ -4,7 +4,7 @@
 )]
 
 use std::{fs, path::Path};
-use vize_l2::lang::tsrx::prepared::{RegionLowering, with_prepared};
+use vize_l1_to_l2::lower::tsrx::{RegionLowering, with_prepared};
 use vize_l4::lang::tsrx::{CompileOptions, Compiled, Failure, Target, compile, compile_prepared};
 use vize_patina::{HelpLevel, LintPreset, LintResult, Linter, Locale};
 

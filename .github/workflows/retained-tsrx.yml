@@ -5,6 +5,10 @@ on:
       - ".github/workflows/retained-tsrx.yml"
       - "davinci/vize_l1/src/markup/tsrx*"
       - "davinci/vize_l1/src/markup/tsrx/**"
+      - "davinci/vize_l1_to_l2/Cargo.toml"
+      - "davinci/vize_l1_to_l2/src/lower.rs"
+      - "davinci/vize_l1_to_l2/src/lower/tsrx.rs"
+      - "davinci/vize_l4/tests/tsrx_retained.rs"
       - "davinci/vize_l2/Cargo.toml"
       - "davinci/vize_l2/src/lang/tsrx*"
       - "davinci/vize_l2/src/lang/tsrx/**"
@@ -58,7 +62,7 @@ jobs:
           set -euo pipefail
           flags=(--locked --profile ci-opt)
           for modes in retained-tsrx retained-tsrx,typescript; do
-            cargo test "${flags[@]}" -p vize_l4 --features "$modes" --lib lang::tsrx::prepared::tests
+            cargo test "${flags[@]}" -p vize_l4 --features "$modes" --test tsrx_retained
           done
           cargo test "${flags[@]}" -p vize_l4 --features typescript --test tsrx_dom
           node --test tests/tooling/tsrx-oracle.test.ts tests/tooling/tsrx-mount.test.ts
