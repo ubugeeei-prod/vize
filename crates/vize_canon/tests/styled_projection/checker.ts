@@ -5,7 +5,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 
 interface InputDocument {
-  id: number;
+  path: string;
   extension: "mjs" | "ts";
   text: string;
 }
@@ -24,10 +24,7 @@ const ts: typeof import("typescript") = process.env.VIZE_TYPESCRIPT_PACKAGE
 assert.equal(ts.version, "6.0.3");
 const cases: InputDocument[] = JSON.parse(fs.readFileSync(0, "utf8"));
 const documents = new Map<string, InputDocument>(
-  cases.map(({ id, extension, text }) => [
-    path.resolve(`npm/ui/styled-checker-${id}.${extension}`),
-    { id, extension, text },
-  ]),
+  cases.map((doc) => [path.resolve(`${doc.path}.${doc.extension}`), doc]),
 );
 const options: import("typescript").CompilerOptions = {
   target: ts.ScriptTarget.ESNext,
@@ -46,6 +43,27 @@ const read = host.readFile.bind(host);
 const exists = host.fileExists.bind(host);
 host.readFile = (name) => documents.get(name)?.text ?? read(name);
 host.fileExists = (name) => documents.has(name) || exists(name);
+// Keep all relative resolution at the original source location. Uninstalled
+// external fixture trees still use the qualification's pinned Vue/Vite ambient
+// packages when their own ancestor directories do not supply them.
+const ambientOwner = path.resolve("npm/ui/package.json");
+host.resolveModuleNameLiterals = (names, containingFile, redirect, options) =>
+  names.map(({ text }) => {
+    const resolve = (from: string) =>
+      ts.resolveModuleName(text, from, options, host, undefined, redirect);
+    const found = resolve(containingFile);
+    return !found.resolvedModule && text === "vue" ? resolve(ambientOwner) : found;
+  });
+host.resolveTypeReferenceDirectiveReferences = (references, containingFile, redirect, options) =>
+  references.map((ref) => {
+    const name = typeof ref === "string" ? ref : ref.fileName;
+    const resolve = (from: string) =>
+      ts.resolveTypeReferenceDirective(name, from, options, host, redirect);
+    const found = resolve(containingFile);
+    return !found.resolvedTypeReferenceDirective && name === "vite/client"
+      ? resolve(ambientOwner)
+      : found;
+  });
 const globals = path.resolve("npm/cli/virtual-ts-globals.d.ts");
 const program = ts.createProgram([...documents.keys(), globals], options, host);
 const output = new Map<string, RawDiagnostic[]>([...documents.keys()].map((name) => [name, []]));

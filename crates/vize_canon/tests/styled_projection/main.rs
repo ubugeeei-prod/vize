@@ -97,7 +97,7 @@ fn compare(current: &VueProjection<'_, '_>, original: &VueProjection<'_, '_>, co
     }
 }
 
-fn qualify(source: &str, counts: &mut Counts) {
+fn qualify(source: &str, path: &Path, counts: &mut Counts) {
     // Exercise the lexical boundary even on components the later IR cannot admit.
     if let Ok(descriptor) = parse_sfc(source, SfcParseOptions::default()) {
         for style in &descriptor.styles {
@@ -113,9 +113,23 @@ fn qualify(source: &str, counts: &mut Counts) {
             let actual: Vec<_> = calls.iter().map(|call| call.expression_range()).collect();
             assert_eq!(actual, expected);
             let first = first_v_bind_start(css);
-            assert_eq!(first.is_some(), !expected.is_empty() || !complete);
             if let Some(call) = calls.first() {
-                assert_eq!(first, Some(call.call_start));
+                assert!(first.is_some_and(|start| start <= call.call_start));
+            }
+            if !complete {
+                assert!(first.is_some());
+            }
+            if let Some(start) = first {
+                // An opener missing from the historical contiguous-call iterator
+                // must be the whitespace form accepted by Vue's CSS compiler.
+                if calls.first().is_none_or(|call| start != call.call_start) && complete {
+                    let tail = css.get(start..).unwrap().strip_prefix("v-bind").unwrap();
+                    assert!(!tail.starts_with('('));
+                    assert!(
+                        tail.trim_start_matches(|c: char| c.is_whitespace() || c == '\u{feff}')
+                            .starts_with('(')
+                    );
+                }
             }
             counts.style_bodies += 1;
             counts.bindings += calls.len();
@@ -170,11 +184,13 @@ fn qualify(source: &str, counts: &mut Counts) {
             .all(|style| style.module.is_none() && style.src.is_none())
     );
     let rewriter = ImportRewriter::new();
-    let path = Path::new("StyledChecker.vue");
     let config = VirtualTsOptions::default();
-    let canon = generate_vue_document_virtual_ts(path, source, &config, &rewriter, false)
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(path);
+    let canon = generate_vue_document_virtual_ts(&path, source, &config, &rewriter, false)
         .expect("original styled checker");
-    let canon_control = generate_vue_document_virtual_ts(path, &masked, &config, &rewriter, false)
+    let canon_control = generate_vue_document_virtual_ts(&path, &masked, &config, &rewriter, false)
         .expect("control checker");
     assert_eq!(canon.code, canon_control.code);
     assert_eq!(canon.pre_rewrite_code, canon_control.pre_rewrite_code);
@@ -214,13 +230,13 @@ fn original_ranges_survive_leading_trailing_and_multiple_styles() {
     let cases = [
         "<style>.é { color: red }</style>\r\n<script setup>const 雪 = '🎨';</script><template><p>{{ 雪 }}</p></template>",
         "<template><p>{{ 'a&amp;b' }}</p></template><style scoped lang='css'>p { color: blue }</style>",
-        "<style>/* v-bind(missing) */</style><template>text</template><style>.a::after {content:'v-bind(hidden)'} .x {--x: my-v-bind(foo)}</style>",
+        "<style>/* v-bind(missing) v-bind (unused) */</style><template>text</template><style>.a::after {content:'v-bind (hidden)'} .x {--x: my-v-bind (foo)}</style>",
         "<script setup>const green = true;</script><style>.a { color: green }</style>",
     ];
     let mut counts = Counts::default();
     for source in cases {
         let before = counts.styled;
-        qualify(source, &mut counts);
+        qualify(source, Path::new("StyledChecker.vue"), &mut counts);
         assert_eq!(counts.styled, before + 1, "{source}");
     }
     assert_eq!(counts.styled, cases.len(), "{counts:?}");
@@ -232,6 +248,9 @@ fn authored_bindings_incomplete_calls_modules_and_preprocessors_stay_unsupported
     for style in [
         "<style>p { color: v-bind(color) }</style>",
         "<style>p { color: v-bind(unclosed }</style>",
+        "<style>p { color: v-bind (missing) }</style>",
+        "<style>p { color: v-bind\t\r\n(unfinished }</style>",
+        "<style>p { color: v-bind\u{feff}(missing) }</style>",
         "<style module>.a{}</style>",
         "<style module='theme'>.a{}</style>",
         "<style lang='scss'>.a{}</style>",
@@ -277,7 +296,11 @@ fn original_styled_files() {
             continue;
         };
         let previous = counts.styled;
-        qualify(source, &mut counts);
+        qualify(
+            source,
+            Path::new(std::str::from_utf8(path).unwrap()),
+            &mut counts,
+        );
         if counts.styled > previous {
             checker_inputs.push((std::str::from_utf8(path).unwrap(), source.to_owned()));
         }

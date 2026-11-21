@@ -10,7 +10,7 @@ use vize_l0::line_index::utf16_offset;
 
 #[derive(Serialize)]
 struct Document<'a> {
-    id: usize,
+    path: &'a str,
     extension: &'a str,
     text: &'a str,
 }
@@ -109,11 +109,12 @@ pub(super) fn compare_programs(cases: &[(&str, &str)]) -> Vec<Vec<u32>> {
                 .unwrap()
         })
         .collect();
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let canon: Vec<_> = cases
         .iter()
-        .map(|(_, source)| {
+        .map(|(path, source)| {
             generate_vue_document_virtual_ts(
-                Path::new("StyledChecker.vue"),
+                &root.join(path),
                 source,
                 &VirtualTsOptions::default(),
                 &ImportRewriter::new(),
@@ -129,7 +130,7 @@ pub(super) fn compare_programs(cases: &[(&str, &str)]) -> Vec<Vec<u32>> {
             .map(|(id, doc)| {
                 assert_eq!(doc.virtual_suffix, ".ts");
                 Document {
-                    id,
+                    path: cases.get(id).unwrap().0,
                     extension: "ts",
                     text: &doc.code,
                 }
@@ -141,7 +142,7 @@ pub(super) fn compare_programs(cases: &[(&str, &str)]) -> Vec<Vec<u32>> {
             .iter()
             .enumerate()
             .map(|(id, doc)| Document {
-                id,
+                path: cases.get(id).unwrap().0,
                 extension: doc.source_kind().extension(),
                 text: doc.document().as_str(),
             })
@@ -169,28 +170,44 @@ pub(super) fn compare_programs(cases: &[(&str, &str)]) -> Vec<Vec<u32>> {
 fn complete_typescript_diagnostics_match_canons_original_styled_sfc() {
     let cases = [
         (
-            "leading style",
+            "crates/vize_canon/tests/styled_projection/leading.vue",
             "<style>.é { color: green }</style>\r\n<script setup lang='ts'>const count: number = 'no';</script><template>{{ count }}</template>",
         ),
         (
-            "trailing style",
+            "crates/vize_canon/tests/styled_projection/trailing.vue",
             "<script setup lang='ts'>const label: string = '雪';</script><template>{{ label }}</template><style scoped>.label{color:blue}</style>",
         ),
         (
-            "two styles",
+            "crates/vize_canon/tests/styled_projection/two.vue",
             "<style>/* v-bind(missing) */</style><script setup lang='ts'>const value: boolean = 1;</script><style lang='css'>.a::before{content:'😀'}</style>",
         ),
         (
-            "JavaScript template read",
+            "crates/vize_canon/tests/styled_projection/js-read.vue",
             "<style scoped>.雪 { color: red }</style><script setup>const count = 7;</script><template>{{ count.missing }}</template>",
         ),
         (
-            "JavaScript valid read",
+            "crates/vize_canon/tests/styled_projection/js-valid.vue",
             "<script setup>const label = '雪';</script><template>{{ label.length }}</template><style>.red{color:red}</style>",
+        ),
+        (
+            "crates/vize_canon/tests/styled_projection/relative.vue",
+            "<script setup lang='ts'>import {counter} from './relative-types'; let value=counter;</script><style>.red{color:red}</style>",
+        ),
+        (
+            "crates/vize_canon/tests/styled_projection/relative-missing.vue",
+            "<script setup lang='ts'>import {missing} from './relative-types'; let value=missing;</script><style>.red{color:red}</style>",
         ),
     ];
     assert_eq!(
         compare_programs(&cases),
-        [vec![2322], vec![], vec![2322], vec![2339], vec![]]
+        [
+            vec![2322],
+            vec![],
+            vec![2322],
+            vec![2339],
+            vec![],
+            vec![],
+            vec![2305]
+        ]
     );
 }

@@ -36,7 +36,12 @@ pub fn v_bind_calls(css: &str) -> impl Iterator<Item = VBindCall<'_>> {
 }
 
 fn next(css: &str, from: usize) -> Option<VBindCall<'_>> {
-    let start = find_next_v_bind(css, from)?;
+    let start = find_next_v_bind(
+        css,
+        from,
+        #[cfg(feature = "style-bindings")]
+        false,
+    )?;
     let inner = start + 7;
     let after_open = css.get(inner..)?;
     let end = find_matching_paren(after_open)?;
@@ -118,7 +123,11 @@ fn find_matching_paren(s: &str) -> Option<usize> {
     None
 }
 
-fn find_next_v_bind(css: &str, start: usize) -> Option<usize> {
+fn find_next_v_bind(
+    css: &str,
+    start: usize,
+    #[cfg(feature = "style-bindings")] allow_spaced: bool,
+) -> Option<usize> {
     let bytes = css.as_bytes();
     let mut pos = start;
     let mut quote: Option<u8> = None;
@@ -180,6 +189,18 @@ fn find_next_v_bind(css: &str, start: usize) -> Option<usize> {
             {
                 return Some(pos);
             }
+            #[cfg(feature = "style-bindings")]
+            b'v' if allow_spaced
+                && has_v_bind_left_boundary(bytes, pos)
+                && css
+                    .get(pos..)
+                    .and_then(|rest| rest.strip_prefix("v-bind"))
+                    .is_some_and(|tail| {
+                        tail.trim_start_matches(binding_whitespace).starts_with('(')
+                    }) =>
+            {
+                return Some(pos);
+            }
             _ => pos += 1,
         }
     }
@@ -196,6 +217,12 @@ fn is_css_identifier_byte(byte: u8) -> bool {
     byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-')
 }
 
+#[cfg(feature = "style-bindings")]
+fn binding_whitespace(c: char) -> bool {
+    // ECMAScript \s includes the byte order mark and excludes next-line (U+0085).
+    c == '\u{feff}' || (c != '\u{85}' && c.is_whitespace())
+}
+
 /// Byte offset of the first authored Vue CSS binding opener. It also covers
 /// an unterminated call, where a checker cannot prove that the style is inert.
 /// Comments, strings and CSS identifier suffixes follow the same lexical rules
@@ -203,8 +230,8 @@ fn is_css_identifier_byte(byte: u8) -> bool {
 #[cfg(feature = "style-bindings")]
 #[must_use]
 pub fn first_v_bind_start(css: &str) -> Option<usize> {
-    if css.contains("v-bind(") {
-        find_next_v_bind(css, 0)
+    if css.contains("v-bind") {
+        find_next_v_bind(css, 0, true)
     } else {
         None
     }
@@ -212,6 +239,31 @@ pub fn first_v_bind_start(css: &str) -> Option<usize> {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "style-bindings")]
+    #[test]
+    fn checker_openers_allow_ecmascript_whitespace_and_preserve_lexical_boundaries() {
+        use super::{first_v_bind_start, v_bind_calls};
+        for gap in [
+            "", " ", "\t", "\u{000b}", "\u{000c}", "\r\n", "\u{00a0}", "\u{1680}", "\u{2003}",
+            "\u{2028}", "\u{2029}", "\u{3000}", "\u{feff}",
+        ] {
+            let prefix = "/* v-bind (ignored) */ \"v-bind (text)\" my-v-bind (suffix) ";
+            let css = vize_l0::cstr!("{prefix}v-bind{gap}(incomplete");
+            assert_eq!(first_v_bind_start(&css), Some(prefix.len()));
+            // The original CSS lowering still reports complete contiguous calls.
+            assert_eq!(v_bind_calls(&css).count(), 0);
+        }
+        for css in [
+            "v-bind\u{0085}(not_js_space)",
+            "v-bind /* comment */(x)",
+            "'v-bind \\(text)'",
+            "x-v-bind (x)",
+            "v-binding (x)",
+        ] {
+            assert_eq!(first_v_bind_start(css), None, "{css}");
+        }
+    }
+
     use super::v_bind_calls;
     use alloc::vec::Vec;
 

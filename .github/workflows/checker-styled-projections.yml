@@ -50,12 +50,13 @@ jobs:
       - name: Compare original CSS dependencies, checker documents, mappings and costs
         run: |
           set -euo pipefail
-          node node_modules/typescript/bin/tsc --ignoreConfig --strict --noEmit --skipLibCheck --module Node16 --target ESNext --types node crates/vize_canon/tests/styled_projection/checker.ts
+          node npm/ui/node_modules/typescript/bin/tsc -p crates/vize_canon/tests/styled_projection/checker.tsconfig.json
           flags=(--locked --profile ci-opt)
           suite=(-p vize_canon --features styled-projection-tests)
           cargo clippy "${flags[@]}" -p vize_l1 --features style-bindings --lib --no-deps -- -D warnings
           cargo clippy "${flags[@]}" -p vize_l4 --features vue-style-projection --lib --no-deps -- -D warnings
           cargo clippy "${flags[@]}" "${suite[@]}" --test styled_projection --example styled_projection_profile --no-deps -- -D warnings
+          cargo test "${flags[@]}" -p vize_l1 --features style-bindings --lib css::bind::tests
           cargo test "${flags[@]}" -p vize_l4 --features vue-style-projection --test vue_projection
           cargo test "${flags[@]}" "${suite[@]}" --lib css_var_usage
           cargo test "${flags[@]}" "${suite[@]}" --test styled_projection
