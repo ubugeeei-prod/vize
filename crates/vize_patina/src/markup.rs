@@ -105,7 +105,12 @@ pub use branches::MarkupBranch;
 pub use context::MarkupContext;
 pub use directive::MarkupDirective;
 pub use element::MarkupElement;
-pub use l2::{L2Markup, L2Template};
+pub use l2::L2Markup;
+/// An owned L1 surface and L2 artifact, including the lowering decisions
+/// available through its `lowered` accessor.
+pub type L2Template<'a> = l2::L2Template<'a, std::vec::Vec<vize_l2::provenance::ProvenanceRecord>>;
+/// The linter reads the ops, expression facts and diagnostics.
+pub(crate) type LintInput<'a> = l2::L2Template<'a, vize_l2::provenance::NoProvenance>;
 pub use node::{MarkupNode, MarkupText};
 pub use rule::{MarkupLevel, MarkupRule, MarkupTraversal};
 pub use scope::{MarkupConditional, MarkupList};
