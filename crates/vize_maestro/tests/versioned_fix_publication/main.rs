@@ -51,9 +51,9 @@ fn apply_wire(source: &str, edits: &WorkspaceEdit, uri: &Url, version: i32) -> S
     // Editors clamp columns beyond line content to the start of its terminator.
     let offset = |position: tower_lsp::lsp_types::Position| {
         let line = position.line as usize;
-        let from = starts[line];
+        let from = *starts.get(line).unwrap();
         let to = starts.get(line + 1).copied().unwrap_or(source.len());
-        let text = source[from..to].trim_end_matches(['\r', '\n']);
+        let text = source.get(from..to).unwrap().trim_end_matches(['\r', '\n']);
         from + utf16_offset(text, position.character.min(utf16_len(text) as u32)).unwrap()
     };
     let mut result = source.to_owned();

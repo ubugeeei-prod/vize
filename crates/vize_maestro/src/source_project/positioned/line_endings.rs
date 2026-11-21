@@ -8,7 +8,7 @@ type Edit<'a, 'r> = SpanEdit<'a, 'r, SnapshotKey<'a>>;
 
 #[inline]
 fn inside_crlf(bytes: &[u8], at: usize) -> bool {
-    bytes.get(at) == Some(&b'\n') && at != 0 && bytes[at - 1] == b'\r'
+    bytes.get(at) == Some(&b'\n') && bytes.get(..at).and_then(<[u8]>::last) == Some(&b'\r')
 }
 
 /// The existing LF positions agree with LSP through complete CRLF pairs.
@@ -20,7 +20,8 @@ pub(super) fn needs_projection(source: &str, edits: &[Edit<'_, '_>]) -> bool {
     };
     let bytes = source.as_bytes();
     let end = last.span().end as usize;
-    let mut returns = memchr::memchr_iter(b'\r', &bytes[..end]);
+    let (prefix, _) = bytes.split_at(end);
+    let mut returns = memchr::memchr_iter(b'\r', prefix);
     let Some(first) = returns.next() else {
         return false;
     };
@@ -31,6 +32,12 @@ pub(super) fn needs_projection(source: &str, edits: &[Edit<'_, '_>]) -> bool {
             let span = edit.span();
             inside_crlf(bytes, span.start as usize) || inside_crlf(bytes, span.end as usize)
         })
+}
+
+// Spans were checked on this exact buffer. Widening can only add ASCII CR or LF.
+fn between(source: &str, start: usize, end: usize) -> &str {
+    let (prefix, _) = source.split_at(end);
+    prefix.split_at(start).1
 }
 
 fn extent(source: &[u8], edit: Edit<'_, '_>) -> (usize, usize) {
@@ -61,7 +68,7 @@ pub(super) fn project(
             previous = line_start;
             column = 0;
         }
-        column += utf16_len(&source[previous..at]) as u32;
+        column += utf16_len(between(source, previous, at)) as u32;
         previous = at;
         Position::new(line, column)
     };
@@ -79,18 +86,21 @@ pub(super) fn project(
         let (group, remaining) = edits.split_at(count);
         edits = remaining;
         let mut written = start;
-        let length = group.iter().fold(end - start, |size, edit| {
+        let (removed, inserted) = group.iter().fold((0, 0), |(removed, inserted), edit| {
             let span = edit.span();
-            size - (span.end - span.start) as usize + edit.replacement().len()
+            (
+                removed + (span.end - span.start) as usize,
+                inserted + edit.replacement().len(),
+            )
         });
-        let mut new_text = String::with_capacity(length);
+        let mut new_text = String::with_capacity(end - start - removed + inserted);
         for edit in group {
             let span = edit.span();
-            new_text.push_str(&source[written..span.start as usize]);
+            new_text.push_str(between(source, written, span.start as usize));
             new_text.push_str(edit.replacement());
             written = span.end as usize;
         }
-        new_text.push_str(&source[written..end]);
+        new_text.push_str(between(source, written, end));
         output.push(OneOf::Left(TextEdit {
             range: Range::new(position(start), position(end)),
             new_text,

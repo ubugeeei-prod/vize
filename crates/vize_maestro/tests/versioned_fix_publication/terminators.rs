@@ -20,7 +20,7 @@ fn edits_on_either_half_of_a_crlf_replay_at_client_line_boundaries() {
             .collect();
         for (i, &a) in offsets.iter().enumerate() {
             for (j, &b) in offsets.iter().enumerate().skip(i) {
-                for &c in &offsets[j..] {
+                for &c in offsets.iter().skip(j) {
                     for replacement in ["", "x", "\r\n🪴"] {
                         let selected = frame
                             .select_edits([
