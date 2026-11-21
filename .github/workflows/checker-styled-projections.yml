@@ -1,0 +1,66 @@
+name: Checker projections for inline Vue styles
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/checker-styled-projections.yml"
+      - "davinci/vize_l1/Cargo.toml"
+      - "davinci/vize_l1/src/css/bind.rs"
+      - "davinci/vize_l1/src/container/vue/descriptor*"
+      - "davinci/vize_l1/src/container/vue/descriptor/**"
+      - "davinci/vize_l1_to_l2/src/native_file*"
+      - "davinci/vize_l1_to_l2/src/native_file/**"
+      - "davinci/vize_l4/Cargo.toml"
+      - "davinci/vize_l4/src/framework/vue.rs"
+      - "davinci/vize_l4/src/targets/ts/vue.rs"
+      - "davinci/vize_l4/tests/vue_projection/**"
+      - "crates/vize_canon/Cargo.toml"
+      - "crates/vize_canon/tests/styled_projection/**"
+      - "crates/vize_canon/src/batch/virtual_project/document.rs"
+      - "crates/vize_canon/src/batch/virtual_project/css_var_usage.rs"
+      - "crates/vize_croquis/src/sfc/css_transform.rs"
+permissions: { contents: read }
+concurrency:
+  group: checker-styled-projections-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  styled-projections:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: ./.github/actions/cache-vp-bootstrap
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
+        with:
+          version: latest
+          node-version-file: package.json
+          cache: true
+          cache-save: false
+          run-install: false
+      - name: Install the pinned production ambient checker and Vue types
+        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './npm/ui...' --filter './npm/cli'
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0", components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Compare original CSS dependencies, checker documents, mappings and costs
+        run: |
+          set -euo pipefail
+          node npm/ui/node_modules/typescript/bin/tsc -p crates/vize_canon/tests/styled_projection/checker.tsconfig.json
+          flags=(--locked --profile ci-opt)
+          suite=(-p vize_canon --features styled-projection-tests)
+          cargo clippy "${flags[@]}" -p vize_l1 --features style-bindings --lib --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" -p vize_l4 --features vue-style-projection --lib --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" "${suite[@]}" --test styled_projection --example styled_projection_profile --no-deps -- -D warnings
+          cargo test "${flags[@]}" -p vize_l1 --features style-bindings --lib css::bind::tests
+          cargo test "${flags[@]}" -p vize_l4 --features vue-style-projection --test vue_projection
+          cargo test "${flags[@]}" "${suite[@]}" --lib css_var_usage
+          cargo test "${flags[@]}" "${suite[@]}" --test styled_projection
+          export VIZE_STYLED_CHECKER_INPUTS="$RUNNER_TEMP/styled-checker-inputs"
+          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_STYLED_CHECKER_INPUTS"
+          cargo test "${flags[@]}" "${suite[@]}" --test styled_projection -- original_styled_files --exact --ignored --nocapture
+          cargo run "${flags[@]}" "${suite[@]}" --example styled_projection_profile

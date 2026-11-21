@@ -32,6 +32,8 @@ legacy = ["vize_armature/legacy", "vize_atelier_jsx/legacy"]
 legacy-differential = []
 # Run the explicit prepared-module projection against the existing checker.
 component-projection-tests = ["native", "vize_l4/component-projection"]
+# Run original Canon documents beside styled native projections.
+styled-projection-tests = ["native", "vize_l4/vue-style-projection"]
 # Deprecated published feature spelling; keep as a compatibility alias.
 davinci-differential = ["legacy-differential"]
 
@@ -121,6 +123,15 @@ required-features = ["component-projection-tests"]
 name = "component_projection_alloc"
 path = "tests/component_prop_projection/alloc.rs"
 required-features = ["component-projection-tests"]
+
+[[test]]
+name = "styled_projection"
+required-features = ["styled-projection-tests"]
+
+[[example]]
+name = "styled_projection_profile"
+path = "tests/styled_projection/profile.rs"
+required-features = ["styled-projection-tests"]
 
 [[test]]
 name = "empty_vue_star_exports"
