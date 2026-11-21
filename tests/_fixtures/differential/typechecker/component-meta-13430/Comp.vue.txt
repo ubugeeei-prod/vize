@@ -1,0 +1,13 @@
+<script setup lang="ts">
+defineProps<{
+  /** Display name. */
+  name: string;
+  kind: "a" | "b";
+  buttonLabel: string;
+  note?: number;
+}>();
+</script>
+
+<template>
+  <button>{{ name }}</button>
+</template>

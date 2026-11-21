@@ -758,7 +758,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         }
         #("\n\n")
     }
-    // Invoke setup to keep diagnostics inside the generated setup body.
     ts.push_str("// Invoke setup to verify types\n");
     semantic_links.extend(script_module::emit_exports(
         &mut ts,
@@ -819,6 +818,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             jsx_slots: check_options.jsx_slots,
             has_authored_default: authored_default == super::types::AuthoredDefaultKind::Component,
             hoist_shared_preamble,
+            named_component_export: generation_options.component_name.is_some(),
         },
         generic_parameters
             .map(|plan| plan.authored())

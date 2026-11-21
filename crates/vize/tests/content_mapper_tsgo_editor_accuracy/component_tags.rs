@@ -29,7 +29,7 @@ fn standard_tsgo_lsp_answers_component_tags_with_the_sfc() {
         let tag_hover = hover(client, &app.0, &tag).await;
         assert_eq!(
             hover_text(&tag_hover),
-            "(alias) const MkNoteHeader: MkNoteHeaderComponent",
+            "(alias) (property) default: MkNoteHeaderComponent",
             "{tag_hover:#}"
         );
 

@@ -111,6 +111,21 @@ void test("the constructor audit admits only the exact named component navigatio
     new URL("../../crates/vize_canon/src/batch/virtual_project/content_mapper.rs", import.meta.url),
   );
   assertConstructorWrapperMappings(before, current, (value) => value, producer);
+  const assignment = "export default Tiny as typeof Tiny;";
+  const metadata = clone(current);
+  metadata.text = text.replace("export default Tiny;", assignment);
+  assert.throws(() =>
+    assertConstructorWrapperMappings(before, metadata, (value) => value, producer),
+  );
+  metadata.rows[1] = [
+    Buffer.from(metadata.text).indexOf(assignment),
+    Buffer.byteLength(assignment),
+    0,
+    0,
+    1,
+    248,
+  ];
+  assertConstructorWrapperMappings(before, metadata, (value) => value, producer);
   for (const field of [0, 1, 2, 3, 4, 5]) {
     const changed = clone(current);
     changed.rows[1]![field]! += 1;

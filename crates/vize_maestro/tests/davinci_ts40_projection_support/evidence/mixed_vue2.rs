@@ -3,7 +3,7 @@ use super::super::{capture_fixture, load_matrix, normalize::sha256};
 use super::receipt::{
     authenticate_join_receipt, authenticate_packets, authenticate_successor_receipt,
 };
-use super::{unowned_owned_keys, with_defaults_undefined};
+use super::{component_metadata, unowned_owned_keys};
 
 #[test]
 fn public_instance_mixed_vue2_packets_remain_authenticated() {
@@ -225,7 +225,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            with_defaults_undefined::mixed_vue2(unowned_successor)
+            component_metadata::mixed_vue2(unowned_successor)
         );
     }
 }

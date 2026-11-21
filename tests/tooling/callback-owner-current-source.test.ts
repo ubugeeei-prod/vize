@@ -99,6 +99,39 @@ void test("current callback packets retain every field under exact d9 and static
     assertPreservedCallbackPacket(before, after, source);
   }
 });
+void test("callback scaffold edits authenticate producer gaps alongside a mapped metadata export", () => {
+  const { before, after, source } = fixture();
+  const declaration = "\ndeclare const Comp: typeof __vize_component__;\n";
+  for (const packet of [before, after]) {
+    const metadata = packet === after;
+    const assignment = metadata ? "export default Comp as typeof Comp;" : "export default Comp;";
+    const navigation = Buffer.byteLength(
+      packet.text + (metadata ? declaration : "\ndeclare const "),
+    );
+    const length = Buffer.byteLength(metadata ? assignment : "Comp");
+    packet.text += declaration + assignment + "\n";
+    packet.mappings.push([navigation, length, 0, 0, 1, 248]);
+    const gaps = packet.diagnosticDirectives.directives;
+    gaps.at(-1)![3] = navigation;
+    gaps.push([0, 0, navigation + length, Buffer.byteLength(packet.text), 0, 0]);
+  }
+  assertPreservedCallbackPacket(before, after, source);
+  for (const packet of [before, after]) {
+    const missing = structuredClone(packet);
+    missing.diagnosticDirectives.directives = missing.diagnosticDirectives.directives.filter(
+      ([start, length]) => start !== 0 || length !== 0,
+    );
+    assert.throws(
+      () =>
+        assertPreservedCallbackPacket(
+          packet === before ? missing : before,
+          packet === after ? missing : after,
+          source,
+        ),
+      /producer.*gap/u,
+    );
+  }
+});
 void test("callback history accepts the member-infer predecessor as one whole helper edit", () => {
   for (const newline of ["\n", "\r\n"]) {
     const { memberInferPredecessor, after, source } = fixture(newline);

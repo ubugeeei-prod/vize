@@ -64840,6 +64840,51 @@
       }
     },
     {
+      "id": "typechecker/regression/component-meta-13430",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-meta-13430/Comp.vue.txt",
+          "sha256": "06b12a34abaf9d7267408cb886980c6902039682cb58ca4daab6162908da8de1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-meta-13430/Consumer.vue.txt",
+          "sha256": "f3d92d78de3775a6248a6af8ed2ab9653420e08e84ec5277434372d494ddbb49",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-meta-13430/Usage.tsx.txt",
+          "sha256": "e0d001509e9eb191db830427e49abd8dd109b3e46ba843729fcad6663d26eeb7",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-meta-13430/tsconfig.json.txt",
+          "sha256": "979b022d1b97ced3dabc9fc7a7ca3a36bcf851fe4653f647513cc41f194979f8",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts",
+              "tsx"
+            ],
+            "selector": "vue-component-meta 4 reads required and optional props and their documentation; the same component retains Vue template and TSX diagnostics (#13430)."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/component-prop-value-editor-12458",
       "state": "active",
       "targets": [

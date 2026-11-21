@@ -40,17 +40,20 @@ fn filename_export_fallback_avoids_authored_identifiers() {
 }
 
 #[test]
-fn named_export_returns_its_declared_name() {
+fn named_export_returns_its_value_declaration() {
     let names = ComponentNames {
         value: String::from("Child"),
         type_name: String::from("ChildComponent"),
     };
     let mut output = crate::virtual_ts::TextBuf::from_text(SETUP);
     let name = default_export(&mut output, Some(&names)).expect("named export");
-    assert_eq!(output.get(name), Some("Child"));
+    assert_eq!(
+        output.get(name),
+        Some("export default Child as typeof Child;")
+    );
     assert_eq!(
         output,
-        "// generated setup helpers\ndeclare const Child: typeof __vize_component__;\nexport default Child;\n"
+        "// generated setup helpers\ndeclare const Child: typeof __vize_component__;\nexport default Child as typeof Child;\n"
     );
     let mut batch = crate::virtual_ts::TextBuf::from_text(SETUP);
     assert_eq!(default_export(&mut batch, None), None);

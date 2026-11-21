@@ -17,7 +17,7 @@ fn default_export(text: &str) -> Option<(&str, &str)> {
 fn declared_export(value: &str) -> (String, String) {
     (
         format!("declare const {value}: typeof __vize_component__;"),
-        format!("export default {value};"),
+        format!("export default {value} as typeof {value};"),
     )
 }
 
@@ -51,12 +51,11 @@ fn the_export_navigates_to_the_sfc_and_its_type_prints_as_the_component() {
         let result =
             generate_vue_content_mapper_transform(Path::new(file_name), source).expect("transform");
         assert_declared_export(&result.text, value);
-        let declared = declared_export(value).0;
+        let export = declared_export(value).1;
         let start = result
             .text
-            .find(&declared)
-            .unwrap_or_else(|| panic!("{}", result.text))
-            + "declare const ".len();
+            .find(&export)
+            .unwrap_or_else(|| panic!("{}", result.text));
         let at_sfc = result
             .mappings
             .iter()
@@ -67,7 +66,7 @@ fn the_export_navigates_to_the_sfc_and_its_type_prints_as_the_component() {
             at_sfc,
             [[
                 start,
-                value.len(),
+                export.len(),
                 0,
                 0,
                 ContentMapperSpanKind::Atom as usize,

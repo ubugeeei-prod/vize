@@ -382,8 +382,7 @@ fn public_name(
     name
 }
 
-/// Emit the default export. A named export returns its declared name's
-/// range, whose authored counterpart is the SFC itself.
+/// Return the export assignment that TypeScript navigates to for a mapped SFC.
 pub(super) fn default_export(
     ts: &mut crate::virtual_ts::TextBuf,
     names: Option<&ComponentNames>,
@@ -393,13 +392,14 @@ pub(super) fn default_export(
         ts.push_str("export default __vize_component__;\n");
         return None;
     };
-    ts.push_str("declare const ");
+    append!(*ts, "declare const {value}: typeof __vize_component__;\n");
     let start = ts.len();
-    append!(
-        *ts,
-        "{value}: typeof __vize_component__;\nexport default {value};\n"
-    );
-    Some(start..start + value.len())
+    // A bare identifier creates an alias with no valueDeclaration. A type
+    // query lets metadata readers find the value, including primitive exports.
+    append!(*ts, "export default {value} as typeof {value};");
+    let end = ts.len();
+    ts.push('\n');
+    Some(start..end)
 }
 
 fn module_scope_contains_identifier(ts: &str, name: &str) -> bool {

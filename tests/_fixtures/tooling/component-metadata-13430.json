@@ -1,0 +1,95 @@
+{
+  "schema": "vize.componentMetadataSource.v1",
+  "issue": 13430,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator.rs",
+      "before": {
+        "bytes": 37959,
+        "sha256": "8d6315d1c1a16ea0a63caf479728491e3b07cfd3b59cd18f5d984e26693c92e1"
+      },
+      "after": {
+        "bytes": 37967,
+        "sha256": "5bb9dd63c0a8bb7cb7f7f548056dc3a5def3daf5db1b1fbad888b5bb93971b6e"
+      },
+      "hunks": [
+        {
+          "before": "    }\n    // Invoke setup to keep diagnostics inside the generated setup body.\n    ts.push_str(\"// Invoke setup to verify types\\n\");\n",
+          "after": "    }\n    ts.push_str(\"// Invoke setup to verify types\\n\");\n"
+        },
+        {
+          "before": "            hoist_shared_preamble,\n        },\n",
+          "after": "            hoist_shared_preamble,\n            named_component_export: generation_options.component_name.is_some(),\n        },\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/binding_output.rs",
+      "before": {
+        "bytes": 5654,
+        "sha256": "714e58ae8333622a1bee02c0ff8a4c47687dd4e77be1c5b8a64adf4fbeec908e"
+      },
+      "after": {
+        "bytes": 5724,
+        "sha256": "ccb683178c93c39bdecfa9b19fa14cfa9314118a598051edd1cc45e6dd895ff3"
+      },
+      "hunks": [
+        {
+          "before": "    }\n    // The exported name's authored counterpart is the SFC itself.\n    if let Some(name) = component_export {\n",
+          "after": "    }\n    // The export assignment's authored counterpart is the SFC itself.\n    if let Some(name) = component_export {\n"
+        },
+        {
+          "before": "            .collect::<Vec<_>>();\n        assert_eq!(exports, [(Some(\"Probe\"), 0..0, 24)]);\n    }\n",
+          "after": "            .collect::<Vec<_>>();\n        assert_eq!(\n            exports,\n            [(Some(\"export default Probe as typeof Probe;\"), 0..0, 24)]\n        );\n    }\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/component_constructors.rs",
+      "before": {
+        "bytes": 11665,
+        "sha256": "96ec5c7f0064b02b72ab37aefc42caa155ed651db88fa631ae7929ec8f1ebf9a"
+      },
+      "after": {
+        "bytes": 12314,
+        "sha256": "5934ed38d238502e54a87a1acf5bc400d658bf4b8baa9ca0e810b285dabe6693"
+      },
+      "hunks": [
+        {
+          "before": "    pub(super) hoist_shared_preamble: bool,\n}\n",
+          "after": "    pub(super) hoist_shared_preamble: bool,\n    pub(super) named_component_export: bool,\n}\n"
+        },
+        {
+          "before": "        let no_infer = crate::virtual_ts::generated_names::lib(\"NoInfer\");\n        append!(\n            *ts,\n            \"type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : {no_infer}<$ComponentInstanceFor<$ComponentInstance, {own}, {constructor_base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>>;\\n\"\n        );\n",
+          "after": "        let no_infer = crate::virtual_ts::generated_names::lib(\"NoInfer\");\n        // Metadata readers inspect the uninstantiated signature. Its string\n        // index supplies the public instance, retaining required props. Once\n        // a call supplies constructor or JSX props, the literal key selects\n        // `unknown` and leaves the inferred input and its diagnostics intact.\n        let public_instance = if aliases.named_component_export {\n            \" & ({ [key: string]: $ComponentInstance } & { input: unknown })[unknown extends $AuthoredProps ? unknown extends $JsxProps ? string : 'input' : 'input']\"\n        } else {\n            \"\"\n        };\n        append!(\n            *ts,\n            \"type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : {no_infer}<$ComponentInstanceFor<$ComponentInstance, {own}, {constructor_base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>>{public_instance};\\n\"\n        );\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/component_export.rs",
+      "before": {
+        "bytes": 17625,
+        "sha256": "f0f42c0d9365153763552cd0b7a0526f0789ae8c3593ab0257729f356c17ea10"
+      },
+      "after": {
+        "bytes": 17753,
+        "sha256": "2312f07fb9aad9a1882414dab249e73fd469f28c956a7a15e6aa2cb9f7c9fd04"
+      },
+      "hunks": [
+        {
+          "before": "\n/// Emit the default export. A named export returns its declared name's\n/// range, whose authored counterpart is the SFC itself.\npub(super) fn default_export(\n",
+          "after": "\n/// Return the export assignment that TypeScript navigates to for a mapped SFC.\npub(super) fn default_export(\n"
+        },
+        {
+          "before": "    };\n    ts.push_str(\"declare const \");\n    let start = ts.len();\n    append!(\n        *ts,\n        \"{value}: typeof __vize_component__;\\nexport default {value};\\n\"\n    );\n    Some(start..start + value.len())\n}\n",
+          "after": "    };\n    append!(*ts, \"declare const {value}: typeof __vize_component__;\\n\");\n    let start = ts.len();\n    // A bare identifier creates an alias with no valueDeclaration. A type\n    // query lets metadata readers find the value, including primitive exports.\n    append!(*ts, \"export default {value} as typeof {value};\");\n    let end = ts.len();\n    ts.push('\\n');\n    Some(start..end)\n}\n"
+        }
+      ]
+    }
+  ]
+}

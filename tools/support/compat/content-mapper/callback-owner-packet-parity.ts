@@ -1,3 +1,5 @@
+import { beforeMetadataPacket, hasMetadataExport } from "./component-metadata-packet.ts";
+import type { Packet } from "./constructor-projection-parity.ts";
 /** Exact observed embedded callback scaffolding; shared references require separate evidence. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -435,8 +437,20 @@ export function assertPreservedCallbackPacket(
   inertBindings?: InertCallbackBinding[],
   currentSourceRead?: CallbackSourceReader,
 ) {
-  assert.equal(typeof before.text, "string");
-  assert.equal(typeof after.text, "string");
+  assert.ok(typeof before.text === "string" && typeof after.text === "string");
+  const producerPackets = [before, after];
+  if (before.text !== after.text && hasMetadataExport(after.text)) {
+    const predecessor = (packet: Record<string, unknown>) =>
+      beforeMetadataPacket(withoutProducerUnmappedIgnores(packet as unknown as Packet));
+    before = predecessor(before);
+    after = predecessor(after);
+  } else if (before.text !== after.text) {
+    assert.equal(
+      hasMetadataExport(before.text),
+      false,
+      "the mapped metadata export must be retained",
+    );
+  }
   if (before.text === after.text) {
     const joinedSuccessor =
       authoredSource === undefined
@@ -568,15 +582,8 @@ export function assertPreservedCallbackPacket(
     return [shifted, length];
   };
   if (currentEdits.length > 0) {
-    for (const packet of [before, after])
-      withoutProducerUnmappedIgnores(
-        {
-          text: packet.text as string,
-          mappings: packet.mappings as number[][],
-          diagnosticDirectives: packet.diagnosticDirectives,
-        },
-        { requireComplete: true },
-      );
+    for (const packet of producerPackets)
+      withoutProducerUnmappedIgnores(packet as unknown as Packet, { requireComplete: true });
   }
   const gapRange = (start: number, end: number): [number, number] => {
     assert.ok(
@@ -598,16 +605,7 @@ export function assertPreservedCallbackPacket(
     return [shifted, finish - shifted];
   };
   const comparisonBefore =
-    currentEdits.length > 0
-      ? withoutProducerUnmappedIgnores(
-          before as typeof before & {
-            text: string;
-            mappings: number[][];
-            diagnosticDirectives?: unknown;
-          },
-          { requireComplete: true },
-        )
-      : before;
+    currentEdits.length > 0 ? withoutProducerUnmappedIgnores(before as unknown as Packet) : before;
   const expected = structuredClone(comparisonBefore) as Record<string, unknown> & {
     text: string;
     mappings: number[][];
@@ -659,16 +657,7 @@ export function assertPreservedCallbackPacket(
     };
   }
   const comparisonAfter =
-    currentEdits.length > 0
-      ? withoutProducerUnmappedIgnores(
-          after as typeof after & {
-            text: string;
-            mappings: number[][];
-            diagnosticDirectives?: unknown;
-          },
-          { requireComplete: true },
-        )
-      : after;
+    currentEdits.length > 0 ? withoutProducerUnmappedIgnores(after as unknown as Packet) : after;
   assert.deepEqual(
     comparisonAfter,
     withComponentPropHoverOwnership(expected, comparisonAfter),
