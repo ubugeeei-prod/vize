@@ -73,6 +73,38 @@ test("check workflow uploads Davinci allocation bench reports", () => {
   );
 });
 
+test("client and server target qualification exercises original inputs and serialized allocation windows", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "client-server-decisions.yml")) as {
+    jobs: Record<string, WorkflowJob>;
+  };
+  const commands = workflow.jobs["target-products"].steps?.find((step) =>
+    step.run?.includes("VIZE_CLIENT_SERVER_INPUTS"),
+  )?.run;
+  assert.ok(commands);
+  assert.match(
+    commands,
+    /suite=\(-p vize_atelier_sfc --features vize_l4\/client-server-decisions --test client_server_decisions\)/,
+  );
+  assert.match(commands, /export VIZE_CLIENT_SERVER_INPUTS="\$RUNNER_TEMP\/[^"]+"/);
+  assert.match(
+    commands,
+    /git ls-files -z -- '\*\.vue' '\*\.vue\.txt' > "\$VIZE_CLIENT_SERVER_INPUTS"/,
+  );
+  const publication = commands
+    .split("\n")
+    .find((line) => line.includes("VIZE_CLIENT_SERVER_REQUIRE_OUTPUT=1"));
+  assert.ok(publication);
+  for (const flag of [
+    "VIZE_CLIENT_SERVER_TIMINGS=1",
+    "cargo test",
+    '"${suite[@]}"',
+    "--include-ignored",
+    "--test-threads=1",
+  ]) {
+    assert.ok(publication.includes(flag), flag);
+  }
+});
+
 test("Vapor Criterion dispatch validates revisions and selects only its suite", (t) => {
   const workflow = parse(readRepoFile(".github", "workflows", "criterion-bench.yml")) as {
     on?: Record<string, { inputs?: Record<string, unknown> }>;
