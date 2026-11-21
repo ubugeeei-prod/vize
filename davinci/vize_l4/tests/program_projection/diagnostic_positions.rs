@@ -24,8 +24,7 @@ use vize_l4::{
 };
 
 mod profile;
-#[path = "../program_projection/support.rs"]
-mod program;
+use super::support as program;
 
 #[derive(Default, Debug)]
 struct Counts {

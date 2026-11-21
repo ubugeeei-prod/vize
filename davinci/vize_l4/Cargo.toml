@@ -56,8 +56,3 @@ davinci_test_support = { workspace = true, features = ["native-dom"] }
 
 [lints]
 workspace = true
-
-[[test]]
-name = "diagnostic_positions"
-path = "tests/diagnostic_positions/main.rs"
-required-features = ["diagnostic-positions"]

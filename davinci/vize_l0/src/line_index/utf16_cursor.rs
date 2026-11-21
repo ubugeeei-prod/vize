@@ -60,7 +60,9 @@ impl<'s> Utf16Cursor<'s> {
         }
         let start = self.ascii_prefix as usize;
         let limit = (end.saturating_add(255) as usize).min(bytes.len());
-        let tail = &bytes[start..limit];
+        let Some(tail) = bytes.get(start..limit) else {
+            return false;
+        };
         if tail.is_ascii() {
             self.ascii_prefix = limit as u32;
             self.scan_ascii = limit < bytes.len();
