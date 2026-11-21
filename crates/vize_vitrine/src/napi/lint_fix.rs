@@ -210,3 +210,6 @@ mod tests {
         assert_eq!(fs::read_to_string(path).unwrap(), source);
     }
 }
+
+#[cfg(test)]
+mod edit_selection;

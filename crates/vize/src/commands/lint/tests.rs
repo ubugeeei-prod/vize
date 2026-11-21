@@ -1,6 +1,7 @@
 //! Tests for the lint command.
 #![expect(clippy::disallowed_macros, reason = "tests use format! and insta")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+mod edit_selection;
 mod fix_regressions;
 mod format_output;
 mod nuxt_layout;
