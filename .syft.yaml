@@ -1,0 +1,4 @@
+# Test fixtures and the Zed extension are not part of the release.
+exclude:
+  - "./tests/**"
+  - "./editors/zed/**"
