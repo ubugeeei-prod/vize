@@ -1,8 +1,8 @@
 //! Block stages from the descriptor already owned by a named open document.
 use super::DocumentBlocks;
 use crate::{
-    DescriptorParseError, ParsedSfc, ResidentDatabase, SharedDescriptor, SourceFile,
-    artifact::descriptor_slots, db::Block, descriptor::sfc_descriptor,
+    DescriptorParseError, ParsedSfc, ResidentDatabase, SharedDescriptor, SourceFile, db::Block,
+    descriptor::sfc_descriptor,
 };
 
 /// The original shared descriptor and its block partition at one revision.
@@ -16,10 +16,7 @@ fn descriptor_blocks(db: &dyn salsa::Database, file: SourceFile) -> Vec<Block<'_
     let ParsedSfc::Descriptor(descriptor) = sfc_descriptor(db, file) else {
         return Vec::new();
     };
-    descriptor_slots(file.text(db), descriptor)
-        .into_iter()
-        .map(|slot| Block::new(db, file, slot.kind, slot.ordinal, slot.source, slot.start))
-        .collect()
+    crate::artifact::open::blocks(db, file, file.text(db), descriptor)
 }
 
 pub(crate) fn read<'a>(

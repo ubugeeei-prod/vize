@@ -171,14 +171,6 @@ pub fn split_blocks(text: &str) -> Vec<BlockSlot> {
     let Ok(descriptor) = parse_sfc(text, SfcParseOptions::default()) else {
         return Vec::new();
     };
-    descriptor_slots(text, &descriptor)
-}
-
-#[inline]
-pub(crate) fn descriptor_slots(
-    text: &str,
-    descriptor: &vize_croquis::sfc::SfcDescriptor<'_>,
-) -> Vec<BlockSlot> {
     let mut slots = Vec::new();
     let mut push = |kind: BlockKind, ordinal: usize, start: usize, end: usize, attrs| {
         slots.extend(slot(text, kind, ordinal, start, end, attrs));
@@ -334,3 +326,6 @@ pub fn compute_file_artifacts(text: &str, config: StageConfig) -> Vec<BlockArtif
         })
         .collect()
 }
+
+#[cfg(feature = "open-block-queries")]
+pub(crate) mod open;
