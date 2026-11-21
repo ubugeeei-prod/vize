@@ -53,7 +53,7 @@ pub(super) fn lookup<'a>(
 
 #[cfg(test)]
 mod tests {
-    use super::super::L2Template;
+    use crate::markup::L2Template;
     use vize_l0::Allocator;
     use vize_l1_to_l2::lower::TextParts;
     use vize_l2::op::Op;

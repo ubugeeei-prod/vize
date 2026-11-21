@@ -1,7 +1,7 @@
 //! Translation of parser errors (template and SFC) into lint diagnostics.
 
 use crate::diagnostic::LintDiagnostic;
-use crate::markup::L2Template;
+use crate::markup::LintInput;
 use vize_atelier_sfc::SfcError;
 use vize_l0::ToCompactString;
 
@@ -39,7 +39,7 @@ impl Linter {
         &self,
         filename: &str,
         source: &str,
-        template: &L2Template<'_>,
+        template: &LintInput<'_>,
     ) -> LintResult {
         let parse_errors = template.surface_errors();
         let mut diagnostics = Vec::with_capacity(parse_errors.len());
@@ -65,14 +65,14 @@ impl Linter {
         }
     }
 
-    pub(crate) fn has_fatal_l1_template_parse_errors(template: &L2Template<'_>) -> bool {
+    pub(crate) fn has_fatal_l1_template_parse_errors(template: &LintInput<'_>) -> bool {
         template
             .surface_errors()
             .iter()
             .any(|error| !error.has_documented_recovery())
     }
 
-    pub(crate) fn has_fatal_template_parse_errors(&self, template: &L2Template<'_>) -> bool {
+    pub(crate) fn has_fatal_template_parse_errors(&self, template: &LintInput<'_>) -> bool {
         Self::has_fatal_l1_template_parse_errors(template)
     }
 

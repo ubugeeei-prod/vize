@@ -11,6 +11,9 @@ use vize_atelier_core::{
 };
 use vize_l0::Allocator;
 use vize_l0::pass::NoObserver;
+use vize_l1_to_l2::LegacyCaps;
+use vize_l1_to_l2::lower::{LowerPolicy, lower_with_caps_and_comment_policy};
+use vize_l2::provenance::NoProvenance;
 use vize_l4::targets::dom::artifact::{DomEmitMode, DomEmitOptions};
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -37,7 +40,15 @@ pub(crate) fn compile(
     }
     let allocator = Allocator::new();
     let (tree, errors) = vize_l1::markup::parse(&allocator, source);
-    let mut lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
+    let mut lowered = lower_with_caps_and_comment_policy::<NoProvenance>(
+        &allocator,
+        &tree,
+        &errors,
+        LegacyCaps::VUE3,
+        LowerPolicy::compile(false),
+        &[],
+        None,
+    );
     if !lowered.diagnostics.is_empty() {
         return Err("transform requires a diagnostic-free L2 lowering".into());
     }
