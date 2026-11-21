@@ -294,3 +294,6 @@ fn authentic_nested_units_and_mixed_template_nodes_remain_outside_program_projec
         Err(ProjectionError::TemplateOperations)
     ));
 }
+
+#[cfg(feature = "diagnostic-positions")]
+mod diagnostic_positions;
