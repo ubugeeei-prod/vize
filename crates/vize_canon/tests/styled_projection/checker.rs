@@ -126,11 +126,11 @@ pub(super) fn compare_programs(cases: &[(&str, &str)]) -> Vec<Vec<u32>> {
     let before = check(
         canon
             .iter()
-            .enumerate()
-            .map(|(id, doc)| {
+            .zip(cases)
+            .map(|(doc, &(path, _))| {
                 assert_eq!(doc.virtual_suffix, ".ts");
                 Document {
-                    path: cases.get(id).unwrap().0,
+                    path,
                     extension: "ts",
                     text: &doc.code,
                 }
@@ -140,9 +140,9 @@ pub(super) fn compare_programs(cases: &[(&str, &str)]) -> Vec<Vec<u32>> {
     let after = check(
         native
             .iter()
-            .enumerate()
-            .map(|(id, doc)| Document {
-                path: cases.get(id).unwrap().0,
+            .zip(cases)
+            .map(|(doc, &(path, _))| Document {
+                path,
                 extension: doc.source_kind().extension(),
                 text: doc.document().as_str(),
             })
