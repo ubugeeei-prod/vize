@@ -11,6 +11,40 @@ fn inside_crlf(bytes: &[u8], at: usize) -> bool {
     bytes.get(at) == Some(&b'\n') && bytes.get(..at).and_then(<[u8]>::last) == Some(&b'\r')
 }
 
+/// Locate one short edit in protocol coordinates. Each CRLF is consumed as a
+/// pair, including when standalone CR and LF also occur in the same prefix.
+pub(super) fn single_range(
+    source: &str,
+    span: vize_l0::Span,
+) -> Option<vize_l0::line_index::Range> {
+    use vize_l0::line_index::{Position, Range};
+    let start = span.start as usize;
+    let end = span.end as usize;
+    if inside_crlf(source.as_bytes(), start) || inside_crlf(source.as_bytes(), end) {
+        return None;
+    }
+    let advance = |mut position: Position, mut text: &str| {
+        while let Some(at) = memchr::memchr2(b'\r', b'\n', text.as_bytes()) {
+            let (_, tail) = text.split_at(at + 1);
+            text = if text.as_bytes().get(at) == Some(&b'\r') {
+                tail.strip_prefix('\n').unwrap_or(tail)
+            } else {
+                tail
+            };
+            position.line += 1;
+            position.character = 0;
+        }
+        position.character += utf16_len(text) as u32;
+        position
+    };
+    let (before, _) = source.split_at(start);
+    let first = advance(Position::default(), before);
+    Some(Range::new(
+        first,
+        advance(first, between(source, start, end)),
+    ))
+}
+
 /// The existing LF positions agree with LSP through complete CRLF pairs.
 /// Only selected endpoints and the prefix that can affect them are relevant.
 #[inline]
