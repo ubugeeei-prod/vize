@@ -8,6 +8,10 @@ repository.workspace = true
 description = "L2 - the Davinci semantic IR (codename Disegno): the neutral op family every input dialect lowers into"
 metadata.vize.stability = "experimental"
 
+[features]
+# Build position indexes on explicit demand in resident analysis tools.
+position-index = []
+
 [dependencies]
 oxc_ast = { workspace = true }
 oxc_ast_visit = { workspace = true }
@@ -27,6 +31,10 @@ serde_json.workspace = true
 vize_armature.workspace = true
 vize_croquis.workspace = true
 vize_relief.workspace = true
+
+[[example]]
+name = "position_index_profile"
+required-features = ["position-index"]
 
 [lints]
 workspace = true

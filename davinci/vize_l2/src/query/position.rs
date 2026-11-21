@@ -304,3 +304,6 @@ fn unique<T>(mut rows: impl Iterator<Item = T>) -> Result<Option<T>, PositionQue
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(any(test, feature = "position-index"))]
+pub(in crate::query) mod index;

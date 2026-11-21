@@ -38,7 +38,9 @@ fn file<'a>(arena: &'a Allocator, source: &'a str, source_type: SourceType) -> F
         source_type,
         ProgramScope::Module,
     );
-    producer.finish().unwrap()
+    let owner = producer.finish().unwrap();
+    super::index::tests::assert_equivalent(&owner);
+    owner
 }
 
 fn offset(source: &str, needle: &str) -> u32 {
@@ -46,6 +48,7 @@ fn offset(source: &str, needle: &str) -> u32 {
 }
 
 fn refused(owner: &FileArtifact<'_>) {
+    super::index::tests::assert_equivalent(owner);
     let declaration = owner
         .bindings()
         .next()
@@ -83,3 +86,20 @@ impl TemplatePolicy for Values {
 mod boundaries;
 mod completion;
 mod sites;
+
+#[test]
+fn moving_an_owned_position_snapshot_keeps_its_file_and_queries_together() {
+    let arena = Allocator::default();
+    let source = "const name=1; name;";
+    let file = file(&arena, source, SourceType::mjs());
+    let snapshot = crate::query::PositionIndex::from_file(file);
+    let moved = core::hint::black_box(snapshot);
+    let binding = moved
+        .model()
+        .binding_at_offset(offset(source, "name;"))
+        .unwrap()
+        .unwrap();
+    assert!(core::ptr::eq(binding.file(), moved.model().file()));
+    assert_eq!(binding.declaration().unwrap().span, Span::new(6, 10));
+    super::index::tests::assert_equivalent(&moved.into_file());
+}
