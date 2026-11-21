@@ -45,3 +45,6 @@ pub struct Embed<'a> {
     pub grammar: Grammar,
     pub source: EmbedSource<'a>,
 }
+
+#[cfg(feature = "module-ir")]
+pub mod regions;

@@ -182,3 +182,10 @@ impl<'a> Visit<'a> for Markup {
         self.depth = self.depth.saturating_sub(1);
     }
 }
+
+#[cfg(feature = "module-ir")]
+pub use JsxModuleRefusal as ModuleProjectionError;
+#[cfg(feature = "module-ir")]
+mod prepared;
+#[cfg(feature = "module-ir")]
+pub use prepared::project_module;
