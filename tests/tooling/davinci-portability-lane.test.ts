@@ -9,7 +9,7 @@ import {
 } from "./support/github-workflows.ts";
 
 // TS-24 (docs/davinci/plan/test-suites.md): the wasm32-wasip2 portability
-// lanes for std L0 and five `no_std` stage libraries run beside Clippy in
+// lanes for L0 and the six stage libraries run beside Clippy in
 // rust-clippy-portability. The same-name clippy-and-test aggregate requires
 // this producer together with allocations and native differential tests.
 // L0 remains the approved std foundation recorded in no-std-boundary.md.
@@ -19,6 +19,7 @@ const portableStageCrates = [
   ["vize_l1", "vize_l1"],
   ["vize_l2", "vize_l2"],
   ["vize_l3", "vize_l3"],
+  ["vize_l4", "vize_l4"],
   ["vize_l1_to_l2", "vize_l1_to_l2"],
   ["vize_l2_to_l3", "vize_l2_to_l3"],
 ] as const;
@@ -36,7 +37,7 @@ test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
   assert.equal(ts24Rows.length, 1, "test-suites.md must define exactly one normative TS-24 row");
   assert.ok(
     ts24Rows[0].includes(`\`${defaultLane}\` + \`${noDefaultLane}\``),
-    "the normative TS-24 row must pin the same six-library commands as CI",
+    "the normative TS-24 row must pin the same seven-library commands as CI",
   );
 
   // The full portability suite runs on schedule and manual Check; routine
@@ -59,7 +60,7 @@ test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
   // the portability claim merely because WASI provides std.
   assert.ok(
     job.includes(`        run: ${defaultLane} && ${noDefaultLane}`),
-    "TS-24 must build all six stage libraries with and without default features",
+    "TS-24 must build all seven libraries with and without default features",
   );
   assert.doesNotMatch(job, /cargo build[^\n]*-p vize_carton[^\n]*wasm32-wasip2/);
   assert.match(
@@ -68,7 +69,7 @@ test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
   );
 });
 
-test("the no_std claim stays on five stage libraries and excludes the std L0 foundation", () => {
+test("stage library sources pin unconditional no_std and L4’s non-test no_std boundary", () => {
   // The lane's target carries std (wasm32-wasip2 is not a std-less build), so
   // the `no_std` half of the claim is held by these attributes; the build
   // proves they are honest (a `std::` path in either crate stops compiling).
@@ -76,7 +77,9 @@ test("the no_std claim stays on five stage libraries and excludes the std L0 fou
   // and in no-std-boundary.md's ledger.
   for (const [packageName, crateDir] of portableStageCrates.slice(1)) {
     const lib = readRepoFile("davinci", crateDir, "src", "lib.rs");
-    assert.match(lib, /^#!\[no_std\]$/m, `${packageName} must keep #![no_std]`);
+    const boundary =
+      packageName === "vize_l4" ? /^#!\[cfg_attr\(not\(test\), no_std\)\]$/m : /^#!\[no_std\]$/m;
+    assert.match(lib, boundary, `${packageName} must keep its no_std boundary`);
     assert.match(lib, /^extern crate alloc;$/m, `${packageName} must keep extern crate alloc`);
   }
 
