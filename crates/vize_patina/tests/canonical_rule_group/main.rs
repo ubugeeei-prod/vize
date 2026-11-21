@@ -189,6 +189,11 @@ fn authentic_owners_keep_each_rule_and_ordered_catalog_effects() {
         "<section><img/><p/><img v-bind='attrs'/><p tabindex='2'/></section>",
         "<section><img alt=''/><i tabindex='0'/></section>",
         "<img/>",
+        "plain text",
+        "<img tabindex='2'/>",
+        "<Widget tabindex='2'/>",
+        "<!-- vize-disable -->",
+        "<img :alt='label'/>",
     ] {
         let text = vize_l0::cstr!("<template>{body}</template>");
         original(&text, "fixture.vue", &mut count).unwrap();

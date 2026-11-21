@@ -77,17 +77,12 @@ impl Candidate {
         let rendered = messages();
         self.outcome()?;
         let (headline, help) = texts(&rendered);
-        Ok(render_findings(
-            core::mem::take(&mut self.spans),
-            rule_name,
-            headline,
-            help,
-        ))
+        Ok(render_findings(&mut self.spans, rule_name, headline, help))
     }
 }
 
 fn render_findings(
-    mut spans: Spans,
+    spans: &mut Spans,
     rule_name: &'static str,
     headline: &str,
     help: &str,
@@ -106,7 +101,8 @@ fn render_findings(
     };
     if !spans.spilled() {
         return spans
-            .into_iter()
+            .iter()
+            .copied()
             .map(|span| {
                 let mut finding = header(span);
                 add_help(&mut finding);
@@ -116,7 +112,7 @@ fn render_findings(
     }
     // Drop the heap-backed spans before allocating structured help for every
     // diagnostic. The first pass has already built the final localized headers.
-    let mut output: Vec<_> = spans.into_iter().map(header).collect();
+    let mut output: Vec<_> = core::mem::take(spans).into_iter().map(header).collect();
     for finding in &mut output {
         add_help(finding);
     }

@@ -40,9 +40,17 @@ pub(super) struct Candidates {
 
 impl Candidates {
     pub(super) fn collect(&mut self, file: &vize_l2::file::FileArtifact<'_>) {
-        let walk = file
-            .artifact()
-            .visit_markup_preorder(&mut |_, node| self.observe(node));
+        let artifact = file.artifact();
+        // The validated count includes attached bindings and nested regions.
+        // An isolated root is therefore the complete input to both rules.
+        if artifact.node_count() == 1
+            && let [only] = artifact.root().ops.as_slice()
+        {
+            self.observe(NodeRef::Op(only));
+            self.finish_image();
+            return;
+        }
+        let walk = artifact.visit_markup_preorder(&mut |_, node| self.observe(node));
         self.finish(walk);
     }
 
