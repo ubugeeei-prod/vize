@@ -338,6 +338,8 @@ pub(crate) fn element_core<'a>(
             continue;
         }
         if Some(index) == analyzed.v_pre {
+            cx.surface_changes
+                .insert(super::SurfaceChanges::FROZEN_ATTRIBUTE);
             // The spelling itself leaves the output — Vue emits the
             // frozen attributes without it — but the bytes are still
             // accounted for, like any other dropped node.

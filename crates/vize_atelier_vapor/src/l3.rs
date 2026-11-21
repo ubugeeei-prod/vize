@@ -14,6 +14,8 @@ use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{Allocator, String, cstr, profile, profiler::global_profiler};
 use vize_l0::{dump::capture::CaptureSink, level::Level};
 use vize_l1::markup::SurfaceParseOptions;
+use vize_l1_to_l2::lower::SurfaceChanges;
+use vize_l2::provenance::{NoProvenance, ProvenanceRecord, ProvenanceSink};
 use vize_l2_to_l3::Lowered;
 use vize_l3::verify::verify;
 
@@ -157,6 +159,19 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
     options: VaporL3BridgeOptions,
     capture: &mut C,
 ) -> VaporL3BridgeStatus<'a> {
+    if C::RECORDING {
+        lower_source::<std::vec::Vec<ProvenanceRecord>, C>(allocator, source, options, capture)
+    } else {
+        lower_source::<NoProvenance, C>(allocator, source, options, capture)
+    }
+}
+
+fn lower_source<'a, P: ProvenanceSink + Default, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &str,
+    options: VaporL3BridgeOptions,
+    capture: &mut C,
+) -> VaporL3BridgeStatus<'a> {
     if options.ssr
         || options.custom_renderer
         || options.experimental_patterned_template
@@ -191,48 +206,27 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
             vize_l1::markup::htmlish::render::render(&tree, &mut |part| text.push_str(part));
             text
         });
-        let s2 = bridge_profile!(
+        let (mut s2, changes) = bridge_profile!(
             "atelier.vapor.bridge.s1_to_s2",
             // Vapor templates are parsed again by `innerHTML`: keep the
             // `tbody`/`tr` owners the legacy Vapor parse implies too.
-            vize_l1_to_l2::lower::lower_with_caps_and_comment_policy::<
-                std::vec::Vec<vize_l2::provenance::ProvenanceRecord>,
-            >(
+            vize_l1_to_l2::lower::lower_with_surface_changes::<P>(
                 &scratch,
                 &tree,
                 &errors,
-                vize_l1_to_l2::lower::LegacyCaps::VUE3,
                 vize_l1_to_l2::lower::LowerPolicy::compile(false).with_implied_table_sections(),
-                &[],
-                None,
+                &vize_l0::config::NO_DIRECTIVE_CONTRACTS,
             )
         );
         capture.page(Level::L2, "lower", || {
             vize_l2::dump::render_full_page(&vize_l2::dump::Page::of(&s2.artifact.root.ops))
         });
-        capture.page(Level::L2, "provenance", || {
-            vize_l2::dump::render_full_page(&vize_l2::dump::ProvenancePage::of(
-                &s2.artifact.provenance,
-            ))
-        });
-        if !s2.diagnostics.is_empty()
-            || s2.artifact.provenance.iter().any(|record| {
-                !record.rule.starts_with("lower.")
-                    && !record.rule.starts_with("condense.")
-                    && record.rule != "drop.vue-is"
-                    && record.rule != "drop.comment"
-                    && record.rule != "drop.branch-gap"
-                    // HTML content CDATA is a legacy parser diagnostic.
-                    || record.rule == "lower.cdata-text"
-                    // Whitespace between `v-if` branches is dropped as the
-                    // retained lane drops it; a comment there moves the
-                    // surrounding whitespace differently per lane.
-                    || record.rule == "drop.branch-gap"
-                        && (source.as_bytes())
-                            .get(record.span.start as usize..)
-                            .is_none_or(|rest| rest.starts_with(b"<!--"))
-            })
-        {
+        if let Some(records) = s2.artifact.provenance.kept() {
+            capture.page(Level::L2, "provenance", || {
+                vize_l2::dump::render_full_page(&vize_l2::dump::ProvenancePage::of(records))
+            });
+        }
+        if !s2.diagnostics.is_empty() || !admits_surface(changes) {
             return VaporL3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
         }
         let mut s3 = bridge_profile!(
@@ -258,14 +252,14 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
         // Template carriers keep their wrapper facts in L2 side tables.
         let loops = match bridge_profile!(
             "atelier.vapor.bridge.template_carriers",
-            templates::collect(allocator, source, &s2, &s3.program, &mut retained)
+            templates::collect(allocator, source, &s2, &s3, &mut retained)
         ) {
             Ok(loops) => loops,
             Err(reason) => return VaporL3BridgeStatus::Legacy(reason),
         };
         if let Err(failure) = bridge_profile!(
             "atelier.vapor.bridge.text_capture",
-            text::capture(allocator, &s2, &mut s3, &mut retained)
+            text::capture(allocator, &s2.artifact.texts, &mut s3, &mut retained)
         ) {
             return match failure {
                 AdmissionFailure::Unsupported(reason) => VaporL3BridgeStatus::Legacy(reason),
@@ -287,6 +281,12 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
         });
         admit_with(s3, &retained, &loops, source, recoveries)
     })
+}
+
+/// These rewrites lose a distinction the Vapor emitter still needs. Other
+/// discarded directives already carry diagnostics, which admission checks first.
+fn admits_surface(changes: SurfaceChanges) -> bool {
+    changes.is_empty()
 }
 
 #[cfg(test)]

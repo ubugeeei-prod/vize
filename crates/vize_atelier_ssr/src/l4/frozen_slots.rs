@@ -32,15 +32,21 @@ impl<'a> FrozenTemplate<'a> {
         Ok(Self { source, spans })
     }
 
-    pub(super) fn lower(
+    pub(super) fn lower<P: vize_l2::provenance::ProvenanceSink + Default>(
         self,
         allocator: &'a vize_l0::Allocator,
         tree: &vize_l1::markup::SurfaceTree<'a>,
         errors: &[vize_l1::markup::SurfaceError],
         directive_contracts: &vize_l0::config::DirectiveContracts,
-    ) -> Result<vize_l1_to_l2::Lowered<'a>, &'static str> {
+    ) -> Result<
+        (
+            vize_l1_to_l2::Lowered<'a, P>,
+            vize_l1_to_l2::lower::SurfaceChanges,
+        ),
+        &'static str,
+    > {
         let source = vize_l0::SourceRoot::new(self.source).map_err(|_| FOREIGN_SOURCE)?;
-        vize_l1_to_l2::lower_with_frozen_element_spans_and_directives(
+        vize_l1_to_l2::lower::lower_with_frozen_surface_changes(
             allocator,
             tree,
             errors,
@@ -144,6 +150,7 @@ mod tests {
                 &vize_l0::config::NO_DIRECTIVE_CONTRACTS,
             )
             .expect("complete opening custody")
+            .0
     }
 
     #[test]
@@ -319,7 +326,7 @@ mod tests {
                 FrozenTemplate::new(&root, source, &carrier).expect("actual original parser join");
             assert_eq!(
                 template
-                    .lower(
+                    .lower::<vize_l2::provenance::NoProvenance>(
                         &arena,
                         &tree,
                         &errors,
@@ -347,7 +354,7 @@ mod tests {
             let (tree, errors) = vize_l1::markup::parse(&arena, source);
             let template =
                 FrozenTemplate::new(&root, source, &carrier).expect("actual original parser join");
-            let lowered = template.lower(
+            let lowered = template.lower::<vize_l2::provenance::NoProvenance>(
                 &arena,
                 &tree,
                 &errors,

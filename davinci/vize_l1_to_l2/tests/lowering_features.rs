@@ -285,3 +285,58 @@ fn a_family_free_template_plans_two_passes_not_four() {
     let (_, passes) = run("<div class=\"a\"><span>b</span></div>", false);
     assert_eq!(passes, 2);
 }
+
+#[test]
+fn admission_facts_survive_without_a_provenance_observer() {
+    use vize_l1_to_l2::lower::{
+        LowerPolicy, SurfaceChanges as Changes, lower_with_surface_changes,
+    };
+    use vize_l2::provenance::{NoProvenance, ProvenanceRecord};
+
+    for (source, expected) in [
+        ("<p :id=\"id\">hello {{who}}</p>", Changes::empty()),
+        ("<slot :name/>", Changes::SAME_NAME_BINDING),
+        ("<div :id/>", Changes::SAME_NAME_BINDING),
+        ("<p v-pre :id>{{literal}}</p>", Changes::FROZEN_ATTRIBUTE),
+        ("<svg><![CDATA[text]]></svg>", Changes::CDATA_TEXT),
+        ("<?keep?>", Changes::DISCARDED_MARKUP),
+        ("<p v-if=\"a\"/> \n <p v-else/>", Changes::empty()),
+        (
+            "<p v-if=\"a\"/><!--note--><p v-else/>",
+            Changes::BRANCH_COMMENT,
+        ),
+        (
+            "<p v-if=\"a\"/><!-- @vize:todo task --><p v-else/>",
+            Changes::BRANCH_COMMENT | Changes::BRANCH_DIRECTIVE,
+        ),
+        ("<p v-html.mod=\"x\"/>", Changes::IGNORED_DIRECTIVE),
+        ("<slot v-show=\"x\"/>", Changes::empty()),
+        (
+            "<div :id><span v-pre/></div>",
+            Changes::SAME_NAME_BINDING | Changes::FROZEN_ATTRIBUTE,
+        ),
+    ] {
+        let arena = Allocator::default();
+        let (tree, errors) = parse(&arena, source);
+        let policy = LowerPolicy::compile(false);
+        let contracts = &vize_l0::config::NO_DIRECTIVE_CONTRACTS;
+        let (observed, changes) = lower_with_surface_changes::<Vec<ProvenanceRecord>>(
+            &arena, &tree, &errors, policy, contracts,
+        );
+        let (plain, plain_changes) =
+            lower_with_surface_changes::<NoProvenance>(&arena, &tree, &errors, policy, contracts);
+        assert_eq!(changes, expected, "{source}");
+        assert_eq!(changes, plain_changes, "{source}");
+        assert_eq!(observed.diagnostics, plain.diagnostics, "{source}");
+        assert_eq!(
+            L2Page::of(&observed.artifact.root.ops).print_to_string(DumpMode::Full),
+            L2Page::of(&plain.artifact.root.ops).print_to_string(DumpMode::Full),
+            "{source}"
+        );
+        assert_eq!(
+            observed.artifact.provenance,
+            lower(&arena, &tree, &errors).artifact.provenance,
+            "{source}"
+        );
+    }
+}

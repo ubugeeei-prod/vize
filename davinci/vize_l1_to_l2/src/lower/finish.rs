@@ -1,6 +1,6 @@
 //! Materialize the lowering's op and fact channels from one context.
 
-use super::{Lowered, cx::Cx, structural, surface_error_span};
+use super::{Lowered, SurfaceChanges, cx::Cx, structural, surface_error_span};
 use vize_l0::SourceBlock;
 use vize_l1::markup::{SurfaceError, SurfaceTree};
 use vize_l2::artifact::ArtifactParts;
@@ -12,9 +12,10 @@ pub(super) fn lower_in_context<'a, P: ProvenanceSink>(
     tree: &SurfaceTree<'a>,
     errors: &[SurfaceError],
     block: SourceBlock<'a>,
-) -> Lowered<'a, P> {
+) -> (Lowered<'a, P>, SurfaceChanges) {
     let ops = walk(&mut cx, tree, errors, block);
-    materialize(cx, block, ops)
+    let changes = cx.surface_changes;
+    (materialize(cx, block, ops), changes)
 }
 
 pub(super) fn lower_in_frozen_context<'a, P: ProvenanceSink>(
@@ -22,10 +23,11 @@ pub(super) fn lower_in_frozen_context<'a, P: ProvenanceSink>(
     tree: &SurfaceTree<'a>,
     errors: &[SurfaceError],
     block: SourceBlock<'a>,
-) -> Result<Lowered<'a, P>, &'static str> {
+) -> Result<(Lowered<'a, P>, SurfaceChanges), &'static str> {
     let ops = walk(&mut cx, tree, errors, block);
     cx.frozen_openings.complete()?;
-    Ok(materialize(cx, block, ops))
+    let changes = cx.surface_changes;
+    Ok((materialize(cx, block, ops), changes))
 }
 
 fn walk<'a>(

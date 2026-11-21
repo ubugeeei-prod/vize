@@ -31,37 +31,37 @@ const FIXTURES: [(&str, &str, u64); 7] = [
     (
         "text_runs",
         "<main>Hello {{ name }}!<span>{{ first }} / {{ last }}</span><button @click=\"save\">Save {{ count }}</button></main>",
-        75,
+        63,
     ),
     (
         "events",
         "<main @keydown=\"save\"><button @click.stop=\"save\" @keydown.enter.stop=\"save\">{{ label }}</button><input @focus=\"save\" @change.once=\"save\"></main>",
-        74,
+        68,
     ),
     (
         "expressions",
         "<main class=\"shell\" :class=\"{ dense, [theme]: true }\"><button @click=\"count++\" :title=\"'n=' + count\">{{ count * 2 }} / {{ label.toUpperCase() }}</button><div v-show=\"open && ready\" v-text=\"items.map(i => i.name).join(', ')\"></div></main>",
-        110,
+        98,
     ),
     (
         "components",
         "<main><Counter :label=\"title\" :step=\"2\" @bump=\"total += $event\"><b>{{ total }}</b></Counter><slot name=\"aside\" :n=\"total\"><i>none</i></slot></main>",
-        100,
+        95,
     ),
     (
         "templates",
         "<main><template v-if=\"open\"><header>{{ title }}</header><section>{{ lead }}</section></template><ul><template v-for=\"row in rows\" :key=\"row.id\"><li>{{ row.label }}</li><li v-if=\"row.note\">{{ row.note }}</li></template></ul></main>",
-        134,
+        129,
     ),
     (
         "spreads",
         "<main class=\"shell\"><section id=\"card\" class=\"card\" v-bind=\"attrs\" :title=\"title\"><b v-bind=\"badge\">{{ count }}</b></section><Panel v-bind=\"panel\" v-on=\"{ close: save }\" :size=\"size\" /><button v-on=\"handlers\">go</button></main>",
-        99,
+        94,
     ),
     (
         "control_flow",
         "<main><section v-if=\"open\"><b>{{ title }}</b><span v-for=\"row in rows\" :key=\"row.id\" :title=\"row.title\">{{ row.label }}</span></section><i v-else>closed</i><ul><li v-for=\"(cell, i) in cells\" @click=\"save\">{{ i }}: {{ cell }}</li></ul></main>",
-        158,
+        145,
     ),
 ];
 
