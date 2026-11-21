@@ -144,7 +144,7 @@ export function prepareNuxtSourceBinding(
       VIZE_NUXT_NATIVE_CUSTODY: configuration,
       NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --require=${JSON.stringify(preload)}`.trim(),
     },
-    verify() {
+    verify(transformedFixtures?: readonly SourceFixture[]) {
       validateNativeHistoryBuild(nativeDir, receipt);
       assert.equal(sha256(fs.readFileSync(binary)), custody.binary.sha256);
       const events = fs
@@ -152,7 +152,7 @@ export function prepareNuxtSourceBinding(
         .trim()
         .split("\n")
         .map((line): unknown => JSON.parse(line));
-      return verifyNuxtSourceBindingEvents(custody, events);
+      return verifyNuxtSourceBindingEvents(custody, events, transformedFixtures);
     },
   };
 }
@@ -211,6 +211,7 @@ export function normalizeNuxtCompilerCall(value: unknown): NormalizedNuxtCompile
 export function verifyNuxtSourceBindingEvents(
   custody: SourceBindingCustody,
   events: readonly unknown[],
+  transformedFixtures: readonly SourceFixture[] = [],
 ) {
   assert.equal(custody.schema, "vize.nuxt.source-binding");
   assert.equal(custody.version, 1);
@@ -219,6 +220,7 @@ export function verifyNuxtSourceBindingEvents(
   assert.ok(events.length > 0, "no physical source-addon load was recorded");
   const loaded = new Set<number>();
   const compiled = new Set<string>();
+  const transformed = new Set<string>();
   const backends = custody.backends ?? ["client", "ssr"];
   assert.ok(Array.isArray(backends) && backends.length > 0);
   assert.equal(new Set(backends).size, backends.length);
@@ -249,11 +251,14 @@ export function verifyNuxtSourceBindingEvents(
       for (const input of inputs) {
         const original = custody.fixtures.find((fixture) => fixture.filename === input.filename);
         if (original) {
-          assert.equal(
-            input.source,
-            original.source,
-            "compiler input differs from original fixture bytes",
-          );
+          if (input.source !== original.source) {
+            const expected = transformedFixtures.find(
+              (fixture) => fixture.filename === original.filename,
+            );
+            assert.ok(expected, "compiler input differs from original fixture bytes");
+            assert.equal(input.source, expected.source, "unexpected host transform output");
+            transformed.add(original.filename);
+          }
           const batch = at(result, "results");
           const results: unknown[] | undefined =
             event.entrypoint === "compileSfc"
@@ -281,6 +286,11 @@ export function verifyNuxtSourceBindingEvents(
     }
   }
   assert.ok(calls > 0, "fixture build never called the source SFC compiler");
+  for (const fixture of transformedFixtures)
+    assert.ok(
+      transformed.has(fixture.filename),
+      `source compiler missed host transform for ${fixture.filename}`,
+    );
   for (const fixture of custody.fixtures)
     for (const backend of backends)
       assert.ok(

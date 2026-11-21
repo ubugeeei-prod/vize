@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { h as _h_island } from "vue";
+import _raw_island_0 from "../../components/VisitsCounter.vue"
+
+const VisitsCounter = { inheritAttrs: false, render() { const props = this.$attrs; return _h_island("div", { "data-island": "components/VisitsCounter", "data-props": JSON.stringify(props), "data-hydrate": "load" }, _h_island(_raw_island_0, props)); } };
+</script>
+
+<template>
+  <section>
+    <VisitsCounter />
+  </section>
+</template>

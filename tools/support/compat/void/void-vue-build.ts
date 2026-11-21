@@ -236,8 +236,16 @@ try {
   let native: unknown;
   try {
     await assertSsr(dev.origin, false);
-    // Custody covers the original fixture bytes; the HMR edit below changes them.
-    native = binding.verify();
+    // Precompilation sees the authored page; the SSR compiler also sees Void's island rewrite.
+    native = binding.verify([
+      {
+        filename: fs.realpathSync(path.join(fixture, "pages/stats/index.island.vue")),
+        source: fs.readFileSync(
+          new URL("./fixtures/stats-island.transformed.txt", import.meta.url),
+          "utf8",
+        ),
+      },
+    ]);
     await assertHydrationAndHmr(dev.origin);
   } finally {
     await stop(dev.server);
