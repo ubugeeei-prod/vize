@@ -289,6 +289,14 @@ pub trait ScriptRule: Send + Sync {
     fn runs_on_script_setup(&self) -> bool {
         true
     }
+
+    /// An unescaped spelling required by every diagnostic from this standalone rule.
+    /// Aliases must require the spelling at their declaration. Rules without that
+    /// guarantee inspect their original Program on every successful parse.
+    #[cfg(feature = "authored-script-rules")]
+    fn required_authored_spelling(&self) -> Option<&'static str> {
+        None
+    }
 }
 
 /// A configured script rule's independent template capability.

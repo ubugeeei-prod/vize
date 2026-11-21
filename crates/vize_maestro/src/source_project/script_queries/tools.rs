@@ -102,7 +102,16 @@ impl SourceSnapshot {
             }
             Ok(())
         })?;
-        let format = formatter.format(self.source());
+        let source = self.source();
+        let template_only = if editor.is_some() && script_lint.is_none() && setup_lint.is_none() {
+            vize_l1::container::Vue.observe_template_only(source)
+        } else {
+            None
+        };
+        let format = match template_only {
+            Some(template) => formatter.format_observed_template(&template),
+            None => formatter.format(source),
+        };
         self.check_current(&state.documents)
             .map_err(ScriptQueryRefusal::Host)?;
         let scripts = editor.map(|editor| ScriptToolAnalysis {

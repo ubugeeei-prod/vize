@@ -138,3 +138,6 @@ fn template_only<'a>(template: &TemplateOnlyDescriptor<'a>) -> SfcBlock<'a> {
         },
     }
 }
+
+#[cfg(feature = "observed-template")]
+mod observed;

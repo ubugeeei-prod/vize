@@ -70,6 +70,11 @@ impl ScriptRule for NoGetCurrentInstance {
         };
         visitor.visit_program(program);
     }
+
+    #[cfg(feature = "authored-script-rules")]
+    fn required_authored_spelling(&self) -> Option<&'static str> {
+        Some("getCurrentInstance")
+    }
 }
 
 struct NoGetCurrentInstanceVisitor<'result> {

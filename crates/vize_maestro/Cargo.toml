@@ -38,6 +38,7 @@ experimental-checker-script-queries = [
 experimental-script-tools = [
   "experimental-checker-script-queries",
   "vize_patina/authored-script-rules",
+  "vize_glyph/observed-template",
   "glyph",
 ]
 # Opt-in same-file JS/TS/Vue queries from original retained native owners.

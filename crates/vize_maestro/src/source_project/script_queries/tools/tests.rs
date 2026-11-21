@@ -101,9 +101,15 @@ fn recovery_roles_and_configured_formatting_match_the_original_tools() {
     let mut changed = 0;
     for source in [
         "\u{feff}<!-- 雪🌱 -->\r\n<script lang='ts'>import z from './z';import a from './a';export {z,a};</script>\r\n<script setup lang='ts'>import {getCurrentInstance} from 'vue';getCurrentInstance();const store=reactive({ x:1 });const {x}=store;</script>\r\n<template><div>  a  b  </div></template>",
+        " \r\n<template lang='HTML'>\r\n<p>  雪🌱   a </p>\r\n</template>  \r\n",
+        "  <template></template>  ",
+        "<template><div :value='('>{{ ( }}</div></template>",
+        "<!-- prologue --><template>  a <i/> b </template><!-- after -->",
+        "<style scoped>p{color:red}</style><template>  a  </template>",
         "<script setup>const broken: = 1; const thing = reactive({x: 1});const {x}=thing;</script>",
         "<script lang='jsx'>export default <span/>;</script><script setup lang='tsx'>type Props = {value: string};const node=<div/>;</script>",
         "<script>const typed: string = 'x';</script><template><div/></template>",
+        r#"<script>import { n\u0065xtTick as later, g\u0065tCurrentInstance as current } from 'vue';later();current();ctx['$ne\x78tTick']()</script>"#,
         "<script src='./entry.js'/><style>.a{color:red}</style>",
         "<script setup lang='tsx' generic='T'>import('./a');</script>",
         "<script>let first</script><script>let second</script>",

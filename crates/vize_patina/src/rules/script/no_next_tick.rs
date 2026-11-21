@@ -71,6 +71,11 @@ impl ScriptRule for NoNextTick {
         };
         visitor.visit_program(program);
     }
+
+    #[cfg(feature = "authored-script-rules")]
+    fn required_authored_spelling(&self) -> Option<&'static str> {
+        Some("nextTick")
+    }
 }
 
 struct NoNextTickVisitor<'result> {

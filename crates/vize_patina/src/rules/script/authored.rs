@@ -96,9 +96,17 @@ impl AuthoredScriptRules<'_> {
         program: Option<&'p Program<'p>>,
     ) -> ScriptLintResult {
         let mut result = ScriptLintResult::default();
+        let bytes = block.source().as_bytes();
+        let mut escaped = None;
         for rule in &self.linter.rules {
             if rule.uses_ast() {
                 if let Some(program) = program {
+                    if let Some(spelling) = rule.required_authored_spelling()
+                        && memchr::memmem::find(bytes, spelling.as_bytes()).is_none()
+                        && !*escaped.get_or_insert_with(|| memchr::memchr(b'\\', bytes).is_some())
+                    {
+                        continue;
+                    }
                     rule.check_program_with_sfc(
                         program,
                         block.source(),
