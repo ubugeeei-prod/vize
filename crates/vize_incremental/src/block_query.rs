@@ -9,9 +9,12 @@ use crate::{
 };
 use vize_l0::Span;
 
+/// A file-absolute offset cannot select a UTF-8 position in this revision.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum BlockPositionError {
+    /// The offset exceeds the document length in bytes.
     OutOfBounds,
+    /// The offset lies inside the encoding of a single Unicode scalar.
     NotCharBoundary,
 }
 
@@ -25,6 +28,9 @@ pub struct DocumentBlocks<'db> {
 impl ResidentDatabase {
     /// Read an input opened in this database. A rejected document exposes its
     /// original descriptor error. A read holds the current immutable revision.
+    ///
+    /// # Errors
+    /// Returns the descriptor's rejection for this file and revision.
     #[inline]
     pub fn document_blocks(
         &self,
@@ -56,6 +62,10 @@ impl<'db> DocumentBlocks<'db> {
 
     /// The block content at a file-absolute UTF-8 boundary. Headers, gaps,
     /// empty blocks and EOF have no containing content.
+    ///
+    /// # Errors
+    /// Returns [`BlockPositionError::OutOfBounds`] past EOF and
+    /// [`BlockPositionError::NotCharBoundary`] inside a multi-byte scalar.
     #[inline]
     pub fn at(&self, byte: u32) -> Result<Option<BlockView<'db>>, BlockPositionError> {
         if byte as usize > self.source.len() {
@@ -99,31 +109,37 @@ pub struct BlockView<'db> {
 }
 
 impl<'db> BlockView<'db> {
+    /// The descriptor role, including the authored tag of a custom block.
     #[must_use]
     #[inline]
     pub fn kind(self) -> &'db BlockKind {
         self.block.kind(self.db)
     }
+    /// The zero-based ordinal among blocks of this kind in this document.
     #[must_use]
     #[inline]
     pub fn ordinal(self) -> u32 {
         self.block.ordinal(self.db)
     }
+    /// The file-absolute UTF-8 byte offset of the first content byte.
     #[must_use]
     #[inline]
     pub fn start(self) -> u32 {
         self.block.start(self.db)
     }
+    /// The original content, sorted header attributes and L0 source key.
     #[must_use]
     #[inline]
     pub fn source(self) -> &'db BlockSource {
         self.block.source(self.db)
     }
+    /// The L1 surface of an inline HTML template. Other blocks return `None`.
     #[must_use]
     #[inline]
     pub fn surface(self) -> Option<&'db SurfaceArtifact> {
         l1_block(self.db, self.block).as_ref()
     }
+    /// The L2 page for an inline HTML template or a style block. Other blocks return `None`.
     #[must_use]
     #[inline]
     pub fn page(self) -> Option<&'db PageArtifact> {
