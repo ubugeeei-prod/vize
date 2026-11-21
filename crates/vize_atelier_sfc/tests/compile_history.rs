@@ -80,6 +80,8 @@ struct Options {
     comments: Option<bool>,
     /// Emit a source map.
     source_map: Option<bool>,
+    /// SFC adapter: request or suppress the final generated module map.
+    module_source_map: Option<bool>,
     /// Template syntax recovery: `standard` (default), `strict` or `quirks`.
     template_syntax: Option<String>,
     /// Compile for a custom renderer instead of the DOM runtime.
@@ -142,7 +144,7 @@ impl core::fmt::Debug for Options {
             .field("template_syntax", &self.template_syntax)
             .field("custom_renderer", &self.custom_renderer)
             .field("vue_version", &self.vue_version);
-        let later: [(&str, &dyn core::fmt::Debug, bool); 8] = [
+        let later: [(&str, &dyn core::fmt::Debug, bool); 9] = [
             (
                 "script_output",
                 &self.script_output,
@@ -165,6 +167,11 @@ impl core::fmt::Debug for Options {
             ),
             ("scoped", &self.scoped, self.scoped.is_some()),
             ("minify", &self.minify, self.minify.is_some()),
+            (
+                "module_source_map",
+                &self.module_source_map,
+                self.module_source_map.is_some(),
+            ),
             ("vite_helper", &self.vite_helper, self.vite_helper.is_some()),
             (
                 "no_project_config",
@@ -305,6 +312,10 @@ fn compile_whole_sfc(case: &Case, project: Option<&Path>) -> Observation {
         vapor,
         scope_id: None,
     };
+    let codegen = CodegenOptions {
+        source_map: case.options.module_source_map.unwrap_or(false),
+        ..CodegenOptions::default()
+    };
     let script_output = match case.options.script_output.as_deref().unwrap_or("inline") {
         "inline" => SfcScriptOutputMode::InlineTemplate,
         "separate" => SfcScriptOutputMode::SeparateTemplate,
@@ -326,7 +337,7 @@ fn compile_whole_sfc(case: &Case, project: Option<&Path>) -> Observation {
             options,
             template_syntax(case),
             custom_elements,
-            CodegenOptions::default(),
+            codegen,
             script_output,
             SfcCompileExperimentalOptions::default(),
             false,
@@ -335,6 +346,7 @@ fn compile_whole_sfc(case: &Case, project: Option<&Path>) -> Observation {
     }
     if script_output == SfcScriptOutputMode::InlineTemplate
         && case.options.custom_elements.is_none()
+        && case.options.module_source_map.is_none()
     {
         return Observation::Sfc(compile_sfc_with_template_syntax(
             &descriptor,
@@ -355,7 +367,7 @@ fn compile_whole_sfc(case: &Case, project: Option<&Path>) -> Observation {
         options,
         template_syntax(case),
         custom_elements,
-        CodegenOptions::default(),
+        codegen,
         script_output,
     ))
 }
@@ -452,7 +464,7 @@ fn full_current_compile_results() {
             .expect("strict fixture schema");
     assert_eq!(
         cases.len(),
-        1777,
+        1801,
         "every reviewed case must remain registered"
     );
     // Every case runs before the error counts are judged, so one run reports

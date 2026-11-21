@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "sfc-history-custom-directive-child-patch",
+    history: "466fa30950232f6740c2d9abf7b604a23775ed81",
+    source: "<script setup>\nimport { ref } from 'vue'\nconst value = ref('first')\n</script>\n\n<template>\n  <div v-track=\"value\">content</div>\n</template>",
+    filename: "App.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode } from \"vue\"\n\nimport { ref } from 'vue'\n\n\nexport default {\n  __name: 'App',\n  setup(__props) {\n\nconst value = ref('first')\n\nreturn (_ctx, _cache) => {\n  const _directive_track = _resolveDirective(\"track\")\n\n  return _withDirectives((_openBlock(), _createElementBlock(\"div\", null, [\n    _createTextVNode(\"content\")\n  ], 512 /* NEED_PATCH */)), [\n    [_directive_track, value.value]\n  ])\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "value": SetupRef,
+                        "ref": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

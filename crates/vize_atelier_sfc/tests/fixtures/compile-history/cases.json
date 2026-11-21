@@ -17705,5 +17705,302 @@
       "sourceMap": true
     },
     "errors": 0
+  },
+  {
+    "id": "sfc-history-counter-source-map-disabled",
+    "history": "0494c409b07a58c6296cdc2f50739b8e947366f4",
+    "source": "<template>\n  <button @click=\"bump\">{{ count }}</button>\n</template>\n\n<script setup>\nimport { ref } from 'vue'\n\nconst count = ref(0)\nfunction bump() {\n  count.value += 1\n}\n</script>\n",
+    "filename": "/app/src/Counter.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "moduleSourceMap": false,
+      "sourceMap": false
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-counter-source-map-enabled",
+    "history": "0494c409b07a58c6296cdc2f50739b8e947366f4",
+    "source": "<template>\n  <button @click=\"bump\">{{ count }}</button>\n</template>\n\n<script setup>\nimport { ref } from 'vue'\n\nconst count = ref(0)\nfunction bump() {\n  count.value += 1\n}\n</script>\n",
+    "filename": "/app/src/Counter.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "moduleSourceMap": true,
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-invalid-template-expression-diagnostic",
+    "history": "336622af2aea3f9bce3e7c297e3b4307bd7445ff",
+    "source": "<script setup>\nconst foo = () => {}\n</script>\n\n<template>\n  <div>{{ foo( }}</div>\n</template>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 1
+  },
+  {
+    "id": "sfc-history-custom-directive-child-patch",
+    "history": "466fa30950232f6740c2d9abf7b604a23775ed81",
+    "source": "<script setup>\nimport { ref } from 'vue'\nconst value = ref('first')\n</script>\n\n<template>\n  <div v-track=\"value\">content</div>\n</template>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-custom-directive-child-patch-separate",
+    "history": "466fa30950232f6740c2d9abf7b604a23775ed81",
+    "source": "<script setup>\nimport { ref } from 'vue'\nconst value = ref('first')\n</script>\n\n<template>\n  <div v-track=\"value\">content</div>\n</template>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true,
+      "scriptOutput": "separate"
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-model-before-listener",
+    "history": "619614e63976020659659cdc06fcca609ee2c56b",
+    "source": "<template><Foo v-model=\"value\" @update:modelValue=\"onUpdate\" /></template>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-listener-before-model",
+    "history": "619614e63976020659659cdc06fcca609ee2c56b",
+    "source": "<template><Foo @update:modelValue=\"onUpdate\" v-model=\"value\" /></template>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-event-modifiers",
+    "history": "619614e63976020659659cdc06fcca609ee2c56b",
+    "source": "<template><Foo @keydown=\"a\" @keydown.enter.prevent=\"b\" /></template>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-event-spread-boundary",
+    "history": "619614e63976020659659cdc06fcca609ee2c56b",
+    "source": "<template><Foo @click=\"before\" v-bind=\"props\" @click.stop=\"after\" /></template>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-event-dynamic-key-boundary",
+    "history": "619614e63976020659659cdc06fcca609ee2c56b",
+    "source": "<template><Foo @click=\"before\" @[name]=\"middle\" @click.stop=\"after\" /></template>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-props-default-type-diagnostic",
+    "history": "7b821f8d0c46c56ab48d0a954def515a9219838e",
+    "source": "<script setup lang=\"ts\">\nconst { count = \"zero\" } = defineProps<{\n  count?: number\n}>()\n</script>\n\n<template>\n  <div>{{ count }}</div>\n</template>",
+    "filename": "test.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 1
+  },
+  {
+    "id": "sfc-history-component-lone-spread",
+    "history": "7c5c7282989291cf92c3e3546a5c56e24eeb92d5",
+    "source": "<template><Icon v-bind=\"iconProps\" /></template>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-dynamic-loop-ref-for",
+    "history": "b01f36701cd90e7e7968457e28440b01570f7957",
+    "source": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n\ntype Menu = { id: number }\n\nconst menus = ref<Menu[][]>([[{ id: 1 }]])\nconst menuList = ref<unknown[]>([])\n</script>\n\n<template>\n  <Child\n    v-for=\"(menu, index) in menus\"\n    :key=\"index\"\n    :ref=\"(item) => (menuList[index] = item as unknown)\"\n    :nodes=\"[...menu]\"\n  />\n</template>",
+    "filename": "CascaderPanel.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-dynamic-loop-ref-for-separate",
+    "history": "b01f36701cd90e7e7968457e28440b01570f7957",
+    "source": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n\ntype Menu = { id: number }\n\nconst menus = ref<Menu[][]>([[{ id: 1 }]])\nconst menuList = ref<unknown[]>([])\n</script>\n\n<template>\n  <Child\n    v-for=\"(menu, index) in menus\"\n    :key=\"index\"\n    :ref=\"(item) => (menuList[index] = item as unknown)\"\n    :nodes=\"[...menu]\"\n  />\n</template>",
+    "filename": "CascaderPanel.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true,
+      "scriptOutput": "separate"
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-imported-component-before-prop",
+    "history": "ceb0fda9c18ed6e40db71a2c582e9fe10950a43a",
+    "source": "<script setup lang=\"ts\">\nimport Predefine from './components/predefine.vue'\n\ndefineProps<{ predefine?: string[] }>()\n</script>\n\n<template>\n  <predefine v-if=\"predefine\" ref=\"predefine\" />\n</template>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true,
+      "preserveTs": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-imported-component-before-prop-separate",
+    "history": "ceb0fda9c18ed6e40db71a2c582e9fe10950a43a",
+    "source": "<script setup lang=\"ts\">\nimport Predefine from './components/predefine.vue'\n\ndefineProps<{ predefine?: string[] }>()\n</script>\n\n<template>\n  <predefine v-if=\"predefine\" ref=\"predefine\" />\n</template>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true,
+      "preserveTs": true,
+      "scriptOutput": "separate"
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-keyed-slot-conditional",
+    "history": "dcd679b5dec0ca68a474e9a1a5d402af3add67ce",
+    "source": "<template><Comp>\n  <template v-for=\"item in items\" :key=\"item.id\">\n    <span v-if=\"item.visible\">{{ item.label }}</span>\n    <span v-else>hidden</span>\n  </template>\n</Comp></template>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-keyed-slot-single-element",
+    "history": "dcd679b5dec0ca68a474e9a1a5d402af3add67ce",
+    "source": "<template><Comp>\n  <template v-for=\"(item, index) in items\" :key=\"index\">\n    <div class=\"item\">{{ item.label }}</div>\n  </template>\n</Comp></template>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-keyed-slot-fallback",
+    "history": "dcd679b5dec0ca68a474e9a1a5d402af3add67ce",
+    "source": "<template><Outer>\n  <slot>\n  <template v-for=\"displayed in [value]\" :key=\"displayed\">\n    <span v-if=\"displayed\">{{ displayed }}</span>\n    <span v-else>empty</span>\n  </template>\n  </slot>\n</Outer></template>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-scoped-css-v-bind",
+    "history": "e9586daff99ae43ff1e3621829f63e647181a3f1",
+    "source": "<script setup>\nconst height = 12\nconst color = 'tomato'\n</script>\n\n<template>\n  <div class=\"box\">Box</div>\n</template>\n\n<style scoped>\n.box {\n  height: v-bind(\"height + 'px'\");\n  color: v-bind(color);\n}\n</style>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-scoped-css-v-bind-production",
+    "history": "e9586daff99ae43ff1e3621829f63e647181a3f1",
+    "source": "<script setup>\nconst height = 12\nconst color = 'tomato'\n</script>\n\n<template>\n  <div class=\"box\">Box</div>\n</template>\n\n<style scoped>\n.box {\n  height: v-bind(\"height + 'px'\");\n  color: v-bind(color);\n}\n</style>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true,
+      "prod": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-scoped-css-v-bind-server",
+    "history": "e9586daff99ae43ff1e3621829f63e647181a3f1",
+    "source": "<script setup>\nconst height = 12\nconst color = 'tomato'\n</script>\n\n<template>\n  <div class=\"box\">Box</div>\n</template>\n\n<style scoped>\n.box {\n  height: v-bind(\"height + 'px'\");\n  color: v-bind(color);\n}\n</style>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-computed-component-unref",
+    "history": "ff008f61e83372618ae57ee453c1361e814a0f4f",
+    "source": "<template>\n  <Menu>hello</Menu>\n  <Menu v-if=\"show\" />\n  <Menu v-for=\"item in items\" :key=\"item\" />\n  <Menu v-once />\n  <Menu.Item />\n</template>\n\n<script setup>\nimport { computed, h, ref } from 'vue'\nconst show = ref(true)\nconst items = ref(['a'])\nconst Menu = computed(() => Object.assign({ render: () => h('div', 'x') }, {\n  Item: { render: () => h('span', 'item') },\n}))\n</script>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-history-computed-component-unref-separate",
+    "history": "ff008f61e83372618ae57ee453c1361e814a0f4f",
+    "source": "<template>\n  <Menu>hello</Menu>\n  <Menu v-if=\"show\" />\n  <Menu v-for=\"item in items\" :key=\"item\" />\n  <Menu v-once />\n  <Menu.Item />\n</template>\n\n<script setup>\nimport { computed, h, ref } from 'vue'\nconst show = ref(true)\nconst items = ref(['a'])\nconst Menu = computed(() => Object.assign({ render: () => h('div', 'x') }, {\n  Item: { render: () => h('span', 'item') },\n}))\n</script>",
+    "filename": "App.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true,
+      "scriptOutput": "separate"
+    },
+    "errors": 0
   }
 ]

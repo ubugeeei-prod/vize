@@ -80,7 +80,16 @@ void test("current-API compiler oracles and dispositions match the history index
     else if (pinned.has(commit)) assert.equal(row[status], reviewed, commit);
   }
   const dispositions = readDispositions(root);
-  for (const [commit, state] of dispositions) assert.equal(indexed.get(commit)?.[status], state);
+  for (const [commit, state] of dispositions) {
+    assert.equal(indexed.get(commit)?.[status], state);
+    assert(!pinned.has(commit), commit);
+  }
+  for (const commit of indexed.keys()) {
+    assert(
+      pinned.has(commit) || dispositions.has(commit),
+      `missing public compiler oracle: ${commit}`,
+    );
+  }
   assert.equal(
     rows.filter((line) => line.split("\t")[status] === "no-compile-behavior").length,
     dispositions.size,

@@ -44,6 +44,7 @@ const OPTIONS = new Set([
   "cacheHandlers",
   "comments",
   "sourceMap",
+  "moduleSourceMap",
   "templateSyntax",
   "customRenderer",
   "vueVersion",

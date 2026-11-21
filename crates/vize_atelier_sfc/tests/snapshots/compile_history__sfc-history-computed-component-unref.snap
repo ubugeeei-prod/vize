@@ -1,0 +1,56 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "sfc-history-computed-component-unref",
+    history: "ff008f61e83372618ae57ee453c1361e814a0f4f",
+    source: "<template>\n  <Menu>hello</Menu>\n  <Menu v-if=\"show\" />\n  <Menu v-for=\"item in items\" :key=\"item\" />\n  <Menu v-once />\n  <Menu.Item />\n</template>\n\n<script setup>\nimport { computed, h, ref } from 'vue'\nconst show = ref(true)\nconst items = ref(['a'])\nconst Menu = computed(() => Object.assign({ render: () => h('div', 'x') }, {\n  Item: { render: () => h('span', 'item') },\n}))\n</script>",
+    filename: "App.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, createCommentVNode as _createCommentVNode, renderList as _renderList, unref as _unref, withCtx as _withCtx, setBlockTracking as _setBlockTracking } from \"vue\"\n\nimport { computed, h, ref } from 'vue'\n\n\nexport default {\n  __name: 'App',\n  setup(__props) {\n\nconst show = ref(true)\nconst items = ref(['a'])\nconst Menu = computed(() => Object.assign({ render: () => h('div', 'x') }, {\n  Item: { render: () => h('span', 'item') },\n}))\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createVNode(_unref(Menu), null, {\n      default: _withCtx(() => [\n        _createTextVNode(\"hello\")\n      ]),\n      _: 1 /* STABLE */\n    }),\n    (show.value)\n      ? (_openBlock(), _createBlock(_unref(Menu), { key: 0 }))\n      : _createCommentVNode(\"v-if\", true),\n    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items.value, (item) => {\n      return (_openBlock(), _createBlock(_unref(Menu), { key: item }))\n    }), 128 /* KEYED_FRAGMENT */)),\n    _cache[0] || (\n      _setBlockTracking(-1, true),\n      (_cache[0] = _createVNode(_unref(Menu))).cacheIndex = 0,\n      _setBlockTracking(1),\n      _cache[0]\n    ),\n    _createVNode(_unref(Menu).Item)\n  ], 64 /* STABLE_FRAGMENT */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "computed": SetupConst,
+                        "h": SetupConst,
+                        "ref": SetupConst,
+                        "show": SetupRef,
+                        "items": SetupRef,
+                        "Menu": SetupRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

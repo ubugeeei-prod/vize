@@ -1,0 +1,54 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "sfc-history-imported-component-before-prop",
+    history: "ceb0fda9c18ed6e40db71a2c582e9fe10950a43a",
+    source: "<script setup lang=\"ts\">\nimport Predefine from './components/predefine.vue'\n\ndefineProps<{ predefine?: string[] }>()\n</script>\n\n<template>\n  <predefine v-if=\"predefine\" ref=\"predefine\" />\n</template>",
+    filename: "App.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineComponent as _defineComponent } from 'vue'\nimport { openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n\nimport Predefine from './components/predefine.vue'\n\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'App',\n  props: {\n    predefine: { type: Array, required: false }\n  },\n  setup(__props: any) {\n\n\nreturn (_ctx: any,_cache: any) => {\n  return (__props.predefine)\n    ? (_openBlock(), _createBlock(Predefine, {\n      key: 0,\n      ref: \"predefine\"\n    }, null, 512 /* NEED_PATCH */))\n    : _createCommentVNode(\"v-if\", true)\n}\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "Predefine": SetupConst,
+                        "predefine": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)
