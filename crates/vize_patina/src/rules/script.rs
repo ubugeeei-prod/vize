@@ -2,6 +2,10 @@
 //! in `<script>` and `<script setup>` blocks and are **opt-in** via `[rules.script]`.
 
 mod after_await;
+#[cfg(feature = "authored-script-rules")]
+mod authored;
+#[cfg(feature = "authored-script-rules")]
+pub use authored::ScriptLintRefusal;
 mod component_options;
 mod component_options_name_casing;
 mod composition_api;
