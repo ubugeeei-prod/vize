@@ -72,3 +72,6 @@ impl<'a> FileObserver<'a> for NoObserver {
     }
     fn rollback(&mut self, _: ()) {}
 }
+
+#[cfg(any(test, feature = "observed-queries"))]
+mod pair;
