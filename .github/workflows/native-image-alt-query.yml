@@ -264,7 +264,10 @@ jobs:
           TOML
               cargo test --locked --profile ci-opt -p vize_patina --features canonical-rule-group --test ci_original_region_client --no-run --message-format=json > "$RUNNER_TEMP/$epoch-region-build.jsonl"
               binary=$(jq -ers '[.[] | select(.reason == "compiler-artifact" and .target.name == "ci_original_region_client")] | last | .executable' "$RUNNER_TEMP/$epoch-region-build.jsonl")
-              cp "$binary" "$RUNNER_TEMP/$epoch-original-region-client"
+              cp "$binary" "$capture/$epoch-original-region-client"
+              readelf -SW "$binary" > "$capture/$epoch-original-region-sections.txt"
+              nm -nC "$binary" > "$capture/$epoch-original-region-symbols.txt"
+              objcopy --dump-section ".text=$capture/$epoch-original-region-text.bin" "$binary" "$RUNNER_TEMP/$epoch-region-sections.elf"
               sha256sum "$binary" > "$capture/$epoch-original-region-client.sha256"
               "$binary" regions::original_region_events --exact --ignored --nocapture > "$capture/$epoch-original-region-client.log" 2>&1
               git restore -- crates/vize_patina/Cargo.toml davinci/vize_l2/Cargo.toml
@@ -272,7 +275,15 @@ jobs:
               rmdir "$probe"
             )
           done
-          cmp "$RUNNER_TEMP/base-original-region-client" "$RUNNER_TEMP/head-original-region-client"
+          for round in 0 1 2 3 4 5; do
+            order=(base head)
+            if ((round % 2)); then order=(head base); fi
+            for epoch in "${order[@]}"; do
+              "$capture/$epoch-original-region-client" regions::original_region_events --exact --ignored --nocapture > "$capture/repeated/$epoch-$round-standalone-events.log" 2>&1
+            done
+          done
+          sha256sum "$capture/"*-original-region-text.bin > "$capture/original-region-text.sha256"
+          cmp "$capture/base-original-region-text.bin" "$capture/head-original-region-text.bin"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
