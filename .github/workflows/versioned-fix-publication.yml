@@ -1,0 +1,52 @@
+name: Versioned diagnostic fix publication
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/versioned-fix-publication.yml"
+      - "davinci/vize_l0/Cargo.toml"
+      - "davinci/vize_l0/src/line_index*"
+      - "davinci/vize_l0/src/line_index/**"
+      - "davinci/vize_l1/Cargo.toml"
+      - "davinci/vize_l1/src/edit.rs"
+      - "davinci/vize_l1/src/edit/**"
+      - "crates/vize_maestro/Cargo.toml"
+      - "crates/vize_maestro/src/document/store*"
+      - "crates/vize_maestro/src/document/store/**"
+      - "crates/vize_maestro/src/source_project/edit*"
+      - "crates/vize_maestro/src/source_project/snapshot.rs"
+      - "crates/vize_maestro/tests/versioned_fix_publication/**"
+      - "crates/vize_patina/tests/fixtures/issue-7905*/**"
+      - "tests/_fixtures/differential/linter/lint-fix-passes-7906/**"
+permissions: { contents: read }
+concurrency:
+  group: versioned-fix-publication-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  versioned-edits:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0", components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Compare complete editor changes and every resulting authored byte
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt)
+          suite=(-p vize_maestro --features experimental-versioned-fixes)
+          cargo clippy "${flags[@]}" -p vize_l1 --lib --features positioned-edits --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" "${suite[@]}" --test versioned_fix_publication --no-deps -- -D warnings
+          cargo test "${flags[@]}" -p vize_l1 --lib --features positioned-edits,diagnostic-edit-selection edit::
+          cargo test "${flags[@]}" "${suite[@]}" --lib source_project::edit_tests
+          cargo test "${flags[@]}" "${suite[@]}" --test versioned_fix_publication
+          export VIZE_VERSIONED_FIX_INPUTS="$RUNNER_TEMP/versioned-fixture-paths"
+          git ls-files -z -- '*.vue' '*.vue.txt' '*.html' '*.html.txt' '*.tsx' '*.tsx.txt' '*.jsx' '*.jsx.txt' > "$VIZE_VERSIONED_FIX_INPUTS"
+          VIZE_VERSIONED_FIX_TIMINGS=1 cargo test "${flags[@]}" "${suite[@]}" --test versioned_fix_publication original_lint_fixes -- --exact --ignored --nocapture
+          cargo test "${flags[@]}" "${suite[@]}" --test versioned_fix_publication profile::publication_cost -- --exact --ignored --nocapture

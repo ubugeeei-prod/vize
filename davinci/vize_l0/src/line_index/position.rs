@@ -39,3 +39,31 @@ impl Range {
         }
     }
 }
+
+#[cfg(feature = "positioned-edits")]
+impl Position {
+    /// Position after a UTF-8 slice beginning here, within a source whose
+    /// offsets fit in `u32`. A carriage return occupies one UTF-16 column.
+    #[inline]
+    pub fn after_text(self, text: &str) -> Self {
+        use super::utf16::utf16_len;
+
+        let bytes = text.as_bytes();
+        match bytes {
+            [] => self,
+            [b'\n'] => Self::new(self.line + 1, 0),
+            [_] => Self::new(self.line, self.character + 1),
+            _ => {
+                let mut breaks = memchr::memchr_iter(b'\n', bytes);
+                let Some(last) = breaks.next_back() else {
+                    return Self::new(self.line, self.character + utf16_len(text) as u32);
+                };
+                let (_, tail) = text.split_at(last + 1);
+                Self::new(
+                    self.line + 1 + breaks.count() as u32,
+                    utf16_len(tail) as u32,
+                )
+            }
+        }
+    }
+}

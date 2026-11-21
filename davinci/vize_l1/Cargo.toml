@@ -32,6 +32,8 @@ legacy-differential = []
 davinci-differential = ["legacy-differential"]
 # Select and apply versioned diagnostic edits for explicit callers.
 diagnostic-edit-selection = []
+# Stream source-ordered edits in shared UTF-16 coordinates.
+positioned-edits = ["vize_l0/positioned-edits"]
 # Retain the published opt-in spelling for native lexer differential tests.
 # The lexer, entity decoder and callback adapter are available by default.
 native-markup-lex = []

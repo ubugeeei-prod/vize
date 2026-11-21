@@ -1,8 +1,8 @@
 //! Host binding for the actual source-owned native edit model.
 
 use tower_lsp::lsp_types::{
-    DocumentChanges, OneOf, OptionalVersionedTextDocumentIdentifier, Position, Range,
-    TextDocumentEdit, TextEdit, WorkspaceEdit,
+    AnnotatedTextEdit, DocumentChanges, OneOf, OptionalVersionedTextDocumentIdentifier, Position,
+    Range, TextDocumentEdit, TextEdit, WorkspaceEdit,
 };
 use vize_l0::line_index::offset_to_line_col;
 use vize_l0::{SourceFrameError, SourceRoot, String};
@@ -99,17 +99,54 @@ impl SourceSnapshot {
                 })
                 .collect();
 
-            Ok(WorkspaceEdit {
-                changes: None,
-                document_changes: Some(DocumentChanges::Edits(vec![TextDocumentEdit {
-                    text_document: OptionalVersionedTextDocumentIdentifier {
-                        uri: self.uri().clone(),
-                        version: Some(self.version()),
-                    },
-                    edits: text_edits,
-                }])),
-                change_annotations: None,
-            })
+            Ok(self.document_change(text_edits))
+        })
+        .map_err(SourceEditRefusal::Host)?
+    }
+
+    fn document_change(
+        &self,
+        text_edits: Vec<OneOf<TextEdit, AnnotatedTextEdit>>,
+    ) -> WorkspaceEdit {
+        WorkspaceEdit {
+            changes: None,
+            document_changes: Some(DocumentChanges::Edits(vec![TextDocumentEdit {
+                text_document: OptionalVersionedTextDocumentIdentifier {
+                    uri: self.uri().clone(),
+                    version: Some(self.version()),
+                },
+                edits: text_edits,
+            }])),
+            change_annotations: None,
+        }
+    }
+}
+
+#[cfg(feature = "experimental-versioned-fixes")]
+impl SourceSnapshot {
+    /// Publish the same selection the CLI and Node bindings can apply. The
+    /// edit set belongs to its original file, revision, version and buffer.
+    pub fn workspace_edit_for_fixes(
+        &self,
+        documents: &DocumentStore,
+        edits: EditSet<'_, '_, '_, SnapshotKey<'_>>,
+    ) -> Result<WorkspaceEdit, SourceEditRefusal> {
+        self.with_current(documents, |_| {
+            let current = self.versioned_source().map_err(SourceEditRefusal::Frame)?;
+            let edits = edits
+                .positioned_edits(current)
+                .map_err(SourceEditRefusal::Edit)?;
+            let mut text_edits = Vec::with_capacity(edits.len());
+            for (range, replacement) in edits {
+                text_edits.push(OneOf::Left(TextEdit {
+                    range: Range::new(
+                        Position::new(range.start.line, range.start.character),
+                        Position::new(range.end.line, range.end.character),
+                    ),
+                    new_text: replacement.into(),
+                }));
+            }
+            Ok(self.document_change(text_edits))
         })
         .map_err(SourceEditRefusal::Host)?
     }

@@ -38,7 +38,7 @@ surfaces and are not routine CI-refactor targets.
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
-| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 12        |
+| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 13        |
 
 ## 01 Pull request orchestration
 
@@ -364,17 +364,18 @@ Musea, Fresco, playground, app E2E, UI packages, and browser-facing integrations
 
 Security audits, dependency upkeep, scheduled maintenance, docs, and repository hygiene.
 
-| ID    | Workflow                      | File                                                                       |
-| ----- | ----------------------------- | -------------------------------------------------------------------------- |
-| 11.01 | Docs build                    | [`build-docs.yml`](./build-docs.yml)                                       |
-| 11.02 | Clean obsolete merge groups   | [`cleanup-obsolete-merge-groups.yml`](./cleanup-obsolete-merge-groups.yml) |
-| 11.03 | Deploy docs                   | [`deploy-docs.yml`](./deploy-docs.yml)                                     |
-| 11.04 | Fuzz                          | [`fuzz.yml`](./fuzz.yml)                                                   |
-| 11.05 | Language project fixture laws | [`language-project-fixtures.yml`](./language-project-fixtures.yml)         |
-| 11.06 | Miri                          | [`miri.yml`](./miri.yml)                                                   |
-| 11.07 | Production reach accounting   | [`production-reach-accounting.yml`](./production-reach-accounting.yml)     |
-| 11.08 | qs runtime security contracts | [`qs-runtime-security.yml`](./qs-runtime-security.yml)                     |
-| 11.09 | Retained script formatting    | [`retained-script-formatting.yml`](./retained-script-formatting.yml)       |
-| 11.10 | Sticky disk maintenance       | [`sticky-disk-maintenance.yml`](./sticky-disk-maintenance.yml)             |
-| 11.11 | Generated VTS source census   | [`vts-source-census.yml`](./vts-source-census.yml)                         |
-| 11.12 | Zizmor                        | [`zizmor.yml`](./zizmor.yml)                                               |
+| ID    | Workflow                             | File                                                                       |
+| ----- | ------------------------------------ | -------------------------------------------------------------------------- |
+| 11.01 | Docs build                           | [`build-docs.yml`](./build-docs.yml)                                       |
+| 11.02 | Clean obsolete merge groups          | [`cleanup-obsolete-merge-groups.yml`](./cleanup-obsolete-merge-groups.yml) |
+| 11.03 | Deploy docs                          | [`deploy-docs.yml`](./deploy-docs.yml)                                     |
+| 11.04 | Fuzz                                 | [`fuzz.yml`](./fuzz.yml)                                                   |
+| 11.05 | Language project fixture laws        | [`language-project-fixtures.yml`](./language-project-fixtures.yml)         |
+| 11.06 | Miri                                 | [`miri.yml`](./miri.yml)                                                   |
+| 11.07 | Production reach accounting          | [`production-reach-accounting.yml`](./production-reach-accounting.yml)     |
+| 11.08 | qs runtime security contracts        | [`qs-runtime-security.yml`](./qs-runtime-security.yml)                     |
+| 11.09 | Retained script formatting           | [`retained-script-formatting.yml`](./retained-script-formatting.yml)       |
+| 11.10 | Sticky disk maintenance              | [`sticky-disk-maintenance.yml`](./sticky-disk-maintenance.yml)             |
+| 11.11 | Versioned diagnostic fix publication | [`versioned-fix-publication.yml`](./versioned-fix-publication.yml)         |
+| 11.12 | Generated VTS source census          | [`vts-source-census.yml`](./vts-source-census.yml)                         |
+| 11.13 | Zizmor                               | [`zizmor.yml`](./zizmor.yml)                                               |

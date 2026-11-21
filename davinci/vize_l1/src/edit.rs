@@ -255,3 +255,6 @@ pub mod selection;
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "positioned-edits")]
+mod positioned;
