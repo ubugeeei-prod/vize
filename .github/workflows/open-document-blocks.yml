@@ -9,6 +9,7 @@ on:
       - "crates/vize_maestro/src/document/store/**"
       - "crates/vize_maestro/src/server/state.rs"
       - "crates/vize_maestro/src/server/state/resident*"
+      - "crates/vize_maestro/src/source_project.rs"
       - "crates/vize_maestro/src/source_project/blocks*"
       - "crates/vize_maestro/src/source_project/blocks/**"
       - "crates/vize_maestro/src/source_project/snapshot.rs"

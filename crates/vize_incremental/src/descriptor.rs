@@ -197,10 +197,8 @@ pub struct ResidentDocuments {
 }
 
 impl ResidentDocuments {
-    /// The descriptor of document `key` whose current text is `text`,
-    /// parsed as `filename`. A text that differs from the stored buffer is a
-    /// new revision; an equal one reads the memo. `None` when this revision
-    /// was rejected — the error itself is [`parsed`](Self::parsed).
+    /// Parse `text` as `filename` for this document. Rejected revisions return
+    /// `None`. [`Self::parsed`] also exposes their original error.
     pub fn descriptor(
         &mut self,
         key: &str,
@@ -210,21 +208,17 @@ impl ResidentDocuments {
         self.parsed(key, filename, text).into_descriptor()
     }
 
-    /// The parse of document `key` whose current text is `text`, parsed as
-    /// `filename`, including a rejection. A text that differs from the stored
-    /// buffer is a new revision; an equal one reads the memo.
+    /// Read this document's parse or rejection, reusing an equal buffer.
     pub fn parsed(&mut self, key: &str, filename: &str, text: &str) -> ParsedSfc {
         self.lookups += 1;
         let file = self.file(key, filename, text);
         let parsed = sfc_descriptor(&self.db, file).clone();
-        // Drain the event records on every lookup: a long-lived process
-        // must not accumulate them.
+        // Drain each lookup so the process retains no event records.
         self.parses += executions(&self.db.take_accounting());
         parsed
     }
 
-    /// Release document `key`'s buffer: its text becomes empty and its memo
-    /// is recomputed over the empty text, so the old descriptor is dropped.
+    /// Empty this document and replace its memo to release the previous descriptor.
     pub fn close(&mut self, key: &str) {
         let interface = self.interfaces.remove(key);
         if let Some(&file) = self.files.get(key) {
