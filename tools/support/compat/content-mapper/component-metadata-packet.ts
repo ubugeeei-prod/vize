@@ -6,7 +6,7 @@ import { point, type Edit } from "./projection-byte-relocation.ts";
 const suffix =
   " & ({ [key: string]: $ComponentInstance } & { input: unknown })[unknown extends $AuthoredProps ? unknown extends $JsxProps ? string : 'input' : 'input']";
 const namedExport =
-  /^declare const ([$_\p{ID_Start}][$\u200c\u200d_\p{ID_Continue}]*): typeof __vize_component__;\n(export default \1)( as typeof \1);$/mu;
+  /^declare const ([$_\p{ID_Start}](?:[$\p{ID_Continue}]|\u200c|\u200d)*): typeof __vize_component__;\n(export default \1)( as typeof \1);$/mu;
 
 export function hasMetadataExport(text: string): boolean {
   return namedExport.test(text);
