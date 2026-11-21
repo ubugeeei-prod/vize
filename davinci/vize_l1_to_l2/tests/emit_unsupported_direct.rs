@@ -351,3 +351,42 @@ fn id(index: u32) -> NodeId {
 fn sp() -> Span {
     Span::new(0, 1)
 }
+
+#[test]
+fn composed_analysis_visits_the_host_empty_arm_at_its_enclosing_depth() {
+    use vize_l0::pass::NoRemarks;
+    use vize_l2::analysis::{
+        static_facts::StaticLevel, template, template_complexity::DecisionKind,
+    };
+    use vize_l2::provenance::NoProvenance;
+
+    let arena = Allocator::new();
+    let (mut lowered, _) = host_for_loop(&arena);
+    let Some(Op::For(iteration)) = lowered.artifact.root.ops.first_mut() else {
+        panic!("host loop fixture");
+    };
+    let empty_owner = el(&arena, "b", av(&arena), empty_region(&arena));
+    let inner = for_op(&arena, js(&arena, "item"), region(&arena, [empty_owner]));
+    iteration.host.as_mut().expect("host fixture").empty = Some(region(&arena, [inner]));
+    let result = template::run(&lowered.artifact.root, 4, &mut NoProvenance, &mut NoRemarks);
+    assert_eq!(result.op_visits, 4);
+    assert_eq!(result.complexity.max_nesting, 1);
+    assert_eq!(result.complexity.cognitive, 2);
+    let rows: StdVec<_> = result
+        .complexity
+        .contributions
+        .iter()
+        .map(|row| (row.kind, row.op, row.nesting))
+        .collect();
+    assert_eq!(
+        rows,
+        [
+            (DecisionKind::For, NodeId::from_index(0), 0),
+            (DecisionKind::For, NodeId::from_index(2), 0),
+        ]
+    );
+    let owners = result.static_facts.sorted_entries();
+    assert_eq!(owners.len(), 1);
+    assert_eq!(owners[0].0.index(), 3);
+    assert_eq!(owners[0].1.level, StaticLevel::FullyStatic);
+}

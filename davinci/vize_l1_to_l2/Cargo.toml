@@ -46,6 +46,7 @@ vize_l1 = { workspace = true }
 vize_l2 = { workspace = true }
 
 [dev-dependencies]
+vize_l2 = { workspace = true, features = ["composed-template-analysis"] }
 serde_json = { workspace = true }
 vize_carton.workspace = true
 criterion = { workspace = true }
@@ -113,6 +114,10 @@ path = "tests/main.rs"
 [[test]]
 name = "metamorphic"
 path = "tests/metamorphic/main.rs"
+
+[[test]]
+name = "composed_template_alloc"
+harness = false
 
 [[test]]
 name = "cfg_complexity_oracle"

@@ -22,7 +22,7 @@ mod tests;
 /// Score one evaluated expression position standing at template nesting
 /// `depth`, carried by op `op`.
 #[inline(always)]
-pub(super) fn score(
+pub(in crate::analysis) fn score(
     expr: ExprRef<'_>,
     op: Option<NodeId>,
     depth: u32,

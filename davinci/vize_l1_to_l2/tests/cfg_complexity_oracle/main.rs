@@ -25,6 +25,8 @@
 )]
 
 mod ast;
+mod composed;
+mod coordinates;
 mod graph;
 mod runner;
 mod spec;

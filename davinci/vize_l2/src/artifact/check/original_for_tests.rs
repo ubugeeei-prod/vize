@@ -172,3 +172,37 @@ fn nested_original_for_tags_are_dense_canonical_sites_not_file_scope_ids() {
         file.artifact().node_count()
     );
 }
+
+#[test]
+fn composed_template_facts_use_the_original_file_loop_id() {
+    use crate::analysis::{static_facts, template, template_complexity};
+    use crate::provenance::NoProvenance;
+    use vize_l0::pass::NoRemarks;
+    let arena = Allocator::default();
+    let source = "<script setup>const items=2;</script><template><div v-for='item in items'>body</div></template>";
+    let output = native(&arena, source);
+    let file = output.view().unwrap().file().unwrap();
+    let artifact = file.artifact();
+    let joint = template::run(
+        artifact.root(),
+        artifact.node_count(),
+        &mut NoProvenance,
+        &mut NoRemarks,
+    );
+    let [Op::OriginalFor(iteration)] = artifact.root().ops.as_slice() else {
+        panic!("original loop")
+    };
+    let [decision] = joint.complexity.contributions.as_slice() else {
+        panic!("single loop decision")
+    };
+    assert_eq!(decision.op, Some(iteration.id().node()));
+    assert_eq!(
+        joint.complexity,
+        template_complexity::run(artifact.root(), artifact.node_count())
+    );
+    let original = static_facts::run(artifact.root(), artifact.node_count(), &mut NoProvenance);
+    assert_eq!(
+        original.sorted_entries(),
+        joint.static_facts.sorted_entries()
+    );
+}
