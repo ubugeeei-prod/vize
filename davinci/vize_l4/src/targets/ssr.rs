@@ -244,3 +244,16 @@ fn encode<'owner, 'arena, L: LinkSink>(
     }
     Ok(writer)
 }
+
+/// Emit the ordinary server render fragment from its exact selected-owner facts.
+#[cfg(feature = "client-server-decisions")]
+pub fn emit_render_analysis<L: LinkSink>(
+    receipt: &vize_l3::decision::ServerRenderAnalysis<'_, '_>,
+) -> Result<Writer<L>, SsrError> {
+    encode(
+        receipt.file().artifact().source(),
+        Some(receipt.facts()),
+        None,
+        None,
+    )
+}

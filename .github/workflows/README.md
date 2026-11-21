@@ -38,7 +38,7 @@ surfaces and are not routine CI-refactor targets.
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
-| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 15        |
+| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 16        |
 
 ## 01 Pull request orchestration
 
@@ -364,20 +364,21 @@ Musea, Fresco, playground, app E2E, UI packages, and browser-facing integrations
 
 Security audits, dependency upkeep, scheduled maintenance, docs, and repository hygiene.
 
-| ID    | Workflow                             | File                                                                       |
-| ----- | ------------------------------------ | -------------------------------------------------------------------------- |
-| 11.01 | Docs build                           | [`build-docs.yml`](./build-docs.yml)                                       |
-| 11.02 | Clean obsolete merge groups          | [`cleanup-obsolete-merge-groups.yml`](./cleanup-obsolete-merge-groups.yml) |
-| 11.03 | Deploy docs                          | [`deploy-docs.yml`](./deploy-docs.yml)                                     |
-| 11.04 | Fuzz                                 | [`fuzz.yml`](./fuzz.yml)                                                   |
-| 11.05 | Language project fixture laws        | [`language-project-fixtures.yml`](./language-project-fixtures.yml)         |
-| 11.06 | Miri                                 | [`miri.yml`](./miri.yml)                                                   |
-| 11.07 | Open document block queries          | [`open-document-blocks.yml`](./open-document-blocks.yml)                   |
-| 11.08 | Production reach accounting          | [`production-reach-accounting.yml`](./production-reach-accounting.yml)     |
-| 11.09 | qs runtime security contracts        | [`qs-runtime-security.yml`](./qs-runtime-security.yml)                     |
-| 11.10 | Retained script formatting           | [`retained-script-formatting.yml`](./retained-script-formatting.yml)       |
-| 11.11 | Retained TSRX module products        | [`retained-tsrx.yml`](./retained-tsrx.yml)                                 |
-| 11.12 | Sticky disk maintenance              | [`sticky-disk-maintenance.yml`](./sticky-disk-maintenance.yml)             |
-| 11.13 | Versioned diagnostic fix publication | [`versioned-fix-publication.yml`](./versioned-fix-publication.yml)         |
-| 11.14 | Generated VTS source census          | [`vts-source-census.yml`](./vts-source-census.yml)                         |
-| 11.15 | Zizmor                               | [`zizmor.yml`](./zizmor.yml)                                               |
+| ID    | Workflow                                    | File                                                                       |
+| ----- | ------------------------------------------- | -------------------------------------------------------------------------- |
+| 11.01 | Docs build                                  | [`build-docs.yml`](./build-docs.yml)                                       |
+| 11.02 | Clean obsolete merge groups                 | [`cleanup-obsolete-merge-groups.yml`](./cleanup-obsolete-merge-groups.yml) |
+| 11.03 | Shared client and server template decisions | [`client-server-decisions.yml`](./client-server-decisions.yml)             |
+| 11.04 | Deploy docs                                 | [`deploy-docs.yml`](./deploy-docs.yml)                                     |
+| 11.05 | Fuzz                                        | [`fuzz.yml`](./fuzz.yml)                                                   |
+| 11.06 | Language project fixture laws               | [`language-project-fixtures.yml`](./language-project-fixtures.yml)         |
+| 11.07 | Miri                                        | [`miri.yml`](./miri.yml)                                                   |
+| 11.08 | Open document block queries                 | [`open-document-blocks.yml`](./open-document-blocks.yml)                   |
+| 11.09 | Production reach accounting                 | [`production-reach-accounting.yml`](./production-reach-accounting.yml)     |
+| 11.10 | qs runtime security contracts               | [`qs-runtime-security.yml`](./qs-runtime-security.yml)                     |
+| 11.11 | Retained script formatting                  | [`retained-script-formatting.yml`](./retained-script-formatting.yml)       |
+| 11.12 | Retained TSRX module products               | [`retained-tsrx.yml`](./retained-tsrx.yml)                                 |
+| 11.13 | Sticky disk maintenance                     | [`sticky-disk-maintenance.yml`](./sticky-disk-maintenance.yml)             |
+| 11.14 | Versioned diagnostic fix publication        | [`versioned-fix-publication.yml`](./versioned-fix-publication.yml)         |
+| 11.15 | Generated VTS source census                 | [`vts-source-census.yml`](./vts-source-census.yml)                         |
+| 11.16 | Zizmor                                      | [`zizmor.yml`](./zizmor.yml)                                               |

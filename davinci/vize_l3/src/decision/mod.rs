@@ -191,3 +191,8 @@ pub struct DecisionTables {
     /// Control owners and their containment.
     pub controls: SideTable<ControlRegion>,
 }
+
+#[cfg(feature = "client-server-decisions")]
+pub use build::paired::{
+    ClientServerDecisions, ServerRenderAnalysis, build_client_server_decisions,
+};

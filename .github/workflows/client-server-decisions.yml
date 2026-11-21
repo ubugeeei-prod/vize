@@ -1,0 +1,60 @@
+name: Shared client and server template decisions
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/client-server-decisions.yml"
+      - "davinci/vize_l2/src/artifact*"
+      - "davinci/vize_l2/src/walk*"
+      - "davinci/vize_l2/src/walk/**"
+      - "davinci/vize_l2/src/lang/js/**"
+      - "davinci/vize_l1_to_l2/src/native_file*"
+      - "davinci/vize_l1_to_l2/src/native_file/**"
+      - "davinci/vize_l3/Cargo.toml"
+      - "davinci/vize_l3/src/decision/**"
+      - "davinci/vize_l4/Cargo.toml"
+      - "davinci/vize_l4/src/targets/dom*"
+      - "davinci/vize_l4/src/targets/dom/**"
+      - "davinci/vize_l4/src/targets/ssr*"
+      - "davinci/vize_l4/src/targets/ssr/**"
+      - "davinci/vize_l4/tests/fixtures/native-*"
+      - "crates/vize_atelier_sfc/Cargo.toml"
+      - "crates/vize_atelier_sfc/tests/client_server_decisions/**"
+permissions: { contents: read }
+concurrency:
+  group: client-server-decisions-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  target-products:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUST_MIN_STACK: "16777216"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0", components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: target-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
+      - name: Verify original artifacts, decisions, emitted bytes and authored links
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt)
+          for package in vize_l3 vize_l4; do
+            cargo clippy "${flags[@]}" -p "$package" --features client-server-decisions --lib --no-deps -- -D warnings
+          done
+          cargo test "${flags[@]}" -p vize_l4 --features client-server-decisions --test native_dom_file --test native_ssr --test native_selected_ssr --test native_selected_root_text --test native_selected_template_output
+          suite=(-p vize_atelier_sfc --features vize_l4/client-server-decisions --test client_server_decisions)
+          cargo clippy "${flags[@]}" "${suite[@]}" --no-deps -- -D warnings
+          export VIZE_CLIENT_SERVER_INPUTS="$RUNNER_TEMP/target-sources"
+          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_CLIENT_SERVER_INPUTS"
+          VIZE_CLIENT_SERVER_REQUIRE_OUTPUT=1 VIZE_CLIENT_SERVER_TIMINGS=1 cargo test "${flags[@]}" "${suite[@]}" -- --include-ignored --nocapture --test-threads=1
