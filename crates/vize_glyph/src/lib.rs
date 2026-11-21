@@ -135,3 +135,6 @@ pub fn format_script_with_sort_imports(
 ) -> Result<String, FormatError> {
     script::format_script_content_stable(source, options, allocator, source_type, sort_imports)
 }
+
+#[cfg(feature = "retained-script")]
+pub use script::snapshot::ScriptFormatQuery;

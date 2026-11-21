@@ -47,6 +47,17 @@ fn is_empty_statement_only_program(source: &str, source_type: SourceType) -> boo
             .all(|statement| matches!(statement, Statement::EmptyStatement(_)))
 }
 
+/// Recover the block body after the shared standalone formatter produced only
+/// whitespace. Reuse the same empty-statement classification as the SFC path.
+#[cfg(feature = "retained-script")]
+pub(super) fn retained_empty_body(source: &str, ty: SourceType) -> &str {
+    if is_empty_statement_only_program(source, ty) {
+        ";"
+    } else {
+        source.trim()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::is_empty_statement_only_program;
