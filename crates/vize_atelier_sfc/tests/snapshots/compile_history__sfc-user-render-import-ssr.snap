@@ -1,0 +1,58 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "sfc-user-render-import-ssr",
+    history: "fe724476c7a1fd1bd9bf784699814626994ff9b4",
+    source: "\n<script setup lang=\"ts\">\nimport { render } from \"./lib\";\nimport { ref } from \"vue\";\nconst props = defineProps<{ text: string }>();\nconst html = ref(\"\");\nhtml.value = render(props.text);\n</script>\n<template><div v-html=\"html\" /></template>\n",
+    filename: "Foo.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        script_output: Some(
+            "separate",
+        ),
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>${($setup.html) ?? ''}</div>`)\n}\nimport { render } from './lib'\nimport { ref } from 'vue'\n\n\nexport default {\n  __name: 'Foo',\n  props: {\n    text: { type: String, required: true }\n  },\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst props = __props;\nconst html = ref(\"\");\nhtml.value = render(props.text);\n\nconst __returned__ = { ref, props, html, render }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "ref": SetupConst,
+                        "text": Props,
+                        "props": SetupReactiveConst,
+                        "html": SetupRef,
+                        "render": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

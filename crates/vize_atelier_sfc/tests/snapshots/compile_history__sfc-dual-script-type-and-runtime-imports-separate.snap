@@ -1,0 +1,56 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "sfc-dual-script-type-and-runtime-imports-separate",
+    history: "92adfb6927517974101e6837bed34bf76b55da9b",
+    source: "<script lang=\"ts\">\nimport { type Foo } from './types-only'\nimport { type Bar, runtimeValue } from './mixed'\nimport {} from './empty-import'\nimport './side-effect'\nconst make = (): Foo => ({ id: runtimeValue })\n</script>\n\n<script setup lang=\"ts\">\nconst value = make()\n</script>\n\n<template>{{ value.id }}</template>",
+    filename: "Foo.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        script_output: Some(
+            "separate",
+        ),
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _toDisplayString($setup.value.id)\n}\nimport { runtimeValue } from './mixed'\nimport './empty-import'\nimport './side-effect'\n\nconst make = () => ({ id: runtimeValue });\n\nexport default {\n  __name: 'Foo',\n  render: _sfc_render,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst value = make();\n\nconst __returned__ = { value, make }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "value": SetupMaybeRef,
+                        "runtimeValue": SetupMaybeRef,
+                        "make": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)
