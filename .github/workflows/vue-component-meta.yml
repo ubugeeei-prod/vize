@@ -47,4 +47,5 @@ jobs:
         env:
           VIZE_TEST_CONTENT_MAPPER_TSGO: ${{ runner.temp }}/component-meta/node_modules/.bin/tsrs
           VIZE_TEST_CONTENT_MAPPER_VUE: ${{ runner.temp }}/component-meta/node_modules/vue
-        run: cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_editor_accuracy::component_tags::
+        run: |
+          cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_editor_accuracy::component_tags:: --nocapture
