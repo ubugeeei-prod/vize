@@ -406,3 +406,34 @@ export default defineComponent({
         );
     }
 }
+
+#[test]
+fn default_export_expression_retains_its_authored_byte_range() {
+    const SFC: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/typechecker/deprecated-default-call-12985/Default.vue.txt"
+    ));
+    for source in [SFC.to_owned(), SFC.replace('\n', "\r\n")] {
+        let script_start = source.find('>').unwrap() + 1;
+        let script = &source[script_start..source.find("</script>").unwrap()];
+        let mut analyzer =
+            vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
+        analyzer.analyze_script_plain(script);
+        let output = generate_virtual_ts_with_offsets_options_api(
+            &analyzer.finish(),
+            Some(script),
+            None,
+            u32::try_from(script_start).unwrap(),
+            0,
+            &Default::default(),
+        );
+        let expression = " dépassé(\"雪\");";
+        let start = source.find(expression).unwrap();
+        let row = output
+            .mapping
+            .rows()
+            .find(|row| row.span.src_range == (start..start + expression.len()))
+            .expect("the default expression has an exact mapping");
+        assert_eq!(&output.code[row.span.gen_range.clone()], expression);
+    }
+}

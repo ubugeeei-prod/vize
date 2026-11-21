@@ -1,0 +1,8 @@
+<script lang="ts">
+/** @deprecated Use makeCurrent instead. */
+function dépassé(value: string) {
+  return { value };
+}
+
+  export default dépassé("雪");
+</script>

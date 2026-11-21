@@ -561,7 +561,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     &mut ts,
                     &mut mappings,
                     output_line,
-                    (line_start, line.len()),
+                    (line_start, line),
                     source_offset,
                 );
                 // Once the class body has closed, append the deferred

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "pullRequest": 13439,
+  "predecessor": {
+    "path": "successor-component-metadata-13430/projection-record.txt",
+    "bytes": 2326,
+    "sha256": "b33e195c145b1bfdc4c450d8d44b225e5eb8f76efce551a64c8604deebfb7854"
+  },
+  "successor": {
+    "path": "successor-default-expression-12985/projection-record.txt",
+    "bytes": 2326,
+    "sha256": "b40928a6ae8fbe0dab4c4f8244b80307a93f0e1e07692b23ba1534d36d71d8ed"
+  },
+  "delta": {
+    "canonGeneratedTextBytes": 0,
+    "contentMapperGeneratedTextBytes": 0,
+    "maestroGeneratedTextBytes": 0,
+    "contentMapperMappings": 0,
+    "contentMapperAuthoredHits": 0
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "The checker can locate the authored expression inside a rewritten default export. The generated text and diagnostics stay byte-identical."
+}

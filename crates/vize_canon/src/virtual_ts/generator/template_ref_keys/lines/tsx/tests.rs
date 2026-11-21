@@ -23,7 +23,7 @@ fn inserted_comma_has_no_authored_subspan_and_original_bytes_stay_exact() {
         &mut code,
         &mut mappings,
         Cow::Borrowed(source),
-        (0, source.len()),
+        (0, source),
         &|n| 300 + n,
     );
     let expected = cstr!("header\n{},{}\n", &source[..position], &source[position..]);
@@ -76,7 +76,7 @@ fn template_ref_callee_and_arrow_share_original_coordinates() {
             &mut code,
             &mut mappings,
             Cow::Borrowed(source),
-            (0, source.len()),
+            (0, source),
             &|n| 500 + n,
         );
         let replacement = if imported {
@@ -154,7 +154,7 @@ fn already_unambiguous_or_recovered_source_keeps_its_whole_line() {
             &mut code,
             &mut mappings,
             Cow::Borrowed(source),
-            (0, source.len()),
+            (0, source),
             &|n| n,
         );
         assert_eq!(code, cstr!("{source}\n"));

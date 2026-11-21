@@ -26943,7 +26943,7 @@
           {
             "path": "cases.json",
             "role": "upstream-selected-corpus",
-            "sha256": "ce51272ab01d733a634e5be0aaa72874bc91c85f7568fb69498464381c091ef4"
+            "sha256": "fa988169cf5d14e78afa586ff9861a8ec4a74323faa003884636514ad128aa1c"
           }
         ]
       },
@@ -26956,7 +26956,6 @@
             "dialects": [
               "vue3-sfc",
               "html-template",
-              "js",
               "ts"
             ],
             "selector": "linter manifest pinned authored sources"
