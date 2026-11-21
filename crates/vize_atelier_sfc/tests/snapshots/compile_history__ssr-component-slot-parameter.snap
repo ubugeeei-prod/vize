@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "ssr-component-slot-parameter",
+    history: "4819858579748608f8a3837b62ee6a2fb638d11e",
+    source: "<template><Comp v-slot=\"{ item }\"><span>{{ item.label }}</span></Comp></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, withCtx as _withCtx } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Comp\"), _attrs, {\n    default: _withCtx(({ item }, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(`<span>${_ssrInterpolate(item.label)}</span>`)\n      } else {\n        return [_createElementVNode(\"span\", null, _toDisplayString(item.label), 1 /* TEXT */)]\n      }\n    }),\n    _: 1\n  }, _parent))\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

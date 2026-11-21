@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "ssr-vnode-named-slot-and-implicit-default",
+    history: "49c9bcc2d19e1a1abfc2bcd0a372e16339a41ff6",
+    source: "<template><Outer><Inner><template #aside=\"{ item: row }\"><i>{{ row.label }}</i></template><b>{{ heading }}</b></Inner></Outer></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { createVNode as _createVNode, createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, withCtx as _withCtx } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Outer\"), _attrs, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(_ssrRenderComponent(_resolveComponent(\"Inner\"), null, {\n          default: _withCtx((_, _push, _parent, _scopeId) => {\n            if (_push) {\n              _push(`<b>${_ssrInterpolate(_ctx.heading)}</b>`)\n            } else {\n              return [_createElementVNode(\"b\", null, _toDisplayString(_ctx.heading), 1 /* TEXT */)]\n            }\n          }),\n          aside: _withCtx(({ item: row }, _push, _parent, _scopeId) => {\n            if (_push) {\n              _push(`<i>${_ssrInterpolate(row.label)}</i>`)\n            } else {\n              return [_createElementVNode(\"i\", null, _toDisplayString(row.label), 1 /* TEXT */)]\n            }\n          }),\n          _: 1\n        }, _parent, _scopeId))\n      } else {\n        return [_createVNode(_resolveComponent(\"Inner\"), null, { aside: _withCtx(({ item: row }) => [_createElementVNode(\"i\", null, _toDisplayString(row.label), 1 /* TEXT */)]), default: _withCtx(() => [_createElementVNode(\"b\", null, _toDisplayString(_ctx.heading), 1 /* TEXT */)]), _: 1 })]\n      }\n    }),\n    _: 1\n  }, _parent))\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

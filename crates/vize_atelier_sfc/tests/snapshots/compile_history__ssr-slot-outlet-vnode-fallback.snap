@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "ssr-slot-outlet-vnode-fallback",
+    history: "dd9f507ccdf045c33596e6f37f403b06a084b1e7",
+    source: "<template><Outer><button><slot :ui=\"ui\"><span v-if=\"label\">{{ label }}</span></slot></button></Outer></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderSlot as _ssrRenderSlot } from \"@vue/server-renderer\"\nimport { createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveComponent as _resolveComponent, renderSlot as _renderSlot, toDisplayString as _toDisplayString, withCtx as _withCtx } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Outer\"), _attrs, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(`<button>`)\n        _ssrRenderSlot(_ctx.$slots, \"default\", { ui: _ctx.ui }, () => {\n          if (_ctx.label) {\n            _push(`<span>${_ssrInterpolate(_ctx.label)}</span>`)\n          } else {\n            _push(`<!---->`)\n          }\n        }, _push, _parent, _scopeId)\n        _push(`</button>`)\n      } else {\n        return [_createElementVNode(\"button\", null, [_renderSlot(_ctx.$slots, \"default\", { ui: _ctx.ui }, () => [(_ctx.label) ? _createElementVNode(\"span\", null, _toDisplayString(_ctx.label), 1 /* TEXT */) : _createCommentVNode(\"v-if\", true)], true)])]\n      }\n    }),\n    _: 3 /* FORWARDED */\n  }, _parent))\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)
