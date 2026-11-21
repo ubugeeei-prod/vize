@@ -97,6 +97,29 @@ fn compare(current: &VueProjection<'_, '_>, original: &VueProjection<'_, '_>, co
     }
 }
 
+// Ask the independent original CSS lowerer whether each possible opener
+// belongs to code. Complete its argument on a copy of the original prefix so
+// an unfinished call is observable without rewriting comments or earlier strings.
+fn first_original_binding(css: &str) -> Option<usize> {
+    use vize_croquis::sfc::__internal::v_bind_expression_ranges;
+    css.match_indices("v-bind").find_map(|(start, spelling)| {
+        let end = start + spelling.len();
+        let first = css
+            .get(end..)?
+            .chars()
+            .find(|&c| c != '\u{feff}' && (c == '\u{85}' || !c.is_whitespace()));
+        if first != Some('(') {
+            return None;
+        }
+        let mut probe = css.get(..end)?.to_owned();
+        probe.push_str("(x)");
+        let marker = end + 1..end + 2;
+        v_bind_expression_ranges(&probe)
+            .contains(&marker)
+            .then_some(start)
+    })
+}
+
 fn qualify(source: &str, path: &Path, counts: &mut Counts) {
     // Exercise the lexical boundary even on components the later IR cannot admit.
     if let Ok(descriptor) = parse_sfc(source, SfcParseOptions::default()) {
@@ -112,25 +135,7 @@ fn qualify(source: &str, path: &Path, counts: &mut Counts) {
             let calls: Vec<_> = v_bind_calls(css).collect();
             let actual: Vec<_> = calls.iter().map(|call| call.expression_range()).collect();
             assert_eq!(actual, expected);
-            let first = first_v_bind_start(css);
-            if let Some(call) = calls.first() {
-                assert!(first.is_some_and(|start| start <= call.call_start));
-            }
-            if !complete {
-                assert!(first.is_some());
-            }
-            if let Some(start) = first {
-                // An opener missing from the historical contiguous-call iterator
-                // must be the whitespace form accepted by Vue's CSS compiler.
-                if calls.first().is_none_or(|call| start != call.call_start) && complete {
-                    let tail = css.get(start..).unwrap().strip_prefix("v-bind").unwrap();
-                    assert!(!tail.starts_with('('));
-                    assert!(
-                        tail.trim_start_matches(|c: char| c.is_whitespace() || c == '\u{feff}')
-                            .starts_with('(')
-                    );
-                }
-            }
+            assert_eq!(first_v_bind_start(css), first_original_binding(css));
             counts.style_bodies += 1;
             counts.bindings += calls.len();
             counts.incomplete += usize::from(!complete);

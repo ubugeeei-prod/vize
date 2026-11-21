@@ -7,7 +7,7 @@
     "skipLibCheck": true,
     "types": ["node"],
     "typeRoots": ["../../../../npm/ui/node_modules/@types"],
-    "paths": { "typescript": ["../../../../npm/ui/node_modules/typescript"] }
+    "paths": { "typescript": ["../../../../npm/ui/node_modules/typescript/lib/typescript.d.ts"] }
   },
   "files": ["checker.ts"]
 }
