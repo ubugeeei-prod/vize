@@ -4,6 +4,7 @@ import { runInNewContext } from "node:vm";
 import { test } from "node:test";
 import { parse } from "yaml";
 import {
+  normalizePortabilityRun,
   portabilityRun,
   portabilityRunBeforeL4,
   portabilityStep,
@@ -161,8 +162,11 @@ test("parallel Rust jobs preserve setup and apply the reviewed Clippy and TS-24 
     );
   const portability = expectedTasks.find((step) => step.name === portabilityStep);
   assert.ok(portability);
-  assert.equal(portability.run, portabilityRunBeforeL4);
-  portability.run = portabilityRun;
+  assert.equal(normalizePortabilityRun(portability.run), portabilityRunBeforeL4);
+  const currentPortability = tasks.find((step) => step.name === portabilityStep);
+  assert.ok(currentPortability);
+  assert.equal(normalizePortabilityRun(currentPortability.run), portabilityRun);
+  portability.run = currentPortability.run;
   assert.deepEqual(tasks, expectedTasks);
   const aggregate = jobs["clippy-and-test"];
   assert.deepEqual(aggregate.needs, producers);

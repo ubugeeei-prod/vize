@@ -35,18 +35,18 @@ accepted closure rather than embedded or std-less support.
 The current workspace metadata has these direct normal edges. Native
 level/conversion crates take no normal/build dependency on legacy products.
 
-| Library  | Direct normal dependencies                                                                                                                        |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| L1       | L0; `htmlize`                                                                                                                                     |
-| L2       | L0; `oxc_ast`; `oxc_parser`; `oxc_span`                                                                                                           |
-| L3       | L0; `serde_json`                                                                                                                                  |
-| L4       | L0, L1, L2, L3, L1 to L2, `htmlize`, `serde_json`, OXC AST, visit, diagnostics, parser, semantic, span and syntax, opt-in codegen and transformer |
-| L1 to L2 | L0; L1; L2; L3; `htmlize`; `smallvec`; OXC AST, visit, parser, semantic, span and syntax; opt-in codegen/transformer                              |
-| L2 to L3 | L0; L2; L3                                                                                                                                        |
+| Library  | Davinci packages         | Other direct dependencies                                                                                                 |
+| -------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| L1       | L0                       | `cssparser`, `htmlize`, `memchr`, OXC allocator, AST, visit, diagnostics, parser and span                                 |
+| L2       | L0, L1                   | OXC AST, visit, parser, span and syntax                                                                                   |
+| L3       | L0, L2                   | OXC AST and `serde_json`                                                                                                  |
+| L4       | L0, L1, L2, L3, L1 to L2 | `htmlize`, `serde_json`, OXC AST, visit, diagnostics, parser, semantic, span and syntax, optional codegen and transformer |
+| L1 to L2 | L0, L1, L2               | `smallvec`, OXC AST, visit, parser, semantic, span and syntax                                                             |
+| L2 to L3 | L0, L2, L3               | None                                                                                                                      |
 
-L0 and the OXC dependency closure include std-bound code. L1 to L2 and L4 each expose
-an opt-in `typescript` feature for OXC's transformer path API. TS-24
-exercises the default feature set and the build with defaults disabled.
+L0 and the OXC dependency closure include std-bound code. L4 exposes an
+opt-in `typescript` feature for the OXC transformer. Both TS-24 builds
+exercise L4 with that feature disabled.
 Dev-only higher-level and legacy producer oracles are excluded from normal
 dependency direction and stripped from L0 packaging when version-less.
 

@@ -22,3 +22,9 @@ export const portabilityRun = `${defaultLane} && ${noDefaultLane}`;
 // The extraction fixture predates the move of the DOM emitter into L4.
 const previous = defaultBuild(stagePackages.filter((name) => name !== "vize_l4"));
 export const portabilityRunBeforeL4 = `${previous} && ${previous} --no-default-features`;
+
+// Horizontal shell separators are equivalent here. Preserve line breaks and
+// every argument, operator and target in the historical job comparison.
+export function normalizePortabilityRun(run: string | undefined) {
+  return run?.trim().replace(/[ \t]+/g, " ");
+}

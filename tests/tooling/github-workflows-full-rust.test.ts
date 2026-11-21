@@ -5,6 +5,7 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { parse } from "yaml";
 import {
+  normalizePortabilityRun,
   portabilityRun,
   portabilityRunBeforeL4,
   portabilityStep,
@@ -395,7 +396,7 @@ void test("full-only extraction preserves all seventeen complete original job ob
     (step: Step) => step.name === portabilityStep,
   );
   assert.ok(portability);
-  assert.equal(portability.run, portabilityRun);
+  assert.equal(normalizePortabilityRun(portability.run), portabilityRun);
   portability.run = portabilityRunBeforeL4;
   const originalJobs = Object.values(original) as Job[];
   const restoredWildSteps = originalJobs.reduce(
