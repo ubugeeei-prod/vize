@@ -16,9 +16,12 @@ pub(super) fn paired(
     alloc::mark_installed();
     let set = selected.as_edit_set();
     let run = |shared| {
+        // Both publications start with the document identifier owned by an LSP
+        // request. The borrowed entry releases it after producing its response.
+        let document = black_box(request(snapshot.uri()));
         if shared {
             black_box(snapshot)
-                .workspace_edit_for_fixes(black_box(store), black_box(set))
+                .workspace_edit_for_fixes(black_box(store), document, black_box(set))
                 .unwrap()
         } else {
             black_box(snapshot)

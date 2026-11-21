@@ -7,7 +7,7 @@
 )]
 use serde::Deserialize;
 use std::{fs, path::Path};
-use tower_lsp::lsp_types::{DocumentChanges, OneOf, Url, WorkspaceEdit};
+use tower_lsp::lsp_types::{DocumentChanges, OneOf, TextDocumentIdentifier, Url, WorkspaceEdit};
 use vize_l0::{
     SourceRoot, Span,
     line_index::{LineBreaks, utf16_len, utf16_offset},
@@ -21,6 +21,10 @@ use vize_patina::{JsxLang, LintPreset, LintResult, Linter};
 
 mod profile;
 mod terminators;
+
+fn request(uri: &Url) -> TextDocumentIdentifier {
+    TextDocumentIdentifier { uri: uri.clone() }
+}
 
 fn open(store: &DocumentStore, path: &str, source: &str) -> Url {
     let uri = Url::parse(path).unwrap();
@@ -112,7 +116,7 @@ fn compare(source: &str, diagnostics: &LintResult, profile_id: Option<usize>) ->
     let set = selected.as_edit_set();
     let old = snapshot.workspace_edit(&store, set).unwrap();
     let new = snapshot
-        .workspace_edit_for_fixes(&store, selected.as_edit_set())
+        .workspace_edit_for_fixes(&store, request(&uri), selected.as_edit_set())
         .unwrap();
     assert_eq!(new, old);
     assert_eq!(
@@ -192,7 +196,7 @@ fn each_published_fix_pass_matches_the_original_complete_document_on_its_actual_
             break;
         };
         let packet = snapshot
-            .workspace_edit_for_fixes(&store, selected.as_edit_set())
+            .workspace_edit_for_fixes(&store, request(&uri), selected.as_edit_set())
             .unwrap();
         assert_eq!(
             packet,
@@ -221,7 +225,7 @@ fn each_published_fix_pass_matches_the_original_complete_document_on_its_actual_
             snapshot.version() + 1
         ));
         assert_eq!(
-            snapshot.workspace_edit_for_fixes(&store, selected.as_edit_set()),
+            snapshot.workspace_edit_for_fixes(&store, request(&uri), selected.as_edit_set()),
             Err(SourceEditRefusal::Host(SnapshotRefusal::Superseded))
         );
     }
@@ -250,7 +254,7 @@ fn batch_order_and_foreign_stale_and_closed_documents_keep_the_original_outcomes
         .unwrap();
     let set = selected.as_edit_set();
     let wire = snapshot
-        .workspace_edit_for_fixes(&store, selected.as_edit_set())
+        .workspace_edit_for_fixes(&store, request(&uri), selected.as_edit_set())
         .unwrap();
     assert_eq!(wire, snapshot.workspace_edit(&store, set).unwrap());
     assert_eq!(
@@ -258,7 +262,11 @@ fn batch_order_and_foreign_stale_and_closed_documents_keep_the_original_outcomes
         "α\r\n一二三🌿z"
     );
     assert_eq!(
-        foreign.workspace_edit_for_fixes(&store, selected.as_edit_set()),
+        foreign.workspace_edit_for_fixes(&store, request(&other), selected.as_edit_set()),
+        Err(SourceEditRefusal::Edit(EditError::SnapshotMismatch))
+    );
+    assert_eq!(
+        snapshot.workspace_edit_for_fixes(&store, request(&other), set),
         Err(SourceEditRefusal::Edit(EditError::SnapshotMismatch))
     );
     let copied = source.to_owned();
@@ -271,7 +279,7 @@ fn batch_order_and_foreign_stale_and_closed_documents_keep_the_original_outcomes
     .unwrap()
     .unwrap();
     assert_eq!(
-        snapshot.workspace_edit_for_fixes(&store, detached.as_edit_set()),
+        snapshot.workspace_edit_for_fixes(&store, request(&uri), detached.as_edit_set()),
         Err(SourceEditRefusal::Edit(EditError::SourceMismatch))
     );
     let old_version = VersionedSource::new(frame.key(), 6, frame.root())
@@ -279,17 +287,17 @@ fn batch_order_and_foreign_stale_and_closed_documents_keep_the_original_outcomes
         .unwrap()
         .unwrap();
     assert_eq!(
-        snapshot.workspace_edit_for_fixes(&store, old_version.as_edit_set()),
+        snapshot.workspace_edit_for_fixes(&store, request(&uri), old_version.as_edit_set()),
         Err(SourceEditRefusal::Edit(EditError::StaleVersion))
     );
     store.close(&uri);
     assert_eq!(
-        snapshot.workspace_edit_for_fixes(&store, selected.as_edit_set()),
+        snapshot.workspace_edit_for_fixes(&store, request(&uri), selected.as_edit_set()),
         Err(SourceEditRefusal::Host(SnapshotRefusal::MissingDocument))
     );
-    store.open(uri, source.into(), 7, "vue".into());
+    store.open(uri.clone(), source.into(), 7, "vue".into());
     assert_eq!(
-        snapshot.workspace_edit_for_fixes(&store, selected.as_edit_set()),
+        snapshot.workspace_edit_for_fixes(&store, request(&uri), selected.as_edit_set()),
         Err(SourceEditRefusal::Host(SnapshotRefusal::Superseded))
     );
 }

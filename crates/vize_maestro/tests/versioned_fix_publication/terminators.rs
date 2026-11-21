@@ -32,7 +32,9 @@ fn edits_on_either_half_of_a_crlf_replay_at_client_line_boundaries() {
                             .unwrap()
                             .unwrap();
                         let edits = selected.as_edit_set();
-                        let wire = snapshot.workspace_edit_for_fixes(&store, edits).unwrap();
+                        let wire = snapshot
+                            .workspace_edit_for_fixes(&store, request(&uri), edits)
+                            .unwrap();
                         let expected = snapshot.apply_edits(&store, edits).unwrap();
                         assert_eq!(
                             apply_wire(source, &wire, &uri, 7),
@@ -50,7 +52,9 @@ fn edits_on_either_half_of_a_crlf_replay_at_client_line_boundaries() {
                 .unwrap();
             let edits = selected.as_edit_set();
             let old = snapshot.workspace_edit(&store, edits).unwrap();
-            let fixed = snapshot.workspace_edit_for_fixes(&store, edits).unwrap();
+            let fixed = snapshot
+                .workspace_edit_for_fixes(&store, request(&uri), edits)
+                .unwrap();
             assert_eq!(apply_wire(source, &old, &uri, 7), source);
             assert_eq!(apply_wire(source, &fixed, &uri, 7), "a\nb");
         }
