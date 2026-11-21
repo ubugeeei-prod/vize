@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "vapor-loop-destructured-aliases-module",
+    history: "6812891ddaaf2404e71589d5cc57859646de5973",
+    source: "<template><ul><li v-for=\"{ id: itemId, user: { name }, meta: { count: total = 0 } } in rows\" :key=\"itemId\" :title=\"name\">{{ total }}</li></ul></template>",
+    filename: "Loop.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setProp as _setProp, getDefaultValue as _getDefaultValue, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';\nconst t0 = _template(\"<li> </li>\")\nconst t1 = _template(\"<ul></ul>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t1()\n  _setInsertionState(n0)\n  const n1 = _createFor(() => (_ctx.rows), (_for_item0) => {\n    const n3 = t0()\n    const x3 = _txt(n3)\n    _renderEffect(() => {\n      _setProp(n3, \"title\", _for_item0.value.user.name)\n      _setText(x3, _toDisplayString(_getDefaultValue(_for_item0.value.meta.count, () => (0))))\n    })\n    return n3\n  }, ({ id: itemId, user: { name }, meta: { count: total = 0 } }) => (itemId), 9 /* FAST_REMOVE, IS_SINGLE_NODE */)\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

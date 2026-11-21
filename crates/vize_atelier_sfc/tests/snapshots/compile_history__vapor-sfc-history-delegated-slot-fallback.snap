@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "vapor-sfc-history-delegated-slot-fallback",
+    history: "3b0400f76165e2bafa3f4b61e728cc7ae9769bc8",
+    source: "<template><slot name=\"body\"><button @click=\"save\">save</button></slot></template>",
+    filename: "Original.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createSlot as _createSlot, on as _on, template as _template } from 'vue';\nconst t0 = _template(\"<button>save</button>\")\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = _createSlot(\"body\", null, () => {\n    const n1 = t0()\n    _on(n1, \"click\", e => _ctx.save(e))\n    return n1\n  })\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

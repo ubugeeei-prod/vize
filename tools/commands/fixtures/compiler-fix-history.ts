@@ -375,8 +375,10 @@ export function collectHistory(root: string) {
         );
         const row = rows.find((candidate) => candidate.sha === sourceCommit);
         assert(row, "reviewed merge source is absent from the pinned census");
+        if (row.review === "semantic-review-pending") {
+          row.review = "fixture-linked-via-reviewed-merge;target-and-semantic-review-pending";
+        }
         row.references.push(...references);
-        row.review = "fixture-linked-via-reviewed-merge;target-and-semantic-review-pending";
       }
       return {
         sha,

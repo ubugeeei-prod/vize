@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "vapor-loop-destructured-key-setup",
+    history: "14a4ff375bc1a31dac829da5c650347353130331",
+    source: "<script setup>const items = [{ id: 1, name: 'Leaf' }]</script>\n<template><div v-for=\"{ id, name } in items\" :key=\"id\">{{ name }}</div></template>",
+    filename: "Loop.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';\n\nconst t0 = _template(\"<div> </div>\")\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = _createFor(() => (_ctx.items), (_for_item0) => {\n    const n2 = t0()\n    const x2 = _txt(n2)\n    _renderEffect(() => _setText(x2, _toDisplayString(_for_item0.value.name)))\n    return n2\n  }, ({ id, name }) => (id), 8 /* IS_SINGLE_NODE */)\n  return n0\n}\nconst __vaporRender = render\n\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'Loop',\n  render: __vaporRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst items = [{ id: 1, name: 'Leaf' }]\n\nconst __returned__ = { items }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "items": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

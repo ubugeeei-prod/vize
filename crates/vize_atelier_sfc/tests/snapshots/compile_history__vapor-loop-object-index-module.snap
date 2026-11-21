@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "vapor-loop-object-index-module",
+    history: "0895f6324800ac945aaba3c375ef0dc239458f60",
+    source: "<template><div v-for=\"(value, key, idx) in obj\" :key=\"idx\">{{ key }}: {{ value }}: {{ idx }}</div></template>",
+    filename: "Loop.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';\nconst t0 = _template(\"<div> :  :  </div>\")\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = _createFor(() => (_ctx.obj), (_for_item0, _for_key0, _for_index0) => {\n    const n2 = t0()\n    const x2 = _txt(n2)\n    _renderEffect(() => _setText(x2, _toDisplayString(_for_key0.value) + \": \" + _toDisplayString(_for_item0.value) + \": \" + _toDisplayString(_for_index0.value)))\n    return n2\n  }, (value, key, idx) => (idx), 8 /* IS_SINGLE_NODE */)\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

@@ -34,11 +34,11 @@
   "nonMergeFixSubjects": 626,
   "fixtureLinkedFixSubjects": 528,
   "boundedReviewedFixtureScopes": 16,
-  "currentApiPinnedFixSubjects": 499,
+  "currentApiPinnedFixSubjects": 510,
   "noCompileBehaviorFixSubjects": 98,
   "currentApiCohort": {
     "path": "crates/vize_atelier_sfc/tests/fixtures/compile-history/cases.json",
-    "sha256": "829a1003f18c3b5d2c34fc56f069f306c507d805f4ac46b60519f104bc20b184"
+    "sha256": "0a2a11c63093fc3a1e3c2d4cb0805997a303a7c02a2b12133fc4ce9cababebe7"
   },
   "jsxApiCohort": {
     "path": "crates/vize_atelier_jsx/tests/fixtures/jsx-history/cases.json",
@@ -88,7 +88,7 @@
   ],
   "index": {
     "path": "docs/davinci/plan/compiler-fix-history.tsv",
-    "sha256": "10fa0d5323c2e3202c2622dfc96a92333155c03f1c4e67a1435b474c7fc85a49"
+    "sha256": "bb7be7caa97783a392a663d5435a1743ec66d26d776bea0b71dc047076262315"
   },
   "semanticDenominator": null,
   "nativeAcceptance": 0,
