@@ -33,6 +33,8 @@ impl SourceSnapshot {
         }
         let source = self.source();
         if source.is_empty() {
+            self.check_current(&state.documents)
+                .map_err(DeclarationToolRefusal::Host)?;
             return Ok(DeclarationToolProducts {
                 checker: DeclarationCheckerProducts {
                     typescript: String::default(),
