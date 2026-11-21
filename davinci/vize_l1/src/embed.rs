@@ -48,3 +48,6 @@ pub struct Embed<'a> {
 
 #[cfg(feature = "module-ir")]
 pub mod regions;
+
+#[cfg(feature = "authored-script-queries")]
+pub mod authored_program;

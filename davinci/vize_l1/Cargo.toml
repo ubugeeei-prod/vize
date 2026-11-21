@@ -43,6 +43,8 @@ legacy = []
 program-snapshot = []
 # Share one original Program per requested Vue script role.
 script-queries = []
+# Original parser products for syntax tools that choose their authored source profile.
+authored-script-queries = []
 
 [dependencies]
 memchr.workspace = true

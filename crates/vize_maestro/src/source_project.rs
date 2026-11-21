@@ -32,3 +32,8 @@ mod tests;
 
 #[cfg(feature = "experimental-versioned-fixes")]
 mod positioned;
+
+#[cfg(feature = "experimental-script-queries")]
+mod script_queries;
+#[cfg(feature = "experimental-script-queries")]
+pub use script_queries::{ScriptModuleSpecifier, ScriptQueryProducts, ScriptQueryRefusal};

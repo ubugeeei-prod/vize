@@ -1,0 +1,59 @@
+name: Authored editor script queries
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/editor-script-queries.yml"
+      - "davinci/vize_l0/src/source*"
+      - "davinci/vize_l0/src/line_index*"
+      - "davinci/vize_l0/src/line_index/**"
+      - "davinci/vize_l1/Cargo.toml"
+      - "davinci/vize_l1/src/embed.rs"
+      - "davinci/vize_l1/src/embed/authored_program.rs"
+      - "crates/vize_maestro/Cargo.toml"
+      - "crates/vize_maestro/src/source_project.rs"
+      - "crates/vize_maestro/src/source_project/snapshot*"
+      - "crates/vize_maestro/src/source_project/script_queries*"
+      - "crates/vize_maestro/src/source_project/script_queries/**"
+      - "crates/vize_maestro/src/ide/file_rename*"
+      - "crates/vize_maestro/src/ide/file_rename/**"
+      - "crates/vize_maestro/src/server/document_structure/symbols*"
+      - "crates/vize_maestro/src/server/document_structure/symbols/**"
+      - "tests/_fixtures/differential/lint/oxlint-script-safe-carrier-7903/ScriptEnd.vue.txt"
+permissions: { contents: read }
+concurrency:
+  group: authored-script-queries-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  editor-products:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUST_MIN_STACK: "16777216"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0", components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: editor-script-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
+      - name: Check both original editor readers and their shared parse
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt)
+          editor=(-p vize_maestro --features experimental-script-queries,micro-profiling --lib)
+          cargo clippy "${flags[@]}" -p vize_l1 --features authored-script-queries --lib --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
+          cargo test "${flags[@]}" "${editor[@]}" server::document_structure::symbols::tests
+          cargo test "${flags[@]}" "${editor[@]}" ide::file_rename::
+          export VIZE_SCRIPT_QUERY_INPUTS="$RUNNER_TEMP/editor-scripts"
+          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_SCRIPT_QUERY_INPUTS"
+          cargo test "${flags[@]}" "${editor[@]}" source_project::script_queries:: -- --include-ignored --nocapture --test-threads=1
