@@ -92,6 +92,7 @@ libc.workspace = true
 junction = "2"
 
 [dev-dependencies]
+davinci_harness.workspace = true
 davinci_test_support = { workspace = true, features = [
   "canon-project",
   "native-process",
@@ -109,6 +110,16 @@ vize_l0.workspace = true
 [[test]]
 name = "davinci_projection_differential"
 required-features = ["legacy-differential"]
+
+[[test]]
+name = "component_prop_projection"
+required-features = ["native", "vize_l4/component-projection"]
+
+[[test]]
+name = "component_projection_alloc"
+path = "tests/component_prop_projection/alloc.rs"
+harness = false
+required-features = ["native", "vize_l4/component-projection"]
 
 [[test]]
 name = "empty_vue_star_exports"

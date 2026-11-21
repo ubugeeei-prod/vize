@@ -56,7 +56,11 @@ impl Items {
     }
 }
 
-fn region(cx: &mut Cx<'_>, region: &Region<'_>, items: &mut Items) -> Result<(), JsxModuleRefusal> {
+pub(super) fn region(
+    cx: &mut Cx<'_>,
+    region: &Region<'_>,
+    items: &mut Items,
+) -> Result<(), JsxModuleRefusal> {
     for op in &region.ops {
         self::op(cx, op, items)?;
     }
@@ -74,7 +78,11 @@ fn op(cx: &mut Cx<'_>, op: &Op<'_>, items: &mut Items) -> Result<(), JsxModuleRe
             cx.out.push(")");
             Ok(())
         }
-        // The owner-object helper for components is not published yet.
+        #[cfg(feature = "component-projection")]
+        Op::Component(component) if cx.component_checks => {
+            super::component::write(cx, component, items)
+        }
+        // Preserve the original projection profile's typed refusal.
         Op::Component(_) => Err(JsxModuleRefusal::UnpublishedHelper(op.mnemonic())),
         Op::If(_) | Op::For(_) => {
             items.next(cx);

@@ -11,6 +11,8 @@ use vize_l0::Span;
 use vize_l2::file::{FileArtifact, ScriptUnit};
 use vize_l2::lang::js::JsxFile;
 
+#[cfg(feature = "component-projection")]
+mod component;
 mod control;
 mod helpers;
 mod mapping;
@@ -206,3 +208,8 @@ fn project<'file, 'arena, L: LinkSink, const JSX: bool>(
 
 #[cfg(feature = "module-ir")]
 pub use module::{ModuleProjectionError, project_module};
+
+#[cfg(feature = "component-projection")]
+pub use helpers::COMPONENT_HELPERS;
+#[cfg(feature = "component-projection")]
+pub use module::project_module_with_component_checks;

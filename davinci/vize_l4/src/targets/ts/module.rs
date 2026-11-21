@@ -76,6 +76,8 @@ pub fn project_jsx_module(
     let mut cx = Cx {
         source,
         markup: &markup.starts,
+        #[cfg(feature = "component-projection")]
+        component_checks: false,
         out: Out::with_capacity(source.len().saturating_mul(2)),
     };
     let mut cursor = 0;
@@ -93,6 +95,8 @@ pub fn project_jsx_module(
 pub(super) struct Cx<'s> {
     pub(super) source: &'s str,
     markup: &'s [u32],
+    #[cfg(feature = "component-projection")]
+    pub(super) component_checks: bool,
     pub(super) out: Out,
 }
 
@@ -131,6 +135,12 @@ impl Cx<'_> {
         role: LinkRole,
         write: impl FnOnce(&mut Self) -> Result<(), JsxModuleRefusal>,
     ) -> Result<(), JsxModuleRefusal> {
+        #[cfg(feature = "component-projection")]
+        if self.component_checks {
+            let link = self.out.open_anchor(role);
+            write(self)?;
+            return self.out.close_anchor(link, authored);
+        }
         let capacity = (authored.end.saturating_sub(authored.start) as usize).saturating_mul(2);
         let outer = core::mem::replace(&mut self.out, Out::with_capacity(capacity));
         let written = write(self);
@@ -189,3 +199,6 @@ pub use JsxModuleRefusal as ModuleProjectionError;
 mod prepared;
 #[cfg(feature = "module-ir")]
 pub use prepared::project_module;
+
+#[cfg(feature = "component-projection")]
+pub use prepared::project_module_with_component_checks;

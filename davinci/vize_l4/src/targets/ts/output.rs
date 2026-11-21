@@ -162,6 +162,11 @@ impl Out {
         }
     }
 
+    #[cfg(feature = "component-projection")]
+    pub(super) fn len(&self) -> usize {
+        self.writer.len()
+    }
+
     pub(super) fn push(&mut self, text: &str) {
         self.writer.push(text);
     }
@@ -176,6 +181,36 @@ impl Out {
         self.facts.push(LinkFact {
             role,
             mapping: LinkMapping::Verbatim,
+        });
+    }
+
+    #[cfg(feature = "component-projection")]
+    pub(super) fn open_anchor(&mut self, role: LinkRole) -> crate::write::OpenLink {
+        self.facts.push(LinkFact {
+            role,
+            mapping: LinkMapping::Anchor,
+        });
+        self.writer.open_link()
+    }
+
+    #[cfg(feature = "component-projection")]
+    pub(super) fn close_anchor(
+        &mut self,
+        open: crate::write::OpenLink,
+        authored: Span,
+    ) -> Result<(), super::JsxModuleRefusal> {
+        self.writer
+            .close_link(open, authored)
+            .ok_or(super::JsxModuleRefusal::SourceTooLarge)
+    }
+
+    /// A rewritten leaf has one authored owner, including generated quotes.
+    #[cfg(feature = "component-projection")]
+    pub(super) fn rewritten(&mut self, text: &str, authored: Span, role: LinkRole) {
+        self.writer.push_linked(text, authored);
+        self.facts.push(LinkFact {
+            role,
+            mapping: LinkMapping::Anchor,
         });
     }
 

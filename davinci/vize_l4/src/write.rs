@@ -327,3 +327,8 @@ impl<L: LinkSink> Writer<L> {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "component-projection")]
+mod open_link;
+#[cfg(feature = "component-projection")]
+pub(crate) use open_link::OpenLink;
