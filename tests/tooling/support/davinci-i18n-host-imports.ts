@@ -39,7 +39,7 @@ export const i18nHostImports: Record<string, readonly string[]> = {
     "use vize_carton::i18n::{Locale, translator};",
   ],
   "crates/vize_patina/tests/canonical_messages.rs": [
-    "pub(crate) use vize_carton::i18n::{Locale, translator};",
+    "pub use vize_carton::i18n::{Locale, translator};",
   ],
   "crates/vize_patina/examples/image_alt_measurement/mod.rs": [
     "use vize_carton::i18n::{Locale, translator};",

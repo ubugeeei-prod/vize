@@ -1,4 +1,4 @@
-use canonical_messages::{Locale, translator};
+use crate::canonical_messages::{Locale, translator};
 use std::{
     borrow::Cow,
     cell::RefCell,
@@ -19,8 +19,6 @@ use vize_patina::native::{
     canonical::{NativeCanonicalLint, NativeCanonicalLintRefusal},
 };
 
-#[path = "../canonical_messages.rs"]
-mod canonical_messages;
 mod group;
 mod profile;
 
