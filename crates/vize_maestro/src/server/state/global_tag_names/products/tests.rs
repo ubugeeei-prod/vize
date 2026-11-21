@@ -48,6 +48,7 @@ fn production_inputs(mut visit: impl FnMut(&str, &str)) {
     let Ok(inputs) = std::env::var("VIZE_DECLARATION_INPUTS") else {
         return;
     };
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     for entry in std::fs::read(inputs)
         .unwrap()
         .split(|b| *b == 0)
@@ -56,7 +57,7 @@ fn production_inputs(mut visit: impl FnMut(&str, &str)) {
         let name = std::str::from_utf8(entry).unwrap();
         let path = Path::new(name);
         assert!(DeclarationCheckerProducts::supports_path(path));
-        let source = std::fs::read_to_string(path).unwrap();
+        let source = std::fs::read_to_string(root.join(path)).unwrap();
         visit(name, &source);
     }
 }
