@@ -48,11 +48,21 @@ pub fn visit_authored_profiles<E>(
     profiles: &[Option<SourceType>],
     mut read: impl for<'p> FnMut(AuthoredProgram<'p>) -> Result<(), E>,
 ) -> Result<(), E> {
+    let mut arena = Allocator::default();
+    let mut first = true;
     for (i, &profile) in profiles.iter().enumerate() {
         if let Some(grammar) = profile
             && !profiles[..i].contains(&profile)
         {
-            let arena = Allocator::default();
+            if !first {
+                let used = arena.allocated_bytes();
+                arena.reset();
+                if arena.as_oxc().capacity() < used {
+                    drop(arena);
+                    arena = Allocator::with_capacity(used);
+                }
+            }
+            first = false;
             read(AuthoredProgram::parse(&arena, block, grammar))?;
         }
     }

@@ -1,6 +1,6 @@
 //! Read the checker's existing script diagnostic format from an original parse.
 use super::{ScriptParseDiagnostic, diagnostic_span, script_source_type};
-use oxc_span::SourceType;
+use oxc_span::{FileExtension, SourceType};
 use vize_carton::ToCompactString;
 use vize_l1::embed::authored_program::AuthoredProgram;
 
@@ -19,6 +19,20 @@ impl ScriptDiagnosticProfile {
     #[must_use]
     pub fn for_language(lang: Option<&str>) -> Self {
         Self(script_source_type(lang))
+    }
+
+    /// Select the existing standalone `.ts` parse for a plain TypeScript
+    /// diagnostic reader. Both request the same unambiguous grammar. The
+    /// parser distinguishes `.mts` and `.cts` at angle-bracket assertions and
+    /// generic arrows, so those profiles and declaration files stay separate.
+    #[must_use]
+    pub fn sharing_plain_typescript(self, available: Option<SourceType>) -> Self {
+        let with_filename = SourceType::from(FileExtension::Ts);
+        if self.0 == SourceType::ts() && available == Some(with_filename) {
+            Self(with_filename)
+        } else {
+            self
+        }
     }
 
     #[must_use]

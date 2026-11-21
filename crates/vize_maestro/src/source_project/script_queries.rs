@@ -9,7 +9,7 @@ use crate::server::ServerState;
 use oxc_span::SourceType;
 use tower_lsp::lsp_types::DocumentSymbol;
 use vize_atelier_sfc::SfcScriptBlock;
-use vize_l0::{Allocator, SourceFrameError, SourceRoot, Span, line_index::LineIndex};
+use vize_l0::{Allocator, SourceBlock, SourceFrameError, SourceRoot, Span, line_index::LineIndex};
 use vize_l1::embed::authored_program::AuthoredProgram;
 
 /// A literal module specifier selected by the editor's file-rename reader.
@@ -34,6 +34,8 @@ pub enum ScriptQueryRefusal {
     DescriptorSourceMismatch,
     #[cfg(feature = "experimental-checker-script-queries")]
     Checker(vize_canon::ScriptDiagnosticRefusal),
+    #[cfg(feature = "experimental-script-tools")]
+    Linter(vize_patina::rules::script::ScriptLintRefusal),
 }
 
 impl SourceSnapshot {
@@ -53,6 +55,22 @@ impl SourceSnapshot {
     fn with_script_blocks(
         &self,
         state: &ServerState,
+        read: impl FnMut(
+            &mut ScriptQueryProducts,
+            SourceRoot<'_>,
+            &'static str,
+            &SfcScriptBlock<'_>,
+        ) -> Result<(), ScriptQueryRefusal>,
+    ) -> Result<Option<ScriptQueryProducts>, ScriptQueryRefusal> {
+        let result = self.read_script_blocks(state, read)?;
+        self.check_current(&state.documents)
+            .map_err(ScriptQueryRefusal::Host)?;
+        Ok(result)
+    }
+
+    fn read_script_blocks(
+        &self,
+        state: &ServerState,
         mut read: impl FnMut(
             &mut ScriptQueryProducts,
             SourceRoot<'_>,
@@ -68,7 +86,7 @@ impl SourceSnapshot {
                 Ok(state.sfc_descriptor(self.uri(), self.source()))
             })
             .map_err(ScriptQueryRefusal::Host)??;
-        let result = if let Some(descriptor) = parsed.as_deref() {
+        Ok(if let Some(descriptor) = parsed.as_deref() {
             let root = SourceRoot::new(self.source()).map_err(ScriptQueryRefusal::Frame)?;
             let mut products = ScriptQueryProducts::default();
             for (name, block) in [
@@ -82,11 +100,27 @@ impl SourceSnapshot {
             Some(products)
         } else {
             None
-        };
-        self.check_current(&state.documents)
-            .map_err(ScriptQueryRefusal::Host)?;
-        Ok(result)
+        })
     }
+}
+
+fn script_frame<'a>(
+    root: SourceRoot<'a>,
+    block: &SfcScriptBlock<'_>,
+) -> Result<(SourceBlock<'a>, &'a str), ScriptQueryRefusal> {
+    let text = root
+        .source()
+        .get(block.loc.start..block.loc.end)
+        .filter(|text| *text == block.content.as_ref())
+        .ok_or(ScriptQueryRefusal::DescriptorSourceMismatch)?;
+    let start =
+        u32::try_from(block.loc.start).map_err(|_| ScriptQueryRefusal::DescriptorSourceMismatch)?;
+    let frame = root.block(text, start).map_err(ScriptQueryRefusal::Frame)?;
+    let prefix = root
+        .source()
+        .get(..block.loc.tag_end)
+        .ok_or(ScriptQueryRefusal::DescriptorSourceMismatch)?;
+    Ok((frame, prefix))
 }
 
 impl ScriptQueryProducts {
@@ -98,18 +132,7 @@ impl ScriptQueryProducts {
         additional_profile: Option<SourceType>,
         mut observe: impl FnMut(&AuthoredProgram<'_>) -> Result<(), ScriptQueryRefusal>,
     ) -> Result<(), ScriptQueryRefusal> {
-        let text = root
-            .source()
-            .get(block.loc.start..block.loc.end)
-            .filter(|text| *text == block.content.as_ref())
-            .ok_or(ScriptQueryRefusal::DescriptorSourceMismatch)?;
-        let start = u32::try_from(block.loc.start)
-            .map_err(|_| ScriptQueryRefusal::DescriptorSourceMismatch)?;
-        let frame = root.block(text, start).map_err(ScriptQueryRefusal::Frame)?;
-        let prefix = root
-            .source()
-            .get(..block.loc.tag_end)
-            .ok_or(ScriptQueryRefusal::DescriptorSourceMismatch)?;
+        let (frame, prefix) = script_frame(root, block)?;
         let editor_type = Self::script_type(block.lang.as_deref());
         let symbol = {
             let mut arena = Allocator::default();
@@ -161,3 +184,6 @@ mod tests;
 
 #[cfg(feature = "experimental-checker-script-queries")]
 mod checker;
+
+#[cfg(feature = "experimental-script-tools")]
+pub(super) mod tools;

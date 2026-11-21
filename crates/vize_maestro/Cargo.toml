@@ -34,6 +34,12 @@ experimental-checker-script-queries = [
   "experimental-script-queries",
   "vize_canon/authored-script-diagnostics",
 ]
+# Run the requested checker, editor, formatter and configured lint products on one open revision.
+experimental-script-tools = [
+  "experimental-checker-script-queries",
+  "vize_patina/authored-script-rules",
+  "glyph",
+]
 # Opt-in same-file JS/TS/Vue queries from original retained native owners.
 experimental-source-navigation = ["experimental-source-project", "retained-program"]
 # Explicit definition, references and highlights on the same retained File.

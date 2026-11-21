@@ -37,3 +37,6 @@ mod positioned;
 mod script_queries;
 #[cfg(feature = "experimental-script-queries")]
 pub use script_queries::{ScriptModuleSpecifier, ScriptQueryProducts, ScriptQueryRefusal};
+
+#[cfg(feature = "experimental-script-tools")]
+pub use script_queries::tools::{ScriptBlockLint, ScriptToolAnalysis, ScriptToolProducts};

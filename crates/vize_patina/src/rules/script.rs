@@ -5,7 +5,7 @@ mod after_await;
 #[cfg(feature = "authored-script-rules")]
 mod authored;
 #[cfg(feature = "authored-script-rules")]
-pub use authored::ScriptLintRefusal;
+pub use authored::{AuthoredScriptRules, ScriptLintRefusal};
 mod component_options;
 mod component_options_name_casing;
 mod composition_api;
