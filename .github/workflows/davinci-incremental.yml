@@ -104,6 +104,19 @@ jobs:
           run-install: false
       - name: Resident tier tests (firewall accounting, committed plane)
         run: cargo test -p vize_incremental
+      - name: Check borrowed stages and selective invalidation
+        run: "cargo test --locked --profile ci-opt -p vize_incremental --features block-queries --lib block_query::"
+      - name: Select original Vue files for resident queries
+        run: git ls-files -z -- '*.vue' '*.vue.txt' > "$RUNNER_TEMP/resident-block-query-files"
+      - name: Compare every borrowed stage with the original files
+        env:
+          VIZE_BLOCK_QUERY_MANIFEST: ${{ runner.temp }}/resident-block-query-files
+          RUST_MIN_STACK: "16777216"
+        run: cargo test --locked --profile ci-opt -p vize_incremental --features block-queries --lib block_query::corpus::original_documents -- --exact --ignored --nocapture
+      - name: Check allocations for borrowed stages and file positions
+        run: cargo run --locked --profile ci-opt -p vize_incremental --features block-queries --example resident_block_alloc
+      - name: Compare paired first and repeated resident requests
+        run: cargo test --locked --profile ci-opt -p vize_incremental --features block-queries --test resident_block_profile -- --exact paired_resident_requests --ignored --nocapture
       - name: TS-42 production alpha interfaces over the corpus shard
         run: cargo test -p vize_maestro production_alpha_corpus_edits_match_clean -- --ignored --nocapture
       - name: TS-42 over the corpus shard and the committed fixtures

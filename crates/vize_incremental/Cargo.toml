@@ -15,6 +15,8 @@ publish = false
 metadata.vize.stability = "experimental"
 
 [features]
+# Borrow selected stage results for an explicitly requested document view.
+block-queries = []
 # TS-42's seeded defect (P5-9): weakens the block firewall's equality so the
 # equivalence harness proves it catches the stale artifacts that follow.
 # Never enabled in a real build.
@@ -28,6 +30,19 @@ vize_l0 = { workspace = true }
 vize_l1 = { workspace = true }
 vize_l1_to_l2 = { workspace = true }
 vize_l2 = { workspace = true }
+
+[dev-dependencies]
+davinci_harness = { workspace = true }
+
+[[test]]
+name = "resident_block_profile"
+path = "tests/block_queries/profile.rs"
+required-features = ["block-queries"]
+
+[[example]]
+name = "resident_block_alloc"
+path = "tests/block_queries/alloc.rs"
+required-features = ["block-queries"]
 
 [lints]
 workspace = true

@@ -66,6 +66,11 @@ test("TS-42 runs over the hydrated corpus shard and proves the seeded defect cau
   assert.deepEqual(runs(job), [
     `git submodule update --init --depth 1 -- ${shard.map((id) => `tests/_fixtures/_git/${id}`).join(" ")}`,
     "cargo test -p vize_incremental",
+    "cargo test --locked --profile ci-opt -p vize_incremental --features block-queries --lib block_query::",
+    `git ls-files -z -- '*.vue' '*.vue.txt' > "$RUNNER_TEMP/resident-block-query-files"`,
+    "cargo test --locked --profile ci-opt -p vize_incremental --features block-queries --lib block_query::corpus::original_documents -- --exact --ignored --nocapture",
+    "cargo run --locked --profile ci-opt -p vize_incremental --features block-queries --example resident_block_alloc",
+    "cargo test --locked --profile ci-opt -p vize_incremental --features block-queries --test resident_block_profile -- --exact paired_resident_requests --ignored --nocapture",
     "cargo test -p vize_maestro production_alpha_corpus_edits_match_clean -- --ignored --nocapture",
     `${driver} --corpus-shard ${fixtures}`,
     "cargo test -p vize_incremental --features seeded-stale-cache --test equivalence",
