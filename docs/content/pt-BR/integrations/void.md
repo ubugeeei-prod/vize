@@ -17,7 +17,7 @@ O [Void](https://void.cloud) cria apps full-stack sobre o Vite e os executa no w
 ### 1. Instale o plugin
 
 ```bash
-npm install -D @vizejs/vite-plugin
+npm install -D @vizejs/vite-plugin vite-plus
 ```
 
 ### 2. Componha `vite.config.ts` com `withVue`

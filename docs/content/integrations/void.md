@@ -15,7 +15,7 @@ description: Use Vize in a Void app with @void/vue pages, workerd SSR and Void's
 ### 1. Install the plugin
 
 ```bash
-npm install -D @vizejs/vite-plugin
+npm install -D @vizejs/vite-plugin vite-plus
 ```
 
 ### 2. Compose `vite.config.ts` with `withVue`

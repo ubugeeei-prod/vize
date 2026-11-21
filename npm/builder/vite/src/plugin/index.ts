@@ -33,6 +33,7 @@ import {
 } from "./compat.ts";
 import { patchUnoCssBridge } from "./unocss.ts";
 import { patchQuasarBridge } from "./quasar.ts";
+import { patchVoidIslandTransform } from "./void-islands.ts";
 import { patchCssModuleGenerateScopedName } from "./css-modules.ts";
 import { installDevMiddleware } from "./dev-middleware.ts";
 import { mergeCompilerOptions, type VizeCompilerDefaults } from "./compiler-config.ts";
@@ -278,6 +279,7 @@ export function vize(
           transform?: Function;
         }>,
       );
+      patchVoidIslandTransform(resolvedConfig.plugins);
       state.initialized = true;
     },
 
