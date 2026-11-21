@@ -47,3 +47,6 @@ pub use summary::{
     DeclarationName, ResidentSummaryError, SummaryCachePolicy, SummaryInput, TsConfig,
     declaration_fingerprint, sfc_summary,
 };
+
+#[cfg(feature = "block-queries")]
+pub mod block_query;
