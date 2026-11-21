@@ -438,6 +438,7 @@ export function assertPreservedCallbackPacket(
   currentSourceRead?: CallbackSourceReader,
 ) {
   assert.ok(typeof before.text === "string" && typeof after.text === "string");
+  const producerPackets = [before, after];
   if (before.text !== after.text && hasMetadataExport(after.text)) {
     const predecessor = (packet: Record<string, unknown>) =>
       beforeMetadataPacket(withoutProducerUnmappedIgnores(packet as unknown as Packet));
@@ -581,15 +582,8 @@ export function assertPreservedCallbackPacket(
     return [shifted, length];
   };
   if (currentEdits.length > 0) {
-    for (const packet of [before, after])
-      withoutProducerUnmappedIgnores(
-        {
-          text: packet.text as string,
-          mappings: packet.mappings as number[][],
-          diagnosticDirectives: packet.diagnosticDirectives,
-        },
-        { requireComplete: true },
-      );
+    for (const packet of producerPackets)
+      withoutProducerUnmappedIgnores(packet as unknown as Packet, { requireComplete: true });
   }
   const gapRange = (start: number, end: number): [number, number] => {
     assert.ok(
@@ -611,16 +605,7 @@ export function assertPreservedCallbackPacket(
     return [shifted, finish - shifted];
   };
   const comparisonBefore =
-    currentEdits.length > 0
-      ? withoutProducerUnmappedIgnores(
-          before as typeof before & {
-            text: string;
-            mappings: number[][];
-            diagnosticDirectives?: unknown;
-          },
-          { requireComplete: true },
-        )
-      : before;
+    currentEdits.length > 0 ? withoutProducerUnmappedIgnores(before as unknown as Packet) : before;
   const expected = structuredClone(comparisonBefore) as Record<string, unknown> & {
     text: string;
     mappings: number[][];
@@ -672,16 +657,7 @@ export function assertPreservedCallbackPacket(
     };
   }
   const comparisonAfter =
-    currentEdits.length > 0
-      ? withoutProducerUnmappedIgnores(
-          after as typeof after & {
-            text: string;
-            mappings: number[][];
-            diagnosticDirectives?: unknown;
-          },
-          { requireComplete: true },
-        )
-      : after;
+    currentEdits.length > 0 ? withoutProducerUnmappedIgnores(after as unknown as Packet) : after;
   assert.deepEqual(
     comparisonAfter,
     withComponentPropHoverOwnership(expected, comparisonAfter),
