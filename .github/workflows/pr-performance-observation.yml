@@ -136,6 +136,17 @@ jobs:
             --corsa-path "$OBSERVATION_CORSA" --runs 5 --warmups 1 \
             --out "$GITHUB_WORKSPACE/performance-observation/measurements" \
             --build-receipts "$GITHUB_WORKSPACE/performance-observation/build"
+      - name: Measure forty alternating pairs from the same two binaries
+        run: |
+          node driver/tools/benchmarks/scripts/pr-performance-observation.ts \
+            --base-bin "$RUNNER_TEMP/pr-performance-base-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" \
+            --head-bin "$RUNNER_TEMP/pr-performance-head-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" \
+            --base-source "$BASE_SHA" --head-source "$HEAD_SHA" \
+            --input-dir "$OBSERVATION_INPUT" --vue-dir "$OBSERVATION_VUE" \
+            --corsa-path "$OBSERVATION_CORSA" --runs 40 --warmups 4 \
+            --out "$GITHUB_WORKSPACE/performance-observation/extended" \
+            --build-receipts "$GITHUB_WORKSPACE/performance-observation/build"
+          cat performance-observation/extended/summary.md >> "$GITHUB_STEP_SUMMARY"
       - name: Publish the observation summary
         if: always()
         run: |
