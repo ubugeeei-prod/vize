@@ -10,6 +10,8 @@ metadata.vize.stability = "compatibility-preview"
 autotests = false
 
 [features]
+# Explicit consumers of the same parsed TSRX module and sealed regions.
+retained-tsrx = ["vize_l2/retained-tsrx"]
 # Arms the TS-25 markup lane (`tests/davinci_markup_differential.rs`): the
 # facade's full hook trace over Relief vs over L2, exact, on the committed
 # battery plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
@@ -116,6 +118,11 @@ name = "documented_rule_examples"
 [[test]]
 name = "integration"
 path = "tests/main.rs"
+
+[[test]]
+name = "prepared_tsrx"
+path = "tests/prepared_tsrx/main.rs"
+required-features = ["retained-tsrx", "vize_l4/retained-tsrx"]
 
 [lints]
 workspace = true

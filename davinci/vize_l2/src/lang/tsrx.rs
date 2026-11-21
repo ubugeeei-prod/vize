@@ -217,3 +217,6 @@ fn expression<'a>(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "retained-tsrx")]
+pub mod prepared;

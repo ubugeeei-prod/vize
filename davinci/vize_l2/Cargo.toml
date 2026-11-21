@@ -9,6 +9,8 @@ description = "L2 - the Davinci semantic IR (codename Disegno): the neutral op f
 metadata.vize.stability = "experimental"
 
 [features]
+# Explicit consumers of the same parsed TSRX module and sealed regions.
+retained-tsrx = []
 # Prepare input-neutral modules for explicit analysis and projection.
 module-ir = ["vize_l1/module-ir"]
 # Retain original callee and literal ranges for explicit component checks.

@@ -235,3 +235,8 @@ fn syntax(diagnostic: &oxc_diagnostics::OxcDiagnostic) -> Diagnostic {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "retained-tsrx")]
+mod prepared;
+#[cfg(feature = "retained-tsrx")]
+pub use prepared::compile_prepared;
