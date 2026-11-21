@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/compile-tsrx",
-  "version": "0.474.0",
+  "version": "0.789.0",
   "description": "Vize compiler for TSRX modules",
   "keywords": [
     "compiler",
