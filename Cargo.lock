@@ -5017,6 +5017,7 @@ dependencies = [
  "unicode-width",
  "vize_l0",
  "vize_l1",
+ "vize_l2",
  "vize_lightningcss",
  "vize_oxc_formatter",
 ]
