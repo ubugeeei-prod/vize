@@ -1,6 +1,6 @@
 //! Two independent accessibility results over a single canonical node walk.
 use super::{NativeCanonicalLint, NativeCanonicalLintRefusal, NativeLintFinding};
-use collect::Candidates;
+use collect::{Candidate, Candidates};
 mod collect;
 use crate::{
     attribute_policy::ImageAltMessages,
@@ -41,19 +41,14 @@ impl NativeCanonicalLint<'_, '_> {
                 img_alt: Ok(Vec::new()),
             };
         }
-        let candidates = Candidates::from_file(self.file);
-        let tab = candidates.tabindex.outcome();
-        let img = candidates.images.outcome();
-        let tabindex_no_positive = render(
-            candidates.tabindex.spans,
-            tab,
+        let mut candidates = Candidates::default();
+        candidates.collect(self.file);
+        let tabindex_no_positive = candidates.tabindex.render(
             TABINDEX_NO_POSITIVE_RULE,
             || tabindex_no_positive::Messages::new(messages),
             tabindex_no_positive::Messages::texts,
         );
-        let img_alt = render(
-            candidates.images.spans,
-            img,
+        let img_alt = candidates.images.render(
             IMG_ALT_RULE,
             || ImageAltMessages::from_lookup(|key| messages.lookup(key)),
             |text| (text.message(), text.help()),
@@ -68,19 +63,35 @@ impl NativeCanonicalLint<'_, '_> {
 // Each standalone rule requests its catalog at its first actual finding,
 // including when a later node refuses the whole query. Render in that same
 // rule order after the one shared traversal.
-fn render<T>(
-    mut spans: Spans,
-    outcome: Result<(), NativeCanonicalLintRefusal>,
-    rule_name: &'static str,
-    messages: impl FnOnce() -> T,
-    texts: impl FnOnce(&T) -> (&str, &str),
-) -> Result<Vec<NativeLintFinding>, NativeCanonicalLintRefusal> {
-    if spans.is_empty() {
-        return outcome.map(|()| Vec::new());
+impl Candidate {
+    #[inline]
+    fn render<T>(
+        &mut self,
+        rule_name: &'static str,
+        messages: impl FnOnce() -> T,
+        texts: impl FnOnce(&T) -> (&str, &str),
+    ) -> Result<Vec<NativeLintFinding>, NativeCanonicalLintRefusal> {
+        if self.spans.is_empty() {
+            return self.outcome().map(|()| Vec::new());
+        }
+        let rendered = messages();
+        self.outcome()?;
+        let (headline, help) = texts(&rendered);
+        Ok(render_findings(
+            core::mem::take(&mut self.spans),
+            rule_name,
+            headline,
+            help,
+        ))
     }
-    let rendered = messages();
-    outcome?;
-    let (headline, help) = texts(&rendered);
+}
+
+fn render_findings(
+    mut spans: Spans,
+    rule_name: &'static str,
+    headline: &str,
+    help: &str,
+) -> Vec<NativeLintFinding> {
     spans.sort_unstable_by_key(|span| (span.start, span.end));
     let header = |span| NativeLintFinding {
         rule_name,
@@ -94,14 +105,14 @@ fn render<T>(
         ));
     };
     if !spans.spilled() {
-        return Ok(spans
+        return spans
             .into_iter()
             .map(|span| {
                 let mut finding = header(span);
                 add_help(&mut finding);
                 finding
             })
-            .collect());
+            .collect();
     }
     // Drop the heap-backed spans before allocating structured help for every
     // diagnostic. The first pass has already built the final localized headers.
@@ -109,5 +120,5 @@ fn render<T>(
     for finding in &mut output {
         add_help(finding);
     }
-    Ok(output)
+    output
 }

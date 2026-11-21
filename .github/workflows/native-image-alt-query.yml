@@ -203,7 +203,9 @@ jobs:
           cargo test "${head[@]}" --test canonical_rule_group
           (cd "$baseline" && CARGO_TARGET_DIR="$base_target" cargo test "${base[@]}" profile::individual_lint_requests -- --exact --ignored --nocapture 2>&1 | tee "$capture/base-rule-times.log")
           cargo test "${head[@]}" --test canonical_rule_group profile::individual_lint_requests -- --exact --ignored --nocapture 2>&1 | tee "$capture/head-rule-times.log"
+          (cd "$baseline" && CARGO_TARGET_DIR="$base_target" cargo test "${base[@]}" profile::paired_lint_requests -- --exact --ignored --nocapture 2>&1 | tee "$capture/base-grouped-rule-times.log")
           cargo test "${head[@]}" --test canonical_rule_group profile::paired_lint_requests -- --exact --ignored --nocapture 2>&1 | tee "$capture/grouped-rule-times.log"
+          (cd "$baseline" && CARGO_TARGET_DIR="$base_target" cargo test "${base[@]}" profile::original_request_costs -- --exact --ignored --nocapture 2>&1 | tee "$capture/base-original-grouped-times.log")
           cargo test "${head[@]}" --test canonical_rule_group profile::original_request_costs -- --exact --ignored --nocapture 2>&1 | tee "$capture/original-grouped-times.log"
           cargo test --locked --profile ci-opt -p vize_l2 --features sparse-region-walk --lib
           (cd "$baseline" && CARGO_TARGET_DIR="$base_target" cargo test "${base[@]}" regions::original_region_events -- --exact --ignored --nocapture 2>&1 | tee "$capture/base-region-events.log")

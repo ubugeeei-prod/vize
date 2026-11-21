@@ -39,13 +39,11 @@ pub(super) struct Candidates {
 }
 
 impl Candidates {
-    pub(super) fn from_file(file: &vize_l2::file::FileArtifact<'_>) -> Self {
-        let mut candidates = Self::default();
+    pub(super) fn collect(&mut self, file: &vize_l2::file::FileArtifact<'_>) {
         let walk = file
             .artifact()
-            .visit_markup_preorder(&mut |_, node| candidates.observe(node));
-        candidates.finish(walk);
-        candidates
+            .visit_markup_preorder(&mut |_, node| self.observe(node));
+        self.finish(walk);
     }
 
     fn observe(&mut self, node: NodeRef<'_, '_>) {
