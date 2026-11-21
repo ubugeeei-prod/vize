@@ -1011,12 +1011,10 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.21",
  "valgrind-requests",
- "vize_glyph",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
- "vize_oxc_formatter",
 ]
 
 [[package]]
@@ -5019,6 +5017,7 @@ dependencies = [
  "unicode-width",
  "vize_l0",
  "vize_l1",
+ "vize_l2",
  "vize_lightningcss",
  "vize_oxc_formatter",
 ]

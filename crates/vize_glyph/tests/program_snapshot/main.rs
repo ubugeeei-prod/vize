@@ -238,10 +238,27 @@ fn corpus(paths: impl Iterator<Item = impl AsRef<Path>>) {
 }
 
 #[test]
+fn repository_vue_scripts_match_both_original_consumers() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let mut files = Vec::new();
+    for directory in [
+        "tests/_fixtures",
+        "tests/fixtures",
+        "crates",
+        "playground",
+        "examples",
+        "npm",
+    ] {
+        davinci_test_support::corpus::collect_vue_files(&root.join(directory), &mut files);
+    }
+    corpus(files.into_iter());
+}
+
+#[test]
 #[ignore = "NUL-delimited paths to repository or pinned external Vue fixtures"]
 fn original_sfc_script_corpus() {
     let manifest =
         fs::read_to_string(std::env::var_os("VIZE_PROGRAM_SNAPSHOT_MANIFEST").unwrap()).unwrap();
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../..");
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     corpus(manifest.split_terminator('\0').map(|path| root.join(path)));
 }

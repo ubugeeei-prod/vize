@@ -98,6 +98,17 @@ fn measure_demand<const SEMANTIC: usize, const PRINTING: usize>(input: &str, tex
         snapshots.push(new);
         ratios.push(new as f64 / old as f64);
     }
+    for (pair, (old, new)) in originals.iter().zip(&snapshots).enumerate() {
+        let first = if pair % 2 == 0 {
+            "independent"
+        } else {
+            "shared"
+        };
+        eprintln!(
+            "sample {input} semantic={SEMANTIC} print={PRINTING} pair={pair} first={first} iterations={rounds} independent_ns={old} shared_ns={new} shared_over_independent={:.6}",
+            *new as f64 / *old as f64
+        );
+    }
     originals.sort_unstable();
     snapshots.sort_unstable();
     ratios.sort_by(f64::total_cmp);

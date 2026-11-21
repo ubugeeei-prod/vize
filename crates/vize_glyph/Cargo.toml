@@ -33,6 +33,8 @@ memchr.workspace = true
 unicode-width.workspace = true
 
 [dev-dependencies]
+vize_l1 = { workspace = true, features = ["program-snapshot"] }
+vize_l2.workspace = true
 davinci_test_support = { workspace = true, features = ["formatter"] }
 criterion.workspace = true
 davinci_harness.workspace = true
