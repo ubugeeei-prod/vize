@@ -33,7 +33,7 @@ surfaces and are not routine CI-refactor targets.
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 43        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 17        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 23        |
-| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 40        |
+| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 41        |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 24        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
@@ -258,11 +258,12 @@ SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctne
 | 06.33 | Retained source-line replay              | [`source-symbolizer-retained.yml`](./source-symbolizer-retained.yml)           |
 | 06.34 | Source symbolizer smoke                  | [`source-symbolizer-smoke.yml`](./source-symbolizer-smoke.yml)                 |
 | 06.35 | Public mapper comparison                 | [`template-alias-paired-11822.yml`](./template-alias-paired-11822.yml)         |
-| 06.36 | Template compiler global policy          | [`template-global-policy.yml`](./template-global-policy.yml)                   |
-| 06.37 | Typed context undefined contracts        | [`typed-context-undefined.yml`](./typed-context-undefined.yml)                 |
-| 06.38 | Unicode prop projection                  | [`unicode-prop-projection.yml`](./unicode-prop-projection.yml)                 |
-| 06.39 | Vapor literal object styles              | [`vapor-literal-object-styles.yml`](./vapor-literal-object-styles.yml)         |
-| 06.40 | Native Vue 2 IR template target          | [`vue2-ir-template.yml`](./vue2-ir-template.yml)                               |
+| 06.36 | Template expression queries              | [`template-expression-queries.yml`](./template-expression-queries.yml)         |
+| 06.37 | Template compiler global policy          | [`template-global-policy.yml`](./template-global-policy.yml)                   |
+| 06.38 | Typed context undefined contracts        | [`typed-context-undefined.yml`](./typed-context-undefined.yml)                 |
+| 06.39 | Unicode prop projection                  | [`unicode-prop-projection.yml`](./unicode-prop-projection.yml)                 |
+| 06.40 | Vapor literal object styles              | [`vapor-literal-object-styles.yml`](./vapor-literal-object-styles.yml)         |
+| 06.41 | Native Vue 2 IR template target          | [`vue2-ir-template.yml`](./vue2-ir-template.yml)                               |
 
 ## 07 Davinci, Canon, and Level
 

@@ -201,7 +201,10 @@ impl<'f, 'a> Model<'f, 'a> {
     }
 }
 
-fn check_template_offset(file: &FileArtifact<'_>, offset: u32) -> Result<(), TemplateQueryError> {
+pub(super) fn check_template_offset(
+    file: &FileArtifact<'_>,
+    offset: u32,
+) -> Result<(), TemplateQueryError> {
     let error = if !file.is_complete() {
         Some(PositionQueryError::IncompleteFile)
     } else if offset as usize > file.artifact().source().len() {

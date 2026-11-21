@@ -54,3 +54,10 @@ pub use position::index::{IndexedModel, PositionIndex};
 
 #[cfg(any(test, feature = "observed-queries"))]
 pub mod vue;
+
+#[cfg(feature = "expression-queries")]
+mod expression;
+#[cfg(all(feature = "expression-queries", feature = "position-index"))]
+pub use expression::ExpressionPositionIndex;
+#[cfg(feature = "expression-queries")]
+pub use expression::ExpressionReferenceRef;

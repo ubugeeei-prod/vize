@@ -1,0 +1,47 @@
+name: Template expression queries
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/template-expression-queries.yml"
+      - "davinci/vize_l2/Cargo.toml"
+      - "davinci/vize_l2/src/query*"
+      - "davinci/vize_l2/src/query/**"
+      - "davinci/vize_l2/src/file*"
+      - "davinci/vize_l2/src/file/**"
+      - "davinci/vize_l2/src/expr/**"
+      - "davinci/vize_l2/src/resolution*"
+      - "davinci/vize_l2/src/resolution/**"
+      - "davinci/vize_l1_to_l2/Cargo.toml"
+      - "davinci/vize_l1_to_l2/src/native_file*"
+      - "davinci/vize_l1_to_l2/src/native_file/**"
+      - "davinci/vize_l1_to_l2/tests/expression_queries/**"
+      - "crates/vize_croquis/src/drawer/template_references*"
+      - "crates/vize_croquis/src/drawer/template_references/**"
+permissions: { contents: read }
+concurrency:
+  group: template-expression-queries-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  expression-queries:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0" }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Compare original reference packets and allocation windows
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt -p vize_l1_to_l2 --features vize_l2/expression-queries,vize_l2/position-index)
+          cargo test "${flags[@]}" --test expression_queries --test expression_query_alloc
+          export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/expression-query-files"
+          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
+          cargo test "${flags[@]}" --test expression_queries -- corpus::original_vue_files --exact --ignored --nocapture
+          cargo test "${flags[@]}" --test expression_queries -- profile::paired_reference_queries --exact --ignored --nocapture
