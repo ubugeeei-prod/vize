@@ -34,9 +34,32 @@ const identity = (text: string): Identity => ({
   sha256: createHash("sha256").update(text).digest("hex"),
 });
 
+const metadataBytes = readFileSync(
+  new URL("../../../../tests/_fixtures/tooling/component-metadata-13430.json", import.meta.url),
+);
+assert.equal(
+  createHash("sha256").update(metadataBytes).digest("hex"),
+  "c8b12d5eec1751e3b378a4e023c2a9cd86f5ff8a5df74499151b3620dc53ace5",
+);
+const metadata = JSON.parse(metadataBytes.toString("utf8")) as Record;
+assert.equal(metadata.schema, "vize.componentMetadataSource.v1");
+assert.equal(metadata.issue, 13430);
+assert.deepEqual(metadata.credit, { compiled: false, native: false, performance: false });
+
+export function beforeComponentMetadata(file: string, current: string): string {
+  return restoreProducer(metadata, file, current);
+}
+
 /** The pre-#13113 bytes of a recorded producer; other images pass through. */
 export function beforeAuthoredComponentInfer(file: string, current: string): string {
-  current = beforeWithDefaultsUndefined(file, current);
+  return restoreProducer(
+    record,
+    file,
+    beforeWithDefaultsUndefined(file, beforeComponentMetadata(file, current)),
+  );
+}
+
+function restoreProducer(record: Record, file: string, current: string): string {
   const transition = record.files.find((candidate) => candidate.path === file);
   if (!transition) return current;
   const now = identity(current);

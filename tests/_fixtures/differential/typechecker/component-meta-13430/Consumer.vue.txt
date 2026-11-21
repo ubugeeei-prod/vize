@@ -3,6 +3,6 @@ import Comp from "./Comp.vue";
 </script>
 
 <template>
-  <Comp name="Ada" kind="a" />
-  <Comp kind="b" />
+  <Comp name="Ada" kind="a" button-label="Save" />
+  <Comp kind="b" button-label="Go" />
 </template>

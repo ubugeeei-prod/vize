@@ -819,6 +819,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             jsx_slots: check_options.jsx_slots,
             has_authored_default: authored_default == super::types::AuthoredDefaultKind::Component,
             hoist_shared_preamble,
+            named_component_export: generation_options.component_name.is_some(),
         },
         generic_parameters
             .map(|plan| plan.authored())

@@ -19,8 +19,8 @@ try {
     );
     const props = Object.fromEntries(component.props.map((prop) => [prop.name, prop.required]));
     assert.deepEqual(
-      { name: props.name, kind: props.kind, note: props.note },
-      { name: true, kind: true, note: false },
+      { name: props.name, kind: props.kind, buttonLabel: props.buttonLabel, note: props.note },
+      { name: true, kind: true, buttonLabel: true, note: false },
     );
     assert.equal(
       component.props.find((prop) => prop.name === "name")?.description,
@@ -36,6 +36,15 @@ try {
         message.text.includes("Property 'name' is missing"),
       ),
       JSON.stringify(diagnostics[0]),
+    );
+    const jsx = await project.program.getSemanticDiagnostics(path.join(cwd, "Usage.tsx"));
+    assert.deepEqual(
+      jsx.map((diagnostic) => [diagnostic.startPosition?.line, diagnostic.code]),
+      [
+        [4, 2322],
+        [5, 2339],
+      ],
+      JSON.stringify(jsx),
     );
   } finally {
     await snapshot.dispose();

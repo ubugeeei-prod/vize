@@ -1,5 +1,0 @@
-{
-  "compilerOptions": { "module": "preserve", "strict": true, "noEmit": true, "skipLibCheck": true },
-  "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
-  "include": ["*.vue"]
-}

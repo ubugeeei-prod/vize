@@ -1,3 +1,5 @@
+import { beforeMetadataPacket, hasMetadataExport } from "./component-metadata-packet.ts";
+import type { Packet } from "./constructor-projection-parity.ts";
 /** Exact observed embedded callback scaffolding; shared references require separate evidence. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -437,6 +439,18 @@ export function assertPreservedCallbackPacket(
 ) {
   assert.equal(typeof before.text, "string");
   assert.equal(typeof after.text, "string");
+  if (before.text !== after.text && hasMetadataExport(after.text)) {
+    const predecessor = (packet: Record<string, unknown>) =>
+      beforeMetadataPacket(withoutProducerUnmappedIgnores(packet as unknown as Packet));
+    before = predecessor(before);
+    after = predecessor(after);
+  } else if (before.text !== after.text) {
+    assert.equal(
+      hasMetadataExport(before.text),
+      false,
+      "the mapped metadata export must be retained",
+    );
+  }
   if (before.text === after.text) {
     const joinedSuccessor =
       authoredSource === undefined

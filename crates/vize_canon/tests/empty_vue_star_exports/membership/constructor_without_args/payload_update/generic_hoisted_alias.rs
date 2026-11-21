@@ -70,6 +70,7 @@ mod tests {
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
             let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::authored_component_infer::before_metadata(path, current);
             assert!(is_after(&current, file), "{path}");
             let previous = read_current(path);
             assert_eq!(support::hash(previous.as_bytes()), file["before"]["sha256"]);

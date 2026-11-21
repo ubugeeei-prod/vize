@@ -37,6 +37,7 @@ pub(super) struct ComponentInstanceAliases<'a> {
     pub(super) jsx_slots: bool,
     pub(super) has_authored_default: bool,
     pub(super) hoist_shared_preamble: bool,
+    pub(super) named_component_export: bool,
 }
 
 /// Reference to a module-scope alias inside the generic component constructor:
@@ -204,9 +205,18 @@ pub(super) fn emit_component_constructors<'a>(
             String::from(base.as_str())
         };
         let no_infer = crate::virtual_ts::generated_names::lib("NoInfer");
+        // Metadata readers inspect the uninstantiated signature. Its string
+        // index supplies the public instance, retaining required props. Once
+        // a call supplies constructor or JSX props, the literal key selects
+        // `unknown` and leaves the inferred input and its diagnostics intact.
+        let public_instance = if aliases.named_component_export {
+            " & ({ [key: string]: $ComponentInstance } & { input: unknown })[unknown extends $AuthoredProps ? unknown extends $JsxProps ? string : 'input' : 'input']"
+        } else {
+            ""
+        };
         append!(
             *ts,
-            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : {no_infer}<$ComponentInstanceFor<$ComponentInstance, {own}, {constructor_base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>>;\n"
+            "type $ComponentConstructor = new <$AuthoredProps = unknown, $JsxProps = unknown>(props?: $AuthoredProps & $ComponentInput<{props_ref}, {emit_props_ref}, $AuthoredProps>, ...args: any[]) => ($IsAny<$AuthoredProps> extends true ? true : $IsUnknown<$AuthoredProps> extends true ? $UsePublicInstance<$JsxProps> : false) extends true ? $ComponentInstance : {no_infer}<$ComponentInstanceFor<$ComponentInstance, {own}, {constructor_base}, {props_ref}, {emit_props_ref}, $AuthoredProps, $JsxProps>>{public_instance};\n"
         );
     }
 

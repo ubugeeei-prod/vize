@@ -3,8 +3,11 @@ defineProps<{
   /** Display name. */
   name: string;
   kind: "a" | "b";
+  buttonLabel: string;
   note?: number;
 }>();
 </script>
 
-<template><div>{{ name }}</div></template>
+<template>
+  <button>{{ name }}</button>
+</template>

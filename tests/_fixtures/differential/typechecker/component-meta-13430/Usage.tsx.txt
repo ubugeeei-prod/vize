@@ -1,0 +1,6 @@
+import Comp from "./Comp.vue";
+
+<Comp name="Ada" kind="a" buttonLabel="Save" />;
+<Comp name="Ada" kind="b" button-label="Go" class="primary" onClick={event => event.pointerId} />;
+<Comp name="Ada" kind="invalid" buttonLabel="Save" />;
+<Comp name="Ada" kind="a" buttonLabel="Go" onClick={event => event.absentProperty} />;

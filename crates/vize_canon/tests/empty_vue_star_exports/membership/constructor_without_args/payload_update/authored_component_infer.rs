@@ -20,6 +20,32 @@ fn record() -> Value {
     record
 }
 
+fn metadata_record() -> &'static Value {
+    static RECORD: std::sync::OnceLock<Value> = std::sync::OnceLock::new();
+    RECORD.get_or_init(|| {
+        let bytes = include_bytes!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/tooling/component-metadata-13430.json"
+        ));
+        assert_eq!(
+            support::hash(bytes),
+            "c8b12d5eec1751e3b378a4e023c2a9cd86f5ff8a5df74499151b3620dc53ace5"
+        );
+        let record: Value = serde_json::from_slice(bytes).unwrap();
+        assert_eq!(record["schema"], "vize.componentMetadataSource.v1");
+        assert_eq!(record["issue"], 13430);
+        assert_eq!(
+            record["credit"],
+            json!({ "compiled": false, "native": false, "performance": false })
+        );
+        record
+    })
+}
+
+pub(super) fn before_metadata(path: &str, current: String) -> String {
+    restore_producer(path, current, metadata_record())
+}
+
 fn is_after(current: &str, transition: &Value) -> bool {
     json!(current.len()) == transition["after"]["bytes"]
         && support::hash(current.as_bytes()) == transition["after"]["sha256"]
@@ -44,8 +70,12 @@ fn restore(current: &str, transition: &Value) -> String {
 /// The pre-#13113 bytes of a recorded producer's current image. Older images
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
-    let current = super::with_defaults_undefined::source_before(path, current);
-    let record = record();
+    let current =
+        super::with_defaults_undefined::source_before(path, before_metadata(path, current));
+    restore_producer(path, current, &record())
+}
+
+fn restore_producer(path: &str, current: String, record: &Value) -> String {
     match record["files"]
         .as_array()
         .unwrap()
@@ -67,6 +97,7 @@ mod tests {
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
             let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = before_metadata(path, current);
             assert!(is_after(&current, file), "{path}");
             let previous = source_before(path, current.clone());
             assert_eq!(support::hash(previous.as_bytes()), file["before"]["sha256"]);

@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { isDeepStrictEqual } from "node:util";
+import { beforeMetadataPacket, hasMetadataExport } from "./component-metadata-packet.ts";
 import { withoutProducerUnmappedIgnores } from "./producer-unmapped-ignores.ts";
 import {
   certifiedTransition,
@@ -279,6 +280,17 @@ export function relocatePacket(
   head = withoutProducerUnmappedIgnores(head, {
     requireComplete: assets.canonical[0].baseSha256 !== assets.canonical[0].headSha256,
   });
+  const metadataExport = hasMetadataExport(head.text);
+  if (metadataExport) {
+    base = beforeMetadataPacket(base);
+    head = beforeMetadataPacket(head);
+  } else {
+    assert.equal(
+      hasMetadataExport(base.text),
+      false,
+      "the mapped metadata export must be retained",
+    );
+  }
   const sourceBytes = Buffer.byteLength(source);
   validateSource(base, sourceBytes);
   validateSource(head, sourceBytes);
@@ -337,6 +349,7 @@ export function relocatePacket(
     );
   assert.deepEqual(head, expected, "the complete packet must equal only the certified relocation");
   const proof = {
+    ...(metadataExport ? { metadataExport } : {}),
     helperStart: start,
     edits: edits.map((edit) => ({
       start: edit.start,

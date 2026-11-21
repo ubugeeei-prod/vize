@@ -183,12 +183,6 @@ pub(super) fn emit_default_export_declaration(
     {
         component_contract_fields.push_str("readonly __vizeComponentMarker: true;");
     }
-    if component_type.is_some() && generic_component_params.is_none() {
-        // Docgen reads the first construct signature without instantiating its type
-        // parameters. A zero-argument construction has the ordinary public instance.
-        // Keep the inferred constructor last for calls with props and InstanceType.
-        component_contract_fields.push_str(" new(): $ComponentInstance;");
-    }
     if let Some(props_ref) = static_raw_props_ref {
         append!(
             component_contract_fields,

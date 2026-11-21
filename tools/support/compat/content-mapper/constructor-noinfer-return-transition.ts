@@ -1,4 +1,5 @@
 /** Invert the `NoInfer` constructor return (#12431) before older emitter custody. */
+import { beforeComponentMetadata } from "./authored-component-infer-transition.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -42,7 +43,7 @@ function load(): Transition {
 
 /** The pre-`NoInfer` bytes of a recorded producer's current image; older images pass through. */
 export function beforeConstructorNoInferReturn(path: string, current: string): string {
-  current = beforeLibTypeShadowingAudit(path, current);
+  current = beforeLibTypeShadowingAudit(path, beforeComponentMetadata(path, current));
   const file = load().files.find((entry) => entry.path === path);
   if (!file) return current;
   const now = identity(current);
