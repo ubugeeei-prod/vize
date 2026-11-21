@@ -22,7 +22,8 @@ pub enum SnapshotRefusal {
 }
 
 /// Actual host URI and process-global content revision, never editor version alone.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Eq)]
+#[cfg_attr(not(feature = "experimental-versioned-fixes"), derive(PartialEq))]
 pub struct SnapshotKey<'snapshot> {
     pub(super) uri: &'snapshot Url,
     pub(super) revision: u64,

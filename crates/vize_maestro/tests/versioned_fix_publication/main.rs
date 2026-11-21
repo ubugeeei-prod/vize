@@ -269,6 +269,13 @@ fn batch_order_and_foreign_stale_and_closed_documents_keep_the_original_outcomes
         snapshot.workspace_edit_for_fixes(&store, request(&other), set),
         Err(SourceEditRefusal::Edit(EditError::SnapshotMismatch))
     );
+    let independent = SourceSnapshotCache::default()
+        .capture(&store, &uri)
+        .unwrap();
+    assert_eq!(
+        independent.workspace_edit_for_fixes(&store, request(&uri), set),
+        Ok(wire)
+    );
     let copied = source.to_owned();
     let detached = VersionedSource::new(
         frame.key(),

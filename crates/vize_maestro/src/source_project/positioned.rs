@@ -10,6 +10,14 @@ use vize_l1::edit::{EditError, EditSet, VersionedSource};
 
 mod line_endings;
 
+impl PartialEq for SnapshotKey<'_> {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.revision == other.revision
+            && (core::ptr::eq(self.uri, other.uri) || self.uri == other.uri)
+    }
+}
+
 impl SourceSnapshot {
     /// Publish the same selection the CLI and Node bindings can apply. The
     /// edit set belongs to its original file, revision, version and buffer.
@@ -45,7 +53,14 @@ impl SourceSnapshot {
             if let [only] = checked.edits()
                 && only.span().end <= 256
             {
-                if let Some(range) = line_endings::single_range(source, only.span()) {
+                let end = only.span().end as usize;
+                let (prefix, _) = source.split_at(end);
+                let range = if memchr::memchr(b'\r', prefix.as_bytes()).is_none() {
+                    checked.single().map(|(range, _)| range)
+                } else {
+                    line_endings::single_range(source, only.span())
+                };
+                if let Some(range) = range {
                     return Ok(
                         self.document_change(document, vec![wire(range, only.replacement())])
                     );
