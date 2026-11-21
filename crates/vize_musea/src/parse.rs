@@ -71,18 +71,6 @@ pub fn parse_art<'a>(
     let (tree, _surface_errors) = vize_l1::markup::parse(allocator, frame.source());
     let art = art_block::art_element(&tree).ok_or(ArtParseError::NoArtBlock)?;
 
-    descriptor_from_element(allocator, source, filename, blocks, frame, art)
-}
-
-#[inline]
-fn descriptor_from_element<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    filename: &'a str,
-    blocks: blocks::ArtBlocks<'a>,
-    frame: vize_l0::SourceBlock<'a>,
-    art: &vize_l1::markup::Element<'a>,
-) -> ArtParseResult<'a> {
     let variants = variant::parse_variants(allocator, &art.children, frame)?;
     let mut art_metadata = blocks
         .script_setup
