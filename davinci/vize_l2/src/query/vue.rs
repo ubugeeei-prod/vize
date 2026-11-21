@@ -236,3 +236,6 @@ fn original(rows: &[SetupBinding], span: Span) -> Result<Option<SetupBinding>, V
         Ok(found)
     }
 }
+
+#[cfg(feature = "script-queries")]
+mod script_programs;

@@ -34,47 +34,83 @@ fn compare(source: &str, count: &mut Counts, path: &std::path::Path) {
         count.descriptor += 1;
         return;
     };
-    if [&parsed.ordinary, &parsed.setup]
+    #[cfg(feature = "script-queries")]
+    let view = parsed.descriptor.admitted().unwrap();
+    #[cfg(feature = "script-queries")]
+    view.with_script_programs(&arena, |programs| {
+        let produce = || {
+            VueFileProducer::from_script_programs(&arena, programs, ALL)
+                .map(|producer| producer.finish().unwrap())
+        };
+        compare_file(
+            &arena,
+            &parsed,
+            programs.get(ScriptRole::Ordinary),
+            programs.get(ScriptRole::Setup),
+            produce,
+            count,
+            path,
+        );
+    });
+    #[cfg(not(feature = "script-queries"))]
+    compare_file(
+        &arena,
+        &parsed,
+        parsed.ordinary.as_ref(),
+        parsed.setup.as_ref(),
+        || parsed.produce(&arena, ALL),
+        count,
+        path,
+    );
+}
+
+fn compare_file<'a>(
+    arena: &'a Allocator,
+    parsed: &Parsed<'a>,
+    ordinary_syntax: Option<&EmbedSyntax<'a>>,
+    setup_syntax: Option<&EmbedSyntax<'a>>,
+    produce: impl FnOnce() -> Result<VueFile<'a>, VueProgramError>,
+    count: &mut Counts,
+    path: &std::path::Path,
+) {
+    let view = parsed.descriptor.admitted().unwrap();
+    let source = view.source();
+    if [ordinary_syntax, setup_syntax]
         .into_iter()
         .flatten()
         .any(|p| p.admitted_program().is_none())
     {
-        assert!(matches!(
-            parsed.produce(&arena, ALL),
-            Err(VueProgramError::Missing(_))
-        ));
+        let error = produce().err().unwrap();
+        assert!(matches!(error, VueProgramError::Missing(_)));
+        assert_eq!(parsed.produce(arena, ALL).err(), Some(error));
         count.syntax += 1;
         return;
     }
-    let view = parsed.descriptor.admitted().unwrap();
-    let candidate = parsed.produce(&arena, ALL).unwrap();
+    let candidate = produce().unwrap();
     let model = candidate.model();
-    let mut control = FileProducer::new(&arena, source).unwrap();
+    let mut control = FileProducer::new(arena, source).unwrap();
     let ordinary = view
         .ordinary()
-        .zip(parsed.ordinary.as_ref())
+        .zip(ordinary_syntax)
         .map(|(script, syntax)| {
             let mut bindings = OrdinaryObserver::new();
             let (_, scope) = control
                 .program_observed(input(script, syntax), ProgramScope::Module, &mut bindings)
                 .unwrap();
-            let mut second_file = FileProducer::new(&arena, source).unwrap();
+            let mut second_file = FileProducer::new(arena, source).unwrap();
             let mut options = OptionsObserver::new();
             second_file
                 .program_observed(input(script, syntax), ProgramScope::Module, &mut options)
                 .unwrap();
             (scope, bindings.finish(), options.finish())
         });
-    let setup = view
-        .setup()
-        .zip(parsed.setup.as_ref())
-        .map(|(script, syntax)| {
-            let mut observer = SetupObserver::new().with_hoist_static(ordinary.is_none());
-            let (_, scope) = control
-                .program_observed(input(script, syntax), ProgramScope::Nested, &mut observer)
-                .unwrap();
-            (scope, observer.finish())
-        });
+    let setup = view.setup().zip(setup_syntax).map(|(script, syntax)| {
+        let mut observer = SetupObserver::new().with_hoist_static(ordinary.is_none());
+        let (_, scope) = control
+            .program_observed(input(script, syntax), ProgramScope::Nested, &mut observer)
+            .unwrap();
+        (scope, observer.finish())
+    });
     let control = control.finish().unwrap();
     assert_eq!(candidate.file().issues(), control.issues(), "{path:?}");
     assert_eq!(

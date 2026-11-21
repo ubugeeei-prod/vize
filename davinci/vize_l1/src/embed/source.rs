@@ -283,6 +283,20 @@ fn prepare_decoded_value<'a>(
     })
 }
 
+#[cfg(feature = "script-queries")]
+impl<'a> EmbedSource<'a> {
+    /// A SourceBlock already certifies the root, UTF-8 boundaries and slice identity.
+    #[inline]
+    pub(crate) fn from_block(block: vize_l0::SourceBlock<'a>) -> Self {
+        Self {
+            authored_root: block.root_source(),
+            span: block.span(),
+            text: block.source(),
+            decoded: None,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests;
 

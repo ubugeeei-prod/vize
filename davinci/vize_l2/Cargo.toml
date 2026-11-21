@@ -19,6 +19,8 @@ position-index = []
 expression-queries = []
 # Attach selected framework facts to the same original File.
 observed-queries = []
+# Read a descriptor’s retained L1 Programs when producing Vue facts.
+script-queries = ["observed-queries", "vize_l1/script-queries"]
 # Compute compiler static facts and tooling complexity in a single requested traversal.
 composed-template-analysis = []
 

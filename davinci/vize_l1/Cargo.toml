@@ -37,6 +37,8 @@ native-markup-lex = []
 legacy = []
 # Retain the distinct semantic and printing observations on explicit demand.
 program-snapshot = []
+# Share one original Program per requested Vue script role.
+script-queries = []
 
 [dependencies]
 memchr.workspace = true
