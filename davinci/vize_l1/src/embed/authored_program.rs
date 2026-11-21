@@ -52,7 +52,7 @@ pub fn visit_authored_profiles<E>(
     let mut first = true;
     for (i, &profile) in profiles.iter().enumerate() {
         if let Some(grammar) = profile
-            && !profiles[..i].contains(&profile)
+            && profiles.iter().take(i).all(|previous| *previous != profile)
         {
             if !first {
                 let used = arena.allocated_bytes();
