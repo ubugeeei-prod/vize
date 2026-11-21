@@ -22,10 +22,11 @@ fn descriptor_blocks(db: &dyn salsa::Database, file: SourceFile) -> Vec<Block<'_
         .collect()
 }
 
-pub(crate) fn read(
-    db: &ResidentDatabase,
+pub(crate) fn read<'a>(
+    db: &'a ResidentDatabase,
     file: SourceFile,
-) -> Result<ParsedBlocks<'_>, &DescriptorParseError> {
+    text: &'a str,
+) -> Result<ParsedBlocks<'a>, &'a DescriptorParseError> {
     let descriptor = match sfc_descriptor(db, file) {
         ParsedSfc::Descriptor(descriptor) => descriptor,
         ParsedSfc::Failed(error) => return Err(error),
@@ -36,7 +37,7 @@ pub(crate) fn read(
         blocks: DocumentBlocks {
             db,
             blocks,
-            source: file.text(db),
+            source: text,
         },
     })
 }

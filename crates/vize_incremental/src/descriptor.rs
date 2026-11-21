@@ -287,7 +287,8 @@ impl ResidentDocuments {
     ) -> T {
         let file = self.file(key, filename, text);
         self.open_block_files.insert(file);
-        let result = read(crate::block_query::open::read(&self.db, file));
+        // file() has matched or installed this exact text at the current revision.
+        let result = read(crate::block_query::open::read(&self.db, file, text));
         self.lookups += 1;
         self.parses += executions(&self.db.take_accounting());
         result
