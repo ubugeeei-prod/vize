@@ -161,3 +161,6 @@ fn bindings(
         }
     }
 }
+
+#[cfg(feature = "experimental-script-queries")]
+mod observed;

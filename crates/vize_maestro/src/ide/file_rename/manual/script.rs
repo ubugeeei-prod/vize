@@ -238,3 +238,6 @@ fn script_source_type(lang: Option<&str>) -> SourceType {
         _ => SourceType::mjs(),
     }
 }
+
+#[cfg(feature = "experimental-script-queries")]
+mod observed;

@@ -73,6 +73,32 @@ test("check workflow uploads Davinci allocation bench reports", () => {
   );
 });
 
+test("editor script qualification runs the original readers and paired measurements on tracked inputs", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "editor-script-queries.yml")) as {
+    jobs: Record<string, WorkflowJob>;
+  };
+  const commands = workflow.jobs["editor-products"].steps?.find((step) =>
+    step.run?.includes("VIZE_SCRIPT_QUERY_INPUTS"),
+  )?.run;
+  assert.ok(commands);
+  assert.match(
+    commands,
+    /editor=\(-p vize_maestro --features experimental-script-queries,micro-profiling --lib\)/,
+  );
+  assert.match(commands, /export VIZE_SCRIPT_QUERY_INPUTS="\$RUNNER_TEMP\/[^"]+"/);
+  assert.match(
+    commands,
+    /git ls-files -z -- '\*\.vue' '\*\.vue\.txt' > "\$VIZE_SCRIPT_QUERY_INPUTS"/,
+  );
+  for (const suite of ["server::document_structure::symbols::tests", "ide::file_rename::"]) {
+    assert.ok(commands.includes('cargo test "${flags[@]}" "${editor[@]}" ' + suite));
+  }
+  assert.match(
+    commands,
+    /cargo test "\$\{flags\[@\]\}" "\$\{editor\[@\]\}" source_project::script_queries:: -- --include-ignored --nocapture --test-threads=1/,
+  );
+});
+
 test("client and server target qualification exercises original inputs and serialized allocation windows", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "client-server-decisions.yml")) as {
     jobs: Record<string, WorkflowJob>;

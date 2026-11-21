@@ -32,7 +32,7 @@ surfaces and are not routine CI-refactor targets.
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 37        |
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 43        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 19        |
-| 05    | [Language services and editors](#05-language-services-and-editors)                     | 23        |
+| 05    | [Language services and editors](#05-language-services-and-editors)                     | 24        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 41        |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 24        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
@@ -197,27 +197,28 @@ LSP behavior, editor packages, VSIX hosts, overlays, navigation, and hover check
 | ----- | ----------------------------------------- | ---------------------------------------------------------------------------- |
 | 05.01 | Packaged CSS hover visual evidence        | [`css-hover-visual.yml`](./css-hover-visual.yml)                             |
 | 05.02 | Editor conformance                        | [`editor-conformance.yml`](./editor-conformance.yml)                         |
-| 05.03 | LSP config startup diagnostics            | [`lsp-config-diagnostics.yml`](./lsp-config-diagnostics.yml)                 |
-| 05.04 | Current-source LSP baseline               | [`lsp-current-baseline.yml`](./lsp-current-baseline.yml)                     |
-| 05.05 | Focused real-project LSP qualification    | [`lsp-focused-projects.yml`](./lsp-focused-projects.yml)                     |
-| 05.06 | JSX intrinsic hover observations          | [`lsp-jsx-intrinsic-hover.yml`](./lsp-jsx-intrinsic-hover.yml)               |
-| 05.07 | LSP native diagnostic coverage            | [`lsp-native-diagnostic-coverage.yml`](./lsp-native-diagnostic-coverage.yml) |
-| 05.08 | Native diagnostic warm-up                 | [`lsp-native-diagnostic-warmup.yml`](./lsp-native-diagnostic-warmup.yml)     |
-| 05.09 | Native LSP overlay custody                | [`lsp-overlay-custody.yml`](./lsp-overlay-custody.yml)                       |
-| 05.10 | LSP independent overlay graphs            | [`lsp-overlay-graph-reuse.yml`](./lsp-overlay-graph-reuse.yml)               |
-| 05.11 | LSP exact-parent residency pair           | [`lsp-residency-pair.yml`](./lsp-residency-pair.yml)                         |
-| 05.12 | LSP indexed scheduler source cost carrier | [`lsp-scheduler-cost-carrier.yml`](./lsp-scheduler-cost-carrier.yml)         |
-| 05.13 | Tag prefix classification observations    | [`lsp-tag-prefix-classification.yml`](./lsp-tag-prefix-classification.yml)   |
-| 05.14 | LSP vs Vue language tools                 | [`lsp-vs-volar.yml`](./lsp-vs-volar.yml)                                     |
-| 05.15 | Native named SFC value hover              | [`named-sfc-value-hover.yml`](./named-sfc-value-hover.yml)                   |
-| 05.16 | Router installed editor artifact          | [`router-editor-artifact.yml`](./router-editor-artifact.yml)                 |
-| 05.17 | Published router navigation matrix        | [`router-experimental-navigation.yml`](./router-experimental-navigation.yml) |
-| 05.18 | Router preview source provider            | [`router-preview-conformance.yml`](./router-preview-conformance.yml)         |
-| 05.19 | TypeScript plugin packed consumer         | [`typescript-plugin.yml`](./typescript-plugin.yml)                           |
-| 05.20 | Volar Plugin                              | [`volar-plugin.yml`](./volar-plugin.yml)                                     |
-| 05.21 | VS Code VSIX validation                   | [`vscode-vsix-validation.yml`](./vscode-vsix-validation.yml)                 |
-| 05.22 | VS Code workspace server                  | [`vscode-workspace-server.yml`](./vscode-workspace-server.yml)               |
-| 05.23 | Vue 2 editor diagnostic context           | [`vue2-editor-diagnostic-context.yml`](./vue2-editor-diagnostic-context.yml) |
+| 05.03 | Authored editor script queries            | [`editor-script-queries.yml`](./editor-script-queries.yml)                   |
+| 05.04 | LSP config startup diagnostics            | [`lsp-config-diagnostics.yml`](./lsp-config-diagnostics.yml)                 |
+| 05.05 | Current-source LSP baseline               | [`lsp-current-baseline.yml`](./lsp-current-baseline.yml)                     |
+| 05.06 | Focused real-project LSP qualification    | [`lsp-focused-projects.yml`](./lsp-focused-projects.yml)                     |
+| 05.07 | JSX intrinsic hover observations          | [`lsp-jsx-intrinsic-hover.yml`](./lsp-jsx-intrinsic-hover.yml)               |
+| 05.08 | LSP native diagnostic coverage            | [`lsp-native-diagnostic-coverage.yml`](./lsp-native-diagnostic-coverage.yml) |
+| 05.09 | Native diagnostic warm-up                 | [`lsp-native-diagnostic-warmup.yml`](./lsp-native-diagnostic-warmup.yml)     |
+| 05.10 | Native LSP overlay custody                | [`lsp-overlay-custody.yml`](./lsp-overlay-custody.yml)                       |
+| 05.11 | LSP independent overlay graphs            | [`lsp-overlay-graph-reuse.yml`](./lsp-overlay-graph-reuse.yml)               |
+| 05.12 | LSP exact-parent residency pair           | [`lsp-residency-pair.yml`](./lsp-residency-pair.yml)                         |
+| 05.13 | LSP indexed scheduler source cost carrier | [`lsp-scheduler-cost-carrier.yml`](./lsp-scheduler-cost-carrier.yml)         |
+| 05.14 | Tag prefix classification observations    | [`lsp-tag-prefix-classification.yml`](./lsp-tag-prefix-classification.yml)   |
+| 05.15 | LSP vs Vue language tools                 | [`lsp-vs-volar.yml`](./lsp-vs-volar.yml)                                     |
+| 05.16 | Native named SFC value hover              | [`named-sfc-value-hover.yml`](./named-sfc-value-hover.yml)                   |
+| 05.17 | Router installed editor artifact          | [`router-editor-artifact.yml`](./router-editor-artifact.yml)                 |
+| 05.18 | Published router navigation matrix        | [`router-experimental-navigation.yml`](./router-experimental-navigation.yml) |
+| 05.19 | Router preview source provider            | [`router-preview-conformance.yml`](./router-preview-conformance.yml)         |
+| 05.20 | TypeScript plugin packed consumer         | [`typescript-plugin.yml`](./typescript-plugin.yml)                           |
+| 05.21 | Volar Plugin                              | [`volar-plugin.yml`](./volar-plugin.yml)                                     |
+| 05.22 | VS Code VSIX validation                   | [`vscode-vsix-validation.yml`](./vscode-vsix-validation.yml)                 |
+| 05.23 | VS Code workspace server                  | [`vscode-workspace-server.yml`](./vscode-workspace-server.yml)               |
+| 05.24 | Vue 2 editor diagnostic context           | [`vue2-editor-diagnostic-context.yml`](./vue2-editor-diagnostic-context.yml) |
 
 ## 06 SFC, JSX, and compiler correctness
 
