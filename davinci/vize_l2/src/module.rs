@@ -110,3 +110,15 @@ impl<'a> ModuleDef<'a> {
         Ok(())
     }
 }
+
+#[cfg(feature = "component-sites")]
+pub use vize_l1::embed::regions::ComponentSites;
+
+#[cfg(feature = "component-sites")]
+impl ModuleDef<'_> {
+    /// Source sites captured with this module by the original frontend.
+    #[must_use]
+    pub fn component_sites(&self) -> Option<&ComponentSites> {
+        self.surface.component_sites()
+    }
+}

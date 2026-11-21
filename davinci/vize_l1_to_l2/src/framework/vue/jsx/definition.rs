@@ -33,6 +33,29 @@ pub fn lower_module_def<'a>(
     options: ModuleOptions,
 ) -> Result<ModuleLowering<'a>, ModuleLoweringError> {
     let regions = ModuleRegions::from_program(input).map_err(ModuleLoweringError::Regions)?;
+    lower_regions(allocator, input, scoping, options, regions)
+}
+
+/// Prepare the same definitions with their original callable and literal tokens.
+#[cfg(feature = "component-sites")]
+pub fn lower_module_with_component_sites<'a>(
+    allocator: &'a Allocator,
+    input: &AdmittedProgram<'_, 'a>,
+    scoping: Option<&Scoping>,
+    options: ModuleOptions,
+) -> Result<ModuleLowering<'a>, ModuleLoweringError> {
+    let regions =
+        ModuleRegions::with_component_sites(input).map_err(ModuleLoweringError::Regions)?;
+    lower_regions(allocator, input, scoping, options, regions)
+}
+
+fn lower_regions<'a>(
+    allocator: &'a Allocator,
+    input: &AdmittedProgram<'_, 'a>,
+    scoping: Option<&Scoping>,
+    options: ModuleOptions,
+    regions: ModuleRegions<'a>,
+) -> Result<ModuleLowering<'a>, ModuleLoweringError> {
     let program = input.program();
     let booleans = BooleanBindings::collect(program, scoping);
     let mut lower = Definitions {

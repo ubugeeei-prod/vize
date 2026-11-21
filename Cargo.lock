@@ -4807,6 +4807,7 @@ dependencies = [
  "corsa_lsp",
  "criterion",
  "dashmap 6.2.1",
+ "davinci_harness",
  "davinci_test_support",
  "dirs",
  "futures",

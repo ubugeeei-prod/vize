@@ -11,6 +11,8 @@ metadata.vize.stability = "experimental"
 [features]
 # Prepare input-neutral modules for explicit analysis and projection.
 module-ir = ["vize_l1/module-ir"]
+# Retain original callee and literal ranges for explicit component checks.
+component-sites = ["module-ir", "vize_l1/component-sites"]
 # Build position indexes on explicit demand in resident analysis tools.
 position-index = []
 # Attach selected framework facts to the same original File.

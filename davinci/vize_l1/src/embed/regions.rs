@@ -22,6 +22,8 @@ pub struct ModuleSurface<'a> {
     host: ProgramOptions,
     end: u32,
     starts: Vec<u32>,
+    #[cfg(feature = "component-sites")]
+    component_sites: Option<ComponentSites>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -34,6 +36,22 @@ pub enum RegionError {
 impl<'a> ModuleRegions<'a> {
     /// Capture the parse profile and original markup sites without reparsing.
     pub fn from_program(input: &AdmittedProgram<'_, 'a>) -> Result<Self, RegionError> {
+        Self::collect(input, Sites::default())
+    }
+
+    /// Also capture the original call and literal tokens during the same walk.
+    #[cfg(feature = "component-sites")]
+    pub fn with_component_sites(input: &AdmittedProgram<'_, 'a>) -> Result<Self, RegionError> {
+        Self::collect(
+            input,
+            Sites {
+                component_sites: Some(ComponentSites::default()),
+                ..Sites::default()
+            },
+        )
+    }
+
+    fn collect(input: &AdmittedProgram<'_, 'a>, mut sites: Sites) -> Result<Self, RegionError> {
         let source = input.source();
         let program = input.program();
         // An unambiguous input has one resolved goal after the parser finishes.
@@ -42,7 +60,6 @@ impl<'a> ModuleRegions<'a> {
             return Err(RegionError::SourceMismatch);
         }
         let end = u32::try_from(source.len()).map_err(|_| RegionError::SourceTooLarge)?;
-        let mut sites = Sites::default();
         if profile.is_jsx() {
             sites.visit_program(program);
         }
@@ -76,6 +93,8 @@ impl<'a> ModuleRegions<'a> {
                     },
                 },
                 starts: sites.starts,
+                #[cfg(feature = "component-sites")]
+                component_sites: sites.component_sites.map(ComponentSites::finish),
             },
         })
     }
@@ -120,6 +139,8 @@ struct Sites {
     roots: Vec<Span>,
     starts: Vec<u32>,
     depth: usize,
+    #[cfg(feature = "component-sites")]
+    component_sites: Option<ComponentSites>,
 }
 
 impl Sites {
@@ -133,6 +154,10 @@ impl Sites {
 }
 impl<'a> Visit<'a> for Sites {
     fn visit_jsx_element(&mut self, element: &JSXElement<'a>) {
+        #[cfg(feature = "component-sites")]
+        if let Some(sites) = &mut self.component_sites {
+            sites.record(&element.opening_element);
+        }
         self.enter(element.span);
         walk::walk_jsx_element(self, element);
         self.depth -= 1;
@@ -141,5 +166,18 @@ impl<'a> Visit<'a> for Sites {
         self.enter(fragment.span);
         walk::walk_jsx_fragment(self, fragment);
         self.depth -= 1;
+    }
+}
+
+#[cfg(feature = "component-sites")]
+mod component;
+#[cfg(feature = "component-sites")]
+pub use component::ComponentSites;
+
+#[cfg(feature = "component-sites")]
+impl ModuleSurface<'_> {
+    #[must_use]
+    pub fn component_sites(&self) -> Option<&ComponentSites> {
+        self.component_sites.as_ref()
     }
 }

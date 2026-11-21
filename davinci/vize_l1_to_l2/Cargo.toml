@@ -24,6 +24,8 @@ metadata.vize.stability = "experimental"
 [features]
 # Prepare input-neutral modules for explicit analysis and projection.
 module-ir = ["vize_l2/module-ir"]
+# Retain original callee and literal ranges for explicit component checks.
+component-sites = ["module-ir", "vize_l2/component-sites"]
 # Separate production attribution executable only; absent from timed builds.
 davinci-benchmark-profile = []
 # Arms the corpus-runnable TS-20 lane (`tests/davinci_lowering_corpus.rs`),

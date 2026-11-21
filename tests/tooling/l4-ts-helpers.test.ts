@@ -20,7 +20,7 @@ function rustFiles(dir: string): string[] {
   });
 }
 
-function helperTable(): string[] {
+function helperTable(name = "HELPERS"): string[] {
   const source = fs.readFileSync(path.join(root, helpersFile), "utf8");
   const constants = new Map(
     [...source.matchAll(/pub const ([A-Z_]+): &str = "([^"]+)";/g)].map(([, name, value]) => [
@@ -28,9 +28,11 @@ function helperTable(): string[] {
       value,
     ]),
   );
-  const table = /pub const HELPERS: &\[&str\] = &\[([^\]]*)\];/.exec(source);
+  const table = [...source.matchAll(/pub const ([A-Z_]+): &\[&str\] = &\[([^\]]*)\];/g)].find(
+    ([, tableName]) => tableName === name,
+  );
   assert.ok(table, "the helper table");
-  return table[1]
+  return table[2]
     .split(",")
     .map((entry) => entry.trim())
     .filter((entry) => entry.length > 0)
@@ -66,9 +68,15 @@ function ambientDeclarations(): Set<string> {
 test("every helper the L4 TS target writes is declared by the published ambient set", () => {
   const helpers = helperTable();
   assert.deepEqual(helpers, ["__vizeNativeElementProp"]);
+  const withComponents = helperTable("COMPONENT_HELPERS");
+  assert.deepEqual(withComponents, [
+    ...helpers,
+    "__vize_jsx_component__",
+    "__vize_jsx_component_spread__",
+  ]);
   const declared = ambientDeclarations();
   assert.deepEqual(
-    helpers.filter((name) => !declared.has(name)),
+    withComponents.filter((name) => !declared.has(name)),
     [],
   );
 });
@@ -81,6 +89,6 @@ test("only the helper table spells helper names in the L4 TS target", () => {
   );
   assert.deepEqual(
     spelled,
-    helperTable().map((name) => `${helpersFile}: ${name}`),
+    helperTable("COMPONENT_HELPERS").map((name) => `${helpersFile}: ${name}`),
   );
 });
