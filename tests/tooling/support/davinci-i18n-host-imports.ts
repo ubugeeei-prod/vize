@@ -38,10 +38,22 @@ export const i18nHostImports: Record<string, readonly string[]> = {
   "crates/vize_patina/tests/native_syntax_img_alt/support.rs": [
     "use vize_carton::i18n::{Locale, translator};",
   ],
-  "crates/vize_patina/tests/canonical_messages.rs": [
-    "pub use vize_carton::i18n::{Locale, translator};",
+  "crates/vize_patina/tests/canonical_rule_group/main.rs": [
+    "use vize_carton::i18n::{Locale, translator};",
+  ],
+  "crates/vize_patina/tests/native_canonical_tabindex/support.rs": [
+    "use vize_carton::i18n::{Locale, translator};",
+  ],
+  "crates/vize_patina/tests/native_canonical_img_alt/support.rs": [
+    "use vize_carton::i18n::{Locale, translator};",
+  ],
+  "crates/vize_patina/tests/native_canonical_img_alt/refusals.rs": [
+    "use vize_carton::i18n::{Locale, translator};",
   ],
   "crates/vize_patina/examples/image_alt_measurement/mod.rs": [
+    "use vize_carton::i18n::{Locale, translator};",
+  ],
+  "crates/vize_patina/tests/native_canonical_tabindex/refusals.rs": [
     "use vize_carton::i18n::{Locale, translator};",
   ],
   "crates/vize_patina/tests/native_syntax_img_alt/iframe_has_title.rs": [

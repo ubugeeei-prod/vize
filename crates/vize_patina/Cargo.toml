@@ -124,5 +124,4 @@ workspace = true
 
 [[test]]
 name = "canonical_rule_group"
-path = "tests/canonical_rule_probe.rs"
 required-features = ["canonical-rule-group"]

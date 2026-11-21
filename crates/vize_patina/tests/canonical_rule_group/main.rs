@@ -1,4 +1,3 @@
-use crate::canonical_messages::{Locale, translator};
 use std::{
     borrow::Cow,
     cell::RefCell,
@@ -6,6 +5,7 @@ use std::{
     io::{BufWriter, Write},
     path::Path,
 };
+use vize_carton::i18n::{Locale, translator};
 use vize_l0::{
     Allocator, SourceRoot, String,
     config::{VueDialect, VueVersion},
