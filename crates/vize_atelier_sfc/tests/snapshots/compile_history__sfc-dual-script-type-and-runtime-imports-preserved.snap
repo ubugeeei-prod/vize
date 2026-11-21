@@ -1,0 +1,55 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "sfc-dual-script-type-and-runtime-imports-preserved",
+    history: "92adfb6927517974101e6837bed34bf76b55da9b",
+    source: "<script lang=\"ts\">\nimport { type Foo } from './types-only'\nimport { type Bar, runtimeValue } from './mixed'\nimport {} from './empty-import'\nimport './side-effect'\nconst make = (): Foo => ({ id: runtimeValue })\n</script>\n\n<script setup lang=\"ts\">\nconst value = make()\n</script>\n\n<template>{{ value.id }}</template>",
+    filename: "Foo.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineComponent as _defineComponent } from 'vue'\nimport { toDisplayString as _toDisplayString, unref as _unref } from \"vue\"\n\nimport { type Foo } from './types-only'\nimport { type Bar, runtimeValue } from './mixed'\nimport {} from './empty-import'\nimport './side-effect'\n\nconst make = (): Foo => ({ id: runtimeValue })\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'Foo',\n  setup(__props) {\n\nconst value = make()\n\nreturn (_ctx: any,_cache: any) => {\n  return _toDisplayString(_unref(value).id)\n}\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "value": SetupMaybeRef,
+                        "runtimeValue": SetupMaybeRef,
+                        "make": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

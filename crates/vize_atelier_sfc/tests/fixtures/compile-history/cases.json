@@ -17389,5 +17389,81 @@
       "sourceMap": true
     },
     "errors": 0
+  },
+  {
+    "id": "sfc-dual-script-type-and-runtime-imports",
+    "history": "92adfb6927517974101e6837bed34bf76b55da9b",
+    "source": "<script lang=\"ts\">\nimport { type Foo } from './types-only'\nimport { type Bar, runtimeValue } from './mixed'\nimport {} from './empty-import'\nimport './side-effect'\nconst make = (): Foo => ({ id: runtimeValue })\n</script>\n\n<script setup lang=\"ts\">\nconst value = make()\n</script>\n\n<template>{{ value.id }}</template>",
+    "filename": "Foo.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-dual-script-type-and-runtime-imports-preserved",
+    "history": "92adfb6927517974101e6837bed34bf76b55da9b",
+    "source": "<script lang=\"ts\">\nimport { type Foo } from './types-only'\nimport { type Bar, runtimeValue } from './mixed'\nimport {} from './empty-import'\nimport './side-effect'\nconst make = (): Foo => ({ id: runtimeValue })\n</script>\n\n<script setup lang=\"ts\">\nconst value = make()\n</script>\n\n<template>{{ value.id }}</template>",
+    "filename": "Foo.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true,
+      "preserveTs": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-dual-script-type-and-runtime-imports-separate",
+    "history": "92adfb6927517974101e6837bed34bf76b55da9b",
+    "source": "<script lang=\"ts\">\nimport { type Foo } from './types-only'\nimport { type Bar, runtimeValue } from './mixed'\nimport {} from './empty-import'\nimport './side-effect'\nconst make = (): Foo => ({ id: runtimeValue })\n</script>\n\n<script setup lang=\"ts\">\nconst value = make()\n</script>\n\n<template>{{ value.id }}</template>",
+    "filename": "Foo.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true,
+      "scriptOutput": "separate"
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-user-render-import-separate",
+    "history": "fe724476c7a1fd1bd9bf784699814626994ff9b4",
+    "source": "\n<script setup lang=\"ts\">\nimport { render } from \"./lib\";\nimport { ref } from \"vue\";\nconst props = defineProps<{ text: string }>();\nconst html = ref(\"\");\nhtml.value = render(props.text);\n</script>\n<template><div v-html=\"html\" /></template>\n",
+    "filename": "Foo.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true,
+      "scriptOutput": "separate"
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-user-render-import-inline",
+    "history": "fe724476c7a1fd1bd9bf784699814626994ff9b4",
+    "source": "\n<script setup lang=\"ts\">\nimport { render } from \"./lib\";\nimport { ref } from \"vue\";\nconst props = defineProps<{ text: string }>();\nconst html = ref(\"\");\nhtml.value = render(props.text);\n</script>\n<template><div v-html=\"html\" /></template>\n",
+    "filename": "Foo.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "sfc-user-render-import-ssr",
+    "history": "fe724476c7a1fd1bd9bf784699814626994ff9b4",
+    "source": "\n<script setup lang=\"ts\">\nimport { render } from \"./lib\";\nimport { ref } from \"vue\";\nconst props = defineProps<{ text: string }>();\nconst html = ref(\"\");\nhtml.value = render(props.text);\n</script>\n<template><div v-html=\"html\" /></template>\n",
+    "filename": "Foo.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true,
+      "scriptOutput": "separate"
+    },
+    "errors": 0
   }
 ]
