@@ -14,7 +14,7 @@ static ALLOCATOR: CountingAllocator<System> = CountingAllocator::system();
 
 #[test]
 fn original_component_facts_plugin_scopes_and_report_positions_share_the_authored_file() {
-    const SOURCE: &str = "<script setup>// 🌱</script>\r\n<template>\r\n  <ul v-if=\"enabled\"><li v-for=\"(item, i) in rows\" :key=\"i\">{{ item }}</li></ul>\r\n</template>";
+    const SOURCE: &str = "<script setup>/* 🌱 */</script>\r\n<template>\r\n  <ul v-if=\"enabled\"><li v-for=\"(item, i) in rows\" :key=\"i\">{{ item }}</li></ul>\r\n</template>";
     let demands = ["templateScopes".into()];
     let mut spec = PluginSpec {
         name: "contract",
@@ -60,10 +60,22 @@ fn original_component_facts_plugin_scopes_and_report_positions_share_the_authore
         (mapped[0].line, mapped[0].column),
         document.position(loop_node.start)
     );
-    assert!(batch.json.contains("templateScopes"));
     assert_eq!(
-        payload["parents"].as_array().expect("parents").len(),
-        document.nodes.len()
+        payload["facts"],
+        serde_json::json!({"templateScopes": [[loop_node.id, [
+            {"name": "item", "position": "value"},
+            {"name": "i", "position": "key"}
+        ]]]})
+    );
+    assert_eq!(
+        payload["parents"],
+        serde_json::json!(
+            document
+                .nodes
+                .iter()
+                .map(|node| node.parent.map_or(-1, i64::from))
+                .collect::<Vec<_>>()
+        )
     );
     assert!(allocation.calls > 0 && allocation.peak_bytes_over_start > 0);
     eprintln!(
@@ -77,5 +89,10 @@ fn original_component_facts_plugin_scopes_and_report_positions_share_the_authore
     spec.demands = &[];
     let without =
         build_batch(&document, &spec, &mut FactManager::new(&REGISTRY)).expect("no demands");
-    assert!(!without.json.contains("templateScopes"));
+    let mut expected = payload;
+    expected["facts"] = serde_json::json!({});
+    assert_eq!(
+        serde_json::from_str::<serde_json::Value>(&without.json).expect("SDK JSON"),
+        expected
+    );
 }
