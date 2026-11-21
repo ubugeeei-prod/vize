@@ -203,3 +203,6 @@ fn project<'file, 'arena, L: LinkSink, const JSX: bool>(
         document: writer.finish().into_document(),
     })
 }
+
+#[cfg(feature = "module-ir")]
+pub use module::{ModuleProjectionError, project_module};

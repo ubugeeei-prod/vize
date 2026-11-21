@@ -254,3 +254,8 @@ pub fn lower_component<'a>(
         op_count: cx.op_count,
     })
 }
+
+#[cfg(feature = "module-ir")]
+mod definition;
+#[cfg(feature = "module-ir")]
+pub use definition::{ModuleLowering, ModuleLoweringError, lower_module_def};

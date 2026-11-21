@@ -67,3 +67,6 @@ pub mod scope;
 pub mod summary;
 pub mod verify;
 pub mod walk;
+
+#[cfg(feature = "module-ir")]
+pub mod module;

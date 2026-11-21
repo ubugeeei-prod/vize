@@ -258,3 +258,8 @@ fn root_facts_and_expression_custody_are_checked() {
         "declare const x: number; const v = ([(x)] as unknown as import(\"vue\").VNode);\n;\nexport {};\n"
     );
 }
+
+#[cfg(feature = "module-ir")]
+mod neutral;
+#[cfg(feature = "module-ir")]
+mod neutral_corpus;

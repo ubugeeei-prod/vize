@@ -16,6 +16,8 @@ description = "L1 - the lossless Vue-template surface tree (codename Sinopia, Da
 metadata.vize.stability = "experimental"
 
 [features]
+# Prepare input-neutral modules for explicit analysis and projection.
+module-ir = []
 # Arms the corpus-runnable TS-19 lane (`tests/surface_corpus.rs`),
 # the P1-6/P1-7 differential-lane shape: committed battery with pinned
 # counts, plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
