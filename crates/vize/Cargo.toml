@@ -111,6 +111,8 @@ sha2.workspace = true
 similar.workspace = true
 
 [dev-dependencies]
+# Compare the experimental selector against the actual CLI fix loop in tests.
+vize_l1 = { workspace = true, features = ["diagnostic-edit-selection"] }
 corsa.workspace = true
 corsa_lsp.workspace = true
 davinci_test_support = { workspace = true, features = [

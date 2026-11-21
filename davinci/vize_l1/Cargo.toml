@@ -26,6 +26,8 @@ observed-styles = []
 legacy-differential = []
 # Deprecated published feature spelling; keep as a compatibility alias.
 davinci-differential = ["legacy-differential"]
+# Select and apply versioned diagnostic edits for explicit callers.
+diagnostic-edit-selection = []
 # Retain the published opt-in spelling for native lexer differential tests.
 # The lexer, entity decoder and callback adapter are available by default.
 native-markup-lex = []
