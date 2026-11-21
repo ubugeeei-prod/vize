@@ -182,10 +182,18 @@ pub(super) fn binding<'a>(
         } else {
             return Err(LegacyReason::Binding.into());
         };
-    let value = if family == BindingKind::Event {
-        handler(retained, value)?
-    } else {
-        js(retained, value)?
+    let value = match family {
+        BindingKind::Event => handler(retained, value)?,
+        BindingKind::Prop
+            if dynamic_name.is_none()
+                && value.value.kind == ValueKind::Opaque
+                && value.value.qualifier
+                    == vize_l2::expr::OpaqueReason::ParseRejected.mnemonic()
+                && super::ident::reserved_keyword(value.value.text) =>
+        {
+            Expr::plain(value.value.text)
+        }
+        _ => js(retained, value)?,
     };
     Ok((
         target,
