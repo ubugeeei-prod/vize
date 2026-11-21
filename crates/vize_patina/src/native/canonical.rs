@@ -153,3 +153,8 @@ impl<'o, 'a> NativeCanonicalLint<'o, 'a> {
         Ok(findings)
     }
 }
+
+#[cfg(feature = "canonical-rule-group")]
+mod accessibility;
+#[cfg(feature = "canonical-rule-group")]
+pub use accessibility::AccessibilityFindings;

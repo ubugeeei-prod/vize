@@ -120,3 +120,10 @@ fn positive(value: &str) -> Result<bool, NativeLintRefusal> {
     }
     Ok(crate::attribute_policy::positive_tabindex(&decoded))
 }
+
+#[cfg(feature = "canonical-rule-group")]
+impl Messages {
+    pub(super) fn texts(&self) -> (&str, &str) {
+        (self.message.as_ref(), self.help.as_ref())
+    }
+}

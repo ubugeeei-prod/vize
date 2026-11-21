@@ -5,7 +5,10 @@ on:
     paths:
       - "crates/vize_patina/src/attribute_policy/**"
       - "crates/vize_patina/src/native/img_alt.rs"
-      - "crates/vize_patina/src/native/canonical/img_alt.rs"
+      - "crates/vize_patina/src/native/canonical.rs"
+      - "crates/vize_patina/src/native/canonical/**"
+      - "crates/vize_patina/src/native/tabindex_no_positive.rs"
+      - "crates/vize_patina/tests/canonical_rule_group/**"
       - "crates/vize_patina/examples/native_image_alt_*.rs"
       - "crates/vize_patina/examples/image_alt_measurement/**"
       - ".github/workflows/native-image-alt-query.yml"
@@ -158,6 +161,49 @@ jobs:
           writeFileSync(`${directory}/receipt.json`, JSON.stringify(receipt, null, 2) + '\n');
           console.log(JSON.stringify(receipt));
           JS
+      - name: Compare canonical accessibility diagnostics with the original rule pair
+        shell: bash
+        run: |
+          set -euo pipefail
+          capture="$RUNNER_TEMP/native-image-alt"
+          baseline="$RUNNER_TEMP/native-image-alt-base"
+          base_target="$RUNNER_TEMP/native-image-alt-targets/$BASE_SHA"
+          head_target="$RUNNER_TEMP/native-image-alt-targets/$HEAD_SHA"
+          probe=crates/vize_patina/tests/canonical_rule_group
+          base_probe=crates/vize_patina/tests/ci_canonical_lint_probe
+          cp -R "$probe" "$baseline/$base_probe"
+          # Compile the same observer with the two original public rule calls.
+          # Only the head invokes the grouped entry. Both read the same input bytes.
+          printf '%s\n' 'pub(super) use super::separate as requested;' > "$baseline/$base_probe/group.rs"
+          cat >> "$baseline/crates/vize_patina/Cargo.toml" <<'TOML'
+
+          [[test]]
+          name = "ci_canonical_lint_probe"
+          path = "tests/ci_canonical_lint_probe/main.rs"
+          TOML
+          export VIZE_CANONICAL_LINT_INPUTS="$RUNNER_TEMP/canonical-lint-inputs"
+          python3 - <<'PYTHON'
+          import os, subprocess
+          from pathlib import Path
+          paths = subprocess.check_output(["git", "ls-files", "-z", "--", "*.vue", "*.vue.txt", "*.jsx", "*.tsx", "*.jsx.txt", "*.tsx.txt"])
+          root = os.fsencode(os.getcwd())
+          Path(os.environ["VIZE_CANONICAL_LINT_INPUTS"]).write_bytes(b"".join(os.path.join(root,p)+b"\0" for p in paths.split(b"\0") if p))
+          PYTHON
+          base=(--locked --profile ci-opt -p vize_patina --test ci_canonical_lint_probe)
+          head=(--locked --profile ci-opt -p vize_patina --features canonical-rule-group)
+          (cd "$baseline" && CARGO_TARGET_DIR="$base_target" VIZE_CANONICAL_LINT_CAPTURE="$capture/base-rule-packets.txt" cargo test "${base[@]}" original_sources -- --exact --ignored --nocapture)
+          export CARGO_TARGET_DIR="$head_target"
+          VIZE_CANONICAL_LINT_CAPTURE="$capture/head-rule-packets.txt" cargo test "${head[@]}" --test canonical_rule_group original_sources -- --exact --ignored --nocapture
+          cmp "$capture/base-rule-packets.txt" "$capture/head-rule-packets.txt"
+          cargo test "${head[@]}" --lib exhausted_walk_overrides_each_rule
+          cargo clippy "${head[@]}" --lib --test canonical_rule_group --no-deps -- -D warnings
+          cargo test "${head[@]}" --test integration native_canonical_
+          cargo test "${head[@]}" --test canonical_rule_group
+          (cd "$baseline" && CARGO_TARGET_DIR="$base_target" cargo test "${base[@]}" profile::individual_lint_requests -- --exact --ignored --nocapture 2>&1 | tee "$capture/base-rule-times.log")
+          cargo test "${head[@]}" --test canonical_rule_group profile::individual_lint_requests -- --exact --ignored --nocapture 2>&1 | tee "$capture/head-rule-times.log"
+          cargo test "${head[@]}" --test canonical_rule_group profile::paired_lint_requests -- --exact --ignored --nocapture 2>&1 | tee "$capture/grouped-rule-times.log"
+          cargo test "${head[@]}" --test canonical_rule_group profile::original_request_costs -- --exact --ignored --nocapture 2>&1 | tee "$capture/original-grouped-times.log"
+          git -C "$baseline" diff --exit-code -- crates/vize_patina/src Cargo.lock
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
