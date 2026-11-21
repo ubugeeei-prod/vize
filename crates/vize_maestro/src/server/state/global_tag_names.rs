@@ -194,8 +194,13 @@ fn declared_names(source: &str) -> Vec<String> {
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return Vec::new();
     }
+    names_from_program(&parsed.program)
+}
+
+#[inline]
+fn names_from_program(program: &oxc_ast::ast::Program<'_>) -> Vec<String> {
     let mut declarations = Declarations::default();
-    declarations.visit_program(&parsed.program);
+    declarations.visit_program(program);
     let mut pending = declarations.roots;
     let mut visited = BTreeSet::new();
     let mut result = BTreeSet::new();
@@ -317,3 +322,9 @@ mod tests {
         assert_eq!(names(), Vec::<String>::new());
     }
 }
+
+#[cfg(feature = "experimental-declaration-products")]
+mod products;
+
+#[cfg(feature = "experimental-declaration-products")]
+pub use products::{DeclarationToolProducts, DeclarationToolRefusal};

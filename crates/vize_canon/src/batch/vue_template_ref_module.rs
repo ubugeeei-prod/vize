@@ -22,7 +22,12 @@ pub fn reexports_vue_template_ref(source: &str) -> bool {
     if parsed.panicked {
         return false;
     }
-    parsed.program.body.iter().any(|statement| match statement {
+    exports_template_ref(&parsed.program)
+}
+
+#[inline]
+pub(super) fn exports_template_ref(program: &oxc_ast::ast::Program<'_>) -> bool {
+    program.body.iter().any(|statement| match statement {
         Statement::ExportNamedDeclaration(export) => {
             export.export_kind != ImportOrExportKind::Type
                 && export.source.as_ref().is_some_and(|source| {

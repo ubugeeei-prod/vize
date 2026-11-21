@@ -1,0 +1,74 @@
+name: Declaration source products
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/declaration-source-products.yml"
+      - "davinci/vize_l0/src/source_frame.rs"
+      - "davinci/vize_l1/Cargo.toml"
+      - "davinci/vize_l1/src/embed.rs"
+      - "davinci/vize_l1/src/embed/authored_program.rs"
+      - "davinci/vize_l1/src/embed/declaration_program.rs"
+      - "crates/vize_canon/Cargo.toml"
+      - "crates/vize_canon/src/batch/declaration*.rs"
+      - "crates/vize_canon/src/batch/vue_template_ref*.rs"
+      - "crates/vize_maestro/Cargo.toml"
+      - "crates/vize_maestro/src/server/state/global_tag_names*"
+      - "crates/vize_maestro/src/server/state/global_tag_names/**"
+      - "crates/vize_maestro/src/source_project/snapshot.rs"
+      - "**/*.d.ts"
+      - "**/*.d.mts"
+      - "**/*.d.cts"
+permissions: { contents: read }
+concurrency:
+  group: declaration-source-products-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  declarations:
+    name: Declaration products ${{ matrix.suite }}
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [correctness, performance]
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUST_MIN_STACK: "16777216"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0", components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: declaration-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
+      - name: Select tracked original TypeScript declarations
+        run: git ls-files -z -- '*.d.ts' '*.d.mts' '*.d.cts' > "$RUNNER_TEMP/declaration-inputs"
+      - name: Compare the projected TypeScript, provider identity and workspace completion
+        if: matrix.suite == 'correctness'
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt)
+          checker=(-p vize_canon --features authored-declarations --lib)
+          editor=(-p vize_maestro --features experimental-declaration-products,micro-profiling --lib)
+          export VIZE_DECLARATION_INPUTS="$RUNNER_TEMP/declaration-inputs"
+          cargo clippy "${flags[@]}" -p vize_l1 --features authored-declarations --lib --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" "${checker[@]}" --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
+          cargo test "${flags[@]}" "${checker[@]}" batch::vue_template_ref_module::
+          cargo test "${flags[@]}" "${checker[@]}" batch::import_rewriter_dts_tests::
+          cargo test "${flags[@]}" "${editor[@]}" server::state::global_tag_names::
+          cargo test "${flags[@]}" "${editor[@]}" original_declaration_products_match -- --ignored --nocapture --test-threads=1
+      - name: Measure complete products for each original declaration
+        if: matrix.suite == 'performance'
+        run: |
+          set -euo pipefail
+          export VIZE_DECLARATION_INPUTS="$RUNNER_TEMP/declaration-inputs"
+          cargo test --locked --profile ci-opt -p vize_maestro --features experimental-declaration-products,micro-profiling --lib paired_declaration_products -- --ignored --nocapture --test-threads=1
