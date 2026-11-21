@@ -10,6 +10,7 @@ metadata.vize.stability = "compatibility-preview"
 autotests = false
 
 [features]
+plugin-template-facts = []
 # Read configured standalone script rules from a physically matched L1 Program.
 authored-script-rules = ["vize_l1/authored-script-queries"]
 # Explicit consumers of the same parsed TSRX module and sealed regions.

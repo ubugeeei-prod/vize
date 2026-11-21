@@ -383,3 +383,6 @@ mod tests {
         assert_eq!(typed.mnemonic(), "ui.slots-object");
     }
 }
+
+#[cfg(feature = "plugin-template-facts")]
+mod observed;
