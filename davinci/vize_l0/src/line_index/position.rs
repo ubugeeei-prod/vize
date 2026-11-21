@@ -166,3 +166,43 @@ impl Position {
         )
     }
 }
+
+#[cfg(feature = "positioned-edits")]
+impl Range {
+    /// Locate both ends of an edit in an original source prefix. The caller
+    /// keeps CRLF pairs together at both endpoints. Within a scalar, use the
+    /// next valid UTF-8 boundary, as in the original offset conversions.
+    #[inline]
+    pub fn lsp_suffix(prefix: &str, split: usize) -> Self {
+        use super::utf16::utf16_len;
+
+        let split = prefix.ceil_char_boundary(split);
+        let (line, line_start) = match memchr::memrchr2(b'\r', b'\n', prefix.as_bytes()) {
+            Some(last) => {
+                let (lines, _) = prefix.split_at(last + 1);
+                (
+                    str_indices::lines_crlf::count_breaks(lines) as u32,
+                    last + 1,
+                )
+            }
+            None => (0, 0),
+        };
+        let (_, tail) = prefix.split_at(line_start);
+        if split < line_start {
+            let (before, _) = prefix.split_at(split);
+            return Self::new(
+                Position::default().after_lsp_segment(before),
+                Position::new(line, utf16_len(tail) as u32),
+            );
+        }
+        let column = split - line_start;
+        let (start, end) = if tail.is_ascii() {
+            (column, tail.len())
+        } else {
+            let (first, rest) = tail.split_at(column);
+            let start = utf16_len(first);
+            (start, start + utf16_len(rest))
+        };
+        Self::from_positions(line, start as u32, line, end as u32)
+    }
+}

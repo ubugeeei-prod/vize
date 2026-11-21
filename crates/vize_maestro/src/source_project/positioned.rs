@@ -53,14 +53,7 @@ impl SourceSnapshot {
             if let [only] = checked.edits()
                 && only.span().end <= 256
             {
-                let end = only.span().end as usize;
-                let (prefix, _) = source.split_at(end);
-                let range = if memchr::memchr(b'\r', prefix.as_bytes()).is_none() {
-                    checked.single().map(|(range, _)| range)
-                } else {
-                    line_endings::single_range(source, only.span())
-                };
-                if let Some(range) = range {
+                if let Some(range) = line_endings::single_range(source, only.span()) {
                     return Ok(
                         self.document_change(document, vec![wire(range, only.replacement())])
                     );

@@ -17,18 +17,14 @@ pub(super) fn single_range(
     source: &str,
     span: vize_l0::Span,
 ) -> Option<vize_l0::line_index::Range> {
-    use vize_l0::line_index::{Position, Range};
+    use vize_l0::line_index::Range;
     let start = span.start as usize;
     let end = span.end as usize;
     if inside_crlf(source.as_bytes(), start) || inside_crlf(source.as_bytes(), end) {
         return None;
     }
-    let (before, _) = source.split_at(start);
-    let first = Position::default().after_lsp_segment(before);
-    Some(Range::new(
-        first,
-        first.after_lsp_segment(between(source, start, end)),
-    ))
+    let (prefix, _) = source.split_at(end);
+    Some(Range::lsp_suffix(prefix, start))
 }
 
 /// The existing LF positions agree with LSP through complete CRLF pairs.
