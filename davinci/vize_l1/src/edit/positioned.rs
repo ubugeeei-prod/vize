@@ -5,6 +5,9 @@ use vize_l0::{
     line_index::{AsciiLineCursor, Position, Range},
 };
 
+// Keep the ASCII preflight bounded even for a single fix near the end of a large file.
+const SHORT_PREFIX: usize = 256;
+
 // Edit construction proves source order and both UTF-8 boundaries.
 #[inline]
 fn consume(source: &str, offset: u32, origin: Position, span: Span) -> (Range, &str) {
@@ -20,13 +23,21 @@ impl<K: Copy + Eq> SpanEdit<'_, '_, K> {
     #[inline]
     pub fn positioned_range(self, current: VersionedSource<'_, K>) -> Result<Range, EditError> {
         self.snapshot.check(current)?;
-        Ok(consume(
-            self.snapshot.root().source(),
-            0,
+        let source = self.snapshot.root().source();
+        let (prefix, _) = source.split_at(self.span.end as usize);
+        if (32..=SHORT_PREFIX).contains(&prefix.len())
+            && let Some(mut lines) = AsciiLineCursor::new(prefix)
+        {
+            return Ok(Range::new(
+                lines.position(self.span.start),
+                lines.position(self.span.end),
+            ));
+        }
+        Ok(Range::suffix_of(
             Position::default(),
-            self.span,
-        )
-        .0)
+            prefix,
+            self.span.start as usize,
+        ))
     }
 }
 
@@ -48,7 +59,7 @@ impl<'edits, 'source, 'replacement, K: Copy + Eq> EditSet<'edits, 'source, 'repl
         let (prefix, _) = remaining.split_at(end);
         // A bounded prefix amortizes one ASCII check across nearby edits.
         // Sparse edits in larger files skip whole lines with suffix_of.
-        let mut ascii = if end <= 256 {
+        let mut ascii = if end <= SHORT_PREFIX {
             AsciiLineCursor::new(prefix)
         } else {
             None
