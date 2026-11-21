@@ -38,7 +38,7 @@ surfaces and are not routine CI-refactor targets.
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
-| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 14        |
+| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 15        |
 
 ## 01 Pull request orchestration
 
@@ -376,7 +376,8 @@ Security audits, dependency upkeep, scheduled maintenance, docs, and repository 
 | 11.08 | Production reach accounting          | [`production-reach-accounting.yml`](./production-reach-accounting.yml)     |
 | 11.09 | qs runtime security contracts        | [`qs-runtime-security.yml`](./qs-runtime-security.yml)                     |
 | 11.10 | Retained script formatting           | [`retained-script-formatting.yml`](./retained-script-formatting.yml)       |
-| 11.11 | Sticky disk maintenance              | [`sticky-disk-maintenance.yml`](./sticky-disk-maintenance.yml)             |
-| 11.12 | Versioned diagnostic fix publication | [`versioned-fix-publication.yml`](./versioned-fix-publication.yml)         |
-| 11.13 | Generated VTS source census          | [`vts-source-census.yml`](./vts-source-census.yml)                         |
-| 11.14 | Zizmor                               | [`zizmor.yml`](./zizmor.yml)                                               |
+| 11.11 | Retained TSRX module products        | [`retained-tsrx.yml`](./retained-tsrx.yml)                                 |
+| 11.12 | Sticky disk maintenance              | [`sticky-disk-maintenance.yml`](./sticky-disk-maintenance.yml)             |
+| 11.13 | Versioned diagnostic fix publication | [`versioned-fix-publication.yml`](./versioned-fix-publication.yml)         |
+| 11.14 | Generated VTS source census          | [`vts-source-census.yml`](./vts-source-census.yml)                         |
+| 11.15 | Zizmor                               | [`zizmor.yml`](./zizmor.yml)                                               |
