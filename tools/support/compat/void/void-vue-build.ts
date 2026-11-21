@@ -118,6 +118,10 @@ async function assertSsr(origin: string, built: boolean) {
   }
   assert.match(await page(origin, "/users"), /<a href="\/users\/2"[^>]*>Grace<\/a>/);
   assert.match(await page(origin, "/users/2"), /<h1 data-test="user">Grace<\/h1>/);
+  assert.match(
+    await page(origin, "/stats"),
+    /<div data-island="components\/VisitsCounter"[^>]*data-hydrate="load"[^>]*><button data-test="visits"[^>]*>Visits: \?<\/button>/,
+  );
   const visits = async () =>
     ((await (await fetch(`${origin}/api/visits`)).json()) as never)["visits"];
   assert.equal((await visits()) + 1, await visits(), "KV binding must persist across requests");
@@ -134,6 +138,12 @@ async function assertHydrationAndHmr(origin: string) {
     tab.on("pageerror", (error: Error) => errors.push(String(error)));
     let navigations = 0;
     tab.on("framenavigated", () => navigations++);
+    await tab.goto(origin + "/stats");
+    const island = tab.locator('[data-island="components/VisitsCounter"][data-hydrated="true"]');
+    await island.locator("button").click();
+    await tab.waitForFunction(() =>
+      /^Visits: \d+$/.test(document.querySelector("[data-test=visits]")?.textContent ?? ""),
+    );
     await tab.goto(origin + "/");
     await tab.waitForSelector("#app[data-hydrated=true]");
     await tab.click("[data-test=counter]");
@@ -186,7 +196,7 @@ function assertCheckParity() {
   // Seed what Void's generated types catch: loader props and typed routes.
   const seeds = [
     ["pages/users/[id].vue", "{{ user.name }}", "{{ user.nam }}"],
-    ["pages/stats/index.island.vue", 'fetch("/api/visits")', 'fetch("/api/visit")'],
+    ["components/VisitsCounter.vue", 'fetch("/api/visits")', 'fetch("/api/visit")'],
   ];
   const originals = seeds.map(([file]) => fs.readFileSync(path.join(fixture, file), "utf8"));
   try {
@@ -236,7 +246,19 @@ try {
   assertCheckParity();
   for (const [name, args] of [
     ["lint", ["lint"]],
-    ["fmt", ["fmt", "--check", "pages", "routes", "env.ts", "vite.config.ts", "void.config.ts"]],
+    [
+      "fmt",
+      [
+        "fmt",
+        "--check",
+        "components",
+        "pages",
+        "routes",
+        "env.ts",
+        "vite.config.ts",
+        "void.config.ts",
+      ],
+    ],
   ] as const) {
     const result = run(name, vizeBin, [...args]);
     assert.equal(result.status, 0, `vize ${name} failed on the Void app; see ${name}.log`);

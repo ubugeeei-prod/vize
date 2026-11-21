@@ -17,7 +17,7 @@ description: Void アプリで Vize を使います。@void/vue のページ、w
 ### 1. プラグインをインストールする
 
 ```bash
-npm install -D @vizejs/vite-plugin
+npm install -D @vizejs/vite-plugin vite-plus
 ```
 
 ### 2. `vite.config.ts` を `withVue` で構成する

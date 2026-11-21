@@ -17,7 +17,7 @@ description: Utilisez Vize dans une application Void avec les pages @void/vue, l
 ### 1. Installer le plugin
 
 ```bash
-npm install -D @vizejs/vite-plugin
+npm install -D @vizejs/vite-plugin vite-plus
 ```
 
 ### 2. Composer `vite.config.ts` avec `withVue`

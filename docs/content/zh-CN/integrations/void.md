@@ -17,7 +17,7 @@ description: 在 Void 应用中使用 Vize，支持 @void/vue 页面、workerd �
 ### 1. 安装插件
 
 ```bash
-npm install -D @vizejs/vite-plugin
+npm install -D @vizejs/vite-plugin vite-plus
 ```
 
 ### 2. 使用 `withVue` 组合 `vite.config.ts`
