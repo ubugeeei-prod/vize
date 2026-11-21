@@ -95,6 +95,16 @@ jobs:
         with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Compare reusable module regions with the original checker projection
         run: |
+          # Both the projected modules and the published ambient file import Vue.
+          node --input-type=module - <<'JS'
+          import assert from "node:assert/strict";
+          import { createRequire } from "node:module";
+          import path from "node:path";
+          const globals = path.resolve("npm/cli/virtual-ts-globals.d.ts");
+          const ts = createRequire(path.resolve("npm/ui/package.json"))("typescript");
+          const options = { moduleResolution: ts.ModuleResolutionKind.Bundler };
+          assert.ok(ts.resolveModuleName("vue", globals, options, ts.sys).resolvedModule, "Vue types for CLI globals");
+          JS
           cargo test --locked --profile ci -p vize_l4 --features module-ir --test jsx_module_projection
           export VIZE_MODULE_IR_MANIFEST="$RUNNER_TEMP/module-ir-paths"
           git ls-files -z '*.jsx' '*.tsx' '*.jsx.txt' '*.tsx.txt' > "$VIZE_MODULE_IR_MANIFEST"

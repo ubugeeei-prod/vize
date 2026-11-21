@@ -28,12 +28,6 @@ const options = {
   skipLibCheck: true,
 };
 const host = ts.createCompilerHost(options);
-// The ambient file imports Vue from its own package. An unresolved peer would
-// silently turn DOM prop and listener types into any under skipLibCheck.
-assert.ok(
-  ts.resolveModuleName("vue", globals, options, host).resolvedModule,
-  "Vue types for CLI globals",
-);
 const read = host.readFile.bind(host);
 const exists = host.fileExists.bind(host);
 host.readFile = (name) => files.get(name)?.projected ?? read(name);
