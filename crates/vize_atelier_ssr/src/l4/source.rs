@@ -1,12 +1,13 @@
 //! The SSR source bridge through the native level artifacts.
 
+use vize_l2::provenance::{NoProvenance, ProvenanceSink};
+
 use super::frozen_slots::{FrozenSlotFacts, FrozenTemplate};
 
 use super::{
     Allocator, CaptureSink, Dump, DumpMode, LegacyReason, Level, SsrL4Request, SsrL4Selection,
-    String, SurfaceParseOptions, TransformExpressions, admitted_rule, blocks_surface,
-    bridge_supported, drops_directive, emission_supported, emit, profile, record_selection, select,
-    surface_gate,
+    String, SurfaceParseOptions, TransformExpressions, admits_surface, blocks_surface,
+    bridge_supported, emission_supported, emit, profile, record_selection, select, surface_gate,
 };
 
 /// Whether attached script tables register a component the metadata binding
@@ -67,8 +68,8 @@ fn lower_and_emit_plain(
             ..SurfaceParseOptions::default()
         },
     );
-    let lowered = lower_request(allocator, source, &tree, &surface_errors, request);
-    let s2 = match lowered {
+    let lowered = lower_request::<NoProvenance>(allocator, source, &tree, &surface_errors, request);
+    let (s2, changes) = match lowered {
         Ok(lowered) => lowered,
         Err(message) => {
             return SsrL4Selection::Rejected(std::vec![vize_l0::cstr!("{message}")]);
@@ -124,11 +125,7 @@ fn lower_and_emit_plain(
             // deferral the legacy SSR walker does not render, so it does not
             // by itself keep the template on that walker.
             if s2.diagnostics.iter().any(blocks_surface)
-                || s2
-                    .artifact
-                    .provenance
-                    .iter()
-                    .any(|record| !admitted_rule(record) || drops_directive(record))
+                || !admits_surface(changes)
                 || surface_gate::slot_v_pre_interpolates(source, &s2.artifact.root.ops)
             {
                 return Err(LegacyReason::SurfaceSemantics);
@@ -149,6 +146,9 @@ pub(crate) fn select_ssr_lane_captured<C: CaptureSink>(
     request: &SsrL4Request<'_>,
     capture: &mut C,
 ) -> SsrL4Selection {
+    if !C::RECORDING {
+        return select_ssr_lane(allocator, source, request);
+    }
     if let Some((root, carrier)) = request.frozen
         && let Err(message) = FrozenTemplate::new(root, source, carrier)
     {
@@ -185,8 +185,14 @@ fn lower_and_emit<C: CaptureSink>(
         vize_l1::markup::htmlish::render::render(&tree, &mut |part| text.push_str(part));
         text
     });
-    let lowered = lower_request(allocator, source, &tree, &surface_errors, request);
-    let s2 = match lowered {
+    let lowered = lower_request::<std::vec::Vec<vize_l2::provenance::ProvenanceRecord>>(
+        allocator,
+        source,
+        &tree,
+        &surface_errors,
+        request,
+    );
+    let (s2, changes) = match lowered {
         Ok(lowered) => lowered,
         Err(message) => {
             return SsrL4Selection::Rejected(std::vec![vize_l0::cstr!("{message}")]);
@@ -249,11 +255,7 @@ fn lower_and_emit<C: CaptureSink>(
             // deferral the legacy SSR walker does not render, so it does not
             // by itself keep the template on that walker.
             if s2.diagnostics.iter().any(blocks_surface)
-                || s2
-                    .artifact
-                    .provenance
-                    .iter()
-                    .any(|record| !admitted_rule(record) || drops_directive(record))
+                || !admits_surface(changes)
                 || surface_gate::slot_v_pre_interpolates(source, &s2.artifact.root.ops)
             {
                 return Err(LegacyReason::SurfaceSemantics);
@@ -269,20 +271,29 @@ fn lower_and_emit<C: CaptureSink>(
 }
 
 /// Lower one request, honoring the declared directive contracts (#13074).
-fn lower_request<'a>(
+fn lower_request<'a, P: ProvenanceSink + Default>(
     allocator: &'a Allocator,
     source: &'a str,
     tree: &vize_l1::markup::SurfaceTree<'a>,
     errors: &[vize_l1::markup::SurfaceError],
     request: &SsrL4Request<'a>,
-) -> Result<vize_l1_to_l2::Lowered<'a>, &'static str> {
+) -> Result<
+    (
+        vize_l1_to_l2::Lowered<'a, P>,
+        vize_l1_to_l2::lower::SurfaceChanges,
+    ),
+    &'static str,
+> {
     let contracts = &request.options.directive_contracts;
     match request.frozen {
         Some((root, carrier)) => FrozenTemplate::new(root, source, carrier)
             .and_then(|template| template.lower(allocator, tree, errors, contracts)),
-        None if contracts.is_empty() => Ok(vize_l1_to_l2::lower(allocator, tree, errors)),
-        None => Ok(vize_l1_to_l2::lower_with_directives(
-            allocator, tree, errors, contracts,
+        None => Ok(vize_l1_to_l2::lower::lower_with_surface_changes(
+            allocator,
+            tree,
+            errors,
+            vize_l1_to_l2::lower::LowerPolicy::compile(false),
+            contracts,
         )),
     }
 }

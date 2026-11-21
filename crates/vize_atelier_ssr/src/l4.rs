@@ -111,63 +111,18 @@ pub(crate) enum SsrL4Selection {
     Rejected(std::vec::Vec<String>),
 }
 
-/// L2 lowering rules whose output the plan emitter reproduces byte-for-byte.
-const ADMITTED_RULES: &[&str] = &[
-    "lower.element",
-    "lower.text",
-    "lower.text-run",
-    "lower.text-fact",
-    "lower.interpolation",
-    "lower.compound",
-    "lower.bind",
-    "lower.on",
-    "lower.if",
-    "lower.if-branch-key",
-    "lower.branch-wrapper-key",
-    "lower.for",
-    "lower.for-fact",
-    "lower.model",
-    "lower.vue-show",
-    "lower.vue-html",
-    "lower.vue-text",
-    "lower.component",
-    "lower.slot",
-    "lower.slot-content",
-    "lower.vue-directive",
-    "lower.vue-once",
-    "lower.vue-memo",
-    "lower.vue-cloak",
-    "normalize.bind.same-name",
-    "condense.whitespace",
-    "condense.drop-whitespace",
-    "drop.vue-is",
-    "drop.comment",
-    "drop.branch-gap",
-    "lower.comment",
-    // `v-model` and a custom directive on an outlet are error diagnostics
-    // and no binding. The legacy SSR walker ignores them and renders the
-    // outlet.
-    "error.v-model-on-slot",
-    "error.slot-directive",
-    // Attributes on an unwrapped `<template>` wrapper. The legacy SSR
-    // walker drops them with the wrapper.
-    "drop.template-attribute",
-    // `v-pre` freezes its subtree as text and drops the directive itself.
-    "drop.v-pre",
-    "lower.v-pre-text",
-];
-
 mod source;
 pub(crate) use source::select_ssr_lane;
 pub(crate) use source::select_ssr_lane_captured;
 
-/// Whether one L2 lowering rule is reproduced by the plan emitter.
-///
-/// `defer.slot-directive` is the Info recorded for a directive the legacy
-/// slot walker does not render. `v-pre` is the exception: it freezes the
-/// outlet fallback as text, which the plan still interpolates.
-fn admitted_rule(record: &vize_l2::provenance::ProvenanceRecord) -> bool {
-    record.rule.as_str() == "defer.slot-directive" || ADMITTED_RULES.contains(&record.rule.as_str())
+/// The SSR plan reproduces same-name bindings, frozen attributes, and ordinary
+/// comments between branches. A discarded directive comment needs the legacy walker.
+fn admits_surface(changes: vize_l1_to_l2::lower::SurfaceChanges) -> bool {
+    use vize_l1_to_l2::lower::SurfaceChanges;
+    (SurfaceChanges::SAME_NAME_BINDING
+        | SurfaceChanges::FROZEN_ATTRIBUTE
+        | SurfaceChanges::BRANCH_COMMENT)
+        .contains(changes)
 }
 
 /// The slot `v-model` and custom-directive errors note that the directive
@@ -179,18 +134,6 @@ fn blocks_surface(diagnostic: &vize_l0::diag::Diagnostic) -> bool {
             "v-model is not supported on <slot> outlets."
                 | "Unexpected custom directive on <slot> outlet."
         )
-}
-
-/// `@vize:` comments that still drop (`v-if` / `v-else` gaps) stay on the
-/// legacy walker. In-tree directive comments are `lower.comment`.
-fn drops_directive(record: &vize_l2::provenance::ProvenanceRecord) -> bool {
-    if !matches!(record.rule.as_str(), "drop.comment" | "drop.branch-gap") {
-        return false;
-    }
-    let text = record.before.as_str();
-    let text = text.strip_prefix("<!--").unwrap_or(text);
-    let text = text.strip_suffix("-->").unwrap_or(text);
-    vize_l0::directive::parse_vize_directive(text, 1, 0).is_some()
 }
 
 /// Options under which L1 and L2 see the same template the SSR parser sees.

@@ -42,6 +42,8 @@ pub(crate) fn lower_leaf<'a>(
         }
         SurfaceChild::Cdata(token) => lower_cdata(cx, token, out),
         SurfaceChild::ProcessingInstruction(token) => {
+            cx.surface_changes
+                .insert(super::SurfaceChanges::DISCARDED_MARKUP);
             let span = cx.token_span(token);
             cx.record(
                 "drop.processing-instruction",
@@ -52,6 +54,8 @@ pub(crate) fn lower_leaf<'a>(
             );
         }
         SurfaceChild::Unexpected(token) => {
+            cx.surface_changes
+                .insert(super::SurfaceChanges::DISCARDED_MARKUP);
             let span = cx.token_span(token);
             cx.record("drop.unexpected", None, token.text, String::default, span);
         }
@@ -137,7 +141,7 @@ fn lower_comment<'a>(
 pub(crate) fn keeps_directive_comment(text: &str) -> bool {
     let inner = text.strip_prefix("<!--").unwrap_or(text);
     let inner = inner.strip_suffix("-->").unwrap_or(inner);
-    vize_l0::directive::parse_vize_directive(inner, 1, 0).is_some()
+    vize_l0::directive::is_vize_directive(inner)
 }
 
 fn comment_content(text: &str) -> &str {
@@ -153,6 +157,7 @@ fn lower_cdata<'a>(
     token: &Token<'a>,
     out: &mut Vec<'a, Op<'a>>,
 ) {
+    cx.surface_changes.insert(super::SurfaceChanges::CDATA_TEXT);
     let inner = token.text.strip_prefix("<![CDATA[").unwrap_or(token.text);
     let inner = inner.strip_suffix("]]>").unwrap_or(inner);
     let node = cx.mint_op();

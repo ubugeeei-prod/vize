@@ -130,6 +130,20 @@ pub fn lower_with_frozen_element_spans_and_directives<'a>(
     spans: &'a [Span],
     directive_contracts: &vize_l0::config::DirectiveContracts,
 ) -> Result<Lowered<'a>, &'static str> {
+    lower_with_frozen_surface_changes(allocator, tree, errors, block, spans, directive_contracts)
+        .map(|(lowered, _)| lowered)
+}
+
+/// Lower with frozen opening custody and the caller's provenance sink.
+#[doc(hidden)]
+pub fn lower_with_frozen_surface_changes<'a, P: ProvenanceSink + Default>(
+    allocator: &'a Allocator,
+    tree: &SurfaceTree<'a>,
+    errors: &[SurfaceError],
+    block: SourceBlock<'a>,
+    spans: &'a [Span],
+    directive_contracts: &vize_l0::config::DirectiveContracts,
+) -> Result<(Lowered<'a, P>, super::SurfaceChanges), &'static str> {
     let openings = FrozenOpenings::new(tree, block, spans)?;
     let mut cx = Cx::with_source_block_and_comment_policy(
         allocator,

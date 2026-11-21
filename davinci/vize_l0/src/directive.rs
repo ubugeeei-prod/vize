@@ -54,13 +54,22 @@ pub struct VizeDirective {
     pub offset: u32,
 }
 
+fn directive_body(content: &str) -> Option<&str> {
+    content.trim().strip_prefix("@vize:")
+}
+
+/// Whether a comment carries a directive, without materializing its payload.
+#[must_use]
+pub fn is_vize_directive(content: &str) -> bool {
+    directive_body(content).is_some()
+}
+
 /// Parse a `@vize:` directive from HTML comment content.
 ///
 /// The `content` should be the inner text of an HTML comment (without `<!--` and `-->`).
 /// Returns `None` if the content does not contain a `@vize:` directive.
 pub fn parse_vize_directive(content: &str, line: u32, offset: u32) -> Option<VizeDirective> {
-    let trimmed = content.trim();
-    let rest = trimmed.strip_prefix("@vize:")?;
+    let rest = directive_body(content)?;
 
     let (keyword, payload) = match rest.split_once(char::is_whitespace) {
         Some((keyword, payload)) => (keyword, payload.trim()),
