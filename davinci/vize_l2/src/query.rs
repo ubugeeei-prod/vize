@@ -51,3 +51,6 @@ impl<'f, 'a> Model<'f, 'a> {
 
 #[cfg(any(test, feature = "position-index"))]
 pub use position::index::{IndexedModel, PositionIndex};
+
+#[cfg(any(test, feature = "observed-queries"))]
+pub mod vue;

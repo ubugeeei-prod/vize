@@ -11,6 +11,8 @@ metadata.vize.stability = "experimental"
 [features]
 # Build position indexes on explicit demand in resident analysis tools.
 position-index = []
+# Attach selected framework facts to the same original File.
+observed-queries = []
 
 [dependencies]
 oxc_ast = { workspace = true }
