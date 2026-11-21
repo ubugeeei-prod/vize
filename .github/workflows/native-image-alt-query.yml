@@ -9,6 +9,7 @@ on:
       - "crates/vize_patina/src/native/canonical/**"
       - "crates/vize_patina/src/native/tabindex_no_positive.rs"
       - "crates/vize_patina/tests/canonical_rule_group/**"
+      - "crates/vize_patina/tests/canonical_messages.rs"
       - "crates/vize_patina/examples/native_image_alt_*.rs"
       - "crates/vize_patina/examples/image_alt_measurement/**"
       - ".github/workflows/native-image-alt-query.yml"
@@ -172,6 +173,7 @@ jobs:
           probe=crates/vize_patina/tests/canonical_rule_group
           base_probe=crates/vize_patina/tests/ci_canonical_lint_probe
           cp -R "$probe" "$baseline/$base_probe"
+          cp crates/vize_patina/tests/canonical_messages.rs "$baseline/crates/vize_patina/tests/canonical_messages.rs"
           # Compile the same observer with the two original public rule calls.
           # Only the head invokes the grouped entry. Both read the same input bytes.
           printf '%s\n' 'pub(super) use super::separate as requested;' > "$baseline/$base_probe/group.rs"
@@ -182,13 +184,10 @@ jobs:
           path = "tests/ci_canonical_lint_probe/main.rs"
           TOML
           export VIZE_CANONICAL_LINT_INPUTS="$RUNNER_TEMP/canonical-lint-inputs"
-          python3 - <<'PYTHON'
-          import os, subprocess
-          from pathlib import Path
-          paths = subprocess.check_output(["git", "ls-files", "-z", "--", "*.vue", "*.vue.txt", "*.jsx", "*.tsx", "*.jsx.txt", "*.tsx.txt"])
-          root = os.fsencode(os.getcwd())
-          Path(os.environ["VIZE_CANONICAL_LINT_INPUTS"]).write_bytes(b"".join(os.path.join(root,p)+b"\0" for p in paths.split(b"\0") if p))
-          PYTHON
+          git ls-files -z -- '*.vue' '*.vue.txt' '*.jsx' '*.tsx' '*.jsx.txt' '*.tsx.txt' |
+            while IFS= read -r -d '' path; do
+              printf '%s\0' "$GITHUB_WORKSPACE/$path"
+            done > "$VIZE_CANONICAL_LINT_INPUTS"
           base=(--locked --profile ci-opt -p vize_patina --test ci_canonical_lint_probe)
           head=(--locked --profile ci-opt -p vize_patina --features canonical-rule-group)
           (cd "$baseline" && CARGO_TARGET_DIR="$base_target" VIZE_CANONICAL_LINT_CAPTURE="$capture/base-rule-packets.txt" cargo test "${base[@]}" original_sources -- --exact --ignored --nocapture)

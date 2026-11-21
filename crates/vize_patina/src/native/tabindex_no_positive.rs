@@ -72,7 +72,7 @@ pub(super) struct Messages {
 }
 
 impl Messages {
-    pub(super) fn new(messages: &impl MessageLookup) -> Self {
+    pub(super) fn new(messages: &(impl MessageLookup + ?Sized)) -> Self {
         Self {
             message: messages.lookup("a11y/tabindex-no-positive.message"),
             help: messages.lookup("a11y/tabindex-no-positive.help"),

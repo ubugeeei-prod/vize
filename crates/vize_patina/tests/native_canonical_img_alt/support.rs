@@ -1,5 +1,5 @@
+use crate::canonical_messages::{Locale, translator};
 use serde_json::{Value, json};
-use vize_carton::i18n::{Locale, translator};
 use vize_l0::{Allocator, SourceRoot};
 use vize_l1::container::vue::DescriptorOptions;
 use vize_l1_to_l2::native_file::lower_sfc_native;

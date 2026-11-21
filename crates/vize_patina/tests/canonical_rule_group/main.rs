@@ -1,3 +1,4 @@
+use canonical_messages::{Locale, translator};
 use std::{
     borrow::Cow,
     cell::RefCell,
@@ -5,7 +6,6 @@ use std::{
     io::{BufWriter, Write},
     path::Path,
 };
-use vize_carton::i18n::{Locale, translator};
 use vize_l0::{
     Allocator, SourceRoot, String,
     config::{VueDialect, VueVersion},
@@ -19,6 +19,8 @@ use vize_patina::native::{
     canonical::{NativeCanonicalLint, NativeCanonicalLintRefusal},
 };
 
+#[path = "../canonical_messages.rs"]
+mod canonical_messages;
 mod group;
 mod profile;
 

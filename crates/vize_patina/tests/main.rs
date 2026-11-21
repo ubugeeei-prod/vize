@@ -18,6 +18,7 @@ mod bare_reserved_8090;
 mod boolean_attr_fix_history;
 mod bound_slot_attribute;
 mod call_source_7989;
+mod canonical_messages;
 mod component_import_value_reads;
 mod component_positive_template_corpus;
 mod component_positive_template_reads;

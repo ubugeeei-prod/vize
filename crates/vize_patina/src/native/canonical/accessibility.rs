@@ -27,14 +27,14 @@ impl NativeCanonicalLint<'_, '_> {
     /// Each rule retains its own first refusal. Catalog lookups have the same
     /// keys, count and order as requesting tabindex first and image-alt second.
     #[must_use]
-    pub fn accessibility(&self, messages: &impl MessageLookup) -> AccessibilityFindings {
+    pub fn accessibility(&self, messages: &dyn MessageLookup) -> AccessibilityFindings {
         vize_l0::profile!(
             "patina.native.canonical.accessibility",
             self.check_accessibility(messages)
         )
     }
 
-    fn check_accessibility(&self, messages: &impl MessageLookup) -> AccessibilityFindings {
+    fn check_accessibility(&self, messages: &dyn MessageLookup) -> AccessibilityFindings {
         if self.file.artifact().root().ops.is_empty() {
             return AccessibilityFindings {
                 tabindex_no_positive: Ok(Vec::new()),
@@ -55,7 +55,7 @@ impl NativeCanonicalLint<'_, '_> {
             candidates.images.spans,
             img,
             IMG_ALT_RULE,
-            || ImageAltMessages::new(messages),
+            || ImageAltMessages::from_lookup(|key| messages.lookup(key)),
             |text| (text.message(), text.help()),
         );
         AccessibilityFindings {
