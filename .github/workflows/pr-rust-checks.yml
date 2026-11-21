@@ -123,6 +123,13 @@ jobs:
           --label "Clippy test targets of touched ratchet crates"
           --path tools/config/clippy-test-targets.json --
           node tools/support/compat/github/clippy-test-targets.ts touched "$RUNNER_TEMP/rust-plan.json"
+      - name: Shared script observations and formatter output
+        if: ${{ matrix.lane == 'clippy' && contains(fromJSON(inputs.rust-plan).packages, 'vize_l1') }}
+        run: |
+          cargo test --locked --profile ci -p davinci_harness --features program-snapshot --test program_snapshot
+          export VIZE_PROGRAM_SNAPSHOT_MANIFEST="$RUNNER_TEMP/program-snapshot-paths"
+          git ls-files -z -- '*.vue' > "$VIZE_PROGRAM_SNAPSHOT_MANIFEST"
+          cargo test --locked --profile ci -p davinci_harness --features program-snapshot --test program_snapshot -- original_sfc_script_corpus --exact --ignored --nocapture
       - name: Native L1 markup parity
         if: ${{ matrix.lane == 'clippy' && (contains(fromJSON(inputs.rust-plan).packages, 'vize_l1') || contains(fromJSON(inputs.rust-plan).packages, 'vize_armature')) }}
         run: >-

@@ -13,6 +13,8 @@ metadata.vize.stability = "experimental"
 [features]
 # Diagnostic-only ownership ledger; never narrows process-global totals.
 allocation-window-diagnostics = []
+# Cross-tool qualification of original and printing Programs on the same snapshot.
+program-snapshot = ["vize_l1/program-snapshot", "dep:oxc_formatter", "dep:vize_glyph"]
 # Benchmark-only instrumentation; no production crate enables this feature.
 instruction-counts = ["dep:valgrind-requests", "dep:stacker"]
 
@@ -20,6 +22,8 @@ instruction-counts = ["dep:valgrind-requests", "dep:stacker"]
 criterion = { workspace = true }
 davinci_test_support = { workspace = true }
 mimalloc = { workspace = true }
+oxc_formatter = { workspace = true, optional = true }
+vize_glyph = { workspace = true, optional = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
@@ -39,6 +43,10 @@ vize_l0 = { workspace = true }
 vize_l1 = { workspace = true }
 vize_l1_to_l2 = { workspace = true }
 vize_l2 = { workspace = true }
+
+[[test]]
+name = "program_snapshot"
+required-features = ["program-snapshot"]
 
 [[bench]]
 name = "selfcheck"

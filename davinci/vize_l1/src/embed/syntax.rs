@@ -255,3 +255,6 @@ mod embedding_tests;
 
 #[cfg(test)]
 mod parameter_context_tests;
+
+#[cfg(any(test, feature = "program-snapshot"))]
+pub mod snapshot;
