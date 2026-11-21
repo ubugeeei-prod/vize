@@ -17,11 +17,11 @@ impl<'s> Utf16Cursor<'s> {
     #[must_use]
     #[inline]
     pub fn new(source: &'s str) -> Self {
-        // Two vector-sized chunks cover small diagnostic documents without
-        // making a request near the beginning scan an entire large file.
-        let prefix = source.as_bytes().get(..64).unwrap_or(source.as_bytes());
-        let ascii_prefix = if prefix.is_ascii() {
-            prefix.len() as u32
+        // Tiny documents fit in one bounded check. On a larger document the
+        // first request determines how much text needs to be inspected.
+        let small = source.len() <= 64;
+        let ascii_prefix = if small && source.is_ascii() {
+            source.len() as u32
         } else {
             0
         };
@@ -30,7 +30,7 @@ impl<'s> Utf16Cursor<'s> {
             byte: 0,
             units: 0,
             ascii_prefix,
-            scan_ascii: ascii_prefix != 0 && prefix.len() < source.len(),
+            scan_ascii: !small,
         }
     }
 
@@ -59,7 +59,11 @@ impl<'s> Utf16Cursor<'s> {
             return false;
         }
         let start = self.ascii_prefix as usize;
-        let limit = (end.saturating_add(255) as usize).min(bytes.len());
+        let limit = if start == 0 {
+            end as usize
+        } else {
+            (end.saturating_add(255) as usize).min(bytes.len())
+        };
         let Some(tail) = bytes.get(start..limit) else {
             return false;
         };
