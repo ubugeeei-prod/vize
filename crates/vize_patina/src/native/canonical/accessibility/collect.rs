@@ -43,7 +43,7 @@ impl Candidates {
         let mut candidates = Self::default();
         let walk = file
             .artifact()
-            .visit_nodes(&mut |_, node| candidates.observe(node));
+            .visit_markup_preorder(&mut |_, node| candidates.observe(node));
         candidates.finish(walk);
         candidates
     }

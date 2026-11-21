@@ -9,7 +9,11 @@ on:
       - "crates/vize_patina/src/native/canonical/**"
       - "crates/vize_patina/src/native/tabindex_no_positive.rs"
       - "crates/vize_patina/tests/canonical_rule_group/**"
-      - "crates/vize_patina/tests/canonical_messages.rs"
+      - "crates/vize_patina/Cargo.toml"
+      - "davinci/vize_l2/Cargo.toml"
+      - "davinci/vize_l2/src/artifact.rs"
+      - "davinci/vize_l2/src/walk.rs"
+      - "davinci/vize_l2/src/walk/**"
       - "crates/vize_patina/examples/native_image_alt_*.rs"
       - "crates/vize_patina/examples/image_alt_measurement/**"
       - ".github/workflows/native-image-alt-query.yml"
@@ -175,7 +179,7 @@ jobs:
           cp -R "$probe" "$baseline/$base_probe"
           # Compile the same observer with the two original public rule calls.
           # Only the head invokes the grouped entry. Both read the same input bytes.
-          printf '%s\n' 'pub(super) use super::separate as requested;' > "$baseline/$base_probe/group.rs"
+          printf '%s\n' 'pub(super) use super::{regions::original_preorder as preorder, separate as requested};' > "$baseline/$base_probe/group.rs"
           cat >> "$baseline/crates/vize_patina/Cargo.toml" <<'TOML'
 
           [[test]]
@@ -201,6 +205,14 @@ jobs:
           cargo test "${head[@]}" --test canonical_rule_group profile::individual_lint_requests -- --exact --ignored --nocapture 2>&1 | tee "$capture/head-rule-times.log"
           cargo test "${head[@]}" --test canonical_rule_group profile::paired_lint_requests -- --exact --ignored --nocapture 2>&1 | tee "$capture/grouped-rule-times.log"
           cargo test "${head[@]}" --test canonical_rule_group profile::original_request_costs -- --exact --ignored --nocapture 2>&1 | tee "$capture/original-grouped-times.log"
+          cargo test --locked --profile ci-opt -p vize_l2 --features sparse-region-walk --lib
+          (cd "$baseline" && CARGO_TARGET_DIR="$base_target" cargo test "${base[@]}" regions::original_region_events -- --exact --ignored --nocapture 2>&1 | tee "$capture/base-region-events.log")
+          cargo test "${head[@]}" --test canonical_rule_group regions::original_region_events -- --exact --ignored --nocapture 2>&1 | tee "$capture/head-region-events.log"
+          for epoch in base head; do
+            grep -E '^(nodes|events) ' "$capture/$epoch-region-events.log" > "$capture/$epoch-region-packets.txt"
+            test -s "$capture/$epoch-region-packets.txt"
+          done
+          cmp "$capture/base-region-packets.txt" "$capture/head-region-packets.txt"
           git -C "$baseline" diff --exit-code -- crates/vize_patina/src Cargo.lock
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()

@@ -113,34 +113,32 @@ impl<'o, 'a> NativeCanonicalLint<'o, 'a> {
         let mut findings = Vec::new();
         let mut refusal = None;
         let mut rendered = None;
-        self.file
-            .artifact()
-            .visit_nodes(&mut |_, node| {
-                if refusal.is_some() {
+        visit_markup_nodes(self.file, &mut |_, node| {
+            if refusal.is_some() {
+                return;
+            }
+            let attributes = match node {
+                NodeRef::Op(Op::Element(element)) => &element.attributes,
+                NodeRef::Op(Op::Component(component)) => &component.attributes,
+                NodeRef::Op(Op::Comment(comment)) => {
+                    refusal =
+                        Some(NativeCanonicalLintRefusal::MarkupComment { span: comment.span });
                     return;
                 }
-                let attributes = match node {
-                    NodeRef::Op(Op::Element(element)) => &element.attributes,
-                    NodeRef::Op(Op::Component(component)) => &component.attributes,
-                    NodeRef::Op(Op::Comment(comment)) => {
-                        refusal =
-                            Some(NativeCanonicalLintRefusal::MarkupComment { span: comment.span });
-                        return;
-                    }
-                    _ => return,
-                };
-                for attribute in attributes {
-                    if attribute.name.eq_ignore_ascii_case("tabindex")
-                        && let Some(value) = attribute.value
-                        && crate::attribute_policy::positive_tabindex(value)
-                    {
-                        let rendered = rendered
-                            .get_or_insert_with(|| tabindex_no_positive::Messages::new(messages));
-                        findings.push(rendered.finding(attribute.span));
-                    }
+                _ => return,
+            };
+            for attribute in attributes {
+                if attribute.name.eq_ignore_ascii_case("tabindex")
+                    && let Some(value) = attribute.value
+                    && crate::attribute_policy::positive_tabindex(value)
+                {
+                    let rendered = rendered
+                        .get_or_insert_with(|| tabindex_no_positive::Messages::new(messages));
+                    findings.push(rendered.finding(attribute.span));
                 }
-            })
-            .map_err(|_| NativeCanonicalLintRefusal::NodeLimit)?;
+            }
+        })
+        .map_err(|_| NativeCanonicalLintRefusal::NodeLimit)?;
         if let Some(refusal) = refusal {
             return Err(refusal);
         }
@@ -158,3 +156,18 @@ impl<'o, 'a> NativeCanonicalLint<'o, 'a> {
 mod accessibility;
 #[cfg(feature = "canonical-rule-group")]
 pub use accessibility::AccessibilityFindings;
+
+#[inline]
+fn visit_markup_nodes<'s, 'a>(
+    file: &'s FileArtifact<'a>,
+    visit: &mut impl FnMut(vize_l0::id::NodeId, NodeRef<'s, 'a>),
+) -> Result<(), vize_l2::walk::NodeLimit> {
+    #[cfg(feature = "canonical-rule-group")]
+    {
+        file.artifact().visit_markup_preorder(visit)
+    }
+    #[cfg(not(feature = "canonical-rule-group"))]
+    {
+        file.artifact().visit_nodes(visit)
+    }
+}

@@ -21,6 +21,7 @@ use vize_patina::native::{
 
 mod group;
 mod profile;
+mod regions;
 
 type Answer = Result<Vec<NativeLintFinding>, NativeCanonicalLintRefusal>;
 type Findings = Result<Vec<(&'static str, Diagnostic)>, NativeCanonicalLintRefusal>;

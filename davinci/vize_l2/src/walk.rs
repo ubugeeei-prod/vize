@@ -174,3 +174,6 @@ pub fn assert_accounting(walk: &PageWalk, op_count: u32, pass: &str) {
         walk.next,
     );
 }
+
+#[cfg(feature = "sparse-region-walk")]
+pub(crate) use nodes::preorder::visit_sealed_nodes;

@@ -152,3 +152,6 @@ fn bindings<'s, 'a>(
     }
     Ok(())
 }
+
+#[cfg(feature = "sparse-region-walk")]
+pub(crate) mod preorder;
