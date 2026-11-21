@@ -30,6 +30,8 @@ native = [
 legacy = ["vize_armature/legacy", "vize_atelier_jsx/legacy"]
 # TS-25 lane: the L4 projection compared with the current virtual-TS generator.
 legacy-differential = []
+# Run the explicit prepared-module projection against the existing checker.
+component-projection-tests = ["native", "vize_l4/component-projection"]
 # Deprecated published feature spelling; keep as a compatibility alias.
 davinci-differential = ["legacy-differential"]
 
@@ -113,13 +115,12 @@ required-features = ["legacy-differential"]
 
 [[test]]
 name = "component_prop_projection"
-required-features = ["native", "vize_l4/component-projection"]
+required-features = ["component-projection-tests"]
 
-[[test]]
+[[example]]
 name = "component_projection_alloc"
 path = "tests/component_prop_projection/alloc.rs"
-harness = false
-required-features = ["native", "vize_l4/component-projection"]
+required-features = ["component-projection-tests"]
 
 [[test]]
 name = "empty_vue_star_exports"

@@ -67,7 +67,8 @@ const helpers = input.helpers.map((name) => {
     const meaning = ts.SymbolFlags.Value | ts.SymbolFlags.Type;
     const symbol = checker.resolveName(name, program.getSourceFile(filename), meaning, false);
     for (const declaration of symbol?.declarations ?? []) {
-      declarations.add(path.relative(process.cwd(), declaration.getSourceFile().fileName));
+      const relative = path.relative(process.cwd(), declaration.getSourceFile().fileName);
+      declarations.add(relative.split(path.sep).join("/"));
     }
   }
   return { name, declarations: [...declarations] };

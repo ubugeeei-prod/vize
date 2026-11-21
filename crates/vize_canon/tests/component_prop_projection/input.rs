@@ -3,7 +3,7 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_l0::Allocator;
-use vize_l1_to_l2::framework::vue::jsx::{ModuleOptions, VIZE, lower_module_def};
+use vize_l1_to_l2::framework::vue::jsx::{ModuleOptions, VIZE, lower_module_with_component_sites};
 use vize_l2::{component::Exec, module::ModuleDef};
 
 pub(super) fn lower<'a>(arena: &'a Allocator, source: &'a str) -> ModuleDef<'a> {
@@ -17,7 +17,7 @@ pub(super) fn lower<'a>(arena: &'a Allocator, source: &'a str) -> ModuleDef<'a> 
         dialect: &VIZE,
         default_exec: Exec::ReRender,
     };
-    lower_module_def(arena, &observed, Some(&scoping), options)
+    lower_module_with_component_sites(arena, &observed, Some(&scoping), options)
         .unwrap()
         .module
 }

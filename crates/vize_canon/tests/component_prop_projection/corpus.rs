@@ -40,7 +40,9 @@ fn component_props_in_original_modules() {
             dialect: &VIZE,
             default_exec: Exec::ReRender,
         };
-        let Ok(lowered) = lower_module_def(&arena, &observed, Some(&scoping), options) else {
+        let Ok(lowered) =
+            lower_module_with_component_sites(&arena, &observed, Some(&scoping), options)
+        else {
             lowering += 1;
             continue;
         };

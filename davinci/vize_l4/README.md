@@ -58,7 +58,9 @@ child values are checked through the published ambient helpers. `&&`, `?:`
 and `.map()` keep their authored script around the projected regions. The
 result is a `TsDocument`: text, one role per link and check-comment ranges.
 The explicit `component-projection` feature adds
-`project_module_with_component_checks` for prepared lexical modules. It checks
+`project_module_with_component_checks` for lexical modules prepared with
+`lower_module_with_component_sites`. The original parser supplies each callee
+and quoted literal range in the module-region walk. The projection checks
 the original component value and one ordered props object with the published
 component helpers. Registry lookups, explicit generic arguments and slot
 scopes return a typed refusal. The original projection API keeps its

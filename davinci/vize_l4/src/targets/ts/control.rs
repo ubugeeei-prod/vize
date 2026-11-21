@@ -71,14 +71,16 @@ fn region(
     };
     #[cfg(feature = "component-projection")]
     if let Op::Component(component) = op
-        && cx.component_checks
+        && cx.component_checks.is_some()
     {
         let span = component.span;
         gap(cx, cursor, span.start, inner)?;
         cx.anchor(span, LinkRole::Expression, |cx| {
-            cx.out.push("[");
+            cx.out.push("([");
             super::component::write(cx, component, &mut Items::new())?;
-            cx.out.push("]");
+            cx.out.push("] as unknown as ");
+            cx.out.push(super::helpers::RE_RENDER_ROOT);
+            cx.out.push(")");
             Ok(())
         })?;
         return Ok(span.end);

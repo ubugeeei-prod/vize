@@ -22,6 +22,12 @@ pub(super) const CASES: &[Case] = &[
         codes: &[2345],
     },
     Case {
+        id: "callee_trivia",
+        declarations: WIDGET,
+        root: "<Widget /* trivia */ foo-bar='ok'/>",
+        codes: &[],
+    },
+    Case {
         id: "wrong_type",
         declarations: WIDGET,
         root: "<Widget foo-bar={12}/>",
@@ -122,6 +128,24 @@ pub(super) const CASES: &[Case] = &[
         declarations: "declare const when: boolean; declare function Widget(p: { ok: boolean }): unknown;",
         root: "<div>{when ? <Widget ok/> : <Widget ok={false}/>}</div>",
         codes: &[],
+    },
+    Case {
+        id: "typed_callback",
+        declarations: "import type { VNode } from 'vue'; declare const values: number[]; declare function Widget(p: { count: number }): unknown;",
+        root: "<div>{values.map((n): VNode => <Widget count={n}/>)}</div>",
+        codes: &[],
+    },
+    Case {
+        id: "map_type_argument",
+        declarations: "import type { VNode } from 'vue'; declare const values: number[]; declare function Widget(p: { count: number }): unknown;",
+        root: "<div>{values.map<VNode>(n => <Widget count={n}/>)}</div>",
+        codes: &[],
+    },
+    Case {
+        id: "typed_callback_invalid_prop",
+        declarations: "import type { VNode } from 'vue'; declare const values: string[]; declare function Widget(p: { count: number }): unknown;",
+        root: "<div>{values.map((n): VNode => <Widget count={n}/>)}</div>",
+        codes: &[2322],
     },
     Case {
         id: "loop",

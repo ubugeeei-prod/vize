@@ -7,11 +7,11 @@ use vize_l2::expr::ExprRef;
 use vize_l2::op::{Attribute, BindOp, BindingOp, ComponentOp, DynamicName};
 
 use super::helpers::{COMPONENT, COMPONENT_SPREAD};
-use super::module::{Cx, JsxModuleRefusal};
+use super::module::{Cx, ModuleProjectionError};
 use super::ops::{self, Items};
 use super::output::LinkRole;
 
-type Result<T> = core::result::Result<T, JsxModuleRefusal>;
+type Result<T> = core::result::Result<T, ModuleProjectionError>;
 
 pub(super) fn write(cx: &mut Cx<'_>, component: &ComponentOp<'_>, items: &mut Items) -> Result<()> {
     let (tag, bindings) = lexical_owner(cx, component)?;
@@ -40,14 +40,12 @@ pub(super) fn write(cx: &mut Cx<'_>, component: &ComponentOp<'_>, items: &mut It
     ops::region(cx, &component.children, items)
 }
 
-/// The JSX lowering represents a lexical tag as the first `is` binding
-/// located at the tag itself. A literal <component is={...}> and a
-/// registry-resolved tag require separate projection rules.
+/// Join the original lexical callee with the canonical component selector.
 fn lexical_owner<'b, 'a>(
     cx: &Cx<'_>,
     component: &'b ComponentOp<'a>,
 ) -> Result<(Span, &'b [BindingOp<'a>])> {
-    let refusal = JsxModuleRefusal::Unsupported("ui.component");
+    let refusal = ModuleProjectionError::Unsupported("ui.component");
     let Some((BindingOp::Bind(owner), bindings)) = component.bindings.split_first() else {
         return Err(refusal);
     };
@@ -58,37 +56,26 @@ fn lexical_owner<'b, 'a>(
     // A lexical tag must be an identifier or a member expression from this
     // opening. A recovered or synthesized expression cannot establish it.
     let ExprRef::Js(js) = value else {
-        return Err(JsxModuleRefusal::Expression);
+        return Err(ModuleProjectionError::Expression);
     };
     if !matches!(
         js.ast,
         oxc_ast::ast::Expression::Identifier(_)
             | oxc_ast::ast::Expression::StaticMemberExpression(_)
     ) {
-        return Err(JsxModuleRefusal::Expression);
+        return Err(ModuleProjectionError::Expression);
     }
     let text = js.source;
     if component.name != "component"
         || !matches!(owner.name, Some(DynamicName::Static("is")))
         || !owner.modifiers.is_empty()
         || owner.span != tag
-        || component.span.start.checked_add(1) != Some(tag.start)
         || cx
-            .source
-            .get(component.span.start as usize..tag.start as usize)
-            != Some("<")
+            .component_checks
+            .and_then(|sites| sites.callee(component.span.start))
+            != Some(tag)
         || cx.source.get(tag.start as usize..tag.end as usize) != Some(text)
     {
-        return Err(refusal);
-    }
-    // The lowering does not retain explicit JSX type arguments. Refuse
-    // those before inferring a generic call with a different contract.
-    let tail = cx
-        .source
-        .get(tag.end as usize..component.span.end as usize)
-        .ok_or(JsxModuleRefusal::Span)?;
-    let tail = tail.trim_start_matches(|ch: char| ch.is_whitespace() || ch == '\u{feff}');
-    if tail.starts_with('<') || tail.starts_with("/*") || tail.starts_with("//") {
         return Err(refusal);
     }
     Ok((tag, bindings))
@@ -111,7 +98,7 @@ fn prop_object(
     let width = (cx.out.len() - start).min(tag.len() as usize) as u32;
     let authored = Span::new(tag.start, tag.start + width);
     if !cx.source.is_char_boundary(authored.end as usize) {
-        return Err(JsxModuleRefusal::Span);
+        return Err(ModuleProjectionError::Span);
     }
     cx.out.close_anchor(link, authored)?;
     Ok(reads)
@@ -129,7 +116,7 @@ fn props(
     loop {
         let bind = match bindings.split_first() {
             Some((BindingOp::Bind(bind), rest)) => Some((&**bind, rest)),
-            Some((other, _)) => return Err(JsxModuleRefusal::Unsupported(other.mnemonic())),
+            Some((other, _)) => return Err(ModuleProjectionError::Unsupported(other.mnemonic())),
             None => None,
         };
         if let Some((attr, rest)) = attributes.split_first()
@@ -150,7 +137,7 @@ fn props(
 
 fn advance(cursor: &mut u32, span: Span, owner: Span) -> Result<()> {
     if span.start < *cursor || span.is_empty() || span.end > owner.end {
-        return Err(JsxModuleRefusal::Span);
+        return Err(ModuleProjectionError::Span);
     }
     *cursor = span.end;
     Ok(())
@@ -165,29 +152,19 @@ fn attribute(cx: &mut Cx<'_>, attr: &Attribute<'_>, entries: &mut Items) -> Resu
     cx.anchor(attr.span, LinkRole::Attribute, |cx| {
         prop_name(cx, attr.name, key)?;
         if let Some(value) = attr.value {
-            let tail = cx
+            let authored = cx
+                .component_checks
+                .and_then(|sites| sites.literal(attr.span))
+                .ok_or(ModuleProjectionError::Span)?;
+            let quoted = cx
                 .source
-                .get(key.end as usize..attr.span.end as usize)
-                .ok_or(JsxModuleRefusal::Span)?;
-            let quoted = tail
-                .trim_start()
-                .strip_prefix('=')
-                .ok_or(JsxModuleRefusal::Span)?
-                .trim_start();
-            let first = quoted.as_bytes().first();
-            if quoted.len() < 2
-                || !matches!(first, Some(b'\'' | b'"'))
-                || first != quoted.as_bytes().last()
-            {
-                return Err(JsxModuleRefusal::Span);
-            }
-            let length = u32::try_from(quoted.len()).map_err(|_| JsxModuleRefusal::Span)?;
-            let authored = Span::new(attr.span.end - length, attr.span.end);
+                .get(authored.start as usize..authored.end as usize)
+                .ok_or(ModuleProjectionError::Span)?;
             literal(cx, value, authored, LinkRole::Expression, Some(quoted))?;
         } else if key == attr.span {
             cx.out.push("true");
         } else {
-            return Err(JsxModuleRefusal::Unsupported("ui.attribute"));
+            return Err(ModuleProjectionError::Unsupported("ui.attribute"));
         }
         Ok(())
     })
@@ -195,13 +172,13 @@ fn attribute(cx: &mut Cx<'_>, attr: &Attribute<'_>, entries: &mut Items) -> Resu
 
 fn binding(cx: &mut Cx<'_>, bind: &BindOp<'_>, entries: &mut Items) -> Result<bool> {
     let Some(value) = &bind.value else {
-        return Err(JsxModuleRefusal::Unsupported("ui.bind"));
+        return Err(ModuleProjectionError::Unsupported("ui.bind"));
     };
     if !bind.modifiers.is_empty()
         || value.span().start < bind.span.start
         || value.span().end > bind.span.end
     {
-        return Err(JsxModuleRefusal::Unsupported("ui.bind"));
+        return Err(ModuleProjectionError::Unsupported("ui.bind"));
     }
     let name = match &bind.name {
         Some(DynamicName::Static(name)) => {
@@ -211,7 +188,7 @@ fn binding(cx: &mut Cx<'_>, bind: &BindOp<'_>, entries: &mut Items) -> Result<bo
             }
             Some((*name, key))
         }
-        Some(DynamicName::Dynamic(_)) => return Err(JsxModuleRefusal::Unsupported("ui.bind")),
+        Some(DynamicName::Dynamic(_)) => return Err(ModuleProjectionError::Unsupported("ui.bind")),
         None => None,
     };
     entries.next(cx);
@@ -238,16 +215,16 @@ fn prop_expression(cx: &mut Cx<'_>, value: &ExprRef<'_>) -> Result<()> {
         ExprRef::Js(js) if !matches!(js.ast, oxc_ast::ast::Expression::SequenceExpression(_)) => {
             ops::expression(cx, value)
         }
-        _ => Err(JsxModuleRefusal::Expression),
+        _ => Err(ModuleProjectionError::Expression),
     }
 }
 
 fn name_span(cx: &Cx<'_>, name: &str, attr: Span) -> Result<Span> {
-    let root = SourceRoot::new(cx.source).map_err(|_| JsxModuleRefusal::SourceTooLarge)?;
+    let root = SourceRoot::new(cx.source).map_err(|_| ModuleProjectionError::SourceTooLarge)?;
     root.whole_block()
         .span_of(name)
         .filter(|span| span.start == attr.start && !span.is_empty() && span.end <= attr.end)
-        .ok_or(JsxModuleRefusal::Span)
+        .ok_or(ModuleProjectionError::Span)
 }
 
 /// Canon's JSX contract accepts Vue's kebab aliases and leaves data/ARIA
@@ -288,7 +265,8 @@ fn literal(
         .bytes()
         .any(|byte| byte < 0x20 || matches!(byte, b'"' | b'\\'))
     {
-        let escaped = serde_json::to_string(value).map_err(|_| JsxModuleRefusal::Expression)?;
+        let escaped =
+            serde_json::to_string(value).map_err(|_| ModuleProjectionError::Expression)?;
         if original == Some(escaped.as_str()) {
             return cx.verbatim(authored, role);
         }

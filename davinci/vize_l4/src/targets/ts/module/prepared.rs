@@ -42,7 +42,7 @@ macro_rules! emit {
 }
 
 pub fn project_module(module: &ModuleDef<'_>) -> Result<TsDocument, ModuleProjectionError> {
-    emit!(module, false)
+    emit!(module, None)
 }
 
 /// Project native checks and lexical component prop objects from the same L2 roots.
@@ -51,5 +51,8 @@ pub fn project_module(module: &ModuleDef<'_>) -> Result<TsDocument, ModuleProjec
 pub fn project_module_with_component_checks(
     module: &ModuleDef<'_>,
 ) -> Result<TsDocument, ModuleProjectionError> {
-    emit!(module, true)
+    let sites = module
+        .component_sites()
+        .ok_or(ModuleProjectionError::MissingComponentSites)?;
+    emit!(module, Some(sites))
 }

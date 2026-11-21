@@ -259,3 +259,6 @@ pub fn lower_component<'a>(
 mod definition;
 #[cfg(feature = "module-ir")]
 pub use definition::{ModuleLowering, ModuleLoweringError, lower_module_def};
+
+#[cfg(feature = "component-sites")]
+pub use definition::lower_module_with_component_sites;

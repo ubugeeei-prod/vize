@@ -67,6 +67,7 @@ test("all raw-child producers, exhaustive visitors and the three registered inpu
     "crates/vize_canon/src/projection/expression.rs",
     "crates/vize_canon/tests/jsx_child_expression_control.rs",
     "crates/vize_canon/tests/component_prop_projection/main.rs",
+    "davinci/vize_l1/src/embed/regions/component.rs",
     "crates/vize_canon/Cargo.toml",
     "crates/vize_patina/src/markup/visitor.rs",
     "crates/vize_patina/tests/jsx_child_expression_control.rs",

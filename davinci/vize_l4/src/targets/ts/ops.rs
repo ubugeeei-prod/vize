@@ -79,7 +79,7 @@ fn op(cx: &mut Cx<'_>, op: &Op<'_>, items: &mut Items) -> Result<(), JsxModuleRe
             Ok(())
         }
         #[cfg(feature = "component-projection")]
-        Op::Component(component) if cx.component_checks => {
+        Op::Component(component) if cx.component_checks.is_some() => {
             super::component::write(cx, component, items)
         }
         // Preserve the original projection profile's typed refusal.

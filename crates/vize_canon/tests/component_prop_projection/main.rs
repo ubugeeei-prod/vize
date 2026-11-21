@@ -23,7 +23,7 @@ use std::path::Path;
 use vize_atelier_jsx::JsxLang;
 use vize_canon::batch::generate_jsx_document_virtual_ts;
 use vize_l0::Allocator;
-use vize_l1_to_l2::framework::vue::jsx::{ModuleOptions, VIZE, lower_module_def};
+use vize_l1_to_l2::framework::vue::jsx::{ModuleOptions, VIZE, lower_module_with_component_sites};
 use vize_l2::component::Exec;
 use vize_l4::targets::ts::{
     ModuleProjectionError, project_module, project_module_with_component_checks,
@@ -88,5 +88,32 @@ fn a_canon_diagnostic_endpoint_inside_a_unicode_tag_is_an_explicit_refusal() {
     assert_eq!(
         project_module_with_component_checks(&module).unwrap_err(),
         ModuleProjectionError::Span
+    );
+}
+
+#[test]
+fn ordinary_module_preparation_keeps_its_original_surface() {
+    use vize_l1_to_l2::framework::vue::jsx::lower_module_def;
+    let source = "declare function Widget(p: object): unknown; export const view=()=> <Widget/>;";
+    let arena = Allocator::default();
+    let parsed = Parser::new(arena.as_oxc(), source, SourceType::tsx()).parse_observed();
+    let observed = parsed.admitted().unwrap();
+    let scoping = SemanticBuilder::new()
+        .build(observed.program())
+        .semantic
+        .into_scoping();
+    let options = ModuleOptions {
+        dialect: &VIZE,
+        default_exec: Exec::ReRender,
+    };
+    let ordinary = lower_module_def(&arena, &observed, Some(&scoping), options).unwrap();
+    assert!(ordinary.module.component_sites().is_none());
+    assert_eq!(
+        project_module(&ordinary.module).unwrap_err(),
+        ModuleProjectionError::UnpublishedHelper("ui.component")
+    );
+    assert_eq!(
+        project_module_with_component_checks(&ordinary.module).unwrap_err(),
+        ModuleProjectionError::MissingComponentSites
     );
 }

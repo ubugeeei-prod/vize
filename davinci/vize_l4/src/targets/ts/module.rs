@@ -21,6 +21,9 @@ use super::output::{LinkRole, Out, TsDocument};
 pub enum JsxModuleRefusal {
     /// The module does not fit 32-bit offsets.
     SourceTooLarge,
+    /// The prepared module was built without callee and literal sites.
+    #[cfg(feature = "component-projection")]
+    MissingComponentSites,
     /// A root's L2 body indexes another source.
     ForeignSource,
     /// The roots are not exactly the module's outermost markup roots, in order.
@@ -77,7 +80,7 @@ pub fn project_jsx_module(
         source,
         markup: &markup.starts,
         #[cfg(feature = "component-projection")]
-        component_checks: false,
+        component_checks: None,
         out: Out::with_capacity(source.len().saturating_mul(2)),
     };
     let mut cursor = 0;
@@ -96,7 +99,7 @@ pub(super) struct Cx<'s> {
     pub(super) source: &'s str,
     markup: &'s [u32],
     #[cfg(feature = "component-projection")]
-    pub(super) component_checks: bool,
+    pub(super) component_checks: Option<&'s vize_l2::module::ComponentSites>,
     pub(super) out: Out,
 }
 
@@ -136,7 +139,7 @@ impl Cx<'_> {
         write: impl FnOnce(&mut Self) -> Result<(), JsxModuleRefusal>,
     ) -> Result<(), JsxModuleRefusal> {
         #[cfg(feature = "component-projection")]
-        if self.component_checks {
+        if self.component_checks.is_some() {
             let link = self.out.open_anchor(role);
             write(self)?;
             return self.out.close_anchor(link, authored);

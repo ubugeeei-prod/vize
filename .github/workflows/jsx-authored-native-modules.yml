@@ -9,6 +9,7 @@ on:
       - "davinci/vize_l1/Cargo.toml"
       - "davinci/vize_l1/src/embed.rs"
       - "davinci/vize_l1/src/embed/regions.rs"
+      - "davinci/vize_l1/src/embed/regions/**"
       - "davinci/vize_l1_to_l2/**"
       - "davinci/vize_l2/**"
       - "davinci/vize_l2_to_l3/**"
@@ -107,8 +108,9 @@ jobs:
         env:
           VIZE_MODULE_IR_MANIFEST: ${{ runner.temp }}/module-ir-paths
         run: |
-          cargo test --locked --profile ci -p vize_canon --features vize_l4/component-projection --test component_prop_projection --test component_projection_alloc
-          cargo test --locked --profile ci -p vize_canon --features vize_l4/component-projection --test component_prop_projection -- corpus::component_props_in_original_modules --exact --ignored --nocapture
+          cargo test --locked --profile ci -p vize_canon --features component-projection-tests --test component_prop_projection
+          cargo run --locked --profile ci -p vize_canon --features component-projection-tests --example component_projection_alloc
+          cargo test --locked --profile ci -p vize_canon --features component-projection-tests --test component_prop_projection -- corpus::component_props_in_original_modules --exact --ignored --nocapture
       - name: Original VDOM child values and parent block ownership before and after
         env:
           INSTA_UPDATE: new

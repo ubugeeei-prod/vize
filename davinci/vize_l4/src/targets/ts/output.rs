@@ -198,10 +198,10 @@ impl Out {
         &mut self,
         open: crate::write::OpenLink,
         authored: Span,
-    ) -> Result<(), super::JsxModuleRefusal> {
+    ) -> Result<(), super::ModuleProjectionError> {
         self.writer
             .close_link(open, authored)
-            .ok_or(super::JsxModuleRefusal::SourceTooLarge)
+            .ok_or(super::ModuleProjectionError::SourceTooLarge)
     }
 
     /// A rewritten leaf has one authored owner, including generated quotes.
