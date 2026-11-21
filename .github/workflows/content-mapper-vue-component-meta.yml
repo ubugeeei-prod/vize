@@ -7,7 +7,7 @@ on:
       - crates/vize_canon/src/virtual_ts/generator/component_export*
       - crates/vize_canon/src/virtual_ts/generator/component_constructors*
       - tools/support/compat/content-mapper/fixtures/vue-component-meta/**
-      - .github/workflows/vue-component-meta.yml
+      - .github/workflows/content-mapper-vue-component-meta.yml
   workflow_dispatch:
 permissions: { contents: read }
 concurrency:
@@ -39,14 +39,9 @@ jobs:
           cd "$RUNNER_TEMP/component-meta"
           npm install --no-audit --no-fund --legacy-peer-deps tsrs@7.1.0-beta.tsrs4 vue@3.5.46 vue-component-meta@4.0.0-alpha.3
           mkdir -p node_modules/vize
-          cp -R "$GITHUB_WORKSPACE/npm/cli/"{package.json,*.d.*,generated} node_modules/vize/
-          node --input-type=module <<'JS'
-          import fs from "node:fs";
-          const file = "node_modules/vize/package.json";
-          const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
-          manifest.typescript.contentMapper.exec = [process.env.GITHUB_WORKSPACE + "/target/ci/vize", "content-mapper"];
-          fs.writeFileSync(file, JSON.stringify(manifest));
-          JS
+          cp -R "$GITHUB_WORKSPACE/npm/cli/"{*.d.*,generated} node_modules/vize/
+          jq --arg cli "$GITHUB_WORKSPACE/target/ci/vize" '.typescript.contentMapper.exec = [$cli, "content-mapper"]' \
+            "$GITHUB_WORKSPACE/npm/cli/package.json" > node_modules/vize/package.json
           node check.ts
       - name: Check component tag hover and go-to-definition
         env:

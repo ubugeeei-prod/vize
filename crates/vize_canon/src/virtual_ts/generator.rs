@@ -758,7 +758,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         }
         #("\n\n")
     }
-    // Invoke setup to keep diagnostics inside the generated setup body.
     ts.push_str("// Invoke setup to verify types\n");
     semantic_links.extend(script_module::emit_exports(
         &mut ts,

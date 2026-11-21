@@ -14,10 +14,14 @@
         "sha256": "8d6315d1c1a16ea0a63caf479728491e3b07cfd3b59cd18f5d984e26693c92e1"
       },
       "after": {
-        "bytes": 38040,
-        "sha256": "e968c3579779746afc1a3f392d6ab69133d077ac2e79b1772244a5fb09eb0eec"
+        "bytes": 37967,
+        "sha256": "5bb9dd63c0a8bb7cb7f7f548056dc3a5def3daf5db1b1fbad888b5bb93971b6e"
       },
       "hunks": [
+        {
+          "before": "    }\n    // Invoke setup to keep diagnostics inside the generated setup body.\n    ts.push_str(\"// Invoke setup to verify types\\n\");\n",
+          "after": "    }\n    ts.push_str(\"// Invoke setup to verify types\\n\");\n"
+        },
         {
           "before": "            hoist_shared_preamble,\n        },\n",
           "after": "            hoist_shared_preamble,\n            named_component_export: generation_options.component_name.is_some(),\n        },\n"

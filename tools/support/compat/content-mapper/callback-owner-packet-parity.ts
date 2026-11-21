@@ -437,8 +437,7 @@ export function assertPreservedCallbackPacket(
   inertBindings?: InertCallbackBinding[],
   currentSourceRead?: CallbackSourceReader,
 ) {
-  assert.equal(typeof before.text, "string");
-  assert.equal(typeof after.text, "string");
+  assert.ok(typeof before.text === "string" && typeof after.text === "string");
   if (before.text !== after.text && hasMetadataExport(after.text)) {
     const predecessor = (packet: Record<string, unknown>) =>
       beforeMetadataPacket(withoutProducerUnmappedIgnores(packet as unknown as Packet));

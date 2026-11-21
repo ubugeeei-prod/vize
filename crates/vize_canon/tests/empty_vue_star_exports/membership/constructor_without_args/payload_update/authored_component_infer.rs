@@ -29,7 +29,7 @@ fn metadata_record() -> &'static Value {
         ));
         assert_eq!(
             support::hash(bytes),
-            "c8b12d5eec1751e3b378a4e023c2a9cd86f5ff8a5df74499151b3620dc53ace5"
+            "24efda8a8e69229347612becd4f5503d1158d824a755f2f5b9d3b5eff5f23b95"
         );
         let record: Value = serde_json::from_slice(bytes).unwrap();
         assert_eq!(record["schema"], "vize.componentMetadataSource.v1");

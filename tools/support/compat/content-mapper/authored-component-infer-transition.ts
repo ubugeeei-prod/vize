@@ -39,7 +39,7 @@ const metadataBytes = readFileSync(
 );
 assert.equal(
   createHash("sha256").update(metadataBytes).digest("hex"),
-  "c8b12d5eec1751e3b378a4e023c2a9cd86f5ff8a5df74499151b3620dc53ace5",
+  "24efda8a8e69229347612becd4f5503d1158d824a755f2f5b9d3b5eff5f23b95",
 );
 const metadata = JSON.parse(metadataBytes.toString("utf8")) as Record;
 assert.equal(metadata.schema, "vize.componentMetadataSource.v1");

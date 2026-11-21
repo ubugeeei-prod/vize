@@ -267,14 +267,24 @@ export function assertConstructorWrapperMappings(
       "one named component export owns the navigation successor",
     );
     const name = exported[1]!;
-    const start = Buffer.byteLength(
-      current.text.slice(0, exported.index! + "declare const ".length),
-    );
-    const navigation: Tuple = [start, Buffer.byteLength(name), 0, 0, 1, 248];
+    const assignment = `export default ${name} as typeof ${name};`;
+    const declaration = exported.index!;
+    const assignmentAt = declaration + exported[0].length + 1;
+    const usesValueDeclaration = current.text.startsWith(assignment + "\n", assignmentAt);
+    const target = usesValueDeclaration ? assignment : name;
+    const targetAt = usesValueDeclaration ? assignmentAt : declaration + "declare const ".length;
+    const navigation: Tuple = [
+      Buffer.byteLength(current.text.slice(0, targetAt)),
+      Buffer.byteLength(target),
+      0,
+      0,
+      1,
+      248,
+    ];
     assert.deepEqual(
       current.rows[cursor],
       navigation,
-      "the named component export maps only its exact name to the SFC start",
+      "the component's exact definition target maps to the SFC start",
     );
     expected.push(contract(current, navigation, canonical));
     cursor++;
