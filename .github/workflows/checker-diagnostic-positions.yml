@@ -38,7 +38,7 @@ jobs:
           cache-save: false
           run-install: false
       - name: Install the pinned checker used by the original projection suites
-        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './npm/ui...'
+        run: node tools/support/github/vp-install.ts --filter vize-workspace --filter './npm/ui...' --filter './npm/cli'
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with: { toolchain: "1.100.0", components: clippy }
       - uses: ./.github/actions/setup-wild-http-recovery
