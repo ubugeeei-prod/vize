@@ -4,6 +4,12 @@ import { runInNewContext } from "node:vm";
 import { test } from "node:test";
 import { parse } from "yaml";
 import {
+  normalizePortabilityRun,
+  portabilityRun,
+  portabilityRunBeforeL4,
+  portabilityStep,
+} from "./support/davinci-portability.ts";
+import {
   checkWorkflowJobSources,
   readRepoFile,
   restorePinnedWildAction,
@@ -109,7 +115,7 @@ test("explicit profile refuses nonrelease and malformed release refs through its
   assert.equal(condition(step.if, "workflow_dispatch", "refs/heads/main", false), false);
 });
 
-test("parallel Rust jobs preserve their setup and migrate only the Clippy helper commands", () => {
+test("parallel Rust jobs preserve setup and apply the reviewed Clippy and TS-24 changes", () => {
   const original = (
     parse(
       readRepoFile("tests", "_fixtures", "ci", "check-clippy-and-test.original.yml.txt"),
@@ -154,6 +160,13 @@ test("parallel Rust jobs preserve their setup and migrate only the Clippy helper
       "rust-script tools/commands/ci/check-skeleton-todos.rs",
       "node tools/commands/ci/check-skeleton-todos.ts",
     );
+  const portability = expectedTasks.find((step) => step.name === portabilityStep);
+  assert.ok(portability);
+  assert.equal(normalizePortabilityRun(portability.run), portabilityRunBeforeL4);
+  const currentPortability = tasks.find((step) => step.name === portabilityStep);
+  assert.ok(currentPortability);
+  assert.equal(normalizePortabilityRun(currentPortability.run), portabilityRun);
+  portability.run = currentPortability.run;
   assert.deepEqual(tasks, expectedTasks);
   const aggregate = jobs["clippy-and-test"];
   assert.deepEqual(aggregate.needs, producers);

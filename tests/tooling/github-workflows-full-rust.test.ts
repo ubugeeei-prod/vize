@@ -5,6 +5,12 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { parse } from "yaml";
 import {
+  normalizePortabilityRun,
+  portabilityRun,
+  portabilityRunBeforeL4,
+  portabilityStep,
+} from "./support/davinci-portability.ts";
+import {
   checkWorkflowJobSources,
   readRepoFile,
   restorePinnedWildAction,
@@ -386,6 +392,12 @@ void test("full-only extraction preserves all seventeen complete original job ob
     },
     run: 'node tests/differential/typechecker-workspace.ts verify "$SOURCE_SHA" .artifacts/rust-full-workspace "$GITHUB_RUN_ID" "$PRODUCER_ATTEMPT"',
   });
+  const portability = original["rust-clippy-portability"].steps.find(
+    (step: Step) => step.name === portabilityStep,
+  );
+  assert.ok(portability);
+  assert.equal(normalizePortabilityRun(portability.run), portabilityRun);
+  portability.run = portabilityRunBeforeL4;
   const originalJobs = Object.values(original) as Job[];
   const restoredWildSteps = originalJobs.reduce(
     (count: number, job: Job) => count + restorePinnedWildAction(job.steps ?? []),

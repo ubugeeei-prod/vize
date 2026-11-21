@@ -279,7 +279,7 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && node tools/commands/ci/github/check-maestro-feature-contract.ts && node tools/commands/ci/check-workspace-lints.ts --check && node tools/commands/ci/check-skeleton-todos.ts --check
       - name: Davinci no_std stage-library portability lanes (TS-24)
-        run: cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 && cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 --no-default-features
+        run: cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l4 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 && cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l4 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 --no-default-features
   rust-davinci-allocations:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
