@@ -11,6 +11,8 @@ metadata.vize.stability = "experimental"
 [features]
 # Explicit consumers of the same parsed TSRX module and sealed regions.
 retained-tsrx = []
+# Traverse sealed markup preorder without entering leaf regions or recursing for a tail child.
+sparse-region-walk = []
 # Prepare input-neutral modules for explicit analysis and projection.
 module-ir = ["vize_l1/module-ir"]
 # Retain original callee and literal ranges for explicit component checks.

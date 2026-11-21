@@ -46,69 +46,67 @@ impl NativeCanonicalLint<'_, '_> {
         // Attached bindings immediately follow their owner in canonical page
         // order. Finish the previous header on the next op, so every binding
         // is inspected through the existing single traversal, never rescanned.
-        self.file
-            .artifact()
-            .visit_nodes(&mut |_, node| {
-                if refusal.is_some() {
-                    return;
-                }
-                match node {
-                    NodeRef::Op(op) => {
-                        finish(&mut pending, &mut findings, &mut rendered, messages);
-                        match op {
-                            Op::Element(element) => {
-                                let policy = ImageAltPolicy::for_tag(element.tag);
-                                if !policy.applies() {
-                                    return;
-                                }
-                                if element.namespace != Namespace::Html {
-                                    refusal =
-                                        Some(NativeCanonicalLintRefusal::UnsupportedImageElement {
-                                            span: element.span,
-                                        });
-                                    return;
-                                }
-                                pending = Some(PendingImage {
-                                    policy,
-                                    span: element.span,
-                                    has_alt: element.attributes.iter().any(|attribute| {
-                                        attribute.name.eq_ignore_ascii_case("alt")
-                                    }),
-                                });
+        super::visit_markup_nodes(self.file, &mut |_, node| {
+            if refusal.is_some() {
+                return;
+            }
+            match node {
+                NodeRef::Op(op) => {
+                    finish(&mut pending, &mut findings, &mut rendered, messages);
+                    match op {
+                        Op::Element(element) => {
+                            let policy = ImageAltPolicy::for_tag(element.tag);
+                            if !policy.applies() {
+                                return;
                             }
-                            Op::Component(component) => {
-                                // A semantic component name is not authority
-                                // for its original tag: `img is='vue:Other'`
-                                // no longer has an image-shaped name here.
+                            if element.namespace != Namespace::Html {
                                 refusal =
                                     Some(NativeCanonicalLintRefusal::UnsupportedImageElement {
-                                        span: component.span,
+                                        span: element.span,
                                     });
+                                return;
                             }
-                            Op::Comment(comment) => {
-                                refusal = Some(NativeCanonicalLintRefusal::MarkupComment {
-                                    span: comment.span,
-                                });
-                            }
-                            _ => {}
-                        }
-                    }
-                    NodeRef::Binding(BindingOp::Bind(binding)) => match binding.name {
-                        Some(DynamicName::Static(name)) => {
-                            if let Some(image) = pending.as_mut() {
-                                image.has_alt |= name.eq_ignore_ascii_case("alt");
-                            }
-                        }
-                        None | Some(DynamicName::Dynamic(_)) => {
-                            refusal = Some(NativeCanonicalLintRefusal::IndeterminateAttribute {
-                                span: binding.span,
+                            pending = Some(PendingImage {
+                                policy,
+                                span: element.span,
+                                has_alt: element
+                                    .attributes
+                                    .iter()
+                                    .any(|attribute| attribute.name.eq_ignore_ascii_case("alt")),
                             });
                         }
-                    },
-                    _ => {}
+                        Op::Component(component) => {
+                            // A semantic component name is not authority
+                            // for its original tag: `img is='vue:Other'`
+                            // no longer has an image-shaped name here.
+                            refusal = Some(NativeCanonicalLintRefusal::UnsupportedImageElement {
+                                span: component.span,
+                            });
+                        }
+                        Op::Comment(comment) => {
+                            refusal = Some(NativeCanonicalLintRefusal::MarkupComment {
+                                span: comment.span,
+                            });
+                        }
+                        _ => {}
+                    }
                 }
-            })
-            .map_err(|_| NativeCanonicalLintRefusal::NodeLimit)?;
+                NodeRef::Binding(BindingOp::Bind(binding)) => match binding.name {
+                    Some(DynamicName::Static(name)) => {
+                        if let Some(image) = pending.as_mut() {
+                            image.has_alt |= name.eq_ignore_ascii_case("alt");
+                        }
+                    }
+                    None | Some(DynamicName::Dynamic(_)) => {
+                        refusal = Some(NativeCanonicalLintRefusal::IndeterminateAttribute {
+                            span: binding.span,
+                        });
+                    }
+                },
+                _ => {}
+            }
+        })
+        .map_err(|_| NativeCanonicalLintRefusal::NodeLimit)?;
         if let Some(refusal) = refusal {
             return Err(refusal);
         }
