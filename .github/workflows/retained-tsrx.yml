@@ -15,8 +15,10 @@ on:
       - "crates/vize_patina/src/linter/engine/tsrx*"
       - "crates/vize_patina/src/linter/engine/tsrx/**"
       - "crates/vize_patina/tests/prepared_tsrx/**"
+      - "crates/vize_patina/src/markup/**"
       - "tests/_fixtures/tsrx/**"
       - "tests/tooling/tsrx-oracle/**"
+      - "tests/tooling/tsrx-oracle.test.ts"
       - "tests/tooling/tsrx-mount.test.ts"
       - "tests/tooling/jsx-vapor-oracle/tsrx-mount.ts"
 permissions: { contents: read }
