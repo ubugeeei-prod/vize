@@ -72,3 +72,9 @@ impl StyleLanguage {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(any(test, feature = "observed-styles"))]
+mod observation;
+
+#[cfg(any(test, feature = "observed-styles"))]
+pub use observation::StyleObservation;
