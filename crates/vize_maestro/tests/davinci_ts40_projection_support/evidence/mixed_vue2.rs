@@ -223,9 +223,21 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
             non_text_fields(delimiter_successor),
             non_text_fields(owned_constructor)
         );
+        let default_expression = include_str!(
+            "../fixtures/public-instance-mixed-vue2/successor-default-expression-12985/projection-record.txt"
+        );
+        authenticate_successor_receipt(
+            include_str!(
+                "../fixtures/public-instance-mixed-vue2/successor-default-expression-12985/receipt.json"
+            ),
+            "9c46f52fc0076862f4fd61120c22cff920fea26ef9eb5e7555818e42380fa60c",
+            13439,
+            component_metadata::mixed_vue2(unowned_successor),
+            default_expression,
+        );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            component_metadata::mixed_vue2(unowned_successor)
+            default_expression
         );
     }
 }

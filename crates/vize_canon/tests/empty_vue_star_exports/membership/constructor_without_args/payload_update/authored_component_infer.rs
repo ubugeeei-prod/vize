@@ -20,30 +20,47 @@ fn record() -> Value {
     record
 }
 
-fn metadata_record() -> &'static Value {
-    static RECORD: std::sync::OnceLock<Value> = std::sync::OnceLock::new();
-    RECORD.get_or_init(|| {
-        let bytes = include_bytes!(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/../../tests/_fixtures/tooling/component-metadata-13430.json"
-        ));
-        assert_eq!(
-            support::hash(bytes),
-            "24efda8a8e69229347612becd4f5503d1158d824a755f2f5b9d3b5eff5f23b95"
-        );
-        let record: Value = serde_json::from_slice(bytes).unwrap();
-        assert_eq!(record["schema"], "vize.componentMetadataSource.v1");
-        assert_eq!(record["issue"], 13430);
-        assert_eq!(
-            record["credit"],
-            json!({ "compiled": false, "native": false, "performance": false })
-        );
-        record
-    })
+fn read_source_record(bytes: &[u8], hash: &str, schema: &str, issue: u64) -> Value {
+    assert_eq!(support::hash(bytes), hash);
+    let record: Value = serde_json::from_slice(bytes).unwrap();
+    assert_eq!(record["schema"], schema);
+    assert_eq!(record["issue"], issue);
+    assert_eq!(
+        record["credit"],
+        json!({ "compiled": false, "native": false, "performance": false })
+    );
+    record
 }
 
 pub(super) fn before_metadata(path: &str, current: String) -> String {
-    restore_producer(path, current, metadata_record())
+    static RECORDS: std::sync::OnceLock<(Value, Value)> = std::sync::OnceLock::new();
+    let (metadata, default_expression) = RECORDS.get_or_init(|| {
+        (
+            read_source_record(
+                include_bytes!(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/../../tests/_fixtures/tooling/component-metadata-13430.json"
+                )),
+                "24efda8a8e69229347612becd4f5503d1158d824a755f2f5b9d3b5eff5f23b95",
+                "vize.componentMetadataSource.v1",
+                13430,
+            ),
+            read_source_record(
+                include_bytes!(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/../../tests/_fixtures/tooling/default-export-expression-mapping-12985.json"
+                )),
+                "c7747859a9100742ac100f965c4e981005381e65c3bf12ed1986a699e459e8d2",
+                "vize.defaultExportExpressionMappingSource.v1",
+                12985,
+            ),
+        )
+    });
+    restore_producer(
+        path,
+        restore_producer(path, current, default_expression),
+        metadata,
+    )
 }
 
 fn is_after(current: &str, transition: &Value) -> bool {

@@ -233,7 +233,7 @@ fn ambient_callees_remain_owned_and_only_real_vue_contracts_are_specialized() {
         &mut generated,
         &mut mappings,
         std::borrow::Cow::Borrowed(script),
-        (0, script.len()),
+        (0, script),
         &|n| n,
     );
     assert_eq!(
@@ -294,7 +294,7 @@ fn unowned_global_calls_retain_the_complete_authored_line_and_one_mapping() {
             &mut generated,
             &mut mappings,
             std::borrow::Cow::Borrowed(script),
-            (0, script.len()),
+            (0, script),
             &|n| n,
         );
         assert_eq!(generated, format!("{script}\n"));

@@ -34,20 +34,33 @@ const identity = (text: string): Identity => ({
   sha256: createHash("sha256").update(text).digest("hex"),
 });
 
-const metadataBytes = readFileSync(
-  new URL("../../../../tests/_fixtures/tooling/component-metadata-13430.json", import.meta.url),
-);
-assert.equal(
-  createHash("sha256").update(metadataBytes).digest("hex"),
+function readSourceRecord(name: string, hash: string, schema: string, issue: number): Record {
+  const bytes = readFileSync(
+    new URL(`../../../../tests/_fixtures/tooling/${name}.json`, import.meta.url),
+  );
+  assert.equal(createHash("sha256").update(bytes).digest("hex"), hash);
+  const parsed = JSON.parse(bytes.toString("utf8")) as Record;
+  assert.equal(parsed.schema, schema);
+  assert.equal(parsed.issue, issue);
+  assert.deepEqual(parsed.credit, { compiled: false, native: false, performance: false });
+  return parsed;
+}
+
+const metadata = readSourceRecord(
+  "component-metadata-13430",
   "24efda8a8e69229347612becd4f5503d1158d824a755f2f5b9d3b5eff5f23b95",
+  "vize.componentMetadataSource.v1",
+  13430,
 );
-const metadata = JSON.parse(metadataBytes.toString("utf8")) as Record;
-assert.equal(metadata.schema, "vize.componentMetadataSource.v1");
-assert.equal(metadata.issue, 13430);
-assert.deepEqual(metadata.credit, { compiled: false, native: false, performance: false });
+const defaultExpression = readSourceRecord(
+  "default-export-expression-mapping-12985",
+  "c7747859a9100742ac100f965c4e981005381e65c3bf12ed1986a699e459e8d2",
+  "vize.defaultExportExpressionMappingSource.v1",
+  12985,
+);
 
 export function beforeComponentMetadata(file: string, current: string): string {
-  return restoreProducer(metadata, file, current);
+  return restoreProducer(metadata, file, restoreProducer(defaultExpression, file, current));
 }
 
 /** The pre-#13113 bytes of a recorded producer; other images pass through. */

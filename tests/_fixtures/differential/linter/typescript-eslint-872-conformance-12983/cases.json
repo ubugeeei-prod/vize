@@ -178,8 +178,7 @@
       "code": "/** @deprecated */\nfunction a(): object {\n  return {};\n}\n\nexport default a();",
       "expectedLines": [
         6
-      ],
-      "vizeGap": "A lone <script>'s `export default <expr>` is projected as `const __default__ = <expr>` on one mapping row of a different length, so no checker fact maps back to the expression."
+      ]
     },
     {
       "id": "no-deprecated.invalid[36]",

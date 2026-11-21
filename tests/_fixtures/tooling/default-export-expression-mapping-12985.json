@@ -1,0 +1,28 @@
+{
+  "schema": "vize.defaultExportExpressionMappingSource.v1",
+  "issue": 12985,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator.rs",
+      "before": {
+        "bytes": 37967,
+        "sha256": "5bb9dd63c0a8bb7cb7f7f548056dc3a5def3daf5db1b1fbad888b5bb93971b6e"
+      },
+      "after": {
+        "bytes": 37961,
+        "sha256": "4427a0dd9815d6f3f3824c9ffcfaf31adaa7c706034b6d464fd5e3e3fa5e6608"
+      },
+      "hunks": [
+        {
+          "before": "                    (line_start, line.len()),\n                    source_offset,\n                );\n                // Once the class",
+          "after": "                    (line_start, line),\n                    source_offset,\n                );\n                // Once the class"
+        }
+      ]
+    }
+  ]
+}

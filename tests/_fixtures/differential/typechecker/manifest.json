@@ -65339,6 +65339,34 @@
       }
     },
     {
+      "id": "typechecker/regression/deprecated-default-call-12985",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "deprecated-default-call-12985/Default.vue.txt",
+          "sha256": "4d82d2edf275c57840a7cf047e46a8e70491df29bfdc2e6cb2bb154b16648028",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "An indented default export retains exact UTF-8 offsets for a deprecated call in a plain script, including CRLF input (#12985)."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/direct-child-props-11809",
       "state": "active",
       "targets": [

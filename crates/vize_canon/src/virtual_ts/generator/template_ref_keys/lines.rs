@@ -14,11 +14,11 @@ impl TemplateRefKeyChecks<'_> {
         ts: &mut crate::virtual_ts::TextBuf,
         mappings: &mut Vec<VizeMapping>,
         mut line: Cow<'_, str>,
-        (start, original_length): (usize, usize),
+        (start, original): (usize, &str),
         source_offset: &dyn Fn(usize) -> usize,
     ) {
         let gen_start = ts.len();
-        let sub_spans = if line.len() == original_length {
+        let sub_spans = if line.len() == original.len() {
             self.specialize_tsx_line(&mut line, start, gen_start, source_offset)
                 .unwrap_or_else(|| self.specialize_line(&mut line, start, gen_start, source_offset))
         } else {
@@ -27,11 +27,28 @@ impl TemplateRefKeyChecks<'_> {
         ts.push_str(&line);
         let gen_end = ts.len();
         ts.push('\n');
-        if original_length != 0 {
+        if !original.is_empty() {
             let src_start = source_offset(start);
+            // The exported expression is copied verbatim after a longer synthetic
+            // declaration. Preserve its byte offsets for checker queries (#12985).
+            if matches!(line, Cow::Owned(_))
+                && sub_spans.is_empty()
+                && let Some(expr) = original.trim_start().strip_prefix("export default")
+                && !expr.trim().is_empty()
+                && line.trim_start().strip_prefix("const __default__ =") == Some(expr)
+            {
+                let src_expr = source_offset(start + original.len() - expr.len());
+                let gen_expr = gen_end - expr.len();
+                mappings.push(VizeMapping::new(gen_start..gen_expr, src_start..src_expr));
+                mappings.push(VizeMapping::new(
+                    gen_expr..gen_end,
+                    src_expr..source_offset(start + original.len()),
+                ));
+                return;
+            }
             mappings.push(VizeMapping {
                 gen_range: gen_start..gen_end,
-                src_range: src_start..src_start + original_length,
+                src_range: src_start..src_start + original.len(),
                 sub_spans,
             });
         }
