@@ -26,7 +26,10 @@ pub use element::{BranchKind, Structure, frozen_attribute_name, structure};
 
 pub use foreign::{ForeignDialect, lower_source_block_with_foreign_expressions};
 #[doc(hidden)]
-pub use frozen::{lower_with_frozen_element_spans, lower_with_frozen_element_spans_and_directives};
+pub use frozen::{
+    lower_with_frozen_element_spans, lower_with_frozen_element_spans_and_directives,
+    lower_with_frozen_surface_changes,
+};
 pub use if_keys::{BranchKey, BranchKeyKind, IfFacts, SAME_KEY_MESSAGE};
 
 // The one-scanner rule (#4365): the L2 passes re-derive binding names
@@ -96,6 +99,29 @@ pub(super) fn directive_values_are_clauses(
     cx: &cx::Cx<'_, impl vize_l2::provenance::ProvenanceSink>,
 ) -> bool {
     cx.caps.directive_arg_style == vize_l1::framework::vue::DirectiveArgStyle::Clause
+}
+
+vize_l0::bitflags! {
+    /// Source constructs rewritten or discarded while building L2. Backends
+    /// use these facts when the canonical ops alone cannot recover a distinction.
+    #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+    pub struct SurfaceChanges: u8 {
+        /// A valueless binding acquired its value from its argument.
+        const SAME_NAME_BINDING = 1 << 0;
+        /// A v-pre attribute was consumed at its frozen element.
+        const FROZEN_ATTRIBUTE = 1 << 1;
+        /// A CDATA section became a text op.
+        const CDATA_TEXT = 1 << 2;
+        /// A processing instruction or an unexpected token was discarded.
+        const DISCARDED_MARKUP = 1 << 3;
+        /// An HTML comment between conditional branches was discarded.
+        const BRANCH_COMMENT = 1 << 4;
+        /// A discarded branch comment carried a compiler directive.
+        const BRANCH_DIRECTIVE = 1 << 5;
+        /// An ordinary element directive had no representation, or a structural
+        /// directive was duplicated. Slot outlet deferrals have their own rules.
+        const IGNORED_DIRECTIVE = 1 << 6;
+    }
 }
 
 /// The canonical L2 artifact one lowering produces, beside the conversion
@@ -197,8 +223,31 @@ pub fn lower_with_directives<'a>(
     errors: &[SurfaceError],
     directive_contracts: &vize_l0::config::DirectiveContracts,
 ) -> Lowered<'a> {
+    lower_with_surface_changes(
+        allocator,
+        tree,
+        errors,
+        LowerPolicy::compile(false),
+        directive_contracts,
+    )
+    .0
+}
+
+/// Lower a Vue 3 template and return the source distinctions needed for backend admission alongside the
+/// canonical lowering. Both results come from the same walk.
+#[doc(hidden)]
+pub fn lower_with_surface_changes<'a, P: ProvenanceSink + Default>(
+    allocator: &'a Allocator,
+    tree: &SurfaceTree<'a>,
+    errors: &[SurfaceError],
+    policy: LowerPolicy,
+    directive_contracts: &vize_l0::config::DirectiveContracts,
+) -> (Lowered<'a, P>, SurfaceChanges) {
     let Ok(root) = SourceRoot::new(tree.source) else {
-        return oversized_source(allocator, tree.source, LegacyCaps::VUE3);
+        return (
+            oversized_source(allocator, tree.source, LegacyCaps::VUE3),
+            SurfaceChanges::empty(),
+        );
     };
     lower_source_block_with_caps_and_comment_policy(
         allocator,
@@ -206,7 +255,7 @@ pub fn lower_with_directives<'a>(
         errors,
         root.whole_block(),
         LegacyCaps::VUE3,
-        LowerPolicy::compile(false),
+        policy,
         LowerCustomElements {
             directives: directive_contracts,
             ..LowerCustomElements::default()
@@ -241,6 +290,7 @@ pub fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default>(
         policy,
         custom_elements,
     )
+    .0
 }
 
 /// Lower a parsed L1 source block while preserving file-absolute L0 spans.
@@ -272,6 +322,7 @@ pub fn lower_source_block_with_caps<'a>(
         LowerPolicy::compile(false),
         LowerCustomElements::default(),
     )
+    .0
 }
 
 /// Host-declared element and directive tables.
@@ -300,7 +351,7 @@ fn lower_source_block_with_caps_and_comment_policy<'a, P: ProvenanceSink + Defau
     caps: LegacyCaps,
     policy: LowerPolicy,
     custom_elements: LowerCustomElements<'_>,
-) -> Lowered<'a, P> {
+) -> (Lowered<'a, P>, SurfaceChanges) {
     debug_assert!(
         tree.source.as_ptr() == block.source().as_ptr()
             && tree.source.len() == block.source().len(),

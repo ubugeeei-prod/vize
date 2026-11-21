@@ -257,18 +257,29 @@ fn lower_if_group<'a, 't>(
     let mut once = false;
     for (_, element, analyzed, attr, gaps) in branches {
         for gap in gaps {
-            if let Some(SurfaceChild::Text(token) | SurfaceChild::Comment(token)) =
-                children.get(gap)
-            {
-                let gap_span = cx.token_span(token);
-                cx.record(
-                    "drop.branch-gap",
-                    None,
-                    token.text,
-                    String::default,
-                    gap_span,
-                );
-            }
+            let token = match children.get(gap) {
+                Some(SurfaceChild::Text(token)) => token,
+                Some(SurfaceChild::Comment(token)) => {
+                    if token.text.starts_with("<!--") {
+                        cx.surface_changes
+                            .insert(super::SurfaceChanges::BRANCH_COMMENT);
+                    }
+                    if super::leaf::keeps_directive_comment(token.text) {
+                        cx.surface_changes
+                            .insert(super::SurfaceChanges::BRANCH_DIRECTIVE);
+                    }
+                    token
+                }
+                _ => continue,
+            };
+            let gap_span = cx.token_span(token);
+            cx.record(
+                "drop.branch-gap",
+                None,
+                token.text,
+                String::default,
+                gap_span,
+            );
         }
         let kind = match analyzed.branch {
             Some((_, kind)) => kind,

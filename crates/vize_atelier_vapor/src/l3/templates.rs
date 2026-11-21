@@ -6,18 +6,18 @@
 
 use vize_carton::{Allocator, Span};
 use vize_l2::analysis::fragment_facts::FragmentKey;
-use vize_l3::op::{OpId, OpKind, Program};
+use vize_l3::op::{OpId, OpKind};
 
 use super::{LegacyReason, native::validate::reference, retained::Retained};
 
 /// A template-carried loop: its L3 op and its wrapper key text and span.
 pub(super) type TemplateLoop<'a> = (OpId, Option<(&'a str, Span)>);
 
-pub(super) fn collect<'a>(
+pub(super) fn collect<'a, P>(
     allocator: &'a Allocator,
     source: &str,
-    s2: &vize_l1_to_l2::Lowered<'_>,
-    program: &Program<'a>,
+    s2: &vize_l1_to_l2::Lowered<'_, P>,
+    s3: &vize_l2_to_l3::Lowered<'a>,
     retained: &mut Retained<'_, 'a>,
 ) -> Result<std::vec::Vec<TemplateLoop<'a>>, LegacyReason> {
     if s2
@@ -38,22 +38,9 @@ pub(super) fn collect<'a>(
         if !wrapper.attributes.is_empty() || wrapper.class.is_some() {
             return Err(LegacyReason::ControlFlow);
         }
-        // The loop's directive value locates its L3 op: the innermost loop
-        // spanning it.
-        let value = s2
-            .artifact
-            .provenance
-            .iter()
-            .find(|record| record.rule == "lower.for" && record.node == Some(node))
-            .map(|record| record.span)
-            .ok_or(LegacyReason::ControlFlow)?;
-        let op = program
-            .ops
-            .iter()
-            .filter(|op| {
-                op.kind == OpKind::For && op.span.start <= value.start && value.end <= op.span.end
-            })
-            .min_by_key(|op| op.span.end - op.span.start)
+        let op = s3
+            .op_for_node(node)
+            .filter(|op| op.kind == OpKind::For)
             .ok_or(LegacyReason::ControlFlow)?;
         let key = match &wrapper.key {
             None => None,

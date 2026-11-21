@@ -20,6 +20,26 @@ pub struct Lowered<'a> {
     pub partition: PartitionFacts<'a>,
 }
 
+impl Lowered<'_> {
+    /// The flat conversion emits exactly one op per L2 page node, including
+    /// attached bindings, in page order. Regions and effects have separate ids.
+    /// Use this correspondence on the freshly lowered program.
+    #[must_use]
+    pub fn op_for_node(&self, node: vize_l0::id::NodeId) -> Option<&Op> {
+        self.program
+            .ops
+            .get(node.index() as usize)
+            .filter(|op| op.id.index() == node.index())
+    }
+
+    /// Source node of an operand's owner in the freshly lowered program.
+    #[must_use]
+    pub fn source_node(&self, op: OpId) -> Option<vize_l0::id::NodeId> {
+        let node = vize_l0::id::NodeId::from_index(op.index())?;
+        self.op_for_node(node).map(|_| node)
+    }
+}
+
 /// Lower an L2 root region to an L3 program plus shared partition facts.
 #[must_use]
 pub fn lower<'a>(allocator: &'a Allocator, root: &l2::Region<'_>) -> Lowered<'a> {

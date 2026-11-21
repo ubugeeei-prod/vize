@@ -92,3 +92,30 @@ fn every_l3_op_receives_one_partition_fact() {
         },
     );
 }
+
+#[test]
+fn flat_ops_correspond_to_page_nodes_through_bindings_and_nested_regions() {
+    use vize_l0::id::NodeId;
+    use vize_l2::walk::{PageWalk, visit_nodes};
+    use vize_l3::op::OpId;
+
+    let arena = Allocator::default();
+    let source = r#"<Panel :title="title" @click="save"><template v-if="ready"><template v-for="x in xs" :key="x.id"><b :id="x.id">one {{ x }}</b><template v-for="y in x.ys"><i>two {{ y }}</i></template></template></template><slot v-else :n="n"><u>fallback</u></slot></Panel>"#;
+    let (tree, errors) = vize_l1::markup::parse(&arena, source);
+    let s2 = vize_l1_to_l2::lower(&arena, &tree, &errors);
+    assert!(s2.diagnostics.is_empty(), "{:?}", s2.diagnostics);
+    let s3 = lower(&arena, &s2.artifact.root);
+    let mut walk = PageWalk::new();
+    visit_nodes(&mut walk, &s2.artifact.root.ops, &mut |node, original| {
+        let op = s3.op_for_node(node).unwrap();
+        assert_eq!(op.span, original.span(), "{}", original.mnemonic());
+        assert_eq!(s3.source_node(op.id), Some(node));
+    })
+    .unwrap();
+    assert_eq!(walk.minted() as usize, s3.program.ops.len());
+    assert!(
+        s3.op_for_node(NodeId::from_index(walk.minted()).unwrap())
+            .is_none()
+    );
+    assert_eq!(s3.source_node(OpId::new(u32::MAX)), None);
+}
