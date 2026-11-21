@@ -19,8 +19,6 @@ use vize_l1::{
 };
 
 mod corpus;
-#[path = "../../../tests/support/vue_corpus.rs"]
-mod fixtures;
 mod profile;
 
 const ALL: VueDemand = VueDemand {

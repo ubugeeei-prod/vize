@@ -1,8 +1,6 @@
 //! The repository's `<script setup>` corpus observed by `SetupObserver`.
 
-#[path = "vue_corpus.rs"]
-mod vue_corpus;
-pub use vue_corpus::corpus;
+use std::path::{Path, PathBuf};
 
 use vize_l0::{
     Allocator, String,
@@ -19,6 +17,45 @@ use vize_l1::embed::{
 use vize_l1::markup::SurfaceParseOptions;
 use vize_l2::framework::vue::{SetupFacts, SetupFactsIncomplete, SetupObserver};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+
+/// Repository trees holding `.vue` files, relative to the workspace root.
+const CORPUS: &[&str] = &[
+    "tests/_fixtures",
+    "tests/fixtures",
+    "crates",
+    "playground",
+    "examples",
+    "npm",
+];
+const SKIPPED_DIRECTORIES: &[&str] = &["node_modules", "target", "dist", ".git"];
+
+fn collect(directory: &Path, files: &mut Vec<PathBuf>) {
+    let Ok(entries) = std::fs::read_dir(directory) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let name = entry.file_name();
+        if path.is_dir() {
+            if !SKIPPED_DIRECTORIES.iter().any(|skip| name == *skip) {
+                collect(&path, files);
+            }
+        } else if path.extension().is_some_and(|extension| extension == "vue") {
+            files.push(path);
+        }
+    }
+}
+
+/// The workspace root and every corpus `.vue` file, sorted.
+pub fn corpus() -> (PathBuf, Vec<PathBuf>) {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let mut files = Vec::new();
+    for tree in CORPUS {
+        collect(&root.join(tree), &mut files);
+    }
+    files.sort();
+    (root, files)
+}
 
 pub fn slice(source: &str, base: u32, span: vize_l0::Span) -> Option<String> {
     source

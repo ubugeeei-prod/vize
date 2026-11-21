@@ -199,7 +199,18 @@ fn exact(rows: &[SetupBinding], span: Span) -> Result<Option<SetupBinding>, VueQ
 
 #[test]
 fn existing_vue_corpus_agrees_with_the_independent_script_observers() {
-    let (root, files) = fixtures::corpus();
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let mut files = alloc::vec::Vec::new();
+    for tree in [
+        "tests/_fixtures",
+        "tests/fixtures",
+        "crates",
+        "playground",
+        "examples",
+        "npm",
+    ] {
+        davinci_test_support::corpus::collect_vue_files(&root.join(tree), &mut files);
+    }
     let mut count = Counts::default();
     for path in files {
         let source = fs::read_to_string(&path).unwrap();

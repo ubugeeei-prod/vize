@@ -29,6 +29,7 @@ name = "file_program_unwind_alloc"
 harness = false
 
 [dev-dependencies]
+davinci_test_support.workspace = true
 serde_json.workspace = true
 vize_armature.workspace = true
 vize_croquis.workspace = true
