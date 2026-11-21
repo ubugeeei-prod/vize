@@ -6,7 +6,6 @@ use davinci_test_support::corpus::{collect_vue_files, read_corpus_source};
 use std::{
     fs,
     path::{Path, PathBuf},
-    vec::Vec,
 };
 use vize_l0::Allocator;
 
@@ -61,7 +60,7 @@ fn compare(path: &Path, counts: &mut Counts) {
 #[test]
 fn repository_style_blocks_match_structure_and_class_readers() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let mut files = Vec::new();
+    let mut files = alloc::vec::Vec::new();
     for dir in [
         "tests/_fixtures",
         "tests/fixtures",
