@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "sfc-history-keyed-slot-single-element",
+    history: "dcd679b5dec0ca68a474e9a1a5d402af3add67ce",
+    source: "<template><Comp>\n  <template v-for=\"(item, index) in items\" :key=\"index\">\n    <div class=\"item\">{{ item.label }}</div>\n  </template>\n</Comp></template>",
+    filename: "App.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderList as _ssrRenderList } from \"@vue/server-renderer\"\nimport { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, renderList as _renderList, toDisplayString as _toDisplayString, withCtx as _withCtx } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Comp\"), _attrs, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(`<!--[-->`)\n        _ssrRenderList(_ctx.items, (item, index) => {\n          _push(`<div class=\"item\">${_ssrInterpolate(item.label)}</div>`)\n        })\n        _push(`<!--]-->`)\n      } else {\n        return [(_openBlock(true), _createBlock(_Fragment, null, _renderList(_ctx.items, (item, index) => { return _createElementVNode(\"div\", { key: index, class: \"item\" }, _toDisplayString(item.label), 1 /* TEXT */) }), 128 /* KEYED_FRAGMENT */))]\n      }\n    }),\n    _: 1\n  }, _parent))\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

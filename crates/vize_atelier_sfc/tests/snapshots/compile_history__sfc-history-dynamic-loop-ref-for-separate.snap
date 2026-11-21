@@ -1,0 +1,56 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "sfc-history-dynamic-loop-ref-for-separate",
+    history: "b01f36701cd90e7e7968457e28440b01570f7957",
+    source: "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n\ntype Menu = { id: number }\n\nconst menus = ref<Menu[][]>([[{ id: 1 }]])\nconst menuList = ref<unknown[]>([])\n</script>\n\n<template>\n  <Child\n    v-for=\"(menu, index) in menus\"\n    :key=\"index\"\n    :ref=\"(item) => (menuList[index] = item as unknown)\"\n    :nodes=\"[...menu]\"\n  />\n</template>",
+    filename: "CascaderPanel.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+        script_output: Some(
+            "separate",
+        ),
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _component_Child = _resolveComponent(\"Child\")\n  \n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.menus, (menu, index) => {\n    return (_openBlock(), _createBlock(_component_Child, {\n      key: index,\n      ref_for: true, ref: (item) => $setup.menuList[index] = item,\n      nodes: [...menu]\n    }, null, 8 /* PROPS */, [\"nodes\"]))\n  }), 128 /* KEYED_FRAGMENT */))\n}\nimport { ref } from 'vue'\n\n\nexport default {\n  __name: 'CascaderPanel',\n  render: _sfc_render,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst menus = ref([[{ id: 1 }]]);\nconst menuList = ref([]);\n\nconst __returned__ = { ref, menus, menuList }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "ref": SetupConst,
+                        "menus": SetupRef,
+                        "menuList": SetupRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

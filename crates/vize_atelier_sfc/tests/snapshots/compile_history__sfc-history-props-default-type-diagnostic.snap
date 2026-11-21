@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "sfc-history-props-default-type-diagnostic",
+    history: "7b821f8d0c46c56ab48d0a954def515a9219838e",
+    source: "<script setup lang=\"ts\">\nconst { count = \"zero\" } = defineProps<{\n  count?: number\n}>()\n</script>\n\n<template>\n  <div>{{ count }}</div>\n</template>",
+    filename: "test.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "Default value of prop \"count\" does not match declared type.",
+            code: Some(
+                "DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE",
+            ),
+            loc: Some(
+                BlockLocation {
+                    start: 17,
+                    end: 23,
+                    tag_start: 17,
+                    tag_end: 23,
+                    start_line: 2,
+                    start_column: 17,
+                    end_line: 2,
+                    end_column: 23,
+                },
+            ),
+        },
+    ),
+)

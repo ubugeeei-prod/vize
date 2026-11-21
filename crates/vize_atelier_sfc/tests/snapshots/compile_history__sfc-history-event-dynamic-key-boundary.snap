@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "sfc-history-event-dynamic-key-boundary",
+    history: "619614e63976020659659cdc06fcca609ee2c56b",
+    source: "<template><Foo @click=\"before\" @[name]=\"middle\" @click.stop=\"after\" /></template>",
+    filename: "App.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { resolveComponent as _resolveComponent, mergeProps as _mergeProps, normalizeProps as _normalizeProps, toHandlerKey as _toHandlerKey } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Foo\"), _mergeProps(_mergeProps({ onClick: _ctx.before }, _normalizeProps({ [_toHandlerKey(_ctx.name) || \"\"]: _ctx.middle }), { onClick: _ctx.after }), _attrs), null, _parent))\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

@@ -1,0 +1,70 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "sfc-history-invalid-template-expression-diagnostic",
+    history: "336622af2aea3f9bce3e7c297e3b4307bd7445ff",
+    source: "<script setup>\nconst foo = () => {}\n</script>\n\n<template>\n  <div>{{ foo( }}</div>\n</template>",
+    filename: "App.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "\nexport default {\n  __name: 'App',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst foo = () => {}\n\nreturn { foo }\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [
+                SfcError {
+                    message: "Template compilation errors: [CompilerError { code: InvalidExpression, message: \"Error parsing JavaScript expression: mismatched expression delimiters\", loc: Some(SourceLocation { start: Position { offset: 11, line: 2, column: 11 }, end: Position { offset: 15, line: 2, column: 15 }, source: \"foo(\" }) }]",
+                    code: Some(
+                        "TEMPLATE_ERROR",
+                    ),
+                    loc: Some(
+                        BlockLocation {
+                            start: 57,
+                            end: 82,
+                            tag_start: 47,
+                            tag_end: 93,
+                            start_line: 5,
+                            start_column: 11,
+                            end_line: 7,
+                            end_column: 1,
+                        },
+                    ),
+                },
+            ],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "foo": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)
