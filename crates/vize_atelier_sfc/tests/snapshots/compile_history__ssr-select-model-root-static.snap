@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "ssr-select-model-root-static",
+    history: "f5aa652fc97e1db2b566b8a5feca229a49a08d5e",
+    source: "<template><select v-model=\"x\"><option value=\"a\">A</option><option value=\"b\">B</option></select></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrRenderAttrs as _ssrRenderAttrs, ssrIncludeBooleanAttr as _ssrIncludeBooleanAttr, ssrLooseEqual as _ssrLooseEqual, ssrLooseContain as _ssrLooseContain } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<select${_ssrRenderAttrs(_attrs)}><option value=\"a\"${((_ssrIncludeBooleanAttr(Array.isArray(_ctx.x) ? _ssrLooseContain(_ctx.x, \"a\") : _ssrLooseEqual(_ctx.x, \"a\"))) ? \" selected\" : \"\")}>A</option><option value=\"b\"${((_ssrIncludeBooleanAttr(Array.isArray(_ctx.x) ? _ssrLooseContain(_ctx.x, \"b\") : _ssrLooseEqual(_ctx.x, \"b\"))) ? \" selected\" : \"\")}>B</option></select>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

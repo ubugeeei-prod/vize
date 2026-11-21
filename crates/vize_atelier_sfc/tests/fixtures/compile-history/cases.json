@@ -17233,5 +17233,89 @@
       "node_modules/wild/dist/button.mjs": "export {}\n"
     },
     "errors": 0
+  },
+  {
+    "id": "ssr-select-model-root-static",
+    "history": "f5aa652fc97e1db2b566b8a5feca229a49a08d5e",
+    "source": "<template><select v-model=\"x\"><option value=\"a\">A</option><option value=\"b\">B</option></select></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "ssr-select-model-options-and-siblings",
+    "history": "f5aa652fc97e1db2b566b8a5feca229a49a08d5e",
+    "source": "<template><main><select multiple v-model=\"selected\"><optgroup label=\"items\"><option :value=\"item.id\">First</option><option v-bind:value=\"other\">Second</option><option>Empty</option></optgroup></select><select><option value=\"outside\">After</option></select></main></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "ssr-select-model-nested-scope",
+    "history": "f5aa652fc97e1db2b566b8a5feca229a49a08d5e",
+    "source": "<template><div><select v-model=\"outer\"><option value=\"before\">Before</option><select v-model=\"inner\"><option :value=\"leaf\">Inner</option></select><option value=\"after\">After</option></select></div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "ssr-textarea-model-root-content",
+    "history": "63d11c41a88db4cead31dbbb512e3a47c8ac29e6",
+    "source": "<template><textarea v-model=\"x\"></textarea></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "ssr-textarea-model-nested-content",
+    "history": "63d11c41a88db4cead31dbbb512e3a47c8ac29e6",
+    "source": "<template><div><textarea v-model=\"draft.message\"/></div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "ssr-input-model-dynamic-type-nested",
+    "history": "63d11c41a88db4cead31dbbb512e3a47c8ac29e6",
+    "source": "<template><div><input :type=\"type\" v-model=\"answer\"><input v-bind:type=\"field.kind\" v-model=\"field.value\"><input :name=\"name\" v-model=\"text\"></div></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "ssr-input-model-dynamic-type-root",
+    "history": "63d11c41a88db4cead31dbbb512e3a47c8ac29e6",
+    "source": "<template><input :type=\"kind\" v-model=\"answer\"></template>",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "options": {
+      "sourceMap": true
+    },
+    "errors": 0
   }
 ]

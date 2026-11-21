@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "ssr-select-model-nested-scope",
+    history: "f5aa652fc97e1db2b566b8a5feca229a49a08d5e",
+    source: "<template><div><select v-model=\"outer\"><option value=\"before\">Before</option><select v-model=\"inner\"><option :value=\"leaf\">Inner</option></select><option value=\"after\">After</option></select></div></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: Some(
+            true,
+        ),
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrRenderAttrs as _ssrRenderAttrs, ssrRenderAttr as _ssrRenderAttr, ssrIncludeBooleanAttr as _ssrIncludeBooleanAttr, ssrLooseEqual as _ssrLooseEqual, ssrLooseContain as _ssrLooseContain } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><select><option value=\"before\"${((_ssrIncludeBooleanAttr(Array.isArray(_ctx.outer) ? _ssrLooseContain(_ctx.outer, \"before\") : _ssrLooseEqual(_ctx.outer, \"before\"))) ? \" selected\" : \"\")}>Before</option><select><option${_ssrRenderAttr(\"value\", _ctx.leaf)}${((_ssrIncludeBooleanAttr(Array.isArray(_ctx.inner) ? _ssrLooseContain(_ctx.inner, _ctx.leaf) : _ssrLooseEqual(_ctx.inner, _ctx.leaf))) ? \" selected\" : \"\")}>Inner</option></select><option value=\"after\"${((_ssrIncludeBooleanAttr(Array.isArray(_ctx.outer) ? _ssrLooseContain(_ctx.outer, \"after\") : _ssrLooseEqual(_ctx.outer, \"after\"))) ? \" selected\" : \"\")}>After</option></select></div>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)
