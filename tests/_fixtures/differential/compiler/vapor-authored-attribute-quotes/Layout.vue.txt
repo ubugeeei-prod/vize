@@ -1,1 +1,1 @@
-<template><input class="['radio']" placeholder="Example: 'something'"></template>
+<template><input class="['radio']" placeholder="Example: 'something'" :title="class"></template>

@@ -2,7 +2,7 @@ import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
 import { mergeProps as _mergeProps } from "vue"
 
 function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(`<input${_ssrRenderAttrs(_mergeProps({ placeholder: "Example: 'something'", class: "['radio']" }, _attrs))}>`)
+  _push(`<input${_ssrRenderAttrs(_mergeProps({ placeholder: "Example: 'something'", title: _ctx.class, class: "['radio']" }, _attrs))}>`)
 }
 
 const _sfc_main = {}

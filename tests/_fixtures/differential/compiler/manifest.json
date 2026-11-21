@@ -5828,14 +5828,14 @@
         "files": [
           {
             "path": "Layout.vue.txt",
-            "sha256": "1c098c8a50cd1c559a1fc7c6a2577e2faa0a571c9ab6374d570460675507f245",
+            "sha256": "38defe4f622f0d3b9324d2c3792c2587c66f2c29062042b9364e16fd2c750043",
             "role": "entry"
           }
         ]
       },
       "reference": {
         "path": "vapor-authored-attribute-quotes/module.expected.txt",
-        "sha256": "c2745d1a9a887bddeedd58b7c05d0b88ec2b34a9e43f790768e80a18a81a345d",
+        "sha256": "a8df8b8ded17e8dd1a5abc12ea3d631b5631cccb3732d9857918710287b0ad53",
         "source": "Baseline 4bac9d3d9e55876bace27198a8ff3b92158788d6, compiler-cli-ssr-v1 on Layout.vue. The native and retained Vapor test consumes the same fixture in crates/vize_atelier_vapor/src/tests_static_attribute_entities.rs."
       },
       "adapters": {
