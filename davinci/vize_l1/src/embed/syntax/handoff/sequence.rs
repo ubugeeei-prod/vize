@@ -81,7 +81,7 @@ impl<'a> RetainedExpressionParser<'a> {
                 *older = latest.replace(key);
             }
         }
-        let owner = input.observe();
+        let owner = input.observe_terminal_expression();
         retain(grammar, source, owner)
     }
 }

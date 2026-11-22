@@ -79,8 +79,22 @@ impl<'a> Context<'_, 'a> {
         construct: impl FnOnce(&mut R, &'a JsExpr<'a>) -> Result<vize_l0::id::NodeId, ArtifactError>,
     ) {
         let source_span = source.span();
-        let ordinary = || {
-            parse_once(
+        #[cfg(not(feature = "lexical-arrow-initializers"))]
+        let original = parse_once(
+            self.allocator,
+            Embed {
+                grammar: Grammar {
+                    shape: Shape::Expr,
+                    lang: self.lang,
+                },
+                source,
+            },
+        )
+        .into_expression();
+        #[cfg(feature = "lexical-arrow-initializers")]
+        let original = match self.expressions.as_mut() {
+            Some(parser) => parser.parse(source, self.lang),
+            None => parse_once(
                 self.allocator,
                 Embed {
                     grammar: Grammar {
@@ -90,15 +104,8 @@ impl<'a> Context<'_, 'a> {
                     source,
                 },
             )
-            .into_expression()
+            .into_expression(),
         };
-        #[cfg(feature = "lexical-arrow-initializers")]
-        let original = match self.expressions.as_mut() {
-            Some(parser) => parser.parse(source, self.lang),
-            None => ordinary(),
-        };
-        #[cfg(not(feature = "lexical-arrow-initializers"))]
-        let original = ordinary();
         let retained = match original {
             Ok(retained) => retained,
             Err(syntax) => {

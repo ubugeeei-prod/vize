@@ -35,8 +35,7 @@ impl<'a, B: BindingLookup> ReferenceSink<'a> for Arena<'a, '_, B> {
         self.occurrences.len()
     }
     fn reference(&mut self, event: ReferenceEvent<'a>) -> Result<(), ResolutionErrorKind> {
-        self.occurrences.push(event.resolved(self.bindings)?);
-        Ok(())
+        include!("immediate.rs")
     }
     fn rollback(&mut self, checkpoint: usize) {
         self.occurrences.truncate(checkpoint);

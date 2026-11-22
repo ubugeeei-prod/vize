@@ -52,6 +52,7 @@ oxc_ast_visit = { version = "=0.142.0", git = "https://github.com/oxc-project/ox
 pico-args = "0.5.0"
 
 [features]
+terminal-embedding = []
 default = ["regular_expression"]
 # Parse regex
 regular_expression = ["dep:oxc_regular_expression"]
