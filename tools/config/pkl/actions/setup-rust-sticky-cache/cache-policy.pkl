@@ -2,5 +2,5 @@ name = "Evaluate the Rust cache policy"
 description = "Evaluate the Rust cache policy using the runner Node runtime"
 runs {
   using = "node24"
-  main = "main.mjs"
+  main = "main.ts"
 }

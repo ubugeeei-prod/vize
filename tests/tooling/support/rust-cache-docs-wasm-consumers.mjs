@@ -282,7 +282,7 @@ export function verifyDocsWasmConsumers(root) {
         const policy = source.get(
           ".github/actions/setup-rust-sticky-cache/cache-policy/action.yml",
         );
-        assert.deepEqual(policy?.runs, { using: "node24", main: "main.mjs" });
+        assert.deepEqual(policy?.runs, { using: "node24", main: "main.ts" });
         continue;
       }
       if (!/(?:setup-rust-sticky-cache|app-e2e-row)(?:\/|@|$)/.test(step.uses)) continue;
