@@ -4,8 +4,8 @@ import assert from "node:assert/strict";
 import { createReadStream } from "node:fs";
 import { createRequire } from "node:module";
 import { createInterface } from "node:readline";
-import type * as TS from "typescript";
-const ts: typeof TS = createRequire(import.meta.url)("typescript");
+import type { TypeScriptApi } from "../../../../tests/_helpers/template-alias-typescript-11822.ts";
+const ts: TypeScriptApi = createRequire(import.meta.url)("typescript");
 interface Claim {
   binding: [number, number];
   annotation: [number, number];
@@ -25,7 +25,7 @@ interface Input {
 function examine(input: Input) {
   const { source, claims } = input;
   const filename = input.tsx ? "/original.tsx" : "/original.ts";
-  const options: TS.CompilerOptions = {
+  const options: Parameters<TypeScriptApi["createCompilerHost"]>[0] = {
     target: ts.ScriptTarget.Latest,
     module: ts.ModuleKind.ESNext,
     moduleDetection: ts.ModuleDetectionKind.Force,
@@ -36,7 +36,10 @@ function examine(input: Input) {
   };
   const original = ts.createSourceFile(filename, source, options.target!, true);
   const byte = (offset: number) => Buffer.byteLength(source.slice(0, offset));
-  const span = (node: TS.Node) => [byte(node.getStart(original)), byte(node.end)];
+  const span = (node: Parameters<TypeScriptApi["isIdentifier"]>[0]) => [
+    byte(node.getStart(original)),
+    byte(node.end),
+  ];
   const vars = original.statements.flatMap((st) => {
     if (
       !ts.isVariableStatement(st) ||

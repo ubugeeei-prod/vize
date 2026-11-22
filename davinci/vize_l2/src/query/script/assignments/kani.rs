@@ -1,7 +1,6 @@
 //! Check the shipped relation against membership in the three disjoint
 //! primitive value sets. Float bit patterns include NaNs and signed zero; a
 //! representative string unit witnesses every primitive type-tag decision.
-#[path = "relation.rs"]
 mod relation;
 use relation::{Primitive, Verdict};
 
