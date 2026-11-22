@@ -63,16 +63,17 @@ impl<'o, 'a> PlainStyle<'o, 'a> {
     }
 }
 
-pub(crate) fn emit<L: LinkSink, const SCSS: bool>(
+pub(crate) fn emit<L: LinkSink>(
     descriptor: AdmittedDescriptor<'_, '_>,
     syntax: &[StyleSyntax<'_>],
     scope_id: Option<ScopeId<'_>>,
     trim: bool,
+    #[cfg(feature = "native-sfc-scss")] scss: bool,
 ) -> Result<Option<EmitDocument>, NativeSfcCompileError> {
     let mut output = EmitDocument::new(L::RECORDING);
     for original in descriptor.styles() {
         #[cfg(feature = "native-sfc-scss")]
-        if SCSS
+        if scss
             && let [lang] = original.attrs()
             && lang.name == "lang"
             && vize_l1::container::lang::style_lang(lang.value)

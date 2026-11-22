@@ -35,6 +35,8 @@ on:
       - "crates/vize_atelier_sfc/src/native/styles.rs"
       - "crates/vize_atelier_sfc/src/native_scoped_ssr.rs"
       - "crates/vize_atelier_sfc/tests/native_sfc_scss.rs"
+      - "crates/vize_atelier_sfc/tests/component_scss/**"
+      - "davinci/vize_l4/src/write/document.rs"
       - "crates/vize_atelier_sfc/tests/fixtures/native_sfc_ts_annotation_setup_vue_3_5_35.json"
       - "crates/vize_atelier_sfc/tests/scss_products.rs"
       - "crates/vize_atelier_sfc/tests/observed_scss/**"

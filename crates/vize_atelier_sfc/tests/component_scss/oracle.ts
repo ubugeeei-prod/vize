@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import { createRequire } from "node:module";
-import { resolve } from "node:path";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { text } from "node:stream/consumers";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const require = createRequire(import.meta.url);
@@ -31,7 +33,7 @@ type Scene = {
   css: string | null;
   cssMap: object | null;
 };
-const rows: Scene[] = JSON.parse(fs.readFileSync(0, "utf8"));
+const rows: Scene[] = JSON.parse(await text(process.stdin));
 
 function starts(text: string, breaks = /\r\n|[\r\n\u2028\u2029]/g): number[] {
   return [0, ...Array.from(text.matchAll(breaks), (m) => m.index + m[0].length)];
@@ -136,13 +138,27 @@ for (const row of rows) {
     modules++;
   }
 }
-const stock = spawnSync(process.execPath, [preprocess], {
-  input: JSON.stringify(jobs),
-  encoding: "utf8",
-  maxBuffer: 64 << 20,
-});
-assert.equal(stock.status, 0, stock.stderr);
-assert.deepEqual(JSON.parse(stock.stdout), expectedBlocks);
+// The shipped subprocess reads fd 0 synchronously. A disk-backed input also
+// works for a corpus larger than a Linux nonblocking pipe buffer.
+const scratch = fs.mkdtempSync(join(tmpdir(), "vize-scss-jobs-"));
+try {
+  const path = join(scratch, "jobs.json");
+  fs.writeFileSync(path, JSON.stringify(jobs));
+  const input = fs.openSync(path, "r");
+  try {
+    const stock = spawnSync(process.execPath, [preprocess], {
+      stdio: [input, "pipe", "pipe"],
+      encoding: "utf8",
+      maxBuffer: 64 << 20,
+    });
+    assert.equal(stock.status, 0, stock.stderr);
+    assert.deepEqual(JSON.parse(stock.stdout), expectedBlocks);
+  } finally {
+    fs.closeSync(input);
+  }
+} finally {
+  fs.rmSync(scratch, { recursive: true });
+}
 assert.ok(anchors && modules && jobs.length);
 console.log(
   `whole SCSS styles=${jobs.length} CSS anchors=${anchors} frozen JS modules and maps=${modules} Sass=${sass.info.split("\n")[0]}`,

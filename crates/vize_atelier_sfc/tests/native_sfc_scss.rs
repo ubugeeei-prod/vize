@@ -16,8 +16,7 @@ use vize_atelier_sfc::{
 };
 use vize_l0::Allocator;
 
-#[path = "observed_scss/component_perf.rs"]
-mod profile;
+mod component_scss;
 
 const FILENAME: &str = "Setup雪🌸.vue";
 const FIXTURES: &str = include_str!("fixtures/native_sfc_ts_annotation_setup_vue_3_5_35.json");
@@ -237,7 +236,7 @@ fn complete_styles_and_authored_map_segments_match_upstream() {
         }
     }
     let mut child = Command::new("node")
-        .arg(root.join("crates/vize_atelier_sfc/tests/observed_scss/component.ts"))
+        .arg(root.join("crates/vize_atelier_sfc/tests/component_scss/oracle.ts"))
         .stdin(Stdio::piped())
         .stdout(Stdio::inherit())
         .spawn()
