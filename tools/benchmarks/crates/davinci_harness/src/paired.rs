@@ -17,7 +17,7 @@ pub fn assert_paired_time(label: &str, iterations: u32, mut run: impl FnMut(bool
             start.elapsed().as_nanos()
         };
         let mut pair = |round: usize| {
-            let first = (round % 2 == 0) != reverse;
+            let first = round.is_multiple_of(2) != reverse;
             let a = sample(first);
             let b = sample(!first);
             if first { (b, a) } else { (a, b) }
