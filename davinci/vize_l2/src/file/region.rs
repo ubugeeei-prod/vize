@@ -174,6 +174,8 @@ where
                 ScopedResolution {
                     scope: region.scope,
                     table,
+                    #[cfg(feature = "template-operand-queries")]
+                    kind: crate::query::TemplateOperandKind::Interpolation,
                 },
             );
             Ok(node)
@@ -196,6 +198,8 @@ where
                 ScopedResolution {
                     scope: region.scope,
                     table,
+                    #[cfg(feature = "template-operand-queries")]
+                    kind: crate::query::TemplateOperandKind::Bind,
                 },
             );
             Ok(node)

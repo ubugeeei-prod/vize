@@ -44,6 +44,8 @@ pub(crate) struct Facts<'a> {
 pub(crate) struct ScopedResolution<'a> {
     pub scope: ScopeId,
     pub table: ResolutionTable<'a>,
+    #[cfg(feature = "template-operand-queries")]
+    pub kind: crate::query::TemplateOperandKind,
 }
 
 #[derive(Default)]
