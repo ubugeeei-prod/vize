@@ -1,5 +1,14 @@
 import { isDeepStrictEqual } from "node:util";
-import { isAlias, isMap, isScalar, isSeq, parseDocument, stringify, type Node } from "yaml";
+import {
+  isAlias,
+  isMap,
+  isScalar,
+  isSeq,
+  parseDocument,
+  stringify,
+  type Document,
+  type Node,
+} from "yaml";
 
 export type ConfigValue =
   | string
@@ -12,13 +21,23 @@ export type ConfigValue =
 type ScalarEdit = { start: number; end: number; text: string };
 
 function sameValue(left: unknown, right: ConfigValue, ordered: boolean): boolean {
-  // Key order is part of the authoring contract (e.g. matrix and pnpm overrides).
+  // External configuration readers can use mapping order (for example, pnpm overrides).
   return ordered ? JSON.stringify(left) === JSON.stringify(right) : isDeepStrictEqual(left, right);
+}
+
+function readDocument(document: Document): ConfigValue | undefined {
+  if (document.errors.length) return undefined;
+  try {
+    return document.toJS() as ConfigValue;
+  } catch {
+    // A dangling alias cannot supply a presentation template.
+    return undefined;
+  }
 }
 
 function matches(text: string, value: ConfigValue, ordered: boolean): boolean {
   const document = parseDocument(text);
-  return document.errors.length === 0 && sameValue(document.toJS(), value, ordered);
+  return sameValue(readDocument(document), value, ordered);
 }
 
 function scalarEdits(node: Node | null, value: ConfigValue, edits: ScalarEdit[]): boolean {
@@ -58,8 +77,9 @@ function scalarEdits(node: Node | null, value: ConfigValue, edits: ScalarEdit[])
 export function renderRepositoryYaml(value: ConfigValue, current?: string, ordered = true): string {
   if (current !== undefined) {
     const document = parseDocument(current);
-    if (document.errors.length === 0) {
-      if (sameValue(document.toJS(), value, ordered)) return current;
+    const existing = readDocument(document);
+    if (existing !== undefined) {
+      if (sameValue(existing, value, ordered)) return current;
       const edits: ScalarEdit[] = [];
       if (scalarEdits(document.contents, value, edits)) {
         let text = current;
@@ -113,7 +133,7 @@ export function renderRepositoryYaml(value: ConfigValue, current?: string, order
         document.setIn(location, document.createNode(next));
       }
       try {
-        update(document.toJS() as ConfigValue, value, []);
+        update(existing, value, []);
         const text = document.toString({ lineWidth: 0 });
         if (matches(text, value, ordered)) return text;
       } catch {

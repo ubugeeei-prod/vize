@@ -40,3 +40,9 @@ test("Actions mappings may keep their layout, but step order must match the sour
     "name: job\nsteps: [second, first]\n",
   );
 });
+
+test("a malformed output can be recovered from its Pkl source", () => {
+  const config = { steps: ["build"] };
+  assert.deepEqual(parse(renderRepositoryYaml(config, "steps: *missing\n")), config);
+  assert.deepEqual(parse(renderRepositoryYaml(config, "steps: [\n")), config);
+});

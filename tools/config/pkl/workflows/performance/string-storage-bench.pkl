@@ -47,7 +47,7 @@ jobs {
       new Dynamic {
         uses = ci.checkout
         with {
-          ref = "${{ inputs.head_sha }}"
+          ref = "${{ github.sha }}"
           path = "head"
           `fetch-depth` = 0
           `persist-credentials` = false

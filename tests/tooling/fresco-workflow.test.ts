@@ -108,6 +108,9 @@ test("repeated Fresco and storage measurements stay outside ordinary PR and queu
     assert.equal(storage.on.workflow_dispatch.inputs[sha].type, "string");
   }
   assert.deepEqual(storage.jobs["bounded-storage"].strategy.matrix.repetition, [1, 2, 3]);
+  const checkout = workflowUsesStep(storage.jobs["bounded-storage"], "actions/checkout@");
+  assert.equal(checkout.with?.ref, "${{ github.sha }}");
+  assert.equal(checkout.with?.path, "head");
   const validate = workflowStep(
     storage.jobs["bounded-storage"],
     "Validate exact commits and use identical benchmark harness",
