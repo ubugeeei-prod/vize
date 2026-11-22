@@ -19,6 +19,8 @@ original-style-binding-tests = [
   "original-style-bindings",
   "vize_atelier_sfc/original-style-bindings",
 ]
+# Explicit editor session with authored ambient declarations in its native project.
+ambient-project-declarations = ["native"]
 # Emit original expression projections and observe the same authored operands.
 template-operand-projection = ["native", "vize_l1_to_l2/template-operand-queries"]
 observed-style-modules = ["native", "vize_l1/observed-styles"]

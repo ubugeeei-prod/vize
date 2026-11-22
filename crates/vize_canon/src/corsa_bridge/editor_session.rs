@@ -10,10 +10,10 @@ use std::time::{Duration, SystemTime};
 use super::types::CorsaBridgeError;
 use super::vue_dependencies_alias::{SessionCache, recover_lock};
 
-/// One bridge/check-server session owns one private mirror namespace. Live
-/// overlay bytes and the cache describing them must never be shared with an
-/// independent native TypeScript session.
+/// One native TypeScript session owns this private mirror and its live overlay cache.
 pub(crate) struct EditorMirrorSession {
+    #[cfg(feature = "ambient-project-declarations")]
+    pub(super) ambient_declarations: std::sync::OnceLock<()>,
     storage: Result<EditorStorage, vize_carton::String>,
     cache: Mutex<SessionCache>,
     /// The workspace preparation in flight, shared by equal requests.
@@ -57,6 +57,8 @@ impl EditorMirrorSession {
             vize_carton::cstr!("failed to create private editor mirror storage: {error}")
         });
         Self {
+            #[cfg(feature = "ambient-project-declarations")]
+            ambient_declarations: std::sync::OnceLock::new(),
             storage,
             cache: Mutex::new(SessionCache::default()),
             preparing: Mutex::new(None),
@@ -65,10 +67,8 @@ impl EditorMirrorSession {
         }
     }
 
-    #[expect(
-        clippy::disallowed_types,
-        reason = "immutable snapshots are shared by editor owners"
-    )]
+    /// Immutable compiler settings belong to the admitted editor owner.
+    #[expect(clippy::disallowed_types, reason = "shared compiler configuration")]
     pub(crate) fn compiler_configuration(
         &self,
     ) -> Option<&std::sync::Arc<crate::CompilerConfigurationSnapshot>> {

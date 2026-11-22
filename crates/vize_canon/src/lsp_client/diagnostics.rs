@@ -466,3 +466,8 @@ fn diagnostics_api_error_is_unsupported(error: &impl std::fmt::Display) -> bool 
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "ambient-project-declarations")]
+mod ambient;
+#[cfg(feature = "ambient-project-declarations")]
+pub use ambient::AmbientDiagnosticSnapshot;

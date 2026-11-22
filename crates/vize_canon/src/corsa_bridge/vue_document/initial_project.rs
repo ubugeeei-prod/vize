@@ -91,6 +91,8 @@ impl CorsaBridge {
         if !seed.lease.belongs_to(&self.startup, &self.editor_session) {
             return Err(CorsaBridgeError::NotInitialized);
         }
+        #[cfg(feature = "ambient-project-declarations")]
+        let build_initial_project_client = self.ambient_factory(build_initial_project_client);
         let config = self.config.clone();
         let initialized = Arc::clone(&self.initialized);
         let operation_epoch = Arc::clone(&self.client_operation_epoch);
@@ -160,9 +162,7 @@ impl CorsaBridge {
                     ))
                 })();
                 if outcome.is_err() {
-                    // A failed constructor can still have an unknown-live
-                    // native transport. Neither last-Arc Drop nor a later
-                    // apparently successful cleanup proves its old readers gone.
+                    // A failed handshake can leave native readers alive even after cleanup.
                     lease.retain_after_failure();
                 }
                 outcome

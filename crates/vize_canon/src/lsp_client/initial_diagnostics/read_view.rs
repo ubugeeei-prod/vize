@@ -59,7 +59,7 @@ impl<'a> DiagnosticReadView<'a> {
         }
     }
 
-    pub(super) fn into_owned(self) -> InitialDiagnosticsRead {
+    pub(in crate::lsp_client) fn into_owned(self) -> InitialDiagnosticsRead {
         InitialDiagnosticsRead {
             client: self.client.clone(),
             snapshot: self.snapshot,

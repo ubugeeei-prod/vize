@@ -393,7 +393,7 @@ fn convert_bridge_diagnostic(
     })
 }
 
-pub(super) fn convert_bridge_diagnostics_with_provenance(
+pub(in crate::corsa_bridge) fn convert_bridge_diagnostics_with_provenance(
     diagnostics: &[crate::lsp_client::PhasedDiagnostic],
 ) -> Result<Vec<PhasedLspDiagnostic>, CorsaBridgeError> {
     diagnostics

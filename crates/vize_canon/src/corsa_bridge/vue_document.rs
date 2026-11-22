@@ -356,3 +356,8 @@ pub(super) fn generate_vue_document_with_alias(
 
 mod generate;
 use generate::generate_vue_document_with_options;
+
+#[cfg(feature = "ambient-project-declarations")]
+mod ambient_diagnostics;
+#[cfg(feature = "ambient-project-declarations")]
+pub use ambient_diagnostics::AmbientVueDiagnostics;

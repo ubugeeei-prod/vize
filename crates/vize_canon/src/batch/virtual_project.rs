@@ -454,3 +454,6 @@ struct SourceArtifacts {
 
 #[cfg(test)]
 mod preparation_import_facts_test_snapshot;
+
+#[cfg(feature = "ambient-project-declarations")]
+mod ambient_declarations;
