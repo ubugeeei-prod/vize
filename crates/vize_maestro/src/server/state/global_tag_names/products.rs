@@ -1,4 +1,5 @@
 //! Read a declaration's checker products and its completion contribution together.
+use super::super::workspace_project_files::is_project_source;
 use super::{Declarations, ServerState};
 use crate::source_project::{SnapshotRefusal, SourceSnapshot};
 use oxc_ast_visit::Visit;
@@ -84,8 +85,7 @@ fn names_from_program(program: &oxc_ast::ast::Program<'_>) -> Vec<String> {
 
 fn supported_declaration(uri: &tower_lsp::lsp_types::Url) -> bool {
     let supported = |path: &std::path::Path| {
-        DeclarationCheckerProducts::supports_path(path)
-            && !vize_carton::path::is_git_metadata_path(path)
+        DeclarationCheckerProducts::supports_path(path) && is_project_source(path)
     };
     // A local Unix file URL with no escaped bytes already contains its
     // absolute filesystem path. Encoded paths and authorities use the URL
