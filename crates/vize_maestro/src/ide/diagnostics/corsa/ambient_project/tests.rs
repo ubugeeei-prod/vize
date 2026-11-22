@@ -148,12 +148,15 @@ fn historical_slot_pack_maps_complete_native_responses() {
                 "{}",
                 case["id"]
             );
+            let hits = &session.bridge.cache_stats().hits;
+            let before = hits.load(std::sync::atomic::Ordering::Relaxed);
             assert_eq!(
                 wire(&session, &snapshot).await,
                 Value::Array(expected),
                 "retained {}",
                 case["id"]
             );
+            assert_eq!(hits.load(std::sync::atomic::Ordering::Relaxed), before + 1);
             session.shutdown().await.unwrap();
         }
     });

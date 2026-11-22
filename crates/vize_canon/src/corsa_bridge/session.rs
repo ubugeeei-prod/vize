@@ -98,11 +98,13 @@ pub(super) fn build_ambient_project_client(
 }
 
 #[cfg(feature = "ambient-project-declarations")]
-pub(super) fn initial_factory(session: &super::EditorMirrorSession) -> InitialProjectFactory {
-    if session.ambient_declarations.get().is_some() {
-        build_ambient_project_client
-    } else {
-        build_initial_project_client
+impl super::CorsaBridge {
+    pub(super) fn ambient_factory(&self, ordinary: InitialProjectFactory) -> InitialProjectFactory {
+        if self.editor_session.ambient_declarations.get().is_some() {
+            build_ambient_project_client
+        } else {
+            ordinary
+        }
     }
 }
 

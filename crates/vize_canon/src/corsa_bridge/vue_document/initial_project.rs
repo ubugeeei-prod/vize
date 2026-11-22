@@ -77,7 +77,9 @@ impl CorsaBridge {
         }))
     }
 
-    /// Start the Canon graph on its bounded FIFO worker with the caller's original admission fence.
+    /// Perform a real direct-Canon handshake and complete owned document open
+    /// on the original FIFO worker/deadline. `current` is the caller's original
+    /// environment admission predicate, not a fresh document/request stamp.
     pub async fn spawn_with_initial_project<F>(
         &self,
         seed: CorsaInitialVueProject,
@@ -90,7 +92,7 @@ impl CorsaBridge {
             return Err(CorsaBridgeError::NotInitialized);
         }
         #[cfg(feature = "ambient-project-declarations")]
-        let build_initial_project_client = initial_factory(&self.editor_session);
+        let build_initial_project_client = self.ambient_factory(build_initial_project_client);
         let config = self.config.clone();
         let initialized = Arc::clone(&self.initialized);
         let operation_epoch = Arc::clone(&self.client_operation_epoch);
@@ -160,9 +162,7 @@ impl CorsaBridge {
                     ))
                 })();
                 if outcome.is_err() {
-                    // A failed constructor can still have an unknown-live
-                    // native transport. Neither last-Arc Drop nor a later
-                    // apparently successful cleanup proves its old readers gone.
+                    // A failed handshake can leave native readers alive even after cleanup.
                     lease.retain_after_failure();
                 }
                 outcome
@@ -322,6 +322,3 @@ mod tests;
 
 #[cfg(all(test, target_os = "linux"))]
 mod native_tests;
-
-#[cfg(feature = "ambient-project-declarations")]
-use crate::corsa_bridge::session::initial_factory;
