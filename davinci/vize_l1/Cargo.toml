@@ -45,6 +45,7 @@ program-snapshot = []
 script-queries = []
 # Original parser products for syntax tools that choose their authored source profile.
 authored-script-queries = []
+authored-declarations = ["authored-script-queries"]
 
 [dependencies]
 memchr.workspace = true
