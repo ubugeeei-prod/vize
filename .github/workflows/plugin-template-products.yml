@@ -22,6 +22,9 @@ on:
       - "davinci/vize_l1_to_l2/src/pass/cfg*"
       - "davinci/vize_l1_to_l2/src/pass/cfg/**"
       - "davinci/vize_l1_to_l2/src/dialect/vue/lower.rs"
+      - "davinci/vize_l2/src/analysis/static_facts/**"
+      - "davinci/vize_l1_to_l2/tests/cfg_complexity_oracle/**"
+      - "davinci/vize_l1_to_l2/tests/composed_template_alloc.rs"
       - "davinci/vize_l2/src/analysis/template_complexity*"
       - "davinci/vize_l2/src/analysis/template_complexity/**"
 permissions: { contents: read }
@@ -76,3 +79,13 @@ jobs:
           set -euo pipefail
           export VIZE_PLUGIN_TEMPLATE_INPUTS="$RUNNER_TEMP/plugin-templates"
           cargo test --locked --profile ci-opt -p vize --features plugin-project-facts --test plugin_template_products measure_complete_ -- --ignored --nocapture --test-threads=1
+
+      - name: Qualify standalone and composed static facts and complexity
+        if: matrix.suite == 'correctness'
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt -p vize_l1_to_l2)
+          export VIZE_COMPOSED_TEMPLATE_FILES="$RUNNER_TEMP/authored-static-templates"
+          git ls-files -z -- '*.vue' > "$VIZE_COMPOSED_TEMPLATE_FILES"
+          cargo test "${flags[@]}" --test cfg_complexity_oracle composed:: -- --include-ignored --nocapture --test-threads=1
+          cargo test "${flags[@]}" --test composed_template_alloc
