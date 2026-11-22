@@ -50,3 +50,8 @@ pub use scss::ScssDefinitionError;
 mod style_format;
 #[cfg(feature = "experimental-verified-style-format")]
 pub use style_format::{StyleFormatError, VerifiedStyleFormat};
+#[cfg(feature = "experimental-literal-products")]
+pub mod literal_products;
+
+#[cfg(feature = "experimental-recovered-literal-prefix")]
+pub mod recovered_script;

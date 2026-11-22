@@ -24,6 +24,14 @@ experimental-verified-style-format = [
   "vize_atelier_sfc/verified-scss-edits",
 ]
 experimental-scss-definitions = ["vize_atelier_sfc/original-scss-products"]
+experimental-recovered-literal-prefix = [
+  "experimental-literal-products",
+  "vize_l2/recovered-literal-prefix",
+]
+experimental-literal-products = [
+  "vize_canon/verified-literal-assignments",
+  "vize_patina/verified-prefer-const",
+]
 experimental-style-lint-products = [
   "experimental-style-module-products",
   "vize_patina/observed-style-rules",
