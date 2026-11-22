@@ -200,7 +200,7 @@ xxhash-rust = { version = "=0.8.19", features = ["xxh3"] }
 # the caller's, charter #33).
 salsa = { version = "=0.28.5", default-features = false, features = ["macros", "inventory"] }
 sha2 = "=0.11.1"
-url = "=2.5.8"
+url = "=2.5.9"
 htmlize = { version = "=1.1.0", features = ["unescape"] }
 libc = "=0.2.190"
 # Moves a recursive AST pass onto a heap-allocated stack when the thread stack
