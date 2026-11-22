@@ -5,6 +5,7 @@
 use super::*;
 use crate::ide::{CompletionService, IdeContext};
 use crate::server::ServerState;
+use std::collections::BTreeSet;
 use tower_lsp::lsp_types::{CompletionResponse, Url};
 use vize_canon::virtual_ts::TemplateGlobal;
 
@@ -19,7 +20,7 @@ const STYLES: &[(&str, &str)] = &[
     ("less", ".card { &-body { color: red } }"),
     ("sass", ".card\n  &-body\n    color: red\n"),
     ("stylus", ".card\n  &-body\n    color red\n"),
-    ("styl", ".card { color: red; }"),
+    ("styl", ".card\n  &-body\n    color red\n"),
 ];
 
 fn options() -> VirtualTsOptions {
@@ -139,7 +140,6 @@ fn all_style_dialects_share_complete_checker_options_and_published_member_respon
                                 &["accent", "card"],
                                 r#"{ "accent": string; "card": string; }"#,
                             ),
-                            "styl" => (&["card"], r#"{ "card": string; }"#),
                             _ => (
                                 &["card", "card-body"],
                                 r#"{ "card": string; "card-body": string; }"#,
@@ -150,7 +150,8 @@ fn all_style_dialects_share_complete_checker_options_and_published_member_respon
                                 .iter()
                                 .map(|item| item.label.as_str())
                                 .collect::<Vec<_>>(),
-                            labels
+                            labels,
+                            "{language}"
                         );
                         let annotation = if strict {
                             object.to_owned()
@@ -164,7 +165,8 @@ fn all_style_dialects_share_complete_checker_options_and_published_member_respon
                                 .iter()
                                 .find(|g| g.name == "$style")
                                 .map(|g| g.type_annotation.as_str()),
-                            Some(annotation.as_str())
+                            Some(annotation.as_str()),
+                            "{language}"
                         );
                     }
                 }

@@ -1,9 +1,11 @@
 //! Checker options and complete CSS-module completion items for one open revision.
-use super::{IdeContext, class_completion, module_receiver};
-use std::{collections::BTreeSet, sync::Arc};
-use tower_lsp::lsp_types::CompletionItem;
+use super::{IdeContext, is_identifier_char};
+use std::sync::Arc;
+use tower_lsp::lsp_types::{
+    CompletionItem, CompletionItemKind, Documentation, MarkupContent, MarkupKind,
+};
 use vize_canon::virtual_ts::VirtualTsOptions;
-use vize_l0::SourceFrameError;
+use vize_l0::{SmallVec, SourceFrameError, String as CompactString};
 
 #[derive(Debug)]
 pub struct StyleModuleToolProducts {
@@ -46,14 +48,14 @@ impl IdeContext<'_> {
             .content
             .get(..self.offset.min(self.content.len()))
             .and_then(module_receiver);
-        let mut names = None;
+        let mut names: Option<SmallVec<[CompactString; 8]>> = None;
         let checker = base.observe_style_modules(
             descriptor,
             strict,
             resolve_imports,
             |module, style, observed| {
                 if Some(module) == receiver {
-                    let names = names.get_or_insert_with(BTreeSet::new);
+                    let names = names.get_or_insert_with(SmallVec::new);
                     if style.src.is_none()
                         && let Some(classes) = observed.and_then(|o| o.authored_classes())
                     {
@@ -62,7 +64,9 @@ impl IdeContext<'_> {
                 }
             },
         );
-        let completions = names.map(|names| {
+        let completions = names.map(|mut names| {
+            names.sort_unstable();
+            names.dedup();
             names
                 .into_iter()
                 .map(|name| class_completion(&name))
@@ -73,6 +77,34 @@ impl IdeContext<'_> {
             checker: checker.map_err(StyleModuleRefusal::Frame)?,
             completions,
         }))
+    }
+}
+
+fn module_receiver(before: &str) -> Option<&str> {
+    let receiver = before
+        .trim_end_matches(is_identifier_char)
+        .strip_suffix('.')?;
+    receiver
+        .rsplit(|character| !is_identifier_char(character))
+        .next()
+        .filter(|module| !module.is_empty())
+}
+
+fn class_completion(name: &str) -> CompletionItem {
+    #[expect(
+        clippy::disallowed_macros,
+        reason = "tower-lsp payload fields take std `String`, which `cstr!` does not produce"
+    )]
+    CompletionItem {
+        label: name.to_string(),
+        kind: Some(CompletionItemKind::FIELD),
+        detail: Some("CSS module class".to_string()),
+        documentation: Some(Documentation::MarkupContent(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: format!("`{name}` from `<style module>`."),
+        })),
+        sort_text: Some(format!("0{name}")),
+        ..Default::default()
     }
 }
 

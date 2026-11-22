@@ -1,7 +1,11 @@
 //! Build per-file checker options while other tools read the same authored style.
-use super::*;
-use std::collections::btree_map::Entry;
-use vize_atelier_sfc::SfcStyleBlock;
+use super::{
+    AuthoredClasses, CSS_MODULE_GLOBAL_MARKER, CssModuleShape, TemplateGlobal, VirtualTsOptions,
+    contains_dynamic_css_module_exports, css_import_targets, css_module_type,
+    virtual_ts_options_for_descriptor,
+};
+use std::collections::{BTreeMap, btree_map::Entry};
+use vize_atelier_sfc::{SfcDescriptor, SfcStyleBlock};
 use vize_l0::{SourceFrameError, SourceRoot};
 use vize_l1::css::lang::StyleObservation;
 
@@ -18,7 +22,7 @@ impl VirtualTsOptions {
 
     /// Read each CSS module's original structure and classes once. The callback
     /// also observes external sources, unknown dialects and incomplete class sets.
-    /// Failure to match a block to the descriptor invalidates the complete visit.
+    /// An invalid source range stops the visit and discards the checker product.
     pub fn observe_style_modules(
         &self,
         descriptor: &SfcDescriptor<'_>,
