@@ -5,6 +5,8 @@ use oxc_ast::ast::{
     VariableDeclarationKind,
 };
 
+use crate::commands::project_nuxt::unwrap_expression;
+
 pub(super) enum StaticPlugin<'a> {
     Arrow(&'a oxc_ast::ast::ArrowFunctionExpression<'a>),
     Function(&'a Function<'a>),
@@ -14,54 +16,14 @@ pub(super) fn resolve_static_plugin_from_export<'a>(
     declaration: &'a ExportDefaultDeclarationKind<'a>,
     program_body: &'a [Statement<'a>],
 ) -> Option<StaticPlugin<'a>> {
-    match declaration {
-        ExportDefaultDeclarationKind::ArrowFunctionExpression(arrow) => {
-            Some(StaticPlugin::Arrow(arrow))
-        }
-        ExportDefaultDeclarationKind::FunctionDeclaration(function)
-        | ExportDefaultDeclarationKind::FunctionExpression(function) => {
-            Some(StaticPlugin::Function(function))
-        }
-        ExportDefaultDeclarationKind::Identifier(identifier) => {
-            resolve_static_plugin(program_body, identifier.name.as_str())
-        }
-        ExportDefaultDeclarationKind::ParenthesizedExpression(parenthesized) => {
-            resolve_static_plugin_from_export_expression(&parenthesized.expression, program_body)
-        }
-        ExportDefaultDeclarationKind::TSAsExpression(ts_as) => {
-            resolve_static_plugin_from_export_expression(&ts_as.expression, program_body)
-        }
-        ExportDefaultDeclarationKind::TSSatisfiesExpression(ts_satisfies) => {
-            resolve_static_plugin_from_export_expression(&ts_satisfies.expression, program_body)
-        }
-        ExportDefaultDeclarationKind::TSNonNullExpression(ts_non_null) => {
-            resolve_static_plugin_from_export_expression(&ts_non_null.expression, program_body)
-        }
-        _ => None,
+    if let ExportDefaultDeclarationKind::FunctionDeclaration(function) = declaration {
+        return Some(StaticPlugin::Function(function));
     }
-}
-
-fn resolve_static_plugin_from_export_expression<'a>(
-    expression: &'a Expression<'a>,
-    program_body: &'a [Statement<'a>],
-) -> Option<StaticPlugin<'a>> {
-    match expression {
+    match unwrap_expression(declaration.as_expression()?) {
         Expression::Identifier(identifier) => {
             resolve_static_plugin(program_body, identifier.name.as_str())
         }
-        Expression::ParenthesizedExpression(parenthesized) => {
-            resolve_static_plugin_from_export_expression(&parenthesized.expression, program_body)
-        }
-        Expression::TSAsExpression(ts_as) => {
-            resolve_static_plugin_from_export_expression(&ts_as.expression, program_body)
-        }
-        Expression::TSSatisfiesExpression(ts_satisfies) => {
-            resolve_static_plugin_from_export_expression(&ts_satisfies.expression, program_body)
-        }
-        Expression::TSNonNullExpression(ts_non_null) => {
-            resolve_static_plugin_from_export_expression(&ts_non_null.expression, program_body)
-        }
-        _ => static_plugin_from_expression(expression),
+        expression => static_plugin_from_expression(expression),
     }
 }
 
@@ -86,6 +48,7 @@ fn resolve_static_plugin<'a>(
                     return declarator
                         .init
                         .as_ref()
+                        .map(unwrap_expression)
                         .and_then(static_plugin_from_expression);
                 }
             }
@@ -107,16 +70,6 @@ fn static_plugin_from_expression<'a>(expression: &'a Expression<'a>) -> Option<S
     match expression {
         Expression::ArrowFunctionExpression(arrow) => Some(StaticPlugin::Arrow(arrow)),
         Expression::FunctionExpression(function) => Some(StaticPlugin::Function(function)),
-        Expression::ParenthesizedExpression(parenthesized) => {
-            static_plugin_from_expression(&parenthesized.expression)
-        }
-        Expression::TSAsExpression(ts_as) => static_plugin_from_expression(&ts_as.expression),
-        Expression::TSSatisfiesExpression(ts_satisfies) => {
-            static_plugin_from_expression(&ts_satisfies.expression)
-        }
-        Expression::TSNonNullExpression(ts_non_null) => {
-            static_plugin_from_expression(&ts_non_null.expression)
-        }
         _ => None,
     }
 }
