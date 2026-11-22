@@ -141,6 +141,8 @@ fn repository_component_requests() {
         .unwrap();
     let mut failures = Vec::new();
     let mut count = 0;
+    let mut admitted_imports = 0;
+    let mut refused_bindings = 0;
     for name in manifest.split_terminator('\0') {
         let path = root.join(name);
         let bytes = fs::read(&path).unwrap();
@@ -149,8 +151,17 @@ fn repository_component_requests() {
         };
         let arena = Allocator::new();
         let observed = observe(&arena, source);
-        if observed.setup_component_imports().is_err() {
+        let Ok(imports) = observed.setup_component_imports() else {
             continue;
+        };
+        admitted_imports += 1;
+        match imports.try_for_each_in_postorder(|site| site.visit_passed_props(|_| {})) {
+            Ok(()) => {}
+            Err(ComponentPropIssue::Binding(_)) => {
+                refused_bindings += 1;
+                continue;
+            }
+            Err(ComponentPropIssue::OriginalSource) => panic!("{name}: invalid original source"),
         }
         let path = if path.extension().is_some_and(|e| e == "txt") {
             path.with_extension("")
@@ -166,6 +177,7 @@ fn repository_component_requests() {
         }
         count += 1;
     }
+    assert_eq!(admitted_imports, count + refused_bindings);
     assert!(count > 0);
     assert!(failures.is_empty(), "{failures:?}");
 }

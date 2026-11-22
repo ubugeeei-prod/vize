@@ -102,6 +102,8 @@ fn original_workspace_diagnostics() {
         .canonicalize()
         .unwrap();
     let (mut count, mut sites, mut diagnostics, mut bytes) = (0, 0, 0, 0);
+    let mut refused_bindings = 0;
+    let mut admitted_imports = 0;
     for name in manifest.split_terminator('\0') {
         let path = root.join(name);
         let data = fs::read(&path).unwrap();
@@ -113,6 +115,7 @@ fn original_workspace_diagnostics() {
         let Ok(inputs) = owner.setup_component_imports() else {
             continue;
         };
+        admitted_imports += 1;
         let path = if path.extension().is_some_and(|e| e == "txt") {
             path.with_extension("")
         } else {
@@ -122,7 +125,19 @@ fn original_workspace_diagnostics() {
         let state = ServerState::new();
         open(&state, &uri, source);
         let actual =
-            DiagnosticService::imported_component_required_props(&state, &uri, &inputs).unwrap();
+            match DiagnosticService::imported_component_required_props(&state, &uri, &inputs) {
+                Ok(rows) => rows,
+                Err(ComponentPropDiagnosticIssue::Props(ComponentPropIssue::Binding(span))) => {
+                    assert_eq!(
+                        inputs.try_for_each_in_postorder(|site| site.visit_passed_props(|_| {})),
+                        Err(ComponentPropIssue::Binding(span)),
+                        "{name}"
+                    );
+                    refused_bindings += 1;
+                    continue;
+                }
+                Err(issue) => panic!("{name}: {issue:?}"),
+            };
         let old = original(&state, &uri, source);
         assert_eq!(actual, old, "{name}");
         count += 1;
@@ -130,8 +145,9 @@ fn original_workspace_diagnostics() {
         diagnostics += actual.len();
         bytes += serde_json::to_vec(&actual).unwrap().len();
     }
+    assert_eq!(admitted_imports, count + refused_bindings);
     assert!(count > 0);
     eprintln!(
-        "required_props_workspaces inputs={count} sites={sites} diagnostics={diagnostics} bytes={bytes}"
+        "required_props_workspaces inputs={count} refused_bindings={refused_bindings} sites={sites} diagnostics={diagnostics} bytes={bytes}"
     );
 }
