@@ -1,5 +1,9 @@
 //! Required-prop diagnostics over original component operations retained by a request.
-use super::*;
+use super::{
+    Diagnostic, DiagnosticService, DiagnosticSeverity, IdeContext, LineIndex, NumberOrString,
+    Position, Range, ServerState, Url, component_metadata, prop_names_match,
+    required_props_message, sources, vue_props_code_description,
+};
 use vize_l0::SmallVec;
 use vize_l1_to_l2::native_file::SetupComponentImports;
 use vize_l2::query::ComponentPropIssue;
