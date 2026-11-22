@@ -33,6 +33,8 @@ component-listener-queries = [
   "setup-component-imports",
   "vize_l2/component-listener-queries",
 ]
+# Native L1/L2 views for explicit layered graph consumers.
+ir-views = ["vize_l1/ir-views", "vize_l2/ir-views"]
 # Admit Vue 3.4+ same-name binds with an authored identifier operand.
 authored-bind-shorthand = []
 # Read authored props in source order from each resolved component operation.

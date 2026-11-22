@@ -120,3 +120,5 @@ pub fn lower_sfc_with_lexical_initializers<'a>(
     }
     include!("native_file/assembly.rs")
 }
+#[cfg(feature = "ir-views")]
+mod ir_views;
