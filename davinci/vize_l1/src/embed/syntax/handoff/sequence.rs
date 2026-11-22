@@ -1,4 +1,4 @@
-//! Share only prepared parser input and its resource decision across identical
+//! Share the pure parser-input resource decision across identical
 //! short expressions. Each authored site receives its own ordinary OXC parse.
 use super::{
     Coordinates, Diagnostics, EmbedHole, EmbedSource, EmbedSyntax, Grammar, RetainedExpression,
@@ -9,16 +9,12 @@ use crate::embed::{
     syntax::{ProgramOptions, admission, wrapped},
 };
 use alloc::boxed::Box;
-use oxc_parser::{
-    EmbeddingGoal, EmbeddingInput, EmbeddingInputError, EmbeddingObservation,
-    ReusableExpressionInput,
-};
+use oxc_parser::{EmbeddingGoal, EmbeddingInput, EmbeddingInputError, EmbeddingObservation};
 use vize_l0::{Allocator, expression_guard::expression_is_safe_to_parse};
 
 pub struct RetainedExpressionParser<'a> {
     allocator: &'a Allocator,
-    recent: [Option<ReusableExpressionInput<'a>>; 2],
-    next: usize,
+    recent: [Option<(Lang, &'a str)>; 2],
 }
 
 impl<'a> RetainedExpressionParser<'a> {
@@ -27,7 +23,6 @@ impl<'a> RetainedExpressionParser<'a> {
         Self {
             allocator,
             recent: [None, None],
-            next: 0,
         }
     }
 
@@ -54,14 +49,6 @@ impl<'a> RetainedExpressionParser<'a> {
             })
         };
         let text = source.text();
-        let short = text.len() <= 64;
-        if short {
-            for entry in self.recent.iter().flatten() {
-                if let Some(owner) = entry.observe_matching(text, source_type) {
-                    return retain(grammar, source, owner);
-                }
-            }
-        }
         let input = match EmbeddingInput::prepare_in(
             self.allocator.as_oxc(),
             text,
@@ -80,25 +67,21 @@ impl<'a> RetainedExpressionParser<'a> {
             }
         };
         let prefix = input.parser_content_span().start;
-        if !admission::allows_small_input(input.parser_source()) {
-            return rejected(prefix, EmbedHole::TokenBudget);
-        }
-        if !expression_is_safe_to_parse(input.parser_source()) {
-            return rejected(prefix, EmbedHole::SafetyAdmission);
-        }
-        let owner = if short {
-            match input.reusable_expression() {
-                Ok(entry) => {
-                    let owner = entry.observe();
-                    self.recent[self.next] = Some(entry);
-                    self.next ^= 1;
-                    owner
-                }
-                Err(input) => input.observe(),
+        let key = (lang, text);
+        let short = text.len() <= 64;
+        if !short || !self.recent.contains(&Some(key)) {
+            if !admission::allows_small_input(input.parser_source()) {
+                return rejected(prefix, EmbedHole::TokenBudget);
             }
-        } else {
-            input.observe()
-        };
+            if !expression_is_safe_to_parse(input.parser_source()) {
+                return rejected(prefix, EmbedHole::SafetyAdmission);
+            }
+            if short {
+                let [older, latest] = &mut self.recent;
+                *older = latest.replace(key);
+            }
+        }
+        let owner = input.observe();
         retain(grammar, source, owner)
     }
 }

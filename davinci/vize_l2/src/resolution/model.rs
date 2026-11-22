@@ -18,6 +18,6 @@ pub(crate) fn resolve_model_facts<'a>(
         #[cfg(not(feature = "lexical-arrow-initializers"))]
         occurrences,
         #[cfg(feature = "lexical-arrow-initializers")]
-        occurrences: occurrences.into(),
+        occurrences: super::Occurrences::Owned(occurrences),
     })
 }

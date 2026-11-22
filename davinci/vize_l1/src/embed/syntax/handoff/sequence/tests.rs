@@ -35,46 +35,53 @@ fn compare<'a>(
         actual.source().authored_root(),
         source.authored_root()
     ));
-    let comments = |result: &RetainedExpression<'a>| {
-        result
+    assert!(
+        actual
             .comments()
             .map(|c| (c.kind(), c.text(), c.decoded_span(), c.authored_span()))
-            .collect::<Vec<_>>()
-    };
-    assert_eq!(comments(&actual), comments(&normal));
-    let diagnostics = |result: &RetainedExpression<'a>| {
-        result
-            .diagnostics()
-            .map(|d| {
-                let labels = d
-                    .labels()
-                    .map(|l| {
-                        (
-                            l.message().map(alloc::string::String::from),
-                            l.primary(),
-                            l.authored_span(),
-                            l.decoded_span(),
-                        )
-                    })
-                    .collect::<Vec<_>>();
-                (
-                    format!(
-                        "{:?}",
-                        (
-                            d.message(),
-                            d.severity(),
-                            d.code(),
-                            d.help(),
-                            d.note(),
-                            d.url()
-                        )
-                    ),
-                    labels,
-                )
-            })
-            .collect::<Vec<_>>()
-    };
-    assert_eq!(diagnostics(&actual), diagnostics(&normal));
+            .eq(normal.comments().map(|c| (
+                c.kind(),
+                c.text(),
+                c.decoded_span(),
+                c.authored_span()
+            )))
+    );
+    assert_eq!(actual.diagnostics().count(), normal.diagnostics().count());
+    for (a, b) in actual.diagnostics().zip(normal.diagnostics()) {
+        assert_eq!(
+            (
+                a.message(),
+                a.severity(),
+                a.code(),
+                a.help(),
+                a.note(),
+                a.url()
+            ),
+            (
+                b.message(),
+                b.severity(),
+                b.code(),
+                b.help(),
+                b.note(),
+                b.url()
+            )
+        );
+        assert!(
+            a.labels()
+                .map(|l| (
+                    l.message(),
+                    l.primary(),
+                    l.authored_span(),
+                    l.decoded_span()
+                ))
+                .eq(b.labels().map(|l| (
+                    l.message(),
+                    l.primary(),
+                    l.authored_span(),
+                    l.decoded_span()
+                )))
+        );
+    }
     match (actual.admitted_expression(), normal.admitted_expression()) {
         (None, None) => None,
         (Some(a), Some(b)) => {

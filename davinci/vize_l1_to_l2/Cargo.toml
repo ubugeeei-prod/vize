@@ -22,7 +22,11 @@ autotests = false
 metadata.vize.stability = "experimental"
 
 [features]
-lexical-arrow-initializers = ["vize_l1/retained-expressions", "component-listener-queries", "vize_l2/lexical-arrow-initializers"]
+lexical-arrow-initializers = [
+  "vize_l1/retained-expressions",
+  "component-listener-queries",
+  "vize_l2/lexical-arrow-initializers",
+]
 # Original listener operations and method-reference queries for explicit tool requests.
 component-listener-queries = [
   "authored-bind-shorthand",

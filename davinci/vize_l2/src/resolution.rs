@@ -88,7 +88,7 @@ pub struct ResolutionTable<'a> {
     #[cfg(not(feature = "lexical-arrow-initializers"))]
     occurrences: Vec<Occurrence<'a>>,
     #[cfg(feature = "lexical-arrow-initializers")]
-    occurrences: alloc::borrow::Cow<'a, [Occurrence<'a>]>,
+    occurrences: Occurrences<'a>,
 }
 
 impl<'a> ResolutionTable<'a> {
@@ -99,7 +99,15 @@ impl<'a> ResolutionTable<'a> {
 
     #[must_use]
     pub fn occurrences(&self) -> &[Occurrence<'a>] {
-        &self.occurrences
+        #[cfg(feature = "lexical-arrow-initializers")]
+        match &self.occurrences {
+            Occurrences::Owned(rows) => rows,
+            Occurrences::Arena(rows) => rows,
+        }
+        #[cfg(not(feature = "lexical-arrow-initializers"))]
+        {
+            &self.occurrences
+        }
     }
 }
 
@@ -133,6 +141,13 @@ pub fn resolve_expression<'a>(
         #[cfg(not(feature = "lexical-arrow-initializers"))]
         occurrences,
         #[cfg(feature = "lexical-arrow-initializers")]
-        occurrences: occurrences.into(),
+        occurrences: Occurrences::Owned(occurrences),
     })
+}
+
+#[cfg(feature = "lexical-arrow-initializers")]
+#[derive(Debug)]
+enum Occurrences<'a> {
+    Owned(alloc::vec::Vec<Occurrence<'a>>),
+    Arena(&'a [Occurrence<'a>]),
 }

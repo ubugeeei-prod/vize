@@ -327,3 +327,10 @@ impl<'a> VueFileProducer<'a> {
         Ok(producer)
     }
 }
+
+#[cfg(feature = "lexical-arrow-initializers")]
+impl VueFileProducer<'_> {
+    pub(crate) fn reserve_template_storage(&mut self, roots: usize, expressions: usize) {
+        self.producer.reserve_template_storage(roots, expressions);
+    }
+}

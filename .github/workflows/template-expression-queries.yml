@@ -36,7 +36,6 @@ on:
       - "davinci/vize_l1_to_l2/tests/expression_queries/**"
       - "davinci/vize_l1/Cargo.toml"
       - "davinci/vize_l1/src/embed/**"
-      - "upstream/forks/oxc_parser/Cargo.toml"
       - "upstream/forks/oxc_parser/src/embedding*"
       - "upstream/forks/oxc_parser/src/embedding/**"
       - "davinci/vize_l1/src/container/vue/descriptor*"

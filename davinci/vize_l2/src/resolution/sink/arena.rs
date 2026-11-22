@@ -13,12 +13,12 @@ pub(crate) fn resolve<'a>(
 ) -> Result<ResolutionTable<'a>, ResolutionError> {
     let mut sink = Arena {
         bindings,
-        occurrences: Vec::new_in(allocator),
+        occurrences: Vec::new_in(&allocator),
     };
     walk::expression(expression, &mut sink)?;
     Ok(ResolutionTable {
         expression: *expression,
-        occurrences: alloc::borrow::Cow::Borrowed(
+        occurrences: crate::resolution::Occurrences::Arena(
             sink.occurrences.into_boxed_slice().into_arena_slice(),
         ),
     })

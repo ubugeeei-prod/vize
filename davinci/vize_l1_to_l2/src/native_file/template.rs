@@ -182,6 +182,14 @@ impl<'a> NativeTemplateObservation<'a> {
             self.reject(issues, NativeSfcIssueKind::FileRejected);
             return;
         };
+        #[cfg(feature = "lexical-arrow-initializers")]
+        if let Some((roots, expressions)) = self
+            .pending
+            .as_mut()
+            .and_then(PendingNativeComponent::lexical_storage_hint)
+        {
+            producer.reserve_template_storage(roots, expressions);
+        }
         let result = {
             let mut region = match producer.template_region() {
                 Ok(region) => region,

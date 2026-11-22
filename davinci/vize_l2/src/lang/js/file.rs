@@ -256,3 +256,20 @@ impl ProgramInput<'_, '_> {
         self
     }
 }
+
+#[cfg(feature = "lexical-arrow-initializers")]
+impl FileProducer<'_> {
+    /// Bounded capacity hints from the original surface. No nodes, issues or
+    /// resolution facts are created by this operation.
+    pub fn reserve_template_storage(&mut self, roots: usize, expressions: usize) {
+        let roots = roots.min(32);
+        let expressions = expressions.min(32);
+        self.builder
+            .canonical
+            .reserve_template_storage(roots, expressions);
+        if expressions > 0 && self.builder.facts.expressions.is_empty() {
+            self.builder.facts.expressions =
+                vize_l0::side_table::SideTable::with_capacity(expressions);
+        }
+    }
+}

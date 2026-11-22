@@ -232,32 +232,42 @@ impl PendingNativeComponent<'_> {
 #[cfg(feature = "lexical-arrow-initializers")]
 impl PendingNativeComponent<'_> {
     pub(crate) fn retain_expression_sequence(&mut self) {
-        // A retained OXC result owns its whole observation. Reserve the top-level
-        // expression slots from the original headers before moving any large
-        // results. Nested children keep the ordinary amortized growth policy.
-        use vize_l1::markup::SurfaceChild;
-        let top_level = self
-            .component
-            .carrier()
-            .tree
-            .children
-            .iter()
-            .map(|child| match child {
-                SurfaceChild::Interpolation(_) => 1,
-                SurfaceChild::Element(element) if !element.open.is_verbatim() => element
-                    .open
-                    .attrs
-                    .iter()
-                    .filter(|attr| {
-                        attr.value.is_some()
-                            && (attr.name.text.starts_with(':')
-                                || attr.name.text.starts_with("v-bind:"))
-                    })
-                    .count(),
-                _ => 0,
-            })
-            .sum::<usize>();
-        self.observations.embeds.reserve_exact(top_level);
         self.component.retained_expressions = true;
+    }
+
+    /// Estimate just the first direct children. The hint changes capacity only;
+    /// genuinely constructed owners and facts still determine every length.
+    pub(crate) fn lexical_storage_hint(&mut self) -> Option<(usize, usize)> {
+        use vize_l1::markup::SurfaceChild;
+        if !self.component.retained_expressions {
+            return None;
+        }
+        let children = &self.component.carrier().tree.children;
+        let roots = children.len().min(32);
+        let mut expressions = 0;
+        for child in children.iter().take(roots) {
+            match child {
+                SurfaceChild::Interpolation(_) => expressions += 1,
+                SurfaceChild::Element(element) if !element.open.is_verbatim() => {
+                    expressions += element
+                        .open
+                        .attrs
+                        .iter()
+                        .take(32 - expressions)
+                        .filter(|attr| {
+                            attr.value.is_some()
+                                && (attr.name.text.starts_with(':')
+                                    || attr.name.text.starts_with("v-bind:"))
+                        })
+                        .count();
+                }
+                _ => {}
+            }
+            if expressions == 32 {
+                break;
+            }
+        }
+        self.observations.embeds.reserve_exact(expressions);
+        Some((roots, expressions))
     }
 }
