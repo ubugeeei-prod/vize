@@ -334,4 +334,4 @@ macro_rules! rule_with_authored_spelling {
         }
     };
 }
-pub(self) use rule_with_authored_spelling;
+use rule_with_authored_spelling;
