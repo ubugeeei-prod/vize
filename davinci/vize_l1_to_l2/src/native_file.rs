@@ -58,6 +58,12 @@ pub struct NativeSfcIssue {
     pub kind: NativeSfcIssueKind,
 }
 
+macro_rules! create_producer {
+    ($allocator:expr, $source:expr) => {
+        crate::vue_file::VueFileProducer::new($allocator, $source)
+    };
+}
+
 /// Retain all original owners; only the private assembly check grants admission.
 pub fn lower_sfc_native<'a>(
     allocator: &'a Allocator,
@@ -65,7 +71,6 @@ pub fn lower_sfc_native<'a>(
     options: DescriptorOptions,
 ) -> NativeSfcObservation<'a> {
     use template::prepare;
-    let create_producer = crate::vue_file::VueFileProducer::new;
     include!("native_file/assembly.rs")
 }
 
@@ -77,7 +82,6 @@ pub fn lower_sfc_with_authored_bind_shorthand<'a>(
     options: DescriptorOptions,
 ) -> NativeSfcObservation<'a> {
     use template::prepare_shorthand as prepare;
-    let create_producer = crate::vue_file::VueFileProducer::new;
     include!("native_file/assembly.rs")
 }
 
@@ -97,7 +101,6 @@ pub fn lower_sfc_with_listener_references<'a>(
     options: DescriptorOptions,
 ) -> NativeSfcObservation<'a> {
     use template::prepare_listeners as prepare;
-    let create_producer = crate::vue_file::VueFileProducer::new;
     include!("native_file/assembly.rs")
 }
 
@@ -110,6 +113,10 @@ pub fn lower_sfc_with_lexical_initializers<'a>(
     options: DescriptorOptions,
 ) -> NativeSfcObservation<'a> {
     use template::prepare_lexical as prepare;
-    let create_producer = crate::vue_file::VueFileProducer::for_lexical_initializers;
+    macro_rules! create_producer {
+        ($allocator:expr, $source:expr) => {
+            crate::vue_file::VueFileProducer::for_lexical_initializers($allocator, $source)
+        };
+    }
     include!("native_file/assembly.rs")
 }

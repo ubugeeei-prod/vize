@@ -6,9 +6,7 @@ use crate::artifact::{ArtifactError, ComponentBody, ComponentFactory, RegionBuil
 use crate::expr::{ExprRef, JsExpr};
 use crate::op::{Attribute, Namespace};
 use crate::provenance::ProvenanceRecord;
-use crate::resolution::{
-    BindingId, BindingLookup, ResolutionErrorKind, ResolutionTable, resolve_expression,
-};
+use crate::resolution::{BindingId, BindingLookup, ResolutionErrorKind, ResolutionTable};
 use core::{
     marker::PhantomData,
     ops::{Deref, DerefMut},
@@ -116,20 +114,23 @@ where
         if !expression.matches_authored_source(self.source) {
             return Err(self.reject(span, FileIssueKind::InvalidSource));
         }
-        let lookup = Lookup {
-            facts: self.facts,
-            scope: self.scope,
-            policy: self.policy,
-        };
         #[cfg(feature = "lexical-arrow-initializers")]
-        let result = if self.facts.arena_expressions {
-            crate::resolution::sink::arena::resolve(self.region.allocator(), expression, &lookup)
-        } else {
-            resolve_expression(expression, &lookup)
+        let resolve_expression = |expression: &JsExpr<'a>, lookup: &Lookup<'_, 'a, P>| {
+            if self.facts.arena_expressions {
+                crate::resolution::sink::arena::resolve(self.region.allocator(), expression, lookup)
+            } else {
+                crate::resolution::resolve_expression(expression, lookup)
+            }
         };
-        #[cfg(not(feature = "lexical-arrow-initializers"))]
-        let result = resolve_expression(expression, &lookup);
-        result.map_err(|error| {
+        resolve_expression(
+            expression,
+            &Lookup {
+                facts: self.facts,
+                scope: self.scope,
+                policy: self.policy,
+            },
+        )
+        .map_err(|error| {
             self.reject(
                 expression.authored_span(error.span).unwrap_or(span),
                 match error.kind {
@@ -281,3 +282,6 @@ where
 
 #[cfg(feature = "component-listener-queries")]
 mod listener;
+
+#[cfg(not(feature = "lexical-arrow-initializers"))]
+use crate::resolution::resolve_expression;

@@ -99,15 +99,7 @@ impl<'a> ResolutionTable<'a> {
 
     #[must_use]
     pub fn occurrences(&self) -> &[Occurrence<'a>] {
-        #[cfg(feature = "lexical-arrow-initializers")]
-        match &self.occurrences {
-            Occurrences::Owned(rows) => rows,
-            Occurrences::Arena(rows) => rows,
-        }
-        #[cfg(not(feature = "lexical-arrow-initializers"))]
-        {
-            &self.occurrences
-        }
+        &self.occurrences
     }
 }
 
@@ -150,4 +142,15 @@ pub fn resolve_expression<'a>(
 enum Occurrences<'a> {
     Owned(alloc::vec::Vec<Occurrence<'a>>),
     Arena(&'a [Occurrence<'a>]),
+}
+
+#[cfg(feature = "lexical-arrow-initializers")]
+impl<'a> core::ops::Deref for Occurrences<'a> {
+    type Target = [Occurrence<'a>];
+    fn deref(&self) -> &Self::Target {
+        match self {
+            Self::Owned(rows) => rows,
+            Self::Arena(rows) => rows,
+        }
+    }
 }

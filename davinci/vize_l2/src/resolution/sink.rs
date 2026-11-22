@@ -112,14 +112,14 @@ struct Immediate<'a, 'b, B> {
     occurrences: Vec<Occurrence<'a>>,
 }
 
+include!("sink/immediate.rs");
+
 impl<'a, B: BindingLookup> ReferenceSink<'a> for Immediate<'a, '_, B> {
     type Checkpoint = usize;
     fn checkpoint(&self) -> usize {
         self.occurrences.len()
     }
-    fn reference(&mut self, event: ReferenceEvent<'a>) -> Result<(), ResolutionErrorKind> {
-        include!("sink/immediate.rs")
-    }
+    immediate_reference!();
     fn rollback(&mut self, checkpoint: usize) {
         self.occurrences.truncate(checkpoint);
     }

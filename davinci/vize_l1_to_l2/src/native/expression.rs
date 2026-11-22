@@ -80,7 +80,7 @@ impl<'a> Context<'_, 'a> {
     ) {
         let source_span = source.span();
         #[cfg(not(feature = "lexical-arrow-initializers"))]
-        let original = parse_once(
+        let syntax = parse_once(
             self.allocator,
             Embed {
                 grammar: Grammar {
@@ -89,35 +89,40 @@ impl<'a> Context<'_, 'a> {
                 },
                 source,
             },
-        )
-        .into_expression();
+        );
+        macro_rules! retained {
+            ($result:expr) => {
+                match $result {
+                    Ok(retained) => retained,
+                    Err(syntax) => {
+                        self.rejected_syntax.push(*syntax);
+                        self.hole(
+                            region,
+                            NativeHoleKind::Embed(EmbedHole::UnsupportedShape),
+                            source_span,
+                        );
+                        return;
+                    }
+                }
+            };
+        }
+        #[cfg(not(feature = "lexical-arrow-initializers"))]
+        let retained = retained!(syntax.into_expression());
         #[cfg(feature = "lexical-arrow-initializers")]
-        let original = match self.expressions.as_mut() {
+        let retained = retained!(match self.expressions.as_mut() {
             Some(parser) => parser.parse(source, self.lang),
             None => parse_once(
                 self.allocator,
                 Embed {
                     grammar: Grammar {
                         shape: Shape::Expr,
-                        lang: self.lang,
+                        lang: self.lang
                     },
-                    source,
-                },
+                    source
+                }
             )
             .into_expression(),
-        };
-        let retained = match original {
-            Ok(retained) => retained,
-            Err(syntax) => {
-                self.rejected_syntax.push(*syntax);
-                self.hole(
-                    region,
-                    NativeHoleKind::Embed(EmbedHole::UnsupportedShape),
-                    source_span,
-                );
-                return;
-            }
-        };
+        });
         let expression = admit(&retained).and_then(|()| {
             retain_expression_in(self.allocator, self.block().root_source(), &retained).map_err(
                 |error| match error {
