@@ -211,9 +211,7 @@ fn stale_buffers_and_mismatched_owned_style_ranges_do_not_publish() {
         .documents
         .open(uri.clone(), source.clone(), 1, "vue".to_owned());
     let ctx = IdeContext::new(&state, &uri, 0).unwrap();
-    let mut descriptor = vize_atelier_sfc::parse_sfc(&source, Default::default())
-        .unwrap()
-        .into_owned();
+    let mut descriptor = (**ctx.descriptor().unwrap()).clone();
     let style = descriptor.styles.first_mut().unwrap();
     style.content = ".z{}".into();
     assert!(matches!(
@@ -246,7 +244,7 @@ fn original_modules(mut read: impl FnMut(&str, &str, Vec<usize>)) -> (usize, usi
             invalid += 1;
             continue;
         };
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, Default::default()) else {
+        let Some(descriptor) = vize_incremental::parse_borrowed_descriptor(filename, source) else {
             continue;
         };
         parsed += 1;
