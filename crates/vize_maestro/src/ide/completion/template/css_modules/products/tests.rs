@@ -299,3 +299,6 @@ fn original_style_module_products_match() {
 
 #[cfg(feature = "micro-profiling")]
 mod profile;
+
+#[cfg(feature = "experimental-style-lint-products")]
+mod lint;
