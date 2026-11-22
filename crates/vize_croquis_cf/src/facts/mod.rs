@@ -78,3 +78,6 @@ mod async_component_ancestry_tests;
 
 #[cfg(test)]
 mod template_shadow_tests;
+
+#[cfg(feature = "setup-render-products")]
+pub use render_tree::setup::{SetupRenderInput, SetupRenderProducts, SetupRenderRefusal};
