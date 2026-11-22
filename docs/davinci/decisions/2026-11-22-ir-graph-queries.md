@@ -40,9 +40,10 @@ The cyclic graph of source and operation relationships is independent of the dat
 
 The checker validates a particular answer against the original L3 rows. The graph specification assumes the selected relation represents the intended language behavior. A compiler correctness result additionally needs source and target semantics and a simulation across lowering. Diagnostics need rule-specific soundness and range checks, a typechecker needs a typing derivation, a formatter needs preservation and idempotence for its admitted grammar, and an LSP response needs current document identity, revision and coordinate encoding. Keep those claims specific to each product and continue using the established differential oracles for every adoption decision. [Necula, Proof-Carrying Code](https://doi.org/10.1145/263699.263712), [CompCert's semantics and simulation proofs](https://compcert.org/doc/).
 
-
 ## Many starting operations in a resident document
 
 The single-query cache uses a Salsa LRU capacity of 128, matching the existing resident interface summary capacity. Cold answers leave the cache when a document revision advances. An all-start scan can visit every suffix of a chain in one revision, producing a quadratic number of rows. The batch reader retains the verified graph and returns one independently checked answer at a time. Dropping that answer releases its rows. A caller that collects every answer owns the corresponding storage.
 
 On Apple arm64 a 256-sibling scan visited 32,896 rows. Memoizing each start and reading through the batch produced identical results. The additional peak fell from 936,224 to 5,376 bytes, allocation calls from 5,010 to 3,847 and elapsed time from 629,709 to 534,708 ns. A subsequent prefix-only edit reused the graph and rechecked the 128 evicted answers. The time control on the regular compiler/editor benchmark pools two additional measurement windows if the initial median slows down. The final median must still meet the original threshold.
+
+On Linux x86-64 the same 32,896 results took 485,824 ns with memoization at every start and 379,985 ns with the batch reader. Peak bytes fell from 940,472 to 5,376 and allocation calls from 5,046 to 3,847. [Linux measurement and corpus checks](https://github.com/ubugeeei-prod/vize/actions/runs/45029702414/job/137230353875)
