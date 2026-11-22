@@ -5,7 +5,7 @@ on:
       - ".github/workflows/bundler-block-products.yml"
       - "tools/commands/levels/codegen-equivalence.ts"
       - "tools/commands/levels/native-addon-identity.ts"
-      - "tools/commands/levels/stock-addon-rustc.rs"
+      - "tools/support/compat/npm/stock-addon-rustc.rs"
       - "tests/tooling/native-addon-identity.test.ts"
       - "tools/support/compat/npm/bundler-block-products.ts"
       - "davinci/vize_l1/src/container/vue/boundary*"

@@ -317,7 +317,7 @@ async function main([base, head, pkg, product, mode, report, control, ...extra]:
       const wrapper = path.join(temp, "stock-addon-rustc");
       execFileSync("rustc", [
         "--edition=2024",
-        fileURLToPath(new URL("./stock-addon-rustc.rs", import.meta.url)),
+        fileURLToPath(new URL("../../support/compat/npm/stock-addon-rustc.rs", import.meta.url)),
         "-o",
         wrapper,
       ]);
