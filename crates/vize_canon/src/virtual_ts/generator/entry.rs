@@ -137,3 +137,6 @@ pub fn generate_virtual_ts_with_offsets_options_api(
         },
     )
 }
+
+#[cfg(feature = "plain-script-bridges")]
+pub use super::script_module::{PlainScriptBridge, PlainScriptBridgeError, PlainScriptExportText};

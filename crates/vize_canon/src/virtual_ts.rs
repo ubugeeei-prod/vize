@@ -174,4 +174,4 @@ pub fn generate_virtual_ts_with_offsets_and_lib_references(
 }
 
 #[cfg(feature = "plain-script-bridges")]
-pub use generator::{PlainScriptBridge, PlainScriptBridgeError, PlainScriptExportText};
+pub use generator::entry::{PlainScriptBridge, PlainScriptBridgeError, PlainScriptExportText};

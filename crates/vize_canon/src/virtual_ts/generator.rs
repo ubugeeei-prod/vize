@@ -863,6 +863,3 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         export,
     )
 }
-
-#[cfg(feature = "plain-script-bridges")]
-pub use script_module::{PlainScriptBridge, PlainScriptBridgeError, PlainScriptExportText};
