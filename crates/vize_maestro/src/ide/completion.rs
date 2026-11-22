@@ -78,3 +78,6 @@ pub(crate) use dispatch::{
     is_inside_art_tag, is_inside_html_comment, is_inside_variant_tag, should_suggest_art_block,
     should_suggest_variant_block,
 };
+
+#[cfg(feature = "experimental-style-module-products")]
+pub use template::{StyleModuleRefusal, StyleModuleToolProducts};

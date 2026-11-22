@@ -65,3 +65,8 @@ pub(crate) fn css_module_class_completions(ctx: &IdeContext) -> Option<Vec<Compl
 fn is_identifier_char(character: char) -> bool {
     character.is_ascii_alphanumeric() || matches!(character, '_' | '$')
 }
+
+#[cfg(feature = "experimental-style-module-products")]
+mod products;
+#[cfg(feature = "experimental-style-module-products")]
+pub use products::{StyleModuleRefusal, StyleModuleToolProducts};

@@ -11,6 +11,7 @@ publish = false
 [features]
 # Share admitted template operands with Canon for explicitly selected editor products.
 experimental-template-operand-products = ["vize_canon/template-operand-projection"]
+experimental-style-module-products = ["vize_canon/observed-style-modules"]
 default = ["native", "glyph"]
 glyph = ["dep:vize_glyph"]
 native = ["vize_canon/native", "retained-program"]
