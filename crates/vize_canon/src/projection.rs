@@ -15,3 +15,6 @@ pub use assemble::{
     ProjectedDocument, assemble_diagnostics,
 };
 pub use expr::{project_template_expression_document, project_template_expressions};
+
+#[cfg(feature = "template-operand-projection")]
+pub mod native_template;

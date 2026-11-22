@@ -9,6 +9,8 @@ description = "Canon - The standard of correctness for Vize type checking"
 metadata.vize.stability = "compatibility-preview"
 
 [features]
+# Emit original expression projections and observe the same authored operands.
+template-operand-projection = ["native", "vize_l1_to_l2/template-operand-queries"]
 observed-style-modules = ["native", "vize_l1/observed-styles"]
 default = ["native"]
 # Read checker syntax diagnostics from an original script with the checker grammar.
