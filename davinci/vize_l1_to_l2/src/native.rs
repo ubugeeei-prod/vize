@@ -146,10 +146,6 @@ struct Context<'component, 'a> {
 }
 
 impl<'a> Context<'_, 'a> {
-    fn block(&self) -> SourceBlock<'a> {
-        self.component.block()
-    }
-
     fn children<R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
@@ -158,17 +154,10 @@ impl<'a> Context<'_, 'a> {
     ) {
         vize_l0::ensure_sufficient_stack(|| {
             #[cfg(feature = "component-text-condense")]
-            let mut neighbours = (0..children.len()).map(|i| {
-                let previous = i.checked_sub(1).and_then(|j| children.get(j));
-                (previous, children.get(i + 1))
-            });
+            let mut positions = 0..children.len();
             for child in children {
                 #[cfg(feature = "component-text-condense")]
-                if let Some((previous, next)) = neighbours.next()
-                    && let Some(lane) = self.text_lane
-                    && let SurfaceChild::Text(token) = child
-                {
-                    self.component_text(region, token, lane, previous, next);
+                if self.component_text_at(region, child, children, positions.next()) {
                     continue;
                 }
                 match child {
@@ -188,10 +177,6 @@ impl<'a> Context<'_, 'a> {
                 }
             }
         });
-    }
-
-    fn token_span(&self, token: &Token<'_>) -> Span {
-        self.block().span_of(token.text).unwrap_or(Span::new(0, 0))
     }
 
     fn record<R: ConstructionFactory<'a>>(
@@ -257,6 +242,14 @@ impl<'a> Context<'_, 'a> {
                 None
             }
         }
+    }
+
+    fn block(&self) -> SourceBlock<'a> {
+        self.component.block()
+    }
+
+    fn token_span(&self, token: &Token<'_>) -> Span {
+        self.block().span_of(token.text).unwrap_or(Span::new(0, 0))
     }
 }
 
