@@ -120,5 +120,8 @@ pub mod sources {
     pub const MUSEA: &str = "vize/musea";
 }
 
+#[cfg(feature = "experimental-component-props")]
+pub use component_props::original::ComponentPropDiagnosticIssue;
+
 #[cfg(feature = "experimental-ambient-project")]
 pub use corsa::ambient_project::{AmbientComponentProject, AmbientProjectError};
