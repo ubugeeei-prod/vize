@@ -35,6 +35,7 @@ fn capture(name: &str, source: &str, trim: bool) -> Result<Value, NativeSfcCompi
     let arena = Allocator::default();
     let options = NativeSfcCompileOptions {
         filename: FILENAME,
+        scope_id: Some("data-v-oracle"),
         style_trim: trim,
         ..Default::default()
     };
@@ -226,7 +227,11 @@ fn complete_styles_and_authored_map_segments_match_upstream() {
     }
     assert!(candidates > 0 && borrowed > 0);
     for fixture in pack["fixtures"].as_array().unwrap() {
-        for suffix in [STYLES, "<style lang='scss'>$only:blue;</style>"] {
+        for suffix in [
+            STYLES,
+            "<style lang='scss'>$only:blue;</style>",
+            "<style scoped>\r\n.雪, .b{color:blue}\r\n</style><style lang='scss'>.outer{color:red}</style><style scoped>.b:empty{color:green}</style>",
+        ] {
             for prefix in ["", "<!-- 🦀 -->\r\n", "<!-- 雪🌸 -->"] {
                 for trim in [false, true] {
                     let source = format!("{prefix}{}{suffix}", fixture["source"].as_str().unwrap());
