@@ -19,34 +19,54 @@ assert.equal(
   "",
 );
 
-// Reuse the same physical public provider already authenticated by the 13-state
-// qualifier in this job. Recheck its loaded native image bytes before running.
-const publicIdentity = record(
-  JSON.parse(fs.readFileSync(path.join(inherited, "public-entrypoint.json"), "utf8")),
-);
-assert.equal(typeof publicIdentity.path, "string");
-const publicBinary = publicIdentity.path as string;
-assert.equal(hash(fs.readFileSync(publicBinary)), publicIdentity.sha256);
-const nativeImages: unknown = JSON.parse(
-  fs.readFileSync(path.join(inherited, "public-native-images.json"), "utf8"),
-);
-assert.ok(Array.isArray(nativeImages) && nativeImages.length === 1);
-for (const image of nativeImages.map(record)) {
-  assert.equal(typeof image.path, "string");
-  assert.equal(hash(fs.readFileSync(image.path as string)), image.sha256);
+// The effects qualification installed both pinned releases in this job.
+function verifiedProvider(label: "public" | "current"): string {
+  const entry = label + "-entrypoint.json";
+  const images = label + "-native-images.json";
+  const identity = record(JSON.parse(fs.readFileSync(path.join(inherited, entry), "utf8")));
+  assert.equal(typeof identity.path, "string");
+  const binary = identity.path as string;
+  assert.equal(hash(fs.readFileSync(binary)), identity.sha256);
+  const native: unknown = JSON.parse(fs.readFileSync(path.join(inherited, images), "utf8"));
+  assert.ok(Array.isArray(native) && native.length === 1);
+  for (const image of native.map(record)) {
+    assert.equal(typeof image.path, "string");
+    assert.equal(hash(fs.readFileSync(image.path as string)), image.sha256);
+  }
+  for (const name of [entry, images, label + "-package-lock.json"]) {
+    fs.copyFileSync(path.join(inherited, name), path.join(output, name));
+  }
+  return binary;
 }
-for (const name of [
-  "public-packages.json",
-  "public-package-lock.json",
-  "public-entrypoint.json",
-  "public-native-images.json",
-]) {
-  fs.copyFileSync(path.join(inherited, name), path.join(output, name));
+const publicBinary = verifiedProvider("public");
+const currentBinary = verifiedProvider("current");
+fs.copyFileSync(
+  path.join(inherited, "public-packages.json"),
+  path.join(output, "public-packages.json"),
+);
+
+function equalBytes(actual: Buffer, expected: Buffer, label: string): void {
+  // Buffer diffs from node:assert can exhaust the runner on large, unequal reports.
+  if (!actual.equals(expected)) {
+    assert.fail(
+      `${label}: expected ${expected.length} bytes (${hash(expected)}), got ${actual.length} (${hash(actual)})`,
+    );
+  }
+}
+
+function complexitySection(plain: Buffer): Buffer {
+  const marker = "\n## Cross-file Complexity";
+  const start = plain.indexOf(marker);
+  assert.notEqual(start, -1, "missing cross-file complexity section");
+  assert.equal(plain.indexOf(marker, start + 1), -1, "duplicate cross-file complexity section");
+  return plain.subarray(start);
 }
 const sourceBinary = path.join(repo, "target/ci-opt/vize");
 const sourceImage = hash(fs.readFileSync(sourceBinary));
 const publicVersion = run(output, "public-version", publicBinary, ["--version"], repo);
 assert.equal(publicVersion.stdout.toString("utf8"), "vize 0.565.0\n");
+const currentVersion = run(output, "current-version", currentBinary, ["--version"], repo);
+assert.equal(currentVersion.stdout.toString("utf8"), "vize 0.778.0\n");
 const sourceVersion = run(output, "source-version", sourceBinary, ["--version"], repo);
 save(output, "source-build.json", {
   schema: "vize.cross-file.finalization.optimized-source",
@@ -76,20 +96,36 @@ const inputs = Object.entries(files()).map(([name, source]) => {
 assert.equal(inputs.length, 241);
 save(output, "complete-inputs.json", inputs);
 const flags = ["lint", "--no-config", "--cross-file-complexity", "--help-level", "short"];
-const expectedJson = run(
-  output,
-  "public-json",
-  publicBinary,
-  [...flags, "--format", "json", "*.vue"],
-  project,
-);
-const expectedPlain = run(
+run(output, "public-json", publicBinary, [...flags, "--format", "json", "*.vue"], project);
+const historicalPlain = run(
   output,
   "public-plain",
   publicBinary,
   [...flags, "--format", "plain", "*.vue"],
   project,
 );
+const expectedJson = run(
+  output,
+  "current-json",
+  currentBinary,
+  [...flags, "--format", "json", "*.vue"],
+  project,
+);
+const expectedPlain = run(
+  output,
+  "current-plain",
+  currentBinary,
+  [...flags, "--format", "plain", "*.vue"],
+  project,
+);
+// These graphs have unchanged complexity. The lint rule set and help links
+// are versioned separately, exactly as in the preceding SFC effects comparison.
+equalBytes(
+  complexitySection(expectedPlain.stdout),
+  complexitySection(historicalPlain.stdout),
+  "historical complexity report",
+);
+assert.equal(expectedPlain.packet.status, historicalPlain.packet.status);
 const sourceJson = run(
   output,
   "source-json",
@@ -97,7 +133,7 @@ const sourceJson = run(
   [...flags, "--format", "json", "*.vue"],
   project,
 );
-assert.deepEqual(sourceJson.stdout, expectedJson.stdout, "complete 241-file diagnostic packet");
+equalBytes(sourceJson.stdout, expectedJson.stdout, "complete 241-file diagnostic packet");
 assert.equal(sourceJson.packet.status, expectedJson.packet.status);
 
 const observations: unknown[] = [];
@@ -116,11 +152,7 @@ for (let ordinal = 0; ordinal < 9; ordinal++) {
       [...flags, "--format", "plain", ...profileFlags, "*.vue"],
       project,
     );
-    assert.deepEqual(
-      actual.stdout,
-      expectedPlain.stdout,
-      label + ": complete report and diagnostics",
-    );
+    equalBytes(actual.stdout, expectedPlain.stdout, label + ": complete report and diagnostics");
     assert.equal(actual.packet.status, expectedPlain.packet.status);
     observations.push({
       ordinal,
@@ -147,14 +179,21 @@ const optOut = run(
   ],
   project,
 );
-const beforeOptOut = run(
+run(
   output,
   "public-opt-out",
   publicBinary,
   ["lint", "--no-config", "--format", "json", "*.vue"],
   project,
 );
-assert.deepEqual(optOut.stdout, beforeOptOut.stdout);
+const beforeOptOut = run(
+  output,
+  "current-opt-out",
+  currentBinary,
+  ["lint", "--no-config", "--format", "json", "*.vue"],
+  project,
+);
+equalBytes(optOut.stdout, beforeOptOut.stdout, "complete opt-out diagnostics");
 assert.equal(optOut.packet.status, beforeOptOut.packet.status);
 const offProfile = record(
   JSON.parse(fs.readFileSync(path.join(output, "source-opt-out.profile.json"), "utf8")),
@@ -185,6 +224,7 @@ save(output, "qualification.json", {
   measuredRounds: 7,
   warmupRounds: 2,
   observations,
+  historicalComplexitySha256: hash(complexitySection(historicalPlain.stdout)),
   diagnosticsSha256: hash(sourceJson.stdout),
   reportSha256: hash(expectedPlain.stdout),
   note: "Actual optimized source-phase/call observations. Enabled and disabled whole-process timings are retained separately; no throughput improvement, internal WASM phase or instruction-budget claim.",

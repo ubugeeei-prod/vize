@@ -156,14 +156,27 @@ assert.equal(
   run("current-version", currentBinary, ["--version"], currentConsumer).toString("utf8"),
   `vize ${CURRENT_VERSION}\n`,
 );
-const publicRequire = createRequire(path.join(consumer, "package.json"));
-const native: unknown = publicRequire("@vizejs/native");
-assert.equal(typeof record(native).runCli, "function");
-const nativeImages = Object.keys(publicRequire.cache)
-  .filter((image) => image.endsWith(".node") && image.startsWith(consumer + path.sep))
-  .map((image) => ({ path: image, sha256: hash(fs.readFileSync(image)) }));
-assert.equal(nativeImages.length, 1);
-save("public-native-images.json", nativeImages);
+save("current-entrypoint.json", {
+  path: currentBinary,
+  sha256: hash(fs.readFileSync(currentBinary)),
+});
+fs.copyFileSync(
+  path.join(currentConsumer, "package-lock.json"),
+  path.join(output, "current-package-lock.json"),
+);
+for (const [label, root] of [
+  ["public", consumer],
+  ["current", currentConsumer],
+] as const) {
+  const load = createRequire(path.join(root, "package.json"));
+  const native: unknown = load("@vizejs/native");
+  assert.equal(typeof record(native).runCli, "function");
+  const images = Object.keys(load.cache)
+    .filter((image) => image.endsWith(".node") && image.startsWith(root + path.sep))
+    .map((image) => ({ path: image, sha256: hash(fs.readFileSync(image)) }));
+  assert.equal(images.length, 1, label);
+  save(label + "-native-images.json", images);
+}
 
 interface WasmApi {
   default: (input: { module_or_path: Uint8Array }) => Promise<unknown>;
