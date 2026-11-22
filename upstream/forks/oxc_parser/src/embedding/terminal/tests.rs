@@ -62,6 +62,7 @@ fn terminal_lookahead_preserves_the_entire_ordinary_parser_return() {
         inputs.push(format!("{n}{}", "0".repeat(n)));
     }
     for source_type in [SourceType::mjs(), SourceType::ts(), SourceType::jsx(), SourceType::tsx()] {
+        let source_type = source_type.with_module(true);
         for goal in [EmbeddingGoal::Expr, EmbeddingGoal::HandlerBody, EmbeddingGoal::Parameters] {
             for content in &inputs {
                 let input =
