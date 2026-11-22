@@ -38,7 +38,7 @@ surfaces and are not routine CI-refactor targets.
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
-| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 21        |
+| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 22        |
 
 ## 01 Pull request orchestration
 
@@ -379,14 +379,15 @@ Security audits, dependency upkeep, scheduled maintenance, docs, and repository 
 | 11.08 | Language project fixture laws               | [`language-project-fixtures.yml`](./language-project-fixtures.yml)         |
 | 11.09 | Miri                                        | [`miri.yml`](./miri.yml)                                                   |
 | 11.10 | Open document block queries                 | [`open-document-blocks.yml`](./open-document-blocks.yml)                   |
-| 11.11 | Plugin and Doctor template products         | [`plugin-template-products.yml`](./plugin-template-products.yml)           |
-| 11.12 | Production reach accounting                 | [`production-reach-accounting.yml`](./production-reach-accounting.yml)     |
-| 11.13 | qs runtime security contracts               | [`qs-runtime-security.yml`](./qs-runtime-security.yml)                     |
-| 11.14 | Retained script formatting                  | [`retained-script-formatting.yml`](./retained-script-formatting.yml)       |
-| 11.15 | Retained TSRX module products               | [`retained-tsrx.yml`](./retained-tsrx.yml)                                 |
-| 11.16 | Sticky disk maintenance                     | [`sticky-disk-maintenance.yml`](./sticky-disk-maintenance.yml)             |
-| 11.17 | Style module products                       | [`style-module-products.yml`](./style-module-products.yml)                 |
-| 11.18 | Tool codegen equivalence                    | [`tool-codegen-equivalence.yml`](./tool-codegen-equivalence.yml)           |
-| 11.19 | Versioned diagnostic fix publication        | [`versioned-fix-publication.yml`](./versioned-fix-publication.yml)         |
-| 11.20 | Generated VTS source census                 | [`vts-source-census.yml`](./vts-source-census.yml)                         |
-| 11.21 | Zizmor                                      | [`zizmor.yml`](./zizmor.yml)                                               |
+| 11.11 | Packed browser tool equivalence             | [`packed-browser-equivalence.yml`](./packed-browser-equivalence.yml)       |
+| 11.12 | Plugin and Doctor template products         | [`plugin-template-products.yml`](./plugin-template-products.yml)           |
+| 11.13 | Production reach accounting                 | [`production-reach-accounting.yml`](./production-reach-accounting.yml)     |
+| 11.14 | qs runtime security contracts               | [`qs-runtime-security.yml`](./qs-runtime-security.yml)                     |
+| 11.15 | Retained script formatting                  | [`retained-script-formatting.yml`](./retained-script-formatting.yml)       |
+| 11.16 | Retained TSRX module products               | [`retained-tsrx.yml`](./retained-tsrx.yml)                                 |
+| 11.17 | Sticky disk maintenance                     | [`sticky-disk-maintenance.yml`](./sticky-disk-maintenance.yml)             |
+| 11.18 | Style module products                       | [`style-module-products.yml`](./style-module-products.yml)                 |
+| 11.19 | Tool codegen equivalence                    | [`tool-codegen-equivalence.yml`](./tool-codegen-equivalence.yml)           |
+| 11.20 | Versioned diagnostic fix publication        | [`versioned-fix-publication.yml`](./versioned-fix-publication.yml)         |
+| 11.21 | Generated VTS source census                 | [`vts-source-census.yml`](./vts-source-census.yml)                         |
+| 11.22 | Zizmor                                      | [`zizmor.yml`](./zizmor.yml)                                               |
