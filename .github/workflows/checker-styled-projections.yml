@@ -110,3 +110,4 @@ jobs:
           export VIZE_STYLE_BINDING_INPUTS="$RUNNER_TEMP/original-style-inputs"
           git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_STYLE_BINDING_INPUTS"
           cargo test "${flags[@]}" -p vize_canon "${features[@]}" --test original_style_bindings -- --include-ignored --nocapture --test-threads=1
+          cargo run "${flags[@]}" -p vize_canon "${features[@]}" --example original_style_binding_profile

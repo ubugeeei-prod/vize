@@ -5,7 +5,7 @@
     reason = "compare the actual original fixtures and outputs"
 )]
 use oxc_span::{ContentEq, GetSpan};
-use std::{borrow::Cow, fs, path::Path};
+use std::borrow::Cow;
 use vize_atelier_sfc::{
     compile_sfc, parse_sfc,
     vite_plugin::{
@@ -15,26 +15,12 @@ use vize_atelier_sfc::{
 use vize_canon::virtual_ts::{StyleBindingInputError, StyleBindingReferences};
 use vize_carton::FxHashSet;
 use vize_croquis::sfc::__internal::extract_and_transform_v_bind_with_edits;
-use vize_l0::{
-    Allocator,
-    config::{VueDialect, VueVersion},
-};
-use vize_l1::container::vue::{AdmittedDescriptor, DescriptorOptions, Vue};
+use vize_l0::Allocator;
+use vize_l1::container::vue::{AdmittedDescriptor, Vue};
 use vize_l1_to_l2::{lower::OriginalStyleBindings, lower_style_block_in};
 use vize_l2::op::{BindingOp, Op};
-mod profile;
-
-#[global_allocator]
-static ALLOC: davinci_harness::alloc::CountingAllocator<std::alloc::System> =
-    davinci_harness::alloc::CountingAllocator::system();
-
-fn options() -> DescriptorOptions {
-    DescriptorOptions {
-        version: VueVersion::V3,
-        dialect: VueDialect::Vue,
-        template: Default::default(),
-    }
-}
+mod input;
+use input::{options, originals};
 
 #[derive(Default, Debug)]
 struct Totals {
@@ -260,39 +246,14 @@ fn filename_maps_and_parse_options_keep_the_complete_compiler_descriptor() {
     }
 }
 
-fn originals(
-    mut inspect: impl for<'a> FnMut(
-        &'a Allocator,
-        &'a str,
-        Option<AdmittedDescriptor<'_, 'a>>,
-        &str,
-        &mut Totals,
-    ),
-) -> Totals {
-    let manifest =
-        fs::read_to_string(std::env::var_os("VIZE_STYLE_BINDING_INPUTS").unwrap()).unwrap();
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let mut counts = Totals::default();
-    for path in manifest.split_terminator('\0') {
-        counts.inputs += 1;
-        let data = fs::read(root.join(path)).unwrap();
-        let Ok(source) = std::str::from_utf8(&data) else {
-            counts.invalid_utf8 += 1;
-            continue;
-        };
-        let arena = Allocator::new();
-        let desc = Vue.observe_descriptor(&arena, source, options());
-        let owner = desc.admitted().ok();
-        counts.containers += usize::from(owner.is_none());
-        inspect(&arena, source, owner, path, &mut counts);
-    }
-    counts
-}
-
 #[test]
 #[ignore = "compare tracked and external original style products"]
 fn original_vue_styles() {
-    let counts = originals(|arena, source, owner, _, scale| compare(arena, source, owner, scale));
+    let mut counts = Totals::default();
+    (counts.inputs, counts.invalid_utf8) = originals(|arena, source, owner, _| {
+        counts.containers += usize::from(owner.is_none());
+        compare(arena, source, owner, &mut counts);
+    });
     assert_eq!(
         counts.inputs,
         counts.invalid_utf8 + counts.complete + counts.parser_errors

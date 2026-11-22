@@ -1,4 +1,27 @@
-use super::*;
+//! Compare complete cold and retained requests in a dedicated allocation process.
+#![expect(
+    clippy::unwrap_used,
+    clippy::panic,
+    reason = "profile validated original style requests"
+)]
+mod input;
+use input::{options, originals};
+use vize_atelier_sfc::{
+    parse_sfc,
+    vite_plugin::{
+        transform_css_vars_for_pipeline_with_context, transform_original_style_bindings,
+    },
+};
+use vize_canon::virtual_ts::StyleBindingReferences;
+use vize_carton::FxHashSet;
+use vize_l0::Allocator;
+use vize_l1::container::vue::{AdmittedDescriptor, Vue};
+use vize_l1_to_l2::{lower::OriginalStyleBindings, lower_style_block_in};
+use vize_l2::op::Op;
+#[global_allocator]
+static ALLOCATOR: davinci_harness::alloc::CountingAllocator<std::alloc::System> =
+    davinci_harness::alloc::CountingAllocator::system();
+
 use davinci_harness::alloc;
 use std::{hint::black_box, time::Instant};
 use vize_l0::String as CompactString;
@@ -173,10 +196,7 @@ fn paired(retained: AdmittedDescriptor<'_, '_>, label: &str, n: u128) -> bool {
     retained && cold
 }
 
-#[test]
-#[ignore = "paired complete CSS, checker reads and lowered style carriers"]
 fn paired_style_requests() {
-    alloc::mark_installed();
     for count in [0, 1, 4, 32, 128] {
         let mut text = String::from("<template><i/></template><style lang='scss'>");
         for ix in 0..count {
@@ -191,13 +211,10 @@ fn paired_style_requests() {
     }
 }
 
-#[test]
-#[ignore = "per-original composed style requests"]
 fn original_style_requests() {
-    alloc::mark_installed();
     let mut failures = Vec::new();
     let mut counted = 0;
-    originals(|_, _, owner, path, _| {
+    originals(|_, _, owner, path| {
         let Some(owner) = owner else { return };
         counted += 1;
         if !paired(owner, path, 1) {
@@ -207,4 +224,10 @@ fn original_style_requests() {
     eprintln!("css_bind_requests files={counted}");
     assert!(counted > 0);
     assert!(failures.is_empty(), "{failures:?}");
+}
+
+fn main() {
+    alloc::mark_installed();
+    paired_style_requests();
+    original_style_requests();
 }

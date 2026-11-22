@@ -172,3 +172,8 @@ workspace = true
 name = "original_style_bindings"
 path = "tests/original_style_bindings/main.rs"
 required-features = ["original-style-binding-tests"]
+
+[[example]]
+name = "original_style_binding_profile"
+path = "tests/original_style_bindings/profile.rs"
+required-features = ["original-style-binding-tests"]
