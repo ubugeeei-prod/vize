@@ -220,5 +220,51 @@ fn named_dom_event_expressions_keep_their_checker_links_and_editor_exports() {
     assert_eq!(result.checker.links()[1].authored.slice(source), "保存");
 }
 
+#[cfg(feature = "experimental-component-listeners")]
+#[test]
+#[ignore = "full checker and editor documents for original Vue inputs with event spellings"]
+fn original_event_documents() {
+    let manifest =
+        std::fs::read_to_string(std::env::var_os("VIZE_EXPRESSION_QUERY_MANIFEST").unwrap())
+            .unwrap();
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let (mut candidates, mut documents, mut event_files, mut events) = (0, 0, 0, 0);
+    for name in manifest.split_terminator('\0') {
+        let bytes = std::fs::read(root.join(name)).unwrap();
+        let Ok(source) = std::str::from_utf8(&bytes) else {
+            continue;
+        };
+        if !source.contains('@') && !source.contains("v-on:") {
+            continue;
+        }
+        candidates += 1;
+        let arena = Allocator::new();
+        let owner = vize_l1_to_l2::native_file::lower_sfc_with_listener_references(
+            &arena,
+            source,
+            DescriptorOptions {
+                version: VueVersion::V3,
+                dialect: VueDialect::Vue,
+                template: Default::default(),
+            },
+        );
+        let Some(native) = owner.admitted() else {
+            continue;
+        };
+        let result = compare(&native, &fixture_descriptor(source), name);
+        let count = result
+            .expressions
+            .iter()
+            .filter(|e| e.kind == ExpressionKind::VOn)
+            .count();
+        documents += 1;
+        event_files += usize::from(count != 0);
+        events += count;
+    }
+    eprintln!(
+        "event_documents candidates={candidates} admitted={documents} event_files={event_files} events={events}"
+    );
+}
+
 #[cfg(feature = "micro-profiling")]
 mod profile;
