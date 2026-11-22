@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { text } from "node:stream/consumers";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { scopedBlock, scopeId } from "./scoped-oracle.ts";
 
 const require = createRequire(import.meta.url);
 const { decode, encode } = require("@jridgewell/sourcemap-codec");
@@ -63,6 +64,7 @@ for (const row of rows) {
     const start = block.loc.start.offset;
     assert.equal(row.source.slice(start, block.loc.end.offset), block.content);
     if (block.lang?.toLowerCase() === "scss") {
+      assert.ok(!block.scoped && !block.module && !block.src, row.name);
       const file = resolve(row.name);
       const result = sass.compileString(block.content, {
         url: pathToFileURL(file),
@@ -81,10 +83,17 @@ for (const row of rows) {
       }
       css += result.css;
     } else {
-      assert.ok(!block.scoped && !block.module && !block.src, row.name);
+      assert.ok(!block.module && !block.src, row.name);
       const raw: string = block.content;
       const body = row.trim ? raw.trim() : raw;
       const offset = row.trim ? raw.length - raw.trimStart().length : 0;
+      if (block.scoped) {
+        const scoped = scopedBlock(body, row.filename);
+        for (const [target, source] of scoped.links)
+          links.push([css.length + target, start + offset + source]);
+        css += scoped.css;
+        continue;
+      }
       for (let line = 0; line < body.length;) {
         links.push([css.length + line, start + offset + line]);
         const lf = body.indexOf("\n", line);
@@ -129,7 +138,13 @@ for (const row of rows) {
         [segment[2], segment[3]] = point(inputLines, offset);
       }
     }
-    assert.equal(row.code, fixture.code, row.name);
+    const expected = descriptor.styles.some((block: { scoped?: boolean }) => block.scoped)
+      ? fixture.code.replace(
+          "export default _sfc_main",
+          `_sfc_main.__scopeId = "${scopeId}"\nexport default _sfc_main`,
+        )
+      : fixture.code;
+    assert.equal(row.code, expected, row.name);
     assert.deepEqual(
       row.map,
       { ...fixture.nativeMap, sourcesContent: [row.source], mappings: encode(map) },
