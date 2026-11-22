@@ -464,7 +464,10 @@ mod uri_snapshot_tests;
 #[cfg(test)]
 mod version_tests;
 
-#[cfg(any(feature = "experimental-scss-definitions", feature = "experimental-literal-products"))]
+#[cfg(any(
+    feature = "experimental-scss-definitions",
+    feature = "experimental-literal-products"
+))]
 impl Document {
     pub(crate) fn position_text(&self) -> &DocumentText {
         &self.content
