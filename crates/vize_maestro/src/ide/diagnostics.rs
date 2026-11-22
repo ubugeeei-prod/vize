@@ -119,3 +119,6 @@ pub mod sources {
     pub const COMPONENTS: &str = "vize/components";
     pub const MUSEA: &str = "vize/musea";
 }
+
+#[cfg(feature = "experimental-component-props")]
+pub use component_props::original::ComponentPropDiagnosticIssue;

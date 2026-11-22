@@ -106,3 +106,34 @@ impl<'a> NativeSfcObservation<'a> {
         })
     }
 }
+
+#[cfg(feature = "component-prop-queries")]
+impl<'o, 'a> SetupComponentImports<'o, 'a> {
+    /// Visit nested usages before their enclosing component, with siblings in
+    /// source order. Both one-shot diagnostics and project reports use this
+    /// order when publishing a component after its children.
+    pub fn try_for_each_in_postorder<E>(
+        &self,
+        mut visit: impl FnMut(&ImportedComponentSite<'o, 'a>) -> Result<(), E>,
+    ) -> Result<(), E> {
+        fn region<'o, 'a, E>(
+            mut sites: &[ImportedComponentSite<'o, 'a>],
+            visit: &mut impl FnMut(&ImportedComponentSite<'o, 'a>) -> Result<(), E>,
+        ) -> Result<(), E> {
+            while let Some((site, tail)) = sites.split_first() {
+                let end = site.element_span().end;
+                if tail.first().is_some_and(|s| s.name_span().start < end) {
+                    let after = tail.partition_point(|s| s.name_span().start < end);
+                    let (children, siblings) = tail.split_at(after);
+                    vize_l0::ensure_sufficient_stack(|| region(children, visit))?;
+                    sites = siblings;
+                } else {
+                    sites = tail;
+                }
+                visit(site)?;
+            }
+            Ok(())
+        }
+        region(self.sites(), &mut visit)
+    }
+}

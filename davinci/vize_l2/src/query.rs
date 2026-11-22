@@ -72,3 +72,6 @@ pub use expression::{ResolvedTemplateOperand, TemplateOperandKind};
 mod component_import;
 #[cfg(feature = "setup-component-imports")]
 pub use component_import::{ComponentImportIssue, ImportedComponentSite};
+
+#[cfg(feature = "component-prop-queries")]
+pub use component_import::props::{ComponentPropIssue, ImportedComponentProp};

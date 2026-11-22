@@ -149,3 +149,6 @@ fn vue_props_code_description() -> Option<CodeDescription> {
         .ok()
         .map(|href| CodeDescription { href })
 }
+
+#[cfg(feature = "experimental-component-props")]
+pub(super) mod original;
