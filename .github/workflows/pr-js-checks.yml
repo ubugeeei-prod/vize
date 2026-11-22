@@ -81,12 +81,14 @@ jobs:
       - name: Test Vite+ rule catalog custody on Bun
         if: ${{ inputs.run-js && matrix.group == 'builders' }}
         run: bun test npm/builder/vite/src/vite-plus/runtime.test.ts
+      - name: Install the pinned Vue Router fixture
+        if: ${{ inputs.run-js && matrix.group == 'builders' }}
+        working-directory: tests/_fixtures/_projects/vue-router-define-page
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Test definePage metadata with Vue Router and Vite
         if: ${{ inputs.run-js && matrix.group == 'builders' }}
         working-directory: tests/_fixtures/_projects/vue-router-define-page
-        run: |
-          npm ci --ignore-scripts --no-audit --no-fund
-          node --test router.test.ts
+        run: node --test router.test.ts
       - name: Test content mapper capability launch on Bun
         if: ${{ inputs.run-js && matrix.group == 'builders' }}
         run: bun test npm/cli/tests/content-mapper-bun.test.ts
@@ -119,6 +121,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: template-style-fixes-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
+          # Project qualification staging belongs to its own job below.
           path: target/template-style-fixes-7905.json
           if-no-files-found: warn
           retention-days: 14
@@ -127,7 +130,6 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
-          # Project qualification staging belongs to its own job below.
           path: |
             target/oxlint-original-locations-7904.json
             target/oxlint-original-project-checks-7903.json
@@ -138,7 +140,7 @@ jobs:
           retention-days: 14
       - name: Preserve bounded JS native fault diagnostics
         if: ${{ !cancelled() && (inputs.run-js && matrix.group != 'none') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: js-native-fault-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}
           path: ${{ runner.temp }}/js-native-fault-evidence-*/**/*.json
@@ -254,7 +256,7 @@ jobs:
     name: PR package conformance (${{ matrix.surface }})
     strategy:
       fail-fast: false
-      matrix: { surface: [fresco, ui] }
+      matrix: { surface: [ fresco, ui ] }
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
