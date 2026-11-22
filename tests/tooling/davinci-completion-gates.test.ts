@@ -13,6 +13,12 @@ import {
   workspaceMembers,
 } from "../../tools/commands/davinci/completion-gates.ts";
 
+import {
+  coordinateKernel,
+  coordinateProof,
+  coordinateTheory,
+} from "../../tools/support/retired-tooling-languages.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const doc = fs.readFileSync(path.join(root, "docs/davinci/completion-gates.md"), "utf8");
 
@@ -148,4 +154,20 @@ void test("issue gates are unknown offline and fail while an issue is open", () 
 void test("workspace members are read from the real Cargo.toml", () => {
   const members = workspaceMembers(fs.readFileSync(path.join(root, "Cargo.toml"), "utf8"));
   assert.ok(members.includes("davinci/vize_l0"));
+});
+
+void test("the supplemental reference for UTF-16 columns requires its Rust kernel and Kani harness", () => {
+  const gate = gates.find((row) => row.id === "formal.rust-only");
+  assert.ok(gate?.measure);
+  const pair = { [coordinateKernel]: "", [coordinateProof]: "", [coordinateTheory]: "" };
+  assert.equal(gate.measure(memory(pair)).pass, true);
+  assert.equal(
+    gate.measure(memory({ [coordinateTheory]: "", [coordinateKernel]: "" })).pass,
+    false,
+  );
+  assert.equal(gate.measure(memory({ [coordinateTheory]: "", [coordinateProof]: "" })).pass, false);
+  assert.equal(
+    gate.measure(memory({ ...pair, "tests/formal/source-map/Other.lean": "" })).pass,
+    false,
+  );
 });
