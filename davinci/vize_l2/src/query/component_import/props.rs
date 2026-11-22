@@ -21,6 +21,16 @@ pub enum ComponentPropIssue {
 }
 
 impl<'a> ImportedComponentSite<'_, 'a> {
+    /// The exact setup Program that supplied this import, when its complete
+    /// statement walk saw no ECMAScript module exports.
+    #[must_use]
+    pub fn nonexporting_setup_span(&self) -> Option<Span> {
+        let [unit] = self.binding.file().units() else {
+            return None;
+        };
+        (unit.walk_completed() && !unit.origin.has_export).then_some(unit.span)
+    }
+
     /// Merge the component's semantic attribute and binding groups in authored
     /// order. Returns a refusal when a binding needs another prop contract.
     /// A late refusal invalidates all earlier rows of this request.

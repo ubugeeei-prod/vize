@@ -31,11 +31,12 @@ impl DiagnosticService {
         if !(core::ptr::eq(content.as_str(), source) || content.as_str() == source) {
             return Err(ComponentPropDiagnosticIssue::SourceRevision);
         }
-        if imports.sites().is_empty() {
+        let Some(first) = imports.sites().first() else {
             return Ok(Vec::new());
-        }
-        let context =
+        };
+        let mut context =
             IdeContext::with_content(state, uri, imports.template_span().start as usize, content);
+        context.nonexporting_setup = first.nonexporting_setup_span();
         let mut diagnostics = Vec::new();
         let mut lines = None;
         imports.try_for_each_in_postorder(|site| {

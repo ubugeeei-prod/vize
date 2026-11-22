@@ -151,3 +151,38 @@ fn original_workspace_diagnostics() {
         "required_props_workspaces inputs={count} refused_bindings={refused_bindings} sites={sites} diagnostics={diagnostics} bytes={bytes}"
     );
 }
+
+#[test]
+fn registration_lookup_preserves_the_original_selection_and_script_revision() {
+    use crate::ide::definition::component_import::registered_component_local_name;
+    let state = ServerState::new();
+    let uri = Url::parse("file:///project/Parent.vue").unwrap();
+    let source = "<script setup>import Box from './Box.vue';const example='export default {}'</script><template><Box/></template>";
+    open(&state, &uri, source);
+    let arena = Allocator::new();
+    let observed = observe(&arena, source);
+    let inputs = observed.setup_component_imports().unwrap();
+    let no_exports = inputs.sites()[0].nonexporting_setup_span().unwrap();
+    let mut ctx = IdeContext::new(&state, &uri, inputs.template_span().start as usize).unwrap();
+    assert_eq!(registered_component_local_name(&ctx, "Alias"), None);
+    ctx.nonexporting_setup = Some(no_exports);
+    assert_eq!(registered_component_local_name(&ctx, "Alias"), None);
+    drop(ctx);
+
+    let registered = "<script setup>import Box from './Box.vue';export default {components:{Alias:Box}}</script><template><Alias/></template>";
+    open(&state, &uri, registered);
+    let mut ctx = IdeContext::new(&state, &uri, 0).unwrap();
+    assert_eq!(
+        registered_component_local_name(&ctx, "Alias").as_deref(),
+        Some("Box")
+    );
+    ctx.nonexporting_setup = Some(no_exports);
+    assert_eq!(
+        registered_component_local_name(&ctx, "Alias").as_deref(),
+        Some("Box")
+    );
+    assert_eq!(
+        DiagnosticService::imported_component_required_props(&state, &uri, &inputs),
+        Err(ComponentPropDiagnosticIssue::SourceRevision)
+    );
+}

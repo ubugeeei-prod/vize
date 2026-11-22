@@ -36,6 +36,8 @@ pub struct IdeContext<'a> {
     /// A cold initial project receipt is owned only by this request.
     #[cfg(feature = "native")]
     initial_canonical_document: Option<Box<initial_project::OwnedInitialDocument>>,
+    #[cfg(feature = "experimental-component-props")]
+    pub(in crate::ide) nonexporting_setup: Option<vize_l0::Span>,
     /// Pug derivation and semantic scope are shared by this request's fallbacks.
     pub(in crate::ide) pug_scope: OnceLock<Option<Box<super::template_scope::pug::PugScope>>>,
 }
@@ -191,6 +193,8 @@ impl<'a> IdeContext<'a> {
             foreground_preparation: None,
             #[cfg(feature = "native")]
             initial_canonical_document: None,
+            #[cfg(feature = "experimental-component-props")]
+            nonexporting_setup: None,
             pug_scope: OnceLock::new(),
         }
     }
