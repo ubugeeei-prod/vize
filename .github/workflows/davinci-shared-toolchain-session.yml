@@ -2,7 +2,7 @@ name: Shared toolchain session
 on:
   pull_request:
     paths:
-      - ".github/workflows/shared-toolchain-session.yml"
+      - ".github/workflows/davinci-shared-toolchain-session.yml"
       - "crates/vize_maestro/src/source_project/toolchain_session.rs"
       - "crates/vize_maestro/src/source_project/toolchain_session/**"
       - "crates/vize_incremental/providers/graph/tests/incremental.rs"
