@@ -139,3 +139,50 @@ fn other_buffers_headers_and_language_inputs_have_separate_ownership() {
         Some(&TemplateGraphError::UnsupportedBlock)
     );
 }
+
+#[test]
+fn scanning_all_starts_keeps_only_the_graph_and_evicted_answers_recheck() {
+    let mut db = ResidentDatabase::default();
+    let source = vize_l0::cstr!(
+        "<script>1</script><template>{}</template>",
+        "<p/>".repeat(256)
+    );
+    let file = db.open("Batch.vue", &source);
+    {
+        let block = view(&db, file);
+        let batch = block.reach_batch(Lang::Js).unwrap();
+        let mut witnesses = 0;
+        for i in 0..256 {
+            let row = batch.reachable(request(i)).unwrap();
+            witnesses += row.relative().steps().len();
+            assert!(row.authored_spans().all(|s| s.is_ok()));
+        }
+        assert_eq!(witnesses, 256 * 257 / 2);
+        assert_eq!(executions(&db), (1, 0));
+        for i in 0..256 {
+            let one = block.reachable(Lang::Js, request(i)).unwrap();
+            let transient = batch.reachable(request(i)).unwrap();
+            assert_eq!(one.relative(), transient.relative());
+            assert_eq!(
+                one.authored_spans().collect::<Vec<_>>(),
+                transient.authored_spans().collect::<Vec<_>>()
+            );
+        }
+        assert_eq!(executions(&db), (0, 256));
+    }
+    db.edit(file, &source.replace("<script>1", "<script>1234"));
+    let block = view(&db, file);
+    let batch = block.reach_batch(Lang::Js).unwrap();
+    for i in 0..256 {
+        let one = block.reachable(Lang::Js, request(i)).unwrap();
+        let transient = batch.reachable(request(i)).unwrap();
+        assert_eq!(one.relative(), transient.relative());
+        assert_eq!(
+            one.authored_spans().collect::<Vec<_>>(),
+            transient.authored_spans().collect::<Vec<_>>()
+        );
+    }
+    let (graphs, recomputed) = executions(&db);
+    assert_eq!(graphs, 0);
+    assert_eq!(recomputed, 128);
+}

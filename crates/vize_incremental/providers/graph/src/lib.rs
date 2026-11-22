@@ -1,5 +1,6 @@
 //! Resident queries over the selected template's own source and expression
 //! language. Positions become document-absolute only through the current view.
+use std::borrow::Borrow;
 use vize_incremental::{block_query::BlockView, db::Block};
 use vize_l0::{Allocator, Lang, Span, diag::Diagnostic};
 use vize_l1_to_l2::native::{NativeHole, lower_component_native};
@@ -65,7 +66,10 @@ fn template_graph<'db>(
         .map_err(TemplateGraphError::Graph)
 }
 
-#[salsa::tracked(returns(ref))]
+// The same capacity as resident interface summaries. Salsa releases cold
+// answer values on revision changes. A multi-start scan uses TemplateReachBatch
+// to keep its working set bounded within the current revision as well.
+#[salsa::tracked(returns(ref), lru = 128)]
 fn template_reach<'db>(
     db: &'db dyn salsa::Database,
     block: Block<'db>,
@@ -75,6 +79,13 @@ fn template_reach<'db>(
     let graph = template_graph(db, block, lang)
         .as_ref()
         .map_err(Clone::clone)?;
+    checked_reach(graph, query)
+}
+
+fn checked_reach(
+    graph: &OpGraph<'_>,
+    query: ReachQuery,
+) -> Result<TemplateReach, TemplateGraphError> {
     let mut spans = Vec::new();
     let steps = graph
         .reach_with(query, |op| spans.push(op.span))
@@ -86,24 +97,51 @@ fn template_reach<'db>(
 }
 
 /// Checked rows paired with the exact open block that requested them.
-pub struct DocumentReach<'db> {
+pub struct DocumentReach<'db, R = &'db TemplateReach> {
     view: BlockView<'db>,
-    relative: &'db TemplateReach,
+    relative: R,
 }
 
 impl<'db> DocumentReach<'db> {
     pub fn relative(&self) -> &'db TemplateReach {
         self.relative
     }
+}
 
+impl DocumentReach<'_, TemplateReach> {
+    pub fn relative(&self) -> &TemplateReach {
+        &self.relative
+    }
+}
+
+impl<R: Borrow<TemplateReach>> DocumentReach<'_, R> {
     /// Use the current snapshot's base for every relative position. An
     /// invalid UTF-8 boundary or unrepresentable end is reported to the caller.
     pub fn authored_spans(&self) -> impl ExactSizeIterator<Item = Result<(OpId, Span), Span>> + '_ {
-        self.relative.spans().map(|(id, span)| {
+        self.relative.borrow().spans().map(|(id, span)| {
             self.view
                 .authored_span(span)
                 .map(|position| (id, position))
                 .ok_or(span)
+        })
+    }
+}
+
+/// One resident graph for scans across many starting operations. Each answer
+/// belongs to its caller and is released when that caller drops it.
+pub struct TemplateReachBatch<'db> {
+    view: BlockView<'db>,
+    graph: &'db OpGraph<'static>,
+}
+
+impl<'db> TemplateReachBatch<'db> {
+    pub fn reachable(
+        &self,
+        query: ReachQuery,
+    ) -> Result<DocumentReach<'db, TemplateReach>, TemplateGraphError> {
+        Ok(DocumentReach {
+            view: self.view,
+            relative: checked_reach(self.graph, query)?,
         })
     }
 }
@@ -116,6 +154,8 @@ pub trait TemplateQueries<'db> {
         lang: Lang,
         query: ReachQuery,
     ) -> Result<DocumentReach<'db>, &'db TemplateGraphError>;
+    /// Open a many-start scan without populating a resident memo for each start.
+    fn reach_batch(self, lang: Lang) -> Result<TemplateReachBatch<'db>, &'db TemplateGraphError>;
 }
 
 impl<'db> TemplateQueries<'db> for BlockView<'db> {
@@ -131,6 +171,15 @@ impl<'db> TemplateQueries<'db> for BlockView<'db> {
         Ok(DocumentReach {
             view: self,
             relative,
+        })
+    }
+    fn reach_batch(self, lang: Lang) -> Result<TemplateReachBatch<'db>, &'db TemplateGraphError> {
+        let (db, block) = self
+            .template_input()
+            .ok_or(&TemplateGraphError::UnsupportedBlock)?;
+        Ok(TemplateReachBatch {
+            view: self,
+            graph: template_graph(db, block, lang).as_ref()?,
         })
     }
 }

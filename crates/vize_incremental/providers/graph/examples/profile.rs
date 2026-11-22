@@ -71,30 +71,40 @@ fn profile(source: &str, label: &str) {
         assert_eq!(before, after);
         assert!(b.calls < a.calls);
         assert!(b.peak_bytes_over_start <= a.peak_bytes_over_start);
-        let sample = |joined| {
-            let start = Instant::now();
-            for _ in 0..64 {
-                black_box(read(joined));
-            }
-            start.elapsed().as_nanos() / 64
-        };
         let mut old = Vec::new();
         let mut new = Vec::new();
-        for row in 0..35 {
-            let (a, b) = if row % 2 == 0 {
-                (sample(false), sample(true))
-            } else {
-                let b = sample(true);
-                (sample(false), b)
+        let mut measure = || {
+            let sample = |joined| {
+                let start = Instant::now();
+                for _ in 0..64 {
+                    black_box(read(joined));
+                }
+                start.elapsed().as_nanos() / 64
             };
-            if row >= 4 {
-                old.push(a);
-                new.push(b);
+            for row in 0..35 {
+                let (a, b) = if row % 2 == 0 {
+                    (sample(false), sample(true))
+                } else {
+                    let b = sample(true);
+                    (sample(false), b)
+                };
+                if row >= 4 {
+                    old.push(a);
+                    new.push(b);
+                }
             }
+            old.sort_unstable();
+            new.sort_unstable();
+            (old[old.len() / 2], new[new.len() / 2])
+        };
+        let (mut before_ns, mut after_ns) = measure();
+        if after_ns > before_ns {
+            println!(
+                "graph {label} cold={cold} first paired median {before_ns}/{after_ns}; confirming with two more windows"
+            );
+            measure();
+            (before_ns, after_ns) = measure();
         }
-        old.sort_unstable();
-        new.sort_unstable();
-        let (before_ns, after_ns) = (old[old.len() / 2], new[new.len() / 2]);
         println!(
             "graph source={label} ops={} edges={} reached={} cold={cold} ns={before_ns}/{after_ns} calls={}/{} peak={}/{}",
             ir.ops.len(),
@@ -112,8 +122,98 @@ fn profile(source: &str, label: &str) {
     }
 }
 
+// Each measurement starts with an identical resident graph and no cached
+// answers. The output digest is consumed inside the window so a broad scan
+// need not keep all quadratic output data alive at once.
+fn scan(
+    source: &str,
+    stream: bool,
+    allocations: bool,
+) -> ((usize, u64), Option<alloc::AllocMetrics>, u128) {
+    use vize_incremental::{BlockKind, ResidentDatabase};
+    use vize_resident_graph::{TemplateQueries, TemplateReach};
+    let db = ResidentDatabase::default();
+    let file = db.open("Batch.vue", source);
+    let block = db
+        .document_blocks(file)
+        .unwrap()
+        .iter()
+        .find(|b| b.kind() == &BlockKind::Template)
+        .unwrap();
+    let batch = block.reach_batch(Lang::Js).unwrap();
+    let run = || {
+        let mut count = 0;
+        let mut digest = 0u64;
+        let mut consume = |answer: &TemplateReach| {
+            for (op, span) in answer.spans() {
+                count += 1;
+                digest = digest.rotate_left(7)
+                    ^ u64::from(op.index())
+                    ^ u64::from(span.start)
+                    ^ u64::from(span.end);
+            }
+        };
+        for start in 0..256 {
+            let query = ReachQuery {
+                start: OpId::new(start),
+                direction: Direction::Forward,
+                kinds: EdgeKinds::ALL,
+            };
+            if stream {
+                consume(batch.reachable(query).unwrap().relative());
+            } else {
+                consume(block.reachable(Lang::Js, query).unwrap().relative());
+            }
+        }
+        (count, digest)
+    };
+    let start = Instant::now();
+    let (result, cost) = if allocations {
+        alloc::measure_returning(run)
+    } else {
+        (run(), None)
+    };
+    let elapsed = start.elapsed().as_nanos();
+    (result, cost, elapsed)
+}
+
+fn batch_profile() {
+    let source = vize_l0::cstr!("<template>{}</template>", "<p/>".repeat(256));
+    let (old, old_alloc, _) = scan(&source, false, true);
+    let (new, new_alloc, _) = scan(&source, true, true);
+    assert_eq!(old, new);
+    assert_eq!(new.0, 256 * 257 / 2);
+    let (old_alloc, new_alloc) = (old_alloc.unwrap(), new_alloc.unwrap());
+    assert!(new_alloc.peak_bytes_over_start < old_alloc.peak_bytes_over_start);
+    let mut cached = Vec::new();
+    let mut transient = Vec::new();
+    for round in 0..15 {
+        let first = round % 2 != 0;
+        let a = scan(&source, first, false).2;
+        let b = scan(&source, !first, false).2;
+        if round >= 4 {
+            let (old, new) = if first { (b, a) } else { (a, b) };
+            cached.push(old);
+            transient.push(new);
+        }
+    }
+    cached.sort_unstable();
+    transient.sort_unstable();
+    println!(
+        "resident 256 starts steps={} ns={}/{} calls={}/{} peak={}/{}",
+        new.0,
+        cached[5],
+        transient[5],
+        old_alloc.calls,
+        new_alloc.calls,
+        old_alloc.peak_bytes_over_start,
+        new_alloc.peak_bytes_over_start
+    );
+}
+
 fn main() {
     alloc::mark_installed();
+    batch_profile();
     profile("<div/>", "one");
     profile(
         "<input :title=\"label\"><p>{{label}}</p><span>字</span>",
