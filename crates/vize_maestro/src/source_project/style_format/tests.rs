@@ -51,10 +51,12 @@ fn authentic_format_keeps_css_bindings_and_untouched_bytes_and_rechecks_revision
     after.replace_range(from..to, &edit.new_text);
     assert_eq!(
         after,
-        format!(
-            "\u{feff}<template>🦀</template>\r\n{}\r\n<!--尻--><style>.keep{}</style>",
-            edit.new_text
-        )
+        [
+            "\u{feff}<template>🦀</template>\r\n",
+            edit.new_text.as_str(),
+            "\r\n<!--尻--><style>.keep{}</style>"
+        ]
+        .concat()
     );
     let observed = Vue.observe_descriptor(&arena, &after, options());
     let next = observed.admitted().unwrap().styles().next().unwrap();
