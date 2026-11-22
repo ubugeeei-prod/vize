@@ -126,7 +126,7 @@ async function build(
     cargo: execFileSync("cargo", ["-V"], { cwd: checkout, encoding: "utf8" }).trim(),
     rustc: execFileSync("rustc", ["-vV"], { cwd: checkout, encoding: "utf8" }).trim(),
     lock: digest(fs.readFileSync(path.join(checkout, "Cargo.lock"))),
-    features: [...artifact.features].sort(),
+    features: [...artifact.features].sort((left, right) => left.localeCompare(right, "en")),
     profile: artifact.profile,
     members,
   };
