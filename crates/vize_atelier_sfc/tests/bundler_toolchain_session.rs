@@ -14,8 +14,16 @@ fn bundler_metadata_tracks_the_actual_toolchain_revisions() {
     let history =
         std::fs::read_to_string(std::env::var_os("VIZE_TOOLCHAIN_HISTORY").unwrap()).unwrap();
     let revisions: Vec<_> = history.split('\0').collect();
-    assert!((4..=6).contains(&revisions.len()));
     let name = Some("Setup雪🌸.vue");
+    let last = BundlerBlockProducts::read(revisions.last().unwrap(), name);
+    let expected = if last.has_scoped_style {
+        6
+    } else if last.styles.is_empty() {
+        4
+    } else {
+        5
+    };
+    assert_eq!(revisions.len(), expected);
     for (i, text) in revisions.into_iter().enumerate() {
         let descriptor = parse_sfc(text, Default::default()).unwrap();
         let shared = BundlerBlockProducts::from_descriptor(&descriptor);

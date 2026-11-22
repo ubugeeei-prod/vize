@@ -56,6 +56,42 @@ pub(super) fn scope_the_live_style(
     current
 }
 
+#[test]
+fn toolchain_session_rejects_a_foreign_language_and_checks_the_revision_after_scoped_passes() {
+    let docs = DocumentStore::new();
+    let snapshots = SourceSnapshotCache::default();
+    let uri = Url::parse("file:///pass.vue").unwrap();
+    let options = NativeSfcCompileOptions::default();
+    docs.open(uri.clone(), "let n = 1".into(), 1, "typescript".into());
+    let (foreign, _) = snapshots.begin_query(&docs, &uri).unwrap();
+    assert!(matches!(
+        block_on(foreign.run_scoped_component(&docs, options, |_, _| panic!("foreign request"))),
+        Err(ScopedComponentQueryError::Language)
+    ));
+    let source = "<template><p/></template><style scoped lang=scss>.a{color:red}</style>";
+    docs.open(uri.clone(), source.into(), 2, "vue".into());
+    let (query, _) = snapshots.begin_query(&docs, &uri).unwrap();
+    let changed = block_on(query.run_scoped_component(&docs, options, |_, session| {
+        let output = session.emit([]).unwrap();
+        apply(&docs, &uri, 3, None, "<template><b/></template>");
+        output
+    }));
+    assert!(matches!(
+        changed,
+        Err(ScopedComponentQueryError::Host(SnapshotRefusal::Superseded))
+    ));
+    let (query, cancel) = snapshots.begin_query(&docs, &uri).unwrap();
+    let prepared = block_on(query.run_scoped_component(&docs, options, |_, session| {
+        session.observation().descriptor().source().to_owned()
+    }))
+    .unwrap();
+    cancel.abort();
+    assert_eq!(
+        prepared.publish(&docs, |_| ()),
+        Err(SnapshotRefusal::Cancelled)
+    );
+}
+
 fn products(
     docs: &DocumentStore,
     snapshot: &SourceSnapshot,
@@ -142,7 +178,10 @@ fn products(
             .as_str()
     );
     assert_eq!(output.scope_id(), options.scope_id);
-    assert!(output.css().unwrap().starts_with(".card[data-v-oracle] {"));
+    assert_eq!(
+        output.css(),
+        Some(".card[data-v-oracle] {\n  color: red;\n  display: none;\n  margin-left: 4px;\n}")
+    );
     serde_json::json!([{
         "name":options.filename, "filename":options.filename, "source":snapshot.source(),
         "trim":options.style_trim, "scopedScss":true, "code":output.code(), "css":output.css(),

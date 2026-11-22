@@ -193,7 +193,7 @@ fn original_template_graphs_follow_the_same_toolchain_session() {
     let inputs =
         std::fs::read_to_string(std::env::var_os("VIZE_TOOLCHAIN_HISTORY").unwrap()).unwrap();
     let revisions = inputs.split('\0').collect::<Vec<_>>();
-    assert!((4..=6).contains(&revisions.len()));
+    assert!(matches!(revisions.len(), 4..=6));
     let mut db = ResidentDatabase::default();
     let file = db.open("Setup雪🌸.vue", revisions[0]);
     let first = read(&db, file, revisions[0], Lang::Ts);
