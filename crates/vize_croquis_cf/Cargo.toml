@@ -14,6 +14,7 @@ default = ["provider-vue-router"]
 # In-tree app-level fact providers compile in behind cargo features (charter
 # #15's first tier, the P4-10a provider contract).
 provider-vue-router = []
+observed-template-complexity = []
 
 [dependencies]
 vize_carton.workspace = true

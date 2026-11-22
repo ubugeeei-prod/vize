@@ -322,7 +322,7 @@ impl ServerState {
     }
 }
 
-fn is_project_source(path: &Path) -> bool {
+pub(super) fn is_project_source(path: &Path) -> bool {
     !vize_carton::path::is_git_metadata_path(path)
         && matches!(
             path.extension().and_then(|ext| ext.to_str()),

@@ -9,7 +9,16 @@ on:
       - "crates/vize_patina/src/plugin_batch/**"
       - "crates/vize_patina/Cargo.toml"
       - "crates/vize_croquis/src/sfc/**"
-      - "crates/vize_croquis_cf/src/rules/complexity/template.rs"
+      - "crates/vize_croquis_cf/Cargo.toml"
+      - "crates/vize_croquis_cf/src/analyzer/core/files.rs"
+      - "crates/vize_croquis_cf/src/analyzer/core/files/**"
+      - "crates/vize_croquis_cf/src/analyzer/core/deps.rs"
+      - "crates/vize_croquis_cf/src/rules/complexity/**"
+      - "crates/vize_doctor/src/application_analysis*"
+      - "crates/vize_doctor/src/application_analysis/**"
+      - "examples/cli/src/**/*.vue"
+      - "examples/html-conformance/src/**/*.vue"
+      - "examples/vite-musea/src/**/*.vue"
       - "davinci/vize_l1_to_l2/src/pass/cfg*"
       - "davinci/vize_l1_to_l2/src/pass/cfg/**"
       - "davinci/vize_l1_to_l2/src/dialect/vue/lower.rs"
@@ -53,10 +62,10 @@ jobs:
         run: |
           set -euo pipefail
           flags=(--locked --profile ci-opt)
-          suite=(-p vize --features plugin-template-facts --test plugin_template_products)
+          suite=(-p vize --features plugin-project-facts --test plugin_template_products)
           export VIZE_PLUGIN_TEMPLATE_INPUTS="$RUNNER_TEMP/plugin-templates"
           cargo clippy "${flags[@]}" -p vize_patina --features plugin-template-facts --lib --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" -p vize --features plugin-template-facts --lib --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" -p vize --features plugin-project-facts --lib --no-deps -- -D warnings
           cargo test "${flags[@]}" -p vize_patina --features plugin-template-facts --lib plugin_batch::
           cargo test "${flags[@]}" -p vize_doctor --features application-analysis --test application_complexity
           cargo test "${flags[@]}" "${suite[@]}" -- --test-threads=1
@@ -66,4 +75,4 @@ jobs:
         run: |
           set -euo pipefail
           export VIZE_PLUGIN_TEMPLATE_INPUTS="$RUNNER_TEMP/plugin-templates"
-          cargo test --locked --profile ci-opt -p vize --features plugin-template-facts --test plugin_template_products measure_complete_plugin_and_component_responses -- --ignored --nocapture --test-threads=1
+          cargo test --locked --profile ci-opt -p vize --features plugin-project-facts --test plugin_template_products measure_complete_ -- --ignored --nocapture --test-threads=1

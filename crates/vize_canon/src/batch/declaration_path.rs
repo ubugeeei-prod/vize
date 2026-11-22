@@ -246,3 +246,6 @@ pub fn project_declaration_as_typescript(text: &str) -> String {
     }
     projected
 }
+
+#[cfg(feature = "authored-declarations")]
+pub(super) mod observed;

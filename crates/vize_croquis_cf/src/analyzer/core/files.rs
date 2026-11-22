@@ -140,3 +140,6 @@ fn automatic_effect_summary(path: &Path, source: &str) -> EffectGraphSummary {
     };
     build_effect_graph_from_sfc_scripts(None, Some(EffectGraphScript::new(source, lang))).summary()
 }
+
+#[cfg(feature = "observed-template-complexity")]
+mod observed;

@@ -100,3 +100,6 @@ pub struct Diagnostic {
     /// SFC block type if applicable.
     pub block_type: Option<SfcBlockType>,
 }
+
+#[cfg(feature = "authored-declarations")]
+pub mod declaration_products;

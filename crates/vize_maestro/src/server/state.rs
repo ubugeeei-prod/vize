@@ -350,3 +350,6 @@ impl ServerState {
         self.lsp_features().lint
     }
 }
+
+#[cfg(feature = "experimental-declaration-products")]
+pub use global_tag_names::{DeclarationToolProducts, DeclarationToolRefusal};

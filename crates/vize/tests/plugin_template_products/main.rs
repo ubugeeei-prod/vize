@@ -16,13 +16,20 @@ use vize_patina::plugin_batch::{
 #[global_allocator]
 static ALLOCATOR: CountingAllocator<System> = CountingAllocator::system();
 
-fn separate(source: &str, name: &str, spec: &PluginSpec<'_>) -> PluginTemplateProducts {
-    let plugin = PluginDocument::build(source, name).and_then(|document| {
+fn original_plugin(
+    source: &str,
+    name: &str,
+    spec: &PluginSpec<'_>,
+) -> Result<PluginTemplateBatch, vize_patina::plugin_batch::error::HostError> {
+    PluginDocument::build(source, name).and_then(|document| {
         let batch = build_batch(&document, spec, &mut FactManager::new(&REGISTRY))?;
         Ok(PluginTemplateBatch { batch, document })
-    });
+    })
+}
+
+fn separate(source: &str, name: &str, spec: &PluginSpec<'_>) -> PluginTemplateProducts {
     PluginTemplateProducts {
-        plugin,
+        plugin: original_plugin(source, name, spec),
         complexity: TemplateComplexity::from_sfc(source),
     }
 }
@@ -171,3 +178,6 @@ fn original_packets_and_component_records_match() {
 }
 
 mod profile;
+
+#[cfg(feature = "plugin-project-facts")]
+mod project;
