@@ -134,6 +134,8 @@ fn empty_rejection<'a>(
 }
 
 struct Context<'component, 'a> {
+    #[cfg(feature = "component-text-condense")]
+    text_lane: Option<crate::lower::TextLane>,
     allocator: &'a Allocator,
     component: block::ComponentInput<'component, 'a>,
     lang: Lang,
@@ -155,13 +157,33 @@ impl<'a> Context<'_, 'a> {
         parent: (Namespace, Option<&'a str>),
     ) {
         vize_l0::ensure_sufficient_stack(|| {
-            for child in children {
+            #[cfg(feature = "component-text-condense")]
+            let entries = children.iter().enumerate();
+            #[cfg(not(feature = "component-text-condense"))]
+            let entries = children;
+            for child in entries {
+                #[cfg(feature = "component-text-condense")]
+                let (index, child) = child;
                 match child {
                     SurfaceChild::Element(element) => self.element(region, element, parent),
                     SurfaceChild::Interpolation(interpolation) => {
                         self.interpolation(region, interpolation)
                     }
-                    SurfaceChild::Text(token) => self.text(region, token),
+                    SurfaceChild::Text(token) => {
+                        #[cfg(feature = "component-text-condense")]
+                        if let Some(lane) = self.text_lane {
+                            let previous = index.checked_sub(1).and_then(|i| children.get(i));
+                            self.component_text(
+                                region,
+                                token,
+                                lane,
+                                previous,
+                                children.get(index + 1),
+                            );
+                            continue;
+                        }
+                        self.text(region, token);
+                    }
                     SurfaceChild::Comment(token) => self.comment(region, token),
                     SurfaceChild::Cdata(token)
                     | SurfaceChild::ProcessingInstruction(token)

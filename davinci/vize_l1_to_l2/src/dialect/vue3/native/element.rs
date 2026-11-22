@@ -31,7 +31,23 @@ impl<'a> Context<'_, 'a> {
                 StructuralHeadMask::default()
             }
         };
+        #[cfg(feature = "component-text-condense")]
+        let previous = self.text_lane;
+        #[cfg(feature = "component-text-condense")]
+        if let Some(lane) = previous {
+            self.text_lane = Some(lane.component_children_of(
+                crate::lower::TextSource::new(self.allocator, self.block()),
+                element,
+                header.tag,
+                header.namespace == Namespace::Html,
+                matches!(header.admission, HeaderAdmission::PreCarrier),
+            ));
+        }
         self.element_body(region, header, mask, parent);
+        #[cfg(feature = "component-text-condense")]
+        {
+            self.text_lane = previous;
+        }
     }
 
     pub(super) fn element_body<R: ConstructionFactory<'a>>(

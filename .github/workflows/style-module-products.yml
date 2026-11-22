@@ -21,6 +21,7 @@ on:
       - "crates/vize_maestro/src/ide/completion/template.rs"
       - "crates/vize_maestro/src/ide/completion/template/css_modules.rs"
       - "crates/vize_maestro/src/ide/completion/template/css_modules/**"
+      - "davinci/vize_l1_to_l2/**"
       - "davinci/vize_l2/Cargo.toml"
       - "davinci/vize_l2/src/lang/mod.rs"
       - "davinci/vize_l2/src/lang/scss.rs"
@@ -142,6 +143,8 @@ jobs:
           flags=(--locked --profile ci-opt)
           host=(-p vize_atelier_sfc --features native-scoped-scss)
           editor=(-p vize_maestro --features experimental-scss-definitions)
+          cargo clippy "${flags[@]}" -p vize_l1_to_l2 --features component-text-condense --lib --no-deps -- -D warnings
+          cargo test "${flags[@]}" -p vize_l1_to_l2 --features component-text-condense --lib
           cargo clippy "${flags[@]}" -p vize_l2 --features scss-rules --lib --no-deps -- -D warnings
           cargo clippy "${flags[@]}" -p vize_l4 --features scoped-scss --lib --no-deps -- -D warnings
           cargo clippy "${flags[@]}" "${host[@]}" --lib --no-deps -- -D warnings

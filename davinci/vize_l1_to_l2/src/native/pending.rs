@@ -215,6 +215,13 @@ impl Drop for NativeWalkGuard<'_> {
 #[cfg(test)]
 mod tests;
 
+#[cfg(feature = "component-text-condense")]
+impl PendingNativeComponent<'_> {
+    pub(crate) fn enable_condensed_text(&mut self) {
+        self.component.condense = true;
+    }
+}
+
 #[cfg(feature = "authored-bind-shorthand")]
 impl PendingNativeComponent<'_> {
     pub(crate) fn enable_authored_bind_shorthand(&mut self) {

@@ -22,6 +22,7 @@ autotests = false
 metadata.vize.stability = "experimental"
 
 [features]
+component-text-condense = []
 lexical-arrow-initializers = [
   "vize_l1/retained-expressions",
   "component-listener-queries",

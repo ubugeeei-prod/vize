@@ -74,6 +74,17 @@ pub fn lower_sfc_native<'a>(
     include!("native_file/assembly.rs")
 }
 
+/// Keep the full original surface and apply Vue text condensation during File construction.
+#[cfg(feature = "component-text-condense")]
+pub fn lower_sfc_with_condensed_text<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DescriptorOptions,
+) -> NativeSfcObservation<'a> {
+    use template::prepare_condensed as prepare;
+    include!("native_file/assembly.rs")
+}
+
 /// Build a Vue 3.4+ File with same-name binding operands owned by the authored arguments.
 #[cfg(feature = "authored-bind-shorthand")]
 pub fn lower_sfc_with_authored_bind_shorthand<'a>(

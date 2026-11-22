@@ -395,9 +395,20 @@ impl<'a, 'o> NativeScssSession<'a, 'o> {
     /// Also emit original scoped SCSS through the admitted selector grammar.
     #[cfg(feature = "native-scoped-scss")]
     #[must_use]
-    pub fn with_scoped_styles(mut self) -> Self {
-        self.scoped = true;
-        self
+    pub fn new_scoped(
+        allocator: &'a Allocator,
+        source: &'a str,
+        options: NativeSfcCompileOptions<'o>,
+    ) -> Self {
+        Self {
+            observation: vize_l1_to_l2::native_file::lower_sfc_with_condensed_text(
+                allocator,
+                source,
+                options.descriptor,
+            ),
+            options,
+            scoped: true,
+        }
     }
 
     /// Reuse the supplied style passes in authored order. Other inline SCSS

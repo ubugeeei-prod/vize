@@ -19,8 +19,8 @@ fn row(name: &str, source: &str, trim: bool) -> Result<Value, NativeSfcCompileEr
         old.emit([]).is_err(),
         "{name}: previous scoped SCSS decision"
     );
-    let mapped = old.with_scoped_styles().emit([])?;
-    let plain = NativeScssSession::new(
+    let mapped = NativeScssSession::new_scoped(&arena, source, options).emit([])?;
+    let plain = NativeScssSession::new_scoped(
         &arena,
         source,
         NativeSfcCompileOptions {
@@ -28,7 +28,6 @@ fn row(name: &str, source: &str, trim: bool) -> Result<Value, NativeSfcCompileEr
             ..options
         },
     )
-    .with_scoped_styles()
     .emit([])
     .unwrap();
     assert_eq!(mapped.scope_id(), Some("data-v-oracle"));
@@ -68,6 +67,46 @@ fn original_project_component_compiles_without_retagging_or_preprocessing_its_so
 }
 
 #[test]
+fn condensed_text_keeps_each_authored_span_and_existing_svg_refusal() {
+    let arena = Allocator::default();
+    let source = "<!-- 🌸 --><template>&#32;<p>a&#32;  b</p>&#10;</template><style lang=scss scoped>.a{color:red}</style>";
+    let session = NativeScssSession::new_scoped(&arena, source, Default::default());
+    let observed = session.observation().file().unwrap().file().artifact();
+    let records: Vec<_> = observed
+        .provenance()
+        .iter()
+        .filter(|record| {
+            matches!(
+                record.rule.as_str(),
+                "native.text" | "condense.drop-whitespace"
+            )
+        })
+        .collect();
+    assert_eq!(records.len(), 3);
+    for (record, (raw, emitted)) in
+        records
+            .iter()
+            .zip([("&#32;", false), ("a&#32;  b", true), ("&#10;", false)])
+    {
+        assert_eq!(record.before.as_str(), raw);
+        assert_eq!(
+            &source[record.span.start as usize..record.span.end as usize],
+            raw
+        );
+        assert_eq!(record.node.is_some(), emitted);
+    }
+    let source = "<template><svg><title> a  b </title></svg></template><style lang=scss scoped>.a{color:red}</style>";
+    let session = NativeScssSession::new_scoped(&arena, source, Default::default());
+    assert!(matches!(
+        session.emit([]),
+        Err(NativeSfcCompileError::Dom(vize_l4::targets::dom::DomError {
+            kind: vize_l4::targets::dom::DomErrorKind::Unsupported(vize_l3::decision::dom::DomUnsupported::Namespace),
+            span, ..
+        })) if &source[span.start as usize..span.end as usize] == "<svg><title> a  b </title></svg>"
+    ));
+}
+
+#[test]
 fn unsupported_selectors_options_and_broken_styles_keep_original_typed_refusals() {
     for tag in [
         "<style lang=scss scoped>.a::before{color:red}</style>",
@@ -80,8 +119,7 @@ fn unsupported_selectors_options_and_broken_styles_keep_original_typed_refusals(
     ] {
         let source = format!("<template><p/></template>{tag}");
         let arena = Allocator::default();
-        let session =
-            NativeScssSession::new(&arena, &source, Default::default()).with_scoped_styles();
+        let session = NativeScssSession::new_scoped(&arena, &source, Default::default());
         assert!(core::ptr::eq(
             session.observation().descriptor().source(),
             source.as_str()
@@ -159,6 +197,27 @@ fn observed_scoped_components_match_published_style_and_render_products() {
             }
         }
     }
+    for template in [
+        " \r\n<p>a   b\r\nc</p>\r\n",
+        "\n<i/>\r\n<b/>\n",
+        "<div> <i/> <b/> </div>",
+        "<div>\n<i/>\n<!--c-->\n<b/>\n</div>",
+        "<pre>\r\n a\r\n  b </pre>",
+        "<textarea>\r\n  a  b </textarea>",
+        "<p>a&#32; b &amp; c</p>",
+        "<p>&#32;<i/>&#x0a;<b/>&Tab;</p>",
+        "<div>&nbsp; <b/> &amp;amp; &#9; &#12;X</div>",
+        "<pre>&#13;&#10;x&#13;&#10;y</pre>",
+        "<pre>&amp;#10;  x</pre>",
+        "<textarea>&NewLine;&amp;#10; a&#32; b</textarea>",
+        "<title>\r\n  a  b \r\n</title>",
+        "<div>雪\u{00a0}🦀</div>",
+    ] {
+        let text = format!(
+            "<template>{template}</template><style scoped lang=scss>.a{{color:red}}</style>"
+        );
+        rows.push(row("Whitespace.vue", &text, false).unwrap());
+    }
     if std::env::var_os("VIZE_REQUIRE_REPOSITORY_SCSS").is_some() {
         assert!(
             originals > 0
@@ -183,3 +242,5 @@ fn observed_scoped_components_match_published_style_and_render_products() {
         rows.len()
     );
 }
+
+mod profile;

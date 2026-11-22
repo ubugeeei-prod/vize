@@ -11,7 +11,11 @@ metadata.vize.stability = "alpha-supported"
 [features]
 # Compare complete original SCSS products before admitting a source edit.
 verified-scss-edits = ["original-scss-products"]
-native-scoped-scss = ["native-sfc-scss", "vize_l4/scoped-scss"]
+native-scoped-scss = [
+  "native-sfc-scss",
+  "vize_l1_to_l2/component-text-condense",
+  "vize_l4/scoped-scss",
+]
 native-sfc-scss = ["original-scss-products"]
 original-scss-products = ["vize_l4/scss-rules", "vize_l2/scss-rules", "vize_l1/observed-styles"]
 bundler-block-products = []
