@@ -26,6 +26,12 @@ impl<'a> StyleObservation<'a> {
         Self { sheet, classes }
     }
 
+    /// Move the computed class set to a consumer after the structural readers finish.
+    #[must_use]
+    pub fn into_authored_classes(self) -> Option<AuthoredClasses> {
+        self.classes
+    }
+
     /// Rules, declarations, comments and parser recovery over the original bytes.
     #[inline]
     #[must_use]

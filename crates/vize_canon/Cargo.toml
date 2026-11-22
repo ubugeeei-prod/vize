@@ -9,6 +9,7 @@ description = "Canon - The standard of correctness for Vize type checking"
 metadata.vize.stability = "compatibility-preview"
 
 [features]
+observed-style-modules = ["native", "vize_l1/observed-styles"]
 default = ["native"]
 # Read checker syntax diagnostics from an original script with the checker grammar.
 authored-script-diagnostics = ["vize_l1/authored-script-queries"]

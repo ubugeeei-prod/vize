@@ -477,3 +477,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(feature = "observed-style-modules")]
+mod observed;

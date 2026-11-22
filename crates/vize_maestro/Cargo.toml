@@ -9,6 +9,7 @@ description = "Maestro - Language Server Protocol implementation for Vize Vue te
 publish = false
 
 [features]
+experimental-style-module-products = ["vize_canon/observed-style-modules"]
 default = ["native", "glyph"]
 glyph = ["dep:vize_glyph"]
 native = ["vize_canon/native", "retained-program"]
