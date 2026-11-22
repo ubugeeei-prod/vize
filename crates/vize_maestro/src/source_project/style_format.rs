@@ -71,9 +71,8 @@ impl SourceSnapshot {
             let suffix = source
                 .get(span.end as usize..)
                 .ok_or(StyleFormatError::Position)?;
-            let mut candidate = std::string::String::with_capacity(
-                prefix.len() + formatted.code.len() + suffix.len(),
-            );
+            let mut candidate =
+                String::with_capacity(prefix.len() + formatted.code.len() + suffix.len());
             candidate.push_str(prefix);
             candidate.push_str(formatted.code.as_str());
             let end = candidate.len();
@@ -167,7 +166,7 @@ impl VerifiedStyleFormat<'_> {
                     },
                     edits: vec![OneOf::Left(TextEdit {
                         range: Range::new(start, end),
-                        new_text: replacement.to_string(),
+                        new_text: replacement.as_str().into(),
                     })],
                 }))
             })
