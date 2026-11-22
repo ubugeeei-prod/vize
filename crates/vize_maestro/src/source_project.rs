@@ -55,3 +55,11 @@ pub mod literal_products;
 
 #[cfg(feature = "experimental-recovered-literal-prefix")]
 pub mod recovered_script;
+
+#[cfg(all(
+    test,
+    feature = "experimental-recovered-literal-prefix",
+    feature = "experimental-verified-style-format",
+    feature = "experimental-style-lint-products"
+))]
+mod toolchain_session;

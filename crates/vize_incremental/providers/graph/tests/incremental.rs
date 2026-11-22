@@ -186,3 +186,47 @@ fn scanning_all_starts_keeps_only_the_graph_and_evicted_answers_recheck() {
     assert_eq!(graphs, 0);
     assert_eq!(recomputed, 128);
 }
+
+#[test]
+#[ignore = "uses the four actual documents emitted by the cross-tool editor replay"]
+fn original_template_graphs_follow_the_same_toolchain_session() {
+    let inputs =
+        std::fs::read_to_string(std::env::var_os("VIZE_TOOLCHAIN_HISTORY").unwrap()).unwrap();
+    let revisions = inputs.split('\0').collect::<Vec<_>>();
+    assert_eq!(revisions.len(), 4);
+    let mut db = ResidentDatabase::default();
+    let file = db.open("Setup雪🌸.vue", revisions[0]);
+    let first = read(&db, file, revisions[0], Lang::Ts);
+    assert!(!first.0.is_empty());
+    assert_eq!(executions(&db), (1, 1));
+    let mut previous = first.2.clone();
+    for text in &revisions[1..] {
+        db.edit(file, text);
+        let updated = read(&db, file, text, Lang::Ts);
+        assert_eq!(updated.0, first.0);
+        assert_eq!(updated.1, first.1);
+        assert_ne!(updated.2, previous);
+        assert_eq!(executions(&db), (0, 0));
+        let fresh = ResidentDatabase::default();
+        assert_eq!(
+            read(&fresh, fresh.open("Setup雪🌸.vue", text), text, Lang::Ts),
+            updated
+        );
+        previous = updated.2;
+    }
+    let changed = revisions[3].replace("{{other}}", "<i>{{other}}</i>");
+    assert_ne!(changed, revisions[3]);
+    db.edit(file, &changed);
+    let updated = read(&db, file, &changed, Lang::Ts);
+    assert_eq!(executions(&db), (1, 1));
+    let fresh = ResidentDatabase::default();
+    assert_eq!(
+        read(
+            &fresh,
+            fresh.open("Setup雪🌸.vue", &changed),
+            &changed,
+            Lang::Ts
+        ),
+        updated
+    );
+}
