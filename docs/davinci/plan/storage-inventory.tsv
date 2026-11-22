@@ -341,7 +341,7 @@ l2	analysis	davinci/vize_l2/src/analysis/constant_expression.rs	1	5	2	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/analysis/template_complexity.rs	1	2	0	0	0	0	0	0
 l2	-	davinci/vize_l2/src/analysis/template_complexity/print.rs	0	0	1	4	0	0	0	0
 l2	-	davinci/vize_l2/src/analysis/static_facts/consts.rs	0	0	2	0	0	0	0	0
-l2	analysis	davinci/vize_l2/src/analysis/static_facts/lattice/composed/owners.rs	1	2	0	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/analysis/static_facts/lattice/composed/owners.rs	1	2	0	0	0	0	1	1
 l2	-	davinci/vize_l2/src/analysis/static_facts/lattice.rs	0	0	2	0	0	0	0	0
 l2	-	davinci/vize_l2/src/analysis/static_facts/lattice/composed/publication.rs	0	0	2	0	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/dialect/legalize/filter.rs	1	4	1	11	0	0	0	0
