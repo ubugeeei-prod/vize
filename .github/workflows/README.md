@@ -38,7 +38,7 @@ surfaces and are not routine CI-refactor targets.
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
-| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 20        |
+| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 21        |
 
 ## 01 Pull request orchestration
 
@@ -386,6 +386,7 @@ Security audits, dependency upkeep, scheduled maintenance, docs, and repository 
 | 11.15 | Retained TSRX module products               | [`retained-tsrx.yml`](./retained-tsrx.yml)                                 |
 | 11.16 | Sticky disk maintenance                     | [`sticky-disk-maintenance.yml`](./sticky-disk-maintenance.yml)             |
 | 11.17 | Style module products                       | [`style-module-products.yml`](./style-module-products.yml)                 |
-| 11.18 | Versioned diagnostic fix publication        | [`versioned-fix-publication.yml`](./versioned-fix-publication.yml)         |
-| 11.19 | Generated VTS source census                 | [`vts-source-census.yml`](./vts-source-census.yml)                         |
-| 11.20 | Zizmor                                      | [`zizmor.yml`](./zizmor.yml)                                               |
+| 11.18 | Tool codegen equivalence                    | [`tool-codegen-equivalence.yml`](./tool-codegen-equivalence.yml)           |
+| 11.19 | Versioned diagnostic fix publication        | [`versioned-fix-publication.yml`](./versioned-fix-publication.yml)         |
+| 11.20 | Generated VTS source census                 | [`vts-source-census.yml`](./vts-source-census.yml)                         |
+| 11.21 | Zizmor                                      | [`zizmor.yml`](./zizmor.yml)                                               |
