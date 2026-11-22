@@ -31,11 +31,9 @@ type Scene = {
   filename: string;
   source: string;
   trim: boolean;
-  code: string;
-  map: object;
   css: string | null;
   cssMap: object | null;
-};
+} & ({ stylesOnly: true } | { stylesOnly?: false; code: string; map: object });
 const rows: Scene[] = JSON.parse(await text(process.stdin));
 
 function starts(text: string, breaks = /\r\n|[\r\n\u2028\u2029]/g): number[] {
@@ -58,7 +56,7 @@ for (const row of rows) {
     sourceMap: false,
     ignoreEmpty: false,
   });
-  assert.deepEqual(errors, [], row.name);
+  if (!row.stylesOnly) assert.deepEqual(errors, [], row.name);
   const inputLines = starts(row.source);
   let css = "";
   const links: Point[] = [];
@@ -118,7 +116,7 @@ for (const row of rows) {
     }
   }
   const generated = starts(css);
-  if (row.scopedScss && descriptor.template) {
+  if (!row.stylesOnly && row.scopedScss && descriptor.template) {
     await compareRender(descriptor, row.code, row.filename);
     renders++;
   }
@@ -145,6 +143,7 @@ for (const row of rows) {
       : null,
     row.name,
   );
+  if (row.stylesOnly) continue;
   for (const fixture of frozen.fixtures) {
     const prefix = row.source.indexOf(fixture.source);
     if (prefix < 0) continue;
@@ -192,7 +191,8 @@ try {
 } finally {
   fs.rmSync(scratch, { recursive: true });
 }
-assert.ok(anchors && modules && jobs.length);
+assert.ok(anchors && jobs.length);
+if (rows.some((row) => !row.stylesOnly)) assert.ok(modules);
 console.log(
   `whole SCSS styles=${jobs.length} CSS anchors=${anchors} frozen JS modules and maps=${modules} Vue render comparisons=${renders} Sass=${sass.info.split("\n")[0]}`,
 );

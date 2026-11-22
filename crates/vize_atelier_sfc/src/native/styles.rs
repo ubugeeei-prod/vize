@@ -1,10 +1,7 @@
 //! Emit a genuine source-owned plain CSS family; no legacy compiler helper.
 
 use vize_l0::Span;
-use vize_l1::{
-    container::vue::{AdmittedDescriptor, StyleView},
-    css::StyleSyntax,
-};
+use vize_l1::{container::vue::StyleView, css::StyleSyntax};
 use vize_l4::module::ScopeId;
 use vize_l4::write::{EmitDocument, LinkSink};
 
@@ -63,8 +60,12 @@ impl<'o, 'a> PlainStyle<'o, 'a> {
     }
 }
 
-pub(crate) fn emit<L: LinkSink>(
-    descriptor: AdmittedDescriptor<'_, '_>,
+pub(crate) fn emit<'o, 'a: 'o, L: LinkSink>(
+    #[cfg(not(feature = "native-scoped-scss"))]
+    descriptor: vize_l1::container::vue::AdmittedDescriptor<'o, 'a>,
+    #[cfg(feature = "native-scoped-scss")] descriptor: impl Into<
+        vize_l1::container::vue::CheckedStyleBlocks<'o, 'a>,
+    >,
     syntax: &[StyleSyntax<'_>],
     scope_id: Option<ScopeId<'_>>,
     trim: bool,
@@ -73,6 +74,8 @@ pub(crate) fn emit<L: LinkSink>(
     >,
     #[cfg(feature = "native-scoped-scss")] scoped_scss: bool,
 ) -> Result<Option<EmitDocument>, NativeSfcCompileError> {
+    #[cfg(feature = "native-scoped-scss")]
+    let descriptor = descriptor.into();
     let mut output = EmitDocument::new(L::RECORDING);
     #[cfg(feature = "native-sfc-scss")]
     let enabled = scss.is_some();

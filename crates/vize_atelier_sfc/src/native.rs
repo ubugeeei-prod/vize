@@ -455,3 +455,6 @@ impl<'a, 'o> NativeScssSession<'a, 'o> {
         }
     }
 }
+
+#[cfg(feature = "native-scoped-scss")]
+pub(crate) mod style_products;

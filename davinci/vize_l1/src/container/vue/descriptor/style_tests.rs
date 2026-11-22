@@ -189,3 +189,51 @@ fn style_alone_never_satisfies_component_cardinality() {
     );
     assert_eq!(owner.issues()[0].container_index, None);
 }
+
+#[cfg(feature = "independent-style-blocks")]
+#[test]
+fn styles_preserve_original_membership_when_other_block_semantics_are_unavailable() {
+    let arena = Allocator::default();
+    for other in [
+        "",
+        "<script src='old.js'></script>",
+        "<template lang=pug>p Hello</template>",
+        "<script lang=coffee>n = 1</script>",
+        "<script setup>let a=1</script><script setup>let b=2</script>",
+    ] {
+        let source = alloc::format!("<style>a</style>{other}<style scoped>b</style>");
+        let owner = Vue.observe_descriptor(&arena, &source, options());
+        assert!(owner.admitted().is_err(), "{other}");
+        let selected = owner.admitted_styles().unwrap();
+        assert!(core::ptr::eq(selected.source(), source.as_str()));
+        let mut styles = selected.styles();
+        assert_eq!(styles.len(), 2);
+        for expected in ["a", "b"] {
+            let style = styles.next().unwrap();
+            let original = &owner.container().blocks[style.container_index()];
+            assert!(core::ptr::eq(original, style.original_block()));
+            assert_eq!(original.content.slice(&source), expected);
+            assert_eq!(style.block().span(), original.content);
+        }
+    }
+}
+
+#[cfg(feature = "independent-style-blocks")]
+#[test]
+fn style_selection_requires_trusted_framing_and_unambiguous_style_attributes() {
+    let arena = Allocator::default();
+    for sibling in [
+        "<style lang=scss lang=css>x</style>",
+        "<style src='external.css'>x</style>",
+        "<style lang='scss'scoped>x</style>",
+        "<style>unfinished",
+        "<template/>",
+        "<custom>unknown</custom>",
+    ] {
+        let source = alloc::format!("<script src='s'></script><style>safe</style>{sibling}");
+        let owner = Vue.observe_descriptor(&arena, &source, options());
+        let refused = owner.admitted_styles().unwrap_err();
+        assert_eq!(refused.issues(), owner.issues());
+        assert_eq!(refused.errors(), owner.container().errors.as_slice());
+    }
+}

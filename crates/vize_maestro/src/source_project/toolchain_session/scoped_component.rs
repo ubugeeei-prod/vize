@@ -192,3 +192,125 @@ fn products(
 
 #[cfg(feature = "micro-profiling")]
 mod profile;
+
+pub(super) fn current_styles(
+    docs: &DocumentStore,
+    snapshots: &SourceSnapshotCache,
+    expected: &SourceSnapshot,
+    options: NativeSfcCompileOptions<'_>,
+    expected_css: &str,
+) -> SourceQueryResult<vize_atelier_sfc::NativeStyleOutput> {
+    let (query, _) = snapshots.begin_query(docs, expected.uri()).unwrap();
+    block_on(
+        query.run_vue_descriptor(docs, options.descriptor, |snapshot, owner| {
+            assert!(core::ptr::eq(snapshot, expected));
+            check_source(owner, snapshot);
+            let rules = CssLinter::with_all_rules();
+            let (style, lint) = snapshot
+                .prepare_scss_with(docs, owner, 0, |original| {
+                    rules.lint_file_style(StyleRuleInput::Observed(original), true)
+                })
+                .unwrap();
+            assert!(!lint.diagnostics.is_empty());
+            let cursor = at(snapshot.source(), "$ink;");
+            let Some(GotoDefinitionResponse::Scalar(def)) = snapshot
+                .scss_definition(docs, style.products(), cursor)
+                .unwrap()
+            else {
+                panic!("current original definition")
+            };
+            assert_eq!(def.range.start, at(snapshot.source(), "$ink:"));
+            let arena = Allocator::default();
+            let format = FormatOptions::default();
+            let verified = style
+                .verified_format(docs, &GlyphFormatter::new(&format, &arena))
+                .unwrap();
+            assert!(verified.publish(docs).unwrap().is_none());
+            let out =
+                vize_atelier_sfc::compile_native_styles(owner, options.into(), [style.products()])
+                    .unwrap();
+            assert_eq!(out.css_document().unwrap().as_str(), expected_css);
+            let map: Value = serde_json::from_str(out.css_source_map().unwrap()).unwrap();
+            assert_eq!(
+                map["sourcesContent"],
+                serde_json::json!([snapshot.source()])
+            );
+            out
+        }),
+    )
+    .unwrap()
+}
+
+#[test]
+fn toolchain_session_style_only_rechecks_publication_even_with_an_external_script() {
+    let docs = DocumentStore::new();
+    let snapshots = SourceSnapshotCache::default();
+    let uri = Url::parse("file:///partial.vue").unwrap();
+    let options = NativeSfcCompileOptions {
+        filename: "partial.vue",
+        scope_id: Some("data-v-oracle"),
+        source_map: true,
+        ..Default::default()
+    };
+    let source = "<script src='unavailable.ts'></script>\r\n<style lang=scss scoped>$ink:red;.card{color:$ink;display:none;margin-left:4px;}</style>";
+    docs.open(uri.clone(), source.into(), 1, "vue".into());
+    let (query, _) = snapshots.begin_query(&docs, &uri).unwrap();
+    let result = block_on(query.run_vue_descriptor(
+        &docs,
+        options.descriptor,
+        |snapshot, owner| {
+            assert!(owner.admitted().is_err());
+            let (style, ()) = snapshot.prepare_scss_with(&docs, owner, 0, |_| ()).unwrap();
+            let output =
+                vize_atelier_sfc::compile_native_styles(owner, options.into(), [style.products()])
+                    .unwrap();
+            assert_eq!(
+                output.css().unwrap(),
+                ".card[data-v-oracle] {\n  color: red;\n  display: none;\n  margin-left: 4px;\n}"
+            );
+            let arena = Allocator::default();
+            let options = FormatOptions::default();
+            let glyph = GlyphFormatter::new(&options, &arena);
+            let original = owner.admitted_styles().unwrap().styles().next().unwrap();
+            let formatted = glyph.format_observed_style(original).unwrap();
+            let edit = style
+                .verified_format(&docs, &glyph)
+                .unwrap()
+                .publish(&docs)
+                .unwrap()
+                .unwrap();
+            assert_eq!(
+                (edit.text_document.uri, edit.text_document.version),
+                (uri.clone(), Some(1))
+            );
+            let [OneOf::Left(edit)] = edit.edits.as_slice() else {
+                panic!("one original stylesheet edit")
+            };
+            assert_eq!(
+                edit.range,
+                Range::new(
+                    at(source, "<style"),
+                    offset_to_position_str(source, source.len())
+                )
+            );
+            assert_eq!(edit.new_text, formatted.code.as_str());
+            snapshot.version()
+        },
+    ))
+    .unwrap();
+    apply(&docs, &uri, 2, None, "<template>新</template>");
+    assert_eq!(
+        result.publish(&docs, |_| ()),
+        Err(SnapshotRefusal::Superseded)
+    );
+    let (query, abort) = snapshots.begin_query(&docs, &uri).unwrap();
+    abort.abort();
+    assert!(matches!(
+        block_on(
+            query.run_vue_descriptor(&docs, options.descriptor, |_, _| panic!(
+                "cancelled stylesheet request"
+            ))
+        ),
+        Err(ScopedComponentQueryError::Host(SnapshotRefusal::Cancelled))
+    ));
+}

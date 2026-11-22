@@ -198,8 +198,11 @@ fn style_at<'o, 'a>(
     descriptor: &'o DescriptorObservation<'a>,
     ordinal: usize,
 ) -> Result<StyleView<'o, 'a>, StyleFormatError> {
-    descriptor
-        .admitted()
+    #[cfg(feature = "experimental-scoped-component-session")]
+    let selection = descriptor.admitted_styles();
+    #[cfg(not(feature = "experimental-scoped-component-session"))]
+    let selection = descriptor.admitted();
+    selection
         .map_err(|_| StyleFormatError::Descriptor)?
         .styles()
         .nth(ordinal)

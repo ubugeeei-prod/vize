@@ -14,6 +14,7 @@ verified-scss-edits = ["original-scss-products"]
 native-scoped-scss = [
   "native-sfc-scss",
   "vize_l1_to_l2/component-text-condense",
+  "vize_l1/independent-style-blocks",
   "vize_l4/scoped-scss",
 ]
 native-sfc-scss = ["original-scss-products", "vize_l4/indexed-source-maps"]

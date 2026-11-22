@@ -178,6 +178,9 @@ fn toolchain_session_from_one_open_buffer_through_edit_error_and_repair() {
     let damaged_owner = damaged_file.observation().descriptor();
     check_source(damaged_owner, &damaged);
     assert!(damaged_file.result().is_err());
+    #[cfg(feature = "experimental-scoped-component-session")]
+    let damaged_style =
+        scoped_component::current_styles(&docs, &snapshots, &damaged, options, &css);
     assert!(
         damaged
             .prepare_literal_products(&docs, damaged_owner, ROLE)
@@ -231,6 +234,11 @@ fn toolchain_session_from_one_open_buffer_through_edit_error_and_repair() {
             SnapshotRefusal::Superseded
         ))
     ));
+    #[cfg(feature = "experimental-scoped-component-session")]
+    assert_eq!(
+        damaged_style.publish(&docs, |_| ()),
+        Err(SnapshotRefusal::Superseded)
+    );
     let final_snapshot = snapshots.capture(&docs, &uri).unwrap();
     let actual = compile_native_sfc(&arena, final_snapshot.source(), options);
     let final_owner = actual.observation().descriptor();

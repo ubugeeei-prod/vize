@@ -28,6 +28,8 @@ module-ir = []
 component-sites = ["module-ir"]
 # Share one style block between structural rules and CSS class consumers.
 observed-styles = []
+# Check original stylesheet boundaries independently of script and template selection.
+independent-style-blocks = []
 # Inspect checker-relevant CSS binding openers on original style bytes.
 style-bindings = []
 # Arms the corpus-runnable TS-19 lane (`tests/surface_corpus.rs`),

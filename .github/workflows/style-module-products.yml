@@ -42,6 +42,9 @@ on:
       - "crates/vize_maestro/src/source_project/style_format/**"
       - "crates/vize_atelier_sfc/src/native.rs"
       - "crates/vize_atelier_sfc/src/native/styles.rs"
+      - "crates/vize_atelier_sfc/src/native/style_products.rs"
+      - "crates/vize_atelier_sfc/src/native/scope.rs"
+      - "davinci/vize_l1/src/container/vue/descriptor/style_blocks.rs"
       - "crates/vize_atelier_sfc/src/native_scoped_ssr.rs"
       - "crates/vize_atelier_sfc/tests/native_sfc_scss.rs"
       - "crates/vize_atelier_sfc/tests/component_scss/**"
@@ -156,6 +159,7 @@ jobs:
           cargo clippy "${flags[@]}" "${editor[@]}" --lib --no-deps -- -D warnings
           cargo test "${flags[@]}" "${host[@]}" --test scss_products -- --include-ignored --nocapture --test-threads=1
           cargo test "${flags[@]}" "${host[@]}" --test native_sfc_scss -- --include-ignored --nocapture --test-threads=1
+          cargo test "${flags[@]}" -p vize_l1 --features independent-style-blocks --lib container::vue::descriptor::style_tests::
           cargo test "${flags[@]}" "${editor[@]}" --lib source_project::scss:: -- --include-ignored --nocapture --test-threads=1
 
           export VIZE_FORMAT_SCSS_INPUTS="$VIZE_SCSS_MANIFEST"

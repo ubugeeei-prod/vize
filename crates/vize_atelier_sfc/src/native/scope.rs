@@ -3,13 +3,18 @@
 use super::NativeSfcCompileError;
 use std::hash::{Hash, Hasher};
 use vize_l0::String;
-use vize_l1::container::vue::AdmittedDescriptor;
 
-pub(crate) fn for_styles(
-    descriptor: AdmittedDescriptor<'_, '_>,
+pub(crate) fn for_styles<'o, 'a: 'o>(
+    #[cfg(not(feature = "native-scoped-scss"))]
+    descriptor: vize_l1::container::vue::AdmittedDescriptor<'o, 'a>,
+    #[cfg(feature = "native-scoped-scss")] descriptor: impl Into<
+        vize_l1::container::vue::CheckedStyleBlocks<'o, 'a>,
+    >,
     explicit: Option<&str>,
     filename: &str,
 ) -> Result<Option<String>, NativeSfcCompileError> {
+    #[cfg(feature = "native-scoped-scss")]
+    let descriptor = descriptor.into();
     if !descriptor
         .styles()
         .any(|style| style.attrs().iter().any(|attr| attr.name == "scoped"))

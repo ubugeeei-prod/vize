@@ -444,3 +444,8 @@ pub(super) fn observe_template_only(source: &str) -> Option<TemplateOnlyDescript
 
 #[cfg(test)]
 mod template_only_tests;
+
+#[cfg(feature = "independent-style-blocks")]
+mod style_blocks;
+#[cfg(feature = "independent-style-blocks")]
+pub use style_blocks::CheckedStyleBlocks;
