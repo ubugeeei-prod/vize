@@ -12,6 +12,17 @@ pub(super) fn compare(
     let mut usage = vize_croquis::facts::component_usage_slice(&original).iter();
     let (mut sites, mut attrs, mut bound) = (0, 0, 0);
     imports.try_for_each_in_postorder(|site| {
+        if let Some(block) = site.nonexporting_setup() {
+            let span = block.span();
+            let descriptor = vize_atelier_sfc::parse_sfc(text, Default::default()).unwrap();
+            let setup = descriptor.script_setup.unwrap();
+            assert_eq!(
+                (span.start as usize, span.end as usize),
+                (setup.loc.start, setup.loc.end)
+            );
+            assert_eq!(block.source(), setup.content.as_ref());
+            assert!(original.component_registrations.is_empty(), "{text}");
+        }
         let other = usage.next().unwrap();
         assert_eq!(
             (site.tag(), site.element_span().start),
