@@ -273,3 +273,6 @@ impl From<&vize_relief::SourceLocation> for SourceRange {
         }
     }
 }
+
+#[cfg(feature = "experimental-template-operand-products")]
+pub use generator::template_products::{TemplateOperandProducts, TemplateProductRefusal};

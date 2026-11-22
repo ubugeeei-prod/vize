@@ -33,12 +33,12 @@ surfaces and are not routine CI-refactor targets.
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 43        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 19        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 24        |
-| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 42        |
+| 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 43        |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 24        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
-| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 18        |
+| 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 19        |
 
 ## 01 Pull request orchestration
 
@@ -264,10 +264,11 @@ SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctne
 | 06.36 | Public mapper comparison                 | [`template-alias-paired-11822.yml`](./template-alias-paired-11822.yml)         |
 | 06.37 | Template expression queries              | [`template-expression-queries.yml`](./template-expression-queries.yml)         |
 | 06.38 | Template compiler global policy          | [`template-global-policy.yml`](./template-global-policy.yml)                   |
-| 06.39 | Typed context undefined contracts        | [`typed-context-undefined.yml`](./typed-context-undefined.yml)                 |
-| 06.40 | Unicode prop projection                  | [`unicode-prop-projection.yml`](./unicode-prop-projection.yml)                 |
-| 06.41 | Vapor literal object styles              | [`vapor-literal-object-styles.yml`](./vapor-literal-object-styles.yml)         |
-| 06.42 | Native Vue 2 IR template target          | [`vue2-ir-template.yml`](./vue2-ir-template.yml)                               |
+| 06.39 | Native template tool projections         | [`template-tool-projections.yml`](./template-tool-projections.yml)             |
+| 06.40 | Typed context undefined contracts        | [`typed-context-undefined.yml`](./typed-context-undefined.yml)                 |
+| 06.41 | Unicode prop projection                  | [`unicode-prop-projection.yml`](./unicode-prop-projection.yml)                 |
+| 06.42 | Vapor literal object styles              | [`vapor-literal-object-styles.yml`](./vapor-literal-object-styles.yml)         |
+| 06.43 | Native Vue 2 IR template target          | [`vue2-ir-template.yml`](./vue2-ir-template.yml)                               |
 
 ## 07 Davinci, Canon, and Level
 
@@ -372,17 +373,18 @@ Security audits, dependency upkeep, scheduled maintenance, docs, and repository 
 | 11.02 | Docs build                                  | [`build-docs.yml`](./build-docs.yml)                                       |
 | 11.03 | Clean obsolete merge groups                 | [`cleanup-obsolete-merge-groups.yml`](./cleanup-obsolete-merge-groups.yml) |
 | 11.04 | Shared client and server template decisions | [`client-server-decisions.yml`](./client-server-decisions.yml)             |
-| 11.05 | Deploy docs                                 | [`deploy-docs.yml`](./deploy-docs.yml)                                     |
-| 11.06 | Fuzz                                        | [`fuzz.yml`](./fuzz.yml)                                                   |
-| 11.07 | Language project fixture laws               | [`language-project-fixtures.yml`](./language-project-fixtures.yml)         |
-| 11.08 | Miri                                        | [`miri.yml`](./miri.yml)                                                   |
-| 11.09 | Open document block queries                 | [`open-document-blocks.yml`](./open-document-blocks.yml)                   |
-| 11.10 | Plugin and Doctor template products         | [`plugin-template-products.yml`](./plugin-template-products.yml)           |
-| 11.11 | Production reach accounting                 | [`production-reach-accounting.yml`](./production-reach-accounting.yml)     |
-| 11.12 | qs runtime security contracts               | [`qs-runtime-security.yml`](./qs-runtime-security.yml)                     |
-| 11.13 | Retained script formatting                  | [`retained-script-formatting.yml`](./retained-script-formatting.yml)       |
-| 11.14 | Retained TSRX module products               | [`retained-tsrx.yml`](./retained-tsrx.yml)                                 |
-| 11.15 | Sticky disk maintenance                     | [`sticky-disk-maintenance.yml`](./sticky-disk-maintenance.yml)             |
-| 11.16 | Versioned diagnostic fix publication        | [`versioned-fix-publication.yml`](./versioned-fix-publication.yml)         |
-| 11.17 | Generated VTS source census                 | [`vts-source-census.yml`](./vts-source-census.yml)                         |
-| 11.18 | Zizmor                                      | [`zizmor.yml`](./zizmor.yml)                                               |
+| 11.05 | Declaration source products                 | [`declaration-source-products.yml`](./declaration-source-products.yml)     |
+| 11.06 | Deploy docs                                 | [`deploy-docs.yml`](./deploy-docs.yml)                                     |
+| 11.07 | Fuzz                                        | [`fuzz.yml`](./fuzz.yml)                                                   |
+| 11.08 | Language project fixture laws               | [`language-project-fixtures.yml`](./language-project-fixtures.yml)         |
+| 11.09 | Miri                                        | [`miri.yml`](./miri.yml)                                                   |
+| 11.10 | Open document block queries                 | [`open-document-blocks.yml`](./open-document-blocks.yml)                   |
+| 11.11 | Plugin and Doctor template products         | [`plugin-template-products.yml`](./plugin-template-products.yml)           |
+| 11.12 | Production reach accounting                 | [`production-reach-accounting.yml`](./production-reach-accounting.yml)     |
+| 11.13 | qs runtime security contracts               | [`qs-runtime-security.yml`](./qs-runtime-security.yml)                     |
+| 11.14 | Retained script formatting                  | [`retained-script-formatting.yml`](./retained-script-formatting.yml)       |
+| 11.15 | Retained TSRX module products               | [`retained-tsrx.yml`](./retained-tsrx.yml)                                 |
+| 11.16 | Sticky disk maintenance                     | [`sticky-disk-maintenance.yml`](./sticky-disk-maintenance.yml)             |
+| 11.17 | Versioned diagnostic fix publication        | [`versioned-fix-publication.yml`](./versioned-fix-publication.yml)         |
+| 11.18 | Generated VTS source census                 | [`vts-source-census.yml`](./vts-source-census.yml)                         |
+| 11.19 | Zizmor                                      | [`zizmor.yml`](./zizmor.yml)                                               |

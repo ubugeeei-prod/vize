@@ -115,6 +115,9 @@ pub fn lower_sfc_native<'a>(
     NativeSfcObservation::new(descriptor, scripts, template, file, issues)
 }
 
+#[cfg(feature = "template-operand-queries")]
+mod operands;
+
 #[cfg(feature = "setup-component-imports")]
 mod component_imports;
 #[cfg(feature = "setup-component-imports")]

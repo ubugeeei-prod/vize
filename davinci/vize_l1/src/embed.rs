@@ -51,3 +51,6 @@ pub mod regions;
 
 #[cfg(feature = "authored-script-queries")]
 pub mod authored_program;
+
+#[cfg(feature = "authored-declarations")]
+pub mod declaration_program;

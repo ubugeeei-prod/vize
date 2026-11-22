@@ -9,6 +9,8 @@ description = "Maestro - Language Server Protocol implementation for Vize Vue te
 publish = false
 
 [features]
+# Share admitted template operands with Canon for explicitly selected editor products.
+experimental-template-operand-products = ["vize_canon/template-operand-projection"]
 default = ["native", "glyph"]
 glyph = ["dep:vize_glyph"]
 native = ["vize_canon/native", "retained-program"]
@@ -30,6 +32,11 @@ experimental-versioned-fixes = [
 experimental-resident-blocks = ["vize_incremental/open-block-queries"]
 # Read both the editor outline and import specifiers from each original script.
 experimental-script-queries = ["vize_l1/authored-script-queries"]
+experimental-declaration-products = [
+  "native",
+  "vize_canon/authored-declarations",
+  "vize_l1/authored-declarations",
+]
 experimental-checker-script-queries = [
   "experimental-script-queries",
   "vize_canon/authored-script-diagnostics",

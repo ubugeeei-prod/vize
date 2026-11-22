@@ -317,3 +317,9 @@ mod tests {
         assert_eq!(names(), Vec::<String>::new());
     }
 }
+
+#[cfg(feature = "experimental-declaration-products")]
+mod products;
+
+#[cfg(feature = "experimental-declaration-products")]
+pub use products::{DeclarationToolProducts, DeclarationToolRefusal};
