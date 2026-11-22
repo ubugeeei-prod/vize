@@ -11,7 +11,10 @@ use std::{
 use tower_lsp::lsp_types::Url;
 use vize_glyph::{EndOfLine, FormatOptions};
 use vize_l0::config::{VueDialect, VueVersion};
-use vize_l1::container::vue::DescriptorOptions;
+use vize_l1::container::vue::{
+    DescriptorOptions,
+    boundary::{split_blocks, tag_name_eq},
+};
 
 #[derive(Default)]
 struct Counts {
@@ -21,6 +24,26 @@ struct Counts {
     checked: usize,
     changed: usize,
     uses: usize,
+}
+
+// Use the same top-level walk as the public Glyph formatter. Offsets from the
+// original descriptor cannot identify a block after surrounding text is formatted.
+fn stock_style(source: &str, ordinal: usize) -> &str {
+    let mut seen = 0;
+    let mut selected = None;
+    split_blocks(source, |block| {
+        if tag_name_eq(block.tag_name, b"style") {
+            if seen == ordinal {
+                let loc = block.location;
+                selected = source.get(loc.tag_start..loc.tag_end);
+                return false;
+            }
+            seen += 1;
+        }
+        true
+    })
+    .unwrap();
+    selected.expect("selected style in the stock document")
 }
 
 fn examine(name: &str, text: &str, counts: &mut Counts, rows: &mut Vec<Value>) {
@@ -48,6 +71,7 @@ fn examine(name: &str, text: &str, counts: &mut Counts, rows: &mut Vec<Value>) {
         ..Default::default()
     };
     let formatter = GlyphFormatter::new(&settings, &arena);
+    let stock_document = std::cell::OnceCell::new();
     for (ordinal, style) in view.styles().enumerate() {
         let Ok(original) = ScssProducts::from_style(style) else {
             continue;
@@ -66,8 +90,19 @@ fn examine(name: &str, text: &str, counts: &mut Counts, rows: &mut Vec<Value>) {
         counts.checked += 1;
         let span = style.original_block().authored_span();
         let fragment = text.get(span.start as usize..span.end as usize).unwrap();
+        assert_eq!(
+            fragment,
+            stock_style(text, ordinal),
+            "{name} style {ordinal}"
+        );
         let stock = formatter.format(fragment).unwrap();
         let rendered = stock.code.strip_suffix('\n').unwrap();
+        let full = stock_document.get_or_init(|| formatter.format(text).unwrap());
+        assert_eq!(
+            rendered,
+            stock_style(&full.code, ordinal),
+            "{name} style {ordinal}"
+        );
         let mut newer = text.to_owned();
         if let Some(edit) = checked.publish(&docs).unwrap() {
             let [OneOf::Left(edit)] = edit.edits.as_slice() else {
@@ -84,6 +119,20 @@ fn examine(name: &str, text: &str, counts: &mut Counts, rows: &mut Vec<Value>) {
         } else {
             assert_eq!(fragment, rendered, "{name}");
         }
+        let end = span.start as usize + rendered.len();
+        assert_eq!(&newer[..span.start as usize], &text[..span.start as usize]);
+        assert_eq!(&newer[end..], &text[span.end as usize..]);
+        assert_eq!(
+            stock_style(&newer, ordinal),
+            rendered,
+            "{name} style {ordinal}"
+        );
+        let fixed = formatter.format(&newer).unwrap();
+        assert_eq!(
+            stock_style(&fixed.code, ordinal),
+            rendered,
+            "{name} style {ordinal}"
+        );
         let edited = Vue.observe_descriptor(&arena, &newer, options);
         let next = edited.admitted().unwrap().styles().nth(ordinal).unwrap();
         let after = ScssProducts::from_style(next).unwrap();
@@ -101,6 +150,20 @@ fn examine(name: &str, text: &str, counts: &mut Counts, rows: &mut Vec<Value>) {
             rows.push(json!({"name":name,"source":product.block().source(),"css":product.css().unwrap().as_str()}));
         }
     }
+}
+
+#[test]
+fn full_stock_document_selects_both_original_styles_across_other_blocks() {
+    let source = concat!(
+        "<!-- <style lang='scss'>.wrong{color:red}</style> 🦀 -->\r\n",
+        "<template><div  class='x' /></template>",
+        "<style lang='scss'>.first{color:red}</style>",
+        "<script setup>const example='<style lang=scss>.fake{}</style>'</script>",
+        "<style module lang='scss'>$v:blue;.second{color:$v}</style>"
+    );
+    let mut counts = Counts::default();
+    examine("Mixed.vue", source, &mut counts, &mut Vec::new());
+    assert_eq!((counts.selected, counts.checked, counts.changed), (2, 2, 2));
 }
 
 #[test]
