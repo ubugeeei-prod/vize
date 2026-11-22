@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main, davinci]
     paths:
-      - "crates/vize/tests/plugin_template_baseline.rs"
+      - "crates/vize/tests/plugin_template_baseline/**"
       - "npm/plugin-sdk/**"
       - "npm/devtools/**"
       - "crates/vize_vitrine/**"
@@ -15,7 +15,7 @@ on:
   push:
     branches: [main, davinci]
     paths:
-      - "crates/vize/tests/plugin_template_baseline.rs"
+      - "crates/vize/tests/plugin_template_baseline/**"
       - "npm/plugin-sdk/**"
       - "npm/devtools/**"
       - "crates/vize_vitrine/**"

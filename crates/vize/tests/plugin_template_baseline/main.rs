@@ -14,7 +14,7 @@ static ALLOCATOR: CountingAllocator<System> = CountingAllocator::system();
 
 #[test]
 fn original_component_facts_plugin_scopes_and_report_positions_share_the_authored_file() {
-    const SOURCE: &str = "<script setup>/* 🌱 */</script>\r\n<template>\r\n  <ul v-if=\"enabled\"><li v-for=\"(item, i) in rows\" :key=\"i\">{{ item }}</li></ul>\r\n</template>";
+    const SOURCE: &str = "<script setup>/* ok */</script>\r\n<template>\r\n  <ul title=\"🌱\" v-if=\"enabled\"><li v-for=\"(item, i) in rows\" :key=\"i\">{{ item }}</li></ul>\r\n</template>";
     let demands = ["templateScopes".into()];
     let mut spec = PluginSpec {
         name: "contract",
@@ -57,8 +57,13 @@ fn original_component_facts_plugin_scopes_and_report_positions_share_the_authore
         (loop_node.start, loop_node.end)
     );
     assert_eq!(
-        (mapped[0].line, mapped[0].column),
-        document.position(loop_node.start)
+        (
+            mapped[0].line,
+            mapped[0].column,
+            mapped[0].end_line,
+            mapped[0].end_column
+        ),
+        (3, 33, 3, 87)
     );
     assert_eq!(
         payload["facts"],
