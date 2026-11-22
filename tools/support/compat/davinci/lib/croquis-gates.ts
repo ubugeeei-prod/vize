@@ -36,7 +36,6 @@ export const GATES: Record<string, readonly string[]> = {
   "symbol-table": ["Croquis.symbols", "Symbol", "SymbolFlags", "SymbolId", "SymbolTable"],
   UndefinedRefs: ["Croquis.undefined_refs"],
   "template-facts": ["ComponentRegistration", "ElementIdInfo", "TemplateInfo"],
-  "effect-graph": ["EffectGraph"],
   "provide-inject": ["ProvideInjectTracker", "Croquis.provide_inject"],
   "race-conditions": ["RaceConditionTracker", "Croquis.race_conditions"],
   "reactivity-overlay": [

@@ -133,3 +133,6 @@ pub fn compile_script(
         }
     }
 }
+
+#[cfg(feature = "script-binding-products")]
+pub mod binding_products;

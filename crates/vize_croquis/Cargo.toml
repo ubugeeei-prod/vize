@@ -37,6 +37,7 @@ oxc_span.workspace = true
 oxc_allocator.workspace = true
 
 [features]
+observed-script-effects = ["vize_l2/script-declaration-queries"]
 # Davinci P1-6 differential lane: dual-runs the retained-AST expression reads
 # against the legacy re-parse paths and panics on divergence. Also active
 # under cfg(test); zero-cost when off. Deleted with the lane at P1-8.

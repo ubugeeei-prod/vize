@@ -278,3 +278,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(feature = "observed-script-effects")]
+pub use builder::observed::{ObservedEffectError, ObservedEffectScript, visit_sfc_effect_graph};

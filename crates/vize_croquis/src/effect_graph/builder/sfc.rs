@@ -63,3 +63,24 @@ pub fn build_effect_graph_from_sfc_scripts(
 
     graph
 }
+
+#[cfg(feature = "observed-script-effects")]
+impl EffectGraphScript<'_> {
+    /// Pair the authored block and declared language with its actual stock parser result.
+    pub fn with_original<'p, 'a>(
+        self,
+        syntax: &'p vize_l1::embed::authored_program::AuthoredProgram<'a>,
+    ) -> Result<super::observed::ObservedEffectScript<'p, 'a>, super::observed::ObservedEffectError>
+    {
+        use super::observed::{ObservedEffectError, ObservedEffectScript};
+        if !core::ptr::eq(self.source, syntax.block().source()) {
+            return Err(ObservedEffectError::Source);
+        }
+        if syntax.source_type() != SourceType::from_path(self.virtual_path()).unwrap_or_default() {
+            return Err(ObservedEffectError::Grammar);
+        }
+        vize_l2::query::script::ScriptDeclarations::new(syntax)
+            .map(ObservedEffectScript::new)
+            .map_err(ObservedEffectError::Syntax)
+    }
+}

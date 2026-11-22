@@ -28,6 +28,8 @@ observed-queries = []
 script-queries = ["observed-queries", "vize_l1/script-queries"]
 # Compute compiler static facts and tooling complexity in a single requested traversal.
 composed-template-analysis = []
+# Direct declaration names of one original script, including destructuring.
+script-declaration-queries = ["vize_l1/authored-script-queries"]
 
 [dependencies]
 oxc_ast = { workspace = true }
