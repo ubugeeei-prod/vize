@@ -56,6 +56,21 @@ impl VirtualTsOptions {
         mut module: impl FnMut(&str, &SfcStyleBlock<'_>, Option<&StyleObservation<'_>>),
     ) -> Result<VirtualTsOptions, SourceFrameError> {
         let root = SourceRoot::new(&descriptor.source)?;
+        let options = |template_globals, css_modules| VirtualTsOptions {
+            template_globals,
+            css_modules,
+            auto_import_stubs: Vec::new(),
+            auto_import_bindings: self.auto_import_binding_names(),
+            external_template_bindings: self.external_template_bindings.clone(),
+            reference_paths: self.reference_paths.clone(),
+            strict_instance_globals: self.strict_instance_globals,
+        };
+        if ALL && descriptor.styles.is_empty() {
+            return Ok(options(
+                self.template_globals.clone(),
+                self.css_modules.clone(),
+            ));
+        }
         // Keep the common single module beside the walk. A B-tree node would
         // otherwise stay live while other consumers check the next style.
         let mut first: Option<(&str, Option<CssModuleShape>)> = None;
@@ -135,15 +150,7 @@ impl VirtualTsOptions {
                 unknown.push(name.into());
             }
         }
-        Ok(VirtualTsOptions {
-            template_globals: globals,
-            css_modules: unknown,
-            auto_import_stubs: Vec::new(),
-            auto_import_bindings: self.auto_import_binding_names(),
-            external_template_bindings: self.external_template_bindings.clone(),
-            reference_paths: self.reference_paths.clone(),
-            strict_instance_globals: self.strict_instance_globals,
-        })
+        Ok(options(globals, unknown))
     }
 }
 
