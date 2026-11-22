@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/ir-pass-composition.yml"
+      - "tools/benchmarks/crates/davinci_harness/src/paired.rs"
       - "davinci/vize_l0/Cargo.toml"
       - "davinci/vize_l0/src/pass.rs"
       - "davinci/vize_l0/src/pass/**"
@@ -61,7 +62,7 @@ jobs:
       RUST_MIN_STACK: "16777216"
       CARGO_INCREMENTAL: "0"
       MODE: ${{ matrix.mode }}
-      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      TARGET_SHA: ${{ github.event.pull_request.base.sha }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -72,13 +73,17 @@ jobs:
         with: { wild-version: "0.9.0" }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version: 24 }
-      - name: Compare the shipping entry points against the base build
+      - name: Compare the shipping entry points against the common base
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          git fetch --no-tags --depth=1 origin "$BASE_SHA" "$HEAD_SHA"
-          node tools/commands/levels/codegen-equivalence.ts "$BASE_SHA" "$HEAD_SHA" vize bin:vize "$MODE" "$RUNNER_TEMP/cli.json"
+          base=$(gh api "repos/$GITHUB_REPOSITORY/compare/$TARGET_SHA...$HEAD_SHA" --jq .merge_base_commit.sha)
+          [[ "$base" =~ ^[a-f0-9]{40}$ ]]
+          git fetch --no-tags --depth=1 origin "$base" "$HEAD_SHA"
+          node tools/commands/levels/codegen-equivalence.ts "$base" "$HEAD_SHA" vize bin:vize "$MODE" "$RUNNER_TEMP/cli.json"
           status=0
-          node tools/commands/levels/codegen-equivalence.ts "$BASE_SHA" "$HEAD_SHA" vize_vitrine node-addon "$MODE" "$RUNNER_TEMP/addon.json" --control-plugin-identity || status=$?
+          node tools/commands/levels/codegen-equivalence.ts "$base" "$HEAD_SHA" vize_vitrine node-addon "$MODE" "$RUNNER_TEMP/addon.json" --control-plugin-identity || status=$?
           if ((status != 0)); then
             test "$status" = 1
             node tools/commands/levels/native-addon-identity.ts "$RUNNER_TEMP/addon.json"

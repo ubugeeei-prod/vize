@@ -3,7 +3,8 @@
 #![cfg(feature = "streamed-pass-groups")]
 
 use davinci_harness::alloc::{CountingAllocator, mark_installed, measure_returning};
-use std::{alloc::System, hint::black_box, time::Instant};
+use davinci_harness::paired::assert_paired_time;
+use std::{alloc::System, hint::black_box};
 use vize_l0::{
     Span,
     pass::{
@@ -176,32 +177,13 @@ fn linear_group_dispatch_cost() {
         for sample in [old.unwrap(), new.unwrap()] {
             assert_eq!((sample.calls, sample.peak_bytes_over_start), (0, 0));
         }
-        let time = |stream| {
-            let start = Instant::now();
-            for _ in 0..128 {
-                black_box(run(stream));
-            }
-            start.elapsed().as_nanos() / 128
-        };
-        let (mut old, mut new) = (Vec::new(), Vec::new());
-        for round in 0..35 {
-            let stream = round % 2 != 0;
-            let x = time(stream);
-            let y = time(!stream);
-            if round >= 4 {
-                old.push(if stream { y } else { x });
-                new.push(if stream { x } else { y });
-            }
-        }
-        old.sort_unstable();
-        new.sort_unstable();
-        println!(
-            "grouped passes={} walks={} median_ns={}/{} allocations=0/0 peak_bytes=0/0",
+        let label = format!(
+            "grouped passes={} walks={} allocations=0/0 peak_bytes=0/0",
             passes.len(),
-            pipeline.group_count(),
-            old[15],
-            new[15]
+            pipeline.group_count()
         );
-        assert!(new[15] <= old[15]);
+        assert_paired_time(&label, 128, |stream| {
+            black_box(run(stream));
+        });
     }
 }
