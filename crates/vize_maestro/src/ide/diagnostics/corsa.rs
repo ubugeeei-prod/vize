@@ -32,3 +32,6 @@ mod relative_import_tests;
 mod semantic_link_tests;
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "experimental-ambient-project")]
+pub(super) mod ambient_project;

@@ -23,6 +23,7 @@ experimental-source-folding = []
 experimental-sfc-folding = []
 # Optional genuine native edit and original Program observation adapters.
 experimental-source-project = []
+experimental-ambient-project = ["native", "vize_canon/ambient-project-declarations"]
 # Publish an explicitly selected diagnostic fix batch against its original open revision.
 experimental-versioned-fixes = [
   "experimental-source-project",

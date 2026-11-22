@@ -27,6 +27,19 @@ on:
       - "crates/vize_maestro/src/server.rs"
       - "crates/vize_maestro/src/server/state.rs"
       - "crates/vize_maestro/src/server/state/workspace_project_files.rs"
+      - "crates/vize_maestro/src/server/state/workspace_project_files/**"
+      - "crates/vize_maestro/src/server/state/global_components*"
+      - "crates/vize_maestro/src/server/state/global_components/**"
+      - "crates/vize_maestro/src/ide/diagnostics.rs"
+      - "crates/vize_maestro/src/ide/diagnostics/corsa*"
+      - "crates/vize_maestro/src/ide/diagnostics/corsa/**"
+      - "crates/vize_canon/src/corsa_bridge.rs"
+      - "crates/vize_canon/src/corsa_bridge/bridge.rs"
+      - "crates/vize_canon/src/batch/virtual_project.rs"
+      - "crates/vize_canon/src/batch/virtual_project/ambient_declarations*"
+      - "crates/vize_canon/src/corsa_bridge/editor_session.rs"
+      - "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/build.rs"
+      - "tests/_fixtures/differential/typechecker/ambient-global-slot-host-3011/**"
       - "crates/vize_maestro/src/server/state/global_tag_names*"
       - "crates/vize_maestro/src/server/state/global_tag_names/**"
       - "crates/vize_maestro/src/source_project/snapshot.rs"
@@ -111,3 +124,33 @@ jobs:
           cargo clippy "${flags[@]}" --no-deps -- -D warnings
           cargo test --locked --profile ci-opt --lib -p vize_l2 --features script-declaration-queries query::script::declaration::
           cargo test "${flags[@]}" plain_exports::observed:: -- --include-ignored --nocapture --test-threads=1
+
+  ambient-component-project:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+      VIZE_TEST_REQUIRE_TSGO: "1"
+      VIZE_TEST_TSGO_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0", components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af
+        with:
+          { node-version-file: package.json, cache: true, run-install: false, cache-save: false }
+      - run: vp install --frozen-lockfile --prefer-offline
+      - name: Check authored ambient components in live native editor sessions
+        run: |
+          set -euo pipefail
+          "$VIZE_TEST_TSGO_PATH" --version
+          flags=(--locked --profile ci-opt -p vize_maestro --features experimental-ambient-project --lib)
+          cargo clippy --locked --profile ci-opt -p vize_canon --features ambient-project-declarations --lib --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" --no-deps -- -D warnings
+          cargo test --locked --profile ci-opt -p vize_canon --features ambient-project-declarations --lib virtual_project::ambient_declarations::
+          cargo test "${flags[@]}" corsa::ambient_project:: -- --include-ignored --nocapture --test-threads=1

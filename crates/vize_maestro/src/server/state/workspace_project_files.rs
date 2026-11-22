@@ -384,3 +384,30 @@ async fn background<T: Send + 'static>(work: impl FnOnce() -> T + Send + 'static
 mod membership_tests;
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "experimental-ambient-project")]
+impl ServerState {
+    pub(crate) async fn read_closed_declarations(
+        &self,
+        paths: Vec<PathBuf>,
+    ) -> std::io::Result<Vec<(PathBuf, Arc<String>)>> {
+        self.workspace_project_files
+            .worker
+            .run(move || {
+                paths
+                    .into_iter()
+                    .map(|path| {
+                        let text = std::fs::read_to_string(&path).map_err(|error| {
+                            std::io::Error::new(
+                                error.kind(),
+                                vize_l0::cstr!("{}: {error}", path.display()).as_str(),
+                            )
+                        })?;
+                        Ok((path, Arc::new(text)))
+                    })
+                    .collect()
+            })
+            .await
+            .ok_or_else(|| std::io::Error::other("declaration reader stopped"))?
+    }
+}

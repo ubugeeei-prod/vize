@@ -87,6 +87,7 @@ pub(super) fn build_with_import_facts(
     });
 
     let mut project = VirtualProject::new(&root).map_err(bridge_error)?;
+    #[cfg(not(feature = "ambient-project-declarations"))]
     project.set_virtual_ts_options(environment.virtual_ts_options.clone());
     project.set_options_api(options.options_api);
     project.set_legacy_vue2(options.legacy_vue2);
@@ -119,6 +120,22 @@ pub(super) fn build_with_import_facts(
     );
     project.scope_editor_namespace(environment.editor_session.root()?, namespace_identity);
     project.set_session_script_registration(true);
+    #[cfg(feature = "ambient-project-declarations")]
+    let virtual_ts_options = {
+        let mut selected = environment.virtual_ts_options.clone();
+        if environment
+            .editor_session
+            .ambient_declarations
+            .get()
+            .is_some()
+        {
+            project
+                .project_declaration_references(&mut selected, revision.requested_sources)
+                .map_err(bridge_error)?;
+        }
+        project.set_virtual_ts_options(selected.clone());
+        selected
+    };
     project.set_editor_document_options(
         crate::batch::virtual_project::VueDocumentVirtualTsOptions {
             options_api: options.options_api,
@@ -351,7 +368,10 @@ pub(super) fn build_with_import_facts(
         refreshed_sources,
         host_facts,
         mirror,
+        #[cfg(not(feature = "ambient-project-declarations"))]
         virtual_ts_options: environment.virtual_ts_options.clone(),
+        #[cfg(feature = "ambient-project-declarations")]
+        virtual_ts_options,
         configured_global_template_ref,
         query_surface: Default::default(),
     })

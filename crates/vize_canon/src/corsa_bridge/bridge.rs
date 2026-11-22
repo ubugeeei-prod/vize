@@ -361,3 +361,18 @@ mod tests {
         assert_eq!(locations[0].range.end.character, 21);
     }
 }
+
+#[cfg(feature = "ambient-project-declarations")]
+impl CorsaBridge {
+    /// Start a separate editor session in which workspace declarations supplied in
+    /// both the reference paths and the request's original sources resolve inside
+    /// the same private module graph as the generated Vue host.
+    pub fn with_ambient_declaration_project(config: CorsaBridgeConfig) -> Self {
+        let bridge = Self::with_config(config);
+        bridge
+            .editor_session
+            .ambient_declarations
+            .get_or_init(|| ());
+        bridge
+    }
+}

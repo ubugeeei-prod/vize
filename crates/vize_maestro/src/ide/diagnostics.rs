@@ -119,3 +119,6 @@ pub mod sources {
     pub const COMPONENTS: &str = "vize/components";
     pub const MUSEA: &str = "vize/musea";
 }
+
+#[cfg(feature = "experimental-ambient-project")]
+pub use corsa::ambient_project::{AmbientComponentProject, AmbientProjectError};
