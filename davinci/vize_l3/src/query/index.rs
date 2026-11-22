@@ -1,4 +1,4 @@
-use super::{Direction, GraphError, L3Ir, Op, Positions, ReachQuery, ReachStep, StateEdge};
+use super::{Direction, GraphError, L3Ir, Op, OpId, Positions, ReachQuery, ReachStep, StateEdge};
 use alloc::{borrow::Cow, vec, vec::Vec};
 
 const END: u32 = u32::MAX;
@@ -73,6 +73,12 @@ impl<'p> OpGraph<'p> {
         }
     }
 
+    /// Read the operation from the same original graph as its relationships.
+    #[must_use]
+    pub fn operation(&self, id: OpId) -> Option<&Op> {
+        self.ops.get(self.positions.get(id)?)
+    }
+
     /// Validate against the retained original rows, independently of the index.
     pub fn check(
         &self,
@@ -80,6 +86,15 @@ impl<'p> OpGraph<'p> {
         steps: &[ReachStep],
     ) -> Result<(), super::CertificateError> {
         super::check::check_rows(&self.ops, &self.edges, query, steps)
+    }
+
+    /// Check a complete trail response against the original rows of this graph.
+    pub fn check_two_hop(
+        &self,
+        query: super::TwoHopQuery,
+        rows: &[super::TwoHopMatch],
+    ) -> Result<(), super::TrailError> {
+        super::trail::check_rows(&self.ops, &self.edges, query, rows)
     }
 
     fn incident_at(

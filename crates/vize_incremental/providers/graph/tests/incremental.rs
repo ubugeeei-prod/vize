@@ -197,12 +197,16 @@ fn original_template_graphs_follow_the_same_toolchain_session() {
     let mut db = ResidentDatabase::default();
     let file = db.open("Setup雪🌸.vue", revisions[0]);
     let first = read(&db, file, revisions[0], Lang::Ts);
+    let original_trails = current_trails::read(&db, file, revisions[0]);
+    assert_eq!(original_trails.len(), 20);
     assert!(!first.0.is_empty());
     assert_eq!(executions(&db), (1, 1));
     let mut previous = first.2.clone();
     for (i, text) in revisions[1..].iter().enumerate() {
         db.edit(file, text);
         let updated = read(&db, file, text, Lang::Ts);
+        let trails = current_trails::read(&db, file, text);
+        assert_eq!(trails, original_trails);
         assert_eq!(updated.0, first.0);
         assert_eq!(updated.1, first.1);
         if i >= 3 {
@@ -223,6 +227,8 @@ fn original_template_graphs_follow_the_same_toolchain_session() {
     assert_ne!(changed, revisions[3]);
     db.edit(file, &changed);
     let updated = read(&db, file, &changed, Lang::Ts);
+    let changed_trails = current_trails::read(&db, file, &changed);
+    assert_ne!(changed_trails, original_trails);
     assert_eq!(executions(&db), (1, 1));
     let fresh = ResidentDatabase::default();
     assert_eq!(
@@ -235,3 +241,9 @@ fn original_template_graphs_follow_the_same_toolchain_session() {
         updated
     );
 }
+
+#[path = "incremental/trails.rs"]
+mod trails;
+
+#[path = "incremental/current_trails.rs"]
+mod current_trails;

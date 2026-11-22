@@ -8,6 +8,9 @@ use vize_l3::{
     query::{Direction, EdgeKinds, OpGraph, ReachQuery, ReachStep},
 };
 
+#[path = "profile/trails.rs"]
+mod trails;
+
 #[global_allocator]
 static ALLOCATOR: CountingAllocator = CountingAllocator::mimalloc();
 
@@ -213,6 +216,9 @@ fn batch_profile() {
 
 fn main() {
     alloc::mark_installed();
+    for siblings in [4, 32, 128] {
+        trails::profile(siblings);
+    }
     batch_profile();
     profile("<div/>", "one");
     profile(
