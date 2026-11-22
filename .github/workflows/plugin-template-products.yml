@@ -11,6 +11,8 @@ on:
       - "crates/vize_croquis/src/sfc/**"
       - "crates/vize_croquis_cf/Cargo.toml"
       - "crates/vize_croquis_cf/src/analyzer/core/files.rs"
+      - "crates/vize_croquis_cf/src/analyzer/core/files/**"
+      - "crates/vize_croquis_cf/src/analyzer/core/deps.rs"
       - "crates/vize_croquis_cf/src/rules/complexity/**"
       - "crates/vize_doctor/src/application_analysis*"
       - "crates/vize_doctor/src/application_analysis/**"
