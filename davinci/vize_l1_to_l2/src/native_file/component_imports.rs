@@ -124,8 +124,9 @@ impl<'o, 'a> SetupComponentImports<'o, 'a> {
                 let end = site.element_span().end;
                 if tail.first().is_some_and(|s| s.name_span().start < end) {
                     let after = tail.partition_point(|s| s.name_span().start < end);
-                    vize_l0::ensure_sufficient_stack(|| region(&tail[..after], visit))?;
-                    sites = &tail[after..];
+                    let (children, siblings) = tail.split_at(after);
+                    vize_l0::ensure_sufficient_stack(|| region(children, visit))?;
+                    sites = siblings;
                 } else {
                     sites = tail;
                 }
