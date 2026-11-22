@@ -236,11 +236,16 @@ async function main([base, head, pkg, product, mode, report, ...extra]: string[]
     let executables;
     if (second.executable && changed.includes("executable")) {
       const directory = fs.mkdtempSync(path.resolve(report) + ".executables-");
-      for (const [side, source] of [
-        ["base", saved],
-        ["head", second.executable],
-      ]) {
-        fs.copyFileSync(source, path.join(directory, side), fs.constants.COPYFILE_FICLONE);
+      try {
+        for (const [side, source] of [
+          ["base", saved],
+          ["head", second.executable],
+        ]) {
+          fs.copyFileSync(source, path.join(directory, side), fs.constants.COPYFILE_FICLONE);
+        }
+      } catch (error) {
+        fs.rmSync(directory, { recursive: true, force: true });
+        throw error;
       }
       const relative = path.relative(path.dirname(path.resolve(report)), directory);
       executables = { base: path.join(relative, "base"), head: path.join(relative, "head") };

@@ -71,8 +71,12 @@ jobs:
         if: always()
         with:
           name: tool-codegen-${{ matrix.mode }}
-          path: |
-            ${{ runner.temp }}/codegen-${{ matrix.mode }}.json
-            ${{ runner.temp }}/codegen-${{ matrix.mode }}.json.executables-*/*
+          path: ${{ runner.temp }}/codegen-${{ matrix.mode }}.json
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: failure() && startsWith(env.PRODUCT, 'bin:')
+        with:
+          name: tool-executable-difference-${{ matrix.mode }}
+          path: ${{ runner.temp }}/codegen-${{ matrix.mode }}.json.executables-*/*
           retention-days: 7
           if-no-files-found: ignore
