@@ -7,7 +7,7 @@ import { test } from "node:test";
 import type { VizePluginState } from "./state.ts";
 import { transformHook } from "./load.ts";
 import { toPluginVisibleVirtualId, toVirtualId } from "../virtual.ts";
-import { transformCachedSfcModule } from "../test/sfc-module.ts";
+import { loadSfcModule, transformCachedSfcModule } from "../test/sfc-module.ts";
 
 const ENV_FLAGS = "/src/EnvFlags.vue";
 
@@ -71,6 +71,31 @@ void test("the compile stage, not the pre stage, inlines a virtual SFC module's 
     );
     assert.match(compiled.code, /import\.meta\.hot/, `${id}: import.meta.hot stays for Vite HMR`);
     assert.equal(compiled.map, null, `${id}: no map is allocated for a module without one`);
+  }
+});
+
+void test("#13503 Istanbul's uncovered-file request compiles the original Vue component", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vitest-coverage-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const file = path.join(root, "Untested.vue");
+  const source =
+    '<script setup lang="ts">const label = "untested"</script>\n<template><p>{{ label }}</p></template>';
+  fs.writeFileSync(file, source);
+  const state = { ...stateWithEnvFlags(), root, server: null };
+  const query = "cache=123-0&vitest-uncovered-coverage=true";
+
+  const uncovered = await loadSfcModule(state, `${file}?${query}`, { ssr: true });
+  assert.ok(uncovered);
+  assert.match(uncovered.code, /ssrRender/);
+  assert.ok(uncovered.map?.sourcesContent?.includes(source));
+  assert.deepEqual(uncovered, await loadSfcModule(state, file, { ssr: true }));
+  for (const other of [
+    "cache=123-0",
+    "vitest-uncovered-coverage=false",
+    `raw&${query}`,
+    `vue&type=script&${query}`,
+  ]) {
+    assert.equal(await loadSfcModule(state, `${file}?${other}`), null);
   }
 });
 
