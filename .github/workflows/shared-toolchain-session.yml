@@ -5,6 +5,7 @@ on:
       - ".github/workflows/shared-toolchain-session.yml"
       - "crates/vize_maestro/src/source_project/toolchain_session.rs"
       - "crates/vize_incremental/providers/graph/tests/incremental.rs"
+      - "crates/vize_atelier_sfc/tests/bundler_toolchain_session.rs"
       - "tests/fixtures/shared-toolchain/**"
   workflow_dispatch:
 permissions: { contents: read }
@@ -37,6 +38,8 @@ jobs:
           cargo clippy "${flags[@]}" --no-deps -- -D warnings
           cargo test "${flags[@]}" toolchain_session_from_one_open_buffer -- --nocapture
           cargo test "${flags[@]}" source_project::style_format::composition:: -- --include-ignored --nocapture --test-threads=1
+          test -s "$VIZE_TOOLCHAIN_HISTORY"
+          cargo test --locked --profile ci-opt -p vize_atelier_sfc --features bundler-block-products --test bundler_toolchain_session -- --ignored --nocapture
           cargo test --locked --profile ci-opt --manifest-path crates/vize_incremental/providers/graph/Cargo.toml --test incremental original_template_graphs_follow_the_same_toolchain_session -- --ignored --nocapture
   stock:
     name: Stock CLI and packaged Node addon (${{ matrix.mode }})
