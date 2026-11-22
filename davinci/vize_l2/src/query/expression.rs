@@ -134,3 +134,8 @@ fn visit_rows<'f, 'a>(
 mod index;
 #[cfg(feature = "position-index")]
 pub use index::ExpressionPositionIndex;
+
+#[cfg(feature = "template-operand-queries")]
+mod operand;
+#[cfg(feature = "template-operand-queries")]
+pub use operand::{ResolvedTemplateOperand, TemplateOperandKind};

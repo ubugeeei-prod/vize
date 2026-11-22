@@ -18,6 +18,7 @@ name = "vize"
 path = "src/lib.rs"
 
 [features]
+plugin-template-facts = ["vize_patina/plugin-template-facts"]
 # Untimed source custody only; never enabled by default or in shipping builds.
 cache-custody = ["vize_canon/cache-custody"]
 default = ["glyph", "maestro"]
@@ -144,3 +145,8 @@ workspace = true
 [[test]]
 name = "plugin_template_baseline"
 path = "tests/plugin_template_baseline/main.rs"
+
+[[test]]
+name = "plugin_template_products"
+path = "tests/plugin_template_products/main.rs"
+required-features = ["plugin-template-facts"]

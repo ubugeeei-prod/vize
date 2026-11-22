@@ -106,6 +106,11 @@ fn a_refused_expression_invalidates_earlier_uses() {
     let model = Model::new(&file);
     let mut calls = 0;
     let error = TemplateQueryError::Position(PositionQueryError::IncompleteFile);
+    #[cfg(feature = "template-operand-queries")]
+    assert_eq!(
+        model.for_each_resolved_template_operand(|_| calls += 1),
+        Err(error)
+    );
     assert_eq!(
         model.for_each_expression_reference(|_| calls += 1),
         Err(error)

@@ -1,0 +1,69 @@
+name: Plugin and Doctor template products
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/plugin-template-products.yml"
+      - "crates/vize/Cargo.toml"
+      - "crates/vize/src/plugin_template.rs"
+      - "crates/vize/tests/plugin_template_products/**"
+      - "crates/vize_patina/src/plugin_batch/**"
+      - "crates/vize_patina/Cargo.toml"
+      - "crates/vize_croquis/src/sfc/**"
+      - "crates/vize_croquis_cf/src/rules/complexity/template.rs"
+      - "davinci/vize_l1_to_l2/src/pass/cfg*"
+      - "davinci/vize_l1_to_l2/src/pass/cfg/**"
+      - "davinci/vize_l1_to_l2/src/dialect/vue/lower.rs"
+      - "davinci/vize_l2/src/analysis/template_complexity*"
+      - "davinci/vize_l2/src/analysis/template_complexity/**"
+permissions: { contents: read }
+concurrency:
+  group: plugin-template-products-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  plugin-products:
+    name: Plugin and Doctor ${{ matrix.suite }}
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [correctness, performance]
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUST_MIN_STACK: "16777216"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0", components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: plugin-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
+      - name: Select original Vue documents
+        run: git ls-files -z -- '*.vue' '*.vue.txt' > "$RUNNER_TEMP/plugin-templates"
+      - name: Compare original SDK reports and Doctor component records
+        if: matrix.suite == 'correctness'
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt)
+          suite=(-p vize --features plugin-template-facts --test plugin_template_products)
+          export VIZE_PLUGIN_TEMPLATE_INPUTS="$RUNNER_TEMP/plugin-templates"
+          cargo clippy "${flags[@]}" -p vize_patina --features plugin-template-facts --lib --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" -p vize --features plugin-template-facts --lib --no-deps -- -D warnings
+          cargo test "${flags[@]}" -p vize_patina --features plugin-template-facts --lib plugin_batch::
+          cargo test "${flags[@]}" -p vize_doctor --features application-analysis --test application_complexity
+          cargo test "${flags[@]}" "${suite[@]}" -- --test-threads=1
+          cargo test "${flags[@]}" "${suite[@]}" original_packets_and_component_records_match -- --ignored --nocapture --test-threads=1
+      - name: Measure complete plugin and Doctor responses
+        if: matrix.suite == 'performance'
+        run: |
+          set -euo pipefail
+          export VIZE_PLUGIN_TEMPLATE_INPUTS="$RUNNER_TEMP/plugin-templates"
+          cargo test --locked --profile ci-opt -p vize --features plugin-template-facts --test plugin_template_products measure_complete_plugin_and_component_responses -- --ignored --nocapture --test-threads=1
