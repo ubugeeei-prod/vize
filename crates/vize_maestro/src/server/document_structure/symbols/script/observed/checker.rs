@@ -64,3 +64,6 @@ fn position_on_line(prefix: &str, line: usize) -> Option<Position> {
         utf16_len(prefix.get(start..)?) as u32,
     ))
 }
+
+#[cfg(feature = "experimental-script-tools")]
+mod tools;

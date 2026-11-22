@@ -149,12 +149,18 @@ test("editor script qualification runs the original readers and paired measureme
   const scriptRules = ["authored-script-rules"];
   invocation("clippy", "vize_patina", scriptRules, lint);
   invocation("test", "vize_patina", scriptRules, ["rules::script::authored"], "--doc");
+  const tools = ["experimental-script-tools", "micro-profiling"];
+  invocation("test", "vize_l1", ["authored-script-queries"], ["embed::authored_program::tests"]);
+  invocation("clippy", "vize_glyph", ["observed-template"], lint);
+  invocation("test", "vize_glyph", ["observed-template"], ["formatter::"]);
+  invocation("clippy", "vize_maestro", tools, lint);
   const checker = ["authored-script-diagnostics"];
   const combined = ["experimental-checker-script-queries", "micro-profiling"];
   invocation("clippy", "vize_canon", checker, lint);
   invocation("clippy", "vize_maestro", combined, lint);
   for (const corpus of [
     invocation("test", "vize_patina", scriptRules, ["authored_script_rules"], "--test"),
+    invocation("test", "vize_maestro", tools, ["source_project::script_queries::tools::"]),
     invocation("test", "vize_maestro", editor, ["source_project::script_queries::"]),
     invocation("test", "vize_canon", checker, ["script_parse::"]),
     invocation("test", "vize_maestro", combined, ["source_project::script_queries::"]),

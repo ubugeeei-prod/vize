@@ -45,9 +45,9 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 pub struct NoGetCurrentInstance;
 
 impl ScriptRule for NoGetCurrentInstance {
-    fn meta(&self) -> &'static ScriptRuleMeta {
-        &META
-    }
+    // A local alias still spells the exported name at its import. Escaped
+    // identifiers take the full visitor in the authored-program runner.
+    super::rule_with_authored_spelling!(META, "getCurrentInstance");
 
     #[inline]
     fn uses_ast(&self) -> bool {

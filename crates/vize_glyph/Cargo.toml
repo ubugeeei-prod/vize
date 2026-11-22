@@ -11,6 +11,8 @@ publish = false
 [features]
 # Share a formatting result for an observed program and immutable settings.
 retained-script = []
+# Format a complete document from its original single-template observation.
+observed-template = []
 
 [dependencies]
 # Internal crates

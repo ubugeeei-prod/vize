@@ -5,7 +5,7 @@ mod after_await;
 #[cfg(feature = "authored-script-rules")]
 mod authored;
 #[cfg(feature = "authored-script-rules")]
-pub use authored::ScriptLintRefusal;
+pub use authored::{AuthoredScriptRules, ScriptLintRefusal};
 mod component_options;
 mod component_options_name_casing;
 mod composition_api;
@@ -289,6 +289,14 @@ pub trait ScriptRule: Send + Sync {
     fn runs_on_script_setup(&self) -> bool {
         true
     }
+
+    /// An unescaped spelling required by every diagnostic from this standalone rule.
+    /// Aliases must require the spelling at their declaration. Rules without that
+    /// guarantee inspect their original Program on every successful parse.
+    #[cfg(feature = "authored-script-rules")]
+    fn required_authored_spelling(&self) -> Option<&'static str> {
+        None
+    }
 }
 
 /// A configured script rule's independent template capability.
@@ -311,3 +319,19 @@ pub struct ScriptLinter {
 
 #[cfg(test)]
 mod tests;
+
+// Couple the opt-in scan's required spelling to the concrete rule that owns
+// the metadata. A custom rule can reuse a name without acquiring this capability.
+macro_rules! rule_with_authored_spelling {
+    ($meta:ident, $spelling:literal) => {
+        fn meta(&self) -> &'static super::ScriptRuleMeta {
+            &$meta
+        }
+
+        #[cfg(feature = "authored-script-rules")]
+        fn required_authored_spelling(&self) -> Option<&'static str> {
+            Some($spelling)
+        }
+    };
+}
+use rule_with_authored_spelling;

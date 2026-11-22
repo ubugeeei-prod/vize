@@ -38,3 +38,70 @@ impl<'a> AuthoredProgram<'a> {
         &self.parsed
     }
 }
+
+/// Parse each requested stock grammar once for this block, in first-request order.
+/// An absent profile needs no parse. The callback owns its original Program for
+/// the duration of the group so a final tool can consume it after read-only passes.
+/// A failed reader stops the schedule before any later grammar is parsed.
+pub fn visit_authored_profiles<E>(
+    block: SourceBlock<'_>,
+    profiles: &[Option<SourceType>],
+    mut read: impl for<'p> FnMut(AuthoredProgram<'p>) -> Result<(), E>,
+) -> Result<(), E> {
+    let mut arena = Allocator::default();
+    let mut first = true;
+    for (i, &profile) in profiles.iter().enumerate() {
+        if let Some(grammar) = profile
+            && profiles.iter().take(i).all(|previous| *previous != profile)
+        {
+            if !first {
+                let used = arena.allocated_bytes();
+                arena.reset();
+                if arena.as_oxc().capacity() < used {
+                    drop(arena);
+                    arena = Allocator::with_capacity(used);
+                }
+            }
+            first = false;
+            read(AuthoredProgram::parse(&arena, block, grammar))?;
+        }
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use vize_l0::SourceRoot;
+
+    #[test]
+    fn one_original_per_requested_grammar_and_no_parse_after_refusal() {
+        let source = "<script>const x: number = 1</script>";
+        let root = SourceRoot::new(source).unwrap();
+        let block = root.block(&source[8..27], 8).unwrap();
+        let js = Some(SourceType::mjs());
+        let ts = Some(SourceType::ts());
+        let mut reads = alloc::vec::Vec::new();
+        let result = visit_authored_profiles(
+            block,
+            &[None, js, js, ts, None, Some(SourceType::tsx())],
+            |syntax| {
+                assert!(core::ptr::eq(syntax.block().root_source(), source));
+                assert!(core::ptr::eq(syntax.block().source(), block.source()));
+                reads.push((syntax.source_type(), syntax.parsed().diagnostics.is_empty()));
+                if Some(syntax.source_type()) == ts {
+                    Err(7)
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        assert_eq!(result, Err(7));
+        assert_eq!(
+            reads,
+            [(SourceType::mjs(), false), (SourceType::ts(), true)]
+        );
+        visit_authored_profiles::<()>(block, &[None, None], |_| panic!("unexpected parse"))
+            .unwrap();
+    }
+}

@@ -1,6 +1,8 @@
 //! Run the configured standalone rules on a Program already read by another tool.
-use super::{ScriptLintResult, ScriptLinter, SfcScriptContext, script_source_type};
-use oxc_span::SourceType;
+use super::{ScriptLintResult, ScriptLinter, SfcScriptContext};
+use oxc_ast::ast::Program;
+use oxc_span::{FileExtension, SourceType};
+use vize_l0::SourceBlock;
 use vize_l1::embed::authored_program::AuthoredProgram;
 
 /// The supplied parse cannot drive the configured AST-based rules.
@@ -10,14 +12,29 @@ pub enum ScriptLintRefusal {
     DifferentGrammar,
 }
 
+/// The parser demand of one block's configured standalone rule pass.
+pub struct AuthoredScriptRules<'l> {
+    linter: &'l ScriptLinter,
+    grammar: Option<SourceType>,
+}
+
 impl ScriptLinter {
+    /// Inspect parser demand once before scheduling the readers of this block.
+    #[must_use]
+    pub fn authored_rules(&self) -> AuthoredScriptRules<'_> {
+        AuthoredScriptRules {
+            linter: self,
+            grammar: self.authored_source_type(),
+        }
+    }
+
     /// Parser demand for this rule list. Byte-only rules read the authored block directly.
     #[must_use]
     pub fn authored_source_type(&self) -> Option<SourceType> {
         self.rules
             .iter()
             .any(|rule| rule.uses_ast())
-            .then(script_source_type)
+            .then(|| SourceType::from(FileExtension::Ts))
     }
 
     /// Run the configured standalone rules after the other syntax readers.
@@ -38,21 +55,60 @@ impl ScriptLinter {
         &self,
         syntax: AuthoredProgram<'_>,
     ) -> Result<ScriptLintResult, ScriptLintRefusal> {
-        let block = syntax.block();
+        self.authored_rules().lint_authored(syntax)
+    }
+}
+
+impl AuthoredScriptRules<'_> {
+    /// The complete parser profile required for this block, when any rule needs syntax.
+    #[must_use]
+    pub const fn source_type(&self) -> Option<SourceType> {
+        self.grammar
+    }
+
+    /// A caller without shared syntax can request the complete standalone result.
+    pub fn lint_source(&self, block: SourceBlock<'_>) -> ScriptLintResult {
+        if self.grammar.is_some() {
+            return self.linter.lint(block.source(), block.start() as usize);
+        }
+        self.run(block, None)
+    }
+
+    /// Consume the original parse after read-only clients have finished.
+    pub fn lint_authored(
+        &self,
+        syntax: AuthoredProgram<'_>,
+    ) -> Result<ScriptLintResult, ScriptLintRefusal> {
         if self
-            .authored_source_type()
+            .grammar
             .is_some_and(|grammar| grammar != syntax.source_type())
         {
             return Err(ScriptLintRefusal::DifferentGrammar);
         }
         let parsed = syntax.parsed();
         let clean = !parsed.panicked && parsed.diagnostics.is_empty();
+        Ok(self.run(syntax.block(), clean.then_some(&parsed.program)))
+    }
+
+    fn run<'p>(
+        &self,
+        block: SourceBlock<'_>,
+        program: Option<&'p Program<'p>>,
+    ) -> ScriptLintResult {
         let mut result = ScriptLintResult::default();
-        for rule in &self.rules {
+        let bytes = block.source().as_bytes();
+        let mut escaped = None;
+        for rule in &self.linter.rules {
             if rule.uses_ast() {
-                if clean {
+                if let Some(program) = program {
+                    if let Some(spelling) = rule.required_authored_spelling()
+                        && memchr::memmem::find(bytes, spelling.as_bytes()).is_none()
+                        && !*escaped.get_or_insert_with(|| memchr::memchr(b'\\', bytes).is_some())
+                    {
+                        continue;
+                    }
                     rule.check_program_with_sfc(
-                        &parsed.program,
+                        program,
                         block.source(),
                         block.start() as usize,
                         SfcScriptContext::default(),
@@ -63,6 +119,6 @@ impl ScriptLinter {
                 rule.check(block.source(), block.start() as usize, &mut result);
             }
         }
-        Ok(result)
+        result
     }
 }
