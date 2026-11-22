@@ -1,6 +1,6 @@
 use super::*;
 use crate::source_project::SourceSnapshotCache;
-use tower_lsp::lsp_types::Url;
+use tower_lsp::lsp_types::{HoverContents, MarkupContent, MarkupKind, Url};
 use vize_l0::{
     config::{VueDialect, VueVersion},
     line_index::LineIndex,
@@ -72,10 +72,10 @@ fn exact_stock_warnings_tsc_binding_spans_hover_and_same_text_reopen() {
     assert_eq!(hover.range, Some(by_name("雪")));
     assert_eq!(
         hover.contents,
-        HoverContents::Scalar(MarkedString::LanguageString(LanguageString {
-            language: "typescript".into(),
-            value: "雪: number".into()
-        }))
+        HoverContents::Markup(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: "```typescript\nlet 雪: number\n```".into()
+        })
     );
     let stock = Linter::with_preset(LintPreset::Ecosystem)
         .with_enabled_rules(Some(vec![RULE.into()]))
