@@ -76,5 +76,5 @@ pub(super) fn restore_formatted_style(
         }]);
         std::fs::write(path, serde_json::to_vec(&rows).unwrap()).unwrap();
     }
-    live
+    Arc::clone(&live)
 }
