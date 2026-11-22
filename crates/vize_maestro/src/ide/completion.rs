@@ -80,4 +80,4 @@ pub(crate) use dispatch::{
 };
 
 #[cfg(feature = "experimental-style-module-products")]
-pub use template::{StyleModuleToolProducts, StyleModuleRefusal};
+pub use template::{StyleModuleRefusal, StyleModuleToolProducts};

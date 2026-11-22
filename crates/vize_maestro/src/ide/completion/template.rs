@@ -390,4 +390,4 @@ pub(crate) fn legacy_vue2_template_completions(ctx: &IdeContext) -> Vec<Completi
 }
 
 #[cfg(feature = "experimental-style-module-products")]
-pub use css_modules::{StyleModuleToolProducts, StyleModuleRefusal};
+pub use css_modules::{StyleModuleRefusal, StyleModuleToolProducts};
