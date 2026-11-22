@@ -121,14 +121,14 @@ fn role_inheritance_shadowing_and_reactive_cycles_match_the_public_graph() {
         ["r", "c", "count", "left", "right"]
             .into_iter()
             .map(CompactString::new)
-            .collect()
+            .collect::<FxHashSet<_>>()
     );
     assert_eq!(
         real.setup,
         ["before", "definePageMeta", "rest", "local", "after"]
             .into_iter()
             .map(CompactString::new)
-            .collect()
+            .collect::<FxHashSet<_>>()
     );
     assert_eq!(real.effects.summary().cycle_count, 1);
     assert!(
@@ -194,7 +194,7 @@ fn owned_descriptors_reuse_their_original_frame_and_external_scripts_refuse() {
         ["longName", "rest"]
             .into_iter()
             .map(CompactString::new)
-            .collect()
+            .collect::<FxHashSet<_>>()
     );
     let mut external = owned.clone();
     external.script_setup.as_mut().unwrap().src = Some("./external.ts".into());
