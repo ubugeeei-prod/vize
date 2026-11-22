@@ -147,3 +147,11 @@ impl HoverService {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "experimental-literal-products")]
+impl HoverService {
+    pub(crate) fn literal_binding_override(word: &str, is_setup: bool) -> Option<Hover> {
+        Self::hover_vue_api(word)
+            .or_else(|| is_setup.then(|| Self::hover_vue_macro(word)).flatten())
+    }
+}

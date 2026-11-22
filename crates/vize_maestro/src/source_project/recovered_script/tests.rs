@@ -1,17 +1,25 @@
 use super::*;
 use crate::source_project::SourceSnapshotCache;
-use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
+use tower_lsp::lsp_types::{
+    HoverContents, MarkupContent, MarkupKind, TextDocumentContentChangeEvent, Url,
+};
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l1::container::{Vue, vue::DescriptorOptions};
 
-fn options() -> DescriptorOptions {
+pub(super) fn options() -> DescriptorOptions {
     DescriptorOptions {
         version: VueVersion::V3,
         dialect: VueDialect::Vue,
         template: Default::default(),
     }
 }
-fn replace(docs: &DocumentStore, uri: &Url, range: Option<Range>, text: &str, version: i32) {
+pub(super) fn replace(
+    docs: &DocumentStore,
+    uri: &Url,
+    range: Option<Range>,
+    text: &str,
+    version: i32,
+) {
     assert!(docs.apply_changes(
         uri,
         vec![TextDocumentContentChangeEvent {
@@ -123,10 +131,10 @@ fn successive_keystrokes_recover_original_utf16_bindings_and_reject_stale_public
     );
     assert_eq!(
         hover.contents,
-        HoverContents::Scalar(MarkedString::LanguageString(LanguageString {
-            language: "typescript".into(),
-            value: "雪: number".into()
-        }))
+        HoverContents::Markup(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: "```typescript\nlet 雪: number\n```".into()
+        })
     );
     assert_eq!(
         local.publish(&docs, Position::new(3, 6)).unwrap().hover,

@@ -6,8 +6,8 @@ use crate::{
     utils::{offset_to_position, position_to_offset},
 };
 use oxc_span::SourceType;
-use tower_lsp::lsp_types::{Hover, HoverContents, LanguageString, MarkedString, Position, Range};
-use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, cstr};
+use tower_lsp::lsp_types::{Hover, Position, Range};
+use vize_l0::{Allocator, SourceBlock, SourceRoot, Span};
 use vize_l1::{
     container::vue::{DescriptorObservation, ScriptRole},
     embed::{Lang, authored_program::AuthoredProgram},
@@ -38,6 +38,7 @@ pub struct PreviousScript<'s> {
 pub struct RecoveredScript<'idx, 's> {
     snapshot: &'s SourceSnapshot,
     local: UnchangedLiterals<'idx, 's>,
+    hover_role: Option<ScriptRole>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -55,7 +56,7 @@ fn selected<'s>(
     snap: &'s SourceSnapshot,
     owner: &DescriptorObservation<'_>,
     role: ScriptRole,
-) -> Result<SourceBlock<'s>, RecoveredScriptError> {
+) -> Result<(SourceBlock<'s>, Option<ScriptRole>), RecoveredScriptError> {
     if snap.language_id() != "vue" {
         return Err(RecoveredScriptError::Document);
     }
@@ -76,9 +77,11 @@ fn selected<'s>(
         .source()
         .get(span.start as usize..span.end as usize)
         .ok_or(RecoveredScriptError::Source)?;
-    SourceRoot::new(snap.source())
+    let block = SourceRoot::new(snap.source())
         .and_then(|root| root.block(text, span.start))
-        .map_err(|_| RecoveredScriptError::Source)
+        .map_err(|_| RecoveredScriptError::Source)?;
+    let hover_role = (desc.ordinary().is_none() || desc.setup().is_none()).then_some(role);
+    Ok((block, hover_role))
 }
 
 impl SourceSnapshot {
@@ -92,7 +95,7 @@ impl SourceSnapshot {
     ) -> Result<PreviousScript<'s>, RecoveredScriptError> {
         self.check_current(docs)
             .map_err(RecoveredScriptError::Host)?;
-        let block = selected(self, owner, role)?;
+        let (block, _) = selected(self, owner, role)?;
         let index = LiteralPrefixIndex::open(block, SourceType::ts()).map_err(|e| match e {
             PrefixOpenError::Syntax(reason) => RecoveredScriptError::Syntax(reason),
             PrefixOpenError::Evidence(reason) => RecoveredScriptError::Evidence(reason),
@@ -115,7 +118,7 @@ impl SourceSnapshot {
     ) -> Result<PreviousScript<'s>, RecoveredScriptError> {
         self.check_current(docs)
             .map_err(RecoveredScriptError::Host)?;
-        let block = selected(self, owner, role)?;
+        let (block, _) = selected(self, owner, role)?;
         let arena = Allocator::new();
         let syntax = AuthoredProgram::parse(&arena, block, SourceType::ts());
         let model = LiteralAssignments::new(&syntax).map_err(RecoveredScriptError::Syntax)?;
@@ -145,7 +148,7 @@ impl PreviousScript<'_> {
         if self.snapshot.uri() != current.uri() || self.snapshot.revision() > current.revision() {
             return Err(RecoveredScriptError::Document);
         }
-        let block = selected(current, owner, self.role)?;
+        let (block, hover_role) = selected(current, owner, self.role)?;
         let local = self
             .index
             .revalidate(block, SourceType::ts())
@@ -153,6 +156,7 @@ impl PreviousScript<'_> {
         Ok(RecoveredScript {
             snapshot: current,
             local,
+            hover_role,
         })
     }
 }
@@ -178,17 +182,14 @@ impl RecoveredScript<'_, '_> {
                     ))
                 };
                 let row = self.local.binding_at(offset);
-                let hover = if let Some(r) = row {
-                    let name = r.binding.slice(self.snapshot.source());
-                    Some(Hover {
-                        contents: HoverContents::Scalar(MarkedString::LanguageString(
-                            LanguageString {
-                                language: "typescript".into(),
-                                value: cstr!("{name}: {}", r.expected.keyword()).into(),
-                            },
-                        )),
-                        range: Some(range(r.binding)?),
-                    })
+                let hover = if let (Some(row), Some(role)) = (row, self.hover_role) {
+                    super::literal_products::hover::typed_binding_hover(
+                        self.snapshot.source(),
+                        self.local.current().span(),
+                        role,
+                        vize_canon::literal_assignments::BindingType::from(&row),
+                        range(row.binding)?,
+                    )
                 } else {
                     None
                 };
@@ -209,3 +210,6 @@ mod corpus;
 mod profile;
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod wire;
