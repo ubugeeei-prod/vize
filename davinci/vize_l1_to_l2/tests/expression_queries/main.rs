@@ -14,6 +14,10 @@ use vize_l2::query::{
     ExpressionPositionIndex, ExpressionReferenceRef, Model, PositionQueryError, TemplateQueryError,
 };
 
+#[cfg(feature = "setup-component-imports")]
+mod component_imports;
+#[cfg(feature = "setup-component-imports")]
+mod component_projection;
 mod corpus;
 mod input;
 #[cfg(feature = "template-operand-queries")]

@@ -117,3 +117,8 @@ pub fn lower_sfc_native<'a>(
 
 #[cfg(feature = "template-operand-queries")]
 mod operands;
+
+#[cfg(feature = "setup-component-imports")]
+mod component_imports;
+#[cfg(feature = "setup-component-imports")]
+pub use component_imports::{ComponentImportRefusal, SetupComponentImports};
