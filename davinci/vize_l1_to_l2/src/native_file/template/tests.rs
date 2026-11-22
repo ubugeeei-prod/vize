@@ -48,8 +48,6 @@ fn row<'a>(
         view.template().unwrap(),
         view.template_lang(),
         &mut issues,
-        #[cfg(feature = "authored-bind-shorthand")]
-        false,
     );
     assert!(issues.is_empty());
     (template, producer, scripts, issues)

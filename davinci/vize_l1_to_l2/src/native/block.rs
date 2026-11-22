@@ -71,12 +71,6 @@ impl<'a> NativeComponent<'a> {
         })
     }
 
-    #[cfg(feature = "authored-bind-shorthand")]
-    pub(crate) fn with_authored_bind_shorthand(mut self, enabled: bool) -> Self {
-        self.authored_bind_shorthand = enabled;
-        self
-    }
-
     #[must_use]
     pub fn block(&self) -> SourceBlock<'a> {
         self.block

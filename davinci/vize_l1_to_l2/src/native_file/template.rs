@@ -232,7 +232,6 @@ pub(super) fn prepare<'a>(
     selected: TemplateView<'_, 'a>,
     lang: Lang,
     issues: &mut Vec<NativeSfcIssue>,
-    #[cfg(feature = "authored-bind-shorthand")] authored_bind_shorthand: bool,
 ) -> NativeTemplateObservation<'a> {
     let block = selected.block();
     let reject = |issues: &mut Vec<NativeSfcIssue>, kind| {
@@ -243,14 +242,10 @@ pub(super) fn prepare<'a>(
         });
     };
     let (pending, outcome) = match NativeComponent::parse_in(allocator, block) {
-        Ok(component) => {
-            #[cfg(feature = "authored-bind-shorthand")]
-            let component = component.with_authored_bind_shorthand(authored_bind_shorthand);
-            (
-                Some(PendingNativeComponent::from_component(component)),
-                NativeTemplateOutcome::ConstructionPending,
-            )
-        }
+        Ok(component) => (
+            Some(PendingNativeComponent::from_component(component)),
+            NativeTemplateOutcome::ConstructionPending,
+        ),
         Err(error) => {
             reject(issues, NativeSfcIssueKind::TemplateSource(error));
             (None, NativeTemplateOutcome::SourceRefused(error))
@@ -267,3 +262,17 @@ pub(super) fn prepare<'a>(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "authored-bind-shorthand")]
+pub(super) fn prepare_shorthand<'a>(
+    allocator: &'a Allocator,
+    selected: TemplateView<'_, 'a>,
+    lang: Lang,
+    issues: &mut Vec<NativeSfcIssue>,
+) -> NativeTemplateObservation<'a> {
+    let mut template = prepare(allocator, selected, lang, issues);
+    if let Some(pending) = &mut template.pending {
+        pending.enable_authored_bind_shorthand();
+    }
+    template
+}
