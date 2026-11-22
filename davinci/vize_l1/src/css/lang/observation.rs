@@ -6,6 +6,7 @@ use vize_l0::SourceBlock;
 /// A style block shared by tools needing both its authored structure and its
 /// class names. All spans use the original block's file coordinates.
 pub struct StyleObservation<'a> {
+    language: StyleLanguage,
     sheet: StyleSheet<'a>,
     classes: Option<AuthoredClasses>,
 }
@@ -23,7 +24,17 @@ impl<'a> StyleObservation<'a> {
             StyleLanguage::Sass => indented::authored_classes(&sheet, indented::Syntax::Sass),
             StyleLanguage::Stylus => indented::authored_classes(&sheet, indented::Syntax::Stylus),
         };
-        Self { sheet, classes }
+        Self {
+            language,
+            sheet,
+            classes,
+        }
+    }
+
+    /// The dialect used to parse this original block.
+    #[must_use]
+    pub const fn language(&self) -> StyleLanguage {
+        self.language
     }
 
     /// Move the computed class set to a consumer after the structural readers finish.

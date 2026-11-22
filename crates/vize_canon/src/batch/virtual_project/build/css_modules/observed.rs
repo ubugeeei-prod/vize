@@ -30,24 +30,55 @@ impl VirtualTsOptions {
         resolve_imports: bool,
         mut visit: impl FnMut(&str, &SfcStyleBlock<'_>, Option<&StyleObservation<'_>>),
     ) -> Result<VirtualTsOptions, SourceFrameError> {
+        self.observe_styles::<false>(descriptor, strict, resolve_imports, |style, observed| {
+            if let Some(name) = style.module.as_deref() {
+                visit(name, style, observed);
+            }
+        })
+    }
+
+    /// Visit every original style in descriptor order while computing checker
+    /// options. Inline module structure is shared with the callback. Ordinary
+    /// styles require no class analysis for the checker.
+    pub fn observe_file_styles(
+        &self,
+        descriptor: &SfcDescriptor<'_>,
+        strict: bool,
+        resolve_imports: bool,
+        visit: impl FnMut(&SfcStyleBlock<'_>, Option<&StyleObservation<'_>>),
+    ) -> Result<VirtualTsOptions, SourceFrameError> {
+        self.observe_styles::<true>(descriptor, strict, resolve_imports, visit)
+    }
+
+    fn observe_styles<const ALL: bool>(
+        &self,
+        descriptor: &SfcDescriptor<'_>,
+        strict: bool,
+        resolve_imports: bool,
+        mut visit: impl FnMut(&SfcStyleBlock<'_>, Option<&StyleObservation<'_>>),
+    ) -> Result<VirtualTsOptions, SourceFrameError> {
         let root = SourceRoot::new(&descriptor.source)?;
         let mut modules: BTreeMap<&str, Option<CssModuleShape>> = BTreeMap::new();
         for style in &descriptor.styles {
-            let Some(name) = style.module.as_deref() else {
+            if !ALL && style.module.is_none() {
                 continue;
-            };
+            }
             let source = root
                 .source()
                 .get(style.loc.start..style.loc.end)
                 .ok_or(SourceFrameError::BlockOutOfBounds)?;
-            if source != style.content.as_ref() {
+            if !std::ptr::eq(source, style.content.as_ref()) && source != style.content.as_ref() {
                 return Err(SourceFrameError::BlockNotRootSlice);
             }
             let block = root.block(source, style.loc.start as u32)?;
+            let Some(name) = style.module.as_deref() else {
+                visit(style, None);
+                continue;
+            };
             let original = vize_l1::container::lang::style_lang(style.lang.as_deref())
                 .ok()
                 .map(|language| StyleObservation::read(language, block));
-            visit(name, style, original.as_ref());
+            visit(style, original.as_ref());
             let shape =
                 original.and_then(|observed| module_shape(style, observed, resolve_imports));
             match modules.entry(name) {
