@@ -15,6 +15,12 @@ use vize_l1_to_l2::native_file::{NativeSfcObservation, lower_sfc_with_authored_b
 #[derive(Debug, PartialEq, Eq)]
 pub(super) struct Products {
     targets: Vec<Site>,
+    sites: Vec<SiteProps>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct SiteProps {
+    name: Span,
     props: Vec<(String, Option<String>, Span, bool)>,
 }
 
@@ -24,10 +30,11 @@ fn products(
     joined: bool,
 ) -> Products {
     let targets = retained_product(imports);
-    let mut props = Vec::new();
+    let mut sites = Vec::new();
     if joined {
         imports
             .try_for_each_in_postorder(|site| {
+                let mut props = Vec::new();
                 site.visit_passed_props(|p| {
                     props.push((
                         p.name.to_owned(),
@@ -35,7 +42,12 @@ fn products(
                         p.span,
                         p.expression.is_some(),
                     ));
-                })
+                })?;
+                sites.push(SiteProps {
+                    name: site.name_span(),
+                    props,
+                });
+                Ok::<_, vize_l2::query::ComponentPropIssue>(())
             })
             .unwrap();
     } else {
@@ -48,6 +60,7 @@ fn products(
         });
         drawer.draw_template(&root);
         for site in vize_croquis::facts::component_usage_slice(drawer.croquis()) {
+            let mut props = Vec::new();
             for p in &site.props {
                 let span = Span::new(block.start() + p.start, block.start() + p.end);
                 props.push((
@@ -57,9 +70,12 @@ fn products(
                     p.is_dynamic,
                 ));
             }
+            let first = block.start() + site.start + 1;
+            let name = Span::new(first, first + site.name.len() as u32);
+            sites.push(SiteProps { name, props });
         }
     }
-    Products { targets, props }
+    Products { targets, sites }
 }
 
 fn observe<'a>(arena: &'a Allocator, source: &'a str) -> NativeSfcObservation<'a> {
@@ -77,7 +93,7 @@ fn observe<'a>(arena: &'a Allocator, source: &'a str) -> NativeSfcObservation<'a
 pub(super) fn request_modes(mut check: impl FnMut(&str, bool, &dyn Fn(bool) -> Products)) {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/_fixtures/differential/lsp");
-    let direct = "<script setup>import Card from './Card.vue';const title=1, other=2;</script><template><Card :title flag v-bind:other /></template>";
+    let direct = "<script setup>import Card from './Card.vue';import Other from './Other.vue';const title=1, other=2;</script><template><Card :title v-bind:other><Other flag/><Card/></Card></template>";
     run_modes("direct", direct, &mut check);
     for name in [
         "same-name-rename/7994/Parent.vue.txt",
