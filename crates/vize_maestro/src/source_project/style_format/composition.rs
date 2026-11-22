@@ -147,7 +147,7 @@ fn a_style_lowering_refusal_preserves_rules_and_a_superseded_snapshot_skips_the_
     let docs = DocumentStore::new();
     let cache = SourceSnapshotCache::default();
     let uri = Url::parse("file:///Partial.vue").unwrap();
-    let text = "<style lang='scss'>.card { color:$missing; display:none; }</style>";
+    let text = "<template><p/></template><style lang='scss'>.card { color:$missing; display:none; }</style>";
     docs.open(uri.clone(), text.into(), 2, "vue".into());
     let source = cache.capture(&docs, &uri).unwrap();
     let arena = Allocator::new();
