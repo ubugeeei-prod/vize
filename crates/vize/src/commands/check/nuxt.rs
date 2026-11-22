@@ -40,6 +40,13 @@ use stubs::{declared_name, is_template_component_binding};
 use tsconfig_aliases::collect_explicit_virtual_module_aliases;
 use virtual_modules::{collect_fallback_module_stubs, collect_fallback_path_aliases};
 
+const CHECK_CONFIG_NAMES: [&str; 4] = [
+    "nuxt.config.ts",
+    "nuxt.config.js",
+    "nuxt.config.mts",
+    "nuxt.config.mjs",
+];
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(in crate::commands::check) struct NuxtPathAlias {
     pub(in crate::commands::check) pattern: String,
@@ -206,10 +213,9 @@ pub(in crate::commands::check) fn supplies_generated_declaration(
 }
 
 pub(in crate::commands::check) fn is_nuxt_project_root(cwd: &Path) -> bool {
-    cwd.join("nuxt.config.ts").exists()
-        || cwd.join("nuxt.config.js").exists()
-        || cwd.join("nuxt.config.mts").exists()
-        || cwd.join("nuxt.config.mjs").exists()
+    CHECK_CONFIG_NAMES
+        .iter()
+        .any(|name| cwd.join(name).exists())
 }
 
 /// Warning shown once per `vize check` run for a Nuxt project that has no
