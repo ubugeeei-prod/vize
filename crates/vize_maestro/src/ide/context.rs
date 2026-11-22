@@ -37,7 +37,7 @@ pub struct IdeContext<'a> {
     #[cfg(feature = "native")]
     initial_canonical_document: Option<Box<initial_project::OwnedInitialDocument>>,
     #[cfg(feature = "experimental-component-props")]
-    pub(in crate::ide) nonexporting_setup: Option<vize_l0::Span>,
+    pub(in crate::ide) nonexporting_setup: Option<vize_l0::SourceBlock<'a>>,
     /// Pug derivation and semantic scope are shared by this request's fallbacks.
     pub(in crate::ide) pug_scope: OnceLock<Option<Box<super::template_scope::pug::PugScope>>>,
 }

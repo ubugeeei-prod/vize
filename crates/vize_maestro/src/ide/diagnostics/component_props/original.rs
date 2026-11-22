@@ -36,7 +36,7 @@ impl DiagnosticService {
         };
         let mut context =
             IdeContext::with_content(state, uri, imports.template_span().start as usize, content);
-        context.nonexporting_setup = first.nonexporting_setup_span();
+        context.nonexporting_setup = first.nonexporting_setup();
         let mut diagnostics = Vec::new();
         let mut lines = None;
         imports.try_for_each_in_postorder(|site| {
