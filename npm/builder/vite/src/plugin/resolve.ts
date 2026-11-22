@@ -18,6 +18,7 @@ import type { VizePluginState } from "./state.ts";
 import { isInsidePath, isProjectSourceImporter, normalizeImporterFilePath } from "./importer.ts";
 import { resolvePackageJsonImportFromVizeImporter } from "./package-imports.ts";
 import { cleanVueSfcImporter, resolveRelativeVueSfcImport } from "./resolve-relative-vue.ts";
+import { resolvePageMacroRequest } from "./resolve-page-macro.ts";
 import { isOptimizedVueDependency } from "./resolve-optimized-vue.ts";
 import { ssrEnvironmentBundles, type SsrEnvironmentResolve } from "./ssr-modules.ts";
 export { isOptimizedVueDependency };
@@ -43,7 +44,11 @@ const VUE_PEER_RUNTIME_ESM_ENTRIES = new Map<string, string[]>([
 ]);
 
 interface ResolveContext {
-  environment?: { name?: string; config?: { resolve?: SsrEnvironmentResolve } };
+  environment?: {
+    name?: string;
+    config?: { resolve?: SsrEnvironmentResolve };
+    plugins?: readonly { name: string }[];
+  };
   resolve(
     id: string,
     importer?: string,
@@ -891,18 +896,8 @@ export async function resolveIdHook(
     return RESOLVED_CSS_MODULE;
   }
 
-  // Handle route macro queries.
-  // - ?macro=true is used by Nuxt page macros.
-  // - ?definePage is used by Vue Router file-based routing.
-  // Nuxt's router generates `import { default } from "page.vue?macro=true"` to extract
-  // route metadata. Without @vitejs/plugin-vue, Vize must resolve this query so the
-  // load hook can return compile-time macro artifact modules.
-  if ((request.hasMacroQuery || request.hasDefinePageQuery) && request.isVueSfcPath) {
-    const resolved = resolveVuePath(state, request.path, importer);
-    if (resolved && fs.existsSync(resolved)) {
-      return `\0${resolved}${request.querySuffix}`;
-    }
-  }
+  const pageMacro = resolvePageMacroRequest(state.root, request, importer, ctx.environment);
+  if (pageMacro) return pageMacro;
 
   // Handle virtual style imports:
   //   Component.vue?vue&type=style&index=0&lang=scss

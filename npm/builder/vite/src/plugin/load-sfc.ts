@@ -25,7 +25,11 @@ function shouldLoadVueSfcRequest(request: ReturnType<typeof classifyVitePluginRe
     return false;
   }
 
-  return params.has("nuxt_component");
+  // Vitest instruments the whole file under its own cache key.
+  return (
+    params.has("nuxt_component") ||
+    (params.get("vitest-uncovered-coverage") === "true" && !params.has("type"))
+  );
 }
 
 export function getLoadableVueSfcPath(

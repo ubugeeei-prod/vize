@@ -1,0 +1,10 @@
+{
+  "name": "vize-vue-router-define-page-reproduction",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "vite": "8.3.8",
+    "vue": "3.5.46",
+    "vue-router": "5.5.1"
+  }
+}
