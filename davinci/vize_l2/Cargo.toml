@@ -13,6 +13,7 @@ metadata.vize.stability = "experimental"
 lexical-arrow-initializers = []
 # Original listener operations and method-reference queries for explicit tool requests.
 component-listener-queries = ["setup-component-imports"]
+scss-rules = ["vize_l1/observed-styles"]
 # Read authored props in source order from each resolved component operation.
 component-prop-queries = ["setup-component-imports"]
 setup-component-imports = []

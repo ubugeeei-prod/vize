@@ -45,8 +45,17 @@ impl<'a> StyleObservation<'a> {
         block: SourceBlock<'a>,
         visit: impl FnOnce(OriginalStyleStructure<'_, 'a>),
     ) -> Self {
+        Self::read_with_product(language, block, visit).0
+    }
+
+    /// Return a product of the same original tree beside the retained class facts.
+    pub fn read_with_product<R>(
+        language: StyleLanguage,
+        block: SourceBlock<'a>,
+        visit: impl FnOnce(OriginalStyleStructure<'_, 'a>) -> R,
+    ) -> (Self, R) {
         let sheet = language.structure(block.source(), block.start());
-        visit(OriginalStyleStructure {
+        let product = visit(OriginalStyleStructure {
             language,
             sheet: &sheet,
         });
@@ -57,7 +66,7 @@ impl<'a> StyleObservation<'a> {
             StyleLanguage::Sass => indented::authored_classes(&sheet, indented::Syntax::Sass),
             StyleLanguage::Stylus => indented::authored_classes(&sheet, indented::Syntax::Stylus),
         };
-        Self { sheet, classes }
+        (Self { sheet, classes }, product)
     }
 
     /// Move the computed class set to a consumer after the structural readers finish.
@@ -84,3 +93,18 @@ impl<'a> StyleObservation<'a> {
 
 #[cfg(test)]
 mod tests;
+
+impl StyleLanguage {
+    /// Run a structural consumer without eagerly collecting class names.
+    pub fn with_original_structure<'a, R>(
+        self,
+        block: SourceBlock<'a>,
+        visit: impl FnOnce(OriginalStyleStructure<'_, 'a>) -> R,
+    ) -> R {
+        let sheet = self.structure(block.source(), block.start());
+        visit(OriginalStyleStructure {
+            language: self,
+            sheet: &sheet,
+        })
+    }
+}
