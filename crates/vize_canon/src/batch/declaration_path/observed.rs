@@ -76,8 +76,9 @@ pub(in crate::batch) fn products(
 // modifier must be inserted first, then the preceding export assignment.
 fn order_adjacent_insertions(edits: &mut [TextEdit]) -> Option<usize> {
     let mut conflict = None;
-    for index in 1..edits.len() {
-        let (left, right) = (&edits[index - 1], &edits[index]);
+    let mut iter = edits.iter_mut();
+    let mut left = iter.next()?;
+    for right in iter {
         if left.start == right.start
             && left.end == left.start
             && right.end == right.start
@@ -85,8 +86,9 @@ fn order_adjacent_insertions(edits: &mut [TextEdit]) -> Option<usize> {
             && left.replacement.starts_with("\nexport default ")
         {
             conflict = Some(left.start);
-            edits.swap(index - 1, index);
+            core::mem::swap(left, right);
         }
+        left = right;
     }
     conflict
 }
