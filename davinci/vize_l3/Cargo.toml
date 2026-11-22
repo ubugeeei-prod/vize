@@ -12,6 +12,8 @@ readme = "README.md"
 [features]
 # Build both original client and server target analyses in one canonical walk.
 client-server-decisions = []
+# Explicitly exercise the grouped pass driver with the original L3 optimizer.
+streamed-pass-groups = ["vize_l0/streamed-pass-groups"]
 
 [dependencies]
 oxc_ast = { workspace = true }
