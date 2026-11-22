@@ -464,3 +464,14 @@ mod tests {
         assert_eq!(reads.get(), 4);
     }
 }
+
+#[cfg(feature = "setup-render-products")]
+impl ModuleRegistry {
+    /// Match the registry's path resolution while borrowing an already rooted key.
+    pub(crate) fn setup_render_entry(&self, path: &Path) -> Option<&ModuleEntry> {
+        if !path.is_absolute() && self.project_root.is_some() {
+            return self.get_by_path(path);
+        }
+        self.path_to_id.get(path).and_then(|id| self.get(*id))
+    }
+}

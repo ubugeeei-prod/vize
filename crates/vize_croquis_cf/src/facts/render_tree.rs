@@ -408,3 +408,6 @@ fn names_match(left: &str, right: &str) -> bool {
     left == right
         || vize_croquis::naming::to_pascal_case(left) == vize_croquis::naming::to_pascal_case(right)
 }
+
+#[cfg(feature = "setup-render-products")]
+pub(super) mod setup;

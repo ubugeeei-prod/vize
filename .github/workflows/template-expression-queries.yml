@@ -31,6 +31,13 @@ on:
       - "crates/vize_croquis/src/drawer/template/visit_element.rs"
       - "crates/vize_croquis/src/drawer/template_references*"
       - "crates/vize_croquis/src/drawer/template_references/**"
+      - "crates/vize_croquis/src/facts/access.rs"
+      - "crates/vize_croquis_cf/Cargo.toml"
+      - "crates/vize_croquis_cf/src/registry.rs"
+      - "crates/vize_croquis_cf/src/facts/mod.rs"
+      - "crates/vize_croquis_cf/src/facts/render_tree*"
+      - "crates/vize_croquis_cf/src/facts/render_tree/**"
+      - "crates/vize_croquis_cf/src/module_paths.rs"
 permissions: { contents: read }
 concurrency:
   group: template-expression-queries-${{ github.event.pull_request.number }}
@@ -63,3 +70,28 @@ jobs:
           cargo test "${flags[@]}" --test expression_queries -- operand::paired_operand_products --exact --ignored --nocapture --test-threads=1
           cargo test "${flags[@]}" --test expression_queries -- component_imports::original_vue_files --exact --ignored --nocapture --test-threads=1
           cargo test "${flags[@]}" --test expression_queries -- component_imports::paired_queries --exact --ignored --nocapture --test-threads=1
+  setup-render-products:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0", components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Compare project render sites and ordered dependency targets
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt -p vize_croquis_cf --features setup-render-products --lib)
+          cargo clippy "${flags[@]}" --no-deps -- -D warnings
+          cargo test "${flags[@]}" facts::
+          export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/setup-render-callers"
+          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
+          for suite in corpus::original_project_results profile::paired_render_products profile::original_render_performance profile::registration::registration_and_first_read; do
+            cargo test "${flags[@]}" "facts::render_tree::setup::tests::$suite" -- --exact --ignored --nocapture --test-threads=1
+          done
