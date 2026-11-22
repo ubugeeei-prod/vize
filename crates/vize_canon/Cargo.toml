@@ -14,6 +14,11 @@ original-style-bindings = [
   "vize_croquis/original-style-bindings",
   "vize_l1_to_l2/original-style-bindings",
 ]
+# Qualify both product adapters on one original stylesheet.
+original-style-binding-tests = [
+  "original-style-bindings",
+  "vize_atelier_sfc/original-style-bindings",
+]
 # Emit original expression projections and observe the same authored operands.
 template-operand-projection = ["native", "vize_l1_to_l2/template-operand-queries"]
 observed-style-modules = ["native", "vize_l1/observed-styles"]
@@ -166,4 +171,4 @@ workspace = true
 [[test]]
 name = "original_style_bindings"
 path = "tests/original_style_bindings/main.rs"
-required-features = ["original-style-bindings", "vize_atelier_sfc/original-style-bindings"]
+required-features = ["original-style-binding-tests"]
