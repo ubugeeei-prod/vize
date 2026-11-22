@@ -19,6 +19,7 @@ interface Input {
   tsx: boolean;
   complete?: boolean;
   covered?: number;
+  recovery?: "retained" | "first-open" | "upstream-original";
   claims: Claim[];
 }
 
@@ -114,6 +115,11 @@ let scripts = 0,
   bindings = 0,
   mismatches = 0,
   complete = 0;
+const recovery = {
+  retained: { scripts: 0, bindings: 0, mismatches: 0 },
+  "first-open": { scripts: 0, bindings: 0, mismatches: 0 },
+  "upstream-original": { scripts: 0, bindings: 0, mismatches: 0 },
+};
 // JSON permits literal U+2028 and U+2029 in source strings. Only LF is a
 // record delimiter; terminal line readers can also split at those code points.
 async function* inputRecords(path: string): AsyncGenerator<string> {
@@ -135,12 +141,33 @@ for await (const line of inputRecords(process.argv[2])) {
   if (examine(entry)) complete++;
   scripts++;
   bindings += entry.claims.length;
-  mismatches += entry.claims.filter((c) =>
+  const failed = entry.claims.filter((c) =>
     "message" in c ? c.message !== null : !c.assignable,
   ).length;
+  mismatches += failed;
+  if (entry.covered !== undefined) {
+    assert.ok(
+      entry.recovery === "retained" ||
+        entry.recovery === "first-open" ||
+        entry.recovery === "upstream-original",
+    );
+    const mode = recovery[entry.recovery];
+    mode.scripts++;
+    mode.bindings += entry.claims.length;
+    mode.mismatches += failed;
+  }
 }
 assert.ok(scripts > 0 && bindings > 0 && mismatches > 0);
 if (process.argv[3] !== "--recovered") assert.ok(complete > 0);
+else {
+  for (const [name, mode] of Object.entries(recovery)) {
+    assert.ok(mode.scripts > 0, name);
+    if (name !== "upstream-original") assert.ok(mode.bindings > 0 && mode.mismatches > 0, name);
+    console.log(
+      `TypeScript ${ts.version} ${name} scripts=${mode.scripts} bindings=${mode.bindings} mismatches=${mode.mismatches}`,
+    );
+  }
+}
 console.log(
   `TypeScript ${ts.version} original scripts=${scripts} checked bindings=${bindings} mismatches=${mismatches} complete diagnostic comparisons=${complete}`,
 );

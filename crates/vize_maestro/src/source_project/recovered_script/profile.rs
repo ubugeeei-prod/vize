@@ -3,6 +3,14 @@ use davinci_harness::alloc;
 use std::{fmt::Write, hint::black_box, time::Instant};
 use vize_l2::query::script::assignments::prefix::LiteralPrefixIndex;
 
+fn time<T>(mut run: impl FnMut() -> T) -> u128 {
+    let start = Instant::now();
+    for _ in 0..24 {
+        black_box(run());
+    }
+    start.elapsed().as_nanos() / 24
+}
+
 fn timed(name: &str, original: &str) {
     let old = SourceRoot::new(original).unwrap().whole_block();
     let arena = Allocator::new();
@@ -51,21 +59,15 @@ fn timed(name: &str, original: &str) {
     assert!(run(true).is_some());
     let old_cost = alloc::measure(|| run(false)).unwrap();
     let new_cost = alloc::measure(|| run(true)).unwrap();
-    let time = |v| {
-        let start = Instant::now();
-        for _ in 0..24 {
-            black_box(run(black_box(v)));
-        }
-        start.elapsed().as_nanos() / 24
-    };
+    let batch = |v| time(|| run(black_box(v)));
     let mut fresh = Vec::new();
     let mut saved = Vec::new();
     for round in 0..35 {
         let (a, b) = if round % 2 == 0 {
-            (time(false), time(true))
+            (batch(false), batch(true))
         } else {
-            let b = time(true);
-            (time(false), b)
+            let b = batch(true);
+            (batch(false), b)
         };
         if round >= 4 {
             fresh.push(a);
@@ -88,6 +90,28 @@ fn timed(name: &str, original: &str) {
             && new_cost.calls <= old_cost.calls
             && new_cost.peak_bytes_over_start <= old_cost.peak_bytes_over_start,
         "{name}"
+    );
+    // A first open has no cached syntax or known boundary. Charge the whole
+    // failed parse, all checked prefix probes, and the actual cursor query.
+    let open = || {
+        let idx = LiteralPrefixIndex::open(black_box(whole), SourceType::ts()).unwrap();
+        idx.revalidate(whole, SourceType::ts())
+            .unwrap()
+            .binding_at(black_box(offset))
+    };
+    assert_eq!(open(), run(true));
+    let cost = alloc::measure(open).unwrap();
+    for _ in 0..4 {
+        black_box(time(open));
+    }
+    let mut times = [0; 31];
+    for t in &mut times {
+        *t = time(open);
+    }
+    times.sort_unstable();
+    eprintln!(
+        "first open broken cursor {name} ns={} calls={} peak={}",
+        times[15], cost.calls, cost.peak_bytes_over_start
     );
 }
 

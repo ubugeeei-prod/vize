@@ -1,6 +1,18 @@
-//! Standalone Kani crate for the actual checked source rebase operation.
+//! Standalone Kani crate for source relocation and the first-open retry budget.
 mod frame;
 use frame::rebase;
+
+#[kani::proof]
+fn cold_retries_fit_the_remaining_byte_budget() {
+    let end: u32 = kani::any();
+    let first_label: u32 = kani::any();
+    let next = frame::retry_limit(end as usize, first_label as usize) as u64;
+    assert!(next <= u64::from(first_label));
+    assert!(end == 0 || next < u64::from(end));
+    // Spend 'end' bytes on this attempt and reserve twice the next limit
+    // for every descendant attempt. The invariant holds for any sequence.
+    assert!(u64::from(end) + 2 * next <= 2 * u64::from(end));
+}
 
 #[kani::proof]
 fn moving_a_checked_source_interval_is_lossless() {

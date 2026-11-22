@@ -8,10 +8,66 @@ use vize_l2::query::script::assignments::prefix::LiteralPrefixIndex;
 #[derive(Default, Debug)]
 struct Counts {
     originals: usize,
+    retained: Coverage,
+    reopened: Coverage,
+}
+
+#[derive(Default, Debug)]
+struct Coverage {
     edits: usize,
     bindings: usize,
+    mismatches: usize,
     empty: usize,
     directives: usize,
+}
+
+impl Coverage {
+    fn open(
+        &mut self,
+        entry: &Value,
+        source: &str,
+        ty: SourceType,
+        mode: &str,
+        out: &mut impl Write,
+    ) {
+        let block = SourceRoot::new(source).unwrap().whole_block();
+        match LiteralPrefixIndex::open(block, ty) {
+            Ok(index) => match index.revalidate(block, ty) {
+                Ok(view) => self.record(&view, entry, source, mode, out),
+                Err(PrefixRefusal::DiagnosticDirective) => self.directives += 1,
+                Err(e) => panic!("{e:?}"),
+            },
+            Err(PrefixOpenError::Syntax(ScriptRefusal::DiagnosticDirective)) => {
+                self.directives += 1
+            }
+            Err(e) => panic!("{e:?}"),
+        }
+    }
+
+    fn record(
+        &mut self,
+        view: &UnchangedLiterals<'_, '_>,
+        entry: &Value,
+        current: &str,
+        mode: &str,
+        output: &mut impl Write,
+    ) {
+        let mut claims = Vec::new();
+        for row in view.assignments() {
+            assert_eq!(view.binding_at(row.binding.start), Some(row));
+            self.mismatches += usize::from(row.verdict == Verdict::Mismatch);
+            claims.push(json!({
+                "binding":[row.binding.start,row.binding.end],"annotation":[row.annotation.start,row.annotation.end],
+                "initializer":[row.initializer.start,row.initializer.end],"actual":row.actual.keyword(),"expected":row.expected.keyword(),"assignable":row.verdict==Verdict::Assignable
+            }));
+        }
+        self.edits += 1;
+        self.bindings += claims.len();
+        self.empty += usize::from(claims.is_empty());
+        let result = json!({"name":entry["name"],"recovery":mode,"source":current,"tsx":entry["tsx"],"covered":view.covered().end,"claims":claims});
+        serde_json::to_writer(&mut *output, &result).unwrap();
+        writeln!(output).unwrap();
+    }
 }
 
 fn examine(entry: &Value, output: &mut impl Write, counts: &mut Counts) {
@@ -44,30 +100,24 @@ fn examine(entry: &Value, output: &mut impl Write, counts: &mut Counts) {
     offsets.sort_unstable();
     offsets.dedup();
     for at in offsets {
-        let current = format!("{}\nconst __vize_incomplete: = ;\n", &text[..at]);
-        let frame = SourceRoot::new(&current).unwrap().whole_block();
-        let view = match idx.revalidate(frame, ty) {
-            Ok(view) => view,
-            Err(PrefixRefusal::DiagnosticDirective) => {
-                counts.directives += 1;
-                continue;
+        for suffix in [
+            "\nconst __vize_incomplete: = ;\n",
+            "\nconst __vize_string = 'unfinished",
+            "\nfunction __vize_block() { const buried: number=1;",
+        ] {
+            let current = format!("{}{suffix}", &text[..at]);
+            let frame = SourceRoot::new(&current).unwrap().whole_block();
+            match idx.revalidate(frame, ty) {
+                Ok(view) => counts
+                    .retained
+                    .record(&view, entry, &current, "retained", output),
+                Err(PrefixRefusal::DiagnosticDirective) => counts.retained.directives += 1,
+                Err(e) => panic!("{e:?}"),
             }
-            Err(e) => panic!("{e:?}"),
-        };
-        let mut evidence = Vec::new();
-        for row in view.assignments() {
-            assert_eq!(view.binding_at(row.binding.start), Some(row));
-            evidence.push(json!({
-                "binding":[row.binding.start,row.binding.end],"annotation":[row.annotation.start,row.annotation.end],
-                "initializer":[row.initializer.start,row.initializer.end],"actual":row.actual.keyword(),"expected":row.expected.keyword(),"assignable":row.verdict==Verdict::Assignable
-            }));
+            counts
+                .reopened
+                .open(entry, &current, ty, "first-open", output);
         }
-        counts.edits += 1;
-        counts.bindings += evidence.len();
-        counts.empty += usize::from(evidence.is_empty());
-        let result = json!({"name":entry["name"],"source":current,"tsx":entry["tsx"],"covered":view.covered().end,"claims":evidence});
-        serde_json::to_writer(&mut *output, &result).unwrap();
-        writeln!(output).unwrap();
     }
 }
 #[test]
@@ -84,13 +134,38 @@ fn changed_suffixes_on_original_programs() {
             &mut counts,
         );
     }
-    out.flush().unwrap();
-    assert!(
-        counts.originals > 0
-            && counts.edits > counts.originals
-            && counts.bindings > 0
-            && counts.empty > 0,
-        "{counts:?}"
-    );
+    assert!(counts.originals > 0);
+    for sample in [&counts.retained, &counts.reopened] {
+        assert!(
+            sample.edits > counts.originals
+                && sample.bindings > 0
+                && sample.empty > 0
+                && sample.mismatches > 0,
+            "{counts:?}"
+        );
+    }
     eprintln!("recovered edit corpus {counts:?}");
+    let inputs = std::fs::File::open(std::env::var_os("VIZE_FIRST_OPEN_INPUT").unwrap()).unwrap();
+    let mut first = Coverage::default();
+    let mut sources = 0;
+    for line in std::io::BufReader::new(inputs).lines() {
+        let entry: Value = serde_json::from_str(&line.unwrap()).unwrap();
+        let ty = if entry["tsx"] == true {
+            SourceType::tsx()
+        } else {
+            SourceType::ts()
+        };
+        first.open(
+            &entry,
+            entry["source"].as_str().unwrap(),
+            ty,
+            "upstream-original",
+            &mut out,
+        );
+        sources += 1;
+    }
+    assert_eq!(first.edits + first.directives, sources);
+    assert!(first.edits > 0);
+    eprintln!("unaltered damaged TypeScript sources {sources}: {first:?}");
+    out.flush().unwrap();
 }

@@ -1,5 +1,5 @@
 use super::*;
-use crate::query::script::assignments::{LiteralAssignments, Primitive, Verdict};
+use crate::query::script::assignments::{LiteralAssignments, Primitive, ScriptRefusal, Verdict};
 use alloc::{format, vec};
 use vize_l0::{Allocator, SourceRoot};
 use vize_l1::embed::authored_program::AuthoredProgram;
@@ -168,4 +168,82 @@ fn diagnostic_directives_grammar_and_foreign_owners_cannot_reuse_a_prefix() {
             if end == src.len() { 2 } else { 0 }
         );
     }
+}
+
+#[test]
+fn first_open_certifies_original_statements_before_the_parser_error() {
+    let base = "// 🦀\r\nconst 先: string = 8\nexport const also: boolean = true;";
+    for (grammar, tail) in [
+        (SourceType::ts(), "const broken: = ;"),
+        (
+            SourceType::ts(),
+            "// text containing ;\r\nconst broken: = ;",
+        ),
+        (SourceType::tsx(), "const node = <A value={;"),
+    ] {
+        let source = format!("<script lang=ts>{base}\r\n{tail}</script>");
+        let at = source.find("//").unwrap();
+        let frame = block(&source, at, source.rfind("</script>").unwrap());
+        let index = LiteralPrefixIndex::open(frame, grammar).unwrap();
+        let view = index.revalidate(frame, grammar).unwrap();
+        assert_eq!(
+            view.covered(),
+            Span::new(at as u32, (at + base.len()) as u32)
+        );
+        let rows: Vec<_> = view.assignments().collect();
+        assert_eq!(rows.len(), 2, "{tail}");
+        assert_eq!(rows[0].binding.slice(&source), "先");
+        assert_eq!(rows[0].verdict, Verdict::Mismatch);
+        assert_eq!(rows[1].binding.slice(&source), "also");
+        assert!(rows[1].exported);
+    }
+}
+
+#[test]
+fn damaged_strings_comments_and_nested_blocks_cannot_invent_first_open_bindings() {
+    for text in [
+        "';const fake: number=1; ;",
+        "`x; const fake: number=1; ${",
+        "/* ; const fake: number=1; ",
+        "function f() { const hidden: number=1; const broken: = ;",
+        "const first: number=1, next: string= ;",
+        "const first: number=1\n(;",
+    ] {
+        let frame = SourceRoot::new(text).unwrap().whole_block();
+        let idx = LiteralPrefixIndex::open(frame, SourceType::ts()).unwrap();
+        assert_eq!(
+            idx.revalidate(frame, SourceType::ts())
+                .unwrap()
+                .assignments()
+                .len(),
+            0,
+            "{text}"
+        );
+    }
+    let text = "const first: number=1;\n// @TS-NOCHECK\nconst broken: = ;";
+    let frame = SourceRoot::new(text).unwrap().whole_block();
+    assert!(matches!(
+        LiteralPrefixIndex::open(frame, SourceType::ts()).and_then(|i| i
+            .revalidate(frame, SourceType::ts())
+            .map(|v| v.assignments().len())
+            .map_err(PrefixOpenError::Prefix)),
+        Err(PrefixOpenError::Syntax(ScriptRefusal::DiagnosticDirective)
+            | PrefixOpenError::Prefix(PrefixRefusal::DiagnosticDirective))
+    ));
+    let frame = SourceRoot::new("const a: number=false;")
+        .unwrap()
+        .whole_block();
+    assert!(matches!(
+        LiteralPrefixIndex::open(frame, SourceType::mjs()),
+        Err(PrefixOpenError::Syntax(ScriptRefusal::Grammar))
+    ));
+    let clean = LiteralPrefixIndex::open(frame, SourceType::ts()).unwrap();
+    assert_eq!(
+        clean
+            .revalidate(frame, SourceType::ts())
+            .unwrap()
+            .assignments()
+            .len(),
+        1
+    );
 }

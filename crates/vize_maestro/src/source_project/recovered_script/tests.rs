@@ -22,6 +22,54 @@ fn replace(docs: &DocumentStore, uri: &Url, range: Option<Range>, text: &str, ve
         version
     ));
 }
+
+#[test]
+fn first_open_of_a_damaged_file_serves_a_current_utf16_hover_and_survives_an_edit() {
+    let docs = DocumentStore::new();
+    let cache = SourceSnapshotCache::default();
+    let uri = Url::parse("file:///AlreadyBroken.vue").unwrap();
+    let text = "<script lang=ts>\r\nconst pre: string='🦀'; const 雪: number=false;\r\nconst broken: = ;</script>";
+    docs.open(uri.clone(), text.into(), 1, "vue".into());
+    let initial = cache.capture(&docs, &uri).unwrap();
+    let arena = Allocator::new();
+    let owner = Vue.observe_descriptor(&arena, initial.source(), options());
+    let idx = initial
+        .open_literal_prefix(&docs, &owner, ScriptRole::Ordinary)
+        .unwrap();
+    let position = Position::new(
+        1,
+        "const pre: string='🦀'; const ".encode_utf16().count() as u32,
+    );
+    let response = idx.recover(&docs, &initial, &owner).unwrap();
+    let published = response.publish(&docs, position).unwrap();
+    assert_eq!(
+        (published.version, published.bindings, published.assignment),
+        (1, 2, Some(Verdict::Mismatch))
+    );
+    assert_eq!(
+        published.hover.unwrap().range,
+        Some(Range::new(
+            position,
+            Position::new(1, position.character + 1)
+        ))
+    );
+    replace(&docs, &uri, None, &text.replace("= ;", "= ["), 2);
+    assert_eq!(
+        response.publish(&docs, position).unwrap_err(),
+        RecoveredScriptError::Host(SnapshotRefusal::Superseded)
+    );
+    let edited = cache.capture(&docs, &uri).unwrap();
+    let current = Vue.observe_descriptor(&arena, edited.source(), options());
+    let next = idx
+        .recover(&docs, &edited, &current)
+        .unwrap()
+        .publish(&docs, position)
+        .unwrap();
+    assert_eq!(
+        (next.version, next.bindings, next.assignment),
+        (2, 2, Some(Verdict::Mismatch))
+    );
+}
 #[test]
 fn successive_keystrokes_recover_original_utf16_bindings_and_reject_stale_publication() {
     let docs = DocumentStore::new();

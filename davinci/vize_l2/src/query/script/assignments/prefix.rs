@@ -5,6 +5,8 @@ use super::{Assignment, CheckedAssignments, GetSpan, SourceBlock, Span};
 use alloc::vec::Vec;
 use oxc_span::SourceType;
 mod frame;
+mod open;
+pub use open::PrefixOpenError;
 
 #[derive(Clone, Copy)]
 struct Entry {

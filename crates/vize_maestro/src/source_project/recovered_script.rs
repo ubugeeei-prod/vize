@@ -14,7 +14,7 @@ use vize_l1::{
 };
 use vize_l2::query::script::assignments::{
     AssignmentError, LiteralAssignments, ScriptRefusal, Verdict,
-    prefix::{LiteralPrefixIndex, PrefixRefusal, UnchangedLiterals},
+    prefix::{LiteralPrefixIndex, PrefixOpenError, PrefixRefusal, UnchangedLiterals},
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -82,6 +82,29 @@ fn selected<'s>(
 }
 
 impl SourceSnapshot {
+    /// Establish current local evidence even when the first opened script is
+    /// incomplete. The returned index can also service following revisions.
+    pub fn open_literal_prefix<'s>(
+        &'s self,
+        docs: &DocumentStore,
+        owner: &DescriptorObservation<'_>,
+        role: ScriptRole,
+    ) -> Result<PreviousScript<'s>, RecoveredScriptError> {
+        self.check_current(docs)
+            .map_err(RecoveredScriptError::Host)?;
+        let block = selected(self, owner, role)?;
+        let index = LiteralPrefixIndex::open(block, SourceType::ts()).map_err(|e| match e {
+            PrefixOpenError::Syntax(reason) => RecoveredScriptError::Syntax(reason),
+            PrefixOpenError::Evidence(reason) => RecoveredScriptError::Evidence(reason),
+            PrefixOpenError::Prefix(reason) => RecoveredScriptError::Prefix(reason),
+        })?;
+        Ok(PreviousScript {
+            snapshot: self,
+            role,
+            index,
+        })
+    }
+
     /// Parse and certify a valid original script once. The retained index
     /// shares the owned snapshot text after the temporary AST arena is dropped.
     pub fn retain_literal_prefix<'s>(
