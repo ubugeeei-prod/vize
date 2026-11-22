@@ -13,7 +13,7 @@ fn paired_template_tool_products() {
         let arena = Allocator::default();
         let owner = observe(&arena, &source);
         let native = owner.admitted().unwrap();
-        let descriptor = vize_atelier_sfc::parse_sfc(&source, Default::default()).unwrap();
+        let descriptor = fixture_descriptor(&source);
         compare(&native, &descriptor, "repeated elements");
         let run = |joined| {
             if joined {

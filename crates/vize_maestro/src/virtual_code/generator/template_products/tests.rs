@@ -2,6 +2,7 @@
     clippy::unwrap_used,
     reason = "original parsers and product equivalence are asserted"
 )]
+use super::super::tests::fixture_descriptor;
 use super::*;
 use crate::virtual_code::extract_expressions;
 use vize_canon::projection::project_template_expression_document;
@@ -97,7 +98,7 @@ fn complete_document_ranges_and_exports_retain_their_coordinate_frames() {
     let arena = Allocator::default();
     let observed = observe(&arena, ENTITY);
     let native = observed.admitted().unwrap();
-    let descriptor = vize_atelier_sfc::parse_sfc(ENTITY, Default::default()).unwrap();
+    let descriptor = fixture_descriptor(ENTITY);
     let output = compare(&native, &descriptor, "entity, Unicode and CRLF");
     assert_eq!(output.checker.as_str(), "fj\n作者 + fj");
     assert_eq!(output.checker.links().len(), 2);
@@ -126,23 +127,20 @@ fn descriptor_revisions_and_selections_are_verified_before_emission() {
     let observed = observe(&arena, ENTITY);
     let native = observed.admitted().unwrap();
     let mut generator = VirtualCodeGenerator::new();
-    let mut descriptor = vize_atelier_sfc::parse_sfc(ENTITY, Default::default())
-        .unwrap()
-        .into_owned();
+    let mut descriptor = fixture_descriptor(ENTITY).into_owned();
     compare(&native, &descriptor, "owned cache entry");
     descriptor.template.as_mut().unwrap().loc.start += 1;
     assert!(matches!(
         generator.template_operand_products(&native, &descriptor, URI),
         Err(TemplateProductRefusal::Descriptor)
     ));
-    let mut descriptor = vize_atelier_sfc::parse_sfc(ENTITY, Default::default()).unwrap();
+    let mut descriptor = fixture_descriptor(ENTITY);
     descriptor.script_setup.as_mut().unwrap().content = "const forged=1;".into();
     assert!(matches!(
         generator.template_operand_products(&native, &descriptor, URI),
         Err(TemplateProductRefusal::Descriptor)
     ));
-    let foreign =
-        vize_atelier_sfc::parse_sfc("<template>other</template>", Default::default()).unwrap();
+    let foreign = fixture_descriptor("<template>other</template>");
     assert!(matches!(
         generator.template_operand_products(&native, &foreign, URI),
         Err(TemplateProductRefusal::Descriptor)
@@ -161,7 +159,7 @@ fn empty_static_script_only_and_nested_sources_match_the_public_editor() {
         let arena = Allocator::default();
         let owner = observe(&arena, source);
         let native = owner.admitted().unwrap();
-        let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+        let descriptor = fixture_descriptor(source);
         compare(&native, &descriptor, source);
     }
 }
@@ -186,7 +184,7 @@ fn original_tool_template_projections_match() {
             refused += 1;
             continue;
         };
-        let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+        let descriptor = fixture_descriptor(source);
         let output = compare(&native, &descriptor, name);
         admitted += 1;
         operands += output.expressions.len();
