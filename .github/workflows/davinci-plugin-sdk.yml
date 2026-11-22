@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: [main, davinci]
     paths:
+      - "crates/vize/tests/plugin_template_baseline/**"
       - "npm/plugin-sdk/**"
       - "npm/devtools/**"
       - "crates/vize_vitrine/**"
@@ -14,6 +15,7 @@ on:
   push:
     branches: [main, davinci]
     paths:
+      - "crates/vize/tests/plugin_template_baseline/**"
       - "npm/plugin-sdk/**"
       - "npm/devtools/**"
       - "crates/vize_vitrine/**"
@@ -63,3 +65,5 @@ jobs:
         run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.ts
       - name: Run the author package and native plugin contracts
         run: vp exec node --test tests/tooling/davinci-plugin-*.test.ts
+      - name: Qualify original plugin records and Doctor component facts
+        run: cargo test --locked --profile ci-opt -p vize --test plugin_template_baseline -- --nocapture --test-threads=1

@@ -4519,6 +4519,7 @@ dependencies = [
  "clap",
  "corsa",
  "corsa_lsp",
+ "davinci_harness",
  "davinci_test_support",
  "dirs",
  "flate2",

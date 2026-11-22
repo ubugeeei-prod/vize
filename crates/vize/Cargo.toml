@@ -111,6 +111,7 @@ sha2.workspace = true
 similar.workspace = true
 
 [dev-dependencies]
+davinci_harness.workspace = true
 # Compare the experimental selector against the actual CLI fix loop in tests.
 vize_l1 = { workspace = true, features = ["diagnostic-edit-selection"] }
 corsa.workspace = true
@@ -139,3 +140,7 @@ required-features = ["glyph"]
 
 [lints]
 workspace = true
+
+[[test]]
+name = "plugin_template_baseline"
+path = "tests/plugin_template_baseline/main.rs"
