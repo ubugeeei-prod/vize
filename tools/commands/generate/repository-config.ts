@@ -92,6 +92,9 @@ function ownedTarget(file: string): boolean {
 function verifyInventory(products: Product[]): void {
   const targets = new Set(products.map(({ target }) => target));
   if (targets.size !== products.length) throw new Error("Multiple Pkl modules own the same output");
+  for (const file of targets) {
+    if (!ownedTarget(file)) throw new Error(`Pkl cannot own independently managed file: ${file}`);
+  }
   const paths = execFileSync(
     "git",
     [

@@ -22,7 +22,9 @@ type ScalarEdit = { start: number; end: number; text: string };
 
 function sameValue(left: unknown, right: ConfigValue, ordered: boolean): boolean {
   // External configuration readers can use mapping order (for example, pnpm overrides).
-  return ordered ? JSON.stringify(left) === JSON.stringify(right) : isDeepStrictEqual(left, right);
+  return (
+    isDeepStrictEqual(left, right) && (!ordered || JSON.stringify(left) === JSON.stringify(right))
+  );
 }
 
 function readDocument(document: Document): ConfigValue | undefined {
