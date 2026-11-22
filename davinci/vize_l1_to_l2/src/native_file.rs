@@ -5,7 +5,6 @@
 //! ignored-empty script policy, controls and emitted products remain unfinished.
 //! There is no legacy route, second binder or AST traversal here.
 
-use alloc::vec::Vec;
 use vize_l0::{Allocator, Span};
 use vize_l1::container::{Vue, vue::DescriptorOptions};
 

@@ -1,5 +1,6 @@
 // Both constructors instantiate this single original-descriptor and File assembly.
 {
+    use alloc::vec::Vec;
     let descriptor = Vue.observe_descriptor(allocator, source, options);
     let mut issues = Vec::new();
     let view = match descriptor.admitted() {
