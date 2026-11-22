@@ -1,6 +1,8 @@
 //! Read a declaration's checker products and its completion contribution together.
-use super::{ServerState, names_from_program};
+use super::{Declarations, ServerState};
 use crate::source_project::{SnapshotRefusal, SourceSnapshot};
+use oxc_ast_visit::Visit;
+use std::collections::BTreeSet;
 use vize_canon::batch::declaration_products::DeclarationCheckerProducts;
 use vize_l0::{Allocator, SourceFrameError, SourceRoot, String};
 use vize_l1::embed::declaration_program::DeclarationProgram;
@@ -63,6 +65,21 @@ impl SourceSnapshot {
             .map_err(DeclarationToolRefusal::Host)?;
         Ok(products)
     }
+}
+
+fn names_from_program(program: &oxc_ast::ast::Program<'_>) -> Vec<String> {
+    let mut declarations = Declarations::default();
+    declarations.visit_program(program);
+    let mut pending = declarations.roots;
+    let mut names = BTreeSet::new();
+    while let Some(name) = pending.pop() {
+        // Removing each visited declaration also terminates inheritance cycles.
+        if let Some(interface) = declarations.interfaces.remove(&name) {
+            pending.extend(interface.extends);
+            names.extend(interface.names);
+        }
+    }
+    names.into_iter().collect()
 }
 
 fn supported_declaration(uri: &tower_lsp::lsp_types::Url) -> bool {

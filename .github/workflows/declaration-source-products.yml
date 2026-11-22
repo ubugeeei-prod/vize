@@ -10,6 +10,7 @@ on:
       - "davinci/vize_l1/src/embed/declaration_program.rs"
       - "crates/vize_canon/Cargo.toml"
       - "crates/vize_canon/src/batch/declaration*.rs"
+      - "crates/vize_canon/src/batch/declaration_path/**"
       - "crates/vize_canon/src/batch/vue_template_ref*.rs"
       - "crates/vize_maestro/Cargo.toml"
       - "crates/vize_maestro/src/server/state/global_tag_names*"

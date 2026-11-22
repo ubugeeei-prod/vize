@@ -158,15 +158,10 @@ pub fn project_declaration_as_typescript(text: &str) -> String {
         return text.to_compact_string();
     }
 
-    project_program(text, &parsed.program)
-}
-
-#[inline]
-pub(super) fn project_program(text: &str, program: &oxc_ast::ast::Program<'_>) -> String {
     let mut edits = Vec::new();
     let mut default_sequence = 0;
     let mut exported_default_names = Vec::new();
-    for statement in &program.body {
+    for statement in &parsed.program.body {
         match statement {
             Statement::VariableDeclaration(declaration) if !declaration.declare => {
                 edits.push(TextEdit::insertion(declaration.span.start, "declare "));
@@ -251,3 +246,6 @@ pub(super) fn project_program(text: &str, program: &oxc_ast::ast::Program<'_>) -
     }
     projected
 }
+
+#[cfg(feature = "authored-declarations")]
+pub(super) mod observed;
