@@ -47,9 +47,9 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 pub struct NoNextTick;
 
 impl ScriptRule for NoNextTick {
-    fn meta(&self) -> &'static ScriptRuleMeta {
-        &META
-    }
+    // A local alias still spells the exported name at its import. Escaped
+    // identifiers take the full visitor in the authored-program runner.
+    super::rule_with_authored_spelling!(META, "nextTick");
 
     #[inline]
     fn uses_ast(&self) -> bool {
@@ -70,11 +70,6 @@ impl ScriptRule for NoNextTick {
             imported_aliases: FxHashSet::default(),
         };
         visitor.visit_program(program);
-    }
-
-    #[cfg(feature = "authored-script-rules")]
-    fn required_authored_spelling(&self) -> Option<&'static str> {
-        Some("nextTick")
     }
 }
 

@@ -319,3 +319,19 @@ pub struct ScriptLinter {
 
 #[cfg(test)]
 mod tests;
+
+// Couple the opt-in scan's required spelling to the concrete rule that owns
+// the metadata. A custom rule can reuse a name without acquiring this capability.
+macro_rules! rule_with_authored_spelling {
+    ($meta:ident, $spelling:literal) => {
+        fn meta(&self) -> &'static super::ScriptRuleMeta {
+            &$meta
+        }
+
+        #[cfg(feature = "authored-script-rules")]
+        fn required_authored_spelling(&self) -> Option<&'static str> {
+            Some($spelling)
+        }
+    };
+}
+pub(self) use rule_with_authored_spelling;
