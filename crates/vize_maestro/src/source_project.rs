@@ -49,4 +49,4 @@ pub use scss::ScssDefinitionError;
 #[cfg(feature = "experimental-verified-style-format")]
 mod style_format;
 #[cfg(feature = "experimental-verified-style-format")]
-pub use style_format::{StyleFormatError, VerifiedStyleFormat};
+pub use style_format::{PreparedScss, StyleFormatError, VerifiedStyleFormat};

@@ -8,7 +8,10 @@ use tower_lsp::lsp_types::{
 use vize_atelier_sfc::scss::{ScssMismatch, ScssProducts, ScssRefusal};
 use vize_glyph::{FormatError, GlyphFormatter};
 use vize_l0::{Allocator, Span, String};
-use vize_l1::container::vue::{DescriptorObservation, StyleView, Vue};
+use vize_l1::{
+    container::vue::{DescriptorObservation, StyleView, Vue},
+    css::lang::OriginalStyleStructure,
+};
 
 #[derive(Debug)]
 pub enum StyleFormatError {
@@ -32,6 +35,16 @@ pub struct VerifiedStyleFormat<'s> {
     replacement: Option<String>,
 }
 
+/// The selected original style, its compiler products and the owning editor
+/// revision. The descriptor borrow keeps the original style identity private.
+pub struct PreparedScss<'s, 'o, 'a> {
+    snapshot: &'s SourceSnapshot,
+    descriptor: &'o DescriptorObservation<'a>,
+    ordinal: usize,
+    original: StyleView<'o, 'a>,
+    products: ScssProducts<'a>,
+}
+
 impl SourceSnapshot {
     pub fn verified_style_format<'s>(
         &'s self,
@@ -40,6 +53,19 @@ impl SourceSnapshot {
         ordinal: usize,
         formatter: &GlyphFormatter<'_>,
     ) -> Result<VerifiedStyleFormat<'s>, StyleFormatError> {
+        let (prepared, ()) = self.prepare_scss_with(documents, descriptor, ordinal, |_| ())?;
+        prepared.format(formatter)
+    }
+
+    /// Select one genuine style on this revision. Compiler output, class
+    /// queries, editor definitions and a requested rule pass share its tree.
+    pub fn prepare_scss_with<'s, 'o, 'a, R>(
+        &'s self,
+        documents: &DocumentStore,
+        descriptor: &'o DescriptorObservation<'a>,
+        ordinal: usize,
+        visit: impl FnOnce(OriginalStyleStructure<'_, 'a>) -> R,
+    ) -> Result<(PreparedScss<'s, 'o, 'a>, R), StyleFormatError> {
         self.check_current(documents)
             .map_err(StyleFormatError::Host)?;
         if !core::ptr::eq(descriptor.source(), self.source()) {
@@ -49,19 +75,57 @@ impl SourceSnapshot {
         if original.attrs().iter().any(|attr| attr.name == "src") {
             return Err(StyleFormatError::ExternalStyle);
         }
+        let (products, result) =
+            ScssProducts::from_style_with(original, visit).map_err(StyleFormatError::Style)?;
+        Ok((
+            PreparedScss {
+                snapshot: self,
+                descriptor,
+                ordinal,
+                original,
+                products,
+            },
+            result,
+        ))
+    }
+}
+
+impl<'s, 'a> PreparedScss<'s, '_, 'a> {
+    pub fn products(&self) -> &ScssProducts<'a> {
+        &self.products
+    }
+
+    /// Verify a format request against the retained compiler inputs. Reject a
+    /// superseded editor revision before building the prospective document.
+    pub fn verified_format(
+        &self,
+        documents: &DocumentStore,
+        formatter: &GlyphFormatter<'_>,
+    ) -> Result<VerifiedStyleFormat<'s>, StyleFormatError> {
+        self.snapshot
+            .check_current(documents)
+            .map_err(StyleFormatError::Host)?;
+        self.format(formatter)
+    }
+
+    fn format(
+        &self,
+        formatter: &GlyphFormatter<'_>,
+    ) -> Result<VerifiedStyleFormat<'s>, StyleFormatError> {
+        let original = self.original;
         let span = original.original_block().authored_span();
-        let before = ScssProducts::from_style(original).map_err(StyleFormatError::Style)?;
+        let before = &self.products;
         before.program().map_err(StyleFormatError::Style)?;
         let formatted = formatter
             .format_observed_style(original)
             .map_err(StyleFormatError::Formatting)?;
-        let source = self.source();
+        let source = self.snapshot.source();
         let keep = source
             .get(span.start as usize..span.end as usize)
             .ok_or(StyleFormatError::Position)?;
         let replacement = if keep == formatted.code.as_str() {
             before
-                .check_equivalent(&before)
+                .check_equivalent(before)
                 .map_err(StyleFormatError::Semantics)?;
             None
         } else {
@@ -78,8 +142,8 @@ impl SourceSnapshot {
             let end = candidate.len();
             candidate.push_str(suffix);
             let arena = Allocator::default();
-            let observed = Vue.observe_descriptor(&arena, &candidate, descriptor.options());
-            let after = style_at(&observed, ordinal)?;
+            let observed = Vue.observe_descriptor(&arena, &candidate, self.descriptor.options());
+            let after = style_at(&observed, self.ordinal)?;
             let after_span = after.original_block().authored_span();
             if span.start != after_span.start
                 || after_span.end as usize != end
@@ -101,7 +165,7 @@ impl SourceSnapshot {
             Some(formatted.code)
         };
         Ok(VerifiedStyleFormat {
-            snapshot: self,
+            snapshot: self.snapshot,
             span,
             replacement,
         })
@@ -179,3 +243,6 @@ mod tests;
 
 #[cfg(test)]
 mod corpus;
+
+#[cfg(all(test, feature = "experimental-style-lint-products"))]
+mod composition;
