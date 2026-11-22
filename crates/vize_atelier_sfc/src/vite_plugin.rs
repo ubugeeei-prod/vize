@@ -47,3 +47,6 @@ pub use transform::{
     rewrite_dynamic_template_imports, rewrite_import_meta_glob_base, rewrite_static_asset_urls,
     should_apply_define_in_virtual_module, to_browser_import_prefix,
 };
+
+#[cfg(feature = "original-style-bindings")]
+pub use css_vars::transform_original_style_bindings;

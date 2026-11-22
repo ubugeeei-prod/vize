@@ -117,3 +117,8 @@ impl<'a> super::Lowered<'a> {
         self.op_count = self.op_count.saturating_add(extra);
     }
 }
+
+#[cfg(feature = "original-style-bindings")]
+mod original;
+#[cfg(feature = "original-style-bindings")]
+pub use original::OriginalStyleBindings;
