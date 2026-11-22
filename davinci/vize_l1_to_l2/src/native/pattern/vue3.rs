@@ -46,7 +46,14 @@ fn bind<'a, R: ConstructionFactory<'a>>(
         return;
     }
     let Some(value) = directive.value else {
-        // Same-name shorthand is a separate contract; do not synthesize a parse.
+        #[cfg(feature = "authored-bind-shorthand")]
+        if cx.component.authored_bind_shorthand
+            && directive.span == directive.name_span
+            && !directive.missing
+        {
+            shorthand::bind(cx, region, directive, argument);
+            return;
+        }
         cx.hole(region, NativeHoleKind::Directive, directive.span);
         return;
     };
@@ -75,3 +82,6 @@ fn bind<'a, R: ConstructionFactory<'a>>(
         |region, value| region.bind(name, argument, value, directive.span),
     );
 }
+
+#[cfg(feature = "authored-bind-shorthand")]
+mod shorthand;

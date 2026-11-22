@@ -22,6 +22,8 @@ autotests = false
 metadata.vize.stability = "experimental"
 
 [features]
+# Admit Vue 3.4+ same-name binds with an authored identifier operand.
+authored-bind-shorthand = []
 # Read authored props in source order from each resolved component operation.
 component-prop-queries = ["setup-component-imports", "vize_l2/component-prop-queries"]
 original-style-bindings = ["vize_l1/original-style-bindings"]
