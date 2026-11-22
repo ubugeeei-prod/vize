@@ -4,10 +4,10 @@
 //! beside the L2 fact schema; this file is their single implementation.
 
 use crate::op::{BindingOp, ComponentOp, ElementOp, Namespace, Op};
-use crate::provenance::ProvenanceSink;
-use vize_l0::ensure_sufficient_stack;
+use crate::provenance::{ProvenanceRecord, ProvenanceSink};
 use vize_l0::pass::RemarkSink;
 use vize_l0::side_table::SideTable;
+use vize_l0::{cstr, ensure_sufficient_stack};
 
 use super::consts::{props_all_hoistable, slot_props_static};
 use super::{StaticFacts, StaticLevel};
@@ -331,11 +331,27 @@ fn publish(
     let Some(id) = id else {
         return;
     };
-    publication::record!(provenance, id, owner, span, fact);
+    provenance.record(|| {
+        let level = match fact.level {
+            StaticLevel::NotStatic => "not-static",
+            StaticLevel::HasDynamicText => "dynamic-text",
+            StaticLevel::FullyStatic => "fully-static",
+        };
+        ProvenanceRecord {
+            rule: vize_l0::String::from("pass.hoist-static.fact"),
+            node: Some(id),
+            before: vize_l0::String::from(owner),
+            after: cstr!(
+                "level={level} props={} nested={} native={}",
+                fact.props_hoistable,
+                fact.nested_static,
+                fact.native_descendants
+            ),
+            span,
+        }
+    });
     facts.insert(id, fact);
 }
 
 #[cfg(any(test, feature = "composed-template-analysis"))]
 pub(crate) mod composed;
-
-mod publication;

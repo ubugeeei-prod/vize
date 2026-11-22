@@ -69,7 +69,7 @@ impl<P: ProvenanceSink, R: RemarkSink> Walk<'_, P, R> {
     fn publish(&mut self, id: Option<NodeId>, owner: &str, span: Span, fact: StaticFacts) {
         if let Some(id) = id {
             let provenance = &mut self.provenance;
-            super::publication::record!(provenance, id, owner, span, fact);
+            publication::record!(provenance, id, owner, span, fact);
             self.static_facts.insert(id, fact);
         }
     }
@@ -266,3 +266,5 @@ mod tests {
         assert_eq!((rows[1].op.unwrap().index(), rows[1].nesting), (1, 1));
     }
 }
+
+mod publication;
