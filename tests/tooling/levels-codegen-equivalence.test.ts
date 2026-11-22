@@ -14,6 +14,7 @@ const members = (hash: string) =>
 const build = (hash: string) => ({
   revision: hash,
   manifest: "crates/sample/Cargo.toml",
+  target: { name: "custom", kind: ["lib"], source: "crates/sample/src/lib.rs" },
   lock: "lock",
   cargo: "cargo",
   rustc: "rustc",
@@ -43,9 +44,10 @@ test("reordering, omissions, extra members and configuration changes fail the co
   b.members = [...a.members];
   b.features = [...a.features];
   b.manifest = "other/Cargo.toml";
+  b.target.name = "another";
   b.lock = "changed";
   b.profile.opt_level = "0";
-  assert.deepEqual(differences(a, b), ["manifest", "lock", "profile"]);
+  assert.deepEqual(differences(a, b), ["manifest", "target", "lock", "profile"]);
 });
 
 test("empty and ambiguous archives cannot pass", () => {
@@ -74,7 +76,7 @@ test(
       execFileSync(args[0], args.slice(1), { cwd: root, encoding: "utf8" }).trim();
     const source = path.join(root, "src/lib.rs");
     const commit = (message: string) => {
-      run("git", "add", "Cargo.toml", "Cargo.lock", "src");
+      run("git", "add", "Cargo.toml", "Cargo.lock", "src", "helper");
       run(
         "git",
         "-c",
@@ -105,9 +107,18 @@ test(
     try {
       run("git", "init", "-q");
       fs.mkdirSync(path.join(root, "src"));
+      fs.mkdirSync(path.join(root, "helper", "src"), { recursive: true });
+      fs.writeFileSync(
+        path.join(root, "helper", "Cargo.toml"),
+        '[package]\nname="helper"\nversion="0.1.0"\nedition="2024"\n[lib]\nname="sample"\n',
+      );
+      fs.writeFileSync(
+        path.join(root, "helper", "src", "lib.rs"),
+        "pub fn dependency() -> u32 { 7 }\n",
+      );
       fs.writeFileSync(
         path.join(root, "Cargo.toml"),
-        '[package]\nname="sample"\nversion="0.1.0"\nedition="2024"\n[features]\nextra=[]\n[profile.ci-opt]\ninherits="release"\ncodegen-units=4\n',
+        '[workspace]\nmembers=["helper"]\n[package]\nname="sample"\nversion="0.1.0"\nedition="2024"\n[lib]\nname="custom"\n[dependencies]\nhelper={path="helper"}\n[features]\nextra=[]\n[profile.ci-opt]\ninherits="release"\ncodegen-units=4\n',
       );
       fs.writeFileSync(
         source,
@@ -115,7 +126,7 @@ test(
       );
       fs.writeFileSync(
         path.join(root, "src/main.rs"),
-        'fn main() { println!("{}", sample::emitted(std::hint::black_box(7)) + sample::generic(std::hint::black_box(3u8))); }\n',
+        'fn main() { println!("{}", custom::emitted(std::hint::black_box(7)) + custom::generic(std::hint::black_box(3u8))); }\n',
       );
       run("cargo", "generate-lockfile");
       const base = commit("base");

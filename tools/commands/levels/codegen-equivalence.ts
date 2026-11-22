@@ -19,12 +19,26 @@ interface Member {
 interface Build {
   revision: string;
   manifest: string;
+  target: { name: string; kind: string[]; source: string };
   lock: string;
   cargo: string;
   rustc: string;
   features: string[];
   profile: object;
   members: Member[];
+}
+
+interface CargoTarget {
+  kind: string[];
+  name: string;
+  src_path: string;
+}
+
+interface CargoPackage {
+  id: string;
+  name: string;
+  manifest_path: string;
+  targets: CargoTarget[];
 }
 
 const git = (cwd: string, ...args: string[]) =>
@@ -84,6 +98,25 @@ async function build(
   mode: string,
 ): Promise<Build> {
   const binary = product.startsWith("bin:") ? product.slice(4) : undefined;
+  const metadata: { packages: CargoPackage[]; workspace_members: string[] } = JSON.parse(
+    execFileSync("cargo", ["metadata", "--locked", "--no-deps", "--format-version", "1"], {
+      cwd: checkout,
+      encoding: "utf8",
+      maxBuffer: 128 * 1024 * 1024,
+    }),
+  );
+  const packages = metadata.packages.filter(
+    (entry) => entry.name === pkg && metadata.workspace_members.includes(entry.id),
+  );
+  if (packages.length !== 1) throw new Error(`expected one workspace package for ${pkg}`);
+  const owner = packages[0];
+  const targets = owner.targets.filter((target) =>
+    binary
+      ? target.name === binary && target.kind.includes("bin")
+      : target.kind.includes("lib") || target.kind.includes("rlib"),
+  );
+  if (targets.length !== 1) throw new Error(`expected one ${product} target for ${pkg}`);
+  const requested = targets[0];
   const selector = binary ? ["--bin", binary] : ["--lib"];
   const args = ["build", ...selector, "--locked", "--profile", "ci-opt", "-p", pkg];
   if (mode === "portable") args.push("--no-default-features");
@@ -94,7 +127,6 @@ async function build(
     maxBuffer: 128 * 1024 * 1024,
     env: { ...process.env, CARGO_TARGET_DIR: target, CARGO_INCREMENTAL: "0" },
   });
-  const crate = pkg.replaceAll("-", "_");
   const artifacts = output
     .trimEnd()
     .split("\n")
@@ -102,11 +134,11 @@ async function build(
     .filter(
       (m) =>
         m.reason === "compiler-artifact" &&
-        m.target.name === (binary ?? crate) &&
-        m.target.kind.some((kind: string) =>
-          binary ? kind === "bin" : kind === "lib" || kind === "rlib",
-        ) &&
-        (m.manifest_path as string).startsWith(checkout + path.sep),
+        m.package_id === owner.id &&
+        m.manifest_path === owner.manifest_path &&
+        m.target.name === requested.name &&
+        m.target.src_path === requested.src_path &&
+        isDeepStrictEqual(m.target.kind, requested.kind),
     );
   if (artifacts.length !== 1 || artifacts[0].fresh)
     throw new Error(`expected one freshly compiled workspace target for ${pkg}`);
@@ -123,6 +155,11 @@ async function build(
   return {
     revision: git(checkout, "rev-parse", "HEAD"),
     manifest: path.relative(checkout, artifact.manifest_path),
+    target: {
+      name: requested.name,
+      kind: requested.kind,
+      source: path.relative(checkout, requested.src_path),
+    },
     cargo: execFileSync("cargo", ["-V"], { cwd: checkout, encoding: "utf8" }).trim(),
     rustc: execFileSync("rustc", ["-vV"], { cwd: checkout, encoding: "utf8" }).trim(),
     lock: digest(fs.readFileSync(path.join(checkout, "Cargo.lock"))),
@@ -134,7 +171,15 @@ async function build(
 
 export function differences(base: Build, head: Build): string[] {
   const result = [];
-  for (const field of ["manifest", "lock", "cargo", "rustc", "features", "profile"] as const)
+  for (const field of [
+    "manifest",
+    "target",
+    "lock",
+    "cargo",
+    "rustc",
+    "features",
+    "profile",
+  ] as const)
     if (!isDeepStrictEqual(base[field], head[field])) result.push(field);
   if (
     !isDeepStrictEqual(
