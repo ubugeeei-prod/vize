@@ -17,3 +17,6 @@ pub use blocks::{
 };
 pub use css::{strip_css_comments_for_scoped, wrap_scoped_preprocessor_style};
 pub use scope::generate_bundler_scope_id;
+
+#[cfg(feature = "bundler-block-products")]
+pub use blocks::BundlerBlockProducts;

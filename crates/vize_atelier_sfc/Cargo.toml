@@ -9,6 +9,7 @@ description = "Atelier SFC - The Single File Component workshop for Vize"
 metadata.vize.stability = "alpha-supported"
 
 [features]
+bundler-block-products = []
 script-binding-products = [
   "vize_croquis/observed-script-effects",
   "vize_l2/script-declaration-queries",

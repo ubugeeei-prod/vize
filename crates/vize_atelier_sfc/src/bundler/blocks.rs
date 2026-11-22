@@ -153,3 +153,8 @@ fn block_attrs(attrs: &vize_l0::FxHashMap<Cow<'_, str>, Cow<'_, str>>) -> Vec<Sf
         })
         .collect()
 }
+
+#[cfg(feature = "bundler-block-products")]
+mod products;
+#[cfg(feature = "bundler-block-products")]
+pub use products::BundlerBlockProducts;
