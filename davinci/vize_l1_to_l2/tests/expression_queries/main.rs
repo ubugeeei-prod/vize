@@ -260,3 +260,17 @@ fn a_foreign_binding_and_invalid_byte_positions_are_typed_refusals() {
 
 #[cfg(feature = "component-prop-queries")]
 mod component_props;
+
+#[cfg(all(
+    feature = "authored-bind-shorthand",
+    feature = "component-prop-queries",
+    feature = "template-operand-queries"
+))]
+mod shorthand;
+
+#[cfg(all(
+    feature = "authored-bind-shorthand",
+    feature = "component-prop-queries",
+    feature = "template-operand-queries"
+))]
+mod shorthand_products;

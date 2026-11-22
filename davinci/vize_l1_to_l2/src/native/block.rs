@@ -17,6 +17,8 @@ pub struct NativeComponent<'a> {
     allocator: &'a Allocator,
     block: SourceBlock<'a>,
     component: ComponentParse<'a>,
+    #[cfg(feature = "authored-bind-shorthand")]
+    pub(super) authored_bind_shorthand: bool,
 }
 
 impl core::fmt::Debug for NativeComponent<'_> {
@@ -64,6 +66,8 @@ impl<'a> NativeComponent<'a> {
             allocator,
             block,
             component,
+            #[cfg(feature = "authored-bind-shorthand")]
+            authored_bind_shorthand: false,
         })
     }
 
