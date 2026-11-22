@@ -264,6 +264,16 @@ fn original_event_documents() {
     eprintln!(
         "event_documents candidates={candidates} admitted={documents} event_files={event_files} events={events}"
     );
+    if std::env::var_os("VIZE_REQUIRE_REPOSITORY_LISTENERS").is_some() {
+        assert!(
+            documents > 0,
+            "the tracked corpus must admit editor documents"
+        );
+        assert!(
+            event_files > 0,
+            "the tracked corpus must exercise original event expressions"
+        );
+    }
 }
 
 #[cfg(feature = "micro-profiling")]
