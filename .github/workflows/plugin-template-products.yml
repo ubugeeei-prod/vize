@@ -6,6 +6,17 @@ on:
       - "crates/vize/Cargo.toml"
       - "crates/vize/src/plugin_template.rs"
       - "crates/vize/tests/plugin_template_products/**"
+      - "crates/vize/tests/inspector_template_products/**"
+      - "crates/vize_curator/Cargo.toml"
+      - "crates/vize_curator/src/inspector.rs"
+      - "crates/vize_curator/src/inspector/feed.rs"
+      - "crates/vize_curator/src/inspector/payload.rs"
+      - "crates/vize_curator/src/inspector/stages.rs"
+      - "crates/vize_curator/src/inspector/stages/**"
+      - "davinci/vize_l1/src/markup/**"
+      - "davinci/vize_l1_to_l2/src/pass.rs"
+      - "davinci/vize_l1_to_l2/src/dialect/vue/pass/**"
+      - "crates/vize_atelier_sfc/src/parse/**"
       - "crates/vize_patina/src/plugin_batch/**"
       - "crates/vize_patina/Cargo.toml"
       - "crates/vize_croquis/src/sfc/**"
@@ -89,3 +100,29 @@ jobs:
           git ls-files -z -- '*.vue' > "$VIZE_COMPOSED_TEMPLATE_FILES"
           cargo test "${flags[@]}" --test cfg_complexity_oracle composed:: -- --include-ignored --nocapture --test-threads=1
           cargo test "${flags[@]}" --test composed_template_alloc
+
+  inspector-products:
+    name: Inspector and Doctor template products
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUST_MIN_STACK: "16777216"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0", components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Compare public stage feeds, Doctor component records and complete request costs
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt)
+          export VIZE_INSPECTOR_TEMPLATE_INPUTS="$RUNNER_TEMP/inspector-templates"
+          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_INSPECTOR_TEMPLATE_INPUTS"
+          cargo clippy "${flags[@]}" -p vize_curator --features inspector-template-products --lib --no-deps -- -D warnings
+          cargo test "${flags[@]}" -p vize_curator --features inspector-template-products --lib inspector:: -- --include-ignored --nocapture --test-threads=1
+          cargo test "${flags[@]}" -p vize --no-default-features --features inspector-template-products --test inspector_template_products -- --include-ignored --nocapture --test-threads=1

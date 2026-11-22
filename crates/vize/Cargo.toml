@@ -19,6 +19,7 @@ path = "src/lib.rs"
 
 [features]
 plugin-template-facts = ["vize_patina/plugin-template-facts"]
+inspector-template-products = ["vize_curator/inspector-template-products"]
 plugin-project-facts = ["plugin-template-facts", "vize_croquis_cf/observed-template-complexity"]
 # Untimed source custody only; never enabled by default or in shipping builds.
 cache-custody = ["vize_canon/cache-custody"]
@@ -151,3 +152,8 @@ path = "tests/plugin_template_baseline/main.rs"
 name = "plugin_template_products"
 path = "tests/plugin_template_products/main.rs"
 required-features = ["plugin-template-facts"]
+
+[[test]]
+name = "inspector_template_products"
+path = "tests/inspector_template_products/main.rs"
+required-features = ["inspector-template-products"]
