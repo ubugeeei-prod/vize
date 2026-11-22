@@ -1,0 +1,37 @@
+// Shell files are distribution artifacts. CI can also use these functions for run steps.
+open module vize.ci.ShellScript
+
+executable: Boolean = false
+interpreter: ("bash" | "sh")?
+commands: Listing<String>
+
+function quote(argument: String): String =
+  if (argument.matches(Regex("[a-zA-Z0-9_./@%+=,:-]+"))) argument
+  else "'" + argument.replaceAll("'", "'\\''") + "'"
+
+function command(program: String, arguments: List<String>): String =
+  (List(program) + arguments).map((arg) -> quote(arg)).join(" ")
+
+function cargoTest(profile: String, crate: String, target: List<String>, testArgs: List<String>): String =
+  command("cargo", List("test", "--locked", "--profile", profile, "-p", crate) + target + testArgs)
+
+fixed strictMode = "set -euo pipefail"
+fixed collectFailuresMode = "set -uo pipefail"
+fixed onlyPullRequestsAndSchedules = #"if [[ "$GITHUB_EVENT_NAME" != pull_request && "$GITHUB_EVENT_NAME" != schedule ]]; then exit 0; fi"#
+
+function captureDirectory(variable: String, relativePath: String): String =
+  #"export \#(variable)="$RUNNER_TEMP/\#(relativePath)""#
+
+function inSourceRoot(): String = #"cd "$NATIVE_PHASE_SOURCE_ROOT""#
+function makeDirectory(variable: String): String = "mkdir -p \"$\(variable)\""
+function unsetVariable(variable: String): String = "unset \(variable)"
+
+local header = if (interpreter == "bash") List("#!/usr/bin/env bash")
+  else if (interpreter == "sh") List("#!/bin/sh") else List()
+
+output {
+  value = new Dynamic {
+    text = (header + commands.toList()).join("\n") + "\n"
+    executable = module.executable
+  }
+}

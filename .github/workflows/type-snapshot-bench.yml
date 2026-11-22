@@ -1,4 +1,4 @@
-name: Type source snapshot benchmark
+name: Benchmark - Type source snapshots
 
 on:
   workflow_dispatch:

@@ -1,4 +1,4 @@
-name: Criterion Bench
+name: Benchmark - Criterion suites
 on:
   workflow_dispatch:
     inputs:

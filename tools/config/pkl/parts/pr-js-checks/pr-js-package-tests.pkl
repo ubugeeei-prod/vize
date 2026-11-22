@@ -1,0 +1,177 @@
+import "../../Actions.pkl" as ci
+
+name = "PR JS package tests (${{ matrix.group }})"
+strategy {
+  `fail-fast` = false
+  // Groups partition `testedPackages`; see
+  // tools/config/vite-plus/tested-package-groups.ts.
+  matrix = "${{ fromJSON(inputs.js-plan).matrix }}"
+}
+`runs-on` = ci.linux
+`timeout-minutes` = 35
+env {
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+  CARGO_BUILD_JOBS = "12"
+}
+steps = new Listing {
+  new Dynamic {
+    name = "Explain documentation-only skip"
+    `if` = "${{ !(inputs.run-js && matrix.group != 'none') }}"
+    run = #"echo 'JS package checks skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY""#
+  }
+  new Dynamic {
+    uses = ci.checkout
+    `if` = "${{ (inputs.run-js && matrix.group != 'none') }}"
+  }
+  new Dynamic {
+    uses = "./.github/actions/cache-vp-bootstrap"
+    `if` = "${{ (inputs.run-js && matrix.group != 'none') }}"
+  }
+  new Dynamic {
+    uses = ci.setupVp121
+    `if` = "${{ (inputs.run-js && matrix.group != 'none') }}"
+    with {
+      version = "latest"
+      `node-version-file` = "package.json"
+      cache = true
+      `cache-save` = false
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    uses = ci.setupRust
+    with { toolchain = "stable" }
+    `if` = "${{ (inputs.run-js && matrix.group != 'none') }}"
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-wild-http-recovery"
+    `if` = "${{ (inputs.run-js && matrix.group != 'none') }}"
+    with { `wild-version` = "0.9.0" }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    `if` = "${{ (inputs.run-js && matrix.group != 'none') }}"
+    with {
+      key = "test-js-packages"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    uses = ci.setupBun
+    `if` = "${{ inputs.run-js && matrix.group == 'builders' }}"
+    with { `bun-version` = "1.3.14" }
+  }
+  new Dynamic {
+    name = "Install JS dependencies"
+    `if` = "${{ (inputs.run-js && matrix.group != 'none') }}"
+    env { VIZE_JS_PACKAGE_GROUP = "${{ matrix.group }}" }
+    run = #"node tools/support/compat/github/install-js-checks.ts "$VIZE_JS_PACKAGE_GROUP""#
+  }
+  new Dynamic {
+    name = "Test JS package group"
+    id = "tests"
+    `if` = "${{ (inputs.run-js && matrix.group != 'none') }}"
+    env {
+      VIZE_JS_PACKAGE_GROUP = "${{ matrix.group }}"
+      TEST_CASES_JOB = "PR JS package tests (${{ matrix.group }})"
+      VIZE_TEST_CASES = "${{ runner.temp }}/test-cases-js-${{ matrix.group }}.json"
+    }
+    run = #"node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP""#
+  }
+  new Dynamic {
+    name = "Upload JS package test cases"
+    `if` = "${{ !cancelled() && steps.tests.outcome != 'skipped' }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "test-cases-js-${{ matrix.group }}-${{ github.run_attempt }}"
+      path = "${{ runner.temp }}/test-cases-js-${{ matrix.group }}.json"
+      `if-no-files-found` = "error"
+      `retention-days` = 7
+    }
+  }
+  new Dynamic {
+    name = "Test Vite+ rule catalog custody on Bun"
+    `if` = "${{ inputs.run-js && matrix.group == 'builders' }}"
+    run = "bun test npm/builder/vite/src/vite-plus/runtime.test.ts"
+  }
+  new Dynamic {
+    name = "Test content mapper capability launch on Bun"
+    `if` = "${{ inputs.run-js && matrix.group == 'builders' }}"
+    run = "bun test npm/cli/tests/content-mapper-bun.test.ts"
+  }
+  new Dynamic {
+    name = "Test the plugin plan and lint host on Bun"
+    `if` = "${{ inputs.run-js && matrix.group == 'builders' }}"
+    run = "bun test tests/tooling/plugin-plan.test.ts tests/tooling/plugin-lint-host.test.ts tests/tooling/plugin-config-projection.test.ts"
+  }
+  new Dynamic {
+    name = "Preserve complete Rspack JSX producer and bundle"
+    `if` = "${{ !cancelled() && inputs.run-js && matrix.group == 'builders' }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "jsx-rspack-child-values-${{ github.run_id }}-${{ github.run_attempt }}"
+      path = """
+      ${{ runner.temp }}/jsx-rspack-child-values-6890/authored-vapor-bundle.json
+      target/vize-tests/test-output/rspack-vize-plugin/jsx-vapor/authored-vapor-bundle.json
+      target/vize-tests/test-output/rspack-vize-plugin/jsx-vdom/native-vdom-bundle.json
+      target/vize-tests/test-output/rspack-vize-plugin/jsx-vdom-module/native-vdom-module.json
+      target/vize-tests/test-output/rspack-vize-plugin/jsx-vdom-map/native-vdom-map.json
+
+      """
+      `if-no-files-found` = "error"
+      `retention-days` = 14
+    }
+  }
+  new Dynamic {
+    name = "Preserve public native formatter evidence"
+    `if` = "${{ !cancelled() && (inputs.run-js && matrix.group != 'none') }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}"
+      path = "npm/native/.artifacts/native/formatter-history/**"
+      `if-no-files-found` = "warn"
+      `retention-days` = 14
+    }
+  }
+  new Dynamic {
+    name = "Preserve original template style fix observations"
+    `if` = "${{ !cancelled() && (inputs.run-js && matrix.group != 'none') }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "template-style-fixes-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}"
+      path = "target/template-style-fixes-7905.json"
+      `if-no-files-found` = "warn"
+      `retention-days` = 14
+    }
+  }
+  new Dynamic {
+    name = "Preserve original Oxlint package locations"
+    `if` = "${{ !cancelled() && (inputs.run-js && matrix.group != 'none') }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}"
+      // Project qualification staging belongs to its own job below.
+      path = """
+      target/oxlint-original-locations-7904.json
+      target/oxlint-original-project-checks-7903.json
+      target/oxlint-script-safe-carrier-7903.json
+      target/oxlint-original-html-binding-7903/**
+      target/vize-tests/original-sfc-host-7004-7005-*/**
+
+      """
+      `if-no-files-found` = "warn"
+      `retention-days` = 14
+    }
+  }
+  new Dynamic {
+    name = "Preserve bounded JS native fault diagnostics"
+    `if` = "${{ !cancelled() && (inputs.run-js && matrix.group != 'none') }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "js-native-fault-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.group }}"
+      path = "${{ runner.temp }}/js-native-fault-evidence-*/**/*.json"
+      `if-no-files-found` = "warn"
+      `retention-days` = 14
+    }
+  }
+}

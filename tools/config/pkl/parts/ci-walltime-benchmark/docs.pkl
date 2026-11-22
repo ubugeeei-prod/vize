@@ -1,0 +1,59 @@
+import "../../Actions.pkl" as ci
+
+`if` = "${{ (github.event_name == 'pull_request' && (github.event.label.name == 'ci-walltime-benchmark' || (github.event.action != 'labeled' && startsWith(github.head_ref, 'ci/optimize-')))) || (github.event_name == 'workflow_dispatch' && (inputs.component == 'all' || inputs.component == 'docs')) }}"
+`runs-on` = ci.linux
+`timeout-minutes` = 120
+steps = new Listing {
+  new Dynamic {
+    uses = ci.checkout
+    with { ref = "${{ github.sha }}" }
+  }
+  ci.rust("stable")
+  ci.wild()
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      key = "docs-napi"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  ci.workspaceVp()
+  ci.use("./.github/actions/setup-rust-script")
+  new Dynamic {
+    name = "Install identical Docs dependencies and rendering fonts"
+    run = """
+    node tools/support/github/vp-install.ts --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'
+    sudo apt-get update
+    sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+
+    """
+  }
+  new Dynamic {
+    name = "Build the same native packages and Docs once"
+    run = """
+    node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
+    vp run --no-cache --filter './docs' build
+
+    """
+  }
+  new Dynamic {
+    name = "Serial complete navigation proof"
+    run = "vp node docs/scripts/verify-navigation-render.ts --workers 1 --output docs-render-evidence/ci-walltime/serial"
+  }
+  new Dynamic {
+    name = "Concurrent complete navigation proof"
+    `if` = "${{ !cancelled() }}"
+    run = "vp node docs/scripts/verify-navigation-render.ts --workers 2 --output docs-render-evidence/ci-walltime/concurrent"
+  }
+  new Dynamic {
+    name = "Preserve both complete render proofs and timings"
+    `if` = "${{ always() }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "ci-walltime-docs-${{ github.sha }}"
+      path = "docs-render-evidence/ci-walltime/"
+      `if-no-files-found` = "error"
+      `retention-days` = 14
+    }
+  }
+}

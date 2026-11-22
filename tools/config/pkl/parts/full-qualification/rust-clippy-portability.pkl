@@ -1,0 +1,43 @@
+import "../../Actions.pkl" as ci
+
+`runs-on` = ci.linux
+`if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+`timeout-minutes` = 45
+env { VIZE_NUXT_CONFIG_ITERATIONS = "100" }
+steps = new Listing {
+  ci.use(ci.checkout)
+  new Dynamic {
+    uses = ci.setupRust
+    with {
+      toolchain = "stable"
+      components = "clippy"
+    }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-wild-http-recovery"
+    with { `wild-version` = "0.9.0" }
+  }
+  new Dynamic {
+    uses = ci.setupVp
+    with {
+      `node-version-file` = "package.json"
+      cache = true
+      `run-install` = true
+    }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      key = "clippy-test"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    name = "Clippy"
+    run = "cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && node tools/commands/ci/github/check-maestro-feature-contract.ts && node tools/commands/ci/check-workspace-lints.ts --check && node tools/commands/ci/check-skeleton-todos.ts --check"
+  }
+  new Dynamic {
+    name = "Davinci no_std stage-library portability lanes (TS-24)"
+    run = "cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l4 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 && cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l4 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 --no-default-features"
+  }
+}

@@ -1,0 +1,100 @@
+import "../../Actions.pkl" as ci
+
+name = "Release"
+// Dispatch on main (or `vp run release`) to publish the next minor version.
+//
+// main is already validated by the merge queue, so nothing here re-runs Check.
+// `version` picks the next minor above every tag and npm version, stamps it into
+// all manifests on a commit whose only parent is the main commit, and pushes it
+// to refs/release-candidates/<main sha>. main itself is never rewritten. All
+// platforms build that candidate in parallel and one pre-publish smoke checks
+// the tarballs. Only when every artifact exists does `tag` push vX.Y.0, so a
+// failed build burns no version: the next run retries the same number. Every
+// registry then publishes in parallel. npm publishes and verifies every native
+// platform package before exposing @vizejs/native or vize, so an install can
+// never resolve a wrapper while its binding is still propagating.
+// release-verify.yml checks registry visibility again after publishing, outside
+// this run. Re-running failed jobs is safe: every publisher skips versions that
+// exist.
+// npm-first: when the rolling crates.io quota refuses this version, the
+// post-build admission defers crates.io alone. Every other registry and the
+// GitHub release still publish; crates.io skips the version and a later
+// admitted release publishes the crates at its own version.
+// release-cadence.yml dispatches this workflow automatically. It is always a
+// workflow_dispatch run because crates.io trusted publishing refuses
+// workflow_run and schedule triggers.
+on {
+  workflow_dispatch {
+    inputs {
+      version {
+        description = "Exact version to release (default the next minor)"
+        required = false
+        ["default"] = ""
+        type = "string"
+      }
+      source {
+        description = "main commit to release (default the dispatched main commit)"
+        required = false
+        ["default"] = ""
+        type = "string"
+      }
+      npm_resume_run {
+        description = "Release run whose immutable artifacts should resume npm publication"
+        required = false
+        ["default"] = ""
+        type = "string"
+      }
+    }
+  }
+}
+`run-name` = "Release ${{ inputs.npm_resume_run && format('npm resume {0} from run {1}', inputs.version, inputs.npm_resume_run) || inputs.version || 'next minor' }}${{ inputs.source && format(' @ {0}', inputs.source) || '' }}"
+concurrency {
+  group = "release"
+  `cancel-in-progress` = false
+}
+permissions { contents = "read" }
+env {
+  CARGO_INCREMENTAL = 0
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  // Release binaries report the plain version; every other build says <version>-dev.
+  VIZE_RELEASE_BUILD = "1"
+  // JS packages built by ./.github/actions/release-build-packages.
+  RELEASE_JS_PACKAGES = "npm/cli npm/create-fresco npm/builder/vite npm/linter/oxlint npm/builder/unplugin npm/fresco npm/mcp-musea npm/builder/vite-musea npm/builder/rspack npm/framework/musea-nuxt npm/framework/nuxt-lint-config npm/framework/nuxt npm/marquette npm/compose/core npm/compose/router npm/compose/data npm/ui npm/plugin-sdk npm/builder/babel"
+}
+jobs {
+  version = import("../../parts/release/version.pkl")
+  `build-cli` = import("../../parts/release/build-cli.pkl")
+  `build-native` = import("../../parts/release/build-native.pkl")
+  `build-packages` = import("../../parts/release/build-packages.pkl")
+  `build-wasm` = import("../../parts/release/build-wasm.pkl")
+  `build-editor-extensions` = import("../../parts/release/build-editor-extensions.pkl")
+  `smoke-editor-artifacts` = import("../../parts/release/smoke-editor-artifacts.pkl")
+  // Reuse each native producer image and its token receipt. Packaging does not
+  // execute foreign images or build another native provider.
+  `build-editor-platforms` = import("../../parts/release/build-editor-platforms.pkl")
+  // The single pre-publish gate: install every package tarball together and
+  // run it. Runs without registry credentials. Every registry waits for it, so
+  // a failed build (wasm included) publishes nowhere.
+  smoke = import("../../parts/release/smoke.pkl")
+  // The Linux GNU bindings and CLIs must run on the documented glibc floor
+  // (tools/support/github/glibc-floor.ts): Amazon Linux 2023 is the Vercel
+  // build image and the Vercel Functions / AWS Lambda runtime.
+  `smoke-glibc-floor` = import("../../parts/release/smoke-glibc-floor.pkl")
+  // Every artifact exists: only now does the version become real.
+  tag = import("../../parts/release/tag.pkl")
+  // Re-read complete registry histories after the long builds, before any registry write.
+  // The pre-stamp check is not reused as admission evidence.
+  `publication-quota` = import("../../parts/release/publication-quota.pkl")
+  `publish-npm` = import("../../parts/release/publish-npm.pkl")
+  `publish-crates` = import("../../parts/release/publish-crates.pkl")
+  `publish-vscode` = import("../../parts/release/publish-vscode.pkl")
+  `publish-open-vsx` = import("../../parts/release/publish-open-vsx.pkl")
+  // Platform VSIXes publish only after every provider package exists. They
+  // never gate the tag, npm or the universal extension.
+  `publish-vscode-platforms` = import("../../parts/release/publish-vscode-platforms.pkl")
+  `publish-open-vsx-platforms` = import("../../parts/release/publish-open-vsx-platforms.pkl")
+  `github-release` = import("../../parts/release/github-release.pkl")
+  // Post-publish checks and JSR run in release-verify.yml, so this run, and
+  // with it the cadence, ends once every registry has the version.
+  `dispatch-verify` = import("../../parts/release/dispatch-verify.pkl")
+}

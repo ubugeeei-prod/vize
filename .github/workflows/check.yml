@@ -123,6 +123,8 @@ jobs:
           }
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
+      - name: Check Pkl repository configuration
+        run: node tools/commands/generate/repository-config.ts --check
       - name: Check JS/TS
         if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         run: vp run --no-cache --filter './npm/native' build:debug && vp run --workspace-root check:ci

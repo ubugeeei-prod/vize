@@ -1,0 +1,106 @@
+import "../../Actions.pkl" as ci
+
+name = "CSS color declaration admission"
+
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/css-color-declaration-admission.yml"
+      "crates/vize_maestro/src/server/annotations/document_color.rs"
+      "crates/vize_maestro/src/server/annotations/document_color/**"
+      "crates/vize_maestro/src/ide/style.rs"
+      "tests/tooling/lsp-css-color-declaration-admission.test.ts"
+      "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562*/**"
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "css-color-declaration-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  `source-packets` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 15
+    env {
+      CARGO_BUILD_JOBS = "12"
+      CARGO_TERM_COLOR = "always"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+      SOURCE_SHA = "${{ github.event.pull_request.head.sha }}"
+      VIZE_LSP_BIN = "target/ci/vize"
+      VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      ci.workspaceVp()
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "test-scripts"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      new Dynamic {
+        name = "Build and receipt the exact source CLI"
+        run = """
+        cargo build --profile ci -p vize
+        node tests/differential/build-receipt.ts
+        node --input-type=module -e "import assert from 'node:assert/strict';import fs from 'node:fs';assert.equal(JSON.parse(fs.readFileSync('target/ci/vize.differential-build.json')).sourceRevision,process.env.SOURCE_SHA)"
+
+        """
+      }
+      new Dynamic {
+        name = "Preserve complete public controls and corrected source packets"
+        shell = "bash"
+        run = """
+        set -euo pipefail
+        mkdir -p target/vize-tests/css-color-declaration-admission
+        node --test tests/tooling/lsp-css-color-declaration-admission.test.ts 2>&1 | tee target/vize-tests/css-color-declaration-admission/protocol.log
+
+        """
+      }
+      new Dynamic {
+        name = "Verify shared parser edges and source work accounting"
+        shell = "bash"
+        env {
+          VIZE_CSS_COLOR_WORK_CAPTURE = "${{ github.workspace }}/target/vize-tests/css-color-declaration-admission/scanner-work.json"
+        }
+        run = """
+        set -euo pipefail
+        cargo test --locked --profile ci -p vize_maestro --lib server::annotations::document_color:: -- --nocapture 2>&1 | tee target/vize-tests/css-color-declaration-admission/native.log
+
+        """
+      }
+      new Dynamic {
+        name = "Retain owned whole packets and actual source identity"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "css-color-declarations-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha }}"
+          path = """
+          target/vize-tests/css-color-declaration-admission/
+          target/differential/lsp-sessions/
+          target/ci/vize.differential-build.json
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,174 @@
+import "../../Actions.pkl" as ci
+
+name = "Compact Collections"
+
+on {
+  workflow_dispatch {
+    inputs {
+      base_sha {
+        description = "Exact baseline commit"
+        type = "string"
+        required = true
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "compact-collections-${{ github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env {
+  CARGO_INCREMENTAL = "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+
+jobs {
+  `compact-collections` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "head"
+          `fetch-depth` = 0
+          ref = "${{ github.event.pull_request.head.sha || github.sha }}"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Select and record exact comparison commits"
+        env {
+          REQUESTED_BASE = "${{ github.event.pull_request.base.sha || inputs.base_sha }}"
+          REQUESTED_HEAD = "${{ github.event.pull_request.head.sha || github.sha }}"
+        }
+        run = """
+        set -euo pipefail
+        [[ "$REQUESTED_BASE" =~ ^[0-9a-f]{40}$ ]]
+        [[ "$REQUESTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+        [[ "$(git -C head rev-parse HEAD)" == "$REQUESTED_HEAD" ]]
+        if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+          COMPARISON_BASE="$(git -C head merge-base "$REQUESTED_BASE" HEAD)"
+        else
+          git -C head merge-base --is-ancestor "$REQUESTED_BASE" HEAD
+          COMPARISON_BASE="$REQUESTED_BASE"
+        fi
+        git -C head worktree add ../base "$COMPARISON_BASE"
+        [[ "$(git -C base rev-parse HEAD)" == "$COMPARISON_BASE" ]]
+        mkdir -p measurements
+        export COMPARISON_BASE
+        node --input-type=module - <<'JS'
+        import fs from 'node:fs';
+        const commits = {
+          base: process.env.COMPARISON_BASE,
+          head: process.env.REQUESTED_HEAD,
+          requested_base: process.env.REQUESTED_BASE,
+        };
+        fs.writeFileSync('measurements/commits.json', JSON.stringify(commits, null, 2));
+        JS
+
+        """
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "stable"
+          components = "clippy"
+          targets = "wasm32-unknown-unknown"
+        }
+      }
+      ci.wild()
+      // The cache action's nested local action resolves from the workspace root,
+      // and this job checks the repository out under head/.
+      new Dynamic {
+        name = "Expose the nested target action at the workspace root"
+        run = "mkdir -p .github/actions && cp -R head/.github/actions/reuse-rust-target .github/actions/"
+      }
+      new Dynamic {
+        uses = "./head/.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "compact-collections"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+          `target-path` = "head/target"
+        }
+      }
+      new Dynamic {
+        name = "Focused production regressions and lint"
+        `working-directory` = "head"
+        run = """
+        cargo test --locked -p vize_croquis -p vize_croquis_cf --lib
+        cargo clippy --locked -p vize_croquis -p vize_croquis_cf --all-targets -- -D warnings
+        cargo check --locked -p vize_croquis -p vize_croquis_cf --target wasm32-unknown-unknown
+
+        """
+      }
+      new Dynamic {
+        name = "Install identical measurement harness on baseline"
+        run = #"""
+        mkdir -p base/crates/vize_croquis_cf/examples
+        cp head/crates/vize_croquis_cf/examples/compact_collections.rs base/crates/vize_croquis_cf/examples/
+        node --input-type=module - <<'JS'
+        import fs from 'node:fs';
+        const path = 'base/crates/vize_croquis_cf/Cargo.toml';
+        const source = fs.readFileSync(path, 'utf8');
+        const dependency = 'davinci_harness.workspace = true';
+        if (!source.includes(dependency))
+          fs.writeFileSync(path, source.replaceAll('[dev-dependencies]', `[dev-dependencies]\n${dependency}`));
+        JS
+
+        """#
+      }
+      new Dynamic {
+        name = "Build exact production base and head"
+        run = """
+        (cd base && CARGO_TARGET_DIR=../head/target/base cargo build --release -p vize_croquis_cf --example compact_collections)
+        (cd head && CARGO_TARGET_DIR=target/head cargo build --release --locked -p vize_croquis_cf --example compact_collections)
+
+        """
+      }
+      new Dynamic {
+        name = "Alternate measurements and check graph parity"
+        run = """
+        mkdir -p measurements
+        for pass in 1 2 3 4 5; do
+          if (( pass % 2 )); then
+            head/target/base/release/examples/compact_collections "measurements/base-$pass.json"
+            head/target/head/release/examples/compact_collections "measurements/head-$pass.json"
+          else
+            head/target/head/release/examples/compact_collections "measurements/head-$pass.json"
+            head/target/base/release/examples/compact_collections "measurements/base-$pass.json"
+          fi
+        done
+        node --input-type=module - <<'JS'
+        import assert from 'node:assert/strict';
+        import fs from 'node:fs';
+        const read = (path) => JSON.parse(fs.readFileSync(path, 'utf8'));
+        for (let i = 1; i <= 5; i += 1) {
+          const base = read(`measurements/base-${i}.json`);
+          const head = read(`measurements/head-${i}.json`);
+          assert.deepEqual(base.cycle_fingerprints, head.cycle_fingerprints);
+          assert.deepEqual(base.semantic_fingerprints, head.semantic_fingerprints);
+          assert.ok(base.scope_id_bytes === 4 && head.scope_id_bytes === 4);
+        }
+        JS
+
+        """
+      }
+      new Dynamic {
+        name = "Upload raw samples"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "compact-collections-measurements"
+          path = "measurements/"
+          `if-no-files-found` = "warn"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

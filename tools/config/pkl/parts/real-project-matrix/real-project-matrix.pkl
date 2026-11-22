@@ -1,0 +1,343 @@
+import "../../Actions.pkl" as ci
+
+name = "real projects (${{ matrix.name }})"
+needs = "plan-projects"
+`runs-on` = ci.linux
+`timeout-minutes` = 120
+strategy {
+  `fail-fast` = false
+  // The hosted release fallback must fit the documented Free plan floor:
+  // 20 concurrent standard hosted jobs, so 22 shards can take two waves.
+  `max-parallel` = 6
+  matrix = "${{ fromJSON(needs.plan-projects.outputs.matrix) }}"
+}
+env {
+  FIXTURE_SHARD_COUNT = "${{ matrix.shardCount || '22' }}"
+  FIXTURE_SHARD_INDEX = "${{ matrix.shard }}"
+  FIXTURE_REPORT_DIR = "real-project-results/shard-${{ matrix.shard }}"
+}
+steps = new Listing {
+  new Dynamic {
+    name = "Checkout matrix commit"
+    uses = ci.checkout
+    with {
+      `persist-credentials` = false
+      ref = "${{ github.sha }}"
+    }
+  }
+  ci.workspaceVp()
+  new Dynamic {
+    name = "Setup Rust"
+    uses = ci.setupRust
+    with { toolchain = "stable" }
+  }
+  ci.use("./.github/actions/setup-rust-script")
+  ci.command("Enable package manager shims", "corepack enable")
+  new Dynamic {
+    name = "Select and hydrate fixture shard"
+    shell = "bash"
+    run = #"""
+    mapfile -t fixture_paths < <(
+      node tools/support/compat/fixtures/tool-matrix-report.ts \
+        --list-fixture-paths \
+        --shard-index "$FIXTURE_SHARD_INDEX" \
+        --shard-count "$FIXTURE_SHARD_COUNT"
+    )
+    if (( ${#fixture_paths[@]} == 0 )); then
+      echo "::error title=Empty fixture shard::shard $FIXTURE_SHARD_INDEX selected no projects"
+      exit 1
+    fi
+    mkdir -p "$FIXTURE_REPORT_DIR"
+    printf '%s\n' "${fixture_paths[@]}" > "$FIXTURE_REPORT_DIR/selected-fixtures.txt"
+    git submodule update --init --depth 1 -- "${fixture_paths[@]}"
+
+    """#
+  }
+  new Dynamic {
+    name = "Install pinned typecheck baseline dependencies"
+    id = "typecheck_dependencies"
+    `if` = "${{ !cancelled() }}"
+    `continue-on-error` = true
+    run = #"""
+    node --experimental-strip-types tools/commands/fixtures/typecheck-dependency-prepare.ts \
+      --output-dir "$FIXTURE_REPORT_DIR" \
+      --shard-index "$FIXTURE_SHARD_INDEX" \
+      --shard-count "$FIXTURE_SHARD_COUNT" \
+      --timeout-ms 600000
+
+    """#
+  }
+  new Dynamic {
+    name = "Audit formatter waiver owners"
+    id = "waiver_audit"
+    `if` = "${{ !cancelled() }}"
+    `continue-on-error` = true
+    env { GITHUB_TOKEN = "${{ github.token }}" }
+    run = #"""
+    node tools/support/compat/fixtures/glyph-corpus-waiver-audit.ts \
+      --output "$FIXTURE_REPORT_DIR/glyph-waiver-issues.json"
+
+    """#
+  }
+  new Dynamic {
+    name = "Setup Wild linker"
+    uses = "./.github/actions/setup-wild-http-recovery"
+    with { `wild-version` = "0.9.0" }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      key = "real-project-matrix-${{ matrix.shard }}"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  ci.command("Install JavaScript dependencies", "vp install --frozen-lockfile --prefer-offline")
+  // v0.450.0 lost a shard to a stalled crates.io download; retry only the fetch.
+  new Dynamic {
+    name = "Fetch Rust dependencies"
+    env { CARGO_NET_RETRY = "10" }
+    run = """
+    for attempt in 1 2 3; do
+      cargo fetch --locked --target "$(rustc -vV | sed -n 's/^host: //p')" && exit 0
+      echo "::warning title=crates.io fetch::attempt $attempt failed"
+      sleep $((attempt * 30))
+    done
+    exit 1
+
+    """
+  }
+  ci.command("Build Vize CLI", "cargo build --profile ci -p vize")
+  new Dynamic {
+    name = "Classify pinned Misskey generated diagnostics"
+    `if` = "${{ !cancelled() && contains(matrix.name, 'misskey') }}"
+    env {
+      CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+      VIZE_TEST_MISSKEY_GENERATED_DIAGNOSTICS_9516 = "1"
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_TEST_FIX_HISTORY_CAPTURE_DIR = "${{ github.workspace }}/${{ env.FIXTURE_REPORT_DIR }}/misskey-generated-diagnostics-9516"
+    }
+    run = "cargo test --locked --profile ci -p vize_canon --lib pinned_misskey_preserves_current_and_tuple_diagnostic_boundaries -- --nocapture --test-threads=1"
+  }
+  new Dynamic {
+    name = "Exercise real projects with every core tool"
+    id = "core_tools"
+    `if` = "${{ !cancelled() }}"
+    `continue-on-error` = true
+    `timeout-minutes` = 60  // Green shards take at most 14 min; one project may use its 40.
+    // Qualify Vize on the one supported checker, not a fixture's own preview.
+    env {
+      CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+      CORE_TOOLS_TIMEOUT_MS = "${{ inputs.core_tools_timeout_ms || '2400000' }}"
+    }
+    run = #"""
+    node tools/support/compat/fixtures/tool-matrix-report.ts \
+      --shard-index "$FIXTURE_SHARD_INDEX" \
+      --shard-count "$FIXTURE_SHARD_COUNT" \
+      --vize-bin target/ci/vize \
+      --timeout-ms "$CORE_TOOLS_TIMEOUT_MS" \
+      --output-dir "$FIXTURE_REPORT_DIR"
+
+    """#
+  }
+  new Dynamic {
+    name = "Check real-project LSP lifecycle"
+    id = "lsp"
+    `if` = "${{ !cancelled() }}"
+    `continue-on-error` = true
+    `timeout-minutes` = 30  // Green shards take at most 11 min.
+    env {
+      CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+      REAL_PROJECT_LSP_TIMEOUT_MS = "600000"
+      VIZE_LSP_BIN = "target/ci/vize"
+      VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+      VIZE_LSP_BUILD_RECIPE = "cargo build --profile ci -p vize"
+    }
+    run = #"""
+    node tests/differential/build-receipt.ts
+    node tests/tooling/support/lsp/verify-session-captures.ts snapshot "$FIXTURE_REPORT_DIR/lsp-wire-before.json"
+    printf '%s\n' 'Lifecycle timings include passive raw RPC recording; they are not paired performance acceptance.' > "$FIXTURE_REPORT_DIR/lsp-wire-timing-policy.txt"
+    if [ ! -x "$CORSA_PATH" ]; then
+      echo "::error title=Missing typecheck runtime::vp install produced no executable at $CORSA_PATH"
+      exit 1
+    fi
+    node --test --test-concurrency=1 \
+      tests/tooling/real-project-lsp.test.ts
+    test -s "$FIXTURE_REPORT_DIR/lsp-lifecycle-summary.json"
+
+    """#
+  }
+  new Dynamic {
+    name = "Validate source-bound LSP wire"
+    `if` = "${{ always() }}"
+    run = #"node tests/tooling/support/lsp/verify-session-captures.ts verify "$FIXTURE_REPORT_DIR/lsp-wire-before.json" "$FIXTURE_REPORT_DIR/lsp-wire-integrity.json""#
+  }
+  new Dynamic {
+    name = "Measure real-project lint divergence"
+    id = "lint_divergence"
+    `if` = "${{ !cancelled() }}"
+    `continue-on-error` = true
+    env {
+      LINT_DIVERGENCE_MODE = "${{ inputs.lint_divergence_mode || 'enforce' }}"
+      LINT_BASELINE_REFERENCE_MODE = "${{ inputs.lint_baseline_reference_mode || 'bounded' }}"
+      LINT_BASELINE_SHARD_MAX_BYTES = "8388608"
+      LINT_BASELINE_SHARD_MAX_FILES = "32"
+      LINT_BASELINE_SHARD_MAX_OUTPUT_BYTES = "268435456"
+      NODE_OPTIONS = "${{ inputs.lint_baseline_reference_mode == 'unbounded-6g' && '--max-old-space-size=6144' || '' }}"
+      VIZE_LINT_BASELINE_PROGRESS = "1"
+      VIZE_LINT_BASELINE_UNBOUNDED = "${{ inputs.lint_baseline_reference_mode == 'unbounded-6g' && '1' || '0' }}"
+    }
+    run = #"""
+    /usr/bin/time --verbose --output "$FIXTURE_REPORT_DIR/lint-divergence-resource.txt" \
+      node tools/commands/fixtures/lint-divergence-report.ts \
+      --shard-index "$FIXTURE_SHARD_INDEX" --shard-count "$FIXTURE_SHARD_COUNT" \
+      --all-mapped-rules --measure-coverage-gap --budget-mode "$LINT_DIVERGENCE_MODE" \
+      --vize-bin target/ci/vize --timeout-ms 600000 \
+      --output-dir "$FIXTURE_REPORT_DIR"
+    test -s "$FIXTURE_REPORT_DIR/lint-divergence-summary.json"
+    LC_ALL=C sha256sum "$FIXTURE_REPORT_DIR"/*-lint-divergence.json \
+      > "$FIXTURE_REPORT_DIR/lint-divergence-hashes.txt"
+
+    """#
+  }
+  new Dynamic {
+    name = "Record linter deletion-readiness evidence"
+    `if` = "${{ !cancelled() }}"
+    run = #"node tests/differential/linter-deletion-recorder.ts "$FIXTURE_REPORT_DIR" && test -s "$FIXTURE_REPORT_DIR/linter-deletion-readiness.json""#
+  }
+  new Dynamic {
+    name = "Check real-project syntax highlighting"
+    id = "syntax_highlighter"
+    `if` = "${{ !cancelled() }}"
+    `continue-on-error` = true
+    env { SYNTAX_HIGHLIGHTER_TIMEOUT_MS = "600000" }
+    run = #"""
+    node --test --test-concurrency=1 \
+      tests/tooling/real-project-syntax-highlighting.test.ts
+    test -s "$FIXTURE_REPORT_DIR/syntax-highlighter-summary.json"
+
+    """#
+  }
+  new Dynamic {
+    name = "Check glyph formatter corpus properties"
+    id = "glyph"
+    `if` = "${{ !cancelled() }}"
+    `continue-on-error` = true
+    env { VIZE_TEST_BIN = "target/ci/vize" }
+    shell = "bash"
+    run = #"""
+    glyph_exit_code=0
+    node --test --test-concurrency=1 \
+      tests/tooling/sfc-baseline-routes.test.ts \
+      tests/tooling/sfc-baselines.test.ts \
+      tests/tooling/vue2-render-signature.test.ts \
+      tests/tooling/glyph-sfc-evidence.test.ts \
+      tests/tooling/sfc-equivalence.test.ts \
+      tests/tooling/glyph-corpus-idempotence.test.ts \
+      tests/tooling/glyph-corpus-parse-preservation.test.ts \
+      tests/tooling/glyph-pug-oracle.test.ts tests/tooling/davinci-pug-corpus-oracle.test.ts \
+      tests/tooling/glyph-corpus-lint-agreement.test.ts || glyph_exit_code=$?
+    for property in idempotence parse-preservation lint-agreement; do
+      if [[ ! -s "$FIXTURE_REPORT_DIR/glyph-$property.json" ]]; then
+        echo "::error title=Missing formatter evidence::$property produced no artifact"
+        glyph_exit_code=1
+      fi
+    done
+    if [[ ! -s "$FIXTURE_REPORT_DIR/glyph-pug-semantics.json" ]]; then
+      echo "::error title=Missing formatter evidence::Pug semantic oracle produced no artifact"
+      glyph_exit_code=1
+    fi
+    if [[ ! -s "$FIXTURE_REPORT_DIR/glyph-sfc-dialect-equivalence.json" ]]; then
+      echo "::error title=Missing formatter evidence::SFC dialect oracle produced no artifact"
+      glyph_exit_code=1
+    fi
+    exit "$glyph_exit_code"
+
+    """#
+  }
+  new Dynamic {
+    name = "Record formatter deletion-readiness evidence"
+    `if` = "${{ !cancelled() }}"
+    run = """
+    node tests/differential/formatter-deletion-verifier.mjs "$FIXTURE_REPORT_DIR"
+    test -s "$FIXTURE_REPORT_DIR/formatter-deletion-readiness.json"
+
+    """
+  }
+  new Dynamic {
+    name = "Enforce typechecker baseline divergence"
+    id = "typecheck_divergence"
+    `if` = "${{ !cancelled() && (inputs.typecheck_divergence_mode || 'enforce') != 'skip' }}"
+    `continue-on-error` = true
+    `timeout-minutes` = 100
+    env {
+      BUDGET_MODE = "${{ inputs.typecheck_divergence_mode || 'enforce' }}"
+      CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+      VIZE_TYPECHECK_DIVERGENCE_PROGRESS = "1"
+    }
+    run = #"""
+    rust-script tools/commands/fixtures/typecheck-divergence-report.rs \
+      --report-dir "$FIXTURE_REPORT_DIR" \
+      --shard-index "$FIXTURE_SHARD_INDEX" \
+      --shard-count "$FIXTURE_SHARD_COUNT" \
+      --budget-mode "$BUDGET_MODE" \
+      --vize-bin target/ci/vize \
+      --vue-tsc-bin tests/node_modules/.bin/vue-tsc
+
+    """#
+  }
+  new Dynamic {
+    name = "Enforce all real-project surface verdicts"
+    id = "surface_verdict"
+    `if` = "${{ always() }}"
+    shell = "bash"
+    env {
+      CORE_TOOLS_MODE = "${{ inputs.core_tools_mode || 'enforce' }}"
+      TYPECHECK_DEPENDENCIES_MODE = "${{ inputs.typecheck_dependencies_mode || 'enforce' }}"
+      LINT_DIVERGENCE_MODE = "${{ inputs.lint_divergence_mode || 'enforce' }}"
+      LSP_MODE = "${{ inputs.lsp_mode || 'enforce' }}"
+      TYPECHECK_DIVERGENCE_MODE = "${{ inputs.typecheck_divergence_mode || 'enforce' }}"
+      VIZE_WAIVER_AUDIT_OUTCOME = "${{ steps.waiver_audit.outcome }}"
+      VIZE_TYPECHECK_DEPENDENCIES_OUTCOME = "${{ steps.typecheck_dependencies.outcome }}"
+      VIZE_CORE_TOOLS_OUTCOME = "${{ steps.core_tools.outcome }}"
+      VIZE_LSP_OUTCOME = "${{ steps.lsp.outcome }}"
+      VIZE_LINT_DIVERGENCE_OUTCOME = "${{ steps.lint_divergence.outcome }}"
+      VIZE_SYNTAX_HIGHLIGHTER_OUTCOME = "${{ steps.syntax_highlighter.outcome }}"
+      VIZE_GLYPH_OUTCOME = "${{ steps.glyph.outcome }}"
+      VIZE_TYPECHECK_DIVERGENCE_OUTCOME = "${{ steps.typecheck_divergence.outcome }}"
+    }
+    run = #"node tools/commands/fixtures/real-project-surface-verdict.ts --from-workflow-env --output "$FIXTURE_REPORT_DIR/surface-verdict.json""#
+  }
+  new Dynamic {
+    name = "Publish shard summary"
+    `if` = "${{ always() }}"
+    shell = "bash"
+    run = "node tools/commands/ci/github/publish-real-project-shard-summary.ts"
+  }
+  new Dynamic {
+    name = "Upload shard report"
+    `if` = "${{ always() }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "real-project-matrix-${{ matrix.shard }}"
+      path = "${{ env.FIXTURE_REPORT_DIR }}"
+      `if-no-files-found` = "error"
+      `include-hidden-files` = false
+      `retention-days` = 30
+    }
+  }
+  new Dynamic {
+    name = "Upload source-bound LSP wire evidence"
+    `if` = "${{ always() }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "real-project-lsp-wire-${{ matrix.shard }}-${{ github.sha }}"
+      path = """
+      target/differential/lsp-sessions
+      target/ci/vize.differential-build.json
+
+      """
+      `if-no-files-found` = "error"
+      `retention-days` = 30
+    }
+  }
+}

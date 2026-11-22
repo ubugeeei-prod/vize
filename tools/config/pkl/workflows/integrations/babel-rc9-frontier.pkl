@@ -1,0 +1,123 @@
+import "../../Actions.pkl" as ci
+
+name = "Babel rc9 ABI frontier"
+on {
+  workflow_dispatch = null
+  push {
+    branches = List("ci/babel-rc9-frontier-evidence")
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "babel-rc9-frontier-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = false
+}
+env {
+  SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `unsupported-frontier` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ env.SOURCE_SHA }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version` = "24.14.0"
+          `run-install` = false
+          cache = true
+          `cache-save` = false
+        }
+      }
+      ci.rust("stable")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "babel-plugin-hosts"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Install frozen source and exact isolated host graphs"
+        run = """
+        vp install --frozen-lockfile --prefer-offline --filter './npm/builder/babel...' --filter './npm/native...'
+        npm ci --prefix npm/builder/babel/test/hosts/fixtures/babel7 --ignore-scripts --no-audit --no-fund
+        npm ci --prefix npm/builder/babel/test/hosts/fixtures/babel8 --ignore-scripts --no-audit --no-fund
+        for runtime in vdom vapor-rc9 vapor-rc11; do
+          npm ci --prefix "npm/builder/babel/test/runtime/fixtures/$runtime" --ignore-scripts --no-audit --no-fund
+        done
+        node npm/builder/babel/test/runtime/fixtures/vdom/node_modules/playwright/cli.js install --with-deps chromium
+
+        """
+      }
+      new Dynamic {
+        name = "Build the actual source compiler and both public package entrypoints"
+        run = """
+        set -euo pipefail
+        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+        mkdir -p "$RUNNER_TEMP/babel-plugin/packed"
+        git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/babel-plugin/source.txt"
+        git log -50 --format='%H %T %P %s' > "$RUNNER_TEMP/babel-plugin/ordered-history.txt"
+        node --version > "$RUNNER_TEMP/babel-plugin/node-version.txt"
+        vp run --workspace-root build:native:test
+        GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs
+        vp run --no-cache --filter './npm/builder/babel' build
+        (cd npm/builder/babel && npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/babel-plugin/packed" --json) > "$RUNNER_TEMP/babel-plugin/pack.json"
+        sha256sum "$RUNNER_TEMP/babel-plugin/packed/"*.tgz > "$RUNNER_TEMP/babel-plugin/packed.sha256"
+        cp npm/native/.artifacts/native/build-token-receipt.json "$RUNNER_TEMP/babel-plugin/"
+
+        """
+      }
+      new Dynamic {
+        name = "Retain four strict unsupported rc9 functional frontier rows"
+        `if` = "always()"
+        env {
+          VIZE_BABEL_NATIVE_ROOT = "${{ github.workspace }}/npm/native"
+          VIZE_BABEL_RUNTIME_OUTPUT = "${{ runner.temp }}/babel-plugin/runtime"
+          VIZE_BABEL_RUNTIME_ROLE = "frontier"
+        }
+        run = """
+        set -euo pipefail
+        export VIZE_BABEL_PACKED_PLUGIN=$(find "$RUNNER_TEMP/babel-plugin/packed" -maxdepth 1 -name '*.tgz' -print -quit)
+        node npm/native/scripts/test-preparation.mjs node --test npm/builder/babel/test/runtime-renderers.test.mjs
+
+        """
+      }
+      new Dynamic {
+        name = "Check package source and declarations"
+        `if` = "always()"
+        run = "vp run --filter './npm/builder/babel' check"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "babel-rc9-unsupported-frontier-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SOURCE_SHA }}"
+          path = """
+          ${{ runner.temp }}/babel-plugin
+          !${{ runner.temp }}/babel-plugin/**/node_modules/**
+          npm/native/.artifacts/native/build-token-receipt.json
+          npm/native/*.node
+          npm/builder/babel/test/hosts/fixtures/babel7/package-lock.json
+          npm/builder/babel/test/hosts/fixtures/babel8/package-lock.json
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

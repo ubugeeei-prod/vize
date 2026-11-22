@@ -1,0 +1,19 @@
+amends "../../../../ShellScript.pkl"
+import "../../../../NativeChecks.pkl" as native
+
+commands {
+  module.strictMode
+  module.unsetVariable("VIZE_TEST_DISABLE_TSGO")
+  module.inSourceRoot()
+  #"""
+  VIZE_UNCHECKED_INDEX_CAPTURE="$RUNNER_TEMP/unchecked-index-access" cargo test --locked --profile ci-opt -p vize --test integration --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- check_template_emit_cli:: check_vue_helper_scope_cli:: lint_unchecked_indexed_access_cli:: check_canon_define_model_modifiers_cli:: lsp_generic_prop_hover_cli:: lsp_data_aria_attributes_cli:: tsconfig_diamond:: check_tsconfig_types_extends_cli:: lsp_bare_script_symbols_cli:: check_tsconfig_bom_cli:: check_tsconfig_ignore_cli:: check_jsx_slot_parameter_types_cli:: check_canon_selected_alias_cli:: --nocapture
+  env -u VIZE_INLAY_HINT_CAPTURE VIZE_LSP_PASSIVE_EVIDENCE="$RUNNER_TEMP/lsp-passive-3952" VIZE_TRACE_EDITOR_PREPARATION=1 cargo test --locked --profile ci-opt -p vize --test integration --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- lsp_passive_evidence_cli:: lsp_reactive_diagnostics_cli:: --nocapture
+  """#
+  native.envSetup
+  native.emitTests
+  native.vueHelperTests
+  native.projectionCapture
+  native.projectionMatrix
+  List(native.projectionReceipt, native.templateReceipt, native.vueHelperReceipt).join("; ")
+  native.optionChecks
+}

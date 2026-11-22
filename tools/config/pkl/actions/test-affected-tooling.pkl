@@ -1,0 +1,214 @@
+import "../Actions.pkl" as ci
+
+name = "Affected tooling worker"
+description = "Run one planned shard of the PR-tier tooling tests that the change can affect."
+inputs {
+  producer {
+    description = "Complete source CLI producer outputs."
+    required = true
+  }
+  base {
+    description = "Comparison base the planner selected the affected tests against."
+    required = true
+  }
+  shard {
+    description = "One-based worker index in the planned matrix."
+    required = true
+  }
+  total {
+    description = "Worker count of the planned matrix."
+    required = true
+  }
+  job {
+    description = "This job's display name, which its test case packet reports under."
+    required = true
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    ci.workspaceVp()
+    ci.rust("stable")
+    new Dynamic {
+      uses = "./.github/actions/setup-wild-http-recovery"
+      with { `wild-version` = "0.9.0" }
+    }
+    // Read-only clone of the disk the first full tooling worker commits.
+    new Dynamic {
+      uses = "./.github/actions/setup-rust-sticky-cache"
+      with {
+        key = "test-scripts"
+        `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}-shard-1"
+      }
+    }
+    ci.use("./.github/actions/setup-rust-script")
+    new Dynamic {
+      name = "Select the same affected tooling tests as the planner"
+      id = "plan"
+      shell = "bash"
+      env {
+        BASE_SHA = "${{ inputs.base }}"
+        TOOLING_SHARD = "${{ inputs.shard }}/${{ inputs.total }}"
+      }
+      run = """
+      if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags origin "$BASE_SHA"; fi
+      node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json"
+      native_build="$(node tools/support/compat/github/tooling-shard-native-build.ts "$RUNNER_TEMP/tooling-plan.json" "$TOOLING_SHARD")"
+      echo "native-build=$native_build" >> "$GITHUB_OUTPUT"
+
+      """
+    }
+    new Dynamic {
+      name = "Hydrate CLI and fact corpus fixtures and install JS dependencies"
+      shell = "bash"
+      run = "git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/layoutit-grid tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline"
+    }
+    new Dynamic {
+      uses = "./.github/actions/restore-source-cli"
+      with { producer = "${{ inputs.producer }}" }
+    }
+    new Dynamic {
+      name = "Prepare the pinned plugin isolation runtime"
+      shell = "bash"
+      run = "vp exec node tools/support/compat/davinci/plugin-sandbox-image.ts"
+    }
+    new Dynamic {
+      name = "Install CSS formatter reference browser"
+      uses = "./.github/actions/install-formatter-css-browser"
+      env {
+        VIZE_TOOLING_TEST_PLAN = "${{ runner.temp }}/tooling-plan.json"
+        VIZE_TOOLING_TEST_TIER = "pr"
+        VIZE_TOOLING_TEST_SHARD = "${{ inputs.shard }}/${{ inputs.total }}"
+      }
+    }
+    new Dynamic {
+      name = "Build the native addon required by this shard"
+      `if` = "${{ steps.plan.outputs.native-build == 'true' }}"
+      shell = "bash"
+      run = "vp run --workspace-root build:native:test"
+    }
+    new Dynamic {
+      name = "Test affected tooling scripts"
+      id = "tests"
+      shell = "bash"
+      env {
+        TEST_CASES_JOB = "${{ inputs.job }}"
+        VIZE_TEST_CASES = "${{ runner.temp }}/test-cases-tooling-${{ inputs.shard }}.json"
+        SOURCE_LENGTH_BASE_REF = "${{ inputs.base }}"
+        VIZE_LSP_BIN = "${{ github.workspace }}/target/ci/vize"
+        VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+        VIZE_TOOLING_TEST_TIER = "pr"
+        VIZE_TOOLING_TEST_PLAN = "${{ runner.temp }}/tooling-plan.json"
+        VIZE_TOOLING_TEST_SHARD = "${{ inputs.shard }}/${{ inputs.total }}"
+      }
+      run = "node tools/commands/ci/verify-tool-layout.ts && node tools/support/compat/github/run-tooling-tests.mjs"
+    }
+    new Dynamic {
+      name = "Upload tooling test cases"
+      `if` = "${{ !cancelled() && steps.tests.outcome != 'skipped' }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "test-cases-tooling-${{ inputs.shard }}-${{ github.run_attempt }}"
+        path = "${{ runner.temp }}/test-cases-tooling-${{ inputs.shard }}.json"
+        `if-no-files-found` = "error"
+        `retention-days` = 7
+      }
+    }
+    new Dynamic {
+      name = "Retain complete compiler and setup-export packets"
+      `if` = "${{ always() && hashFiles('target/differential/compiler-default.json', 'target/differential/lint-setup-export-defaults.json') != '' }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "compiler-setup-packets-${{ inputs.shard }}-${{ github.run_id }}-${{ github.run_attempt }}"
+        path = """
+        target/differential/compiler-default.json
+        target/differential/lint-setup-export-defaults.json
+        target/ci/vize.differential-build.json
+
+        """
+        `if-no-files-found` = "error"
+        `retention-days` = 7
+      }
+    }
+    new Dynamic {
+      name = "Retain complete native capacity packets and source send trace"
+      `if` = "${{ always() && hashFiles('target/vize-tests/diagnostic-capacity-*/result.json') != '' }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "lsp-capacity-tooling-${{ inputs.shard }}-${{ github.run_id }}-${{ github.run_attempt }}"
+        path = """
+        target/vize-tests/diagnostic-capacity-*/result.json
+        target/ci/vize.differential-build.json
+
+        """
+        `if-no-files-found` = "error"
+        `retention-days` = 7
+      }
+    }
+    new Dynamic {
+      name = "Retain complete config generation before byte comparisons"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "config-generation-${{ inputs.shard }}-${{ github.run_id }}-${{ github.run_attempt }}"
+        path = "${{ runner.temp }}/vize-config-generation"
+        `if-no-files-found` = "ignore"
+        `retention-days` = 7
+      }
+    }
+    new Dynamic {
+      name = "Retain complete experimental Router observations"
+      `if` = "${{ always() && hashFiles('target/differential/experimental-router-check/provider-processes.json', 'target/differential/experimental-router-params/provider-processes.json', 'target/differential/experimental-router-params/observation.json', 'target/differential/experimental-router-variable-roots/observation.json', 'target/differential/reference-path-attributes/provider-processes.json') != '' }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "experimental-router-tooling-${{ inputs.shard }}-${{ github.run_id }}-${{ github.run_attempt }}"
+        path = """
+        target/differential/experimental-router-check/
+        target/differential/experimental-router-params/
+        target/differential/experimental-router-variable-roots/
+        target/differential/reference-path-attributes/
+        target/ci/vize.differential-build.json
+        target/ci/vize.source-build.json
+        target/ci/vize.source-use.json
+        !target/differential/**/node_modules/**
+
+        """
+        `if-no-files-found` = "ignore"
+        `retention-days` = 7
+      }
+    }
+    new Dynamic {
+      name = "Retain failed instance-global qualification observations"
+      // Keep the original failed result and every raw packet for diagnosis.
+      `if` = "${{ failure() && hashFiles('target/differential/instance-globals-10617/processes.json') != '' }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "instance-globals-tooling-${{ inputs.shard }}-${{ github.run_id }}-${{ github.run_attempt }}"
+        path = """
+        target/differential/instance-globals-10617/
+        target/ci/vize.differential-build.json
+        target/ci/vize.source-build.json
+        target/ci/vize.source-use.json
+        !target/differential/instance-globals-10617/**/node_modules/**
+        !target/differential/instance-globals-10617/**/.cache/**
+        !target/differential/instance-globals-10617/**/cache/**
+        !target/differential/instance-globals-10617/**/*.tgz
+        !target/differential/instance-globals-10617/**/*.zip
+        !target/differential/instance-globals-10617/**/*.tar
+        !target/differential/instance-globals-10617/**/*.tar.gz
+        !target/differential/instance-globals-10617/**/*.node
+        !target/differential/instance-globals-10617/**/*.so
+        !target/differential/instance-globals-10617/**/*.dylib
+        !target/differential/instance-globals-10617/**/*.dll
+        !target/differential/instance-globals-10617/**/*.exe
+        !target/differential/instance-globals-10617/**/vize
+        !target/differential/instance-globals-10617/**/tsgo
+        !target/differential/instance-globals-10617/**/tsc
+
+        """
+        `if-no-files-found` = "error"
+        `retention-days` = 7
+      }
+    }
+  }
+}

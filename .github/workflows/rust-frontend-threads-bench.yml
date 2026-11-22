@@ -1,4 +1,4 @@
-name: Rust frontend threads benchmark
+name: Benchmark - Rust frontend threads
 run-name: Rust frontend threads @ ${{ github.sha }}
 # Measures rustc's nightly parallel frontend (`--jobs-frontend=N`) against the
 # pinned stable toolchain on the CI runner class. Release builds stay on stable;

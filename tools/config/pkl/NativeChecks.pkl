@@ -1,0 +1,28 @@
+// The historical native recipes share these commands byte for byte.
+module vize.ci.NativeChecks
+
+envSetup = #"export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync,readdirSync} from "node:fs";import {join} from "node:path";const root=process.env.VIZE_TEMPLATE_EMIT_CAPTURE;const name=readdirSync(root,{withFileTypes:true}).find(e=>e.isDirectory()).name;process.stdout.write(JSON.parse(readFileSync(join(root,name,"oracle.json"),"utf8")).nativeBinary)')""#
+
+local ciOptOverrides = List(
+  "profile.ci-opt.inherits=\"release\"",
+  "profile.ci-opt.lto=\"thin\"",
+  "profile.ci-opt.codegen-units=16"
+).map((setting) -> "--config '\(setting)'").join(" ")
+
+local function runTests(crate: String, target: String, filter: String): String =
+  "cargo test --locked --profile ci-opt -p \(crate) \(target) \(filter) \(ciOptOverrides) -- --nocapture"
+
+emitTests = runTests("vize_maestro", "--lib", "editor_typecheck_emit_tests")
+vueHelperTests = runTests("vize_maestro", "--lib", "editor_typecheck_vue_helper_tests")
+
+projectionCapture = #"export VIZE_TEMPLATE_EMIT_TS40_CAPTURE="$RUNNER_TEMP/template-emit-ts40-projection""#
+projectionMatrix = runTests("vize_maestro", "--test davinci_ts40_projection", "current_projection_matrix_is_exact_and_non_empty")
+
+optionChecks = "bash tools/benchmarks/scripts/typechecker-native-unknown-options.sh && "
+  + runTests("vize_patina", "--test documented_rule_examples", "documented_type_aware_examples_match_with_the_required_corsa_runtime")
+
+projectionReceipt = "node tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs"
+
+templateReceipt = "node tools/benchmarks/scripts/typechecker-native-template-emit-receipt.mjs"
+
+vueHelperReceipt = "node tools/benchmarks/scripts/typechecker-native-vue-helper-receipt.mjs"

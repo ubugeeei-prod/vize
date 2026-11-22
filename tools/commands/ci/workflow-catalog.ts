@@ -10,6 +10,7 @@ interface WorkflowEntry {
 
 interface WorkflowGroup {
   readonly id: string;
+  readonly directory: string;
   readonly title: string;
   readonly description: string;
 }
@@ -17,64 +18,75 @@ interface WorkflowGroup {
 const groups = [
   {
     id: "01",
+    directory: "checks",
     title: "Pull request orchestration",
     description:
       "Start here for required checks, change planning, merge queues, and full qualification.",
   },
   {
     id: "02",
+    directory: "release",
     title: "Release and public acceptance",
     description:
       "Publication, registry, and installed-consumer evidence. Trusted-publishing workflows are protected surfaces.",
   },
   {
     id: "03",
+    directory: "performance",
     title: "Benchmarks and profiling",
     description:
       "Wall time, allocation, instruction, memory, scaling, and reproducible benchmark runs.",
   },
   {
     id: "04",
+    directory: "typecheck",
     title: "Type checking and content mapping",
     description: "Typechecker, content-mapper, Corsa, and TypeScript-provider qualification.",
   },
   {
     id: "05",
+    directory: "editors",
     title: "Language services and editors",
     description:
       "LSP behavior, editor packages, VSIX hosts, overlays, navigation, and hover checks.",
   },
   {
     id: "06",
+    directory: "compiler",
     title: "SFC, JSX, and compiler correctness",
     description:
       "SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctness.",
   },
   {
     id: "07",
+    directory: "davinci",
     title: "Davinci, Canon, and Level",
     description:
       "Davinci migration, Canon ownership, Level lowering, and cross-file graph contracts.",
   },
   {
     id: "08",
+    directory: "integrations",
     title: "Builders and framework integrations",
     description: "Babel, Nuxt, Parcel, Rspack, Turbopack, Vite, Vitest, and consumer hosts.",
   },
   {
     id: "09",
+    directory: "tooling",
     title: "Lint, format, and developer tooling",
     description:
       "ESLint, Oxlint, Prettier, formatter, doctor, configuration, and tooling contracts.",
   },
   {
     id: "10",
+    directory: "apps",
     title: "Applications and UI packages",
     description:
       "Musea, Fresco, playground, app E2E, UI packages, and browser-facing integrations.",
   },
   {
     id: "11",
+    directory: "maintenance",
     title: "Security, maintenance, and documentation",
     description:
       "Security audits, dependency upkeep, scheduled maintenance, docs, and repository hygiene.",
@@ -203,12 +215,8 @@ export function renderWorkflowCatalog(entries: readonly WorkflowEntry[]): string
   const lines = [
     "# Workflow catalog",
     "",
-    "GitHub only discovers workflow files directly under this directory, so the files",
-    "cannot be organized into subdirectories without changing how Actions finds them.",
-    "This generated, numbered catalog is the navigation layer; reusable implementation",
-    "belongs in `.github/actions/` or typed drivers under `tools/`.",
-    "",
-    "Regenerate with `node tools/commands/ci/workflow-catalog.ts`.",
+    "Edit the Pkl sources linked from each group. GitHub runs the generated YAML in this directory.",
+    "Run `node tools/commands/generate/repository-config.ts` to update the workflows and this catalog.",
     "",
     "## Start here",
     "",
@@ -235,22 +243,15 @@ export function renderWorkflowCatalog(entries: readonly WorkflowEntry[]): string
   ];
   for (const group of groups) {
     const rows = workflowRows(entries, group.id);
-    const idWidth = Math.max("ID".length, ...rows.map(([id]) => id.length));
-    const workflowWidth = Math.max("Workflow".length, ...rows.map(([, name]) => name.length));
-    const fileWidth = Math.max("File".length, ...rows.map(([, , file]) => file.length));
     lines.push(
       `## ${group.id} ${group.title}`,
       "",
       group.description,
       "",
-      `| ${"ID".padEnd(idWidth)} | ${"Workflow".padEnd(workflowWidth)} | ${"File".padEnd(fileWidth)} |`,
-      `| ${"-".repeat(idWidth)} | ${"-".repeat(workflowWidth)} | ${"-".repeat(fileWidth)} |`,
+      `[Edit the Pkl sources](../../tools/config/pkl/workflows/${group.directory}/)`,
+      "",
+      ...markdownTable(["ID", "Workflow", "File"], rows),
     );
-    for (const [id, name, file] of rows) {
-      lines.push(
-        `| ${id.padEnd(idWidth)} | ${name.padEnd(workflowWidth)} | ${file.padEnd(fileWidth)} |`,
-      );
-    }
     lines.push("");
   }
   return `${lines.join("\n").trimEnd()}\n`;

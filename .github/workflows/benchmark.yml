@@ -1,4 +1,4 @@
-name: Benchmark
+name: Benchmark - Source comparison
 
 on:
   schedule:

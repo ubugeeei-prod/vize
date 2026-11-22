@@ -1,4 +1,4 @@
-name: Fresco dimension benchmark
+name: Benchmark - Fresco dimensions
 
 on:
   schedule:

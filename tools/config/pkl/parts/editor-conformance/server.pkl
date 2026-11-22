@@ -1,0 +1,72 @@
+import "../../Actions.pkl" as ci
+
+name = "Build the real vize server"
+`runs-on` = ci.linux
+`timeout-minutes` = 30
+steps = new Listing {
+  new Dynamic {
+    uses = ci.checkout
+    with { `persist-credentials` = false }
+  }
+  // The runner's rustup installs the toolchain pinned in rust-toolchain.toml.
+  new Dynamic {
+    name = "Install the repository Rust toolchain"
+    run = """
+    rustup --version
+    rustup toolchain install || rustup show active-toolchain
+    cargo --version
+
+    """
+  }
+  ci.wild()
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      key = "editor-conformance"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    uses = ci.setupVp
+    with {
+      `node-version-file` = "package.json"
+      cache = false
+      `run-install` = false
+    }
+  }
+  ci.command("Build vize CLI", "cargo build --profile ci -p vize")
+  new Dynamic {
+    name = "Record the source-built server identity"
+    run = #"node tests/editor-conformance/server-artifact.ts write target/ci/vize target/ci/server.json "$GITHUB_SHA""#
+  }
+  new Dynamic {
+    name = "Record the real server source and executable identity"
+    run = """
+    set -euo pipefail
+    test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+    {
+      echo "producer=$(git rev-parse HEAD)"
+      echo 'recipe=cargo build --profile ci -p vize'
+      rustc --version --verbose
+      cargo --version
+      sha256sum rust-toolchain.toml Cargo.lock target/ci/vize
+    } > target/ci/vize-producer.txt
+    (cd target/ci && sha256sum vize > vize.sha256)
+
+    """
+  }
+  new Dynamic {
+    uses = ci.uploadArtifact
+    with {
+      name = "vize-server"
+      path = """
+      target/ci/vize
+      target/ci/server.json
+      target/ci/vize.sha256
+      target/ci/vize-producer.txt
+
+      """
+      `retention-days` = 1
+    }
+  }
+}

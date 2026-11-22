@@ -1,0 +1,107 @@
+import "../Actions.pkl" as ci
+
+name = "Native scoped CSS runtime"
+description = "Check original SFC scoped CSS and fresh complete native modules in real Vue"
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Cache Chromium for original scoped empty selectors"
+      id = "cache-scoped-chromium"
+      uses = ci.cache
+      with {
+        path = "~/.cache/ms-playwright"
+        key = "${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}"
+      }
+    }
+    new Dynamic {
+      name = "Install Chromium for scoped CSS behavior"
+      uses = "./.github/actions/install-playwright-browsers"
+      with { workspace = "./tests" }
+    }
+    new Dynamic {
+      name = "Capture scoped modules from the current Rust source and mount real Vue"
+      shell = "bash"
+      env {
+        VIZE_NATIVE_SCOPED_CSS_CAPTURE = "${{ runner.temp }}/native-scoped-css-capture.json"
+        VIZE_NATIVE_SCOPED_CSS_RUNTIME_CAPTURE = "${{ runner.temp }}/native-scoped-css-runtime.json"
+        VIZE_NATIVE_CLASS_LIST_CSS_CAPTURE = "${{ runner.temp }}/native-class-list-css-capture.json"
+        VIZE_NATIVE_CLASS_LIST_CSS_RUNTIME_CAPTURE = "${{ runner.temp }}/native-class-list-css-runtime.json"
+        VIZE_NATIVE_EMPTY_CSS_CAPTURE = "${{ runner.temp }}/native-empty-css-capture.json"
+        VIZE_NATIVE_EMPTY_CSS_RUNTIME_CAPTURE = "${{ runner.temp }}/native-empty-css-runtime.json"
+        VIZE_NATIVE_SCOPED_SSR_CAPTURE = "${{ runner.temp }}/native-scoped-ssr-capture.json"
+        VIZE_NATIVE_SCOPED_SSR_RUNTIME_CAPTURE = "${{ runner.temp }}/native-scoped-ssr-runtime.json"
+        VIZE_NATIVE_SCOPED_SSR_REQUIRE_NATIVE = "1"
+        VIZE_SCOPE_BODY_CAPTURE = "${{ runner.temp }}/scope-body-source.json"
+        VIZE_SCOPE_BODY_RUNTIME_CAPTURE = "${{ runner.temp }}/scope-body-browser.json"
+      }
+      run = """
+      git rev-parse HEAD > "$RUNNER_TEMP/native-scoped-css-source.txt"
+      cargo test --locked --profile ci -p vize_atelier_sfc native::scoped_tests::four_source_bound_scoped_modules_css_and_default_identity_match_complete_contracts -- --exact
+      cargo test --locked --profile ci -p vize_atelier_sfc native::class_list_tests::three_original_class_list_sfc_modules_css_maps_and_scope_id_match_whole_contracts -- --exact
+      cargo test --locked --profile ci -p vize_atelier_sfc native::scoped_empty_tests::three_original_empty_sfc_modules_css_maps_and_scope_id_match_whole_contracts -- --exact
+      cargo test --locked --profile ci -p vize_atelier_sfc --test native_scoped_ssr three_whole_original_scoped_ssr_modules_css_maps_and_file_custody_match -- --exact
+      vp node --test tests/tooling/native-sfc-scoped-css-reference.test.ts
+      vp node --test tests/tooling/native-sfc-scoped-class-list-reference.test.ts
+      vp node --test tests/tooling/native-sfc-scoped-empty-reference.test.ts
+      vp node --test tests/tooling/native-sfc-scoped-ssr-reference.test.ts
+      cargo test --locked --profile ci -p vize_atelier_sfc --test css_scope_body
+      vp node --test tests/tooling/scope-body-browser.test.ts
+
+      """
+    }
+    new Dynamic {
+      name = "Verify original fragment CSS variables with exact production Vue"
+      shell = "bash"
+      env {
+        NODE_ENV = "production"
+        VIZE_FRAGMENT_CSS_CAPTURE = "${{ runner.temp }}/fragment-css-modules.json"
+        VIZE_FRAGMENT_CSS_RUNTIME_CAPTURE = "${{ runner.temp }}/fragment-css-runtime.json"
+        VIZE_NESTED_BRANCH_CAPTURE = "${{ runner.temp }}/nested-branch-modules.json"
+        VIZE_NESTED_BRANCH_RUNTIME_CAPTURE = "${{ runner.temp }}/nested-branch-runtime.json"
+        VIZE_SCOPE_ATTR_CAPTURE = "${{ runner.temp }}/scope-attr-modules.json"
+        VIZE_SCOPE_ATTR_RUNTIME_CAPTURE = "${{ runner.temp }}/scope-attr-runtime.json"
+      }
+      run = """
+      cargo test --locked --profile ci -p vize_atelier_sfc --test ssr_fragment_css_vars -- --nocapture
+      cargo test --locked --profile ci -p vize_atelier_ssr --features legacy-differential --test ssr_fragment_css_vars -- --nocapture
+      vp node --test tests/tooling/ssr-fragment-css-vars.test.ts
+      cargo test --locked --profile ci -p vize_atelier_ssr --features legacy-differential --test nested_branch_fragments -- --nocapture
+      vp node --test tests/tooling/ssr-nested-branch-fragments.test.mjs
+      cargo test --locked --profile ci -p vize_atelier_ssr --features legacy-differential --test scope_attr_forwarding -- --nocapture
+      vp node --test tests/tooling/ssr-component-scope-attrs.test.ts
+
+      """
+    }
+    new Dynamic {
+      name = "Upload current-source scoped CSS modules and runtime captures"
+      `if` = "always()"
+      uses = ci.uploadArtifact
+      with {
+        name = "native-scoped-css-${{ github.sha }}-${{ github.run_attempt }}"
+        path = """
+        ${{ runner.temp }}/native-scoped-css-capture.json
+        ${{ runner.temp }}/native-scoped-css-runtime.json
+        ${{ runner.temp }}/native-class-list-css-capture.json
+        ${{ runner.temp }}/native-class-list-css-runtime.json
+        ${{ runner.temp }}/native-empty-css-capture.json
+        ${{ runner.temp }}/native-empty-css-runtime.json
+        ${{ runner.temp }}/native-scoped-ssr-capture.json
+        ${{ runner.temp }}/native-scoped-ssr-runtime.json
+        ${{ runner.temp }}/native-scoped-css-source.txt
+        ${{ runner.temp }}/scope-body-source.json
+        ${{ runner.temp }}/scope-body-browser.json
+        ${{ runner.temp }}/fragment-css-modules.json
+        ${{ runner.temp }}/fragment-css-runtime.json
+        ${{ runner.temp }}/nested-branch-modules.json
+        ${{ runner.temp }}/nested-branch-runtime.json
+        ${{ runner.temp }}/scope-attr-modules.json
+        ${{ runner.temp }}/scope-attr-runtime.json
+
+        """
+        `if-no-files-found` = "error"
+        `retention-days` = 7
+      }
+    }
+  }
+}

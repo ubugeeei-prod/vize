@@ -1,0 +1,126 @@
+import "../../Actions.pkl" as ci
+
+name = "Persistent batch storage"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/persistent-batch-storage.yml"
+      "crates/vize/src/commands/check/runner.rs"
+      "crates/vize/src/commands/check/runner/execution.rs"
+      "crates/vize_canon/src/batch/type_checker/installed_sources*"
+      "crates/vize_canon/src/batch/type_checker/installed_sources/**"
+      "crates/vize_canon/src/batch/virtual_project/persistent_namespace*"
+      "crates/vize_canon/src/batch/virtual_project/persistent_namespace/**"
+      "crates/vize_canon/src/batch/materialize_fs*"
+      "crates/vize_canon/src/batch/materialize_fs/**"
+      "crates/vize/tests/check_package_external_import_cli.rs"
+      "crates/vize/tests/check_outside_import_types_cli.rs"
+      "tests/_fixtures/differential/typechecker/relative-sibling-storage-10934/**"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "persistent-batch-storage-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `native-storage` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+      CARGO_BUILD_JOBS = "24"
+      RUST_TEST_THREADS = "4"
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_TYPECHECK_REGRESSION_CAPTURE = "${{ github.workspace }}/target/persistent-storage-evidence/native"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "nextest-ci"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/cache-vp-bootstrap")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = true
+        }
+      }
+      new Dynamic {
+        uses = "taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1"
+        with { tool = "cargo-nextest@0.9.146" }
+      }
+      new Dynamic {
+        name = "Pin source and toolchain identity"
+        run = """
+        mkdir -p target/persistent-storage-evidence
+        git rev-parse HEAD > target/persistent-storage-evidence/source.sha
+        rustc --version --verbose > target/persistent-storage-evidence/rustc.txt
+        cp Cargo.lock target/persistent-storage-evidence/
+
+        """
+      }
+      new Dynamic {
+        name = "Select the required physical native provider"
+        run = #"""
+        runtime="$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+        test -x "$runtime"
+        "$runtime" --version > target/persistent-storage-evidence/native-provider-version.txt
+        sha256sum "$runtime" > target/persistent-storage-evidence/native-provider.sha256
+        printf '%s\n' "$runtime" > target/persistent-storage-evidence/native-provider-path.txt
+        printf 'CORSA_PATH=%s\n' "$runtime" >> "$GITHUB_ENV"
+
+        """#
+      }
+      new Dynamic {
+        name = "Require native visibility and three-process storage acceptance"
+        run = """
+        cargo nextest run -p vize --test integration --cargo-profile ci --profile full -E 'test(relative_sibling_sfc_keeps_package_storage_and_exact_repeated_diagnostics) | test(type_config_anchor_does_not_expose_app_modules_to_sibling_sources) | test(expanded_program_cache_redirect_stays_outside_authored_workspace)' --no-tests=fail
+        cp target/nextest/full/junit.xml target/persistent-storage-evidence/cli.junit.xml
+        sha256sum target/ci/vize > target/persistent-storage-evidence/cli.sha256
+        tar -czf target/persistent-storage-evidence/source-cli-linux-x64.tgz -C target/ci vize
+
+        """
+      }
+      new Dynamic {
+        name = "Require exact batch packets and linked-target ownership invariants"
+        run = """
+        cargo nextest run -p vize_canon --lib --test fix_history_diagnostics --cargo-profile ci --profile full -E 'test(relative_sibling_imports_preserve_complete_package_diagnostics) | test(persistent_namespace) | test(installed_sources) | test(replacing_a_hardlinked_cache_leaf)' --no-tests=fail
+        cp target/nextest/full/junit.xml target/persistent-storage-evidence/canon.junit.xml
+
+        """
+      }
+      new Dynamic {
+        name = "Preserve exact native evidence paths in one portable archive"
+        `if` = "always()"
+        run = "tar -czf target/persistent-storage-evidence.tgz -C target persistent-storage-evidence"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "persistent-batch-storage-${{ github.sha }}"
+          path = "target/persistent-storage-evidence.tgz"
+          `compression-level` = 0
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

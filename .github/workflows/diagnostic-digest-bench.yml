@@ -1,4 +1,4 @@
-name: Diagnostic digest benchmark
+name: Benchmark - Diagnostic digest
 run-name: "Diagnostic digest ${{ inputs.head }} vs ${{ inputs.base }}"
 # Base vs head cost of the `vize check` / `vize build` diagnostic digest on
 # pinned real corpora (elk, misskey), interleaved per round on one runner,

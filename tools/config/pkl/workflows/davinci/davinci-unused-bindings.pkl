@@ -1,0 +1,143 @@
+import "../../Actions.pkl" as ci
+
+name = "Davinci unused bindings"
+
+on {
+  pull_request {
+    paths = new Listing {
+      "davinci/vize_l0/**"
+      "crates/vize_croquis/**"
+      "crates/vize_atelier_sfc/src/croquis/**"
+      "crates/vize_atelier_sfc/src/croquis.rs"
+      "crates/vize_patina/**"
+      "tools/commands/davinci/seed-defects.rs"
+      "tools/support/davinci/**"
+      "tests/tooling/davinci-unused-setup-bindings.test.ts"
+      "tests/_fixtures/davinci-fpfn/**"
+      ".github/workflows/davinci-unused-bindings.yml"
+      "tools/support/compat/github/compare-unused-bindings-profiles.ts"
+      "tests/tooling/unused-bindings-profiles.test.ts"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      `compare-profiles` {
+        description = "Compare the old test profile and ci profile on this exact source, old first"
+        type = "boolean"
+        ["default"] = false
+      }
+    }
+  }
+}
+
+concurrency {
+  group = "davinci-unused-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+permissions { contents = "read" }
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+
+jobs {
+  `unused-bindings` {
+    name = "Unused bindings fact specs and seeded recall"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 35
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.rust("stable")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          cache = true
+          `run-install` = true
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "unused-bindings"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Hydrate the pinned P0-13 shard"
+        run = "git submodule update --init --depth 1 -- tests/_fixtures/_git/splitpanes tests/_fixtures/_git/layoutit-grid tests/_fixtures/_git/cssgridgenerator"
+      }
+      new Dynamic {
+        name = "Start fresh Cargo unit evidence"
+        run = """
+        rm -rf target/unused-bindings-units
+        mkdir -p target/unused-bindings-units
+
+        """
+      }
+      new Dynamic {
+        name = "Check independent specs and real rule dispatch"
+        `if` = "${{ !inputs.compare-profiles }}"
+        env {
+          VIZE_DAVINCI_FACT_CORPUS = "tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator"
+        }
+        run = """
+        set -o pipefail
+        cargo test --profile ci --message-format=json-render-diagnostics -p vize_l0 --test fact_demand | tee target/unused-bindings-units/ci-fact_demand.jsonl
+        cargo test --profile ci --message-format=json-render-diagnostics -p vize_croquis --test fact_spec | tee target/unused-bindings-units/ci-fact_spec.jsonl
+        cargo test --profile ci --message-format=json-render-diagnostics -p vize_patina unused_setup_bindings | tee target/unused-bindings-units/ci-unused_setup_bindings.jsonl
+
+        """
+      }
+      new Dynamic {
+        name = "Compare the same complete fact specs under both profiles"
+        `if` = "${{ github.event_name == 'workflow_dispatch' && inputs.compare-profiles }}"
+        env {
+          VIZE_DAVINCI_FACT_CORPUS = "tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator"
+        }
+        run = "node tools/support/compat/github/compare-unused-bindings-profiles.ts"
+      }
+      new Dynamic {
+        name = "Build the real CLI"
+        run = """
+        set -o pipefail
+        cargo build --profile ci --message-format=json-render-diagnostics -p vize | tee target/unused-bindings-units/ci-vize.jsonl
+
+        """
+      }
+      new Dynamic {
+        name = "Recall every class-b mutation and reject wrong diagnostic identities"
+        run = #"VIZE_BIN="$PWD/target/ci/vize" vp exec node --test tests/tooling/davinci-unused-setup-bindings.test.ts tests/tooling/davinci-fpfn-pilots.test.ts"#
+      }
+      new Dynamic {
+        name = "Collect only emitted Cargo unit fingerprints"
+        `if` = "${{ always() }}"
+        run = "node tools/support/compat/github/compare-unused-bindings-profiles.ts --collect-unit-evidence"
+      }
+      new Dynamic {
+        name = "Preserve Cargo unit evidence even on failure"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "unused-bindings-units-${{ github.sha }}"
+          path = "target/unused-bindings-units/"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+      new Dynamic {
+        name = "Preserve complete profile comparison output"
+        `if` = "${{ always() && github.event_name == 'workflow_dispatch' && inputs.compare-profiles }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "unused-bindings-profiles-${{ github.sha }}"
+          path = "target/unused-bindings-profiles/"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

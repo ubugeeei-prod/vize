@@ -1,0 +1,191 @@
+import "../../Actions.pkl" as ci
+
+name = "Native CSS source maps"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/css-compile-source-maps.yml"
+      "Cargo.lock"
+      "crates/vize_atelier_sfc/Cargo.toml"
+      "crates/vize_atelier_sfc/src/css.rs"
+      "crates/vize_atelier_sfc/src/css/**"
+      "crates/vize_atelier_sfc/tests/css_source_maps.rs"
+      "upstream/forks/lightningcss/src/printer.rs"
+      "upstream/forks/lightningcss/tests/vize_printer_utf16.rs"
+      "tests/fixtures/css/compile-source-maps/**"
+      "tests/native/css-compile-source-maps.mjs"
+      "tests/native/css-v-bind-source-maps.mjs"
+      "crates/vize_croquis/src/sfc.rs"
+      "crates/vize_croquis/src/sfc/css_transform.rs"
+      "crates/vize_croquis/tests/css_v_bind_origins.rs"
+      "crates/vize_atelier_sfc/tests/css_v_bind_source_maps.rs"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      measurements {
+        type = "boolean"
+        ["default"] = false
+        description = "Build two pristine optimized sources and report paired map overhead"
+      }
+      base_sha {
+        type = "string"
+        ["default"] = "b0033883518f364cfbd3dd0ab9464715e9f51758"
+        description = "Immutable pre-fix source revision"
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "css-compile-source-maps-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_BUILD_JOBS = "12"
+  CARGO_TERM_COLOR = "never"
+  VIZE_CSS_MAP_SOURCE_SHA = "${{ github.sha }}"
+  VIZE_CSS_MAP_PR_HEAD = "${{ github.event.pull_request.head.sha || '' }}"
+  VIZE_CSS_MAP_REQUIRE_SOURCE = "1"
+}
+jobs {
+  native {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ env.VIZE_CSS_MAP_SOURCE_SHA }}"
+          `fetch-depth` = 2
+          `persist-credentials` = false
+        }
+      }
+      ci.workspaceVp()
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "css-source-maps"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        run = "vp install --filter './npm/native...' --filter './npm/cli...' --filter './tests' --frozen-lockfile --prefer-offline"
+      }
+      new Dynamic {
+        name = "Bind actual checkout to its PR merge or exact dispatch role"
+        run = """
+        node --test tests/tooling/css-source-map-event.test.ts
+        node tests/native/css-source-map-event.mjs
+
+        """
+      }
+      new Dynamic {
+        name = "Verify real writer coordinates and complete existing engine contracts"
+        run = """
+        test "$(git rev-parse HEAD)" = "$VIZE_CSS_MAP_SOURCE_SHA"
+        cargo test --locked --profile ci -p vize_lightningcss --test vize_printer_utf16 --test vize_source_map_contract
+        cargo test --locked --profile ci -p vize_atelier_sfc --test css_source_maps --test css_v_bind_source_maps --test css_engine_panic_boundary --test css_nesting_guard
+        cargo test --locked --profile ci -p vize_croquis --test css_v_bind_origins
+        cargo test --locked --profile ci -p vize_atelier_sfc --lib css::
+
+        """
+      }
+      ci.command("Build the exact source native API", "vp run --filter './npm/native' build:ci")
+      new Dynamic {
+        name = "Retain every real off/on native result before whole comparisons"
+        run = "node --test tests/native/css-compile-source-maps.mjs tests/native/css-v-bind-source-maps.mjs"
+      }
+      new Dynamic {
+        name = "Retain original public capture and source protocol authority"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "css-source-maps-${{ env.VIZE_CSS_MAP_SOURCE_SHA }}-${{ github.run_id }}"
+          path = """
+          target/css-compile-source-maps/
+          tests/fixtures/css/compile-source-maps/
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+  measurements {
+    `if` = "${{ github.event_name == 'workflow_dispatch' && inputs.measurements }}"
+    needs = "native"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    env {
+      VIZE_CSS_MAP_BASE_SHA = "${{ inputs.base_sha }}"
+      CARGO_INCREMENTAL = "0"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ env.VIZE_CSS_MAP_SOURCE_SHA }}"
+          path = "head"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Validate immutable source roles before baseline checkout"
+        run = """
+        [[ "$VIZE_CSS_MAP_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+        [[ "$VIZE_CSS_MAP_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+        test "$(git -C head rev-parse HEAD)" = "$VIZE_CSS_MAP_SOURCE_SHA"
+        git -C head merge-base --is-ancestor "$VIZE_CSS_MAP_BASE_SHA" "$VIZE_CSS_MAP_SOURCE_SHA"
+
+        """
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ inputs.base_sha }}"
+          path = "base"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "head/package.json"
+          cache = true
+          `run-install` = false
+        }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      // Compiled targets start absent and remain separate for each source role.
+      new Dynamic {
+        name = "Install the pinned shared NAPI build toolchain"
+        `working-directory` = "head"
+        run = "vp install --filter './npm/native...' --frozen-lockfile --prefer-offline"
+      }
+      ci.command("Qualify source role and image freshness refusals", "node --test head/tests/tooling/css-source-map-profile.test.ts")
+      new Dynamic {
+        name = "Build both exact sources and retain ABBA native measurements"
+        run = #"node head/tools/benchmarks/scripts/css-source-map-profile.mjs "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/head" "$GITHUB_WORKSPACE/artifacts/css-source-map-profile""#
+      }
+      new Dynamic {
+        name = "Retain every original packet, image, source identity and timing sample"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "css-source-map-profile-${{ env.VIZE_CSS_MAP_SOURCE_SHA }}-${{ github.run_id }}"
+          path = "artifacts/css-source-map-profile/"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+amends "../../../../ShellScript.pkl"
+
+commands {
+  module.strictMode
+  #"""
+
+  consumer="$RUNNER_TEMP/component-input-consumer"
+  beta="$RUNNER_TEMP/component-input-beta"
+  """#
+  module.makeDirectory("consumer")
+  #"cd "$consumer""#
+  module.command("npm", List("init", "-y"))
+  #"""
+  npm install --prefer-online --ignore-scripts --no-audit --no-fund --save-exact \
+    vize@0.566.0 typescript@7.1.0-dev.20261024.1 vue@3.5.42
+
+  """#
+  module.makeDirectory("beta")
+  #"cd "$beta""#
+  module.command("npm", List("init", "-y"))
+  #"""
+  npm install --prefer-online --ignore-scripts --no-audit --no-fund --save-exact \
+    typescript@7.1.0-beta
+  npm view typescript@7.1.0-beta gitHead dist.integrity --json > provider-metadata.json
+  node --input-type=module <<'JS'
+  import assert from "node:assert/strict";
+  import { readFileSync } from "node:fs";
+
+  const metadata = JSON.parse(readFileSync("provider-metadata.json", "utf8"));
+  assert.equal(metadata.gitHead, "3e9236361fa97a9e6c685f4833ac457ae2d8c50a");
+  assert.match(metadata["dist.integrity"], /^sha512-/u);
+  JS
+  """#
+}

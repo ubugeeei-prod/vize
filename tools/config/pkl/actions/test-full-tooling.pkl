@@ -1,0 +1,115 @@
+import "../Actions.pkl" as ci
+
+name = "Full tooling worker"
+description = "Run one planned shard of the exhaustive full suite with the original source CLI and native gates."
+inputs {
+  producer {
+    description = "Complete original full-suite CLI producer outputs."
+    required = true
+  }
+  shard {
+    description = "One-based worker index in the planned full-suite matrix."
+    required = true
+  }
+  total {
+    description = "Worker count of the planned full-suite matrix."
+    required = true
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    ci.workspaceVp()
+    ci.rust("stable")
+    ci.wild()
+    new Dynamic {
+      uses = "./.github/actions/setup-rust-sticky-cache"
+      with {
+        key = "test-scripts"
+        `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}-shard-${{ inputs.shard }}"
+      }
+    }
+    ci.use("./.github/actions/setup-rust-script")
+    new Dynamic {
+      name = "Hydrate CLI and fact corpus fixtures and install JS dependencies"
+      shell = "bash"
+      run = "git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/layoutit-grid tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline && node tools/support/compat/github/prepare-vue-benchmarks.ts"
+    }
+    new Dynamic {
+      uses = "./.github/actions/restore-source-cli"
+      with { producer = "${{ inputs.producer }}" }
+    }
+    new Dynamic {
+      name = "Check configured Router page CLI and editor types"
+      `if` = "${{ inputs.shard == '1' }}"
+      uses = "./.github/actions/check-router-page-types"
+    }
+    new Dynamic {
+      name = "Keep raw Router packets and source receipts"
+      `if` = "${{ always() && inputs.shard == '1' }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "full-tooling-router-${{ github.run_id }}-${{ github.run_attempt }}"
+        path = """
+        target/differential/experimental-router-check/
+        target/differential/router-page-types/
+        target/differential/router-page-types-secondary/
+        target/ci/vize.differential-build.json
+        target/ci/vize.source-build.json
+        target/ci/vize.source-use.json
+
+        """
+        `if-no-files-found` = "error"
+        `retention-days` = 7
+      }
+    }
+    new Dynamic {
+      name = "Prepare the pinned plugin isolation runtime for other workers"
+      `if` = "${{ !cancelled() && inputs.shard != '1' }}"
+      shell = "bash"
+      run = "vp exec node tools/support/compat/davinci/plugin-sandbox-image.ts"
+    }
+    new Dynamic {
+      name = "Prepare plugin runtime and test native JS setup"
+      `if` = "${{ !cancelled() && inputs.shard == '1' }}"
+      uses = "./.github/actions/test-native-js-setup"
+    }
+    new Dynamic {
+      name = "Capture original native attribute values and fixed fresh mounts"
+      `if` = "${{ !cancelled() && inputs.shard == '1' }}"
+      uses = "./.github/actions/test-native-attribute-values-7502"
+    }
+    new Dynamic {
+      name = "Join original historical Vue documents to pinned whole goldens"
+      `if` = "${{ !cancelled() && inputs.shard == '1' }}"
+      uses = "./.github/actions/test-native-historical-sfc-documents"
+      with { `comparison-base` = "${{ github.sha }}" }
+    }
+    new Dynamic {
+      name = "Install CSS formatter reference browser"
+      uses = "./.github/actions/install-formatter-css-browser"
+    }
+    new Dynamic {
+      name = "Select the exhaustive full tooling inventory"
+      shell = "bash"
+      run = #"node tools/support/compat/github/plan-tooling-tests.mjs 0000000000000000000000000000000000000000 "$GITHUB_SHA" --tier merge --output "$RUNNER_TEMP/tooling-plan.json""#
+    }
+    new Dynamic {
+      name = "Test release scripts"
+      shell = "bash"
+      env {
+        VIZE_LSP_BIN = "${{ github.workspace }}/target/ci/vize"
+        VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+        VIZE_TOOLING_TEST_TIER = "merge"
+        VIZE_TOOLING_TEST_PLAN = "${{ runner.temp }}/tooling-plan.json"
+        VIZE_TOOLING_TEST_SHARD = "${{ inputs.shard }}/${{ inputs.total }}"
+      }
+      run = "vp run --workspace-root test:scripts:planned"
+    }
+    new Dynamic {
+      uses = "./.github/actions/upload-formatter-api-corpus-evidence"
+      `if` = "${{ always() }}"
+      with { shard = "${{ inputs.shard }}" }
+    }
+  }
+}

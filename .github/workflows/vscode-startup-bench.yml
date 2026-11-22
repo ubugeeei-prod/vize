@@ -1,4 +1,4 @@
-name: VS Code startup bench
+name: Benchmark - VS Code startup
 run-name: "VS Code startup ${{ inputs.head }} vs ${{ inputs.base }}"
 # Two extension builds open one SFC in a generated workspace, alternating per
 # round: time to the started client and to the first Vize diagnostic on Linux,

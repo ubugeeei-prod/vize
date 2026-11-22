@@ -1,4 +1,4 @@
-name: Complete Level Memory Comparison
+name: Benchmark - Level memory
 
 # Paired runs require a base after the 104-row registry landed. The base and
 # head registry and budget files must be byte-identical; the collector rejects

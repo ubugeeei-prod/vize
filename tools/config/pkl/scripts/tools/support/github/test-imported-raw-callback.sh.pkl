@@ -1,0 +1,21 @@
+amends "../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+local testName = "check_imported_raw_callback_cli::imported_mark_raw_getter_reads_keep_direct_callback_and_authored_error_controls"
+local testCommand = cargoTest("ci", "vize", List("--test", "integration"), List("--", testName, "--exact", "--nocapture", "--color", "never"))
+
+commands {
+  module.strictMode
+  ""
+  module.unsetVariable("VIZE_TEST_DISABLE_TSGO")
+  module.makeDirectory("VIZE_IMPORTED_RAW_CAPTURE")
+  "set +e"
+  testCommand + #" >"$VIZE_IMPORTED_RAW_CAPTURE/test.stdout" 2>"$VIZE_IMPORTED_RAW_CAPTURE/test.stderr""#
+  "status=$?"
+  "set -e"
+  #"printf '%s\n' "$status" >"$VIZE_IMPORTED_RAW_CAPTURE/test.status""#
+  #"cat "$VIZE_IMPORTED_RAW_CAPTURE/test.stdout""#
+  #"cat "$VIZE_IMPORTED_RAW_CAPTURE/test.stderr" >&2"#
+  module.command("node", List("tools/support/github/test-imported-raw-callback.ts", testName))
+}

@@ -1,4 +1,4 @@
-name: Compile Benchmark
+name: Benchmark - SFC compilation
 
 # Compile-only measurements on the README runner class: wall, CPU-seconds
 # (user+sys) and load cost per build, single-thread and parallel apart.

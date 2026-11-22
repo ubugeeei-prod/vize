@@ -1,4 +1,4 @@
-name: Doctor filter benchmark
+name: Benchmark - Doctor filters
 
 on:
   workflow_dispatch:

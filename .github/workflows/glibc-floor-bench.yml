@@ -1,4 +1,4 @@
-name: glibc floor benchmark
+name: Benchmark - glibc compatibility
 run-name: glibc floor benchmark @ ${{ github.sha }}
 # Evidence for the Linux GNU release recipe: builds the same source twice on
 # one runner, against the runner's glibc (`host`, the recipe before the

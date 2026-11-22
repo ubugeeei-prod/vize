@@ -1,0 +1,113 @@
+import "../../Actions.pkl" as ci
+
+`runs-on` = ci.linux
+`if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+`timeout-minutes` = 30
+needs = List("build-js-packages")
+steps = new Listing {
+  ci.use(ci.checkout)
+  // Rust is always needed for @vizejs/native (used by vite-plugin-vize)
+  new Dynamic {
+    name = "Setup Rust"
+    uses = ci.setupRust
+    with {
+      toolchain = "stable"
+      targets = "wasm32-unknown-unknown"
+    }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      key = "playground-test"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    name = "Cache WASM build"
+    id = "cache-wasm"
+    uses = ci.cache
+    with {
+      path = "playground/src/wasm/vize_vitrine*"  // outputs only; tests/tooling/github-wasm-cache.test.ts
+      key = "${{ runner.os }}-wasm-v2-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'crates/**/Cargo.toml', 'davinci/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/support/github/build-vitrine-wasm.ts', 'tools/support/tasks/build-vitrine-wasm.ts', 'tools/support/command-runtime.ts') }}"
+    }
+  }
+  new Dynamic {
+    name = "Install wasm-bindgen-cli"
+    `if` = "steps.cache-wasm.outputs.cache-hit != 'true'"
+    uses = "taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1"  // v2
+    with { tool = "wasm-bindgen-cli@0.2.129" }
+  }
+  new Dynamic {
+    name = "Setup Vite+ and Node.js"
+    uses = ci.setupVp
+    with {
+      `node-version-file` = "package.json"
+      cache = true
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    name = "Build WASM"
+    `if` = "steps.cache-wasm.outputs.cache-hit != 'true'"
+    run = "node tools/support/github/build-vitrine-wasm.ts playground/src/wasm"
+  }
+  new Dynamic {
+    name = "Install JS dependencies"
+    run = "node tools/support/github/vp-install.ts --filter './playground...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...'"
+  }
+  new Dynamic {
+    name = "Download shared JS build artifacts"
+    uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+    with {
+      name = "shared-js-build"
+      path = "."
+    }
+  }
+  new Dynamic {
+    name = "Cache Playwright browsers"
+    id = "cache-playwright"
+    uses = ci.cache
+    with {
+      path = "~/.cache/ms-playwright"
+      key = "${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}"
+    }
+  }
+  new Dynamic {
+    name = "Install Playwright browsers"
+    `if` = "steps.cache-playwright.outputs.cache-hit != 'true'"
+    uses = "./.github/actions/install-playwright-browsers"
+  }
+  ci.command("Run playground tests", "vp run --filter './playground' test:browser")
+  new Dynamic {
+    name = "Run VRT"
+    run = "vp run --filter './playground' test:vrt"
+    `continue-on-error` = true
+    id = "vrt"
+  }
+  new Dynamic {
+    name = "Upload VRT report"
+    `if` = "steps.vrt.outcome == 'failure'"
+    uses = ci.uploadArtifact
+    with {
+      name = "playground-vrt-report"
+      path = "playground/playwright-report/"
+      `if-no-files-found` = "ignore"
+      `retention-days` = 7
+    }
+  }
+  new Dynamic {
+    name = "Upload VRT diff artifacts"
+    `if` = "steps.vrt.outcome == 'failure'"
+    uses = ci.uploadArtifact
+    with {
+      name = "vrt-diff"
+      path = "playground/e2e/vrt/test-results/"
+      `retention-days` = 7
+    }
+  }
+  new Dynamic {
+    name = "Fail if VRT failed"
+    `if` = "steps.vrt.outcome == 'failure'"
+    run = "exit 1"
+  }
+}

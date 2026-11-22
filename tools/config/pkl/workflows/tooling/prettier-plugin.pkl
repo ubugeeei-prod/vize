@@ -1,0 +1,148 @@
+import "../../Actions.pkl" as ci
+
+name = "Prettier plugin consumer"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/prettier-plugin.yml"
+      "npm/formatter/prettier/**"
+      "npm/native/**"
+      "crates/vize_glyph/**"
+      "crates/vize_vitrine/src/napi/format.rs"
+      "pnpm-lock.yaml"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "prettier-plugin-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_TERM_COLOR = "always"
+  SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+}
+jobs {
+  `source-native` {
+    name = "Prettier CLI and semantics with authenticated source native binding"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    steps = new Listing {
+      ci.checkoutAt("${{ env.SOURCE_SHA }}")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version` = "24.14.0"
+          `run-install` = false
+          cache = true
+          `cache-save` = false
+        }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "prettier-plugin-native"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Install frozen package and native build dependencies"
+        run = "vp install --frozen-lockfile --prefer-offline --filter './npm/formatter/prettier...' --filter './npm/native...'"
+      }
+      new Dynamic {
+        name = "Build exact source binding and package exports"
+        run = """
+        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+        test "$(node -p 'process.versions.node')" = 24.14.0
+        vp run --workspace-root build:native:test
+        cd npm/formatter/prettier
+        vp check src test vite.config.ts
+        vp pack
+
+        """
+      }
+      new Dynamic {
+        name = "Check real host options, complete goldens, AST/render semantics and format counts"
+        run = "node npm/native/scripts/test-preparation.mjs node --test npm/formatter/prettier/src/plugin.test.ts"
+      }
+      new Dynamic {
+        name = "Install the tarball in a fresh consumer and exercise actual CLI and configuration"
+        run = #"node npm/native/scripts/test-preparation.mjs node npm/formatter/prettier/test/consumer.mjs --mode source-native --expected-node 24.14.0 --output "$RUNNER_TEMP/prettier-source-consumer""#
+      }
+      new Dynamic {
+        name = "Install the declared minimum Node consumer runtime"
+        uses = ci.setupNode
+        with {
+          `node-version` = "22.0.0"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Qualify the same tarball and native image on Node 22.0.0"
+        run = #"node npm/native/scripts/test-preparation.mjs node npm/formatter/prettier/test/consumer.mjs --mode source-native --expected-node 22.0.0 --tarball-directory "$RUNNER_TEMP/prettier-source-consumer" --output "$RUNNER_TEMP/prettier-node22-consumer""#
+      }
+      new Dynamic {
+        name = "Compare installed runtime identity and complete output across consumers"
+        shell = "bash"
+        run = """
+        node --input-type=module <<'JS'
+        import assert from 'node:assert/strict';
+        import { readFileSync } from 'node:fs';
+        const report = name => JSON.parse(readFileSync(`${process.env.RUNNER_TEMP}/prettier-${name}-consumer/report.json`, 'utf8'));
+        const current = report('source');
+        const minimum = report('node22');
+        assert.equal(current.node, 'v24.14.0');
+        assert.equal(minimum.node, 'v22.0.0');
+        const identity = value => ({
+          tarball: value.adapterTarballSha256,
+          source: {
+            head: value.sourcePreparation.head,
+            tree: value.sourcePreparation.tree,
+            workingDiff: value.sourcePreparation.workingDiff,
+            binding: value.sourcePreparation.binding,
+            sha256: value.sourcePreparation.sha256,
+          },
+          nativePackage: value.nativePackage,
+          pluginVersion: value.pluginVersion,
+          prettier: value.prettier,
+          golden: value.golden,
+          art: value.art,
+          ignored: value.ignored,
+        });
+        assert.deepEqual(identity(minimum), identity(current));
+        JS
+
+        """
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "prettier-source-consumer-${{ env.SOURCE_SHA }}"
+          path = """
+          ${{ runner.temp }}/prettier-source-consumer/*.json
+          ${{ runner.temp }}/prettier-source-consumer/*.tgz
+          ${{ runner.temp }}/prettier-source-consumer/project*/package*.json
+          ${{ runner.temp }}/prettier-source-consumer/project*/prettier.config.mjs
+          ${{ runner.temp }}/prettier-source-consumer/project*/.prettierignore
+          ${{ runner.temp }}/prettier-source-consumer/project*/src/**
+          ${{ runner.temp }}/prettier-node22-consumer/*.json
+          ${{ runner.temp }}/prettier-node22-consumer/project*/package*.json
+          ${{ runner.temp }}/prettier-node22-consumer/project*/prettier.config.mjs
+          ${{ runner.temp }}/prettier-node22-consumer/project*/.prettierignore
+          ${{ runner.temp }}/prettier-node22-consumer/project*/src/**
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

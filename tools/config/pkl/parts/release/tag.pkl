@@ -1,0 +1,40 @@
+import "../../Actions.pkl" as ci
+
+name = "Tag the release"
+needs = new Listing {
+  "version"
+  "smoke"
+  "smoke-glibc-floor"
+  "smoke-editor-artifacts"
+  "build-cli"
+  "build-editor-extensions"
+}
+`runs-on` = "ubuntu-24.04"
+`timeout-minutes` = 5
+permissions {
+  actions = "write"
+  contents = "write"
+}
+env {
+  RELEASE_TAG = "${{ needs.version.outputs.tag }}"
+  RELEASE_CANDIDATE = "${{ needs.version.outputs.ref }}"
+}
+steps = new Listing {
+  new Dynamic {
+    uses = ci.checkout
+    with { ref = "${{ needs.version.outputs.ref }}" }
+  }
+  new Dynamic {
+    name = "Push the tag and drop the candidate ref"
+    run = """
+    git push origin "HEAD:refs/tags/$RELEASE_TAG"
+    git push origin ":$RELEASE_CANDIDATE"
+
+    """
+  }
+  new Dynamic {
+    name = "Dispatch Parcel native publication from the immutable tag"
+    env { GH_TOKEN = "${{ github.token }}" }
+    run = #"gh workflow run parcel-transformer.yml --ref "$RELEASE_TAG" -f publish=true"#
+  }
+}

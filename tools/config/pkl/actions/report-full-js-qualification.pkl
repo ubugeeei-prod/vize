@@ -1,0 +1,29 @@
+import "../Actions.pkl" as ci
+
+name = "Report full JS qualification"
+description = "Install the pinned Node runtime and require every full qualification dependency to succeed."
+inputs {
+  `needs-json` {
+    description = "Complete full qualification job results."
+    required = true
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      uses = ci.setupVp
+      with {
+        `node-version-file` = "package.json"
+        cache = false
+        `run-install` = false
+      }
+    }
+    new Dynamic {
+      name = "Require every full JS qualification job to succeed"
+      shell = "bash"
+      env { NEEDS_JSON = "${{ inputs.needs-json }}" }
+      run = "node tools/support/compat/github/require-needs-success.ts"
+    }
+  }
+}

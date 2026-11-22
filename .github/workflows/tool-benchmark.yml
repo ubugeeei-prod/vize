@@ -1,4 +1,4 @@
-name: Tool Benchmark
+name: Benchmark - Tool comparison
 
 on:
   workflow_dispatch:

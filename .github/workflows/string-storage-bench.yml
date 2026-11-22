@@ -1,4 +1,4 @@
-name: String Storage Bench
+name: Benchmark - String storage
 
 on:
   workflow_dispatch:
@@ -45,6 +45,10 @@ jobs:
           ref: ${{ inputs.base_sha }}
           path: base
           persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: head/package.json
+          package-manager-cache: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with:
           toolchain: stable
@@ -66,61 +70,14 @@ jobs:
           BASE_SHA: ${{ inputs.base_sha }}
           HEAD_SHA: ${{ inputs.head_sha }}
           DISPATCH_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$HEAD_SHA" == "$DISPATCH_SHA" ]]
-          [[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
-          [[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
-          git -C head merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
-          mkdir -p reports
-          printf '%s\n' "$BASE_SHA" > reports/base-sha.txt
-          printf '%s\n' "$HEAD_SHA" > reports/head-sha.txt
-          cp head/crates/vize_croquis_cf/benches/{cross_file,string_storage}.rs base/crates/vize_croquis_cf/benches/
-          node --input-type=module - <<'JS'
-          import fs from 'node:fs';
-          const path = 'base/crates/vize_croquis_cf/Cargo.toml';
-          const source = fs.readFileSync(path, 'utf8');
-          const dependency = 'davinci_harness.workspace = true';
-          if (!source.includes(dependency))
-            fs.writeFileSync(path, source.replaceAll('[dev-dependencies]', `[dev-dependencies]\n${dependency}`));
-          JS
+        run: node head/tools/benchmarks/scripts/string-storage.ts prepare
       - name: Check candidate CF semantics and lints
         working-directory: head
         run: |
           cargo test --profile ci -p vize_croquis_cf
           cargo clippy -p vize_croquis_cf --lib --tests -- -D warnings
       - name: Compare controlled production storage and traversal
-        run: |
-          set -euo pipefail
-          for side in base head; do
-            rm -rf "$GITHUB_WORKSPACE/head/target/$side/criterion"
-            (cd "$side" && CRITERION_HOME="$GITHUB_WORKSPACE/head/target/$side/criterion" STRING_STORAGE_REPORT_DIR="$GITHUB_WORKSPACE/reports/$side" cargo bench -p vize_croquis_cf --bench cross_file --target-dir "$GITHUB_WORKSPACE/head/target/$side" -- string_storage --warm-up-time 0.5 --measurement-time 1 --sample-size 30 --save-baseline "$side")
-          done
-          node --input-type=module - <<'JS'
-          import assert from 'node:assert/strict';
-          import fs from 'node:fs';
-          import path from 'node:path';
-          const read = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
-          for (const name of fs.readdirSync('reports/base')) {
-            if (!/^tree_.*\.json$/.test(name)) continue;
-            assert.deepEqual(read(`reports/base/${name}`).semantic, read(`reports/head/${name}`).semantic, name);
-          }
-          for (const side of ['base', 'head']) {
-            const root = `head/target/${side}/criterion`;
-            const estimates = fs
-              .readdirSync(root, { recursive: true })
-              .map(String)
-              .filter((file) => `/${file}`.endsWith(`/${side}/estimates.json`))
-              .map((file) => path.join(root, file));
-            assert.equal(estimates.length, 8, `${side}: ${estimates.length}`);
-            for (const estimate of estimates) {
-              assert.ok(read(estimate).median.point_estimate > 0, estimate);
-              assert.ok(fs.statSync(path.join(path.dirname(estimate), 'sample.json')).isFile(), estimate);
-            }
-          }
-          JS
+        run: node head/tools/benchmarks/scripts/string-storage.ts measure
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

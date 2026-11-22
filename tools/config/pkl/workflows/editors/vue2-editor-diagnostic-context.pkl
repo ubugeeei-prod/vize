@@ -1,0 +1,107 @@
+import "../../Actions.pkl" as ci
+
+name = "Vue 2 editor diagnostic context"
+
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/vue2-editor-diagnostic-context.yml"
+      "tests/snapshots/check/vue-element-admin-legacy-lsp-oracle.ts"
+      "tests/snapshots/check/vue-element-admin-unmapped-diagnostic-oracle.ts"
+      "tests/tooling/vue2-rename-context-custody.test.mjs"
+      "tests/_fixtures/differential/typechecker/vue2-rename-context-custody/**"
+    }
+  }
+  workflow_dispatch {}
+}
+
+permissions { contents = "read" }
+concurrency {
+  group = "vue2-editor-context-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_TERM_COLOR = "always"
+}
+
+jobs {
+  `edit-cycles` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { ref = "${{ github.event.pull_request.head.sha || github.sha }}" }
+      }
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          `run-install` = false
+          cache = true
+          `cache-save` = false
+        }
+      }
+      ci.rust("stable")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "vue-parity"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Install pinned provider and Vue 2 fixture"
+        run = """
+        git submodule update --init --depth 1 -- tests/_fixtures/_git/vue-element-admin
+        vp install --frozen-lockfile --prefer-offline
+
+        """
+      }
+      new Dynamic {
+        name = "Build exact source CLI with its receipt"
+        run = """
+        cargo build --locked --profile ci -p vize --features legacy
+        node tests/differential/build-receipt.ts --legacy
+
+        """
+      }
+      new Dynamic {
+        name = "Verify whole CLI packets and original editor edit cycles"
+        env {
+          VIZE_TEST_BIN = "${{ github.workspace }}/target/ci/vize"
+          VIZE_LSP_BIN = "${{ github.workspace }}/target/ci/vize"
+          VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+          VIZE_LSP_BUILD_RECIPE = "cargo build --profile ci -p vize --features legacy"
+          RAYON_NUM_THREADS = "4"
+        }
+        run = #"""
+        node --test --test-concurrency=1 \
+          tests/tooling/vue2-rename-context-custody.test.mjs \
+          tests/snapshots/check/vue-element-admin-legacy-lsp-oracle.ts \
+          tests/snapshots/check/vue-element-admin-unmapped-diagnostic-oracle.ts
+
+        """#
+      }
+      new Dynamic {
+        name = "Retain complete source-built editor wires"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "vue2-editor-context-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_id }}"
+          path = """
+          target/ci/vize.differential-build.json
+          target/differential/lsp-sessions/
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

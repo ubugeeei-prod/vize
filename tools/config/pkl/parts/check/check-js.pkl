@@ -1,0 +1,63 @@
+import "../../Actions.pkl" as ci
+
+`runs-on` = ci.linux
+`timeout-minutes` = 15
+permissions {
+  contents = "read"
+  actions = "read"
+}
+env { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }
+steps = new Listing {
+  new Dynamic {
+    uses = ci.checkout
+    with { `fetch-depth` = 2 }
+  }
+  new Dynamic {
+    uses = ci.setupVp121
+    with {
+      version = "latest"
+      `node-version-file` = "package.json"
+      cache = true
+      `cache-save` = false
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    name = "Guard legacy crate deletion"
+    `if` = "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}"
+    env {
+      GH_TOKEN = "${{ github.token }}"
+      BASE_SHA = "${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}"
+      CANDIDATE_SHA = "${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}"
+    }
+    run = "vp node tools/support/compat/davinci/legacy-deletion-guard.ts"
+  }
+  new Dynamic {
+    name = "Check Davinci source inventories"
+    `if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+    uses = "./.github/actions/check-level-inventories"
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-js-check-runtime"
+    with {
+      full = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+    }
+  }
+  ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+  ci.command("Check Pkl repository configuration", "node tools/commands/generate/repository-config.ts --check")
+  new Dynamic {
+    name = "Check JS/TS"
+    `if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+    run = "vp run --no-cache --filter './npm/native' build:debug && vp run --workspace-root check:ci"
+  }
+  new Dynamic {
+    name = "Check fast JS/TS"
+    `if` = "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push' }}"
+    uses = "./.github/actions/test-small-node-cases"
+    with {
+      suite = "check-js"
+      job = "check-js"
+      packet = "check-js"
+    }
+  }
+}

@@ -1,0 +1,134 @@
+import "../../Actions.pkl" as ci
+
+`if` = "github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && !inputs.router-experimental-only && inputs.event-rename-only && !inputs.official-css-options-only && !inputs.published-defaults-only"
+`runs-on` = ci.linux
+`timeout-minutes` = 20
+steps = new Listing {
+  new Dynamic {
+    name = "Checkout Vize"
+    uses = ci.checkout
+    with { `persist-credentials` = false }
+  }
+  new Dynamic {
+    name = "Checkout exact TypeScript Content Mapper revision"
+    uses = ci.checkout
+    with {
+      repository = "microsoft/TypeScript"
+      ref = "${{ env.CONTENT_MAPPER_TYPESCRIPT_SHA }}"
+      path = "typescript-content-mapper"
+      `persist-credentials` = false
+    }
+  }
+  new Dynamic {
+    name = "Setup Go"
+    uses = "actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c"  // v6.1.0
+    with {
+      `go-version-file` = "typescript-content-mapper/tsc/go.mod"
+      `cache-dependency-path` = "typescript-content-mapper/tsc/go.sum"
+    }
+  }
+  new Dynamic {
+    name = "Setup Rust"
+    uses = ci.setupRust
+    with { toolchain = "1.100.0" }
+  }
+  ci.wild()
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      key = "content-mapper-conformance"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    name = "Setup Vite Plus"
+    uses = ci.setupVp
+    with {
+      `node-version-file` = "package.json"
+      cache = true
+      `run-install` = false
+    }
+  }
+  ci.command("Install frozen dependencies", "vp install --frozen-lockfile --prefer-offline")
+  new Dynamic {
+    name = "Build exact upstream tsgo"
+    `working-directory` = "typescript-content-mapper/tsc"
+    run = """
+    go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsc
+    cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/"
+
+    """
+  }
+  new Dynamic {
+    name = "Preserve source and provider identity before queries"
+    run = """
+    mkdir -p "$RUNNER_TEMP/event-rename"
+    rustc -Vv > "$RUNNER_TEMP/event-rename/rustc.txt"
+    go version > "$RUNNER_TEMP/event-rename/go.txt"
+    node --version > "$RUNNER_TEMP/event-rename/node.txt"
+    git rev-parse HEAD > "$RUNNER_TEMP/event-rename/source-sha.txt"
+    git -C typescript-content-mapper rev-parse HEAD > "$RUNNER_TEMP/event-rename/provider-source-sha.txt"
+    test "$(cat "$RUNNER_TEMP/event-rename/provider-source-sha.txt")" = "$CONTENT_MAPPER_TYPESCRIPT_SHA"
+    git diff --binary HEAD > "$RUNNER_TEMP/event-rename/source.patch"
+    test ! -s "$RUNNER_TEMP/event-rename/source.patch"
+    sha256sum "$RUNNER_TEMP/tsgo" "$RUNNER_TEMP/"*.d.ts > "$RUNNER_TEMP/event-rename/provider.sha256"
+    sha256sum tests/_fixtures/differential/lsp/event-rename/4075/{bound-emitter,named-model}/cases.json.txt > "$RUNNER_TEMP/event-rename/oracles.sha256"
+    sha256sum pnpm-lock.yaml > "$RUNNER_TEMP/event-rename/dependency-lock.sha256"
+    cp npm/cli/node_modules/vue/package.json "$RUNNER_TEMP/event-rename/vue-package.json"
+    sha256sum npm/cli/node_modules/vue/package.json > "$RUNNER_TEMP/event-rename/vue-package.sha256"
+
+    """
+  }
+  new Dynamic {
+    name = "Run both whole event rename transaction targets"
+    id = "transactions"
+    `continue-on-error` = true
+    env {
+      SOURCE_SHA = "${{ github.sha }}"
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_TEST_CONTENT_MAPPER_TSGO = "${{ runner.temp }}/tsgo"
+      VIZE_TEST_CONTENT_MAPPER_VUE = "${{ github.workspace }}/npm/cli/node_modules/vue"
+      VIZE_TEST_FIX_HISTORY_CAPTURE_DIR = "${{ runner.temp }}/event-rename/packets"
+      VIZE_INLAY_HINT_CAPTURE = "${{ runner.temp }}/event-rename/processes"
+    }
+    run = #"""
+    cargo test --locked --profile ci --no-fail-fast -p vize --test integration -- \
+      lsp_bound_event_casing_cli:: \
+      lsp_named_model_transactions_cli:: --nocapture \
+      2>&1 | tee "$RUNNER_TEMP/event-rename/tests.log"
+
+    """#
+  }
+  new Dynamic {
+    name = "Preserve actual CLI identity and complete artifact inventory"
+    `if` = "always()"
+    run = """
+    mkdir -p "$RUNNER_TEMP/event-rename"
+    if [ -f target/ci/vize ]; then
+      sha256sum target/ci/vize > "$RUNNER_TEMP/event-rename/cli.sha256"
+    fi
+    find "$RUNNER_TEMP/event-rename" -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/event-rename-inventory.sha256"
+
+    """
+  }
+  new Dynamic {
+    name = "Upload complete event rename observations before result gate"
+    `if` = "always()"
+    uses = ci.uploadArtifact
+    with {
+      name = "content-mapper-event-rename-${{ github.sha }}"
+      path = """
+      ${{ runner.temp }}/event-rename/
+      ${{ runner.temp }}/event-rename-inventory.sha256
+
+      """
+      `if-no-files-found` = "error"
+    }
+  }
+  new Dynamic {
+    name = "Require both whole transaction targets"
+    `if` = "always()"
+    env { TRANSACTIONS_OUTCOME = "${{ steps.transactions.outcome }}" }
+    run = #"test "$TRANSACTIONS_OUTCOME" = success"#
+  }
+}

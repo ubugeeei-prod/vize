@@ -1,0 +1,116 @@
+import "../../Actions.pkl" as ci
+
+name = "Current native SFC lifecycle"
+on {
+  workflow_call {
+    inputs {
+      `expected-driver-sha` {
+        required = true
+        type = "string"
+      }
+      `conflicting-modes` {
+        required = true
+        type = "boolean"
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+jobs {
+  lifecycle {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    env {
+      CARGO_INCREMENTAL = "0"
+      CARGO_TERM_COLOR = "never"
+      EXPECTED_DRIVER_SHA = "${{ inputs.expected-driver-sha }}"
+      CONFLICTING_MODES = "${{ inputs.conflicting-modes }}"
+    }
+    steps = new Listing {
+      new Dynamic {
+        name = "Refuse stale or conflicting diagnostic dispatch"
+        run = """
+        [[ "$EXPECTED_DRIVER_SHA" == "$GITHUB_SHA" && "$CONFLICTING_MODES" == false ]]
+        [[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize ]]
+
+        """
+      }
+      new Dynamic {
+        name = "Checkout diagnostic driver"
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        name = "Checkout the fresh current source under qualification"
+        uses = ci.checkout
+        with {
+          ref = "${{ inputs.expected-driver-sha }}"
+          path = "source"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "source/package.json"
+          cache = true
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f"  // master
+        with { toolchain = "1.100.0" }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      ci.use("./.github/actions/setup-ubuntu-archive")
+      new Dynamic {
+        name = "Install the pinned Linux heap observer"
+        run = """
+        vize-ci-apt-retry sudo apt-get update -qq
+        vize-ci-apt-retry sudo apt-get install -y --no-install-recommends valgrind
+
+        """
+      }
+      new Dynamic {
+        name = "Install exact source lifecycle dependencies"
+        `working-directory` = "source"
+        run = "vp install --filter './npm/native...' --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline"
+      }
+      // No compiled-target cache/restore action belongs in this diagnostic.
+      new Dynamic {
+        name = "Compare one historical public and one fresh current-source lifecycle"
+        run = #"node tools/benchmarks/scripts/sfc-optional-lifecycle.mjs "$GITHUB_WORKSPACE/source" "$GITHUB_WORKSPACE/artifacts/sfc-optional-lifecycle""#
+      }
+      new Dynamic {
+        name = "Retain compact image, token and phase receipts"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "sfc-optional-lifecycle-receipt-${{ github.sha }}-${{ github.run_attempt }}"
+          path = """
+          artifacts/sfc-optional-lifecycle/receipt.json
+          artifacts/sfc-optional-lifecycle/*-identity.json
+          artifacts/sfc-optional-lifecycle/*/phases.jsonl
+          artifacts/sfc-optional-lifecycle/source-memcheck/memcheck.log
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+          `include-hidden-files` = true
+        }
+      }
+      new Dynamic {
+        name = "Retain Cargo, loaded images and lifecycle phase receipts"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "sfc-optional-lifecycle-${{ github.sha }}-${{ github.run_attempt }}"
+          path = "artifacts/sfc-optional-lifecycle/"
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+          `include-hidden-files` = true
+        }
+      }
+    }
+  }
+}
