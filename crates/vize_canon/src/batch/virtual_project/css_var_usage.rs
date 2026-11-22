@@ -107,3 +107,6 @@ div {
         );
     }
 }
+
+#[cfg(all(test, feature = "original-style-bindings"))]
+mod original;

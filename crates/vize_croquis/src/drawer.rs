@@ -45,3 +45,6 @@ pub use helpers::{
 pub use lint_template::LintTemplate;
 pub use options::DrawerOptions;
 pub use source_offsets::{AuthoredSourceOffsets, attribute_source_offset, text_source_offset};
+
+#[cfg(feature = "original-style-bindings")]
+pub use helpers::extract_identifiers_retained;

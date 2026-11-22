@@ -63,6 +63,13 @@ fn main() {
             ));
         })
         .expect("installed counting allocator");
+        eprintln!(
+            "composed_storage input={name} calls={}/{} peak={}/{}",
+            original.calls,
+            shared.calls,
+            original.peak_bytes_over_start,
+            shared.peak_bytes_over_start
+        );
         assert!(
             shared.calls <= original.calls,
             "{name}: {original:?} / {shared:?}"

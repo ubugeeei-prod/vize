@@ -26,3 +26,8 @@ pub use payload::{
 pub use product_capture::{
     PRODUCT_STAGE_FEED_VERSION, ProductCaptureSource, product_capture_value, sfc_authored_syntax,
 };
+
+#[cfg(feature = "inspector-template-products")]
+pub use payload::build_payload_with_complexity;
+#[cfg(feature = "inspector-template-products")]
+pub use stages::products::inspect_template_products;

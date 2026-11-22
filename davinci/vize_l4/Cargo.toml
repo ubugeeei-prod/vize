@@ -19,6 +19,7 @@ metadata.vize.stability = "experimental"
 readme = "README.md"
 
 [features]
+original-style-bindings = ["vize_l1_to_l2/original-style-bindings"]
 # Explicit consumers of the same parsed TSRX module and sealed regions.
 retained-tsrx = ["vize_l1_to_l2/retained-tsrx"]
 # Emit the server render fragment from a paired L3 client/server query.

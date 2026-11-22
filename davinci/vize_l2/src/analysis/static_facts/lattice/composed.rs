@@ -38,14 +38,30 @@ pub fn run(
     provenance: &mut impl ProvenanceSink,
     remarks: &mut impl RemarkSink,
 ) -> TemplateFacts {
+    // Root text and comments have no enclosing owner to receive their child
+    // contribution and publish no complexity row, provenance or remark.
+    let mut roots = region.ops.as_slice();
+    let mut ids = PageWalk::new();
+    while let Some((Op::Text(_) | Op::Comment(_), rest)) = roots.split_first() {
+        ids.mint();
+        roots = rest;
+    }
+    if roots.is_empty() {
+        assert_accounting(&ids, node_count, "hoist-static+template-complexity");
+        return TemplateFacts {
+            static_facts: OwnerFacts::default(),
+            complexity: complexity::ComplexityFacts::empty(),
+            op_visits: ids.visits(),
+        };
+    }
     let mut pass = Walk {
-        ids: PageWalk::new(),
+        ids,
         static_facts: OwnerFacts::default(),
         complexity: complexity::ComplexityFacts::empty(),
         provenance,
         remarks,
     };
-    pass.region(&region.ops, Namespace::Html, 0);
+    pass.region(roots, Namespace::Html, 0);
     assert_accounting(&pass.ids, node_count, "hoist-static+template-complexity");
     pass.complexity
         .contributions

@@ -301,3 +301,8 @@ mod tests {
         );
     }
 }
+
+#[cfg(feature = "original-style-bindings")]
+mod authored;
+#[cfg(feature = "original-style-bindings")]
+pub use authored::{StyleBinding, binding_calls_in};

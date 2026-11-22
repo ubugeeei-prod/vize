@@ -114,3 +114,6 @@ pub(super) fn payload_stage_feed(files: &[InspectorSourceFile]) -> serde_json::V
     }
     stage_feed_value_with_remarks("inspector", pages, remarks)
 }
+
+#[cfg(feature = "inspector-template-products")]
+pub(super) mod products;

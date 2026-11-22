@@ -57,3 +57,6 @@ include!("dialect/vue/lower.rs");
 
 #[cfg(feature = "retained-tsrx")]
 pub mod tsrx;
+
+#[cfg(feature = "original-style-bindings")]
+pub use css::OriginalStyleBindings;
