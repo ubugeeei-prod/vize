@@ -27,7 +27,7 @@ fn observe<'a>(arena: &'a Allocator, source: &'a str) -> NativeSfcObservation<'a
 }
 
 fn original(state: &ServerState, uri: &Url, source: &str) -> Vec<Diagnostic> {
-    let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+    let descriptor = state.sfc_descriptor(uri, source).unwrap();
     DiagnosticService::collect_component_required_prop_diagnostics(
         state,
         uri,

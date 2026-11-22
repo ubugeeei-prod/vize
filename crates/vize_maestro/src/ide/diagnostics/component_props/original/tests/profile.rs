@@ -12,7 +12,7 @@ fn profile(
     let arena = Allocator::new();
     let owner = observe(&arena, source);
     let retained = owner.setup_component_imports().unwrap();
-    let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+    let descriptor = state.sfc_descriptor(uri, source).unwrap();
     let lines = LineIndex::new(source);
     let product = |imports: &SetupComponentImports<'_, '_>, joined| {
         let diagnostics = if joined {
