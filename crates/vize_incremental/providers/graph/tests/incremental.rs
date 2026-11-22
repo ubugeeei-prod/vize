@@ -187,5 +187,6 @@ fn scanning_all_starts_keeps_only_the_graph_and_evicted_answers_recheck() {
     assert_eq!(recomputed, 128);
 }
 
-#[path = "incremental/trails.rs"]
-mod trails;
+mod incremental {
+    mod trails;
+}

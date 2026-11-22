@@ -54,7 +54,7 @@ fn visit(graph: &OpGraph<'_>, query: TwoHopQuery, stream: bool, mut sink: impl F
     }
 }
 
-pub(super) fn profile(siblings: usize) {
+pub(crate) fn profile(siblings: usize) {
     let source = "<p :title=\"title\">{{title}}</p>".repeat(siblings);
     let arena = Allocator::default();
     let native = vize_l1_to_l2::native::lower_component_native(&arena, &source, Lang::Js).unwrap();

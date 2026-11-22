@@ -1,4 +1,4 @@
-use super::*;
+use crate::*;
 use std::ops::ControlFlow;
 use vize_l3::query::{EdgePattern, TrailError, TwoHopMatch, TwoHopQuery, check_two_hop_matches};
 
