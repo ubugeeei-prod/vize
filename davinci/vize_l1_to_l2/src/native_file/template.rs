@@ -262,3 +262,17 @@ pub(super) fn prepare<'a>(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "authored-bind-shorthand")]
+pub(super) fn prepare_shorthand<'a>(
+    allocator: &'a Allocator,
+    selected: TemplateView<'_, 'a>,
+    lang: Lang,
+    issues: &mut Vec<NativeSfcIssue>,
+) -> NativeTemplateObservation<'a> {
+    let mut template = prepare(allocator, selected, lang, issues);
+    if let Some(pending) = &mut template.pending {
+        pending.enable_authored_bind_shorthand();
+    }
+    template
+}
