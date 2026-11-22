@@ -6,3 +6,4 @@ crates/vize/tests/diagnostic_render/cases/markup.rs	v-on:keydown.enter
 crates/vize/tests/fmt_lint_agreement_cli.rs	v-on:keyup.space
 crates/vize/tests/fmt_lint_agreement_cli.rs	v-on:keyup.32
 crates/vize/tests/fmt_lint_agreement_cli.rs	v-on:keyup.custom
+crates/vize/tests/plugin_template_products/main.rs	@click.once
