@@ -3,6 +3,10 @@ use super::{
     find_art_block_at_offset, find_block_at_offset,
 };
 
+pub(super) fn fixture_descriptor(source: &str) -> vize_atelier_sfc::SfcDescriptor<'_> {
+    vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap()
+}
+
 #[test]
 fn test_virtual_code_generator() {
     let source = r#"<template>
@@ -17,7 +21,7 @@ const message = ref('hello')
 .container { color: red; }
 </style>"#;
 
-    let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+    let descriptor = fixture_descriptor(source);
 
     let mut generator = VirtualCodeGenerator::new();
     let docs = generator.generate(&descriptor, "test.vue");

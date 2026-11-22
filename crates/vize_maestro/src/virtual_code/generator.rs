@@ -367,3 +367,6 @@ impl Default for BatchVirtualCodeGenerator {
         Self::new()
     }
 }
+
+#[cfg(feature = "experimental-template-operand-products")]
+pub(super) mod template_products;

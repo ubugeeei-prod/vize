@@ -78,6 +78,36 @@ impl<'f, 'a> ResolvedTemplateOperand<'f, 'a> {
 }
 
 impl<'f, 'a> Model<'f, 'a> {
+    /// Number of original expression operands in this completed File.
+    pub fn resolved_template_operand_count(self) -> Result<usize, TemplateQueryError> {
+        check_template_offset(self.file, 0)?;
+        Ok(self.file.facts.expressions.len())
+    }
+
+    /// Read the operand minted for this node in this File's own ID space.
+    pub fn resolved_template_operand(
+        self,
+        node: NodeId,
+    ) -> Result<Option<ResolvedTemplateOperand<'f, 'a>>, TemplateQueryError> {
+        check_template_offset(self.file, 0)?;
+        self.file
+            .facts
+            .expressions
+            .get(node)
+            .map(|row| self.operand(node, row))
+            .transpose()
+    }
+
+    fn operand(
+        self,
+        node: NodeId,
+        row: &'f ScopedResolution<'a>,
+    ) -> Result<ResolvedTemplateOperand<'f, 'a>, TemplateQueryError> {
+        let scope = ScopeRef::from_id(self.file, row.scope)
+            .ok_or(TemplateQueryError::OriginalMembership)?;
+        Ok(ResolvedTemplateOperand { node, scope, row })
+    }
+
     /// Visit each resolved expression once in unspecified order. The operation
     /// that minted its node recorded the role alongside the resolution. A late
     /// refusal invalidates the whole visit.
@@ -87,9 +117,7 @@ impl<'f, 'a> Model<'f, 'a> {
     ) -> Result<(), TemplateQueryError> {
         check_template_offset(self.file, 0)?;
         for (node, row) in self.file.facts.expressions.iter() {
-            let scope = ScopeRef::from_id(self.file, row.scope)
-                .ok_or(TemplateQueryError::OriginalMembership)?;
-            visit(ResolvedTemplateOperand { node, scope, row });
+            visit(self.operand(node, row)?);
         }
         Ok(())
     }
