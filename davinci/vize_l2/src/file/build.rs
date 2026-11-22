@@ -1,16 +1,14 @@
 //! Crate-private construction capability fed only by real language events.
 
-use super::records::ProgramOrigin;
 use super::{
     Declaration, DeclarationKind, Export, FileArtifact, FileIssue, FileIssueKind, Import,
     InitializerKind, Namespace, Reference, ReferenceTarget, RejectedFile, Scope, ScopeId,
-    ScriptProfile, ScriptUnit, ScriptUnitId, TemplateIssue,
+    ScriptProfile, ScriptUnit, ScriptUnitId, TemplateIssue, records::ProgramOrigin,
 };
 use crate::artifact::{ArtifactError, Builder};
 use crate::resolution::{BindingId, ResolutionTable};
 use alloc::{boxed::Box, collections::BTreeMap, vec::Vec};
-use vize_l0::side_table::SideTable;
-use vize_l0::{Allocator, Span, String, id::NodeId};
+use vize_l0::{Allocator, Span, String, id::NodeId, side_table::SideTable};
 
 pub(crate) struct Facts<'a> {
     pub units: Vec<ScriptUnit>,

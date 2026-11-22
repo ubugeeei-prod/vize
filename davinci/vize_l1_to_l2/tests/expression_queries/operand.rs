@@ -52,15 +52,13 @@ fn output(model: Model<'_, '_>) -> Vec<Row> {
             });
         })
         .unwrap();
+    rows.sort_unstable_by_key(|row| (row.span.start, row.span.end));
     rows
 }
 
 pub(super) fn compare(root: &RootNode<'_>, start: u32, model: Model<'_, '_>, path: &str) -> usize {
-    let mut expected = original(root, start);
-    let mut actual = output(model);
-    let key = |r: &Row| (r.span.start, r.span.end);
-    expected.sort_by_key(key);
-    actual.sort_by_key(key);
+    let expected = original(root, start);
+    let actual = output(model);
     assert_eq!(actual, expected, "{path}");
 
     let mut occurrences = Vec::new();
@@ -166,6 +164,46 @@ fn selected_conditions_and_mutable_models_use_the_original_operation_and_binding
         assert_eq!(refs, 1);
     }
 }
+// Both routes answer the same native binding query and checker expression
+// request, including the cost of acquiring their original owners.
+fn from_source(source: &str, joined: bool) -> (Vec<Row>, Vec<Span>) {
+    let arena = Allocator::default();
+    let original_file = observe(&arena, source);
+    let native = original_file.admitted().unwrap();
+    let model = Model::new(native.file().file());
+    let mut uses = Vec::new();
+    let rows = if joined {
+        let mut rows = Vec::new();
+        model
+            .for_each_resolved_template_operand(|op| {
+                rows.push(Row {
+                    kind: op.kind(),
+                    text: op.text().to_string(),
+                    span: op.span(),
+                });
+                op.for_each_reference(|r| uses.push(r.span())).unwrap();
+            })
+            .unwrap();
+        rows.sort_unstable_by_key(|r| (r.span.start, r.span.end));
+        rows
+    } else {
+        let block = original_file
+            .descriptor()
+            .admitted()
+            .unwrap()
+            .template()
+            .unwrap()
+            .block();
+        let (root, _) = Parser::new(&arena, block.source()).parse();
+        model
+            .for_each_expression_reference(|r| uses.push(r.span()))
+            .unwrap();
+        original(&root, block.start())
+    };
+    uses.sort_unstable_by_key(|s| (s.start, s.end));
+    (rows, uses)
+}
+
 #[test]
 #[ignore = "paired checker expression packets over retained inputs"]
 fn paired_operand_products() {
@@ -184,35 +222,46 @@ fn paired_operand_products() {
             .block();
         let (root, _) = Parser::new(&arena, block.source()).parse();
         assert_eq!(compare(&root, block.start(), model, "profile"), 2 * repeats);
-        let time = |joined| {
-            let rounds = 512 / repeats;
-            let start = Instant::now();
-            for _ in 0..rounds {
-                let rows = if joined {
-                    output(black_box(model))
+        assert_eq!(from_source(&source, false), from_source(&source, true));
+        for mode in ["retained", "from-source"] {
+            let time = |joined| {
+                let rounds = if mode == "retained" {
+                    512 / repeats
                 } else {
-                    original(black_box(&root), block.start())
+                    (32 / repeats).max(1)
                 };
-                drop(black_box(rows));
+                let start = Instant::now();
+                for _ in 0..rounds {
+                    if mode == "retained" {
+                        let result = if joined {
+                            output(black_box(model))
+                        } else {
+                            original(black_box(&root), block.start())
+                        };
+                        drop(black_box(result));
+                    } else {
+                        drop(black_box(from_source(black_box(&source), joined)));
+                    }
+                }
+                start.elapsed().as_nanos() / rounds as u128
+            };
+            let mut pairs = Vec::new();
+            for i in 0..35 {
+                let first = i % 2 == 0;
+                let a = time(first);
+                let b = time(!first);
+                if i >= 4 {
+                    pairs.push(if first { (b, a) } else { (a, b) });
+                }
             }
-            start.elapsed().as_nanos() / rounds as u128
-        };
-        let mut pairs = Vec::new();
-        for i in 0..35 {
-            let first = i % 2 == 0;
-            let a = time(first);
-            let b = time(!first);
-            if i >= 4 {
-                pairs.push(if first { (b, a) } else { (a, b) });
-            }
+            eprintln!("template_operand mode={mode} repeats={repeats} ns={pairs:?}");
+            let (mut old, mut new): (Vec<_>, Vec<_>) = pairs.into_iter().unzip();
+            old.sort_unstable();
+            new.sort_unstable();
+            assert!(
+                new[new.len() / 2] <= old[old.len() / 2],
+                "{mode} packet for {repeats}"
+            );
         }
-        eprintln!("template_operand repeats={repeats} ns={pairs:?}");
-        let (mut old, mut new): (Vec<_>, Vec<_>) = pairs.into_iter().unzip();
-        old.sort_unstable();
-        new.sort_unstable();
-        assert!(
-            new[new.len() / 2] <= old[old.len() / 2],
-            "complete packet for {repeats}"
-        );
     }
 }

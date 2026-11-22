@@ -105,38 +105,27 @@ fn visit_rows<'f, 'a>(
     mut visit: impl FnMut(usize, ExpressionReferenceRef<'f, 'a>) -> Result<(), TemplateQueryError>,
 ) -> Result<(), TemplateQueryError> {
     for (node, resolved) in file.facts.expressions.iter() {
-        visit_resolution(file, node, resolved, &mut visit)?;
-    }
-    Ok(())
-}
-
-#[inline]
-fn visit_resolution<'f, 'a>(
-    file: &'f FileArtifact<'a>,
-    node: NodeId,
-    resolved: &'f crate::file::build::ScopedResolution<'a>,
-    mut visit: impl FnMut(usize, ExpressionReferenceRef<'f, 'a>) -> Result<(), TemplateQueryError>,
-) -> Result<(), TemplateQueryError> {
-    // The expression factory checked this table against the File's source
-    // before attaching it. Project only the original occurrence range.
-    let expression = resolved.table.expression();
-    for (index, occurrence) in resolved.table.occurrences().iter().enumerate() {
-        let span = expression
-            .authored_span(occurrence.span)
-            .ok_or(TemplateQueryError::Projection)?;
-        let binding = file
-            .binding(occurrence.binding)
-            .ok_or(TemplateQueryError::OriginalMembership)?;
-        visit(
-            index,
-            ExpressionReferenceRef {
-                binding,
-                scope: resolved.scope,
-                node,
-                span,
-                occurrence,
-            },
-        )?;
+        // The expression factory checked this table against the File's source
+        // before attaching it. Project only the original occurrence range.
+        let expression = resolved.table.expression();
+        for (index, occurrence) in resolved.table.occurrences().iter().enumerate() {
+            let span = expression
+                .authored_span(occurrence.span)
+                .ok_or(TemplateQueryError::Projection)?;
+            let binding = file
+                .binding(occurrence.binding)
+                .ok_or(TemplateQueryError::OriginalMembership)?;
+            visit(
+                index,
+                ExpressionReferenceRef {
+                    binding,
+                    scope: resolved.scope,
+                    node,
+                    span,
+                    occurrence,
+                },
+            )?;
+        }
     }
     Ok(())
 }

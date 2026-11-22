@@ -1,7 +1,5 @@
 //! Expression-producing template operations and their original lexical resolution.
-use super::{
-    ExpressionReferenceRef, Model, TemplateQueryError, check_template_offset, visit_resolution,
-};
+use super::{ExpressionReferenceRef, Model, TemplateQueryError, check_template_offset};
 use crate::{file::build::ScopedResolution, query::ScopeRef};
 use vize_l0::{Span, id::NodeId};
 
@@ -57,10 +55,25 @@ impl<'f, 'a> ResolvedTemplateOperand<'f, 'a> {
         self,
         mut visit: impl FnMut(ExpressionReferenceRef<'f, 'a>),
     ) -> Result<(), TemplateQueryError> {
-        visit_resolution(self.scope.file(), self.node, self.row, |_, reference| {
-            visit(reference);
-            Ok(())
-        })
+        let table = &self.row.table;
+        let file = self.scope.file();
+        for occurrence in table.occurrences() {
+            let span = table
+                .expression()
+                .authored_span(occurrence.span)
+                .ok_or(TemplateQueryError::Projection)?;
+            let binding = file
+                .binding(occurrence.binding)
+                .ok_or(TemplateQueryError::OriginalMembership)?;
+            visit(ExpressionReferenceRef {
+                binding,
+                node: self.node,
+                span,
+                scope: self.scope.scope().id,
+                occurrence,
+            });
+        }
+        Ok(())
     }
 }
 
