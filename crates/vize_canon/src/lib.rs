@@ -226,3 +226,6 @@ impl CheckResult {
 
 #[cfg(feature = "authored-script-diagnostics")]
 pub use script_parse::observed::{ScriptDiagnosticProfile, ScriptDiagnosticRefusal};
+
+#[cfg(feature = "verified-literal-assignments")]
+pub mod literal_assignments;
