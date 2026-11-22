@@ -4,6 +4,7 @@ on:
     paths:
       - ".github/workflows/shared-toolchain-session.yml"
       - "crates/vize_maestro/src/source_project/toolchain_session.rs"
+      - "crates/vize_maestro/src/source_project/toolchain_session/**"
       - "crates/vize_incremental/providers/graph/tests/incremental.rs"
       - "crates/vize_atelier_sfc/tests/bundler_toolchain_session.rs"
       - "tests/fixtures/shared-toolchain/**"
@@ -37,6 +38,9 @@ jobs:
           flags=(--locked --profile ci-opt -p vize_maestro --features experimental-lexical-arrow-queries,experimental-recovered-literal-prefix,experimental-verified-style-format,experimental-style-lint-products,micro-profiling --lib)
           cargo clippy "${flags[@]}" --no-deps -- -D warnings
           cargo test "${flags[@]}" toolchain_session_from_one_open_buffer -- --nocapture
+          export VIZE_COMPOSED_STYLE_INPUTS="$RUNNER_TEMP/vue-paths"
+          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_COMPOSED_STYLE_INPUTS"
+          cargo test "${flags[@]}" shared_style_queries_on_repository_documents -- --ignored --nocapture
           cargo test "${flags[@]}" source_project::style_format::composition:: -- --include-ignored --nocapture --test-threads=1
           test -s "$VIZE_TOOLCHAIN_HISTORY"
           cargo test --locked --profile ci-opt -p vize_atelier_sfc --features bundler-block-products --test bundler_toolchain_session -- --ignored --nocapture

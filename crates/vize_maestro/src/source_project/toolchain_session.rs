@@ -95,15 +95,19 @@ fn toolchain_session_from_one_open_buffer_through_edit_error_and_repair() {
         .unwrap();
     assert!(!lint.diagnostics.is_empty());
     let css = style.products().css().unwrap();
+    assert_eq!(
+        css.as_str(),
+        ".card {\n  color: red;\n  display: none;\n  margin-left: 4px;\n}"
+    );
     assert!(
-        css.contains("color: red")
-            && style
-                .products()
-                .classes()
-                .unwrap()
-                .names()
-                .iter()
-                .any(|s| s == "card")
+        style
+            .products()
+            .classes()
+            .unwrap()
+            .names()
+            .iter()
+            .map(|name| name.as_str())
+            .eq(["card"])
     );
     let cursor = at(source.source(), "$ink;");
     let Some(GotoDefinitionResponse::Scalar(def)) = source
@@ -253,3 +257,5 @@ fn toolchain_session_from_one_open_buffer_through_edit_error_and_repair() {
         std::fs::write(history, revisions.join("\0")).unwrap();
     }
 }
+
+mod style_corpus;
