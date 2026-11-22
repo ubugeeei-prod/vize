@@ -143,4 +143,4 @@ workspace = true
 
 [[test]]
 name = "plugin_template_baseline"
-path = "tests/plugin_template_baseline.rs"
+path = "tests/plugin_template_baseline/main.rs"
