@@ -1,0 +1,75 @@
+name: Tool codegen equivalence
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: Full base commit SHA
+        required: true
+        type: string
+      head:
+        description: Full candidate commit SHA
+        required: true
+        type: string
+      package:
+        description: Workspace library package to compare
+        required: true
+        default: vize_maestro
+        type: string
+      product:
+        description: Library (lib) or complete binary (bin:NAME)
+        required: true
+        default: lib
+        type: string
+  pull_request:
+    paths:
+      - ".github/workflows/tool-codegen-equivalence.yml"
+      - "tools/commands/levels/codegen-equivalence.ts"
+      - "tests/tooling/levels-codegen-equivalence.test.ts"
+permissions: { contents: read }
+jobs:
+  compare:
+    name: Compare ${{ inputs.package || 'vize_maestro' }} ${{ inputs.product || 'lib' }} ${{ matrix.mode }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [default, portable]
+    env:
+      BASE_SHA: ${{ inputs.base || github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ inputs.head || github.event.pull_request.head.sha }}
+      PACKAGE: ${{ inputs.package || 'vize_maestro' }}
+      PRODUCT: ${{ inputs.product || 'lib' }}
+      MODE: ${{ matrix.mode }}
+      CARGO_BUILD_JOBS: "24"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          {
+            ref: "${{ github.event.pull_request.head.sha || github.sha }}",
+            persist-credentials: false,
+          }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with: { node-version: "24.14.0" }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0" }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Verify comparison controls and fetch both commits
+        run: |
+          set -euo pipefail
+          VIZE_CODEGEN_PROBE=1 node --test tests/tooling/levels-codegen-equivalence.test.ts
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git fetch --no-tags --depth=1 origin "$BASE_SHA" "$HEAD_SHA"
+      - name: Compare independently compiled products
+        run: |
+          set -euo pipefail
+          node tools/commands/levels/codegen-equivalence.ts \
+            "$BASE_SHA" "$HEAD_SHA" "$PACKAGE" "$PRODUCT" "$MODE" "$RUNNER_TEMP/codegen-$MODE.json" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: tool-codegen-${{ matrix.mode }}
+          path: ${{ runner.temp }}/codegen-${{ matrix.mode }}.json
+          if-no-files-found: ignore
