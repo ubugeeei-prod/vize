@@ -202,6 +202,8 @@ pub fn compile_native_sfc<'a>(
             options,
             #[cfg(feature = "native-sfc-scss")]
             None,
+            #[cfg(feature = "native-scoped-scss")]
+            false,
         )
     } else {
         emit::<NoLinks>(
@@ -209,6 +211,8 @@ pub fn compile_native_sfc<'a>(
             options,
             #[cfg(feature = "native-sfc-scss")]
             None,
+            #[cfg(feature = "native-scoped-scss")]
+            false,
         )
     };
     NativeSfcCompilation {
@@ -223,6 +227,7 @@ fn emit<L: LinkSink>(
     #[cfg(feature = "native-sfc-scss")] scss: Option<
         &mut dyn Iterator<Item = &crate::scss::ScssProducts<'_>>,
     >,
+    #[cfg(feature = "native-scoped-scss")] scoped_scss: bool,
 ) -> Result<NativeSfcOutput, NativeSfcCompileError> {
     // Refusal classification reads retained block metadata, never source text
     // or an external file. It grants no descriptor or compilation authority.
@@ -261,6 +266,8 @@ fn emit<L: LinkSink>(
         options.style_trim,
         #[cfg(feature = "native-sfc-scss")]
         scss,
+        #[cfg(feature = "native-scoped-scss")]
+        scoped_scss,
     )?;
     if let Some(script) = observation.scripts().first()
         && (observation.scripts().len() != 1
@@ -362,6 +369,8 @@ pub fn compile_native_sfc_with_scss<'a>(
 pub struct NativeScssSession<'a, 'o> {
     observation: NativeSfcObservation<'a>,
     options: NativeSfcCompileOptions<'o>,
+    #[cfg(feature = "native-scoped-scss")]
+    scoped: bool,
 }
 
 #[cfg(feature = "native-sfc-scss")]
@@ -374,11 +383,21 @@ impl<'a, 'o> NativeScssSession<'a, 'o> {
         Self {
             observation: lower_sfc_native(allocator, source, options.descriptor),
             options,
+            #[cfg(feature = "native-scoped-scss")]
+            scoped: false,
         }
     }
 
     pub fn observation(&self) -> &NativeSfcObservation<'a> {
         &self.observation
+    }
+
+    /// Also emit original scoped SCSS through the admitted selector grammar.
+    #[cfg(feature = "native-scoped-scss")]
+    #[must_use]
+    pub fn with_scoped_styles(mut self) -> Self {
+        self.scoped = true;
+        self
     }
 
     /// Reuse the supplied style passes in authored order. Other inline SCSS
@@ -389,9 +408,21 @@ impl<'a, 'o> NativeScssSession<'a, 'o> {
     ) -> Result<NativeSfcOutput, NativeSfcCompileError> {
         let mut styles = prepared.into_iter();
         if self.options.source_map {
-            emit::<Recorded>(&self.observation, self.options, Some(&mut styles))
+            emit::<Recorded>(
+                &self.observation,
+                self.options,
+                Some(&mut styles),
+                #[cfg(feature = "native-scoped-scss")]
+                self.scoped,
+            )
         } else {
-            emit::<NoLinks>(&self.observation, self.options, Some(&mut styles))
+            emit::<NoLinks>(
+                &self.observation,
+                self.options,
+                Some(&mut styles),
+                #[cfg(feature = "native-scoped-scss")]
+                self.scoped,
+            )
         }
     }
 }

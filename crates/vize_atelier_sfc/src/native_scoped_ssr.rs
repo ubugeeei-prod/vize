@@ -170,6 +170,8 @@ fn emit<L: LinkSink>(
         options.style_trim,
         #[cfg(feature = "native-sfc-scss")]
         None,
+        #[cfg(feature = "native-scoped-scss")]
+        false,
     )
     .map_err(Error::Style)?;
     let receipt = build_scoped_template_ssr_decisions(view).map_err(Error::Analysis)?;

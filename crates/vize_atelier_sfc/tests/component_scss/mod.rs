@@ -6,6 +6,8 @@ use vize_l2::lang::scss::ScssProgram;
 use vize_l4::{targets::scss, write::EmitDocument};
 
 mod prepared;
+#[cfg(feature = "native-scoped-scss")]
+mod scoped;
 
 #[global_allocator]
 static ALLOCATOR: CountingAllocator<System> = CountingAllocator::system();
