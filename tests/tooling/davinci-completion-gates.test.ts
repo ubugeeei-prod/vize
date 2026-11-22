@@ -115,6 +115,7 @@ void test("the Rust-only gate matches Lean workflow tokens without substring fal
         ".github/workflows/cleanup-obsolete-merge-groups.yml": "",
         ".github/workflows/patina-boolean-public.yml": "",
         ".github/workflows/patina-native-boolean-protocol.yml": "",
+        "tests/formal/ir-graph/Reach.lean": "",
       }),
     ).pass,
     true,

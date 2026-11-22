@@ -20,6 +20,19 @@ pub struct Lowered<'a> {
     pub partition: PartitionFacts<'a>,
 }
 
+impl<'a> Lowered<'a> {
+    #[must_use]
+    pub fn l3ir(&self) -> &vize_l3::L3Ir<'a> {
+        &self.program
+    }
+}
+
+/// Lower the root from a complete native L2 file.
+#[must_use]
+pub fn lower_ir<'a>(allocator: &'a Allocator, file: &vize_l2::L2Ir<'_>) -> Lowered<'a> {
+    lower(allocator, file.artifact().root())
+}
+
 /// Lower an L2 root region to an L3 program plus shared partition facts.
 #[must_use]
 pub fn lower<'a>(allocator: &'a Allocator, root: &l2::Region<'_>) -> Lowered<'a> {

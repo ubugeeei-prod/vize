@@ -9,6 +9,9 @@ use crate::{
 };
 use vize_l0::Span;
 
+#[cfg(feature = "ir-graph")]
+pub mod graph;
+
 #[cfg(feature = "open-block-queries")]
 pub(crate) mod open;
 #[cfg(feature = "open-block-queries")]

@@ -256,7 +256,7 @@ fn slot(
 }
 
 /// Whether a template block is HTML (the only L1 input language today).
-fn is_html_template(source: &BlockSource) -> bool {
+pub(crate) fn is_html_template(source: &BlockSource) -> bool {
     source.kind == BlockKind::Template
         && source.attr("src").is_none()
         && vize_l1::container::lang::is_html_template(source.attr("lang"))

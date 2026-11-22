@@ -39,3 +39,9 @@ pub mod registry;
 pub mod trace;
 pub mod values_dump;
 pub mod verify;
+
+/// Backend-neutral operations, regions, effects and directed state edges.
+pub use op::Program as L3Ir;
+
+#[cfg(feature = "graph-queries")]
+pub mod query;

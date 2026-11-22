@@ -22,5 +22,5 @@ pub use decision::{
     DecisionAnalysis, DecisionBuildError, FileAnalysis, build_decisions, build_dom_decisions,
     build_dom_file_decisions,
 };
-pub use lower::{Lowered, lower};
+pub use lower::{Lowered, lower, lower_ir};
 pub use vize_l3::jsx::{JsxAnalysis, RejectedJsxAnalysis, build_jsx_decisions};
