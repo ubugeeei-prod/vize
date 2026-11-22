@@ -2,7 +2,7 @@
 use vize_l0::{SourceBlock, String};
 use vize_l1::css::{
     AuthoredClasses,
-    lang::{StyleLanguage, StyleObservation},
+    lang::{OriginalStyleStructure, StyleLanguage, StyleObservation},
 };
 pub use vize_l2::lang::scss::{ScssProgram, ScssRefusal};
 
@@ -17,6 +17,16 @@ impl<'a> ScssProducts<'a> {
     pub fn from_style(
         style: vize_l1::container::vue::StyleView<'_, 'a>,
     ) -> Result<Self, ScssRefusal> {
+        Self::from_style_with(style, |_| ()).map(|(products, ())| products)
+    }
+
+    /// Run a caller-selected structural analysis on the same parsed tree used
+    /// by SCSS lowering and class discovery. A lowering refusal stays in the
+    /// compiler product, so an independent analysis can still finish.
+    pub fn from_style_with<R>(
+        style: vize_l1::container::vue::StyleView<'_, 'a>,
+        visit: impl FnOnce(OriginalStyleStructure<'_, 'a>) -> R,
+    ) -> Result<(Self, R), ScssRefusal> {
         let language = style
             .attrs()
             .iter()
@@ -25,17 +35,29 @@ impl<'a> ScssProducts<'a> {
         if vize_l1::container::lang::style_lang(language) != Ok(StyleLanguage::Scss) {
             return Err(ScssRefusal::Language);
         }
-        Ok(Self::read(style.block()))
+        Ok(Self::read_with(style.block(), visit))
     }
 
     pub fn read(block: SourceBlock<'a>) -> Self {
-        let (style, program) =
-            StyleObservation::read_with_product(StyleLanguage::Scss, block, ScssProgram::lower);
-        Self {
-            block,
-            style,
-            program,
-        }
+        Self::read_with(block, |_| ()).0
+    }
+
+    fn read_with<R>(
+        block: SourceBlock<'a>,
+        visit: impl FnOnce(OriginalStyleStructure<'_, 'a>) -> R,
+    ) -> (Self, R) {
+        let (style, (program, result)) =
+            StyleObservation::read_with_product(StyleLanguage::Scss, block, |structure| {
+                (ScssProgram::lower(structure), visit(structure))
+            });
+        (
+            Self {
+                block,
+                style,
+                program,
+            },
+            result,
+        )
     }
 
     /// Original owner and file-absolute extent for all projected ranges.
@@ -59,3 +81,8 @@ impl<'a> ScssProducts<'a> {
         self.style.authored_classes()
     }
 }
+
+#[cfg(feature = "verified-scss-edits")]
+mod equivalent;
+#[cfg(feature = "verified-scss-edits")]
+pub use equivalent::{ScssEquivalence, ScssMismatch};
