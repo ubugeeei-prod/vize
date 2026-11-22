@@ -59,9 +59,16 @@ fn source_definitions_select_the_visible_assignment_across_nested_rules_and_alia
         source.rfind("$main-color:").unwrap() as u32
     );
     assert!(products.classes().unwrap().is_complete());
-    for name in ["active", "card", "final"] {
-        assert!(products.classes().unwrap().names().contains(name));
-    }
+    assert_eq!(
+        products
+            .classes()
+            .unwrap()
+            .names()
+            .iter()
+            .map(|name| name.as_str())
+            .collect::<Vec<_>>(),
+        ["active", "card", "final"]
+    );
     let css = "<template><p/></template><style lang='less'>.c{color:red}</style>";
     let seen = Vue.observe_descriptor(&arena, css, options());
     let style = seen.admitted().unwrap().styles().next().unwrap();

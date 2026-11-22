@@ -101,7 +101,7 @@ fn admitted_grammar_matches_the_complete_project_preprocessor() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let mut child = Command::new("node")
         .current_dir(&root)
-        .arg("crates/vize_atelier_sfc/tests/observed_scss/oracle.mjs")
+        .arg("crates/vize_atelier_sfc/tests/observed_scss/oracle.ts")
         .arg("--correctness-only")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

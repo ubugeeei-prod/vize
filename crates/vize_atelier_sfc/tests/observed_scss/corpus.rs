@@ -130,7 +130,7 @@ fn every_admitted_scss_input_matches_the_project_preprocessor() {
     }
     let mut child = Command::new("node")
         .current_dir(&root)
-        .arg(root.join("crates/vize_atelier_sfc/tests/observed_scss/oracle.mjs"))
+        .arg(root.join("crates/vize_atelier_sfc/tests/observed_scss/oracle.ts"))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()

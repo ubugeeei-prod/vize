@@ -6,8 +6,16 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const require = createRequire(import.meta.url);
-const sass = require("sass");
-const rows = JSON.parse(fs.readFileSync(0, "utf8"));
+type Sample = { name: string; source: string; css: string };
+type Sass = {
+  info: string;
+  compileString(
+    source: string,
+    options: { syntax: "scss"; url: URL; loadPaths: string[] },
+  ): { css: string };
+};
+const sass: Sass = require("sass");
+const rows: Sample[] = JSON.parse(fs.readFileSync(0, "utf8"));
 const runner = fileURLToPath(
   new URL("../../../vize/src/commands/build/runner/preprocess.mjs", import.meta.url),
 );
@@ -18,7 +26,8 @@ const stock = spawnSync(process.execPath, [runner], {
   maxBuffer: 32 << 20,
 });
 assert.equal(stock.status, 0, stock.stderr);
-const output = JSON.parse(stock.stdout);
+const output: unknown = JSON.parse(stock.stdout);
+assert.ok(Array.isArray(output));
 assert.equal(output.length, rows.length);
 for (const [index, row] of rows.entries()) {
   assert.deepEqual(output[index], { css: row.css }, JSON.stringify(row.source));
@@ -27,15 +36,15 @@ if (process.argv.includes("--correctness-only")) {
   process.stdout.write(JSON.stringify({ checked: rows.length }));
   process.exit(0);
 }
-const medians = [];
+const medians: number[] = [];
 for (const row of rows) {
   const options = {
-    syntax: "scss",
+    syntax: "scss" as const,
     url: pathToFileURL(resolve(row.name)),
     loadPaths: [dirname(resolve(row.name))],
   };
   assert.equal(row.css, sass.compileString(row.source, options).css, row.name);
-  const samples = [];
+  const samples: number[] = [];
   for (let i = 0; i < 35; i++) {
     const start = process.hrtime.bigint();
     const css = sass.compileString(row.source, options).css;
