@@ -264,3 +264,6 @@ fn is_effect_api(name: &str) -> bool {
         "watch" | "watchEffect" | "watchPostEffect" | "watchSyncEffect"
     )
 }
+
+#[cfg(feature = "observed-script-effects")]
+pub(super) mod observed;
