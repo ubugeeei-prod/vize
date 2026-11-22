@@ -13,25 +13,35 @@ pub struct DeclarationCheckerProducts {
     pub reexports_vue_template_ref: bool,
 }
 
+/// The shipping projection places the next ambient modifier on an export
+/// assignment. The corrected candidate is available for differential inspection.
+#[derive(Debug, PartialEq, Eq)]
+pub struct DeclarationProjectionConflict {
+    /// Original UTF-8 byte offset shared by the two insertions.
+    pub offset: usize,
+    pub corrected: DeclarationCheckerProducts,
+}
+
 impl DeclarationCheckerProducts {
     #[must_use]
     pub fn supports_path(path: &Path) -> bool {
         declaration_path::is_declaration_file(path)
     }
 
-    #[must_use]
-    pub fn from_program(declaration: &DeclarationProgram<'_>) -> Self {
+    pub fn from_program(
+        declaration: &DeclarationProgram<'_>,
+    ) -> Result<Self, DeclarationProjectionConflict> {
         let text = declaration.source();
         let inspect_exports = text.contains("useTemplateRef") || text.contains("export *");
         if let Some(program) = declaration.clean() {
             return observed::products(text, program, inspect_exports);
         }
-        Self {
+        Ok(Self {
             typescript: text.to_compact_string(),
             reexports_vue_template_ref: inspect_exports
                 && declaration.recovered().is_some_and(|program| {
                     program.body.iter().any(observed::vue_template_ref_export)
                 }),
-        }
+        })
     }
 }

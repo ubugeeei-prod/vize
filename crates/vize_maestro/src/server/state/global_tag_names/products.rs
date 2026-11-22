@@ -4,7 +4,9 @@ use super::{Declarations, ServerState};
 use crate::source_project::{SnapshotRefusal, SourceSnapshot};
 use oxc_ast_visit::Visit;
 use std::collections::BTreeSet;
-use vize_canon::batch::declaration_products::DeclarationCheckerProducts;
+use vize_canon::batch::declaration_products::{
+    DeclarationCheckerProducts, DeclarationProjectionConflict,
+};
 use vize_l0::{Allocator, SourceFrameError, SourceRoot, String};
 use vize_l1::embed::declaration_program::DeclarationProgram;
 
@@ -20,6 +22,7 @@ pub enum DeclarationToolRefusal {
     Host(SnapshotRefusal),
     Path,
     Frame(SourceFrameError),
+    Projection(DeclarationProjectionConflict),
 }
 
 impl SourceSnapshot {
@@ -58,13 +61,13 @@ impl SourceSnapshot {
         } else {
             Vec::new()
         };
-        let products = DeclarationToolProducts {
-            component_tags,
-            checker: DeclarationCheckerProducts::from_program(&declaration),
-        };
+        let checker = DeclarationCheckerProducts::from_program(&declaration);
         self.check_current(&state.documents)
             .map_err(DeclarationToolRefusal::Host)?;
-        Ok(products)
+        Ok(DeclarationToolProducts {
+            checker: checker.map_err(DeclarationToolRefusal::Projection)?,
+            component_tags,
+        })
     }
 }
 

@@ -1,7 +1,8 @@
 //! Project declarations and inspect Vue re-exports in the same statement pass.
 use super::{DefaultExport, TextEdit, ambient_default_export, ambient_insertion, keyword_end};
 use crate::batch::{
-    declaration_products::DeclarationCheckerProducts, vue_template_ref_global::is_vue_package,
+    declaration_products::{DeclarationCheckerProducts, DeclarationProjectionConflict},
+    vue_template_ref_global::is_vue_package,
 };
 use oxc_ast::ast::{
     ExportDefaultDeclaration, ExportDefaultDeclarationKind, ImportOrExportKind, Program, Statement,
@@ -12,9 +13,10 @@ pub(in crate::batch) fn products(
     text: &str,
     program: &Program<'_>,
     inspect_exports: bool,
-) -> DeclarationCheckerProducts {
+) -> Result<DeclarationCheckerProducts, DeclarationProjectionConflict> {
     let mut edits = Vec::new();
     let mut sequence = 0;
+    let mut adjacent = false;
     let mut exported_names = Vec::new();
     let mut reexports_vue_template_ref = false;
     for statement in &program.body {
@@ -37,19 +39,56 @@ pub(in crate::batch) fn products(
                 other => other.as_declaration(),
             };
             if let Some(start) = declaration.and_then(ambient_insertion) {
+                adjacent |= edits
+                    .last()
+                    .is_some_and(|edit| edit.start == start as usize);
                 edits.push(TextEdit::insertion(start, "declare "));
             }
         }
     }
-    edits.sort_unstable_by_key(|edit| core::cmp::Reverse((edit.start, edit.end)));
+    edits.sort_unstable_by(|left, right| {
+        right
+            .start
+            .cmp(&left.start)
+            .then_with(|| right.end.cmp(&left.end))
+    });
+    let conflict = adjacent
+        .then(|| order_adjacent_insertions(&mut edits))
+        .flatten();
     let mut typescript = text.to_compact_string();
     for edit in edits {
         typescript.replace_range(edit.start..edit.end, &edit.replacement);
     }
-    DeclarationCheckerProducts {
+    let projected = DeclarationCheckerProducts {
         typescript,
         reexports_vue_template_ref,
+    };
+    match conflict {
+        Some(offset) => Err(DeclarationProjectionConflict {
+            offset,
+            corrected: projected,
+        }),
+        None => Ok(projected),
     }
+}
+
+// Edits are applied backwards. At a shared offset the following declaration’s
+// modifier must be inserted first, then the preceding export assignment.
+fn order_adjacent_insertions(edits: &mut [TextEdit]) -> Option<usize> {
+    let mut conflict = None;
+    for index in 1..edits.len() {
+        let (left, right) = (&edits[index - 1], &edits[index]);
+        if left.start == right.start
+            && left.end == left.start
+            && right.end == right.start
+            && right.replacement == "declare "
+            && left.replacement.starts_with("\nexport default ")
+        {
+            conflict = Some(left.start);
+            edits.swap(index - 1, index);
+        }
+    }
+    conflict
 }
 
 fn default_declaration<'a>(

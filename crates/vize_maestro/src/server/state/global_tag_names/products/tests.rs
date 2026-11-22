@@ -210,3 +210,52 @@ fn original_declaration_products_match() {
 
 #[cfg(feature = "micro-profiling")]
 mod profile;
+
+#[test]
+fn adjacent_default_and_ambient_declarations_keep_their_statement_boundaries() {
+    let state = ServerState::new();
+    let cache = SourceSnapshotCache::default();
+    let uri = Url::parse("file:///project/adjacent.d.ts").unwrap();
+    for (source, boundary, shipping, corrected) in [
+        (
+            "export default class A {}class B {}",
+            25,
+            "declare class A {}declare \nexport default A;class B {}",
+            "declare class A {}\nexport default A;declare class B {}",
+        ),
+        (
+            "export default function f(): void;class B {}",
+            34,
+            "declare function f(): void;declare \nexport default f;class B {}",
+            "declare function f(): void;\nexport default f;declare class B {}",
+        ),
+    ] {
+        state
+            .documents
+            .open(uri.clone(), source.into(), 1, "typescript".into());
+        let snapshot = cache.capture(&state.documents, &uri).unwrap();
+        assert_eq!(separate(source).checker.typescript.as_str(), shipping);
+        let Err(DeclarationToolRefusal::Projection(conflict)) =
+            snapshot.declaration_tool_products(&state)
+        else {
+            panic!("the shipping edit order differs from the ambient projection");
+        };
+        assert_eq!(conflict.offset, boundary);
+        assert_eq!(conflict.corrected.typescript.as_str(), corrected);
+        let arena = Allocator::default();
+        let parsed = oxc_parser::Parser::new(&arena, corrected, oxc_span::SourceType::ts()).parse();
+        assert!(parsed.diagnostics.is_empty());
+        assert!(
+            matches!(parsed.program.body.last(), Some(oxc_ast::ast::Statement::ClassDeclaration(class)) if class.declare)
+        );
+    }
+    let separated = "export default class A {}\r\nclass B {}";
+    state
+        .documents
+        .open(uri.clone(), separated.into(), 2, "typescript".into());
+    let snapshot = cache.capture(&state.documents, &uri).unwrap();
+    assert_eq!(
+        snapshot.declaration_tool_products(&state).unwrap(),
+        separate(separated)
+    );
+}
