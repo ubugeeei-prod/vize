@@ -4,6 +4,8 @@ on:
     paths:
       - ".github/workflows/template-expression-queries.yml"
       - "crates/vize_maestro/Cargo.toml"
+      - "crates/vize_maestro/src/ide/context.rs"
+      - "crates/vize_maestro/src/ide/definition/component_import.rs"
       - "crates/vize_maestro/src/ide/diagnostics/component_props*"
       - "crates/vize_maestro/src/ide/diagnostics/component_props/**"
       - "crates/vize_maestro/src/ide/completion/template/component_meta*"

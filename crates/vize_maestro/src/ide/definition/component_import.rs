@@ -76,6 +76,17 @@ pub(crate) fn registered_component_local_name(
     component_name: &str,
 ) -> Option<String> {
     let descriptor = ctx.descriptor()?;
+    #[cfg(feature = "experimental-component-props")]
+    if let Some(block) = ctx.nonexporting_setup
+        && let Some(setup) = descriptor.script_setup.as_ref()
+        && setup.loc.start == block.start() as usize
+        && setup.loc.end == block.end() as usize
+        && setup.content.as_ref() == block.source()
+    {
+        // Croquis collects Options API and decorated-class registrations from
+        // an original default export. This setup Program has none.
+        return None;
+    }
     let mut analyzer = Drawer::with_options(DrawerOptions::full());
     if let Some(script_setup) = descriptor.script_setup.as_ref() {
         analyzer.analyze_script_setup(&script_setup.content);
