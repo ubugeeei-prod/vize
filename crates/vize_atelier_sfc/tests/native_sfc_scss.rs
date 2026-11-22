@@ -25,6 +25,7 @@ const STYLES: &str = concat!(
     "<style> /* 🦀 */\r\n.a{color:red} </style>\r\n",
     "<style lang='scss'>$v: #abc; .card{padding:2px;.child{color:$v} &.on{color:blue} margin:0 $v}</style>",
     "<style lang='scss'>$empty: 2px;</style>",
+    "<style lang='scss'>$v:red;\r\n$w:$v;\n.a{color:$w; margin:$v $w; padding:\n 0 2px}</style>",
     "<style lang='scss'>\r\n.second{\r width:4px}\u{c}.third {height: 0} </style>",
     "<style></style>"
 );

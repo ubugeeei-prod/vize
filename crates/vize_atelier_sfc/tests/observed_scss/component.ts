@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import { createRequire } from "node:module";
+import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const require = createRequire(import.meta.url);
@@ -60,11 +61,12 @@ for (const row of rows) {
     const start = block.loc.start.offset;
     assert.equal(row.source.slice(start, block.loc.end.offset), block.content);
     if (block.lang?.toLowerCase() === "scss") {
+      const file = resolve(row.name);
       const result = sass.compileString(block.content, {
-        url: pathToFileURL(row.filename),
+        url: pathToFileURL(file),
         sourceMap: true,
       });
-      jobs.push({ file: row.filename, lang: "scss", source: block.content });
+      jobs.push({ file, lang: "scss", source: block.content });
       expectedBlocks.push({ css: result.css });
       const inLines = starts(block.content, /\r\n|[\r\n]/g);
       const outLines = starts(result.css);
