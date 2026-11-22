@@ -238,3 +238,31 @@ fn empty_requests_still_require_the_registered_revision() {
         Err(SetupRenderRefusal::SourceRevision)
     );
 }
+
+#[test]
+fn original_path_resolution_handles_relative_and_rooted_callers() {
+    let source = "<script setup>const x=1</script><template><div/></template>";
+    let arena = Allocator::new();
+    let observation = observe(&arena, source);
+    let imports = observation.setup_component_imports().unwrap();
+    let relative = Path::new("App.vue");
+    for mut registry in [
+        ModuleRegistry::new(),
+        ModuleRegistry::with_project_root("/project"),
+    ] {
+        let (_, input) = registry
+            .register_setup_caller(relative, analysis(relative, source), &imports)
+            .unwrap();
+        assert_eq!(
+            registry.setup_render_products(relative, &input).unwrap(),
+            original(&registry, relative)
+        );
+        if registry.project_root().is_some() {
+            let absolute = Path::new("/project/App.vue");
+            assert_eq!(
+                registry.setup_render_products(absolute, &input).unwrap(),
+                original(&registry, absolute)
+            );
+        }
+    }
+}

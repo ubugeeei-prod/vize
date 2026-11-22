@@ -64,7 +64,7 @@ impl ModuleRegistry {
         input: &SetupRenderInput<'_, '_, '_>,
     ) -> Result<SetupRenderProducts, SetupRenderRefusal> {
         let entry = self
-            .get_by_path(path)
+            .setup_render_entry(path)
             .filter(|entry| entry.is_vue_sfc)
             .ok_or(SetupRenderRefusal::Caller)?;
         if entry.source_hash != input.revision {
