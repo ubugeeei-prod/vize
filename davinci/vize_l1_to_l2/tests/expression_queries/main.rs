@@ -257,3 +257,6 @@ fn a_foreign_binding_and_invalid_byte_positions_are_typed_refusals() {
     }
     assert!(ptr::eq(index.into_file(), file));
 }
+
+#[cfg(feature = "component-prop-queries")]
+mod component_props;

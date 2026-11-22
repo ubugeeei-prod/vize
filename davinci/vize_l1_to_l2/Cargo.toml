@@ -22,6 +22,8 @@ autotests = false
 metadata.vize.stability = "experimental"
 
 [features]
+# Read authored props in source order from each resolved component operation.
+component-prop-queries = ["setup-component-imports", "vize_l2/component-prop-queries"]
 setup-component-imports = ["vize_l2/setup-component-imports"]
 native-navigation-products = []
 template-operand-queries = ["vize_l2/template-operand-queries"]

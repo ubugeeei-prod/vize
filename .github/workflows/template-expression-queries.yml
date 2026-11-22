@@ -3,6 +3,13 @@ on:
   pull_request:
     paths:
       - ".github/workflows/template-expression-queries.yml"
+      - "crates/vize_maestro/Cargo.toml"
+      - "crates/vize_maestro/src/ide/diagnostics/component_props*"
+      - "crates/vize_maestro/src/ide/diagnostics/component_props/**"
+      - "crates/vize_maestro/src/ide/completion/template/component_meta*"
+      - "crates/vize_maestro/src/ide/completion/template/component_meta/**"
+      - "crates/vize_maestro/src/ide/completion/template/component_interface*"
+      - "crates/vize_maestro/src/ide/completion/template/component_interface/**"
       - "davinci/vize_l2/Cargo.toml"
       - "davinci/vize_l2/src/query*"
       - "davinci/vize_l2/src/query/**"
@@ -95,3 +102,31 @@ jobs:
           for suite in corpus::original_project_results profile::paired_render_products profile::original_render_performance profile::registration::registration_and_first_read; do
             cargo test "${flags[@]}" "facts::render_tree::setup::tests::$suite" -- --exact --ignored --nocapture --test-threads=1
           done
+
+  component-prop-diagnostics:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: "24"
+      CARGO_INCREMENTAL: "0"
+      RUST_MIN_STACK: "16777216"
+      RUSTUP_TOOLCHAIN: "1.100.0"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.100.0", components: clippy }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Compare original component props and editor diagnostics
+        run: |
+          set -euo pipefail
+          export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/original-prop-inputs"
+          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
+          flags=(--locked --profile ci-opt)
+          native=(-p vize_l1_to_l2 --features component-prop-queries,vize_l2/expression-queries,vize_l2/position-index)
+          editor=(-p vize_maestro --features experimental-component-props,micro-profiling --lib)
+          cargo clippy "${flags[@]}" "${native[@]}" --lib --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
+          cargo test "${flags[@]}" "${native[@]}" --test expression_queries component_props:: -- --include-ignored --nocapture --test-threads=1
+          cargo test "${flags[@]}" "${editor[@]}" component_props::original:: -- --include-ignored --nocapture --test-threads=1

@@ -2,7 +2,7 @@
 use super::{BindingRef, Model};
 use crate::file::{DeclarationKind, FileIssueKind, Namespace, ScopeId, TemplateIssue};
 use crate::{
-    op::{BindingOp, Op},
+    op::{BindingOp, ComponentOp, Op},
     walk::{NodeEvent, NodeRef},
 };
 use oxc_ast::ast::{ImportDeclarationSpecifier, ModuleExportName, Statement};
@@ -24,9 +24,8 @@ pub enum ComponentImportIssue {
 
 pub struct ImportedComponentSite<'f, 'a> {
     node: NodeId,
-    tag: &'a str,
+    component: &'f ComponentOp<'a>,
     name: Span,
-    element: Span,
     binding: BindingRef<'f, 'a>,
     module: &'f str,
     export: &'f str,
@@ -39,7 +38,7 @@ impl<'f, 'a> ImportedComponentSite<'f, 'a> {
     }
     #[must_use]
     pub fn tag(&self) -> &'a str {
-        self.tag
+        self.component.name
     }
     #[must_use]
     pub fn name_span(&self) -> Span {
@@ -47,7 +46,7 @@ impl<'f, 'a> ImportedComponentSite<'f, 'a> {
     }
     #[must_use]
     pub fn element_span(&self) -> Span {
-        self.element
+        self.component.span
     }
     #[must_use]
     pub fn binding(&self) -> BindingRef<'f, 'a> {
@@ -213,9 +212,8 @@ impl<'f, 'a> Model<'f, 'a> {
                     previous_name_end = name.end;
                     visit(ImportedComponentSite {
                         node: id,
-                        tag,
+                        component,
                         name,
-                        element: span,
                         binding,
                         module,
                         export,
@@ -341,3 +339,6 @@ fn component_spelling(tag: &str, mut uppercase: bool) -> impl Iterator<Item = u8
         }
     })
 }
+
+#[cfg(feature = "component-prop-queries")]
+pub(super) mod props;
