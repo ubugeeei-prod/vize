@@ -61,6 +61,20 @@ pub(super) fn check(lowered: &Lowered<'_>, complexity: &ComplexityFacts) {
 }
 
 #[test]
+fn root_text_and_comments_keep_the_next_owner_ids_and_exact_observer_order() {
+    for template in [
+        "",
+        "text",
+        "text<!--a-->tail",
+        "text<!--a--><i id='x'>child</i><!--z-->",
+        "<!--before--><Card :p='q'/><b v-if='valid'>ok</b>",
+    ] {
+        let (production, independent) = super::runner::both_template(template);
+        assert_eq!(production, independent, "{template}");
+    }
+}
+
+#[test]
 #[ignore = "NUL-delimited list of original Vue files"]
 fn original_templates() {
     let directory = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
