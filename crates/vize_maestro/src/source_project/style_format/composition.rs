@@ -142,12 +142,56 @@ fn shared_original_style_preserves_every_css_lint_edit_and_definition_field() {
     paired(ONE, compare);
 }
 
+#[test]
+fn a_style_lowering_refusal_preserves_rules_and_a_superseded_snapshot_skips_the_pass() {
+    let docs = DocumentStore::new();
+    let cache = SourceSnapshotCache::default();
+    let uri = Url::parse("file:///Partial.vue").unwrap();
+    let text = "<style lang='scss'>.card { color:$missing; display:none; }</style>";
+    docs.open(uri.clone(), text.into(), 2, "vue".into());
+    let source = cache.capture(&docs, &uri).unwrap();
+    let arena = Allocator::new();
+    let descriptor = Vue.observe_descriptor(
+        &arena,
+        source.source(),
+        DescriptorOptions {
+            version: VueVersion::V3,
+            dialect: VueDialect::Vue,
+            template: Default::default(),
+        },
+    );
+    let rules = CssLinter::with_all_rules();
+    let format = FormatOptions::default();
+    let glyph = GlyphFormatter::new(&format, &arena);
+    let (prepared, lint) = source
+        .prepare_scss_with(&docs, &descriptor, 0, |s| {
+            rules.lint_file_style(StyleRuleInput::Observed(s), true)
+        })
+        .unwrap();
+    assert!(!lint.diagnostics.is_empty());
+    assert!(prepared.products().css().is_err());
+    assert!(matches!(
+        prepared.verified_format(&docs, &glyph),
+        Err(StyleFormatError::Style(_))
+    ));
+    docs.open(uri, text.into(), 2, "vue".into());
+    assert!(matches!(
+        prepared.verified_format(&docs, &glyph),
+        Err(StyleFormatError::Host(SnapshotRefusal::Superseded))
+    ));
+    assert!(matches!(
+        source.prepare_scss_with(&docs, &descriptor, 0, |_| panic!("superseded")),
+        Err(StyleFormatError::Host(SnapshotRefusal::Superseded))
+    ));
+}
+
 #[cfg(feature = "micro-profiling")]
 #[test]
 #[ignore = "paired optimized style tool timing with allocation measurement"]
 fn measure_shared_style_queries() {
     use davinci_harness::alloc;
     use std::{hint::black_box, time::Instant};
+    alloc::mark_installed();
     for count in [1, 8, 48] {
         let mut body = String::from("$ink:red;");
         for i in 0..count {
