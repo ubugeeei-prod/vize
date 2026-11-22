@@ -4,14 +4,13 @@ use crate::document::DocumentStore;
 use crate::utils::{offset_to_position, position_to_offset};
 use oxc_span::SourceType;
 use tower_lsp::lsp_types::{
-    Diagnostic, DiagnosticSeverity, Hover, HoverContents, LanguageString, MarkedString,
-    NumberOrString, Position, Range,
+    Diagnostic, DiagnosticSeverity, Hover, NumberOrString, Position, Range,
 };
 use vize_canon::{
     SfcTypeDiagnostic,
     literal_assignments::{BindingType, visit_binding_types},
 };
-use vize_l0::{Allocator, Span, cstr};
+use vize_l0::{Allocator, Span};
 use vize_l1::{
     container::vue::{DescriptorObservation, ScriptRole},
     embed::{Lang, authored_program::AuthoredProgram},
@@ -38,6 +37,8 @@ pub enum LiteralProductError {
 
 pub struct PreparedLiteralProducts<'s> {
     snapshot: &'s SourceSnapshot,
+    script: Span,
+    hover_role: Option<ScriptRole>,
     types: Vec<SfcTypeDiagnostic>,
     bindings: Vec<BindingType>,
     lint: Result<Vec<LintDiagnostic>, PreferConstRefusal>,
@@ -101,6 +102,8 @@ impl SourceSnapshot {
             .map(|()| warnings);
         Ok(PreparedLiteralProducts {
             snapshot: self,
+            script: selected.block().span(),
+            hover_role: (view.ordinary().is_none() || view.setup().is_none()).then_some(role),
             types,
             bindings,
             lint,
@@ -130,22 +133,21 @@ impl PreparedLiteralProducts<'_> {
                     hover
                         .and_then(|at| position_to_offset(text, at))
                         .and_then(|offset| {
-                            self.bindings.iter().find(|item| {
-                                (item.binding.start as usize..item.binding.end as usize)
-                                    .contains(&offset)
-                            })
+                            let i = self
+                                .bindings
+                                .partition_point(|item| item.binding.end as usize <= offset);
+                            self.bindings
+                                .get(i)
+                                .filter(|item| item.binding.start as usize <= offset)
                         });
-                let binding_hover = if let Some(item) = binding {
-                    let spelling = item.binding.slice(self.snapshot.source());
-                    Some(Hover {
-                        contents: HoverContents::Scalar(MarkedString::LanguageString(
-                            LanguageString {
-                                language: "typescript".into(),
-                                value: cstr!("{spelling}: {}", item.declared.keyword()).into(),
-                            },
-                        )),
-                        range: Some(range(item.binding)?),
-                    })
+                let binding_hover = if let (Some(item), Some(role)) = (binding, self.hover_role) {
+                    hover::typed_binding_hover(
+                        self.snapshot.source(),
+                        self.script,
+                        role,
+                        *item,
+                        range(item.binding)?,
+                    )
                 } else {
                     None
                 };
@@ -191,8 +193,12 @@ impl PreparedLiteralProducts<'_> {
     }
 }
 
+pub(super) mod hover;
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod wire;
 
 #[cfg(test)]
 mod corpus;

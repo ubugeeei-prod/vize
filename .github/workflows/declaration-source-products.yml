@@ -25,6 +25,7 @@ on:
       - "crates/vize_maestro/src/source_project/literal_products*"
       - "crates/vize_maestro/src/source_project/literal_products/**"
       - "tools/support/compat/davinci/primitive-assignments-oracle.ts"
+      - "tools/support/compat/davinci/literal-hover-oracle.ts"
       - "tests/formal/primitive-assignments/**"
       - "crates/vize_canon/Cargo.toml"
       - "crates/vize_canon/src/batch.rs"
@@ -38,6 +39,9 @@ on:
       - "crates/vize_maestro/src/server/state/workspace_project_files/**"
       - "crates/vize_maestro/src/server/state/global_components*"
       - "crates/vize_maestro/src/server/state/global_components/**"
+      - "crates/vize_maestro/src/ide/hover.rs"
+      - "crates/vize_maestro/src/ide/hover/**"
+      - "tests/differential/lsp-history.ts"
       - "crates/vize_maestro/src/ide/diagnostics.rs"
       - "crates/vize_maestro/src/ide/diagnostics/corsa*"
       - "crates/vize_maestro/src/ide/diagnostics/corsa/**"
@@ -189,6 +193,7 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/checked-ts" --ignore-scripts --no-audit --no-fund --save-exact typescript@6.0.3
           export NODE_PATH="$RUNNER_TEMP/checked-ts/node_modules"
           export VIZE_LITERAL_INPUTS="$RUNNER_TEMP/original-ts-paths" VIZE_LITERAL_OUTPUT="$RUNNER_TEMP/original-scripts.jsonl"
+          export VIZE_LITERAL_HOVERS="$RUNNER_TEMP/original-hovers.json"
           git ls-files -z -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.vue' '*.vue.txt' > "$VIZE_LITERAL_INPUTS"
           flags=(--locked --profile ci-opt --lib)
           for feature in vize_l2/literal-assignments vize_canon/verified-literal-assignments vize_patina/verified-prefer-const vize_maestro/experimental-literal-products; do
@@ -197,6 +202,15 @@ jobs:
           cargo test "${flags[@]}" -p vize_l2 --features literal-assignments query::script::assignments::
           cargo test "${flags[@]}" -p vize_maestro --features experimental-literal-products,micro-profiling source_project::literal_products:: -- --include-ignored --nocapture --test-threads=1
           node tools/support/compat/davinci/primitive-assignments-oracle.ts "$VIZE_LITERAL_OUTPUT"
+
+      - name: Replay the complete typed hover through the ordinary editor
+        run: |
+          set -euo pipefail
+          npm install --prefix "$RUNNER_TEMP/typed-editor" --ignore-scripts --no-audit --no-fund --save-exact @typescript/typescript-linux-x64@7.0.2
+          export CORSA_PATH="$RUNNER_TEMP/typed-editor/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+          "$CORSA_PATH" --version
+          cargo build --locked --profile ci-opt -p vize
+          node tools/support/compat/davinci/literal-hover-oracle.ts target/ci-opt/vize "$RUNNER_TEMP/original-hovers.json"
 
   primitive-assignability-proof:
     name: Verify primitive literal membership in Kani
