@@ -49,15 +49,10 @@ fn examine(name: &str, text: &str, counts: &mut Counts, rows: &mut Vec<Value>) {
     };
     let formatter = GlyphFormatter::new(&settings, &arena);
     for (ordinal, style) in view.styles().enumerate() {
-        if !style
-            .attrs()
-            .iter()
-            .any(|attr| attr.name == "lang" && attr.value == Some("scss"))
-        {
+        let Ok(original) = ScssProducts::from_style(style) else {
             continue;
-        }
+        };
         counts.selected += 1;
-        let original = ScssProducts::from_style(style).unwrap();
         let result = snapshot.verified_style_format(&docs, &descriptor, ordinal, &formatter);
         if original.program().is_err()
             || !original.classes().is_some_and(|c| c.is_complete())
