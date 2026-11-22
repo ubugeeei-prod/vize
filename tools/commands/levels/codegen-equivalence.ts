@@ -18,6 +18,7 @@ interface Member {
 }
 interface Build {
   revision: string;
+  pluginHostBuildId?: string;
   manifest: string;
   target: { name: string; kind: string[]; source: string };
   lock: string;
@@ -97,6 +98,7 @@ async function build(
   product: string,
   mode: string,
   sourceDateEpoch: string,
+  controlEnv?: NodeJS.ProcessEnv,
 ): Promise<{ evidence: Build; executable?: string }> {
   const binary = product.startsWith("bin:") ? product.slice(4) : undefined;
   const addon = product === "node-addon";
@@ -136,6 +138,7 @@ async function build(
       CARGO_TARGET_DIR: target,
       CARGO_INCREMENTAL: "0",
       SOURCE_DATE_EPOCH: sourceDateEpoch,
+      ...controlEnv,
     },
   });
   const messages = output
@@ -241,9 +244,13 @@ export function differences(base: Build, head: Build): string[] {
   return result;
 }
 
-async function main([base, head, pkg, product, mode, report, ...extra]: string[]) {
+async function main([base, head, pkg, product, mode, report, control, ...extra]: string[]) {
   if (
     extra.length ||
+    (control !== undefined &&
+      (control !== "--control-plugin-identity" ||
+        product !== "node-addon" ||
+        pkg !== "vize_vitrine")) ||
     !report ||
     ![base, head].every((rev) => /^[a-f0-9]{40}$/u.test(rev)) ||
     !/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/u.test(pkg) ||
@@ -266,10 +273,10 @@ async function main([base, head, pkg, product, mode, report, ...extra]: string[]
   const temp = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-codegen-")));
   const checkout = path.join(temp, "source");
   const target = path.join(temp, "target");
-  async function compile(revision: string) {
+  async function compile(revision: string, controlEnv?: NodeJS.ProcessEnv) {
     git(root, "worktree", "add", "--quiet", "--detach", checkout, revision);
     try {
-      return await build(checkout, target, pkg, product, mode, sourceDateEpoch);
+      return await build(checkout, target, pkg, product, mode, sourceDateEpoch, controlEnv);
     } finally {
       git(root, "worktree", "remove", "--force", checkout);
     }
@@ -302,6 +309,41 @@ async function main([base, head, pkg, product, mode, report, ...extra]: string[]
       const relative = path.relative(path.dirname(path.resolve(report)), directory);
       executables = { base: path.join(relative, "base"), head: path.join(relative, "head") };
     }
+    let pluginIdentityControl;
+    if (control) {
+      if (!before.pluginHostBuildId || !after.pluginHostBuildId || !executables)
+        throw new Error("expected two independently stamped stock Node addons");
+      const receipt = path.join(temp, "rustc-identity.txt");
+      const wrapper = path.join(temp, "stock-addon-rustc");
+      execFileSync("rustc", [
+        "--edition=2024",
+        fileURLToPath(new URL("./stock-addon-rustc.rs", import.meta.url)),
+        "-o",
+        wrapper,
+      ]);
+      fs.rmSync(target, { recursive: true });
+      const fixed = await compile(head, {
+        RUSTC_WRAPPER: wrapper,
+        VIZE_PROOF_PRODUCED_ID: after.pluginHostBuildId,
+        VIZE_PROOF_BASE_ID: before.pluginHostBuildId,
+        VIZE_PROOF_RECEIPT: receipt,
+      });
+      const recorded = fs.readFileSync(receipt, "utf8");
+      if (recorded !== after.pluginHostBuildId + "\n" + before.pluginHostBuildId + "\n")
+        throw new Error("expected exactly one recorded native crate invocation");
+      pluginIdentityControl = {
+        produced: after.pluginHostBuildId,
+        compiled: before.pluginHostBuildId,
+        evidence: fixed.evidence,
+        differences: differences(before, fixed.evidence),
+      };
+      if (pluginIdentityControl.differences.length && fixed.executable) {
+        fs.copyFileSync(
+          fixed.executable,
+          path.resolve(path.dirname(report), executables.head + "-control"),
+        );
+      }
+    }
     const evidence = {
       package: pkg,
       product,
@@ -311,6 +353,7 @@ async function main([base, head, pkg, product, mode, report, ...extra]: string[]
       head: after,
       differences: changed,
       executables,
+      pluginIdentityControl,
     };
     fs.writeFileSync(report, JSON.stringify(evidence, null, 2) + "\n");
     const bytes = after.members.reduce((n, m) => n + m.bytes, 0);

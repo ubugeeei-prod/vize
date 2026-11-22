@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { verifyNativeAddons } from "../../../commands/levels/native-addon-identity.ts";
 
 interface Products {
   styles: unknown[];
@@ -18,16 +19,40 @@ interface Binding {
   hasSfcScopedStyle(source: string, file?: string): boolean;
   inspectSfcBundlerBlocks(source: string, file?: string): Products;
 }
-const binding = createRequire(import.meta.url)(path.resolve(process.argv[2])) as Binding;
-const read = (joined: boolean, source: string, file: string): Products => {
-  if (joined) return binding.inspectSfcBundlerBlocks(source, file);
+const requireNative = createRequire(import.meta.url);
+const stock = process.argv[2] === "--stock";
+function loadBindings(): [Binding, Binding] {
+  if (!stock) {
+    const candidate = requireNative(path.resolve(process.argv[2])) as Binding;
+    return [candidate, candidate];
+  }
+  const images = verifyNativeAddons(process.argv[3]);
+  const load = (file: string) => {
+    const name = file + ".node";
+    if (!fs.existsSync(name)) fs.linkSync(file, name);
+    return requireNative(name) as Binding;
+  };
+  const base = load(images.base),
+    head = load(images.head);
+  assert.deepStrictEqual(
+    Object.getOwnPropertyNames(base).sort(),
+    Object.getOwnPropertyNames(head).sort(),
+  );
+  assert.equal(Object.hasOwn(head, "inspectSfcBundlerBlocks"), false);
+  console.log(JSON.stringify({ stockExports: Object.getOwnPropertyNames(head).length }));
+  return [base, head];
+}
+const [baseline, candidate] = loadBindings();
+function read(joined: boolean, source: string, file: string): Products {
+  if (joined && !stock) return candidate.inspectSfcBundlerBlocks(source, file);
+  const binding = joined ? candidate : baseline;
   return {
     styles: binding.extractSfcStyleBlocks(source, file),
     customBlocks: binding.extractSfcCustomBlocks(source, file),
     src: binding.extractSfcSrcInfo(source, file),
     hasScopedStyle: binding.hasSfcScopedStyle(source, file),
   };
-};
+}
 
 const cases = [
   ["empty", ""],
@@ -78,11 +103,12 @@ function bench(source: string, file: string, rounds: number, reverse: boolean): 
 }
 for (const [file, source] of cases) {
   assert.deepStrictEqual(read(true, source, file), read(false, source, file), file);
-  assert.ok(!(bench(source, file, 96, false) && bench(source, file, 384, true)), file);
+  if (!stock) assert.ok(!(bench(source, file, 96, false) && bench(source, file, 384, true)), file);
 }
 
-const manifest = process.argv[3]
-  ? fs.readFileSync(process.argv[3])
+const manifestFile = process.argv[stock ? 4 : 3];
+const manifest = manifestFile
+  ? fs.readFileSync(manifestFile)
   : execFileSync("git", ["ls-files", "-z", "--", "*.vue", "*.vue.txt"], {
       maxBuffer: 32 * 1024 * 1024,
     });
