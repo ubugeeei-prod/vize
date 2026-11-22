@@ -10,7 +10,12 @@ publish = false
 
 [features]
 # Project original SCSS variable definitions for an explicitly selected document revision.
-experimental-verified-style-format = ["experimental-scss-definitions", "glyph", "vize_glyph/observed-style", "vize_atelier_sfc/verified-scss-edits"]
+experimental-verified-style-format = [
+  "experimental-scss-definitions",
+  "glyph",
+  "vize_glyph/observed-style",
+  "vize_atelier_sfc/verified-scss-edits",
+]
 experimental-scss-definitions = ["vize_atelier_sfc/original-scss-products"]
 experimental-style-lint-products = [
   "experimental-style-module-products",
