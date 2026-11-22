@@ -34,7 +34,7 @@ impl VirtualCodeGenerator {
         let original = native.observation().descriptor();
         let selected = original
             .admitted()
-            .ok_or(TemplateProductRefusal::Descriptor)?;
+            .map_err(|_| TemplateProductRefusal::Descriptor)?;
         let root = original.source();
         let editor = descriptor.source.as_ref();
         let block = selected.template().map(|t| t.block());
