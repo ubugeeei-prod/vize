@@ -163,7 +163,7 @@ fn emit<L: LinkSink>(
         .map_err(Error::Style)?
         .ok_or(Error::Custody)?;
     let scope = ScopeId::new(&scope_id).map_err(Error::Assembly)?;
-    let css = styles::emit::<L>(
+    let css = styles::emit::<L, false>(
         view.descriptor(),
         core::slice::from_ref(view.style_syntax()),
         Some(scope),

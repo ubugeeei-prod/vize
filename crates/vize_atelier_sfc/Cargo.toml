@@ -9,6 +9,7 @@ description = "Atelier SFC - The Single File Component workshop for Vize"
 metadata.vize.stability = "alpha-supported"
 
 [features]
+native-sfc-scss = ["original-scss-products"]
 original-scss-products = ["vize_l4/scss-rules", "vize_l2/scss-rules", "vize_l1/observed-styles"]
 bundler-block-products = []
 script-binding-products = [

@@ -80,6 +80,11 @@ pub enum NativeSfcCompileError {
         container_index: usize,
         span: Span,
     },
+    #[cfg(feature = "native-sfc-scss")]
+    Scss {
+        container_index: usize,
+        issue: vize_l2::lang::scss::ScssRefusal,
+    },
     StyleBindSyntaxUnproven {
         container_index: usize,
         span: Span,
@@ -186,11 +191,31 @@ pub fn compile_native_sfc<'a>(
     source: &'a str,
     options: NativeSfcCompileOptions<'_>,
 ) -> NativeSfcCompilation<'a> {
+    compile::<false>(allocator, source, options)
+}
+
+/// Compile a DOM component including unscoped inline SCSS in the supported
+/// original grammar. Scripts, template and CSS maps refer to this same file.
+#[cfg(feature = "native-sfc-scss")]
+#[must_use]
+pub fn compile_native_sfc_with_scss<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: NativeSfcCompileOptions<'_>,
+) -> NativeSfcCompilation<'a> {
+    compile::<true>(allocator, source, options)
+}
+
+fn compile<'a, const SCSS: bool>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: NativeSfcCompileOptions<'_>,
+) -> NativeSfcCompilation<'a> {
     let observation = lower_sfc_native(allocator, source, options.descriptor);
     let result = if options.source_map {
-        emit::<Recorded>(&observation, options)
+        emit::<Recorded, SCSS>(&observation, options)
     } else {
-        emit::<NoLinks>(&observation, options)
+        emit::<NoLinks, SCSS>(&observation, options)
     };
     NativeSfcCompilation {
         observation,
@@ -198,7 +223,7 @@ pub fn compile_native_sfc<'a>(
     }
 }
 
-fn emit<L: LinkSink>(
+fn emit<L: LinkSink, const SCSS: bool>(
     observation: &NativeSfcObservation<'_>,
     options: NativeSfcCompileOptions<'_>,
 ) -> Result<NativeSfcOutput, NativeSfcCompileError> {
@@ -232,7 +257,7 @@ fn emit<L: LinkSink>(
         .map(vize_l4::module::ScopeId::new)
         .transpose()
         .map_err(NativeSfcCompileError::Assembly)?;
-    let css = styles::emit::<L>(
+    let css = styles::emit::<L, SCSS>(
         descriptor,
         observation.style_syntax(),
         scope,

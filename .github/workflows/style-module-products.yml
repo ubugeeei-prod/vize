@@ -31,6 +31,11 @@ on:
       - "crates/vize_atelier_sfc/Cargo.toml"
       - "crates/vize_atelier_sfc/src/lib.rs"
       - "crates/vize_atelier_sfc/src/scss.rs"
+      - "crates/vize_atelier_sfc/src/native.rs"
+      - "crates/vize_atelier_sfc/src/native/styles.rs"
+      - "crates/vize_atelier_sfc/src/native_scoped_ssr.rs"
+      - "crates/vize_atelier_sfc/tests/native_sfc_scss.rs"
+      - "crates/vize_atelier_sfc/tests/fixtures/native_sfc_ts_annotation_setup_vue_3_5_35.json"
       - "crates/vize_atelier_sfc/tests/scss_products.rs"
       - "crates/vize_atelier_sfc/tests/observed_scss/**"
       - "crates/vize_maestro/src/source_project.rs"
@@ -116,7 +121,7 @@ jobs:
       - name: Install the repository's pinned Sass implementation
         run: |
           version=$(node -p "require('./npm/builder/parcel/package.json').devDependencies.sass")
-          npm install --prefix "$RUNNER_TEMP/scss-oracle" --no-audit --no-fund --ignore-scripts --save-exact "sass@$version"
+          npm install --prefix "$RUNNER_TEMP/scss-oracle" --no-audit --no-fund --ignore-scripts --save-exact "sass@$version" @vue/compiler-sfc@3.5.35 @jridgewell/sourcemap-codec@1.6.0
       - name: Compare the original preprocessor, shared products and authored editor locations
         run: |
           set -euo pipefail
@@ -125,11 +130,12 @@ jobs:
           export VIZE_REQUIRE_REPOSITORY_SCSS=1
           git ls-files -z -- '*.vue' '*.vue.txt' '*.scss' > "$VIZE_SCSS_MANIFEST"
           flags=(--locked --profile ci-opt)
-          host=(-p vize_atelier_sfc --features original-scss-products)
+          host=(-p vize_atelier_sfc --features native-sfc-scss)
           editor=(-p vize_maestro --features experimental-scss-definitions)
           cargo clippy "${flags[@]}" -p vize_l2 --features scss-rules --lib --no-deps -- -D warnings
           cargo clippy "${flags[@]}" -p vize_l4 --features scss-rules --lib --no-deps -- -D warnings
           cargo clippy "${flags[@]}" "${host[@]}" --lib --no-deps -- -D warnings
           cargo clippy "${flags[@]}" "${editor[@]}" --lib --no-deps -- -D warnings
           cargo test "${flags[@]}" "${host[@]}" --test scss_products -- --include-ignored --nocapture --test-threads=1
+          cargo test "${flags[@]}" "${host[@]}" --test native_sfc_scss -- --include-ignored --nocapture --test-threads=1
           cargo test "${flags[@]}" "${editor[@]}" --lib source_project::scss:: -- --include-ignored --nocapture --test-threads=1
