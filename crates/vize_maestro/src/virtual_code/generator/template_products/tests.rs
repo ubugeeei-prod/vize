@@ -1,0 +1,201 @@
+#![expect(
+    clippy::unwrap_used,
+    reason = "original parsers and product equivalence are asserted"
+)]
+use super::*;
+use crate::virtual_code::extract_expressions;
+use vize_canon::projection::project_template_expression_document;
+use vize_l0::{
+    Allocator,
+    config::{VueDialect, VueVersion},
+};
+use vize_l1::container::vue::DescriptorOptions;
+use vize_l1_to_l2::native_file::{NativeSfcObservation, lower_sfc_native};
+
+const URI: &str = "file:///project/Example.vue";
+const ENTITY: &str = "<script setup>const fj=1; const 作者=2; const unused=0;</script>\r\n<template><p :title='&fjlig;'>{{ 作者 + fj }}</p></template>";
+
+fn observe<'a>(arena: &'a Allocator, source: &'a str) -> NativeSfcObservation<'a> {
+    lower_sfc_native(
+        arena,
+        source,
+        DescriptorOptions {
+            version: VueVersion::V3,
+            dialect: VueDialect::Vue,
+            template: Default::default(),
+        },
+    )
+}
+
+fn separate(native: &NativeSfc<'_, '_>, descriptor: &SfcDescriptor<'_>) -> TemplateOperandProducts {
+    let checker = project_template_expression_document(native.file().file().artifact().root());
+    let arena = Allocator::default();
+    let expressions = descriptor.template.as_ref().map_or_else(Vec::new, |t| {
+        let (ast, _) = vize_armature::parse(&arena, &t.content);
+        extract_expressions(&ast)
+    });
+    let script_setup = descriptor.script_setup.as_ref().map(|script| {
+        let exports = template_used_script_bindings(script.content.as_ref(), &expressions);
+        let mut document =
+            super::super::ScriptCodeGenerator::new().generate_with_exports(script, true, &exports);
+        document.uri = cstr!("{URI}.__script_setup.ts").to_string();
+        document
+    });
+    TemplateOperandProducts {
+        checker,
+        expressions,
+        script_setup,
+    }
+}
+
+fn equal_script(a: Option<&VirtualDocument>, b: Option<&VirtualDocument>, name: &str) {
+    assert_eq!(
+        a.map(|d| (&d.uri, &d.content, d.language, &d.source_map)),
+        b.map(|d| (&d.uri, &d.content, d.language, &d.source_map)),
+        "{name}"
+    );
+}
+
+fn compare(
+    native: &NativeSfc<'_, '_>,
+    descriptor: &SfcDescriptor<'_>,
+    name: &str,
+) -> TemplateOperandProducts {
+    let expected = separate(native, descriptor);
+    let result = VirtualCodeGenerator::new()
+        .template_operand_products(native, descriptor, URI)
+        .unwrap();
+    assert_eq!(result.checker, expected.checker, "{name}");
+    assert_eq!(
+        result.expressions.len(),
+        expected.expressions.len(),
+        "{name}"
+    );
+    for (a, b) in result.expressions.iter().zip(&expected.expressions) {
+        assert_eq!(
+            (&a.text, a.range, a.kind),
+            (&b.text, b.range, b.kind),
+            "{name}"
+        );
+    }
+    equal_script(
+        result.script_setup.as_ref(),
+        expected.script_setup.as_ref(),
+        name,
+    );
+    let published = VirtualCodeGenerator::new().generate(descriptor, URI);
+    equal_script(
+        result.script_setup.as_ref(),
+        published.script_setup.as_ref(),
+        name,
+    );
+    result
+}
+
+#[test]
+fn complete_document_ranges_and_exports_retain_their_coordinate_frames() {
+    let arena = Allocator::default();
+    let observed = observe(&arena, ENTITY);
+    let native = observed.admitted().unwrap();
+    let descriptor = vize_atelier_sfc::parse_sfc(ENTITY, Default::default()).unwrap();
+    let output = compare(&native, &descriptor, "entity, Unicode and CRLF");
+    assert_eq!(output.checker.as_str(), "fj\n作者 + fj");
+    assert_eq!(output.checker.links().len(), 2);
+    let base = descriptor.template.as_ref().unwrap().loc.start;
+    for (link, expr) in output.checker.links().iter().zip(&output.expressions) {
+        assert_eq!(
+            link.authored.start as usize,
+            base + expr.range.start as usize
+        );
+        assert_eq!(link.authored.end as usize, base + expr.range.end as usize);
+    }
+    assert!(
+        output
+            .script_setup
+            .unwrap()
+            .content
+            .contains("export { fj, 作者 };")
+    );
+}
+
+#[test]
+fn descriptor_revisions_and_selections_are_verified_before_emission() {
+    let arena = Allocator::default();
+    let observed = observe(&arena, ENTITY);
+    let native = observed.admitted().unwrap();
+    let mut generator = VirtualCodeGenerator::new();
+    let mut descriptor = vize_atelier_sfc::parse_sfc(ENTITY, Default::default())
+        .unwrap()
+        .into_owned();
+    compare(&native, &descriptor, "owned cache entry");
+    descriptor.template.as_mut().unwrap().loc.start += 1;
+    assert!(matches!(
+        generator.template_operand_products(&native, &descriptor, URI),
+        Err(TemplateProductRefusal::Descriptor)
+    ));
+    let mut descriptor = vize_atelier_sfc::parse_sfc(ENTITY, Default::default()).unwrap();
+    descriptor.script_setup.as_mut().unwrap().content = "const forged=1;".into();
+    assert!(matches!(
+        generator.template_operand_products(&native, &descriptor, URI),
+        Err(TemplateProductRefusal::Descriptor)
+    ));
+    let foreign =
+        vize_atelier_sfc::parse_sfc("<template>other</template>", Default::default()).unwrap();
+    assert!(matches!(
+        generator.template_operand_products(&native, &foreign, URI),
+        Err(TemplateProductRefusal::Descriptor)
+    ));
+}
+
+#[test]
+fn empty_static_script_only_and_nested_sources_match_the_public_editor() {
+    for source in [
+        "<template></template>",
+        "<template><p>static</p></template>",
+        "<script setup>const value=1;</script>",
+        "<script>export default {}</script><template><p>{{ 42 }}</p></template>",
+        "<script setup>const a=1;const b=2;</script><template><div :id='a'><p :title='b'>{{a + b}}</p>{{b}}</div></template>",
+    ] {
+        let arena = Allocator::default();
+        let owner = observe(&arena, source);
+        let native = owner.admitted().unwrap();
+        let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+        compare(&native, &descriptor, source);
+    }
+}
+
+#[test]
+#[ignore = "compare complete checker, expression and public script documents on original files"]
+fn original_tool_template_projections_match() {
+    let list = std::fs::read(std::env::var_os("VIZE_TEMPLATE_PRODUCT_INPUTS").unwrap()).unwrap();
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let (mut invalid, mut refused, mut admitted, mut operands, mut links, mut script_bytes) =
+        (0, 0, 0, 0, 0, 0);
+    for path in list.split(|&b| b == 0).filter(|p| !p.is_empty()) {
+        let name = std::str::from_utf8(path).unwrap();
+        let bytes = std::fs::read(root.join(name)).unwrap();
+        let Ok(source) = std::str::from_utf8(&bytes) else {
+            invalid += 1;
+            continue;
+        };
+        let arena = Allocator::default();
+        let owner = observe(&arena, source);
+        let Some(native) = owner.admitted() else {
+            refused += 1;
+            continue;
+        };
+        let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+        let output = compare(&native, &descriptor, name);
+        admitted += 1;
+        operands += output.expressions.len();
+        links += output.checker.links().len();
+        script_bytes += output.script_setup.as_ref().map_or(0, |d| d.content.len());
+    }
+    assert!(admitted > 0 && operands > 0 && links > 0 && script_bytes > 0);
+    eprintln!(
+        "template_products invalid={invalid} refused={refused} admitted={admitted} operands={operands} links={links} script_bytes={script_bytes}"
+    );
+}
+
+#[cfg(feature = "micro-profiling")]
+mod profile;
