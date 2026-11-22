@@ -114,3 +114,8 @@ pub fn lower_sfc_native<'a>(
     }
     NativeSfcObservation::new(descriptor, scripts, template, file, issues)
 }
+
+#[cfg(feature = "setup-component-imports")]
+mod component_imports;
+#[cfg(feature = "setup-component-imports")]
+pub use component_imports::{ComponentImportRefusal, SetupComponentImports};

@@ -64,3 +64,8 @@ pub use expression::ExpressionReferenceRef;
 
 #[cfg(feature = "template-operand-queries")]
 pub use expression::{ResolvedTemplateOperand, TemplateOperandKind};
+
+#[cfg(feature = "setup-component-imports")]
+mod component_import;
+#[cfg(feature = "setup-component-imports")]
+pub use component_import::{ComponentImportIssue, ImportedComponentSite};

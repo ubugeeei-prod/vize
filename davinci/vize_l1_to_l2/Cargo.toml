@@ -22,6 +22,7 @@ autotests = false
 metadata.vize.stability = "experimental"
 
 [features]
+setup-component-imports = ["vize_l2/setup-component-imports"]
 native-navigation-products = []
 template-operand-queries = ["vize_l2/template-operand-queries"]
 # Retain the source Program alongside its canonical region lowering.
