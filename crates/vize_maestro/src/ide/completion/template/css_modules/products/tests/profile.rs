@@ -28,30 +28,41 @@ fn paired_style_module_requests() {
             }
             let old = alloc::measure(|| run(false)).unwrap();
             let new = alloc::measure(|| run(true)).unwrap();
-            let time = |joined| {
+            let time = |joined, iterations| {
                 let start = Instant::now();
-                for _ in 0..8 {
+                for _ in 0..iterations {
                     drop(black_box(run(joined)));
                 }
-                start.elapsed().as_nanos() / 8
+                start.elapsed().as_nanos() / iterations
             };
-            let mut pairs = Vec::new();
-            for round in 0..35 {
-                let first = round % 2 == 0;
-                let a = time(first);
-                let b = time(!first);
-                if round >= 4 {
-                    pairs.push(if first { (b, a) } else { (a, b) });
+            let sample = |iterations, reverse| {
+                let mut pairs = Vec::with_capacity(31);
+                for round in 0..35 {
+                    let first = (round % 2 == 0) != reverse;
+                    let a = time(first, iterations);
+                    let b = time(!first, iterations);
+                    if round >= 4 {
+                        pairs.push(if first { (b, a) } else { (a, b) });
+                    }
                 }
-            }
+                pairs
+            };
+            let pairs = sample(8, false);
             eprintln!(
                 "style_module_time {name} calls={}/{} peak={}/{} ns={pairs:?}",
                 old.calls, new.calls, old.peak_bytes_over_start, new.peak_bytes_over_start
             );
-            let (mut a, mut b): (Vec<_>, Vec<_>) = pairs.into_iter().unzip();
-            a.sort_unstable();
-            b.sort_unstable();
-            if b[15] > a[15]
+            // Under equal odds of a slower pair, 23 or more of 31 has a
+            // one-sided probability below 1%. Confirm with longer batches
+            // and the opposite starting order before reporting a slowdown.
+            let slower =
+                |pairs: &[(u128, u128)]| pairs.iter().filter(|(old, new)| new > old).count() >= 23;
+            let timing_regression = slower(&pairs) && {
+                let confirmation = sample(64, true);
+                eprintln!("style_module_confirmation {name} ns={confirmation:?}");
+                slower(&confirmation)
+            };
+            if timing_regression
                 || new.calls > old.calls
                 || new.peak_bytes_over_start > old.peak_bytes_over_start
             {
