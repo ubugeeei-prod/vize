@@ -400,3 +400,12 @@ impl<'a> Builder<'a> {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "observed-styles")]
+impl StyleSheet<'_> {
+    /// File-absolute start of this style's authored content.
+    #[must_use]
+    pub const fn source_start(&self) -> u32 {
+        self.base
+    }
+}
