@@ -1,6 +1,7 @@
 //! An imported component request uses the original descriptor, Program and L2 operations.
 use super::{NativeSfcIssueKind, NativeSfcObservation};
 use smallvec::SmallVec;
+use vize_l0::{SourceBlock, Span};
 use vize_l2::query::{ComponentImportIssue, ImportedComponentSite, Model};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -11,7 +12,7 @@ pub enum ComponentImportRefusal {
 
 /// Static tag sites and their imported declarations, borrowed from one source revision.
 pub struct SetupComponentImports<'o, 'a> {
-    source: &'a str,
+    template: SourceBlock<'a>,
     sites: SmallVec<[ImportedComponentSite<'o, 'a>; 2]>,
 }
 
@@ -19,7 +20,13 @@ impl<'o, 'a> SetupComponentImports<'o, 'a> {
     /// Original file text shared by tag spans and import declarations.
     #[must_use]
     pub fn source(&self) -> &'a str {
-        self.source
+        self.template.root_source()
+    }
+
+    /// The selected template content in file-absolute coordinates.
+    #[must_use]
+    pub fn template_span(&self) -> Span {
+        self.template.span()
     }
 
     /// Authored opening tags in source order.
@@ -94,7 +101,7 @@ impl<'a> NativeSfcObservation<'a> {
             .visit_setup_component_imports(setup, &program, template, |site| sites.push(site))
             .map_err(ComponentImportRefusal::Component)?;
         Ok(SetupComponentImports {
-            source: descriptor.source(),
+            template: template.block(),
             sites,
         })
     }

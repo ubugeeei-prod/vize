@@ -83,6 +83,7 @@ fn nested_named_default_and_kebab_tags_borrow_their_import_declarations() {
     let mut stored = Vec::new();
     let imports = owner.setup_component_imports().unwrap();
     assert!(std::ptr::eq(imports.source(), source.as_str()));
+    assert_eq!(imports.template_span().start, start);
     for site in imports.sites() {
         stored.push((
             site.node().index(),
@@ -120,6 +121,14 @@ fn unbound_local_type_only_namespace_and_ambiguous_targets_refuse_the_product() 
         (r"import { '\ud800' as Card } from './card';", "<Card/>"),
         ("import * as Card from './card';", "<Card.Widget/>"),
         ("import Card from './card';", "<component :is='Card'/>"),
+        (
+            "import Card from './card'; const cards = [1];",
+            "<div v-for='Card in cards'><Card/></div>",
+        ),
+        (
+            "import Card from './card'; import Host from './host';",
+            "<Host v-slot='{ Card }'><Card/></Host>",
+        ),
         ("const Card = 1;", "<Card/>"),
         (
             "import CardPiece from './a';import cardPiece from './b';",

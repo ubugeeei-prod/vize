@@ -1,7 +1,10 @@
 //! Resolve authored static component owners against their original setup import.
 use super::{BindingRef, Model};
 use crate::file::{DeclarationKind, FileIssueKind, Namespace, ScopeId, TemplateIssue};
-use crate::{op::Op, walk::NodeRef};
+use crate::{
+    op::{BindingOp, Op},
+    walk::{NodeEvent, NodeRef},
+};
 use oxc_ast::ast::{ImportDeclarationSpecifier, ModuleExportName, Statement};
 use oxc_parser::{AdmittedProgram, ParseOptions};
 use vize_l0::{Span, id::NodeId};
@@ -14,6 +17,7 @@ pub enum ComponentImportIssue {
     IncompleteFile,
     OriginalNode,
     UnrepresentableImport,
+    TemplateScope(Span),
     UnresolvedTag(Span),
     AmbiguousTag(Span),
 }
@@ -125,12 +129,44 @@ impl<'f, 'a> Model<'f, 'a> {
         let mut previous_name_end = template.span().start;
         let mut issues = file.template_issues().iter();
         let mut result = Ok(());
+        let mut local_region = None;
         file.artifact()
-            .visit_nodes(&mut |id, node| {
-                let NodeRef::Op(Op::Component(component)) = node else {
-                    return;
-                };
+            .visit_events(&mut |event| {
                 if result.is_err() {
+                    return;
+                }
+                let (id, component) = match event {
+                    NodeEvent::Leave { id, .. } if Some(id) == local_region => {
+                        local_region = None;
+                        return;
+                    }
+                    NodeEvent::Enter {
+                        id,
+                        node: NodeRef::Op(Op::For(_) | Op::OriginalFor(_)),
+                        ..
+                    } => {
+                        local_region.get_or_insert(id);
+                        return;
+                    }
+                    NodeEvent::Enter {
+                        parent: Some(owner),
+                        node: NodeRef::Binding(BindingOp::SlotContent(slot)),
+                        ..
+                    } if slot.params.is_some() => {
+                        local_region.get_or_insert(owner);
+                        return;
+                    }
+                    NodeEvent::Enter {
+                        id,
+                        node: NodeRef::Op(Op::Component(component)),
+                        ..
+                    } => (id, component),
+                    _ => return,
+                };
+                // A loop variable or scoped-slot parameter can shadow a setup
+                // import. These regions require a separate lexical resolution.
+                if local_region.is_some() {
+                    result = Err(ComponentImportIssue::TemplateScope(component.span));
                     return;
                 }
                 let span = component.span;
