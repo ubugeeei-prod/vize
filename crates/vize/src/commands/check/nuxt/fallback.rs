@@ -15,9 +15,9 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{FxHashSet, String, ToCompactString};
 
-use super::parsing::{
-    default_export_config_object, extract_expression, find_object_property, nuxt_config_source,
-};
+use crate::commands::project_nuxt::unwrap_expression;
+
+use super::parsing::{default_export_config_object, find_object_property, nuxt_config_source};
 use super::stubs::{
     declared_name, push_generic_function_stub, push_named_overload_stubs, push_stub,
 };
@@ -234,7 +234,7 @@ pub(super) fn parse_nuxt_config_modules(config_source: &str) -> NuxtConfigModule
 }
 
 fn collect_nuxt_config_module_list(value: &Expression<'_>, resolved: &mut NuxtConfigModules) {
-    let Some(Expression::ArrayExpression(modules)) = extract_expression(value) else {
+    let Expression::ArrayExpression(modules) = unwrap_expression(value) else {
         resolved.has_unresolved_entries = true;
         return;
     };
@@ -243,7 +243,7 @@ fn collect_nuxt_config_module_list(value: &Expression<'_>, resolved: &mut NuxtCo
         match element {
             ArrayExpressionElement::Elision(_) => {}
             ArrayExpressionElement::SpreadElement(_) => resolved.has_unresolved_entries = true,
-            _ => match element.as_expression().and_then(extract_expression) {
+            _ => match element.as_expression().map(unwrap_expression) {
                 Some(expression) if static_module_name(expression, resolved) => {}
                 // `['module-name', { ...options }]` tuple form.
                 Some(Expression::ArrayExpression(tuple)) => {
@@ -251,7 +251,7 @@ fn collect_nuxt_config_module_list(value: &Expression<'_>, resolved: &mut NuxtCo
                         .elements
                         .first()
                         .and_then(ArrayExpressionElement::as_expression)
-                        .and_then(extract_expression)
+                        .map(unwrap_expression)
                     {
                         Some(expression) if static_module_name(expression, resolved) => {}
                         _ => resolved.has_unresolved_entries = true,

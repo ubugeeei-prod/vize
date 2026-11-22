@@ -18,7 +18,7 @@ use oxc_span::SourceType;
 use vize_croquis_cf::NuxtRenderDirs;
 use vize_l0::String;
 
-const CONFIG_NAMES: [&str; 6] = [
+pub(super) const NUXT_CONFIG_NAMES: [&str; 6] = [
     "nuxt.config.ts",
     "nuxt.config.js",
     "nuxt.config.mts",
@@ -45,7 +45,7 @@ pub(super) struct NuxtConfig {
 pub(super) fn find(root: &Path) -> Option<NuxtConfig> {
     let mut directory = Some(root);
     while let Some(dir) = directory {
-        for name in CONFIG_NAMES {
+        for name in NUXT_CONFIG_NAMES {
             let path = dir.join(name);
             if path.exists() {
                 return Some(NuxtConfig {
@@ -84,7 +84,7 @@ pub(super) struct ConfigObject<'a> {
 
 impl<'a> ConfigObject<'a> {
     pub(super) fn nested(expression: &'a Expression<'a>) -> Option<Self> {
-        match unwrap(expression) {
+        match unwrap_expression(expression) {
             Expression::ObjectExpression(object) => Some(Self {
                 object,
                 root: false,
@@ -125,7 +125,9 @@ impl<'a> ConfigObject<'a> {
                         return Lookup::Unknown;
                     }
                 }
-                Some(name) if name == key => found = Lookup::Value(unwrap(&property.value)),
+                Some(name) if name == key => {
+                    found = Lookup::Value(unwrap_expression(&property.value))
+                }
                 Some(_) => {}
             }
         }
@@ -178,7 +180,7 @@ pub(super) fn read<T>(
             Statement::ExportDefaultDeclaration(export) => Some(export),
             _ => None,
         })?;
-    let expression = unwrap(export.declaration.as_expression()?);
+    let expression = unwrap_expression(export.declaration.as_expression()?);
     let closed_program = parsed.program.body.len() == 1
         && match expression {
             Expression::ObjectExpression(_) => true,
@@ -198,7 +200,7 @@ pub(super) fn read<T>(
             if shadows_nuxt_config(&parsed.program) {
                 return None;
             }
-            unwrap(call.arguments.first()?.as_expression()?)
+            unwrap_expression(call.arguments.first()?.as_expression()?)
         }
         expression => expression,
     };
@@ -319,13 +321,15 @@ fn same_literal(left: &Expression<'_>, right: &Expression<'_>) -> bool {
     }
 }
 
-pub(super) fn unwrap<'a>(expression: &'a Expression<'a>) -> &'a Expression<'a> {
-    match expression {
-        Expression::ParenthesizedExpression(inner) => unwrap(&inner.expression),
-        Expression::TSAsExpression(inner) => unwrap(&inner.expression),
-        Expression::TSSatisfiesExpression(inner) => unwrap(&inner.expression),
-        Expression::TSNonNullExpression(inner) => unwrap(&inner.expression),
-        expression => expression,
+pub(super) fn unwrap_expression<'e, 'a>(mut expression: &'e Expression<'a>) -> &'e Expression<'a> {
+    loop {
+        expression = match expression {
+            Expression::ParenthesizedExpression(inner) => &inner.expression,
+            Expression::TSAsExpression(inner) => &inner.expression,
+            Expression::TSSatisfiesExpression(inner) => &inner.expression,
+            Expression::TSNonNullExpression(inner) => &inner.expression,
+            _ => return expression,
+        };
     }
 }
 
