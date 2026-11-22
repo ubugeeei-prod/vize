@@ -57,7 +57,17 @@ impl<'a> ImportedComponentSite<'_, 'a> {
                     if !bind.modifiers.is_empty() {
                         return Err(ComponentPropIssue::Binding(bind.span));
                     }
-                    let row = (name, Some(value.source()), bind.span, Some(value.span()));
+                    let extent = value.span();
+                    let spelling = source
+                        .source()
+                        .get(extent.start as usize..extent.end as usize)
+                        .ok_or(ComponentPropIssue::OriginalSource)?;
+                    // A shorthand may synthesize a camelized operand over the
+                    // authored kebab-case name. Its spelling and value differ.
+                    if !std::ptr::eq(spelling, value.source()) && spelling != value.source() {
+                        return Err(ComponentPropIssue::Binding(bind.span));
+                    }
+                    let row = (name, Some(spelling), bind.span, Some(extent));
                     bindings.next();
                     row
                 }

@@ -31,6 +31,9 @@ fn compare(
                 "{text}"
             );
             assert_eq!(prop.name_span.slice(text), prop.name);
+            if let Some(operand) = prop.expression {
+                assert_eq!(prop.value, Some(operand.slice(text)));
+            }
             assert!(!old.name_is_dynamic);
             attrs += 1;
             bound += usize::from(prop.expression.is_some());
@@ -68,6 +71,48 @@ fn nested_usages_yield_inner_first_with_interleaved_bound_and_literal_props() {
             ("title", Some("a&b"), None),
             ("user-name", Some("msg"), Some("msg")),
             ("flag", None, None)
+        ]
+    );
+}
+
+#[test]
+fn original_binding_values_keep_the_spelling_at_the_reported_operand() {
+    for attribute in [":user-name", "v-bind:user-name"] {
+        let source = format!(
+            "<script setup>import Card from './Card.vue'; const userName=1;</script><template><Card {attribute}/></template>"
+        );
+        let arena = Allocator::new();
+        let observed = observe(&arena, &source);
+        let imports = observed.setup_component_imports().unwrap();
+        let mut rows = Vec::new();
+        let issue = imports.sites()[0]
+            .visit_passed_props(|prop| rows.push(prop))
+            .unwrap_err();
+        let ComponentPropIssue::Binding(span) = issue else {
+            panic!("expected synthesized operand")
+        };
+        assert_eq!(span.slice(&source), attribute);
+        assert!(rows.is_empty());
+    }
+    let source = "<script setup>import Card from './Card.vue'; const userName=1;</script><template><Card :userName :user-name='userName'/></template>";
+    let arena = Allocator::new();
+    let observed = observe(&arena, source);
+    let imports = observed.setup_component_imports().unwrap();
+    let mut pairs = Vec::new();
+    imports.sites()[0]
+        .visit_passed_props(|prop| {
+            pairs.push((
+                prop.name,
+                prop.value,
+                prop.expression.unwrap().slice(source),
+            ))
+        })
+        .unwrap();
+    assert_eq!(
+        pairs,
+        [
+            ("userName", Some("userName"), "userName"),
+            ("user-name", Some("userName"), "userName")
         ]
     );
 }
