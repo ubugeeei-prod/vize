@@ -8,7 +8,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { getExePath } from "@pkl-community/pkl";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { renderRepositoryYaml, type ConfigValue } from "../../support/ci/repository-yaml.ts";
@@ -16,6 +16,10 @@ import { readWorkflowEntries, renderWorkflowCatalog } from "../ci/workflow-catal
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const sources = path.join(root, "tools/config/pkl");
+
+// The product CLI already owns the repository's pinned Pkl distribution.
+const cliRequire = createRequire(new URL("../../../npm/cli/package.json", import.meta.url));
+const { getExePath } = cliRequire("@pkl-community/pkl") as { getExePath(): string };
 
 type Product = { source: string; target: string; shell: boolean };
 
