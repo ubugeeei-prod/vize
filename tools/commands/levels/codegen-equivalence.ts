@@ -138,19 +138,19 @@ async function build(
       SOURCE_DATE_EPOCH: sourceDateEpoch,
     },
   });
-  const artifacts = output
+  const messages = output
     .trimEnd()
     .split("\n")
-    .map((line) => JSON.parse(line))
-    .filter(
-      (m) =>
-        m.reason === "compiler-artifact" &&
-        m.package_id === owner.id &&
-        m.manifest_path === owner.manifest_path &&
-        m.target.name === requested.name &&
-        m.target.src_path === requested.src_path &&
-        isDeepStrictEqual(m.target.kind, requested.kind),
-    );
+    .map((line) => JSON.parse(line));
+  const artifacts = messages.filter(
+    (m) =>
+      m.reason === "compiler-artifact" &&
+      m.package_id === owner.id &&
+      m.manifest_path === owner.manifest_path &&
+      m.target.name === requested.name &&
+      m.target.src_path === requested.src_path &&
+      isDeepStrictEqual(m.target.kind, requested.kind),
+  );
   if (artifacts.length !== 1 || artifacts[0].fresh)
     throw new Error(`expected one freshly compiled workspace target for ${pkg}`);
   const artifact = artifacts[0];
@@ -176,8 +176,27 @@ async function build(
     if (libraries.length !== 1) throw new Error(`expected one rlib for ${pkg}`);
     members = await readMembers(libraries[0]);
   }
+  const revision = git(checkout, "rev-parse", "HEAD");
+  let pluginHostBuildId: string | undefined;
+  if (addon && pkg === "vize_vitrine") {
+    const ids = messages
+      .filter((m) => m.reason === "build-script-executed" && m.package_id === owner.id)
+      .flatMap((m) =>
+        (m.env as [string, string][]).filter(([key]) => key === "VIZE_PLUGIN_HOST_BUILD_ID"),
+      );
+    if (
+      ids.length !== 1 ||
+      !ids[0][1].startsWith(revision + ":") ||
+      !/^[a-f0-9]{40}:[a-f0-9]{64}$/u.test(ids[0][1])
+    )
+      throw new Error(
+        "missing revision-bound plugin host cache identity from the native build script",
+      );
+    pluginHostBuildId = ids[0][1];
+  }
   const evidence = {
-    revision: git(checkout, "rev-parse", "HEAD"),
+    revision,
+    ...(pluginHostBuildId && { pluginHostBuildId }),
     manifest: path.relative(checkout, artifact.manifest_path),
     target: {
       name: requested.name,

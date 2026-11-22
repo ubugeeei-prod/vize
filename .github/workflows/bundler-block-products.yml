@@ -4,6 +4,8 @@ on:
     paths:
       - ".github/workflows/bundler-block-products.yml"
       - "tools/commands/levels/codegen-equivalence.ts"
+      - "tools/commands/levels/native-addon-identity.ts"
+      - "tests/tooling/native-addon-identity.test.ts"
       - "tools/support/compat/npm/bundler-block-products.ts"
       - "davinci/vize_l1/src/container/vue/boundary*"
       - "davinci/vize_l1/src/container/vue/boundary/**"
@@ -49,13 +51,19 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --no-tags --depth=1 origin "$BASE_SHA" "$HEAD_SHA"
-          node tools/commands/levels/codegen-equivalence.ts "$BASE_SHA" "$HEAD_SHA" vize_vitrine node-addon default "$RUNNER_TEMP/stock-addon.json"
+          node --test tests/tooling/native-addon-identity.test.ts
+          status=0
+          node tools/commands/levels/codegen-equivalence.ts "$BASE_SHA" "$HEAD_SHA" vize_vitrine node-addon default "$RUNNER_TEMP/stock-addon.json" || status=$?
+          # The real builds stamp their respective Git SHA and source closure into the plugin cache key.
+          test "$status" = 1
+          node tools/commands/levels/native-addon-identity.ts "$RUNNER_TEMP/stock-addon.json" | tee "$RUNNER_TEMP/stock-addon-identity.json"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always() && matrix.suite == 'stock-addon'
         with:
           name: bundler-stock-addon
           path: |
             ${{ runner.temp }}/stock-addon.json
+            ${{ runner.temp }}/stock-addon-identity.json
             ${{ runner.temp }}/stock-addon.json.executables-*/*
       - name: Compare native and Node products on original source
         if: matrix.suite == 'products'
