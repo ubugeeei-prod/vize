@@ -12,26 +12,6 @@ impl<'a> Context<'_, 'a> {
         self.produced(region, result, "native.text", span, "ui.text");
     }
 
-    #[cfg(feature = "component-text-condense")]
-    pub(super) fn component_text<R: ConstructionFactory<'a>>(
-        &mut self,
-        region: &mut R,
-        token: &Token<'a>,
-        lane: crate::lower::TextLane,
-        previous: Option<&vize_l1::markup::SurfaceChild<'a>>,
-        next: Option<&vize_l1::markup::SurfaceChild<'a>>,
-    ) {
-        let span = self.token_span(token);
-        let decoded = decode_references(self.allocator, token.text, EntityContext::Text);
-        if let Some(text) = lane.component_text(self.allocator, decoded, span.start, previous, next)
-        {
-            let result = region.text(text, span);
-            self.produced(region, result, "native.text", span, "ui.text");
-        } else {
-            self.record(region, "condense.drop-whitespace", None, span, "");
-        }
-    }
-
     pub(super) fn comment<R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
@@ -93,4 +73,26 @@ pub(crate) fn decode_references<'a>(
         output.push_str(tail);
     }
     allocator.alloc_str(output.as_str())
+}
+
+#[cfg(feature = "component-text-condense")]
+impl<'a> Context<'_, 'a> {
+    pub(super) fn component_text<R: ConstructionFactory<'a>>(
+        &mut self,
+        region: &mut R,
+        token: &Token<'a>,
+        lane: crate::lower::TextLane,
+        previous: Option<&vize_l1::markup::SurfaceChild<'a>>,
+        next: Option<&vize_l1::markup::SurfaceChild<'a>>,
+    ) {
+        let span = self.token_span(token);
+        let decoded = decode_references(self.allocator, token.text, EntityContext::Text);
+        if let Some(text) = lane.component_text(self.allocator, decoded, span.start, previous, next)
+        {
+            let result = region.text(text, span);
+            self.produced(region, result, "native.text", span, "ui.text");
+        } else {
+            self.record(region, "condense.drop-whitespace", None, span, "");
+        }
+    }
 }
