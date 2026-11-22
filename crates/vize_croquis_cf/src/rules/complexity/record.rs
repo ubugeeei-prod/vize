@@ -11,7 +11,16 @@ impl CrossFileAnalyzer {
     /// the source they receive. A host that registers only an SFC's script
     /// (the WASM binding does) calls it again with the whole SFC.
     pub fn record_template_complexity(&mut self, file_id: FileId, sfc_source: &str) {
-        match TemplateComplexity::from_sfc(sfc_source) {
+        self.store_template_complexity(file_id, TemplateComplexity::from_sfc(sfc_source));
+    }
+
+    #[inline]
+    pub(crate) fn store_template_complexity(
+        &mut self,
+        file_id: FileId,
+        template: Option<TemplateComplexity>,
+    ) {
+        match template {
             Some(template) => {
                 self.template_complexity.insert(file_id, template);
             }
