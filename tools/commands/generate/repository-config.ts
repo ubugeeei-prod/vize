@@ -19,7 +19,7 @@ const sources = path.join(root, "tools/config/pkl");
 
 // The product CLI already owns the repository's pinned Pkl distribution.
 const cliRequire = createRequire(new URL("../../../npm/cli/package.json", import.meta.url));
-const { getExePath } = cliRequire("@pkl-community/pkl") as { getExePath(): string };
+const pkl = cliRequire("@pkl-community/pkl") as { getExePath(): string };
 
 type Product = { source: string; target: string; shell: boolean };
 
@@ -45,7 +45,7 @@ function listProducts(): Product[] {
 function evaluate(products: Product[]): ConfigValue[] {
   const separator = "\u001e";
   const result = spawnSync(
-    process.platform === "win32" ? "pkl" : getExePath(),
+    process.platform === "win32" ? "pkl" : pkl.getExePath(),
     [
       "eval",
       "--no-project",
