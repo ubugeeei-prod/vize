@@ -35,7 +35,7 @@ surfaces and are not routine CI-refactor targets.
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 24        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 43        |
 | 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 24        |
-| 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
+| 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 24        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
 | 11    | [Security, maintenance, and documentation](#11-security-maintenance-and-documentation) | 22        |
@@ -309,27 +309,28 @@ Babel, Nuxt, Parcel, Rspack, Turbopack, Vite, Vitest, and consumer hosts.
 | ----- | -------------------------------------- | -------------------------------------------------------------------------- |
 | 08.01 | Babel plugin host contracts            | [`babel-plugin-hosts.yml`](./babel-plugin-hosts.yml)                       |
 | 08.02 | Babel rc9 ABI frontier                 | [`babel-rc9-frontier.yml`](./babel-rc9-frontier.yml)                       |
-| 08.03 | JS install dependency closure          | [`js-install-closure.yml`](./js-install-closure.yml)                       |
-| 08.04 | Nuxt generated declaration membership  | [`nuxt-generated-membership.yml`](./nuxt-generated-membership.yml)         |
-| 08.05 | Nuxt scoped style build                | [`nuxt-style-build.yml`](./nuxt-style-build.yml)                           |
-| 08.06 | Nuxt 2 Bridge host runtimes            | [`nuxt2-bridge-module-build.yml`](./nuxt2-bridge-module-build.yml)         |
-| 08.07 | Nuxt 2 module build                    | [`nuxt2-module-build.yml`](./nuxt2-module-build.yml)                       |
-| 08.08 | Nuxt 3 module build                    | [`nuxt3-module-build.yml`](./nuxt3-module-build.yml)                       |
-| 08.09 | Parcel transformer                     | [`parcel-transformer.yml`](./parcel-transformer.yml)                       |
-| 08.10 | Plain-script import ref runtime        | [`plain-script-import-ref.yml`](./plain-script-import-ref.yml)             |
-| 08.11 | Rspack SFC HMR                         | [`rspack-hmr.yml`](./rspack-hmr.yml)                                       |
-| 08.12 | Rspack external block ranges           | [`rspack-src-block-ranges.yml`](./rspack-src-block-ranges.yml)             |
-| 08.13 | Turbopack consumers                    | [`turbopack-consumers.yml`](./turbopack-consumers.yml)                     |
-| 08.14 | Vite+ Type Compatibility               | [`vite-plus-type-compat.yml`](./vite-plus-type-compat.yml)                 |
-| 08.15 | Vite precompile cache identities       | [`vite-precompile-cache.yml`](./vite-precompile-cache.yml)                 |
-| 08.16 | Vite relative style origins            | [`vite-style-relative-imports.yml`](./vite-style-relative-imports.yml)     |
-| 08.17 | Vite+ configuration consumers          | [`viteplus-config-consumers.yml`](./viteplus-config-consumers.yml)         |
-| 08.18 | Vite+ lint configuration consumers     | [`viteplus-lint-consumers.yml`](./viteplus-lint-consumers.yml)             |
-| 08.19 | Vite+ task cache consumers             | [`viteplus-task-cache.yml`](./viteplus-task-cache.yml)                     |
-| 08.20 | Vitest persistent Vue modules          | [`vitest-module-cache.yml`](./vitest-module-cache.yml)                     |
-| 08.21 | Vitest project configuration consumers | [`vitest-project-extends.yml`](./vitest-project-extends.yml)               |
-| 08.22 | Void build                             | [`void-build.yml`](./void-build.yml)                                       |
-| 08.23 | VueFes SSR style dependencies          | [`vuefes-ssr-style-dependencies.yml`](./vuefes-ssr-style-dependencies.yml) |
+| 08.03 | Bundler block products                 | [`bundler-block-products.yml`](./bundler-block-products.yml)               |
+| 08.04 | JS install dependency closure          | [`js-install-closure.yml`](./js-install-closure.yml)                       |
+| 08.05 | Nuxt generated declaration membership  | [`nuxt-generated-membership.yml`](./nuxt-generated-membership.yml)         |
+| 08.06 | Nuxt scoped style build                | [`nuxt-style-build.yml`](./nuxt-style-build.yml)                           |
+| 08.07 | Nuxt 2 Bridge host runtimes            | [`nuxt2-bridge-module-build.yml`](./nuxt2-bridge-module-build.yml)         |
+| 08.08 | Nuxt 2 module build                    | [`nuxt2-module-build.yml`](./nuxt2-module-build.yml)                       |
+| 08.09 | Nuxt 3 module build                    | [`nuxt3-module-build.yml`](./nuxt3-module-build.yml)                       |
+| 08.10 | Parcel transformer                     | [`parcel-transformer.yml`](./parcel-transformer.yml)                       |
+| 08.11 | Plain-script import ref runtime        | [`plain-script-import-ref.yml`](./plain-script-import-ref.yml)             |
+| 08.12 | Rspack SFC HMR                         | [`rspack-hmr.yml`](./rspack-hmr.yml)                                       |
+| 08.13 | Rspack external block ranges           | [`rspack-src-block-ranges.yml`](./rspack-src-block-ranges.yml)             |
+| 08.14 | Turbopack consumers                    | [`turbopack-consumers.yml`](./turbopack-consumers.yml)                     |
+| 08.15 | Vite+ Type Compatibility               | [`vite-plus-type-compat.yml`](./vite-plus-type-compat.yml)                 |
+| 08.16 | Vite precompile cache identities       | [`vite-precompile-cache.yml`](./vite-precompile-cache.yml)                 |
+| 08.17 | Vite relative style origins            | [`vite-style-relative-imports.yml`](./vite-style-relative-imports.yml)     |
+| 08.18 | Vite+ configuration consumers          | [`viteplus-config-consumers.yml`](./viteplus-config-consumers.yml)         |
+| 08.19 | Vite+ lint configuration consumers     | [`viteplus-lint-consumers.yml`](./viteplus-lint-consumers.yml)             |
+| 08.20 | Vite+ task cache consumers             | [`viteplus-task-cache.yml`](./viteplus-task-cache.yml)                     |
+| 08.21 | Vitest persistent Vue modules          | [`vitest-module-cache.yml`](./vitest-module-cache.yml)                     |
+| 08.22 | Vitest project configuration consumers | [`vitest-project-extends.yml`](./vitest-project-extends.yml)               |
+| 08.23 | Void build                             | [`void-build.yml`](./void-build.yml)                                       |
+| 08.24 | VueFes SSR style dependencies          | [`vuefes-ssr-style-dependencies.yml`](./vuefes-ssr-style-dependencies.yml) |
 
 ## 09 Lint, format, and developer tooling
 

@@ -109,12 +109,21 @@ test(
       assert.equal(receipt.base.revision, base);
       assert.equal(receipt.head.revision, head);
       assert.equal(receipt.sourceDateEpoch, run("git", "show", "-s", "--format=%ct", base));
-      if (receipt.differences.includes("executable")) {
+      if (
+        receipt.differences.includes("executable") ||
+        receipt.differences.includes("node-addon")
+      ) {
         for (const side of ["base", "head"] as const) {
           const executable = path.join(root, receipt.executables[side]);
           const data = fs.readFileSync(executable);
-          const time = new Date(Number(receipt.sourceDateEpoch) * 1000).toISOString().slice(11, 19);
-          assert.ok(run(executable).includes('"Feb  3 2001" "' + time + '"'));
+          if (product.startsWith("bin:")) {
+            const time = new Date(Number(receipt.sourceDateEpoch) * 1000)
+              .toISOString()
+              .slice(11, 19);
+            assert.ok(run(executable).includes('"Feb  3 2001" "' + time + '"'));
+          } else {
+            assert.deepEqual(receipt[side].features, ["legacy", "napi"]);
+          }
           assert.equal(data.length, receipt[side].members[0].bytes);
           assert.equal(
             createHash("sha256").update(data).digest("hex"),
@@ -140,7 +149,7 @@ test(
       );
       fs.writeFileSync(
         path.join(root, "Cargo.toml"),
-        '[workspace]\nmembers=["helper"]\n[package]\nname="sample"\nversion="0.1.0"\nedition="2024"\n[lib]\nname="custom"\n[dependencies]\nhelper={path="helper"}\n[features]\nextra=[]\n[profile.ci-opt]\ninherits="release"\ncodegen-units=4\n',
+        '[workspace]\nmembers=["helper"]\n[package]\nname="sample"\nversion="0.1.0"\nedition="2024"\n[lib]\nname="custom"\ncrate-type=["rlib","cdylib"]\n[dependencies]\nhelper={path="helper"}\n[features]\nextra=[]\nnapi=[]\nlegacy=[]\n[profile.ci-opt]\ninherits="release"\ncodegen-units=4\n',
       );
       fs.writeFileSync(
         source,
@@ -168,11 +177,13 @@ test(
       const gated = commit("gate new method");
       assert.deepEqual(compare(base, gated, "lib", 0), []);
       assert.deepEqual(compare(base, gated, "bin:sample", 0), []);
+      assert.deepEqual(compare(base, gated, "node-addon", 0), []);
       fs.writeFileSync(
         source,
         fs.readFileSync(source, "utf8").replace("wrapping_add(1)", "wrapping_add(2)"),
       );
       const emitted = commit("change exported code");
+      assert.deepEqual(compare(gated, emitted, "node-addon", 1), ["node-addon"]);
       assert.ok(compare(gated, emitted, "lib", 1).some((key) => key.startsWith("rust:")));
       fs.writeFileSync(
         source,

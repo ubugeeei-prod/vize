@@ -181,6 +181,7 @@ jobs:
           cargo test "${flags[@]}" "${native[@]}" --test expression_queries component_listeners:: -- --include-ignored --nocapture --test-threads=1
           cargo test "${flags[@]}" "${editor[@]}" event_rename:: -- --include-ignored --nocapture --test-threads=1
           cargo test "${flags[@]}" "${editor[@]}" named_dom_event_expressions_keep_their_checker_links_and_editor_exports
+          cargo test "${flags[@]}" "${editor[@]}" original_event_documents -- --ignored --nocapture --test-threads=1
 
   lexical-script-products:
     runs-on: blacksmith-32vcpu-ubuntu-2404

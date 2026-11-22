@@ -1,5 +1,5 @@
 // Compare a library's linker inputs or the complete consuming executable for two immutable Git revisions.
-// node tools/commands/levels/codegen-equivalence.ts BASE_SHA HEAD_SHA PACKAGE lib|bin:NAME default|portable REPORT.json
+// node tools/commands/levels/codegen-equivalence.ts BASE_SHA HEAD_SHA PACKAGE lib|bin:NAME|node-addon default|portable REPORT.json
 import { execFileSync, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { once } from "node:events";
@@ -18,6 +18,7 @@ interface Member {
 }
 interface Build {
   revision: string;
+  pluginHostBuildId?: string;
   manifest: string;
   target: { name: string; kind: string[]; source: string };
   lock: string;
@@ -97,8 +98,10 @@ async function build(
   product: string,
   mode: string,
   sourceDateEpoch: string,
+  controlEnv?: NodeJS.ProcessEnv,
 ): Promise<{ evidence: Build; executable?: string }> {
   const binary = product.startsWith("bin:") ? product.slice(4) : undefined;
+  const addon = product === "node-addon";
   const metadata: { packages: CargoPackage[]; workspace_members: string[] } = JSON.parse(
     execFileSync("cargo", ["metadata", "--locked", "--no-deps", "--format-version", "1"], {
       cwd: checkout,
@@ -114,13 +117,17 @@ async function build(
   const targets = owner.targets.filter((target) =>
     binary
       ? target.name === binary && target.kind.includes("bin")
-      : target.kind.includes("lib") || target.kind.includes("rlib"),
+      : addon
+        ? target.kind.includes("cdylib")
+        : target.kind.includes("lib") || target.kind.includes("rlib"),
   );
   if (targets.length !== 1) throw new Error(`expected one ${product} target for ${pkg}`);
   const requested = targets[0];
   const selector = binary ? ["--bin", binary] : ["--lib"];
   const args = ["build", ...selector, "--locked", "--profile", "ci-opt", "-p", pkg];
   if (mode === "portable") args.push("--no-default-features");
+  // Match the native package build in npm/native/scripts/build-local.mts.
+  if (addon) args.push("--features", "napi,legacy");
   const output = execFileSync("cargo", [...args, "--message-format=json-render-diagnostics"], {
     cwd: checkout,
     encoding: "utf8",
@@ -131,35 +138,68 @@ async function build(
       CARGO_TARGET_DIR: target,
       CARGO_INCREMENTAL: "0",
       SOURCE_DATE_EPOCH: sourceDateEpoch,
+      ...controlEnv,
     },
   });
-  const artifacts = output
+  const messages = output
     .trimEnd()
     .split("\n")
-    .map((line) => JSON.parse(line))
-    .filter(
-      (m) =>
-        m.reason === "compiler-artifact" &&
-        m.package_id === owner.id &&
-        m.manifest_path === owner.manifest_path &&
-        m.target.name === requested.name &&
-        m.target.src_path === requested.src_path &&
-        isDeepStrictEqual(m.target.kind, requested.kind),
-    );
+    .map((line) => JSON.parse(line));
+  const artifacts = messages.filter(
+    (m) =>
+      m.reason === "compiler-artifact" &&
+      m.package_id === owner.id &&
+      m.manifest_path === owner.manifest_path &&
+      m.target.name === requested.name &&
+      m.target.src_path === requested.src_path &&
+      isDeepStrictEqual(m.target.kind, requested.kind),
+  );
   if (artifacts.length !== 1 || artifacts[0].fresh)
     throw new Error(`expected one freshly compiled workspace target for ${pkg}`);
   const artifact = artifacts[0];
   let members;
+  let linked: string | undefined;
   if (binary) {
     if (!artifact.executable) throw new Error(`expected executable for ${binary}`);
+    linked = artifact.executable;
     members = [await fingerprint(fs.createReadStream(artifact.executable), "executable", binary)];
+  } else if (addon) {
+    const libraries = (artifact.filenames as string[]).filter((name) =>
+      /[.](?:so|dylib|dll)$/u.test(name),
+    );
+    if (
+      libraries.length !== 1 ||
+      !["napi", "legacy"].every((feature) => artifact.features.includes(feature))
+    )
+      throw new Error(`expected one native addon with the package build features for ${pkg}`);
+    linked = libraries[0];
+    members = [await fingerprint(fs.createReadStream(linked), "node-addon", requested.name)];
   } else {
     const libraries = artifact.filenames.filter((name: string) => name.endsWith(".rlib"));
     if (libraries.length !== 1) throw new Error(`expected one rlib for ${pkg}`);
     members = await readMembers(libraries[0]);
   }
+  const revision = git(checkout, "rev-parse", "HEAD");
+  let pluginHostBuildId: string | undefined;
+  if (addon && pkg === "vize_vitrine") {
+    const ids = messages
+      .filter((m) => m.reason === "build-script-executed" && m.package_id === owner.id)
+      .flatMap((m) =>
+        (m.env as [string, string][]).filter(([key]) => key === "VIZE_PLUGIN_HOST_BUILD_ID"),
+      );
+    if (
+      ids.length !== 1 ||
+      !ids[0][1].startsWith(revision + ":") ||
+      !/^[a-f0-9]{40}:[a-f0-9]{64}$/u.test(ids[0][1])
+    )
+      throw new Error(
+        "missing revision-bound plugin host cache identity from the native build script",
+      );
+    pluginHostBuildId = ids[0][1];
+  }
   const evidence = {
-    revision: git(checkout, "rev-parse", "HEAD"),
+    revision,
+    ...(pluginHostBuildId && { pluginHostBuildId }),
     manifest: path.relative(checkout, artifact.manifest_path),
     target: {
       name: requested.name,
@@ -173,7 +213,7 @@ async function build(
     profile: artifact.profile,
     members,
   };
-  return { evidence, executable: binary ? artifact.executable : undefined };
+  return { evidence, executable: linked };
 }
 
 export function differences(base: Build, head: Build): string[] {
@@ -204,16 +244,26 @@ export function differences(base: Build, head: Build): string[] {
   return result;
 }
 
-async function main([base, head, pkg, product, mode, report, ...extra]: string[]) {
+async function main([base, head, pkg, product, mode, report, control, ...extra]: string[]) {
   if (
     extra.length ||
+    (control !== undefined &&
+      (control !== "--control-plugin-identity" ||
+        product !== "node-addon" ||
+        pkg !== "vize_vitrine")) ||
     !report ||
     ![base, head].every((rev) => /^[a-f0-9]{40}$/u.test(rev)) ||
     !/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/u.test(pkg) ||
-    !(product === "lib" || /^bin:[a-zA-Z0-9][a-zA-Z0-9_-]*$/u.test(product)) ||
+    !(
+      product === "lib" ||
+      product === "node-addon" ||
+      /^bin:[a-zA-Z0-9][a-zA-Z0-9_-]*$/u.test(product)
+    ) ||
     !["default", "portable"].includes(mode)
   )
-    throw new Error("expected BASE_SHA HEAD_SHA PACKAGE lib|bin:NAME default|portable REPORT.json");
+    throw new Error(
+      "expected BASE_SHA HEAD_SHA PACKAGE lib|bin:NAME|node-addon default|portable REPORT.json",
+    );
   const root = git(process.cwd(), "rev-parse", "--show-toplevel");
   for (const rev of [base, head])
     if (git(root, "cat-file", "-t", rev) !== "commit") throw new Error(`not a commit: ${rev}`);
@@ -223,10 +273,10 @@ async function main([base, head, pkg, product, mode, report, ...extra]: string[]
   const temp = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-codegen-")));
   const checkout = path.join(temp, "source");
   const target = path.join(temp, "target");
-  async function compile(revision: string) {
+  async function compile(revision: string, controlEnv?: NodeJS.ProcessEnv) {
     git(root, "worktree", "add", "--quiet", "--detach", checkout, revision);
     try {
-      return await build(checkout, target, pkg, product, mode, sourceDateEpoch);
+      return await build(checkout, target, pkg, product, mode, sourceDateEpoch, controlEnv);
     } finally {
       git(root, "worktree", "remove", "--force", checkout);
     }
@@ -243,7 +293,7 @@ async function main([base, head, pkg, product, mode, report, ...extra]: string[]
     const after = second.evidence;
     const changed = differences(before, after);
     let executables;
-    if (second.executable && changed.includes("executable")) {
+    if (second.executable && (changed.includes("executable") || changed.includes("node-addon"))) {
       const directory = fs.mkdtempSync(path.resolve(report) + ".executables-");
       try {
         for (const [side, source] of [
@@ -259,6 +309,41 @@ async function main([base, head, pkg, product, mode, report, ...extra]: string[]
       const relative = path.relative(path.dirname(path.resolve(report)), directory);
       executables = { base: path.join(relative, "base"), head: path.join(relative, "head") };
     }
+    let pluginIdentityControl;
+    if (control) {
+      if (!before.pluginHostBuildId || !after.pluginHostBuildId || !executables)
+        throw new Error("expected two independently stamped stock Node addons");
+      const receipt = path.join(temp, "rustc-identity.txt");
+      const wrapper = path.join(temp, "stock-addon-rustc");
+      execFileSync("rustc", [
+        "--edition=2024",
+        fileURLToPath(new URL("../../support/compat/npm/stock-addon-rustc.rs", import.meta.url)),
+        "-o",
+        wrapper,
+      ]);
+      fs.rmSync(target, { recursive: true });
+      const fixed = await compile(head, {
+        RUSTC_WRAPPER: wrapper,
+        VIZE_PROOF_PRODUCED_ID: after.pluginHostBuildId,
+        VIZE_PROOF_BASE_ID: before.pluginHostBuildId,
+        VIZE_PROOF_RECEIPT: receipt,
+      });
+      const recorded = fs.readFileSync(receipt, "utf8");
+      if (recorded !== after.pluginHostBuildId + "\n" + before.pluginHostBuildId + "\n")
+        throw new Error("expected exactly one recorded native crate invocation");
+      pluginIdentityControl = {
+        produced: after.pluginHostBuildId,
+        compiled: before.pluginHostBuildId,
+        evidence: fixed.evidence,
+        differences: differences(before, fixed.evidence),
+      };
+      if (pluginIdentityControl.differences.length && fixed.executable) {
+        fs.copyFileSync(
+          fixed.executable,
+          path.resolve(path.dirname(report), executables.head + "-control"),
+        );
+      }
+    }
     const evidence = {
       package: pkg,
       product,
@@ -268,6 +353,7 @@ async function main([base, head, pkg, product, mode, report, ...extra]: string[]
       head: after,
       differences: changed,
       executables,
+      pluginIdentityControl,
     };
     fs.writeFileSync(report, JSON.stringify(evidence, null, 2) + "\n");
     const bytes = after.members.reduce((n, m) => n + m.bytes, 0);
