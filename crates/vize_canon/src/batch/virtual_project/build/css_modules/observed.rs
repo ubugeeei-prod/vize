@@ -4,10 +4,10 @@ use super::{
     contains_dynamic_css_module_exports, css_import_targets, css_module_type,
     virtual_ts_options_for_descriptor,
 };
-use std::collections::{BTreeMap, btree_map::Entry};
+use std::collections::BTreeMap;
 use vize_atelier_sfc::{SfcDescriptor, SfcStyleBlock};
 use vize_l0::{SourceFrameError, SourceRoot};
-use vize_l1::css::lang::StyleObservation;
+use vize_l1::css::lang::{OriginalStyleStructure, StyleObservation};
 
 impl VirtualTsOptions {
     /// The ordinary checker-only projection, including all source and project options.
@@ -28,13 +28,9 @@ impl VirtualTsOptions {
         descriptor: &SfcDescriptor<'_>,
         strict: bool,
         resolve_imports: bool,
-        mut visit: impl FnMut(&str, &SfcStyleBlock<'_>, Option<&StyleObservation<'_>>),
+        visit: impl FnMut(&str, &SfcStyleBlock<'_>, Option<&StyleObservation<'_>>),
     ) -> Result<VirtualTsOptions, SourceFrameError> {
-        self.observe_styles::<false>(descriptor, strict, resolve_imports, |style, observed| {
-            if let Some(name) = style.module.as_deref() {
-                visit(name, style, observed);
-            }
-        })
+        self.observe_styles::<false>(descriptor, strict, resolve_imports, |_, _| {}, visit)
     }
 
     /// Visit every original style in descriptor order while computing checker
@@ -45,9 +41,10 @@ impl VirtualTsOptions {
         descriptor: &SfcDescriptor<'_>,
         strict: bool,
         resolve_imports: bool,
-        visit: impl FnMut(&SfcStyleBlock<'_>, Option<&StyleObservation<'_>>),
+        structure: impl FnMut(&SfcStyleBlock<'_>, Option<OriginalStyleStructure<'_, '_>>),
+        module: impl FnMut(&str, &SfcStyleBlock<'_>, Option<&StyleObservation<'_>>),
     ) -> Result<VirtualTsOptions, SourceFrameError> {
-        self.observe_styles::<true>(descriptor, strict, resolve_imports, visit)
+        self.observe_styles::<true>(descriptor, strict, resolve_imports, structure, module)
     }
 
     fn observe_styles<const ALL: bool>(
@@ -55,10 +52,14 @@ impl VirtualTsOptions {
         descriptor: &SfcDescriptor<'_>,
         strict: bool,
         resolve_imports: bool,
-        mut visit: impl FnMut(&SfcStyleBlock<'_>, Option<&StyleObservation<'_>>),
+        mut structure: impl FnMut(&SfcStyleBlock<'_>, Option<OriginalStyleStructure<'_, '_>>),
+        mut module: impl FnMut(&str, &SfcStyleBlock<'_>, Option<&StyleObservation<'_>>),
     ) -> Result<VirtualTsOptions, SourceFrameError> {
         let root = SourceRoot::new(&descriptor.source)?;
-        let mut modules: BTreeMap<&str, Option<CssModuleShape>> = BTreeMap::new();
+        // Keep the common single module beside the walk. A B-tree node would
+        // otherwise stay live while other consumers check the next style.
+        let mut first: Option<(&str, Option<CssModuleShape>)> = None;
+        let mut modules = BTreeMap::new();
         for style in &descriptor.styles {
             if !ALL && style.module.is_none() {
                 continue;
@@ -72,37 +73,58 @@ impl VirtualTsOptions {
             }
             let block = root.block(source, style.loc.start as u32)?;
             let Some(name) = style.module.as_deref() else {
-                visit(style, None);
+                structure(style, None);
                 continue;
             };
-            let original = vize_l1::container::lang::style_lang(style.lang.as_deref())
-                .ok()
-                .map(|language| StyleObservation::read(language, block));
-            visit(style, original.as_ref());
+            let original = match vize_l1::container::lang::style_lang(style.lang.as_deref()) {
+                Ok(language) => Some(StyleObservation::read_with_structure(
+                    language,
+                    block,
+                    |sheet| structure(style, Some(sheet)),
+                )),
+                Err(_) => {
+                    structure(style, None);
+                    None
+                }
+            };
+            module(name, style, original.as_ref());
             let shape =
                 original.and_then(|observed| module_shape(style, observed, resolve_imports));
-            match modules.entry(name) {
-                Entry::Vacant(entry) => {
-                    entry.insert(shape);
-                }
-                Entry::Occupied(mut entry) => match (entry.get_mut(), shape) {
-                    (Some(previous), Some(shape)) => {
-                        previous.classes.extend(shape.classes);
-                        previous.imports.extend(shape.imports);
+            let Some((first_name, first_shape)) = first.as_mut() else {
+                first = Some((name, shape));
+                continue;
+            };
+            if *first_name == name {
+                merge_shape(first_shape, shape);
+            } else {
+                match modules.entry(name) {
+                    std::collections::btree_map::Entry::Vacant(entry) => {
+                        entry.insert(shape);
                     }
-                    (previous, None) => *previous = None,
-                    (None, Some(_)) => {}
-                },
+                    std::collections::btree_map::Entry::Occupied(mut entry) => {
+                        merge_shape(entry.get_mut(), shape)
+                    }
+                }
             }
         }
+        if !modules.is_empty()
+            && let Some((name, shape)) = first.take()
+        {
+            modules.insert(name, shape);
+        }
         let mut globals = self.template_globals.clone();
-        let mut unknown = if modules.is_empty() {
+        let mut unknown = if first.is_none() && modules.is_empty() {
             self.css_modules.clone()
         } else {
             Vec::new()
         };
-        globals.retain(|global| !modules.contains_key(global.name.as_str()));
-        for (name, shape) in modules {
+        globals.retain(|global| {
+            first
+                .as_ref()
+                .is_none_or(|(name, _)| *name != global.name.as_str())
+                && !modules.contains_key(global.name.as_str())
+        });
+        for (name, shape) in first.into_iter().chain(modules) {
             if let Some(shape) = shape {
                 globals.push(TemplateGlobal {
                     name: name.into(),
@@ -122,6 +144,17 @@ impl VirtualTsOptions {
             reference_paths: self.reference_paths.clone(),
             strict_instance_globals: self.strict_instance_globals,
         })
+    }
+}
+
+fn merge_shape(previous: &mut Option<CssModuleShape>, shape: Option<CssModuleShape>) {
+    match (previous, shape) {
+        (Some(previous), Some(shape)) => {
+            previous.classes.extend(shape.classes);
+            previous.imports.extend(shape.imports);
+        }
+        (previous, None) => *previous = None,
+        (None, Some(_)) => {}
     }
 }
 

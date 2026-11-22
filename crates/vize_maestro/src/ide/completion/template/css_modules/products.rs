@@ -36,9 +36,9 @@ impl IdeContext<'_> {
         base: &VirtualTsOptions,
         strict: bool,
         resolve_imports: bool,
-        mut visit: impl FnMut(
+        visit: impl FnMut(
             &vize_atelier_sfc::SfcStyleBlock<'_>,
-            Option<&vize_l1::css::lang::StyleObservation<'_>>,
+            Option<vize_l1::css::lang::OriginalStyleStructure<'_, '_>>,
         ),
     ) -> Result<Option<StyleModuleToolProducts>, StyleModuleRefusal> {
         let current = || {
@@ -57,18 +57,18 @@ impl IdeContext<'_> {
             current()?;
             return Ok(None);
         };
-        let receiver = self
-            .content
-            .get(..self.offset.min(self.content.len()))
-            .and_then(module_receiver);
+        let receiver = if ALL && descriptor.styles.is_empty() {
+            None
+        } else {
+            self.content
+                .get(..self.offset.min(self.content.len()))
+                .and_then(module_receiver)
+        };
         let mut names: Option<SmallVec<[CompactString; 8]>> = None;
-        let mut read =
-            |style: &vize_atelier_sfc::SfcStyleBlock<'_>,
+        let read =
+            |module: &str,
+             style: &vize_atelier_sfc::SfcStyleBlock<'_>,
              observed: Option<&vize_l1::css::lang::StyleObservation<'_>>| {
-                visit(style, observed);
-                let Some(module) = style.module.as_deref() else {
-                    return;
-                };
                 if Some(module) == receiver {
                     let names = names.get_or_insert_with(SmallVec::new);
                     if style.src.is_none()
@@ -79,9 +79,9 @@ impl IdeContext<'_> {
                 }
             };
         let checker = if ALL {
-            base.observe_file_styles(descriptor, strict, resolve_imports, read)
+            base.observe_file_styles(descriptor, strict, resolve_imports, visit, read)
         } else {
-            base.observe_style_modules(descriptor, strict, resolve_imports, |_, s, o| read(s, o))
+            base.observe_style_modules(descriptor, strict, resolve_imports, read)
         };
         let completions = names.map(|mut names| {
             names.sort_unstable();

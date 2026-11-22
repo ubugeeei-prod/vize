@@ -77,4 +77,4 @@ mod tests;
 mod observation;
 
 #[cfg(any(test, feature = "observed-styles"))]
-pub use observation::StyleObservation;
+pub use observation::{OriginalStyleStructure, StyleObservation};

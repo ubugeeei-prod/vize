@@ -135,6 +135,40 @@ fn mixed_blocks_preserve_rule_order_absolute_spans_and_inline_disables() {
 }
 
 #[test]
+fn custom_rules_keep_labels_edits_and_both_counting_policies() {
+    use vize_patina::{
+        Fix, TextEdit,
+        rules::css::{CssRuleMeta, NoImportant, StyleRule},
+    };
+    struct Direct;
+    impl StyleRule for Direct {
+        fn meta(&self) -> &'static CssRuleMeta {
+            NoImportant.meta()
+        }
+        fn check(&self, sheet: &vize_l1::css::StyleSheet<'_>, result: &mut CssLintResult) {
+            let start = sheet.source_start();
+            // Third-party rules can push directly into the public result.
+            result.diagnostics.push(
+                LintDiagnostic::error("css/custom", "custom", start, start + 1)
+                    .with_label("selector", start, start + 2)
+                    .with_help("use other selector")
+                    .with_fix(Fix::new("edit", TextEdit::replace(start, start + 1, "#"))),
+            );
+        }
+    }
+    let mut rules = CssLinter::new();
+    rules.add_style_rule(Box::new(Direct));
+    let source = format!("{TEMPLATE}<style module>.a{{}}</style><style>.b{{}}</style>");
+    in_document(&source, 0, |ctx| {
+        for respect in [false, true] {
+            let result = compare_lint(ctx, &options(), &rules, respect, "custom rule");
+            assert_eq!(result.diagnostics.len(), 2);
+            assert_eq!(result.error_count, if respect { 2 } else { 0 });
+        }
+    });
+}
+
+#[test]
 fn combined_products_require_the_current_revision_and_original_style_ranges() {
     let source = format!("{TEMPLATE}<style>.first{{}}</style><style module>.second{{}}</style>");
     in_document(&source, 0, |ctx| {
@@ -143,7 +177,7 @@ fn combined_products_require_the_current_revision_and_original_style_ranges() {
         plain.content = ".other{}".into();
         let base = options();
         assert!(matches!(
-            base.observe_file_styles(&descriptor, true, false, |_, _| {}),
+            base.observe_file_styles(&descriptor, true, false, |_, _| {}, |_, _, _| {}),
             Err(SourceFrameError::BlockNotRootSlice)
         ));
         assert!(

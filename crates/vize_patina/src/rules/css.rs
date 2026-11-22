@@ -417,18 +417,6 @@ impl Default for CssLinter {
 mod disable_tests;
 
 #[cfg(feature = "observed-style-rules")]
-impl CssLinter {
-    /// Check the same original stylesheet the checker uses for its module classes.
-    pub fn lint_observed(
-        &self,
-        style: &vize_l1::css::lang::StyleObservation<'_>,
-        respect_disable_comments: bool,
-    ) -> CssLintResult {
-        let sheet = style.structure();
-        let source = sheet.source();
-        let offset = sheet.source_start() as usize;
-        let language = style.language();
-        let read_structure = |_, _: &str, _| sheet;
-        include!("css/block.rs")
-    }
-}
+mod observed;
+#[cfg(feature = "observed-style-rules")]
+pub use observed::StyleRuleInput;
