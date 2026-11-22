@@ -96,7 +96,7 @@ async function build(
   pkg: string,
   product: string,
   mode: string,
-): Promise<Build> {
+): Promise<{ evidence: Build; executable?: string }> {
   const binary = product.startsWith("bin:") ? product.slice(4) : undefined;
   const metadata: { packages: CargoPackage[]; workspace_members: string[] } = JSON.parse(
     execFileSync("cargo", ["metadata", "--locked", "--no-deps", "--format-version", "1"], {
@@ -152,7 +152,7 @@ async function build(
     if (libraries.length !== 1) throw new Error(`expected one rlib for ${pkg}`);
     members = await readMembers(libraries[0]);
   }
-  return {
+  const evidence = {
     revision: git(checkout, "rev-parse", "HEAD"),
     manifest: path.relative(checkout, artifact.manifest_path),
     target: {
@@ -167,6 +167,7 @@ async function build(
     profile: artifact.profile,
     members,
   };
+  return { evidence, executable: binary ? artifact.executable : undefined };
 }
 
 export function differences(base: Build, head: Build): string[] {
@@ -222,12 +223,28 @@ async function main([base, head, pkg, product, mode, report, ...extra]: string[]
     }
   }
   try {
-    const before = await compile(base);
+    const first = await compile(base);
+    const before = first.evidence;
+    const saved = path.join(temp, "base-executable");
+    if (first.executable) fs.copyFileSync(first.executable, saved, fs.constants.COPYFILE_FICLONE);
     // Both compilers see the same physical source and OUT_DIR paths. Each
     // starts from a fresh checkout and independently builds every dependency.
     fs.rmSync(target, { recursive: true });
-    const after = await compile(head);
+    const second = await compile(head);
+    const after = second.evidence;
     const changed = differences(before, after);
+    let executables;
+    if (second.executable && changed.includes("executable")) {
+      const directory = fs.mkdtempSync(path.resolve(report) + ".executables-");
+      for (const [side, source] of [
+        ["base", saved],
+        ["head", second.executable],
+      ]) {
+        fs.copyFileSync(source, path.join(directory, side), fs.constants.COPYFILE_FICLONE);
+      }
+      const relative = path.relative(path.dirname(path.resolve(report)), directory);
+      executables = { base: path.join(relative, "base"), head: path.join(relative, "head") };
+    }
     const evidence = {
       package: pkg,
       product,
@@ -235,6 +252,7 @@ async function main([base, head, pkg, product, mode, report, ...extra]: string[]
       base: before,
       head: after,
       differences: changed,
+      executables,
     };
     fs.writeFileSync(report, JSON.stringify(evidence, null, 2) + "\n");
     const bytes = after.members.reduce((n, m) => n + m.bytes, 0);

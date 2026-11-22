@@ -71,5 +71,8 @@ jobs:
         if: always()
         with:
           name: tool-codegen-${{ matrix.mode }}
-          path: ${{ runner.temp }}/codegen-${{ matrix.mode }}.json
+          path: |
+            ${{ runner.temp }}/codegen-${{ matrix.mode }}.json
+            ${{ runner.temp }}/codegen-${{ matrix.mode }}.json.executables-*/*
+          retention-days: 7
           if-no-files-found: ignore

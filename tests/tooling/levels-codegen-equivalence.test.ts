@@ -64,6 +64,7 @@ test(
   },
   async () => {
     const { execFileSync, spawnSync } = await import("node:child_process");
+    const { createHash } = await import("node:crypto");
     const fs = await import("node:fs");
     const os = await import("node:os");
     const path = await import("node:path");
@@ -102,6 +103,18 @@ test(
       const receipt = JSON.parse(fs.readFileSync(report, "utf8"));
       assert.equal(receipt.base.revision, base);
       assert.equal(receipt.head.revision, head);
+      if (receipt.differences.includes("executable")) {
+        for (const side of ["base", "head"] as const) {
+          const data = fs.readFileSync(path.join(root, receipt.executables[side]));
+          assert.equal(data.length, receipt[side].members[0].bytes);
+          assert.equal(
+            createHash("sha256").update(data).digest("hex"),
+            receipt[side].members[0].sha256,
+          );
+        }
+      } else {
+        assert.equal(receipt.executables, undefined);
+      }
       return receipt.differences as string[];
     };
     try {
