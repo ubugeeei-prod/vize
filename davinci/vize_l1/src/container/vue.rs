@@ -399,3 +399,6 @@ mod tests {
 mod programs;
 #[cfg(feature = "script-queries")]
 pub use programs::ScriptPrograms;
+
+#[cfg(feature = "independent-template-block")]
+pub use descriptor::CheckedTemplateBlock;
