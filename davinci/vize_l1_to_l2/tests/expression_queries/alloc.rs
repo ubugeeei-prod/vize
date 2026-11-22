@@ -33,6 +33,27 @@ fn main() {
         let offset = source.rfind("value").unwrap() as u32;
         let model = Model::new(file);
         let index = ExpressionPositionIndex::new(file);
+        #[cfg(feature = "template-operand-queries")]
+        {
+            let stats = measure(|| {
+                let mut operands = 0;
+                let mut uses = 0;
+                model
+                    .for_each_resolved_template_operand(|op| {
+                        black_box((op.kind(), op.span(), op.text(), op.scope()));
+                        op.for_each_reference(|site| {
+                            black_box(site);
+                            uses += 1
+                        })
+                        .unwrap();
+                        operands += 1;
+                    })
+                    .unwrap();
+                assert_eq!((operands, uses), (2 * repeats, 2 * repeats));
+            })
+            .unwrap();
+            assert_eq!((stats.calls, stats.peak_bytes_over_start), (0, 0));
+        }
         let native_lookup = || native.reference_at_offset(black_box(offset)).unwrap();
         let scan_lookup = || {
             model

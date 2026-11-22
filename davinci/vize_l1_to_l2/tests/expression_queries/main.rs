@@ -16,6 +16,8 @@ use vize_l2::query::{
 
 mod corpus;
 mod input;
+#[cfg(feature = "template-operand-queries")]
+mod operand;
 mod owner;
 mod profile;
 
@@ -51,6 +53,8 @@ struct Counts {
     positions: usize,
     bindings: usize,
     parser_diagnostics: usize,
+    #[cfg(feature = "template-operand-queries")]
+    operands: usize,
 }
 
 fn compare(source: &str, path: &str, counts: &mut Counts, every_byte: bool) -> bool {
@@ -163,6 +167,10 @@ fn compare(source: &str, path: &str, counts: &mut Counts, every_byte: bool) -> b
             .iter()
             .filter(|d| !d.is_compatibility_notice())
             .count();
+        #[cfg(feature = "template-operand-queries")]
+        {
+            counts.operands += operand::compare(&root, block.start(), model, path);
+        }
         let croquis = collect_template_references(&root, &syntax);
         assert!(croquis.gaps().is_empty(), "{path}: {:?}", croquis.gaps());
         let mut lexical: Vec<_> = croquis

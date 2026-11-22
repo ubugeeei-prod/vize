@@ -61,3 +61,6 @@ mod expression;
 pub use expression::ExpressionPositionIndex;
 #[cfg(feature = "expression-queries")]
 pub use expression::ExpressionReferenceRef;
+
+#[cfg(feature = "template-operand-queries")]
+pub use expression::{ResolvedTemplateOperand, TemplateOperandKind};

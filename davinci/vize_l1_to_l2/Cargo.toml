@@ -23,6 +23,7 @@ metadata.vize.stability = "experimental"
 
 [features]
 native-navigation-products = []
+template-operand-queries = ["vize_l2/template-operand-queries"]
 # Retain the source Program alongside its canonical region lowering.
 retained-tsrx = []
 # Prepare input-neutral modules for explicit analysis and projection.

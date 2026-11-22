@@ -307,3 +307,11 @@ mod tests;
 
 #[cfg(any(test, feature = "position-index"))]
 pub(in crate::query) mod index;
+
+#[cfg(feature = "template-operand-queries")]
+impl<'f, 'a> ScopeRef<'f, 'a> {
+    pub(super) fn from_id(file: &'f FileArtifact<'a>, id: ScopeId) -> Option<Self> {
+        let scope = file.scopes().get(id.index() as usize)?;
+        (scope.id == id).then_some(Self { file, scope })
+    }
+}
