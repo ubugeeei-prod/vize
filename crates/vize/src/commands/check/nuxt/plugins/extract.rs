@@ -11,11 +11,10 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::String;
 
+use crate::commands::project_nuxt::unwrap_expression;
+
 use self::bindings::{StaticPlugin, resolve_static_plugin_from_export};
-use super::super::parsing::{
-    collect_object_keys, extract_call_expression_from_export, extract_expression,
-    extract_object_expression, find_object_property,
-};
+use super::super::parsing::{collect_object_keys, extract_object_expression, find_object_property};
 
 pub(in crate::commands::check::nuxt) fn extract_plugin_provide_keys_from_source(
     source: &str,
@@ -42,7 +41,9 @@ fn collect_plugin_keys_from_default_export(
     program_body: &[Statement<'_>],
     keys: &mut Vec<String>,
 ) {
-    if let Some(call) = extract_call_expression_from_export(declaration) {
+    if let Some(Expression::CallExpression(call)) =
+        declaration.as_expression().map(unwrap_expression)
+    {
         let Expression::Identifier(callee) = &call.callee else {
             return;
         };
@@ -181,43 +182,16 @@ fn collect_plugin_key_from_nuxt2_inject_expression(
     inject_name: &str,
     keys: &mut Vec<String>,
 ) {
-    match expression {
-        Expression::CallExpression(call) => {
-            let Expression::Identifier(callee) = &call.callee else {
-                return;
-            };
-            if callee.name.as_str() != inject_name {
-                return;
-            }
-            if let Some(key) = call.arguments.first().and_then(inject_key_from_argument) {
-                keys.push(key);
-            }
-        }
-        Expression::ParenthesizedExpression(parenthesized) => {
-            collect_plugin_key_from_nuxt2_inject_expression(
-                &parenthesized.expression,
-                inject_name,
-                keys,
-            );
-        }
-        Expression::TSAsExpression(ts_as) => {
-            collect_plugin_key_from_nuxt2_inject_expression(&ts_as.expression, inject_name, keys);
-        }
-        Expression::TSSatisfiesExpression(ts_satisfies) => {
-            collect_plugin_key_from_nuxt2_inject_expression(
-                &ts_satisfies.expression,
-                inject_name,
-                keys,
-            );
-        }
-        Expression::TSNonNullExpression(ts_non_null) => {
-            collect_plugin_key_from_nuxt2_inject_expression(
-                &ts_non_null.expression,
-                inject_name,
-                keys,
-            );
-        }
-        _ => {}
+    let Expression::CallExpression(call) = unwrap_expression(expression) else {
+        return;
+    };
+    let Expression::Identifier(callee) = &call.callee else {
+        return;
+    };
+    if callee.name.as_str() == inject_name
+        && let Some(key) = call.arguments.first().and_then(inject_key_from_argument)
+    {
+        keys.push(key);
     }
 }
 
@@ -257,11 +231,11 @@ fn collect_plugin_keys_from_object(object: &ObjectExpression<'_>, keys: &mut Vec
     }
 
     if let Some(setup_expression) = find_object_property(object, "setup") {
-        match extract_expression(setup_expression) {
-            Some(Expression::ArrowFunctionExpression(arrow)) => {
+        match unwrap_expression(setup_expression) {
+            Expression::ArrowFunctionExpression(arrow) => {
                 collect_plugin_keys_from_function_body(&arrow.body.statements, keys);
             }
-            Some(Expression::FunctionExpression(function)) => {
+            Expression::FunctionExpression(function) => {
                 if let Some(body) = &function.body {
                     collect_plugin_keys_from_function_body(&body.statements, keys);
                 }

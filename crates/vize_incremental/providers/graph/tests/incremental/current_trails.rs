@@ -1,11 +1,11 @@
 //! Re-read the authored IR and independently certify all two-edge responses
 //! from the resident graph on each buffer produced by the editor.
-use super::*;
+use crate::*;
 use std::ops::ControlFlow;
 use vize_l0::Allocator;
 use vize_l3::query::{EdgePattern, TwoHopMatch, TwoHopQuery, check_two_hop_matches};
 
-pub(super) fn read(
+pub(crate) fn read(
     db: &ResidentDatabase,
     file: SourceFile,
     source: &str,

@@ -272,5 +272,6 @@ fn original_l1_round_trips_recovered_source_and_only_admitted_l2_supplies_the_gr
     }
 }
 
-#[path = "ir_queries/trails.rs"]
-mod trails;
+mod ir_queries {
+    mod trails;
+}
