@@ -1,4 +1,5 @@
 //! One-way construction of original JS/TS arrow scopes and their consuming tool queries.
+use super::lexical_symbols as oracle;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{
@@ -14,7 +15,6 @@ use vize_l2::{
     lang::js::{FileProducer, ProgramInput, ProgramScope},
     query::Model,
 };
-mod oracle;
 
 fn options() -> DescriptorOptions {
     DescriptorOptions {

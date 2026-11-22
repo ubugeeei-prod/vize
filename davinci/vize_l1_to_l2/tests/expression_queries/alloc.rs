@@ -231,5 +231,6 @@ fn component_imports() {
 mod shorthand_products;
 
 #[cfg(feature = "lexical-arrow-initializers")]
-#[path = "lexical_arrows/requests.rs"]
 mod lexical_requests;
+#[cfg(feature = "lexical-arrow-initializers")]
+mod lexical_symbols;

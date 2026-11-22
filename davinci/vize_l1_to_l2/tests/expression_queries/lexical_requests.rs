@@ -14,8 +14,7 @@ use vize_l2::{
     query::ComponentListenerIssue,
 };
 
-#[path = "oracle.rs"]
-mod oracle;
+use super::lexical_symbols as oracle;
 
 #[derive(Debug, PartialEq, Eq)]
 struct Event {

@@ -280,3 +280,5 @@ mod component_listeners;
 
 #[cfg(feature = "lexical-arrow-initializers")]
 mod lexical_arrows;
+#[cfg(feature = "lexical-arrow-initializers")]
+mod lexical_symbols;
