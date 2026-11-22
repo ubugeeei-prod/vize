@@ -325,8 +325,6 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
       }
 
       const generated = generateOutput(compiled, {
-        isProduction: options.isProduction,
-        isDev: false,
         hostCss: hostCss(this, meta.framework),
         filePath: id,
         styleRequest: webpackStyleFiles
