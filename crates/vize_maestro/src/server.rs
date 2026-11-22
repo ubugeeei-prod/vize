@@ -347,3 +347,6 @@ where
         .boxed()
     }
 }
+
+#[cfg(feature = "experimental-declaration-products")]
+pub use state::{DeclarationToolProducts, DeclarationToolRefusal};
