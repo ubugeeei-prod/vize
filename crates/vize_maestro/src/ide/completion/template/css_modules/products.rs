@@ -67,10 +67,11 @@ impl IdeContext<'_> {
         let completions = names.map(|mut names| {
             names.sort_unstable();
             names.dedup();
-            names
-                .into_iter()
-                .map(|name| class_completion(&name))
-                .collect()
+            let mut items = Vec::with_capacity(names.len());
+            for name in names {
+                items.push(class_completion(&name));
+            }
+            items
         });
         current()?;
         Ok(Some(StyleModuleToolProducts {
