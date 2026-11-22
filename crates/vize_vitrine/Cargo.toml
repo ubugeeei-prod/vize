@@ -16,6 +16,7 @@ name = "vize_vitrine"
 crate-type = ["cdylib", "rlib"]
 
 [features]
+experimental-bundler-block-products = ["napi", "vize_atelier_sfc/bundler-block-products"]
 default = ["glyph"]
 glyph = ["dep:vize_glyph"]
 legacy = ["vize/legacy", "vize_canon/legacy"]
