@@ -158,32 +158,25 @@ impl<'a> Context<'_, 'a> {
     ) {
         vize_l0::ensure_sufficient_stack(|| {
             #[cfg(feature = "component-text-condense")]
-            let entries = children.iter().enumerate();
-            #[cfg(not(feature = "component-text-condense"))]
-            let entries = children;
-            for child in entries {
+            let mut neighbours = (0..children.len()).map(|i| {
+                let previous = i.checked_sub(1).and_then(|j| children.get(j));
+                (previous, children.get(i + 1))
+            });
+            for child in children {
                 #[cfg(feature = "component-text-condense")]
-                let (index, child) = child;
+                if let Some((previous, next)) = neighbours.next()
+                    && let Some(lane) = self.text_lane
+                    && let SurfaceChild::Text(token) = child
+                {
+                    self.component_text(region, token, lane, previous, next);
+                    continue;
+                }
                 match child {
                     SurfaceChild::Element(element) => self.element(region, element, parent),
                     SurfaceChild::Interpolation(interpolation) => {
                         self.interpolation(region, interpolation)
                     }
-                    SurfaceChild::Text(token) => {
-                        #[cfg(feature = "component-text-condense")]
-                        if let Some(lane) = self.text_lane {
-                            let previous = index.checked_sub(1).and_then(|i| children.get(i));
-                            self.component_text(
-                                region,
-                                token,
-                                lane,
-                                previous,
-                                children.get(index + 1),
-                            );
-                            continue;
-                        }
-                        self.text(region, token);
-                    }
+                    SurfaceChild::Text(token) => self.text(region, token),
                     SurfaceChild::Comment(token) => self.comment(region, token),
                     SurfaceChild::Cdata(token)
                     | SurfaceChild::ProcessingInstruction(token)

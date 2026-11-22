@@ -85,8 +85,6 @@
 use vize_l2::op::Op;
 
 mod branch_gap;
-#[cfg(feature = "component-text-condense")]
-mod component;
 mod condense;
 mod lane;
 mod leading_newline;
@@ -129,3 +127,6 @@ pub(crate) fn debug_assert_text_family_gaps(ops: &[Op<'_>]) {
 
 #[cfg(not(debug_assertions))]
 pub(crate) fn debug_assert_text_family_gaps(_: &[Op<'_>]) {}
+
+#[cfg(feature = "component-text-condense")]
+mod component;

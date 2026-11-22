@@ -58,11 +58,20 @@ fn original_project_component_compiles_without_retagging_or_preprocessing_its_so
     );
     assert_eq!(product["cssMap"]["sourcesContent"], json!([REAL]));
     assert_eq!(product["map"]["sourcesContent"], json!([REAL]));
-    assert!(
-        product["code"]
-            .as_str()
-            .unwrap()
-            .contains("_sfc_main.__scopeId = \"data-v-oracle\"")
+    assert_eq!(
+        product["code"],
+        r#"import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+const _sfc_main = {}
+;
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", { class: "box" }, [
+    _createElementVNode("span", { class: "inner" }, "x")
+  ]))
+}
+_sfc_main.render = render
+_sfc_main.__scopeId = "data-v-oracle"
+export default _sfc_main
+"#
     );
 }
 
