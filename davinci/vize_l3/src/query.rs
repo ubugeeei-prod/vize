@@ -11,8 +11,10 @@ use alloc::vec::Vec;
 
 mod check;
 mod index;
+mod trail;
 pub use check::{CertificateError, check_reachability};
 pub use index::OpGraph;
+pub use trail::{EdgePattern, TrailError, TwoHopMatch, TwoHopQuery, check_two_hop_matches};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Direction {
