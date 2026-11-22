@@ -9,7 +9,10 @@ description = "Atelier SFC - The Single File Component workshop for Vize"
 metadata.vize.stability = "alpha-supported"
 
 [features]
-script-binding-products = ["vize_croquis/observed-script-effects", "vize_l2/script-declaration-queries"]
+script-binding-products = [
+  "vize_croquis/observed-script-effects",
+  "vize_l2/script-declaration-queries",
+]
 default = ["native"]
 native = ["dep:lightningcss", "lightningcss/serde", "dep:parcel_selectors", "dep:parcel_sourcemap"]
 legacy = ["vize_atelier_core/legacy", "vize_atelier_ssr/legacy"]

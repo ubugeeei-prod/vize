@@ -1,5 +1,5 @@
 use super::*;
-use alloc::{format, vec::Vec};
+use alloc::format;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
 
@@ -28,33 +28,36 @@ export * from 'other'; export { v as exported };
         .unwrap();
     let original = AuthoredProgram::parse(&arena, block, SourceType::ts());
     let model = ScriptDeclarations::new(&original).unwrap();
-    let mut rows = Vec::new();
-    model.visit(|row| rows.push((row.name, row.span.slice(&source), row.kind, row.export)));
     use DeclarationExport::{Default, Local, Named};
     use ScriptDeclarationKind::*;
     let variable = Variable(VariableDeclarationKind::Const);
-    assert_eq!(
-        rows,
-        [
-            ("Default", "Default", Import { type_only: false }, Local),
-            ("T", "T", Import { type_only: true }, Local),
-            ("v", "v", Import { type_only: false }, Local),
-            ("N", "N", Import { type_only: true }, Local),
-            ("first", "first", variable, Named),
-            ("tail", "tail", variable, Named),
-            ("rest", "rest", variable, Named),
-            ("a", r"\u0061", variable, Local),
-            ("fn", "fn", Function, Named),
-            ("Cls", "Cls", Class, Named),
-            ("Mode", "Mode", Enum, Local),
-            ("Mode", "Mode", Enum, Named),
-            ("A", "A", TypeAlias, Local),
-            ("I", "I", Interface, Local),
-            ("NS", "NS", Namespace, Local),
-            ("Alias", "Alias", ImportEquals { type_only: false }, Local),
-            ("DefaultFn", "DefaultFn", Function, Default)
-        ]
-    );
+    let mut expected = [
+        ("Default", "Default", Import { type_only: false }, Local),
+        ("T", "T", Import { type_only: true }, Local),
+        ("v", "v", Import { type_only: false }, Local),
+        ("N", "N", Import { type_only: true }, Local),
+        ("first", "first", variable, Named),
+        ("tail", "tail", variable, Named),
+        ("rest", "rest", variable, Named),
+        ("a", r"\u0061", variable, Local),
+        ("fn", "fn", Function, Named),
+        ("Cls", "Cls", Class, Named),
+        ("Mode", "Mode", Enum, Local),
+        ("Mode", "Mode", Enum, Named),
+        ("A", "A", TypeAlias, Local),
+        ("I", "I", Interface, Local),
+        ("NS", "NS", Namespace, Local),
+        ("Alias", "Alias", ImportEquals { type_only: false }, Local),
+        ("DefaultFn", "DefaultFn", Function, Default),
+    ]
+    .into_iter();
+    model.visit(|row| {
+        assert_eq!(
+            Some((row.name, row.span.slice(&source), row.kind, row.export)),
+            expected.next()
+        );
+    });
+    assert_eq!(expected.next(), None);
 }
 
 #[test]

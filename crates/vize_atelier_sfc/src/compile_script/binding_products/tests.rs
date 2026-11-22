@@ -116,10 +116,21 @@ fn role_inheritance_shadowing_and_reactive_cycles_match_the_public_graph() {
         Err(ScriptBindingError::Selection)
     ));
     compare(&real, &original(input, &parsed), "two roles");
-    assert!(real.ordinary.contains("r"));
-    assert!(real.setup.contains("definePageMeta"));
-    assert!(!real.setup.contains("Phantom"));
-    assert!(real.effects.summary().cycle_count > 0);
+    assert_eq!(
+        real.ordinary,
+        ["r", "c", "count", "left", "right"]
+            .into_iter()
+            .map(CompactString::new)
+            .collect()
+    );
+    assert_eq!(
+        real.setup,
+        ["before", "definePageMeta", "rest", "local", "after"]
+            .into_iter()
+            .map(CompactString::new)
+            .collect()
+    );
+    assert_eq!(real.effects.summary().cycle_count, 1);
     assert!(
         real.effects
             .edges()
@@ -178,7 +189,13 @@ fn owned_descriptors_reuse_their_original_frame_and_external_scripts_refuse() {
     ));
     let original = parse(&arena, blocks(owned.source.as_ref(), &owned));
     let products = read(&owned, &original).unwrap();
-    assert!(products.setup.contains("longName") && products.setup.contains("rest"));
+    assert_eq!(
+        products.setup,
+        ["longName", "rest"]
+            .into_iter()
+            .map(CompactString::new)
+            .collect()
+    );
     let mut external = owned.clone();
     external.script_setup.as_mut().unwrap().src = Some("./external.ts".into());
     assert!(matches!(
