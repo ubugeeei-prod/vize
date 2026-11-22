@@ -96,6 +96,7 @@ async function build(
   pkg: string,
   product: string,
   mode: string,
+  sourceDateEpoch: string,
 ): Promise<{ evidence: Build; executable?: string }> {
   const binary = product.startsWith("bin:") ? product.slice(4) : undefined;
   const metadata: { packages: CargoPackage[]; workspace_members: string[] } = JSON.parse(
@@ -125,7 +126,12 @@ async function build(
     encoding: "utf8",
     stdio: ["ignore", "pipe", "inherit"],
     maxBuffer: 128 * 1024 * 1024,
-    env: { ...process.env, CARGO_TARGET_DIR: target, CARGO_INCREMENTAL: "0" },
+    env: {
+      ...process.env,
+      CARGO_TARGET_DIR: target,
+      CARGO_INCREMENTAL: "0",
+      SOURCE_DATE_EPOCH: sourceDateEpoch,
+    },
   });
   const artifacts = output
     .trimEnd()
@@ -211,13 +217,16 @@ async function main([base, head, pkg, product, mode, report, ...extra]: string[]
   const root = git(process.cwd(), "rev-parse", "--show-toplevel");
   for (const rev of [base, head])
     if (git(root, "cat-file", "-t", rev) !== "commit") throw new Error(`not a commit: ${rev}`);
+  // Native dependencies embed __DATE__ and __TIME__. Both independent builds
+  // must see the same clock as well as the same source and output paths.
+  const sourceDateEpoch = git(root, "show", "-s", "--format=%ct", base);
   const temp = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-codegen-")));
   const checkout = path.join(temp, "source");
   const target = path.join(temp, "target");
   async function compile(revision: string) {
     git(root, "worktree", "add", "--quiet", "--detach", checkout, revision);
     try {
-      return await build(checkout, target, pkg, product, mode);
+      return await build(checkout, target, pkg, product, mode, sourceDateEpoch);
     } finally {
       git(root, "worktree", "remove", "--force", checkout);
     }
@@ -254,6 +263,7 @@ async function main([base, head, pkg, product, mode, report, ...extra]: string[]
       package: pkg,
       product,
       mode,
+      sourceDateEpoch,
       base: before,
       head: after,
       differences: changed,

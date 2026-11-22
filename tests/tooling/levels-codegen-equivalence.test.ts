@@ -76,19 +76,24 @@ test(
     const run = (...args: string[]) =>
       execFileSync(args[0], args.slice(1), { cwd: root, encoding: "utf8" }).trim();
     const source = path.join(root, "src/lib.rs");
+    let commits = 0;
     const commit = (message: string) => {
-      run("git", "add", "Cargo.toml", "Cargo.lock", "src", "helper");
-      run(
+      run("git", "add", "Cargo.toml", "Cargo.lock", "src", "helper", "build.rs");
+      const date = new Date(Date.UTC(2001, 1, 3, 4, 5, 6 + commits++)).toISOString();
+      execFileSync(
         "git",
-        "-c",
-        "user.name=Fixture",
-        "-c",
-        "user.email=fixture@example.invalid",
-        "-c",
-        "commit.gpgsign=false",
-        "commit",
-        "-qm",
-        message,
+        [
+          "-c",
+          "user.name=Fixture",
+          "-c",
+          "user.email=fixture@example.invalid",
+          "-c",
+          "commit.gpgsign=false",
+          "commit",
+          "-qm",
+          message,
+        ],
+        { cwd: root, env: { ...process.env, GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date } },
       );
       return run("git", "rev-parse", "HEAD");
     };
@@ -103,9 +108,13 @@ test(
       const receipt = JSON.parse(fs.readFileSync(report, "utf8"));
       assert.equal(receipt.base.revision, base);
       assert.equal(receipt.head.revision, head);
+      assert.equal(receipt.sourceDateEpoch, run("git", "show", "-s", "--format=%ct", base));
       if (receipt.differences.includes("executable")) {
         for (const side of ["base", "head"] as const) {
-          const data = fs.readFileSync(path.join(root, receipt.executables[side]));
+          const executable = path.join(root, receipt.executables[side]);
+          const data = fs.readFileSync(executable);
+          const time = new Date(Number(receipt.sourceDateEpoch) * 1000).toISOString().slice(11, 19);
+          assert.ok(run(executable).includes('"Feb  3 2001" "' + time + '"'));
           assert.equal(data.length, receipt[side].members[0].bytes);
           assert.equal(
             createHash("sha256").update(data).digest("hex"),
@@ -137,9 +146,21 @@ test(
         source,
         '#[unsafe(no_mangle)] pub extern "C" fn emitted(a: u32) -> u32 { a.wrapping_add(1) }\npub fn generic<T: Into<u32>>(a: T) -> u32 { a.into().wrapping_mul(3) }\n',
       );
+      fs.writeFileSync(path.join(root, "src/stamp.c"), "__DATE__ __TIME__\n");
+      fs.writeFileSync(
+        path.join(root, "build.rs"),
+        [
+          "fn main() {",
+          '    let stamp = std::process::Command::new("cc").args(["-E", "-P", "src/stamp.c"]).output().unwrap();',
+          "    assert!(stamp.status.success());",
+          '    let dir = std::env::var_os("OUT_DIR").unwrap();',
+          '    std::fs::write(std::path::Path::new(&dir).join("stamp.txt"), stamp.stdout).unwrap();',
+          "}",
+        ].join("\n"),
+      );
       fs.writeFileSync(
         path.join(root, "src/main.rs"),
-        'fn main() { println!("{}", custom::emitted(std::hint::black_box(7)) + custom::generic(std::hint::black_box(3u8))); }\n',
+        'fn main() { println!("{} {}", include_str!(concat!(env!("OUT_DIR"), "/stamp.txt")).trim(), custom::emitted(std::hint::black_box(7)) + custom::generic(std::hint::black_box(3u8))); }\n',
       );
       run("cargo", "generate-lockfile");
       const base = commit("base");
