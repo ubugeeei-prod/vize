@@ -71,3 +71,47 @@ pub(super) fn build_initial_project_client(
     )
     .map_err(CorsaBridgeError::SpawnFailed)
 }
+
+#[cfg(feature = "ambient-project-declarations")]
+pub(super) fn build_ambient_project_client(
+    config: &CorsaBridgeConfig,
+    root: &std::path::Path,
+    config_path: &std::path::Path,
+    changes: &crate::batch::virtual_project::MaterializedFileDelta,
+) -> Result<CorsaProjectClient, CorsaBridgeError> {
+    let workspace = config
+        .working_dir
+        .as_deref()
+        .ok_or(CorsaBridgeError::NotInitialized)?;
+    let executable = config
+        .corsa_path
+        .as_deref()
+        .map(std::path::Path::to_string_lossy);
+    CorsaProjectClient::new_for_ambient_materialized_workspace(
+        executable.as_deref(),
+        workspace,
+        root,
+        config_path,
+        changes,
+    )
+    .map_err(CorsaBridgeError::SpawnFailed)
+}
+
+#[cfg(feature = "ambient-project-declarations")]
+impl super::CorsaBridge {
+    pub(super) fn ambient_factory(&self, ordinary: InitialProjectFactory) -> InitialProjectFactory {
+        if self.editor_session.ambient_declarations.get().is_some() {
+            build_ambient_project_client
+        } else {
+            ordinary
+        }
+    }
+}
+
+#[cfg(feature = "ambient-project-declarations")]
+type InitialProjectFactory = fn(
+    &CorsaBridgeConfig,
+    &std::path::Path,
+    &std::path::Path,
+    &crate::batch::virtual_project::MaterializedFileDelta,
+) -> Result<CorsaProjectClient, CorsaBridgeError>;

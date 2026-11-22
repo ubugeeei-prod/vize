@@ -176,3 +176,25 @@ impl InitialDiagnosticsRead {
         DiagnosticReadView::from_owned(self).run_with_provenance()
     }
 }
+
+#[cfg(feature = "ambient-project-declarations")]
+impl InitialDiagnosticsRead {
+    pub(in crate::lsp_client) fn confirms_ambient_project(
+        &self,
+        uri: &str,
+        document_uri: &str,
+    ) -> Result<bool, String> {
+        if self.uri() != uri || self.document_uri != document_uri {
+            return Ok(false);
+        }
+        crate::corsa_bridge::native_operation::checkpoint()?;
+        // Ask the live backend for the file's owner in this exact snapshot.
+        // Unsupported probes and retired sessions take the ordinary read.
+        let owner = corsa::runtime::block_on(self.client.get_default_project_for_file(
+            self.snapshot.handle.clone(),
+            super::session::uri_document_identifier(document_uri),
+        ));
+        crate::corsa_bridge::native_operation::checkpoint()?;
+        Ok(matches!(owner, Ok(Some(project)) if project == self.project))
+    }
+}

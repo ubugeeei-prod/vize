@@ -22,3 +22,6 @@ impl ServerState {
 mod custody;
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "experimental-ambient-project")]
+mod ambient;
