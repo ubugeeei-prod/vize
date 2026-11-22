@@ -147,7 +147,7 @@ fn a_style_lowering_refusal_preserves_rules_and_a_superseded_snapshot_skips_the_
     let docs = DocumentStore::new();
     let cache = SourceSnapshotCache::default();
     let uri = Url::parse("file:///Partial.vue").unwrap();
-    let text = "<template><p/></template><style lang='scss'>.card { color:$missing; display:none; }</style>";
+    let text = "<template><p/></template><style lang='scss'>.card { color:$missing; } .notice { color:red !important; margin-left:4px; }</style>";
     docs.open(uri.clone(), text.into(), 2, "vue".into());
     let source = cache.capture(&docs, &uri).unwrap();
     let arena = Allocator::new();
@@ -168,7 +168,26 @@ fn a_style_lowering_refusal_preserves_rules_and_a_superseded_snapshot_skips_the_
             rules.lint_file_style(StyleRuleInput::Observed(s), true)
         })
         .unwrap();
-    assert!(!lint.diagnostics.is_empty());
+    let block = descriptor
+        .admitted()
+        .unwrap()
+        .styles()
+        .next()
+        .unwrap()
+        .block();
+    let stock = rules.lint_block(
+        block.source(),
+        block.start() as usize,
+        StyleLanguage::Scss,
+        true,
+    );
+    assert!(
+        stock
+            .diagnostics
+            .iter()
+            .any(|row| row.rule_name == "css/no-important")
+    );
+    assert_eq!(diagnostics(&lint), diagnostics(&stock));
     assert!(prepared.products().css().is_err());
     assert!(matches!(
         prepared.verified_format(&docs, &glyph),
