@@ -28,6 +28,13 @@ test("ordered configuration preserves key order, scalar types, and multiline com
   assert.deepEqual(parse(renderRepositoryYaml(config)), config);
 });
 
+test("ordered configuration preserves the distinction between a non-finite float and null", () => {
+  const config = { option: null };
+  const rendered = renderRepositoryYaml(config, "option: .nan\n");
+  assert.deepEqual(parse(rendered), config);
+  assert.equal(renderRepositoryYaml(config, rendered), rendered);
+});
+
 test("Actions mappings may keep their layout, but step order must match the source", () => {
   const input = "name: job\nsteps: [first, second]\n";
   assert.equal(
