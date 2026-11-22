@@ -194,3 +194,6 @@ fn visit_declaration<'a>(
 
 #[cfg(test)]
 mod tests;
+
+mod declaration;
+pub use declaration::DeclarationStatement;

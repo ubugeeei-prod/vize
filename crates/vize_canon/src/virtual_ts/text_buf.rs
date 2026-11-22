@@ -185,3 +185,10 @@ impl<B: vize_l0::ts_emit::TsBuf> vize_l0::ts_emit::EmitHole<B> for TextBuf {
         buffer.push_ts_str(&self.0);
     }
 }
+
+#[cfg(feature = "plain-script-bridges")]
+impl TextBuf {
+    pub(super) fn from_compact(text: vize_carton::String) -> Self {
+        Self(text.into_string())
+    }
+}

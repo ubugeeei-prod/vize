@@ -43,6 +43,9 @@ styled-projection-tests = ["native", "vize_l4/vue-style-projection"]
 # Deprecated published feature spelling; keep as a compatibility alias.
 davinci-differential = ["legacy-differential"]
 
+# Plan plain-script export bridges over the original checker grammar.
+plain-script-bridges = ["native", "vize_l2/script-declaration-queries"]
+
 [dependencies]
 vize_carton.workspace = true
 vize_l0.workspace = true

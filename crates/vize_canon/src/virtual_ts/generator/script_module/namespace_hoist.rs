@@ -377,3 +377,6 @@ impl<'a> Visit<'a> for ReferencedNames {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "plain-script-bridges")]
+mod observed;

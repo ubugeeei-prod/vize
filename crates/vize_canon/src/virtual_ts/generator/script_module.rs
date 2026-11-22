@@ -459,3 +459,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(feature = "plain-script-bridges")]
+pub use plain_exports::observed::{PlainScriptBridge, PlainScriptBridgeError, PlainScriptExportText};

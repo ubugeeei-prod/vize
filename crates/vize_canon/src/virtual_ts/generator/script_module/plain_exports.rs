@@ -304,3 +304,6 @@ fn push_export(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "plain-script-bridges")]
+pub(super) mod observed;
