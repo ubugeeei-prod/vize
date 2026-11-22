@@ -22,6 +22,7 @@ autotests = false
 metadata.vize.stability = "experimental"
 
 [features]
+original-style-bindings = ["vize_l1/original-style-bindings"]
 setup-component-imports = ["vize_l2/setup-component-imports"]
 native-navigation-products = []
 template-operand-queries = ["vize_l2/template-operand-queries"]

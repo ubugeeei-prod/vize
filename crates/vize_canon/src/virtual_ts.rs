@@ -175,3 +175,7 @@ pub fn generate_virtual_ts_with_offsets_and_lib_references(
 
 #[cfg(feature = "plain-script-bridges")]
 pub use generator::entry::{PlainScriptBridge, PlainScriptBridgeError, PlainScriptExportText};
+#[cfg(feature = "original-style-bindings")]
+mod style_bindings;
+#[cfg(feature = "original-style-bindings")]
+pub use style_bindings::{StyleBindingInputError, StyleBindingReferences};

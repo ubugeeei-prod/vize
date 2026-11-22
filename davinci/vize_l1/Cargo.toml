@@ -16,6 +16,8 @@ description = "L1 - the lossless Vue-template surface tree (codename Sinopia, Da
 metadata.vize.stability = "experimental"
 
 [features]
+# Original file coordinates for CSS binding calls in all Vue style languages.
+original-style-bindings = []
 # Prepare input-neutral modules for explicit analysis and projection.
 module-ir = []
 # Retain original callee and literal ranges for explicit component checks.
