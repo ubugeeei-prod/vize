@@ -4,11 +4,13 @@ import { archiveKeys, differences } from "../../tools/commands/levels/codegen-eq
 
 const rust = (hash: string, index: number) => `sample-${hash}.a-cgu.${index}.rcgu.o`;
 const members = (hash: string) =>
-  archiveKeys(["lib.rmeta", "__.SYMDEF", rust(hash, 1), "support.o", rust(hash, 0)]).map((member) => ({
-    ...member,
-    bytes: 12,
-    sha256: "first",
-  }));
+  archiveKeys(["lib.rmeta", "__.SYMDEF", rust(hash, 1), "support.o", rust(hash, 0)]).map(
+    (member) => ({
+      ...member,
+      bytes: 12,
+      sha256: "first",
+    }),
+  );
 const build = (hash: string) => ({
   revision: hash,
   manifest: "crates/sample/Cargo.toml",
