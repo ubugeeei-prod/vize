@@ -83,3 +83,7 @@ pub use vize_musea as musea;
 /// Language Server Protocol (LSP) implementation.
 #[cfg(feature = "maestro")]
 pub use vize_maestro as maestro;
+
+/// Compose SDK record batches with the component facts used by Doctor.
+#[cfg(feature = "plugin-template-facts")]
+pub mod plugin_template;
