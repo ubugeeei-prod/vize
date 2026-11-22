@@ -5,16 +5,8 @@ use std::path::{Component, Path, PathBuf};
 use vize_croquis_cf::{ModuleRegistry, NuxtRenderDirs};
 use vize_l0::FxHashSet;
 
+use crate::commands::project_nuxt::NUXT_CONFIG_NAMES;
 use crate::commands::project_nuxt::host_authority::io::{Entry, EntryKind, ProbeIo};
-
-const CONFIG_NAMES: [&str; 6] = [
-    "nuxt.config.ts",
-    "nuxt.config.js",
-    "nuxt.config.mts",
-    "nuxt.config.mjs",
-    "nuxt.config.cts",
-    "nuxt.config.cjs",
-];
 
 pub(super) fn complete(
     root: &Path,
@@ -127,7 +119,7 @@ fn top_level(
             }
             return None;
         }
-        if CONFIG_NAMES.contains(&name) {
+        if NUXT_CONFIG_NAMES.contains(&name) {
             if directory != root {
                 return None;
             }

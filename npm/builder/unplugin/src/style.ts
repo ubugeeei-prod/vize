@@ -20,20 +20,7 @@ export function extractStyleBlocks(source: string): StyleBlockInfo[] {
   return extractSfcStyleBlocks(source).map(toStyleBlockInfo);
 }
 
-function supportsTemplateOnlyHmr(output: string): boolean {
-  return /(?:^|\n)(?:_sfc_main|__sfc__)\.render\s*=\s*render\b/m.test(output);
-}
-
-/**
- * Prepend a runtime `<style>` injection for plain CSS to a module's output.
- *
- * This is the same inline-CSS path plain SFC `<style>` blocks use (see
- * {@link generateOutput}): a guarded `document.createElement("style")` keyed by
- * a stable id, so the rule is appended once and idempotently. `styleKey` seeds
- * the element id (deduping re-injection across HMR/multiple imports). Used for
- * both SFC plain CSS and JSX `<style scoped>` CSS (#1495, #1533), whose content
- * is already scope-rewritten by the compiler.
- */
+/** SFC and JSX styles share a stable element ID across imports and hot updates. */
 export function prependInlineStyleInjection(output: string, css: string, styleKey: string): string {
   const cssCode = JSON.stringify(css);
   const cssId = JSON.stringify(`vize-style-${styleKey}`);
@@ -70,8 +57,6 @@ function externalStyleImport(src: string): string {
 }
 
 export interface GenerateOutputOptions {
-  isProduction: boolean;
-  isDev: boolean;
   /**
    * A host that bundles stylesheets gets every block as a style module and
    * writes the CSS; with `"none"`, the compiled CSS is injected at run time.
@@ -82,34 +67,36 @@ export interface GenerateOutputOptions {
   styleRequest?: (block: StyleBlockInfo, scoped: string | null) => string;
 }
 
-export function generateOutput(compiled: CompiledModule, options: GenerateOutputOptions): string {
-  const { isProduction, isDev, hostCss, filePath, styleRequest } = options;
+const COMPONENT_EXPORT = "export default _sfc_main";
 
-  let output = compiled.code;
-  const exportDefaultRegex = /^export default /m;
-  const hasExportDefault = exportDefaultRegex.test(output);
-  const hasNamedRenderExport = /^export function render\b/m.test(output);
-  const hasSfcMainDefined = /\bconst\s+_sfc_main\s*=/.test(output);
+function componentModule(code: string, scopeId: string | null): string {
+  const defaultExport = /^export default /m;
+  const hasComponent = /\bconst\s+_sfc_main\s*=/.test(code);
+  const setScope = scopeId === null ? "" : `_sfc_main.__scopeId = "${scopeId}";\n`;
 
-  if (hasExportDefault && !hasSfcMainDefined) {
-    output = output.replace(exportDefaultRegex, "const _sfc_main = ");
-    if (compiled.hasScoped) {
-      output += `\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`;
+  if (defaultExport.test(code)) {
+    if (hasComponent) {
+      return scopeId === null
+        ? code
+        : code.replace(/^export default _sfc_main/m, `${setScope}${COMPONENT_EXPORT}`);
     }
-    output += "\nexport default _sfc_main;";
-  } else if (hasExportDefault && hasSfcMainDefined && compiled.hasScoped) {
-    output = output.replace(
-      /^export default _sfc_main/m,
-      `_sfc_main.__scopeId = "data-v-${compiled.scopeId}";\nexport default _sfc_main`,
-    );
-  } else if (!hasExportDefault && !hasSfcMainDefined && hasNamedRenderExport) {
-    output += "\nconst _sfc_main = {};";
-    if (compiled.hasScoped) {
-      output += `\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`;
-    }
-    output += "\n_sfc_main.render = render;";
-    output += "\nexport default _sfc_main;";
+    const declaration = code.replace(defaultExport, "const _sfc_main = ");
+    return `${declaration}\n${setScope}${COMPONENT_EXPORT};`;
   }
+  if (!hasComponent && /^export function render\b/m.test(code)) {
+    return `${code}\nconst _sfc_main = {};\n${setScope}_sfc_main.render = render;\n${COMPONENT_EXPORT};`;
+  }
+  return code;
+}
+
+function cssModuleBinding(block: StyleBlockInfo): string {
+  return typeof block.module === "string" ? block.module : "$style";
+}
+
+export function generateOutput(compiled: CompiledModule, options: GenerateOutputOptions): string {
+  const { hostCss, filePath, styleRequest } = options;
+  const scopeId = `data-v-${compiled.scopeId}`;
+  let output = componentModule(compiled.code, compiled.hasScoped ? scopeId : null);
 
   if (hostCss !== "none") {
     const styleImports: string[] = [];
@@ -120,12 +107,12 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
         styleImports.push(externalStyleImport(block.src));
         continue;
       }
-      const scoped = block.scoped ? `data-v-${compiled.scopeId}` : null;
+      const scoped = block.scoped ? scopeId : null;
       const styleFile = styleRequest?.(block, scoped);
       const styleId = styleFile ?? styleRequestId(filePath, block, scoped, hostCss);
 
       if (isCssModule(block)) {
-        const bindingName = typeof block.module === "string" ? block.module : "$style";
+        const bindingName = cssModuleBinding(block);
         if (styleFile) {
           // css-loader exports class names as named exports (v7 default) or
           // on the default export, depending on its options.
@@ -152,16 +139,16 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
 
     if (cssModuleImports.length > 0) {
       const cssModuleSetup = compiled.styles
-        .filter((block) => isCssModule(block))
+        .filter(isCssModule)
         .map((block) => {
-          const bindingName = typeof block.module === "string" ? block.module : "$style";
+          const bindingName = cssModuleBinding(block);
           return `_sfc_main.__cssModules = _sfc_main.__cssModules || {};\n_sfc_main.__cssModules[${JSON.stringify(bindingName)}] = ${bindingName};`;
         })
         .join("\n");
 
       output = output.replace(
         /^export default _sfc_main;?$/m,
-        `${cssModuleSetup}\nexport default _sfc_main;`,
+        `${cssModuleSetup}\n${COMPONENT_EXPORT};`,
       );
     }
   } else {
@@ -175,10 +162,6 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
       block.src ? [externalStyleImport(block.src)] : [],
     );
     if (imports.length > 0) output = `${imports.join("\n")}\n${output}`;
-  }
-
-  if (!isProduction && isDev && hasExportDefault && supportsTemplateOnlyHmr(output)) {
-    output += "";
   }
 
   return output;
