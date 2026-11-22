@@ -283,4 +283,42 @@ fn updates_remove_obsolete_records_and_clear_resets_file_ids() {
     assert_eq!(report(&mut actual), report(&mut original));
 }
 
+#[test]
+fn interrupted_template_pass_preserves_the_previous_revision_and_next_file_id() {
+    use std::panic::{AssertUnwindSafe, catch_unwind};
+    let mut actual = graph();
+    let mut original = graph();
+    let request = spec(&[], None);
+    let root = Input::new("App.vue", CHILD);
+    let (id, _) = add(&mut actual, &root, &request, true);
+    let _ = add(&mut original, &root, &request, false);
+    for name in ["App.vue", "New.VUE"] {
+        let input = Input::new(name, "<template><other/></template>");
+        let (analysis, effects) = input.analysis();
+        let failure = catch_unwind(AssertUnwindSafe(|| {
+            actual.add_file_with_template_pass(
+                &input.path,
+                &input.source,
+                analysis,
+                effects,
+                |_| -> (Option<TemplateComplexity>, ()) { panic!("template consumer interrupted") },
+            );
+        }));
+        assert!(failure.is_err());
+        assert_eq!(actual.registry().len(), 1);
+        assert_eq!(actual.graph().len(), 1);
+        assert_eq!(
+            actual.template_complexity_of(id),
+            original.template_complexity_of(id)
+        );
+        assert_eq!(report(&mut actual), report(&mut original));
+    }
+    let next = Input::new("New.VUE", "<template><main/></template>");
+    assert_eq!(
+        add(&mut actual, &next, &request, true).0,
+        add(&mut original, &next, &request, false).0
+    );
+    assert_eq!(report(&mut actual), report(&mut original));
+}
+
 mod profile;

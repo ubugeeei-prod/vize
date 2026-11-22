@@ -56,61 +56,19 @@ impl CrossFileAnalyzer {
         analysis: Croquis,
         effect_summary: EffectGraphSummary,
     ) -> FileId {
-        self.register_analyzed_file(
-            path.as_ref(),
-            source,
-            analysis,
-            effect_summary,
-            Self::record_template_complexity,
-        )
-        .0
-    }
-
-    /// Register the file and run a host's template pass once for a Vue path.
-    /// The pass receives this registration's source. Its complexity replaces
-    /// the previous revision's record, including when an edit removes the
-    /// template. Other file types produce no template result.
-    #[cfg(feature = "observed-template-complexity")]
-    pub fn add_file_with_template_pass<T>(
-        &mut self,
-        path: impl AsRef<Path>,
-        source: &str,
-        analysis: Croquis,
-        effect_summary: EffectGraphSummary,
-        pass: impl FnOnce(&str) -> (Option<crate::TemplateComplexity>, T),
-    ) -> (FileId, Option<T>) {
-        self.register_analyzed_file(
-            path.as_ref(),
-            source,
-            analysis,
-            effect_summary,
-            |this, id, source| {
-                let (template, result) = pass(source);
-                this.store_template_complexity(id, template);
-                result
-            },
-        )
-    }
-
-    #[inline]
-    fn register_analyzed_file<T>(
-        &mut self,
-        path: &Path,
-        source: &str,
-        analysis: Croquis,
-        effect_summary: EffectGraphSummary,
-        record: impl FnOnce(&mut Self, FileId, &str) -> T,
-    ) -> (FileId, Option<T>) {
         self.nuxt_scope_once = false;
+        let path = path.as_ref();
 
         // Register in module registry (takes ownership of analysis)
         let analysis = note_mounted_resources(source, analysis);
         let (file_id, is_new) = self.registry.register(path, source, analysis);
         self.record_effect_graph_summary(file_id, effect_summary);
-        let template = path
+        if path
             .extension()
             .is_some_and(|extension| extension.eq_ignore_ascii_case("vue"))
-            .then(|| record(self, file_id, source));
+        {
+            self.record_template_complexity(file_id, source);
+        }
 
         if is_new {
             // Add to dependency graph
@@ -136,7 +94,7 @@ impl CrossFileAnalyzer {
 
         self.update_dependency_edges(file_id);
 
-        (file_id, template)
+        file_id
     }
 
     fn record_effect_graph_summary(&mut self, file_id: FileId, effect_summary: EffectGraphSummary) {
@@ -182,3 +140,6 @@ fn automatic_effect_summary(path: &Path, source: &str) -> EffectGraphSummary {
     };
     build_effect_graph_from_sfc_scripts(None, Some(EffectGraphScript::new(source, lang))).summary()
 }
+
+#[cfg(feature = "observed-template-complexity")]
+mod observed;
