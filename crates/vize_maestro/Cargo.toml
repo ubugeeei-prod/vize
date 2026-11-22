@@ -16,6 +16,11 @@ experimental-lexical-arrow-queries = [
 ]
 # Rewrite event rename edits against a retained current component File.
 experimental-component-listeners = ["native", "vize_l1_to_l2/component-listener-queries"]
+# Run scoped component passes against the original buffer of a cancellable request.
+experimental-scoped-component-session = [
+  "experimental-native-scss-session",
+  "vize_atelier_sfc/native-scoped-scss",
+]
 # Reuse original style passes in an explicitly prepared complete component.
 experimental-native-scss-session = [
   "experimental-verified-style-format",

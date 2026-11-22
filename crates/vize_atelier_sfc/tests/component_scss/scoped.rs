@@ -39,6 +39,18 @@ fn row(name: &str, source: &str, trim: bool) -> Result<Value, NativeSfcCompileEr
                 .css_document()
                 .is_none_or(|doc| doc.links().is_empty())
     );
+    assert_eq!(
+        mapped.source_map().unwrap(),
+        mapped.document().source_map(FILENAME, source).as_str(),
+        "{name}"
+    );
+    if let Some(document) = mapped.css_document() {
+        assert_eq!(
+            mapped.css_source_map().unwrap(),
+            document.source_map(FILENAME, source).as_str(),
+            "{name}"
+        );
+    }
     let map: Value = serde_json::from_str(mapped.source_map().unwrap()).unwrap();
     let css_map: Option<Value> = mapped
         .css_source_map()

@@ -118,8 +118,8 @@ for (const row of rows) {
     }
   }
   const generated = starts(css);
-  if (row.scopedScss && descriptor.template && !descriptor.script && !descriptor.scriptSetup) {
-    await compareRender(descriptor.template.content, row.code, row.filename);
+  if (row.scopedScss && descriptor.template) {
+    await compareRender(descriptor, row.code, row.filename);
     renders++;
   }
   const mapped: Segment[][] = [];

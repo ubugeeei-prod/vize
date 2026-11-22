@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createRequire } from "node:module";
+import { createRequire, stripTypeScriptTypes } from "node:module";
 import { pathToFileURL } from "node:url";
 import { scopeId } from "./scoped-oracle.ts";
 
@@ -54,17 +54,37 @@ async function load(code: string) {
   return import(data(code.replaceAll(/from\s+["']vue["']/g, `from ${JSON.stringify(runtimeUrl)}`)));
 }
 
-export async function compareRender(source: string, code: string, filename: string) {
+type RenderDescriptor = {
+  template: { content: string };
+  script?: { lang?: string };
+  scriptSetup?: { lang?: string };
+};
+
+export async function compareRender(descriptor: RenderDescriptor, code: string, filename: string) {
   const runtime = require("vue");
   assert.equal(runtime.version, "3.5.35");
   const { renderToString } = createRequire(require.resolve("vue/package.json"))(
     "@vue/server-renderer",
   );
-  const template = compiler.compileTemplate({ source, filename, id: scopeId, scoped: true });
+  const script =
+    descriptor.script || descriptor.scriptSetup
+      ? compiler.compileScript(descriptor, { id: scopeId })
+      : undefined;
+  const template = compiler.compileTemplate({
+    source: descriptor.template.content,
+    filename,
+    id: scopeId,
+    scoped: true,
+    compilerOptions: { bindingMetadata: script?.bindings },
+  });
   assert.deepEqual(template.errors, []);
   const native = (await load(code)).default;
   assert.equal(native.__scopeId, scopeId);
-  const reference = { __scopeId: scopeId, render: (await load(template.code)).render };
+  const setup = script
+    ? (await load(script.lang === "ts" ? stripTypeScriptTypes(script.content) : script.content))
+        .default
+    : {};
+  const reference = { ...setup, __scopeId: scopeId, render: (await load(template.code)).render };
   assert.equal(
     await renderToString(runtime.createSSRApp(native)),
     await renderToString(runtime.createSSRApp(reference)),

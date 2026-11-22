@@ -193,7 +193,7 @@ fn original_template_graphs_follow_the_same_toolchain_session() {
     let inputs =
         std::fs::read_to_string(std::env::var_os("VIZE_TOOLCHAIN_HISTORY").unwrap()).unwrap();
     let revisions = inputs.split('\0').collect::<Vec<_>>();
-    assert!(matches!(revisions.len(), 4 | 5));
+    assert!((4..=6).contains(&revisions.len()));
     let mut db = ResidentDatabase::default();
     let file = db.open("Setup雪🌸.vue", revisions[0]);
     let first = read(&db, file, revisions[0], Lang::Ts);
@@ -205,8 +205,8 @@ fn original_template_graphs_follow_the_same_toolchain_session() {
         let updated = read(&db, file, text, Lang::Ts);
         assert_eq!(updated.0, first.0);
         assert_eq!(updated.1, first.1);
-        if i == 3 {
-            // Restoring the original style after the template keeps every authored site.
+        if i >= 3 {
+            // Restoring and scoping the style after the template keep every authored site.
             assert_eq!(updated.2, previous);
         } else {
             assert_ne!(updated.2, previous);

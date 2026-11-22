@@ -256,6 +256,8 @@ fn toolchain_session_from_one_open_buffer_through_edit_error_and_repair() {
         reference,
         options,
     );
+    #[cfg(feature = "experimental-scoped-component-session")]
+    let scoped = scoped_component::scope_the_live_style(&docs, &snapshots, &styled, options);
     if let Some(history) = std::env::var_os("VIZE_TOOLCHAIN_HISTORY") {
         let revisions = [
             source.source(),
@@ -264,11 +266,15 @@ fn toolchain_session_from_one_open_buffer_through_edit_error_and_repair() {
             final_snapshot.source(),
             #[cfg(feature = "experimental-native-scss-session")]
             styled.source(),
+            #[cfg(feature = "experimental-scoped-component-session")]
+            scoped.source(),
         ];
         std::fs::write(history, revisions.join("\0")).unwrap();
     }
 }
 
+#[cfg(feature = "experimental-scoped-component-session")]
+mod scoped_component;
 mod style_corpus;
 #[cfg(feature = "experimental-native-scss-session")]
 mod styled_component;
