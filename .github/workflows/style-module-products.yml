@@ -7,6 +7,10 @@ on:
       - "davinci/vize_l1/src/container/lang.rs"
       - "davinci/vize_l1/src/css.rs"
       - "davinci/vize_l1/src/css/**"
+      - "crates/vize_patina/Cargo.toml"
+      - "crates/vize_patina/src/rules/css.rs"
+      - "crates/vize_patina/src/rules/css/**"
+      - "crates/vize_patina/src/linter/css_rules.rs"
       - "crates/vize_canon/Cargo.toml"
       - "crates/vize_canon/src/batch/virtual_project/build/css_modules.rs"
       - "crates/vize_canon/src/batch/virtual_project/build/css_modules/**"
@@ -55,7 +59,9 @@ jobs:
         run: |
           set -euo pipefail
           flags=(--locked --profile ci-opt)
-          editor=(-p vize_maestro --features experimental-style-module-products,micro-profiling --lib)
+          editor=(-p vize_maestro --features experimental-style-lint-products,micro-profiling --lib)
+          cargo clippy "${flags[@]}" -p vize_patina --features observed-style-rules --lib --no-deps -- -D warnings
+          cargo test "${flags[@]}" -p vize_patina --features observed-style-rules --lib rules::css
           cargo clippy "${flags[@]}" -p vize_canon --features observed-style-modules --lib --no-deps -- -D warnings
           cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
           cargo test "${flags[@]}" -p vize_l1 --features observed-styles --lib css::lang::
@@ -63,8 +69,10 @@ jobs:
           cargo test "${flags[@]}" "${editor[@]}" css_module
           export VIZE_STYLE_MODULE_INPUTS="$RUNNER_TEMP/style-module-sources"
           cargo test "${flags[@]}" "${editor[@]}" original_style_module_products_match -- --ignored --nocapture --test-threads=1
+          cargo test "${flags[@]}" "${editor[@]}" original_style_lint_products_match -- --ignored --nocapture --test-threads=1
       - name: Measure complete original and shared member requests
         if: matrix.suite == 'performance'
         run: |
           export VIZE_STYLE_MODULE_INPUTS="$RUNNER_TEMP/style-module-sources"
-          cargo test --locked --profile ci-opt -p vize_maestro --features experimental-style-module-products,micro-profiling --lib paired_style_module_requests -- --ignored --nocapture --test-threads=1
+          cargo test --locked --profile ci-opt -p vize_maestro --features experimental-style-lint-products,micro-profiling --lib paired_style_module_requests -- --ignored --nocapture --test-threads=1
+          cargo test --locked --profile ci-opt -p vize_maestro --features experimental-style-lint-products,micro-profiling --lib paired_style_lint_requests -- --ignored --nocapture --test-threads=1

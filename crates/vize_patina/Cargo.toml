@@ -10,6 +10,8 @@ metadata.vize.stability = "compatibility-preview"
 autotests = false
 
 [features]
+# Share the original style structure with checker and editor consumers.
+observed-style-rules = ["vize_l1/observed-styles"]
 plugin-template-facts = []
 # Read configured standalone script rules from a physically matched L1 Program.
 authored-script-rules = ["vize_l1/authored-script-queries"]

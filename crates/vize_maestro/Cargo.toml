@@ -9,6 +9,10 @@ description = "Maestro - Language Server Protocol implementation for Vize Vue te
 publish = false
 
 [features]
+experimental-style-lint-products = [
+  "experimental-style-module-products",
+  "vize_patina/observed-style-rules",
+]
 # Collect required-prop diagnostics from resolved component operations on explicit requests.
 experimental-component-props = ["vize_l1_to_l2/component-prop-queries"]
 # Share admitted template operands with Canon for explicitly selected editor products.
