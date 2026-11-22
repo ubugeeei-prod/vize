@@ -57,6 +57,8 @@ pub struct ProgramInput<'p, 'a> {
     block: SourceBlock<'a>,
     index: u32,
     profile: ScriptProfile,
+    #[cfg(feature = "lexical-arrow-initializers")]
+    lexical_arrow_initializers: bool,
 }
 
 impl<'p, 'a> ProgramInput<'p, 'a> {
@@ -100,6 +102,8 @@ impl<'p, 'a> ProgramInput<'p, 'a> {
             u32::try_from(container_index).map_err(|_| reject(FileIssueKind::BindingLimit))?;
         Ok(Self {
             references,
+            #[cfg(feature = "lexical-arrow-initializers")]
+            lexical_arrow_initializers: false,
             block,
             index,
             profile: ScriptProfile {
@@ -162,6 +166,10 @@ impl<'a> FileProducer<'a> {
                 kind: FileIssueKind::InvalidSpan,
             });
         };
+        #[cfg(feature = "lexical-arrow-initializers")]
+        if input.lexical_arrow_initializers {
+            guard.facts().arena_expressions = true;
+        }
         if let Some(unit) = guard.facts().units.last() {
             observer.unit(unit);
         }
@@ -236,5 +244,15 @@ impl<'a> FileProducer<'a> {
             policy,
             builder.source,
         )))
+    }
+}
+
+#[cfg(feature = "lexical-arrow-initializers")]
+impl ProgramInput<'_, '_> {
+    /// Request lexical arrow-initializer analysis during this original Program walk.
+    #[must_use]
+    pub fn with_lexical_arrow_initializers(mut self) -> Self {
+        self.lexical_arrow_initializers = true;
+        self
     }
 }

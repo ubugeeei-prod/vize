@@ -2,7 +2,7 @@ use super::*;
 use davinci_harness::alloc;
 use std::{hint::black_box, time::Instant};
 
-fn sample(label: &str, ctx: &IdeContext<'_>, imports: &SetupComponentImports<'_, '_>) {
+pub(super) fn sample(label: &str, ctx: &IdeContext<'_>, imports: &SetupComponentImports<'_, '_>) {
     let read = alloc::measure(|| {
         for site in black_box(imports).sites() {
             site.visit_static_listeners(|row| {

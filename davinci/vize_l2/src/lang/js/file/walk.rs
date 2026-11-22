@@ -15,6 +15,8 @@ use oxc_span::GetSpan;
 use vize_l0::Span;
 
 mod annotations;
+#[cfg(feature = "lexical-arrow-initializers")]
+mod arrows;
 mod exports;
 mod functions;
 mod imports;
@@ -223,6 +225,12 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
                 continue;
             };
             let initializer = match &declaration.init {
+                #[cfg(feature = "lexical-arrow-initializers")]
+                Some(Expression::ArrowFunctionExpression(_))
+                    if self.input.lexical_arrow_initializers && self.context == Context::Unit =>
+                {
+                    InitializerKind::Function
+                }
                 Some(value) => initializer_kind(value),
                 _ => InitializerKind::Unknown,
             };
@@ -259,6 +267,14 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
                 self.unsupported(declaration.span);
             }
             if let Some(expression) = &declaration.init {
+                #[cfg(feature = "lexical-arrow-initializers")]
+                if self.input.lexical_arrow_initializers
+                    && self.context == Context::Unit
+                    && let Expression::ArrowFunctionExpression(arrow) = expression
+                {
+                    self.arrow_initializer(arrow);
+                    continue;
+                }
                 self.expression(expression);
             }
         }

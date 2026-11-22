@@ -124,6 +124,8 @@ pub use embedding::{
     HandlerBodyObservation, ParametersObservation,
 };
 pub use markup::{MarkupCursor, MarkupGrammar, MarkupSite};
+#[cfg(feature = "reusable-expression-input")]
+pub use embedding::ReusableExpressionInput;
 pub use observation::{AdmittedProgram, OriginalDefaultExport, ProgramObservation};
 
 /// Maximum length of source which can be parsed (in bytes).

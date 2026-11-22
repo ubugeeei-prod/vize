@@ -18,6 +18,8 @@ static ALLOCATOR: CountingAllocator<System> = CountingAllocator::system();
 
 fn main() {
     mark_installed();
+    #[cfg(feature = "lexical-arrow-initializers")]
+    lexical_requests::run();
     #[cfg(all(
         feature = "authored-bind-shorthand",
         feature = "component-prop-queries",
@@ -227,3 +229,7 @@ fn component_imports() {
     feature = "template-operand-queries"
 ))]
 mod shorthand_products;
+
+#[cfg(feature = "lexical-arrow-initializers")]
+#[path = "lexical_arrows/requests.rs"]
+mod lexical_requests;

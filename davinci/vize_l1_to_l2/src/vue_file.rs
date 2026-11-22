@@ -27,6 +27,8 @@ pub struct VueFileProducer<'a> {
     declarations: Vec<VueDeclaration>,
     issues: Vec<VueFileIssue>,
     template_started: bool,
+    #[cfg(feature = "lexical-arrow-initializers")]
+    lexical_arrow_initializers: bool,
     source: &'a str,
 }
 
@@ -39,6 +41,8 @@ impl<'a> VueFileProducer<'a> {
             declarations: Vec::new(),
             issues: Vec::new(),
             template_started: false,
+            #[cfg(feature = "lexical-arrow-initializers")]
+            lexical_arrow_initializers: false,
             source,
         })
     }
@@ -76,6 +80,12 @@ impl<'a> VueFileProducer<'a> {
             receipt: None,
             declarations: &mut self.declarations,
             issues: &mut self.issues,
+        };
+        #[cfg(feature = "lexical-arrow-initializers")]
+        let input = if self.lexical_arrow_initializers {
+            input.with_lexical_arrow_initializers()
+        } else {
+            input
         };
         let (unit, _) = match self.producer.program_observed(
             input,
@@ -303,5 +313,17 @@ impl<'a> RejectedVueFile<'a> {
     #[must_use]
     pub fn issues(&self) -> &[VueFileIssue] {
         &self.issues
+    }
+}
+
+#[cfg(feature = "lexical-arrow-initializers")]
+impl<'a> VueFileProducer<'a> {
+    pub(crate) fn for_lexical_initializers(
+        allocator: &'a Allocator,
+        source: &'a str,
+    ) -> Result<Self, ArtifactError> {
+        let mut producer = Self::new(allocator, source)?;
+        producer.lexical_arrow_initializers = true;
+        Ok(producer)
     }
 }

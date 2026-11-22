@@ -108,6 +108,11 @@ impl<'a> EmbeddingInput<'a> {
     #[must_use]
     pub fn observe(self) -> EmbeddingObservation<'a> {
         let source = self.allocator.alloc_str(self.wrapper.as_str());
+        self.observe_source(self.content, source)
+    }
+
+    #[inline]
+    fn observe_source(&self, content: &'a str, source: &'a str) -> EmbeddingObservation<'a> {
         let options = ParseOptions::default();
         let parsed =
             Parser::new(self.allocator, source, self.source_type).with_options(options).parse();
@@ -124,7 +129,7 @@ impl<'a> EmbeddingInput<'a> {
         };
         EmbeddingObservation {
             allocator: self.allocator,
-            content: self.content,
+            content,
             source_type: self.source_type,
             goal: self.goal,
             content_span: self.content_span,
@@ -215,3 +220,8 @@ impl<'a> EmbeddingObservation<'a> {
             .flatten()
     }
 }
+
+#[cfg(feature = "reusable-expression-input")]
+mod reusable;
+#[cfg(feature = "reusable-expression-input")]
+pub use reusable::ReusableExpressionInput;

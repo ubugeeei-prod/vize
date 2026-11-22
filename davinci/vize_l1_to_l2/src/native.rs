@@ -141,6 +141,8 @@ struct Context<'component, 'a> {
     diagnostics: &'component mut Vec<Diagnostic>,
     embeds: &'component mut Vec<NativeEmbed<'a>>,
     rejected_syntax: &'component mut Vec<EmbedSyntax<'a>>,
+    #[cfg(feature = "lexical-arrow-initializers")]
+    expressions: Option<vize_l1::embed::syntax::RetainedExpressionParser<'a>>,
 }
 
 impl<'a> Context<'_, 'a> {

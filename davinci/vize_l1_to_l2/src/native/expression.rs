@@ -79,17 +79,27 @@ impl<'a> Context<'_, 'a> {
         construct: impl FnOnce(&mut R, &'a JsExpr<'a>) -> Result<vize_l0::id::NodeId, ArtifactError>,
     ) {
         let source_span = source.span();
-        let syntax = parse_once(
-            self.allocator,
-            Embed {
-                grammar: Grammar {
-                    shape: Shape::Expr,
-                    lang: self.lang,
+        let ordinary = || {
+            parse_once(
+                self.allocator,
+                Embed {
+                    grammar: Grammar {
+                        shape: Shape::Expr,
+                        lang: self.lang,
+                    },
+                    source,
                 },
-                source,
-            },
-        );
-        let retained = match syntax.into_expression() {
+            )
+            .into_expression()
+        };
+        #[cfg(feature = "lexical-arrow-initializers")]
+        let original = match self.expressions.as_mut() {
+            Some(parser) => parser.parse(source, self.lang),
+            None => ordinary(),
+        };
+        #[cfg(not(feature = "lexical-arrow-initializers"))]
+        let original = ordinary();
+        let retained = match original {
             Ok(retained) => retained,
             Err(syntax) => {
                 self.rejected_syntax.push(*syntax);

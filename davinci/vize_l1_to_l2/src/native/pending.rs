@@ -228,3 +228,36 @@ impl PendingNativeComponent<'_> {
         self.component.event_references = true;
     }
 }
+
+#[cfg(feature = "lexical-arrow-initializers")]
+impl PendingNativeComponent<'_> {
+    pub(crate) fn retain_expression_sequence(&mut self) {
+        // A retained OXC result owns its whole observation. Reserve the top-level
+        // expression slots from the original headers before moving any large
+        // results. Nested children keep the ordinary amortized growth policy.
+        use vize_l1::markup::SurfaceChild;
+        let top_level = self
+            .component
+            .carrier()
+            .tree
+            .children
+            .iter()
+            .map(|child| match child {
+                SurfaceChild::Interpolation(_) => 1,
+                SurfaceChild::Element(element) if !element.open.is_verbatim() => element
+                    .open
+                    .attrs
+                    .iter()
+                    .filter(|attr| {
+                        attr.value.is_some()
+                            && (attr.name.text.starts_with(':')
+                                || attr.name.text.starts_with("v-bind:"))
+                    })
+                    .count(),
+                _ => 0,
+            })
+            .sum::<usize>();
+        self.observations.embeds.reserve_exact(top_level);
+        self.component.retained_expressions = true;
+    }
+}

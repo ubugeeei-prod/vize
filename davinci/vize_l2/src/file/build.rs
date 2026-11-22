@@ -19,6 +19,8 @@ pub(crate) struct Facts<'a> {
     pub imports: Vec<Import>,
     pub issues: Vec<FileIssue>,
     pub expressions: SideTable<ScopedResolution<'a>>,
+    #[cfg(feature = "lexical-arrow-initializers")]
+    pub arena_expressions: bool,
     pub handlers: SideTable<super::handler::HandlerRecord<'a>>,
     pub rejected_handlers: Vec<super::RejectedFileHandler<'a>>,
     pub pending_handlers: Vec<super::handler::PendingHandler<'a>>,
@@ -118,6 +120,8 @@ impl<'a> Facts<'a> {
             imports: Vec::new(),
             issues: Vec::new(),
             expressions: SideTable::new(),
+            #[cfg(feature = "lexical-arrow-initializers")]
+            arena_expressions: false,
             handlers: SideTable::new(),
             rejected_handlers: Vec::new(),
             pending_handlers: Vec::new(),

@@ -290,3 +290,17 @@ pub(super) fn prepare_listeners<'a>(
     }
     template
 }
+
+#[cfg(feature = "lexical-arrow-initializers")]
+pub(super) fn prepare_lexical<'a>(
+    allocator: &'a Allocator,
+    selected: TemplateView<'_, 'a>,
+    lang: Lang,
+    issues: &mut Vec<NativeSfcIssue>,
+) -> NativeTemplateObservation<'a> {
+    let mut template = prepare_listeners(allocator, selected, lang, issues);
+    if let Some(pending) = &mut template.pending {
+        pending.retain_expression_sequence();
+    }
+    template
+}

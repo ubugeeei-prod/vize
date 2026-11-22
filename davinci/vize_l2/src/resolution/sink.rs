@@ -16,6 +16,24 @@ pub(crate) struct ReferenceEvent<'a> {
 }
 
 impl<'a> ReferenceEvent<'a> {
+    #[inline]
+    fn resolved(
+        self,
+        bindings: &impl BindingLookup,
+    ) -> Result<Occurrence<'a>, ResolutionErrorKind> {
+        let binding = bindings
+            .lookup(self.name())
+            .ok_or(ResolutionErrorKind::MissingBinding)?;
+        Ok(Occurrence {
+            span: self.span(),
+            name: self.name(),
+            binding,
+            usage: self.usage(),
+            shorthand: self.shorthand(),
+            constructor: self.constructor(),
+        })
+    }
+
     pub(super) fn new(
         span: Span,
         name: &'a str,
@@ -118,21 +136,13 @@ impl<'a, B: BindingLookup> ReferenceSink<'a> for Immediate<'a, '_, B> {
         self.occurrences.len()
     }
     fn reference(&mut self, event: ReferenceEvent<'a>) -> Result<(), ResolutionErrorKind> {
-        let binding = self
-            .bindings
-            .lookup(event.name())
-            .ok_or(ResolutionErrorKind::MissingBinding)?;
-        self.occurrences.push(Occurrence {
-            span: event.span(),
-            name: event.name(),
-            binding,
-            usage: event.usage(),
-            shorthand: event.shorthand(),
-            constructor: event.constructor(),
-        });
+        self.occurrences.push(event.resolved(self.bindings)?);
         Ok(())
     }
     fn rollback(&mut self, checkpoint: usize) {
         self.occurrences.truncate(checkpoint);
     }
 }
+
+#[cfg(feature = "lexical-arrow-initializers")]
+pub(crate) mod arena;

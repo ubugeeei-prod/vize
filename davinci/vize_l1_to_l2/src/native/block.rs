@@ -21,6 +21,8 @@ pub struct NativeComponent<'a> {
     pub(super) authored_bind_shorthand: bool,
     #[cfg(feature = "component-listener-queries")]
     pub(super) event_references: bool,
+    #[cfg(feature = "lexical-arrow-initializers")]
+    pub(super) retained_expressions: bool,
 }
 
 impl core::fmt::Debug for NativeComponent<'_> {
@@ -72,6 +74,8 @@ impl<'a> NativeComponent<'a> {
             authored_bind_shorthand: false,
             #[cfg(feature = "component-listener-queries")]
             event_references: false,
+            #[cfg(feature = "lexical-arrow-initializers")]
+            retained_expressions: false,
         })
     }
 
@@ -128,6 +132,10 @@ pub(super) fn construct_component<'a, R: ConstructionFactory<'a>>(
         allocator: component.allocator,
         component,
         lang,
+        #[cfg(feature = "lexical-arrow-initializers")]
+        expressions: component
+            .retained_expressions
+            .then(|| vize_l1::embed::syntax::RetainedExpressionParser::new(component.allocator)),
         holes: &mut observations.holes,
         diagnostics: &mut observations.diagnostics,
         embeds: &mut observations.embeds,
