@@ -39,3 +39,24 @@ pub fn analyze(source: &str, filename: &str, spec: &PluginSpec<'_>) -> PluginTem
         },
     }
 }
+
+/// Register an analyzed source in the cross-file graph. For Vue documents the
+/// returned SDK batch and Doctor's stored component record share the original
+/// template lowering. The graph retains its normal effect and dependency data.
+#[cfg(feature = "plugin-project-facts")]
+pub fn register(
+    graph: &mut vize_croquis_cf::CrossFileAnalyzer,
+    path: &std::path::Path,
+    source: &str,
+    croquis: vize_croquis::Croquis,
+    effects: vize_croquis::EffectGraphSummary,
+    spec: &PluginSpec<'_>,
+) -> (
+    vize_croquis_cf::FileId,
+    Option<Result<PluginTemplateBatch, HostError>>,
+) {
+    graph.add_file_with_template_pass(path, source, croquis, effects, |source| {
+        let products = analyze(source, &path.to_string_lossy(), spec);
+        (products.complexity, products.plugin)
+    })
+}

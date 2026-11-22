@@ -19,6 +19,7 @@ path = "src/lib.rs"
 
 [features]
 plugin-template-facts = ["vize_patina/plugin-template-facts"]
+plugin-project-facts = ["plugin-template-facts", "vize_croquis_cf/observed-template-complexity"]
 # Untimed source custody only; never enabled by default or in shipping builds.
 cache-custody = ["vize_canon/cache-custody"]
 default = ["glyph", "maestro"]
