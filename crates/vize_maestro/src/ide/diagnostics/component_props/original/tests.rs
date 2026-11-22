@@ -151,3 +151,60 @@ fn original_workspace_diagnostics() {
         "required_props_workspaces inputs={count} refused_bindings={refused_bindings} sites={sites} diagnostics={diagnostics} bytes={bytes}"
     );
 }
+
+#[test]
+fn registration_lookup_preserves_the_original_selection_and_script_revision() {
+    use crate::ide::definition::component_import::registered_component_local_name;
+    let state = ServerState::new();
+    let uri = Url::parse("file:///project/Parent.vue").unwrap();
+    let script = "import Box from './Box.vue';export default {components:{Alias:Box}}";
+    let ordinary = "import Box from './Box.vue';const example='export default {}'";
+    let source = format!(
+        "<script setup>{ordinary:width$}</script><template><Box/></template>",
+        width = script.len()
+    );
+    let source = source.as_str();
+    open(&state, &uri, source);
+    let arena = Allocator::new();
+    let observed = observe(&arena, source);
+    let inputs = observed.setup_component_imports().unwrap();
+    let no_exports = inputs.sites()[0].nonexporting_setup().unwrap();
+    let mut ctx = IdeContext::new(&state, &uri, inputs.template_span().start as usize).unwrap();
+    assert_eq!(registered_component_local_name(&ctx, "Alias"), None);
+    ctx.nonexporting_setup = Some(no_exports);
+    assert_eq!(registered_component_local_name(&ctx, "Alias"), None);
+    drop(ctx);
+
+    // The ordinary script has the same content extent as the old setup block.
+    // Its default export contributes an actual Options API registration.
+    let registered = format!("<script      >{script}</script><template><Alias/></template>");
+    let registered = registered.as_str();
+    assert!(state.documents.apply_changes(
+        &uri,
+        vec![tower_lsp::lsp_types::TextDocumentContentChangeEvent {
+            range: None,
+            range_length: None,
+            text: registered.to_owned(),
+        }],
+        2
+    ));
+    let mut ctx = IdeContext::new(&state, &uri, 0).unwrap();
+    assert_eq!(
+        registered_component_local_name(&ctx, "Alias").as_deref(),
+        Some("Box")
+    );
+    let exported = ctx.descriptor().unwrap().script.as_ref().unwrap();
+    assert_eq!(
+        (exported.loc.start, exported.loc.end),
+        (no_exports.start() as usize, no_exports.end() as usize)
+    );
+    ctx.nonexporting_setup = Some(no_exports);
+    assert_eq!(
+        registered_component_local_name(&ctx, "Alias").as_deref(),
+        Some("Box")
+    );
+    assert_eq!(
+        DiagnosticService::imported_component_required_props(&state, &uri, &inputs),
+        Err(ComponentPropDiagnosticIssue::SourceRevision)
+    );
+}

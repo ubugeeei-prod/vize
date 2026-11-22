@@ -21,6 +21,24 @@ pub enum ComponentPropIssue {
 }
 
 impl<'a> ImportedComponentSite<'_, 'a> {
+    /// The exact setup Program that supplied this import, when its complete
+    /// statement walk saw no ECMAScript module exports.
+    #[must_use]
+    pub fn nonexporting_setup(&self) -> Option<vize_l0::SourceBlock<'a>> {
+        let [unit] = self.binding.file().units() else {
+            return None;
+        };
+        if !unit.walk_completed() || unit.origin.has_export {
+            return None;
+        }
+        let text = self.binding.file().artifact().source();
+        let source = text.get(unit.span.start as usize..unit.span.end as usize)?;
+        SourceRoot::new(text)
+            .ok()?
+            .block(source, unit.span.start)
+            .ok()
+    }
+
     /// Merge the component's semantic attribute and binding groups in authored
     /// order. Returns a refusal when a binding needs another prop contract.
     /// A late refusal invalidates all earlier rows of this request.
