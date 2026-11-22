@@ -85,3 +85,6 @@ fn bind<'a, R: ConstructionFactory<'a>>(
 
 #[cfg(feature = "authored-bind-shorthand")]
 mod shorthand;
+
+#[cfg(feature = "component-listener-queries")]
+pub(super) mod listener;

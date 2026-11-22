@@ -22,6 +22,12 @@ autotests = false
 metadata.vize.stability = "experimental"
 
 [features]
+# Original listener operations and method-reference queries for explicit tool requests.
+component-listener-queries = [
+  "authored-bind-shorthand",
+  "setup-component-imports",
+  "vize_l2/component-listener-queries",
+]
 # Admit Vue 3.4+ same-name binds with an authored identifier operand.
 authored-bind-shorthand = []
 # Read authored props in source order from each resolved component operation.

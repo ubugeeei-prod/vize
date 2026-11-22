@@ -274,3 +274,6 @@ mod shorthand;
     feature = "template-operand-queries"
 ))]
 mod shorthand_products;
+
+#[cfg(feature = "component-listener-queries")]
+mod component_listeners;

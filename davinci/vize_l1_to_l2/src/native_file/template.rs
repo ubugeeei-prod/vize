@@ -276,3 +276,17 @@ pub(super) fn prepare_shorthand<'a>(
     }
     template
 }
+
+#[cfg(feature = "component-listener-queries")]
+pub(super) fn prepare_listeners<'a>(
+    allocator: &'a Allocator,
+    selected: TemplateView<'_, 'a>,
+    lang: Lang,
+    issues: &mut Vec<NativeSfcIssue>,
+) -> NativeTemplateObservation<'a> {
+    let mut template = prepare_shorthand(allocator, selected, lang, issues);
+    if let Some(pending) = &mut template.pending {
+        pending.enable_event_references();
+    }
+    template
+}

@@ -10,6 +10,8 @@ pub enum TemplateOperandKind {
     Bind,
     Condition,
     Model,
+    /// A handler that reads a template binding as a method reference.
+    EventReference,
 }
 
 /// One expression, including constants with no references. The scope and all

@@ -197,5 +197,28 @@ fn original_tool_template_projections_match() {
     );
 }
 
+#[cfg(feature = "experimental-component-listeners")]
+#[test]
+fn named_dom_event_expressions_keep_their_checker_links_and_editor_exports() {
+    let source = "<script setup>import { save as 保存 } from './actions'; const label='送信';</script>\r\n<template><button :title='label' @click.once='保存' @cancel>{{ label }}</button></template>";
+    let arena = Allocator::default();
+    let observed = vize_l1_to_l2::native_file::lower_sfc_with_listener_references(
+        &arena,
+        source,
+        DescriptorOptions {
+            version: VueVersion::V3,
+            dialect: VueDialect::Vue,
+            template: Default::default(),
+        },
+    );
+    let native = observed.admitted().unwrap();
+    let descriptor = fixture_descriptor(source);
+    let result = compare(&native, &descriptor, "DOM method reference");
+    assert_eq!(result.checker.as_str(), "label\n保存\nlabel");
+    let handler = &result.expressions[1];
+    assert_eq!(handler.kind, ExpressionKind::VOn);
+    assert_eq!(result.checker.links()[1].authored.slice(source), "保存");
+}
+
 #[cfg(feature = "micro-profiling")]
 mod profile;
