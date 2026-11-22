@@ -230,6 +230,8 @@ jobs:
         env:
           VIZE_PREFIX_INPUT: ${{ runner.temp }}/original-scripts.jsonl
           VIZE_PREFIX_OUTPUT: ${{ runner.temp }}/original-edits.jsonl
+          VIZE_RECOVERED_HOVERS: ${{ runner.temp }}/recovered-hovers.json
+          CORSA_PATH: ${{ runner.temp }}/typed-editor/node_modules/@typescript/typescript-linux-x64/lib/tsc
           VIZE_FIRST_OPEN_INPUT: ${{ runner.temp }}/upstream-broken-scripts.jsonl
           NODE_PATH: ${{ runner.temp }}/checked-ts/node_modules
         run: |
@@ -242,6 +244,7 @@ jobs:
           cargo test "${flags[@]}" -p vize_l2 --features recovered-literal-prefix query::script::assignments::prefix::
           cargo test "${flags[@]}" -p vize_maestro --features experimental-recovered-literal-prefix,micro-profiling source_project::recovered_script:: -- --include-ignored --nocapture --test-threads=1
           node tools/support/compat/davinci/primitive-assignments-oracle.ts "$VIZE_PREFIX_OUTPUT" --recovered
+          node tools/support/compat/davinci/literal-hover-oracle.ts target/ci-opt/vize "$VIZE_RECOVERED_HOVERS"
 
   primitive-assignability-proof:
     name: Verify primitive literal membership in Kani
