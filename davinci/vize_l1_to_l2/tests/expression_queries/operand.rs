@@ -98,17 +98,20 @@ pub(super) fn compare(root: &RootNode<'_>, start: u32, model: Model<'_, '_>, pat
 
 #[test]
 fn reads_constants_entities_whitespace_and_repeated_uses() {
-    for source in [
-        "<script setup>const n=1;</script><template><p :title='0'>{{ n + n }}</p></template>",
-        "<script setup>const fj=1;</script>\r\n<template><p :title='&fjlig;'>{{42}}</p></template>",
-        "<template><div>plain</div></template>",
+    for (source, expected_count) in [
+        (
+            "<script setup>const n=1;</script><template><p :title='0'>{{ n + n }}</p></template>",
+            2,
+        ),
+        (
+            "<script setup>const fj=1;</script>\r\n<template><p :title='&fjlig;'>{{42}}</p></template>",
+            2,
+        ),
+        ("<template><div>plain</div></template>", 0),
     ] {
         let mut counts = super::Counts::default();
         assert!(super::compare(source, source, &mut counts, true));
-        assert_eq!(
-            counts.operands,
-            if source.contains(":title") { 2 } else { 0 }
-        );
+        assert_eq!(counts.operands, expected_count);
     }
 }
 
