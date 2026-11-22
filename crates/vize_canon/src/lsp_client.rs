@@ -226,3 +226,6 @@ fn lsp_transport_error_is_transient(error: &str) -> bool {
         || error.contains("Broken pipe")
         || error.contains("broken pipe")
 }
+
+#[cfg(feature = "ambient-project-declarations")]
+pub use diagnostics::AmbientDiagnosticSnapshot;

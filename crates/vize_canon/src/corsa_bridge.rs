@@ -249,3 +249,6 @@ impl CorsaBridge {
         .is_ok()
     }
 }
+
+#[cfg(feature = "ambient-project-declarations")]
+pub use vue_document::AmbientVueDiagnostics;

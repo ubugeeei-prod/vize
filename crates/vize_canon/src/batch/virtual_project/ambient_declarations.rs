@@ -82,12 +82,13 @@ mod tests {
         project.scope_editor_namespace(storage.path(), 1);
         let component = project_root.join("nested/auto.d.ts");
         let unsaved = project_root.join("unsaved.d.cts");
-        let inferred = project_root.join("inferred.d.mts");
+        let inferred = project_root.join("inferred.d.ts");
+        let module = project_root.join("nested/auto.d.mts");
         let other = external.path().join("package.d.ts");
         let ordinary = project_root.join("source.ts");
         let relative = Path::new("./local.d.ts");
         let names = [
-            &component, &other, &unsaved, &inferred, &component, &ordinary,
+            &component, &other, &unsaved, &module, &inferred, &component, &ordinary,
         ];
         let mut options = VirtualTsOptions::default();
         options
@@ -96,7 +97,8 @@ mod tests {
         options
             .reference_paths
             .push(relative.to_str().unwrap().into());
-        let inputs = [&component, &other, &unsaved, &ordinary].map(|p| (p.clone(), "export {}"));
+        let inputs =
+            [&component, &other, &unsaved, &module, &ordinary].map(|p| (p.clone(), "export {}"));
         project
             .project_declaration_references(&mut options, &inputs)
             .unwrap();
@@ -105,6 +107,7 @@ mod tests {
             mirror.join("nested/auto.d.ts"),
             other,
             mirror.join("unsaved.d.cts"),
+            mirror.join("nested/auto.d.mts"),
             inferred,
             mirror.join("nested/auto.d.ts"),
             ordinary,
@@ -117,5 +120,26 @@ mod tests {
                 .map(|p| Path::new(p.as_str()))
                 .eq(expected.iter().map(PathBuf::as_path))
         );
+    }
+    #[test]
+    fn validate_authored_pragma_spelling_before_replacing_the_path() {
+        let storage = tempfile::tempdir().unwrap();
+        let project = VirtualProject::new(storage.path()).unwrap();
+        let invalid = project.project_root().join("both'\".d.ts");
+        let reference = invalid.to_str().unwrap();
+        let mut options = VirtualTsOptions::default();
+        options.reference_paths.push(reference.into());
+        let result =
+            project.project_declaration_references(&mut options, &[(invalid.clone(), "export {}")]);
+        let Err(CorsaError::Configuration(message)) = result else {
+            panic!("expected original reference rejection");
+        };
+        assert_eq!(
+            message.as_str(),
+            format!(
+                "Invalid declaration reference path {reference:?}: a TypeScript reference path cannot contain both quote delimiters"
+            )
+        );
+        assert_eq!(options.reference_paths.as_slice(), &[reference]);
     }
 }

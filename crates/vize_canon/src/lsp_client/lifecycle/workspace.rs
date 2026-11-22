@@ -109,3 +109,33 @@ impl CorsaProjectClient {
 #[cfg(test)]
 #[cfg(target_os = "linux")]
 mod initial_project_tests;
+
+#[cfg(feature = "ambient-project-declarations")]
+impl CorsaProjectClient {
+    /// Diagnostic-only native startup uses the API transport of a materialized
+    /// workspace. Select the executable and lifetime storage at its authored root.
+    pub(crate) fn new_for_ambient_materialized_workspace(
+        executable: Option<&str>,
+        authored_root: &Path,
+        canon_root: &Path,
+        config_path: &Path,
+        changes: &crate::batch::virtual_project::MaterializedFileDelta,
+    ) -> Result<Self, String> {
+        Self::validate_initial_editor_project_delta(changes)?;
+        let executable =
+            resolve_corsa_executable(executable, Some(&authored_root.to_string_lossy()))?;
+        let storage = std::sync::Arc::new(super::super::session_storage::SessionStorage::new(
+            authored_root,
+        )?);
+        let root = vize_l0::path::physical_path(canon_root);
+        let mut client = Self::spawn_initialized_client_with_config(
+            executable.as_str(),
+            root.clone(),
+            Some(root),
+            Some(storage),
+            Some(config_path),
+        )?;
+        client.finish_initial_materialized_project(changes)?;
+        Ok(client)
+    }
+}

@@ -14,6 +14,12 @@ use vize_canon::virtual_ts::VirtualTsOptions;
 use vize_l0::FxHashMap;
 
 impl ServerState {
+    pub(crate) fn ambient_declaration_revision(&self) -> u64 {
+        self.global_component_references
+            .generation
+            .load(std::sync::atomic::Ordering::Acquire)
+    }
+
     pub(crate) async fn ambient_declaration_inputs(
         &self,
         root: &Path,

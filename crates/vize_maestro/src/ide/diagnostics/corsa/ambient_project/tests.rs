@@ -106,10 +106,8 @@ impl Project {
             ..Default::default()
         }
     }
-    async fn start(&self) -> AmbientComponentProject {
-        AmbientComponentProject::start(Arc::clone(&self.state), self.config())
-            .await
-            .unwrap()
+    fn start(&self) -> AmbientComponentProject {
+        AmbientComponentProject::new(Arc::clone(&self.state), self.config()).unwrap()
     }
 }
 
@@ -137,15 +135,13 @@ fn historical_slot_pack_maps_complete_native_responses() {
                 &fs::read_to_string(project.path(name)).unwrap(),
                 "vue",
             );
-            let session = project.start().await;
-            let expected: Vec<_>=case["diagnostics"].as_array().unwrap().iter().map(|entry| {
-                assert_eq!(entry["file"], name);
-                let line=entry["line"].as_u64().unwrap()-1;
-                let character=entry["column"].as_u64().unwrap()-1;
-                assert!(snapshot.source().lines().nth(line as usize).unwrap()[character as usize..].starts_with("missing"));
-                json!({"range":{"start":{"line":line,"character":character},"end":{"line":line,"character":character+7}},
-                "code":entry["code"],"source":"vize/types","severity":entry["severity"],"message":entry["message"]})
-            }).collect();
+            let session = project.start();
+            let expected: Vec<_> = case["diagnostics"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|entry| expected_slot_response(entry, name, &snapshot))
+                .collect();
             assert_eq!(
                 wire(&session, &snapshot).await,
                 Value::Array(expected.clone()),
@@ -161,6 +157,31 @@ fn historical_slot_pack_maps_complete_native_responses() {
             session.shutdown().await.unwrap();
         }
     });
+}
+
+fn expected_slot_response(entry: &Value, name: &str, snapshot: &SourceSnapshot) -> Value {
+    let line = u32::try_from(entry["line"].as_u64().unwrap() - 1).unwrap();
+    let character = u32::try_from(entry["column"].as_u64().unwrap() - 1).unwrap();
+    let end = character + 7;
+    let positions = vize_l0::line_index::LineBreaks::Lsp;
+    let start_byte = positions
+        .position_to_offset(snapshot.source(), line, character)
+        .unwrap();
+    let end_byte = positions
+        .position_to_offset(snapshot.source(), line, end)
+        .unwrap();
+    assert_eq!(entry["file"], name);
+    assert_eq!(snapshot.source().get(start_byte..end_byte), Some("missing"));
+    json!({
+        "range": {
+            "start": { "line": line, "character": character },
+            "end": { "line": line, "character": end }
+        },
+        "code": entry["code"],
+        "source": "vize/types",
+        "severity": entry["severity"],
+        "message": entry["message"]
+    })
 }
 
 const PROP_HOST: &str = "<template><GlobalBadge :level=\"'x'\" /></template>\n";
@@ -182,7 +203,7 @@ fn declarations_created_edited_closed_and_deleted_update_the_same_native_session
     p.write(HOST, PROP_HOST);
     let host = p.open(HOST, PROP_HOST, "vue");
     crate::runtime::block_on(async {
-        let session = p.start().await;
+        let session = p.start();
         assert_eq!(wire(&session, &host).await, json!([]));
         p.write(DECL, PROVIDER);
         p.refresh(DECL);
@@ -199,6 +220,34 @@ fn declarations_created_edited_closed_and_deleted_update_the_same_native_session
         assert_eq!(wire(&session, &host).await, json!([]));
         p.state.documents.close(&p.uri(CHILD));
         assert_eq!(wire(&session, &host).await, invalid);
+        // A closed dependency can change without a document revision or watcher event.
+        let child_path = p.path(CHILD);
+        let previous_time = fs::metadata(&child_path).unwrap().modified().unwrap();
+        let edit = NUMBER.replace("number", "string");
+        assert_eq!(edit.len(), NUMBER.len());
+        p.write(CHILD, &edit);
+        fs::File::options()
+            .write(true)
+            .open(&child_path)
+            .unwrap()
+            .set_modified(previous_time)
+            .unwrap();
+        assert_eq!(wire(&session, &host).await, json!([]));
+        p.write(CHILD, NUMBER);
+        fs::File::options()
+            .write(true)
+            .open(&child_path)
+            .unwrap()
+            .set_modified(previous_time)
+            .unwrap();
+        assert_eq!(wire(&session, &host).await, invalid);
+        let other_name = "src/views/Other.vue";
+        let other_text = "<template><GlobalBadge :level=\"1\" /></template>";
+        p.write(other_name, other_text);
+        let other = p.open(other_name, other_text, "vue");
+        assert_eq!(wire(&session, &other).await, json!([]));
+        assert_eq!(wire(&session, &host).await, invalid);
+        p.state.documents.close(&p.uri(other_name));
         fs::remove_file(p.path(DECL)).unwrap();
         p.refresh(DECL);
         assert_eq!(wire(&session, &host).await, json!([]));

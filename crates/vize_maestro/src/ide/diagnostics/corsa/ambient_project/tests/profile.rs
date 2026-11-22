@@ -1,5 +1,5 @@
 //! Compare authored results and measure full cold and resident queries.
-use super::super::Mutex;
+use super::super::{CorsaDocument, assemble_corsa_diagnostics, borrowed, finished_from_phased_lsp};
 use super::*;
 use std::time::Instant;
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, CorsaBridge};
@@ -27,6 +27,46 @@ fn batch(p: &Project, host: &Path) -> Vec<Value> {
             json!([d.code, d.severity, d.line, d.column, d.message])
         })
         .collect()
+}
+
+fn ordinary(p: &Project) -> CorsaBridge {
+    let mut config = p.config();
+    config.working_dir = Some(vize_l0::path::physical_path(p.dir.path()));
+    CorsaBridge::with_config(config)
+}
+
+async fn ordinary_wire(p: &Project, bridge: &CorsaBridge, host: &SourceSnapshot) -> Value {
+    let path = vize_l0::path::physical_path(&host.uri().to_file_path().unwrap());
+    let options = p.state.editor_virtual_ts_options().await;
+    let overlays = p.state.corsa_overlays();
+    let document = bridge
+        .open_vue_virtual_document_with_borrowed_overlays_and_options(
+            &path,
+            host.source(),
+            p.state.canonical_vue_document_options(),
+            &borrowed(&overlays),
+            &options,
+        )
+        .await
+        .unwrap();
+    let diagnostics = bridge
+        .get_diagnostics_with_provenance(&document.request_uri)
+        .await
+        .unwrap();
+    let projection = CorsaDocument {
+        code: document.code,
+        mapping: document.mapping,
+        import_source_map: document.import_source_map,
+    };
+    let finished = diagnostics
+        .into_iter()
+        .filter_map(|row| finished_from_phased_lsp(&projection.code, row, 0))
+        .collect();
+    let response: Vec<_> = assemble_corsa_diagnostics(host.source(), &[projection], finished)
+        .into_iter()
+        .map(|row| row.diagnostic)
+        .collect();
+    serde_json::to_value(response).unwrap()
 }
 
 fn starts(wire: &Value) -> Vec<Value> {
@@ -75,6 +115,7 @@ fn ambient_project_cost() {
         assert_eq!(expected.len(), usize::from(declared));
         let mut cold_batch = Vec::new();
         let mut cold_editor = Vec::new();
+        let mut cold_stock = Vec::new();
         for trial in 0..9 {
             let run_batch = || {
                 let start = Instant::now();
@@ -86,7 +127,7 @@ fn ambient_project_cost() {
             let run_editor = || {
                 crate::runtime::block_on(async {
                     let start = Instant::now();
-                    let session = p.start().await;
+                    let session = p.start();
                     let got = wire(&session, &host).await;
                     let spent = start.elapsed();
                     assert_eq!(starts(&got), expected);
@@ -94,18 +135,35 @@ fn ambient_project_cost() {
                     spent.as_nanos()
                 })
             };
+            let run_stock = || {
+                crate::runtime::block_on(async {
+                    let start = Instant::now();
+                    let bridge = ordinary(&p);
+                    bridge.spawn().await.unwrap();
+                    let got = ordinary_wire(&p, &bridge, &host).await;
+                    let spent = start.elapsed();
+                    assert_eq!(starts(&got), expected);
+                    bridge.shutdown().await.unwrap();
+                    spent.as_nanos()
+                })
+            };
             if trial % 2 == 0 {
+                if !declared {
+                    cold_stock.push(run_stock());
+                }
                 cold_batch.push(run_batch());
                 cold_editor.push(run_editor());
             } else {
                 cold_editor.push(run_editor());
                 cold_batch.push(run_batch());
+                if !declared {
+                    cold_stock.push(run_stock());
+                }
             }
         }
-        let root = vize_l0::path::physical_path(p.dir.path());
-        let (mut ordinary, mut resident) = (Vec::new(), Vec::new());
+        let (mut stock_times, mut resident) = (Vec::new(), Vec::new());
         crate::runtime::block_on(async {
-            let session = p.start().await;
+            let session = p.start();
             let reference = wire(&session, &host).await;
             assert_eq!(starts(&reference), expected);
             // With no declaration both constructors select exactly the same
@@ -113,23 +171,15 @@ fn ambient_project_cost() {
             let stock = if declared {
                 None
             } else {
-                let mut config = p.config();
-                config.working_dir = Some(root.clone());
-                let bridge = CorsaBridge::with_config(config);
-                bridge.spawn().await.unwrap();
-                let stock = AmbientComponentProject {
-                    state: Arc::clone(&p.state),
-                    root,
-                    bridge,
-                    transaction: Mutex::new(()),
-                };
-                assert_eq!(wire(&stock, &host).await, reference);
+                let stock = ordinary(&p);
+                stock.spawn().await.unwrap();
+                assert_eq!(ordinary_wire(&p, &stock, &host).await, reference);
                 Some(stock)
             };
             for trial in 0..61 {
-                let run = async |session: &AmbientComponentProject| {
+                let run_stock = async |bridge: &CorsaBridge| {
                     let start = Instant::now();
-                    let got = wire(session, &host).await;
+                    let got = ordinary_wire(&p, bridge, &host).await;
                     let spent = start.elapsed();
                     assert_eq!(got, reference);
                     spent.as_nanos()
@@ -137,13 +187,16 @@ fn ambient_project_cost() {
                 if trial % 2 == 0
                     && let Some(stock) = &stock
                 {
-                    ordinary.push(run(stock).await);
+                    stock_times.push(run_stock(stock).await);
                 }
-                resident.push(run(&session).await);
+                let start = Instant::now();
+                let got = wire(&session, &host).await;
+                resident.push(start.elapsed().as_nanos());
+                assert_eq!(got, reference);
                 if trial % 2 == 1
                     && let Some(stock) = &stock
                 {
-                    ordinary.push(run(stock).await);
+                    stock_times.push(run_stock(stock).await);
                 }
             }
             if let Some(stock) = stock {
@@ -151,9 +204,10 @@ fn ambient_project_cost() {
             }
             session.shutdown().await.unwrap();
         });
-        let stock = (!ordinary.is_empty()).then(|| median(&mut ordinary));
+        let stock = (!stock_times.is_empty()).then(|| median(&mut stock_times));
+        let stock_cold = (!cold_stock.is_empty()).then(|| median(&mut cold_stock));
         eprintln!(
-            "ambient_cost declared={declared} cold_samples=9 batch_ns={} editor_ns={} warm_samples=61 ordinary_editor_ns={stock:?} resident_editor_ns={}",
+            "ambient_cost declared={declared} cold_samples=9 batch_ns={} ordinary_cold_editor_ns={stock_cold:?} editor_ns={} warm_samples=61 ordinary_editor_ns={stock:?} resident_editor_ns={}",
             median(&mut cold_batch),
             median(&mut cold_editor),
             median(&mut resident)

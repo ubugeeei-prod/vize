@@ -77,9 +77,7 @@ impl CorsaBridge {
         }))
     }
 
-    /// Perform a real direct-Canon handshake and complete owned document open
-    /// on the original FIFO worker/deadline. `current` is the caller's original
-    /// environment admission predicate, not a fresh document/request stamp.
+    /// Start the Canon graph on its bounded FIFO worker with the caller's original admission fence.
     pub async fn spawn_with_initial_project<F>(
         &self,
         seed: CorsaInitialVueProject,
@@ -91,6 +89,8 @@ impl CorsaBridge {
         if !seed.lease.belongs_to(&self.startup, &self.editor_session) {
             return Err(CorsaBridgeError::NotInitialized);
         }
+        #[cfg(feature = "ambient-project-declarations")]
+        let build_initial_project_client = initial_factory(&self.editor_session);
         let config = self.config.clone();
         let initialized = Arc::clone(&self.initialized);
         let operation_epoch = Arc::clone(&self.client_operation_epoch);
@@ -322,3 +322,6 @@ mod tests;
 
 #[cfg(all(test, target_os = "linux"))]
 mod native_tests;
+
+#[cfg(feature = "ambient-project-declarations")]
+use crate::corsa_bridge::session::initial_factory;

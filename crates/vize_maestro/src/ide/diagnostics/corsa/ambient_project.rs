@@ -11,14 +11,14 @@ use crate::{
 use futures::lock::Mutex;
 use std::{io, path::PathBuf, sync::Arc};
 use tower_lsp::lsp_types::Diagnostic;
-use vize_canon::{CorsaBridge, CorsaBridgeConfig, CorsaBridgeError};
+use vize_canon::{CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaVueWorkspaceRequest};
 
 /// An explicitly started native session. Its requests serialize only with each other.
 pub struct AmbientComponentProject {
     state: Arc<ServerState>,
     root: PathBuf,
     bridge: CorsaBridge,
-    transaction: Mutex<()>,
+    transaction: Mutex<Option<vize_canon::lsp_client::AmbientDiagnosticSnapshot>>,
 }
 
 #[derive(Debug)]
@@ -31,7 +31,9 @@ pub enum AmbientProjectError {
 }
 
 impl AmbientComponentProject {
-    pub async fn start(
+    /// Create an independent editor owner. Its first native request starts
+    /// directly on the captured Vue project whenever the backend supports it.
+    pub fn new(
         state: Arc<ServerState>,
         mut config: CorsaBridgeConfig,
     ) -> Result<Self, AmbientProjectError> {
@@ -48,12 +50,11 @@ impl AmbientComponentProject {
         }
         config.working_dir = Some(root.clone());
         let bridge = CorsaBridge::with_ambient_declaration_project(config);
-        bridge.spawn().await.map_err(AmbientProjectError::Native)?;
         Ok(Self {
             state,
             root,
             bridge,
-            transaction: Mutex::new(()),
+            transaction: Mutex::new(None),
         })
     }
 
@@ -63,14 +64,17 @@ impl AmbientComponentProject {
         &self,
         snapshot: &SourceSnapshot,
     ) -> Result<Vec<Diagnostic>, AmbientProjectError> {
-        let _transaction = self.transaction.lock().await;
+        let mut previous = self.transaction.lock().await;
         let state = &self.state;
         let stamp = state.corsa_request_stamp();
+        let declaration_revision = state.ambient_declaration_revision();
         let current = || {
             snapshot
                 .check_current(&state.documents)
                 .map_err(AmbientProjectError::Snapshot)?;
-            if !stamp.is_current(state) {
+            if !stamp.is_current(state)
+                || state.ambient_declaration_revision() != declaration_revision
+            {
                 return Err(AmbientProjectError::Snapshot(SnapshotRefusal::Superseded));
             }
             Ok(())
@@ -100,21 +104,50 @@ impl AmbientComponentProject {
             .await
             .map_err(AmbientProjectError::Declaration)?;
         current()?;
+        let document_options = state.canonical_vue_document_options();
+        if !self.bridge.is_initialized() {
+            let seed = self
+                .bridge
+                .prepare_initial_vue_project(CorsaVueWorkspaceRequest {
+                    source_path: path.clone(),
+                    content: snapshot.source().into(),
+                    options: document_options,
+                    virtual_ts_options: options.clone(),
+                    overlays: owned(&overlays),
+                    requested_sources: owned(&declarations),
+                })
+                .map_err(AmbientProjectError::Native)?;
+            current()?;
+            if let Some(seed) = seed {
+                let owner = Arc::clone(state);
+                // The subsequent read always synchronizes the entire current
+                // graph, even when inputs changed during the initial handshake.
+                self.bridge
+                    .spawn_with_initial_project(seed, move || {
+                        stamp.is_current(&owner)
+                            && owner.ambient_declaration_revision() == declaration_revision
+                    })
+                    .await
+                    .map_err(AmbientProjectError::Native)?;
+            } else {
+                self.bridge
+                    .spawn()
+                    .await
+                    .map_err(AmbientProjectError::Native)?;
+            }
+        }
+        current()?;
         let document = self
             .bridge
-            .open_vue_virtual_workspace_document(
+            .read_ambient_vue_diagnostics(
                 &path,
                 snapshot.source(),
-                state.canonical_vue_document_options(),
+                document_options,
                 &borrowed(&overlays),
                 &options,
                 &borrowed(&declarations),
+                previous.take(),
             )
-            .await
-            .map_err(AmbientProjectError::Native)?;
-        let raw = self
-            .bridge
-            .get_diagnostics_with_provenance(&document.request_uri)
             .await
             .map_err(AmbientProjectError::Native)?;
         current()?;
@@ -123,7 +156,8 @@ impl AmbientComponentProject {
             mapping: document.mapping,
             import_source_map: document.import_source_map,
         };
-        let finished = raw
+        let finished = document
+            .diagnostics
             .into_iter()
             .filter_map(|row| finished_from_phased_lsp(&projection.code, row, 0))
             .collect();
@@ -132,10 +166,12 @@ impl AmbientComponentProject {
             .map(|row| row.diagnostic)
             .collect();
         current()?;
+        *previous = document.snapshot;
         Ok(response)
     }
 
     pub async fn shutdown(self) -> Result<(), CorsaBridgeError> {
+        drop(self.transaction.into_inner());
         self.bridge.shutdown().await
     }
 }
@@ -144,6 +180,13 @@ fn borrowed(entries: &[(PathBuf, Arc<String>)]) -> Vec<(PathBuf, &str)> {
     entries
         .iter()
         .map(|(path, text)| (path.clone(), text.as_str()))
+        .collect()
+}
+
+fn owned(entries: &[(PathBuf, Arc<String>)]) -> Vec<(PathBuf, Arc<str>)> {
+    entries
+        .iter()
+        .map(|(path, text)| (path.clone(), Arc::from(text.as_str())))
         .collect()
 }
 
