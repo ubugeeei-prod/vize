@@ -5,6 +5,7 @@ use vize_l1::{container::vue::Vue, css::lang::StyleLanguage};
 use vize_l2::lang::scss::ScssProgram;
 use vize_l4::{targets::scss, write::EmitDocument};
 
+mod map_corpus;
 mod prepared;
 #[cfg(feature = "native-scoped-scss")]
 mod scoped;
@@ -39,6 +40,7 @@ fn paired(label: &str, run: impl Fn(bool)) -> (u128, u128) {
         "whole_scss {label} ns={}/{} calls={}/{} peak={}/{}",
         a[15], b[15], old.calls, new.calls, old.peak_bytes_over_start, new.peak_bytes_over_start
     );
+    assert!(b[15] <= a[15], "{label}: median {} vs {}", b[15], a[15]);
     assert!(
         new.calls <= old.calls && new.peak_bytes_over_start <= old.peak_bytes_over_start,
         "{label}"
@@ -100,6 +102,30 @@ fn composed_css_documents_and_full_component_cost() {
                 source_map: mapped,
                 ..Default::default()
             };
+            if mapped {
+                let result = compile_native_sfc_with_scss(&arena, &source, options);
+                let output = result.result().unwrap();
+                let css = output.css_document().unwrap();
+                let js = output.document();
+                let maps = |indexed| {
+                    if indexed {
+                        let index = vize_l4::write::source_map::SourceMapIndex::new(&source);
+                        (
+                            index.source_map(js, FILENAME),
+                            index.source_map(css, FILENAME),
+                        )
+                    } else {
+                        (
+                            js.source_map(FILENAME, &source),
+                            css.source_map(FILENAME, &source),
+                        )
+                    }
+                };
+                assert_eq!(maps(false), maps(true));
+                paired(&format!("complete-maps styles={count}"), |indexed| {
+                    drop(black_box(maps(indexed)))
+                });
+            }
             let complete = || {
                 let arena = Allocator::default();
                 let result = compile_native_sfc_with_scss(&arena, black_box(&source), options);
