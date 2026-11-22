@@ -3,18 +3,13 @@
 use super::NativeSfcCompileError;
 use std::hash::{Hash, Hasher};
 use vize_l0::String;
+use vize_l4::module::ScopeId;
 
-pub(crate) fn for_styles<'o, 'a: 'o>(
-    #[cfg(not(feature = "native-scoped-scss"))]
-    descriptor: vize_l1::container::vue::AdmittedDescriptor<'o, 'a>,
-    #[cfg(feature = "native-scoped-scss")] descriptor: impl Into<
-        vize_l1::container::vue::CheckedStyleBlocks<'o, 'a>,
-    >,
+pub(crate) fn for_styles(
+    descriptor: StyleBlocks<'_, '_>,
     explicit: Option<&str>,
     filename: &str,
 ) -> Result<Option<String>, NativeSfcCompileError> {
-    #[cfg(feature = "native-scoped-scss")]
-    let descriptor = descriptor.into();
     if !descriptor
         .styles()
         .any(|style| style.attrs().iter().any(|attr| attr.name == "scoped"))
@@ -22,7 +17,7 @@ pub(crate) fn for_styles<'o, 'a: 'o>(
         return Ok(None);
     }
     if let Some(value) = explicit {
-        vize_l4::module::ScopeId::new(value).map_err(NativeSfcCompileError::Assembly)?;
+        ScopeId::new(value).map_err(NativeSfcCompileError::Assembly)?;
         return Ok(Some(value.into()));
     }
     // The established ordinary SFC filename policy: DefaultHasher, low 32 bits,
@@ -36,4 +31,23 @@ pub(crate) fn for_styles<'o, 'a: 'o>(
         output.push(char::from_digit(((value >> shift) & 0xf) as u32, 16).unwrap_or('0'));
     }
     Ok(Some(output))
+}
+
+// Whole components and independently checked styles use the same scope policy.
+// Only the opt-in component entry point needs to narrow its descriptor.
+#[cfg(not(feature = "native-scoped-scss"))]
+use vize_l1::container::vue::AdmittedDescriptor as StyleBlocks;
+#[cfg(feature = "native-scoped-scss")]
+use vize_l1::container::vue::CheckedStyleBlocks as StyleBlocks;
+
+#[cfg(not(feature = "native-scoped-scss"))]
+pub(crate) use for_styles as for_component;
+
+#[cfg(feature = "native-scoped-scss")]
+pub(crate) fn for_component(
+    descriptor: vize_l1::container::vue::AdmittedDescriptor<'_, '_>,
+    explicit: Option<&str>,
+    filename: &str,
+) -> Result<Option<String>, NativeSfcCompileError> {
+    for_styles(descriptor.into(), explicit, filename)
 }

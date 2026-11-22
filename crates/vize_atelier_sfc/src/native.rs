@@ -253,7 +253,7 @@ fn emit<L: LinkSink>(
         .descriptor()
         .admitted()
         .map_err(|_| NativeSfcCompileError::Descriptor)?;
-    let scope_id = scope::for_styles(descriptor, options.scope_id, options.filename)?;
+    let scope_id = scope::for_component(descriptor, options.scope_id, options.filename)?;
     let scope = scope_id
         .as_deref()
         .map(vize_l4::module::ScopeId::new)

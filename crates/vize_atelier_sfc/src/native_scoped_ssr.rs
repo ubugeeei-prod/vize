@@ -159,7 +159,7 @@ fn emit<L: LinkSink>(
         .admitted()
         .ok_or(Error::Custody)?
         .into_scoped_template_view();
-    let scope_id = scope::for_styles(view.descriptor(), options.scope_id, options.filename)
+    let scope_id = scope::for_component(view.descriptor(), options.scope_id, options.filename)
         .map_err(Error::Style)?
         .ok_or(Error::Custody)?;
     let scope = ScopeId::new(&scope_id).map_err(Error::Assembly)?;
