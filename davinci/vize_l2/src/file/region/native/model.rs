@@ -154,6 +154,8 @@ where
             ScopedResolution {
                 scope: self.scope,
                 table,
+                #[cfg(feature = "template-operand-queries")]
+                kind: crate::query::TemplateOperandKind::Model,
             },
         );
         let record = self

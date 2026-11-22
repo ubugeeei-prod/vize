@@ -19,6 +19,8 @@ component-sites = ["module-ir", "vize_l1/component-sites"]
 position-index = []
 # Read the sealed occurrence tables for all admitted template expressions.
 expression-queries = []
+# Observe expression roles and lexical scopes at their original resolution factories.
+template-operand-queries = ["expression-queries"]
 # Attach selected framework facts to the same original File.
 observed-queries = []
 # Read a descriptor’s retained L1 Programs when producing Vue facts.
