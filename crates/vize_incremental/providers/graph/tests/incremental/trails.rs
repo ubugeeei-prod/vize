@@ -25,6 +25,14 @@ fn read_trails(db: &ResidentDatabase, file: SourceFile) -> Result<Vec<Row>, Temp
         ControlFlow::<()>::Continue(())
     })?;
     assert_eq!(result, ControlFlow::Continue(()));
+    let certificate: Vec<_> = rows.iter().map(|(matched, _, _)| *matched).collect();
+    assert_eq!(graph.check_two_hop(query, &certificate), Ok(()));
+    if let Some((_, prefix)) = certificate.split_last() {
+        assert!(matches!(
+            graph.check_two_hop(query, prefix),
+            Err(vize_l3::query::TrailError::Mismatch { at, .. }) if at == prefix.len()
+        ));
+    }
     assert_eq!(
         graph.authored_span(OpId::new(99)),
         Err(TemplateGraphError::Graph(GraphError::UnknownOp(OpId::new(

@@ -1,7 +1,9 @@
 //! Two directed, typed relationships joined on their middle operation.
 //! Original relationship ordinals identify matches, including parallel edges.
 
-use super::{Direction, EdgeKinds, GraphError, L3Ir, OpGraph, OpId, Positions, ReachQuery};
+use super::{
+    Direction, EdgeKinds, GraphError, L3Ir, Op, OpGraph, OpId, Positions, ReachQuery, StateEdge,
+};
 use core::ops::ControlFlow;
 
 /// Direction and eligible kinds of one relationship in a pattern.
@@ -89,11 +91,20 @@ pub fn check_two_hop_matches(
     query: TwoHopQuery,
     rows: &[TwoHopMatch],
 ) -> Result<(), TrailError> {
-    let positions = Positions::read(&ir.ops, &ir.edges).map_err(TrailError::Graph)?;
+    check_rows(&ir.ops, &ir.edges, query, rows)
+}
+
+pub(super) fn check_rows(
+    ops: &[Op],
+    edges: &[StateEdge],
+    query: TwoHopQuery,
+    rows: &[TwoHopMatch],
+) -> Result<(), TrailError> {
+    let positions = Positions::read(ops, edges).map_err(TrailError::Graph)?;
     positions
         .get(query.start)
         .ok_or(TrailError::Graph(GraphError::UnknownOp(query.start)))?;
-    for (i, edge) in ir.edges.iter().enumerate() {
+    for (i, edge) in edges.iter().enumerate() {
         positions
             .endpoint(i as u32, edge.from)
             .map_err(TrailError::Graph)?;
@@ -102,12 +113,12 @@ pub fn check_two_hop_matches(
             .map_err(TrailError::Graph)?;
     }
     let mut at = 0;
-    for (first, left) in ir.edges.iter().enumerate() {
+    for (first, left) in edges.iter().enumerate() {
         let (from, middle) = query.first.direction.endpoints(left);
         if from != query.start || !query.first.kinds.contains(left.kind) {
             continue;
         }
-        for (second, right) in ir.edges.iter().enumerate() {
+        for (second, right) in edges.iter().enumerate() {
             let (through, end) = query.second.direction.endpoints(right);
             if first == second || middle != through || !query.second.kinds.contains(right.kind) {
                 continue;

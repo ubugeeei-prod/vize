@@ -149,6 +149,15 @@ impl<'db> TemplateReachBatch<'db> {
             .map_err(TemplateGraphError::Graph)
     }
 
+    /// Certify the entire ordered answer against this snapshot's retained L3 rows.
+    pub fn check_two_hop(
+        &self,
+        query: TwoHopQuery,
+        rows: &[TwoHopMatch],
+    ) -> Result<(), vize_l3::query::TrailError> {
+        self.graph.check_two_hop(query, rows)
+    }
+
     /// Resolve a matched operation only when the consumer requests its current source site.
     pub fn authored_span(&self, op: OpId) -> Result<Span, TemplateGraphError> {
         let original = self

@@ -88,6 +88,15 @@ impl<'p> OpGraph<'p> {
         super::check::check_rows(&self.ops, &self.edges, query, steps)
     }
 
+    /// Check a complete trail response against the original rows of this graph.
+    pub fn check_two_hop(
+        &self,
+        query: super::TwoHopQuery,
+        rows: &[super::TwoHopMatch],
+    ) -> Result<(), super::TrailError> {
+        super::trail::check_rows(&self.ops, &self.edges, query, rows)
+    }
+
     fn incident_at(
         &self,
         position: usize,

@@ -63,6 +63,7 @@ fn every_kind_mask_and_direction_preserves_parallel_relationship_multiplicity() 
                 };
                 let rows = matches(&graph, query);
                 assert_eq!(check_two_hop_matches(&ir, query, &rows), Ok(()));
+                assert_eq!(graph.check_two_hop(query, &rows), Ok(()));
                 let first = graph
                     .visit_two_hop(query, ControlFlow::Break)
                     .unwrap()
