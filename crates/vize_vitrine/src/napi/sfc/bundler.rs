@@ -159,3 +159,8 @@ pub fn wrap_sfc_scoped_preprocessor_style(
     vize_atelier_sfc::wrap_scoped_preprocessor_style(&content, scoped.as_deref(), lang.as_deref())
         .into()
 }
+
+#[cfg(feature = "experimental-bundler-block-products")]
+mod products;
+#[cfg(feature = "experimental-bundler-block-products")]
+pub use products::*;

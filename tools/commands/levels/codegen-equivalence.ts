@@ -1,5 +1,5 @@
 // Compare a library's linker inputs or the complete consuming executable for two immutable Git revisions.
-// node tools/commands/levels/codegen-equivalence.ts BASE_SHA HEAD_SHA PACKAGE lib|bin:NAME default|portable REPORT.json
+// node tools/commands/levels/codegen-equivalence.ts BASE_SHA HEAD_SHA PACKAGE lib|bin:NAME|node-addon default|portable REPORT.json
 import { execFileSync, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { once } from "node:events";
@@ -99,6 +99,7 @@ async function build(
   sourceDateEpoch: string,
 ): Promise<{ evidence: Build; executable?: string }> {
   const binary = product.startsWith("bin:") ? product.slice(4) : undefined;
+  const addon = product === "node-addon";
   const metadata: { packages: CargoPackage[]; workspace_members: string[] } = JSON.parse(
     execFileSync("cargo", ["metadata", "--locked", "--no-deps", "--format-version", "1"], {
       cwd: checkout,
@@ -114,13 +115,17 @@ async function build(
   const targets = owner.targets.filter((target) =>
     binary
       ? target.name === binary && target.kind.includes("bin")
-      : target.kind.includes("lib") || target.kind.includes("rlib"),
+      : addon
+        ? target.kind.includes("cdylib")
+        : target.kind.includes("lib") || target.kind.includes("rlib"),
   );
   if (targets.length !== 1) throw new Error(`expected one ${product} target for ${pkg}`);
   const requested = targets[0];
   const selector = binary ? ["--bin", binary] : ["--lib"];
   const args = ["build", ...selector, "--locked", "--profile", "ci-opt", "-p", pkg];
   if (mode === "portable") args.push("--no-default-features");
+  // Match the native package build in npm/native/scripts/build-local.mts.
+  if (addon) args.push("--features", "napi,legacy");
   const output = execFileSync("cargo", [...args, "--message-format=json-render-diagnostics"], {
     cwd: checkout,
     encoding: "utf8",
@@ -150,9 +155,22 @@ async function build(
     throw new Error(`expected one freshly compiled workspace target for ${pkg}`);
   const artifact = artifacts[0];
   let members;
+  let linked: string | undefined;
   if (binary) {
     if (!artifact.executable) throw new Error(`expected executable for ${binary}`);
+    linked = artifact.executable;
     members = [await fingerprint(fs.createReadStream(artifact.executable), "executable", binary)];
+  } else if (addon) {
+    const libraries = (artifact.filenames as string[]).filter((name) =>
+      /[.](?:so|dylib|dll)$/u.test(name),
+    );
+    if (
+      libraries.length !== 1 ||
+      !["napi", "legacy"].every((feature) => artifact.features.includes(feature))
+    )
+      throw new Error(`expected one native addon with the package build features for ${pkg}`);
+    linked = libraries[0];
+    members = [await fingerprint(fs.createReadStream(linked), "node-addon", requested.name)];
   } else {
     const libraries = artifact.filenames.filter((name: string) => name.endsWith(".rlib"));
     if (libraries.length !== 1) throw new Error(`expected one rlib for ${pkg}`);
@@ -173,7 +191,7 @@ async function build(
     profile: artifact.profile,
     members,
   };
-  return { evidence, executable: binary ? artifact.executable : undefined };
+  return { evidence, executable: linked };
 }
 
 export function differences(base: Build, head: Build): string[] {
@@ -210,10 +228,16 @@ async function main([base, head, pkg, product, mode, report, ...extra]: string[]
     !report ||
     ![base, head].every((rev) => /^[a-f0-9]{40}$/u.test(rev)) ||
     !/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/u.test(pkg) ||
-    !(product === "lib" || /^bin:[a-zA-Z0-9][a-zA-Z0-9_-]*$/u.test(product)) ||
+    !(
+      product === "lib" ||
+      product === "node-addon" ||
+      /^bin:[a-zA-Z0-9][a-zA-Z0-9_-]*$/u.test(product)
+    ) ||
     !["default", "portable"].includes(mode)
   )
-    throw new Error("expected BASE_SHA HEAD_SHA PACKAGE lib|bin:NAME default|portable REPORT.json");
+    throw new Error(
+      "expected BASE_SHA HEAD_SHA PACKAGE lib|bin:NAME|node-addon default|portable REPORT.json",
+    );
   const root = git(process.cwd(), "rev-parse", "--show-toplevel");
   for (const rev of [base, head])
     if (git(root, "cat-file", "-t", rev) !== "commit") throw new Error(`not a commit: ${rev}`);
@@ -243,7 +267,7 @@ async function main([base, head, pkg, product, mode, report, ...extra]: string[]
     const after = second.evidence;
     const changed = differences(before, after);
     let executables;
-    if (second.executable && changed.includes("executable")) {
+    if (second.executable && (changed.includes("executable") || changed.includes("node-addon"))) {
       const directory = fs.mkdtempSync(path.resolve(report) + ".executables-");
       try {
         for (const [side, source] of [

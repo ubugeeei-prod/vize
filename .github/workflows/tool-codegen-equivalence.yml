@@ -16,7 +16,7 @@ on:
         default: vize_maestro
         type: string
       product:
-        description: Library (lib) or complete binary (bin:NAME)
+        description: Library (lib), binary (bin:NAME), or packaged native image (node-addon)
         required: true
         default: lib
         type: string
@@ -74,7 +74,7 @@ jobs:
           path: ${{ runner.temp }}/codegen-${{ matrix.mode }}.json
           if-no-files-found: ignore
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        if: failure() && startsWith(env.PRODUCT, 'bin:')
+        if: failure() && (startsWith(env.PRODUCT, 'bin:') || env.PRODUCT == 'node-addon')
         with:
           name: tool-executable-difference-${{ matrix.mode }}
           path: ${{ runner.temp }}/codegen-${{ matrix.mode }}.json.executables-*/*
