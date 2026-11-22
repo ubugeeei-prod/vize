@@ -16,19 +16,21 @@ pub fn assert_paired_time(label: &str, iterations: u32, mut run: impl FnMut(bool
             }
             start.elapsed().as_nanos()
         };
-        let mut baseline = [0; PAIRS];
-        let mut candidate = [0; PAIRS];
-        let mut slower = 0;
-        for round in 0..PAIRS + 4 {
+        let mut pair = |round: usize| {
             let first = (round % 2 == 0) != reverse;
             let a = sample(first);
             let b = sample(!first);
-            if let Some(i) = round.checked_sub(4) {
-                let (old, new) = if first { (b, a) } else { (a, b) };
-                baseline[i] = old;
-                candidate[i] = new;
-                slower += usize::from(new > old);
-            }
+            if first { (b, a) } else { (a, b) }
+        };
+        for warmup in 0..4 {
+            pair(warmup);
+        }
+        let mut baseline = [0; PAIRS];
+        let mut candidate = [0; PAIRS];
+        let mut slower = 0;
+        for (round, (old, new)) in baseline.iter_mut().zip(&mut candidate).enumerate() {
+            (*old, *new) = pair(round);
+            slower += usize::from(*new > *old);
         }
         baseline.sort_unstable();
         candidate.sort_unstable();
