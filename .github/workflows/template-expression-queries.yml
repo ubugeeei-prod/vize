@@ -128,5 +128,6 @@ jobs:
           editor=(-p vize_maestro --features experimental-component-props,micro-profiling --lib)
           cargo clippy "${flags[@]}" "${native[@]}" --lib --no-deps -- -D warnings
           cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
+          cargo test "${flags[@]}" -p vize_l2 --features component-prop-queries --lib original_operand_checks
           cargo test "${flags[@]}" "${native[@]}" --test expression_queries component_props:: -- --include-ignored --nocapture --test-threads=1
           cargo test "${flags[@]}" "${editor[@]}" component_props::original:: -- --include-ignored --nocapture --test-threads=1

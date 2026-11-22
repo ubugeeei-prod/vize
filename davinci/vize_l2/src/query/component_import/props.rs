@@ -57,17 +57,8 @@ impl<'a> ImportedComponentSite<'_, 'a> {
                     if !bind.modifiers.is_empty() {
                         return Err(ComponentPropIssue::Binding(bind.span));
                     }
-                    let extent = value.span();
-                    let spelling = source
-                        .source()
-                        .get(extent.start as usize..extent.end as usize)
-                        .ok_or(ComponentPropIssue::OriginalSource)?;
-                    // A shorthand may synthesize a camelized operand over the
-                    // authored kebab-case name. Its spelling and value differ.
-                    if !std::ptr::eq(spelling, value.source()) && spelling != value.source() {
-                        return Err(ComponentPropIssue::Binding(bind.span));
-                    }
-                    let row = (name, Some(spelling), bind.span, Some(extent));
+                    let spelling = original_operand(source.source(), value, bind.span)?;
+                    let row = (name, Some(spelling), bind.span, Some(value.span()));
                     bindings.next();
                     row
                 }
@@ -96,5 +87,54 @@ impl<'a> ImportedComponentSite<'_, 'a> {
             previous = span.end;
         }
         Ok(())
+    }
+}
+
+fn original_operand<'a>(
+    source: &'a str,
+    value: crate::expr::ExprRef<'_>,
+    binding: Span,
+) -> Result<&'a str, ComponentPropIssue> {
+    let extent = value.span();
+    let spelling = source
+        .get(extent.start as usize..extent.end as usize)
+        .ok_or(ComponentPropIssue::OriginalSource)?;
+    // A same-name shorthand can synthesize a camelized expression at the
+    // kebab-case argument's span. Only publish bytes from the original file.
+    if !core::ptr::eq(spelling, value.source()) && spelling != value.source() {
+        return Err(ComponentPropIssue::Binding(binding));
+    }
+    Ok(spelling)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::expr::ExprRef;
+    use vize_l0::Allocator;
+
+    #[test]
+    fn original_operand_checks_synthesized_and_explicit_bytes() {
+        let arena = Allocator::new();
+        let source = ":user-name='userName'";
+        let binding = Span::new(0, 10);
+        let synthesized = ExprRef::parse_js_in(&arena, "userName", Span::new(1, 10));
+        assert_eq!(
+            original_operand(source, synthesized, binding),
+            Err(ComponentPropIssue::Binding(binding))
+        );
+        let valid_extent = Span::new(12, 20);
+        for text in ["userName", valid_extent.slice(source)] {
+            let explicit = ExprRef::parse_js_in(&arena, text, valid_extent);
+            assert!(core::ptr::eq(
+                original_operand(source, explicit, Span::new(0, 21)).unwrap(),
+                valid_extent.slice(source)
+            ));
+        }
+        let invalid = ExprRef::parse_js_in(&arena, "x", Span::new(20, 22));
+        assert_eq!(
+            original_operand(source, invalid, binding),
+            Err(ComponentPropIssue::OriginalSource)
+        );
     }
 }

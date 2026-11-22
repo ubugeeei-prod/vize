@@ -83,18 +83,16 @@ fn original_binding_values_keep_the_spelling_at_the_reported_operand() {
         );
         let arena = Allocator::new();
         let observed = observe(&arena, &source);
-        let imports = observed.setup_component_imports().unwrap();
-        let mut rows = Vec::new();
-        let issue = imports.sites()[0]
-            .visit_passed_props(|prop| rows.push(prop))
-            .unwrap_err();
-        let ComponentPropIssue::Binding(span) = issue else {
-            panic!("expected synthesized operand")
+        assert!(matches!(
+            observed.setup_component_imports(),
+            Err(vize_l1_to_l2::native_file::ComponentImportRefusal::SourceAssembly)
+        ));
+        let [hole] = observed.template().unwrap().holes() else {
+            panic!("expected one unsupported shorthand")
         };
-        assert_eq!(span.slice(&source), attribute);
-        assert!(rows.is_empty());
+        assert_eq!(hole.span.slice(&source), attribute);
     }
-    let source = "<script setup>import Card from './Card.vue'; const userName=1;</script><template><Card :userName :user-name='userName'/></template>";
+    let source = "<script setup>import Card from './Card.vue'; const userName=1;</script><template><Card :userName='userName' :user-name='userName'/></template>";
     let arena = Allocator::new();
     let observed = observe(&arena, source);
     let imports = observed.setup_component_imports().unwrap();
