@@ -40,3 +40,8 @@ pub use script_queries::{ScriptModuleSpecifier, ScriptQueryProducts, ScriptQuery
 
 #[cfg(feature = "experimental-script-tools")]
 pub use script_queries::tools::{ScriptBlockLint, ScriptToolAnalysis, ScriptToolProducts};
+
+#[cfg(feature = "experimental-scss-definitions")]
+mod scss;
+#[cfg(feature = "experimental-scss-definitions")]
+pub use scss::ScssDefinitionError;

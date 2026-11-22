@@ -463,3 +463,10 @@ mod tests;
 mod uri_snapshot_tests;
 #[cfg(test)]
 mod version_tests;
+
+#[cfg(feature = "experimental-scss-definitions")]
+impl Document {
+    pub(crate) fn position_text(&self) -> &DocumentText {
+        &self.content
+    }
+}

@@ -147,3 +147,6 @@ mod parse_tests;
 mod snapshot_tests;
 #[cfg(test)]
 mod template_tests;
+
+#[cfg(feature = "original-scss-products")]
+pub mod scss;

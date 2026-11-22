@@ -9,6 +9,8 @@ description = "Maestro - Language Server Protocol implementation for Vize Vue te
 publish = false
 
 [features]
+# Project original SCSS variable definitions for an explicitly selected document revision.
+experimental-scss-definitions = ["vize_atelier_sfc/original-scss-products"]
 experimental-style-lint-products = [
   "experimental-style-module-products",
   "vize_patina/observed-style-rules",
