@@ -332,3 +332,32 @@ fn percent_encode(value: &str) -> String {
     }
     encoded
 }
+
+/// Build the complete playground payload and publish the Doctor record of each
+/// original source. Both observe the same template lowering while it is live.
+#[cfg(feature = "inspector-template-products")]
+pub fn build_payload_with_complexity(
+    target: InspectorTarget,
+    options: InspectorOptions,
+    files: Vec<InspectorSourceFile>,
+    component: impl FnMut(&InspectorSourceFile, Option<vize_croquis_cf::TemplateComplexity>),
+) -> InspectorPayload {
+    let stage_feed = super::inspect_template_products(&files, component);
+    InspectorPayload {
+        version: 1,
+        target: target.as_payload_str(),
+        selected_file: files.first().map(|f| f.path.clone()),
+        options: InspectorPayloadOptions {
+            custom_renderer: options.custom_renderer,
+            template_syntax: options.template_syntax,
+        },
+        files: files
+            .into_iter()
+            .map(|f| InspectorPayloadFile {
+                path: f.path,
+                source: f.source,
+            })
+            .collect(),
+        stage_feed,
+    }
+}
