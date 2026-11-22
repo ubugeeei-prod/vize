@@ -217,10 +217,8 @@ mod tests {
     ) -> Context<'component, 'a> {
         Context {
             allocator: a,
-            component,
+            component: crate::native::block::component_input(component),
             lang: Lang::Js,
-            #[cfg(feature = "lexical-arrow-initializers")]
-            expressions: None,
             holes: &mut observations.holes,
             diagnostics: &mut observations.diagnostics,
             embeds: &mut observations.embeds,

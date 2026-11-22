@@ -109,7 +109,7 @@ impl<'a> Context<'_, 'a> {
         #[cfg(not(feature = "lexical-arrow-initializers"))]
         let retained = retained!(syntax.into_expression());
         #[cfg(feature = "lexical-arrow-initializers")]
-        let retained = retained!(match self.expressions.as_mut() {
+        let retained = retained!(match self.component.expressions.as_mut() {
             Some(parser) => parser.parse(source, self.lang),
             None => parse_once(
                 self.allocator,

@@ -117,6 +117,8 @@ impl<'p, 'a> ProgramInput<'p, 'a> {
 
 /// Sole source of file-local declarations from original admitted observations.
 pub struct FileProducer<'a> {
+    #[cfg(feature = "lexical-arrow-initializers")]
+    lexical_arrow_initializers: bool,
     builder: FileBuilder<'a>,
 }
 
@@ -124,6 +126,8 @@ impl<'a> FileProducer<'a> {
     pub fn new(allocator: &'a Allocator, source: &'a str) -> Result<Self, ArtifactError> {
         Ok(Self {
             builder: FileBuilder::new(allocator, source)?,
+            #[cfg(feature = "lexical-arrow-initializers")]
+            lexical_arrow_initializers: false,
         })
     }
 
@@ -148,6 +152,12 @@ impl<'a> FileProducer<'a> {
                 kind: FileIssueKind::InvalidSource,
             });
         }
+        #[cfg(feature = "lexical-arrow-initializers")]
+        let input = if self.lexical_arrow_initializers {
+            input.with_lexical_arrow_initializers()
+        } else {
+            input
+        };
         let Some((unit, lexical_scope)) = self.builder.facts.unit(
             input.index,
             input.block.span(),
@@ -168,7 +178,7 @@ impl<'a> FileProducer<'a> {
         };
         #[cfg(feature = "lexical-arrow-initializers")]
         if input.lexical_arrow_initializers {
-            guard.facts().arena_expressions = true;
+            guard.facts().expressions.in_arena = true;
         }
         if let Some(unit) = guard.facts().units.last() {
             observer.unit(unit);
@@ -259,6 +269,11 @@ impl ProgramInput<'_, '_> {
 
 #[cfg(feature = "lexical-arrow-initializers")]
 impl FileProducer<'_> {
+    /// Enable lexical arrow initializers in each admitted original Program of this file.
+    pub fn enable_lexical_arrow_initializers(&mut self) {
+        self.lexical_arrow_initializers = true;
+    }
+
     /// Bounded capacity hints from the original surface. No nodes, issues or
     /// resolution facts are created by this operation.
     pub fn reserve_template_storage(&mut self, roots: usize, expressions: usize) {
@@ -267,9 +282,6 @@ impl FileProducer<'_> {
         self.builder
             .canonical
             .reserve_template_storage(roots, expressions);
-        if expressions > 0 && self.builder.facts.expressions.is_empty() {
-            self.builder.facts.expressions =
-                vize_l0::side_table::SideTable::with_capacity(expressions);
-        }
+        self.builder.facts.expressions.reserve_if_empty(expressions);
     }
 }

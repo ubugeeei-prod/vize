@@ -130,12 +130,8 @@ pub(super) fn construct_component<'a, R: ConstructionFactory<'a>>(
 ) {
     let mut cx = Context {
         allocator: component.allocator,
-        component,
+        component: component_input(component),
         lang,
-        #[cfg(feature = "lexical-arrow-initializers")]
-        expressions: component
-            .retained_expressions
-            .then(|| vize_l1::embed::syntax::RetainedExpressionParser::new(component.allocator)),
         holes: &mut observations.holes,
         diagnostics: &mut observations.diagnostics,
         embeds: &mut observations.embeds,
@@ -191,3 +187,35 @@ impl<'a> Context<'_, 'a> {
 mod observed;
 #[cfg(test)]
 mod tests;
+
+#[cfg(not(feature = "lexical-arrow-initializers"))]
+pub(super) type ComponentInput<'c, 'a> = &'c NativeComponent<'a>;
+#[cfg(not(feature = "lexical-arrow-initializers"))]
+pub(super) use core::convert::identity as component_input;
+
+#[cfg(feature = "lexical-arrow-initializers")]
+pub(super) struct ComponentInput<'c, 'a> {
+    component: &'c NativeComponent<'a>,
+    pub(super) expressions: Option<vize_l1::embed::syntax::RetainedExpressionParser<'a>>,
+}
+
+#[cfg(feature = "lexical-arrow-initializers")]
+pub(super) fn component_input<'c, 'a>(
+    component: &'c NativeComponent<'a>,
+) -> ComponentInput<'c, 'a> {
+    ComponentInput {
+        component,
+        expressions: component
+            .retained_expressions
+            .then(|| vize_l1::embed::syntax::RetainedExpressionParser::new(component.allocator)),
+    }
+}
+
+#[cfg(feature = "lexical-arrow-initializers")]
+impl<'a> core::ops::Deref for ComponentInput<'_, 'a> {
+    type Target = NativeComponent<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        self.component
+    }
+}

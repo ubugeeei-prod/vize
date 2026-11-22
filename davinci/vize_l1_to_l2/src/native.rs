@@ -135,14 +135,12 @@ fn empty_rejection<'a>(
 
 struct Context<'component, 'a> {
     allocator: &'a Allocator,
-    component: &'component NativeComponent<'a>,
+    component: block::ComponentInput<'component, 'a>,
     lang: Lang,
     holes: &'component mut Vec<NativeHole>,
     diagnostics: &'component mut Vec<Diagnostic>,
     embeds: &'component mut Vec<NativeEmbed<'a>>,
     rejected_syntax: &'component mut Vec<EmbedSyntax<'a>>,
-    #[cfg(feature = "lexical-arrow-initializers")]
-    expressions: Option<vize_l1::embed::syntax::RetainedExpressionParser<'a>>,
 }
 
 impl<'a> Context<'_, 'a> {

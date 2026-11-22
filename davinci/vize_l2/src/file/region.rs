@@ -116,7 +116,7 @@ where
         }
         #[cfg(feature = "lexical-arrow-initializers")]
         let resolve_expression = |expression: &JsExpr<'a>, lookup: &Lookup<'_, 'a, P>| {
-            if self.facts.arena_expressions {
+            if self.facts.expressions.in_arena {
                 crate::resolution::sink::arena::resolve(self.region.allocator(), expression, lookup)
             } else {
                 crate::resolution::resolve_expression(expression, lookup)

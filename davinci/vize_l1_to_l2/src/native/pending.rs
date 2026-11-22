@@ -256,8 +256,9 @@ impl PendingNativeComponent<'_> {
                         .take(32 - expressions)
                         .filter(|attr| {
                             attr.value.is_some()
-                                && (attr.name.text.starts_with(':')
-                                    || attr.name.text.starts_with("v-bind:"))
+                                && (attr.name.text.starts_with([':', '@'])
+                                    || attr.name.text.starts_with("v-bind:")
+                                    || attr.name.text.starts_with("v-on:"))
                         })
                         .count();
                 }
