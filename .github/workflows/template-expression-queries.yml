@@ -19,6 +19,7 @@ on:
       - "davinci/vize_l2/src/resolution*"
       - "davinci/vize_l2/src/resolution/**"
       - "davinci/vize_l1_to_l2/Cargo.toml"
+      - "davinci/vize_l1_to_l2/src/native/**"
       - "davinci/vize_l1_to_l2/src/native_file*"
       - "davinci/vize_l1_to_l2/src/native_file/**"
       - "davinci/vize_l1_to_l2/tests/expression_queries/**"
@@ -124,10 +125,12 @@ jobs:
           export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/original-prop-inputs"
           git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
           flags=(--locked --profile ci-opt)
-          native=(-p vize_l1_to_l2 --features component-prop-queries,vize_l2/expression-queries,vize_l2/position-index)
+          native=(-p vize_l1_to_l2 --features authored-bind-shorthand,component-prop-queries,template-operand-queries,vize_l2/expression-queries,vize_l2/position-index)
           editor=(-p vize_maestro --features experimental-component-props,micro-profiling --lib)
           cargo clippy "${flags[@]}" "${native[@]}" --lib --no-deps -- -D warnings
           cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
           cargo test "${flags[@]}" -p vize_l2 --features component-prop-queries --lib original_operand_checks
+          cargo test "${flags[@]}" "${native[@]}" --test expression_queries shorthand:: -- --include-ignored --nocapture --test-threads=1
+          cargo test "${flags[@]}" "${native[@]}" --test expression_query_alloc
           cargo test "${flags[@]}" "${native[@]}" --test expression_queries component_props:: -- --include-ignored --nocapture --test-threads=1
           cargo test "${flags[@]}" "${editor[@]}" component_props::original:: -- --include-ignored --nocapture --test-threads=1

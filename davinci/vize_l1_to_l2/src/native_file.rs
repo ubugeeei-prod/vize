@@ -65,6 +65,25 @@ pub fn lower_sfc_native<'a>(
     source: &'a str,
     options: DescriptorOptions,
 ) -> NativeSfcObservation<'a> {
+    lower_sfc::<false>(allocator, source, options)
+}
+
+/// Build the Vue 3.4+ file with same-name `:id` and `v-bind:id` operands
+/// whose identifier bytes belong to the original directive argument.
+#[cfg(feature = "authored-bind-shorthand")]
+pub fn lower_sfc_with_authored_bind_shorthand<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DescriptorOptions,
+) -> NativeSfcObservation<'a> {
+    lower_sfc::<true>(allocator, source, options)
+}
+
+fn lower_sfc<'a, const AUTHORED_SHORTHAND: bool>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DescriptorOptions,
+) -> NativeSfcObservation<'a> {
     let descriptor = Vue.observe_descriptor(allocator, source, options);
     let mut issues = Vec::new();
     let view = match descriptor.admitted() {
@@ -98,9 +117,14 @@ pub fn lower_sfc_native<'a>(
             &mut issues,
         ));
     }
-    let mut template = view
-        .template()
-        .map(|selected| template::prepare(allocator, selected, view.template_lang(), &mut issues));
+    let mut template = view.template().map(|selected| {
+        template::prepare::<AUTHORED_SHORTHAND>(
+            allocator,
+            selected,
+            view.template_lang(),
+            &mut issues,
+        )
+    });
     if let Some(template) = template.as_mut() {
         template.construct(producer.as_mut(), &mut issues);
     }

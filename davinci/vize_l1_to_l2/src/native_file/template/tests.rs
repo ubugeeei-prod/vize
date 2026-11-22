@@ -43,7 +43,7 @@ fn row<'a>(
         .flatten()
         .map(|selected| script::observe(allocator, selected, Some(&mut producer), &mut issues))
         .collect();
-    let template = prepare(
+    let template = prepare::<false>(
         allocator,
         view.template().unwrap(),
         view.template_lang(),

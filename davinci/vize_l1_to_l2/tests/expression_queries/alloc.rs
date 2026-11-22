@@ -18,6 +18,26 @@ static ALLOCATOR: CountingAllocator<System> = CountingAllocator::system();
 
 fn main() {
     mark_installed();
+    #[cfg(all(
+        feature = "authored-bind-shorthand",
+        feature = "component-prop-queries",
+        feature = "template-operand-queries"
+    ))]
+    shorthand_products::request_modes(|label, cold, run| {
+        let separate = measure(|| drop(black_box(run(false)))).unwrap();
+        let shared = measure(|| drop(black_box(run(true)))).unwrap();
+        assert!(
+            shared.calls <= separate.calls
+                && shared.peak_bytes_over_start <= separate.peak_bytes_over_start
+        );
+        eprintln!(
+            "shorthand_allocation case={label} cold={cold} calls={}/{} peak={}/{}",
+            separate.calls,
+            shared.calls,
+            separate.peak_bytes_over_start,
+            shared.peak_bytes_over_start
+        );
+    });
     #[cfg(feature = "setup-component-imports")]
     {
         component_imports();
@@ -200,3 +220,10 @@ fn component_imports() {
         }
     }
 }
+
+#[cfg(all(
+    feature = "authored-bind-shorthand",
+    feature = "component-prop-queries",
+    feature = "template-operand-queries"
+))]
+mod shorthand_products;

@@ -227,7 +227,7 @@ impl<'a> NativeTemplateObservation<'a> {
     }
 }
 
-pub(super) fn prepare<'a>(
+pub(super) fn prepare<'a, const AUTHORED_SHORTHAND: bool>(
     allocator: &'a Allocator,
     selected: TemplateView<'_, 'a>,
     lang: Lang,
@@ -242,10 +242,14 @@ pub(super) fn prepare<'a>(
         });
     };
     let (pending, outcome) = match NativeComponent::parse_in(allocator, block) {
-        Ok(component) => (
-            Some(PendingNativeComponent::from_component(component)),
-            NativeTemplateOutcome::ConstructionPending,
-        ),
+        Ok(component) => {
+            #[cfg(feature = "authored-bind-shorthand")]
+            let component = component.with_authored_bind_shorthand(AUTHORED_SHORTHAND);
+            (
+                Some(PendingNativeComponent::from_component(component)),
+                NativeTemplateOutcome::ConstructionPending,
+            )
+        }
         Err(error) => {
             reject(issues, NativeSfcIssueKind::TemplateSource(error));
             (None, NativeTemplateOutcome::SourceRefused(error))

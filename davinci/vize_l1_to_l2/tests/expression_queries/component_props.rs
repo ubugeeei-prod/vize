@@ -4,7 +4,7 @@ use vize_l0::{Allocator, Span};
 use vize_l1_to_l2::native_file::SetupComponentImports;
 use vize_l2::query::ComponentPropIssue;
 
-fn compare(
+pub(super) fn compare(
     imports: &SetupComponentImports<'_, '_>,
 ) -> Result<(usize, usize, usize), ComponentPropIssue> {
     let text = imports.source();
