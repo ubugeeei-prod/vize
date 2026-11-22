@@ -59,3 +59,8 @@ impl<'a> ScssProducts<'a> {
         self.style.authored_classes()
     }
 }
+
+#[cfg(feature = "verified-scss-edits")]
+mod equivalent;
+#[cfg(feature = "verified-scss-edits")]
+pub use equivalent::{ScssEquivalence, ScssMismatch};

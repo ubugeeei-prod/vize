@@ -13,6 +13,8 @@ publish = false
 retained-script = []
 # Format a complete document from its original single-template observation.
 observed-template = []
+# Render a selected original style with the stock block writer.
+observed-style = []
 
 [dependencies]
 # Internal crates
@@ -66,3 +68,7 @@ workspace = true
 [[test]]
 name = "selected_script_programs"
 required-features = ["retained-script", "vize_l2/script-queries"]
+
+[[test]]
+name = "observed_style"
+required-features = ["observed-style"]
