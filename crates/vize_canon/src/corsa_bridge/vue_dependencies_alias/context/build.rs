@@ -54,11 +54,8 @@ pub(super) fn build_with_import_facts(
     environment: crate::corsa_bridge::vue_document::CorsaProjectEnvironment<'_>,
     facts: &mut ModuleSpecifierFactsCache,
 ) -> Result<AliasContext, CorsaBridgeError> {
-    // A caller may reach the same file through a logical symlink spelling
-    // (`/var` vs `/private/var` on macOS). Package routes already use physical
-    // source identity, so normalize the host once before deriving its mirror
-    // path and nearest package scope. Mixing the two spellings splits a
-    // package-private `imports` manifest from its generated source companions.
+    // Use the same physical host for package routes and mirroring. Logical symlink
+    // spellings can split a private imports manifest from its generated companions.
     let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
     let source_path = source_path.as_path();
     let discovered_config = source_path.ancestors().skip(1).find_map(|dir| {
@@ -121,21 +118,7 @@ pub(super) fn build_with_import_facts(
     project.scope_editor_namespace(environment.editor_session.root()?, namespace_identity);
     project.set_session_script_registration(true);
     #[cfg(feature = "ambient-project-declarations")]
-    let virtual_ts_options = {
-        let mut selected = environment.virtual_ts_options.clone();
-        if environment
-            .editor_session
-            .ambient_declarations
-            .get()
-            .is_some()
-        {
-            project
-                .project_declaration_references(&mut selected, revision.requested_sources)
-                .map_err(bridge_error)?;
-        }
-        project.set_virtual_ts_options(selected.clone());
-        selected
-    };
+    let virtual_ts_options = editor_declaration_options(&mut project, &revision, environment)?;
     project.set_editor_document_options(
         crate::batch::virtual_project::VueDocumentVirtualTsOptions {
             options_api: options.options_api,
@@ -375,6 +358,27 @@ pub(super) fn build_with_import_facts(
         configured_global_template_ref,
         query_surface: Default::default(),
     })
+}
+
+#[cfg(feature = "ambient-project-declarations")]
+fn editor_declaration_options(
+    project: &mut VirtualProject,
+    revision: &SourceRevision<'_>,
+    environment: crate::corsa_bridge::vue_document::CorsaProjectEnvironment<'_>,
+) -> Result<crate::virtual_ts::VirtualTsOptions, CorsaBridgeError> {
+    let mut options = environment.virtual_ts_options.clone();
+    if environment
+        .editor_session
+        .ambient_declarations
+        .get()
+        .is_some()
+    {
+        project
+            .project_declaration_references(&mut options, revision.requested_sources)
+            .map_err(bridge_error)?;
+    }
+    project.set_virtual_ts_options(options.clone());
+    Ok(options)
 }
 
 fn bridge_error(error: crate::CorsaError) -> CorsaBridgeError {
