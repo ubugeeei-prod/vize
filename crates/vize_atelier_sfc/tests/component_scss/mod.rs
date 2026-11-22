@@ -5,6 +5,8 @@ use vize_l1::{container::vue::Vue, css::lang::StyleLanguage};
 use vize_l2::lang::scss::ScssProgram;
 use vize_l4::{targets::scss, write::EmitDocument};
 
+mod prepared;
+
 #[global_allocator]
 static ALLOCATOR: CountingAllocator<System> = CountingAllocator::system();
 
@@ -16,7 +18,7 @@ fn elapsed(mut run: impl FnMut()) -> u128 {
     start.elapsed().as_nanos() / 24
 }
 
-fn paired(label: &str, run: impl Fn(bool)) {
+fn paired(label: &str, run: impl Fn(bool)) -> (u128, u128) {
     let old = measure(|| run(false)).unwrap();
     let new = measure(|| run(true)).unwrap();
     let (mut a, mut b) = (Vec::new(), Vec::new());
@@ -39,6 +41,7 @@ fn paired(label: &str, run: impl Fn(bool)) {
         new.calls <= old.calls && new.peak_bytes_over_start <= old.peak_bytes_over_start,
         "{label}"
     );
+    (a[15], b[15])
 }
 
 #[test]

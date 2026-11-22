@@ -16,13 +16,15 @@ experimental-lexical-arrow-queries = [
 ]
 # Rewrite event rename edits against a retained current component File.
 experimental-component-listeners = ["native", "vize_l1_to_l2/component-listener-queries"]
-# Project original SCSS variable definitions for an explicitly selected document revision.
+# Reuse original style passes in an explicitly prepared complete component.
+experimental-native-scss-session = ["experimental-verified-style-format", "vize_atelier_sfc/native-sfc-scss"]
 experimental-verified-style-format = [
   "experimental-scss-definitions",
   "glyph",
   "vize_glyph/observed-style",
   "vize_atelier_sfc/verified-scss-edits",
 ]
+# Project original SCSS variable definitions for an explicitly selected document revision.
 experimental-scss-definitions = ["vize_atelier_sfc/original-scss-products"]
 experimental-recovered-literal-prefix = [
   "experimental-literal-products",
