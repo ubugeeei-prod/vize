@@ -26,8 +26,6 @@ void test("external style dependency guards preserve lexical and delegated CSS b
       styles: [info],
     };
     generateOutput(compiled, {
-      isProduction: true,
-      isDev: false,
       hostCss: "none",
       filePath: "/project/Foo.vue",
     });
@@ -164,8 +162,6 @@ void test("#11456 compilation inlines style src; only injected output refuses im
       const output = (hostCss: "none" | "preprocessors") => {
         try {
           return generateOutput(first.compiled, {
-            isProduction: true,
-            isDev: false,
             hostCss,
             filePath,
           });
