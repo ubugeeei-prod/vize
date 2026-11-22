@@ -79,8 +79,7 @@
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
     "vite-plus": "^0.2.3",
-    "vue": "catalog:vue-stable",
-    "vue-router": "5.5.1"
+    "vue": "catalog:vue-stable"
   },
   "peerDependencies": {
     "vite": "^7.3.0 || ^8.0.0",

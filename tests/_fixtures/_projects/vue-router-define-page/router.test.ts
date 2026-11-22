@@ -1,29 +1,18 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { createRequire } from "node:module";
-import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { build, createServer, type InlineConfig } from "vite";
 import router from "vue-router/vite";
 
-import { vize } from "./index.ts";
-import { linkWorkspaceVue } from "./test/startup-scan-project.ts";
-
-const require = createRequire(import.meta.url);
+import { vize } from "../../../../npm/builder/vite/src/index.ts";
 
 for (const scanPatterns of [undefined, []]) {
   const mode = scanPatterns ? "on demand" : "with the startup scan";
   void test(`#13502 Vue Router reads definePage metadata ${mode}`, async (t) => {
-    const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-define-page-")));
+    const root = fs.mkdtempSync(path.join(import.meta.dirname, "app-"));
     t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-    linkWorkspaceVue(root);
-    fs.symlinkSync(
-      path.dirname(require.resolve("vue-router/package.json")),
-      path.join(root, "node_modules/vue-router"),
-      process.platform === "win32" ? "junction" : "dir",
-    );
     fs.mkdirSync(path.join(root, "src/pages"), { recursive: true });
     fs.writeFileSync(path.join(root, "src/access.ts"), "export const isPublic = true;");
     fs.writeFileSync(
