@@ -43,11 +43,13 @@ fn row<'a>(
         .flatten()
         .map(|selected| script::observe(allocator, selected, Some(&mut producer), &mut issues))
         .collect();
-    let template = prepare::<false>(
+    let template = prepare(
         allocator,
         view.template().unwrap(),
         view.template_lang(),
         &mut issues,
+        #[cfg(feature = "authored-bind-shorthand")]
+        false,
     );
     assert!(issues.is_empty());
     (template, producer, scripts, issues)

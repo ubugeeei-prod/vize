@@ -79,6 +79,8 @@ pub fn lower_sfc_with_authored_bind_shorthand<'a>(
     lower_sfc::<true>(allocator, source, options)
 }
 
+// The two public constructors specialize the same single source traversal.
+#[inline(always)]
 fn lower_sfc<'a, const AUTHORED_SHORTHAND: bool>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -118,11 +120,13 @@ fn lower_sfc<'a, const AUTHORED_SHORTHAND: bool>(
         ));
     }
     let mut template = view.template().map(|selected| {
-        template::prepare::<AUTHORED_SHORTHAND>(
+        template::prepare(
             allocator,
             selected,
             view.template_lang(),
             &mut issues,
+            #[cfg(feature = "authored-bind-shorthand")]
+            AUTHORED_SHORTHAND,
         )
     });
     if let Some(template) = template.as_mut() {
