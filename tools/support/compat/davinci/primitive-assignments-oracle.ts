@@ -3,7 +3,6 @@
 import assert from "node:assert/strict";
 import { createReadStream } from "node:fs";
 import { createRequire } from "node:module";
-import { createInterface } from "node:readline";
 import type { TypeScriptApi } from "../../../../tests/_helpers/template-alias-typescript-11822.ts";
 const ts: TypeScriptApi = createRequire(import.meta.url)("typescript");
 interface Claim {
@@ -103,10 +102,22 @@ let scripts = 0,
   bindings = 0,
   mismatches = 0,
   complete = 0;
-for await (const line of createInterface({
-  input: createReadStream(process.argv[2]),
-  crlfDelay: Infinity,
-})) {
+// JSON permits literal U+2028 and U+2029 in source strings. Only LF is a
+// record delimiter; terminal line readers can also split at those code points.
+async function* inputRecords(path: string): AsyncGenerator<string> {
+  let pending = "";
+  for await (const chunk of createReadStream(path, { encoding: "utf8" })) {
+    pending += chunk;
+    let start = 0;
+    for (let end = pending.indexOf("\n"); end >= 0; end = pending.indexOf("\n", start)) {
+      yield pending.slice(start, end);
+      start = end + 1;
+    }
+    pending = pending.slice(start);
+  }
+  if (pending.length) yield pending;
+}
+for await (const line of inputRecords(process.argv[2])) {
   const entry: Input = JSON.parse(line);
   if (examine(entry)) complete++;
   scripts++;
