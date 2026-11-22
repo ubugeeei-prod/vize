@@ -33,7 +33,7 @@ function listProducts(): Product[] {
       const name = path.basename(entry.name, ".pkl");
       let target = path.relative(directory, source).slice(0, -4).split(path.sep).join("/");
       if (area === "workflows") target = `.github/workflows/${name}.yml`;
-      if (area === "actions") target = `.github/actions/${name}/action.yml`;
+      if (area === "actions") target = `.github/actions/${target}/action.yml`;
       products.push({ source, target, shell: area === "scripts" });
     }
   }
