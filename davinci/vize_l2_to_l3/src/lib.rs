@@ -22,5 +22,10 @@ pub use decision::{
     DecisionAnalysis, DecisionBuildError, FileAnalysis, build_decisions, build_dom_decisions,
     build_dom_file_decisions,
 };
-pub use lower::{Lowered, lower, lower_ir};
+pub use lower::{Lowered, lower};
 pub use vize_l3::jsx::{JsxAnalysis, RejectedJsxAnalysis, build_jsx_decisions};
+
+#[cfg(feature = "graph-queries")]
+mod graph;
+#[cfg(feature = "graph-queries")]
+pub use graph::lower_ir;

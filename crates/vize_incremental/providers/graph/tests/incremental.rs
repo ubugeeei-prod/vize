@@ -1,12 +1,10 @@
-#![cfg(feature = "ir-graph")]
-use vize_incremental::{
-    BlockKind, ResidentDatabase, SourceFile, block_query::graph::TemplateGraphError,
-};
+use vize_incremental::{BlockKind, ResidentDatabase, SourceFile};
 use vize_l0::{Lang, Span};
 use vize_l3::{
     op::OpId,
     query::{Direction, EdgeKinds, ReachQuery, ReachStep},
 };
+use vize_resident_graph::{TemplateGraphError, TemplateQueries};
 
 fn request(start: u32) -> ReachQuery {
     ReachQuery {

@@ -10,7 +10,7 @@ metadata.vize.stability = "experimental"
 readme = "README.md"
 
 [features]
-graph-queries = ["vize_l3/graph-queries"]
+graph-queries = ["vize_l3/graph-queries", "vize_l2/ir-views", "vize_l1_to_l2/ir-views"]
 
 [dependencies]
 vize_l0 = { workspace = true }

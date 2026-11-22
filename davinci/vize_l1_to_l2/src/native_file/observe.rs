@@ -178,10 +178,6 @@ impl<'a> NativeSfcObservation<'a> {
         }
     }
     #[must_use]
-    pub fn l1ir(&self) -> &vize_l1::L1Ir<'a> {
-        &self.descriptor
-    }
-    #[must_use]
     pub fn descriptor(&self) -> &DescriptorObservation<'a> {
         &self.descriptor
     }
@@ -240,10 +236,6 @@ impl<'o, 'a> NativeSfc<'o, 'a> {
     #[must_use]
     pub fn observation(&self) -> &'o NativeSfcObservation<'a> {
         self.observation
-    }
-    #[must_use]
-    pub fn l2ir(&self) -> &'o vize_l2::L2Ir<'a> {
-        self.file.file()
     }
     #[must_use]
     pub fn file(&self) -> &'o VueFile<'a> {

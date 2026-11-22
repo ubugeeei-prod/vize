@@ -56,15 +56,6 @@ jobs:
           gc-max-store-size-linux: 8G
       - name: Build the pinned toolchain
         run: nix build 'path:./tools/nix/creusot' --out-link "$RUNNER_TEMP/creusot" --print-build-logs
-      - name: Generate the graph rule certificates
-        working-directory: tests/formal/creusot
-        run: nix develop 'path:../../../tools/nix/creusot' --command cargo creusot -- --locked -p vize_l3_graph_proofs
-      - name: Store graph rule certificates
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: graph-rule-proofs
-          path: tests/formal/creusot/verif/vize_l3_graph_proofs_rlib
-          if-no-files-found: error
       - name: Replay the proofs
         # --replay checks the committed proof certificates and never searches
         # for new ones; why3find exits non-zero on any unproved goal.

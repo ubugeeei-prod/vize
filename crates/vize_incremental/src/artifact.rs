@@ -256,7 +256,7 @@ fn slot(
 }
 
 /// Whether a template block is HTML (the only L1 input language today).
-pub(crate) fn is_html_template(source: &BlockSource) -> bool {
+fn is_html_template(source: &BlockSource) -> bool {
     source.kind == BlockKind::Template
         && source.attr("src").is_none()
         && vize_l1::container::lang::is_html_template(source.attr("lang"))
@@ -329,3 +329,10 @@ pub fn compute_file_artifacts(text: &str, config: StageConfig) -> Vec<BlockArtif
 
 #[cfg(feature = "open-block-queries")]
 pub(crate) mod open;
+
+#[cfg(feature = "resident-providers")]
+impl BlockSource {
+    pub(crate) fn is_inline_html(&self) -> bool {
+        is_html_template(self)
+    }
+}

@@ -1,7 +1,6 @@
 //! Resident queries over the selected template's own source and expression
 //! language. Positions become document-absolute only through the current view.
-use super::BlockView;
-use crate::{artifact::is_html_template, db::Block};
+use vize_incremental::{block_query::BlockView, db::Block};
 use vize_l0::{Allocator, Lang, Span, diag::Diagnostic};
 use vize_l1_to_l2::native::{NativeHole, lower_component_native};
 use vize_l2::artifact::ArtifactError;
@@ -51,9 +50,6 @@ fn template_graph<'db>(
     lang: Lang,
 ) -> Result<OpGraph<'static>, TemplateGraphError> {
     let source = block.source(db);
-    if !is_html_template(source) {
-        return Err(TemplateGraphError::UnsupportedBlock);
-    }
     let arena = Allocator::default();
     let native = lower_component_native(&arena, source.text.as_str(), lang)
         .map_err(|rejected| TemplateGraphError::Construction(rejected.error))?;
@@ -112,15 +108,26 @@ impl<'db> DocumentReach<'db> {
     }
 }
 
-impl<'db> BlockView<'db> {
+pub trait TemplateQueries<'db> {
     /// Read checked reachability on this revision. Separate positions and
     /// content keep prefix-only changes from invalidating the result.
-    pub fn reachable(
+    fn reachable(
+        self,
+        lang: Lang,
+        query: ReachQuery,
+    ) -> Result<DocumentReach<'db>, &'db TemplateGraphError>;
+}
+
+impl<'db> TemplateQueries<'db> for BlockView<'db> {
+    fn reachable(
         self,
         lang: Lang,
         query: ReachQuery,
     ) -> Result<DocumentReach<'db>, &'db TemplateGraphError> {
-        let relative = template_reach(self.db, self.block, lang, query).as_ref()?;
+        let (db, block) = self
+            .template_input()
+            .ok_or(&TemplateGraphError::UnsupportedBlock)?;
+        let relative = template_reach(db, block, lang, query).as_ref()?;
         Ok(DocumentReach {
             view: self,
             relative,

@@ -17,8 +17,8 @@ metadata.vize.stability = "experimental"
 [features]
 # Borrow selected stage results for an explicitly requested document view.
 block-queries = []
-# Cache verified, block-relative template graph queries for resident clients.
-ir-graph = ["block-queries", "dep:vize_l2_to_l3", "dep:vize_l3", "vize_l3/graph-queries"]
+# Lend an admitted template and its database to optional resident providers.
+resident-providers = ["block-queries"]
 # Share a named open document's descriptor and its selected block stages.
 open-block-queries = ["block-queries"]
 # TS-42's seeded defect (P5-9): weakens the block firewall's equality so the
@@ -34,9 +34,6 @@ vize_l0 = { workspace = true }
 vize_l1 = { workspace = true }
 vize_l1_to_l2 = { workspace = true }
 vize_l2 = { workspace = true }
-
-vize_l2_to_l3 = { workspace = true, optional = true }
-vize_l3 = { workspace = true, optional = true }
 
 [dev-dependencies]
 davinci_harness = { workspace = true }
@@ -58,8 +55,3 @@ required-features = ["open-block-queries"]
 
 [lints]
 workspace = true
-
-[[example]]
-name = "ir_graph_profile"
-path = "tests/ir_graph/profile.rs"
-required-features = ["ir-graph"]

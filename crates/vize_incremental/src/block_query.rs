@@ -9,9 +9,6 @@ use crate::{
 };
 use vize_l0::Span;
 
-#[cfg(feature = "ir-graph")]
-pub mod graph;
-
 #[cfg(feature = "open-block-queries")]
 pub(crate) mod open;
 #[cfg(feature = "open-block-queries")]
@@ -186,3 +183,13 @@ mod tests;
 
 #[cfg(all(test, not(feature = "seeded-stale-cache")))]
 mod corpus;
+
+#[cfg(feature = "resident-providers")]
+impl<'db> BlockView<'db> {
+    /// Lend an original tracked inline HTML template to a resident provider.
+    pub fn template_input(self) -> Option<(&'db ResidentDatabase, Block<'db>)> {
+        self.source()
+            .is_inline_html()
+            .then_some((self.db, self.block))
+    }
+}

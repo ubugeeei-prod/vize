@@ -9,6 +9,8 @@ description = "L2 - the Davinci semantic IR (codename Disegno): the neutral op f
 metadata.vize.stability = "experimental"
 
 [features]
+# Name the original source/semantic view for explicit layered consumers.
+ir-views = []
 # Read authored props in source order from each resolved component operation.
 component-prop-queries = ["setup-component-imports"]
 setup-component-imports = []
