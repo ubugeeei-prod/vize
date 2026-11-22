@@ -5,19 +5,20 @@ import { createReadStream } from "node:fs";
 import { createRequire } from "node:module";
 import type { TypeScriptApi } from "../../../../tests/_helpers/template-alias-typescript-11822.ts";
 const ts: TypeScriptApi = createRequire(import.meta.url)("typescript");
-interface Claim {
+interface OperandSpans {
   binding: [number, number];
   annotation: [number, number];
   initializer: [number, number];
   expected: string;
   actual: string;
-  message: string | null;
 }
+type Claim = OperandSpans & ({ message: string | null } | { assignable: boolean });
 interface Input {
   name: string;
   source: string;
   tsx: boolean;
-  complete: boolean;
+  complete?: boolean;
+  covered?: number;
   claims: Claim[];
 }
 
@@ -40,6 +41,7 @@ function examine(input: Input) {
     byte(node.end),
   ];
   const vars = original.statements.flatMap((st) => {
+    if (input.covered !== undefined && byte(st.end) > input.covered) return [];
     if (
       !ts.isVariableStatement(st) ||
       st.modifiers?.some((m) => m.kind === ts.SyntaxKind.DeclareKeyword)
@@ -60,10 +62,13 @@ function examine(input: Input) {
     });
   });
   assert.equal(claims.length, vars.length, input.name);
-  if (vars.length === 0) return false;
+  if (vars.length === 0 && input.covered === undefined) return false;
   const host = ts.createCompilerHost(options);
   host.getSourceFile = (name) => (name === filename ? original : undefined);
   const program = ts.createProgram([filename], options, host);
+  if (input.covered !== undefined) {
+    assert.ok(program.getSyntacticDiagnostics(original).length > 0, input.name);
+  }
   const checker = program.getTypeChecker();
   const claimedDiagnostics = [];
   const names = new Set<string>();
@@ -83,8 +88,15 @@ function examine(input: Input) {
       checker.typeToString(checker.getBaseTypeOfLiteralType(actual)),
       input.name,
     );
-    assert.equal(row.message === null, checker.isTypeAssignableTo(actual, expected), input.name);
-    if (row.message !== null) claimedDiagnostics.push([row.binding, row.message]);
+    const assignable = checker.isTypeAssignableTo(actual, expected);
+    if ("message" in row) {
+      assert.equal(input.covered, undefined);
+      assert.equal(row.message === null, assignable, input.name);
+      if (row.message !== null) claimedDiagnostics.push([row.binding, row.message]);
+    } else {
+      assert.ok(input.covered !== undefined);
+      assert.equal(row.assignable, assignable, input.name);
+    }
   }
   if (!input.complete || names.size !== vars.length) return false;
   const diagnostics = program
@@ -119,12 +131,16 @@ async function* inputRecords(path: string): AsyncGenerator<string> {
 }
 for await (const line of inputRecords(process.argv[2])) {
   const entry: Input = JSON.parse(line);
+  assert.equal(typeof entry.covered === "number", process.argv[3] === "--recovered");
   if (examine(entry)) complete++;
   scripts++;
   bindings += entry.claims.length;
-  mismatches += entry.claims.filter((c) => c.message !== null).length;
+  mismatches += entry.claims.filter((c) =>
+    "message" in c ? c.message !== null : !c.assignable,
+  ).length;
 }
-assert.ok(scripts > 0 && bindings > 0 && mismatches > 0 && complete > 0);
+assert.ok(scripts > 0 && bindings > 0 && mismatches > 0);
+if (process.argv[3] !== "--recovered") assert.ok(complete > 0);
 console.log(
   `TypeScript ${ts.version} original scripts=${scripts} checked bindings=${bindings} mismatches=${mismatches} complete diagnostic comparisons=${complete}`,
 );

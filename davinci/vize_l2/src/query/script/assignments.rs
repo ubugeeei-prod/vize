@@ -184,3 +184,6 @@ fn observe(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "recovered-literal-prefix")]
+pub mod prefix;

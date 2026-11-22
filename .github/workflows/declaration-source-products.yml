@@ -22,6 +22,8 @@ on:
       - "crates/vize_patina/Cargo.toml"
       - "crates/vize_patina/src/checked_prefer_const.rs"
       - "crates/vize_patina/src/rules/opinionated/vue/script_unused/**"
+      - "crates/vize_maestro/src/source_project/recovered_script*"
+      - "crates/vize_maestro/src/source_project/recovered_script/**"
       - "crates/vize_maestro/src/source_project/literal_products*"
       - "crates/vize_maestro/src/source_project/literal_products/**"
       - "tools/support/compat/davinci/primitive-assignments-oracle.ts"
@@ -198,6 +200,20 @@ jobs:
           cargo test "${flags[@]}" -p vize_maestro --features experimental-literal-products,micro-profiling source_project::literal_products:: -- --include-ignored --nocapture --test-threads=1
           node tools/support/compat/davinci/primitive-assignments-oracle.ts "$VIZE_LITERAL_OUTPUT"
 
+      - name: Compare restored document cursors and broken suffixes with TypeScript
+        env:
+          VIZE_PREFIX_INPUT: ${{ runner.temp }}/original-scripts.jsonl
+          VIZE_PREFIX_OUTPUT: ${{ runner.temp }}/original-edits.jsonl
+          NODE_PATH: ${{ runner.temp }}/checked-ts/node_modules
+        run: |
+          set -euo pipefail
+          flags=(--locked --profile ci-opt --lib)
+          cargo clippy "${flags[@]}" -p vize_l2 --features recovered-literal-prefix --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" -p vize_maestro --features experimental-recovered-literal-prefix --no-deps -- -D warnings
+          cargo test "${flags[@]}" -p vize_l2 --features recovered-literal-prefix query::script::assignments::prefix::
+          cargo test "${flags[@]}" -p vize_maestro --features experimental-recovered-literal-prefix,micro-profiling source_project::recovered_script:: -- --include-ignored --nocapture --test-threads=1
+          node tools/support/compat/davinci/primitive-assignments-oracle.ts "$VIZE_PREFIX_OUTPUT" --recovered
+
   primitive-assignability-proof:
     name: Verify primitive literal membership in Kani
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -221,3 +237,10 @@ jobs:
           echo "$ALLOY_SHA256  literal-alloy.jar" | sha256sum -c -
           java -Djava.awt.headless=true -jar literal-alloy.jar exec -q -c '*' -t none -o literal-instances "$GITHUB_WORKSPACE/tests/formal/primitive-assignments/PreferConst.als"
           jq -e '.commands | keys == ["LaterWrite","NonemptyTrace","RepeatedName","SameTrace"] and (.SameTrace | .type == "check" and (.solution | length) == 0) and ([.LaterWrite,.NonemptyTrace,.RepeatedName] | all(.type == "run" and (.solution | length) == 1))' literal-instances/receipt.json
+
+      - name: Verify source relocation for the full 32-bit byte domain
+        uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
+        with:
+          kani-version: "0.68.0"
+          command: kani
+          args: davinci/vize_l2/src/query/script/assignments/prefix/kani.rs --output-format=terse
