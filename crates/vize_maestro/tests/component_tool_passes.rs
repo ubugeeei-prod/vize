@@ -5,7 +5,7 @@ use davinci_harness::{
     paired::assert_paired_time,
 };
 use std::{alloc::System, hint::black_box};
-use tower_lsp::lsp_types::{GotoDefinitionResponse, OneOf, Position, TextDocumentEdit, Url};
+use tower_lsp::lsp_types::{GotoDefinitionResponse, OneOf, Position, Range, TextDocumentEdit, Url};
 use vize_atelier_sfc::{NativeStyleOptions, NativeStyleOutput, compile_native_styles};
 use vize_glyph::{FormatOptions, GlyphFormatter};
 use vize_l0::{
@@ -14,7 +14,10 @@ use vize_l0::{
     pass::NoObserver,
 };
 use vize_l1::{
-    container::vue::{DescriptorObservation, DescriptorOptions, ScriptRole},
+    container::vue::{
+        DescriptorObservation, DescriptorOptions, ScriptRole,
+        boundary::{split_blocks, tag_name_eq},
+    },
     markup::render,
 };
 use vize_l1_to_l2::pass::template::OriginalTemplate;
@@ -162,8 +165,34 @@ fn diagnostic(row: Option<&LintDiagnostic>) -> serde_json::Value {
     })).unwrap_or(serde_json::Value::Null)
 }
 
+fn style_extent(source: &str) -> std::ops::Range<usize> {
+    let mut extent = None;
+    split_blocks(source, |block| {
+        if tag_name_eq(block.tag_name, b"style") {
+            extent = Some(block.location.tag_start..block.location.tag_end);
+            return false;
+        }
+        true
+    })
+    .unwrap();
+    extent.expect("the fixture's style block")
+}
+
 fn check(editor: &Editor, width: usize, prior: &Products, current: &Products) {
     let snapshot = editor.cache.capture(&editor.docs, &editor.uri).unwrap();
+    let source = snapshot.source();
+    let original_style = style_extent(source);
+    let expected_range = Range::new(
+        offset_to_position_str(source, original_style.start),
+        offset_to_position_str(source, original_style.end),
+    );
+    let arena = Allocator::new();
+    let settings = FormatOptions::default();
+    let formatted = GlyphFormatter::new(&settings, &arena)
+        .format(source)
+        .unwrap();
+    let expected_style = &formatted.code.as_str()[style_extent(&formatted.code)];
+
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(MaxTemplateComplexity));
     let stock = Linter::with_registry(registry).lint_sfc(snapshot.source(), "Setup雪🌸.vue");
@@ -197,7 +226,10 @@ fn check(editor: &Editor, width: usize, prior: &Products, current: &Products) {
         );
         assert_eq!(output.script.version, 7);
         let (compiled, edit, definition) = &output.style;
-        assert!(compiled.css().unwrap().contains("color: red"));
+        assert_eq!(
+            compiled.css(),
+            Some(".card {\n  color: red;\n  display: none;\n  margin-left: 4px;\n}")
+        );
         let map: serde_json::Value =
             serde_json::from_str(compiled.css_source_map().unwrap()).unwrap();
         assert_eq!(
@@ -210,7 +242,8 @@ fn check(editor: &Editor, width: usize, prior: &Products, current: &Products) {
         let [OneOf::Left(replacement)] = edit.edits.as_slice() else {
             panic!("one verified formatter edit")
         };
-        assert!(replacement.new_text.contains("$ink"));
+        assert_eq!(replacement.range, expected_range);
+        assert_eq!(replacement.new_text.as_str(), expected_style);
         let Some(GotoDefinitionResponse::Scalar(location)) = definition else {
             panic!("one original variable")
         };
