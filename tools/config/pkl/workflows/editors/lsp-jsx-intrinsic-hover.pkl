@@ -1,0 +1,102 @@
+import "../../Actions.pkl" as ci
+
+name = "JSX intrinsic hover observations"
+
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/lsp-jsx-intrinsic-hover.yml"
+      ".github/scripts/workflows/lsp-jsx-intrinsic-hover/**"
+      "crates/vize_maestro/Cargo.toml"
+      "crates/vize_maestro/src/source_project/**"
+      "crates/vize_maestro/src/server/intrinsic_hover.rs"
+      "crates/vize_maestro/src/server/handlers/typed.rs"
+      "crates/vize_maestro/src/ide/hover/html.rs"
+      "tests/tooling/lsp-jsx-intrinsic-hover.test.ts"
+      "tests/tooling/support/lsp/intrinsic-hover-observation.ts"
+      "tests/tooling/support/lsp/fresh-vue-project.ts"
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "jsx-intrinsic-hover-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  observations {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 15
+    env {
+
+      CARGO_BUILD_JOBS = "12"
+      CARGO_TERM_COLOR = "always"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+      RAYON_NUM_THREADS = "4"
+      SOURCE_SHA = "${{ github.event.pull_request.head.sha }}"
+      VIZE_LSP_BIN = "target/ci/vize"
+      VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+      VIZE_TEST_REQUIRE_TSGO = "1"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("lsp-jsx-intrinsic-hover")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      ci.workspaceVp()
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "test-scripts"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      new Dynamic {
+        name = "Build and receipt the exact source CLI"
+        run = ci.workflowScript("build-and-receipt-the-exact-source-cli.sh")
+      }
+      new Dynamic {
+        name = "Record the actual source and both provider identities"
+        run = ci.workflowScript("record-the-actual-source-and-both-provider-identities.sh")
+      }
+      new Dynamic {
+        name = "Observe complete packets, authored controls and request latency"
+        shell = "bash"
+        run = ci.workflowScript("observe-complete-packets-authored-controls-and-request-latency.sh")
+      }
+      new Dynamic {
+        name = "Verify original parse and walk reuse and asynchronous publication guards"
+        shell = "bash"
+        run = ci.workflowScript("verify-original-parse-and-walk-reuse-and-asynchronous-publication-guards.sh")
+      }
+      new Dynamic {
+        name = "Retain owned complete observations and exact source receipt"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "jsx-intrinsic-hover-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha }}"
+          path = """
+          target/vize-tests/jsx-intrinsic-hover/
+          target/vize-tests/lsp-fresh-capability-policy/intrinsic-*
+          target/differential/lsp-sessions/
+          target/ci/vize.differential-build.json
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

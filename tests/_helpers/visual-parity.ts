@@ -1,3 +1,4 @@
+import { installVisualEnvironment } from "./browser/visual-environment.ts";
 import { expect, type Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -48,15 +49,7 @@ export const VISUAL_STABILITY_CSS = `
 `;
 
 export async function installVisualStabilityHooks(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    const fixedNow = new Date("2026-01-01T00:00:00.000Z").valueOf();
-    Object.defineProperty(Date, "now", { value: () => fixedNow });
-    Object.defineProperty(Math, "random", { value: () => 0.42 });
-    Object.defineProperty(navigator, "userAgent", {
-      configurable: true,
-      get: () => "Chromatic Playwright",
-    });
-  });
+  await page.addInitScript(installVisualEnvironment);
 }
 
 // Runs inside the page: keep it self-contained so Playwright can serialize it,

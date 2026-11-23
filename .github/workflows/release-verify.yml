@@ -44,6 +44,19 @@ jobs:
     env:
       RELEASE_VERSION: ${{ inputs.version }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/release-verify/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ github.sha }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -55,15 +68,7 @@ jobs:
           RELEASE_QUOTA_EVIDENCE: ${{ runner.temp }}/quota-dry-run/report.json
           QUOTA_SOURCE: ${{ inputs.sha }}
           GH_TOKEN: ${{ github.token }}
-        run: |
-          [[ "$QUOTA_SOURCE" =~ ^[0-9a-f]{40}$ ]]
-          mkdir -p "$RUNNER_TEMP/release-quota-tooling"
-          git archive "$GITHUB_SHA" package.json tools/support/release tools/support/archive tests/tooling/release/quota-live-legacy-refusal.ts | tar -x -C "$RUNNER_TEMP/release-quota-tooling"
-          status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$QUOTA_SOURCE...$GITHUB_SHA" --jq .status)
-          [[ "$status" == ahead || "$status" == identical ]]
-          git fetch --no-tags --depth=1 origin "$QUOTA_SOURCE"
-          git checkout --detach FETCH_HEAD
-          node "$RUNNER_TEMP/release-quota-tooling/tools/support/release/release/main.ts" quota-dry-run "$RELEASE_VERSION"
+        run: . "${{ env.VIZE_CI_FILES }}/read-histories-from-staged-tooling-against-the-selected-source-without-p.sh"
       - name: Require legacy 0.602 automatic recovery refusal without fabricated authority
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -88,21 +93,29 @@ jobs:
       RELEASE_TAG: ${{ inputs.tag }}
       RELEASE_SHA: ${{ inputs.sha }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/release-verify/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ inputs.tag }}", persist-credentials: false }
       - name: Check the release identity
-        run: |
-          [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]
-          [[ "$RELEASE_TAG" == "v$RELEASE_VERSION" ]]
-          [[ "$(git rev-parse HEAD)" == "$RELEASE_SHA" ]]
+        run: . "${{ env.VIZE_CI_FILES }}/check-the-release-identity.sh"
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version-file: "package.json", package-manager-cache: false }
       - name: Wait for npm and smoke the published CLI
         env:
           RELEASE_PACKAGES: ${{ inputs.packages }}
-        run: |
-          read -ra packages <<< "$RELEASE_PACKAGES"
-          node tools/support/release/verify_published/main.ts "$RELEASE_VERSION" "${packages[@]}"
+        run: . "${{ env.VIZE_CI_FILES }}/wait-for-npm-and-smoke-the-published-cli.sh"
 
   # Reuse the exact public npm version on every supported host. The verifier
   # runs from the immutable tag, while all product code comes from the registry.
@@ -193,11 +206,22 @@ jobs:
     # github-actions[bot], so dispatch as the maintainer.
     environment: release-operator
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/release-verify/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Dispatch release-jsr.yml
         env:
           GH_TOKEN: ${{ secrets.RELEASE_OPERATOR_TOKEN }}
           JSR_VERSION: ${{ inputs.tag }}
           JSR_SOURCE: ${{ inputs.sha }}
-        run: |
-          gh workflow run release-jsr.yml --repo "$GITHUB_REPOSITORY" --ref main \
-            -f version="$JSR_VERSION" -f source_sha="$JSR_SOURCE"
+        run: . "${{ env.VIZE_CI_FILES }}/dispatch-release-jsr-yml.sh"

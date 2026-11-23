@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { parse } from "yaml";
@@ -5,7 +6,10 @@ import { parse } from "yaml";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 test("JS check runtime reserves native prerequisites for full qualification", () => {
-  const checkJsJob = workflowJobBody(readRepoFile(".github", "workflows", "check.yml"), "check-js");
+  const checkJsJob = workflowJobBody(
+    readAutomationPrograms(".github", "workflows", "check.yml"),
+    "check-js",
+  );
   const action = readRepoFile(".github", "actions", "setup-js-check-runtime", "action.yml");
   const runtime = parse(action);
   const actionSteps =
@@ -27,7 +31,7 @@ test("JS check runtime reserves native prerequisites for full qualification", ()
 
 test("workflow context validation belongs to the unconditional required JS gate", () => {
   type Step = { uses?: string; if?: unknown; "continue-on-error"?: unknown };
-  const workflow = parse(readRepoFile(".github", "workflows", "check.yml"));
+  const workflow = parse(readAutomationPrograms(".github", "workflows", "check.yml"));
   const job = workflow.jobs["check-js"] as { if?: unknown; steps: Step[] };
   assert.equal(job.if, undefined, "missing optional workflow jobs must not bypass this gate");
   const runtimes = job.steps.filter(
@@ -45,7 +49,9 @@ test("workflow context validation belongs to the unconditional required JS gate"
 });
 
 test("workflow checker release recovery stays bounded and version locked", () => {
-  const action = parse(readRepoFile(".github", "actions", "check-workflow-syntax", "action.yml"));
+  const action = parse(
+    readAutomationPrograms(".github", "actions", "check-workflow-syntax", "action.yml"),
+  );
   const install = action.runs.steps.find(
     (step: { name?: string }) => step.name === "Install the pinned workflow checker",
   ).run as string;

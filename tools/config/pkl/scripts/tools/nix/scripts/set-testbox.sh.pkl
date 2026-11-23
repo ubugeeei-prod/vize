@@ -1,0 +1,10 @@
+amends "../../../../ShellScript.pkl"
+
+interpreter = null
+
+commands {
+  #"""
+  export VIZE_TESTBOX_SHELL=1
+  export VIZE_BLACKSMITH_BIN="@BLACKSMITH@/bin/blacksmith"
+  """#
+}

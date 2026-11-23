@@ -1,0 +1,140 @@
+import "../../Actions.pkl" as ci
+
+name = "Prepare npm first-publish handoff"
+
+on {
+  workflow_dispatch {
+    inputs {
+      version {
+        description = "Exact candidate version without the v prefix"
+        required = true
+        type = "string"
+      }
+      tag_name {
+        description = "Immutable candidate tag (must be v plus version)"
+        required = true
+        type = "string"
+      }
+      release_run_id {
+        description = "Completed failed Release workflow run ID"
+        required = true
+        type = "string"
+      }
+      package_path {
+        description = "Explicitly approved package from the npm-packages artifact"
+        required = true
+        type = "choice"
+        options = List("npm/framework/nuxt-lint-config", "npm/plugin-sdk")
+      }
+    }
+  }
+}
+
+`run-name` = "Prepare npm handoff for ${{ inputs.package_path }} from ${{ inputs.tag_name }} run ${{ inputs.release_run_id }}"
+
+concurrency {
+  group = "npm-bootstrap-${{ inputs.package_path }}"
+  `cancel-in-progress` = false
+}
+
+permissions {
+  actions = "read"
+  contents = "read"
+}
+
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  BOOTSTRAP_PACKAGE_PATH = "${{ inputs.package_path }}"
+  RELEASE_RUN_ID = "${{ inputs.release_run_id }}"
+  RELEASE_TAG_NAME = "${{ inputs.tag_name }}"
+  RELEASE_VERSION = "${{ inputs.version }}"
+}
+
+jobs {
+  handoff {
+    name = "Prepare credential-free npm CLI handoff"
+    `if` = "github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/main'"
+    `runs-on` = "ubuntu-24.04"
+    `timeout-minutes` = 10
+    steps = new Listing {
+      new Dynamic {
+        name = "Checkout bootstrap policy from main"
+        uses = ci.checkout
+        with {
+          `fetch-depth` = 1
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Bind the candidate, failed Release run and exact package artifact"
+        id = "policy"
+        env {
+          BOOTSTRAP_STAGE_ROOT = "${{ runner.temp }}/npm-bootstrap-stage"
+          GITHUB_TOKEN = "${{ github.token }}"
+        }
+        run = "node tools/support/release/npm_bootstrap/policy.ts preflight"
+      }
+      new Dynamic {
+        name = "Download the exact npm-packages artifact"
+        uses = ci.downloadArtifact
+        with {
+          `artifact-ids` = "${{ steps.policy.outputs.artifact_id }}"
+          path = "${{ runner.temp }}/npm-bootstrap-stage/npm"
+          `run-id` = "${{ inputs.release_run_id }}"
+          `github-token` = "${{ github.token }}"
+          repository = "${{ github.repository }}"
+        }
+      }
+      new Dynamic {
+        name = "Validate the allowlisted artifact package"
+        id = "artifact"
+        env { BOOTSTRAP_STAGE_ROOT = "${{ runner.temp }}/npm-bootstrap-stage" }
+        run = "node tools/support/release/npm_bootstrap/policy.ts artifact"
+      }
+      new Dynamic {
+        name = "Resolve publish-time workspace and catalog protocols"
+        env { BOOTSTRAP_PACKAGE_ROOT = "${{ steps.artifact.outputs.package_root }}" }
+        run = #"node tools/support/release/prepare_npm_publish_manifest/main.ts "$BOOTSTRAP_PACKAGE_ROOT""#
+      }
+      new Dynamic {
+        name = "Validate the standalone publish manifest"
+        env { BOOTSTRAP_STAGE_ROOT = "${{ runner.temp }}/npm-bootstrap-stage" }
+        run = "node tools/support/release/npm_bootstrap/policy.ts prepared"
+      }
+      ci.command("Confirm the package is still absent from npm", "node tools/support/release/npm_bootstrap/policy.ts registry")
+      new Dynamic {
+        name = "Pack the deterministic local first-publish handoff"
+        id = "handoff"
+        env {
+          BOOTSTRAP_OUTPUT_ROOT = "${{ runner.temp }}/npm-cli-first-publish"
+          BOOTSTRAP_PACKAGE_ROOT = "${{ steps.artifact.outputs.package_root }}"
+          EXPECTED_PACKAGE_NAME = "${{ steps.policy.outputs.package_name }}"
+          ORIGINAL_MANIFEST_SHA512 = "${{ steps.artifact.outputs.original_manifest_sha512 }}"
+          RELEASE_CANDIDATE_SHA = "${{ steps.policy.outputs.candidate_sha }}"
+          RELEASE_PARENT_SHA = "${{ steps.policy.outputs.parent_sha }}"
+          SOURCE_ARTIFACT_DIGEST = "${{ steps.policy.outputs.artifact_digest }}"
+          SOURCE_ARTIFACT_ID = "${{ steps.policy.outputs.artifact_id }}"
+        }
+        run = "node tools/support/release/npm_bootstrap/handoff.ts"
+      }
+      new Dynamic {
+        name = "Upload the exact npm CLI handoff"
+        uses = ci.uploadArtifact
+        with {
+          name = "${{ steps.handoff.outputs.artifact_name }}"
+          path = "${{ runner.temp }}/npm-cli-first-publish"
+          `if-no-files-found` = "error"
+          `compression-level` = 0
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

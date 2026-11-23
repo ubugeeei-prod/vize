@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/jsr-public-types.yml
+      - .github/scripts/workflows/jsr-public-types/**
       - tools/support/release/jsr/consumer-types.ts.fixture
       - tools/support/release/jsr/consumer.ts
       - tools/support/release/jsr/consumer-deno.json
@@ -29,6 +30,19 @@ jobs:
       run:
         shell: bash
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/jsr-public-types/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
@@ -44,71 +58,31 @@ jobs:
         with: { bun-version: "1.3.14" }
       - name: Prepare the isolated public consumer
         working-directory: ${{ github.workspace }}
-        run: |
-          [[ "$PUBLIC_JSR_VERSION" =~ ^0\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
-          mkdir -p "$RUNNER_TEMP/jsr-public-consumer"
-          cp tools/support/release/jsr/consumer.ts "$RUNNER_TEMP/jsr-public-consumer/consumer.ts"
-          cp tools/support/release/jsr/consumer-types.ts.fixture "$RUNNER_TEMP/jsr-public-consumer/consumer-types.ts"
-          cp tools/support/release/jsr/consumer-deno.json "$RUNNER_TEMP/jsr-public-consumer/deno.json"
-          node --input-type=module <<'JS'
-          import fs from "node:fs";
-          const root = process.env.RUNNER_TEMP + "/jsr-public-consumer";
-          fs.writeFileSync(root + "/package.json", JSON.stringify({private: true, type: "module"}));
-          const config = JSON.parse(fs.readFileSync(root + "/deno.json", "utf8"));
-          const exact = "jsr:@vizejs/vize@" + process.env.PUBLIC_JSR_VERSION;
-          config.imports = Object.fromEntries(["", "config", "native", "vite"].map(subpath => {
-            const suffix = subpath ? "/" + subpath : "";
-            return ["@vizejs/vize" + suffix, exact + suffix];
-          }));
-          fs.writeFileSync(root + "/deno.json", JSON.stringify(config, null, 2));
-          JS
+        run: . "${{ env.VIZE_CI_FILES }}/prepare-the-isolated-public-consumer.sh"
       - name: Install the public JSR package (Node)
         working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: matrix.runtime == 'node'
-        run: |
-          npm install --ignore-scripts --save-exact typescript@6.0.3 @types/node@25.9.2 vite@8.2.4 vue@3.5.42 2>&1 | tee install.log
-          npx --yes jsr@0.14.3 add "@vizejs/vize@$PUBLIC_JSR_VERSION" 2>&1 | tee jsr-add.log
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-public-jsr-package-node.sh"
       - name: Check the public types and execute every entry point (Node)
         working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: matrix.runtime == 'node'
-        run: |
-          node --version | tee runtime-version.txt
-          node node_modules/typescript/bin/tsc --strict --noEmit --target ESNext --module NodeNext --moduleResolution NodeNext consumer-types.ts 2>&1 | tee types.log
-          node consumer.ts @vizejs/vize --vite --core-only 2>&1 | tee runtime.log
+        run: . "${{ env.VIZE_CI_FILES }}/check-the-public-types-and-execute-every-entry-point-node.sh"
       - name: Install the public JSR package (Bun)
         working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: matrix.runtime == 'bun'
-        run: |
-          bun add --ignore-scripts --exact typescript@6.0.3 @types/node@25.9.2 vite@8.2.4 vue@3.5.42 2>&1 | tee install.log
-          bunx --bun jsr@0.14.3 add "@vizejs/vize@$PUBLIC_JSR_VERSION" 2>&1 | tee jsr-add.log
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-public-jsr-package-bun.sh"
       - name: Check the public types and execute every entry point (Bun)
         working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: matrix.runtime == 'bun'
-        run: |
-          bun --version | tee runtime-version.txt
-          bun node_modules/typescript/bin/tsc --strict --noEmit --target ESNext --module NodeNext --moduleResolution NodeNext consumer-types.ts 2>&1 | tee types.log
-          bun run consumer.ts @vizejs/vize --vite --core-only 2>&1 | tee runtime.log
+        run: . "${{ env.VIZE_CI_FILES }}/check-the-public-types-and-execute-every-entry-point-bun.sh"
       - name: Check the public types and execute every entry point (Deno)
         working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: matrix.runtime == 'deno'
-        run: |
-          deno --version | tee runtime-version.txt
-          deno check --config deno.json consumer-types.ts 2>&1 | tee types.log
-          deno run --config deno.json --allow-all consumer.ts "jsr:@vizejs/vize@$PUBLIC_JSR_VERSION" --vite --core-only 2>&1 | tee runtime.log
+        run: . "${{ env.VIZE_CI_FILES }}/check-the-public-types-and-execute-every-entry-point-deno.sh"
       - name: Preserve public metadata and dependency locks
         working-directory: ${{ runner.temp }}/jsr-public-consumer
         if: always()
-        run: |
-          curl --fail --silent --show-error --location -A vize-jsr-public-types/1.0 https://jsr.io/@vizejs/vize/meta.json -o public-metadata.json
-          node --input-type=module <<'JS'
-          import fs from "node:fs";
-          import {createHash} from "node:crypto";
-          const metadata = JSON.parse(fs.readFileSync("public-metadata.json", "utf8"));
-          if (!metadata.versions[process.env.PUBLIC_JSR_VERSION]?.createdAt) throw new Error("Version missing from public JSR");
-          const files = fs.readdirSync(".").filter(name => /(?:\.log|\.json|\.lock|\.txt)$/.test(name));
-          const rows = files.map(name => ({name,sha256:createHash("sha256").update(fs.readFileSync(name)).digest("hex")}));
-          fs.writeFileSync("evidence-sha256.json", JSON.stringify({version:process.env.PUBLIC_JSR_VERSION,observedAt:new Date().toISOString(),files:rows},null,2));
-          JS
+        run: . "${{ env.VIZE_CI_FILES }}/preserve-public-metadata-and-dependency-locks.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

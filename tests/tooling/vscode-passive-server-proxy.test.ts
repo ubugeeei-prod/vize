@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import crypto from "node:crypto";
@@ -92,22 +93,11 @@ test(
     const output = Buffer.concat([frame(response), frame(notification)]);
     fs.writeFileSync(
       server,
-      `const fs = require('node:fs');
-const chunks = [];
-process.stderr.write('ready\\n');
-process.stdin.on('data', chunk => chunks.push(chunk));
-process.stdin.on('end', () => {
- fs.writeFileSync(${JSON.stringify(path.join(directory, "received"))}, Buffer.concat(chunks));
- fs.writeFileSync(${JSON.stringify(path.join(directory, "argv.json"))}, JSON.stringify(process.argv.slice(2)));
- const output = Buffer.from(${JSON.stringify(output.toString("base64"))}, 'base64');
- let offset = 0;
- function send() {
-  if (offset === output.length) { process.stderr.write('actual stderr 🌸\\n'); process.exitCode = 23; return; }
-  const end = Math.min(offset + 3, output.length);
-  process.stdout.write(output.subarray(offset, end)); offset = end; if (offset === 3) setTimeout(send, 30); else setImmediate(send);
- }
- send();
-});`,
+      readToolingProgram("commands/vscode-passive-server-proxy/respond-as-server.cjs.in", {
+        RECEIVED: JSON.stringify(path.join(directory, "received")),
+        ARGUMENTS: JSON.stringify(path.join(directory, "argv.json")),
+        OUTPUT: JSON.stringify(output.toString("base64")),
+      }),
     );
     const argv = [server, "lsp", "--stdio", "space value", "設定🌸", "--version"];
     const run = launch(directory, argv);
@@ -197,7 +187,10 @@ test(
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-passive-signal-"));
     t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
     const server = path.join(directory, "waiting.cjs");
-    fs.writeFileSync(server, "process.stdout.write('ready'); process.stdin.resume();");
+    fs.writeFileSync(
+      server,
+      readToolingProgram("commands/vscode-passive-server-proxy/hold-server-input.js"),
+    );
     const run = launch(directory, [server]);
     t.after(() => run.child.kill("SIGKILL"));
     await new Promise<void>((resolve) => run.child.stdout.once("data", () => resolve()));

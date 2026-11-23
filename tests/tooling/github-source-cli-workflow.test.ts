@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -27,21 +28,21 @@ type Action = { inputs: Record<string, { required?: boolean }>; runs: { steps: S
 const full = parse(checkWorkflowJobSources()) as {
   jobs: Record<string, Job>;
 };
-const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
+const source = parse(readAutomationPrograms(".github", "workflows", "pr-source-checks.yml")) as {
   jobs: Record<string, Job>;
 };
-const producer = parse(readRepoFile(".github", "workflows", "full-source-cli.yml")) as {
+const producer = parse(readAutomationPrograms(".github", "workflows", "full-source-cli.yml")) as {
   jobs: Record<string, Job>;
   on: { workflow_call: { outputs: Record<string, { value: string }> } };
 };
 const benchmarkQualification = parse(
-  readRepoFile(".github", "workflows", "vue-benchmarks-current-qualification.yml"),
+  readAutomationPrograms(".github", "workflows", "vue-benchmarks-current-qualification.yml"),
 ) as { jobs: Record<string, Job> };
 const restoreAction = parse(
-  readRepoFile(".github", "actions", "restore-source-cli", "action.yml"),
+  readAutomationPrograms(".github", "actions", "restore-source-cli", "action.yml"),
 ) as Action;
 const toolingAction = parse(
-  readRepoFile(".github", "actions", "test-full-tooling", "action.yml"),
+  readAutomationPrograms(".github", "actions", "test-full-tooling", "action.yml"),
 ) as Action;
 const sourceNeeds = [
   "pr-source-plan",

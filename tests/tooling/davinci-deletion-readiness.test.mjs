@@ -1,3 +1,4 @@
+import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -270,12 +271,19 @@ void test("current repository state is explicitly blocked without native product
 });
 
 void test("unmet deletion readiness runs only on explicit Actions dispatch", () => {
-  const workflow = fs.readFileSync(
+  const workflow = readAutomationPrograms(
     new URL("../../.github/workflows/level-deletion-readiness.yml", import.meta.url),
     "utf8",
   );
   assert.match(workflow, /^  workflow_dispatch:/m);
   assert.doesNotMatch(workflow, /^  (pull_request|push|schedule|merge_group):/m);
-  assert.match(workflow, /\.head_sha == \$sha and \.conclusion == "success"/);
+  const predicate = workflowProgram("level-deletion-readiness", workflow, "check-evidence-run.jq");
+  assert.match(workflow, /jq -e --arg sha "\$GITHUB_SHA"/u);
+  assert.deepEqual(predicate.trim().split(/\s+and\s+/u), [
+    ".head_sha == $sha",
+    '.conclusion == "success"',
+    '.path == ".github/workflows/real-project-matrix.yml"',
+    '(.event == "schedule" or .event == "workflow_dispatch")',
+  ]);
   assert.match(workflow, /check-deletion-readiness\.mjs/);
 });

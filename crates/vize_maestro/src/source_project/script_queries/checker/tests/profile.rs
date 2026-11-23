@@ -93,6 +93,13 @@ fn shared_and_distinct_checking_grammars() {
     }
     for (name, source) in [
         (
+            "upstream empty TypeScript setup",
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#3373/NavBar.vue"
+            )),
+        ),
+        (
             "checker-ts-recovery",
             "<script lang='ts'>const bad: = ;</script>",
         ),

@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -24,12 +25,9 @@ function writeFakeVizePreload(directory: string): string {
   });
   fs.writeFileSync(
     preloadPath,
-    `const path = require("node:path");
-if (path.basename(process.argv[1] ?? "") === "inspector") {
-  process.stdout.write(${JSON.stringify(report)});
-  process.exit(0);
-}
-`,
+    readToolingProgram("commands/compiler-fixture-diff-report/redirect-compiler-artifacts.cjs.in", {
+      REPORT: JSON.stringify(report),
+    }),
   );
   return preloadPath;
 }

@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -22,48 +23,37 @@ void test("the actual host worker runs all original preparation commands before 
   const npm = path.join(bin, "npm");
   fs.writeFileSync(
     npm,
-    `#!${process.execPath}
-import assert from "node:assert/strict";
-import fs from "node:fs";
-import path from "node:path";
-assert.deepEqual(process.argv.slice(2),["install","--ignore-scripts","--no-audit","--no-fund","--legacy-peer-deps","oxlint@1.78.0","oxlint-tsgolint@7.0.2001"]);
-for (const [name,version] of [["oxlint","1.78.0"],["oxlint-tsgolint","7.0.2001"]]) {
- fs.mkdirSync(path.join("node_modules",name,"bin"),{recursive:true});
- fs.writeFileSync(path.join("node_modules",name,"package.json"),JSON.stringify({version}));
-}
-fs.writeFileSync("package-lock.json","complete original controlled installation lock\\r\\n");
-console.log("complete install raw output");
-`,
+    readToolingProgram(
+      new URL("./test-programs/n8n-preparation-worker/npm.js.in", import.meta.url),
+      { NODE: process.execPath },
+    ),
   );
   fs.chmodSync(npm, 0o755);
   // These isolated child fixtures prove the production worker's command and
   // scheduling boundaries only; no native implementation is substituted or qualified.
   fs.writeFileSync(
     path.join(packageDir, "src/project-transport.test.ts"),
-    `
-import fs from "node:fs";
-import { createHash } from "node:crypto";
-const custody=JSON.parse(fs.readFileSync(process.env.VIZE_OXLINT_NATIVE_CUSTODY));
-const common={source:custody.source,binary:custody.binary.path,binarySha256:custody.binary.sha256};
-const source="controlled verifier input",sha=createHash("sha256").update(source).digest("hex");
-const rows=[...Array.from({length:5},(_,i)=>({...common,kind:"load",pid:i+1,control:"Guard-"+i+".vue"})),
- {...common,kind:"load",pid:10},...Array.from({length:18},()=>({...common,kind:"call",pid:10,outcome:"return",hasRuleHint:true,args:[source,{filename:"/Controlled.vue",enabledRules:Array(51).fill("control-rule")}],originalSha256:sha}))];
-fs.writeFileSync(custody.calls,rows.map(x=>JSON.stringify(x)).join("\\n")+"\\n");
-fs.writeFileSync(process.env.VIZE_OXLINT_PROJECT_CAPTURE,JSON.stringify({qualified:{imports:true,typeAware:true}}));
-console.log("complete transport raw output");
-`,
+    readToolingProgram(
+      new URL(
+        "./test-programs/n8n-preparation-worker/exercise-project-transport.js",
+        import.meta.url,
+      ),
+    ),
   );
   for (const file of ["script-safe-transport.test.ts", "original-ignore.test.ts"])
     fs.writeFileSync(path.join(packageDir, "src", file), "// Controlled command membership.\n");
   const marker = path.join(f.artifacts, "html-preparation.done");
   fs.writeFileSync(
     path.join(packageDir, "src/html-cli.test.mjs"),
-    `
-import fs from "node:fs";
-fs.writeFileSync(process.env.VIZE_OXLINT_HTML_CAPTURE,JSON.stringify({complete:true,qualified:{controlled:true}}));
-fs.writeFileSync(${JSON.stringify(marker)},JSON.stringify({owner:process.ppid}));
-console.log("complete HTML raw output");
-`,
+    readToolingProgram(
+      new URL(
+        "./test-programs/n8n-preparation-worker/assert-html-preparation.js.in",
+        import.meta.url,
+      ),
+      {
+        MARKER: JSON.stringify(marker),
+      },
+    ),
   );
   const configuration = path.join(output, "worker-config.json");
   fs.writeFileSync(

@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import childProcess, { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -26,12 +27,13 @@ function coldPrimeFixture(run) {
 }
 await test("a dead owned priming PID can be recovered without accepting a failed strict worker", () => {
   coldPrimeFixture((owner, lock) => {
-    const dead = childProcess.spawnSync(process.execPath, ["-e", ""]);
+    const dead = childProcess.spawnSync(process.execPath, ["--version"]);
     fs.writeFileSync(lock, dead.pid + ":1", { mode: 0o600 });
     let calls = 0;
     mock.method(childProcess, "spawnSync", (_command, args, options) => {
       calls++;
-      assert(args[2].includes("ensureHostedLiteralSource"));
+      assert.equal(path.basename(args[0]), "source-counterpart-worker.ts");
+      assert.equal(args[1], "prime");
       assert(options.timeout <= 1500);
       return { status: 1, pid: undefined };
     });
@@ -62,12 +64,13 @@ await test("the owner worker deadline kills its real process group and preserves
     process.env.VIZE_TOOLING_LISTING_OBSERVATION_DIR = path.join(owner, "observation");
     const original = childProcess.spawnSync,
       mark = path.join(owner, "descendant.pid");
-    const worker = `const {spawn}=require('node:child_process'); const fs=require('node:fs'); const d=spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'ignore'}); fs.writeFileSync(${JSON.stringify(mark)},String(d.pid)); setInterval(()=>{},1000);`;
+    const worker = fileURLToPath(new URL("./support/idle-process-tree.ts", import.meta.url));
     mock.method(childProcess, "spawnSync", (command, args, options) => {
-      assert(args[2].includes("ensureHostedLiteralSource"));
+      assert.equal(path.basename(args[0]), "source-counterpart-worker.ts");
+      assert.equal(args[1], "prime");
       assert(options.detached);
       assert(options.timeout <= 1500);
-      return original(command, ["-e", worker], options);
+      return original(command, [worker, mark], options);
     });
     syncBuiltinESMExports();
     try {

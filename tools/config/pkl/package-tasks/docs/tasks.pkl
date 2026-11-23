@@ -1,0 +1,21 @@
+amends "../../PackageTasks.pkl"
+
+tasks {
+  ["dev"] {
+    module.run("node", List("./scripts/ensure-browser.ts"))
+    module.run("pnpm", List("generate:ui-previews"))
+    module.run("pnpm", List("generate:reference"))
+    module.run("pnpm", List("generate:metadata"))
+    module.run("vp", List("build"))
+    module.run("pnpm", List("generate:og-images"))
+    module.run("vp", List("preview"))
+  }
+  ["build"] {
+    module.run("node", List("./scripts/ensure-browser.ts"))
+    module.run("pnpm", List("generate:ui-previews"))
+    module.run("pnpm", List("generate:reference"))
+    module.run("pnpm", List("generate:metadata"))
+    module.run("vp", List("build"))
+    module.run("node", List("./scripts/finish-build.ts"))
+  }
+}

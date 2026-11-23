@@ -29,10 +29,8 @@ test("vize lsp surfaces template completion contexts", async (t) => {
 defineProps<{ diskOnly: string }>()
 </script>
 `;
-    // Both props are read in the template: `vue/no-unused-properties` is
-    // enabled here, and the assertions below expect a clean child document.
     const openChildSource = `<script setup lang="ts">
-defineProps<{ label: string; disabled?: boolean }>()
+const { label, disabled } = defineProps<{ label: string; disabled?: boolean }>()
 </script>
 <template><button>{{ label }}{{ disabled }}</button></template>
 `;

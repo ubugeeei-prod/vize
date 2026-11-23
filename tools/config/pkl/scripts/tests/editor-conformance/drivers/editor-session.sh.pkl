@@ -1,0 +1,11 @@
+amends "../../../../ShellScript.pkl"
+
+interpreter = "sh"
+executable = false
+
+commands {
+  #""$@""#
+  #"status=$?"#
+  #"sleep 5"#
+  #"exit "$status""#
+}

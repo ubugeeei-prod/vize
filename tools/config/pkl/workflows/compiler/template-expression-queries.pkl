@@ -1,0 +1,242 @@
+import "../../Actions.pkl" as ci
+
+name = "Template expression queries"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/template-expression-queries.yml"
+      ".github/scripts/workflows/template-expression-queries/**"
+      "crates/vize_maestro/Cargo.toml"
+      "crates/vize_maestro/src/ide/context.rs"
+      "crates/vize_maestro/src/source_project/navigation.rs"
+      "crates/vize_maestro/src/source_project/navigation/**"
+      "crates/vize_maestro/src/ide/rename/canonical/event_rename*"
+      "crates/vize_maestro/src/ide/rename/canonical/event_rename/**"
+      "crates/vize_maestro/src/virtual_code/generator/template_products.rs"
+      "davinci/vize_l1_to_l2/src/dialect/vue3/native/pattern.rs"
+      "davinci/vize_l2/src/artifact/builder/binding*"
+      "davinci/vize_l2/src/artifact/builder/binding/**"
+      "crates/vize_croquis/src/drawer/template/components.rs"
+      "crates/vize_maestro/src/ide/definition/component_import.rs"
+      "crates/vize_maestro/src/ide/diagnostics/component_props*"
+      "crates/vize_maestro/src/ide/diagnostics/component_props/**"
+      "crates/vize_maestro/src/ide/completion/template/component_meta*"
+      "crates/vize_maestro/src/ide/completion/template/component_meta/**"
+      "crates/vize_maestro/src/ide/completion/template/component_interface*"
+      "crates/vize_maestro/src/ide/completion/template/component_interface/**"
+      "davinci/vize_l2/Cargo.toml"
+      "davinci/vize_l2/src/query*"
+      "davinci/vize_l2/src/query/**"
+      "davinci/vize_l2/src/file*"
+      "davinci/vize_l2/src/file/**"
+      "davinci/vize_l2/src/expr/**"
+      "davinci/vize_l2/src/resolution*"
+      "davinci/vize_l2/src/resolution/**"
+      "davinci/vize_l1_to_l2/Cargo.toml"
+      "davinci/vize_l1_to_l2/src/native/**"
+      "davinci/vize_l1_to_l2/src/native_file*"
+      "davinci/vize_l1_to_l2/src/native_file/**"
+      "davinci/vize_l1_to_l2/tests/expression_queries/**"
+      "davinci/vize_l1/Cargo.toml"
+      "davinci/vize_l1/src/embed/**"
+      "upstream/forks/oxc_parser/Cargo.toml"
+      "upstream/forks/oxc_parser/src/lib.rs"
+      "upstream/forks/oxc_parser/src/js/statement.rs"
+      "upstream/forks/oxc_parser/src/js/expression*"
+      "upstream/forks/oxc_parser/src/js/expression/**"
+      "upstream/forks/oxc_parser/src/embedding*"
+      "upstream/forks/oxc_parser/src/embedding/**"
+      "davinci/vize_l1/src/container/vue/descriptor*"
+      "davinci/vize_l1/src/container/vue/descriptor/**"
+      "davinci/vize_l1_to_l2/src/vue_file*"
+      "davinci/vize_l1_to_l2/src/vue_file/**"
+      "davinci/vize_l2/src/lang/js/file*"
+      "davinci/vize_l2/src/lang/js/file/**"
+      "davinci/vize_l2/src/walk*"
+      "davinci/vize_l2/src/walk/**"
+      "crates/vize_croquis/src/facts/components.rs"
+      "crates/vize_croquis/src/naming*"
+      "crates/vize_croquis/src/naming/**"
+      "crates/vize_croquis/src/drawer/script*"
+      "crates/vize_croquis/src/drawer/script/**"
+      "crates/vize_croquis/src/drawer/template/visit_element.rs"
+      "crates/vize_croquis/src/drawer/template_references*"
+      "crates/vize_croquis/src/drawer/template_references/**"
+      "crates/vize_croquis/src/facts/access.rs"
+      "crates/vize_croquis_cf/Cargo.toml"
+      "crates/vize_croquis_cf/src/registry.rs"
+      "crates/vize_croquis_cf/src/facts/mod.rs"
+      "crates/vize_croquis_cf/src/facts/render_tree*"
+      "crates/vize_croquis_cf/src/facts/render_tree/**"
+      "crates/vize_croquis_cf/src/module_paths.rs"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "template-expression-queries-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `expression-queries` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("template-expression-queries")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Compare original reference packets and allocation windows"
+        run = ci.workflowScript("compare-original-reference-packets-and-allocation-windows.sh")
+      }
+    }
+  }
+  `setup-render-products` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("template-expression-queries")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Compare project render sites and ordered dependency targets"
+        run = ci.workflowScript("compare-project-render-sites-and-ordered-dependency-targets.sh")
+      }
+    }
+  }
+
+  `component-prop-diagnostics` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("template-expression-queries")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Compare original component props and editor diagnostics"
+        run = ci.workflowScript("compare-original-component-props-and-editor-diagnostics.sh")
+      }
+    }
+  }
+
+  `component-event-edits` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("template-expression-queries")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Compare every original listener, semantic edit and paired resident request"
+        run = ci.workflowScript("compare-every-original-listener-semantic-edit-and-paired-resident-request.sh")
+      }
+    }
+  }
+
+  `lexical-script-products` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+      VIZE_LEXICAL_REFERENCE = ".vize-lexical-originals"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("template-expression-queries")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        name = "Check out the original lexical navigation inputs"
+        uses = ci.checkout
+        with {
+          ref = "54832d863ba3353e758b537934a93baf90e5897c"
+          path = "${{ env.VIZE_LEXICAL_REFERENCE }}"
+          `persist-credentials` = false
+          `sparse-checkout-cone-mode` = false
+          `sparse-checkout` = "/tools/config/vite-plus/tasks/testbox.ts\n/tools/support/compat/davinci/lib/lsp-profile-launch.ts"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Compare original OXC symbols, component listeners and public editor requests"
+        run = ci.workflowScript("compare-original-oxc-symbols-component-listeners-and-public-editor-requests.sh")
+      }
+    }
+  }
+}

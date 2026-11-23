@@ -9,7 +9,6 @@ import {
   parseMoonInt,
   pathExists,
   readFileToString,
-  replaceEvery,
   resolvePath,
   toolBin,
 } from "../command_runtime.ts";
@@ -108,19 +107,6 @@ export function npmTag(version: string): string {
   return nonEmptyEnv("NPM_TAG") ?? npmTagForVersion(version);
 }
 
-function shellQuote(value: string): string {
-  return `'${replaceEvery(value, "'", `'"'"'`)}'`;
-}
-
-/** Builds the shell command line that runs a repository TypeScript command. */
-export function childScriptCommand(
-  nodeBin: string,
-  scriptPath: string,
-  args: readonly string[],
-): string {
-  return [shellQuote(nodeBin), shellQuote(scriptPath), ...args.map(shellQuote)].join(" ");
-}
-
 /**
  * Resolves workspace and catalog dependency protocols before publishing.
  * Release artifacts are published from downloaded directories rather than a
@@ -138,7 +124,7 @@ async function preparePublishManifest(directory: string): Promise<number> {
     repoRoot,
     "tools/support/release/prepare_npm_publish_manifest/main.ts",
   );
-  const exitCode = await run("sh", ["-c", childScriptCommand(nodeBin, scriptPath, [directory])], {
+  const exitCode = await run(nodeBin, [scriptPath, directory], {
     cwd: repoRoot,
   });
   if (exitCode !== 0) {

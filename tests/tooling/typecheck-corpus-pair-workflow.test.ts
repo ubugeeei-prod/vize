@@ -1,11 +1,12 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile } from "./support/github-workflows.ts";
-
 void test("the corpus pair workflow builds both SHAs and measures on the 32-vCPU runner", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "typecheck-corpus-pair.yml")) as {
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "typecheck-corpus-pair.yml"),
+  ) as {
     on: {
       workflow_dispatch: {
         inputs: Record<string, { default?: string | boolean; required?: boolean }>;

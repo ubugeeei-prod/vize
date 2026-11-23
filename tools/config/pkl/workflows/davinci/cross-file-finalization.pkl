@@ -1,0 +1,150 @@
+import "../../Actions.pkl" as ci
+
+name = "Cross-file dependency profiling"
+`run-name` = "Cross-file dependency phases @ ${{ github.event.pull_request.head.sha || github.sha }}"
+on {
+  workflow_dispatch = null
+  pull_request {
+    types = List("opened", "synchronize", "reopened")
+    paths = new Listing {
+      ".github/workflows/cross-file-finalization.yml"
+      ".github/scripts/workflows/cross-file-finalization/**"
+      "crates/vize_croquis_cf/src/analyzer/core/files.rs"
+      "crates/vize_croquis_cf/src/analyzer/core/accessors.rs"
+      "crates/vize_croquis_cf/src/analyzer/core/accessors/**"
+      "crates/vize_croquis_cf/src/analyzer/core/deps.rs"
+      "crates/vize/src/commands/lint/cross_file.rs"
+      "crates/vize_vitrine/src/wasm/cross_file.rs"
+      "tests/tooling/support/cross-file-finalization.ts"
+      "tests/tooling/support/cross-file-finalization/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "cross-file-finalization-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  CARGO_INCREMENTAL = "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  EXPECTED_SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+}
+jobs {
+  `actual-source-profile` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("cross-file-finalization")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      ci.workspaceVp()
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "cross-file-sfc-effects"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.command("Install frozen workspace tools", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Verify complete analyzer reset and file ID reuse"
+        run = ci.workflowScript("verify-complete-analyzer-reset-and-file-id-reuse.sh")
+      }
+      new Dynamic {
+        name = "Build and receipt the actual source CLI"
+        run = ci.workflowScript("build-and-receipt-the-actual-source-cli.sh")
+      }
+      new Dynamic {
+        name = "Verify descriptor and complete report regressions"
+        run = ci.workflowScript("verify-descriptor-and-complete-report-regressions.sh")
+      }
+      new Dynamic {
+        name = "Compare complete public and source CLI packets with the actual WASM reference"
+        run = "node tests/tooling/support/cross-file-sfc-effects.ts"
+      }
+      new Dynamic {
+        name = "Build and observe the optimized source dependency phases"
+        run = ci.workflowScript("build-and-observe-the-optimized-source-dependency-phases.sh")
+      }
+      new Dynamic {
+        name = "Preserve complete packets, provider identities and phase profiles"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "cross-file-finalization-cli-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = """
+          target/ci/vize.differential-build.json
+          target/vize-tests/cross-file-sfc-effects
+          target/vize-tests/cross-file-finalization
+          target/vize-tests/cross-file-clear-template-facts
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+  `actual-source-wasm-packets` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("cross-file-finalization")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      ci.workspaceVp()
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          targets = "wasm32-unknown-unknown"
+        }
+      }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "cross-file-wasm-effects"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = "taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1"  // v2
+        with { tool = "wasm-bindgen-cli@0.2.129" }
+      }
+      ci.command("Install frozen workspace tools", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Verify actual block grammars and binding owners"
+        run = ci.workflowScript("verify-actual-block-grammars-and-binding-owners.sh")
+      }
+      ci.command("Build the existing actual WASM release configuration", "node tools/support/tasks/build-vize-wasm-package.ts")
+      new Dynamic {
+        name = "Verify whole source WASM responses against actual public observations"
+        run = "node tests/tooling/support/cross-file-wasm-effects.ts"
+      }
+      new Dynamic {
+        name = "Preserve complete providers, responses and actual source artifact"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "cross-file-finalization-wasm-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = """
+          target/vize-tests/cross-file-wasm-effects
+          npm/wasm/vize_vitrine.js
+          npm/wasm/vize_vitrine_bg.wasm
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

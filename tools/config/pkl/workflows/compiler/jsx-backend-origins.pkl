@@ -1,0 +1,90 @@
+import "../../Actions.pkl" as ci
+
+name = "JSX backend source origins"
+on {
+  workflow_dispatch = null
+  pull_request {
+    paths = new Listing {
+      "crates/vize_atelier_jsx/**"
+      "crates/vize_atelier_vapor/src/**"
+      "crates/vize_atelier_ssr/src/**"
+      "crates/vize_atelier_core/src/codegen/**"
+      "tests/_fixtures/differential/jsx/child-values-6890-backend-profile-contracts.json"
+      "tests/tooling/jsx-child-backend-profile-contract.test.ts"
+      "tests/tooling/support/jsx-child-backend-profile-contract.ts"
+      "tests/tooling/jsx-current-backend-profile-contract.test.ts"
+      "tests/tooling/support/jsx-current-backend-profile-contract.ts"
+      ".github/workflows/jsx-backend-origins.yml"
+      ".github/scripts/workflows/jsx-backend-origins/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "jsx-backend-origins-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  origins {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      QUALIFICATION_HEAD_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+      BASE_SHA = "${{ github.event.pull_request.base.sha || github.sha }}"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("jsx-backend-origins")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha || github.sha }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "test-scripts"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Capture exact backend maps and code equality"
+        env { VIZE_JSX_BACKEND_ORIGIN_CAPTURE = "${{ runner.temp }}/jsx-backend-origins/origins.json" }
+        run = ci.workflowScript("capture-exact-backend-maps-and-code-equality.sh")
+      }
+      new Dynamic {
+        name = "Measure complete default backends before and after the source change"
+        run = ci.workflowScript("measure-complete-default-backends-before-and-after-the-source-change.sh")
+      }
+      new Dynamic {
+        name = "Compare whole backend outputs and report measured default overhead"
+        run = ci.workflowScript("compare-whole-backend-outputs-and-report-measured-default-overhead.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "jsx-backend-origins-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/jsx-backend-origins"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

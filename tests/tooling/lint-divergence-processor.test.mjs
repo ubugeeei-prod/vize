@@ -23,9 +23,10 @@ import {
   evaluateBudget,
 } from "../../tools/support/compat/fixtures/lint-divergence-budget.ts";
 import { selectComparableRules as selectCurrentComparableRules } from "../../tools/support/fixtures/lint_divergence/compare.ts";
-import { baselineScript as embedded } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
+import { eslintBaselineProgram } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
+const baselineProgram = eslintBaselineProgram(root);
 const digest = (body) => createHash("sha256").update(body).digest("hex");
 const requireFromBench = createRequire(path.join(root, "tools/benchmarks/scripts/package.json"));
 const runtime = resolveScorecardRuntime();
@@ -73,7 +74,10 @@ const producer = fs.readFileSync(
   path.join(root, "tools/support/fixtures/lint_divergence/runtime.ts"),
   "utf8",
 );
-assert.ok(embedded, "exercise the actual TypeScript producer's ESLint entry point");
+assert.ok(
+  fs.existsSync(baselineProgram),
+  "exercise the actual TypeScript producer's ESLint entry point",
+);
 
 function record(input, boundary, packet) {
   const directory = process.env.VIZE_LINT_PROCESSOR_CAPTURE_DIR;
@@ -85,7 +89,7 @@ function record(input, boundary, packet) {
     `${JSON.stringify(
       {
         producerSha256: digest(producer),
-        embeddedSha256: digest(embedded),
+        embeddedSha256: digest(fs.readFileSync(baselineProgram)),
         providers,
         wholeInput: { cwd: input.cwd, filename: input.filename, body, sha256: digest(body) },
         packet,
@@ -127,7 +131,7 @@ function strictUnusable(classified, expectedReason) {
 }
 
 function actual(input, selected) {
-  const child = spawnSync(process.execPath, ["--input-type=module", "--eval", embedded], {
+  const child = spawnSync(process.execPath, [baselineProgram], {
     cwd: root,
     input: JSON.stringify({
       benchPackageJson: path.join(root, "tools/benchmarks/scripts/package.json"),

@@ -33,16 +33,25 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/real-project-matrix-differential/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Resolve the matrix run
         id: run
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ inputs.matrix_run_id || github.event.workflow_run.id }}
-        run: |
-          [[ "$RUN_ID" =~ ^[0-9]+$ ]]
-          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" > "$RUNNER_TEMP/matrix-run.json"
-          jq -e '.path == ".github/workflows/real-project-matrix.yml" and .head_branch == "main" and .status == "completed" and (.display_title | contains("scoped-diagnostic") | not)' "$RUNNER_TEMP/matrix-run.json"
-          jq -r '"id=\(.id)\nattempt=\(.run_attempt)\nsha=\(.head_sha)"' "$RUNNER_TEMP/matrix-run.json" >> "$GITHUB_OUTPUT"
+        run: . "${{ env.VIZE_CI_FILES }}/resolve-the-matrix-run.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ steps.run.outputs.sha }}

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+read -ra js <<< "$RELEASE_JS_PACKAGES"
+platforms=(npm/native/npm)
+native=(npm/native)
+dependents=(npm/fresco-native npm/wasm "${js[@]}")
+node tools/support/release/publish_npm_package_dirs/main.ts "${platforms[@]}" --concurrency 8 --provenance
+node tools/support/release/publish_npm_package_dirs/main.ts "${native[@]}" --concurrency 1 --provenance
+node tools/support/release/publish_npm_package_dirs/main.ts "${dependents[@]}" --concurrency 16 --provenance --no-wait
+echo "packages=$(node tools/support/release/publish_npm_package_dirs/main.ts --names "${platforms[@]}" "${native[@]}" "${dependents[@]}")" >> "$GITHUB_OUTPUT"

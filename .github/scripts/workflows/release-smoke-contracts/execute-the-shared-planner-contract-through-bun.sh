@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+for phase in cold warm; do
+  /usr/bin/time --verbose --output="$RUNNER_TEMP/bun-planner-$phase.txt" \
+    bun test tests/tooling/legacy-fix-fixture-report.test.ts
+done
+cat "$RUNNER_TEMP"/bun-planner-*.txt

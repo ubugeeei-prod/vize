@@ -1,0 +1,18 @@
+amends "../../../../../PackageTasks.pkl"
+
+local buildUnplugin = module.run("pnpm", List("--dir", "..", "run", "build"))
+
+tasks {
+  ["build"] {
+    buildUnplugin
+    module.run("node", List("build/build-all.ts"))
+  }
+  ["build:bun"] {
+    buildUnplugin
+    module.run("bun", List("run", "build/bun.ts"))
+  }
+  ["test"] {
+    buildUnplugin
+    module.run("node", List("--test", "test/builders.test.ts"))
+  }
+}

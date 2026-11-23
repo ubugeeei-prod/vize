@@ -1,0 +1,95 @@
+import "../../Actions.pkl" as ci
+
+name = "Vue 2 editor diagnostic context"
+
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/vue2-editor-diagnostic-context.yml"
+      ".github/scripts/workflows/vue2-editor-diagnostic-context/**"
+      "tests/snapshots/check/vue-element-admin-legacy-lsp-oracle.ts"
+      "tests/snapshots/check/vue-element-admin-unmapped-diagnostic-oracle.ts"
+      "tests/tooling/vue2-rename-context-custody.test.mjs"
+      "tests/_fixtures/differential/typechecker/vue2-rename-context-custody/**"
+    }
+  }
+  workflow_dispatch {}
+}
+
+permissions { contents = "read" }
+concurrency {
+  group = "vue2-editor-context-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_TERM_COLOR = "always"
+}
+
+jobs {
+  `edit-cycles` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("vue2-editor-diagnostic-context")
+      new Dynamic {
+        uses = ci.checkout
+        with { ref = "${{ github.event.pull_request.head.sha || github.sha }}" }
+      }
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          `run-install` = false
+          cache = true
+          `cache-save` = false
+        }
+      }
+      ci.rust("stable")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "vue-parity"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Install pinned provider and Vue 2 fixture"
+        run = ci.workflowScript("install-pinned-provider-and-vue-2-fixture.sh")
+      }
+      new Dynamic {
+        name = "Build exact source CLI with its receipt"
+        run = ci.workflowScript("build-exact-source-cli-with-its-receipt.sh")
+      }
+      new Dynamic {
+        name = "Verify whole CLI packets and original editor edit cycles"
+        env {
+          VIZE_TEST_BIN = "${{ github.workspace }}/target/ci/vize"
+          VIZE_LSP_BIN = "${{ github.workspace }}/target/ci/vize"
+          VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+          VIZE_LSP_BUILD_RECIPE = "cargo build --profile ci -p vize --features legacy"
+          RAYON_NUM_THREADS = "4"
+        }
+        run = ci.workflowScript("verify-whole-cli-packets-and-original-editor-edit-cycles.sh")
+      }
+      new Dynamic {
+        name = "Retain complete source-built editor wires"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "vue2-editor-context-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_id }}"
+          path = """
+          target/ci/vize.differential-build.json
+          target/differential/lsp-sessions/
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

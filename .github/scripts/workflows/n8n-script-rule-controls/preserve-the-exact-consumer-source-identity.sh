@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+[[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+[[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+git diff --exit-code HEAD --
+mkdir -p "$RUNNER_TEMP/n8n-script-rule-workflow"
+git rev-parse HEAD > "$RUNNER_TEMP/n8n-script-rule-workflow/source-sha.txt"
+git rev-parse 'HEAD^{tree}' > "$RUNNER_TEMP/n8n-script-rule-workflow/source-tree.txt"

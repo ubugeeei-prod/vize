@@ -1,0 +1,10 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  printf "producer passed\n"
+  exit 0
+  """#
+}

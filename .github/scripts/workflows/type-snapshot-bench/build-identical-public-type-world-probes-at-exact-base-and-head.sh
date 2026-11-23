@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
+[[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
+mkdir -p base/crates/vize_atelier_sfc/examples
+cp head/crates/vize_atelier_sfc/examples/type_snapshot_bench.rs base/crates/vize_atelier_sfc/examples/
+cmp head/crates/vize_atelier_sfc/examples/type_snapshot_bench.rs base/crates/vize_atelier_sfc/examples/type_snapshot_bench.rs
+cargo build --locked --manifest-path base/Cargo.toml --profile ci-opt -p vize_atelier_sfc --example type_snapshot_bench
+cargo build --locked --manifest-path head/Cargo.toml --profile ci-opt -p vize_atelier_sfc --example type_snapshot_bench

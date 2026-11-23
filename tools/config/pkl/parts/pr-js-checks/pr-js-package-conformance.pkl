@@ -1,0 +1,174 @@
+import "../../Actions.pkl" as ci
+
+name = "PR package conformance (${{ matrix.surface }})"
+strategy {
+  `fail-fast` = false
+  matrix {
+    surface = List("fresco", "ui")
+  }
+}
+`runs-on` = ci.linux
+`timeout-minutes` = 35
+env {
+
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+  CARGO_BUILD_JOBS = "12"
+  TEST_CASES_JOB = "PR package conformance (${{ matrix.surface }})"
+  VIZE_TEST_CASES = "test-cases-js-conformance-${{ matrix.surface }}.json"
+}
+steps = new Listing {
+  ...ci.stageWorkflowScripts("pr-js-checks")
+  new Dynamic {
+    name = "Explain documentation-only skip"
+    `if` = "${{ !(inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}"
+    run = #". "${{ env.VIZE_CI_FILES }}/explain-documentation-only-skip-3.sh""#
+  }
+  new Dynamic {
+    uses = ci.checkout
+    `if` = "${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}"
+  }
+  new Dynamic {
+    uses = "./.github/actions/cache-vp-bootstrap"
+    `if` = "${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}"
+  }
+  new Dynamic {
+    uses = ci.setupVp121
+    `if` = "${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}"
+    with {
+      version = "latest"
+      `node-version-file` = "package.json"
+      cache = true
+      `cache-save` = false
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    uses = ci.setupRust
+    with {
+      toolchain = "stable"
+      components = "clippy"
+    }
+    `if` = "${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}"
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-wild-http-recovery"
+    `if` = "${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}"
+    with { `wild-version` = "0.9.0" }
+  }
+  // check.yml's trusted `build-js-packages` job runs the same Fresco,
+  // native `build:ci` and UI checks and writes this role on main.
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    `if` = "${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}"
+    with {
+      key = "build-js-packages"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    name = "Install JS dependencies"
+    `if` = "${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}"
+    env { CONFORMANCE_GROUP = "${{ matrix.surface }}-conformance" }
+    run = #"node tools/support/compat/github/install-js-checks.ts "$CONFORMANCE_GROUP""#
+  }
+  new Dynamic {
+    name = "Prepare UI conformance test case capture"
+    `if` = "${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}"
+    run = #"node tools/support/compat/github/job-test-cases.ts setup "$RUNNER_TEMP/ui-conformance-test-cases""#
+  }
+  new Dynamic {
+    name = "Check Fresco native declarations and consumer types"
+    `if` = "${{ inputs.run-js && matrix.surface == 'fresco' && fromJSON(inputs.js-plan).conformance.fresco }}"
+    run = #". "${{ env.VIZE_CI_FILES }}/check-fresco-native-declarations-and-consumer-types.sh""#
+  }
+  new Dynamic {
+    name = "Lint Fresco NAPI call sites and test corpus"
+    `if` = "${{ inputs.run-js && matrix.surface == 'fresco' && fromJSON(inputs.js-plan).conformance.fresco }}"
+    run = #". "${{ env.VIZE_CI_FILES }}/lint-fresco-napi-call-sites-and-test-corpus.sh""#
+  }
+  new Dynamic {
+    name = "Check UI package conformance"
+    `if` = "${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}"
+    run = "node .github/actions/test-js-packages-with-history/native-fault-evidence.ts --ui-conformance"
+  }
+  new Dynamic {
+    name = "Verify whole source CSS API maps with the built native image"
+    `if` = "${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}"
+    env {
+      VIZE_CSS_MAP_REQUIRE_SOURCE = "1"
+      VIZE_CSS_MAP_SOURCE_SHA = "${{ github.sha }}"
+    }
+    run = "node --test tests/native/css-compile-source-maps.mjs tests/native/css-v-bind-source-maps.mjs"
+  }
+  new Dynamic {
+    name = "Preserve UI conformance native fault diagnostics"
+    `if` = "${{ !cancelled() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "ui-native-fault-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+      path = "${{ runner.temp }}/js-native-fault-evidence-*/**/*.json"
+      `if-no-files-found` = "warn"
+      `retention-days` = 14
+    }
+  }
+  new Dynamic {
+    name = "Retain every actual CSS API result and source identity"
+    `if` = "${{ always() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "source-css-api-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+      path = "target/css-compile-source-maps/"
+      `if-no-files-found` = "error"
+      `retention-days` = 14
+    }
+  }
+  new Dynamic {
+    name = "Verify packaged direct-child props with source native on Node 22"
+    `if` = "${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}"
+    shell = "bash"
+    run = #". "${{ env.VIZE_CI_FILES }}/verify-packaged-direct-child-props-with-source-native-on-node-22.sh""#
+  }
+  new Dynamic {
+    name = "Retain source reporter archives and whole outcomes"
+    `if` = "${{ always() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "source-child-props-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+      path = """
+      ${{ runner.temp }}/direct-child-props-source-11809/
+      !${{ runner.temp }}/direct-child-props-source-11809/**/node_modules
+      !${{ runner.temp }}/direct-child-props-source-11809/**/node_modules/**
+
+      """
+      `if-no-files-found` = "error"
+      `retention-days` = 14
+    }
+  }
+  new Dynamic {
+    name = "Verify imported type projects with the built native image"
+    `if` = "${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}"
+    shell = "bash"
+    env {
+      VIZE_IMPORTED_TYPES_REQUIRE_SOURCE = "1"
+      VIZE_IMPORTED_TYPES_SOURCE_SHA = "${{ github.sha }}"
+    }
+    run = #". "${{ env.VIZE_CI_FILES }}/verify-imported-type-projects-with-the-built-native-image.sh""#
+  }
+  new Dynamic {
+    name = "Retain imported type project inputs and source receipts"
+    `if` = "${{ always() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "imported-type-project-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+      path = "${{ runner.temp }}/imported-type-project/"
+      `if-no-files-found` = "error"
+      `retention-days` = 14
+    }
+  }
+  new Dynamic {
+    name = "Collect and upload UI conformance test cases"
+    `if` = "${{ !cancelled() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}"
+    uses = "./.github/actions/collect-job-test-cases"
+    with { artifact = "test-cases-js-conformance-${{ matrix.surface }}-${{ github.run_attempt }}" }
+  }
+}

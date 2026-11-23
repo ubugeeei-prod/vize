@@ -1,0 +1,109 @@
+import "../Actions.pkl" as ci
+
+name = "Test JS packages with public native history"
+description = "Preserve the existing JS package gate and all actual formatter build and call evidence."
+inputs {
+  partition {
+    description = "Existing package group, original-project, or the complete diagnostic sequence."
+    ["default"] = "all"
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Validate full JS partition"
+      shell = "bash"
+      env { VIZE_JS_PARTITION = "${{ inputs.partition }}" }
+      run = ci.actionScript("validate-full-js-partition.sh")
+    }
+    // Composite success() scopes to this action; also retain the outer job guard.
+    new Dynamic {
+      name = "Test JS packages"
+      `if` = "${{ success() && job.status == 'success' && inputs.partition == 'all' }}"
+      shell = "bash"
+      run = "node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root test:js"
+    }
+    new Dynamic {
+      name = "Test JS package group"
+      `if` = "${{ success() && job.status == 'success' && inputs.partition != 'all' && inputs.partition != 'original-project' }}"
+      shell = "bash"
+      env { VIZE_JS_PACKAGE_GROUP = "${{ inputs.partition }}" }
+      run = #"node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP""#
+    }
+    new Dynamic {
+      name = "Build the source addon and Oxlint bundles"
+      `if` = "${{ success() && job.status == 'success' && inputs.partition == 'original-project' }}"
+      shell = "bash"
+      run = "vp run --workspace-root build:oxlint-qualification"
+    }
+    new Dynamic {
+      name = "Qualify original project checks with both real Oxlint hosts"
+      id = "original-project-qualification"
+      `if` = "${{ success() && job.status == 'success' && (inputs.partition == 'all' || inputs.partition == 'original-project') }}"
+      shell = "bash"
+      env { VIZE_N8N_BASELINE_MODE = "partitioned" }
+      run = "node npm/linter/oxlint/scripts/check-project-transport.mjs"
+    }
+    new Dynamic {
+      name = "Preserve public native formatter evidence"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ inputs.partition }}"
+        path = "npm/native/.artifacts/native/formatter-history/**"
+        `if-no-files-found` = "warn"
+        `retention-days` = 14
+      }
+    }
+    new Dynamic {
+      name = "Preserve original template style fix observations"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "template-style-fixes-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ inputs.partition }}"
+        path = "target/template-style-fixes-7905.json"
+        `if-no-files-found` = "warn"
+        `retention-days` = 14
+      }
+    }
+    new Dynamic {
+      name = "Preserve original Oxlint bridge locations"
+      id = "original-project-evidence"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ inputs.partition }}"
+        path = """
+        target/oxlint-original-locations-7904.json
+        target/oxlint-original-project-checks-7903.json
+        target/oxlint-script-safe-carrier-7903.json
+        target/oxlint-original-project-transport/**
+        target/oxlint-original-html-binding-7903/**
+        target/vize-tests/original-sfc-host-7004-7005-*/**
+
+        """
+        `if-no-files-found` = "warn"
+        `retention-days` = 14
+      }
+    }
+    new Dynamic {
+      name = "Clean completed original project staging after evidence upload"
+      `if` = "${{ always() && steps.original-project-qualification.outcome == 'success' && steps.original-project-evidence.outcome == 'success' }}"
+      shell = "bash"
+      env { VIZE_OXLINT_STAGING_DIRECTORY = "${{ steps.original-project-qualification.outputs.staging-directory }}" }
+      run = "node npm/linter/oxlint/scripts/project-native-staging.ts --cleanup"
+    }
+    new Dynamic {
+      name = "Preserve bounded JS native fault diagnostics"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "js-native-fault-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}-${{ inputs.partition }}"
+        path = "${{ runner.temp }}/js-native-fault-evidence-*/**/*.json"
+        `if-no-files-found` = "warn"
+        `retention-days` = 14
+      }
+    }
+  }
+}

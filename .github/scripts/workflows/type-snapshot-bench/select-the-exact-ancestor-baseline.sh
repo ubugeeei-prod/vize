@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[[ "$REQUESTED_BASE" =~ ^[0-9a-f]{40}$ ]]
+[[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+git -C head merge-base --is-ancestor "$REQUESTED_BASE" "$HEAD_SHA"
+echo "BASE_SHA=$(git -C head merge-base "$REQUESTED_BASE" "$HEAD_SHA")" >> "$GITHUB_ENV"

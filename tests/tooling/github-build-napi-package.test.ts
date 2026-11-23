@@ -213,7 +213,7 @@ void test("Apple targets replace an existing platform binary in place", (t) => {
     "libvize_vitrine.dylib",
   );
   writeRecordingCommand(bin, "cargo", log, {
-    script: `fs.mkdirSync(${JSON.stringify(path.dirname(library))}, { recursive: true }); fs.writeFileSync(${JSON.stringify(library)}, 'fresh');`,
+    hook: { name: "write-native-build-product", args: [library] },
   });
   const output = path.join(packageDir, "vize-vitrine.darwin-x64.node");
   fs.writeFileSync(output, "stale-binary-with-more-bytes");

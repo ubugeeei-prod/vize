@@ -1,0 +1,58 @@
+import "../../Actions.pkl" as ci
+
+needs = "iteration-plan"
+`runs-on` = "${{ needs.iteration-plan.outputs.engines == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}"
+`timeout-minutes` = 20
+strategy {
+  `fail-fast` = false
+  matrix {
+    `node-version` = List("22", "24")
+  }
+}
+env {
+
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+}
+steps = new Listing {
+  ...ci.stageWorkflowScripts("check")
+  new Dynamic {
+    uses = ci.checkout
+    `if` = "${{ needs.iteration-plan.outputs.engines == 'true' }}"
+  }
+  new Dynamic {
+    uses = ci.setupVp121
+    `if` = "${{ needs.iteration-plan.outputs.engines == 'true' }}"
+    with {
+      version = "latest"
+      `node-version` = "${{ matrix.node-version }}"
+      cache = true
+      `cache-save` = false
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    name = "Install JS dependencies"
+    `if` = "${{ needs.iteration-plan.outputs.engines == 'true' }}"
+    run = "vp install --frozen-lockfile --prefer-offline"
+  }
+  new Dynamic {
+    name = "Check package engine matrix"
+    `if` = "${{ needs.iteration-plan.outputs.engines == 'true' }}"
+    uses = "./.github/actions/test-small-node-cases"
+    with {
+      suite = "node-engine"
+      job = "node-engine-compat (${{ matrix.node-version }})"
+      packet = "node-engine-${{ matrix.node-version }}"
+    }
+  }
+  new Dynamic {
+    name = "Check content mapper helper ABI"
+    `if` = "${{ needs.iteration-plan.outputs.engines == 'true' }}"
+    run = "node npm/cli/scripts/content-mapper-helper-abi.ts --check"
+  }
+  new Dynamic {
+    name = "Report unchanged inputs"
+    `if` = "${{ needs.iteration-plan.outputs.engines != 'true' }}"
+    run = #". "${{ env.VIZE_CI_FILES }}/report-unchanged-inputs-2.sh""#
+  }
+}

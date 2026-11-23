@@ -27,6 +27,7 @@ on:
       - "Cargo.lock"
       - "docs/davinci/plan/key-manifests.md"
       - ".github/workflows/davinci-incremental.yml"
+      - ".github/scripts/workflows/davinci-incremental/**"
   workflow_dispatch:
 
 concurrency:
@@ -82,6 +83,8 @@ jobs:
     name: Incremental ≡ clean (TS-42)
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/davinci-incremental"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -107,7 +110,7 @@ jobs:
       - name: Check borrowed stages and selective invalidation
         run: "cargo test --locked --profile ci-opt -p vize_incremental --features block-queries --lib block_query::"
       - name: Select original Vue files for resident queries
-        run: git ls-files -z -- '*.vue' '*.vue.txt' > "$RUNNER_TEMP/resident-block-query-files"
+        run: . "${{ env.VIZE_CI_FILES }}/select-original-vue-files-for-resident-queries.sh"
       - name: Compare every borrowed stage with the original files
         env:
           VIZE_BLOCK_QUERY_MANIFEST: ${{ runner.temp }}/resident-block-query-files

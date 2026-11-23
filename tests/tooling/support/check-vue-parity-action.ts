@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./automation-source.ts";
 //! Reading and executing the `check-vue-parity` composite action (#4126).
 //!
 //! The workflow-shape tests assert two different things about this action: the
@@ -10,8 +11,6 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parse } from "yaml";
-
-import { readRepoFile } from "./github-workflows.ts";
 
 export type CompositeActionStep = {
   env?: Record<string, string>;
@@ -27,7 +26,9 @@ export type CompositeAction = {
 };
 
 export const vueParityAction = (): CompositeAction =>
-  parse(readRepoFile(".github", "actions", "check-vue-parity", "action.yml")) as CompositeAction;
+  parse(
+    readAutomationPrograms(".github", "actions", "check-vue-parity", "action.yml"),
+  ) as CompositeAction;
 
 /** Parse `key=value` lines: the shape of both `GITHUB_ENV` and the baseline. */
 export const keyValues = (contents: string): Map<string, string> =>

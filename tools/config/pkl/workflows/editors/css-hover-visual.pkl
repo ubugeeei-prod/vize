@@ -1,0 +1,142 @@
+import "../../Actions.pkl" as ci
+
+name = "Packaged CSS hover visual evidence"
+
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/css-hover-visual.yml"
+      ".github/scripts/workflows/css-hover-visual/**"
+      "editors/vscode/test/css-hover-*.mjs"
+      "editors/vscode/test/css-hover-source-custody.json"
+      "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/**"
+      "crates/vize_maestro/src/ide/style.rs"
+      "crates/vize_maestro/src/server/annotations/document_color.rs"
+      "crates/vize_maestro/src/server/annotations/document_color/**"
+      "crates/vize_maestro/src/server/annotations.rs"
+      "crates/vize_maestro/src/server/handlers/typed.rs"
+      "crates/vize_maestro/src/ide/style/documentation.rs"
+      "crates/vize_maestro/src/ide/style/tests/hover.rs"
+      "editors/vscode/test/run-css-hover-visual.mjs"
+      "editors/vscode/test/suite/css-hover-visual.cjs"
+      "tests/tooling/vscode-css-hover-visual.test.mjs"
+      "tests/tooling/vscode-css-hover-source-custody.test.mjs"
+      "tests/tooling/vscode-css-hover-literal-visual.test.mjs"
+      "tests/tooling/lsp-css-color-literal-hover.test.ts"
+      "tests/tooling/lsp-css-color-declaration-admission.test.ts"
+      "tests/_fixtures/differential/lsp/css-color-declaration-admission-10562/**"
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "css-hover-visual-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  `packaged-editor` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+
+      CARGO_TERM_COLOR = "always"
+      CARGO_BUILD_JOBS = "12"
+      RAYON_NUM_THREADS = "4"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+      SOURCE_SHA = "${{ github.event.pull_request.head.sha }}"
+      VIZE_TEST_VSCODE_VERSION = "1.107.1"
+      VIZE_CSS_VISUAL_OUTPUT = "${{ github.workspace }}/output/playwright/css-hover"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("css-hover-visual")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      ci.command("Require the exact reviewed PR source", ci.workflowScript("require-the-exact-reviewed-pr-source.sh"))
+      ci.workspaceVp()
+      ci.command("Install locked JavaScript dependencies", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Verify the reviewed source composition and immutable baseline before building"
+        run = "node editors/vscode/test/css-hover-source-custody.mjs"
+      }
+      new Dynamic {
+        name = "Install repository Rust toolchain"
+        run = ci.workflowScript("install-repository-rust-toolchain.sh")
+      }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "editor-host-smoke"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Build and receipt the actual source CLI with default features"
+        run = ci.workflowScript("build-and-receipt-the-actual-source-cli-with-default-features.sh")
+      }
+      new Dynamic {
+        name = "Check capture refusal boundaries"
+        run = "node --test tests/tooling/vscode-css-hover-visual.test.mjs tests/tooling/vscode-css-hover-source-custody.test.mjs tests/tooling/vscode-css-hover-literal-visual.test.mjs"
+      }
+      new Dynamic {
+        name = "Check real SFC CSS example packets and completion parity"
+        run = "cargo test --profile ci -p vize_maestro ide::style::tests -- --test-threads=4"
+      }
+      new Dynamic {
+        name = "Verify selected color work and publication boundaries on the actual source"
+        env {
+          VIZE_CSS_SELECTED_WORK_CAPTURE = "${{ github.workspace }}/target/vize-tests/css-color-literal-hover/scanner-work.json"
+        }
+        run = ci.workflowScript("verify-selected-color-work-and-publication-boundaries-on-the-actual-sour.sh")
+      }
+      new Dynamic {
+        name = "Verify all eighteen current hovers and frozen color and presentation vectors"
+        env {
+          VIZE_LSP_BIN = "target/ci/vize"
+          VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+        }
+        run = "node --test tests/tooling/lsp-css-color-declaration-admission.test.ts tests/tooling/lsp-css-color-literal-hover.test.ts"
+      }
+      new Dynamic {
+        name = "Build and package the actual extension"
+        run = ci.workflowScript("build-and-package-the-actual-extension.sh")
+      }
+      ci.use("./.github/actions/setup-ubuntu-archive")
+      new Dynamic {
+        name = "Prepare the pinned Electron host"
+        run = ci.workflowScript("prepare-the-pinned-electron-host.sh")
+      }
+      new Dynamic {
+        name = "Capture public APIs, rendered CSS and provider-backed color picker"
+        run = "xvfb-run -a -s '-screen 0 1440x1000x24' node editors/vscode/test/run-css-hover-visual.mjs"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "css-hover-visual-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha }}"
+          path = """
+          output/playwright/css-hover/
+          target/vize-tests/css-color-declaration-admission/
+          target/vize-tests/css-color-literal-hover/
+          target/differential/lsp-sessions/
+
+          """
+          `include-hidden-files` = true
+          `if-no-files-found` = "warn"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

@@ -1,3 +1,5 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { packageScripts } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -26,7 +28,10 @@ test("the HMR task retains its original build and all browser cases without cach
   const manifest = JSON.parse(
     readFileSync(path.join(repo, "npm/builder/rspack/package.json"), "utf8"),
   );
-  assert.equal(manifest.scripts["test:hmr"], "pnpm build && node --test test/hmr.test.mjs");
+  assert.equal(
+    packageScripts("npm/builder/rspack", manifest.scripts)["test:hmr"],
+    "pnpm build && node --test test/hmr.test.mjs",
+  );
   assert.equal(vp, "vp");
   assert.deepEqual(argv, ["run", "--no-cache", "--filter", "@vizejs/rspack-plugin", "test:hmr"]);
 });
@@ -48,15 +53,9 @@ test("the real Vite Plus child resolves only the selected isolated HMR runtime",
     );
     writeFileSync(
       path.join(directory, "probe.mjs"),
-      `import { writeFileSync } from "node:fs";
-import { createRequire } from "node:module";
-import path from "node:path";
-const observed = { runtime: process.env.VIZE_HMR_RUNTIME ?? null, server: null, error: null };
-try {
-  observed.server = createRequire(path.resolve(process.env.VIZE_HMR_RUNTIME ?? ".", "package.json")).resolve("@rspack/dev-server");
-} catch (error) { observed.error = error.code; process.exitCode = 1; }
-writeFileSync(${JSON.stringify(output)}, JSON.stringify(observed));
-`,
+      readToolingProgram("commands/rspack-hmr-runtime-transport/observe-hmr-transport.js.in", {
+        OUTPUT: JSON.stringify(output),
+      }),
     );
     writeFileSync(
       path.join(directory, "vite.config.mjs"),

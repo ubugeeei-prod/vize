@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+if [[ "$GITHUB_EVENT_NAME" == merge_group && ! "$BASE_SHA" =~ ^0+$ ]]; then
+  git fetch --no-tags --depth=1 origin "$BASE_SHA"
+fi
+node tools/support/compat/github/plan-release-gates.ts "$GITHUB_EVENT_NAME" "$BASE_SHA" "$GITHUB_SHA"

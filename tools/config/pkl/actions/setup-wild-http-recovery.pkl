@@ -1,0 +1,39 @@
+import "../Actions.pkl" as ci
+import "../BootstrapAssets.pkl" as assets
+
+name = "wild"
+description = "Use the Wild linker when building Rust code"
+author = "Wild authors"
+
+inputs {
+  `wild-version` {
+    description = "Wild version to use"
+    required = false
+    ["default"] = assets.wild.version
+  }
+  `download-retries` {
+    description = "Number of times to retry the Wild download on transient failures (passed to curl --retry). curl uses exponential backoff between retries."
+    required = false
+    ["default"] = "5"
+  }
+}
+
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      `if` = "${{ runner.os != 'Linux' || runner.arch != 'X64' || inputs.wild-version != '\(assets.wild.version)' || inputs.download-retries != '5' }}"
+      uses = ci.setupWild
+      with {
+        `wild-version` = "${{ inputs.wild-version }}"
+        `download-retries` = "${{ inputs.download-retries }}"
+      }
+    }
+    new Dynamic {
+      run = ci.actionScript("install-wild.sh")
+      shell = "bash"
+      env { GITHUB_TOKEN = "${{ github.token }}" }
+      `if` = "${{ runner.os == 'Linux' && runner.arch == 'X64' && inputs.wild-version == '\(assets.wild.version)' && inputs.download-retries == '5' }}"
+    }
+  }
+}

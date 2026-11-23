@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -236,10 +237,7 @@ void test("POSIX launchers keep detection basenames separate and preserve exact 
       out = join(root, "capture output"),
       executable = join(root, "sdk detection", "tsc"),
       invocation = ["argument with spaces", `quotes 'and' "both"`];
-    writeFileSync(
-      node,
-      '#!/bin/sh\n: "${NATIVE_LAUNCHER_ARGS:?}"\nprintf \'%s\\n\' "$@" > "$NATIVE_LAUNCHER_ARGS"\n',
-    );
+    writeFileSync(node, readToolingProgram("commands/canon-helper-native-proxy/node.sh"));
     chmodSync(node, 0o755);
     for (const mode of ["stats", "rpc"] as const) {
       const launcher = join(root, mode === "stats" ? "tsgo" : "mapper");

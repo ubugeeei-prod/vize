@@ -1,0 +1,183 @@
+import "../../Actions.pkl" as ci
+
+name = "Typed context undefined contracts"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/typed-context-undefined.yml"
+      ".github/scripts/workflows/typed-context-undefined/**"
+      "crates/vize_canon/src/virtual_ts/helpers.rs"
+      "crates/vize_canon/src/batch/virtual_project/content_mapper.rs"
+      "crates/vize_canon/src/virtual_ts/helpers/setup_macros.rs"
+      "crates/vize_canon/src/virtual_ts/generator/setup_helpers/declarations.rs"
+      "crates/vize_canon/src/virtual_ts/generator/template_refs.rs"
+      "crates/vize_canon/src/virtual_ts/generator/options_api/variables.rs"
+      "crates/vize_canon/src/virtual_ts/tests/context_undefined.rs"
+      "crates/vize/tests/content_mapper_tsgo_cli.rs"
+      "crates/vize/tests/content_mapper_tsgo_cli/typed_context_undefined.rs"
+      "crates/vize/tests/content_mapper_tsgo_cli/typed_context_undefined/**"
+      "tests/_fixtures/differential/typechecker/template-context-undefined-10667/**"
+      "tools/support/github/typed-context-undefined-replay.mjs"
+      "tools/support/github/typed-context-wrapper-mappings.ts"
+      "tools/support/compat/content-mapper/check-mode-successor.ts"
+      "tests/tooling/typed-context-wrapper-mappings.test.ts"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      source_ref {
+        description = "Exact immutable source SHA containing the observer and fix"
+        required = true
+        type = "string"
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "typed-context-undefined-${{ github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  qualify {
+    `if` = "${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+
+      SOURCE_SHA = "${{ inputs.source_ref || github.event.pull_request.head.sha }}"
+      BEFORE_SHA = "7a4ab266003bfea2d13d1f5901b55d11b031a702"
+      CARGO_INCREMENTAL = "0"
+      CARGO_BUILD_JOBS = "12"
+      CARGO_TARGET_DIR = "${{ github.workspace }}/target/context-head"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("typed-context-undefined")
+      ci.checkoutAt("${{ env.SOURCE_SHA }}")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ env.SOURCE_SHA }}"
+          path = "source"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ env.BEFORE_SHA }}"
+          path = "before"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Authenticate both immutable production sources"
+        run = ci.workflowScript("authenticate-both-immutable-production-sources.sh")
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "nextest-ci"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "source/package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Install frozen source dependencies"
+        `working-directory` = "source"
+        run = "vp install --frozen-lockfile --prefer-offline"
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "26.12.1"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Require the finite diagnostic-wrapper mapping successor laws"
+        run = "node --test tests/tooling/typed-context-wrapper-mappings.test.ts"
+      }
+      new Dynamic {
+        name = "Install the pinned public dependency graph without hooks"
+        `working-directory` = "public"
+        run = "npm exec --yes --ignore-scripts --package=pnpm@12.9.0 -- pnpm install --frozen-lockfile --ignore-scripts"
+      }
+      new Dynamic {
+        name = "Preserve the public failure and install a test-only baseline observer"
+        run = #"node tools/support/github/typed-context-undefined-replay.mjs prepare "$RUNNER_TEMP/typed-context-undefined""#
+      }
+      new Dynamic {
+        name = "Compile the immutable before producer and record its actual failure"
+        `working-directory` = "before"
+        env {
+          CARGO_TARGET_DIR = "${{ github.workspace }}/target/context-before"
+          VIZE_TEST_CONTEXT_UNDEFINED_SOURCE_ROOT = "${{ github.workspace }}/before"
+          VIZE_TEST_CONTEXT_UNDEFINED_SOURCE_REVISION = "${{ env.BEFORE_SHA }}"
+        }
+        run = ci.workflowScript("compile-the-immutable-before-producer-and-record-its-actual-failure.sh")
+      }
+      new Dynamic {
+        name = "Preserve the before executable images prior to the next build"
+        run = #"node tools/support/github/typed-context-undefined-replay.mjs seal "$RUNNER_TEMP/typed-context-undefined" before"#
+      }
+      new Dynamic {
+        name = "Compile the exact head producer and both observers"
+        `working-directory` = "source"
+        run = ci.workflowScript("compile-the-exact-head-producer-and-both-observers.sh")
+      }
+      new Dynamic {
+        name = "Preserve the head executable images"
+        id = "sealed_head"
+        run = #"node tools/support/github/typed-context-undefined-replay.mjs seal "$RUNNER_TEMP/typed-context-undefined" after"#
+      }
+      new Dynamic {
+        name = "Require full raw native mapper CLI and option outcomes"
+        `working-directory` = "source"
+        env {
+          VIZE_TEST_CONTEXT_UNDEFINED_SOURCE_ROOT = "${{ github.workspace }}/source"
+          VIZE_TEST_CONTEXT_UNDEFINED_SOURCE_REVISION = "${{ env.SOURCE_SHA }}"
+        }
+        run = ci.workflowScript("require-full-raw-native-mapper-cli-and-option-outcomes.sh")
+      }
+      new Dynamic {
+        name = "Verify whole packets and exact generated-prefix mapping deltas"
+        run = #"node tools/support/github/typed-context-undefined-replay.mjs verify "$RUNNER_TEMP/typed-context-undefined""#
+      }
+      new Dynamic {
+        name = "Require the complete legacy editor projection matrix"
+        // Capture this independent oracle even when another observed contract fails.
+        `if` = "${{ always() && steps.sealed_head.outcome == 'success' }}"
+        `working-directory` = "source"
+        env { VIZE_TEMPLATE_EMIT_TS40_CAPTURE = "${{ runner.temp }}/typed-context-undefined/legacy-ts40" }
+        run = ci.workflowScript("require-the-complete-legacy-editor-projection-matrix.sh")
+      }
+      new Dynamic {
+        name = "Retain all raw evidence including failed observations"
+        `if` = "${{ always() }}"
+        run = ci.workflowScript("retain-all-raw-evidence-including-failed-observations.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "${{ always() }}"
+        with {
+          name = "typed-context-undefined-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SOURCE_SHA }}"
+          path = "${{ runner.temp }}/typed-context-undefined/"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

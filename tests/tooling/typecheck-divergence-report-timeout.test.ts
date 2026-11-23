@@ -1,3 +1,4 @@
+import { readToolingProgram, processResultArgs, toolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -90,12 +91,13 @@ test(
       configureBudget(fixture, budget);
       writeVueTsc(
         fixture.vueTsc,
-        String.raw`import { spawn } from "node:child_process";
-process.on("SIGTERM",()=>{});
-const child=spawn(process.execPath,["-e","process.on('SIGTERM',()=>{});setInterval(()=>{},1000)"],{stdio:"inherit"});
-fs.writeFileSync(${JSON.stringify(childPid)},String(child.pid));
-process.stdout.write("baseline-started\n"); process.stderr.write("baseline-evidence\n");
-setInterval(()=>{},1000);`,
+        readToolingProgram(
+          "commands/typecheck-divergence-report-timeout/vue-tsc-bounds-vue-tsc-baseline-ignores-sigterm.js.in",
+          {
+            CHILD_PID: JSON.stringify(childPid),
+            CHILD_PROGRAM: JSON.stringify(toolingProgram("process/ignore-termination.js")),
+          },
+        ),
         fixture.invocationPath,
       );
       const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
@@ -132,29 +134,10 @@ test(
     try {
       fs.writeFileSync(
         fixture.vueTsc,
-        `#!/usr/bin/env node
-import { spawn } from "node:child_process";
-import fs from "node:fs";
-import path from "node:path";
-
-const child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000);"], { stdio: "inherit" });
-if (typeof child.pid === "number") fs.writeFileSync(${JSON.stringify(childPidPath)}, String(child.pid));
-
-if (process.argv.includes("--version")) {
-  console.log("3.3.4");
-  process.exit(0);
-}
-
-if (process.argv.includes("--noCheck")) process.exit(0);
-
-if (process.argv.includes("--listFilesOnly")) {
-  console.log(path.join(process.cwd(), "src/App.vue"));
-  process.exit(0);
-}
-
-process.stdout.write("src/App.vue(1,1): error TS2322: shared\\n");
-process.exit(2);
-`,
+        readToolingProgram("commands/typecheck-divergence-report-timeout/fixture-vue-tsc.js.in", {
+          CHILD_PID_PATH: JSON.stringify(childPidPath),
+          CHILD_ARGS: JSON.stringify(processResultArgs({ keepAlive: true })),
+        }),
       );
       fs.chmodSync(fixture.vueTsc, 0o755);
 
@@ -186,7 +169,9 @@ test(
       configureBudget(fixture, budget);
       writeVueTsc(
         fixture.vueTsc,
-        String.raw`if(process.argv.includes("--listFilesOnly")){process.stdout.write("coverage-started\n");setInterval(()=>{},1000);} else {process.stdout.write("src/App.vue(1,1): error TS2322: shared\n");process.exit(2);}`,
+        readToolingProgram(
+          "commands/typecheck-divergence-report-timeout/vue-tsc-retains-coverage-phase-project-deadline-as-instrument-failure.js",
+        ),
         fixture.invocationPath,
       );
       const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });
@@ -217,22 +202,9 @@ test("typecheck divergence report drains verbose vue-tsc coverage output", linux
     );
     writeVueTsc(
       fixture.vueTsc,
-      `if (process.argv.includes("--listFilesOnly")) {
-  fs.writeSync(1, process.cwd() + "/src/App.vue\\n");
-  const filler = process.cwd() + "/src/generated-support-file.ts\\n";
-  for (let index = 0; index < 50_000; index++) fs.writeSync(1, filler);
-  process.exit(0);
-}
-
-let output = "src/App.vue(1,1): error TS2322: shared\\n";
-const source = fs.readFileSync("src/App.vue", "utf8");
-const marker = "__vize_typecheck_mutation_probe: string = 1";
-if (source.includes(marker)) {
-  const line = source.slice(0, source.indexOf(marker)).split(/\\r?\\n/).length;
-  output += \`src/App.vue(\${line},1): error TS2322: Type 'number' is not assignable to type 'string'.\\n\`;
-}
-process.stdout.write(output);
-process.exit(2);`,
+      readToolingProgram(
+        "commands/typecheck-divergence-report-timeout/vue-tsc-drains-verbose-vue-tsc-coverage-output.js",
+      ),
       fixture.invocationPath,
     );
 
@@ -255,7 +227,9 @@ test("record-only mode still warns and retains complete project timeout custody"
     configureBudget(fixture, budget);
     writeVueTsc(
       fixture.vueTsc,
-      String.raw`process.on("SIGTERM",()=>{});setInterval(()=>{},1000);`,
+      readToolingProgram(
+        "commands/typecheck-divergence-report-timeout/vue-tsc-record-only-mode-still-warns-retains-complete-project.js",
+      ),
       fixture.invocationPath,
     );
     const result = run(fixture, {}, ["--budget-mode", "record-only"], {
@@ -286,7 +260,9 @@ test(
       configureBudget(fixture, budget);
       writeVueTsc(
         fixture.vueTsc,
-        String.raw`const coverage=process.argv.includes("--listFilesOnly");process.stdout.write((coverage?"coverage":"baseline")+"-started\n");await new Promise(resolve=>setTimeout(resolve,800));if(coverage){console.log(process.cwd()+"/src/App.vue");}else{process.stdout.write("src/App.vue(1,1): error TS2322: shared\n");}process.exit(coverage?0:2);`,
+        readToolingProgram(
+          "commands/typecheck-divergence-report-timeout/vue-tsc-baseline-coverage-spend-one-shared-project-allowance-without.js",
+        ),
         fixture.invocationPath,
       );
       const result = run(fixture, {}, [], { timeoutMs: outerHarnessTimeoutMs });

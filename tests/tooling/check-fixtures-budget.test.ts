@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import {
   budgetedArgv,
@@ -52,9 +53,9 @@ test("the constrained PID budget is the measured baseline plus documented headro
 // unconstrained, so both are tried and neither working is an explicit exit.
 test("the budgeted argv lowers the limit in either shell dialect, then execs in place", () => {
   assert.deepEqual(budgetedArgv(1320, "/bin/vize", ["check", "src"]), [
-    "-c",
-    'ulimit -u 1320 2>/dev/null || ulimit -p 1320 2>/dev/null || exit 97; exec "$@"',
-    "sh",
+    fileURLToPath(new URL("./support/check-fixtures/run-with-process-limit.sh", import.meta.url)),
+    "1320",
+    "97",
     "/bin/vize",
     "check",
     "src",

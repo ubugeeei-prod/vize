@@ -171,7 +171,11 @@ mod tests {
         use std::os::unix::fs::PermissionsExt;
 
         let script = dir.join("hanging-corsa");
-        std::fs::write(&script, "#!/bin/sh\ncat > /dev/null\n").unwrap();
+        std::fs::write(
+            &script,
+            include_str!("../tests/programs/consume-corsa-input.sh"),
+        )
+        .unwrap();
         std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
         script
     }

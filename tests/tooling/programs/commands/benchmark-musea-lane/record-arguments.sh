@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+printf "%s\n" "$@" > "$VIZE_BENCH_STUB_LOG"
+exit "${VIZE_BENCH_STUB_EXIT:-0}"

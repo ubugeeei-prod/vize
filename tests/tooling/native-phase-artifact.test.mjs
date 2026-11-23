@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -38,7 +39,7 @@ function fixture(t) {
   put(join(dependencies, "opaque.bin"), Buffer.from([0, 255, 128, 10, 13, 0, 47]));
   put(join(dependencies, ".hidden", "declaration.d.ts"), "export type 雪 = 'unchanged';\n");
   put(join(dependencies, "name\nwith newline.d.ts"), "export const line: 1;\n");
-  put(join(dependencies, "run"), "#!/bin/sh\nexit 0\n", 0o755);
+  put(join(dependencies, "run"), readToolingProgram("process/exit-success.sh"), 0o755);
   const expected = new Map();
   for (let index = 0; index < 21; index++) {
     const prefix = `jsx-slot-parameter-types/case-${index}`;
@@ -59,7 +60,10 @@ function fixture(t) {
     }
   }
   put(join(root, "native-source-recipe.json"), '{"sourceSha":"original"}\n');
-  put(join(root, "native-source-recipe.sh"), "#!/bin/sh\nfalse\n");
+  put(
+    join(root, "native-source-recipe.sh"),
+    readToolingProgram("commands/native-phase-artifact/native-source-recipe.sh"),
+  );
   expected.set("native-source-recipe.json", readFileSync(join(root, "native-source-recipe.json")));
   expected.set("native-source-recipe.sh", readFileSync(join(root, "native-source-recipe.sh")));
   // Match original Actions eligibility, including broken/cyclic links and hidden files.

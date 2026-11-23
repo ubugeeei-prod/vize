@@ -1,3 +1,5 @@
+import { writeFakeVize } from "./support/fake-vize-command.ts";
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -18,13 +20,6 @@ function run(args: string[]) {
     encoding: "utf8",
   });
   return { outputDir, result };
-}
-
-function writeFakeVize(directory: string, body: string) {
-  const executable = path.join(directory, "fake-vize.mjs");
-  fs.writeFileSync(executable, `#!/usr/bin/env node\n${body}\n`);
-  fs.chmodSync(executable, 0o755);
-  return executable;
 }
 
 test("fixture tool matrix plans every registered project across all four required tools", () => {
@@ -176,7 +171,10 @@ test("fixture tool matrix dry-run resolves a relative executable without invokin
   const marker = path.join(fakeDir, "invoked");
   const executable = writeFakeVize(
     fakeDir,
-    `import fs from "node:fs"; fs.writeFileSync(${JSON.stringify(marker)}, "invoked");`,
+    readToolingProgram(
+      "commands/fixture-tool-matrix-report/vize-dry-run-resolves-relative-executable-without-invoking.js.in",
+      { MARKER: JSON.stringify(marker) },
+    ),
   );
   const relativeExecutable = path.relative(root, executable);
   const { outputDir, result } = run([
@@ -204,7 +202,9 @@ test("fixture tool matrix preserves raw output for failed invocations", () => {
   const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-tool-failure-"));
   const executable = writeFakeVize(
     fakeDir,
-    `if (process.argv[2] === "--version") process.exit(0);\nprocess.stdout.write("not json");\nprocess.stderr.write("synthetic failure");\nprocess.exit(2);`,
+    readToolingProgram(
+      "commands/fixture-tool-matrix-report/vize-preserves-raw-output-failed-invocations.js",
+    ),
   );
   const { outputDir, result } = run([
     "--project",
@@ -234,12 +234,12 @@ test("fixture tool matrix preserves raw output for invalid JSON and spawn errors
   const cases = [
     {
       name: "invalid-json",
-      body: `if (process.argv[2] === "--version") process.exit(0);\nprocess.stdout.write("not json");`,
+      body: readToolingProgram("commands/fixture-tool-matrix-report/vize-invalid-json.js"),
       expected: { exitCode: 0, stdout: "not json", parseError: true, spawnError: false },
     },
     {
       name: "spawn-error",
-      body: `import fs from "node:fs"; import { fileURLToPath } from "node:url";\nif (process.argv[2] === "--version") { fs.unlinkSync(fileURLToPath(import.meta.url)); process.exit(0); }`,
+      body: readToolingProgram("commands/fixture-tool-matrix-report/vize-spawn-error.js"),
       expected: { exitCode: null, stdout: "", parseError: false, spawnError: true },
     },
   ] as const;

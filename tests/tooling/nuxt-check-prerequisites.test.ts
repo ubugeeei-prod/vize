@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
@@ -47,7 +48,12 @@ test("real npm preparation binds Node after an ancestor .bin overrides its initi
     fs.mkdirSync(ancestorBin, { recursive: true });
     fs.writeFileSync(
       path.join(ancestorBin, process.platform === "win32" ? "node.cmd" : "node"),
-      process.platform === "win32" ? "@exit /b 97\r\n" : "#!/bin/sh\nexit 97\n",
+      process.platform === "win32"
+        ? readToolingProgram("commands/nuxt-check-prerequisites/exit-97.cmd").replace(
+            /\r?\n/gu,
+            "\r\n",
+          )
+        : readToolingProgram("commands/nuxt-check-prerequisites/exit-97.sh"),
       { mode: 0o755 },
     );
     fs.writeFileSync(
@@ -56,15 +62,7 @@ test("real npm preparation binds Node after an ancestor .bin overrides its initi
     );
     fs.writeFileSync(
       path.join(pkg, "probe.cjs"),
-      `#!/usr/bin/env node
-const fs = require('node:fs');
-const { execFileSync } = require('node:child_process');
-const expression = 'JSON.stringify({execPath:process.execPath,version:process.version})';
-fs.writeFileSync(process.argv[2], JSON.stringify({
-  parent: {execPath:process.execPath, version:process.version},
-  child: JSON.parse(execFileSync('node', ['-p', expression], {encoding:'utf8'}))
-}));
-`,
+      readToolingProgram("commands/nuxt-check-prerequisites/probe.cjs"),
       { mode: 0o755 },
     );
     const selected = inspectPrepareNode(executable, {

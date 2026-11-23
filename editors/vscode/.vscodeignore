@@ -1,6 +1,7 @@
 node_modules/
 typescript-vue-plugin/
 src/
+scripts/package-tasks.cjs
 .vscode-test/
 .vscode/
 test/

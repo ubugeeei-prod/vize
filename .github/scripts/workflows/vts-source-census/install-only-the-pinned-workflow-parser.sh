@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+parser_marker="$RUNNER_TEMP/census-test-runtime/workspace-yaml-link-owned"
+mkdir "$RUNNER_TEMP/census-test-runtime"
+cd "$RUNNER_TEMP/census-test-runtime"
+node "$VIZE_CI_FILES/install-only-the-pinned-workflow-parser.cjs"
+npm install --ignore-scripts --no-audit --no-fund
+test ! -e "$parser_marker"
+test ! -L "$parser_marker"
+printf 'none\n' > "$parser_marker"
+test "$(cat "$parser_marker")" = "none"
+bash "$VIZE_CI_FILES/claim-workspace-parser.sh"

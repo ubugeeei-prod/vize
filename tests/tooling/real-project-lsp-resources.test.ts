@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 import { sampleSessionResources } from "./support/real-project-lsp-resources.ts";
 
 test(
@@ -8,14 +9,9 @@ test(
   { skip: process.platform === "win32" },
   async () => {
     // A parent with one live child stands in for `vize lsp` and a tsgo worker.
-    const parent = spawn(
-      process.execPath,
-      [
-        "-e",
-        "require('node:child_process').spawn(process.execPath, ['-e', 'setTimeout(() => {}, 30000)'], { stdio: 'ignore' }); setTimeout(() => {}, 30000);",
-      ],
-      { stdio: "ignore" },
-    );
+    const parent = spawn(process.execPath, [toolingProgram("process/sample-two-processes.js")], {
+      stdio: "ignore",
+    });
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
       const stop = sampleSessionResources({ processId: parent.pid }, 50);

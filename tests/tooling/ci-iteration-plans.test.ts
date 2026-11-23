@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
@@ -334,11 +335,7 @@ test("differential commands retain their original corpus and production environm
     mkdirSync(bin);
     writeFileSync(
       join(bin, "cargo"),
-      `#!${process.execPath}\nconst fs = require("node:fs");
-const { VIZE_DAVINCI_DIFFERENTIAL_CORPUS: corpus, VIZE_VUE_RUNTIME_PRODUCTION: production, VIZE_TEST_REQUIRE_TSGO: tsgo } = process.env;
-fs.appendFileSync(process.env.COMMAND_LOG, JSON.stringify({ args: process.argv.slice(2), corpus, production, tsgo }) + "\\n");
-if (process.argv.includes(process.env.FAIL_TARGET)) process.exit(42);
-`,
+      readToolingProgram("commands/ci-iteration-plans/cargo.cjs.in", { NODE: process.execPath }),
       { mode: 0o755 },
     );
     const packages = rustDifferentialLanes.flatMap((lane) =>

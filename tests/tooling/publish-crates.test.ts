@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs, { mkdtempSync, rmSync } from "node:fs";
 import path from "node:path";
@@ -33,40 +34,16 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
     writeFakeCommand(
       binDir,
       "cargo",
-      [
-        "const fs = require('node:fs');",
-        "const path = require('node:path');",
-        "const args = process.argv.slice(2);",
-        "fs.appendFileSync(process.env.CARGO_LOG, args.join(' ') + '\\n');",
-        "const [command] = args;",
-        ...assertPublishManifestIsSanitized,
-        "if (command === 'publish') fs.appendFileSync(path.join(process.cwd(), 'Cargo.lock'), '\\n# fake cargo publish lock mutation\\n');",
-        "if (command === 'publish' && args.includes('--dry-run') && process.env.TEST_FAIL_PUBLISH_DRY_RUN) process.exit(1);",
-        "const unresolved = (process.env.TEST_UNRESOLVED_CRATES || '').split(',');",
-        "if (command === 'info' && unresolved.includes(args.at(-1).split('@')[0])) { console.error('not in registry index'); process.exit(1); }",
-        "if (command === 'package' || command === 'publish' || command === 'info') process.exit(0);",
-        "process.exit(1);",
-      ].join("\n"),
+      readToolingProgram("commands/publish-crates/cargo-dry-run.js.in", {
+        CHECK_MANIFEST: assertPublishManifestIsSanitized,
+      }),
     );
     writeFakeCommand(
       binDir,
       "curl",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "if (process.env.CURL_LOG) fs.appendFileSync(process.env.CURL_LOG, args.join(' ') + '\\n');",
-        "const endpoint = args.at(-1).split('/');",
-        "const crateName = endpoint.at(-2);",
-        "const version = endpoint.at(-1);",
-        "if (crateName === process.env.TEST_CURL_FAIL_CRATE) { console.error('registry unavailable'); process.exit(7); }",
-        "if (crateName === process.env.TEST_CURL_MALFORMED_CRATE) { fs.writeSync(1, '{bad jsonVIZE_HTTP_STATUS:200'); process.exit(0); }",
-        "if (crateName === process.env.TEST_CURL_SCHEMA_CRATE) { fs.writeSync(1, JSON.stringify({ version: { crate: crateName } }) + 'VIZE_HTTP_STATUS:200'); process.exit(0); }",
-        "if (crateName === process.env.TEST_CURL_SERVER_ERROR_CRATE) { fs.writeSync(1, JSON.stringify({ errors: [{ detail: 'unavailable' }] }) + 'VIZE_HTTP_STATUS:500'); process.exit(22); }",
-        "const published = (process.env.TEST_PUBLISHED_CRATES || '').split(',').includes(crateName);",
-        "const body = published ? { version: { crate: crateName, num: version } } : { errors: [{ detail: 'Not Found' }] };",
-        "fs.writeSync(1, JSON.stringify(body) + 'VIZE_HTTP_STATUS:' + (published ? '200' : '404'));",
-        "process.exit(published ? 0 : 22);",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-crates/curl-native-script-covers-idempotent-dry-run-modes.js",
+      ),
     );
 
     const result = runReleaseCommand("publish_crates", [], {
@@ -267,24 +244,16 @@ test("publish_crates treats a non-zero cargo publish exit as success when the cr
     writeFakeCommand(
       binDir,
       "cargo",
-      [
-        "const fs = require('node:fs');",
-        "const path = require('node:path');",
-        "const args = process.argv.slice(2);",
-        "fs.appendFileSync(process.env.CARGO_LOG, args.join(' ') + '\\n');",
-        ...assertPublishManifestIsSanitized,
-        "if (args[0] === 'publish' && args.at(-1) === 'vize_l0') process.exit(1);",
-        "if (args[0] === 'publish' || args[0] === 'info') process.exit(0);",
-        "process.exit(1);",
-      ].join("\n"),
+      readToolingProgram("commands/publish-crates/cargo-published-version.js.in", {
+        CHECK_MANIFEST: assertPublishManifestIsSanitized,
+      }),
     );
     writeFakeCommand(
       binDir,
       "curl",
-      [
-        "require('node:fs').writeSync(1, JSON.stringify({ errors: [{ detail: 'Not Found' }] }) + 'VIZE_HTTP_STATUS:404');",
-        "process.exit(22);",
-      ].join("\n"),
+      readToolingProgram(
+        "commands/publish-crates/curl-treats-non-zero-cargo-exit-as-success-crate.js",
+      ),
     );
 
     const result = runReleaseCommand("publish_crates", [], {

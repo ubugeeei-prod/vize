@@ -1,0 +1,3 @@
+`if` = "github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && inputs.router-experimental-only)"
+uses = "./.github/workflows/content-mapper-reported-q16.yml"
+with { request = "${{ toJSON(inputs) }}" }
