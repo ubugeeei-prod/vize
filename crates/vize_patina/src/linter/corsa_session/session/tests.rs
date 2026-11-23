@@ -123,13 +123,30 @@ fn starts_type_aware_session_from_package_root() {
 
 fn case_dir(name: &str) -> std::path::PathBuf {
     let id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
-    std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("target")
-        .join("vize-tests")
-        .join(&*cstr!(
-            "patina-corsa-session-{name}-{}-{id}",
-            std::process::id()
-        ))
+    crate::linter::tests::scratch_project_root().join(&*cstr!(
+        "patina-corsa-session-{name}-{}-{id}",
+        std::process::id()
+    ))
+}
+
+#[test]
+fn open_session_projects_are_outside_the_authored_vue_corpus() {
+    let case = case_dir("corpus-isolation");
+    let parent = case.parent().unwrap();
+    std::fs::create_dir_all(parent).unwrap();
+    let project = tempfile::Builder::new()
+        .prefix(case.file_name().unwrap())
+        .tempdir_in(parent)
+        .unwrap();
+    let transient = project.path().join("Child.vue");
+    std::fs::write(&transient, "<template><p/></template>").unwrap();
+
+    let mut authored = Vec::new();
+    davinci_test_support::corpus::collect_vue_files(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")),
+        &mut authored,
+    );
+    assert!(!authored.contains(&transient), "{transient:?}");
 }
 
 pub(in crate::linter::corsa_session) fn test_corsa_path() -> Option<PathBuf> {
