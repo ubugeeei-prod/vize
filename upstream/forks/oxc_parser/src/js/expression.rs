@@ -1835,3 +1835,6 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         false
     }
 }
+
+#[cfg(feature = "terminal-embedding")]
+mod terminal_embedding;

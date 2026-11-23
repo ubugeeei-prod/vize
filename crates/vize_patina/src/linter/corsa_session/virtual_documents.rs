@@ -242,9 +242,7 @@ mod tests {
 
     fn case_dir() -> std::path::PathBuf {
         let id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
-        std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("target")
-            .join("vize-tests")
+        crate::linter::tests::scratch_project_root()
             .join(format!("patina-virtual-docs-{}-{id}", std::process::id()))
     }
 }

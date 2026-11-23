@@ -76,6 +76,13 @@ fn differential(ir: &L3Ir<'_>) {
                     .map(|(i, edge)| (i as u32, edge))
                     .collect();
                 assert_eq!(index.incident(query).unwrap().collect::<Vec<_>>(), scan);
+                let root = [ReachStep {
+                    op: op.id,
+                    via: None,
+                }];
+                let single = check_reachability(ir, query, &root);
+                assert_eq!(index.check_singleton(query), single);
+                assert_eq!(retained.check_singleton(query), single);
                 let mut visited = Vec::new();
                 let steps = index.reach_with(query, |op| visited.push(op.id)).unwrap();
                 assert_eq!(visited, steps.iter().map(|s| s.op).collect::<Vec<_>>());
@@ -152,7 +159,14 @@ fn checker_rejects_corrupted_witnesses_even_when_the_claimed_set_looks_plausible
     };
     let root = step(0, None);
     let good = [root, step(1, Some(0)), step(2, Some(1))];
-    let check = |rows: &[ReachStep]| check_reachability(&ir, q, rows);
+    let graph = OpGraph::new(&ir).unwrap();
+    let owned = graph.clone().into_owned();
+    let check = |rows: &[ReachStep]| {
+        let reference = check_reachability(&ir, q, rows);
+        assert_eq!(graph.check(q, rows), reference);
+        assert_eq!(owned.check(q, rows), reference);
+        reference
+    };
     assert_eq!(check(&good), Ok(()));
     assert_eq!(check(&[]), Err(CertificateError::Root));
     assert_eq!(check(&[step(0, Some(0))]), Err(CertificateError::Root));
@@ -191,6 +205,15 @@ fn checker_rejects_corrupted_witnesses_even_when_the_claimed_set_looks_plausible
         OpGraph::new(&ir).unwrap().reach_with(query(99), |_| {}),
         Err(GraphError::UnknownOp(_))
     ));
+    assert_eq!(
+        graph.check_singleton(ReachQuery {
+            kinds: EdgeKinds::NONE,
+            ..query(99)
+        }),
+        Err(CertificateError::Graph(GraphError::UnknownOp(OpId::new(
+            99
+        ))))
+    );
     let invalid = build(&arena, &[0, 1, 2], &[(2, 99, Data)]);
     assert!(matches!(
         OpGraph::new(&invalid),
@@ -263,7 +286,10 @@ fn original_l1_round_trips_recovered_source_and_only_admitted_l2_supplies_the_gr
         assert_eq!(cursor as usize, text.len());
         assert_eq!(observed.admitted().is_some(), admits);
         if let Some(native) = observed.admitted() {
-            let ir = vize_l2_to_l3::lower_ir(&arena, native.l2ir());
+            let file = native.l2ir();
+            assert!(core::ptr::eq(file.source(), text));
+            assert!(core::ptr::eq(file.root_region(), file.artifact().root()));
+            let ir = vize_l2_to_l3::lower_ir(&arena, file);
             assert!(!ir.l3ir().ops.is_empty());
             differential(ir.l3ir());
         } else {

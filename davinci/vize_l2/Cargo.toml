@@ -9,6 +9,10 @@ description = "L2 - the Davinci semantic IR (codename Disegno): the neutral op f
 metadata.vize.stability = "experimental"
 
 [features]
+# Lexical scopes for direct arrow initializers, selected on an original script input.
+lexical-arrow-initializers = []
+# Original listener operations and method-reference queries for explicit tool requests.
+component-listener-queries = ["setup-component-imports"]
 recovered-literal-prefix = ["literal-assignments"]
 # Checked primitive assignment judgments on the actual TypeScript AST.
 literal-assignments = ["script-declaration-queries"]

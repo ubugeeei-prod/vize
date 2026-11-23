@@ -1,0 +1,22 @@
+(async ({ content, snapshot, before }) => {
+  const after = snapshot();
+  const packets = (nodes) => nodes.map(({ node: _node, ...packet }) => packet);
+  const beforePackets = packets(before);
+  const afterPackets = packets(after);
+  const hash = async (packet) => [
+    ...new Uint8Array(await crypto.subtle.digest(
+      "SHA-256", new TextEncoder().encode(JSON.stringify(packet)),
+    )),
+  ].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  const sameNodes = document.querySelector(".content") === content &&
+    before.length === after.length && before.every((entry, index) => entry.node === after[index].node);
+  return {
+    descendants: before.length - 1,
+    elements: before.filter((entry) => entry.type === Node.ELEMENT_NODE).length,
+    textNodes: before.filter((entry) => entry.type === Node.TEXT_NODE).length,
+    rectangles: before.reduce((sum, entry) => sum + entry.rectangles.length, 0),
+    beforeSha256: await hash(beforePackets),
+    afterSha256: await hash(afterPackets),
+    identical: sameNodes && JSON.stringify(beforePackets) === JSON.stringify(afterPackets),
+  };
+})

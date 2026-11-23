@@ -153,13 +153,12 @@ const context = vm.createContext({
   process: { env: { NODE_ENV: "test" } },
   console,
 });
-// Run every original byte. A separate read-only expression borrows the actual
-// private upstream functions; no function body is extracted or rewritten.
+// The original script declares both parser functions in its VM context.
 vm.runInContext(source, context, {
   timeout: 1000,
   filename: "actual-vue-template-compiler-2.7.16.cjs",
 });
-const parser = vm.runInContext("({ parseText, parseFilters })", context) as {
+const parser = { parseText: context.parseText, parseFilters: context.parseFilters } as {
   parseText(source: string): unknown;
   parseFilters(source: string): string;
 };

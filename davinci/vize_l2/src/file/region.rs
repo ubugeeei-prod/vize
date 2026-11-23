@@ -6,9 +6,7 @@ use crate::artifact::{ArtifactError, ComponentBody, ComponentFactory, RegionBuil
 use crate::expr::{ExprRef, JsExpr};
 use crate::op::{Attribute, Namespace};
 use crate::provenance::ProvenanceRecord;
-use crate::resolution::{
-    BindingId, BindingLookup, ResolutionErrorKind, ResolutionTable, resolve_expression,
-};
+use crate::resolution::{BindingId, BindingLookup, ResolutionErrorKind, ResolutionTable};
 use core::{
     marker::PhantomData,
     ops::{Deref, DerefMut},
@@ -116,6 +114,14 @@ where
         if !expression.matches_authored_source(self.source) {
             return Err(self.reject(span, FileIssueKind::InvalidSource));
         }
+        #[cfg(feature = "lexical-arrow-initializers")]
+        let resolve_expression = |expression: &JsExpr<'a>, lookup: &Lookup<'_, 'a, P>| {
+            if self.facts.expressions.in_arena {
+                crate::resolution::sink::arena::resolve(self.region.allocator(), expression, lookup)
+            } else {
+                crate::resolution::resolve_expression(expression, lookup)
+            }
+        };
         resolve_expression(
             expression,
             &Lookup {
@@ -273,3 +279,9 @@ where
         self.region.record(record)
     }
 }
+
+#[cfg(feature = "component-listener-queries")]
+mod listener;
+
+#[cfg(not(feature = "lexical-arrow-initializers"))]
+use crate::resolution::resolve_expression;

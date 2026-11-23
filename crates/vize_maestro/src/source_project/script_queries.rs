@@ -172,8 +172,16 @@ impl ScriptQueryProducts {
             }
             symbol
         };
-        self.symbols.push(symbol);
+        self.push_script_symbol(symbol);
         Ok(())
+    }
+
+    pub(crate) fn push_script_symbol(&mut self, symbol: DocumentSymbol) {
+        if self.symbols.is_empty() {
+            // An SFC has at most one ordinary script and one setup script.
+            self.symbols.reserve_exact(2);
+        }
+        self.symbols.push(symbol);
     }
 }
 

@@ -14,7 +14,7 @@
             return NativeSfcObservation::new(descriptor, Vec::new(), None, None, issues);
         }
     };
-    let mut producer = match crate::vue_file::VueFileProducer::new(allocator, source) {
+    let mut producer = match create_producer!(allocator, source) {
         Ok(producer) => Some(producer),
         Err(error) => {
             issues.push(NativeSfcIssue {

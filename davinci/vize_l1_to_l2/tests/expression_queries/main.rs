@@ -274,3 +274,11 @@ mod shorthand;
     feature = "template-operand-queries"
 ))]
 mod shorthand_products;
+
+#[cfg(feature = "component-listener-queries")]
+mod component_listeners;
+
+#[cfg(feature = "lexical-arrow-initializers")]
+mod lexical_arrows;
+#[cfg(feature = "lexical-arrow-initializers")]
+mod lexical_symbols;

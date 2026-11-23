@@ -575,8 +575,7 @@ fn relative_imports_keep_template_bindings_typed_across_source_directories() {
     }) else {
         return;
     };
-    let package = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("target/vize-tests")
+    let package = crate::linter::tests::scratch_project_root()
         .join(format!("patina-imports-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&package);
     let first = package.join("src/first");

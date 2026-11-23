@@ -82,6 +82,12 @@ fn combined_original_products() {
     alloc::mark_installed();
     let state = ServerState::new();
     let uri = Url::parse("file:///projects/Query.vue").unwrap();
+    compare(
+        &state,
+        &uri,
+        "whitespace-only script setup",
+        "<script setup lang='ts'>\n</script>",
+    );
     for lang in ["js", "ts", "jsx", "tsx"] {
         for count in [1, 8, 64] {
             let mut source = vize_l0::cstr!(
@@ -108,6 +114,8 @@ fn combined_original_products() {
         let name = std::str::from_utf8(entry).unwrap();
         if (i % 67 == 0
             || name.contains("document-symbol-outline")
+            || name.ends_with("/transition-custom-child-6881/sources/Fullessential.vue")
+            || name.ends_with("/content-mapper-module-default-export/Picker.vue.txt")
             || name.ends_with("/ScriptEnd.vue.txt"))
             && let Ok(text) = std::fs::read_to_string(root.join(name))
         {

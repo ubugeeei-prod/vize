@@ -154,3 +154,6 @@ fn source_for_uri(ctx: &IdeContext<'_>, uri: &Url) -> Option<String> {
                 .and_then(|path| std::fs::read_to_string(path).ok())
         })
 }
+
+#[cfg(feature = "experimental-component-listeners")]
+mod listeners;
