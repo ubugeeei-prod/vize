@@ -41,5 +41,49 @@ impl<'a> EmbeddingInput<'a> {
     }
 }
 
+/// Fixed parser input borrowed from an actual expression observation.
+/// This receipt can only prepare a byte-identical occurrence in the same grammar.
+#[derive(Clone, Copy)]
+pub struct PreparedExpression<'a> {
+    allocator: &'a oxc_allocator::Allocator,
+    content_span: oxc_span::Span,
+    source: &'a str,
+    source_type: oxc_span::SourceType,
+}
+
+impl<'a> EmbeddingObservation<'a> {
+    #[must_use]
+    pub fn prepared_expression(&self) -> Option<PreparedExpression<'a>> {
+        (self.goal == EmbeddingGoal::Expr).then_some(PreparedExpression {
+            allocator: self.allocator,
+            content_span: self.content_span,
+            source: self.parsed.program.source_text,
+            source_type: self.source_type,
+        })
+    }
+}
+
+impl<'a> PreparedExpression<'a> {
+    /// The new occurrence uses its own content identity, input and parser arena allocation.
+    pub fn prepare_matching(
+        self,
+        content: &'a str,
+        source_type: oxc_span::SourceType,
+    ) -> Option<EmbeddingInput<'a>> {
+        let range = self.content_span.start as usize..self.content_span.end as usize;
+        if self.source_type != source_type || self.source.get(range) != Some(content) {
+            return None;
+        }
+        Some(EmbeddingInput {
+            allocator: self.allocator,
+            content,
+            source_type,
+            goal: EmbeddingGoal::Expr,
+            wrapper: self.source.into(),
+            content_span: self.content_span,
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests;

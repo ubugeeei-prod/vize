@@ -118,6 +118,8 @@ use crate::{
     state::ParserState,
 };
 pub use embedding::AdmittedBorrowedExpression;
+#[cfg(feature = "terminal-embedding")]
+pub use embedding::terminal::PreparedExpression;
 pub use embedding::{
     AdmittedExpression, AdmittedHandlerBody, AdmittedParameters, EmbeddingGoal, EmbeddingHole,
     EmbeddingInput, EmbeddingInputError, EmbeddingObservation, ExpressionObservation,
