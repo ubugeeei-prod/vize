@@ -36,7 +36,7 @@ fn node(program: &str) -> Command {
 
 fn is_running(pid: u32) -> bool {
     let probe = node("config-child-is-alive.cjs")
-        .arg(pid.to_string())
+        .arg(crate::cstr!("{pid}").as_str())
         .status()
         .unwrap();
     !probe.success()
@@ -259,7 +259,7 @@ fn a_grandchild_holding_the_pipes_never_blocks_the_result() {
         .parse::<u32>()
         .unwrap();
     let _ = node("stop-config-process.cjs")
-        .arg(grandchild.to_string())
+        .arg(crate::cstr!("{grandchild}").as_str())
         .status();
     assert_eq!(output.status.code(), Some(3));
     assert_eq!(output.stdout, br#"{"value":2}"#);

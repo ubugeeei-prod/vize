@@ -150,7 +150,7 @@ mod tests {
                     env!("CARGO_MANIFEST_DIR"),
                     "/tests/programs/exit-with-diagnostic.cjs"
                 ))
-                .arg(status.to_string())
+                .arg(crate::cstr!("{status}").as_str())
                 .output()
                 .unwrap();
             output.stderr = crate::cstr!("{reason}\n../../vize-config-module-{nonce}/config.mjs\n")
