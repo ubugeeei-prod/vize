@@ -13,6 +13,8 @@ autotests = false
 verified-prefer-const = ["vize_l2/literal-assignments"]
 # Share the original style structure with checker and editor consumers.
 observed-style-rules = ["vize_l1/observed-styles"]
+# Read template diagnostics from a requested lossless compiler/lint session.
+original-template-lint = ["vize_l1_to_l2/original-template-queries"]
 plugin-template-facts = []
 # Read configured standalone script rules from a physically matched L1 Program.
 authored-script-rules = ["vize_l1/authored-script-queries"]
@@ -142,3 +144,7 @@ required-features = ["canonical-rule-group"]
 [[test]]
 name = "authored_script_rules"
 required-features = ["authored-script-rules"]
+
+[[test]]
+name = "original_template_lint"
+required-features = ["original-template-lint"]

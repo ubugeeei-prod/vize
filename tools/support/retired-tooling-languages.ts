@@ -5,6 +5,12 @@ import { join } from "node:path";
 // The ledger lists every file still waiting for its port; its test is the ratchet.
 // This file is an executable proof specification outside the product tooling.
 export const independentGraphTheory = "tests/formal/ir-graph/Reach.lean";
+// An executable mathematical reference checked alongside the Rust used by Patina.
+export const templateLabelRanking = {
+  theorem: "tests/formal/template-lint/Selection.lean",
+  kernel: "crates/vize_patina/src/rules/facts/max_template_complexity/original/window.rs",
+  harness: "crates/vize_patina/src/rules/facts/max_template_complexity/original/kani.rs",
+} as const;
 export const retiredToolingLedger = "tools/config/retired-tooling-languages.json";
 export const retiredToolingLedgerTest = "tests/tooling/retired-tooling-languages.test.ts";
 export const retiredToolingLanguages = ["py", "lean", "mbt", "mjs"] as const;
@@ -31,6 +37,9 @@ export function retiredToolingDrift(paths: readonly string[], cwd: string): bool
     const language = retiredToolingLanguage(path);
     return language ? [{ path, language }] : [];
   });
+  if (paths.includes(templateLabelRanking.kernel) || paths.includes(templateLabelRanking.harness)) {
+    return true;
+  }
   if (changed.length === 0) return false;
   let ledger: Readonly<Record<string, unknown>> | undefined;
   try {
