@@ -84,8 +84,25 @@ function hasNodeProgram(source: string): boolean {
   );
 }
 
+function hasInlineBrowserScript(argument: ts.Expression | undefined): boolean {
+  if (!argument) return false;
+  if (ts.isObjectLiteralExpression(argument)) {
+    return argument.properties.some(
+      ({ name }) =>
+        name && (ts.isIdentifier(name) || ts.isStringLiteralLike(name)) && name.text === "content",
+    );
+  }
+  return (
+    ts.isStringLiteralLike(argument) ||
+    ts.isTemplateExpression(argument) ||
+    ts.isTaggedTemplateExpression(argument) ||
+    (ts.isBinaryExpression(argument) && argument.operatorToken.kind === ts.SyntaxKind.PlusToken)
+  );
+}
+
 function inlineFixtureBodies(file: string, text: string): number[] {
   if (
+    !/\.(?:addInitScript|addScriptTag)\s*\(/u.test(text) &&
     !text.includes("writeFile") &&
     ![...fixtureWriters.keys()].some((name) => text.includes(name))
   )
@@ -98,6 +115,12 @@ function inlineFixtureBodies(file: string, text: string): number[] {
         ? node.expression.name
         : node.expression;
       const name = ts.isIdentifier(callee) ? callee.text : "";
+      if (
+        (name === "addInitScript" || name === "addScriptTag") &&
+        hasInlineBrowserScript(node.arguments[0])
+      ) {
+        lines.push(source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1);
+      }
       if (
         (name === "writeFileSync" || name === "writeFile") &&
         node.arguments[1] &&
@@ -162,6 +185,14 @@ test("child-process checks distinguish interpreter options from program argument
   );
   assert.deepEqual(inlineDispatches(file, 'spawn(process.execPath, [compiler, "-p", config])'), []);
   assert.deepEqual(inlineDispatches(file, 'run(["git", "-c", option])'), []);
+});
+
+test("browser scripts load named sources", () => {
+  const file = "browser.ts";
+  assert.deepEqual(inlineFixtureBodies(file, 'page.addInitScript("install()")'), [1]);
+  assert.deepEqual(inlineFixtureBodies(file, "page.addScriptTag({ content: source })"), [1]);
+  assert.deepEqual(inlineFixtureBodies(file, "page.addInitScript({ path: driver })"), []);
+  assert.deepEqual(inlineFixtureBodies(file, "page.addInitScript(install, options)"), []);
 });
 
 test("fixture writers take their command bodies from named sources", () => {
