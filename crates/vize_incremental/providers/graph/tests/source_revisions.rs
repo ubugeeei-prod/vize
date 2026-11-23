@@ -22,6 +22,7 @@ struct Counts {
     holes: usize,
     diagnostics: usize,
     accepted: usize,
+    projected: usize,
     checked_answers: usize,
     witnessed: usize,
 }
@@ -62,17 +63,26 @@ fn checked_graph(
     counts: &mut Counts,
 ) {
     let original = OpGraph::new(ir).unwrap();
+    let sites = batch.source_sites();
     for op in &ir.ops {
+        let span = position(block, source, op.span);
+        assert_eq!(batch.authored_span(op.id), Ok(span));
+        let (projected, text) = sites.get(op.id).unwrap();
+        assert_eq!(projected, span);
         assert_eq!(
-            batch.authored_span(op.id),
-            Ok(position(block, source, op.span))
+            Some(text),
+            source.get(span.start as usize..span.end as usize)
         );
+        let relative = op.span.start as usize..op.span.end as usize;
+        assert!(std::ptr::eq(text, &block.source().text[relative]));
     }
+    counts.projected += ir.ops.len();
     // A start outside the source graph is still invalid on a structurally complete template.
     let missing = OpId::new(u32::MAX);
     assert!(original.operation(missing).is_none());
     let absent = request(missing, Direction::Forward);
     let expected = TemplateGraphError::Graph(GraphError::UnknownOp(missing));
+    assert_eq!(sites.get(missing).as_ref().err(), Some(&expected));
     assert_eq!(block.reachable(lang, absent).err(), Some(&expected));
     assert_eq!(batch.reachable(absent).err(), Some(expected));
 
@@ -285,6 +295,7 @@ fn graph_answers_across_original_source_edits() {
         totals.holes += count.holes;
         totals.diagnostics += count.diagnostics;
         totals.accepted += count.accepted;
+        totals.projected += count.projected;
         totals.checked_answers += count.checked_answers;
         totals.witnessed += count.witnessed;
     }

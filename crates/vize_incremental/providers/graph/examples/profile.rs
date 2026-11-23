@@ -10,6 +10,7 @@ use vize_l3::{
 
 mod profile {
     pub(super) mod checks;
+    pub(super) mod sites;
     pub(super) mod trails;
 }
 
@@ -218,6 +219,7 @@ fn batch_profile() {
 
 fn main() {
     alloc::mark_installed();
+    profile::sites::profile();
     for siblings in [1, 4, 32, 128] {
         let source = "<p :title=\"title\">{{title}}</p>".repeat(siblings);
         let arena = Allocator::default();
