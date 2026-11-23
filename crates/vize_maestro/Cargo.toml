@@ -153,3 +153,7 @@ workspace = true
 [[test]]
 name = "versioned_fix_publication"
 required-features = ["experimental-versioned-fixes"]
+
+[[test]]
+name = "original_template_requests"
+required-features = ["vize_l1_to_l2/original-template-queries"]
