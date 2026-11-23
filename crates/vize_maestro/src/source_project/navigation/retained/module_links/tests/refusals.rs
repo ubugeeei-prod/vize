@@ -138,6 +138,8 @@ fn module_link_all_actual_vue_owner_families_refuse_without_program_promotion() 
             Arc::clone(&snapshot),
             Arc::new(AtomicUsize::new(0)),
             profile,
+            #[cfg(feature = "experimental-lexical-arrow-queries")]
+            false,
         )
         .unwrap();
         assert_eq!(

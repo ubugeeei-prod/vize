@@ -17,6 +17,16 @@ pub(crate) trait ConstructionBody<'a> {
 /// Genuine control methods require the separately checked current event route.
 pub(crate) trait ConstructionFactory<'a>: Sized {
     fn source(&self) -> &'a str;
+    #[cfg(feature = "component-listener-queries")]
+    fn event_reference(
+        &mut self,
+        _: Span,
+        _: vize_l0::Vec<'a, &'a str>,
+        _: Option<&'a JsExpr<'a>>,
+        span: Span,
+    ) -> Result<NodeId, ArtifactError> {
+        Err(ArtifactError::MissingEventRecorder { span })
+    }
     fn text(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError>;
     fn comment(&mut self, text: &'a str, span: Span) -> Result<NodeId, ArtifactError>;
     fn interpolation(

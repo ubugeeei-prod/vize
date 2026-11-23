@@ -16,7 +16,22 @@ export const styleHeaderValidation = {
   kernel: "crates/vize_maestro/src/source_project/style_format/header.rs",
   harness: "crates/vize_maestro/src/source_project/style_format/kani.rs",
 } as const;
-export const rustProofReferences = [sourceMapCoordinates, styleHeaderValidation] as const;
+export const templateLabelRanking = {
+  theorem: "tests/formal/template-lint/Selection.lean",
+  kernel: "crates/vize_patina/src/rules/facts/max_template_complexity/original/window.rs",
+  harness: "crates/vize_patina/src/rules/facts/max_template_complexity/original/kani.rs",
+} as const;
+export const templateSpanProjection = {
+  theorem: "tests/formal/ir-graph/TemplateProjection.lean",
+  kernel: "crates/vize_incremental/src/template/projection.rs",
+  harness: "crates/vize_incremental/src/template/kani.rs",
+} as const;
+export const rustProofReferences = [
+  sourceMapCoordinates,
+  styleHeaderValidation,
+  templateLabelRanking,
+  templateSpanProjection,
+] as const;
 
 export function checkedRustTheorems(paths: readonly string[]): Set<string> {
   return new Set(

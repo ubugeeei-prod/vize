@@ -329,3 +329,20 @@ impl<'a> RejectedFile<'a> {
         &self.facts.template_issues
     }
 }
+
+#[cfg(feature = "ir-views")]
+impl<'a> crate::L2Ir<'a> {
+    /// The original input buffer that gives this file's spans their coordinates.
+    #[inline]
+    #[must_use]
+    pub fn source(&self) -> &'a str {
+        self.artifact.source()
+    }
+
+    /// The canonical component region borrowed by L2 analyses and L3 lowering.
+    #[inline]
+    #[must_use]
+    pub fn root_region(&self) -> &crate::op::Region<'a> {
+        self.artifact.root()
+    }
+}

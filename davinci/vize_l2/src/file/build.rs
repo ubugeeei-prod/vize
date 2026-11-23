@@ -18,7 +18,7 @@ pub(crate) struct Facts<'a> {
     pub exports: Vec<Export>,
     pub imports: Vec<Import>,
     pub issues: Vec<FileIssue>,
-    pub expressions: SideTable<ScopedResolution<'a>>,
+    pub expressions: ExpressionTable<'a>,
     pub handlers: SideTable<super::handler::HandlerRecord<'a>>,
     pub rejected_handlers: Vec<super::RejectedFileHandler<'a>>,
     pub pending_handlers: Vec<super::handler::PendingHandler<'a>>,
@@ -117,7 +117,7 @@ impl<'a> Facts<'a> {
             exports: Vec::new(),
             imports: Vec::new(),
             issues: Vec::new(),
-            expressions: SideTable::new(),
+            expressions: ExpressionTable::new(),
             handlers: SideTable::new(),
             rejected_handlers: Vec::new(),
             pending_handlers: Vec::new(),
@@ -296,3 +296,10 @@ fn lookup(
         scope = scopes.get(scope.index() as usize)?.parent?;
     }
 }
+
+#[cfg(not(feature = "lexical-arrow-initializers"))]
+type ExpressionTable<'a> = SideTable<ScopedResolution<'a>>;
+#[cfg(feature = "lexical-arrow-initializers")]
+mod expression_table;
+#[cfg(feature = "lexical-arrow-initializers")]
+use expression_table::ExpressionTable;

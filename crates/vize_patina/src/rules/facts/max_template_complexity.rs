@@ -161,3 +161,6 @@ fn label(row: &Contribution) -> vize_l0::String {
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;
+
+#[cfg(feature = "original-template-lint")]
+mod original;

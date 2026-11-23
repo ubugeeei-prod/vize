@@ -64,6 +64,16 @@ impl<'a> ConstructionFactory<'a> for VueNative<'_, '_, '_, 'a> {
         self.region
             .component_with(name, attributes, span, NativeBody(body))
     }
+    #[cfg(feature = "component-listener-queries")]
+    fn event_reference(
+        &mut self,
+        name: Span,
+        modifiers: vize_l0::Vec<'a, &'a str>,
+        handler: Option<&'a JsExpr<'a>>,
+        span: Span,
+    ) -> Result<NodeId, ArtifactError> {
+        self.region.event_reference(name, modifiers, handler, span)
+    }
     fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
         self.region.record(record)
     }
@@ -118,6 +128,16 @@ impl<'a> ConstructionFactory<'a> for NativeChild<'_, '_, '_, 'a> {
     ) -> Result<NodeId, ArtifactError> {
         self.region
             .component_with(name, attributes, span, NativeBody(body))
+    }
+    #[cfg(feature = "component-listener-queries")]
+    fn event_reference(
+        &mut self,
+        name: Span,
+        modifiers: vize_l0::Vec<'a, &'a str>,
+        handler: Option<&'a JsExpr<'a>>,
+        span: Span,
+    ) -> Result<NodeId, ArtifactError> {
+        self.region.event_reference(name, modifiers, handler, span)
     }
     fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {
         self.region.record(record)

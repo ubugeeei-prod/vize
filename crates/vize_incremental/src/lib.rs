@@ -50,3 +50,6 @@ pub use summary::{
 
 #[cfg(feature = "block-queries")]
 pub mod block_query;
+
+#[cfg(feature = "resident-template-passes")]
+pub mod template;

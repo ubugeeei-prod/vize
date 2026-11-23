@@ -32,6 +32,13 @@ impl<'a> Context<'_, 'a> {
                 return;
             }
         }
+        #[cfg(feature = "component-listener-queries")]
+        if self.component.event_references
+            && vue3::listener::accepts(self.block().root_source(), directive.head)
+        {
+            vue3::listener::lower(self, region, directive);
+            return;
+        }
         self.hole(region, NativeHoleKind::Directive, directive.span);
     }
 }

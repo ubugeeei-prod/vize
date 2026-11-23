@@ -258,3 +258,6 @@ mod parameter_context_tests;
 
 #[cfg(any(test, feature = "program-snapshot"))]
 pub mod snapshot;
+
+#[cfg(feature = "retained-expressions")]
+pub use handoff::RetainedExpressionParser;

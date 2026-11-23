@@ -70,6 +70,7 @@ impl VirtualCodeGenerator {
                 TemplateOperandKind::Bind => ExpressionKind::VBind,
                 TemplateOperandKind::Condition => ExpressionKind::VIf,
                 TemplateOperandKind::Model => ExpressionKind::VModel,
+                TemplateOperandKind::EventReference => ExpressionKind::VOn,
             };
             expressions.push(TemplateExpression {
                 kind,

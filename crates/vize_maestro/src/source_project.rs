@@ -55,3 +55,7 @@ pub mod literal_products;
 
 #[cfg(feature = "experimental-recovered-literal-prefix")]
 pub mod recovered_script;
+#[cfg(feature = "experimental-resident-template-passes")]
+mod template;
+#[cfg(feature = "experimental-resident-template-passes")]
+pub use template::TemplateRequestError;

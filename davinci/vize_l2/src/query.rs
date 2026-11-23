@@ -75,3 +75,6 @@ pub use component_import::{ComponentImportIssue, ImportedComponentSite};
 
 #[cfg(feature = "component-prop-queries")]
 pub use component_import::props::{ComponentPropIssue, ImportedComponentProp};
+
+#[cfg(feature = "component-listener-queries")]
+pub use component_import::listeners::{ComponentListenerIssue, ImportedComponentListener};

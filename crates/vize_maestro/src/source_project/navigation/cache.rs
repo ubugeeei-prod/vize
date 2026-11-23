@@ -90,8 +90,15 @@ impl NativeNavigationProject<'_> {
             }
             // Serialize misses, but parsing and response waits run outside locks.
             // Transient capacity/spawn refusals are retryable, never memoized.
-            let result =
-                NavigationWorker::spawn(Arc::clone(&snapshot), Arc::clone(&self.live), profile);
+            #[cfg(feature = "experimental-lexical-arrow-queries")]
+            let lexical = self.lexical_arrow_initializers && matches!(family, QueryFamily::Program);
+            let result = NavigationWorker::spawn(
+                Arc::clone(&snapshot),
+                Arc::clone(&self.live),
+                profile,
+                #[cfg(feature = "experimental-lexical-arrow-queries")]
+                lexical,
+            );
             if matches!(
                 result,
                 Err(NavigationRefusal::Capacity | NavigationRefusal::WorkerUnavailable)
