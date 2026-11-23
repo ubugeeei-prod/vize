@@ -346,3 +346,13 @@ impl RenameService {
 
 #[cfg(test)]
 mod tests;
+
+/// An explicit event rewrite can publish only complete rows for the current open File.
+#[cfg(feature = "experimental-component-listeners")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ComponentEventEditRefusal {
+    Closed,
+    Superseded,
+    ForeignFile,
+    Listener(vize_l2::query::ComponentListenerIssue),
+}

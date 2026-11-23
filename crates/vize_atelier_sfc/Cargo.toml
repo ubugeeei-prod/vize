@@ -9,6 +9,9 @@ description = "Atelier SFC - The Single File Component workshop for Vize"
 metadata.vize.stability = "alpha-supported"
 
 [features]
+# Compare complete original SCSS products before admitting a source edit.
+verified-scss-edits = ["original-scss-products"]
+original-scss-products = ["vize_l4/scss-rules", "vize_l2/scss-rules", "vize_l1/observed-styles"]
 bundler-block-products = []
 script-binding-products = [
   "vize_croquis/observed-script-effects",
@@ -164,3 +167,8 @@ workspace = true
 name = "client_server_decisions"
 path = "tests/client_server_decisions/main.rs"
 required-features = ["vize_l4/client-server-decisions"]
+
+[[example]]
+name = "verified_scss_profile"
+path = "tests/observed_scss/verify_profile.rs"
+required-features = ["verified-scss-edits"]

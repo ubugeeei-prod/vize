@@ -107,7 +107,10 @@ impl<'a> NativeSfcObservation<'a> {
     }
 }
 
-#[cfg(feature = "component-prop-queries")]
+#[cfg(any(
+    feature = "component-prop-queries",
+    feature = "component-listener-queries"
+))]
 impl<'o, 'a> SetupComponentImports<'o, 'a> {
     /// Visit nested usages before their enclosing component, with siblings in
     /// source order. Both one-shot diagnostics and project reports use this

@@ -87,5 +87,16 @@ mod component_imports;
 #[cfg(feature = "setup-component-imports")]
 pub use component_imports::{ComponentImportRefusal, SetupComponentImports};
 
+/// Observe static event names and original method-reference expressions during File construction.
+#[cfg(feature = "component-listener-queries")]
+pub fn lower_sfc_with_listener_references<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DescriptorOptions,
+) -> NativeSfcObservation<'a> {
+    use template::prepare_listeners as prepare;
+    include!("native_file/assembly.rs")
+}
+
 #[cfg(feature = "ir-views")]
 mod ir_views;

@@ -221,3 +221,10 @@ impl PendingNativeComponent<'_> {
         self.component.authored_bind_shorthand = true;
     }
 }
+
+#[cfg(feature = "component-listener-queries")]
+impl PendingNativeComponent<'_> {
+    pub(crate) fn enable_event_references(&mut self) {
+        self.component.event_references = true;
+    }
+}

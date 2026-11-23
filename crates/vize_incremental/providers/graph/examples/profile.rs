@@ -9,6 +9,7 @@ use vize_l3::{
 };
 
 mod profile {
+    pub(super) mod checks;
     pub(super) mod trails;
 }
 
@@ -217,8 +218,17 @@ fn batch_profile() {
 
 fn main() {
     alloc::mark_installed();
-    for siblings in [4, 32, 128] {
-        profile::trails::profile(siblings);
+    for siblings in [1, 4, 32, 128] {
+        let source = "<p :title=\"title\">{{title}}</p>".repeat(siblings);
+        let arena = Allocator::default();
+        let native =
+            vize_l1_to_l2::native::lower_component_native(&arena, &source, Lang::Js).unwrap();
+        assert!(native.is_supported());
+        let mut lowered = vize_l2_to_l3::lower(&arena, native.artifact.root());
+        if siblings > 1 {
+            profile::trails::profile(lowered.l3ir(), siblings);
+        }
+        profile::checks::profile(&mut lowered.program, siblings);
     }
     batch_profile();
     profile("<div/>", "one");
