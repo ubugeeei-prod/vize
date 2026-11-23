@@ -3,8 +3,8 @@ amends "../../../../../ShellScript.pkl"
 interpreter = "bash"
 
 commands {
+  module.requireCommitShas(List("BASE_SHA"))
   #"""
-  [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
   [[ "$FILES" =~ ^(2500|10000)$ ]]
   test "$BASE_SHA" != "$(git rev-parse HEAD)"
   git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA"

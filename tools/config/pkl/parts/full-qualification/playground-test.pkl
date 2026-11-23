@@ -81,12 +81,11 @@ steps = new Listing {
   new Dynamic {
     name = "Run VRT"
     run = "vp run --filter './playground' test:vrt"
-    `continue-on-error` = true
     id = "vrt"
   }
   new Dynamic {
     name = "Upload VRT report"
-    `if` = "steps.vrt.outcome == 'failure'"
+    `if` = ci.onFailureOf("vrt")
     uses = ci.uploadArtifact
     with {
       name = "playground-vrt-report"
@@ -97,17 +96,12 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Upload VRT diff artifacts"
-    `if` = "steps.vrt.outcome == 'failure'"
+    `if` = ci.onFailureOf("vrt")
     uses = ci.uploadArtifact
     with {
       name = "vrt-diff"
       path = "playground/e2e/vrt/test-results/"
       `retention-days` = 7
     }
-  }
-  new Dynamic {
-    name = "Fail if VRT failed"
-    `if` = "steps.vrt.outcome == 'failure'"
-    run = "exit 1"
   }
 }

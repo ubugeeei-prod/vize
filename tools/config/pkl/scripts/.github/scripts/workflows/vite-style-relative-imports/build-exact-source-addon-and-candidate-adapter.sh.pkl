@@ -3,8 +3,8 @@ amends "../../../../../ShellScript.pkl"
 interpreter = "bash"
 
 commands {
+  module.requireCheckout("SOURCE_SHA")
   #"""
-  test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
   custody="$RUNNER_TEMP/vite-style-source-custody"
   mkdir -p "$custody"
   record_source() {

@@ -1,6 +1,8 @@
 // Each module renders one named shell program for its consumer.
 open module vize.ci.ShellScript
 
+typealias ShellVariable = String(matches(Regex("[A-Za-z_][A-Za-z0-9_]*")))
+
 executable: Boolean = false
 interpreter: ("bash" | "sh")?
 commands: Listing<String>
@@ -19,12 +21,20 @@ fixed strictMode = "set -euo pipefail"
 fixed collectFailuresMode = "set -uo pipefail"
 fixed onlyPullRequestsAndSchedules = #"if [[ "$GITHUB_EVENT_NAME" != pull_request && "$GITHUB_EVENT_NAME" != schedule ]]; then exit 0; fi"#
 
-function captureDirectory(variable: String, relativePath: String): String =
+function requireCheckout(expectedCommit: ShellVariable): String =
+  #"test "$(git rev-parse HEAD)" = "$\#(expectedCommit)""#
+
+function requireCommitShas(variables: List<ShellVariable>(!isEmpty)): String =
+  "[[ " + variables.map((name) -> #""$\#(name)" =~ ^[0-9a-f]{40}$"#).join(" && ") + " ]]"
+
+fixed installRustToolchain = "rustup toolchain install || rustup show active-toolchain"
+
+function captureDirectory(variable: ShellVariable, relativePath: String): String =
   #"export \#(variable)="$RUNNER_TEMP/\#(relativePath)""#
 
 function inSourceRoot(): String = #"cd "$NATIVE_PHASE_SOURCE_ROOT""#
-function makeDirectory(variable: String): String = "mkdir -p \"$\(variable)\""
-function unsetVariable(variable: String): String = "unset \(variable)"
+function makeDirectory(variable: ShellVariable): String = "mkdir -p \"$\(variable)\""
+function unsetVariable(variable: ShellVariable): String = "unset \(variable)"
 
 local header = if (interpreter == "bash") List("#!/usr/bin/env bash")
   else if (interpreter == "sh") List("#!/bin/sh") else List()

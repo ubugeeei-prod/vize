@@ -56,8 +56,10 @@ their original bytes.
 
 Group workflows by purpose in the catalog. Dedicated benchmark workflows use the
 display name `Benchmark - <subject>`. Use `ShellScript.pkl` to quote command
-arguments and compose shared recipes. Put runtime logic that needs process I/O
-in a typed driver under `tools/` and call it from the recipe.
+arguments and verify source revisions, for example `module.requireCheckout("SOURCE_SHA")`.
+When workflows use the same program, put it in `parts/shell/` and amend it from
+each entrypoint module. Put runtime logic that needs process I/O in a typed
+driver under `tools/` and call it from the recipe.
 
 The generator checks every first-party package script for inline commands.
 A multi-command package script invokes its generated `scripts/package-tasks.cjs` entrypoint.

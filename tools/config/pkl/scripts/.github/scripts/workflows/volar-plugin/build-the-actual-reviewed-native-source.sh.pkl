@@ -3,8 +3,8 @@ amends "../../../../../ShellScript.pkl"
 interpreter = "bash"
 
 commands {
+  module.requireCheckout("VIZE_SOURCE_SHA")
   #"""
-  test "$(git rev-parse HEAD)" = "$VIZE_SOURCE_SHA"
   token="$(openssl rand -hex 16)"
   VIZE_NATIVE_BUILD_TOKEN="$token" cargo build --profile ci -p vize_vitrine --features napi
   cp target/ci/libvize_vitrine.so npm/native/vize-vitrine.linux-x64-gnu.node

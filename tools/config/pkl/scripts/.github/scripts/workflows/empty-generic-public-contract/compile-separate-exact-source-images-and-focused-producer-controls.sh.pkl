@@ -4,8 +4,8 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  module.requireCheckout("SOURCE_SHA")
   #"""
-  test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
   git worktree add --detach "$RUNNER_TEMP/empty-generic-base" "$BASE_SHA"
   (cd "$RUNNER_TEMP/empty-generic-base" && CARGO_TARGET_DIR="$RUNNER_TEMP/empty-generic-target-base" cargo build --locked --profile ci -p vize --bin vize)
   CARGO_TARGET_DIR="$RUNNER_TEMP/empty-generic-target-head" cargo build --locked --profile ci -p vize --bin vize

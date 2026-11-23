@@ -4,9 +4,9 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  module.requireCommitShas(List("REQUESTED_BASE"))
+  module.requireCommitShas(List("REQUESTED_HEAD"))
   #"""
-  [[ "$REQUESTED_BASE" =~ ^[0-9a-f]{40}$ ]]
-  [[ "$REQUESTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
   [[ "$(git -C head rev-parse HEAD)" == "$REQUESTED_HEAD" ]]
   if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
     COMPARISON_BASE="$(git -C head merge-base "$REQUESTED_BASE" HEAD)"

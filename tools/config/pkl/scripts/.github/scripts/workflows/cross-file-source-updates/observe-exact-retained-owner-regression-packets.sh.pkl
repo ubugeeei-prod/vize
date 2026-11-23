@@ -3,9 +3,9 @@ amends "../../../../../ShellScript.pkl"
 interpreter = "bash"
 
 commands {
+  #"mkdir -p target/vize-tests/cross-file-source-updates"#
+  module.requireCheckout("EXPECTED_SOURCE_SHA")
   #"""
-  mkdir -p target/vize-tests/cross-file-source-updates
-  test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
   git diff --exit-code
   git rev-parse HEAD HEAD:crates/vize_croquis_cf/src > target/vize-tests/cross-file-source-updates/source-identity.txt
   rustc --version --verbose > target/vize-tests/cross-file-source-updates/rustc.txt

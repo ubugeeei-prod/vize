@@ -3,8 +3,6 @@ amends "../../../../../ShellScript.pkl"
 interpreter = "bash"
 
 commands {
-  #"""
-  test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-  vp run --workspace-root build:native:test
-  """#
+  module.requireCheckout("SOURCE_SHA")
+  #"vp run --workspace-root build:native:test"#
 }

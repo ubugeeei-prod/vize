@@ -4,8 +4,8 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  module.requireCommitShas(List("BASE_SHA"))
   #"""
-  [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
   baseline="$RUNNER_TEMP/jsx-authored-base"
   observer=crates/vize_atelier_jsx/tests/authored_module_profile.rs
   git worktree add --detach "$baseline" "$BASE_SHA"

@@ -3,8 +3,8 @@ amends "../../../../../ShellScript.pkl"
 interpreter = "bash"
 
 commands {
+  module.requireCheckout("SOURCE_SHA")
   #"""
-  test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
   cargo clean --profile "$BUILD_PROFILE" -p vize
   cargo build --locked --profile "$BUILD_PROFILE" -p vize --bin vize
   """#

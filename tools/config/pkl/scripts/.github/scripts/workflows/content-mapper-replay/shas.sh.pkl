@@ -9,7 +9,9 @@ commands {
     BASE=$(git log -1 --format='%(trailers:key=Replay-Base,valueonly)' "$HEAD" | head -1 | tr -d '[:space:]')
   fi
   [[ -n "$BASE" ]] || BASE=$(git merge-base origin/main "$HEAD")
-  [[ "$BASE" =~ ^[0-9a-f]{40}$ && "$HEAD" =~ ^[0-9a-f]{40}$ ]]
+  """#
+  module.requireCommitShas(List("BASE", "HEAD"))
+  #"""
   echo "base=$BASE" >> "$GITHUB_OUTPUT"
   echo "head=$HEAD" >> "$GITHUB_OUTPUT"
   echo "base $BASE, head $HEAD"

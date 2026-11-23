@@ -28,8 +28,11 @@ export function restorePlaygroundCaseReporting(workflow: Workflow, original: Wor
   const vrtIndex = steps.findIndex((step) => step.name === "Run VRT");
   const previousVrt = previous.find((step) => step.name === "Run VRT");
   assert(vrtIndex >= 0 && previousVrt);
+  const currentVrt = { ...previousVrt };
+  assert.equal(currentVrt["continue-on-error"], true);
+  delete currentVrt["continue-on-error"];
   assert.deepEqual(steps[vrtIndex], {
-    ...previousVrt,
+    ...currentVrt,
     env: { VIZE_PLAYWRIGHT_CASES: "e2e/vrt/test-results/case-report.json" },
     run: "vp exec --filter './playground' -- playwright test",
   });
@@ -61,6 +64,22 @@ export function restorePlaygroundCaseReporting(workflow: Workflow, original: Wor
     },
   });
   steps.splice(vrtIndex + 1, 2);
+  // Reconstruct the original reporting sequence after verifying each status transition.
+  for (const name of ["Upload VRT report", "Upload VRT diff artifacts"]) {
+    const index = steps.findIndex((step) => step.name === name);
+    const old = previous.find((step) => step.name === name);
+    assert.ok(index >= 0 && old);
+    assert.deepEqual(steps[index], { ...old, if: "failure() && steps.vrt.outcome == 'failure'" });
+    steps[index] = structuredClone(old);
+  }
+  const originalGate = previous.at(-1);
+  assert.equal(originalGate?.name, "Fail if VRT failed");
+  assert.equal(originalGate.run, "exit 1");
+  assert.equal(
+    originalGate.if,
+    "${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}",
+  );
+  steps.push(structuredClone(originalGate));
   assert.deepEqual(target, before);
   workflow.jobs["pr-playground-test"] = structuredClone(before);
 }

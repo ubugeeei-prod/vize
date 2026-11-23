@@ -4,8 +4,8 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  module.requireCommitShas(List("DECLARED_BASE_SHA"))
   #"""
-  [[ "$DECLARED_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
   mkdir -p evidence
   printf '%s\n' "$DECLARED_BASE_SHA" > evidence/declared-base.sha
   git rev-parse HEAD > evidence/head.sha

@@ -4,8 +4,8 @@ interpreter = "bash"
 
 commands {
   module.strictMode
+  module.requireCheckout("EXPECTED_SOURCE")
   #"""
-  test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
   # The receipt describes this literal checkout, while the later CLI
   # receipt separately retains the actual PR event/merge SHA.
   node "$VIZE_CI_FILES/select-the-exact-locked-platform-native-provider.ts"

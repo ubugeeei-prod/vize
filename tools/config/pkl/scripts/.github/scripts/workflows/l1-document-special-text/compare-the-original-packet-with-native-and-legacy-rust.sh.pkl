@@ -3,8 +3,8 @@ amends "../../../../../ShellScript.pkl"
 interpreter = "bash"
 
 commands {
+  module.requireCheckout("HEAD_SHA")
   #"""
-  test "$(git rev-parse HEAD)" = "$HEAD_SHA"
   cargo test --locked --profile ci -p vize_l1 \
     --test html_body_elements \
     --test html_body_elements_legacy_oracle \

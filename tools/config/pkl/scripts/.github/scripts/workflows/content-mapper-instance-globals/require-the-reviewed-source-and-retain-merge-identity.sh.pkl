@@ -3,8 +3,8 @@ amends "../../../../../ShellScript.pkl"
 interpreter = "bash"
 
 commands {
+  module.requireCheckout("GITHUB_SHA")
   #"""
-  test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
   if [ "$SOURCE_EVENT" = workflow_dispatch ]; then
     [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
     test "$GITHUB_SHA" = "$EXPECTED_SOURCE_SHA"

@@ -412,7 +412,6 @@ jobs:
         if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' }}
         env: { VIZE_PLAYWRIGHT_CASES: "e2e/vrt/test-results/case-report.json" }
         run: vp exec --filter './playground' -- playwright test
-        continue-on-error: true
         id: vrt
       - name: Collect playground test cases
         id: cases
@@ -431,7 +430,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
       - name: Upload VRT report
-        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
+        if: failure() && steps.vrt.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pr-playground-vrt-report
@@ -439,15 +438,12 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
       - name: Upload VRT diff artifacts
-        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
+        if: failure() && steps.vrt.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pr-vrt-diff
           path: playground/e2e/vrt/test-results/
           retention-days: 7
-      - name: Fail if VRT failed
-        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
-        run: exit 1
   source-report:
     name: PR source report
     permissions: { contents: read, actions: read, pull-requests: read }

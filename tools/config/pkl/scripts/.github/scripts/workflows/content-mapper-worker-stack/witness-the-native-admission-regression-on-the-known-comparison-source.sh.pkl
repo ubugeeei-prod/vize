@@ -9,7 +9,9 @@ commands {
   tests=crates/vize/src/commands/content_mapper/dispatch/tests.rs
   evidence="$RUNNER_TEMP/worker-admission-before-$BUILD_PROFILE.log"
   artifacts="$RUNNER_TEMP/worker-admission-before-$BUILD_PROFILE.jsonl"
-  test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+  """#
+  module.requireCheckout("SOURCE_SHA")
+  #"""
   comparison_dispatcher="$(git rev-parse "$COMPARISON_SHA:$dispatcher")"
   if [ "$comparison_dispatcher" != "765353130eaba123edb530df5c0ade0944639659" ]; then
     printf 'Historical admission witness not applicable: comparison dispatcher %s\n' "$comparison_dispatcher" > "$evidence"

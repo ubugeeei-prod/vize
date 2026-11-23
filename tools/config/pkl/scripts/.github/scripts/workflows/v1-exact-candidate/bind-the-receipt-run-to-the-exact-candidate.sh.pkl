@@ -3,8 +3,8 @@ amends "../../../../../ShellScript.pkl"
 interpreter = "bash"
 
 commands {
+  module.requireCommitShas(List("CANDIDATE_SHA"))
   #"""
-  [[ "$CANDIDATE_SHA" =~ ^[0-9a-f]{40}$ ]]
   [[ "$RECEIPT_RUN_ID" =~ ^[1-9][0-9]*$ ]]
   IFS=$'\t' read -r run source attempt < <(
     gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RECEIPT_RUN_ID" \
