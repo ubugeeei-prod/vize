@@ -235,3 +235,7 @@ fn original_template_graphs_follow_the_same_toolchain_session() {
         updated
     );
 }
+
+mod incremental {
+    mod trails;
+}
