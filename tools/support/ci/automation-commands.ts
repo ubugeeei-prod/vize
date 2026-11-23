@@ -59,6 +59,10 @@ export function isProgramInvocation(source: string): boolean {
   return isProgramCommand(tokens);
 }
 
+const textFilter = /^(?:awk|gawk|mawk|jq|sed)$/u;
+const namedFilterOption = /^(?:-[A-Za-z]*f|--(?:file|from-file)(?:=.+)?)$/u;
+const informationalOption = /^(?:--version|--help|-V)$/u;
+
 export function isProgramCommand(tokens: readonly string[]): boolean {
   const executable = tokens[0] ?? "";
   if (
@@ -67,6 +71,16 @@ export function isProgramCommand(tokens: readonly string[]): boolean {
     shellKeywords.test(executable)
   )
     return false;
+  const name = path.win32
+    .basename(executable)
+    .replace(/\.exe$/iu, "")
+    .toLowerCase();
+  if (name === "gh" && tokens.some((word) => /^(?:--jq(?:=|$)|-q$)/u.test(word))) return false;
+  if (textFilter.test(name)) {
+    return tokens
+      .slice(1)
+      .some((word) => namedFilterOption.test(word) || informationalOption.test(word));
+  }
   for (const [index, token] of tokens.entries()) {
     const commandName = path.win32
       .basename(token)
@@ -112,18 +126,37 @@ export function isProgramCommand(tokens: readonly string[]): boolean {
 const inlineProgram =
   /(?:^|[\s(/;&|])(?:(?:node(?:js)?|bun|deno|ruby|perl|python(?:\d+(?:\.\d+)*)?)\s+(?:(?:--(?:input-type|conditions|env-file|import|require|loader)(?:=|\s+)\S+|--[a-z][\w-]*)\s+)*(?:-(?:[ep]|c)(?:\s|=|["']|$)|--(?:eval|print)(?:\s|=)|(?:-\s+)?<<)|(?:ba|da|z|k)?sh\s+(?:-[a-z]+\s+)*-[a-z]*c[a-z]*(?:\s|$)|(?:pwsh|powershell)(?:\.exe)?\s+(?:-\w+\s+)*-(?:c|command|ec|encodedcommand)(?:\s|:)|(?:deno|bun)\s+eval\s|\beval\s+|\bInvoke-Expression\s+)/imu;
 
+// These tools take executable filter text in the same argument slot as a file-based program.
+const shellTextFilter = /(?:^|[;&|(])\s*(?:sudo\s+)?(awk|gawk|mawk|jq|sed)\s+([^;&|)\r\n]*)/gmu;
+
 export function validateShellProgram(file: string, source: string): void {
-  const match = inlineProgram.exec(source.replace(/\\\r?\n/gu, " "));
+  const joined = source.replace(/\\\r?\n/gu, " ");
+  const match = inlineProgram.exec(joined);
   if (match)
     throw new Error(
       file + ": move embedded interpreter code into a named script: " + match[0].trim(),
     );
+  if (file.startsWith(".github/") || file.startsWith("tools/")) {
+    const githubQuery =
+      /(?:^|[;&|(])\s*gh(?:\.exe)?\s+[^\r\n]*?\s(?:--jq[=\t ]+|-q[\t ]+)([^\r\n]*)/gmu;
+    for (const [, query] of joined.matchAll(githubQuery)) {
+      if (!/^"\$\(\s*<\s*"[^"]+\.jq"\s*\)"/u.test(query!)) {
+        throw new Error(file + ": move the GitHub CLI query into a named script");
+      }
+    }
+    for (const [, command, args] of joined.matchAll(shellTextFilter)) {
+      const options = args!.split(/\s+/u);
+      if (!options.some((word) => namedFilterOption.test(word) || informationalOption.test(word))) {
+        throw new Error(file + ": move the " + command + " filter into a named script");
+      }
+    }
+  }
 }
 
 /** Paths are relative to the workflow directory or to a composite action's script directory. */
 export function automationProgramReferences(command: string): string[] {
   const names =
-    /(?:\$\{\{ env\.VIZE_CI_FILES \}\}|\$VIZE_CI_FILES|\$GITHUB_ACTION_PATH\/scripts)\/([.\w/-]+\.(?:sh|ps1|ts|mts|cts|cjs|mjs|js|py))(?=["'\s:]|$)/gu;
+    /(?:\$\{\{ env\.VIZE_CI_FILES \}\}|\$VIZE_CI_FILES|\$GITHUB_ACTION_PATH\/scripts)\/([.\w/-]+\.(?:sh|ps1|ts|mts|cts|cjs|mjs|js|py|awk|jq|sed))(?=["'\s:]|$)/gu;
   return Array.from(command.matchAll(names), ([, name]) => name!);
 }
 

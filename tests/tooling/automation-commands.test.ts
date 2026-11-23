@@ -81,3 +81,28 @@ test("standalone drivers reject embedded interpreters while accepting real progr
     "../shared/receipts.ts",
   ]);
 });
+
+test("operational text filters load a named file", () => {
+  const driver = ".github/scripts/workflows/report/summary.sh";
+  for (const command of [
+    "awk '{print $1}'",
+    "jq -r .id",
+    "sed -n '1,2p'",
+    "gh api repos/example/project --jq .id",
+    "gh.exe api repos/example/project -q .id",
+  ]) {
+    assert.equal(isProgramInvocation(command), false);
+    assert.throws(() => validateShellProgram(driver, "cat input | " + command), /named script/u);
+  }
+  for (const command of [
+    "awk -v column=1 -f threads.awk",
+    "jq --arg name value -ef select.jq",
+    "sed -n -f header.sed",
+  ]) {
+    assert.ok(isProgramInvocation(command));
+    validateShellProgram(driver, command);
+  }
+  assert.deepEqual(automationProgramReferences('jq -f "$VIZE_CI_FILES/../shared/artifact.jq"'), [
+    "../shared/artifact.jq",
+  ]);
+});

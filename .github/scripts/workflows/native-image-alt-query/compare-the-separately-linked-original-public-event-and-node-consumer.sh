@@ -14,10 +14,10 @@ for epoch in base head; do
     cp "$GITHUB_WORKSPACE/crates/vize_patina/tests/canonical_rule_group/regions.rs" "$probe/regions.rs"
     # Older source trees receive only the empty feature and observer target declarations.
     if ! grep -q '^sparse-region-walk =' davinci/vize_l2/Cargo.toml; then
-      sed -i '/^\[features\]$/a sparse-region-walk = []' davinci/vize_l2/Cargo.toml
+      sed -i -f "$VIZE_CI_FILES/enable-sparse-region-walk.sed" davinci/vize_l2/Cargo.toml
     fi
     if ! grep -q '^canonical-rule-group =' crates/vize_patina/Cargo.toml; then
-      sed -i '/^\[features\]$/a canonical-rule-group = ["vize_l2/sparse-region-walk"]' crates/vize_patina/Cargo.toml
+      sed -i -f "$VIZE_CI_FILES/enable-canonical-rule-group.sed" crates/vize_patina/Cargo.toml
     fi
     cat >> crates/vize_patina/Cargo.toml <<'TOML'
 
@@ -26,7 +26,7 @@ name = "ci_original_region_client"
 path = "tests/ci_original_region_client/main.rs"
 TOML
     cargo test --locked --profile ci-opt -p vize_patina --features canonical-rule-group --test ci_original_region_client --no-run --message-format=json > "$RUNNER_TEMP/$epoch-region-build.jsonl"
-    binary=$(jq -ers '[.[] | select(.reason == "compiler-artifact" and .target.name == "ci_original_region_client")] | last | .executable' "$RUNNER_TEMP/$epoch-region-build.jsonl")
+    binary=$(jq -ers --arg name ci_original_region_client -f "$VIZE_CI_FILES/../shared/cargo-target-executable.jq" "$RUNNER_TEMP/$epoch-region-build.jsonl")
     cp "$binary" "$capture/$epoch-original-region-client"
     readelf -SW "$binary" > "$capture/$epoch-original-region-sections.txt"
     nm -nC "$binary" > "$capture/$epoch-original-region-symbols.txt"

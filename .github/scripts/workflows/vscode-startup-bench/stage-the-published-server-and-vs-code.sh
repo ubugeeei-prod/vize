@@ -8,6 +8,6 @@ if ! command -v xvfb-run >/dev/null 2>&1; then
   sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends xvfb xauth
 fi
 VIZE_TEST_VSCODE_VERSION="$VSCODE_VERSION" vp run --workspace-root test:vscode-extension:download
-code=$(cd editors/vscode && VIZE_TEST_VSCODE_VERSION="$VSCODE_VERSION" node test/download-vscode.mjs | sed -n 's/^Verified VS Code [^:]*: //p' | tail -1)
+code=$(cd editors/vscode && VIZE_TEST_VSCODE_VERSION="$VSCODE_VERSION" node test/download-vscode.mjs | sed -n -f "$VIZE_CI_FILES/verified-editor-path.sed" | tail -1)
 test -x "$code"
 echo "CODE_EXE=$code" >> "$GITHUB_ENV"

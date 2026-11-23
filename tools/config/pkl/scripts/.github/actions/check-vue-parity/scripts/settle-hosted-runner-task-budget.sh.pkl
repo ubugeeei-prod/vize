@@ -15,9 +15,9 @@ commands {
   thread_count() {
     local count
     if [ -d /proc ]; then
-      count="$(grep -sh '^Threads:' /proc/[0-9]*/status | awk '{sum += $2} END {print sum + 0}' || true)"
+      count="$(grep -sh '^Threads:' /proc/[0-9]*/status | awk -v column=2 -f "$GITHUB_ACTION_PATH/scripts/sum-thread-counts.awk" || true)"
     else
-      count="$(ps -axo nlwp= 2>/dev/null | awk '{sum += $1} END {print sum + 0}' || true)"
+      count="$(ps -axo nlwp= 2>/dev/null | awk -v column=1 -f "$GITHUB_ACTION_PATH/scripts/sum-thread-counts.awk" || true)"
     fi
     echo "${count:-0}"
   }

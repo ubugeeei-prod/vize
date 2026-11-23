@@ -20,7 +20,7 @@ commands {
   cargo test "${flags[@]}" "${suite[@]}" --test versioned_fix_publication profile::publication_cost -- --exact --ignored --nocapture
   evidence="$RUNNER_TEMP/versioned-edit-times"
   mkdir -p "$evidence"
-  binary=$(cargo test "${flags[@]}" "${suite[@]}" --test versioned_fix_publication --no-run --message-format=json | jq -ers '[.[] | select(.reason == "compiler-artifact" and .target.name == "versioned_fix_publication")] | last | .executable')
+  binary=$(cargo test "${flags[@]}" "${suite[@]}" --test versioned_fix_publication --no-run --message-format=json | jq -ers --arg name versioned_fix_publication -f "$VIZE_CI_FILES/../shared/cargo-target-executable.jq")
   # Each process measures the two entries in counterbalanced pairs.
   for round in 0 1 2 3 4 5; do
     for query in original_lint_fixes profile::publication_cost; do

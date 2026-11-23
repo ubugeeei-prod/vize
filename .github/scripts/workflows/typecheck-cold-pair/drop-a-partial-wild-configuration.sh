@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-sed -i '/# Added by wild GitHub Action/,/^rustflags/d' "$HOME/.cargo/config.toml" || true
+sed -i -f "$VIZE_CI_FILES/drop-wild-rustflags.sed" "$HOME/.cargo/config.toml" || true

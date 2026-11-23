@@ -47,9 +47,8 @@ done
 cmp "$capture/base-region-packets.txt" "$capture/head-region-packets.txt"
 # Repeat source-built processes in alternating order on the same runner.
 # Cargo's artifact record identifies the executable for the requested target.
-binary_filter='[.[] | select(.reason == "compiler-artifact" and .executable != null and .target.name == $name)] | last | .executable'
-base_bin=$(cd "$baseline" && CARGO_TARGET_DIR="$base_target" cargo test "${base[@]}" --no-run --message-format=json | jq -ers --arg name ci_canonical_lint_probe "$binary_filter")
-head_bin=$(cargo test "${head[@]}" --test canonical_rule_group --no-run --message-format=json | jq -ers --arg name canonical_rule_group "$binary_filter")
+base_bin=$(cd "$baseline" && CARGO_TARGET_DIR="$base_target" cargo test "${base[@]}" --no-run --message-format=json | jq -ers --arg name ci_canonical_lint_probe -f "$VIZE_CI_FILES/linked-test-executable.jq")
+head_bin=$(cargo test "${head[@]}" --test canonical_rule_group --no-run --message-format=json | jq -ers --arg name canonical_rule_group -f "$VIZE_CI_FILES/linked-test-executable.jq")
 mkdir -p "$capture/repeated"
 for round in 0 1 2 3 4 5; do
   order=(base head)

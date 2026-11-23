@@ -1,6 +1,9 @@
 tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
-# WSL and Bash read these scripts directly from Windows checkouts.
+# WSL runs these programs and filters directly from Windows checkouts.
 *.sh text eol=lf
+*.awk text eol=lf
+*.jq text eol=lf
+*.sed text eol=lf
 # Dependency patch filenames must retain LF when Windows checks out the repository.
 patches/*.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
 # Strict extra-key transition custody authenticates these exact LF bytes.

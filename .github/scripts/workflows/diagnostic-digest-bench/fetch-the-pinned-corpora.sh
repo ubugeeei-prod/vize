@@ -7,7 +7,7 @@ curl --fail --silent --show-error --location --retry 5 \
 curl --fail --silent --show-error --location --retry 5 \
   "https://codeload.github.com/misskey-dev/misskey/tar.gz/$MISSKEY_SHA" | tar -xz -C "$corpora"
 cd "$corpora/misskey-$MISSKEY_SHA"
-pnpm_spec=$(jq -r .packageManager package.json)
+pnpm_spec=$(jq -r -f "$VIZE_CI_FILES/package-manager.jq" package.json)
 [[ "$pnpm_spec" =~ ^pnpm@[0-9]+\.[0-9]+\.[0-9]+$ ]]
 # misskey pins a newer Node than this repository; its packages
 # are only read here, so a dependency's engines range must not stop

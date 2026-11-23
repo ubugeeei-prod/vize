@@ -11,6 +11,7 @@ on {
       "tools/benchmarks/scripts/source-symbolizer-*.ts"
       "tools/benchmarks/scripts/source-symbolizer-adapter.cjs"
       "tools/benchmarks/scripts/source-symbolizer-matching-symbols.sh"
+      "tools/benchmarks/scripts/source-symbolizer-matching-symbols.awk"
       "tests/tooling/source-symbolizer-protocol.test.ts"
       "tools/benchmarks/scripts/cold-evidence-*.ts"
       "tests/tooling/cold-evidence-thin.test.ts"

@@ -23,7 +23,6 @@ for candidate in /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/s
 done
 if (( ${#apt_source_files[@]} > 0 )); then
   sudo sed -i \
-    -e 's|http://archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' \
-    -e 's|http://security.ubuntu.com/ubuntu|https://security.ubuntu.com/ubuntu|g' \
+    -f "$GITHUB_ACTION_PATH/scripts/secure-ubuntu-mirrors.sed" \
     "${apt_source_files[@]}"
 fi

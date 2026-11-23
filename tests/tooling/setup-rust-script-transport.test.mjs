@@ -48,6 +48,12 @@ function executable(file, lines) {
 function installScript(original) {
   let body = readAutomationPrograms(path.join(actionPath, "action.yml"));
   if (original) {
+    const namedFilter = '-f "${BASH_SOURCE[0]%/*}/rust-script-version.sed"';
+    const versionFilter = fs
+      .readFileSync(path.join(actionPath, "scripts/rust-script-version.sed"), "utf8")
+      .trimEnd();
+    assert.equal(body.split(namedFilter).length, 3);
+    body = body.replaceAll(namedFilter, "'" + versionFilter + "'");
     const replacement = '          "$BASH" "$GITHUB_ACTION_PATH/download-prebuilt.sh" "$archive"';
     assert.equal(body.split(replacement).length, 2);
     body = body.replace(
