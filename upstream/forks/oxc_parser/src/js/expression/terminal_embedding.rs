@@ -2,10 +2,27 @@
 //! that one primary fills the entire expression. Every occurrence still owns
 //! its own parser, source, AST, module record and diagnostics.
 use super::{Config, Context, Expression, Kind, ParserImpl};
-use oxc_ast::ast::Statement;
+use crate::embedding::terminal::TerminalExpression;
+use core::any::TypeId;
+use oxc_allocator::ArenaVec;
+use oxc_ast::ast::{Directive, Statement};
 
 impl<'a, C: Config> ParserImpl<'a, C> {
-    pub(crate) fn terminal_embedding_statement(&mut self) -> Option<Statement<'a>> {
+    /// Only the fixed wrapper can select this grammar, at the program root.
+    pub(crate) fn parse_program_body_with_terminal_operand(
+        &mut self,
+    ) -> (ArenaVec<'a, Directive<'a>>, ArenaVec<'a, Statement<'a>>) {
+        if TypeId::of::<C>() == TypeId::of::<TerminalExpression>()
+            && let Some(statement) = self.terminal_embedding_statement()
+        {
+            let mut statements = ArenaVec::with_capacity_in(1, self);
+            statements.push(statement);
+            return (ArenaVec::new_in(self), statements);
+        }
+        self.parse_directives_and_statements(false)
+    }
+
+    fn terminal_embedding_statement(&mut self) -> Option<Statement<'a>> {
         if !self.at(Kind::LParen) || self.cur_token().start() != 0 {
             return None;
         }
