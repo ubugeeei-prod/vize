@@ -1,4 +1,4 @@
-name: Text boundary benchmark
+name: Benchmark - UTF-8 file reads
 
 on:
   workflow_dispatch:

@@ -4,9 +4,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import YAML from "yaml";
+import { readAutomationPrograms } from "../support/automation-source.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const releaseSource = fs.readFileSync(path.join(root, ".github/workflows/release.yml"), "utf8");
+const releaseSource = readAutomationPrograms(".github/workflows/release.yml");
 
 interface Step {
   id?: string;

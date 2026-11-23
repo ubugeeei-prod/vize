@@ -40,16 +40,6 @@ export function verifyNuxt2Typecheck(fixture: string, artifacts: string): void {
     encoding: "utf8",
   }).stdout.trim();
   const identity = path.join(artifacts, "typecheck-source-binding.json");
-  const script = [
-    `const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');`,
-    `const native=require(${JSON.stringify(native)});`,
-    `const selected=process.report.getReport().sharedObjects.filter(file=>file.endsWith('.node')&&path.basename(file).includes('vize-vitrine'));`,
-    `if(selected.length!==1)throw new Error('source Vize binding identity is ambiguous');`,
-    `const file=fs.realpathSync(selected[0]);`,
-    `if(!file.startsWith(${JSON.stringify(root)}))throw new Error('typecheck must load the current workspace binding');`,
-    `fs.writeFileSync(${JSON.stringify(identity)},JSON.stringify({path:file,sha256:crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'),source:${JSON.stringify(sourceHead)}},null,2));`,
-    `native.runCli(JSON.parse(process.argv[1]));`,
-  ].join("\n");
   const valid = fs.readFileSync(
     path.join(root, "tools/support/compat/nuxt/fixtures/nuxt2-typecheck/App.vue.txt"),
     "utf8",
@@ -88,12 +78,23 @@ export function verifyNuxt2Typecheck(fixture: string, artifacts: string): void {
       fs.writeFileSync(path.join(project, "App.vue"), source);
       const args = ["check", "App.vue", "--format", "json", "--corsa-path", corsa];
       const started = performance.now();
-      const result = spawnSync(process.execPath, ["--eval", script, JSON.stringify(args)], {
-        cwd: project,
-        encoding: "utf8",
-        timeout: 60_000,
-        env: { ...process.env, NO_COLOR: "1" },
-      });
+      const result = spawnSync(
+        process.execPath,
+        [
+          fileURLToPath(new URL("./nuxt2-source-binding.cjs", import.meta.url)),
+          root,
+          native,
+          identity,
+          sourceHead,
+          ...args,
+        ],
+        {
+          cwd: project,
+          encoding: "utf8",
+          timeout: 60_000,
+          env: { ...process.env, NO_COLOR: "1" },
+        },
+      );
       fs.writeFileSync(path.join(artifacts, `${name}.stdout.json`), result.stdout);
       fs.writeFileSync(path.join(artifacts, `${name}.stderr.log`), result.stderr);
       const packet = asRecord(parseJson(result.stdout), "Nuxt 2 typecheck report");

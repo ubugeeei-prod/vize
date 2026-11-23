@@ -1,0 +1,27 @@
+const fs = require("node:fs");
+const path = require("node:path");
+const project = process.argv[3];
+const mode = @@MODE@@;
+const counter = path.join(project, ".fixture-init-count");
+const count = fs.existsSync(counter) ? Number(fs.readFileSync(counter, "utf8")) + 1 : 1;
+fs.writeFileSync(counter, String(count));
+const filename = path.join(project, "package.json");
+const manifest = JSON.parse(fs.readFileSync(filename, "utf8"));
+manifest.scripts = { "vize:check": "vize check" };
+if (mode === "second-package" && count === 2) manifest.changedOnRerun = true;
+fs.writeFileSync(filename, JSON.stringify(manifest));
+const js = !manifest.devDependencies.typescript;
+fs.writeFileSync(
+  path.join(project, "tsconfig.json"),
+  JSON.stringify({
+    compilerOptions: js ? { allowJs: true, checkJs: true } : {},
+    ...(mode === "second-tsconfig" && count === 2 ? { changedOnRerun: true } : {}),
+  }),
+);
+if ((mode === "first-config" && count === 1) || (mode === "second-config" && count === 2)) {
+  fs.writeFileSync(path.join(project, "vize.config.mjs"), "export default {};\n");
+}
+fs.writeFileSync(
+  path.join(project, "run"),
+  "console.log(JSON.stringify({ errorCount: 0, files: [] }));",
+);

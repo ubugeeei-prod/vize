@@ -1,0 +1,13 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  for order in baseline-first candidate-first; do
+    PARTITION_WEIGHT_ORDER="$order" PARTITION_WEIGHT_CRITERION_DIR="$RUNNER_TEMP/partition-weight/criterion-$order" taskset -c "$PARTITION_WEIGHT_CPU" "$PARTITION_WEIGHT_BENCH" --bench --noplot > "$RUNNER_TEMP/partition-weight/bench-$order.txt" 2>&1
+  done
+  node "$VIZE_CI_FILES/execute-normal-kernels-on-one-pinned-cpu-excluding-fixture-setup.cjs"
+  """#
+}

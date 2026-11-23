@@ -1,5 +1,5 @@
+import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import { test } from "node:test";
 import { parse } from "yaml";
 
@@ -11,7 +11,7 @@ type Step = {
   with?: Record<string, unknown>;
 };
 const workflow = parse(
-  fs.readFileSync(
+  readAutomationPrograms(
     new URL("../../.github/workflows/lsp-overlay-custody.yml", import.meta.url),
     "utf8",
   ),
@@ -139,11 +139,14 @@ test("overlay custody runs the exact platform controls, mandatory native case an
       'cargo test --locked --profile ci -p vize_canon --lib lsp_client::session_storage::native_tests::actual_native_old_and_private_roots_preserve_complete_configured_overlay_answers -- --exact --ignored --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/native.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/native.stderr"',
     ],
   );
+  const resolver = "exercise-native-authored-logical-namespace-and-retained-physical-policy-2.ts";
   assert.deepEqual(
-    [...run.matchAll(/^compiler=.+$/gm)].map((match) => match[0]),
-    [
-      `compiler="$(node --input-type=module -e 'import {createRequire} from "node:module"; console.log(createRequire(new URL("./tests/package.json", import.meta.url)).resolve("typescript/lib/tsc.js"));')"`,
-    ],
+    [...run.matchAll(/^compiler=.+$/gmu)].map((match) => match[0]),
+    ['compiler="$(node "$VIZE_CI_FILES/' + resolver + '")"'],
+  );
+  assert.match(
+    workflowProgram("lsp-overlay-custody", run, resolver),
+    /createRequire\(resolve\("tests\/package\.json"\)\)\.resolve\("typescript\/lib\/tsc\.js"\)/u,
   );
   assert.deepEqual(
     [...run.matchAll(/^node "\$compiler" --ignoreConfig .+$/gm)].map((match) => match[0]),

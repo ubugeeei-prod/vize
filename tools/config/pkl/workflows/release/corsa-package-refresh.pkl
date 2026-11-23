@@ -1,0 +1,237 @@
+import "../../Actions.pkl" as ci
+
+name = "Corsa package refresh"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/corsa-package-refresh.yml"
+      ".github/scripts/workflows/corsa-package-refresh/**"
+      "tools/support/compat/github/corsa-package-refresh/**"
+      "tests/tooling/corsa-package-refresh-bootstrap.test.ts"
+      "crates/vize_canon/src/batch/**"
+      "crates/vize_canon/tests/fix_history_diagnostics.rs"
+      "crates/vize_canon/tests/support/fix_history_*.rs"
+      "tests/_fixtures/differential/typechecker/**"
+      "tests/differential/typechecker.ts"
+      "tests/tooling/typechecker-differential.test.ts"
+      "tests/tooling/typechecker-workspace.test.ts"
+      "tests/tooling/differential-dialect-coverage.test.ts"
+      "crates/vize_canon/src/corsa_bridge/**"
+      "crates/vize_canon/src/lsp_client/**"
+      "crates/vize_canon/src/corsa_server/**"
+      "crates/vize_maestro/tests/davinci_ts40_projection*"
+      "crates/vize_maestro/tests/davinci_ts40_projection_support/**"
+      "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__*"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      historical {
+        description = "Repeat the immutable before/after runtime-policy attribution"
+        type = "boolean"
+        ["default"] = false
+      }
+      import_geometry {
+        description = "Execute the focused actual-source import geometry laws only"
+        type = "boolean"
+        ["default"] = false
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "corsa-package-refresh-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_BUILD_JOBS = 12
+}
+jobs {
+  attribution {
+    `if` = "${{ !inputs.import_geometry }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 35
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/corsa-package-refresh"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          `fetch-depth` = 0
+          `persist-credentials` = false
+          ref = "${{ github.sha }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy,rust-src,rustfmt"
+          targets = "wasm32-unknown-unknown,wasm32-wasip2"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "nextest-ci"
+          `cache-key-suffix` = "Linux-X64-1.100.0"
+        }
+      }
+      new Dynamic {
+        name = "Ensure the native process observer"
+        run = #". "${{ env.VIZE_CI_FILES }}/ensure-the-native-process-observer.sh""#
+      }
+      new Dynamic {
+        name = "Install the frozen real Vue fixture dependency"
+        run = "vp install --filter './tests' --frozen-lockfile --prefer-offline --ignore-scripts"
+      }
+      new Dynamic {
+        name = "Verify observer bootstrap and source roles"
+        run = "vp node --test tests/tooling/corsa-package-refresh-bootstrap.test.ts"
+      }
+      new Dynamic {
+        name = "Compare unchanged tests with one physical historical SDK"
+        env {
+          VIZE_PACKAGE_REFRESH_CAPTURE = "${{ runner.temp }}/corsa-package-refresh"
+          VIZE_COMPARE_HISTORICAL = "${{ inputs.historical }}"
+          VIZE_PACKAGE_REFRESH_TRIGGER_HEAD = "${{ github.event.pull_request.head.sha || '' }}"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-unchanged-tests-with-one-physical-historical-sdk.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "corsa-package-refresh-${{ github.sha }}"
+          path = "${{ runner.temp }}/corsa-package-refresh"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+  `import-literal-geometry` {
+    `if` = "${{ github.event_name == 'pull_request' || inputs.import_geometry }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy,rust-src,rustfmt"
+          targets = "wasm32-unknown-unknown,wasm32-wasip2"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "nextest-ci"
+          `cache-key-suffix` = "Linux-X64-1.100.0"
+        }
+      }
+      new Dynamic {
+        name = "Execute all import rewriter laws and retain source measurements"
+        env { VIZE_IMPORT_GEOMETRY_CAPTURE = "${{ runner.temp }}/import-literal-geometry" }
+        run = "vp node tools/support/compat/github/corsa-package-refresh/import-geometry.ts"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "import-literal-geometry-${{ github.sha }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/import-literal-geometry"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+  `projection-import-geometry` {
+    `if` = "${{ github.event_name == 'pull_request' || inputs.import_geometry }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    strategy {
+      `fail-fast` = false
+      matrix {
+        feature = List("default", "legacy")
+      }
+    }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/corsa-package-refresh"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.rust("1.100.0")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "nextest-ci"
+          `cache-key-suffix` = "Linux-X64-1.100.0"
+        }
+      }
+      new Dynamic {
+        name = "Check the complete editor projection and offset probes"
+        env {
+          VIZE_TEMPLATE_EMIT_TS40_CAPTURE = "${{ runner.temp }}/projection-import-geometry/packets"
+          FEATURE = "${{ matrix.feature }}"
+          INSTA_UPDATE = "new"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/check-the-complete-editor-projection-and-offset-probes.sh""#
+      }
+      new Dynamic {
+        name = "Retain pending snapshots for manual review"
+        `if` = "always()"
+        run = #". "${{ env.VIZE_CI_FILES }}/retain-pending-snapshots-for-manual-review.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "projection-import-geometry-${{ matrix.feature }}-${{ github.sha }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/projection-import-geometry"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

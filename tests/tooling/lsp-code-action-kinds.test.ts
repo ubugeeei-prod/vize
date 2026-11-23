@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
@@ -19,7 +20,7 @@ test("release-script CI hydrates the pinned create-vue code-action oracle", () =
     workflow.jobs["test-scripts"].steps.at(-1).uses,
     "./.github/actions/test-full-tooling",
   );
-  const worker = fs.readFileSync(
+  const worker = readAutomationPrograms(
     `${repoRoot}/.github/actions/test-full-tooling/action.yml`,
     "utf8",
   );

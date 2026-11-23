@@ -63,58 +63,18 @@ export function parseContainerSmokeArguments(
   return { platform, mode: mode as ContainerSmokeOptions["mode"], images, cli, nodeDir };
 }
 
-const bindingScript = `
-const binding = require(process.argv[1]);
-const result = binding.compileSfc(
-  '<template><div>{{ msg }}</div></template><script setup lang="ts">const msg: string = "ok";</script>',
-  { filename: "Smoke.vue", isTs: true },
-);
-if (!result || result.errors.length > 0 || !result.code) throw new Error("compileSfc smoke failed");
-console.log("loaded " + process.argv[1] + " and compiled an SFC");
-`;
-
-function shellQuote(value: string): string {
-  return `'${value.replaceAll("'", "'\\''")}'`;
-}
-
-/** The bash program each container runs; every path is inside the container. */
-export function containerScript(options: ContainerSmokeOptions): string {
-  const { platform, mode, cli } = options;
-  const lines = [
-    "set -euo pipefail",
-    '. /etc/os-release; echo "container: ${PRETTY_NAME}; $(ldd --version 2>&1 | head -n 1)"',
+export function containerCommand(options: ContainerSmokeOptions): string[] {
+  return [
+    "bash",
+    "/work/tools/support/compat/npm/glibc-floor-container.sh",
+    options.mode,
+    options.platform,
+    ...(options.mode === "cli" && options.cli ? [options.cli] : []),
   ];
-  if (mode === "cli") {
-    const binary = `/work/${cli}`;
-    lines.push(
-      `${binary} --version`,
-      "mkdir -p /tmp/vize-cli-smoke",
-      "printf '%s\\n' '<template><div>{{ msg }}</div></template>' '<script setup lang=\"ts\">' 'const msg = \"ok\";' '</script>' > /tmp/vize-cli-smoke/App.vue",
-      `${binary} lint /tmp/vize-cli-smoke/App.vue --no-config`,
-    );
-    return lines.join("\n");
-  }
-  lines.push(
-    "export PATH=/opt/vize-node/bin:/tmp/vize-global/bin:$PATH npm_config_prefix=/tmp/vize-global",
-    'echo "node $(node --version)"',
-  );
-  if (mode === "binding") {
-    const binding = `/work/npm/native/npm/${platform}/vize-vitrine.${platform}.node`;
-    lines.push(`node -e ${shellQuote(bindingScript)} ${binding}`);
-  } else {
-    lines.push(
-      "mkdir -p /tmp/vize-global/bin",
-      "corepack enable --install-directory /tmp/vize-global/bin",
-      "npm install --global --allow-scripts=bun bun@1.3.14 vite-plus@0.1.24",
-      `node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks npm/native npm/native/npm/* npm/cli npm/builder/unplugin npm/builder/vite`,
-    );
-  }
-  return lines.join("\n");
 }
 
 export function smokeGlibcFloorContainers(args: readonly string[]): number {
   const options = parseContainerSmokeArguments(args, path.dirname(path.dirname(process.execPath)));
-  const script = containerScript(options);
   const failed: string[] = [];
   for (const image of options.images) {
     console.log(`::group::${image} (${options.platform}, ${options.mode})`);
@@ -122,7 +82,7 @@ export function smokeGlibcFloorContainers(args: readonly string[]): number {
     if (options.mode !== "cli") volumes.push("--volume", `${options.nodeDir}:/opt/vize-node:ro`);
     const result = spawnSync(
       "docker",
-      ["run", "--rm", ...volumes, "--workdir", "/work", image, "bash", "-c", script],
+      ["run", "--rm", ...volumes, "--workdir", "/work", image, ...containerCommand(options)],
       { stdio: "inherit" },
     );
     console.log("::endgroup::");

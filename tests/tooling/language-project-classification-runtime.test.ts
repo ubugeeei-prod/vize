@@ -1,3 +1,4 @@
+import { archivedWorkflow } from "./support/workflow-history.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -167,8 +168,9 @@ test("new helper and input paths select the existing jobs and cannot be removed 
               "node tools/support/editors/typescript-provider/package.ts",
             )
           : originalJobs;
+      const predecessor = archivedWorkflow(workflow);
       assert.equal(
-        current.slice(current.indexOf("\njobs:")),
+        predecessor.slice(predecessor.indexOf("\njobs:")),
         expectedJobs,
         "job bodies only replace the retired provider packager",
       );

@@ -1,0 +1,8 @@
+amends "../../../../PackageTasks.pkl"
+
+tasks {
+  ["test:prepared"] {
+    module.run("node", List("scripts/run-tests.ts", "--require-prepared"))
+    module.run("node", List("--test", "--test-concurrency=1", "src/**/*.test.ts"))
+  }
+}

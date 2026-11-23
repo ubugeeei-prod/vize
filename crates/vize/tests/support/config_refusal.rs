@@ -10,9 +10,14 @@ use std::{
 pub const NODE_OPTIONS: &str = "--stack-trace-limit=0";
 const TOKEN: &str = "[TypeError: owned-refusal-probe]";
 static NODE: LazyLock<(Output, String)> = LazyLock::new(|| {
-    let output = Command::new("node").env("NODE_OPTIONS", NODE_OPTIONS)
-        .args(["--input-type=module", "-e", "process.stdout.write(process.version); await Promise.resolve(); throw new TypeError('owned-refusal-probe');"])
-        .output().expect("independent Node refusal probe");
+    let output = Command::new("node")
+        .env("NODE_OPTIONS", NODE_OPTIONS)
+        .arg(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/programs/throw-config-refusal.js"
+        ))
+        .output()
+        .expect("independent Node refusal probe");
     probe(output)
 });
 

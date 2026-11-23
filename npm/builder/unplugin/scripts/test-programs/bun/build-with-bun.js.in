@@ -1,0 +1,20 @@
+import vize from @@PLUGIN@@;
+const result = await Bun.build({
+  entrypoints: [@@ENTRY@@],
+  outdir: @@OUTPUT_DIRECTORY@@,
+  target: "browser",
+  format: "esm",
+  sourcemap: "external",
+  external: ["vue"],
+  plugins: [vize({ isProduction: true, root: @@PROJECT@@ })],
+});
+await Bun.write(@@REPORT@@, JSON.stringify({
+  success: result.success,
+  logs: result.logs.map((log) => ({ level: log.level, message: log.message })),
+  outputs: await Promise.all(result.outputs.map(async (output) => ({
+    path: output.path,
+    kind: output.kind,
+    text: await output.text(),
+  }))),
+}, null, 2));
+if (!result.success) process.exitCode = 1;

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+nix build --no-update-lock-file --out-link "$RUNNER_TEMP/vize-nix-cache-root" \
+  .#packages.x86_64-linux.vize \
+  .#packages.x86_64-linux.vize.cargoArtifacts \
+  .#checks.x86_64-linux.shell

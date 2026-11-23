@@ -1,6 +1,6 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { parse } from "yaml";
 
@@ -9,14 +9,14 @@ interface Step {
   run?: string;
 }
 interface Job {
+  if?: string;
   steps: Step[];
 }
 interface Workflow {
   jobs: Record<string, Job>;
 }
-const source = readFileSync(
+const source = readAutomationPrograms(
   new URL("../../.github/workflows/native-ops-incident.yml", import.meta.url),
-  "utf8",
 );
 const workflow = parse(source) as Workflow;
 // Exact parsed forensic job from reviewed fb244 / workflow blob edf7edfd.
@@ -36,8 +36,20 @@ function assertBoundary(value: Workflow): void {
     packageSteps[0]?.step.run,
     "sudo apt-get update\nsudo apt-get install --no-install-recommends --no-upgrade gdb\n",
   );
+  const reviewed = structuredClone(forensic);
+  const staging = reviewed.steps.find(
+    (step) => step.name === "Preserve reviewed helpers outside the tested source checkout",
+  );
+  assert.ok(staging?.run);
   assert.equal(
-    createHash("sha256").update(JSON.stringify(forensic)).digest("hex"),
+    createHash("sha256").update(staging.run).digest("hex"),
+    "37f4e0507a79ce63cf24196d7b0116938d2c32e2aebfae1526348cb956172e38",
+    "stage the reviewed debugger and C control",
+  );
+  staging.run =
+    'mkdir "$RUNNER_TEMP/native-ops-harness"\ncp .github/scripts/native-ops-driver.ts .github/scripts/native-ops-data.ts "$RUNNER_TEMP/native-ops-harness/"\nsha256sum "$RUNNER_TEMP/native-ops-harness/"*.ts\n';
+  assert.equal(
+    createHash("sha256").update(JSON.stringify(reviewed)).digest("hex"),
     forensicRecipeSHA256,
     "The complete reviewed original710 job must remain unchanged",
   );
@@ -67,4 +79,25 @@ void test("dropping synthetic debugger setup is rejected", () => {
   assert.ok(control);
   control.steps = control.steps.filter((step) => !/\bapt-get\b/u.test(step.run ?? ""));
   assert.throws(() => assertBoundary(changed));
+});
+
+void test("a manual observer control runs only the synthetic program", () => {
+  assert.equal(
+    workflow.jobs["observer-control"]?.if,
+    "${{ github.event_name == 'pull_request' || inputs.authorization == 'observer-control-only' }}",
+  );
+  assert.equal(
+    workflow.jobs["forensic-only"]?.if,
+    "${{ github.event_name == 'workflow_dispatch' && inputs.authorization == 'reviewed-one-replay' && github.run_attempt == 1 }}",
+  );
+});
+
+void test("missing a staged debugger asset invalidates the reviewed source recipe", () => {
+  const changed = structuredClone(workflow);
+  const stage = changed.jobs["forensic-only"]?.steps.find(
+    (step) => step.name === "Preserve reviewed helpers outside the tested source checkout",
+  );
+  assert.ok(stage?.run);
+  stage.run = stage.run.replace(" .github/scripts/native-ops ", " ");
+  assert.throws(() => assertBoundary(changed), /stage the reviewed debugger/u);
 });

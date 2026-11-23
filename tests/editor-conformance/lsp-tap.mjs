@@ -9,6 +9,7 @@
 // usage: lsp-tap.mjs <server> [server-args...]
 import { spawn } from "node:child_process";
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 
 const [server, ...serverArgs] = process.argv.slice(2);
 const transcriptPath = process.env.VIZE_CONFORMANCE_TRANSCRIPT;
@@ -55,19 +56,9 @@ function frameReader(direction) {
   };
 }
 
-// The server's exit is recorded by a `/bin/sh` wrapper, not by this process:
-// editors may SIGKILL their language-server child right after sending `exit`
-// (Helix drops it with `kill_on_drop`), which would lose an in-process record.
-// The wrapper outlives the tap, sees the server's real status, and appends
-// `{"event":"exit","code":…}` for this session. stderr is inherited, not
-// piped: the server logs into the editor's own stderr handle as it would
-// without the tap.
-const exitRecorder = [
-  'code=0; "$0" "$@" || code=$?',
-  `printf '{"session":%s,"t":null,"event":"exit","code":%s}\\n' "$VIZE_TAP_SESSION" "$code" >> "$VIZE_CONFORMANCE_TRANSCRIPT"`,
-  'exit "$code"',
-].join("; ");
-const child = spawn("/bin/sh", ["-c", exitRecorder, server, ...serverArgs], {
+// The recorder outlives the tap when an editor kills its LSP child after shutdown.
+const recorder = fileURLToPath(new URL("./record-server-exit.sh", import.meta.url));
+const child = spawn("/bin/sh", [recorder, server, ...serverArgs], {
   env: { ...process.env, VIZE_TAP_SESSION: String(session) },
   stdio: ["pipe", "pipe", "inherit"],
 });

@@ -30,6 +30,19 @@ jobs:
     env:
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/v1-supported-matrix/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -38,7 +51,7 @@ jobs:
         with: { node-version: "24", package-manager-cache: false }
       - name: Verify the exact source checkout
         shell: bash
-        run: test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+        run: . "${{ env.VIZE_CI_FILES }}/verify-the-exact-source-checkout.sh"
       - name: Reject a stale generated manifest
         run: node tools/commands/release/v1-support-matrix.ts --check
       - name: Verify closed support, boundary and identity inventories
@@ -48,11 +61,7 @@ jobs:
           tests/tooling/v1-exact-candidate.test.ts
       - name: Retain the complete exact-head coverage plan
         shell: bash
-        run: |
-          mkdir -p .qualification
-          node tools/commands/release/v1-exact-candidate.ts plan \
-            --candidate "$SOURCE_SHA" \
-            --output .qualification/v1-exact-candidate-plan.json
+        run: . "${{ env.VIZE_CI_FILES }}/retain-the-complete-exact-head-coverage-plan.sh"
       - name: Upload the exact-head coverage receipt
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

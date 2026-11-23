@@ -322,22 +322,14 @@ fn ranges_overlap(left: &Range<usize>, right: &Range<usize>) -> bool {
   assert.equal(Buffer.from(source).subarray(89, 98).toString(), "undefined");
   const atom = (at: number) => [at, 1, 89, 9, 1, 0];
   // #11675 emits the two unowned parentheses as diagnostic-only Atom rows.
-  // The integrated component-export producer also owns the generated default
-  // component name without claiming an authored source range.
-  const componentDeclaration = Buffer.from("declare const Route: typeof __vize_component__;");
-  const declaration = generated.indexOf(componentDeclaration);
+  // #13436 maps the full default export as a navigation target with no authored range.
+  const exportStatement = Buffer.from("export default Route as typeof Route;");
+  const exportStart = generated.indexOf(exportStatement);
   assert(
-    declaration >= 0 && generated.indexOf(componentDeclaration, declaration + 1) < 0,
-    "unique generated component declaration",
+    exportStart >= 0 && generated.indexOf(exportStatement, exportStart + 1) < 0,
+    "unique generated default component export",
   );
-  const componentExport = [
-    declaration + Buffer.byteLength("declare const "),
-    Buffer.byteLength("Route"),
-    0,
-    0,
-    1,
-    248,
-  ];
+  const componentExport = [exportStart, exportStatement.length, 0, 0, 1, 248];
   // Keep actual packets untouched; only the finite expected successors change.
   const expected = [
     ...projected.slice(0, 9),

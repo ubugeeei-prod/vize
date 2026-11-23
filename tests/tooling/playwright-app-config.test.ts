@@ -1,3 +1,5 @@
+import { shellLauncher, windowsLauncher } from "../../tools/support/process-launcher.ts";
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -181,35 +183,19 @@ function snapshotParentGitState() {
 }
 
 function writeInstallProbe(probeScript: string): void {
-  fs.writeFileSync(
-    probeScript,
-    `const { spawnSync } = require("node:child_process");
-const fs = require("node:fs");
-const git = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
-fs.writeFileSync(process.env.FIXTURE_INSTALL_PROBE, JSON.stringify({
-  argv: process.argv.slice(2),
-  env: {
-    GIT_CEILING_DIRECTORIES: process.env.GIT_CEILING_DIRECTORIES,
-    HUSKY: process.env.HUSKY,
-    SKIP_INSTALL_SIMPLE_GIT_HOOKS: process.env.SKIP_INSTALL_SIMPLE_GIT_HOOKS,
-  },
-  gitStatus: git.status,
-  gitTopLevel: git.stdout.trim(),
-}));
-`,
-  );
+  fs.writeFileSync(probeScript, readToolingProgram("process/observe-playwright-install.cjs"));
 }
 
 function writeNpxShim(binDir: string, probeScript: string): void {
   if (process.platform === "win32") {
     fs.writeFileSync(
       path.join(binDir, "npx.cmd"),
-      `@echo off\r\n"${process.execPath}" "${probeScript}" %*\r\n`,
+      windowsLauncher([process.execPath, probeScript]),
     );
     return;
   }
 
   const shim = path.join(binDir, "npx");
-  fs.writeFileSync(shim, `#!/bin/sh\nexec "${process.execPath}" "${probeScript}" "$@"\n`);
+  fs.writeFileSync(shim, shellLauncher("exec", { COMMAND: [process.execPath, probeScript] }));
   fs.chmodSync(shim, 0o755);
 }

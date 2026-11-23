@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  module.command("node", List("--test", "tests/tooling/canon-helper-native-proxy.test.ts"))
+}

@@ -1,0 +1,77 @@
+import "../../Actions.pkl" as ci
+
+name = "JSX authored native modules"
+on {
+  workflow_dispatch = null
+  pull_request {
+    paths = new Listing {
+      "crates/vize_atelier_jsx/**"
+      "crates/vize_atelier_core/src/codegen/**"
+      "crates/vize_relief/src/relief/**"
+      "davinci/vize_l1/Cargo.toml"
+      "davinci/vize_l1/src/embed.rs"
+      "davinci/vize_l1/src/embed/regions.rs"
+      "davinci/vize_l1/src/embed/regions/**"
+      "davinci/vize_l1_to_l2/**"
+      "davinci/vize_l2/**"
+      "davinci/vize_l2_to_l3/**"
+      "davinci/vize_l3/**"
+      "davinci/vize_l3_to_l4/**"
+      "davinci/vize_l4/**"
+      "tests/tooling/jsx-authored-native-workflow-paths.test.ts"
+      "crates/vize_canon/src/**"
+      "crates/vize_canon/tests/jsx_child_expression_control.rs"
+      "crates/vize_canon/tests/component_prop_projection/**"
+      "crates/vize_canon/Cargo.toml"
+      "crates/vize_patina/src/**"
+      "crates/vize_patina/tests/jsx_child_expression_control.rs"
+      "crates/vize_patina/tests/main.rs"
+      "tests/tooling/jsx-vdom-snapshot-custody.test.ts"
+      "tests/tooling/jsx-vdom-slot-snapshot-custody.test.ts"
+      "tests/tooling/jsx-vdom-consumer-snapshot-custody.test.ts"
+      "npm/builder/rspack/src/jsx.test.ts"
+      "npm/builder/rspack/src/shared/jsx-compile.test.ts"
+      "npm/builder/rspack/src/test/jsx-vdom-child-values.ts"
+      "tests/_fixtures/differential/jsx/child-values-6890-vdom-snapshot-successors.json"
+      "tests/_fixtures/differential/linter/jsx-child-expression-control-6890/**"
+      "tests/_fixtures/differential/typechecker/jsx-child-expression-control-6890/**"
+      "crates/vize_atelier_vapor/src/**"
+      "crates/vize_atelier_ssr/src/**"
+      "crates/vize_vitrine/src/napi/jsx.rs"
+      "crates/vize_vitrine/src/wasm/jsx.rs"
+      "tests/_fixtures/differential/jsx/**"
+      "tests/_fixtures/differential/compiler/jsx-child-values-6890/**"
+      "tests/_fixtures/differential/compiler/jsx-vdom-template-control-6890/**"
+      "tools/support/compat/github/jsx-child-api-fixtures.ts"
+      "tests/_fixtures/differential/typecheck/jsx-nested-native-expressions-8441/**"
+      "tests/tooling/jsx-authored-module-fixture-custody.test.ts"
+      "tests/tooling/jsx-child-golden-custody.test.ts"
+      "tests/tooling/jsx-child-profile-contract.test.ts"
+      "tests/tooling/jsx-child-api-fixtures.test.ts"
+      "tests/tooling/support/jsx-child-profile-contract.ts"
+      "tests/tooling/support/jsx-authored-custody.ts"
+      "tests/tooling/jsx-vapor-oracle/**"
+      "tests/tooling/support/jsx-falsy-and-runtime.mjs"
+      "tests/tooling/support/vue-vapor-release.mjs"
+      "tests/tooling/vapor-third-party-reports.test.mjs"
+      "davinci/vize_l0/**"
+      "npm/cli/package.json"
+      "npm/cli/virtual-ts-globals.d.ts"
+      "npm/ui/package.json"
+      "tests/tooling/support/native-jsx-module-typescript.ts"
+      "pnpm-lock.yaml"
+      "Cargo.lock"
+      ".github/workflows/jsx-authored-native-modules.yml"
+      ".github/scripts/workflows/jsx-authored-native-modules/**"
+      ".github/scripts/workflows/shared/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "jsx-authored-native-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `authored-modules` = import("../../parts/jsx-authored-native-modules/authored-modules.pkl")
+}

@@ -1,0 +1,35 @@
+import "../../Actions.pkl" as ci
+
+`if` = "${{ (github.event_name == 'pull_request' && (github.event.label.name == 'ci-walltime-benchmark' || (github.event.action != 'labeled' && startsWith(github.head_ref, 'ci/optimize-')))) || (github.event_name == 'workflow_dispatch' && (inputs.component == 'all' || inputs.component == 'native')) }}"
+`runs-on` = ci.linux
+`timeout-minutes` = 15
+steps = new Listing {
+  new Dynamic {
+    uses = ci.checkout
+    with { ref = "${{ github.sha }}" }
+  }
+  new Dynamic {
+    uses = ci.setupVp
+    with {
+      `node-version-file` = "package.json"
+      cache = false
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    name = "Compare actual native publisher scheduling with controlled child waits"
+    env { VIZE_PUBLISH_BENCHMARK_RECEIPT = "target/ci-walltime/native-controlled.json" }
+    run = "node --test --test-name-pattern='controlled platform publish benchmark' tests/tooling/publish-npm-package-dirs-benchmark.test.ts"
+  }
+  new Dynamic {
+    name = "Preserve controlled publisher benchmark"
+    `if` = "${{ always() }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "ci-walltime-native-${{ github.sha }}"
+      path = "target/ci-walltime/"
+      `if-no-files-found` = "error"
+      `retention-days` = 14
+    }
+  }
+}

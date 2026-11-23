@@ -1,0 +1,13 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  test -f "$PREBUILT_VSIX"
+  mkdir -p editors/vscode/dist
+  install -m 0644 "$PREBUILT_VSIX" editors/vscode/dist/vize.vsix
+  cmp "$PREBUILT_VSIX" editors/vscode/dist/vize.vsix
+  """#
+}

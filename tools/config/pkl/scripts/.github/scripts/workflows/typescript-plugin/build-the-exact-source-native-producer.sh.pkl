@@ -1,0 +1,10 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  export NODE_OPTIONS="${NODE_OPTIONS:-} --import=file://$GITHUB_WORKSPACE/tools/support/ci/cargo-metadata-observer.ts?capture=$RUNNER_TEMP/typescript-plugin-cargo-metadata"
+  vp run --filter './npm/native' build:ci
+  """#
+}

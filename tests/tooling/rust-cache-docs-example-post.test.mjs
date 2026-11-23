@@ -1,3 +1,5 @@
+import { packageCommands } from "./support/package-task-source.ts";
+import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -108,9 +110,13 @@ await test("docs examples use separate primary and secondary target directories"
   const scripts = JSON.parse(
     readFileSync(new URL("../../examples/vite-musea/package.json", import.meta.url)),
   ).scripts;
-  assert.equal(scripts.build, "pnpm check && vp build --config vite.app.config.ts");
+  const root = fileURLToPath(new URL("../../", import.meta.url));
   assert.equal(
-    scripts.check,
+    packageCommands(root, "examples/vite-musea", scripts.build, "build").join(" && "),
+    "pnpm check && vp build --config vite.app.config.ts",
+  );
+  assert.equal(
+    packageCommands(root, "examples/vite-musea", scripts.check, "check").join(" && "),
     "cargo run --quiet --target-dir ../../.docs-example-target --manifest-path ../../Cargo.toml -p vize -- check && vp check src vite.config.ts vite.app.config.ts vite.ui-gallery.config.ts vite.globals.config.ts musea.preview.ts playwright.config.ts",
   );
 });

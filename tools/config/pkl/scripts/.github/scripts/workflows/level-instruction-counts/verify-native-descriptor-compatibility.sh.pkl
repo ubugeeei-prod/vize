@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("cargo", List("test", "--locked", "-p", "vize_l1", "--lib", "container::vue"))
+  module.command("cargo", List("test", "--locked", "-p", "vize_atelier_sfc", "--lib", "parse::tests"))
+}

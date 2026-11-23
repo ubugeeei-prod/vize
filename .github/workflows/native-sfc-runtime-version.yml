@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/native-sfc-runtime-version.yml
+      - .github/scripts/workflows/native-sfc-runtime-version/**
       - crates/vize_vitrine/src/napi/sfc.rs
       - crates/vize_vitrine/src/napi/sfc/**
       - davinci/vize_l0/src/config/model/vue.rs
@@ -28,6 +29,19 @@ jobs:
       VIZE_NATIVE_SFC_VERSION_REQUIRED: "1"
       VIZE_NATIVE_SFC_VERSION_PROOF: target/vize-tests/sfc-runtime-version
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/native-sfc-runtime-version/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -45,13 +59,10 @@ jobs:
       - name: Build the actual source-native package
         run: vp run --filter './npm/native' build:ci
       - name: Seal the selected image and exact source
-        run: GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs
+        run: . "${{ env.VIZE_CI_FILES }}/seal-the-selected-image-and-exact-source.sh"
       - name: Verify runtime selectors, all native paths and whole outputs
         shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$VIZE_NATIVE_SFC_VERSION_PROOF"
-          node --test tests/tooling/native-sfc-runtime-version.test.mjs 2>&1 | tee "$VIZE_NATIVE_SFC_VERSION_PROOF/tap.log"
+        run: . "${{ env.VIZE_CI_FILES }}/verify-runtime-selectors-all-native-paths-and-whole-outputs.sh"
       - name: Preserve source identity and all observations
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

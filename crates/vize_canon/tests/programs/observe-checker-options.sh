@@ -1,0 +1,8 @@
+#!/bin/sh
+for arg in "$@"; do
+  if [ "$arg" = "--checkers" ]; then
+    echo "error TS5023: Unknown compiler option '--checkers'."
+    exit 1
+  fi
+done
+exit 0

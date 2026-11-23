@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/component-input-projection-packets.yml
+      - .github/scripts/workflows/component-input-projection-packets/**
       - crates/vize_canon/src/virtual_ts/component_prop_helpers.txt
       - crates/vize_maestro/tests/davinci_ts40_projection_support/evidence.rs
       - crates/vize_maestro/tests/davinci_ts40_projection_support/fixtures/**
@@ -36,19 +37,24 @@ jobs:
       INSTA_UPDATE: new
       INSTA_FORCE_PASS: "0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/component-input-projection-packets/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
       - name: Bind the complete capture to its source and driver
         env: { DRIVER_SHA: "${{ github.sha }}" }
-        run: |
-          set -euo pipefail
-          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          EVIDENCE="$RUNNER_TEMP/component-input-packets"
-          printf 'EVIDENCE=%s\n' "$EVIDENCE" >> "$GITHUB_ENV"
-          mkdir -p "$EVIDENCE"
-          git rev-parse HEAD 'HEAD^{tree}' > "$EVIDENCE/source.txt"
-          printf '%s\n' "$DRIVER_SHA" > "$EVIDENCE/driver.txt"
+        run: . "${{ env.VIZE_CI_FILES }}/bind-the-complete-capture-to-its-source-and-driver.sh"
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with: { toolchain: "1.100.0" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
@@ -58,20 +64,7 @@ jobs:
           key: component-input-packets
           cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}-${{ matrix.role }}"
       - name: Run both complete projection modes without accepting pending output
-        run: |
-          set -euo pipefail
-          default_status=0
-          VIZE_TEMPLATE_EMIT_TS40_CAPTURE="$EVIDENCE/default" \
-            cargo test --locked --profile ci -p vize_maestro --test davinci_ts40_projection -- --nocapture \
-            > "$EVIDENCE/default.stdout" 2> "$EVIDENCE/default.stderr" || default_status=$?
-          legacy_status=0
-          VIZE_TEMPLATE_EMIT_TS40_CAPTURE="$EVIDENCE/legacy" \
-            cargo test --locked --profile ci -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture \
-            > "$EVIDENCE/legacy.stdout" 2> "$EVIDENCE/legacy.stderr" || legacy_status=$?
-          printf '{"default":%s,"legacy":%s,"nativeConsumerAcceptance":false}\n' \
-            "$default_status" "$legacy_status" > "$EVIDENCE/status.json"
-          test "$default_status" = 0
-          test "$legacy_status" = 0
+        run: . "${{ env.VIZE_CI_FILES }}/run-both-complete-projection-modes-without-accepting-pending-output.sh"
       - name: Retain complete packets, original failures, and exact source identity
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

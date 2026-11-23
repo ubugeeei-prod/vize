@@ -13,6 +13,8 @@ import { corpusManifest } from "./type-snapshot-cli-corpus.mjs";
 import { prepareRun } from "./type-snapshot-cli-runner.mjs";
 import { normalizeTypecheckResult } from "./typecheck-command.mjs";
 import {
+  aliasSourcePaths,
+  directoryListingAliasSources,
   expectedFiles,
   sourceContract,
   successorSha256,
@@ -195,7 +197,23 @@ export function captureAliasCorpus({
       if (mirror == null) assert.equal(module, "@x", "missing selected route must remain authored");
       else {
         assert(isAbsolute(module), "a resolved alias must name its physical native mirror");
-        assert.equal(basename(module), mirror, "literal authored alias target");
+        if (sourceContracts[side].resolverSha256 === directoryListingAliasSources.resolver) {
+          const specifier = basename(module);
+          assert.equal(specifier, basename(mirror, ".ts"), "literal extensionless alias target");
+          const resolution = ts.resolveModuleName(
+            "./" + specifier,
+            join(server.root, "App.vue.ts"),
+            { moduleResolution: ts.ModuleResolutionKind.Bundler },
+            ts.sys,
+          ).resolvedModule;
+          assert.equal(
+            resolution?.resolvedFileName,
+            join(server.root, mirror),
+            "authored TypeScript target",
+          );
+        } else {
+          assert.equal(basename(module), mirror, "literal authored alias target");
+        }
         assert.match(
           module.replaceAll("\\", "/"),
           /\/vize-canon\/editor\/sessions\/session-[^/]+\/projects\/[a-f0-9]{64}\//u,
@@ -238,13 +256,8 @@ export function readSourceContracts(binaries) {
       return [
         side,
         sourceContract(
-          fileSha256(
-            join(
-              checkout,
-              "crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution.rs",
-            ),
-          ),
-          fileSha256(join(checkout, "crates/vize/src/commands/check/imports_aliases.rs")),
+          fileSha256(join(checkout, aliasSourcePaths.resolver)),
+          fileSha256(join(checkout, aliasSourcePaths.collector)),
           side,
         ),
       ];

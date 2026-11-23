@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+[[ "$PUBLIC_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+[[ "$PUBLIC_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+git fetch --no-tags --depth=1 origin "refs/tags/v$PUBLIC_VERSION"
+[[ "$(git rev-parse 'FETCH_HEAD^{commit}')" == "$PUBLIC_SOURCE_SHA" ]]
+gh api "repos/$GITHUB_REPOSITORY/compare/$REQUIRED_CPP_SOURCE...$PUBLIC_SOURCE_SHA" > "$RUNNER_TEMP/cpp-source-comparison.json"
+node "$VIZE_CI_FILES/prove-the-immutable-tag-contains-the-merged-public-instance-change.ts"

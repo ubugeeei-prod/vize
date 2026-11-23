@@ -1,0 +1,6 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {preloadProjectNative} from @@PRELOAD@@;
+const require=createRequire(import.meta.url),custody=@@CUSTODY@@;
+@@PROBE@@
+process.stdout.write(JSON.stringify({override:process.env.NAPI_RS_NATIVE_LIBRARY_PATH??null,loads:globalThis.wrapperLoads??0}));

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+mkdir -p "$RUNNER_TEMP/cross-file-offset-proof"
+printf 'VIZE_CROSS_FILE_OFFSET_SOURCE_CLI=%s\n' "$GITHUB_WORKSPACE/target/ci/vize" >> "$GITHUB_ENV"
+printf 'VIZE_CROSS_FILE_OFFSET_BEFORE_CLI=%s\n' "$RUNNER_TEMP/cross-file-before/node_modules/.bin/vize" >> "$GITHUB_ENV"
+printf 'VIZE_CROSS_FILE_OFFSET_PROOF=%s\n' "$RUNNER_TEMP/cross-file-offset-proof/packets.json" >> "$GITHUB_ENV"

@@ -1,10 +1,10 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 /** Source-only path changes must keep the real native/runtime regression selected. */
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import { matchesGlob } from "node:path";
 import { test } from "node:test";
 import { parse, stringify } from "yaml";
-const workflow = fs.readFileSync(
+const workflow = readAutomationPrograms(
   new URL("../../.github/workflows/jsx-authored-native-modules.yml", import.meta.url),
   "utf8",
 );
@@ -136,7 +136,7 @@ test("paired-packet guards reject moving old baselines and omitted browser execu
 });
 
 test("Rspack complete captures retain the original group environment and every actual fallback output", () => {
-  const source = fs.readFileSync(
+  const source = readAutomationPrograms(
     new URL("../../.github/workflows/pr-js-checks.yml", import.meta.url),
     "utf8",
   );

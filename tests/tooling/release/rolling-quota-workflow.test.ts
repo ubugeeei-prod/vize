@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "../support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { compileFunction } from "node:vm";
@@ -17,10 +18,12 @@ interface Job {
   permissions?: Record<string, string>;
   env?: Record<string, string>;
 }
-const release = parse(readRepoFile(".github", "workflows", "release.yml")) as {
+const release = parse(readAutomationPrograms(".github", "workflows", "release.yml")) as {
   jobs: Record<string, Job>;
 };
-const verification = parse(readRepoFile(".github", "workflows", "release-verify.yml")) as {
+const verification = parse(
+  readAutomationPrograms(".github", "workflows", "release-verify.yml"),
+) as {
   jobs: Record<string, Job>;
 };
 const publishers = [

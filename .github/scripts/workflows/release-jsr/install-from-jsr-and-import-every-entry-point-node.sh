@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+npm install vite@8 vue@3
+npx --yes jsr add "@vizejs/vize@${JSR_VERSION#v}"
+node --experimental-strip-types consumer.ts @vizejs/vize --vite

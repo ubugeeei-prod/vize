@@ -1,0 +1,103 @@
+import "../../Actions.pkl" as ci
+
+name = "Turbopack consumers"
+
+on {
+  workflow_dispatch = null
+  pull_request {
+    paths = new Listing {
+      "npm/builder/turbopack/**"
+      "npm/builder/shared/**"
+      "npm/builder/rspack/**"
+      "npm/native/**"
+      "crates/vize_atelier_sfc/**"
+      "crates/vize_vitrine/**"
+      "tests/tooling/turbopack-workflow.test.ts"
+      ".github/workflows/turbopack-consumers.yml"
+      ".github/scripts/workflows/turbopack-consumers/**"
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "turbopack-consumers-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  consumers {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/turbopack-consumers"
+      VIZE_TURBOPACK_ARTIFACTS = "target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.workspaceVp()
+      ci.rust("stable")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "turbopack-consumers"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        run = "vp install --filter vize-workspace --filter '@vize/tests' --filter '@vizejs/rspack-plugin...' --filter '@vizejs/turbopack-plugin...' --frozen-lockfile --prefer-offline"
+      }
+      ci.command("Build the actual source native image", "vp run --filter @vizejs/native build:ci")
+      ci.command("Seal native image and source identity", "node npm/native/scripts/native-build-receipt.mjs")
+      new Dynamic {
+        name = "Check authored positions and existing Rspack behavior"
+        run = #". "${{ env.VIZE_CI_FILES }}/check-authored-positions-and-existing-rspack-behavior.sh""#
+      }
+      new Dynamic {
+        name = "Build both public adapters with bundled shared code"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-both-public-adapters-with-bundled-shared-code.sh""#
+      }
+      new Dynamic {
+        name = "Prepare the actual browser"
+        `working-directory` = "npm/builder/turbopack"
+        run = "vp exec playwright install --with-deps chromium"
+      }
+      new Dynamic {
+        name = "Check fresh packed consumer, SSR, hydration, updates and production"
+        run = "node npm/builder/turbopack/test/run-host.mjs"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "turbopack-consumers-${{ github.sha }}-${{ github.run_attempt }}"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+          path = """
+          target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/*.json
+          target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/*.stdout
+          target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/*.stderr
+          target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/*.html
+          target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/*.tap
+          target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/*.png
+          target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/*.svg
+          target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/packs/*.tgz
+          target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/maps/**
+          target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/consumer/package.json
+          target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/consumer/package-lock.json
+          target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/strict-consumer/package.json
+          target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/strict-consumer/pnpm-workspace.yaml
+          target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}/strict-consumer/pnpm-lock.yaml
+          npm/native/.artifacts/native/build-token-receipt.json
+
+          """
+        }
+      }
+    }
+  }
+}

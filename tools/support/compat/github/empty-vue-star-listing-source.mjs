@@ -66,10 +66,15 @@ const rows = parts.flatMap((part) => part.rows);
 assert.equal(rows.length, metadata.cells);
 assert.equal(new Set(rows.map(([file]) => file)).size, rows.length);
 const named = new Map(rows.map((row) => [row[0], row]));
+export const starListingProgramPaths = [
+  ...metadata.executing,
+  "tools/support/compat/github/source-counterpart-worker.ts",
+  "tests/tooling/support/idle-process-tree.ts",
+];
 const loaded = new Map([
   [metadataPath, metadataBody],
   ...parts.map(({ file, body }) => [file, body]),
-  ...metadata.executing.map((file) => [file, regular(moduleRoot, file)]),
+  ...starListingProgramPaths.map((file) => [file, regular(moduleRoot, file)]),
 ]);
 const mainInverseBody = regular(moduleRoot, metadata.mainUnion.inverseCapsule.file);
 assert.equal(sha(mainInverseBody), metadata.mainUnion.inverseCapsule.compressedSHA256);

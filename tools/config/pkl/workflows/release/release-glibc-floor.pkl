@@ -1,0 +1,214 @@
+import "../../Actions.pkl" as ci
+
+name = "Release glibc floor"
+// Builds the Linux GNU release artifacts with the exact release recipes, fails
+// when any ELF image needs more than the documented glibc floor
+// (tools/support/github/glibc-floor.ts), and runs them on Amazon Linux 2023
+// (Vercel builds and functions), AlmaLinux 8 and CentOS 7. release.yml runs the
+// same container smoke on the release candidate before tagging; this workflow
+// catches a raised floor in the pull request that raises it.
+on {
+  pull_request {
+    paths = new Listing {
+      "Cargo.lock"
+      "rust-toolchain.toml"
+      ".cargo/**"
+      "crates/vize/build.rs"
+      "crates/vize_vitrine/build.rs"
+      "npm/native/native-binding.js"
+      "npm/native/native-targets.js"
+      ".github/actions/build-release-cli/**"
+      ".github/actions/build-release-native/**"
+      ".github/actions/setup-cargo-zigbuild/**"
+      ".github/actions/smoke-glibc-floor-containers/**"
+      ".github/workflows/release-glibc-floor.yml"
+      ".github/scripts/workflows/release-glibc-floor/**"
+      "tools/support/github/build-napi-package.ts"
+      "tools/support/github/elf-dynamic-requirements.ts"
+      "tools/support/github/glibc-floor.ts"
+      "tools/support/github/release-platforms.ts"
+      "tools/commands/ci/github/verify-glibc-symbols.ts"
+      "tools/commands/release/npm/smoke-glibc-floor-containers.ts"
+      "tools/support/compat/npm/glibc-floor-*"
+    }
+  }
+  workflow_dispatch = null
+  schedule = new Listing {
+    new Dynamic { cron = "23 4 * * 1" }
+  }
+}
+concurrency {
+  group = "release-glibc-floor-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+permissions { contents = "read" }
+env {
+  CARGO_INCREMENTAL = 0
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  native {
+    name = "Native glibc floor - ${{ matrix.platform }}"
+    `runs-on` = "${{ matrix.runner }}"
+    `timeout-minutes` = 75
+    strategy {
+      `fail-fast` = false
+      matrix {
+        include = new Listing {
+          new Dynamic {
+            runner = ci.linux2204
+            target = "x86_64-unknown-linux-gnu"
+            platform = "linux-x64-gnu"
+          }
+          new Dynamic {
+            runner = "blacksmith-32vcpu-ubuntu-2204-arm"
+            target = "aarch64-unknown-linux-gnu"
+            platform = "linux-arm64-gnu"
+          }
+        }
+      }
+    }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/release-glibc-floor"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        name = "Read the package version"
+        id = "version"
+        run = #". "${{ env.VIZE_CI_FILES }}/read-the-package-version.sh""#
+      }
+      new Dynamic {
+        name = "Build the release native binding (gates the glibc floor)"
+        uses = "./.github/actions/build-release-native"
+        with {
+          target = "${{ matrix.target }}"
+          `release-version` = "${{ steps.version.outputs.version }}"
+          `cross-compile` = "true"
+          `upload-artifacts` = "false"
+        }
+      }
+      new Dynamic {
+        name = "Install packed runtime dependencies"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-packed-runtime-dependencies.sh""#
+      }
+      new Dynamic {
+        name = "Prepare the native platform package"
+        env { NATIVE_PLATFORM = "${{ matrix.platform }}" }
+        run = #". "${{ env.VIZE_CI_FILES }}/prepare-the-native-platform-package.sh""#
+      }
+      new Dynamic {
+        name = "Build packed runtime packages"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-packed-runtime-packages.sh""#
+      }
+      new Dynamic {
+        uses = "./.github/actions/smoke-glibc-floor-containers"
+        with { platform = "${{ matrix.platform }}" }
+      }
+    }
+  }
+
+  cli {
+    name = "CLI glibc floor - ${{ matrix.platform }}"
+    `runs-on` = "${{ matrix.runner }}"
+    `timeout-minutes` = 75
+    strategy {
+      `fail-fast` = false
+      matrix {
+        include = new Listing {
+          new Dynamic {
+            runner = ci.linux
+            target = "x86_64-unknown-linux-gnu"
+            platform = "linux-x64-gnu"
+          }
+          // The arm64 CLI is cross-linked on x64 like the release; it runs on arm64.
+          new Dynamic {
+            runner = ci.linux
+            target = "aarch64-unknown-linux-gnu"
+            platform = "linux-arm64-gnu"
+          }
+        }
+      }
+    }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/release-glibc-floor"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        name = "Read the package version"
+        id = "version"
+        run = #". "${{ env.VIZE_CI_FILES }}/read-the-package-version.sh""#
+      }
+      new Dynamic {
+        name = "Build the release CLI (gates the glibc floor)"
+        uses = "./.github/actions/build-release-cli"
+        with {
+          target = "${{ matrix.target }}"
+          archive = "vize-${{ matrix.target }}.tar.gz"
+          `release-version` = "${{ steps.version.outputs.version }}"
+          `upload-artifacts` = "true"
+        }
+      }
+    }
+  }
+
+  `cli-smoke` {
+    name = "CLI on old glibc - ${{ matrix.platform }}"
+    needs = "cli"
+    `runs-on` = "${{ matrix.runner }}"
+    `timeout-minutes` = 15
+    strategy {
+      `fail-fast` = false
+      matrix {
+        include = new Listing {
+          new Dynamic {
+            runner = ci.linux
+            target = "x86_64-unknown-linux-gnu"
+            platform = "linux-x64-gnu"
+          }
+          new Dynamic {
+            runner = "ubuntu-22.04-arm"
+            target = "aarch64-unknown-linux-gnu"
+            platform = "linux-arm64-gnu"
+          }
+        }
+      }
+    }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/release-glibc-floor"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        with {
+          name = "cli-${{ matrix.target }}"
+          path = ".artifacts/cli-archive"
+        }
+      }
+      new Dynamic {
+        name = "Unpack the release CLI"
+        env { TARGET = "${{ matrix.target }}" }
+        run = #". "${{ env.VIZE_CI_FILES }}/unpack-the-release-cli.sh""#
+      }
+      new Dynamic {
+        uses = "./.github/actions/smoke-glibc-floor-containers"
+        with {
+          platform = "${{ matrix.platform }}"
+          cli = ".artifacts/cli/vize"
+        }
+      }
+    }
+  }
+}

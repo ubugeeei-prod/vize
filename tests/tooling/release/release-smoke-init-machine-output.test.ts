@@ -13,16 +13,20 @@ function temporaryProject(name: string): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), `vize-fresh-machine-${name}-`));
 }
 
-function writeProjectLocalVize(projectRoot: string, source: string): void {
+function installProjectLocalVize(projectRoot: string, program: URL): void {
   const bin = projectLocalVizeBin(projectRoot);
   fs.mkdirSync(path.dirname(bin), { recursive: true });
-  fs.writeFileSync(bin, source);
+  fs.copyFileSync(program, bin);
+  fs.copyFileSync(
+    new URL("../programs/process/exit-with-status.js", import.meta.url),
+    path.join(projectRoot, "fallback.cjs"),
+  );
   fs.writeFileSync(
     path.join(projectRoot, "package.json"),
     `${JSON.stringify(
       {
         scripts: {
-          "vize:check": 'node -e "process.exit(7)"',
+          "vize:check": "node fallback.cjs 7",
         },
       },
       null,
@@ -33,19 +37,9 @@ function writeProjectLocalVize(projectRoot: string, source: string): void {
 
 test("machine checks read JSON from the project-local vize binary", () => {
   const root = temporaryProject("json");
-  writeProjectLocalVize(
+  installProjectLocalVize(
     root,
-    [
-      'const fs = require("node:fs");',
-      "fs.writeFileSync(",
-      '  "machine-invocation.json",',
-      "  JSON.stringify({ argv: process.argv.slice(2), corsa: process.env.CORSA_PATH ?? null }),",
-      ");",
-      "process.stdout.write(",
-      "  JSON.stringify({ files: [], errorCount: 0, warningCount: 0, fileCount: 0 }),",
-      ");",
-      "",
-    ].join("\n"),
+    new URL("../programs/release/record-machine-check.cjs", import.meta.url),
   );
 
   const previous = process.env.CORSA_PATH;
@@ -75,7 +69,10 @@ test("machine checks read JSON from the project-local vize binary", () => {
 
 test("machine checks fail closed when project-local vize writes no JSON", () => {
   const root = temporaryProject("empty");
-  writeProjectLocalVize(root, "process.exit(0);\n");
+  installProjectLocalVize(
+    root,
+    new URL("../programs/release/empty-machine-check.cjs", import.meta.url),
+  );
 
   assert.throws(
     () => checkReport(root),

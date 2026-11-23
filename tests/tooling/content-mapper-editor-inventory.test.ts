@@ -1,3 +1,4 @@
+import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { stripTypeScriptTypes } from "node:module";
 import { test } from "node:test";
@@ -7,18 +8,20 @@ import { readRepoFile } from "./support/github-workflows.ts";
 
 test("editor inventory helpers preserve the complete workflow refusal controls", () => {
   const workflow = parse(
-    readRepoFile(".github", "workflows", "content-mapper-conformance.yml"),
+    readAutomationPrograms(".github", "workflows", "content-mapper-conformance.yml"),
   ) as { jobs: Record<string, { steps: { name?: string; run?: string }[] }> };
   const stress = workflow.jobs["exact-tsgo-project"].steps.filter(
     (step) => step.name === "Stress every editor case against its exact native provider",
   );
   assert.equal(stress.length, 1);
-  const script = stress[0].run;
-  assert.equal(typeof script, "string");
-  assert.ok(script);
+  const script = workflowProgram(
+    "content-mapper-conformance",
+    stress[0].run ?? "",
+    "stress-every-editor-case-against-its-exact-native-provider.ts",
+  );
   assert.match(
     script,
-    /import \{ names, executions, reject \} from '\.\/tests\/tooling\/support\/content-mapper-editor-inventory\.ts';/,
+    /resolveWorkflowInput\("\.\/tests\/tooling\/support\/content-mapper-editor-inventory\.ts"\)/u,
   );
   const helper = readRepoFile("tests", "tooling", "support", "content-mapper-editor-inventory.ts");
   const importLine = 'import assert from "node:assert/strict";\n';

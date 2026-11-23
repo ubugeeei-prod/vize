@@ -27,18 +27,7 @@ runs:
         VIZE_NATIVE_SCOPED_SSR_REQUIRE_NATIVE: "1"
         VIZE_SCOPE_BODY_CAPTURE: ${{ runner.temp }}/scope-body-source.json
         VIZE_SCOPE_BODY_RUNTIME_CAPTURE: ${{ runner.temp }}/scope-body-browser.json
-      run: |
-        git rev-parse HEAD > "$RUNNER_TEMP/native-scoped-css-source.txt"
-        cargo test --locked --profile ci -p vize_atelier_sfc native::scoped_tests::four_source_bound_scoped_modules_css_and_default_identity_match_complete_contracts -- --exact
-        cargo test --locked --profile ci -p vize_atelier_sfc native::class_list_tests::three_original_class_list_sfc_modules_css_maps_and_scope_id_match_whole_contracts -- --exact
-        cargo test --locked --profile ci -p vize_atelier_sfc native::scoped_empty_tests::three_original_empty_sfc_modules_css_maps_and_scope_id_match_whole_contracts -- --exact
-        cargo test --locked --profile ci -p vize_atelier_sfc --test native_scoped_ssr three_whole_original_scoped_ssr_modules_css_maps_and_file_custody_match -- --exact
-        vp node --test tests/tooling/native-sfc-scoped-css-reference.test.ts
-        vp node --test tests/tooling/native-sfc-scoped-class-list-reference.test.ts
-        vp node --test tests/tooling/native-sfc-scoped-empty-reference.test.ts
-        vp node --test tests/tooling/native-sfc-scoped-ssr-reference.test.ts
-        cargo test --locked --profile ci -p vize_atelier_sfc --test css_scope_body
-        vp node --test tests/tooling/scope-body-browser.test.ts
+      run: . "$GITHUB_ACTION_PATH/scripts/capture-scoped-modules-from-the-current-rust-source-and-mount-real-vue.sh"
     - name: Verify original fragment CSS variables with exact production Vue
       shell: bash
       env:
@@ -49,14 +38,7 @@ runs:
         VIZE_NESTED_BRANCH_RUNTIME_CAPTURE: ${{ runner.temp }}/nested-branch-runtime.json
         VIZE_SCOPE_ATTR_CAPTURE: ${{ runner.temp }}/scope-attr-modules.json
         VIZE_SCOPE_ATTR_RUNTIME_CAPTURE: ${{ runner.temp }}/scope-attr-runtime.json
-      run: |
-        cargo test --locked --profile ci -p vize_atelier_sfc --test ssr_fragment_css_vars -- --nocapture
-        cargo test --locked --profile ci -p vize_atelier_ssr --features legacy-differential --test ssr_fragment_css_vars -- --nocapture
-        vp node --test tests/tooling/ssr-fragment-css-vars.test.ts
-        cargo test --locked --profile ci -p vize_atelier_ssr --features legacy-differential --test nested_branch_fragments -- --nocapture
-        vp node --test tests/tooling/ssr-nested-branch-fragments.test.mjs
-        cargo test --locked --profile ci -p vize_atelier_ssr --features legacy-differential --test scope_attr_forwarding -- --nocapture
-        vp node --test tests/tooling/ssr-component-scope-attrs.test.ts
+      run: . "$GITHUB_ACTION_PATH/scripts/verify-original-fragment-css-variables-with-exact-production-vue.sh"
     - name: Upload current-source scoped CSS modules and runtime captures
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

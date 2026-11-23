@@ -1,13 +1,12 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 
 const workflow = parse(
-  readFileSync(
+  readAutomationPrograms(
     new URL("../../.github/workflows/typechecker-native-phases.yml", import.meta.url),
-    "utf8",
   ),
 );
 const job = workflow.jobs["native-phases"];

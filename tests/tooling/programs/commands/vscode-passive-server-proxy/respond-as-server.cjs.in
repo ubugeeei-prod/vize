@@ -1,0 +1,23 @@
+const fs = require("node:fs");
+const chunks = [];
+process.stderr.write("ready\n");
+process.stdin.on("data", (chunk) => chunks.push(chunk));
+process.stdin.on("end", () => {
+  fs.writeFileSync(@@RECEIVED@@, Buffer.concat(chunks));
+  fs.writeFileSync(@@ARGUMENTS@@, JSON.stringify(process.argv.slice(2)));
+  const output = Buffer.from(@@OUTPUT@@, "base64");
+  let offset = 0;
+  function send() {
+    if (offset === output.length) {
+      process.stderr.write("actual stderr 🌸\n");
+      process.exitCode = 23;
+      return;
+    }
+    const end = Math.min(offset + 3, output.length);
+    process.stdout.write(output.subarray(offset, end));
+    offset = end;
+    if (offset === 3) setTimeout(send, 30);
+    else setImmediate(send);
+  }
+  send();
+});

@@ -1,3 +1,4 @@
+import { archivedWorkflow } from "../support/workflow-history.ts";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
@@ -33,7 +34,7 @@ const evidence =
   "${{ runner.temp }}/public-custom-properties-consumer/public-canonical-sdk-evidence/";
 const workflows = files.map((file) => ({
   file,
-  current: parse(readRepoFile(".github", "workflows", file)) as Workflow,
+  current: parse(archivedWorkflow(".github", "workflows", file)) as Workflow,
   before: parse(
     readRepoFile(
       "tests",

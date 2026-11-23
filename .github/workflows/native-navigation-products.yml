@@ -10,6 +10,7 @@ on:
       - "crates/vize_maestro/src/source_project/navigation.rs"
       - "crates/vize_maestro/src/source_project/navigation/**"
       - ".github/workflows/native-navigation-products.yml"
+      - ".github/scripts/workflows/native-navigation-products/**"
 permissions: { contents: read }
 concurrency:
   group: native-navigation-products-${{ github.event.pull_request.number }}
@@ -29,6 +30,19 @@ jobs:
       RUST_MIN_STACK: "16777216"
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/native-navigation-products/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
@@ -45,23 +59,10 @@ jobs:
             ~/.cargo/git
           key: native-navigation-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
       - name: Select tracked original Vue inputs
-        run: git ls-files -z -- '*.vue' '*.vue.txt' > "$RUNNER_TEMP/navigation-sources"
+        run: . "${{ env.VIZE_CI_FILES }}/select-tracked-original-vue-inputs.sh"
       - name: Check real File membership and complete editor responses
         if: matrix.suite == 'correctness'
-        run: |
-          set -euo pipefail
-          flags=(--locked --profile ci-opt)
-          file=(-p vize_l1_to_l2 --features native-navigation-products --lib)
-          editor=(-p vize_maestro --features experimental-navigation-products,micro-profiling --lib)
-          cargo clippy "${flags[@]}" "${file[@]}" --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
-          cargo test "${flags[@]}" "${file[@]}" native_file::query::
-          cargo test "${flags[@]}" "${editor[@]}" source_project::navigation::
-          export VIZE_NATIVE_NAVIGATION_INPUTS="$RUNNER_TEMP/navigation-sources"
-          cargo test "${flags[@]}" "${editor[@]}" original_file_membership_and_public_navigation_packets_match -- --ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/check-real-file-membership-and-complete-editor-responses.sh"
       - name: Measure complete requests through the editor mailbox
         if: matrix.suite == 'performance'
-        run: |
-          set -euo pipefail
-          export VIZE_NATIVE_NAVIGATION_INPUTS="$RUNNER_TEMP/navigation-sources"
-          cargo test --locked --profile ci-opt -p vize_maestro --features experimental-navigation-products,micro-profiling --lib paired_original_navigation_requests -- --ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/measure-complete-requests-through-the-editor-mailbox.sh"

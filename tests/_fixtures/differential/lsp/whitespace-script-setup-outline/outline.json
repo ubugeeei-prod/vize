@@ -1,0 +1,77 @@
+[
+  {
+    "children": [
+      {
+        "kind": 19,
+        "name": "button",
+        "range": {
+          "end": {
+            "character": 70,
+            "line": 4
+          },
+          "start": {
+            "character": 2,
+            "line": 4
+          }
+        },
+        "selectionRange": {
+          "end": {
+            "character": 9,
+            "line": 4
+          },
+          "start": {
+            "character": 3,
+            "line": 4
+          }
+        }
+      }
+    ],
+    "kind": 2,
+    "name": "template",
+    "range": {
+      "end": {
+        "character": 11,
+        "line": 5
+      },
+      "start": {
+        "character": 0,
+        "line": 3
+      }
+    },
+    "selectionRange": {
+      "end": {
+        "character": 9,
+        "line": 3
+      },
+      "start": {
+        "character": 1,
+        "line": 3
+      }
+    }
+  },
+  {
+    "detail": "ts",
+    "kind": 2,
+    "name": "script setup",
+    "range": {
+      "end": {
+        "character": 9,
+        "line": 1
+      },
+      "start": {
+        "character": 0,
+        "line": 0
+      }
+    },
+    "selectionRange": {
+      "end": {
+        "character": 7,
+        "line": 0
+      },
+      "start": {
+        "character": 1,
+        "line": 0
+      }
+    }
+  }
+]

@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./program-path.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -21,10 +22,20 @@ function selectedStep(job: Job, name: string): { index: number; step: Step } {
 }
 
 export function restoreHistoryToolchainSelection(job: Job, original: Job) {
+  const source = fs.readFileSync(
+    new URL("../native-history-toolchain.test.ts", import.meta.url),
+    "utf8",
+  );
+  const programImport = 'import { readToolingProgram } from "./support/program-path.ts";\n';
+  const programRead = 'readToolingProgram("process/exit-success.sh")';
+  assert.equal(source.split(programImport).length, 2);
+  assert.equal(source.split(programRead).length, 2);
+  // Reconstruct the archived test with the exact bytes its executable receives.
+  const archived = source
+    .replace(programImport, "")
+    .replace(programRead, () => JSON.stringify(readToolingProgram("process/exit-success.sh")));
   assert.equal(
-    createHash("sha256")
-      .update(fs.readFileSync(new URL("../native-history-toolchain.test.ts", import.meta.url)))
-      .digest("hex"),
+    createHash("sha256").update(archived).digest("hex"),
     "da230fd0bc5a8d51005578d8c2d1c437fc3b0bd85216c6c6cdc952928bc8c3c0",
   );
   const previous = selectedStep(original, "Test CI selection when its inputs change").step;
@@ -87,6 +98,15 @@ function restoreSmallNodeAction(
 }
 
 export function restoreCheckJsCasePacket(job: Job, original: Job) {
+  const steps = job.steps;
+  assert(steps);
+  const install = steps.findIndex((step) => step.name === "Install JS dependencies");
+  assert(install >= 0);
+  assert.deepEqual(steps[install + 1], {
+    name: "Check Pkl repository configuration",
+    run: "node tools/commands/generate/repository-config.ts --check",
+  });
+  steps.splice(install + 1, 1);
   restoreSmallNodeAction(job, original, "Check fast JS/TS", {
     suite: "check-js",
     job: "check-js",
@@ -131,6 +151,15 @@ export function restoreNativeRuntimeCasePacket(job: Job, original: Job) {
     assert.deepEqual(selected.step, expected);
     steps.splice(selected.index, 1);
   }
+  const verify = selectedStep(job, "Verify configured native runtime toolchain").step;
+  const namedFilter = '-f "$VIZE_CI_FILES/../shared/rust-host-triple.sed"';
+  const filter = fs.readFileSync(
+    new URL("../../../.github/scripts/workflows/shared/rust-host-triple.sed", import.meta.url),
+    "utf8",
+  );
+  assert.equal(filter, "s/^host: //p\n");
+  assert.equal(verify.run?.split(namedFilter).length, 2);
+  verify.run = verify.run!.replace(namedFilter, "'" + filter.trimEnd() + "'");
   assert.deepEqual(job, original);
 }
 

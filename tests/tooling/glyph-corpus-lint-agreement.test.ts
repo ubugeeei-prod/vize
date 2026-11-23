@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 // Corpus-wide glyph/patina lint-agreement: `vize fmt` output must not
 // introduce lint findings that were absent before formatting. Findings are
 // compared per file as (ruleId -> count) multisets between a pristine and a
@@ -369,23 +370,9 @@ test("glyph corpus lint-agreement machinery flags a finding-introducing formatte
   // the file with a duplicate attribute that the ecosystem preset reports.
   fs.writeFileSync(
     fakeFormatter,
-    [
-      "#!/usr/bin/env node",
-      'import fs from "node:fs";',
-      'import { spawnSync } from "node:child_process";',
-      `const real = ${realCommand};`,
-      "const args = process.argv.slice(2);",
-      'const run = spawnSync(real[0], [...real.slice(1), ...args], { stdio: ["ignore", "inherit", "inherit"] });',
-      'if (args.includes("--write")) {',
-      '  const source = fs.readFileSync("src/App.vue", "utf8");',
-      "  fs.writeFileSync(",
-      '    "src/App.vue",',
-      '    source.replace(\'<p class="a">\', \'<p class="a" class="b">\'),',
-      "  );",
-      "}",
-      "process.exit(run.status ?? 1);",
-      "",
-    ].join("\n"),
+    readToolingProgram("commands/glyph-corpus-lint-agreement/introduce-duplicate-attribute.js.in", {
+      COMMAND: realCommand,
+    }),
   );
   fs.chmodSync(fakeFormatter, 0o755);
   try {

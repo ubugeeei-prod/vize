@@ -27,28 +27,25 @@ jobs:
       VIZE10903_PUBLIC_VERSION: ${{ inputs.version }}
       VIZE10903_PROOF: /tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/plain-script-import-public-acceptance/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "v${{ inputs.version }}", persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "26.6.0" }
       - name: Verify the immutable release includes the merged source fix
-        run: |
-          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-          node --input-type=module -e '
-          import assert from "node:assert/strict";
-          import { execFileSync } from "node:child_process";
-          import { mkdirSync, writeFileSync } from "node:fs";
-          const api = path => JSON.parse(execFileSync("gh", ["api", path], { encoding: "utf8" }));
-          assert(/^0\.\d+\.\d+$/.test(process.env.PUBLIC_VERSION));
-          assert(/^[a-f0-9]{40}$/.test(process.env.SOURCE_SHA));
-          const pr = api("repos/ubugeeei-prod/vize/pulls/10982");
-          assert.equal(pr.merged, true);
-          const comparison = api("repos/ubugeeei-prod/vize/compare/" + pr.merge_commit_sha + "..." + process.env.SOURCE_SHA);
-          assert(["ahead", "identical"].includes(comparison.status));
-          assert.equal(comparison.merge_base_commit.sha, pr.merge_commit_sha);
-          mkdirSync(process.env.VIZE10903_PROOF, { recursive: true });
-          writeFileSync(process.env.VIZE10903_PROOF + "/release-provenance.json", JSON.stringify({ version: process.env.PUBLIC_VERSION, source: process.env.SOURCE_SHA, fix: pr.html_url, merge: pr.merge_commit_sha, comparison: comparison.html_url, status: comparison.status }, null, 2) + "\n");
-          '
+        run: . "${{ env.VIZE_CI_FILES }}/verify-the-immutable-release-includes-the-merged-source-fix.sh"
       - name: Install fresh registry packages and run the untouched reported browser consumer
         run: node tools/support/compat/plain-script-import-ref.ts
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

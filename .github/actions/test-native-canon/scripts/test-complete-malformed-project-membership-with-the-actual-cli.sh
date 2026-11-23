@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+unset VIZE_TEST_DISABLE_TSGO
+cargo test --locked --profile ci -p vize_canon --test empty_vue_star_exports -- configured_native_refuses_erasure_at_unproved_source_boundaries --exact --nocapture

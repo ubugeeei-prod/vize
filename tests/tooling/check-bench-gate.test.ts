@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -127,14 +128,7 @@ test("check-gate refuses to time a binary that misses the plants", (t) => {
   const fakeVize = path.join(workDir, "fake-vize.sh");
   // Answers --version, then reports a clean project for every check: the
   // canonical fast no-op that must never rank.
-  fs.writeFileSync(
-    fakeVize,
-    `#!/bin/sh
-if [ "$1" = "--version" ]; then echo "vize 0.0.0-fake"; exit 0; fi
-echo '{"files":[],"errorCount":0,"warningCount":0,"fileCount":0}'
-exit 0
-`,
-  );
+  fs.writeFileSync(fakeVize, readToolingProgram("commands/check-bench-gate/fake-vize.sh"));
   fs.chmodSync(fakeVize, 0o755);
   const inputDir = path.join(workDir, "in");
   generateCorpus({ fileCount: 2, benchDir: inputDir, log: () => {} });

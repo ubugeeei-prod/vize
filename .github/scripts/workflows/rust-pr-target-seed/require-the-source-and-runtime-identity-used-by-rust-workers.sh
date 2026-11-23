@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+node "$VIZE_CI_FILES/require-the-source-and-runtime-identity-used-by-rust-workers.ts"

@@ -1,0 +1,21 @@
+const { fakeDist } = require(@@ARCHIVE_MODULE@@);
+const fs = require("node:fs");
+const url = new URL(process.argv.at(-1));
+const state = fs.existsSync(process.env.NPM_FAKE_STATE_PATH)
+  ? JSON.parse(fs.readFileSync(process.env.NPM_FAKE_STATE_PATH, "utf8"))
+  : {};
+if (url.pathname.endsWith("/1.2.3")) {
+  const body = state.published
+    ? { name: "@vizejs/example", version: "1.2.3", dist: fakeDist("@vizejs/example", "1.2.3") }
+    : {};
+  process.stdout.write(
+    JSON.stringify(body) + `VIZE_HTTP_STATUS:${state.published ? "200" : "404"}`,
+  );
+  process.exit(0);
+}
+process.stdout.write(
+  JSON.stringify({
+    name: "@vizejs/example",
+    "dist-tags": { latest: "1.3.0", "backfill-1-2-3": "1.2.3" },
+  }) + "VIZE_HTTP_STATUS:200",
+);

@@ -1,3 +1,4 @@
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -42,7 +43,7 @@ test("fuzz workspace declares libfuzzer-sys and an isolated [workspace]", () => 
 });
 
 test("fuzz CI workflow runs strict nightly and dispatched campaigns", () => {
-  const workflow = readRepoFile(".github/workflows/fuzz.yml");
+  const workflow = readAutomationPrograms(".github/workflows/fuzz.yml");
   const parsed = parse(workflow) as {
     "run-name": string;
     jobs: {
@@ -91,10 +92,7 @@ test("fuzz CI workflow runs strict nightly and dispatched campaigns", () => {
   assert.match(budgetStep?.run ?? "", /seconds="\$REQUESTED_MAX_TOTAL_TIME"/);
   assert.match(budgetStep?.run ?? "", /max-total-time must be an integer from 1 to 3600 seconds/);
   assert.doesNotMatch(budgetStep?.run ?? "", /seconds=\$\{\{/);
-  const dispatchBudgetScript = (budgetStep?.run ?? "").replaceAll(
-    "${{ github.event_name }}",
-    "workflow_dispatch",
-  );
+  const dispatchBudgetScript = budgetStep!.run!;
   for (const [input, expectedStatus] of [
     ["abc", 1],
     ["0", 1],
@@ -103,11 +101,12 @@ test("fuzz CI workflow runs strict nightly and dispatched campaigns", () => {
     ["3600", 0],
   ] as const) {
     const output = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "vize-fuzz-budget-")), "output");
-    const result = spawnSync("bash", ["-c", dispatchBudgetScript], {
+    const result = spawnSync("bash", [automationShellPath(dispatchBudgetScript)], {
       encoding: "utf8",
       env: {
         ...process.env,
         GITHUB_OUTPUT: output,
+        GITHUB_EVENT_NAME: "workflow_dispatch",
         REQUESTED_MAX_TOTAL_TIME: input,
       },
     });

@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -44,7 +45,7 @@ export const packageManagers = [
   },
 ] as const;
 
-export const successBody = `fs.mkdirSync("node_modules", { recursive: true }); fs.writeFileSync("node_modules/installed", "yes"); process.stdout.write("installed");`;
+export const successBody = readToolingProgram("commands/typecheck-dependency-prepare/install.js");
 
 type PackageManager = (typeof packageManagers)[number];
 
@@ -116,27 +117,13 @@ export function writeManager(
 ) {
   fs.writeFileSync(
     pathname,
-    `#!${process.execPath}
-import fs from "node:fs";
-const rawArgs = process.argv.slice(2);
-const expectedSpec = ${JSON.stringify(options.spec ?? null)};
-let managerArgs = rawArgs;
-if (expectedSpec !== null) {
-  if (rawArgs[0] !== expectedSpec) {
-    console.error(\`expected \${expectedSpec}, received \${rawArgs[0] ?? "<missing>"}\`);
-    process.exit(13);
-  }
-  managerArgs = rawArgs.slice(1);
-}
-if (managerArgs.includes("--version")) {
-  console.log(${JSON.stringify(version)});
-  process.exit(0);
-}
-const command = process.argv[1].split(/[\\\\/]/u).pop();
-fs.writeFileSync(${JSON.stringify(invocationPath)}, JSON.stringify({ cwd: process.cwd(), command, args: rawArgs, managerArgs, env: { CI: process.env.CI, npm: process.env.npm_config_ignore_scripts, yarn: process.env.YARN_ENABLE_SCRIPTS, corepackProjectSpec: process.env.COREPACK_ENABLE_PROJECT_SPEC } }));
-process.argv = [process.argv[0], process.argv[1], ...managerArgs];
-${installBody}
-`,
+    readToolingProgram("commands/typecheck-dependency-prepare/manager.js.in", {
+      NODE: process.execPath,
+      MANAGER_SPEC: JSON.stringify(options.spec ?? null),
+      VERSION: JSON.stringify(version),
+      INVOCATION_PATH: JSON.stringify(invocationPath),
+      INSTALL_BODY: installBody,
+    }),
   );
   fs.chmodSync(pathname, 0o755);
 }

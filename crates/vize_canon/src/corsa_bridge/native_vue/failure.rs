@@ -45,12 +45,17 @@ fn failed_and_timed_out_native_vue_sessions_preserve_source_and_reap_processes()
         std::fs::write(&path, source).unwrap();
         let pid_file = root.path().join("owned.pid");
         let wrapper = root.path().join("tsc");
-        let branch = if api {
-            "for arg in \"$@\"; do case \"$arg\" in --callbacks=*) fail=true;; esac; done"
-        } else {
-            "if [ \"$1\" = \"--lsp\" ]; then fail=true; fi"
-        };
-        std::fs::write(&wrapper, cstr!("#!/bin/sh\nfail=false\n{branch}\nif [ \"$fail\" = true ]; then\n echo \"$$\" > {}\n {}\n exit 23\nfi\nexec {} \"$@\"\n", quote(&pid_file), if pause { "sleep 1" } else { ":" }, quote(&executable))).unwrap();
+        std::fs::write(
+            &wrapper,
+            cstr!(
+                include_str!("../../../tests/programs/refuse-native-vue-session.sh.in"),
+                api = api,
+                pause = pause,
+                pid = quote(&pid_file),
+                backend = quote(&executable)
+            ),
+        )
+        .unwrap();
         std::fs::set_permissions(&wrapper, std::fs::Permissions::from_mode(0o755)).unwrap();
         let mut bridge = CorsaBridge::with_config(crate::CorsaBridgeConfig {
             corsa_path: Some(wrapper),
