@@ -89,6 +89,9 @@ fn original_graphs_and_lossless_recovery() {
                     })
                     .unwrap();
                 check_reachability(ir, q, &steps).unwrap_or_else(|e| panic!("{path}: {e:?}"));
+                index
+                    .check(q, &steps)
+                    .unwrap_or_else(|e| panic!("{path}: {e:?}"));
                 for second in [Direction::Forward, Direction::Reverse] {
                     let pattern = TwoHopQuery {
                         start: op.id,
@@ -110,6 +113,9 @@ fn original_graphs_and_lossless_recovery() {
                         .unwrap();
                     assert!(result.is_continue());
                     check_two_hop_matches(ir, pattern, &rows)
+                        .unwrap_or_else(|e| panic!("{path}: {e:?}"));
+                    index
+                        .check_two_hop(pattern, &rows)
                         .unwrap_or_else(|e| panic!("{path}: {e:?}"));
                     patterns += 1;
                     trails += rows.len();
