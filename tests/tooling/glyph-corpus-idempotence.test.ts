@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 // Corpus-wide `fmt(fmt(x)) == fmt(x)` and `--check`/`--write` agreement.
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -162,14 +163,7 @@ test("glyph corpus idempotence machinery flags a drifting formatter", () => {
   // Appends one comment line per run: pass two never matches pass one.
   fs.writeFileSync(
     fakeFormatter,
-    [
-      "#!/usr/bin/env node",
-      'import fs from "node:fs";',
-      'const file = "src/App.vue";',
-      'fs.appendFileSync(file, "<!-- drift -->\\n");',
-      'process.stderr.write("Found 1 file(s)\\nReformatted: src/App.vue\\n\\nFormatted 1 file(s)\\n  1 file(s) reformatted\\n");',
-      "",
-    ].join("\n"),
+    readToolingProgram("commands/glyph-corpus-idempotence/append-comment.js"),
   );
   fs.chmodSync(fakeFormatter, 0o755);
   try {
@@ -303,20 +297,9 @@ function makeAgreementFixture(mode: "change" | "clean") {
   const executable = path.join(fakeDir, "fake-vize.mjs");
   fs.writeFileSync(
     executable,
-    [
-      "#!/usr/bin/env node",
-      'import fs from "node:fs";',
-      ...(mode === "change"
-        ? [
-            'const file = "src/App.vue";',
-            'const source = fs.readFileSync(file, "utf8");',
-            'if (source === "<template><p>x</p></template>\\n") {',
-            '  fs.writeFileSync(file, "<template>\\n  <p>x</p>\\n</template>\\n");',
-            "}",
-          ]
-        : []),
-      "",
-    ].join("\n"),
+    readToolingProgram("commands/glyph-corpus-idempotence/format-once.js.in", {
+      CHANGE: mode === "change",
+    }),
   );
   fs.chmodSync(executable, 0o755);
   return {

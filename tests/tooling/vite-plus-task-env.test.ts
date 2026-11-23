@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -43,7 +44,10 @@ function probeEnvironment(names: string[], variables: Record<string, string>) {
     fs.writeFileSync(path.join(root, "package.json"), '{"name":"vize-task-env-probe"}\n');
     fs.writeFileSync(
       path.join(root, "probe.mjs"),
-      `import fs from "node:fs";\nfs.writeFileSync(${JSON.stringify(output)}, JSON.stringify(Object.fromEntries(${JSON.stringify(Object.keys(variables))}.map(name => [name, process.env[name] ?? null]))));\n`,
+      readToolingProgram("commands/vite-plus-task-env/record-task-environment.js.in", {
+        OUTPUT: JSON.stringify(output),
+        VARIABLES: JSON.stringify(Object.keys(variables)),
+      }),
     );
     fs.writeFileSync(
       path.join(root, "vite.config.mjs"),

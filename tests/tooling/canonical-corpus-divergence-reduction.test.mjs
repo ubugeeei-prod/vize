@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { chmodSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { test } from "node:test";
@@ -68,7 +69,7 @@ await test("a reducer invocation records only the minimized witness and provenan
     writeFileSync(sourcePath, "<template><div><span>large source</span></div></template>");
     writeFileSync(
       reducer,
-      "#!/bin/sh\nprintf '<template><span/></template>' > \"$5\"\nprintf 'reduce: 58 -> 28 bytes, 1-minimal\\n' >&2\n",
+      readToolingProgram("commands/canonical-corpus-divergence-reduction/reducer.sh"),
     );
     chmodSync(reducer, 0o755);
     const plan = {

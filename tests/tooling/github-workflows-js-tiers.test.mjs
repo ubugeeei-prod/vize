@@ -1,3 +1,4 @@
+import { configuredNodeLauncher } from "../../tools/support/process-launcher.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -41,11 +42,14 @@ const groupCommand =
 const historyActionPath = "./.github/actions/test-js-packages-with-history";
 const history = parse(readAutomationPrograms(join(root, historyActionPath, "action.yml")));
 
-function recordingCli(directory, source = "process.exit(0);") {
+function recordingCli(directory, tsc) {
   const calls = join(directory, "calls.jsonl");
   writeFileSync(
     join(directory, "vp"),
-    `#!${process.execPath}\nimport fs from 'node:fs'; import path from 'node:path'; import {spawnSync} from 'node:child_process'; const args=process.argv.slice(2); fs.appendFileSync(${JSON.stringify(calls)},JSON.stringify({args,cwd:process.cwd()})+'\\n'); ${source}\n`,
+    configuredNodeLauncher(
+      new URL("./programs/workflow/record-js-package-cli.js", import.meta.url),
+      { calls, tsc },
+    ),
     { mode: 0o755 },
   );
   return {
@@ -414,17 +418,7 @@ void test("Fresco checks generate declarations and invoke static TypeScript with
       mkdirSync(dirname(join(packageDir, file)), { recursive: true });
       copyFileSync(join(originalPackage, file), join(packageDir, file));
     }
-    const cli = recordingCli(
-      fixture,
-      `
-if(args[0]==='exec' && args[1]==='napi') {
-  const out=args[args.indexOf('--output-dir')+1]; fs.mkdirSync(out,{recursive:true});
-  for(const name of ['index.js','index.d.ts']) fs.copyFileSync(path.join(process.cwd(),name),path.join(out,name));
-} else if(args[0]==='exec' && args[1]==='tsc') {
-  process.exit(spawnSync(process.execPath,[${JSON.stringify(tsc)},...args.slice(2)],{stdio:'inherit'}).status ?? 1);
-} else { throw new Error('unexpected CLI'); }
-`,
-    );
+    const cli = recordingCli(fixture, tsc);
     const generated = spawnSync(
       process.execPath,
       [

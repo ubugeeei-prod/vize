@@ -1,4 +1,4 @@
-// The fixture launcher supplies `options`; no environment mutation is needed.
+const options = JSON.parse("@@PROGRAM_SETTINGS@@");
 const fs = require("node:fs");
 function log(event) {
   fs.appendFileSync(

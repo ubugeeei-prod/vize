@@ -3,5 +3,7 @@ amends "../../../../../ShellScript.pkl"
 interpreter = "sh"
 
 commands {
-  #"exit 0"#
+  #"""
+  exit 0
+  """#
 }

@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -26,19 +27,12 @@ test("apt retry wrapper preserves observable retry behavior", () => {
     const probe = path.join(dir, "probe.sh");
     mkdirSync(bin);
     writeFileSync(wrapper, retryWrapperSource(), { mode: 0o755 });
-    writeFileSync(sudo, "#!/usr/bin/env bash\nexit 0\n", { mode: 0o755 });
-    writeFileSync(
-      probe,
-      [
-        "#!/usr/bin/env bash",
-        'count="$(cat "$1" 2>/dev/null || true)"',
-        'count="$((10#${count:-0} + 1))"',
-        'printf "%s" "$count" > "$1"',
-        "if (( count >= 10#$2 )); then exit 0; fi",
-        'exit "$3"',
-      ].join("\n"),
-      { mode: 0o755 },
-    );
+    writeFileSync(sudo, readToolingProgram("commands/github-apt-retry-wrapper/exit-0.sh"), {
+      mode: 0o755,
+    });
+    writeFileSync(probe, readToolingProgram("commands/github-apt-retry-wrapper/probe.sh"), {
+      mode: 0o755,
+    });
 
     const run = (retries: string, passAfter: string, status: string) => {
       const countFile = path.join(dir, `count-${retries}-${passAfter}-${status}`);

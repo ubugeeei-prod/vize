@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 /**
  * Per-PR drop-in compatibility ratchet (part of the #3227 compat roadmap).
  *
@@ -304,7 +305,10 @@ test("vue-tsc version resolution survives every pnpm bin layout", (t) => {
     [
       "cmd-shim naming its target",
       (binPath) =>
-        fs.writeFileSync(binPath, `#!/bin/sh\nexec node "$@"\n# cmd-shim-target=${entry}\n`),
+        fs.writeFileSync(
+          binPath,
+          readToolingProgram("commands/compat-ratchet/forward-to-node.sh", { ENTRY: entry }),
+        ),
     ],
     [
       // Shaped like a real marker-less shim: the interpreter is named through
@@ -314,8 +318,7 @@ test("vue-tsc version resolution survives every pnpm bin layout", (t) => {
       (binPath) =>
         fs.writeFileSync(
           binPath,
-          '#!/bin/sh\nbasedir_win="$basedir"\nexec "$basedir/node"  ' +
-            '"$basedir/../.pnpm/vue-tsc@9.9.9/node_modules/vue-tsc/bin/vue-tsc.js" "$@"\n',
+          readToolingProgram("commands/compat-ratchet/windows-executable-shim.sh"),
         ),
     ],
   ];
@@ -329,7 +332,7 @@ test("vue-tsc version resolution survives every pnpm bin layout", (t) => {
 
   // A bin entry that leads nowhere must report that, not slice a bogus path.
   const orphan = path.join(binDir, "vue-tsc-orphan");
-  fs.writeFileSync(orphan, "#!/bin/sh\nexec node /nowhere/vue-tsc.js\n");
+  fs.writeFileSync(orphan, readToolingProgram("commands/compat-ratchet/orphan.sh"));
   assert.equal(resolveVueTscManifestPath(orphan), undefined);
 });
 

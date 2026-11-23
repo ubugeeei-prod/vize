@@ -7,7 +7,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join, matchesGlob, relative, resolve } from "node:path";
+import { dirname, join, matchesGlob, posix, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { retiredToolingDrift, retiredToolingLedgerTest } from "../../retired-tooling-languages.ts";
 import { cacheInputs } from "../../../config/vite-plus/task-inputs.ts";
@@ -267,6 +267,14 @@ const configurationData = (member) => member.startsWith("tools/config/");
 export function memberReferences(member, source, importers) {
   if (thirdPartySource(member)) return [];
   const found = proseReferences(source);
+  // File-backed observers are loaded relative to their owner, including through shared helpers.
+  const urls =
+    /\bnew\s+URL\(\s*(["'`])(\.\.?\/[^"'\x60\\\r\n?#]+)\1\s*,\s*import\.meta\.url\s*,?\s*\)/gu;
+  for (const [, , specifier] of source.matchAll(urls)) {
+    if (!namesFile(specifier) || specifier.includes("${")) continue;
+    const input = posix.join(posix.dirname(member), specifier);
+    if (!input.startsWith("../")) found.push(input);
+  }
   if (configurationData(member))
     return found.filter((reference) => !globReference(reference) && namesFile(reference));
   return importers > SHARED_HELPER_IMPORTERS

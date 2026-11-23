@@ -1,0 +1,1 @@
+fs.appendFileSync("package.json", " ");

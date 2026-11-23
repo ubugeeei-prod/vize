@@ -1,0 +1,22 @@
+#!/usr/bin/env node
+import { appendFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { gzipSync } from "node:zlib";
+const args = process.argv.slice(2);
+appendFileSync(@@TRACE@@, JSON.stringify({ pid: process.pid, args }) + "\n");
+if (args.includes("--listFilesOnly")) {
+  process.stdout.write(@@MEMBER_N@@);
+} else {
+  process.stdout.write(@@STDOUT@@);
+  if (args.includes("--extendedDiagnostics")) process.stdout.write(@@FOOTER@@);
+  const profile = args.indexOf("--pprofDir");
+  if (profile >= 0) {
+    const cpu = join(args[profile + 1], process.pid + "-cpuprofile.pb.gz");
+    const mem = join(args[profile + 1], process.pid + "-memprofile.pb.gz");
+    writeFileSync(cpu, gzipSync(Buffer.from("fake CPU container")));
+    writeFileSync(mem, gzipSync(Buffer.from("fake allocations container")));
+    process.stdout.write("Memory profile: " + mem + "\nCPU profile: " + cpu + "\n");
+  }
+  process.stderr.write(@@STDERR@@);
+  process.exitCode = 3;
+}

@@ -7,7 +7,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { toolingProgram } from "./support/program-path.ts";
+import { toolingProgram, readToolingProgram } from "./support/program-path.ts";
 import { buildTasks } from "../../tools/config/vite-plus/tasks/build.ts";
 import { checkTasks } from "../../tools/config/vite-plus/tasks/check.ts";
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
@@ -20,7 +20,7 @@ const pushCurrentBranchCommand = 'git push --set-upstream origin "$(git branch -
 const createFakeBlacksmith = (body: string) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-blacksmith-"));
   const executable = path.join(directory, "blacksmith");
-  fs.writeFileSync(executable, `#!/bin/sh\n${body}\n`, { mode: 0o755 });
+  fs.writeFileSync(executable, body, { mode: 0o755 });
   return { directory, executable };
 };
 
@@ -130,18 +130,12 @@ test("Testbox lifecycle tasks use the pinned driver", () => {
 
 test("Testbox warmup distinguishes origin failures from an unpushed branch", () => {
   const fake = createFakeBlacksmith(
-    "printf '%s\\n' \"$*\" >> \"$FAKE_BLACKSMITH_LOG\"\nprintf '%s\\n' tbx_testbox_id",
+    readToolingProgram("commands/local-default-tasks/record-blacksmith.sh"),
   );
   const blacksmithLog = path.join(fake.directory, "calls.log");
   fs.writeFileSync(
     path.join(fake.directory, "git"),
-    [
-      "#!/bin/sh",
-      'if [ "$1" = "branch" ]; then echo "$FAKE_BRANCH"; exit; fi',
-      'if [ "$1" = "rev-parse" ]; then echo "$FAKE_LOCAL_SHA"; exit; fi',
-      'if [ "$FAKE_REMOTE" = "error" ]; then echo "credential detail that must stay hidden" >&2; exit 3; fi',
-      'if [ "$FAKE_REMOTE" != "missing" ]; then echo "$FAKE_REMOTE_SHA refs/heads/$FAKE_BRANCH"; fi',
-    ].join("\n"),
+    readToolingProgram("commands/local-default-tasks/git.sh"),
     { mode: 0o755 },
   );
   const runWarmup = (extraEnv: NodeJS.ProcessEnv) =>
@@ -260,7 +254,9 @@ test("contributor docs use workspace-explicit commands outside the Nix aliases",
 });
 
 test("documented Testbox lifecycle rejects stale ids and always stops after task failure", () => {
-  const fake = createFakeBlacksmith('[ "$1 $2" = "auth login" ]');
+  const fake = createFakeBlacksmith(
+    readToolingProgram("commands/local-default-tasks/expect-login.sh"),
+  );
   const log = path.join(fake.directory, "lifecycle.log");
   const harness = toolingProgram("workflow/run-testbox-lifecycle.sh");
   const runLifecycle = (extraEnv: NodeJS.ProcessEnv) =>

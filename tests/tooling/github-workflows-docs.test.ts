@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -235,18 +236,10 @@ test("Docs resource fixture preserves Node exit failure even after a passing TAP
   try {
     const bin = join(temporary, "bin");
     mkdirSync(bin);
-    writeFileSync(join(bin, "vp"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
-    writeFileSync(
-      join(bin, "node"),
-      `#!/bin/sh
-if [ "$1" = "--test" ]; then
-  printf '%s\\n' '# tests 8' '# pass 8' '# fail 0' '# cancelled 0' '# skipped 0' '# todo 0'
-  exit 17
-fi
-touch "$READINESS_CONTROL_MARKER"
-`,
-      { mode: 0o755 },
-    );
+    writeFileSync(join(bin, "vp"), readToolingProgram("process/exit-success.sh"), { mode: 0o755 });
+    writeFileSync(join(bin, "node"), readToolingProgram("commands/github-workflows-docs/node.sh"), {
+      mode: 0o755,
+    });
     const script = join(temporary, "step.sh");
     const marker = join(temporary, "unexpected-receipt");
     writeFileSync(script, step.run!);

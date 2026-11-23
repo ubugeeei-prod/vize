@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -21,15 +22,9 @@ function fixture() {
   const binary = path.join(directory, "vize.mjs");
   fs.writeFileSync(
     binary,
-    [
-      "#!/usr/bin/env node",
-      'import fs from "node:fs";',
-      "if (process.argv[2] === '--version') process.exit(0);",
-      "if (process.argv[2] !== 'lint') process.exit(2);",
-      `fs.appendFileSync(${JSON.stringify(marker)}, JSON.stringify(process.argv.slice(2)) + '\\n');`,
-      "process.stdout.write(JSON.stringify(fs.existsSync('App.vue') ? [{ file: 'App.vue', messages: [] }] : []));",
-      "",
-    ].join("\n"),
+    readToolingProgram("commands/lint-divergence-zero-vue-runner/binary.js.in", {
+      MARKER: JSON.stringify(marker),
+    }),
   );
   fs.chmodSync(binary, 0o755);
   return {

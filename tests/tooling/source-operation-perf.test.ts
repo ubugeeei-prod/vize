@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
-import { toolingProgram } from "./support/program-path.ts";
+import { toolingProgram, readToolingProgram } from "./support/program-path.ts";
 import {
   captureSourceOperationPerf,
   parsePerfEventStats,
@@ -31,16 +31,9 @@ test("direct command stdout and nonzero child status survive successful collecti
     const fake = join(root, "perf-fixture");
     writeFileSync(
       fake,
-      `#!${process.execPath}
-const {writeFileSync}=require('node:fs');
-const {spawnSync}=require('node:child_process');
-const a=process.argv.slice(2), sep=a.indexOf('--');
-if(a[0]==='--version'){console.log('fixture-perf 1');process.exit(0);}
-const events=a[a.indexOf('-e')+1].split(',');
-writeFileSync(a[a.indexOf('--output')+1],events.map(e=>'7,,'+e+',100,50.00').join('\\n'));
-const c=spawnSync(a[sep+1],a.slice(sep+2),{stdio:'inherit',env:process.env});
-process.exit(c.status);
-`,
+      readToolingProgram("commands/source-operation-perf/write-counter-samples.cjs.in", {
+        NODE: process.execPath,
+      }),
     );
     chmodSync(fake, 0o755);
     const out = join(root, "evidence");
@@ -85,7 +78,9 @@ test("permission failure retains raw stderr and never fabricates command accepta
     const fake = join(root, "perf-denied");
     writeFileSync(
       fake,
-      `#!${process.execPath}\nconsole.error('No permission to enable instructions event.');process.exit(255);\n`,
+      readToolingProgram("commands/source-operation-perf/deny-counter-permission.cjs.in", {
+        NODE: process.execPath,
+      }),
     );
     chmodSync(fake, 0o755);
     const out = join(root, "evidence");
@@ -118,11 +113,9 @@ test("positive instructions with zero cycles retain raw data and fail hardware s
     const fake = join(root, "perf-fixture");
     writeFileSync(
       fake,
-      `#!${process.execPath}
-const fs=require('node:fs'),a=process.argv.slice(2);
-if(a[0]==='--version'){console.log('fixture-perf');process.exit(0);}
-fs.writeFileSync(a[a.indexOf('--output')+1],a[a.indexOf('-e')+1].split(',').map(e=>(e==='instructions'?'312731498115':'0')+',,'+e+',100,100.00').join('\\n'));
-console.log('executed output');\n`,
+      readToolingProgram("commands/source-operation-perf/report-partial-coverage.cjs.in", {
+        NODE: process.execPath,
+      }),
       { mode: 0o755 },
     );
     const receipt = captureSourceOperationPerf({
@@ -152,10 +145,9 @@ test("same-machine full-scheduled calibration qualifies core counters and reject
       calibrationPath = join(root, "calibration.json");
     writeFileSync(
       fake,
-      `#!${process.execPath}
-const fs=require('node:fs'),a=process.argv.slice(2);
-if(a[0]==='--version'){console.log('fixture-perf 1');process.exit(0);}
-fs.writeFileSync(a[a.indexOf('--output')+1],a[a.indexOf('-e')+1].split(',').map(e=>'7,,'+e+',100,100.00').join('\\n'));\n`,
+      readToolingProgram("commands/source-operation-perf/emit-calibrated-stat.cjs.in", {
+        NODE: process.execPath,
+      }),
       { mode: 0o755 },
     );
     const metadata = {
@@ -196,21 +188,9 @@ test("kernel-symbol permission warnings preserve samples while source errors and
     const fake = join(root, "perf-fixture");
     writeFileSync(
       fake,
-      `#!${process.execPath}
-const fs=require('node:fs'),a=process.argv.slice(2);
-if(a[0]==='--version'){console.log('fixture-perf');process.exit(0);}
-if(process.env.PERF_CONFIG!=='/dev/null')throw Error('ambient perf config must not be inherited');
-if(a[0]==='report'&&a.includes('--stats')){console.log(process.env.NO_CENSUS?'Aggregated stats: TOTAL events: 1':'Aggregated stats:\\n SAMPLE events: 12 (100.0%)');process.exit(0);}
-if(a[0]==='report'){
- if(process.env.SLOW_REPORT){setTimeout(()=>{},10000);}
- else {console.log('100.0% fixture_function fixture.rs:'+(process.env.ZERO_LINE?'0':'42')); if(process.env.BAD_REPORT)console.error('addr2line fixture: could not read first record');}
-}else{
- if(!a.includes('--no-buildid')||!a.includes('--no-buildid-cache'))throw Error('record post-pass must be disabled');
- fs.writeFileSync(a[a.indexOf('--output')+1],'retained trace');
- console.error('WARNING: Kernel address maps are restricted. Check /proc/kallsyms permission or run as root.');
- console.error('workload note: optional feature not supported');
- console.error('[ perf record: Captured and wrote 1.0 MB trace ]');
-}\n`,
+      readToolingProgram("commands/source-operation-perf/reject-unsupported-counters.cjs.in", {
+        NODE: process.execPath,
+      }),
       { mode: 0o755 },
     );
     const request = {
@@ -280,7 +260,7 @@ test("a missing perf executable or invalid perf invocation is an infrastructure 
     const bad = join(root, "invalid-perf.cjs");
     writeFileSync(
       bad,
-      `#!${process.execPath}\nif(process.argv.includes('--version')){console.log('fixture-perf');}else{console.error('usage: perf stat invalid option');process.exit(129);}\n`,
+      readToolingProgram("commands/source-operation-perf/bad.cjs.in", { NODE: process.execPath }),
       { mode: 0o755 },
     );
     const invalid = captureSourceOperationPerf({

@@ -9,6 +9,8 @@ on {
       "tools/support/github/build-napi-package.ts"
       "tools/support/github/native-build-receipt.ts"
       "tools/support/github/observe-native-build-token.ts"
+      "tools/support/github/observe-cargo-invocation.cjs"
+      "tools/support/process-launcher.ts"
       "tests/tooling/native-build-token-layout.test.ts"
       ".github/workflows/native-build-token-layout.yml"
       ".github/scripts/workflows/native-build-token-layout/**"

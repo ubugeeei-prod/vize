@@ -1,3 +1,4 @@
+import { readToolingProgram, toolingProgram } from "./support/program-path.ts";
 import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -50,37 +51,12 @@ function runInstaller(initialVersion: string | null) {
     fs.writeFileSync(versionState, initialVersion);
     writeExecutable(
       path.join(fakeBin, "rust-script"),
-      `#!/usr/bin/env bash
-set -euo pipefail
-if [ "\${1:-}" = "--version" ]; then
-  printf 'rust-script %s\\n' "$(cat "$VERSION_STATE")"
-  exit 0
-fi
-exit 64
-`,
+      readToolingProgram("commands/setup-rust-script-action/rust-script.sh"),
     );
   }
   writeExecutable(
     path.join(fakeBin, "cargo"),
-    `#!/usr/bin/env bash
-set -euo pipefail
-printf '%s\\n' "$*" >> "$CARGO_LOG"
-if [ "\${1:-}" != "install" ] || [ "\${2:-}" != "rust-script" ]; then
-  exit 65
-fi
-printf '0.34.0' > "$VERSION_STATE"
-mkdir -p "$CARGO_HOME/bin"
-cat > "$CARGO_HOME/bin/rust-script" <<'SH'
-#!/usr/bin/env bash
-set -euo pipefail
-if [ "\${1:-}" = "--version" ]; then
-  printf 'rust-script %s\\n' "$(cat "$VERSION_STATE")"
-  exit 0
-fi
-exit 64
-SH
-chmod +x "$CARGO_HOME/bin/rust-script"
-`,
+    readToolingProgram("commands/setup-rust-script-action/cargo.sh"),
   );
 
   const result = spawnSync("/bin/bash", [setupRustScriptInstaller()], {
@@ -91,6 +67,7 @@ chmod +x "$CARGO_HOME/bin/rust-script"
       CARGO_LOG: cargoLog,
       GITHUB_PATH: githubPath,
       VERSION_STATE: versionState,
+      FIXTURE_RUST_SCRIPT: toolingProgram("commands/setup-rust-script-action/rust-script.sh"),
     },
   });
 

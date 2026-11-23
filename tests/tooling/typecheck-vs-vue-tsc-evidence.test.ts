@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { readWorkflowShell } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import {
@@ -74,7 +75,11 @@ function fakeTool(root: string, stdout: string, stderr: string, status: number):
   const bin = join(root, "fixture checker.cjs");
   writeFileSync(
     bin,
-    `#!/usr/bin/env node\nprocess.stdout.write(${JSON.stringify(stdout)});\nprocess.stderr.write(${JSON.stringify(stderr)});\nprocess.exitCode = ${status};\n`,
+    readToolingProgram("commands/typecheck-vs-vue-tsc-evidence/bin.cjs.in", {
+      STDOUT: JSON.stringify(stdout),
+      STDERR: JSON.stringify(stderr),
+      STATUS: status,
+    }),
   );
   chmodSync(bin, 0o755);
   return { ...vize, bin };

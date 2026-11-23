@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -110,9 +111,9 @@ test("exported capture creates its own empty temporary directory before invoking
     const binary = join(root, "checker.cjs");
     writeFileSync(
       binary,
-      `#!${process.execPath}\nconst fs = require("node:fs");
-fs.writeFileSync(process.env.TMPDIR + "/probe", "fresh temporary directory");
-console.log(JSON.stringify({fileCount:2000,errorCount:0,warningCount:0,files:[]}));\n`,
+      readToolingProgram("commands/cold-typechecker-scale-evidence/binary.cjs.in", {
+        NODE: process.execPath,
+      }),
       { mode: 0o755 },
     );
     const out = join(root, "evidence");

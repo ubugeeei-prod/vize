@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -43,9 +44,16 @@ test("cache planning preserves a failed version producer before writing any job 
       [37, "0.614.0"],
       [0, "0.614.0-rc.1"],
     ] as const) {
-      fs.writeFileSync(node, `#!/bin/sh\nprintf '%s\\n' '${version}'\nexit ${status}\n`, {
-        mode: 0o755,
-      });
+      fs.writeFileSync(
+        node,
+        readToolingProgram("commands/github-workflows-release-build/node.sh", {
+          VERSION: version,
+          STATUS: status,
+        }),
+        {
+          mode: 0o755,
+        },
+      );
       fs.writeFileSync(output, original);
       const result = spawnSync(
         "bash",

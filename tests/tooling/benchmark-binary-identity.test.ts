@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -34,7 +35,7 @@ function expectedSha(body: string): string {
 
 test("fileSha256 hashes contents and reports null for anything unreadable", () => {
   withTempDir((dir) => {
-    const body = "#!/bin/sh\necho vize\n";
+    const body = readToolingProgram("commands/benchmark-binary-identity/print-vize.sh");
     assert.equal(fileSha256(writeBinary(dir, "vize", body)), expectedSha(body));
     assert.equal(fileSha256(path.join(dir, "absent")), null);
     assert.equal(fileSha256(null), null);
@@ -44,7 +45,7 @@ test("fileSha256 hashes contents and reports null for anything unreadable", () =
 
 test("pinExecutable measures a private copy named by its content hash", () => {
   withTempDir((dir) => {
-    const body = "#!/bin/sh\necho vize\n";
+    const body = readToolingProgram("commands/benchmark-binary-identity/print-vize.sh");
     const source = writeBinary(dir, "vize", body);
     const workRoot = path.join(dir, "work");
     const sha256 = expectedSha(body);
@@ -60,7 +61,10 @@ test("pinExecutable measures a private copy named by its content hash", () => {
     assert.equal(fs.statSync(pinned.measuredPath).mode & 0o111, 0o111);
 
     // Rebuilding the source does not change the copy already being measured.
-    fs.writeFileSync(source, "#!/bin/sh\necho rebuilt\n");
+    fs.writeFileSync(
+      source,
+      readToolingProgram("commands/benchmark-binary-identity/rebuilt-vize.sh"),
+    );
     assert.equal(fs.readFileSync(pinned.measuredPath, "utf8"), body);
   });
 });
@@ -76,7 +80,7 @@ test("pinExecutable refuses a source it cannot hash", () => {
 
 test("hashInPlace records identity without moving a launcher shim", () => {
   withTempDir((dir) => {
-    const body = '#!/bin/sh\nexec "$(dirname "$0")/../pkg/tsgo" "$@"\n';
+    const body = readToolingProgram("commands/benchmark-binary-identity/forward-to-tsgo.sh");
     const source = writeBinary(dir, "tsgo", body);
 
     assert.deepEqual(hashInPlace(source), {
@@ -90,13 +94,20 @@ test("hashInPlace records identity without moving a launcher shim", () => {
 
 test("a binary replaced during the run fails the gate closed", () => {
   withTempDir((dir) => {
-    const source = writeBinary(dir, "vize", "#!/bin/sh\necho one\n");
+    const source = writeBinary(
+      dir,
+      "vize",
+      readToolingProgram("commands/benchmark-binary-identity/print-first-identity.sh"),
+    );
     const before = expectedSha("#!/bin/sh\necho one\n");
     const binaries = { vize: hashInPlace(source) };
 
     assert.equal(assertBinariesUnchanged(binaries), undefined);
 
-    fs.writeFileSync(source, "#!/bin/sh\necho two\n");
+    fs.writeFileSync(
+      source,
+      readToolingProgram("commands/benchmark-binary-identity/print-second-identity.sh"),
+    );
     const after = expectedSha("#!/bin/sh\necho two\n");
     assert.throws(() => assertBinariesUnchanged(binaries), {
       name: "Error",

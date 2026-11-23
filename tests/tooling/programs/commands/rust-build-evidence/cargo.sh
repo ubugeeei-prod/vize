@@ -1,0 +1,4 @@
+#!/bin/sh
+printf '%s\n' "$@" > "$ARGS_FILE"
+printf '%s\n' '{"reason":"build-finished","success":@@EXIT_0@@}'
+exit @@EXIT@@

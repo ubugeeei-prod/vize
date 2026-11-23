@@ -6,7 +6,10 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { toolingProgram } from "../../../../tests/tooling/support/program-path.ts";
+import {
+  toolingProgram,
+  readToolingProgram,
+} from "../../../../tests/tooling/support/program-path.ts";
 import { captureProjectCommand } from "./project-command-capture.mjs";
 import {
   originalSfcSourceCommand,
@@ -84,33 +87,30 @@ for (const mode of ["cancel", "missing-object", "missing-command"])
     if (mode !== "missing-command")
       fs.writeFileSync(
         path.join(root, "bin/git"),
-        `#!${process.execPath}
-const fs=require('node:fs'),root=process.env.VIZE_REFERENCE_CONTROL,args=process.argv.slice(2);
-fs.appendFileSync(root+'/commands.jsonl',JSON.stringify({pid:process.pid,args})+'\\n');
-if(args[0]==='cat-file') {
- process.stdout.write('whole exists stdout');process.stderr.write('whole exists stderr');
- if(process.env.VIZE_REFERENCE_MODE==='cancel') {fs.writeFileSync(root+'/ready',String(process.pid));setInterval(()=>{},1000);}
- else process.exitCode=128;
-} else if(args[0]==='fetch') process.exitCode=0;
-else {process.stdout.write('refuse invalid tree authority');process.exitCode=0;}
-`,
+        readToolingProgram(
+          new URL("./test-programs/project-command-capture/git.cjs.in", import.meta.url),
+          {
+            NODE: process.execPath,
+          },
+        ),
         { mode: 0o755 },
       );
     const moduleUrl = (name) => JSON.stringify(new URL(name, import.meta.url).href);
     const driver = path.join(root, "driver.mjs");
     fs.writeFileSync(
       driver,
-      `import fs from 'node:fs';
-import {prepareReferenceSource} from ${moduleUrl("./n8n-reference-source.mjs")};
-import {runQualificationBranches} from ${moduleUrl("./project-qualification-branches.mjs")};
-const root=${JSON.stringify(root)},mode=${JSON.stringify(mode)};
-const timer=mode==='cancel'?setInterval(()=>{if(fs.existsSync(root+'/ready')){clearInterval(timer);process.kill(process.pid,'SIGTERM');}},10):null;
-try {await runQualificationBranches([
- {id:'mixedDirectory8507',run:()=>new Promise(resolve=>setTimeout(()=>{fs.writeFileSync(root+'/remaining.done','complete');resolve();},150))},
- {id:'n8n',run:()=>prepareReferenceSource(root+'/output')},
-],root+'/branch-outcomes.json');process.exitCode=2;}
-catch {process.exitCode=1;}finally{clearInterval(timer);}
-`,
+      readToolingProgram(
+        new URL(
+          "./test-programs/project-command-capture/capture-project-branch.js.in",
+          import.meta.url,
+        ),
+        {
+          REFERENCE: moduleUrl("./n8n-reference-source.mjs"),
+          QUALIFICATION: moduleUrl("./project-qualification-branches.mjs"),
+          PROJECT: JSON.stringify(root),
+          MODE: JSON.stringify(mode),
+        },
+      ),
     );
     const child = spawn(process.execPath, [driver], {
       env: {
@@ -197,7 +197,9 @@ function sourceMatrixAuthority(t) {
   );
   fs.writeFileSync(
     path.join(root, "npm/native/index.js"),
-    "module.exports=require(process.env.NAPI_RS_NATIVE_LIBRARY_PATH);\n",
+    readToolingProgram(
+      new URL("./test-programs/project-command-capture/load-staged-binding.cjs", import.meta.url),
+    ),
   );
   const plugin = file("plugin.mjs", "// authored plugin control\n");
   const manifest = file("host-package.json", '{"name":"oxlint","version":"1.86.0"}\n');

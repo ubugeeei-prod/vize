@@ -1,0 +1,34 @@
+#!@@NODE@@
+const fs = require("node:fs"),
+  a = process.argv.slice(2);
+if (a[0] === "--version") {
+  console.log("fixture-perf");
+  process.exit(0);
+}
+if (process.env.PERF_CONFIG !== "/dev/null")
+  throw Error("ambient perf config must not be inherited");
+if (a[0] === "report" && a.includes("--stats")) {
+  console.log(
+    process.env.NO_CENSUS
+      ? "Aggregated stats: TOTAL events: 1"
+      : "Aggregated stats:\n SAMPLE events: 12 (100.0%)",
+  );
+  process.exit(0);
+}
+if (a[0] === "report") {
+  if (process.env.SLOW_REPORT) {
+    setTimeout(() => {}, 10000);
+  } else {
+    console.log("100.0% fixture_function fixture.rs:" + (process.env.ZERO_LINE ? "0" : "42"));
+    if (process.env.BAD_REPORT) console.error("addr2line fixture: could not read first record");
+  }
+} else {
+  if (!a.includes("--no-buildid") || !a.includes("--no-buildid-cache"))
+    throw Error("record post-pass must be disabled");
+  fs.writeFileSync(a[a.indexOf("--output") + 1], "retained trace");
+  console.error(
+    "WARNING: Kernel address maps are restricted. Check /proc/kallsyms permission or run as root.",
+  );
+  console.error("workload note: optional feature not supported");
+  console.error("[ perf record: Captured and wrote 1.0 MB trace ]");
+}

@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../../../tests/tooling/support/program-path.ts";
 /** Buffered-pipe regression: preserve >1 MiB on both streams and nonzero status. */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -29,17 +30,12 @@ await test("native forwarding drains stdout/stderr pipes and preserves nonzero s
     // This mock is a transport control, not native phase/performance evidence.
     writeFileSync(
       runtime,
-      `#!/usr/bin/env node
-const args = process.argv.slice(2);
-if (args.includes("--listFilesOnly")) {
-  process.stdout.write(${JSON.stringify(`${member}\n`)});
-} else {
-  process.stdout.write(${JSON.stringify(stdout)});
-  if (args.includes("--extendedDiagnostics")) process.stdout.write(${JSON.stringify(footer)});
-  process.stderr.write(${JSON.stringify(stderr)});
-  process.exitCode = 3;
-}
-`,
+      readToolingProgram("commands/typechecker-native-phase-forwarding/runtime.cjs.in", {
+        MEMBER_N: JSON.stringify(`${member}\n`),
+        STDOUT: JSON.stringify(stdout),
+        FOOTER: JSON.stringify(footer),
+        STDERR: JSON.stringify(stderr),
+      }),
     );
     chmodSync(runtime, 0o755);
     const wrapper = fileURLToPath(
@@ -103,29 +99,13 @@ await test("pprof forwarding preserves product bytes and retains validated conta
     // Deliberately fake gzip payloads prove container custody, never pprof semantics.
     writeFileSync(
       runtime,
-      `#!/usr/bin/env node
-import { appendFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { gzipSync } from 'node:zlib';
-const args = process.argv.slice(2);
-appendFileSync(${JSON.stringify(trace)}, JSON.stringify({ pid: process.pid, args }) + '\\n');
-if (args.includes('--listFilesOnly')) {
-  process.stdout.write(${JSON.stringify(`${member}\n`)});
-} else {
-  process.stdout.write(${JSON.stringify(stdout)});
-  if (args.includes('--extendedDiagnostics')) process.stdout.write(${JSON.stringify(footer)});
-  const profile = args.indexOf('--pprofDir');
-  if (profile >= 0) {
-    const cpu = join(args[profile + 1], process.pid + '-cpuprofile.pb.gz');
-    const mem = join(args[profile + 1], process.pid + '-memprofile.pb.gz');
-    writeFileSync(cpu, gzipSync(Buffer.from('fake CPU container')));
-    writeFileSync(mem, gzipSync(Buffer.from('fake allocations container')));
-    process.stdout.write('Memory profile: ' + mem + '\\nCPU profile: ' + cpu + '\\n');
-  }
-  process.stderr.write(${JSON.stringify(stderr)});
-  process.exitCode = 3;
-}
-`,
+      readToolingProgram("commands/typechecker-native-phase-forwarding/runtime.js.in", {
+        TRACE: JSON.stringify(trace),
+        MEMBER_N: JSON.stringify(`${member}\n`),
+        STDOUT: JSON.stringify(stdout),
+        FOOTER: JSON.stringify(footer),
+        STDERR: JSON.stringify(stderr),
+      }),
     );
     chmodSync(runtime, 0o755);
     const wrapper = fileURLToPath(

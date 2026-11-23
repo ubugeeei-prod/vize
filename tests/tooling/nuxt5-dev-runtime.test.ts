@@ -1,4 +1,8 @@
-import { installToolingProgram, toolingProgram } from "./support/program-path.ts";
+import {
+  installToolingProgram,
+  toolingProgram,
+  readToolingProgram,
+} from "./support/program-path.ts";
 import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -372,7 +376,7 @@ void test("the actual development install shell retains npm failure and its raw 
   try {
     fs.writeFileSync(
       path.join(directory, "npm"),
-      "#!/bin/sh\nprintf 'controlled-install-failure\\n'\nexit 17\n",
+      readToolingProgram("commands/nuxt5-dev-runtime/npm.sh"),
       { mode: 0o755 },
     );
     const result = spawnSync(

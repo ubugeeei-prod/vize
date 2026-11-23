@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -213,23 +214,9 @@ function verifyInstalledRuntimeToolchain(components, targets, fail = "") {
     const trace = join(fixture, "calls.jsonl");
     writeFileSync(
       join(fixture, "rustup"),
-      `#!${process.execPath}\n` +
-        String.raw`
-const fs = require('node:fs');
-const args = process.argv.slice(2);
-fs.appendFileSync(process.env.RUSTUP_TEST_TRACE, JSON.stringify(args) + '\n');
-if (args[0] === process.env.RUSTUP_TEST_FAIL) process.exit(42);
-if (JSON.stringify(args) === JSON.stringify(['run', process.env.VIZE_NATIVE_RUST_TOOLCHAIN, 'rustc', '--version', '--verbose'])) {
-  console.log('rustc fixture\nhost: x86_64-unknown-linux-gnu');
-} else if (JSON.stringify(args) === JSON.stringify(['component', 'list', '--toolchain', process.env.VIZE_NATIVE_RUST_TOOLCHAIN, '--installed'])) {
-  console.log(process.env.RUSTUP_TEST_COMPONENTS);
-} else if (JSON.stringify(args) === JSON.stringify(['target', 'list', '--toolchain', process.env.VIZE_NATIVE_RUST_TOOLCHAIN, '--installed'])) {
-  console.log(process.env.RUSTUP_TEST_TARGETS);
-} else {
-  console.error('unexpected Rustup operation', args);
-  process.exit(43);
-}
-`,
+      readToolingProgram("commands/native-vapor-capture-workflow/rustup.cjs.in", {
+        NODE: process.execPath,
+      }),
       { mode: 0o755 },
     );
     const { runtime, verification } = assertRuntimeToolchainPreparation(

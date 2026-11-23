@@ -1,0 +1,3 @@
+#!@@NODE@@
+require("node:fs").writeFileSync(@@MARKER@@, "started");
+process.exit(99);

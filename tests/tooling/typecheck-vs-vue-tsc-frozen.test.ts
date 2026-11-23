@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { readWorkflowShell } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -309,9 +310,9 @@ test("command failure keeps complete streams/status before any verdict", async (
     const fake = path.join(root, "fake.cjs");
     fs.writeFileSync(
       fake,
-      "#!" +
-        process.execPath +
-        "\nprocess.stdout.write('retained body');process.stderr.write('retained error');process.exitCode=3;\n",
+      readToolingProgram("commands/typecheck-vs-vue-tsc-frozen/retain-terminal-streams.cjs.in", {
+        NODE: process.execPath,
+      }),
     );
     fs.chmodSync(fake, 0o755);
     const out = path.join(root, "call"),

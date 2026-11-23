@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { toolingProgram } from "../support/program-path.ts";
+import { toolingProgram, readToolingProgram } from "../support/program-path.ts";
 
 type Entry = { name: string; type: string; mode: number; bytes?: string; target?: string };
 
@@ -72,7 +72,7 @@ for (const rich of [false, true]) {
       fs.writeFileSync(path.join(source, "index.js"), "module.exports = { ok: true };\n");
       fs.writeFileSync(
         path.join(source, "cli.js"),
-        "#!/usr/bin/env node\nconsole.log('parity executable');\n",
+        readToolingProgram("commands/release-smoke-parity-peer-copy/cli.cjs"),
         { mode: 0o755 },
       );
       if (rich) {

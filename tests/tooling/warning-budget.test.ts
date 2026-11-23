@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
@@ -34,7 +35,7 @@ function runWarningBudget(
 }
 
 test("warning budget fails on parsed JS/TS warning summaries", () => {
-  const result = runWarningBudget(`console.log("\\x1b[33mFound 0 errors and 2 warnings\\x1b[0m");`);
+  const result = runWarningBudget(readToolingProgram("commands/warning-budget/ansi-summary.cjs"));
 
   assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
   assert.match(result.stdout, /Found 0 errors and 2 warnings/);
@@ -42,7 +43,9 @@ test("warning budget fails on parsed JS/TS warning summaries", () => {
 });
 
 test("warning budget fails on unparsed lint warning markers", () => {
-  const result = runWarningBudget(`console.error("warn:    Lint warnings found");`);
+  const result = runWarningBudget(
+    readToolingProgram("commands/warning-budget/unparsed-warning.cjs"),
+  );
 
   assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
   assert.match(result.stderr, /warn:\s+Lint warnings found/);
@@ -53,10 +56,7 @@ test("warning budget fails on unparsed lint warning markers", () => {
 });
 
 test("warning budget preserves child failures without applying the budget", () => {
-  const result = runWarningBudget(
-    `console.error("Found 0 errors and 2 warnings");
-process.exit(7);`,
-  );
+  const result = runWarningBudget(readToolingProgram("commands/warning-budget/failed-child.cjs"));
 
   assert.equal(result.status, 7, `${result.stderr}\n${result.stdout}`.trim());
   assert.match(result.stderr, /Found 0 errors and 2 warnings/);
@@ -64,9 +64,7 @@ process.exit(7);`,
 });
 
 test("warning budget accepts zero warnings and forwards both output streams", () => {
-  const result = runWarningBudget(
-    'console.log("Found 0 errors and 0 warnings"); console.error("check complete");',
-  );
+  const result = runWarningBudget(readToolingProgram("commands/warning-budget/clean-output.cjs"));
 
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout, "Found 0 errors and 0 warnings\n");
@@ -74,18 +72,14 @@ test("warning budget accepts zero warnings and forwards both output streams", ()
 });
 
 test("warning budget counts summaries across stdout and stderr", () => {
-  const result = runWarningBudget(
-    'console.log("prefix Found 1 error and 1 warning"); console.error("Found 0 errors and 12 warnings");',
-  );
+  const result = runWarningBudget(readToolingProgram("commands/warning-budget/mixed-streams.cjs"));
 
   assert.equal(result.status, 1, result.stderr);
   assert.match(result.stderr, /found 13 warnings\./);
 });
 
 test("warning budget preserves summary boundaries between output streams", () => {
-  const result = runWarningBudget(
-    'process.stdout.write("Found 0 errors and 2 warnings"); process.stderr.write("check complete");',
-  );
+  const result = runWarningBudget(readToolingProgram("commands/warning-budget/split-streams.cjs"));
 
   assert.equal(result.status, 1, result.stderr);
   assert.match(result.stderr, /found 2 warnings\./);
@@ -110,7 +104,7 @@ test(
   "warning budget treats a signalled child as failure",
   { skip: process.platform === "win32" },
   () => {
-    const result = runWarningBudget('process.kill(process.pid, "SIGTERM");');
+    const result = runWarningBudget(readToolingProgram("commands/warning-budget/signal-child.cjs"));
 
     assert.equal(result.status, 1, result.stderr);
     assert.doesNotMatch(result.stderr, /JS\/TS warning budget is 0/);
@@ -121,7 +115,7 @@ test(
   "warning budget preserves wide Windows child exit codes",
   { skip: process.platform !== "win32" },
   () => {
-    const result = runWarningBudget("process.exit(256);");
+    const result = runWarningBudget(readToolingProgram("commands/warning-budget/windows-exit.cjs"));
 
     assert.equal(result.status, 256, `${result.stderr}\n${result.stdout}`.trim());
   },

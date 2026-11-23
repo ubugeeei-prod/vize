@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -47,11 +48,10 @@ function executable(file: string, body: string): void {
 }
 
 function fixtureRunner(version: string, status = 0): string {
-  return `#!/bin/bash
-printf '%s\\n' "$*" >> "$RUNNER_LOG"
-printf 'rust-script ${version}\\n'
-exit ${status}
-`;
+  return readToolingProgram("commands/setup-rust-script-prebuilt/report-installed-version.sh", {
+    VERSION: version,
+    STATUS: status,
+  });
 }
 
 function extraction(bytes: Buffer, expected = digest(bytes)) {
@@ -62,7 +62,7 @@ function extraction(bytes: Buffer, expected = digest(bytes)) {
   fs.mkdirSync(bin);
   executable(
     path.join(bin, "tar"),
-    `#!/bin/bash\nprintf '%s\\n' "$*" >> "$TAR_LOG"\nexec /usr/bin/tar "$@"\n`,
+    readToolingProgram("commands/setup-rust-script-prebuilt/tar.sh"),
   );
   fs.writeFileSync(source, bytes);
   const result = spawnSync("/bin/bash", [helper, source, destination, expected], {
@@ -100,45 +100,22 @@ function installer(options: InstallerOptions = {}) {
     executable(path.join(bin, "rust-script"), fixtureRunner(options.initialVersion));
   executable(
     path.join(bin, "curl"),
-    `#!/bin/bash
-set -euo pipefail
-printf '%s\\n' "$@" > "$CURL_LOG"
-if [ "$CURL_STATUS" != 0 ]; then exit "$CURL_STATUS"; fi
-while [ "$#" -gt 0 ]; do
-  if [ "$1" = --output ]; then cp "$FIXTURE_ARCHIVE" "$2"; exit 0; fi
-  shift
-done
-exit 65
-`,
+    readToolingProgram("commands/setup-rust-script-prebuilt/curl.sh"),
   );
   // Only the positive Mac fixture substitutes its digest at the helper boundary.
   // Record/assert the actual producer pin; production refusal uses it unchanged.
   executable(
     path.join(bin, "bash"),
-    `#!/bin/bash
-set -euo pipefail
-if [ "$1" != "$EXTRACTOR" ]; then exec /bin/bash "$@"; fi
-printf '%s\\n' "$@" > "$HELPER_LOG"
-if [ "$FIXTURE_DIGEST" = true ]; then
-  exec /bin/bash "$1" "$2" "$3" "$ARCHIVE_DIGEST"
-fi
-exec /bin/bash "$@"
-`,
+    readToolingProgram("commands/setup-rust-script-prebuilt/bash.sh"),
   );
   executable(
     path.join(bin, "cargo"),
-    `#!/bin/bash
-set -euo pipefail
-printf '%s\\n' "$*" > "$CARGO_LOG"
-mkdir -p "$CARGO_HOME/bin"
-cp "$FIXTURE_RUNNER" "$CARGO_HOME/bin/rust-script"
-chmod +x "$CARGO_HOME/bin/rust-script"
-`,
+    readToolingProgram("commands/setup-rust-script-prebuilt/cargo.sh"),
   );
   executable(path.join(root, "fixture-runner"), fixtureRunner("0.34.0"));
   executable(
     path.join(bin, "tar"),
-    `#!/bin/bash\nprintf '%s\\n' "$*" >> "$TAR_LOG"\nexec /usr/bin/tar "$@"\n`,
+    readToolingProgram("commands/setup-rust-script-prebuilt/tar.sh"),
   );
   const action = parse(
     readAutomationPrograms(".github", "actions", "setup-rust-script", "action.yml"),

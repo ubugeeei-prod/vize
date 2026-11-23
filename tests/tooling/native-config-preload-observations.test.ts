@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { mkdtemp, mkdir, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
@@ -214,10 +215,10 @@ for (const installedVite of [false, true]) {
       const counter = join(root, "factory.txt");
       await writeFile(
         selected,
-        `import { appendFileSync } from 'node:fs'; export default () => {
-          appendFileSync(${JSON.stringify(counter)}, 'once\\n');
-          console.error('authored-specificreason 日本語'); process.exit(17);
-        };`,
+        readToolingProgram(
+          "commands/native-config-preload-observations/record-config-preload.js.in",
+          { COUNTER: JSON.stringify(counter) },
+        ),
       );
       const child = spawn(process.execPath, [runtimeFile, selected, "--observe-config-inputs"], {
         cwd: root,

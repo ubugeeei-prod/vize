@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -140,7 +141,7 @@ export function cacheFixture(callback) {
     const probe = join(cwd, "bin/mountpoint");
     writeFileSync(
       probe,
-      `#!${process.execPath}\nimport { spawnSync } from "node:child_process";\nimport { basename } from "node:path";\nconst path=process.argv[3]; const name=basename(path)==="registry"?"registry":basename(path)==="git"?"git":path===process.env.VIZE_FAKE_SECONDARY_PATH?"secondary":"target";\nconst result=spawnSync(process.execPath,[process.env.VIZE_FAKE_CACHE_ROOT+"/backend.mjs",JSON.stringify({kind:"probe",name,path})],{stdio:"inherit"});process.exit(result.status??1);\n`,
+      readToolingProgram("commands/rust-cache-fixture/probe.js.in", { NODE: process.execPath }),
     );
     chmodSync(probe, 0o755);
     const context = (eventName = "push", ref = "refs/heads/main") => ({

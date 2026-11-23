@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { workspaceTaskSteps } from "../../tools/config/vite-plus/task-plan.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -82,7 +83,9 @@ test("root build command lookup checks PATH without executing the command", () =
     writeFakeCommand(
       binDir,
       "side-effect-tool",
-      `require("node:fs").writeFileSync(${JSON.stringify(sentinelPath)}, "ran");`,
+      readToolingProgram("commands/task-shell/side-effect-tool.js.in", {
+        SENTINEL_PATH: JSON.stringify(sentinelPath),
+      }),
     );
 
     assert.equal(commandExists("side-effect-tool", { PATH: binDir }), true);

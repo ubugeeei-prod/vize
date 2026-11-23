@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -92,13 +93,7 @@ test("editor script qualification runs the original readers and paired measureme
   const log = join(root, "cargo.jsonl");
   writeFileSync(
     join(bin, "cargo"),
-    [
-      "#!/usr/bin/env node",
-      "const fs = require('node:fs');",
-      "const input = process.env.VIZE_SCRIPT_QUERY_INPUTS;",
-      "const manifest = input && fs.readFileSync(input, 'utf8').split('\\0');",
-      "fs.appendFileSync(process.env.CARGO_INVOCATIONS, JSON.stringify({args:process.argv.slice(2),manifest})+'\\n');",
-    ].join("\n"),
+    readToolingProgram("commands/github-workflows-davinci-bench/cargo.cjs").slice(0, -1),
     { mode: 0o755 },
   );
   for (const step of workflow.jobs["editor-products"].steps ?? []) {
@@ -299,7 +294,7 @@ test("Vapor Criterion dispatch validates revisions and selects only its suite", 
   mkdirSync(bin);
   writeFileSync(
     join(bin, "node"),
-    '#!/bin/sh\nprintf \'%s\\n\' \'{"selected":["vize_glyph"],"reason":"from impact script"}\' > "$GITHUB_WORKSPACE/criterion-impact.json"\nprintf \'%s\\n\' \'has_suites=true\' >> "$GITHUB_OUTPUT"\n',
+    readToolingProgram("commands/github-workflows-davinci-bench/node.sh"),
     { mode: 0o755 },
   );
   const affected = spawnSync("bash", ["-e", "-o", "pipefail", automationShellPath(impact)], {
