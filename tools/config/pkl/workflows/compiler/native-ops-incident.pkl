@@ -6,7 +6,7 @@ on {
     branches = List("main")
     paths = new Listing {
       ".github/scripts/native-ops-driver.ts"
-      ".github/scripts/native-ops-data.ts"
+      ".github/scripts/native-ops/**"
       ".github/workflows/native-ops-incident.yml"
       ".github/scripts/workflows/native-ops-incident/**"
       "tests/tooling/native-ops-workflow.test.ts"
@@ -19,7 +19,7 @@ on {
         type = "choice"
         required = true
         ["default"] = "not-authorized"
-        options = List("not-authorized", "reviewed-one-replay")
+        options = List("not-authorized", "observer-control-only", "reviewed-one-replay")
       }
     }
   }
@@ -39,7 +39,7 @@ env {
 
 jobs {
   `observer-control` {
-    `if` = "${{ github.event_name == 'pull_request' }}"
+    `if` = "${{ github.event_name == 'pull_request' || inputs.authorization == 'observer-control-only' }}"
     name = "Short-lived native observer control only"
     `runs-on` = ci.linux
     `timeout-minutes` = 5

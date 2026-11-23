@@ -8,9 +8,10 @@ import { runBaseline } from "../../tools/support/compat/fixtures/lint-divergence
 import { resolveScorecardRuntime } from "../../tools/support/compat/fixtures/lint-divergence-scorecard.ts";
 
 import { runLintDivergenceReport } from "../../tools/support/compat/fixtures/lint-divergence-report.mjs";
-import { baselineScript } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
+import { eslintBaselineProgram } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
+const baselineProgram = eslintBaselineProgram(root);
 const isBun = "Bun" in globalThis;
 
 function fixture() {
@@ -255,7 +256,7 @@ test("both actual ESLint entry points validate mapped rules without linting an e
   const input = fixture();
   try {
     assert.ok(
-      baselineScript,
+      baselineProgram,
       "the actual TypeScript runner's retained ESLint entry point must exist",
     );
     const runtime = resolveScorecardRuntime();
@@ -264,20 +265,16 @@ test("both actual ESLint entry points validate mapped rules without linting an e
       { "vue/no-v-html": ["warn", { invalidOption: true }] },
     ]) {
       await assert.rejects(runBaseline(runtime, input.directory, [], rules), /Key "rules"/u);
-      const measured = spawnSync(
-        process.execPath,
-        ["--input-type=module", "--eval", baselineScript],
-        {
-          cwd: root,
-          encoding: "utf8",
-          input: JSON.stringify({
-            benchPackageJson: path.join(root, "tools/benchmarks/scripts/package.json"),
-            cwd: input.directory,
-            files: [],
-            rules,
-          }),
-        },
-      );
+      const measured = spawnSync(process.execPath, [baselineProgram], {
+        cwd: root,
+        encoding: "utf8",
+        input: JSON.stringify({
+          benchPackageJson: path.join(root, "tools/benchmarks/scripts/package.json"),
+          cwd: input.directory,
+          files: [],
+          rules,
+        }),
+      });
       assert.equal(measured.error, undefined, measured.error?.message);
       assert.equal(measured.status, 1, `${measured.stdout}\n${measured.stderr}`);
       assert.match(measured.stderr, /Key "rules"/u);

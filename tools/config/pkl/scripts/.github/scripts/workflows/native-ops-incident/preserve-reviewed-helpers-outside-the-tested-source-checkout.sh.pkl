@@ -5,7 +5,7 @@ interpreter = "bash"
 commands {
   #"""
   mkdir "$RUNNER_TEMP/native-ops-harness"
-  cp .github/scripts/native-ops-driver.ts .github/scripts/native-ops-data.ts "$RUNNER_TEMP/native-ops-harness/"
-  sha256sum "$RUNNER_TEMP/native-ops-harness/"*.ts
+  cp -R .github/scripts/native-ops-driver.ts .github/scripts/native-ops "$RUNNER_TEMP/native-ops-harness/"
+  sha256sum "$RUNNER_TEMP/native-ops-harness/"*.ts "$RUNNER_TEMP/native-ops-harness/native-ops/"*
   """#
 }
