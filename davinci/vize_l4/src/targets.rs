@@ -19,3 +19,6 @@ pub mod vue2;
 
 #[cfg(feature = "original-style-bindings")]
 pub mod css;
+
+#[cfg(feature = "scss-rules")]
+pub mod scss;

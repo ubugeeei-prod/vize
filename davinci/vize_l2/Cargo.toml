@@ -16,6 +16,7 @@ component-listener-queries = ["setup-component-imports"]
 recovered-literal-prefix = ["literal-assignments"]
 # Checked primitive assignment judgments on the actual TypeScript AST.
 literal-assignments = ["script-declaration-queries"]
+scss-rules = ["vize_l1/observed-styles"]
 # Name the original source/semantic view for explicit layered consumers.
 ir-views = []
 # Read authored props in source order from each resolved component operation.

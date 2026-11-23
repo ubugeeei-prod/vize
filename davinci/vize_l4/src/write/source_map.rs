@@ -345,3 +345,8 @@ use vlq::encode_vlq;
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "indexed-source-maps")]
+mod indexed;
+#[cfg(feature = "indexed-source-maps")]
+pub use indexed::SourceMapIndex;
