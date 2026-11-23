@@ -16,6 +16,11 @@ export const styleHeaderValidation = {
   kernel: "crates/vize_maestro/src/source_project/style_format/header.rs",
   harness: "crates/vize_maestro/src/source_project/style_format/kani.rs",
 } as const;
+const compilerStringLiterals = {
+  theorem: "tests/formal/string-literal/Emission.lean",
+  kernel: "davinci/vize_l0/src/js_string.rs",
+  harness: "davinci/vize_l0/src/js_string_kani.rs",
+} as const;
 const positionIndex = {
   theorem: "tests/formal/position-index/Intervals.lean",
   kernel: "davinci/vize_l2/src/query/position/index/intervals.rs",
@@ -25,6 +30,7 @@ export const rustProofReferences = [
   sourceMapCoordinates,
   styleHeaderValidation,
   positionIndex,
+  compilerStringLiterals,
 ] as const;
 
 export function checkedRustTheorems(paths: readonly string[]): Set<string> {
