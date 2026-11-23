@@ -1,5 +1,8 @@
 import "../../Actions.pkl" as ci
 
+local function graphExample(name: String): String =
+  "cargo run --locked --manifest-path crates/vize_incremental/providers/graph/Cargo.toml --profile ci-opt --example \(name)"
+
 name = "Davinci IR graph queries"
 on {
   pull_request {
@@ -53,10 +56,8 @@ jobs {
         name = "Qualify the real lowerer and exact resident snapshots"
         run = ci.workflowScript("qualify-the-real-lowerer-and-exact-resident-snapshots.sh")
       }
-      new Dynamic {
-        name = "Measure authored graph source lookups independently"
-        run = "cargo run --locked --manifest-path crates/vize_incremental/providers/graph/Cargo.toml --profile ci-opt --example source_sites"
-      }
+      ci.command("Measure authored graph source lookups independently", graphExample("source_sites"))
+      ci.command("Measure retained recovery source lookups independently", graphExample("recovery_sites"))
     }
   }
   models {

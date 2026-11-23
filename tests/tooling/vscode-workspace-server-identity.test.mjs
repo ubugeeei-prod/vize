@@ -33,7 +33,7 @@ function controlledRealpaths(realpaths) {
   )
     .replace(/^import[\s\S]*?;\n/gm, "")
     .replace(/^export /gm, "");
-  const discover = new vm.Script(`${source}\ndiscoverWorkspaceServers;`).runInNewContext({
+  const context = vm.createContext({
     path: path.win32,
     fs: {
       existsSync: (file) => files.has(file),
@@ -51,7 +51,8 @@ function controlledRealpaths(realpaths) {
       },
     },
   });
-  return discover(folders, true, "win32");
+  new vm.Script(source).runInContext(context);
+  return context.discoverWorkspaceServers(folders, true, "win32");
 }
 
 await test("the same Windows realpath with a drive-letter alias selects one engine", () => {

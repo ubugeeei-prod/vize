@@ -52,6 +52,7 @@ on {
       "davinci/vize_l4/src/write/source_map.rs"
       "davinci/vize_l4/src/write/source_map/**"
       "tests/formal/source-map/**"
+      "tests/formal/style-format/**"
       "crates/vize_atelier_sfc/tests/fixtures/native_sfc_ts_annotation_setup_vue_3_5_35.json"
       "crates/vize_atelier_sfc/tests/scss_products.rs"
       "crates/vize_atelier_sfc/tests/observed_scss/**"
@@ -169,7 +170,7 @@ jobs {
   }
 
   `authored-coordinates` {
-    name = "Authored UTF-16 coordinate proofs"
+    name = "Authored coordinates and style header proofs"
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     steps = new Listing {
@@ -183,9 +184,10 @@ jobs {
           args = "davinci/vize_l4/src/write/source_map/indexed/kani.rs --output-format=terse"
         }
       }
+      ci.command("Verify authored style attribute names, values and ordering", "kani crates/vize_maestro/src/source_project/style_format/kani.rs --output-format=terse")
       new Dynamic {
-        name = "Verify authored positions for arbitrary finite Unicode text"
-        run = ci.workflowScript("verify-authored-positions-for-arbitrary-finite-unicode-text.sh")
+        name = "Verify source positions and style attributes for arbitrary finite input"
+        run = ci.workflowScript("verify-source-coordinates-and-style-headers.sh")
       }
     }
   }

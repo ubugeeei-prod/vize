@@ -20,6 +20,16 @@ impl<'db> TemplateReachBatch<'db> {
 }
 
 impl<'db> TemplateSourceSites<'db> {
+    pub(super) fn new(graph: &'db OpGraph<'static>, text: &'db str, start: u32) -> Self {
+        Self { graph, text, start }
+    }
+
+    /// The original, checked graph whose operation IDs this view resolves.
+    #[must_use]
+    pub fn graph(&self) -> &'db OpGraph<'static> {
+        self.graph
+    }
+
     /// Look up an ID from this graph. The file-absolute byte span and the borrowed
     /// spelling both refer to the revision that opened this view.
     #[inline]
@@ -33,7 +43,7 @@ impl<'db> TemplateSourceSites<'db> {
     }
 }
 
-fn project(text: &str, start: u32, span: Span) -> Option<(Span, &str)> {
+pub(super) fn project(text: &str, start: u32, span: Span) -> Option<(Span, &str)> {
     let spelling = text.get(span.start as usize..span.end as usize)?;
     let authored = Span::new(start.checked_add(span.start)?, start.checked_add(span.end)?);
     Some((authored, spelling))
