@@ -26,14 +26,6 @@ experimental-native-scss-session = [
   "experimental-verified-style-format",
   "vize_atelier_sfc/native-sfc-scss",
 ]
-experimental-verified-style-format = [
-  "experimental-scss-definitions",
-  "glyph",
-  "vize_glyph/observed-style",
-  "vize_atelier_sfc/verified-scss-edits",
-]
-# Project original SCSS variable definitions for an explicitly selected document revision.
-experimental-scss-definitions = ["vize_atelier_sfc/original-scss-products"]
 experimental-recovered-literal-prefix = [
   "experimental-literal-products",
   "vize_l2/recovered-literal-prefix",
@@ -51,6 +43,14 @@ experimental-component-props = ["vize_l1_to_l2/component-prop-queries"]
 # Share admitted template operands with Canon for explicitly selected editor products.
 experimental-template-operand-products = ["vize_canon/template-operand-projection"]
 experimental-style-module-products = ["vize_canon/observed-style-modules"]
+experimental-verified-style-format = [
+  "experimental-scss-definitions",
+  "glyph",
+  "vize_glyph/observed-style",
+  "vize_atelier_sfc/verified-scss-edits",
+]
+# Project original SCSS variable definitions for an explicitly selected document revision.
+experimental-scss-definitions = ["vize_atelier_sfc/original-scss-products"]
 default = ["native", "glyph"]
 glyph = ["dep:vize_glyph"]
 native = ["vize_canon/native", "retained-program"]
