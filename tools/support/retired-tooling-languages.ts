@@ -19,7 +19,7 @@ export const styleHeaderValidation = {
 const positionIndex = {
   theorem: "tests/formal/position-index/Intervals.lean",
   kernel: "davinci/vize_l2/src/query/position/index/intervals.rs",
-  harness: "davinci/vize_l2/src/query/position/index/tests/checked_points.rs",
+  harness: "davinci/vize_l2/src/query/position/index/intervals/tests.rs",
 } as const;
 export const rustProofReferences = [
   sourceMapCoordinates,

@@ -6,7 +6,7 @@ on:
       - ".github/workflows/davinci-kani.yml"
       - "davinci/vize_l0/src/span.rs"
       - "davinci/vize_l2/src/query/position/index/intervals.rs"
-      - "davinci/vize_l2/src/query/position/index/tests/checked_points.rs"
+      - "davinci/vize_l2/src/query/position/index/intervals/tests.rs"
       - "tests/formal/position-index/Intervals.lean"
       - "davinci/vize_l3/src/lattice/axis.rs"
       - "davinci/vize_l3/src/lattice/class.rs"

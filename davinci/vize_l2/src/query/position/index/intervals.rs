@@ -142,5 +142,4 @@ impl<T> Intervals<T> {
 }
 
 #[cfg(test)]
-#[path = "tests/checked_points.rs"]
-mod checked_points;
+mod tests;
