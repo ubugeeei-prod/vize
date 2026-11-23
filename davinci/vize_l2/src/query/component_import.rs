@@ -342,3 +342,6 @@ fn component_spelling(tag: &str, mut uppercase: bool) -> impl Iterator<Item = u8
 
 #[cfg(feature = "component-prop-queries")]
 pub(super) mod props;
+
+#[cfg(feature = "component-listener-queries")]
+pub(super) mod listeners;

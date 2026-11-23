@@ -350,7 +350,7 @@ l2	-	davinci/vize_l2/src/analysis/template_complexity/print.rs	0	0	1	4	0	0	0	0
 l2	-	davinci/vize_l2/src/analysis/static_facts/consts.rs	0	0	2	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/analysis/static_facts/lattice/composed/owners.rs	1	2	0	0	0	0	1	1
 l2	-	davinci/vize_l2/src/analysis/static_facts/lattice.rs	0	0	2	0	0	0	0	0
-l2	-	davinci/vize_l2/src/analysis/static_facts/lattice/composed/publication.rs	0	0	2	0	0	0	0	0
+l2	-	davinci/vize_l2/src/analysis/static_facts/lattice/composed/publication.rs	0	0	3	2	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/dialect/legalize/filter.rs	1	4	1	11	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/dialect/legalize/filter/compound.rs	1	1	1	1	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/dialect/legalize/ids.rs	1	5	0	0	0	0	0	0
@@ -378,7 +378,7 @@ l1	-	davinci/vize_l1/src/container/vue/descriptor.rs	0	0	0	0	1	2	0	0
 l1	-	davinci/vize_l1/src/container/vue/descriptor/policy.rs	0	0	0	0	1	4	0	0
 l1	-	davinci/vize_l1/src/container/vue/descriptor/tests.rs	0	0	1	2	0	0	0	0
 l1	-	davinci/vize_l1/src/container/vue/descriptor/template/tests/custody.rs	0	0	1	4	0	0	0	0
-l1_to_l2	-	davinci/vize_l1_to_l2/src/native/construction.rs	0	0	0	0	4	0	0	0
+l1_to_l2	-	davinci/vize_l1_to_l2/src/native/construction.rs	0	0	0	0	5	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/native/pending.rs	1	8	0	0	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/pending/tests.rs	0	0	1	1	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/pending/tests/factory.rs	0	0	0	0	2	0	0	0
@@ -404,7 +404,7 @@ l2	analysis	davinci/vize_l2/src/resolution/source/jsx/names.rs	1	1	1	1	0	0	0	0
 l1_to_l2	analysis	davinci/vize_l1_to_l2/src/vue_file.rs	1	7	0	0	0	0	0	0
 l1_to_l2	analysis	davinci/vize_l1_to_l2/src/vue_file/policy.rs	1	2	0	0	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/vue_file/region.rs	0	0	0	0	2	0	0	0
-l1_to_l2	-	davinci/vize_l1_to_l2/src/vue_file/region/native.rs	0	0	0	0	4	0	0	0
+l1_to_l2	-	davinci/vize_l1_to_l2/src/vue_file/region/native.rs	0	0	0	0	6	0	0	0
 l2	-	davinci/vize_l2/src/file/region/child.rs	0	0	0	0	8	0	0	0
 l2	-	davinci/vize_l2/src/file/region/whole.rs	0	0	0	0	2	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/native_file/assembly.rs	1	3	0	0	0	0	0	0
@@ -414,7 +414,7 @@ l1_to_l2	lower	davinci/vize_l1_to_l2/src/native_file/selected.rs	1	2	0	0	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native_file/selected/tests.rs	0	0	1	0	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native_file/selected_scoped/tests.rs	0	0	1	0	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native_file/selected_setup/tests/accepted.rs	0	0	1	0	0	0	0	0
-l1_to_l2	lower	davinci/vize_l1_to_l2/src/native_file/template.rs	1	5	0	0	0	0	0	0
+l1_to_l2	lower	davinci/vize_l1_to_l2/src/native_file/template.rs	1	6	0	0	0	0	0	0
 l1_to_l2	analysis	davinci/vize_l1_to_l2/src/native_file/template/tests.rs	1	3	0	0	0	0	0	0
 l1_to_l2	analysis	davinci/vize_l1_to_l2/src/native_file/query/tests.rs	1	3	0	0	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/pending/vue/testing.rs	0	0	0	0	2	0	0	0
@@ -544,3 +544,6 @@ l1	contract	davinci/vize_l1/src/embed/regions/component.rs	1	2	0	0	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/framework/vue/jsx/definition.rs	1	5	0	0	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/tsrx.rs	1	1	0	0	0	0	0	0
 l2	contract	davinci/vize_l2/src/module.rs	1	2	0	0	0	0	0	0
+l2	-	davinci/vize_l2/src/artifact/builder/binding/listener.rs	0	0	0	0	1	0	0	0
+l2	-	davinci/vize_l2/src/file/region/listener.rs	0	0	0	0	3	0	0	0
+l1_to_l2	-	davinci/vize_l1_to_l2/src/native/pattern/vue3/listener.rs	0	0	0	0	1	0	0	0

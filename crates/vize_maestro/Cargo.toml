@@ -9,6 +9,8 @@ description = "Maestro - Language Server Protocol implementation for Vize Vue te
 publish = false
 
 [features]
+# Rewrite event rename edits against a retained current component File.
+experimental-component-listeners = ["native", "vize_l1_to_l2/component-listener-queries"]
 experimental-recovered-literal-prefix = [
   "experimental-literal-products",
   "vize_l2/recovered-literal-prefix",
@@ -159,3 +161,7 @@ workspace = true
 [[test]]
 name = "versioned_fix_publication"
 required-features = ["experimental-versioned-fixes"]
+
+[[test]]
+name = "original_template_requests"
+required-features = ["vize_l1_to_l2/original-template-queries"]

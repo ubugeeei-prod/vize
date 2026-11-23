@@ -197,5 +197,84 @@ fn original_tool_template_projections_match() {
     );
 }
 
+#[cfg(feature = "experimental-component-listeners")]
+#[test]
+fn named_dom_event_expressions_keep_their_checker_links_and_editor_exports() {
+    let source = "<script setup>import { save as 保存 } from './actions'; const label='送信';</script>\r\n<template><button :title='label' @click.once='保存' @cancel>{{ label }}</button></template>";
+    let arena = Allocator::default();
+    let observed = vize_l1_to_l2::native_file::lower_sfc_with_listener_references(
+        &arena,
+        source,
+        DescriptorOptions {
+            version: VueVersion::V3,
+            dialect: VueDialect::Vue,
+            template: Default::default(),
+        },
+    );
+    let native = observed.admitted().unwrap();
+    let descriptor = fixture_descriptor(source);
+    let result = compare(&native, &descriptor, "DOM method reference");
+    assert_eq!(result.checker.as_str(), "label\n保存\nlabel");
+    let handler = &result.expressions[1];
+    assert_eq!(handler.kind, ExpressionKind::VOn);
+    assert_eq!(result.checker.links()[1].authored.slice(source), "保存");
+}
+
+#[cfg(feature = "experimental-component-listeners")]
+#[test]
+#[ignore = "full checker and editor documents for original Vue inputs with event spellings"]
+fn original_event_documents() {
+    let manifest =
+        std::fs::read_to_string(std::env::var_os("VIZE_EXPRESSION_QUERY_MANIFEST").unwrap())
+            .unwrap();
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let (mut candidates, mut documents, mut event_files, mut events) = (0, 0, 0, 0);
+    for name in manifest.split_terminator('\0') {
+        let bytes = std::fs::read(root.join(name)).unwrap();
+        let Ok(source) = std::str::from_utf8(&bytes) else {
+            continue;
+        };
+        if !source.contains('@') && !source.contains("v-on:") {
+            continue;
+        }
+        candidates += 1;
+        let arena = Allocator::new();
+        let owner = vize_l1_to_l2::native_file::lower_sfc_with_listener_references(
+            &arena,
+            source,
+            DescriptorOptions {
+                version: VueVersion::V3,
+                dialect: VueDialect::Vue,
+                template: Default::default(),
+            },
+        );
+        let Some(native) = owner.admitted() else {
+            continue;
+        };
+        let result = compare(&native, &fixture_descriptor(source), name);
+        let count = result
+            .expressions
+            .iter()
+            .filter(|e| e.kind == ExpressionKind::VOn)
+            .count();
+        documents += 1;
+        event_files += usize::from(count != 0);
+        events += count;
+    }
+    eprintln!(
+        "event_documents candidates={candidates} admitted={documents} event_files={event_files} events={events}"
+    );
+    if std::env::var_os("VIZE_REQUIRE_REPOSITORY_LISTENERS").is_some() {
+        assert!(
+            documents > 0,
+            "the tracked corpus must admit editor documents"
+        );
+        assert!(
+            event_files > 0,
+            "the tracked corpus must exercise original event expressions"
+        );
+    }
+}
+
 #[cfg(feature = "micro-profiling")]
 mod profile;

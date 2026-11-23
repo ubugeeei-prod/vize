@@ -3,3 +3,5 @@ crates/vize_maestro/src/ide/diagnostics/linter_options/rule_options_tests.rs	@cl
 crates/vize_maestro/src/ide/diagnostics/linter_options/rule_options_tests.rs	@click.unknown
 crates/vize_maestro/src/ide/hover/tests/directives.rs	@submit.prevent
 crates/vize_maestro/src/ide/hover/tests/directives.rs	@click.once
+crates/vize_maestro/src/ide/rename/canonical/event_rename/rewrite/listeners/tests.rs	@saveResult.once
+crates/vize_maestro/src/virtual_code/generator/template_products/tests.rs	@click.once
