@@ -91,6 +91,7 @@ test("npm/native ships the exact generated and portable helper closure", () => {
     "native-binding.js",
     "native-binding-identity.js",
     "native-targets.js",
+    "scripts/package-tasks.cjs",
   ]);
   assert.equal(manifest.types, "index.d.ts");
 });

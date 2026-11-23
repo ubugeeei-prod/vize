@@ -1,0 +1,27 @@
+const fs = require("node:fs");
+fs.writeFileSync(process.env.EDITOR_RUNTIME_MARKER, "child started");
+let bytes = Buffer.alloc(0);
+process.stdin.on("data", (chunk) => {
+  bytes = Buffer.concat([bytes, chunk]);
+  while (true) {
+    const separator = bytes.indexOf("\r\n\r\n");
+    if (separator < 0) return;
+    const length = Number(/Content-Length: (\d+)/.exec(bytes.subarray(0, separator).toString())[1]);
+    if (bytes.length < separator + 4 + length) return;
+    const request = JSON.parse(bytes.subarray(separator + 4, separator + 4 + length));
+    bytes = bytes.subarray(separator + 4 + length);
+    if (request.method === "exit") process.exit(0);
+    if (request.id === undefined) continue;
+    const runtime = Object.fromEntries(
+      @@ENVIRONMENT_KEYS@@.filter((name) => process.env[name] !== undefined).map(
+        (name) => [name, process.env[name]],
+      ),
+    );
+    const body = JSON.stringify({
+      jsonrpc: "2.0",
+      id: request.id,
+      result: request.method === "shutdown" ? null : runtime,
+    });
+    process.stdout.write("Content-Length: " + Buffer.byteLength(body) + "\r\n\r\n" + body);
+  }
+});

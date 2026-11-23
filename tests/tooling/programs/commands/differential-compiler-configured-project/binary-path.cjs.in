@@ -1,0 +1,24 @@
+#!@@NODE@@
+const fs = require("node:fs"),
+  assert = require("node:assert/strict");
+if (process.argv[2] === "--version") {
+  console.log("vize 0.0.0-dev");
+  process.exit(0);
+}
+assert.deepEqual(process.argv.slice(2), @@VALUE@@);
+assert.deepEqual(fs.readdirSync(".").sort(), ["Layout.vue", "vite.config.mjs"]);
+for (const [file, bytes] of @@EXPECTED_FILES@@)
+  assert.deepEqual(fs.readFileSync(file), Buffer.from(bytes, "base64"));
+fs.mkdirSync("out");
+fs.writeFileSync(
+  "out/Layout.json",
+  JSON.stringify({
+    filename: "Layout.vue",
+    code: @@EXPECTED@@,
+    css: null,
+    errors: [],
+    warnings: [],
+    script_lang: "js",
+    macro_artifacts: [],
+  }),
+);

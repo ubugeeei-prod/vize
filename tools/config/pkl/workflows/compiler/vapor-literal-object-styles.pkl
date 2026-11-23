@@ -1,0 +1,111 @@
+import "../../Actions.pkl" as ci
+
+name = "Vapor literal object styles"
+on {
+  workflow_dispatch = null
+  pull_request {
+    paths = new Listing {
+      "crates/vize_relief/**"
+      "crates/vize_atelier_core/**"
+      "crates/vize_atelier_vapor/**"
+      "crates/vize_atelier_jsx/**"
+      ".github/workflows/vapor-literal-object-styles.yml"
+      ".github/scripts/workflows/vapor-literal-object-styles/**"
+      "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/**"
+      "tests/_helpers/vapor-ssr-expose-successor.ts"
+      "tests/tooling/support/vapor-style-authored-transition.ts"
+      "tests/tooling/support/jsx-child-style-successors.ts"
+      "tests/tooling/jsx-child-style-successors.test.ts"
+      "tests/tooling/jsx-vdom-child-style-successors.test.ts"
+      "tests/tooling/support/jsx-vdom-child-style-successors.ts"
+      "tests/_fixtures/differential/jsx/child-values-6890-vdom-style-successors.json"
+      "tests/_fixtures/differential/jsx/child-values-6890-style-successors.json"
+      "tests/tooling/vapor-style-authored-transition.test.ts"
+      "tests/tooling/vapor-ssr-expose-successor.test.ts"
+      "tests/_fixtures/differential/compiler/vapor-literal-object-styles-10749/ssr-expose-successor-10923/**"
+      "tests/tooling/support/vapor-style-successor-composition.ts"
+      "tests/tooling/vapor-style-successor-composition.test.ts"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "vapor-literal-object-styles-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  styles {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      QUALIFICATION_HEAD_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+      BASE_SHA = "78719553cf550bcffbf1d0fb891fda642f42de3a"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("vapor-literal-object-styles")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha || github.sha }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "test-scripts"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Observe exact source evaluator and complete compiler packets"
+        env {
+          VIZE_LITERAL_STYLE_CAPTURE = "${{ runner.temp }}/vapor-literal-styles/head.json"
+          VIZE_LITERAL_STYLE_PROFILE_CAPTURE = "${{ runner.temp }}/vapor-literal-styles/head-profile.json"
+          VIZE_LITERAL_STYLE_SFC_CAPTURE = "${{ runner.temp }}/vapor-literal-styles/head-sfc.json"
+          VIZE_LITERAL_STYLE_MAP_CAPTURE = "${{ runner.temp }}/vapor-literal-styles/maps.json"
+          VIZE_LITERAL_STYLE_REVIEW_CAPTURE = "${{ runner.temp }}/vapor-literal-styles/head-review.json"
+          VIZE_LITERAL_STYLE_CASE_CAPTURE = "${{ runner.temp }}/vapor-literal-styles/head-attribute-case.json"
+          VIZE_LITERAL_STYLE_PRIORITY_CAPTURE = "${{ runner.temp }}/vapor-literal-styles/head-priority.json"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/observe-exact-source-evaluator-and-complete-compiler-packets.sh""#
+      }
+      new Dynamic {
+        name = "Observe the same inputs against the actual unchanged baseline"
+        run = #". "${{ env.VIZE_CI_FILES }}/observe-the-same-inputs-against-the-actual-unchanged-baseline.sh""#
+      }
+      new Dynamic {
+        name = "Install the independent syntax observer"
+        run = #"npm install --prefix "$RUNNER_TEMP/style-ast-provider" --ignore-scripts --no-package-lock --no-audit --no-fund typescript@6.0.3"#
+      }
+      new Dynamic {
+        name = "Compare complete packets and explicit authored module successors"
+        env { VIZE_STYLE_AST_TYPESCRIPT = "${{ runner.temp }}/style-ast-provider/node_modules/typescript" }
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-complete-packets-and-explicit-authored-module-successors.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "vapor-literal-object-styles-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/vapor-literal-styles"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

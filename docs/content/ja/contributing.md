@@ -70,45 +70,7 @@ nix develop .#testbox
 リモートのタスクを実行しません。起動に成功したボックスは、検証が失敗した場合も停止処理を行います。
 
 ```sh
-run_testbox_checks() {
-  unset BLACKSMITH_TESTBOX_ID testbox_output
-  "$VIZE_BLACKSMITH_BIN" auth login || return
-  git push --set-upstream origin "$(git branch --show-current)" || return
-
-  if testbox_output="$(vp run --workspace-root testbox:warmup)"; then
-    BLACKSMITH_TESTBOX_ID="$(printf '%s\n' "$testbox_output" | tail -n1)"
-  else
-    warmup_status=$?
-    unset testbox_output
-    return "$warmup_status"
-  fi
-  if [ -z "$BLACKSMITH_TESTBOX_ID" ]; then
-    printf '%s\n' "Testbox warmup returned no box id." >&2
-    unset BLACKSMITH_TESTBOX_ID testbox_output
-    return 1
-  fi
-  export BLACKSMITH_TESTBOX_ID
-
-  if vp run --workspace-root build:testbox &&
-    vp run --workspace-root test:testbox &&
-    vp run --workspace-root lint:testbox; then
-    testbox_status=0
-  else
-    testbox_status=$?
-  fi
-  if vp run --workspace-root testbox:stop; then
-    stop_status=0
-  else
-    stop_status=$?
-  fi
-  unset BLACKSMITH_TESTBOX_ID testbox_output
-
-  if [ "$testbox_status" -ne 0 ]; then
-    return "$testbox_status"
-  fi
-  return "$stop_status"
-}
-run_testbox_checks
+sh tools/commands/ci/run-testbox-checks.sh
 ```
 
 Blacksmith Testbox のジョブを変更した場合は、

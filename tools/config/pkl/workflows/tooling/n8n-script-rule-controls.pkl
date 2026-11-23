@@ -1,0 +1,107 @@
+import "../../Actions.pkl" as ci
+
+name = "n8n script rule CLI controls"
+`run-name` = "n8n script rule CLI controls @ ${{ github.sha }}"
+
+on {
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+
+concurrency {
+  group = "n8n-script-rule-controls-${{ github.ref }}"
+  `cancel-in-progress` = false
+}
+
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_TERM_COLOR = "always"
+  SCRIPT_CONTROL_OUTPUT = "target/n8n-script-rule-controls/${{ github.run_id }}-${{ github.run_attempt }}"
+}
+
+jobs {
+  // Reuse the existing same-run custody protocol. One CLI build, no 1369-SFC
+  // replay, full-tooling matrix or second source producer in the consumer.
+  producer { uses = "./.github/workflows/full-source-cli.yml" }
+
+  controls {
+    name = "Whole51 authored script controls and retained research"
+    needs = "producer"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 15
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/n8n-script-rule-controls"
+    }
+    steps = new Listing {
+      ci.checkoutAt("${{ github.sha }}")
+      new Dynamic {
+        name = "Preserve the exact consumer source identity"
+        env { SOURCE_SHA = "${{ github.sha }}" }
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-the-exact-consumer-source-identity.sh""#
+      }
+      ci.workspaceVp()
+      // The existing restore contract authenticates the producer toolchain and
+      // linker as well as source/tree/binary/receipt, without rebuilding here.
+      ci.rust("stable")
+      ci.wild()
+      new Dynamic {
+        name = "Install the pinned independent providers"
+        id = "install"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-pinned-independent-providers.sh""#
+      }
+      new Dynamic {
+        uses = "./.github/actions/restore-source-cli"
+        id = "restore"
+        with { producer = "${{ toJSON(needs.producer.outputs) }}" }
+      }
+      new Dynamic {
+        name = "Preserve the original producer and consumer custody"
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-the-original-producer-and-consumer-custody.sh""#
+      }
+      new Dynamic {
+        name = "Pack the source public config export"
+        id = "pack"
+        `working-directory` = "npm/cli"
+        run = #". "${{ env.VIZE_CI_FILES }}/pack-the-source-public-config-export.sh""#
+      }
+      new Dynamic {
+        name = "Verify whole packet and independent coordinate contracts"
+        id = "contracts"
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-whole-packet-and-independent-coordinate-contracts.sh""#
+      }
+      new Dynamic {
+        name = "Capture every control and research input before rejecting disagreement"
+        id = "controls"
+        env {
+          VIZE_LSP_BIN = "${{ github.workspace }}/target/ci/vize"
+          VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/capture-every-control-and-research-input-before-rejecting-disagreement.sh""#
+      }
+      new Dynamic {
+        name = "Preserve workflow outcomes and failures without a second build"
+        `if` = "${{ always() }}"
+        env {
+          INSTALL_OUTCOME = "${{ steps.install.outcome }}"
+          RESTORE_OUTCOME = "${{ steps.restore.outcome }}"
+          PACK_OUTCOME = "${{ steps.pack.outcome }}"
+          CONTRACT_OUTCOME = "${{ steps.contracts.outcome }}"
+          CONTROL_OUTCOME = "${{ steps.controls.outcome }}"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-workflow-outcomes-and-failures-without-a-second-build.sh""#
+      }
+      new Dynamic {
+        name = "Upload every whole provider, native process and research failure packet"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "n8n-script-rule-controls-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ env.SCRIPT_CONTROL_OUTPUT }}"
+          `include-hidden-files` = true
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

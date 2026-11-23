@@ -5,6 +5,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+
+import { processResultArgs } from "./support/program-path.ts";
 import { retainFixtureCommand } from "./support/typecheck-fixture-custody.ts";
 
 test("fixture custody preserves binary failure streams and owned inputs before cleanup", () => {
@@ -14,10 +16,7 @@ test("fixture custody preserves binary failure streams and owned inputs before c
     fs.mkdirSync(fixture);
     const original = Buffer.from([0, 255, 128, 10]);
     fs.writeFileSync(path.join(fixture, "original.bin"), original);
-    const args = [
-      "-e",
-      "process.stdout.write(Buffer.from([0,255,10]));process.stderr.write(Buffer.from([128,0]));process.exitCode=1;",
-    ];
+    const args = [...processResultArgs({ stdout: [0, 255, 10], stderr: [128, 0], status: 1 })];
     const result = spawnSync(process.execPath, args, { encoding: "buffer" });
     const evidence = retainFixtureCommand(
       path.join(root, "retained"),

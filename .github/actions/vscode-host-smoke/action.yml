@@ -57,10 +57,7 @@ runs:
 
     - name: Hydrate pinned create-vue fixture
       shell: bash
-      run: |
-        git submodule update --init --force --depth 1 -- tests/_fixtures/_git/create-vue
-        test "$(git rev-parse HEAD:tests/_fixtures/_git/create-vue)" = \
-          "$(git -C tests/_fixtures/_git/create-vue rev-parse HEAD)"
+      run: . "$GITHUB_ACTION_PATH/scripts/hydrate-pinned-create-vue-fixture.sh"
 
     - name: Install JS dependencies
       shell: bash
@@ -75,13 +72,7 @@ runs:
         VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS: "180"
         ZED_EXTENSION_CLI_SHA: 9ee3c503a4bbbc6b4a0f8a789acca4871d773223
         ZED_EXTENSION_CLI_SHA256: a6fca5ef11ff23f0ef8b03bd2453270591c9fc6c03700c3c92017e5082ada757
-      run: |
-        set -euo pipefail
-        timeout --signal=TERM --kill-after=10s 300s \
-          bash .github/actions/vscode-host-smoke/download-artifact.sh \
-          "https://zed-extension-cli.nyc3.digitaloceanspaces.com/${ZED_EXTENSION_CLI_SHA}/x86_64-unknown-linux-gnu/zed-extension" \
-          "${RUNNER_TEMP}/zed-extension" "${ZED_EXTENSION_CLI_SHA256}"
-        chmod +x "${RUNNER_TEMP}/zed-extension"
+      run: . "$GITHUB_ACTION_PATH/scripts/install-pinned-zed-extension-cli.sh"
 
     - name: Validate the Zed extension
       shell: bash
@@ -89,58 +80,21 @@ runs:
       env:
         # The pinned 114 MB SDK needs more than the downloader's 90s default on slower runners.
         VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS: "180"
-      run: |
-        set -euo pipefail
-        mkdir -p "${RUNNER_TEMP}/zed-extension-scratch"
-        wasi_archive="${RUNNER_TEMP}/wasi-sdk-25.0-x86_64-linux.tar.gz"
-        bash "${GITHUB_WORKSPACE}/.github/actions/vscode-host-smoke/download-artifact.sh" \
-          "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-25/wasi-sdk-25.0-x86_64-linux.tar.gz" \
-          "$wasi_archive" \
-          "52640dde13599bf127a95499e61d6d640256119456d1af8897ab6725bcf3d89c" \
-          "https://api.github.com/repos/WebAssembly/wasi-sdk/releases/assets/212790091"
-        tar -xzf "$wasi_archive" -C "${RUNNER_TEMP}/zed-extension-scratch"
-        mv "${RUNNER_TEMP}/zed-extension-scratch/wasi-sdk-25.0-x86_64-linux" \
-          "${RUNNER_TEMP}/zed-extension-scratch/wasi-sdk"
-        test -x "${RUNNER_TEMP}/zed-extension-scratch/wasi-sdk/bin/clang"
-        mkdir -p "${RUNNER_TEMP}/zed-extension-output"
-        "${RUNNER_TEMP}/zed-extension" \
-          --source-dir . \
-          --scratch-dir "${RUNNER_TEMP}/zed-extension-scratch" \
-          --output-dir "${RUNNER_TEMP}/zed-extension-output"
-        mkdir -p "${RUNNER_TEMP}/zed-extension-installed"
-        tar -xzf "${RUNNER_TEMP}/zed-extension-output/archive.tar.gz" \
-          -C "${RUNNER_TEMP}/zed-extension-installed"
+      run: . "$GITHUB_ACTION_PATH/scripts/validate-the-zed-extension.sh"
 
     - name: Install pinned Zed editor
       shell: bash
       env:
         ZED_VERSION: 1.27.0
         ZED_SHA256: 719f6bf649ea8d87961adbf728e178561bac3f598d72d7949558d1150cfc43dd
-      run: |
-        set -euo pipefail
-        archive="${RUNNER_TEMP}/zed-linux-x86_64.tar.gz"
-        bash .github/actions/vscode-host-smoke/download-artifact.sh \
-          "https://github.com/zed-industries/zed/releases/download/v${ZED_VERSION}/zed-linux-x86_64.tar.gz" \
-          "$archive" "$ZED_SHA256" \
-          "https://api.github.com/repos/zed-industries/zed/releases/assets/710065550"
-        mkdir -p "${RUNNER_TEMP}/zed"
-        tar -xzf "$archive" -C "${RUNNER_TEMP}/zed"
-        "${RUNNER_TEMP}/zed/zed.app/bin/zed" --version
+      run: . "$GITHUB_ACTION_PATH/scripts/install-pinned-zed-editor.sh"
 
     - name: Install pinned Helix
       shell: bash
       env:
         HELIX_VERSION: 25.07.1
         HELIX_SHA256: 3f08e63ecd388fff657ad39722f88bb03dcf326f1f2da2700d99e1dc40ab2e8b
-      run: |
-        set -euo pipefail
-        archive="${RUNNER_TEMP}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz"
-        bash .github/actions/vscode-host-smoke/download-artifact.sh \
-          "https://github.com/helix-editor/helix/releases/download/${HELIX_VERSION}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz" \
-          "${archive}" "${HELIX_SHA256}"
-        mkdir -p "${RUNNER_TEMP}/helix"
-        tar -xJf "${archive}" -C "${RUNNER_TEMP}/helix" --strip-components=1
-        "${RUNNER_TEMP}/helix/hx" --version
+      run: . "$GITHUB_ACTION_PATH/scripts/install-pinned-helix.sh"
 
     - name: Build vize CLI
       if: inputs.prebuilt-server == ''
@@ -153,13 +107,7 @@ runs:
       env:
         PREBUILT_SERVER: ${{ inputs.prebuilt-server }}
         EXPECTED_VERSION: ${{ inputs.expected-version }}
-      run: |
-        set -euo pipefail
-        test -n "$EXPECTED_VERSION"
-        test -f "$PREBUILT_SERVER"
-        mkdir -p target/ci
-        install -m 0755 "$PREBUILT_SERVER" target/ci/vize
-        test "$(target/ci/vize --version)" = "vize $EXPECTED_VERSION"
+      run: . "$GITHUB_ACTION_PATH/scripts/install-and-verify-the-supplied-release-cli.sh"
 
     - name: Check the Helix package with the official CLI
       shell: bash
@@ -167,68 +115,35 @@ runs:
         XDG_CONFIG_HOME: ${{ runner.temp }}/helix-config
         HELIX_RUNTIME: ${{ runner.temp }}/helix/runtime
         VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
-      run: |
-        set -euo pipefail
-        mkdir -p "${XDG_CONFIG_HOME}/helix"
-        cp editors/helix/languages.toml "${XDG_CONFIG_HOME}/helix/languages.toml"
-        node tools/commands/editors/helix/assert-helix-health.ts "${RUNNER_TEMP}/helix/hx"
+      run: . "$GITHUB_ACTION_PATH/scripts/check-the-helix-package-with-the-official-cli.sh"
 
     - name: Stabilize Ubuntu package archive
       uses: ./.github/actions/setup-ubuntu-archive
 
     - name: Ensure xvfb is available
       shell: bash
-      run: |
-        if ! command -v xvfb-run >/dev/null 2>&1; then
-          vize-ci-apt-retry sudo apt-get update
-          vize-ci-apt-retry sudo apt-get install -y xvfb
-        fi
+      run: . "$GITHUB_ACTION_PATH/scripts/ensure-xvfb-is-available.sh"
 
     - name: Install Neovim
       shell: bash
       env:
         NVIM_SHA256: a74740047e73b2b380d63a474282814063d10650cd6cc95efa16d1713c7e616c
         NVIM_VERSION: v0.11.4
-      run: |
-        set -euo pipefail
-        bash .github/actions/vscode-host-smoke/download-artifact.sh \
-          "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
-          "${RUNNER_TEMP}/nvim.tar.gz" "${NVIM_SHA256}"
-        sudo tar -C /opt -xzf "${RUNNER_TEMP}/nvim.tar.gz"
-        sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
-        nvim --version | head -1
+      run: . "$GITHUB_ACTION_PATH/scripts/install-neovim.sh"
 
     - name: Ensure Vim is available
       shell: bash
-      run: |
-        set -euo pipefail
-        if ! command -v vim || ! vim --version | grep -F '+timers' >/dev/null; then
-          vize-ci-apt-retry sudo apt-get update
-          vize-ci-apt-retry sudo apt-get install -y vim-nox
-        fi
-        vim --version | sed -n '1,2p'
-        vim --version | grep -F '+timers' >/dev/null
+      run: . "$GITHUB_ACTION_PATH/scripts/ensure-vim-is-available.sh"
 
     - name: Install pinned vim-lsp
       shell: bash
       env:
         VIM_LSP_COMMIT: 474c656659b5fb51eec6770309e0211c8aa49b5b
-      run: |
-        set -euo pipefail
-        git init "${RUNNER_TEMP}/vim-lsp"
-        git -C "${RUNNER_TEMP}/vim-lsp" remote add origin https://github.com/prabirshrestha/vim-lsp.git
-        git -C "${RUNNER_TEMP}/vim-lsp" fetch --depth 1 origin "${VIM_LSP_COMMIT}"
-        git -C "${RUNNER_TEMP}/vim-lsp" checkout --detach FETCH_HEAD
-        cd "${RUNNER_TEMP}/vim-lsp"
-        test "$(git rev-parse HEAD)" = "${VIM_LSP_COMMIT}"
+      run: . "$GITHUB_ACTION_PATH/scripts/install-pinned-vim-lsp.sh"
 
     - name: Ensure Emacs is available
       shell: bash
-      run: |
-        if ! command -v emacs >/dev/null 2>&1; then
-          vize-ci-apt-retry sudo apt-get update
-          vize-ci-apt-retry sudo apt-get install -y emacs-nox
-        fi
+      run: . "$GITHUB_ACTION_PATH/scripts/ensure-emacs-is-available.sh"
 
     - name: Download pinned VS Code with a total time budget
       shell: bash
@@ -248,12 +163,7 @@ runs:
       shell: bash
       env:
         PREBUILT_VSIX: ${{ inputs.prebuilt-vsix }}
-      run: |
-        set -euo pipefail
-        test -f "$PREBUILT_VSIX"
-        mkdir -p editors/vscode/dist
-        install -m 0644 "$PREBUILT_VSIX" editors/vscode/dist/vize.vsix
-        cmp "$PREBUILT_VSIX" editors/vscode/dist/vize.vsix
+      run: . "$GITHUB_ACTION_PATH/scripts/restore-and-verify-the-supplied-release-vsix.sh"
 
     - name: Run VS Code host smoke against the real server
       shell: bash
@@ -266,13 +176,7 @@ runs:
         PREBUILT_VSIX: ${{ inputs.prebuilt-vsix }}
         VIZE_RELEASE_HOST_WORKSPACE: ${{ inputs.release-workspace }}
         VIZE_RELEASE_HOST_EVIDENCE: ${{ inputs.release-evidence }}
-      run: |
-        set -euo pipefail
-        if [ -n "$PREBUILT_VSIX" ]; then
-          xvfb-run -a vp node editors/vscode/test/run-extension-host-real.mjs
-        else
-          xvfb-run -a vp run --workspace-root test:vscode-extension:host-real
-        fi
+      run: . "$GITHUB_ACTION_PATH/scripts/run-vs-code-host-smoke-against-the-real-server.sh"
 
     - name: Retain the real host failure before fixture cleanup
       if: ${{ always() }}

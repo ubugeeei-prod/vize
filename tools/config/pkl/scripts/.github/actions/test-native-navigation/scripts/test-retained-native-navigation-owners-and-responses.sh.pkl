@@ -1,0 +1,13 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("cargo", List("test", "--locked", "-p", "vize_maestro", "--features", "experimental-source-navigation", "--lib", "source_project::", "--", "--nocapture"))
+  module.command("cargo", List("test", "--locked", "-p", "vize_maestro", "--features", "experimental-source-navigation", "--lib", "server::native_navigation::", "--", "--nocapture"))
+  module.command("cargo", List("test", "--locked", "-p", "vize_maestro", "--features", "experimental-source-navigation", "--lib", "server::project_contexts::", "--", "--nocapture"))
+  module.command("cargo", List("test", "--locked", "-p", "vize_maestro", "--features", "experimental-source-navigation", "--lib", "module_link", "--", "--nocapture"))
+  module.command("cargo", List("test", "--locked", "-p", "vize_maestro", "--no-default-features", "--features", "experimental-source-navigation", "--lib", "module_link", "--", "--nocapture"))
+  module.command("cargo", List("check", "--locked", "-p", "vize_maestro", "--no-default-features", "--features", "experimental-source-navigation"))
+  module.command("cargo", List("clippy", "--locked", "-p", "vize_maestro", "--features", "experimental-source-navigation", "--all-targets", "--", "-D", "warnings"))
+}

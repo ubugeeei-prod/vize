@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -174,7 +175,7 @@ const lanes = [
   },
 ] as const;
 const workflow = parse(
-  fs.readFileSync(path.join(root, ".github/workflows/patina-native-boolean-protocol.yml"), "utf8"),
+  readAutomationPrograms(path.join(root, ".github/workflows/patina-native-boolean-protocol.yml")),
 ) as NativeWorkflow;
 
 function laneStep(candidate: NativeWorkflow, name: string) {

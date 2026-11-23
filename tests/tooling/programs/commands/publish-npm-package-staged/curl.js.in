@@ -1,0 +1,35 @@
+const { fakeDist } = require(@@ARCHIVE_MODULE@@);
+const fs = require("node:fs");
+const path = require("node:path");
+const { spawnSync } = require("node:child_process");
+const url = process.argv.at(-1);
+const probe = Number(
+  new URL(url).searchParams.get("vize-publish-check").replace("staged-order-1-", ""),
+);
+const role = url.includes("/1.2.3?") ? "version" : "metadata";
+const first = @@FIRST@@;
+const marker = path.join(process.env.STAGED_ORDER_ROOT, probe + "-" + first);
+if (probe > 0 && role !== first && !fs.existsSync(marker)) {
+  await new Promise((resolve, reject) => {
+    const watcher = fs.watch(process.env.STAGED_ORDER_ROOT, () => {
+      if (fs.existsSync(marker)) done();
+    });
+    const timer = setTimeout(() => {
+      watcher.close();
+      reject(Error("registry peer did not finish"));
+    }, 10000);
+    function done() {
+      watcher.close();
+      clearTimeout(timer);
+      resolve();
+    }
+    if (fs.existsSync(marker)) done();
+  });
+}
+const result = spawnSync(process.execPath, [@@ORIGINAL@@, ...process.argv.slice(2)], {
+  encoding: "utf8",
+});
+process.stdout.write(result.stdout ?? "");
+process.stderr.write(result.stderr ?? "");
+if (probe > 0 && role === first) fs.writeFileSync(marker, "complete");
+process.exitCode = result.status ?? 1;

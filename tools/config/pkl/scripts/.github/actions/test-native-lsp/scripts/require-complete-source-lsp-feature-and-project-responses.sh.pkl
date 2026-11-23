@@ -1,0 +1,34 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  unset VIZE_TEST_DISABLE_TSGO
+  node --test --test-concurrency=1 \
+    tests/tooling/canon-type-admission.test.ts \
+    tests/tooling/canon-global-ref-admission.test.ts \
+    tests/tooling/lsp-type-admission.test.ts \
+    tests/tooling/lsp-vue-language-tools-oracles.test.ts \
+    tests/tooling/lsp-editor-feature-isolation.test.ts \
+    tests/tooling/lsp-local-completion-resolve.test.ts \
+    tests/tooling/lsp-local-completion-ownership.test.ts \
+    tests/tooling/lsp-preprocessor-colors.test.ts \
+    tests/tooling/lsp-experimental-router-params.test.ts \
+    tests/tooling/lsp-experimental-router-variable-roots.test.ts \
+    tests/tooling/router-experimental-transport.test.ts \
+    tests/tooling/lsp-html-void-examples.test.ts \
+    tests/tooling/lsp-html-element-hover.test.ts \
+    tests/tooling/lsp-diagnostics-lifecycle.test.ts \
+    tests/tooling/lsp-type-diagnostic-retention.test.ts \
+    tests/tooling/lsp-script-syntax-prompt.test.ts \
+    tests/tooling/lsp-implementation-capability.test.ts \
+    tests/tooling/lsp-editor-jsconfig.test.ts \
+    tests/tooling/lsp-package-private-imports.test.ts \
+    tests/tooling/lsp-package-private-imports-js.test.ts \
+    tests/tooling/lsp-project-navigation-8013.test.ts \
+    tests/tooling/lsp-workspace-semantic.test.ts \
+    tests/tooling/lsp-overlay-graph-reuse.test.ts \
+    tests/tooling/lsp-file-rename-workspace.test.ts
+  """#
+}

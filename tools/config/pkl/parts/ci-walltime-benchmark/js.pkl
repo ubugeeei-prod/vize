@@ -1,0 +1,38 @@
+import "../../Actions.pkl" as ci
+
+`if` = "${{ (github.event_name == 'pull_request' && (github.event.label.name == 'ci-walltime-benchmark' || (github.event.action != 'labeled' && startsWith(github.head_ref, 'ci/optimize-')))) || (github.event_name == 'workflow_dispatch' && (inputs.component == 'all' || inputs.component == 'js')) }}"
+`runs-on` = ci.linux
+`timeout-minutes` = 60
+env { CARGO_BUILD_JOBS = "12" }
+steps = new Listing {
+  new Dynamic {
+    uses = ci.checkout
+    with { ref = "${{ github.sha }}" }
+  }
+  ci.use("./.github/actions/setup-js-package-tests")
+  ci.command("Build and qualify the same native binary once", "vp run --workspace-root test:js")
+  new Dynamic {
+    name = "Serial complete original-project qualification"
+    run = "node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode serial --phase-walltime target/ci-walltime/js-serial.json"
+  }
+  new Dynamic {
+    name = "Concurrent complete original-project qualification"
+    `if` = "${{ !cancelled() }}"
+    run = "node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/js-concurrent.json"
+  }
+  new Dynamic {
+    name = "Preserve both complete qualifications and timings"
+    `if` = "${{ always() }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "ci-walltime-js-${{ github.sha }}"
+      path = """
+      target/ci-walltime/
+      target/oxlint-original-project-transport/
+
+      """
+      `if-no-files-found` = "error"
+      `retention-days` = 14
+    }
+  }
+}

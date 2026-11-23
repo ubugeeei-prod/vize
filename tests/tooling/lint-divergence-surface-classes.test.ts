@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 // The lint divergence comparator separates two finding classes from parity
 // failures. Vize keeps camelCase `aria*`/`data*` component props, which
 // eslint-plugin-vue's `vue/attribute-hyphenation` reports; those baseline
@@ -54,12 +55,9 @@ test("the TypeScript runner keeps aria/data props and unused setup imports out o
     const fakeVize = path.join(fixtureDir, "fake-vize.mjs");
     fs.writeFileSync(
       fakeVize,
-      [
-        "#!/usr/bin/env node",
-        "if (process.argv[2] !== 'lint') process.exit(2);",
-        `process.stdout.write(JSON.stringify([{ file: "SurfacePanel.vue", messages: ${JSON.stringify(messages)} }]));`,
-        "",
-      ].join("\n"),
+      readToolingProgram("commands/lint-divergence-surface-classes/fake-vize.cjs.in", {
+        MESSAGES: JSON.stringify(messages),
+      }),
     );
     fs.chmodSync(fakeVize, 0o755);
     const registryPath = path.join(fixtureDir, "registry.json");

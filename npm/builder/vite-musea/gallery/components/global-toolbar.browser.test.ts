@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createServer as createHttpServer } from "node:http";
 import path from "node:path";
 import test from "node:test";
@@ -84,10 +84,15 @@ await test(
     const server = await createFixtureServer(output);
     const browser = await chromium.launch();
     let galleryOrigin = "";
-    const foreign = createHttpServer((_request, response) => {
+    const frameScript = await readFile(new URL("./global-toolbar-frame.js", import.meta.url));
+    const foreign = createHttpServer((request, response) => {
+      if (request.url === "/global-toolbar-frame.js") {
+        response.writeHead(200, { "Content-Type": "text/javascript" }).end(frameScript);
+        return;
+      }
       response.setHeader("Content-Type", "text/html");
       response.end(
-        `<script>parent.frames[0].postMessage({type:'musea:set-globals',browserProbe:'foreign',payload:{theme:'light',locale:'en',rtl:false}},${JSON.stringify(galleryOrigin)});</script><output>Command sent</output>`,
+        `<script src="/global-toolbar-frame.js" data-origin="${galleryOrigin}"></script><output>Command sent</output>`,
       );
     });
     try {

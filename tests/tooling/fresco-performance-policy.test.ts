@@ -34,7 +34,7 @@ test("Fresco performance policy cites the live measurement surfaces", () => {
     "test-js-packages",
   ]);
   assert.equal(frescoPackage.scripts?.build, "vp pack");
-  assert.deepEqual(frescoPackage.files, ["dist"]);
+  assert.deepEqual(frescoPackage.files, ["dist", "scripts/package-tasks.cjs"]);
   assert.ok(fs.existsSync(path.join(repoRoot, "crates/vize_fresco/benches/render.rs")));
   assert.ok(fs.existsSync(path.join(repoRoot, "crates/vize_fresco/benches/capabilities.rs")));
 });

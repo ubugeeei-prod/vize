@@ -1,0 +1,35 @@
+amends "../../../../../ShellScript.pkl"
+
+commands {
+  ####"""
+  $size = ($env:SIZES -split ',' | ForEach-Object { [int]$_ } | Measure-Object -Maximum).Maximum
+  $root = Join-Path $env:RUNNER_TEMP 'pair'
+  $project = Join-Path $root "vue-$size"
+  $stream = Join-Path $root "stream-$size.bin"
+  $out = Join-Path $root 'probe.out'
+  $exe = "$PWD\pair-bin\head\vize.exe"
+  $defender = $null -ne (Get-Command Get-MpComputerStatus -ErrorAction SilentlyContinue) -and
+    $null -ne (Get-MpComputerStatus -ErrorAction SilentlyContinue)
+  "Defender available: $defender" | Write-Output
+  function Median([scriptblock]$run) {
+    $samples = foreach ($i in 1..5) {
+      $w = [System.Diagnostics.Stopwatch]::StartNew(); & $run; $w.Stop(); $w.Elapsed.TotalMilliseconds
+    }
+    [math]::Round(($samples | Sort-Object)[2])
+  }
+  function StartProcess([string]$target) {
+    Start-Process -FilePath $exe -ArgumentList 'content-mapper' -WorkingDirectory $project `
+      -RedirectStandardInput $stream -RedirectStandardOutput $target -NoNewWindow -Wait
+  }
+  $rows = @("### Windows burst probe ($size SFCs, head, median of 5)", '', '| launch | stdout | wall ms |', '|---|---|---|')
+  $rows += "| Start-Process redirect | file | $(Median { StartProcess $out }) |"
+  $rows += "| Start-Process redirect | NUL | $(Median { StartProcess 'NUL' }) |"
+  if ($defender) {
+    Add-MpPreference -ExclusionPath $root, (Split-Path $exe)
+    Start-Sleep -Seconds 2
+    $rows += "| Start-Process redirect, Defender exclusion | file | $(Median { StartProcess $out }) |"
+  }
+  $rows | Write-Output
+  $rows + '' | Add-Content $env:GITHUB_STEP_SUMMARY
+  """####
+}

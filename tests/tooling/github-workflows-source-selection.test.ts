@@ -1,9 +1,10 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { planNativeRuntime } from "../../tools/support/compat/github/plan-native-runtime.ts";
 import { RUST_TEST_COHORT_IDS } from "../../tools/support/compat/github/rust-test-cohorts.ts";
-import { readRepoFile, requireDailySourceContracts } from "./support/github-workflows.ts";
+import { requireDailySourceContracts } from "./support/github-workflows.ts";
 
 type Step = {
   name?: string;
@@ -27,10 +28,10 @@ type Job = {
   with?: Record<string, string>;
   "continue-on-error"?: boolean;
 };
-const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
+const source = parse(readAutomationPrograms(".github", "workflows", "pr-source-checks.yml")) as {
   jobs: Record<string, Job>;
 };
-const rust = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
+const rust = parse(readAutomationPrograms(".github", "workflows", "pr-rust-checks.yml")) as {
   jobs: Record<string, Job>;
   on: {
     workflow_call: {
@@ -38,7 +39,7 @@ const rust = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) a
     };
   };
 };
-const products = parse(readRepoFile(".github", "workflows", "pr-rust-products.yml")) as {
+const products = parse(readAutomationPrograms(".github", "workflows", "pr-rust-products.yml")) as {
   jobs: Record<string, Job>;
   on: {
     workflow_call: {
@@ -98,7 +99,7 @@ test("source planning uses Node and offline metadata before selecting affected p
     ciSelection?.run,
     'node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./tools/support/compat/github/test-case-reporter.ts --test-reporter-destination="$RUNNER_TEMP/test-cases-ci-selection.json" tests/tooling/ci-iteration-plans.test.ts tests/tooling/pr-required-rust.test.ts tests/tooling/rust-test-cohorts.test.ts tests/tooling/rust-build-evidence.test.mjs tests/tooling/pinned-fixture-hydration.test.ts tests/tooling/native-preparation-identity.test.ts tests/tooling/native-formatter-build-custody.test.mjs tests/tooling/native-ci-formatter-custody.test.mjs tests/tooling/native-history-profile.test.ts tests/tooling/native-history-toolchain.test.ts tests/tooling/publish-npm-package*.test.ts tests/tooling/davinci-canonical-corpus-kernel-prefix.test.ts',
   );
-  const check = parse(readRepoFile(".github", "workflows", "check.yml")) as typeof source;
+  const check = parse(readAutomationPrograms(".github", "workflows", "check.yml")) as typeof source;
   const js = check.jobs["check-js"].steps ?? [];
   const install = js.findIndex((step) => step.name === "Install JS dependencies");
   const fast = js.findIndex((step) => step.name === "Check fast JS/TS");
@@ -110,7 +111,12 @@ test("source planning uses Node and offline metadata before selecting affected p
   assert.equal(js[fast]["continue-on-error"], undefined);
   assert.equal(js[fast].uses, "./.github/actions/test-small-node-cases");
   assert.deepEqual(js[fast].with, { suite: "check-js", job: "check-js", packet: "check-js" });
-  const smallCases = readRepoFile(".github", "actions", "test-small-node-cases", "action.yml");
+  const smallCases = readAutomationPrograms(
+    ".github",
+    "actions",
+    "test-small-node-cases",
+    "action.yml",
+  );
   assert.match(smallCases, /vp run --workspace-root check:iteration/);
   assert.match(smallCases, /github-workflows-source-selection\.test\.ts/);
   assert.match(smallCases, /vp-bootstrap-cache\.test\.mjs/);
@@ -205,14 +211,14 @@ test("opted-in PR and merge browser qualification retain tests and enforce merge
   const steps = source.jobs["pr-playground-test"].steps ?? [];
   const browser = steps.find((step) => step.name === "Run playground tests");
   assert.equal(browser?.if, "${{ env.RUN_PLAYGROUND == 'true' }}");
-  for (const name of [
-    "Run VRT",
-    "Upload VRT report",
-    "Upload VRT diff artifacts",
-    "Fail if VRT failed",
-  ]) {
+  const vrt = steps.find((step) => step.name === "Run VRT");
+  assert.equal(
+    vrt?.if,
+    "${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' }}",
+  );
+  for (const name of ["Upload VRT report", "Upload VRT diff artifacts"]) {
     const step = steps.find((candidate) => candidate.name === name);
-    assert.ok(step?.if?.includes("github.event_name == 'merge_group'"), name);
+    assert.equal(step?.if, "failure() && steps.vrt.outcome == 'failure'", name);
   }
 });
 
@@ -255,7 +261,7 @@ test("the Rust report waits for the builder and every named test cohort", () => 
     "run-install": false,
   });
   assert.equal(gate, reportSteps.length - 1, "no worker selection follows the tier gate");
-  const check = parse(readRepoFile(".github", "workflows", "check.yml"));
+  const check = parse(readAutomationPrograms(".github", "workflows", "check.yml"));
   assert.deepEqual(check.jobs["pr-source-checks"].permissions, {
     contents: "read",
     actions: "read",
@@ -305,7 +311,7 @@ test("unchanged queue gate hydrates the same pinned fixture for all five full Ru
     "cli-and-integrations",
   ]);
   const action = parse(
-    readRepoFile(".github", "actions", "hydrate-pinned-fixture", "action.yml"),
+    readAutomationPrograms(".github", "actions", "hydrate-pinned-fixture", "action.yml"),
   ) as {
     runs: { steps: Record<string, unknown>[] };
   };
@@ -350,8 +356,10 @@ test("existing source CLI producer qualifies every formatter semantic case with 
   const replayName = "Replay complete formatter CLI stock semantics with the source CLI";
   const uploadName = "Preserve complete source formatter semantic observations";
   type Action = { runs: { steps: Step[] } };
-  const action = parse(readRepoFile(".github/actions/test-native-lsp/action.yml")) as Action;
-  const check = parse(readRepoFile(".github", "workflows", "check.yml")) as typeof source;
+  const action = parse(
+    readAutomationPrograms(".github/actions/test-native-lsp/action.yml"),
+  ) as Action;
+  const check = parse(readAutomationPrograms(".github", "workflows", "check.yml")) as typeof source;
   const requireReplay = (flow: typeof source, producer: typeof action, outer: typeof check) => {
     const job = flow.jobs["pr-native-runtime"];
     const steps = job.steps ?? [];

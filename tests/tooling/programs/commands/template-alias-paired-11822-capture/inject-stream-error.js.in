@@ -1,0 +1,12 @@
+import { createRequire, syncBuiltinESMExports } from "node:module";
+const require = createRequire(import.meta.url);
+const childProcess = require("node:child_process");
+const original = childProcess.spawn;
+childProcess.spawn = (...args) => {
+  const child = original(...args);
+  const stream = @@STREAM@@;
+  const source = stream === "stdin" ? process.stdin : child[stream];
+  setImmediate(() => source.emit("error", new Error(@@MESSAGE@@)));
+  return child;
+};
+syncBuiltinESMExports();

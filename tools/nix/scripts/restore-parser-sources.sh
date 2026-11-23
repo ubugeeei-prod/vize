@@ -1,0 +1,4 @@
+rm -rf "$out/upstream/forks/oxc_parser" "$out/upstream/forks/oxc_parser_compat"
+cp -R @PARSER@ "$out/upstream/forks/oxc_parser"
+cp -R @PARSER_COMPAT@ "$out/upstream/forks/oxc_parser_compat"
+chmod -R +w "$out/upstream/forks/oxc_parser" "$out/upstream/forks/oxc_parser_compat"

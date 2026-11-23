@@ -5,6 +5,7 @@ on:
       - "tools/support/release/human_reports_11252_11253_public/**"
       - "tests/tooling/release/human-reports-11252-11253*.ts"
       - ".github/workflows/published-human-reports-11252-11253.yml"
+      - ".github/scripts/workflows/published-human-reports-11252-11253/**"
   workflow_dispatch:
     inputs:
       request_blob:
@@ -38,6 +39,7 @@ jobs:
     runs-on: ${{ inputs.role == 'runtime-prop-null-11252' && 'blacksmith-12vcpu-macos-15' || 'blacksmith-8vcpu-ubuntu-2404' }}
     timeout-minutes: 45
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/published-human-reports-11252-11253"
       REQUEST_BLOB: ${{ inputs.request_blob }}
       ROLE: ${{ inputs.role }}
       PHASE: ${{ inputs.phase }}
@@ -58,14 +60,7 @@ jobs:
         run: node --experimental-strip-types --test tests/tooling/release/human-reports-11252-11253-public.test.ts
       - name: Authenticate manual request and execute original public recipe
         shell: bash
-        run: |
-          set -euo pipefail
-          root="$RUNNER_TEMP/human-reports-$ROLE-$PHASE"
-          pnpm_cli="$(node -p 'require("node:fs").realpathSync(process.argv[1])' "$(command -v pnpm)")"
-          node --experimental-strip-types tools/support/release/human_reports_11252_11253_public/bootstrap.ts \
-            "$REQUEST_BLOB" "$ROLE" "$PHASE" "$root-request"
-          node --experimental-strip-types tools/support/release/human_reports_11252_11253_public/run.ts \
-            --execute-public "$root-request/request.json" "$pnpm_cli" "$root-output"
+        run: . "${{ env.VIZE_CI_FILES }}/authenticate-manual-request-and-execute-original-public-recipe.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:

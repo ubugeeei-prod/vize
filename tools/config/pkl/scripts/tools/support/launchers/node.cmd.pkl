@@ -1,0 +1,9 @@
+amends "../../../../ShellScript.pkl"
+
+interpreter = null
+executable = false
+
+commands {
+  #"@echo off"#
+  #"@@COMMAND@@ %*"#
+}

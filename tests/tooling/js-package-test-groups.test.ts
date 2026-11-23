@@ -1,3 +1,5 @@
+import { workspaceTaskSteps } from "../../tools/config/vite-plus/task-plan.ts";
+import { packageCommands, packageScripts } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -6,7 +8,6 @@ import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parse, parseAllDocuments } from "yaml";
 
-import { runPackageScriptDirectly, runTask } from "../../tools/config/vite-plus/task-helpers.ts";
 import type { PackagePath } from "../../tools/config/vite-plus/task-helpers.ts";
 import { testedPackages } from "../../tools/config/vite-plus/task-inputs.ts";
 import { testedPackageGroups } from "../../tools/config/vite-plus/tested-package-groups.ts";
@@ -51,12 +52,13 @@ const check = parse(checkWorkflowJobSources()) as {
   jobs: Record<string, Job>;
 };
 const command = (name: string) => {
-  const entry = (testAndBenchmarkTasks as Record<string, { command?: string; cache?: boolean }>)[
-    name
-  ];
-  assert.ok(entry?.command, `missing task ${name}`);
+  const entry = testAndBenchmarkTasks[name as keyof typeof testAndBenchmarkTasks];
+  assert.ok(
+    typeof entry === "object" && "command" in entry && entry.command,
+    "missing task " + name,
+  );
   assert.equal(entry.cache, false, `${name} always runs`);
-  return entry.command;
+  return workspaceTaskSteps(entry);
 };
 
 // Every workspace package, so dependency chains through untested packages count.
@@ -128,11 +130,11 @@ void test("Musea Nuxt packed consumers run in ordinary and full builder qualific
     ["builders"],
   );
   assert.equal(
-    manifests.get(pkg)?.scripts?.test,
+    packageCommands(root, pkg, manifests.get(pkg)?.scripts?.test, "test").join(" && "),
     "pnpm build && node --test src/*.test.ts src/**/*.test.ts",
   );
   for (const taskName of ["test:js", "test:js:builders"])
-    assert.ok(command(taskName).includes(pkg));
+    assert.ok(command(taskName).some((step) => step.arguments?.includes(pkg)));
   const plan = planAffectedJs(readJsWorkspace(root), ["npm/framework/musea-nuxt/src/plugin.ts"]);
   assert.ok(plan.packages.includes(pkg.slice(2)));
   assert.ok(plan.groups.includes("builders"));
@@ -151,7 +153,7 @@ void test("each group holds its tested dependencies or builds their test bundles
       const scripts = manifests.get(pkg)?.scripts ?? {};
       assert.equal(scripts.build, "vp pack", `${pkg} build is the bundle step`);
       assert.ok(
-        scripts.test?.startsWith(`${scripts.build} && `),
+        packageCommands(root, pkg, scripts.test, "test")[0] === scripts.build,
         `${pkg} tests start with the same bundle step its dependents read`,
       );
     }
@@ -243,34 +245,35 @@ void test("the stable full JS gate refuses every incomplete or unsuccessful upst
 });
 
 void test("group tasks keep the full set's preparation, wrapper, order and concurrency", () => {
-  const full = command("test:js");
-  const filters = testedPackages.map((pkg) => ` --filter '${pkg}'`).join("");
-  assert.ok(full.endsWith(`${filters} test`), "the full task filters testedPackages in order");
-  const prefix = full.slice(0, -`${filters} test`.length);
-  assert.equal(
-    prefix,
-    `${runTask("build:native:test")} && VP_RUN_CONCURRENCY_LIMIT=1 node npm/native/scripts/test-preparation.mjs vp run`,
-  );
-  const [native, packageRun] = prefix.split(" && ");
+  const native = { program: "vp", arguments: ["run", "--workspace-root", "build:native:test"] };
+  const build = (directory: string) => ({
+    program: "pnpm",
+    arguments: ["run", "build"],
+    directory,
+  });
+  const run = (packages: readonly string[]) => ({
+    program: "node",
+    arguments: [
+      "npm/native/scripts/test-preparation.mjs",
+      "vp",
+      "run",
+      ...packages.flatMap((pkg) => ["--filter", pkg]),
+      "test",
+    ],
+    environment: { VP_RUN_CONCURRENCY_LIMIT: "1" },
+  });
+  assert.deepEqual(command("test:js"), [native, run(testedPackages)]);
   for (const { name, packages, prebuilt } of testedPackageGroups) {
-    const selected = testedPackages
-      .filter((pkg) => (packages as readonly PackagePath[]).includes(pkg))
-      .map((pkg) => ` --filter '${pkg}'`)
-      .join("");
-    assert.equal(
-      command(`test:js:${name}`),
-      [
-        native,
-        ...(prebuilt.length > 0 ? [runPackageScriptDirectly("build", prebuilt)] : []),
-        `${packageRun}${selected} test`,
-      ].join(" && "),
+    const selected = testedPackages.filter((pkg) =>
+      (packages as readonly PackagePath[]).includes(pkg),
+    );
+    assert.deepEqual(
+      command("test:js:" + name),
+      [native, ...prebuilt.map(build), run(selected)],
       name,
     );
   }
-  assert.equal(
-    command("build:oxlint-qualification"),
-    `${native} && ${runPackageScriptDirectly("build", ["./npm/linter/oxlint"])}`,
-  );
+  assert.deepEqual(command("build:oxlint-qualification"), [native, build("./npm/linter/oxlint")]);
 });
 
 void test("PR CI runs each affected group once and keeps qualification and conformance separate", () => {
@@ -350,7 +353,11 @@ await test("UI's actual production Vue consumer has its locked fixture in the fi
     for (const pkg of packages) assert.ok(installerPlan.packages.includes(pkg.slice(2)), pkg);
   }
   const ui = manifests.get("./npm/ui");
-  assert.ok(ui?.scripts?.test?.includes("vp test run --config vite.production-vue.config.ts"));
+  assert.ok(
+    packageScripts("npm/ui", ui?.scripts)?.test?.includes(
+      "vp test run --config vite.production-vue.config.ts",
+    ),
+  );
   assert.match(source, /assert\.equal\(manifest\.version, "3\.5\.42"\)/u);
   assert.match(source, /assert\.equal\(compiler\.version, "3\.5\.42"\)/u);
 

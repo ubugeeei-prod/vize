@@ -1,0 +1,11 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  export VIZE_BENCH_CPU_SET=$(node tools/benchmarks/scripts/cold-typechecker-scale-affinity.ts)
+  taskset -c "$VIZE_BENCH_CPU_SET" node tools/benchmarks/scripts/cold-typechecker-scale-candidate-paired.ts --provider "$RUNNER_TEMP/provider" --out "$RUNNER_TEMP/cold-paired/observations" --case "$RUNNER_TEMP/cold-paired/selection/source-case.json" --base "$RUNNER_TEMP/cold-paired/builds/base.json" --head "$RUNNER_TEMP/cold-paired/builds/head.json" --allocation-base "$RUNNER_TEMP/cold-paired/allocation/base/build.json" --allocation-head "$RUNNER_TEMP/cold-paired/allocation/head/build.json" --custody-base "$RUNNER_TEMP/cold-paired/builds/custody-base.json" --custody-head "$RUNNER_TEMP/cold-paired/builds/custody-head.json"
+  """#
+}

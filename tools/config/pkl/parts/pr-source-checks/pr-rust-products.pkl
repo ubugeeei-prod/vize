@@ -1,0 +1,13 @@
+name = "PR Rust workspace products"
+permissions {
+  contents = "read"
+  actions = "read"
+  `pull-requests` = "read"
+}
+`if` = "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}"
+needs = "pr-source-plan"
+uses = "./.github/workflows/pr-rust-products.yml"
+with {
+  `run-rust` = true
+  `rust-plan` = "${{ needs.pr-source-plan.outputs.rust-plan }}"
+}

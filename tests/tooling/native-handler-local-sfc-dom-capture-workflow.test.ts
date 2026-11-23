@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
@@ -27,7 +28,7 @@ test("original local-handler source qualifies the existing source-bound tooling 
 });
 
 test("actual capture runs after plugin preparation and preserves previous complete captures", () => {
-  const setup = read(".github/actions/test-native-js-setup/action.yml");
+  const setup = readAutomationPrograms(".github/actions/test-native-js-setup/action.yml");
   assert(
     setup.indexOf("Prepare the pinned plugin isolation runtime") <
       setup.indexOf("Capture original block-local handler components and runtime"),
@@ -37,7 +38,9 @@ test("actual capture runs after plugin preparation and preserves previous comple
       setup.indexOf("test-native-handler-local-sfc-dom"),
   );
   assert.match(setup, /uses: \.\/\.github\/actions\/test-native-handler-local-sfc-dom/);
-  const action = read(".github/actions/test-native-handler-local-sfc-dom/action.yml");
+  const action = readAutomationPrograms(
+    ".github/actions/test-native-handler-local-sfc-dom/action.yml",
+  );
   assert.match(
     action,
     /cargo test --locked --profile ci -p vize_atelier_sfc native_selected::tests::local::ten_original_block_local_components_and_maps_are_captured -- --exact/,

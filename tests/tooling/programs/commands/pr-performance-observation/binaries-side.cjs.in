@@ -1,0 +1,4 @@
+#!@@NODE@@
+import { writeFileSync } from "node:fs";
+if (process.argv.includes("--version")) console.log("vize fake");
+else writeFileSync(@@BACKEND@@, "changed during measurement");

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+args=(publish "$OBSERVER" "real-project-$OBSERVER-corpus" "real-project-$OBSERVER-reduction")
+if [[ -s "real-project-$OBSERVER-promotion/promotion.json" ]]; then
+  args+=("real-project-$OBSERVER-promotion")
+fi
+node tools/support/compat/github/canonical-corpus-divergence-issue.mjs "${args[@]}"

@@ -16,14 +16,7 @@ fn inspector_compare_hides_missing_vue_compiler_stack_trace() {
     .unwrap();
 
     let fake_node = project.path().join("fake-node");
-    fs::write(
-        &fake_node,
-        "#!/bin/sh\n\
-         echo \"node:internal/modules/esm/resolve:271\" >&2\n\
-         echo \"Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/node_modules/vue/compiler-sfc'\" >&2\n\
-         exit 1\n",
-    )
-    .unwrap();
+    fs::write(&fake_node, include_str!("programs/missing-vue-compiler.sh")).unwrap();
     let mut permissions = fs::metadata(&fake_node).unwrap().permissions();
     permissions.set_mode(0o755);
     fs::set_permissions(&fake_node, permissions).unwrap();
@@ -58,7 +51,7 @@ fn compare_with_closed_node_stdin(script: &str) -> std::process::Output {
     );
     fs::write(project.path().join("App.vue"), source).unwrap();
     let fake_node = project.path().join("fake-node");
-    fs::write(&fake_node, format!("#!/bin/sh\nexec 0<&-\n{script}\n")).unwrap();
+    fs::write(&fake_node, script).unwrap();
     fs::set_permissions(&fake_node, fs::Permissions::from_mode(0o755)).unwrap();
     Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(project.path())
@@ -71,11 +64,8 @@ fn compare_with_closed_node_stdin(script: &str) -> std::process::Output {
 #[cfg(unix)]
 #[test]
 fn inspector_compare_retains_missing_module_diagnostic_after_broken_pipe() {
-    let output = compare_with_closed_node_stdin(
-        "echo \"node:internal/modules/esm/resolve:271\" >&2\n\
-         echo \"Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/node_modules/vue/compiler-sfc'\" >&2\n\
-         exit 17",
-    );
+    let output =
+        compare_with_closed_node_stdin(include_str!("programs/close-input-missing-compiler.sh"));
     assert_eq!(
         output.stderr.as_slice(),
         include_bytes!("fixtures/inspector_compare/missing_compiler.stderr.txt")
@@ -97,7 +87,7 @@ fn inspector_compare_retains_missing_module_diagnostic_after_broken_pipe() {
 #[test]
 fn inspector_compare_retains_child_failure_status_and_stderr_after_broken_pipe() {
     let output =
-        compare_with_closed_node_stdin("echo 'authoritative compiler failure' >&2\nexit 23");
+        compare_with_closed_node_stdin(include_str!("programs/close-input-compiler-error.sh"));
     assert_eq!(
         output.stderr.as_slice(),
         include_bytes!("fixtures/inspector_compare/compiler_failure.stderr.txt")
@@ -115,7 +105,8 @@ fn inspector_compare_retains_child_failure_status_and_stderr_after_broken_pipe()
 #[cfg(unix)]
 #[test]
 fn inspector_compare_rejects_successful_child_that_did_not_receive_input() {
-    let output = compare_with_closed_node_stdin("echo '{\"files\":[]}'\nexit 0");
+    let output =
+        compare_with_closed_node_stdin(include_str!("programs/close-input-print-files.sh"));
     let stderr = String::from_utf8(output.stderr).unwrap();
     assert_eq!(output.status.code(), Some(1), "{stderr}");
     assert!(

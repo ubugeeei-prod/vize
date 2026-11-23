@@ -1,0 +1,29 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  module.requireCommitShas(List("DECLARED_BASE_SHA"))
+  #"""
+  mkdir -p evidence
+  printf '%s\n' "$DECLARED_BASE_SHA" > evidence/declared-base.sha
+  git rev-parse HEAD > evidence/head.sha
+  git cat-file commit HEAD > evidence/head.commit
+  node "$VIZE_CI_FILES/../shared/first-parent.ts" evidence/head.commit write evidence/first-parent.sha
+  recovery_base_sha=$(cat evidence/first-parent.sha)
+  [[ "$recovery_base_sha" =~ ^[0-9a-f]{40}$ ]]
+  test "$recovery_base_sha" != "$(git rev-parse HEAD)"
+  if [[ "$EVENT_KIND" == workflow_dispatch ]]; then test "$DECLARED_BASE_SHA" = "$recovery_base_sha"; fi
+  git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$recovery_base_sha"
+  git worktree add --detach "$RUNNER_TEMP/recovery-base" "$recovery_base_sha"
+  git -C "$RUNNER_TEMP/recovery-base" rev-parse HEAD > evidence/base.sha
+  test "$(cat evidence/base.sha)" = "$(cat evidence/first-parent.sha)"
+  git diff --name-status "$recovery_base_sha" HEAD > evidence/source-diff.txt
+  cp davinci/vize_l0/examples/source_recovery_benchmark.rs "$RUNNER_TEMP/recovery-base/davinci/vize_l0/examples/"
+  sha256sum davinci/vize_l0/examples/source_recovery_benchmark.rs "$RUNNER_TEMP/recovery-base/davinci/vize_l0/examples/source_recovery_benchmark.rs" > evidence/carriers.sha256
+  test "$(cut -d' ' -f1 evidence/carriers.sha256 | sort -u | wc -l)" -eq 1
+  rustc +1.100.0 -vV > evidence/rustc.txt
+  lscpu > evidence/cpu.txt
+  """#
+}

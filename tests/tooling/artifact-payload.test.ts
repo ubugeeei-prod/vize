@@ -18,6 +18,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import type { TestContext } from "node:test";
 import { fileURLToPath } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 import {
   MANIFEST,
   PAYLOAD,
@@ -217,10 +218,11 @@ void test("an unreadable directory cannot hide extra inventory", async (t) => {
     if (process.getuid?.() === 0) {
       // A root runner can read mode000: exercise the real refusal as nobody.
       chmodSync(root, 0o755);
-      const program = `const files = await import(${JSON.stringify(filesModule)});
-try { await files.verifyTree(${JSON.stringify(directory)}, ${JSON.stringify(manifest)}); process.exit(1); }
-catch (error) { process.exit(error instanceof files.PayloadError ? 0 : 2); }`;
-      const child = spawnSync(process.execPath, ["--input-type=module", "-e", program], {
+      const program = [
+        toolingProgram("release/verify-unreadable-inventory.js"),
+        JSON.stringify({ filesModule, directory, manifest }),
+      ];
+      const child = spawnSync(process.execPath, [...program], {
         uid: 65534,
         gid: 65534,
         encoding: "utf8",

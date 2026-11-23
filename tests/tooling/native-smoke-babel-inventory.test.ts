@@ -1,3 +1,5 @@
+import { archivedWorkflow } from "./support/workflow-history.ts";
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
@@ -102,19 +104,15 @@ function assertLiveInventory(workflow: string, release: string): void {
 
 test("actual native-smoke and release files bind the registered successor", () => {
   assertLiveInventory(
-    fs.readFileSync(new URL("../../.github/workflows/native-smoke.yml", import.meta.url), "utf8"),
-    fs.readFileSync(new URL("../../.github/workflows/release.yml", import.meta.url), "utf8"),
+    archivedWorkflow(".github/workflows/native-smoke.yml"),
+    readAutomationPrograms(new URL("../../.github/workflows/release.yml", import.meta.url)),
   );
 });
 
 test("smoke rollback or Babel publication rollback cannot reuse historical admission", () => {
-  const workflow = fs.readFileSync(
-    new URL("../../.github/workflows/native-smoke.yml", import.meta.url),
-    "utf8",
-  );
-  const release = fs.readFileSync(
+  const workflow = archivedWorkflow(".github/workflows/native-smoke.yml");
+  const release = readAutomationPrograms(
     new URL("../../.github/workflows/release.yml", import.meta.url),
-    "utf8",
   );
   const oldLine = before.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
   const currentLine = workflow.split("\n").find((row) => row.startsWith("  RELEASE_JS_PACKAGES: "));
@@ -133,10 +131,7 @@ test("smoke rollback or Babel publication rollback cannot reuse historical admis
 });
 
 test("timing observation cannot alter commands, selectors, retention, or unrelated fields", () => {
-  const workflow = fs.readFileSync(
-    new URL("../../.github/workflows/native-smoke.yml", import.meta.url),
-    "utf8",
-  );
+  const workflow = archivedWorkflow(".github/workflows/native-smoke.yml");
   for (const [from, to] of [
     ["VIZE_SMOKE_TIMING_FILE:", "OTHER_TIMING_FILE:"],
     ["packed-smoke-timing.jsonl", "other.jsonl"],

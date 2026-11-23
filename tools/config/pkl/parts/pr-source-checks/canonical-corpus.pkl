@@ -1,0 +1,8 @@
+permissions {
+  contents = "read"
+  actions = "read"
+  checks = "read"
+}
+needs = "pr-source-plan"
+`if` = "${{ !cancelled() && needs.pr-source-plan.result == 'success' && needs.pr-source-plan.outputs.canonical-corpus == 'true' }}"
+uses = "./.github/workflows/davinci-canonical-corpus.yml"

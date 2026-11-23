@@ -980,7 +980,7 @@ export function renderDocument(data) {
   );
   lines.push("");
   lines.push(
-    "This page is generated from the Tool Benchmark workflow so published performance numbers can cite one reproducible runner, input corpus, and commit.",
+    "This page is generated from the `tool-benchmark.yml` workflow so published performance numbers can cite one reproducible runner, input corpus, and commit.",
   );
   lines.push("");
   lines.push(

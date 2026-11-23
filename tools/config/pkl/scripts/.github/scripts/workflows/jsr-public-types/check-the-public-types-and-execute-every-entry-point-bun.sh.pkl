@@ -1,0 +1,11 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  bun --version | tee runtime-version.txt
+  bun node_modules/typescript/bin/tsc --strict --noEmit --target ESNext --module NodeNext --moduleResolution NodeNext consumer-types.ts 2>&1 | tee types.log
+  bun run consumer.ts @vizejs/vize --vite --core-only 2>&1 | tee runtime.log
+  """#
+}

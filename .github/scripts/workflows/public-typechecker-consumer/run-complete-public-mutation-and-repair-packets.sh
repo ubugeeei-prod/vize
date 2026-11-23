@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo pipefail
+node tools/benchmarks/scripts/public-typechecker-consumer.ts --provider "$RUNNER_TEMP/public-provider" --binary "$RUNNER_TEMP/public-cli/vize" --archive "$RUNNER_TEMP/public-cli/vize.tar.gz" --out "$RUNNER_TEMP/public-acceptance"

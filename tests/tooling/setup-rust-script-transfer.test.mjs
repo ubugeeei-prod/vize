@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -31,7 +32,9 @@ async function observed({ original = false, mode = "stall", alwaysFail = false }
   const sentinel = "old complete archive remains owned until replacement";
   fs.writeFileSync(archive, sentinel);
   const runner = path.join(directory, "rust-script");
-  fs.writeFileSync(runner, "#!/bin/bash\nprintf 'rust-script 0.34.0\\n'\n", { mode: 0o755 });
+  fs.writeFileSync(runner, readToolingProgram("commands/setup-rust-script-transfer/runner.sh"), {
+    mode: 0o755,
+  });
   const fixture = path.join(directory, "fixture.tar.gz");
   const packed = spawnSync("/usr/bin/tar", [
     "--format=ustar",
@@ -89,25 +92,18 @@ async function observed({ original = false, mode = "stall", alwaysFail = false }
   // Transport-only adapter: retain all real curl flags and production URLs in
   // the receipt, map their destination to our trusted local TLS server. No -k,
   // shorter timeout, simulated curl status, or fake output bytes are used.
-  const wrapper = `#!${process.execPath}
-import assert from "node:assert/strict";
-import fs from "node:fs";
-import { spawnSync } from "node:child_process";
-const args = process.argv.slice(2), url = args.at(-1);
-assert.ok([${JSON.stringify(primary)}, ${JSON.stringify(api)}].includes(url));
-assert.deepEqual(args.slice(0, 7), ["--fail", "--silent", "--show-error", "--location", "--proto", "=https", "--tlsv1.2"]);
-const deadlines = ["--connect-timeout", "10", "--max-time", "30", "--speed-limit", "1", "--speed-time", "5"];
-if (!${original}) assert.deepEqual(args.slice(7, 7 + deadlines.length), deadlines);
-if (!${original} && url === ${JSON.stringify(api)}) {
-  const retryStart = 7 + deadlines.length;
-  assert.deepEqual(args.slice(retryStart, retryStart + 5), ["--retry", "5", "--retry-all-errors", "--retry-delay", "1"]);
-}
-const forwarded = [...args.slice(0, -1), "--cacert", ${JSON.stringify(cert)}, ${JSON.stringify(local)} + (url === ${JSON.stringify(primary)} ? "/primary" : "/api")];
-const result = spawnSync("/usr/bin/curl", forwarded, { encoding: "utf8" });
-fs.appendFileSync(${JSON.stringify(path.join(directory, "curl.jsonl"))}, JSON.stringify({ args, forwarded, status: result.status, signal: result.signal, stdout: result.stdout, stderr: result.stderr }) + "\\n");
-process.stdout.write(result.stdout); process.stderr.write(result.stderr);
-process.exit(result.status ?? 126);
-`;
+  const wrapper = readToolingProgram(
+    "commands/setup-rust-script-transfer/redirect-curl-to-local-tls.js.in",
+    {
+      NODE: process.execPath,
+      PRIMARY: JSON.stringify(primary),
+      API: JSON.stringify(api),
+      ORIGINAL: original,
+      CERT: JSON.stringify(cert),
+      LOCAL: JSON.stringify(local),
+      LOG: JSON.stringify(path.join(directory, "curl.jsonl")),
+    },
+  );
   fs.writeFileSync(path.join(bin, "curl"), wrapper, { mode: 0o755 });
   const source = original ? frozen : path.join(action, "download-prebuilt.sh");
   const started = Date.now();

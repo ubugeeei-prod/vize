@@ -27,7 +27,8 @@
     "directory": "npm/builder/unplugin"
   },
   "files": [
-    "dist"
+    "dist",
+    "scripts/package-tasks.cjs"
   ],
   "type": "module",
   "main": "./dist/index.mjs",
@@ -79,7 +80,7 @@
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "test": "vp pack && node --test src/*.test.ts src/**/*.test.ts",
+    "test": "node ./scripts/package-tasks.cjs test",
     "test:update": "node --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
   },
   "dependencies": {

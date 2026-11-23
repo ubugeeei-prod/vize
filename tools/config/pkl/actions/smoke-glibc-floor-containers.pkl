@@ -1,0 +1,44 @@
+name = "Smoke Linux GNU artifacts on old glibc"
+description = "Run the Linux GNU release artifacts inside Amazon Linux 2023 (glibc 2.34: the Vercel build image and the Vercel Functions / AWS Lambda runtime), AlmaLinux 8 (glibc 2.28: the oldest glibc official Node.js 22+ runs on) and CentOS 7 (glibc 2.17: the documented floor itself). The caller lays out npm/native/npm/<platform> and builds npm/cli, npm/builder/unplugin and npm/builder/vite first."
+inputs {
+  platform {
+    required = true
+    description = "linux-x64-gnu or linux-arm64-gnu"
+  }
+  cli {
+    required = false
+    ["default"] = ""
+    description = "Release CLI binary relative to the workspace; skipped when empty"
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Install packed packages on Amazon Linux 2023 and AlmaLinux 8"
+      `if` = "inputs.cli == ''"
+      shell = "bash"
+      env { PLATFORM = "${{ inputs.platform }}" }
+      run = #"node tools/commands/release/npm/smoke-glibc-floor-containers.ts --platform "$PLATFORM" --mode packages amazonlinux:2023@sha256:8ee95c4096d455555cb208d1dcea7b759235afab02253351d566d22d904f2198 almalinux:8@sha256:768bedc30fe0a536adb0a65d2eddb7caad364e514fbddd0ae9e026975f590342"#
+    }
+    // Official Node.js builds need glibc 2.28; the unofficial glibc-217 build
+    // loads the binding where the floor itself is the system glibc.
+    new Dynamic {
+      name = "Load the binding on CentOS 7 (glibc 2.17)"
+      `if` = "inputs.cli == '' && inputs.platform == 'linux-x64-gnu'"
+      shell = "bash"
+      env { PLATFORM = "${{ inputs.platform }}" }
+      run = #". "$GITHUB_ACTION_PATH/scripts/load-the-binding-on-centos-7-glibc-2-17.sh""#
+    }
+    new Dynamic {
+      name = "Run the release CLI on glibc 2.17, 2.28 and 2.34"
+      `if` = "inputs.cli != ''"
+      shell = "bash"
+      env {
+        PLATFORM = "${{ inputs.platform }}"
+        CLI = "${{ inputs.cli }}"
+      }
+      run = #"node tools/commands/release/npm/smoke-glibc-floor-containers.ts --platform "$PLATFORM" --mode cli --cli "$CLI" centos:7@sha256:be65f488b7764ad3638f236b7b515b3678369a5124c47b8d32916d6487418ea4 almalinux:8@sha256:768bedc30fe0a536adb0a65d2eddb7caad364e514fbddd0ae9e026975f590342 amazonlinux:2023@sha256:8ee95c4096d455555cb208d1dcea7b759235afab02253351d566d22d904f2198"#
+    }
+  }
+}

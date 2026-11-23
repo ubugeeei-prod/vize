@@ -1,0 +1,14 @@
+import "../../Actions.pkl" as ci
+
+`self-hosted-runner` {
+  labels = new Listing {
+    "blacksmith-8vcpu-ubuntu-2404"
+    ci.macos
+    ci.linux2204
+    // The arm64 release rows (tools/support/github/release-platforms.ts).
+    "blacksmith-32vcpu-ubuntu-2204-arm"
+    ci.linux
+    "blacksmith-32vcpu-ubuntu-2404-arm"
+    ci.windows
+  }
+}

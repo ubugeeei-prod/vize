@@ -1,0 +1,253 @@
+import "../../Actions.pkl" as ci
+
+name = "Cold typechecker scale"
+on {
+  workflow_dispatch {
+    inputs {
+      base_sha {
+        description = "Immutable 40-hex baseline commit distinct from the dispatched source"
+        type = "string"
+        required = true
+      }
+      head_sha {
+        description = "Immutable candidate source for the separate strict paired mode"
+        type = "string"
+        required = false
+      }
+      mode {
+        description = "Full default comparison or the strict ownership experiment"
+        type = "choice"
+        options = List("full", "paired-comparison")
+        ["default"] = "full"
+      }
+      sfcs {
+        description = "Vue SFC count plus the complete authored package dependency graph"
+        type = "choice"
+        options = List("2500", "10000", "50000")
+        ["default"] = "2500"
+      }
+    }
+  }
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/cold-typechecker-scale.yml"
+      ".github/scripts/workflows/cold-typechecker-scale/**"
+      ".github/scripts/workflows/shared/**"
+      "tools/benchmarks/scripts/cold-typechecker-scale*.ts"
+      "tools/benchmarks/scripts/check-workspace.ts"
+      "tools/benchmarks/scripts/source-operation-perf*.ts"
+      "tools/benchmarks/scripts/source-pmu-calibration.ts"
+      "tools/benchmarks/src/pmu_calibration.rs"
+      "crates/vize/src/commands/check/runner/default_imports.rs"
+      "crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution.rs"
+      "crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution/input_history_tests.rs"
+      "tests/tooling/cold-typechecker-scale*.test.ts"
+      "tests/tooling/source-operation-perf.test.ts"
+      "tests/tooling/source-pmu-calibration.test.ts"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "cold-typechecker-scale-${{ github.event.pull_request.number || github.ref }}${{ inputs.mode == 'paired-comparison' && '-paired-comparison' || '' }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `paired-comparison` {
+    `if` = "github.event_name == 'workflow_dispatch' && inputs.mode == 'paired-comparison'"
+    `runs-on` = ci.linux
+    permissions { contents = "read" }
+    `timeout-minutes` = 60
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/cold-typechecker-scale"
+      BASE_SHA = "${{ inputs.base_sha }}"
+      HEAD_SHA = "${{ inputs.head_sha }}"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = "true"
+      GOMAXPROCS = "8"
+      RAYON_NUM_THREADS = "8"
+      CARGO_BUILD_JOBS = "8"
+      CARGO_INCREMENTAL = "0"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          `persist-credentials` = false
+          `fetch-depth` = 2
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24.14.0"
+          `package-manager-cache` = false
+        }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        name = "Select exact product sources and preserve the separate controller identity"
+        env {
+          VIZE_INPUTS_SFCS = "${{ inputs.sfcs }}"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/select-exact-product-sources-and-preserve-the-separate-controller-identi.sh""#
+      }
+      new Dynamic {
+        name = "Install the exact source-pinned provider graph"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-exact-source-pinned-provider-graph.sh""#
+      }
+      new Dynamic {
+        name = "Refuse changed inputs, native bytes and unsupported modes"
+        run = #". "${{ env.VIZE_CI_FILES }}/refuse-changed-inputs-native-bytes-and-unsupported-modes.sh""#
+      }
+      new Dynamic {
+        name = "Authenticate complete frozen candidate sources before any image build"
+        `if` = "env.PAIRED_ROUTE == 'candidate'"
+        run = """
+        node tools/benchmarks/scripts/cold-typechecker-scale-candidate-prepare.ts --stage verify --plan tools/benchmarks/scripts/cold-typechecker-scale-candidate-cases.json --base "$RUNNER_TEMP/cold-paired-base" --head "$RUNNER_TEMP/cold-paired-head" --provider "$RUNNER_TEMP/provider" --out "$RUNNER_TEMP/cold-paired"
+
+        """
+      }
+      new Dynamic {
+        name = "Build normal exact base and head with equal compiler settings"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-normal-exact-base-and-head-with-equal-compiler-settings.sh""#
+      }
+      new Dynamic {
+        name = "Build separate read-buffer instrumentation after normal image sealing"
+        `if` = "env.PAIRED_ROUTE == 'legacy'"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-separate-read-buffer-instrumentation-after-normal-image-sealing.sh""#
+      }
+      new Dynamic {
+        name = "Build separate allocation and custody roles after both normal images are sealed"
+        `if` = "env.PAIRED_ROUTE == 'candidate'"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-separate-allocation-and-custody-roles-after-both-normal-images-are.sh""#
+      }
+      new Dynamic {
+        uses = "actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c"
+        `if` = "env.PAIRED_ROUTE == 'candidate'"
+        with {
+          `go-version` = "1.27.2"
+          cache = false
+        }
+      }
+      new Dynamic {
+        name = "Require original controls and full output before eight candidate primaries and separate profile blocks"
+        `if` = "env.PAIRED_ROUTE == 'candidate'"
+        run = #". "${{ env.VIZE_CI_FILES }}/require-original-controls-and-full-output-before-eight-candidate-primari.sh""#
+      }
+      new Dynamic {
+        name = "Require full output and read ownership observations before four balanced pairs"
+        `if` = "env.PAIRED_ROUTE == 'legacy'"
+        run = #". "${{ env.VIZE_CI_FILES }}/require-full-output-and-read-ownership-observations-before-four-balanced.sh""#
+      }
+      new Dynamic {
+        name = "Preserve every raw pair, native observation, control and source receipt"
+        `if` = "always()"
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-every-raw-pair-native-observation-control-and-source-receipt.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always() && env.PAIRED_ROUTE == 'candidate'"
+        with {
+          name = "cold-typechecker-candidate-raw-${{ inputs.head_sha }}-${{ github.run_id }}"
+          path = """
+          ${{ runner.temp }}/cold-paired/observations/native/*/native-profile-data
+          ${{ runner.temp }}/cold-paired/observations/native/*/input-blobs
+          ${{ runner.temp }}/cold-paired/observations/native-current/native-profile-data
+          ${{ runner.temp }}/cold-paired/observations/native-current/input-blobs
+
+          """
+          `retention-days` = 14
+        }
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "cold-typechecker-paired-${{ inputs.head_sha }}-${{ github.run_id }}"
+          path = "${{ runner.temp }}/cold-paired-evidence.tgz"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+  profile {
+    `if` = "github.event_name != 'workflow_dispatch' || inputs.mode == 'full'"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 90
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/cold-typechecker-scale"
+      VIZE_BENCH_SFCS = "${{ inputs.sfcs || '2500' }}"
+      BASE_SHA = "${{ inputs.base_sha }}"
+      BENCH_EVENT = "${{ github.event_name }}"
+      PR_EVENT_BASE_SHA = "${{ github.event.pull_request.base.sha }}"
+      PR_HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = "true"
+      GOMAXPROCS = "8"
+      RAYON_NUM_THREADS = "8"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          `persist-credentials` = false
+          `fetch-depth` = 2
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      ci.rust("1.99.1")
+      ci.wild()
+      new Dynamic {
+        name = "Validate the full SFC cohort"
+        run = #". "${{ env.VIZE_CI_FILES }}/validate-the-full-sfc-cohort.sh""#
+      }
+      new Dynamic {
+        name = "Install fixed comparison providers"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-fixed-comparison-providers.sh""#
+      }
+      new Dynamic {
+        name = "Build the exact base and head with equal symbol settings"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-exact-base-and-head-with-equal-symbol-settings.sh""#
+      }
+      new Dynamic {
+        name = "Compare fresh processes and independent authored diagnostic controls"
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-fresh-processes-and-independent-authored-diagnostic-controls.sh""#
+      }
+      new Dynamic {
+        name = "Build allocation instrumentation separately from timing binaries"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-allocation-instrumentation-separately-from-timing-binaries.sh""#
+      }
+      new Dynamic {
+        name = "Capture paired Rust allocation spans without CPU sampling overhead"
+        `timeout-minutes` = 10
+        run = #". "${{ env.VIZE_CI_FILES }}/capture-paired-rust-allocation-spans-without-cpu-sampling-overhead.sh""#
+      }
+      new Dynamic {
+        name = "Capture direct normal-process PMU counters and bounded source stacks"
+        `timeout-minutes` = 15
+        run = #". "${{ env.VIZE_CI_FILES }}/capture-direct-normal-process-pmu-counters-and-bounded-source-stacks.sh""#
+      }
+      new Dynamic {
+        name = "Package evidence without traversing workspace links"
+        `if` = "always()"
+        run = #". "${{ env.VIZE_CI_FILES }}/package-evidence-without-traversing-workspace-links.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "cold-typechecker-scale-${{ github.sha }}"
+          path = "${{ runner.temp }}/cold-scale-evidence.tgz"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = null
+
+commands { "@exit /b 97" }

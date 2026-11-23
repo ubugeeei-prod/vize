@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -15,7 +16,7 @@ import {
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const recipe = "tests/native/sfc-parse-attributes-source.mjs";
-const workflow = fs.readFileSync(
+const workflow = readAutomationPrograms(
   path.join(root, ".github/workflows/sfc-parse-attributes.yml"),
   "utf8",
 );

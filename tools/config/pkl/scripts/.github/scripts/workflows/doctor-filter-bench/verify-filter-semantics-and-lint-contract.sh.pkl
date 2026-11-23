@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("cargo", List("test", "--locked", "-p", "vize_doctor", "filter"))
+  module.command("cargo", List("clippy", "--locked", "-p", "vize_doctor", "--all-targets", "--", "-D", "warnings"))
+}

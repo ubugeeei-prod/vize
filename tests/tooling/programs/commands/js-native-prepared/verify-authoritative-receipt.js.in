@@ -1,0 +1,16 @@
+
+import assert from 'node:assert/strict'; import fs from 'node:fs';
+import {nativePreparationIsActive,withPreparedNative} from './@@HELPER_URL@@';
+const dir=@@NATIVE_ROOT@@; const file=@@RECEIPT@@;
+const original=JSON.parse(fs.readFileSync(file,'utf8')); const active=()=>nativePreparationIsActive(dir);
+assert.equal(active(),true);
+for(const field of ['head','tree','workingDiff','sha256','ownerArgument']) {
+  fs.writeFileSync(file,JSON.stringify({...original,[field]:'different'})); assert.equal(active(),false);
+}
+fs.writeFileSync(file,JSON.stringify({...original,ownerPid:process.pid})); assert.equal(active(),false);
+fs.writeFileSync(file,JSON.stringify(original));
+assert.throws(()=>withPreparedNative(dir,original.ownerArgument,'unused',[]),/owner|already active/);
+fs.appendFileSync('tracked-source','changed'); assert.equal(active(),false);
+assert.throws(()=>withPreparedNative(dir,original.ownerArgument,'unused',[]),/owner|already active/);
+fs.writeFileSync('tracked-source','source\n'); assert.equal(active(),true);
+process.exit(7);

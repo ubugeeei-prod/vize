@@ -110,10 +110,6 @@ function vizeStages(output: string): Partial<Record<Stage, number>> {
   return stages;
 }
 
-function shellQuote(value: string) {
-  return `'${value.replaceAll("'", "'\\''")}'`;
-}
-
 export function measure(
   tool: Tool,
   project: BenchProject,
@@ -133,14 +129,17 @@ export function measure(
     ...(home ? { HOME: home, XDG_CACHE_HOME: join(home, ".cache") } : {}),
   };
   // bash's `time` reports the children's CPU, which node's spawn does not.
-  const script = `TIMEFORMAT='__tcbench %R %U %S'; time ${[tool.bin, ...args].map(shellQuote).join(" ")}`;
-  const result = spawnSync("bash", ["-c", script], {
-    cwd: project.cwd,
-    env,
-    encoding: "utf8",
-    maxBuffer: 256 * 1024 * 1024,
-    timeout: 1_800_000,
-  });
+  const result = spawnSync(
+    "bash",
+    [fileURLToPath(new URL("./time-typecheck.sh", import.meta.url)), tool.bin, ...args],
+    {
+      cwd: project.cwd,
+      env,
+      encoding: "utf8",
+      maxBuffer: 256 * 1024 * 1024,
+      timeout: 1_800_000,
+    },
+  );
   if (home) rmSync(home, { recursive: true, force: true });
   // Persist before validation too: a failed tool must leave its complete output.
   const invocation = retain?.({

@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { test } from "node:test";
@@ -159,10 +160,17 @@ test("source gates cover iteration events while full qualification runs on sched
   assert.equal(ledgerUpload?.with?.["if-no-files-found"], "error");
   assert.equal(ledgerUpload?.with?.["retention-days"], 14);
   assert.equal(ledgerUpload?.if, "${{ always() }}");
-  const smallNodeCases = readRepoFile(".github", "actions", "test-small-node-cases", "action.yml");
+  const smallNodeCases = readAutomationPrograms(
+    ".github",
+    "actions",
+    "test-small-node-cases",
+    "action.yml",
+  );
   assert.match(smallNodeCases, /vp run --workspace-root check:iteration/);
   assert.match(commands("check-js"), /vp run --workspace-root check:ci/);
-  const appAction = parse(readRepoFile(".github", "actions", "check-vize-apps", "action.yml")) as {
+  const appAction = parse(
+    readAutomationPrograms(".github", "actions", "check-vize-apps", "action.yml"),
+  ) as {
     runs: { using: string; steps: NonNullable<Job["steps"]> };
   };
   assert.equal(appAction.runs.using, "composite");
@@ -195,11 +203,11 @@ test("source gates cover iteration events while full qualification runs on sched
   assert.match(appCommands, /sudo install -m 0755 target\/ci\/vize/);
   assert.doesNotMatch(appCommands, /build:native|build:runtime|build:all/);
   assert.match(
-    readRepoFile(".github", "actions", "test-full-tooling", "action.yml"),
+    readAutomationPrograms(".github", "actions", "test-full-tooling", "action.yml"),
     /vp run --workspace-root test:scripts/,
   );
   const history = parse(
-    readRepoFile(".github", "actions", "test-js-packages-with-history", "action.yml"),
+    readAutomationPrograms(".github", "actions", "test-js-packages-with-history", "action.yml"),
   ) as { runs: { steps: Array<{ run?: string }> } };
   const jsTestCommands = history.runs.steps.map((step) => step.run ?? "").join("\n");
   assert.match(jsTestCommands, /vp run --workspace-root test:js/);

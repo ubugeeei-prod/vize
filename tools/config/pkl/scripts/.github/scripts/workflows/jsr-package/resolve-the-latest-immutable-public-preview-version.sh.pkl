@@ -1,0 +1,7 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"echo "version=$(node tools/support/release/jsr/package.ts latest-public)" >> "$GITHUB_OUTPUT""#
+}

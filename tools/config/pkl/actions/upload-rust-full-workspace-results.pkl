@@ -1,0 +1,20 @@
+import "../Actions.pkl" as ci
+
+name = "Preserve full-workspace test results and walltime"
+description = "Preserve workspace diagnostics after source failures without running tests"
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Preserve full-workspace test results and walltime"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "rust-full-workspace-${{ github.sha }}-${{ github.run_attempt }}"
+        path = "target/nextest/full/"
+        `if-no-files-found` = "warn"
+        `retention-days` = 14
+      }
+    }
+  }
+}

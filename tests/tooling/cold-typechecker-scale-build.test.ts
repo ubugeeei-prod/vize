@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -23,13 +24,9 @@ test("immutable role builds reject shared targets, same-binary substitutions and
     // This compiler stub tests build custody, not product code generation.
     writeFileSync(
       cargo,
-      `#!${process.execPath}
-if(process.argv.includes('--version')){console.log('fixture-cargo 1');process.exit(0)}
-const fs=require('node:fs'), path=require('node:path');
-const binary=path.join(process.env.CARGO_TARGET_DIR,'ci-opt','vize');
-fs.mkdirSync(path.dirname(binary),{recursive:true});
-fs.writeFileSync(binary,fs.readFileSync('crates/answer.rs'),{mode:0o755});
-console.log(JSON.stringify({reason:'compiler-artifact',target:{name:'vize',kind:['bin']},executable:binary,fresh:false}));\n`,
+      readToolingProgram("commands/cold-typechecker-scale-build/cargo.cjs.in", {
+        NODE: process.execPath,
+      }),
       { mode: 0o755 },
     );
     function commit(content: string) {

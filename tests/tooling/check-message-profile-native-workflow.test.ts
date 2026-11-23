@@ -1,7 +1,7 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { readRepoFile } from "./support/github-workflows.ts";
 
 type Step = {
   name?: string;
@@ -15,7 +15,7 @@ type Step = {
 
 void test("message profiling executes the exact required native test before merge", () => {
   const action: { runs: { steps: Step[] } } = parse(
-    readRepoFile(".github", "actions", "test-native-canon", "action.yml"),
+    readAutomationPrograms(".github", "actions", "test-native-canon", "action.yml"),
   );
   const steps = action.runs.steps.filter(
     (step) => step.name === "Test complete native diagnostic profiling and source repair",

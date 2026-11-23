@@ -1,0 +1,128 @@
+import "../../Actions.pkl" as ci
+
+name = "Canon helper native baseline"
+on {
+  pull_request {
+    paths = new Listing {
+      "tools/benchmarks/scripts/canon-helper-*.ts"
+      "tools/support/process-launcher.ts"
+      "tools/support/launchers/exec*.sh"
+      "tools/benchmarks/scripts/canon-template-helper-carrier.ts"
+      "tests/tooling/canon-helper-native-proxy.test.ts"
+      ".github/workflows/canon-helper-native-baseline.yml"
+      ".github/scripts/workflows/canon-helper-native-baseline/**"
+      ".github/scripts/workflows/shared/**"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      sfcs {
+        type = "choice"
+        options = List("1", "10", "100", "2500")
+        ["default"] = "1"
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "canon-helper-native-baseline-${{ github.event.pull_request.number || github.run_id }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  baseline {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    strategy {
+      `fail-fast` = false
+      matrix {
+        sfcs = "${{ fromJSON(github.event_name == 'workflow_dispatch' && format('[{0}]', inputs.sfcs) || '[1]') }}"
+      }
+    }
+    env {
+
+      NODE_DISABLE_COMPILE_CACHE = "1"
+      GOMAXPROCS = "2"
+      RAYON_NUM_THREADS = "2"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("canon-helper-native-baseline")
+      ci.checkoutAt("1d1bb26a7f7dcbcb9adf75075bd7ad301c0bb957")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24.14.0"
+          `package-manager-cache` = false
+        }
+      }
+      ci.rust("1.99.1")
+      ci.wild()
+      new Dynamic {
+        name = "Regenerate and verify the fixed normal source image"
+        run = #". "${{ env.VIZE_CI_FILES }}/regenerate-and-verify-the-fixed-normal-source-image.sh""#
+      }
+      new Dynamic {
+        name = "Check out the reviewed helper harness"
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha || github.sha }}"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "b31168ec9c5282f4b58de1d9f5f64e8aa7b7bdaf"
+          path = ".admission-driver"
+          `persist-credentials` = false
+          `sparse-checkout-cone-mode` = false
+          `sparse-checkout` = """
+          /package.json
+          /tools/benchmarks/scripts/type-admission-scale.ts
+          /tools/benchmarks/scripts/type-admission-scale-types.ts
+          /tools/benchmarks/scripts/type-admission-scale-sfc.ts
+          /tools/benchmarks/scripts/type-admission-scale-graph.ts
+          /tests/tooling/support/type-admission-fixtures.ts
+          /tests/tooling/support/type-admission-mutation.ts
+
+          """
+        }
+      }
+      new Dynamic {
+        name = "Install one pinned public helper provider and the integrated native backend"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-one-pinned-public-helper-provider-and-the-integrated-native-back.sh""#
+      }
+      new Dynamic {
+        name = "Run the proxy byte and classification controls"
+        run = #". "${{ env.VIZE_CI_FILES }}/run-the-proxy-byte-and-classification-controls.sh""#
+      }
+      new Dynamic {
+        name = "Preserve the frozen public repro and independently poison inferred slot payloads"
+        env { VIZE_SOURCE_SDK_ROOT = "${{ github.workspace }}/npm/cli" }
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-the-frozen-public-repro-and-independently-poison-inferred-slot.sh""#
+      }
+      new Dynamic {
+        name = "Capture actual CLI and source mapper packets with mutation and repair oracles"
+        env {
+          VIZE_MATRIX_SFCS = "${{ matrix.sfcs }}"
+          VIZE_SOURCE_SDK_ROOT = "${{ github.workspace }}/npm/cli"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/capture-actual-cli-and-source-mapper-packets-with-mutation-and-repair-or.sh""#
+      }
+      new Dynamic {
+        name = "Package only bounded authored inputs and raw evidence"
+        `if` = "always()"
+        run = #". "${{ env.VIZE_CI_FILES }}/package-only-bounded-authored-inputs-and-raw-evidence.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "canon-helper-native-baseline-${{ matrix.sfcs }}-${{ github.sha }}"
+          path = "${{ runner.temp }}/helper-baseline-evidence.tgz"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

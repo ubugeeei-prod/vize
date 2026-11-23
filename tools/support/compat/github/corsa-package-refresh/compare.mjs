@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -246,9 +247,7 @@ for (const [label, source] of refs) {
       const result = spawnSync(
         "bash",
         [
-          "-c",
-          'ulimit -f 524288; exec "$@"',
-          "vize-package-trace",
+          fileURLToPath(new URL("./trace-with-size-limit.sh", import.meta.url)),
           strace,
           "-ff",
           "-q",

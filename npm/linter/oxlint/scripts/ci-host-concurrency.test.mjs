@@ -1,3 +1,7 @@
+import {
+  toolingProgram,
+  readToolingProgram,
+} from "../../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -20,16 +24,9 @@ function subprocesses(t, failures = []) {
   const script = path.join(root, "child.mjs");
   fs.writeFileSync(
     script,
-    `
-    import fs from "node:fs";
-    const [directory, id, failure] = process.argv.slice(2);
-    fs.writeFileSync(directory + "/start.json", JSON.stringify({ time: Date.now(), pid: process.pid }));
-    console.log("started " + id);
-    console.error("evidence " + id);
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    fs.writeFileSync(directory + "/end.json", JSON.stringify({ time: Date.now() }));
-    process.exitCode = Number(failure);
-  `,
+    readToolingProgram(
+      new URL("./test-programs/ci-host-concurrency/sample-peak-workers.js", import.meta.url),
+    ),
   );
   return ["first", "second", "third"].map((id) => {
     const output = path.join(root, id);
@@ -107,7 +104,7 @@ void test("both failed hosts and the queued host retain complete output before a
 
 void test("timed out workers are killed and successful peers still finish", async (t) => {
   const jobs = subprocesses(t).slice(0, 2);
-  jobs[0].args = ["-e", "setInterval(() => {}, 1000)"];
+  jobs[0].args = [toolingProgram("process/hold-process-open.js")];
   jobs[0].timeoutMs = 40;
   const results = await runHostProcesses(jobs, { workers: 2 });
   assert.match(results[0].error, /timed out/u);

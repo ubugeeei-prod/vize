@@ -3,6 +3,7 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { checkArgv, type CycleTarget } from "./cycle-targets.ts";
 import type { TaskRecord } from "./process-table.ts";
@@ -120,10 +121,8 @@ export const BUDGET_NOT_APPLIED_EXIT = 97;
  * missing constraint can never read as a passing cycle.
  */
 export function budgetedArgv(budget: number, command: string, args: readonly string[]): string[] {
-  const prologue =
-    `ulimit -u ${budget} 2>/dev/null || ulimit -p ${budget} 2>/dev/null || ` +
-    `exit ${BUDGET_NOT_APPLIED_EXIT}`;
-  return ["-c", `${prologue}; exec "$@"`, "sh", command, ...args];
+  const runner = fileURLToPath(new URL("./run-with-process-limit.sh", import.meta.url));
+  return [runner, String(budget), String(BUDGET_NOT_APPLIED_EXIT), command, ...args];
 }
 
 /**
@@ -138,7 +137,10 @@ export function verifyBudget(budget: number): number | "unlimited" | null {
   const reader =
     process.platform === "linux"
       ? { args: ["/proc/self/limits"], command: "cat" }
-      : { args: ["-c", "ulimit -u 2>/dev/null || ulimit -p"], command: "/bin/sh" };
+      : {
+          args: [fileURLToPath(new URL("./process-limit.sh", import.meta.url))],
+          command: "/bin/sh",
+        };
   const result = spawnSync("/bin/sh", budgetedArgv(budget, reader.command, reader.args), {
     encoding: "utf8",
   });

@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import childProcess from "node:child_process";
 import fs from "node:fs";
@@ -299,7 +300,7 @@ void test("malformed streams, wrong selection and changed build environment neve
 void test("a text wrapper with executable permission is retained but cannot qualify as a real image", (context) => {
   const f = fixture(context);
   const script = path.join(f.root, "authored-wrapper");
-  fs.writeFileSync(script, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+  fs.writeFileSync(script, readToolingProgram("process/exit-success.sh"), { mode: 0o755 });
   assert.throws(
     () => prepareNativeHistoryToolchain(f.nativeDir, { ...f.environment, RUSTC: script }),
     /real Linux ELF toolchain image/,

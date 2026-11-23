@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -51,7 +52,7 @@ function fixtureRepository() {
   git(upstream, "commit", "-m", "base");
   mkdirSync(join(upstream, "src"));
   writeFileSync(join(upstream, "src/control.vue"), "<template>pinned</template>\n");
-  writeFileSync(join(upstream, "run.sh"), "#!/bin/sh\nexit 0\n");
+  writeFileSync(join(upstream, "run.sh"), readToolingProgram("process/exit-success.sh"));
   chmodSync(join(upstream, "run.sh"), 0o755);
   symlinkSync("src/control.vue", join(upstream, "internal-link"));
   writeFileSync(join(directory, "outside"), "external symlink target must stay untouched\n");
@@ -240,45 +241,12 @@ function gitWrapper(
   const program = join(bin, "git");
   writeFileSync(
     program,
-    `#!${process.execPath}
-const { spawnSync } = require('node:child_process');
-const fs = require('node:fs');
-const behavior = ${JSON.stringify(behavior)};
-const args = process.argv.slice(2);
-const direct = args.includes('fetch') && args.some(value => value.includes('.prepare-'));
-if (direct && ['unavailable', 'mixed-error', 'stdout-error'].includes(behavior)) {
-  console.error('fatal: Server does not allow request for unadvertised object ' + args[args.length - 1]);
-  if (behavior === 'mixed-error') console.error('fatal: pack signature mismatch');
-  if (behavior === 'stdout-error') console.log('fatal: pack signature mismatch');
-  process.exit(128);
-}
-if (direct && behavior === 'error') {
-  console.error('fatal: pack signature mismatch');
-  process.exit(128);
-}
-if (direct && behavior === 'wrong') args[args.length - 1] = ${JSON.stringify(defaultHead)};
-const result = spawnSync(${JSON.stringify(actualGit)}, args, { stdio: 'inherit' });
-if (direct && ['corrupt', 'missing'].includes(behavior) && result.status === 0) {
-  const cwd = args[args.indexOf('-C') + 1];
-  const head = args[args.length - 1];
-  const loose = cwd + '/.git/objects/' + head.slice(0, 2) + '/' + head.slice(2);
-  const folder = cwd + '/.git/objects/pack';
-  const files = fs.existsSync(loose) ? [loose]
-    : fs.readdirSync(folder).filter(name => name.endsWith('.pack')).map(name => folder + '/' + name);
-  if (!files.length) throw Error('No actual Git object to damage');
-  for (const file of files) {
-    if (behavior === 'missing') fs.unlinkSync(file);
-    else {
-      fs.chmodSync(file, 0o600);
-      const fd = fs.openSync(file, 'r+');
-      fs.writeSync(fd, Buffer.from('broken'), 0, 6, 0);
-      fs.closeSync(fd);
-    }
-  }
-  console.error('CONTROL_DAMAGED_REAL_GIT_OBJECT');
-}
-process.exit(result.status ?? 1);
-`,
+    readToolingProgram("commands/pinned-fixture-hydration/program.cjs.in", {
+      NODE: process.execPath,
+      BEHAVIOR: JSON.stringify(behavior),
+      DEFAULT_HEAD: JSON.stringify(defaultHead),
+      ACTUAL_GIT: JSON.stringify(actualGit),
+    }),
   );
   chmodSync(program, 0o755);
   return `${bin}:${process.env.PATH ?? ""}`;

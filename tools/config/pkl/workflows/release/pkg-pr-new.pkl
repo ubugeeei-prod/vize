@@ -1,0 +1,59 @@
+import "../../Actions.pkl" as ci
+
+name = "pkg.pr.new"
+
+on {
+  workflow_dispatch = null
+}
+concurrency {
+  group = "pkg-pr-new-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+permissions { contents = "read" }
+
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+}
+
+jobs {
+  `publish-preview` {
+    name = "Publish preview packages"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/pkg-pr-new"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        name = "Setup Vite+ and Node.js"
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          cache = true
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Install rust-script"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-rust-script.sh""#
+      }
+      new Dynamic {
+        name = "Install package build dependencies"
+        run = "node tools/support/github/vp-install.ts --filter './npm/cli...' --filter './npm/create-fresco...' --filter './npm/builder/vite...' --filter './npm/linter/oxlint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt-lint-config...' --filter './npm/framework/nuxt...' --filter './npm/ui...'"
+      }
+      ci.command("Build preview packages", "vp run --workspace-root build:packages")
+      new Dynamic {
+        name = "Publish pkg.pr.new preview"
+        // The pkg.pr.new GitHub App must be installed on this repository for
+        // the publish call to succeed. Until it is, the job logs a clear
+        // message and is marked successful so the workflow does not red-light
+        // manual previews while waiting on a one-time install action by a maintainer.
+        // https://github.com/apps/pkg-pr-new
+        run = #". "${{ env.VIZE_CI_FILES }}/publish-pkg-pr-new-preview.sh""#
+      }
+    }
+  }
+}

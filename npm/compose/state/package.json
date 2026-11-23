@@ -22,7 +22,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "scripts/package-tasks.cjs"
   ],
   "type": "module",
   "sideEffects": false,
@@ -42,7 +43,7 @@
     "build": "vp pack",
     "dev": "vp pack --watch",
     "test": "vp exec node --test 'src/**/*.test.ts'",
-    "check": "vp check src fixtures vite.config.ts && vp exec tsc --noEmit -p tsconfig.json",
+    "check": "node ./scripts/package-tasks.cjs check",
     "check:fix": "vp check --fix src fixtures vite.config.ts",
     "check:types": "vp exec tsc --noEmit -p tsconfig.json",
     "fmt": "vp fmt --write src fixtures vite.config.ts"

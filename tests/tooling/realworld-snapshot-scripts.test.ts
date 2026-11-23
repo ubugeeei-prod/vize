@@ -1,3 +1,4 @@
+import { packageScripts } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -31,8 +32,8 @@ function readJsonFile<T>(...segments: string[]): T {
 test("real-world check and lint snapshots are wired into e2e scripts", () => {
   const pkg = readJsonFile<{ scripts: Record<string, string> }>("tests", "package.json");
 
-  assert.match(pkg.scripts["test:build"], serialTestConcurrency);
-  assert.match(pkg.scripts["test:check"], serialTestConcurrency);
+  assert.match(packageScripts("tests", pkg.scripts)["test:build"], serialTestConcurrency);
+  assert.match(packageScripts("tests", pkg.scripts)["test:check"], serialTestConcurrency);
   // The fixture lane runs through the supervisor now (#4126), so the flag it
   // passes every phase lives in the manifest rather than in the script string.
   // `CHECK_FIXTURE_NODE_ARGS` is an argv array, so the flag is one whole
@@ -45,12 +46,12 @@ test("real-world check and lint snapshots are wired into e2e scripts", () => {
 
   for (const app of realworldSnapshotApps) {
     assert.match(
-      pkg.scripts["test:check"],
+      packageScripts("tests", pkg.scripts)["test:check"],
       new RegExp(`snapshots/check/${app}\\.ts`),
       `${app} check snapshot should run in test:check`,
     );
     assert.match(
-      pkg.scripts["test:lint"],
+      packageScripts("tests", pkg.scripts)["test:lint"],
       new RegExp(`snapshots/lint/${app}\\.ts`),
       `${app} lint snapshot should run in test:lint`,
     );

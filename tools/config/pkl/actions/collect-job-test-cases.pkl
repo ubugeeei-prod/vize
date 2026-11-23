@@ -1,0 +1,30 @@
+import "../Actions.pkl" as ci
+
+name = "Collect job test cases"
+description = "Merge a persistent job capture and upload its structured case packet."
+inputs {
+  artifact {
+    description = "Artifact name for this run attempt"
+    required = true
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Merge job test cases"
+      shell = "bash"
+      run = "node tools/support/compat/github/job-test-cases.ts finalize"
+    }
+    new Dynamic {
+      name = "Upload job test cases"
+      uses = ci.uploadArtifact
+      with {
+        name = "${{ inputs.artifact }}"
+        path = "${{ env.VIZE_TEST_CASES }}"
+        `if-no-files-found` = "error"
+        `retention-days` = 7
+      }
+    }
+  }
+}

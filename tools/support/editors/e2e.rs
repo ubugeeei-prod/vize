@@ -114,8 +114,8 @@ pub fn resolve_vue_package_path(repo_root: &Path) -> Result<PathBuf, String> {
                 .map_err(|error| format!("cannot canonicalize {}: {error}", candidate.display()));
         }
     }
-    let script = "console.log(require.resolve('vue/package.json'))";
-    let output = common::run_capture_in("node", &["-e", script], repo_root.join("tests"))?;
+    let resolver = repo_root.join("tools/support/compat/editor-e2e/resolve-vue-manifest.cjs");
+    let output = common::run_capture_in("node", &[resolver], repo_root.join("tests"))?;
     let manifest = PathBuf::from(output.stdout.trim());
     manifest
         .parent()
