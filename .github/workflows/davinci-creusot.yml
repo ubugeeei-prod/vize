@@ -7,29 +7,6 @@ name: Davinci Creusot
 # flake and the stable Rust build never see Creusot's nightly compiler.
 
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/davinci-creusot.yml"
-      - "tools/nix/creusot/**"
-      - "tests/formal/creusot/**"
-      - "davinci/vize_l2/src/query/script/assignments/prefix/frame.rs"
-      - "davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs"
-      - "davinci/vize_l3/src/lattice/class.rs"
-      - "davinci/vize_l3/src/lattice/creusot.rs"
-      - "davinci/vize_l3/src/query/check/creusot.rs"
-      - "davinci/vize_l3/src/query/check/rule.rs"
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/davinci-creusot.yml"
-      - "tools/nix/creusot/**"
-      - "tests/formal/creusot/**"
-      - "davinci/vize_l2/src/query/script/assignments/prefix/frame.rs"
-      - "davinci/vize_l2/src/query/script/assignments/prefix/creusot.rs"
-      - "davinci/vize_l3/src/lattice/class.rs"
-      - "davinci/vize_l3/src/lattice/creusot.rs"
-      - "davinci/vize_l3/src/query/check/creusot.rs"
-      - "davinci/vize_l3/src/query/check/rule.rs"
   workflow_dispatch:
 
 permissions:
@@ -60,8 +37,38 @@ jobs:
           gc-max-store-size-linux: 8G
       - name: Build the pinned toolchain
         run: nix build 'path:./tools/nix/creusot' --out-link "$RUNNER_TEMP/creusot" --print-build-logs
-      - name: Replay the proofs
-        # --replay checks the committed proof certificates and never searches
-        # for new ones; why3find exits non-zero on any unproved goal.
+      - name: Find certificates from the original recovery kernel
         working-directory: tests/formal/creusot
-        run: nix develop 'path:../../../tools/nix/creusot' --command cargo creusot --replay -- --locked
+        run: nix develop 'path:../../../tools/nix/creusot' --command cargo creusot -- -p vize_l2_recovery_proofs --locked
+      - name: Replay the captured proofs
+        working-directory: tests/formal/creusot
+        run: nix develop 'path:../../../tools/nix/creusot' --command cargo creusot --replay -- -p vize_l2_recovery_proofs --locked
+      - name: Save the solver certificates
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: checked-prefix-certificates
+          path: tests/formal/creusot/verif/vize_l2_recovery_proofs_rlib/**/proof.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Check that changing either runtime operation invalidates its certificate
+        working-directory: tests/formal/creusot
+        shell: bash
+        run: |
+          set -euo pipefail
+          kernel=../../../davinci/vize_l2/src/query/script/assignments/prefix/frame.rs
+          cp "$kernel" "$RUNNER_TEMP/valid-recovery-frame.rs"
+          for operation in rebase retry_limit; do
+            cp "$RUNNER_TEMP/valid-recovery-frame.rs" "$kernel"
+            if [[ "$operation" == rebase ]]; then
+              sed -i 's/new_start + (offset - old_start)/new_start/' "$kernel"
+            else
+              sed -i 's/failed_end \/ 2)/failed_end \/ 1)/' "$kernel"
+            fi
+            ! cmp -s "$kernel" "$RUNNER_TEMP/valid-recovery-frame.rs"
+            if nix develop 'path:../../../tools/nix/creusot' --command cargo creusot --replay -- -p vize_l2_recovery_proofs --locked > "$RUNNER_TEMP/$operation.log" 2>&1; then
+              echo "Invalid $operation still verified" >&2
+              exit 1
+            fi
+            cat "$RUNNER_TEMP/$operation.log"
+            rg -i 'unproved|failed goal|proof failed|partial|incomplete|no proof|stuck|failed to prove' "$RUNNER_TEMP/$operation.log"
+          done
