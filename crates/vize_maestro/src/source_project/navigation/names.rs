@@ -62,8 +62,13 @@ impl NativeNavigationProject<'_> {
                 continue;
             }
             // No configuration/document guard survives spawning or parsing.
-            let result =
-                NavigationWorker::spawn(Arc::clone(&snapshot), Arc::clone(&self.live), profile);
+            let result = NavigationWorker::spawn(
+                Arc::clone(&snapshot),
+                Arc::clone(&self.live),
+                profile,
+                #[cfg(feature = "experimental-lexical-arrow-queries")]
+                false,
+            );
             if matches!(
                 result,
                 Err(NavigationRefusal::Capacity | NavigationRefusal::WorkerUnavailable)

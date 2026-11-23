@@ -8,6 +8,8 @@ on {
       ".github/scripts/workflows/template-expression-queries/**"
       "crates/vize_maestro/Cargo.toml"
       "crates/vize_maestro/src/ide/context.rs"
+      "crates/vize_maestro/src/source_project/navigation.rs"
+      "crates/vize_maestro/src/source_project/navigation/**"
       "crates/vize_maestro/src/ide/rename/canonical/event_rename*"
       "crates/vize_maestro/src/ide/rename/canonical/event_rename/**"
       "crates/vize_maestro/src/virtual_code/generator/template_products.rs"
@@ -35,6 +37,15 @@ on {
       "davinci/vize_l1_to_l2/src/native_file*"
       "davinci/vize_l1_to_l2/src/native_file/**"
       "davinci/vize_l1_to_l2/tests/expression_queries/**"
+      "davinci/vize_l1/Cargo.toml"
+      "davinci/vize_l1/src/embed/**"
+      "upstream/forks/oxc_parser/Cargo.toml"
+      "upstream/forks/oxc_parser/src/lib.rs"
+      "upstream/forks/oxc_parser/src/js/statement.rs"
+      "upstream/forks/oxc_parser/src/js/expression*"
+      "upstream/forks/oxc_parser/src/js/expression/**"
+      "upstream/forks/oxc_parser/src/embedding*"
+      "upstream/forks/oxc_parser/src/embedding/**"
       "davinci/vize_l1/src/container/vue/descriptor*"
       "davinci/vize_l1/src/container/vue/descriptor/**"
       "davinci/vize_l1_to_l2/src/vue_file*"
@@ -183,6 +194,36 @@ jobs {
       new Dynamic {
         name = "Compare every original listener, semantic edit and paired resident request"
         run = #". "${{ env.VIZE_CI_FILES }}/compare-every-original-listener-semantic-edit-and-paired-resident-request.sh""#
+      }
+    }
+  }
+
+  `lexical-script-products` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("template-expression-queries")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Compare original OXC symbols, component listeners and public editor requests"
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-oxc-symbols-component-listeners-and-public-editor-requests.sh""#
       }
     }
   }

@@ -182,6 +182,14 @@ impl<'a> NativeTemplateObservation<'a> {
             self.reject(issues, NativeSfcIssueKind::FileRejected);
             return;
         };
+        #[cfg(feature = "lexical-arrow-initializers")]
+        if let Some((roots, expressions)) = self
+            .pending
+            .as_mut()
+            .and_then(PendingNativeComponent::lexical_storage_hint)
+        {
+            producer.reserve_template_storage(roots, expressions);
+        }
         let result = {
             let mut region = match producer.template_region() {
                 Ok(region) => region,
@@ -287,6 +295,20 @@ pub(super) fn prepare_listeners<'a>(
     let mut template = prepare_shorthand(allocator, selected, lang, issues);
     if let Some(pending) = &mut template.pending {
         pending.enable_event_references();
+    }
+    template
+}
+
+#[cfg(feature = "lexical-arrow-initializers")]
+pub(super) fn prepare_lexical<'a>(
+    allocator: &'a Allocator,
+    selected: TemplateView<'_, 'a>,
+    lang: Lang,
+    issues: &mut Vec<NativeSfcIssue>,
+) -> NativeTemplateObservation<'a> {
+    let mut template = prepare_listeners(allocator, selected, lang, issues);
+    if let Some(pending) = &mut template.pending {
+        pending.retain_expression_sequence();
     }
     template
 }
