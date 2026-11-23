@@ -42,23 +42,75 @@ function matches(text: string, value: ConfigValue, ordered: boolean): boolean {
   return sameValue(readDocument(document), value, ordered);
 }
 
-function scalarEdits(node: Node | null, value: ConfigValue, edits: ScalarEdit[]): boolean {
-  if (isMap(node) && value !== null && typeof value === "object" && !Array.isArray(value)) {
+function isMapping(value: ConfigValue): value is Record<string, ConfigValue> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function itemIdentity(item: ConfigValue): string | undefined {
+  if (!isMapping(item)) return undefined;
+  if (typeof item.id === "string") return "id:" + item.id;
+  if (typeof item.name === "string") return "name:" + item.name;
+  return undefined;
+}
+
+// Comments and anchors belong to a sequence item even when it moves to a new index.
+function sequenceSources(previous: ConfigValue[], next: ConfigValue[], ordered: boolean) {
+  const available = new Set(previous.keys());
+  function take(matches: (item: ConfigValue) => boolean): number | undefined {
+    for (const index of available) {
+      if (matches(previous[index]!)) {
+        available.delete(index);
+        return index;
+      }
+    }
+    return undefined;
+  }
+  const indices = next.map((item) => take((old) => sameValue(old, item, ordered)));
+  for (const [index, item] of next.entries()) {
+    const identity = itemIdentity(item);
+    if (indices[index] === undefined && identity !== undefined) {
+      indices[index] = take((old) => itemIdentity(old) === identity);
+    }
+  }
+  if (previous.length === next.length) {
+    for (const index of next.keys()) {
+      if (indices[index] === undefined && available.delete(index)) indices[index] = index;
+    }
+  }
+  return indices;
+}
+
+function scalarEdits(
+  node: Node | null,
+  previous: ConfigValue,
+  value: ConfigValue,
+  edits: ScalarEdit[],
+  ordered: boolean,
+): boolean {
+  if (isMap(node) && isMapping(previous) && isMapping(value)) {
     return (
       node.items.length === Object.keys(value).length &&
       node.items.every((pair) => {
         if (!isScalar(pair.key) || typeof pair.key.value !== "string") return false;
         const key = pair.key.value;
         return (
-          Object.hasOwn(value, key) && scalarEdits(pair.value as Node | null, value[key]!, edits)
+          Object.hasOwn(value, key) &&
+          scalarEdits(pair.value as Node | null, previous[key]!, value[key]!, edits, ordered)
         );
       })
     );
   }
-  if (isSeq(node) && Array.isArray(value)) {
+  if (isSeq(node) && Array.isArray(previous) && Array.isArray(value)) {
+    const plainValues = node.items.every(
+      (item) => isScalar(item) && !item.comment && !item.commentBefore && !item.anchor,
+    );
     return (
       node.items.length === value.length &&
-      value.every((child, index) => scalarEdits(node.items[index] as Node | null, child, edits))
+      (plainValues ||
+        sequenceSources(previous, value, ordered).every((source, index) => source === index)) &&
+      value.every((child, index) =>
+        scalarEdits(node.items[index] as Node | null, previous[index]!, child, edits, ordered),
+      )
     );
   }
   if (isAlias(node)) return true; // The caller verifies the expanded result.
@@ -83,7 +135,7 @@ export function renderRepositoryYaml(value: ConfigValue, current?: string, order
     if (existing !== undefined) {
       if (sameValue(existing, value, ordered)) return current;
       const edits: ScalarEdit[] = [];
-      if (scalarEdits(document.contents, value, edits)) {
+      if (scalarEdits(document.contents, existing, value, edits, ordered)) {
         let text = current;
         for (const { start, end, text: replacement } of edits.reverse()) {
           text = text.slice(0, start) + replacement + text.slice(end);
@@ -98,25 +150,19 @@ export function renderRepositoryYaml(value: ConfigValue, current?: string, order
         location: (string | number)[],
       ): void {
         if (sameValue(previous, next, ordered)) return;
-        if (Array.isArray(previous) && Array.isArray(next)) {
-          for (let index = previous.length - 1; index >= next.length; index--) {
-            document.deleteIn([...location, index]);
-          }
-          next.forEach((child, index) => {
-            const childPath = [...location, index];
-            if (index < previous.length) update(previous[index]!, child, childPath);
-            else document.setIn(childPath, document.createNode(child));
+        const node = document.getIn(location, true);
+        if (isSeq(node) && Array.isArray(previous) && Array.isArray(next)) {
+          const sources = sequenceSources(previous, next, ordered);
+          const items = node.items;
+          node.items = sources.map((source, index) =>
+            source === undefined ? document.createNode(next[index]) : items[source],
+          );
+          sources.forEach((source, index) => {
+            if (source !== undefined) update(previous[source]!, next[index]!, [...location, index]);
           });
           return;
         }
-        if (
-          previous !== null &&
-          next !== null &&
-          typeof previous === "object" &&
-          typeof next === "object" &&
-          !Array.isArray(previous) &&
-          !Array.isArray(next)
-        ) {
+        if (isMap(node) && isMapping(previous) && isMapping(next)) {
           for (const key of Object.keys(previous)) {
             if (!Object.hasOwn(next, key)) document.deleteIn([...location, key]);
           }
@@ -125,11 +171,18 @@ export function renderRepositoryYaml(value: ConfigValue, current?: string, order
             if (Object.hasOwn(previous, key)) update(previous[key]!, child, childPath);
             else document.setIn(childPath, document.createNode(child));
           }
-          const map = document.getIn(location, true);
-          if (isMap(map)) {
-            const pairs = new Map(map.items.map((pair) => [String(pair.key), pair]));
-            map.items = Object.keys(next).map((key) => pairs.get(key)!);
-          }
+          const pairs = new Map(node.items.map((pair) => [String(pair.key), pair]));
+          node.items = Object.keys(next).map((key) => pairs.get(key)!);
+          return;
+        }
+        if (isScalar(node) && (next === null || typeof next !== "object")) {
+          node.value = next;
+          if (
+            typeof next === "string" &&
+            !/[\r\n]/u.test(next) &&
+            (node.type === "BLOCK_LITERAL" || node.type === "BLOCK_FOLDED")
+          )
+            node.type = "PLAIN";
           return;
         }
         document.setIn(location, document.createNode(next));

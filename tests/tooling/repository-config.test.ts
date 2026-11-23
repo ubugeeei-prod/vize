@@ -53,3 +53,26 @@ test("a malformed output can be recovered from its Pkl source", () => {
   assert.deepEqual(parse(renderRepositoryYaml(config, "steps: *missing\n")), config);
   assert.deepEqual(parse(renderRepositoryYaml(config, "steps: [\n")), config);
 });
+
+test("inserting and reordering workflow steps keeps comments on their owning steps", () => {
+  const source = [
+    "steps:",
+    "  - name: Build",
+    "    run: build",
+    "  - id: publish",
+    "    name: Upload",
+    "    run: upload # publishes the build",
+    "",
+  ].join("\n");
+  const build = { name: "Build", run: "build" };
+  const publish = { id: "publish", name: "Publish", run: "upload --checked" };
+  for (const steps of [
+    [{ name: "Install", run: "install" }, build, publish],
+    [publish, build],
+  ]) {
+    const rendered = renderRepositoryYaml({ steps }, source, false);
+    assert.deepEqual(parse(rendered), { steps });
+    assert.match(rendered, /run: upload --checked # publishes the build/u);
+    assert.equal(renderRepositoryYaml({ steps }, rendered, false), rendered);
+  }
+});
