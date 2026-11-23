@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { tmpdir } from "node:os";
@@ -35,11 +36,7 @@ const HINT =
   " to type-check without loading project configuration.\n";
 const probe = spawnSync(
   process.execPath,
-  [
-    "--input-type=module",
-    "-e",
-    "process.stdout.write(process.version); await Promise.resolve(); throw new TypeError('owned-refusal-probe');",
-  ],
+  [fileURLToPath(new URL("./config-refusal-probe.ts", import.meta.url))],
   { env, encoding: "utf8" },
 );
 assert.equal(probe.status, 1);

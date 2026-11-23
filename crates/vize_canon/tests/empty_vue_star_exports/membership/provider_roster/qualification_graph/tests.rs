@@ -85,7 +85,9 @@ mod docs_metadata_successor {
             lock: fs::read(support::repository().join("pnpm-lock.yaml")).unwrap(),
             package: fs::read(support::repository().join("package.json")).unwrap(),
             workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
-            manifest: fs::read(support::repository().join(DOCS_METADATA_MANIFEST)).unwrap(),
+            manifest: crate::package_task_history::read(DOCS_METADATA_MANIFEST)
+                .unwrap()
+                .into_bytes(),
         }
     }
 
@@ -415,14 +417,16 @@ mod js_tooling_refresh_successor {
                 .unwrap(),
             )
             .unwrap(),
-            unplugin_manifest: fs::read(
-                support::repository().join("npm/builder/unplugin/package.json"),
+            unplugin_manifest: crate::package_task_history::read(
+                "npm/builder/unplugin/package.json",
             )
-            .unwrap(),
-            example_manifest: fs::read(
-                support::repository().join("npm/builder/unplugin/example/package.json"),
+            .unwrap()
+            .into_bytes(),
+            example_manifest: crate::package_task_history::read(
+                "npm/builder/unplugin/example/package.json",
             )
-            .unwrap(),
+            .unwrap()
+            .into_bytes(),
         }
     }
 

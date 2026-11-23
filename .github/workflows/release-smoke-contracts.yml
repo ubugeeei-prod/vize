@@ -10,23 +10,24 @@ on:
       - ".github/actions/setup-runtime-package-managers/**"
       - "tools/commands/release/npm/smoke-release-install.ts"
       - "tools/support/release/smoke_release_install/**"
-      - "tools/support/compat/npm/smoke-*"
-      - "tools/support/compat/github/legacy-fix-fixture-report.ts"
-      - "tools/support/compat/github/native-beta-dto-fixtures.ts"
-      - "tools/support/compat/github/report-legacy-fix-fixtures.ts"
-      - "npm/cli/**"
-      - "npm/native/**"
-      - "npm/builder/vite/**"
-      - "npm/linter/oxlint/**"
-      - "crates/vize_carton/src/config/loader/js/runtime_file.rs"
-      - "crates/vize_carton/src/config/loader/js/runtime_file/tests.rs"
-      - "tests/tooling/release/release-smoke-*"
-      - "tests/tooling/legacy-fix-fixture-report.test.ts"
-      - "tests/tooling/support/release-smoke-*"
-      - "tests/tooling/github-workflows-release-build.test.ts"
-      - "tests/tooling/release/release-workflow.test.ts"
-      - "tests/tooling/native-build-token.test.ts"
-      - "tests/tooling/native-binding-identity.test.ts"
+      - tools/support/command-invocation.ts
+      - tools/support/compat/npm/smoke-*
+      - tools/support/compat/github/legacy-fix-fixture-report.ts
+      - tools/support/compat/github/native-beta-dto-fixtures.ts
+      - tools/support/compat/github/report-legacy-fix-fixtures.ts
+      - npm/cli/**
+      - npm/native/**
+      - npm/builder/vite/**
+      - npm/linter/oxlint/**
+      - crates/vize_carton/src/config/loader/js/runtime_file.rs
+      - crates/vize_carton/src/config/loader/js/runtime_file/tests.rs
+      - tests/tooling/release/release-smoke-*
+      - tests/tooling/legacy-fix-fixture-report.test.ts
+      - tests/tooling/support/release-smoke-*
+      - tests/tooling/github-workflows-release-build.test.ts
+      - tests/tooling/release/release-workflow.test.ts
+      - tests/tooling/native-build-token.test.ts
+      - tests/tooling/native-binding-identity.test.ts
   workflow_dispatch:
 permissions: { contents: read }
 concurrency:
@@ -101,21 +102,14 @@ jobs:
       - name: Install product build dependencies
         shell: bash
         run: >-
-          vp install --frozen-lockfile --prefer-offline
-          --filter . --filter '@vize/tools'
-          --filter './npm/native...'
-          --filter './npm/cli...'
-          --filter './npm/builder/vite...'
-          --filter './npm/linter/oxlint...'
+          vp install --frozen-lockfile --prefer-offline --filter . --filter '@vize/tools' --filter './npm/native...' --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/linter/oxlint...'
       - name: Build native provider and Bun-facing packages
         shell: bash
         run: . "${{ env.VIZE_CI_FILES }}/build-native-provider-and-bun-facing-packages.sh"
       - name: Compare packed Node and Bun product behavior
         shell: bash
         run: >-
-          node tools/commands/release/npm/smoke-release-install.ts
-          --prepare-manifests --runtime-checks --bun-runtime-checks
-          npm/native npm/native/npm/* npm/cli npm/builder/vite npm/linter/oxlint
+          node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks --bun-runtime-checks npm/native npm/native/npm/* npm/cli npm/builder/vite npm/linter/oxlint
 
   contracts:
     name: Release smoke contracts (${{ matrix.os }})
@@ -162,8 +156,7 @@ jobs:
       - name: Install source contract dependencies
         shell: bash
         run: >-
-          vp install --frozen-lockfile --prefer-offline
-          --filter vize-workspace --filter '@vize/tests' --filter '@vize/tools' --ignore-scripts
+          vp install --frozen-lockfile --prefer-offline --filter vize-workspace --filter '@vize/tests' --filter '@vize/tools' --ignore-scripts
       - name: Require the stable Node release smoke contracts
         shell: bash
         run: node --test tests/tooling/release/release-smoke-parity-peer-copy.test.ts tests/tooling/release/release-smoke-install.test.ts tests/tooling/release/release-smoke-runtime-oracle.test.ts tests/tooling/release/release-smoke-typescript-runtime.test.ts

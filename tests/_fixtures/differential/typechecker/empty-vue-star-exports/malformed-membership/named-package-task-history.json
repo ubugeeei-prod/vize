@@ -1,0 +1,66 @@
+{
+  "docs/package.json": [
+    {
+      "current_sha256": "517ec5bcb9d6a8ec3868d31f9c213d481c7875c33840ec9b7c4da3a004f7a01c",
+      "previous_sha256": "d0fde98a1c1b819ea6d1aa88da09ed06816d88e255d7a4b93a9a77386a075138",
+      "edits": [
+        {
+          "current": "    \"dev\": \"node ./scripts/package-tasks.cjs dev\",\n    \"build\": \"node ./scripts/package-tasks.cjs build\",\n",
+          "previous": "    \"dev\": \"node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && pnpm generate:metadata && vp build && pnpm generate:og-images && vp preview\",\n    \"build\": \"node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && pnpm generate:metadata && vp build && node ./scripts/finish-build.ts\",\n"
+        }
+      ]
+    }
+  ],
+  "npm/builder/unplugin/package.json": [
+    {
+      "current_sha256": "2b1218d3c3c9e24a9dbc473efe94756b74c78b2c8aa739e947e5b76f744a6da6",
+      "previous_sha256": "d1663b75cc91684f2f1f67f90c52be6ddea1f0174338bf34435657aa8b13debf",
+      "edits": [
+        {
+          "current": "    \"dist\",\n    \"scripts/package-tasks.cjs\"\n",
+          "previous": "    \"dist\"\n"
+        },
+        {
+          "current": "    \"test\": \"node ./scripts/package-tasks.cjs test\",\n",
+          "previous": "    \"test\": \"vp pack && node --test src/*.test.ts src/**/*.test.ts\",\n"
+        }
+      ]
+    }
+  ],
+  "npm/builder/unplugin/example/package.json": [
+    {
+      "current_sha256": "90c834fa63e24b7c30f9cee8b4829fe350e8bccdf297b93e037a389a77f108ef",
+      "previous_sha256": "b476d3f91323fc97dc3da3e122f1599e39ea8c734cba8ca8b68564585d32f554",
+      "edits": [
+        {
+          "current": "    \"build\": \"node ./scripts/package-tasks.cjs build\",\n    \"build:bun\": \"node ./scripts/package-tasks.cjs build:bun\",\n",
+          "previous": "    \"build\": \"vp run --filter @vizejs/unplugin build && node build/build-all.ts\",\n    \"build:bun\": \"vp run --filter @vizejs/unplugin build && bun run build/bun.ts\",\n"
+        },
+        {
+          "current": "    \"test\": \"node ./scripts/package-tasks.cjs test\"\n",
+          "previous": "    \"test\": \"vp run --filter @vizejs/unplugin build && node --test test/builders.test.ts\"\n"
+        }
+      ]
+    }
+  ],
+  "npm/cli/package.json": [
+    {
+      "current_sha256": "0fe343f7ba147aa7cf08f495b09d5f81ff7b469b2a062695c004651638bb6616",
+      "previous_sha256": "835515952fb317caaa9403f566efee0bc66d44dc6150170595237de2192919a8",
+      "edits": [
+        {
+          "current": "    \"pkl\",\n    \"scripts/package-tasks.cjs\"\n",
+          "previous": "    \"pkl\"\n"
+        },
+        {
+          "current": "    \"build\": \"node ./scripts/package-tasks.cjs build\",\n",
+          "previous": "    \"build\": \"vp run --workspace-root generate:rule-types && vp pack\",\n"
+        },
+        {
+          "current": "    \"test\": \"node ./scripts/package-tasks.cjs test\"\n",
+          "previous": "    \"test\": \"vp pack && vp test run tests/config.test.ts tests/vite-project-config.test.ts tests/vite-module-config.test.ts tests/define-config.test.ts tests/corsa-runtime.test.ts tests/setup.test.ts tests/setup-oxlint-config.test.ts tests/init.test.ts tests/init-frameworks.test.ts tests/init-tsconfig.test.ts tests/init-prompt.test.ts tests/init-config-free.test.ts tests/init-workspace.test.ts\"\n"
+        }
+      ]
+    }
+  ]
+}

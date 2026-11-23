@@ -1,3 +1,4 @@
+import { workspaceTaskSteps } from "../../tools/config/vite-plus/task-plan.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -86,11 +87,11 @@ test("bench:musea is registered as a no-cache benchmark lane", () => {
 });
 
 test("bench:all runs the Musea lane alongside the other benchmark lanes", () => {
-  assert.equal(
-    taskShape(testAndBenchmarkTasks["bench:all"]).command,
-    ["bench", "bench:lint", "bench:fmt", "bench:check", "bench:vite", "bench:musea"]
-      .map((task) => `vp run --workspace-root ${task}`)
-      .join(" && "),
+  assert.deepEqual(
+    workspaceTaskSteps(testAndBenchmarkTasks["bench:all"]),
+    ["bench", "bench:lint", "bench:fmt", "bench:check", "bench:vite", "bench:musea"].map(
+      (task) => ({ program: "vp", arguments: ["run", "--workspace-root", task] }),
+    ),
   );
 });
 

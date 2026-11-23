@@ -16,6 +16,7 @@ on:
       - tools/support/compat/nuxt/nuxt-component-modes*
       - tools/support/compat/nuxt/fixtures/nuxt5-runtime-build/**
       - tools/support/compat/nuxt/nuxt5-runtime-build.ts
+      - tools/support/node-runtime-identity.cjs
       - tests/tooling/nuxt5-runtime.test.ts
       - tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/**
       - tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts

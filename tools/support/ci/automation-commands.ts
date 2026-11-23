@@ -56,6 +56,10 @@ export function invocationWords(source: string): string[] | undefined {
 export function isProgramInvocation(source: string): boolean {
   const tokens = invocationWords(source);
   if (!tokens) return false;
+  return isProgramCommand(tokens);
+}
+
+export function isProgramCommand(tokens: readonly string[]): boolean {
   const executable = tokens[0] ?? "";
   if (
     !/^[\w@./-]+$/u.test(executable) ||

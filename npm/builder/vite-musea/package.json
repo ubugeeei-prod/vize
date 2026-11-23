@@ -28,7 +28,8 @@
     "dist",
     "dist/gallery",
     "bin",
-    "client.d.ts"
+    "client.d.ts",
+    "scripts/package-tasks.cjs"
   ],
   "type": "module",
   "main": "./dist/index.mjs",
@@ -66,10 +67,10 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack && node scripts/assert-root-import-graph.ts && vp build --config gallery-vite.config.ts",
+    "build": "node ./scripts/package-tasks.cjs build",
     "build:gallery": "vp build --config gallery-vite.config.ts",
     "dev": "vp pack --watch",
-    "test": "pnpm --dir ../vite build && vp exec tsx --test --test-reporter=spec --test-reporter=tap --test-reporter-destination=stdout --test-reporter-destination=stderr src/*.test.ts src/**/*.test.ts gallery/components/*.test.ts",
+    "test": "node ./scripts/package-tasks.cjs test",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"

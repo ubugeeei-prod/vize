@@ -35,6 +35,8 @@ on {
       "npm/cli/src/config/**"
       "crates/vize_carton/src/config/loader/**"
       "npm/builder/vite/scripts/check-task-cache.ts"
+      "npm/builder/vite/scripts/task-cache-read-config.cjs"
+      "npm/builder/vite/scripts/task-cache-compare.cjs"
       "npm/builder/vite/scripts/task-cache-fixture.ts"
       "npm/builder/vite/scripts/task-cache-source-cli.ts"
       ".github/workflows/viteplus-task-cache.yml"

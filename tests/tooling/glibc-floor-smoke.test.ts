@@ -1,11 +1,12 @@
 import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
-  containerScript,
+  containerCommand,
   parseContainerSmokeArguments,
 } from "../../tools/commands/release/npm/smoke-glibc-floor-containers.ts";
 import { roundOrder, summarize } from "../../tools/support/github/glibc-floor-bench.ts";
@@ -46,33 +47,32 @@ test("each container mode runs the artifact it names", () => {
       ["--platform", "linux-x64-gnu", "--mode", mode, "--cli", ".artifacts/cli/vize", "centos:7"],
       "/runner/node",
     );
-  const cli = containerScript(options("cli")).split("\n");
-  assert.equal(cli[0], "set -euo pipefail");
-  assert.equal(cli[2], "/work/.artifacts/cli/vize --version");
-  assert.equal(
-    cli.at(-1),
-    "/work/.artifacts/cli/vize lint /tmp/vize-cli-smoke/App.vue --no-config",
+  const driver = "/work/tools/support/compat/npm/glibc-floor-container.sh";
+  for (const mode of ["cli", "binding", "packages"] as const) {
+    const cli = mode === "cli" ? [".artifacts/cli/vize"] : [];
+    assert.deepEqual(containerCommand(options(mode)), [
+      "bash",
+      driver,
+      mode,
+      "linux-x64-gnu",
+      ...cli,
+    ]);
+  }
+  const script = fs.readFileSync(path.join(root, driver.slice("/work/".length)), "utf8");
+  assert.match(script, /"\$binary" --version/u);
+  assert.match(script, /"\$binary" lint \/tmp\/vize-cli-smoke\/App\.vue --no-config/u);
+  assert.match(
+    script,
+    /exec node \/work\/tools\/support\/compat\/npm\/glibc-floor-binding\.cjs "\/work\/npm\/native\/npm\/\$platform\/vize-vitrine\.\$platform\.node"/u,
   );
-
-  // The quoted program spans lines, so check where it starts and what it loads.
-  const binding = containerScript(options("binding"));
-  assert.match(binding, /\nnode -e '\nconst binding = require\(process\.argv\[1\]\);\n/);
-  assert.equal(
-    binding.slice(binding.lastIndexOf("' ") + 2),
-    "/work/npm/native/npm/linux-x64-gnu/vize-vitrine.linux-x64-gnu.node",
-  );
-
-  const packages = containerScript(options("packages"));
-  assert.equal(
-    packages.split("\n").at(-1),
-    "node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks npm/native npm/native/npm/* npm/cli npm/builder/unplugin npm/builder/vite",
+  assert.match(
+    script,
+    /exec node tools\/commands\/release\/npm\/smoke-release-install\.ts --prepare-manifests --runtime-checks npm\/native npm\/native\/npm\/\* npm\/cli npm\/builder\/unplugin npm\/builder\/vite/u,
   );
 });
 
 test("the package floor builds every JavaScript package it packs", () => {
-  const workflow = readAutomationPrograms(
-    path.join(root, ".github/workflows/release-glibc-floor.yml"),
-  );
+  const workflow = readAutomationPrograms(".github/workflows/release-glibc-floor.yml");
   assert.match(
     workflow,
     /vp run --filter '\.\/npm\/cli' build\n\s+vp run --filter '\.\/npm\/builder\/unplugin' build\n\s+vp run --filter '\.\/npm\/builder\/vite' build/u,

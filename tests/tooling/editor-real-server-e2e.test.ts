@@ -1,3 +1,4 @@
+import { workspaceTaskSteps } from "../../tools/config/vite-plus/task-plan.ts";
 import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
@@ -181,11 +182,14 @@ test("CI hydrates the exact pinned create-vue revision before the packaged host"
 test("CI runs both headless editor specs", () => {
   const action = readAutomationPrograms(".github", "actions", "vscode-host-smoke", "action.yml");
 
-  assert.equal(
-    taskCommand("test:nvim-extension:headless"),
-    "nvim --headless -u NONE --noplugin -l editors/nvim/test/vize_spec.lua && VIZE_TEST_ART_VUE_NATIVE_PARSER=1 nvim --headless -u NONE --noplugin -l editors/nvim/test/vize_spec.lua",
-    "both complete Lua suites must propagate assertion failures to CI",
-  );
+  const nvim = {
+    program: "nvim",
+    arguments: ["--headless", "-u", "NONE", "--noplugin", "-l", "editors/nvim/test/vize_spec.lua"],
+  };
+  assert.deepEqual(workspaceTaskSteps(testAndBenchmarkTasks["test:nvim-extension:headless"]), [
+    nvim,
+    { ...nvim, environment: { VIZE_TEST_ART_VUE_NATIVE_PARSER: "1" } },
+  ]);
   const conformance = parse(
     readAutomationPrograms(".github", "workflows", "editor-conformance.yml"),
   ) as {

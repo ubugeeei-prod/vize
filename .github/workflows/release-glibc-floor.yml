@@ -27,6 +27,7 @@ on:
       - "tools/support/github/release-platforms.ts"
       - "tools/commands/ci/github/verify-glibc-symbols.ts"
       - "tools/commands/release/npm/smoke-glibc-floor-containers.ts"
+      - tools/support/compat/npm/glibc-floor-*
   workflow_dispatch:
   schedule:
     - cron: "23 4 * * 1"

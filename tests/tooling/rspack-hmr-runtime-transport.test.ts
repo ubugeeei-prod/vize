@@ -1,3 +1,4 @@
+import { packageScripts } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -26,7 +27,10 @@ test("the HMR task retains its original build and all browser cases without cach
   const manifest = JSON.parse(
     readFileSync(path.join(repo, "npm/builder/rspack/package.json"), "utf8"),
   );
-  assert.equal(manifest.scripts["test:hmr"], "pnpm build && node --test test/hmr.test.mjs");
+  assert.equal(
+    packageScripts("npm/builder/rspack", manifest.scripts)["test:hmr"],
+    "pnpm build && node --test test/hmr.test.mjs",
+  );
   assert.equal(vp, "vp");
   assert.deepEqual(argv, ["run", "--no-cache", "--filter", "@vizejs/rspack-plugin", "test:hmr"]);
 });

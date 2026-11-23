@@ -1,3 +1,4 @@
+import { workspaceTaskSteps } from "../../tools/config/vite-plus/task-plan.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -172,20 +173,31 @@ test("packaged host strips Node-only options from the VS Code app environment", 
 });
 
 test("real host task packages and statically validates the same VSIX that it runs", () => {
-  const { command } = taskShape(testAndBenchmarkTasks["test:vscode-extension:host-real"]);
-
-  const packageAt = command.indexOf("../../tools/commands/editors/vscode/run-package-bin.ts");
-  const vsceAt = command.indexOf("@vscode/vsce");
-  const packageArgsAt = command.indexOf("package --no-dependencies --out dist/vize.vsix");
-  const staticAssertAt = command.indexOf(
-    "../../tools/commands/editors/vscode/assert-vsix-package.rs",
-  );
-  const hostAt = command.indexOf("node test/run-extension-host-real.mjs");
-  assert.ok(packageAt >= 0, "real host smoke must build the production VSIX");
-  assert.ok(vsceAt > packageAt, "real host smoke must package with the VS Code CLI");
-  assert.ok(packageArgsAt > vsceAt, "real host smoke must pass production VSIX package args");
-  assert.ok(staticAssertAt > packageAt, "the packaged VSIX must retain its static allowlist check");
-  assert.ok(hostAt > staticAssertAt, "the validated VSIX must run in the real host");
+  const recipe = workspaceTaskSteps(testAndBenchmarkTasks["test:vscode-extension:host-real"]);
+  const commands = recipe.map(({ program, arguments: args }) => [program, ...(args ?? [])]);
+  assert.equal(commands[0]?.[1], "tools/commands/editors/vscode/ensure-dependencies.ts");
+  assert.ok(recipe.slice(1).every((step) => step.directory === "editors/vscode"));
+  assert.deepEqual(commands.slice(1), [
+    ["node", "../../tools/commands/editors/vscode/sync-typescript-plugin.ts", "stage"],
+    [
+      "node",
+      "../../tools/commands/editors/vscode/run-package-bin.ts",
+      "@vscode/vsce",
+      "vsce",
+      "package",
+      "--no-dependencies",
+      "--out",
+      "dist/vize.vsix",
+    ],
+    [
+      "node",
+      "../../tools/commands/editors/vscode/sync-typescript-plugin.ts",
+      "inject",
+      "dist/vize.vsix",
+    ],
+    ["rust-script", "../../tools/commands/editors/vscode/assert-vsix-package.rs", "dist/vize.vsix"],
+    ["node", "test/run-extension-host-real.mjs"],
+  ]);
 });
 
 test("real host runner installs the VSIX and launches the host from the installed copy", async () => {
@@ -353,10 +365,6 @@ test("real host runner stops when installing the VSIX fails", async () => {
     fs.rmSync(profilePath, { force: true, recursive: true });
   }
 });
-
-function taskShape(value: unknown): { command: string } {
-  return value as { command: string };
-}
 
 function writeManifest(directory: string, publisher: string, name: string): void {
   fs.mkdirSync(directory);

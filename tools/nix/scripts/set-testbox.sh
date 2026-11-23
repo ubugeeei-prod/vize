@@ -1,0 +1,2 @@
+export VIZE_TESTBOX_SHELL=1
+export VIZE_BLACKSMITH_BIN="@BLACKSMITH@/bin/blacksmith"

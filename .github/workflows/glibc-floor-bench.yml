@@ -13,6 +13,7 @@ on:
       - ".github/workflows/glibc-floor-bench.yml"
       - ".github/scripts/workflows/glibc-floor-bench/**"
       - "tools/support/github/glibc-floor-bench.ts"
+      - tools/support/github/glibc-floor-compile.cjs
   workflow_dispatch:
     inputs:
       rounds:
@@ -67,10 +68,7 @@ jobs:
         run: . "${{ env.VIZE_CI_FILES }}/record-what-each-variant-links.sh"
       - name: Measure
         run: >-
-          node tools/support/github/glibc-floor-bench.ts run --rounds "$BENCH_ROUNDS"
-          --out "$RUNNER_TEMP/glibc-floor-bench.json" --corpus npm/ui/src
-          --cli "host=$RUNNER_TEMP/host/vize" --cli "floor=$RUNNER_TEMP/floor/vize"
-          --binding "host=$RUNNER_TEMP/host/vize-vitrine.node" --binding "floor=$RUNNER_TEMP/floor/vize-vitrine.node"
+          node tools/support/github/glibc-floor-bench.ts run --rounds "$BENCH_ROUNDS" --out "$RUNNER_TEMP/glibc-floor-bench.json" --corpus npm/ui/src --cli "host=$RUNNER_TEMP/host/vize" --cli "floor=$RUNNER_TEMP/floor/vize" --binding "host=$RUNNER_TEMP/host/vize-vitrine.node" --binding "floor=$RUNNER_TEMP/floor/vize-vitrine.node"
       - name: Summarize
         if: ${{ always() }}
         run: . "${{ env.VIZE_CI_FILES }}/summarize.sh"
