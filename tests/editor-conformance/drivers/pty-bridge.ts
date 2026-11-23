@@ -8,6 +8,7 @@
 //
 // usage: node pty-bridge.ts --cols N --rows N --screen FILE -- COMMAND [ARG ...]
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import { StringDecoder } from "node:string_decoder";
 import { parseArgs } from "node:util";
 import { spawn } from "zigpty";
@@ -57,7 +58,7 @@ for (const [key, value] of Object.entries(process.env)) if (value !== undefined)
 // the editor quits.
 const terminal = spawn(
   "/bin/sh",
-  ["-c", '"$@"; status=$?; sleep 5; exit "$status"', "sh", ...positionals],
+  [fileURLToPath(new URL("./editor-session.sh", import.meta.url)), ...positionals],
   { cols, rows, env, cwd: process.cwd(), encoding: null },
 );
 const screen = fs.openSync(values.screen, "a");

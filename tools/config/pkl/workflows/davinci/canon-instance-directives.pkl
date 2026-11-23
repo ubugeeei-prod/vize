@@ -8,6 +8,7 @@ on {
       ".github/scripts/workflows/canon-instance-directives/**"
       ".github/scripts/workflows/shared/**"
       "tools/benchmarks/scripts/canon-instance-directives*.ts"
+      "tools/benchmarks/scripts/canon-instance-directives-observer.js"
       "crates/vize_canon/src/projection/assemble/authored_rules.rs"
       "crates/vize_canon/src/projection/assemble/authored_rules/**"
       "tests/tooling/canon-upstream-diagnostics.test.ts"

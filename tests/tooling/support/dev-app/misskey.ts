@@ -163,8 +163,7 @@ function probeMisskeyNativeDependencies(misskeyRoot: string) {
   return spawnMisskeyPnpm(misskeyRoot, [
     "exec",
     "node",
-    "-e",
-    "const mod = require.resolve('re2', { paths: ['./packages/backend'] }); require(mod);",
+    path.join(import.meta.dirname, "misskey-native-probe.cjs"),
   ]);
 }
 

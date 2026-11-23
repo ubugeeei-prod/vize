@@ -1,4 +1,8 @@
-import { packageTaskRuntime, renderPackageTasks } from "../../support/ci/package-programs.ts";
+import {
+  packageTaskRuntime,
+  renderPackageTasks,
+  validatePackageScripts,
+} from "../../support/ci/package-programs.ts";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
   chmodSync,
@@ -136,22 +140,32 @@ function verifyInventory(products: Product[]): void {
       "--exclude-standard",
       "-z",
       "--",
+      "package.json",
+      "*/package.json",
       "*.yaml",
       "*.yml",
       "*.sh",
       "*.ps1",
+      "*.cmd",
       ".envrc",
     ],
     { cwd: root, encoding: "utf8" },
   )
     .split("\0")
     .filter(Boolean);
-  const missing = paths.filter(
-    (file) =>
-      !targets.has(file) &&
-      ownedTarget(file) &&
-      lstatSync(path.join(root, file), { throwIfNoEntry: false }) !== undefined,
-  );
+  const missing: string[] = [];
+  for (const file of paths) {
+    if (!ownedTarget(file) || !lstatSync(path.join(root, file), { throwIfNoEntry: false }))
+      continue;
+    if (path.posix.basename(file) === "package.json") {
+      const directory = path.posix.dirname(file);
+      if (!targets.has(path.posix.join(directory, "scripts/package-tasks.cjs"))) {
+        validatePackageScripts(root, directory, []);
+      }
+    } else if (!targets.has(file)) {
+      missing.push(file);
+    }
+  }
   if (missing.length) throw new Error(`Missing Pkl sources for:\n${missing.join("\n")}`);
 }
 

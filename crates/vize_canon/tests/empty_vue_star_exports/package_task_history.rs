@@ -37,6 +37,16 @@ pub(crate) fn restore(path: &str, current: String) -> String {
         .fold(current, |body, revision| reverse(path, body, revision))
 }
 
+/// Only the current, byte-exact dependency graph has the translation-worker predecessor.
+pub(crate) fn before_translation_worker(path: &str, body: &[u8]) -> Option<Vec<u8>> {
+    let revision = revisions().get(path)?.first()?;
+    if support::hash(body) != revision.current_sha256 {
+        return None;
+    }
+    let text = std::str::from_utf8(body).ok()?.to_owned();
+    Some(reverse(path, text, revision).into_bytes())
+}
+
 fn reverse(path: &str, mut current: String, revision: &PackageRevision) -> String {
     assert_eq!(
         support::hash(current.as_bytes()),

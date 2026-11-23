@@ -9,6 +9,7 @@ on {
       ".github/scripts/workflows/shared/**"
       "tests/tooling/lsp-diagnostic-capacity*.test.ts"
       "tests/tooling/support/lsp/diagnostic-capacity*.ts"
+      "tests/tooling/support/lsp/diagnostic-capacity-pidfd.c"
       "crates/vize_maestro/src/server/open_document.rs"
       "crates/vize_maestro/src/server/diagnostic_publishing.rs"
       "crates/vize_maestro/src/server/diagnostic_publishing/**"

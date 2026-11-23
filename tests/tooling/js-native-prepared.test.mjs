@@ -31,6 +31,7 @@ function stageNative(fixture) {
   copyFileSync(join(root, helper), join(fixture, helper));
   for (const dependency of [
     "tools/support/compat/github/js-test-cases.ts",
+    "tools/support/compat/github/reporters/js.sh",
     "tools/support/compat/github/test-case-reporter.ts",
     "tools/support/compat/github/test-cases.ts",
     "tools/support/json-value.ts",

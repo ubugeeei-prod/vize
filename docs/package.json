@@ -19,6 +19,7 @@
     "@ox-content/vite-plugin": "catalog:integrations",
     "@vizejs/vite-plugin": "workspace:*",
     "playwright": "catalog:testing",
+    "pythonia": "1.2.6",
     "three": "catalog:content",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",

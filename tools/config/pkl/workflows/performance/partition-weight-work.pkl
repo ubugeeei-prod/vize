@@ -14,6 +14,8 @@ on {
       "crates/vize_canon/src/batch/executor/cli/partition/weight_work/**"
       "crates/vize_canon/src/batch/executor/cli/partition/weight_work.rs"
       "tools/benchmarks/scripts/partition-weight-*.ts"
+      "tools/support/process-launcher.ts"
+      "tools/support/launchers/exec.sh"
       "tests/tooling/partition-weight-cli.test.ts"
       "tests/tooling/partition-weight-layout.test.ts"
     }

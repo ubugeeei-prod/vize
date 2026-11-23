@@ -12,6 +12,8 @@ on {
       "crates/vize_maestro/src/server/state/project_contexts/root_discovery.rs"
       "tools/support/compat/davinci/lsp-resources.ts"
       "tools/support/compat/davinci/lib/lsp-profile-launch.ts"
+      "tools/support/process-launcher.ts"
+      "tools/support/launchers/profile-lsp.sh"
       "tools/support/compat/davinci/lib/lsp-resource-cancellation.ts"
       "tools/support/compat/davinci/lib/lsp-resource-cancellation-run.ts"
       "tools/support/compat/davinci/lib/lsp-resource-corsa-gate.ts"
