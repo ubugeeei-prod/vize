@@ -104,16 +104,16 @@ test("packed package root rejects stale bindings by default and keeps the explic
 
   try {
     const installDir = installPackedNativePackage(tempDir);
-    installNativeTarget(installDir, "stale-binding.cjs", staleTargetVersion);
+    installNativeTarget(installDir, toolingProgram("native/stale-binding.cjs"), staleTargetVersion);
 
-    const rejected = runNativeLoaderProbe(installDir, "reject-stale.cjs", [
+    const rejected = runNativeLoaderProbe(installDir, toolingProgram("native/reject-stale.cjs"), [
       packageVersion,
       staleTargetVersion,
     ]);
     assertSucceeded(rejected, "require('@vizejs/native') without escape hatch");
     assert.match(rejected.stdout, /package root rejected stale binding/);
 
-    const allowed = runNativeLoaderProbe(installDir, "allow-stale.cjs", [], {
+    const allowed = runNativeLoaderProbe(installDir, toolingProgram("native/allow-stale.cjs"), [], {
       ...process.env,
       VIZE_ALLOW_NATIVE_VERSION_MISMATCH: "1",
     });

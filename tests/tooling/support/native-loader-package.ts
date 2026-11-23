@@ -3,7 +3,6 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { toolingProgram } from "./program-path.ts";
 
 export const nativePackageDir = fileURLToPath(new URL("../../../npm/native/", import.meta.url));
 export const packageVersion = "1.0.0";
@@ -138,7 +137,7 @@ export function installNativeTarget(
     path.join(target, "package.json"),
     JSON.stringify({ name, main: "index.js", version }),
   );
-  fs.copyFileSync(toolingProgram("native/" + program), path.join(target, "index.js"));
+  fs.copyFileSync(program, path.join(target, "index.js"));
 }
 
 export function runNativeLoaderProbe(
@@ -148,6 +147,7 @@ export function runNativeLoaderProbe(
   env: NodeJS.ProcessEnv = process.env,
 ) {
   // Node resolves the simulated consumer's dependencies relative to its entry point.
-  fs.copyFileSync(toolingProgram("native/" + program), path.join(installDir, program));
-  return run(process.execPath, [program, ...args], { cwd: installDir, env });
+  const entrypoint = path.basename(program);
+  fs.copyFileSync(program, path.join(installDir, entrypoint));
+  return run(process.execPath, [entrypoint, ...args], { cwd: installDir, env });
 }

@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 import {
   assertSucceeded,
   currentTargetPackageName,
@@ -33,7 +34,7 @@ test("packed package root distinguishes missing and incompatible native targets"
     const missingInstallDir = installPackedNativePackage(path.join(tempDir, "missing"), env);
     const missing = runNativeLoaderProbe(
       missingInstallDir,
-      "reject-missing.cjs",
+      toolingProgram("native/reject-missing.cjs"),
       [currentTargetPackageName()],
       env,
     );
@@ -41,8 +42,13 @@ test("packed package root distinguishes missing and incompatible native targets"
     assert.match(missing.stdout, /reported missing optional dependency/);
 
     const brokenInstallDir = installPackedNativePackage(path.join(tempDir, "broken"), env);
-    installNativeTarget(brokenInstallDir, "incompatible-glibc-binding.cjs");
-    const broken = runNativeLoaderProbe(brokenInstallDir, "reject-incompatible-glibc.cjs", [], env);
+    installNativeTarget(brokenInstallDir, toolingProgram("native/incompatible-glibc-binding.cjs"));
+    const broken = runNativeLoaderProbe(
+      brokenInstallDir,
+      toolingProgram("native/reject-incompatible-glibc.cjs"),
+      [],
+      env,
+    );
     assertSucceeded(broken, "require('@vizejs/native') with incompatible target package");
     assert.match(broken.stdout, /surfaced native loader failure/);
   } finally {
