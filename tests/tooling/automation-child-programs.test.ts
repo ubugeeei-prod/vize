@@ -131,29 +131,13 @@ function inlineFixtureBodies(file: string, text: string): number[] {
 test("automation clients and executable fixtures load named programs", () => {
   const files = execFileSync(
     "git",
-    [
-      "ls-files",
-      "--cached",
-      "--others",
-      "--exclude-standard",
-      "-z",
-      "--",
-      ".github",
-      "crates",
-      "davinci",
-      "tools",
-      "npm",
-      "tests",
-      "examples",
-      "editors",
-      "docs",
-      "playground",
-    ],
+    ["ls-files", "--cached", "--others", "--exclude-standard", "-z"],
     { cwd: root, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 },
   );
   const failures: string[] = [];
   for (const file of files.split("\0")) {
     if (
+      file.startsWith("upstream/") ||
       !/\.[cm]?[jt]s(?:\.in)?$/u.test(file) ||
       /(?:^|\/)(?:_?fixtures|__fixtures__|testdata)\//u.test(file)
     )
