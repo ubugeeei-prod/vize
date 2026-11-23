@@ -1,5 +1,5 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -70,9 +70,8 @@ test("each container mode runs the artifact it names", () => {
 });
 
 test("the package floor builds every JavaScript package it packs", () => {
-  const workflow = fs.readFileSync(
+  const workflow = readAutomationPrograms(
     path.join(root, ".github/workflows/release-glibc-floor.yml"),
-    "utf8",
   );
   assert.match(
     workflow,

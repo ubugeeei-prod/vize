@@ -6,6 +6,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/no-unused-script-vars-public.yml"
+      ".github/scripts/workflows/no-unused-script-vars-public/**"
       "tools/support/release/no_unused_script_vars_public/**"
       "tests/tooling/no-unused-script-vars-public.test.ts"
       "tests/_fixtures/differential/linter/no-unused-script-vars-12999/**"
@@ -79,6 +80,7 @@ jobs {
     `runs-on` = "ubuntu-24.04"
     `timeout-minutes` = 20
     env {
+
       GH_TOKEN = "${{ github.token }}"
       PUBLIC_VERSION = "${{ inputs.version }}"
       PUBLIC_CANDIDATE = "${{ inputs.candidate }}"
@@ -86,6 +88,7 @@ jobs {
       PRODUCER_RUN = "${{ inputs.producer_run }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("no-unused-script-vars-public")
       ci.checkoutAt("${{ env.SOURCE_SHA }}")
       new Dynamic {
         uses = ci.setupBun
@@ -93,12 +96,7 @@ jobs {
       }
       new Dynamic {
         name = "Authenticate the immutable release tag and successful producer"
-        run = #"""
-        git fetch --force --no-tags --depth=2 origin "refs/tags/v$PUBLIC_VERSION"
-        node tools/support/release/no_unused_script_vars_public/authority.ts \
-          "$PUBLIC_VERSION" "$PUBLIC_CANDIDATE" "$PUBLIC_SOURCE" "$PRODUCER_RUN"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/authenticate-the-immutable-release-tag-and-successful-producer.sh""#
       }
       new Dynamic {
         name = "Install vize from public npm and require every reported packet under Bun"

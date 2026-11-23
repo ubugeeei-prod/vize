@@ -6,6 +6,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/vscode-workspace-server.yml"
+      ".github/scripts/workflows/vscode-workspace-server/**"
       "editors/vscode/**"
       "tests/tooling/vscode-workspace-server*.test.mjs"
     }
@@ -30,6 +31,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 25
     steps = new Listing {
+      ...ci.stageWorkflowScripts("vscode-workspace-server")
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
       new Dynamic {
         uses = ci.setupVp121
@@ -50,13 +52,7 @@ jobs {
       ci.command("Package and validate the production VSIX", "vp run --workspace-root package:vscode-extension")
       new Dynamic {
         name = "Ensure virtual display"
-        run = """
-        if ! command -v xvfb-run >/dev/null 2>&1; then
-          sudo apt-get update
-          sudo apt-get install -y xvfb
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/ensure-virtual-display.sh""#
       }
       new Dynamic {
         name = "Run installed VSIX with the pinned workspace engine"

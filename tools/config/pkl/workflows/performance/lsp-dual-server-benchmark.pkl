@@ -6,6 +6,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/lsp-dual-server-benchmark.yml"
+      ".github/scripts/workflows/lsp-dual-server-benchmark/**"
       "tests/_fixtures/performance/lsp-dual-server/**"
       "tests/differential/build-receipt.ts"
       "tests/performance/lsp-dual-server-benchmark.ts"
@@ -48,15 +49,11 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 15
     steps = new Listing {
+      ...ci.stageWorkflowScripts("lsp-dual-server-benchmark")
       ci.checkoutAt("${{ env.EXPECTED_SOURCE }}")
       new Dynamic {
         name = "Refuse a different source"
-        run = """
-        set -euo pipefail
-        [[ "$EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]
-        test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/refuse-a-different-source.sh""#
       }
       ci.workspaceVp()
       ci.command("Install exact JavaScript product stacks", "vp install --frozen-lockfile --prefer-offline")
@@ -79,18 +76,16 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 60
     env {
+
       CARGO_BUILD_JOBS = "16"
       RAYON_NUM_THREADS = "8"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("lsp-dual-server-benchmark")
       ci.checkoutAt("${{ env.EXPECTED_SOURCE }}")
       new Dynamic {
         name = "Refuse a different source"
-        run = """
-        set -euo pipefail
-        test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/refuse-a-different-source-2.sh""#
       }
       ci.workspaceVp()
       ci.command("Install exact JavaScript product stacks", "vp install --frozen-lockfile --prefer-offline")
@@ -99,7 +94,7 @@ jobs {
         `working-directory` = "tests/_fixtures/performance/lsp-dual-server/provider"
         run = "vp install --frozen-lockfile --prefer-offline"
       }
-      ci.command("Install the repository Rust toolchain", "rustup toolchain install || rustup show active-toolchain")
+      ci.command("Install the repository Rust toolchain", #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh""#)
       ci.wild()
       new Dynamic {
         uses = "./.github/actions/setup-rust-sticky-cache"
@@ -110,11 +105,7 @@ jobs {
       }
       new Dynamic {
         name = "Build and receipt the exact normal Vize server"
-        run = """
-        cargo build --profile ci -p vize
-        vp exec node tests/differential/build-receipt.ts
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-exact-normal-vize-server.sh""#
       }
       new Dynamic {
         name = "Measure identical qualified protocol packets"
@@ -122,24 +113,12 @@ jobs {
           CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
           VIZE_LSP_BIN = "${{ github.workspace }}/target/ci/vize"
         }
-        run = #"""
-        set -euo pipefail
-        test -x "$CORSA_PATH"
-        test -x "$VIZE_LSP_BIN"
-        vp exec node tests/performance/lsp-dual-server-benchmark.ts \
-          --fresh 100 --warm 100 --out "$RUNNER_TEMP/lsp-dual-server"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/measure-identical-qualified-protocol-packets.sh""#
       }
       new Dynamic {
         name = "Publish the qualified distribution"
         `if` = "${{ always() }}"
-        run = """
-        if [[ -f "$RUNNER_TEMP/lsp-dual-server/summary.md" ]]; then
-          cat "$RUNNER_TEMP/lsp-dual-server/summary.md" >> "$GITHUB_STEP_SUMMARY"
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/publish-the-qualified-distribution.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -164,12 +143,14 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 45
     env {
+
       CARGO_BUILD_JOBS = "16"
       LSP_DUAL_ALLOW_SMOKE = "1"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("lsp-dual-server-benchmark")
       ci.checkoutAt("${{ env.EXPECTED_SOURCE }}")
-      ci.command("Refuse a different source", #"test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE""#)
+      ci.command("Refuse a different source", #". "${{ env.VIZE_CI_FILES }}/refuse-a-different-source-3.sh""#)
       ci.workspaceVp()
       new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
       new Dynamic {
@@ -177,7 +158,7 @@ jobs {
         `working-directory` = "tests/_fixtures/performance/lsp-dual-server/provider"
         run = "vp install --frozen-lockfile --prefer-offline"
       }
-      new Dynamic { run = "rustup toolchain install || rustup show active-toolchain" }
+      new Dynamic { run = #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh""# }
       ci.wild()
       new Dynamic {
         uses = "./.github/actions/setup-rust-sticky-cache"
@@ -188,11 +169,7 @@ jobs {
       }
       new Dynamic {
         name = "Build the separately instrumented Vize server"
-        run = """
-        cargo build --profile ci-opt -p vize --features profiling
-        vp exec node tests/differential/build-receipt.ts --profile-ci-opt
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-separately-instrumented-vize-server.sh""#
       }
       new Dynamic {
         name = "Collect attribution without comparing unlike metrics"
@@ -203,16 +180,7 @@ jobs {
           LSP_DUAL_ATTRIBUTION_DIR = "${{ runner.temp }}/lsp-attribution"
           VIZE_LSP_BIN = "${{ github.workspace }}/target/ci-opt/vize"
         }
-        run = #"""
-        set -euo pipefail
-        mkdir -p "$LSP_DUAL_VIZE_PROFILE_DIR" "$LSP_DUAL_VUE_CPU_PROFILE_DIR"
-        vp exec node tests/performance/lsp-dual-server-benchmark.ts \
-          --fresh 1 --warm 5 --out "$RUNNER_TEMP/lsp-attribution/report"
-        sha256sum "$VIZE_LSP_BIN" > "$RUNNER_TEMP/lsp-attribution/vize-binary.sha256"
-        git rev-parse HEAD > "$RUNNER_TEMP/lsp-attribution/source.sha"
-        vp exec node tests/performance/lsp-dual-server-attribution-manifest.ts
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/collect-attribution-without-comparing-unlike-metrics.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

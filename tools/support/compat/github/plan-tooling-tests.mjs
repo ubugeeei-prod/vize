@@ -279,6 +279,16 @@ export function planToolingTests(
   { tier = "pr", cwd = root, includeDedicated = false } = {},
 ) {
   if (!["pr", "merge"].includes(tier)) throw new Error("tier must be pr or merge");
+  // Tests can reference the owning manifest without naming its generated shell or driver.
+  const owners = paths.flatMap((path) => {
+    const script =
+      /^(?:tools\/config\/pkl\/scripts\/)?\.github\/scripts\/workflows\/([\w-]+)\//u.exec(path);
+    if (script && script[1] !== "shared") return [".github/workflows/" + script[1] + ".yml"];
+    const definition =
+      /^tools\/config\/pkl\/(?:workflows\/[^/]+\/([\w-]+)\.pkl|parts\/([\w-]+)\/)/u.exec(path);
+    return definition ? [".github/workflows/" + (definition[1] ?? definition[2]) + ".yml"] : [];
+  });
+  paths = [...new Set([...paths, ...owners])];
   const files = toolingTestFiles(cwd);
   const mergeOnly = new Set(mergeOnlyToolingTests);
   const dedicated = new Set(dedicatedPrToolingTests);
@@ -286,7 +296,13 @@ export function planToolingTests(
   const unknown =
     paths.length === 0 ||
     code.some((path) => !matchesAny(path, [...cacheInputs.tooling, ...globalInputs]));
-  const global = code.some((path) => matchesAny(path, globalInputs));
+  const global = code.some(
+    (path) =>
+      matchesAny(path, globalInputs) ||
+      /^(?:\.github\/(?:scripts\/workflows\/shared|actions\/stage-workflow-scripts)\/|tools\/config\/pkl\/(?:Actions|ShellScript)\.pkl$)/u.test(
+        path,
+      ),
+  );
   const candidates = files.filter(
     (file) => tier === "pr" && !mergeOnly.has(file) && (includeDedicated || !dedicated.has(file)),
   );

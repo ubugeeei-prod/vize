@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/production-reach-accounting.yml"
+      ".github/scripts/workflows/production-reach-accounting/**"
       "crates/vize_atelier_sfc/tests/davinci_production_reach.rs"
       "crates/vize_atelier_sfc/tests/davinci_production_reach/**"
     }
@@ -24,6 +25,9 @@ jobs {
   `committed-corpus` {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/production-reach-accounting"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       ci.rust("1.100.0")
@@ -37,19 +41,11 @@ jobs {
       }
       new Dynamic {
         name = "Verify complete original component-handler production parity"
-        run = """
-        set -o pipefail
-        cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach inline_parity_regressions -- --nocapture 2>&1 | tee production-reach-originals.log
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-complete-original-component-handler-production-parity.sh""#
       }
       new Dynamic {
         name = "Hold complete committed-corpus parity, selection accounting and reach floors"
-        run = """
-        set -o pipefail
-        cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach -- --nocapture 2>&1 | tee production-reach-corpus.log
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/hold-complete-committed-corpus-parity-selection-accounting-and-reach-flo.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

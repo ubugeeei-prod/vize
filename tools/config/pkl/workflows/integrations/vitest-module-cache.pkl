@@ -6,6 +6,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/vitest-module-cache.yml"
+      ".github/scripts/workflows/vitest-module-cache/**"
       "npm/builder/vite/**"
       "npm/native/**"
       "crates/vize_atelier_sfc/src/vite_plugin/**"
@@ -34,6 +35,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 15
     steps = new Listing {
+      ...ci.stageWorkflowScripts("vitest-module-cache")
       ci.checkoutAt("${{ env.SOURCE_SHA }}")
       new Dynamic {
         uses = ci.setupVp121
@@ -61,12 +63,7 @@ jobs {
       }
       new Dynamic {
         name = "Build the actual source addon and Vite adapter"
-        run = """
-        vp run --workspace-root build:native:test
-        vp run --workspace-root build:vite-plugin
-        node npm/builder/vite/scripts/run-tests.ts --require-prepared
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-actual-source-addon-and-vite-adapter.sh""#
       }
       new Dynamic {
         name = "Install the exact reported Vitest and official Vue control"

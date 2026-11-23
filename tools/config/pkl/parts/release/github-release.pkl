@@ -12,12 +12,14 @@ permissions {
   `id-token` = "write"
 }
 env {
+
   RELEASE_TAG = "${{ needs.version.outputs.tag }}"
   RELEASE_SHA = "${{ needs.version.outputs.sha }}"
   // A failed platform build releases without its files rather than blocking.
   EDITOR_PLATFORMS = "${{ inputs.npm_resume_run != '' && needs.version.outputs.editor_platform_artifacts || needs.build-editor-platforms.result == 'success' && '1' || '0' }}"
 }
 steps = new Listing {
+  ...ci.stageWorkflowScripts("release")
   ci.checkoutAt("${{ needs.version.outputs.tag }}")
   new Dynamic {
     `if` = "inputs.npm_resume_run == ''"
@@ -115,14 +117,7 @@ steps = new Listing {
       COSIGN_YES = "true"
       VIZE_EDITOR_PLATFORM_ARTIFACTS = "${{ env.EDITOR_PLATFORMS }}"
     }
-    run = """
-    shopt -s nullglob
-    for artifact in cli-artifacts/*.tar.gz cli-artifacts/*.zip editor-extension-artifacts/editors/vscode/dist/*.vsix editor-extension-artifacts/platform/*.vsix editor-extension-artifacts/platform/*.receipt.json editor-extension-artifacts/*.tar.gz; do
-      ( cd "$(dirname "$artifact")" && sha256sum "$(basename "$artifact")" ) > "$artifact.sha256"
-    done
-    node tools/support/release/sign_release_artifacts.ts "$RELEASE_TAG"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/checksum-and-sign-release-artifacts.sh""#
   }
   new Dynamic {
     name = "Generate release notes"

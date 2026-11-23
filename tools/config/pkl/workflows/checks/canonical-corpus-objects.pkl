@@ -12,6 +12,7 @@ on {
       ".gitmodules"
       "tests/_fixtures/_git/**"
       ".github/workflows/canonical-corpus-objects.yml"
+      ".github/scripts/workflows/canonical-corpus-objects/**"
     }
   }
   // Daily, so the entry is never evicted as unused.
@@ -32,6 +33,9 @@ jobs {
     `if` = "${{ github.ref == 'refs/heads/main' }}"
     `runs-on` = ci.linux
     `timeout-minutes` = 30
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/canonical-corpus-objects"
+    }
     steps = new Listing {
       new Dynamic {
         name = "Checkout trusted main"
@@ -57,7 +61,7 @@ jobs {
       new Dynamic {
         name = "Require a trusted cache writer"
         `if` = "${{ steps.corpus-plan.outputs.cache-trusted != 'true' }}"
-        run = "echo 'Only trusted default-branch runs seed canonical fixture objects.' >&2; exit 1"
+        run = #". "${{ env.VIZE_CI_FILES }}/require-a-trusted-cache-writer.sh""#
       }
       new Dynamic {
         name = "Cache immutable trusted fixture objects"

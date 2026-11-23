@@ -6,6 +6,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/css-hover-visual.yml"
+      ".github/scripts/workflows/css-hover-visual/**"
       "editors/vscode/test/css-hover-*.mjs"
       "editors/vscode/test/css-hover-source-custody.json"
       "tests/_fixtures/differential/lsp/css-hover-stylesheet-examples-10572/**"
@@ -40,6 +41,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 25
     env {
+
       CARGO_TERM_COLOR = "always"
       CARGO_BUILD_JOBS = "12"
       RAYON_NUM_THREADS = "4"
@@ -49,6 +51,7 @@ jobs {
       VIZE_CSS_VISUAL_OUTPUT = "${{ github.workspace }}/output/playwright/css-hover"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("css-hover-visual")
       new Dynamic {
         uses = ci.checkout
         with {
@@ -57,7 +60,7 @@ jobs {
           `persist-credentials` = false
         }
       }
-      ci.command("Require the exact reviewed PR source", #"test "$(git rev-parse HEAD)" = "$SOURCE_SHA""#)
+      ci.command("Require the exact reviewed PR source", #". "${{ env.VIZE_CI_FILES }}/require-the-exact-reviewed-pr-source.sh""#)
       ci.workspaceVp()
       ci.command("Install locked JavaScript dependencies", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
@@ -66,11 +69,7 @@ jobs {
       }
       new Dynamic {
         name = "Install repository Rust toolchain"
-        run = """
-        rustup toolchain install || rustup show active-toolchain
-        cargo --version
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-repository-rust-toolchain.sh""#
       }
       ci.wild()
       new Dynamic {
@@ -83,11 +82,7 @@ jobs {
       ci.use("./.github/actions/setup-rust-script")
       new Dynamic {
         name = "Build and receipt the actual source CLI with default features"
-        run = """
-        cargo build --profile ci -p vize
-        node tests/differential/build-receipt.ts
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-actual-source-cli-with-default-features.sh""#
       }
       new Dynamic {
         name = "Check capture refusal boundaries"
@@ -102,11 +97,7 @@ jobs {
         env {
           VIZE_CSS_SELECTED_WORK_CAPTURE = "${{ github.workspace }}/target/vize-tests/css-color-literal-hover/scanner-work.json"
         }
-        run = """
-        mkdir -p target/vize-tests/css-color-literal-hover
-        cargo test --locked --profile ci -p vize_maestro --lib server::annotations::document_color:: -- --nocapture
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-selected-color-work-and-publication-boundaries-on-the-actual-sour.sh""#
       }
       new Dynamic {
         name = "Verify all eighteen current hovers and frozen color and presentation vectors"
@@ -118,23 +109,12 @@ jobs {
       }
       new Dynamic {
         name = "Build and package the actual extension"
-        run = """
-        vp run --workspace-root build:vscode-extension
-        vp run --workspace-root test:vscode-extension:vsix
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-and-package-the-actual-extension.sh""#
       }
       ci.use("./.github/actions/setup-ubuntu-archive")
       new Dynamic {
         name = "Prepare the pinned Electron host"
-        run = """
-        if ! command -v xvfb-run >/dev/null 2>&1; then
-          vize-ci-apt-retry sudo apt-get update
-          vize-ci-apt-retry sudo apt-get install -y xvfb
-        fi
-        timeout --signal=TERM --kill-after=10s 300s vp run --workspace-root test:vscode-extension:download
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/prepare-the-pinned-electron-host.sh""#
       }
       new Dynamic {
         name = "Capture public APIs, rendered CSS and provider-backed color picker"

@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/lsp-dual-server-benchmark.yml"
+      - ".github/scripts/workflows/lsp-dual-server-benchmark/**"
       - "tests/_fixtures/performance/lsp-dual-server/**"
       - "tests/differential/build-receipt.ts"
       - "tests/performance/lsp-dual-server-benchmark.ts"
@@ -39,15 +40,25 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/lsp-dual-server-benchmark/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ env.EXPECTED_SOURCE }}
           persist-credentials: false
       - name: Refuse a different source
-        run: |
-          set -euo pipefail
-          [[ "$EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]
-          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+        run: . "${{ env.VIZE_CI_FILES }}/refuse-a-different-source.sh"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: package.json
@@ -71,14 +82,25 @@ jobs:
       CARGO_BUILD_JOBS: "16"
       RAYON_NUM_THREADS: "8"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/lsp-dual-server-benchmark/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ env.EXPECTED_SOURCE }}
           persist-credentials: false
       - name: Refuse a different source
-        run: |
-          set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+        run: . "${{ env.VIZE_CI_FILES }}/refuse-a-different-source-2.sh"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: package.json
@@ -90,7 +112,7 @@ jobs:
         working-directory: tests/_fixtures/performance/lsp-dual-server/provider
         run: vp install --frozen-lockfile --prefer-offline
       - name: Install the repository Rust toolchain
-        run: rustup toolchain install || rustup show active-toolchain
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh"
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -99,25 +121,15 @@ jobs:
           key: lsp-dual-server-normal
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Build and receipt the exact normal Vize server
-        run: |
-          cargo build --profile ci -p vize
-          vp exec node tests/differential/build-receipt.ts
+        run: . "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-exact-normal-vize-server.sh"
       - name: Measure identical qualified protocol packets
         env:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
           VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
-        run: |
-          set -euo pipefail
-          test -x "$CORSA_PATH"
-          test -x "$VIZE_LSP_BIN"
-          vp exec node tests/performance/lsp-dual-server-benchmark.ts \
-            --fresh 100 --warm 100 --out "$RUNNER_TEMP/lsp-dual-server"
+        run: . "${{ env.VIZE_CI_FILES }}/measure-identical-qualified-protocol-packets.sh"
       - name: Publish the qualified distribution
         if: ${{ always() }}
-        run: |
-          if [[ -f "$RUNNER_TEMP/lsp-dual-server/summary.md" ]]; then
-            cat "$RUNNER_TEMP/lsp-dual-server/summary.md" >> "$GITHUB_STEP_SUMMARY"
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/publish-the-qualified-distribution.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() }}
         with:
@@ -137,12 +149,25 @@ jobs:
       CARGO_BUILD_JOBS: "16"
       LSP_DUAL_ALLOW_SMOKE: "1"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/lsp-dual-server-benchmark/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ env.EXPECTED_SOURCE }}
           persist-credentials: false
       - name: Refuse a different source
-        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+        run: . "${{ env.VIZE_CI_FILES }}/refuse-a-different-source-3.sh"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: package.json
@@ -152,7 +177,7 @@ jobs:
       - name: Install the isolated comparison provider
         working-directory: tests/_fixtures/performance/lsp-dual-server/provider
         run: vp install --frozen-lockfile --prefer-offline
-      - run: rustup toolchain install || rustup show active-toolchain
+      - run: . "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh"
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -161,9 +186,7 @@ jobs:
           key: lsp-dual-server-attribution
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Build the separately instrumented Vize server
-        run: |
-          cargo build --profile ci-opt -p vize --features profiling
-          vp exec node tests/differential/build-receipt.ts --profile-ci-opt
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-separately-instrumented-vize-server.sh"
       - name: Collect attribution without comparing unlike metrics
         env:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
@@ -171,14 +194,7 @@ jobs:
           LSP_DUAL_VUE_CPU_PROFILE_DIR: ${{ runner.temp }}/lsp-attribution/vue
           LSP_DUAL_ATTRIBUTION_DIR: ${{ runner.temp }}/lsp-attribution
           VIZE_LSP_BIN: ${{ github.workspace }}/target/ci-opt/vize
-        run: |
-          set -euo pipefail
-          mkdir -p "$LSP_DUAL_VIZE_PROFILE_DIR" "$LSP_DUAL_VUE_CPU_PROFILE_DIR"
-          vp exec node tests/performance/lsp-dual-server-benchmark.ts \
-            --fresh 1 --warm 5 --out "$RUNNER_TEMP/lsp-attribution/report"
-          sha256sum "$VIZE_LSP_BIN" > "$RUNNER_TEMP/lsp-attribution/vize-binary.sha256"
-          git rev-parse HEAD > "$RUNNER_TEMP/lsp-attribution/source.sha"
-          vp exec node tests/performance/lsp-dual-server-attribution-manifest.ts
+        run: . "${{ env.VIZE_CI_FILES }}/collect-attribution-without-comparing-unlike-metrics.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() }}
         with:

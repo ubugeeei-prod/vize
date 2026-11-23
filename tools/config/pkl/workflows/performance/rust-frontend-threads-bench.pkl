@@ -101,6 +101,9 @@ jobs {
         }
       }
     }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/rust-frontend-threads-bench"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -131,7 +134,7 @@ jobs {
           `package-manager-cache` = false
         }
       }
-      ci.command("Require GNU time", "test -x /usr/bin/time || { sudo apt-get update -qq && sudo apt-get install -y -qq time; }")
+      ci.command("Require GNU time", #". "${{ env.VIZE_CI_FILES }}/require-gnu-time.sh""#)
       new Dynamic {
         name = "Measure"
         env {
@@ -139,13 +142,13 @@ jobs {
           BENCH_CONFIGS = "${{ matrix.configs }}"
           BENCH_NAME = "${{ matrix.name }}"
         }
-        run = #"BENCH_TARGET_DIR="$RUNNER_TEMP/frontend-bench-target" node tools/support/github/rust-frontend-threads-bench.ts run --scenario "$BENCH_SCENARIO" --configs "$BENCH_CONFIGS" --rounds "$BENCH_ROUNDS" --out "$RUNNER_TEMP/frontend-bench/$BENCH_NAME.json""#
+        run = #". "${{ env.VIZE_CI_FILES }}/measure.sh""#
       }
       new Dynamic {
         name = "Summarize"
         `if` = "${{ always() }}"
         env { BENCH_NAME = "${{ matrix.name }}" }
-        run = #"test ! -s "$RUNNER_TEMP/frontend-bench/$BENCH_NAME.json" || node tools/support/github/rust-frontend-threads-bench.ts summarize "$RUNNER_TEMP/frontend-bench/$BENCH_NAME.json" >> "$GITHUB_STEP_SUMMARY""#
+        run = #". "${{ env.VIZE_CI_FILES }}/summarize.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -165,6 +168,9 @@ jobs {
     `if` = "${{ always() }}"
     `runs-on` = ci.linux
     `timeout-minutes` = 5
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/rust-frontend-threads-bench"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -187,7 +193,7 @@ jobs {
       }
       new Dynamic {
         name = "Summarize"
-        run = #"node tools/support/github/rust-frontend-threads-bench.ts summarize "$RUNNER_TEMP"/frontend-bench/*.json >> "$GITHUB_STEP_SUMMARY""#
+        run = #". "${{ env.VIZE_CI_FILES }}/summarize-2.sh""#
       }
     }
   }

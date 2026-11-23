@@ -30,6 +30,7 @@ jobs {
     `runs-on` = "blacksmith-8vcpu-ubuntu-2404"
     `timeout-minutes` = 15
     env {
+
       SOURCE_SHA = "${{ inputs.source-sha }}"
       PUBLIC_VERSION = "${{ inputs.version }}"
       GH_TOKEN = "${{ github.token }}"
@@ -39,6 +40,7 @@ jobs {
       VIZE10903_PROOF = "/tmp/vize-plain-script-public-${{ github.run_id }}-${{ github.run_attempt }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("plain-script-import-public-acceptance")
       ci.checkoutAt("v${{ inputs.version }}")
       new Dynamic {
         uses = ci.setupNode
@@ -46,25 +48,7 @@ jobs {
       }
       new Dynamic {
         name = "Verify the immutable release includes the merged source fix"
-        run = #"""
-        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-        node --input-type=module -e '
-        import assert from "node:assert/strict";
-        import { execFileSync } from "node:child_process";
-        import { mkdirSync, writeFileSync } from "node:fs";
-        const api = path => JSON.parse(execFileSync("gh", ["api", path], { encoding: "utf8" }));
-        assert(/^0\.\d+\.\d+$/.test(process.env.PUBLIC_VERSION));
-        assert(/^[a-f0-9]{40}$/.test(process.env.SOURCE_SHA));
-        const pr = api("repos/ubugeeei-prod/vize/pulls/10982");
-        assert.equal(pr.merged, true);
-        const comparison = api("repos/ubugeeei-prod/vize/compare/" + pr.merge_commit_sha + "..." + process.env.SOURCE_SHA);
-        assert(["ahead", "identical"].includes(comparison.status));
-        assert.equal(comparison.merge_base_commit.sha, pr.merge_commit_sha);
-        mkdirSync(process.env.VIZE10903_PROOF, { recursive: true });
-        writeFileSync(process.env.VIZE10903_PROOF + "/release-provenance.json", JSON.stringify({ version: process.env.PUBLIC_VERSION, source: process.env.SOURCE_SHA, fix: pr.html_url, merge: pr.merge_commit_sha, comparison: comparison.html_url, status: comparison.status }, null, 2) + "\n");
-        '
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-the-immutable-release-includes-the-merged-source-fix.sh""#
       }
       new Dynamic {
         name = "Install fresh registry packages and run the untouched reported browser consumer"

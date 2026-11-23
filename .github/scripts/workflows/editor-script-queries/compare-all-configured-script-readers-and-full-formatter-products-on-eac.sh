@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+flags=(--locked --profile ci-opt)
+tools=(-p vize_maestro --features experimental-script-tools,micro-profiling --lib)
+export VIZE_SCRIPT_QUERY_INPUTS="$RUNNER_TEMP/editor-scripts"
+cargo test "${flags[@]}" -p vize_l1 --features authored-script-queries --lib embed::authored_program::tests
+cargo clippy "${flags[@]}" -p vize_glyph --features observed-template --lib --no-deps -- -D warnings
+cargo test "${flags[@]}" -p vize_glyph --features observed-template --lib formatter::
+cargo clippy "${flags[@]}" "${tools[@]}" --no-deps -- -D warnings
+cargo test "${flags[@]}" "${tools[@]}" source_project::script_queries::tools:: -- --include-ignored --nocapture --test-threads=1

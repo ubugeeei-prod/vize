@@ -27,6 +27,19 @@ jobs:
       MEMORY_HEAD_SHA: ${{ inputs.head_sha }}
       MEMORY_CONFLICTING_MODES: ${{ inputs.conflicting_modes }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/level-memory-bench/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Checkout candidate and collector
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -41,32 +54,20 @@ jobs:
           path: base
           persist-credentials: false
       - name: Validate exact dispatch and pair before build
-        run: |
-          set -euo pipefail
-          [[ "$MEMORY_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$MEMORY_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$MEMORY_CONFLICTING_MODES" == false ]]
-          [[ "$MEMORY_BASE_SHA" != "$MEMORY_HEAD_SHA" ]]
-          [[ "$MEMORY_HEAD_SHA" == "$GITHUB_SHA" ]]
-          [[ "$(git -C base rev-parse HEAD)" == "$MEMORY_BASE_SHA" ]]
-          [[ "$(git -C head rev-parse HEAD)" == "$MEMORY_HEAD_SHA" ]]
-          git -C head merge-base --is-ancestor "$MEMORY_BASE_SHA" "$MEMORY_HEAD_SHA"
+        run: . "${{ env.VIZE_CI_FILES }}/validate-exact-dispatch-and-pair-before-build.sh"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: head/package.json
           run-install: false
       - name: Install exact measurement Rust and Callgrind identity provider
-        run: |
-          rustup toolchain install 1.100.0 --profile minimal
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends valgrind
+        run: . "${{ env.VIZE_CI_FILES }}/install-exact-measurement-rust-and-callgrind-identity-provider.sh"
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
       # The cache action's nested local action resolves from the workspace root,
       # and this job checks the repository out under head/.
       - name: Expose the nested target action at the workspace root
-        run: mkdir -p .github/actions && cp -R head/.github/actions/{reuse-rust-target,setup-rust-sticky-cache} .github/actions/
+        run: . "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh"
       - uses: ./head/.github/actions/setup-rust-sticky-cache
         with:
           key: level-memory-v1

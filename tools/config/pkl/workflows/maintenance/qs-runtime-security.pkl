@@ -10,6 +10,7 @@ on {
       "npm/mcp-musea/**"
       "tools/support/security/qs-runtime-*.ts"
       ".github/workflows/qs-runtime-security.yml"
+      ".github/scripts/workflows/qs-runtime-security/**"
     }
   }
   push {
@@ -20,6 +21,7 @@ on {
       "npm/mcp-musea/**"
       "tools/support/security/qs-runtime-*.ts"
       ".github/workflows/qs-runtime-security.yml"
+      ".github/scripts/workflows/qs-runtime-security/**"
     }
   }
   workflow_dispatch = null
@@ -33,7 +35,10 @@ jobs {
   runtime {
     `runs-on` = ci.linux
     `timeout-minutes` = 25
-    env { EXPECTED_SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}" }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/qs-runtime-security"
+      EXPECTED_SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -43,12 +48,7 @@ jobs {
       ci.command("Install exact source dependencies", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Build and pack the actual MCP server"
-        run = """
-        vp run --filter @vizejs/musea-mcp-server build
-        mkdir -p "$RUNNER_TEMP/qs-runtime-pack"
-        vp exec pnpm --dir npm/mcp-musea pack --pack-destination "$RUNNER_TEMP/qs-runtime-pack"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-and-pack-the-actual-mcp-server.sh""#
       }
       new Dynamic {
         name = "Require original negative, repaired runtime, full upstream and fresh consumer contracts"

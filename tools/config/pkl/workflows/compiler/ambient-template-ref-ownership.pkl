@@ -6,6 +6,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/ambient-template-ref-ownership.yml"
+      ".github/scripts/workflows/ambient-template-ref-ownership/**"
       "crates/vize/tests/content_mapper_tsgo_cli/support.rs"
       "crates/vize/tests/content_mapper_tsgo_cli/support/ambient_template_ref.rs"
       "crates/vize_canon/src/virtual_ts/generator.rs"
@@ -30,11 +31,13 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 30
     env {
+
       SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
       CARGO_BUILD_JOBS = "24"
       CARGO_INCREMENTAL = "0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("ambient-template-ref-ownership")
       ci.checkoutAt("${{ env.SOURCE_SHA }}")
       new Dynamic {
         uses = ci.setupNode
@@ -54,14 +57,7 @@ jobs {
       }
       new Dynamic {
         name = "Install independent pinned framework and native providers"
-        run = """
-        set -euo pipefail
-        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-        mkdir -p "$RUNNER_TEMP/ambient-ref-provider" "$RUNNER_TEMP/ambient-ref-evidence"
-        npm install --prefix "$RUNNER_TEMP/ambient-ref-provider" --ignore-scripts --no-audit --no-fund --save-exact vue@3.6.0-rc.13 vue-tsc@3.3.13 typescript@6.0.3 @typescript/typescript-linux-x64@7.1.0-beta
-        cp "$RUNNER_TEMP/ambient-ref-provider/package-lock.json" "$RUNNER_TEMP/ambient-ref-evidence/provider-lock.json"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-independent-pinned-framework-and-native-providers.sh""#
       }
       new Dynamic {
         name = "Qualify independent framework original and repair packets"
@@ -74,18 +70,7 @@ jobs {
           VIZE_TEST_CONTENT_MAPPER_VUE = "${{ runner.temp }}/ambient-ref-provider/node_modules/vue"
           VIZE_AMBIENT_TEMPLATE_REF_CAPTURE = "${{ runner.temp }}/ambient-ref-evidence/source"
         }
-        run = #"""
-        set -euo pipefail
-        evidence="$RUNNER_TEMP/ambient-ref-evidence"
-        sha256sum "$VIZE_TEST_CONTENT_MAPPER_TSGO" > "$evidence/native.sha256"
-        "$VIZE_TEST_CONTENT_MAPPER_TSGO" --version > "$evidence/native.version"
-        cargo test --locked --profile ci -p vize --test integration content_mapper_tsgo_cli::support::ambient_template_ref:: -- --nocapture --test-threads=1 > "$evidence/test.stdout" 2> "$evidence/test.stderr"
-        grep -Fxq 'running 3 tests' "$evidence/test.stdout"
-        grep -Fq 'test result: ok. 3 passed; 0 failed; 0 ignored;' "$evidence/test.stdout"
-        sha256sum target/ci/vize > "$evidence/source-cli.sha256"
-        printf '%s\n' "$SOURCE_SHA" > "$evidence/source.sha"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/qualify-original-native-cli-and-mapper-ownership-through-repairs.sh""#
       }
       new Dynamic {
         name = "Preserve complete packets"

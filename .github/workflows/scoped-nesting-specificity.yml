@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/scoped-nesting-specificity.yml
+      - .github/scripts/workflows/scoped-nesting-specificity/**
       - crates/vize_atelier_sfc/src/vite_plugin/css_scope.rs
       - crates/vize_atelier_sfc/src/vite_plugin/css_scope/**
       - crates/vize_atelier_sfc/tests/scoped_nesting_specificity.rs
@@ -22,6 +23,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/scoped-nesting-specificity/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ env.HEAD_SHA }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
@@ -47,11 +61,7 @@ jobs:
       - name: Compile current source and retain all prior scoped CSS oracles
         env:
           VIZE_SCOPED_NESTING_CAPTURE: ${{ runner.temp }}/scoped-nesting-modules.json
-        run: |
-          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
-          cargo test --locked --profile ci -p vize_atelier_sfc --lib vite_plugin::css_scope:: -- --nocapture
-          cargo test --locked --profile ci -p vize_atelier_sfc --test scoped_nesting_specificity -- --nocapture
-          cargo test --locked --profile ci -p vize_atelier_sfc --test mixed_style_scope -- --nocapture
+        run: . "${{ env.VIZE_CI_FILES }}/compile-current-source-and-retain-all-prior-scoped-css-oracles.sh"
       - name: Verify complete scoped CSS and real Chromium cascade and pixels
         env:
           VIZE_SCOPED_NESTING_CAPTURE: ${{ runner.temp }}/scoped-nesting-modules.json

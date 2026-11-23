@@ -10,6 +10,9 @@ strategy {
     client = List("vim", "emacs")
   }
 }
+env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/editor-conformance"
+}
 steps = new Listing {
   new Dynamic {
     uses = ci.checkout
@@ -32,42 +35,19 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Verify the source-built server"
-    run = """
-    node tests/editor-conformance/server-artifact.ts verify "${RUNNER_TEMP}/vize-server/vize" "${RUNNER_TEMP}/vize-server/server.json" "$GITHUB_SHA"
-    chmod +x "${RUNNER_TEMP}/vize-server/vize"
-    echo "VIZE_SERVER_PATH=${RUNNER_TEMP}/vize-server/vize" >> "$GITHUB_ENV"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/verify-the-source-built-server-2.sh""#
   }
   ci.use("./.github/actions/setup-ubuntu-archive")
   new Dynamic {
     name = "Install the actual client"
     env { CLIENT = "${{ matrix.client }}" }
-    run = """
-    set -euo pipefail
-    if [ "$CLIENT" = vim ]; then
-      package=vim-nox
-    else
-      package=emacs-nox
-    fi
-    vize-ci-apt-retry sudo apt-get update
-    vize-ci-apt-retry sudo apt-get install -y "$package"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/install-the-actual-client.sh""#
   }
   new Dynamic {
     name = "Install pinned vim-lsp"
     `if` = "matrix.client == 'vim'"
     env { VIM_LSP_COMMIT = "474c656659b5fb51eec6770309e0211c8aa49b5b" }
-    run = """
-    set -euo pipefail
-    git init "${RUNNER_TEMP}/vim-lsp"
-    git -C "${RUNNER_TEMP}/vim-lsp" remote add origin https://github.com/prabirshrestha/vim-lsp.git
-    git -C "${RUNNER_TEMP}/vim-lsp" fetch --depth 1 origin "$VIM_LSP_COMMIT"
-    git -C "${RUNNER_TEMP}/vim-lsp" checkout --detach FETCH_HEAD
-    test "$(git -C "${RUNNER_TEMP}/vim-lsp" rev-parse HEAD)" = "$VIM_LSP_COMMIT"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-vim-lsp.sh""#
   }
   new Dynamic {
     name = "Qualify serialized profiles against the verified server"
@@ -81,16 +61,7 @@ steps = new Listing {
       VIZE_VIM_ARTIFACT_DIR = "${{ runner.temp }}/configuration-client"
       VIZE_EMACS_ARTIFACT_DIR = "${{ runner.temp }}/configuration-client"
     }
-    run = """
-    set -euo pipefail
-    if [ "$CLIENT" = vim ]; then
-      node tools/support/compat/vim-vize/run-config-server.ts
-    else
-      node tools/support/compat/emacs-vize/run-real-server.ts
-    fi
-    node tests/editor-conformance/server-artifact.ts host "${RUNNER_TEMP}/vize-server/server.json" "${RUNNER_TEMP}/configuration-client/receipt.json" "$GITHUB_SHA"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/exercise-project-configuration-through-the-actual-client.sh""#
   }
   new Dynamic {
     uses = ci.uploadArtifact

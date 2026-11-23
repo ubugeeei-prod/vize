@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "../support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -12,9 +13,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../.
 const smokeCommand = path.join(root, "tools/commands/release/npm/smoke-release-install.ts");
 
 test("the Bun lane executes the shared source planner when its graph changes", () => {
-  const workflow = fs.readFileSync(
+  const workflow = readAutomationPrograms(
     path.join(root, ".github/workflows/release-smoke-contracts.yml"),
-    "utf8",
   );
   for (const source of [
     "tools/support/compat/github/legacy-fix-fixture-report.ts",

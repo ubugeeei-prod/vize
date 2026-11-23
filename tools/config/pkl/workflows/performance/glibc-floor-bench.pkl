@@ -11,7 +11,7 @@ name = "Benchmark - glibc compatibility"
 // Only a change to the benchmark itself measures on a pull request.
 on {
   pull_request {
-    paths = List(".github/workflows/glibc-floor-bench.yml", "tools/support/github/glibc-floor-bench.ts")
+    paths = List(".github/workflows/glibc-floor-bench.yml", ".github/scripts/workflows/glibc-floor-bench/**", "tools/support/github/glibc-floor-bench.ts")
   }
   workflow_dispatch {
     inputs {
@@ -39,6 +39,9 @@ jobs {
     name = "Measure (linux-x64-gnu)"
     `runs-on` = ci.linux
     `timeout-minutes` = 180
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/glibc-floor-bench"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -49,7 +52,7 @@ jobs {
       new Dynamic {
         name = "Read the repository Rust toolchain"
         id = "rust-toolchain"
-        run = #"sed -n 's/^channel = "\(.*\)"$/channel=\1/p' rust-toolchain.toml >> "$GITHUB_OUTPUT""#
+        run = #". "${{ env.VIZE_CI_FILES }}/read-the-repository-rust-toolchain.sh""#
       }
       new Dynamic {
         uses = ci.setupRust
@@ -66,19 +69,11 @@ jobs {
       // Before Wild exists: the host CLI links with rust-lld, as the release did.
       new Dynamic {
         name = "Build the CLI against the runner glibc"
-        run = """
-        cargo build --locked --release -p vize --target x86_64-unknown-linux-gnu
-        mkdir -p "$RUNNER_TEMP/host" && cp target/x86_64-unknown-linux-gnu/release/vize "$RUNNER_TEMP/host/vize"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-cli-against-the-runner-glibc.sh""#
       }
       new Dynamic {
         name = "Build the CLI at the glibc floor"
-        run = """
-        cargo zigbuild --locked --release -p vize --target "$(node tools/support/github/glibc-floor.ts target x86_64-unknown-linux-gnu)"
-        mkdir -p "$RUNNER_TEMP/floor" && cp target/x86_64-unknown-linux-gnu/release/vize "$RUNNER_TEMP/floor/vize"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-cli-at-the-glibc-floor.sh""#
       }
       new Dynamic {
         uses = "./.github/actions/setup-wild-http-recovery"
@@ -86,29 +81,15 @@ jobs {
       }
       new Dynamic {
         name = "Build the binding against the runner glibc"
-        run = """
-        node tools/support/github/build-napi-package.ts npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine x86_64-unknown-linux-gnu
-        cp npm/native/vize-vitrine.linux-x64-gnu.node "$RUNNER_TEMP/host/vize-vitrine.node"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-binding-against-the-runner-glibc.sh""#
       }
       new Dynamic {
         name = "Build the binding at the glibc floor"
-        run = """
-        node tools/support/github/build-napi-package.ts npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine x86_64-unknown-linux-gnu --cross-compile
-        cp npm/native/vize-vitrine.linux-x64-gnu.node "$RUNNER_TEMP/floor/vize-vitrine.node"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-binding-at-the-glibc-floor.sh""#
       }
       new Dynamic {
         name = "Record what each variant links"
-        run = """
-        node tools/commands/ci/github/verify-glibc-symbols.ts "$RUNNER_TEMP/floor/vize" "$RUNNER_TEMP/floor/vize-vitrine.node"
-        # The host recipe is expected to break the floor (DT_RELR, GLIBC_2.39); record it only.
-        node tools/commands/ci/github/verify-glibc-symbols.ts --max 2.39 "$RUNNER_TEMP/host/vize" "$RUNNER_TEMP/host/vize-vitrine.node" || true
-        ls -l "$RUNNER_TEMP/host" "$RUNNER_TEMP/floor"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/record-what-each-variant-links.sh""#
       }
       new Dynamic {
         name = "Measure"
@@ -117,7 +98,7 @@ jobs {
       new Dynamic {
         name = "Summarize"
         `if` = "${{ always() }}"
-        run = #"test ! -s "$RUNNER_TEMP/glibc-floor-bench.json" || node tools/support/github/glibc-floor-bench.ts summarize "$RUNNER_TEMP/glibc-floor-bench.json" >> "$GITHUB_STEP_SUMMARY""#
+        run = #". "${{ env.VIZE_CI_FILES }}/summarize.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

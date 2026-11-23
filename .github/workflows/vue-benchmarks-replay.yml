@@ -28,6 +28,19 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/vue-benchmarks-replay/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
@@ -57,11 +70,7 @@ jobs:
         run: cargo build --profile ci -p vize
 
       - name: Replay the upstream corpus against current main
-        run: |
-          node tools/benchmarks/scripts/vue-benchmarks-replay.ts \
-            --vize-bin target/ci/vize \
-            --expect tools/benchmarks/scripts/vue-benchmarks-replay-expect-main.json \
-            --json replay-main-results.json
+        run: . "${{ env.VIZE_CI_FILES }}/replay-the-upstream-corpus-against-current-main.sh"
 
       - name: Upload replay results
         if: ${{ always() }}
@@ -79,6 +88,19 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/vue-benchmarks-replay/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
@@ -96,11 +118,7 @@ jobs:
         run: npm install --prefix "$RUNNER_TEMP/vize-release" vize@latest --no-fund --no-audit
 
       - name: Replay the upstream corpus against the latest release
-        run: |
-          node tools/benchmarks/scripts/vue-benchmarks-replay.ts \
-            --vize-bin "$RUNNER_TEMP/vize-release/node_modules/.bin/vize" \
-            --expect tools/benchmarks/scripts/vue-benchmarks-replay-expect-release.json \
-            --json replay-release-results.json
+        run: . "${{ env.VIZE_CI_FILES }}/replay-the-upstream-corpus-against-the-latest-release.sh"
 
       - name: Upload replay results
         if: ${{ always() }}

@@ -1,0 +1,11 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  rustup --version
+  rustup toolchain install || rustup show active-toolchain
+  cargo --version
+  """#
+}

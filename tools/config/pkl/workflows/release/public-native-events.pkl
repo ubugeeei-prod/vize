@@ -58,6 +58,7 @@ jobs {
     `runs-on` = "ubuntu-24.04"
     `timeout-minutes` = 15
     env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/public-native-events"
       PUBLIC_VERSION = "${{ inputs.version }}"
       PUBLIC_SOURCE_SHA = "${{ inputs.source_sha }}"
       PUBLIC_PHASE = "${{ inputs.phase }}"
@@ -78,55 +79,17 @@ jobs {
       new Dynamic {
         name = "Prove tag identity and source inclusion"
         env { GH_TOKEN = "${{ github.token }}" }
-        run = #"""
-        [[ "$PUBLIC_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
-        [[ "$PUBLIC_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-        [[ "$PUBLIC_PHASE" == before || "$PUBLIC_PHASE" == after ]]
-        mkdir -p "$RUNNER_TEMP/event-receipts"
-        git fetch --no-tags --depth=1 origin "refs/tags/v$PUBLIC_VERSION"
-        [[ "$(git rev-parse 'FETCH_HEAD^{commit}')" == "$PUBLIC_SOURCE_SHA" ]]
-        gh api "repos/$GITHUB_REPOSITORY/compare/$REQUIRED_SOURCE...$PUBLIC_SOURCE_SHA" > "$RUNNER_TEMP/event-receipts/source-comparison.json"
-        node --input-type=module <<'NODE'
-        import assert from "node:assert/strict";
-        import { readFileSync, writeFileSync } from "node:fs";
-        const directory = `${process.env.RUNNER_TEMP}/event-receipts`;
-        const comparison = JSON.parse(readFileSync(`${directory}/source-comparison.json`, "utf8"));
-        assert.equal(comparison.base_commit.sha, process.env.REQUIRED_SOURCE);
-        const containsRequiredSource = ["ahead", "identical"].includes(comparison.status);
-        assert.equal(containsRequiredSource, process.env.PUBLIC_PHASE === "after");
-        if (process.env.PUBLIC_PHASE === "before") assert.equal(process.env.PUBLIC_VERSION, "0.599.0");
-        writeFileSync(`${directory}/release-identity.json`, JSON.stringify({
-          version: process.env.PUBLIC_VERSION, tag: `v${process.env.PUBLIC_VERSION}`,
-          sourceSha: process.env.PUBLIC_SOURCE_SHA, requiredSource: process.env.REQUIRED_SOURCE,
-          containsRequiredSource, comparisonStatus: comparison.status,
-          workflowSha: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID,
-        }, null, 2) + "\n", { flag: "wx" });
-        NODE
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/prove-tag-identity-and-source-inclusion.sh""#
       }
       new Dynamic {
         name = "Install only exact public packages in a fresh consumer"
         `working-directory` = "${{ runner.temp }}"
         env { NPM_CONFIG_REGISTRY = "https://registry.npmjs.org/" }
-        run = """
-        mkdir public-event-consumer
-        cd public-event-consumer
-        npm init -y
-        npm install --ignore-scripts --no-audit --no-fund --save-exact "@vizejs/native@$PUBLIC_VERSION" @vue/compiler-dom@3.5.44 vue@3.5.44
-        cp package-lock.json "$RUNNER_TEMP/event-receipts/package-lock.json"
-        npm view "@vizejs/native@$PUBLIC_VERSION" --json > "$RUNNER_TEMP/event-receipts/npm-native-metadata.json"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-only-exact-public-packages-in-a-fresh-consumer.sh""#
       }
       new Dynamic {
         name = "Compare every complete VNode packet to the frozen official oracle"
-        run = #"""
-        node tools/support/release/public_native_events/verify.ts \
-          "$RUNNER_TEMP/public-event-consumer" "$PUBLIC_VERSION" "$PUBLIC_PHASE" \
-          "$RUNNER_TEMP/event-receipts/consumer.json" "$RUNNER_TEMP/event-receipts/release-identity.json"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-every-complete-vnode-packet-to-the-frozen-official-oracle.sh""#
       }
       new Dynamic {
         name = "Preserve full evidence even on failure"
@@ -151,6 +114,7 @@ jobs {
     `runs-on` = "ubuntu-24.04"
     `timeout-minutes` = 15
     env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/public-native-events"
       PUBLIC_VERSION = "${{ inputs.version }}"
       PUBLIC_SOURCE_SHA = "${{ inputs.source_sha }}"
       PUBLIC_CANDIDATE = "${{ inputs.candidate }}"
@@ -169,22 +133,7 @@ jobs {
       }
       new Dynamic {
         name = "Validate the explicit public candidate"
-        run = #"""
-        node --input-type=module <<'NODE'
-        import assert from "node:assert/strict";
-        import { mkdirSync, writeFileSync } from "node:fs";
-        import path from "node:path";
-        const { PUBLIC_VERSION: version, PUBLIC_CANDIDATE: candidate, PUBLIC_SOURCE_SHA: source } = process.env;
-        const valid = /^0\.[0-9]+\.0$/.test(version ?? "") && /^[0-9a-f]{40}$/.test(candidate ?? "") && source === candidate;
-        const directory = path.join(process.env.RUNNER_TEMP, "public-release-proof");
-        mkdirSync(directory, { recursive: true });
-        writeFileSync(path.join(directory, "candidate-validation.json"), JSON.stringify({
-          version, candidate, source, accepted: valid, workflowSha: process.env.GITHUB_SHA,
-        }, null, 2) + "\n", { flag: "wx" });
-        assert.equal(valid, true, "an exact public version and matching immutable candidate are required");
-        NODE
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/validate-the-explicit-public-candidate.sh""#
       }
       new Dynamic {
         name = "Install exact public packages in an independent fresh consumer"
@@ -201,17 +150,7 @@ jobs {
           GH_TOKEN = "${{ github.token }}"
           REQUIRED_ICON_SOURCE = "d38ab7e48514566f1776f25439e8777a9856b5a6"
         }
-        run = """
-        gh api "repos/$GITHUB_REPOSITORY/compare/$REQUIRED_ICON_SOURCE...$PUBLIC_CANDIDATE" > "$RUNNER_TEMP/public-release-proof/icons-source-comparison.json"
-        node --input-type=module <<'NODE'
-        import assert from "node:assert/strict";
-        import { readFileSync } from "node:fs";
-        const comparison = JSON.parse(readFileSync(process.env.RUNNER_TEMP + "/public-release-proof/icons-source-comparison.json", "utf8"));
-        assert.equal(comparison.base_commit.sha, process.env.REQUIRED_ICON_SOURCE);
-        assert.ok(["ahead", "identical"].includes(comparison.status));
-        NODE
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/prove-the-candidate-contains-the-required-icon-source.sh""#
       }
       new Dynamic {
         name = "Qualify independent published icon class packets"
@@ -237,6 +176,7 @@ jobs {
     `runs-on` = "ubuntu-24.04"
     `timeout-minutes` = 20
     env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/public-native-events"
       PUBLIC_VERSION = "${{ inputs.version }}"
       PUBLIC_SOURCE_SHA = "${{ inputs.source_sha }}"
       REQUIRED_CPP_SOURCE = "7c2f6f46172404a8f95335a79ee2b95094f6b7ee"
@@ -266,36 +206,11 @@ jobs {
       new Dynamic {
         name = "Prove the immutable tag contains the merged public-instance change"
         env { GH_TOKEN = "${{ github.token }}" }
-        run = #"""
-        [[ "$PUBLIC_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
-        [[ "$PUBLIC_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-        git fetch --no-tags --depth=1 origin "refs/tags/v$PUBLIC_VERSION"
-        [[ "$(git rev-parse 'FETCH_HEAD^{commit}')" == "$PUBLIC_SOURCE_SHA" ]]
-        gh api "repos/$GITHUB_REPOSITORY/compare/$REQUIRED_CPP_SOURCE...$PUBLIC_SOURCE_SHA" > "$RUNNER_TEMP/cpp-source-comparison.json"
-        node --input-type=module <<'NODE'
-        import assert from "node:assert/strict";
-        import { readFileSync, writeFileSync } from "node:fs";
-        const comparison = JSON.parse(readFileSync(process.env.RUNNER_TEMP + "/cpp-source-comparison.json", "utf8"));
-        assert.equal(comparison.base_commit.sha, process.env.REQUIRED_CPP_SOURCE);
-        assert.ok(["ahead", "identical"].includes(comparison.status));
-        writeFileSync(process.env.RUNNER_TEMP + "/cpp-release-identity.json", JSON.stringify({
-          version: process.env.PUBLIC_VERSION, sourceSha: process.env.PUBLIC_SOURCE_SHA,
-          requiredSource: process.env.REQUIRED_CPP_SOURCE, containsRequiredSource: true,
-          comparisonStatus: comparison.status, workflowSha: process.env.GITHUB_SHA,
-          runId: process.env.GITHUB_RUN_ID,
-        }, null, 2) + "\n", { flag: "wx" });
-        NODE
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/prove-the-immutable-tag-contains-the-merged-public-instance-change.sh""#
       }
       new Dynamic {
         name = "Qualify fresh public custom properties and authored directive ownership"
-        run = #"""
-        node tools/support/release/public_custom_properties/verify.ts \
-          "$PUBLIC_VERSION" "$RUNNER_TEMP/public-custom-properties-consumer" \
-          "$RUNNER_TEMP/cpp-release-identity.json"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/qualify-fresh-public-custom-properties-and-authored-directive-ownership.sh""#
       }
       new Dynamic {
         name = "Qualify independent published canonical SDK"

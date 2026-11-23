@@ -23,6 +23,9 @@ jobs {
       miri = "${{ steps.plan.outputs.miri }}"
       fuzz = "${{ steps.plan.outputs.fuzz }}"
     }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/queue-release-gates"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       new Dynamic {
@@ -36,13 +39,7 @@ jobs {
         name = "Plan release gates"
         id = "plan"
         env { BASE_SHA = "${{ github.event.merge_group.base_sha }}" }
-        run = """
-        if [[ "$GITHUB_EVENT_NAME" == merge_group && ! "$BASE_SHA" =~ ^0+$ ]]; then
-          git fetch --no-tags --depth=1 origin "$BASE_SHA"
-        fi
-        node tools/support/compat/github/plan-release-gates.ts "$GITHUB_EVENT_NAME" "$BASE_SHA" "$GITHUB_SHA"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/plan-release-gates.sh""#
       }
     }
   }

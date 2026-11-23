@@ -23,6 +23,9 @@ jobs {
   `deletion-readiness` {
     `runs-on` = ci.linux
     `timeout-minutes` = 10
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/level-deletion-readiness"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       new Dynamic {
@@ -40,17 +43,7 @@ jobs {
           GH_REPO = "${{ github.repository }}"
           EVIDENCE_RUN_ID = "${{ inputs.evidence_run_id }}"
         }
-        run = #"""
-        [[ "$EVIDENCE_RUN_ID" =~ ^[0-9]+$ ]]
-        gh api "repos/$GH_REPO/actions/runs/$EVIDENCE_RUN_ID" \
-          --jq '{head_sha, conclusion, path, event}' > "$RUNNER_TEMP/evidence-run.json"
-        jq -e --arg sha "$GITHUB_SHA" \
-          '.head_sha == $sha and .conclusion == "success" and .path == ".github/workflows/real-project-matrix.yml" and (.event == "schedule" or .event == "workflow_dispatch")' \
-          "$RUNNER_TEMP/evidence-run.json"
-        gh run download "$EVIDENCE_RUN_ID" --name davinci-deletion-evidence \
-          --dir "$RUNNER_TEMP/davinci-deletion-evidence"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/download-exact-sha-differential-evidence.sh""#
       }
       new Dynamic {
         name = "Check deletion readiness"

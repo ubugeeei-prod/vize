@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -25,13 +26,13 @@ type Job = {
   env?: Record<string, string>;
   strategy?: { matrix?: unknown };
 };
-const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
+const source = parse(readAutomationPrograms(".github", "workflows", "pr-source-checks.yml")) as {
   jobs: Record<string, Job>;
 };
 const check = parse(checkWorkflowJobSources()) as {
   jobs: Record<string, Job>;
 };
-const jsChecks = parse(readRepoFile(".github", "workflows", "pr-js-checks.yml")) as {
+const jsChecks = parse(readAutomationPrograms(".github", "workflows", "pr-js-checks.yml")) as {
   jobs: Record<string, Job>;
 };
 const recipe = parse(
@@ -40,11 +41,15 @@ const recipe = parse(
   inputs: Record<string, { default: string }>;
   runs: { using: string; steps: Step[] };
 };
-const rust = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
+const rust = parse(readAutomationPrograms(".github", "workflows", "pr-rust-checks.yml")) as {
   jobs: Record<string, Job>;
 };
-const products = parse(readRepoFile(".github/workflows/pr-rust-products.yml")) as typeof rust;
-const differential = parse(readRepoFile(".github", "workflows", "pr-rust-differential.yml")) as {
+const products = parse(
+  readAutomationPrograms(".github/workflows/pr-rust-products.yml"),
+) as typeof rust;
+const differential = parse(
+  readAutomationPrograms(".github", "workflows", "pr-rust-differential.yml"),
+) as {
   jobs: Record<string, Job>;
 };
 const actionPath = "./.github/actions/test-rust-workspace-differential";

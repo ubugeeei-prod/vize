@@ -47,6 +47,19 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/check-bench/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Checkout benchmark commit
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -90,24 +103,12 @@ jobs:
 
       - name: Run the fail-closed check benchmark gate
         env:
+          VIZE_BENCHMARK_REVISION: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
           VIZE_BENCH_REF: ${{ github.ref_name }}
-        run: |
-          node tools/benchmarks/scripts/check-gate.mjs \
-            --input tools/benchmarks/scripts/__in__ \
-            --vize-bin target/ci-opt/vize \
-            --check-file-count "$VIZE_CHECK_BENCH_FILE_COUNT" \
-            --runs "$VIZE_CHECK_BENCH_RUNS" \
-            --warmups "$VIZE_CHECK_BENCH_WARMUPS" \
-            --require-vue-tsc \
-            --runner-label "blacksmith-32vcpu-ubuntu-2404" \
-            --commit "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" \
-            --ref "$VIZE_BENCH_REF" \
-            --repository "${{ github.repository }}" \
-            --out check-gate-summary.md \
-            --json check-gate-results.json
+        run: . "${{ env.VIZE_CI_FILES }}/run-the-fail-closed-check-benchmark-gate.sh"
 
       - name: Write job summary
-        run: cat check-gate-summary.md >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/write-job-summary.sh"
 
       - name: Upload check benchmark gate results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -5,6 +5,7 @@ needs = List("version", "build-packages", "build-native", "build-wasm")
 `runs-on` = ci.linux
 `timeout-minutes` = 20
 steps = new Listing {
+  ...ci.stageWorkflowScripts("release")
   ci.checkoutAt("${{ needs.version.outputs.ref }}")
   new Dynamic {
     uses = "./.github/actions/setup-runtime-package-managers"
@@ -14,12 +15,7 @@ steps = new Listing {
   new Dynamic {
     name = "Smoke install release package tarballs"
     env { VIZE_SMOKE_TIMING_FILE = "${{ runner.temp }}/packed-smoke-timing.jsonl" }
-    run = #"""
-    read -ra js <<< "$RELEASE_JS_PACKAGES"
-    node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks --bun-runtime-checks \
-      npm/native npm/native/npm/* npm/fresco-native "${js[@]}"
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/smoke-install-release-package-tarballs.sh""#
   }
   new Dynamic {
     name = "Retain packed smoke timing"

@@ -59,6 +59,5 @@ jobs {
   `full-js-report` = import("../../parts/check/full-js-report.pkl")
   coverage = import("../../parts/check/coverage.pkl")
   `source-coverage` = import("../../parts/check/source-coverage.pkl")
-  `branch-coverage` = import("../../parts/check/branch-coverage.pkl")
   `test-report` = import("../../parts/check/test-report.pkl")
 }

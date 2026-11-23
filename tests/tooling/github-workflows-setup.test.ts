@@ -1,4 +1,4 @@
-import { readAutomationPrograms } from "./support/automation-source.ts";
+import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -65,7 +65,7 @@ test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () =>
 });
 
 test("deploy-docs deploy job sets up Node before running the site assembler", () => {
-  const workflow = readRepoFile(".github", "workflows", "deploy-docs.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "deploy-docs.yml");
   const deployJob = workflow.slice(workflow.indexOf("\n  deploy:\n"));
   const setupIndex = deployJob.indexOf("uses: voidzero-dev/setup-vp@");
   const runIndex = deployJob.indexOf("run: node tools/support/github/create-site-structure.ts\n");
@@ -77,7 +77,7 @@ test("deploy-docs deploy job sets up Node before running the site assembler", ()
 });
 
 test("deploy-docs deploy job keeps a full checkout so local actions and scripts remain available", () => {
-  const workflow = readRepoFile(".github", "workflows", "deploy-docs.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "deploy-docs.yml");
   const deployJob = workflow.slice(workflow.indexOf("\n  deploy:\n"));
 
   assert.match(deployJob, /uses: actions\/checkout@[0-9a-f]{40}\s*# v6/);
@@ -97,7 +97,7 @@ test("docs build isolates musea example cargo checks in a dedicated sticky disk"
     "musea example check script must use the dedicated docs example target",
   );
 
-  const workflow = readRepoFile(".github", "workflows", "build-docs.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "build-docs.yml");
   const job = workflowJobBody(workflow, "build-playground");
   assert.match(job, /secondary-key: docs-example/);
   assert.match(job, /secondary-target-path: \.docs-example-target/);
@@ -163,7 +163,7 @@ test("setup-rust-script pins Windows MSVC linkers before cargo install", () => {
 });
 
 test("native smoke workflow covers host platforms before release tags", () => {
-  const workflow = readRepoFile(".github", "workflows", "native-smoke.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "native-smoke.yml");
   const job = workflowJobBody(workflow, "host-native-smoke");
 
   assert.match(workflow, /workflow_dispatch:/);
@@ -189,12 +189,15 @@ test("native smoke workflow covers host platforms before release tags", () => {
     job,
     /node tools\/commands\/ci\/github\/verify-glibc-symbols\.ts --max 2\.36 npm\/native\/\*\.linux-\*-gnu\.node/,
   );
-  assert.match(job, /require\('\.\/npm\/native'\)/);
+  assert.match(
+    workflowProgram("native-smoke", job, "smoke-vizejs-native.cjs"),
+    /requireFromWorkspace\("\.\/npm\/native"\)/u,
+  );
   assert.match(job, /smoke-release-install\.ts --prepare-manifests npm\/native/);
 });
 
 test("native smoke workflow fresh-installs runtime tarballs across supported targets", () => {
-  const workflow = readRepoFile(".github", "workflows", "native-smoke.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "native-smoke.yml");
   const parsed = parse(workflow) as { jobs?: Record<string, WorkflowJob> };
   const parsedJob = parsed.jobs?.["fresh-install-smoke"];
   const job = workflowJobBody(workflow, "fresh-install-smoke");
@@ -229,7 +232,7 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
 });
 
 test("pkg.pr.new workflow publishes built npm packages from the lockfile", () => {
-  const workflow = readRepoFile(".github", "workflows", "pkg-pr-new.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "pkg-pr-new.yml");
   const job = workflowJobBody(workflow, "publish-preview");
 
   assert.match(job, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);

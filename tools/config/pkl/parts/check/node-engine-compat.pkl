@@ -9,8 +9,12 @@ strategy {
     `node-version` = List("22", "24")
   }
 }
-env { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }
+env {
+
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+}
 steps = new Listing {
+  ...ci.stageWorkflowScripts("check")
   new Dynamic {
     uses = ci.checkout
     `if` = "${{ needs.iteration-plan.outputs.engines == 'true' }}"
@@ -49,6 +53,6 @@ steps = new Listing {
   new Dynamic {
     name = "Report unchanged inputs"
     `if` = "${{ needs.iteration-plan.outputs.engines != 'true' }}"
-    run = #"echo 'engines inputs are unchanged.' >> "$GITHUB_STEP_SUMMARY""#
+    run = #". "${{ env.VIZE_CI_FILES }}/report-unchanged-inputs-2.sh""#
   }
 }

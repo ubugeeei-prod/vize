@@ -38,12 +38,14 @@ jobs {
       }
     }
     env {
+
       CARGO_INCREMENTAL = 0
       CARGO_PROFILE_RELEASE_LTO = "thin"
       CARGO_PROFILE_RELEASE_CODEGEN_UNITS = 16
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("string-storage-bench")
       new Dynamic {
         uses = ci.checkout
         with {
@@ -80,7 +82,7 @@ jobs {
       // and this job checks the repository out under head/.
       new Dynamic {
         name = "Expose the nested target action at the workspace root"
-        run = "mkdir -p .github/actions && cp -R head/.github/actions/{reuse-rust-target,setup-rust-sticky-cache} .github/actions/"
+        run = #". "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh""#
       }
       new Dynamic {
         uses = "./head/.github/actions/setup-rust-sticky-cache"
@@ -102,11 +104,7 @@ jobs {
       new Dynamic {
         name = "Check candidate CF semantics and lints"
         `working-directory` = "head"
-        run = """
-        cargo test --profile ci -p vize_croquis_cf
-        cargo clippy -p vize_croquis_cf --lib --tests -- -D warnings
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/check-candidate-cf-semantics-and-lints.sh""#
       }
       new Dynamic {
         name = "Compare controlled production storage and traversal"

@@ -14,6 +14,7 @@ on {
       "crates/vize_vitrine/**"
       "tests/tooling/turbopack-workflow.test.ts"
       ".github/workflows/turbopack-consumers.yml"
+      ".github/scripts/workflows/turbopack-consumers/**"
     }
   }
 }
@@ -29,7 +30,10 @@ jobs {
   consumers {
     `runs-on` = ci.linux
     `timeout-minutes` = 30
-    env { VIZE_TURBOPACK_ARTIFACTS = "target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}" }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/turbopack-consumers"
+      VIZE_TURBOPACK_ARTIFACTS = "target/turbopack-consumers/${{ github.run_id }}-${{ github.run_attempt }}"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       ci.workspaceVp()
@@ -52,21 +56,11 @@ jobs {
       ci.command("Seal native image and source identity", "node npm/native/scripts/native-build-receipt.mjs")
       new Dynamic {
         name = "Check authored positions and existing Rspack behavior"
-        run = """
-        set -euo pipefail
-        mkdir -p "$VIZE_TURBOPACK_ARTIFACTS"
-        node --test tests/tooling/turbopack-workflow.test.ts npm/builder/turbopack/test/consumer-packaging.test.mjs
-        node --test npm/builder/turbopack/src/*.test.ts npm/builder/shared/*.test.ts npm/builder/rspack/src/shared/source-map.test.ts npm/builder/rspack/src/shared/output.test.ts npm/builder/rspack/src/shared/hotReload.test.ts | tee "$VIZE_TURBOPACK_ARTIFACTS/source-unit.tap"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/check-authored-positions-and-existing-rspack-behavior.sh""#
       }
       new Dynamic {
         name = "Build both public adapters with bundled shared code"
-        run = """
-        vp run --filter @vizejs/rspack-plugin build
-        vp run --filter @vizejs/turbopack-plugin build
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-both-public-adapters-with-bundled-shared-code.sh""#
       }
       new Dynamic {
         name = "Prepare the actual browser"

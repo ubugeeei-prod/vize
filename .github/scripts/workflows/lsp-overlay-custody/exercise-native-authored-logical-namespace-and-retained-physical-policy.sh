@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+node "$VIZE_CI_FILES/exercise-native-authored-logical-namespace-and-retained-physical-policy.ts"
+git rev-parse HEAD > "$VIZE_PRIVATE_OVERLAY_CAPTURE/source.txt"
+cargo test --locked --profile ci -p vize_canon --lib lsp_client::session_storage:: --no-run --message-format=json > "$VIZE_PRIVATE_OVERLAY_CAPTURE/build.jsonl" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/build.stderr"
+cargo test --locked --profile ci -p vize_canon --lib lsp_client::session_storage::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/storage.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/storage.stderr"
+cargo test --locked --profile ci -p vize_canon --lib lsp_client::session::close::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/close.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/close.stderr"
+cargo test --locked --profile ci -p vize_canon --lib lsp_client::session::logical::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/logical.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/logical.stderr"
+if [ "$RUNNER_OS" = Windows ]; then
+  cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::vue_document::build::tests::windows_overlays::verbatim_windows_overlay_inputs_preserve_materialized_revision_bytes -- --exact --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/windows-overlay-input.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/windows-overlay-input.stderr"
+fi
+if [ "$RUNNER_OS" = Linux ]; then
+  cargo test --locked --profile ci -p vize_canon --lib corsa_bridge::bridge::initial_diagnostics::tests:: -- --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/leases.stderr"
+  VIZE_TEST_REQUIRE_TSGO=1 cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::configured_project::shared_transport::tests::native::native_editor_resolves_package_alias_from_monorepo_root_with_one_api_editor_owner -- --exact --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/shared-api-owner.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/shared-api-owner.stderr"
+  VIZE_TEST_REQUIRE_TSGO=1 cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::configured_project::shared_transport::tests::native::replay::native_editor_resolves_package_alias_from_monorepo_root_replays_unsaved_api_after_disk_events -- --exact --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/shared-api-replay.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/shared-api-replay.stderr"
+  VIZE_TEST_REQUIRE_TSGO=1 cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::configured_project::shared_transport::tests::logical_currentness::native_logical_revision_refusal_quarantines_current_api_but_preserves_held_snapshot -- --exact --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/shared-api-currentness.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/shared-api-currentness.stderr"
+fi
+set +e
+cargo test --locked --profile ci -p vize_canon --lib lsp_client::session_storage::native_tests::actual_native_old_and_private_roots_preserve_complete_configured_overlay_answers -- --exact --ignored --nocapture > "$VIZE_PRIVATE_OVERLAY_CAPTURE/native.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/native.stderr"
+native_status=$?
+printf '%s\n' "$native_status" > "$VIZE_PRIVATE_OVERLAY_CAPTURE/native.status"
+set -e
+compiler="$(node "$VIZE_CI_FILES/exercise-native-authored-logical-namespace-and-retained-physical-policy-2.ts")"
+printf '%s\n' "$compiler" > "$VIZE_PRIVATE_OVERLAY_CAPTURE/source-cli-helper-compiler.path"
+node "$compiler" --version > "$VIZE_PRIVATE_OVERLAY_CAPTURE/source-cli-helper-compiler.version"
+node "$compiler" --ignoreConfig --strict --noEmit --noImplicitAny --noUncheckedIndexedAccess --exactOptionalPropertyTypes --erasableSyntaxOnly --target es2023 --module esnext --moduleResolution bundler --allowImportingTsExtensions --skipLibCheck --types node --typeRoots "$PWD/node_modules/@types" .github/actions/lsp-overlay-custody/source-cli.ts > "$VIZE_PRIVATE_OVERLAY_CAPTURE/source-cli-helper-strict.stdout" 2> "$VIZE_PRIVATE_OVERLAY_CAPTURE/source-cli-helper-strict.stderr"
+node .github/actions/lsp-overlay-custody/source-cli.ts

@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/editor-script-queries.yml"
+      ".github/scripts/workflows/editor-script-queries/**"
       "davinci/vize_l0/src/source*"
       "davinci/vize_l0/src/line_index*"
       "davinci/vize_l0/src/line_index/**"
@@ -47,12 +48,14 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 30
     env {
+
       CARGO_BUILD_JOBS = "24"
       CARGO_INCREMENTAL = "0"
       RUST_MIN_STACK = "16777216"
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("editor-script-queries")
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
       new Dynamic {
         uses = ci.setupRust
@@ -78,61 +81,19 @@ jobs {
       }
       new Dynamic {
         name = "Check both original editor readers and their shared parse"
-        run = """
-        set -euo pipefail
-        flags=(--locked --profile ci-opt)
-        editor=(-p vize_maestro --features experimental-script-queries,micro-profiling --lib)
-        cargo clippy "${flags[@]}" -p vize_l1 --features authored-script-queries --lib --no-deps -- -D warnings
-        cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
-        cargo test "${flags[@]}" "${editor[@]}" server::document_structure::symbols::tests
-        cargo test "${flags[@]}" "${editor[@]}" ide::file_rename::
-        export VIZE_SCRIPT_QUERY_INPUTS="$RUNNER_TEMP/editor-scripts"
-        git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_SCRIPT_QUERY_INPUTS"
-        cargo test "${flags[@]}" "${editor[@]}" source_project::script_queries:: -- --include-ignored --nocapture --test-threads=1
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/check-both-original-editor-readers-and-their-shared-parse.sh""#
       }
       new Dynamic {
         name = "Compare configured script lint results on original Programs"
-        run = """
-        set -euo pipefail
-        flags=(--locked --profile ci-opt -p vize_patina --features authored-script-rules)
-        cargo clippy "${flags[@]}" --lib --no-deps -- -D warnings
-        cargo test "${flags[@]}" --doc rules::script::authored
-        export VIZE_SCRIPT_QUERY_INPUTS="$RUNNER_TEMP/editor-scripts"
-        cargo test "${flags[@]}" --test authored_script_rules -- --include-ignored --nocapture --test-threads=1
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-configured-script-lint-results-on-original-programs.sh""#
       }
       new Dynamic {
         name = "Compare the checker diagnostics and both editor products on the same source revision"
-        run = """
-        set -euo pipefail
-        flags=(--locked --profile ci-opt)
-        checker=(-p vize_canon --features authored-script-diagnostics --lib)
-        editor=(-p vize_maestro --features experimental-checker-script-queries,micro-profiling --lib)
-        export VIZE_SCRIPT_QUERY_INPUTS="$RUNNER_TEMP/editor-scripts"
-        cargo clippy "${flags[@]}" "${checker[@]}" --no-deps -- -D warnings
-        cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
-        cargo test "${flags[@]}" "${checker[@]}" script_parse:: -- --include-ignored --nocapture --test-threads=1
-        cargo test "${flags[@]}" "${editor[@]}" source_project::script_queries:: -- --include-ignored --nocapture --test-threads=1
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-checker-diagnostics-and-both-editor-products-on-the-same-sou.sh""#
       }
       new Dynamic {
         name = "Compare all configured script readers and full formatter products on each revision"
-        run = """
-        set -euo pipefail
-        flags=(--locked --profile ci-opt)
-        tools=(-p vize_maestro --features experimental-script-tools,micro-profiling --lib)
-        export VIZE_SCRIPT_QUERY_INPUTS="$RUNNER_TEMP/editor-scripts"
-        cargo test "${flags[@]}" -p vize_l1 --features authored-script-queries --lib embed::authored_program::tests
-        cargo clippy "${flags[@]}" -p vize_glyph --features observed-template --lib --no-deps -- -D warnings
-        cargo test "${flags[@]}" -p vize_glyph --features observed-template --lib formatter::
-        cargo clippy "${flags[@]}" "${tools[@]}" --no-deps -- -D warnings
-        cargo test "${flags[@]}" "${tools[@]}" source_project::script_queries::tools:: -- --include-ignored --nocapture --test-threads=1
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-all-configured-script-readers-and-full-formatter-products-on-eac.sh""#
       }
     }
   }

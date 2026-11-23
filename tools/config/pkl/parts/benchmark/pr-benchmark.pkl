@@ -5,30 +5,12 @@ name = "pr-benchmark"
 `timeout-minutes` = 30
 permissions { contents = "read" }
 steps = new Listing {
+  ...ci.stageWorkflowScripts("benchmark")
   new Dynamic {
     name = "Validate benchmark SHAs"
     `if` = "${{ github.event_name != 'pull_request' }}"
     env { RUN_HEAD_SHA = "${{ github.sha }}" }
-    run = """
-    full_sha='^[0-9a-f]{40}$'
-    if [[ ! "$BENCHMARK_BASE_SHA" =~ $full_sha ]]; then
-      echo "::error title=Invalid base_sha::base_sha must be a full lowercase 40-character commit SHA"
-      exit 1
-    fi
-    if [[ ! "$BENCHMARK_HEAD_SHA" =~ $full_sha ]]; then
-      echo "::error title=Invalid head_sha::head_sha must be a full lowercase 40-character commit SHA"
-      exit 1
-    fi
-    if [[ "$BENCHMARK_BASE_SHA" == "$BENCHMARK_HEAD_SHA" ]]; then
-      echo "::error title=Invalid benchmark range::base_sha must differ from head_sha"
-      exit 1
-    fi
-    if [[ "$RUN_HEAD_SHA" != "$BENCHMARK_HEAD_SHA" ]]; then
-      echo "::error title=Workflow ref mismatch::run head_sha must match $BENCHMARK_HEAD_SHA (got $RUN_HEAD_SHA)"
-      exit 1
-    fi
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/validate-benchmark-shas.sh""#
   }
   new Dynamic {
     name = "Checkout head"
@@ -56,28 +38,7 @@ steps = new Listing {
       HEAD_SHA = "${{ env.BENCHMARK_HEAD_SHA }}"
       EVENT_NAME = "${{ github.event_name }}"
     }
-    run = #"""
-    if [[ "$EVENT_NAME" != "pull_request" ]] && \
-       ! git -C "$GITHUB_WORKSPACE/head" merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"; then
-      echo "::error title=Invalid benchmark range::base_sha must be an ancestor of head_sha"
-      exit 1
-    fi
-    if git grep -n -E '^(<<<<<<<|=======$|>>>>>>>)' -- . ':(exclude)tests/_fixtures/_git/**'; then
-      echo "skip=true" >> "$GITHUB_OUTPUT"
-      {
-        echo "## PR Benchmark"
-        echo
-        echo "Skipped because the base checkout contains unresolved merge conflict markers."
-        echo
-        echo "- Base: \`$BASE_SHA\`"
-        echo "- Head: \`$HEAD_SHA\`"
-      } > "$GITHUB_WORKSPACE/benchmark-summary.md"
-      printf '{"skipped":true,"reason":"base_has_conflict_markers","base":"%s","head":"%s"}\n' "$BASE_SHA" "$HEAD_SHA" > "$GITHUB_WORKSPACE/benchmark-results.json"
-    else
-      echo "skip=false" >> "$GITHUB_OUTPUT"
-    fi
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/check-base-checkout.sh""#
   }
   new Dynamic {
     name = "Install Rust toolchain"
@@ -90,7 +51,7 @@ steps = new Listing {
   // and this job checks the repository out under head/.
   new Dynamic {
     name = "Expose the nested target action at the workspace root"
-    run = "mkdir -p .github/actions && cp -R head/.github/actions/{reuse-rust-target,setup-rust-sticky-cache} .github/actions/"
+    run = #". "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh""#
   }
   new Dynamic {
     uses = "./head/.github/actions/setup-rust-sticky-cache"
@@ -121,27 +82,12 @@ steps = new Listing {
     id = "validate-base"
     `if` = "steps.base-integrity.outputs.skip != 'true'"
     `continue-on-error` = true
-    run = "cargo metadata --manifest-path base/Cargo.toml --format-version 1 --no-deps > /dev/null"
+    run = #". "${{ env.VIZE_CI_FILES }}/validate-base-metadata.sh""#
   }
   new Dynamic {
     name = "Skip benchmark when base metadata is invalid"
     `if` = "steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome != 'success'"
-    run = #"""
-    {
-      echo "## PR Benchmark"
-      echo
-      echo "Base metadata could not be parsed, so the benchmark was skipped for this PR."
-      echo
-      echo "| status | reason |"
-      echo "| --- | --- |"
-      echo "| skipped | base checkout is not buildable |"
-    } > benchmark-summary.md
-    printf '{"skipped":true,"reason":"base_metadata_invalid","base":"%s","head":"%s"}\n' \
-      "$BENCHMARK_BASE_SHA" \
-      "$BENCHMARK_HEAD_SHA" \
-      > benchmark-results.json
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/skip-benchmark-when-base-metadata-is-invalid.sh""#
   }
   new Dynamic {
     name = "Cache base CLI"
@@ -166,22 +112,7 @@ steps = new Listing {
   new Dynamic {
     name = "Skip benchmark when base CLI cannot be built"
     `if` = "steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome == 'failure'"
-    run = #"""
-    {
-      echo "## PR Benchmark"
-      echo
-      echo "Base CLI could not be built, so the benchmark was skipped for this PR."
-      echo
-      echo "| status | reason |"
-      echo "| --- | --- |"
-      echo "| skipped | base checkout does not compile |"
-    } > benchmark-summary.md
-    printf '{"skipped":true,"reason":"base_not_buildable","base":"%s","head":"%s"}\n' \
-      "$BENCHMARK_BASE_SHA" \
-      "$BENCHMARK_HEAD_SHA" \
-      > benchmark-results.json
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/skip-benchmark-when-base-cli-cannot-be-built.sh""#
   }
   new Dynamic {
     name = "Cache head CLI"
@@ -207,33 +138,12 @@ steps = new Listing {
   new Dynamic {
     name = "Compare base and head"
     `if` = "steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'"
-    run = #"""
-    node head/tools/benchmarks/scripts/compare-pr.ts \
-      --input "$GITHUB_WORKSPACE/head/tools/benchmarks/scripts/__in__" \
-      --base-bin "$GITHUB_WORKSPACE/base/target/ci-opt/vize" \
-      --head-bin "$GITHUB_WORKSPACE/head/target/ci-opt/vize" \
-      --base-label "$BENCHMARK_BASE_SHA" \
-      --head-label "$BENCHMARK_HEAD_SHA" \
-      --runs "$VIZE_BENCH_RUNS" \
-      --warmups "$VIZE_BENCH_WARMUPS" \
-      --threshold "$VIZE_BENCH_REGRESSION_THRESHOLD_PERCENT" \
-      --out "$GITHUB_WORKSPACE/benchmark-summary.md" \
-      --json "$GITHUB_WORKSPACE/benchmark-results.json"
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/compare-base-and-head.sh""#
   }
   new Dynamic {
     name = "Qualify type-aware project batching on existing optimized binaries"
     `if` = "github.event_name == 'workflow_dispatch' && inputs.patina_project_batch && steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'"
-    run = #"""
-    node --test head/tools/benchmarks/scripts/patina-project-batch.test.mjs
-    node head/tools/benchmarks/scripts/patina-project-batch.mjs \
-      "$GITHUB_WORKSPACE/base/target/ci-opt/vize" \
-      "$GITHUB_WORKSPACE/head/target/ci-opt/vize" \
-      "$BENCHMARK_BASE_SHA" "$BENCHMARK_HEAD_SHA" \
-      "$GITHUB_WORKSPACE/patina-project-batch"
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/qualify-type-aware-project-batching-on-existing-optimized-binaries.sh""#
   }
   new Dynamic {
     name = "Retain type-aware batch evidence including failed observations"
@@ -263,26 +173,12 @@ steps = new Listing {
   new Dynamic {
     name = "Record benchmark build provenance"
     `if` = "steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'"
-    run = #"""
-    {
-      printf 'profile=%s\n' "$VIZE_BENCH_BUILD_PROFILE_KEY"
-      rustc --version --verbose
-      sha256sum base/target/ci-opt/vize head/target/ci-opt/vize
-    } > benchmark-provenance.txt
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/record-benchmark-build-provenance.sh""#
   }
   new Dynamic {
     name = "Replay conditional native type packets after observations"
     `if` = "github.event_name == 'workflow_dispatch' && inputs.patina_plain_type_packets && steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'"
-    run = #"""
-    node --test head/tools/benchmarks/scripts/patina-plain-type-packets.test.mjs
-    node head/tools/benchmarks/scripts/patina-plain-type-packets.mjs \
-      "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/head" \
-      "$BENCHMARK_BASE_SHA" "$BENCHMARK_HEAD_SHA" \
-      "$GITHUB_WORKSPACE/patina-plain-type-packets"
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/replay-conditional-native-type-packets-after-observations.sh""#
   }
   new Dynamic {
     name = "Retain complete native type packets and overlay custody"
@@ -304,16 +200,7 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Write job summary"
-    run = """
-    cat benchmark-summary.md >> "$GITHUB_STEP_SUMMARY"
-    if [[ -f patina-project-batch/summary.md ]]; then
-      cat patina-project-batch/summary.md >> "$GITHUB_STEP_SUMMARY"
-    fi
-    if [[ -f patina-plain-type-packets/summary.md ]]; then
-      cat patina-plain-type-packets/summary.md >> "$GITHUB_STEP_SUMMARY"
-    fi
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/write-job-summary.sh""#
   }
   new Dynamic {
     name = "Upload benchmark results"

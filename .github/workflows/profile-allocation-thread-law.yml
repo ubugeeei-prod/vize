@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - .github/workflows/profile-allocation-thread-law.yml
+      - .github/scripts/workflows/profile-allocation-thread-law/**
+      - .github/scripts/workflows/shared/**
       - davinci/vize_l0/src/profiler/core.rs
       - davinci/vize_l0/src/profiler/allocation.rs
       - davinci/vize_l0/src/profiler/metrics.rs
@@ -19,6 +21,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/profile-allocation-thread-law"
       CARGO_BUILD_JOBS: "4"
       CARGO_INCREMENTAL: "0"
       CARGO_TERM_COLOR: never
@@ -35,25 +38,11 @@ jobs:
           key: profile-thread-law-v1
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Check the small normal and instrumented allocation carriers
-        run: |
-          set -euo pipefail
-          mkdir -p evidence
-          git rev-parse HEAD > evidence/source.sha
-          rustc +1.100.0 -vV > evidence/rustc.txt
-          lscpu > evidence/cpu.txt
-          python3 -c 'import json,os; print(json.dumps({"runner":{k:os.environ.get(k) for k in ("RUNNER_NAME","RUNNER_OS","RUNNER_ARCH","RUNNER_ENVIRONMENT","CARGO_BUILD_JOBS","RAYON_NUM_THREADS","GOMAXPROCS")},"affinity":sorted(os.sched_getaffinity(0)),"scope":"untimed correctness and source-counter law; no throughput comparison"}))' > evidence/resources.json
-          cargo +1.100.0 test --locked --profile ci -p vize_l0 --test profile_allocation_thread_law --message-format json -- --nocapture 2>&1 | tee evidence/normal-law.log
-          cargo +1.100.0 test --locked --profile ci -p vize_l0 --test profile_allocation_thread_law --features micro-profiling --message-format json -- --nocapture 2>&1 | tee evidence/instrumented-law.log
-          cargo +1.100.0 test --locked --profile ci -p vize_l0 --features micro-profiling --doc ProfileGuard 2>&1 | tee evidence/send-law.log
-          python3 -c 'from pathlib import Path; text=Path("evidence/send-law.log").read_text(); assert "running 1 test" in text and "1 passed; 0 failed" in text'
-          cargo +1.100.0 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/observer-law.log
-          cargo +1.100.0 test --locked --profile ci -p vize_carton --test davinci_profile_export --features micro-profiling per_span_allocation_counts_and_schema_validation 2>&1 | tee evidence/nested-export-law.log
+        run: . "${{ env.VIZE_CI_FILES }}/check-the-small-normal-and-instrumented-allocation-carriers.sh"
       - name: Check the same public-type snippet against old and new guards
         run: node tools/benchmarks/scripts/profile_guard_send_law.ts
       - name: Compile the profiling CLI after the carrier succeeds
-        run: |
-          set -euo pipefail
-          cargo +1.100.0 build --locked --profile ci -p vize --features profiling --message-format json > evidence/profiling-cli-artifacts.jsonl
+        run: . "${{ env.VIZE_CI_FILES }}/compile-the-profiling-cli-after-the-carrier-succeeds.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:

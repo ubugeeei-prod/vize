@@ -1,0 +1,10 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
+  echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
+  """#
+}

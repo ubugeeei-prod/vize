@@ -1,0 +1,195 @@
+{
+  "public-typechecker-consumer": {
+    "before": "0ae41e50f9a693bab2d5d44c0193ced6d34d4730c20b6db241f84691dc3931ef",
+    "workflow": "e12c1bbd7378672b1980ee1777b2eb8272b76d3ee07184eb6046d70d47994732",
+    "programs": [
+      ".github/scripts/workflows/public-typechecker-consumer/install-a-fresh-public-0-602-consumer.sh",
+      ".github/scripts/workflows/public-typechecker-consumer/package-only-owned-data.sh",
+      ".github/scripts/workflows/public-typechecker-consumer/package-only-owned-evidence-after-capture-or-refusal.sh",
+      ".github/scripts/workflows/public-typechecker-consumer/package-only-owned-evidence.sh",
+      ".github/scripts/workflows/public-typechecker-consumer/package-owned-data-after-success-or-refusal.sh",
+      ".github/scripts/workflows/public-typechecker-consumer/provision-the-reported-npm-version-separately.sh",
+      ".github/scripts/workflows/public-typechecker-consumer/run-complete-public-mutation-and-repair-packets.sh",
+      ".github/scripts/workflows/public-typechecker-consumer/verify-the-published-standalone-archive.sh"
+    ],
+    "closure": "3d086ec3bec0fb3d666a07e7ac685cf5779b8c22699c5165634b671050973054"
+  },
+  "content-mapper-conformance": {
+    "before": "af3a0c9c81dd1a48f790ea66feced0945e59278eeb8f063a67b83cab62ef4cc1",
+    "workflow": "5acdde56875fb8b83736cbce73304911eb6f72bd8a4e6d0f9f72392f3fef4925",
+    "programs": [
+      ".github/actions/stage-workflow-scripts/action.yml",
+      ".github/actions/stage-workflow-scripts/stage.ts",
+      ".github/scripts/workflows/content-mapper-conformance/authenticate-source-and-recipe-before-any-build.sh",
+      ".github/scripts/workflows/content-mapper-conformance/build-exact-upstream-tsgo.sh",
+      ".github/scripts/workflows/content-mapper-conformance/build-packed-content-mapper-runtime.sh",
+      ".github/scripts/workflows/content-mapper-conformance/build-the-real-packed-mapper-runtime.sh",
+      ".github/scripts/workflows/content-mapper-conformance/preserve-actual-cli-identity-and-complete-artifact-inventory.sh",
+      ".github/scripts/workflows/content-mapper-conformance/preserve-source-and-provider-identity-before-queries.sh",
+      ".github/scripts/workflows/content-mapper-conformance/require-the-explicit-public-scope-and-absent-runtime-overrides.sh",
+      ".github/scripts/workflows/content-mapper-conformance/retain-exact-native-host-identity-before-conformance.sh",
+      ".github/scripts/workflows/content-mapper-conformance/retain-exact-native-host-identity-before-conformance.ts",
+      ".github/scripts/workflows/content-mapper-conformance/run-authored-syntax-and-setup-binding-conformance.sh",
+      ".github/scripts/workflows/content-mapper-conformance/run-both-whole-event-rename-transaction-targets.sh",
+      ".github/scripts/workflows/content-mapper-conformance/run-content-mapper-lsp-and-virtual-overlay-editor-checks.sh",
+      ".github/scripts/workflows/content-mapper-conformance/run-exact-published-reporter-fixtures.sh",
+      ".github/scripts/workflows/content-mapper-conformance/run-exact-published-reporter-fixtures.ts",
+      ".github/scripts/workflows/content-mapper-conformance/run-importer-scoped-package-resolution-matrix.sh",
+      ".github/scripts/workflows/content-mapper-conformance/run-standard-project-and-declaration-conformance.sh",
+      ".github/scripts/workflows/content-mapper-conformance/run-standard-tsgo-through-fresh-installed-package-tarballs.sh",
+      ".github/scripts/workflows/content-mapper-conformance/run-ts-40-current-projection-baselines.sh",
+      ".github/scripts/workflows/content-mapper-conformance/stress-every-editor-case-against-its-exact-native-provider.sh",
+      ".github/scripts/workflows/content-mapper-conformance/stress-every-editor-case-against-its-exact-native-provider.ts",
+      ".github/scripts/workflows/content-mapper-conformance/verify-targeted-source-and-exclusive-mode.sh",
+      ".github/scripts/workflows/content-mapper-conformance/verify-upstream-content-mapper-protocol-regressions.sh",
+      ".github/scripts/workflows/shared/files.ts"
+    ],
+    "closure": "4da9a36870044a38adf75a5adc16b5b901666e6ff60e49200995bc35fdc8600e"
+  },
+  "content-mapper-reported-q16": {
+    "before": "bb8b00e008a1401a72d8993c56b1511e54d52e398106ed65fb7c12ff2877f904",
+    "workflow": "6099319a5bf1d33a94989b73f315fc78613dcb13d7ac8ddc60aa0df924d8073c",
+    "programs": [
+      ".github/scripts/workflows/content-mapper-reported-q16/build-source-cli.sh",
+      ".github/scripts/workflows/content-mapper-reported-q16/initialize-runner-local-joint-evidence-paths.sh",
+      ".github/scripts/workflows/content-mapper-reported-q16/install-the-exact-report-host-and-oracle-versions-and-retain-the-generat.sh",
+      ".github/scripts/workflows/content-mapper-reported-q16/install-the-pinned-published-mapper-host.sh",
+      ".github/scripts/workflows/content-mapper-reported-q16/require-every-independent-router-qualification-result.sh",
+      ".github/scripts/workflows/content-mapper-reported-q16/require-the-exact-requested-source.sh",
+      ".github/scripts/workflows/content-mapper-reported-q16/test-immutable-project-context-and-batch-preservation.sh"
+    ],
+    "closure": "4724abbdcdf29974d6e894acf3dcd49a7e1f41e34482ec7ae78df851de2be394"
+  },
+  "native-smoke": {
+    "before": "dfcea2b5fd581d6e18d08cbefdbdbda26a46dd63df02dc672a7ae13cfcc7f9c0",
+    "workflow": "59d742b4fb2dfccc097dd441e73a31b99e31e4ccb6e8b518f6daa0629b9cccfd",
+    "programs": [
+      ".github/scripts/workflows/native-smoke/build-npm-runtime-packages.sh",
+      ".github/scripts/workflows/native-smoke/fresh-install-and-runtime-smoke-in-alpine.sh",
+      ".github/scripts/workflows/native-smoke/fresh-install-and-runtime-smoke-published-tarballs.sh",
+      ".github/scripts/workflows/native-smoke/fresh-packed-nuxt-init-check-and-lsp-smoke.sh",
+      ".github/scripts/workflows/native-smoke/install-package-dependencies.sh",
+      ".github/scripts/workflows/native-smoke/prepare-the-musl-native-platform-package.sh",
+      ".github/scripts/workflows/native-smoke/read-the-package-version.cjs",
+      ".github/scripts/workflows/native-smoke/read-the-package-version.sh",
+      ".github/scripts/workflows/native-smoke/smoke-cli.sh",
+      ".github/scripts/workflows/native-smoke/smoke-in-alpine-container.sh",
+      ".github/scripts/workflows/native-smoke/smoke-vizejs-native.cjs"
+    ],
+    "closure": "d54d23f7bcfa04bbe3da74ee5107a14dbef0c77bf6f227aae6006e0e46279d6a"
+  },
+  "native-beta-diagnostic-dto": {
+    "before": "5ffa8d324be8757ee3293ec178ca097b1f20e1f50845f83cd370f50f185a8310",
+    "workflow": "cc91a27e03aab752c3eb2ba788d265234b7f07d7874dcd611abb8ad377eeae8d",
+    "programs": [
+      ".github/actions/stage-workflow-scripts/action.yml",
+      ".github/actions/stage-workflow-scripts/stage.ts",
+      ".github/scripts/workflows/native-beta-diagnostic-dto/exercise-same-source-and-sdk-error-repair-hover-refs-and-foreign-file-co.sh",
+      ".github/scripts/workflows/native-beta-diagnostic-dto/install-exact-official-sdk-into-an-isolated-consumer.sh",
+      ".github/scripts/workflows/native-beta-diagnostic-dto/keep-strict-known-dto-unknown-fields-source-ownership-and-both-envelope.sh"
+    ],
+    "closure": "e052895acdf8d6d4cad805ff43c69d40e8793cd36bd80b81fb13738266e9d621"
+  },
+  "public-native-events": {
+    "before": "e8d2be49d842bed8100b42de98343b94268b6fa395758fef8b88b52473135ada",
+    "workflow": "ff4649c539ac653126f123aa6d40ec7afbb446f9ea587e84a7fd09731b2babb2",
+    "programs": [
+      ".github/scripts/workflows/public-native-events/compare-every-complete-vnode-packet-to-the-frozen-official-oracle.sh",
+      ".github/scripts/workflows/public-native-events/install-only-exact-public-packages-in-a-fresh-consumer.sh",
+      ".github/scripts/workflows/public-native-events/prove-tag-identity-and-source-inclusion.sh",
+      ".github/scripts/workflows/public-native-events/prove-tag-identity-and-source-inclusion.ts",
+      ".github/scripts/workflows/public-native-events/prove-the-candidate-contains-the-required-icon-source.sh",
+      ".github/scripts/workflows/public-native-events/prove-the-candidate-contains-the-required-icon-source.ts",
+      ".github/scripts/workflows/public-native-events/prove-the-immutable-tag-contains-the-merged-public-instance-change.sh",
+      ".github/scripts/workflows/public-native-events/prove-the-immutable-tag-contains-the-merged-public-instance-change.ts",
+      ".github/scripts/workflows/public-native-events/qualify-fresh-public-custom-properties-and-authored-directive-ownership.sh",
+      ".github/scripts/workflows/public-native-events/validate-the-explicit-public-candidate.sh",
+      ".github/scripts/workflows/public-native-events/validate-the-explicit-public-candidate.ts",
+      ".github/scripts/workflows/shared/files.ts"
+    ],
+    "closure": "920aeda106e9a7dd4c39cc260a7f78471865083e9ac6fe135cd5096858c38242"
+  },
+  "release-contracts": {
+    "before": "09b8a95b6712a565f5ce782707bf0409189aabf30127b968efcdfce76eac47c3",
+    "workflow": "346fd38408d7089310f59c5bb5f630920107ec95f43c8552cba6b10c7408b654",
+    "programs": [
+      ".github/scripts/workflows/release-contracts/prove-the-candidate-contains-the-required-icon-source.sh",
+      ".github/scripts/workflows/release-contracts/prove-the-candidate-contains-the-required-icon-source.ts",
+      ".github/scripts/workflows/release-contracts/prove-the-immutable-tag-contains-the-merged-public-instance-change.sh",
+      ".github/scripts/workflows/release-contracts/prove-the-immutable-tag-contains-the-merged-public-instance-change.ts",
+      ".github/scripts/workflows/release-contracts/prove-the-known-public-source-for-the-isolated-host-capability.sh",
+      ".github/scripts/workflows/release-contracts/prove-the-known-public-source-for-the-isolated-host-capability.ts",
+      ".github/scripts/workflows/release-contracts/qualify-fresh-public-custom-properties-and-authored-directive-ownership.sh",
+      ".github/scripts/workflows/release-contracts/validate-the-explicit-public-candidate.sh",
+      ".github/scripts/workflows/release-contracts/validate-the-explicit-public-candidate.ts",
+      ".github/scripts/workflows/shared/files.ts"
+    ],
+    "closure": "079adba67440b7e3c7cac19da92188ccee8440de16bb74876b2c72788cc7be35"
+  },
+  "language-project-fixtures": {
+    "before": "b65d5501a7657919f10949f6b721967460dfa76d1bc24c95d53cc2eaf153374a",
+    "workflow": "56754122311cdf7e235c53218fbbcde462832155c967f38918f75103dea0f58d",
+    "programs": [],
+    "closure": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "typescript-plugin": {
+    "before": "8e175b8a01082bc72fc3e6bfb73af101c338618f7ddc8685745fc556c0fe5b78",
+    "workflow": "8d854362247857dad95c31d86c7e37e9eb8fd7a44e1729dadb0eac0f3f2aea5b",
+    "programs": [
+      ".github/actions/stage-workflow-scripts/action.yml",
+      ".github/actions/stage-workflow-scripts/stage.ts",
+      ".github/scripts/workflows/typescript-plugin/build-the-exact-source-native-producer.sh",
+      ".github/scripts/workflows/typescript-plugin/package-the-same-canonical-plugin-in-a-production-vsix.sh",
+      ".github/scripts/workflows/typescript-plugin/retain-the-attempted-source-even-if-setup-fails.sh"
+    ],
+    "closure": "9e9948278c85761d82162d2884d876578cbc30e3009d7388ea90f99d6a571c74"
+  },
+  "typescript-provider-vsix": {
+    "before": "d22338f949d4e20c373c8a7feab76b19d07c2a297858b2336a41e3401ec9e46e",
+    "workflow": "a92175e43e68a4e0034f44e5982d8304594cecbea0497a093507482dad08fe95",
+    "programs": [
+      ".github/actions/stage-workflow-scripts/action.yml",
+      ".github/actions/stage-workflow-scripts/stage.ts",
+      ".github/scripts/workflows/shared/files.ts",
+      ".github/scripts/workflows/typescript-provider-vsix/collect-only-this-image.sh",
+      ".github/scripts/workflows/typescript-provider-vsix/collect-only-this-image.ts",
+      ".github/scripts/workflows/typescript-provider-vsix/ensure-the-linux-virtual-display.sh",
+      ".github/scripts/workflows/typescript-provider-vsix/match-the-existing-windows-native-release-profile.sh",
+      ".github/scripts/workflows/typescript-provider-vsix/package-each-corresponding-same-source-image.sh",
+      ".github/scripts/workflows/typescript-provider-vsix/preserve-and-qualify-the-universal-metadata-only-artifact.sh",
+      ".github/scripts/workflows/typescript-provider-vsix/read-exact-source-toolchain-and-version.sh",
+      ".github/scripts/workflows/typescript-provider-vsix/read-exact-source-toolchain-and-version.ts",
+      ".github/scripts/workflows/typescript-provider-vsix/run-the-actual-installed-platform-extension.sh"
+    ],
+    "closure": "142b40f6f1c08d3c26c4daf3bdb8ff5e53a21f1aef72eee3bf81f6a1e913b3ce"
+  },
+  "cold-typechecker-scale": {
+    "before": "a66155dc3fc7db5823b480e5f2ae5492885948657c3d4cba158fd5db8b3eec2a",
+    "workflow": "3105a9444130ea813a3baeeaa818aa27a8b4b52f4fc1ede9f9ee6cc9299b4f53",
+    "programs": [
+      ".github/scripts/workflows/cold-typechecker-scale/build-allocation-instrumentation-separately-from-timing-binaries.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/build-normal-exact-base-and-head-with-equal-compiler-settings.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/build-separate-allocation-and-custody-roles-after-both-normal-images-are.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/build-separate-read-buffer-instrumentation-after-normal-image-sealing.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/build-the-exact-base-and-head-with-equal-symbol-settings.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/capture-direct-normal-process-pmu-counters-and-bounded-source-stacks.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/capture-paired-rust-allocation-spans-without-cpu-sampling-overhead.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/capture-paired-rust-allocation-spans-without-cpu-sampling-overhead.ts",
+      ".github/scripts/workflows/cold-typechecker-scale/compare-fresh-processes-and-independent-authored-diagnostic-controls.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/install-fixed-comparison-providers.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/install-the-exact-source-pinned-provider-graph.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/package-evidence-without-traversing-workspace-links.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/preserve-every-raw-pair-native-observation-control-and-source-receipt.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/refuse-changed-inputs-native-bytes-and-unsupported-modes.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/require-full-output-and-read-ownership-observations-before-four-balanced.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/require-original-controls-and-full-output-before-eight-candidate-primari.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/select-exact-product-sources-and-preserve-the-separate-controller-identi.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/validate-the-full-sfc-cohort.sh",
+      ".github/scripts/workflows/cold-typechecker-scale/validate-the-full-sfc-cohort.ts",
+      ".github/scripts/workflows/shared/cpu-affinity.ts",
+      ".github/scripts/workflows/shared/files.ts",
+      ".github/scripts/workflows/shared/runner-resources.ts"
+    ],
+    "closure": "9079b3edfc0b180aeb5d14712be3ab6051936a091927dc077faf85417a5fd5ad"
+  }
+}

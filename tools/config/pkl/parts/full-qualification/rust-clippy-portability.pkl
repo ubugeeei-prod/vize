@@ -3,7 +3,10 @@ import "../../Actions.pkl" as ci
 `runs-on` = ci.linux
 `if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
 `timeout-minutes` = 45
-env { VIZE_NUXT_CONFIG_ITERATIONS = "100" }
+env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/full-qualification"
+  VIZE_NUXT_CONFIG_ITERATIONS = "100"
+}
 steps = new Listing {
   ci.use(ci.checkout)
   new Dynamic {
@@ -34,10 +37,10 @@ steps = new Listing {
   }
   new Dynamic {
     name = "Clippy"
-    run = "cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && node tools/commands/ci/github/check-maestro-feature-contract.ts && node tools/commands/ci/check-workspace-lints.ts --check && node tools/commands/ci/check-skeleton-todos.ts --check"
+    run = #". "${{ env.VIZE_CI_FILES }}/clippy.sh""#
   }
   new Dynamic {
     name = "Davinci no_std stage-library portability lanes (TS-24)"
-    run = "cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l4 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 && cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l4 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 --no-default-features"
+    run = #". "${{ env.VIZE_CI_FILES }}/davinci-no-std-stage-library-portability-lanes-ts-24.sh""#
   }
 }

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile, workflowJobRunsOn } from "./support/github-workflows.ts";
+import { workflowJobRunsOn } from "./support/github-workflows.ts";
 
 const BLACKSMITH_RUNNER = "blacksmith-32vcpu-ubuntu-2404";
 
@@ -39,7 +39,7 @@ type Workflow = {
 };
 
 const loadWorkflow = (): Workflow =>
-  parse(readRepoFile(".github", "workflows", "e2e.yml")) as Workflow;
+  parse(readAutomationPrograms(".github", "workflows", "e2e.yml")) as Workflow;
 const namedStep = (job: Job | undefined, name: string): Step => {
   const found = job?.steps?.find((step) => step.name === name);
   assert.ok(found, `missing step ${name}`);
@@ -201,7 +201,7 @@ test("every producer and aggregator checks out the exact event target", () => {
 });
 
 test("App E2E producers take their runner from the plan; support jobs stay Blacksmith", () => {
-  const source = readRepoFile(".github", "workflows", "e2e.yml");
+  const source = readAutomationPrograms(".github", "workflows", "e2e.yml");
   // Which label each row gets is the planner's call and is asserted in
   // app-e2e-plan.test.ts; the workflow only has to defer to it.
   for (const job of ["app-readiness-producer", "app-e2e-producer"]) {

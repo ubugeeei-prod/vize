@@ -5,6 +5,8 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/expression-overlap-audit.yml"
+      ".github/scripts/workflows/expression-overlap-audit/**"
+      ".github/scripts/workflows/shared/**"
       "tools/support/compat/parser/**"
       "upstream/forks/oxc_parser/**"
       "tests/fuzz/regressions/js_ts_expression/issue-10845*"
@@ -29,6 +31,7 @@ jobs {
       }
     }
     env {
+
       CARGO_INCREMENTAL = "0"
       CARGO_TERM_COLOR = "never"
       ROLE = "${{ matrix.role }}"
@@ -36,6 +39,7 @@ jobs {
       SOURCE_SHA = "${{ matrix.role == 'baseline' && '9157b9fa83dbdc98100be084be288f21d0d1bc18' || github.event.pull_request.head.sha || github.sha }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("expression-overlap-audit")
       new Dynamic {
         uses = ci.checkout
         with {
@@ -76,101 +80,23 @@ jobs {
       }
       new Dynamic {
         name = "Freeze driver, original cases and source provenance"
-        run = #"""
-        set -euo pipefail
-        mkdir evidence
-        test "$(git -C source rev-parse HEAD)" = "$SOURCE_SHA"
-        test "$(git -C driver rev-parse HEAD)" = "$DRIVER_SHA"
-        node driver/tools/support/compat/parser/expression-overlap-cases.ts driver "$GITHUB_WORKSPACE/evidence/cases"
-        source_parser=source/upstream/forks/oxc_parser
-        source_parser_relative=upstream/forks/oxc_parser
-        if [[ ! -d "$source_parser" ]]; then
-          source_parser=source/vendor/oxc_parser
-          source_parser_relative=vendor/oxc_parser
-        fi
-        test -d "$source_parser"
-        cp driver/upstream/forks/oxc_parser/examples/failed_speculation_profile.rs "$source_parser/examples/"
-        cp driver/tools/support/compat/parser/frozen-private-facts.rs "$source_parser/src/expression_overlap_private_facts.rs"
-        printf '\n#[cfg(test)]\nmod expression_overlap_private_facts;\n' >> "$source_parser/src/lib.rs"
-        cp driver/tools/support/compat/parser/frozen-10682-observer.rs source/crates/vize_atelier_core/examples/fuzz_expression_raw_close_observe.rs
-        cp driver/crates/vize_atelier_core/examples/fuzz_expression_10401_profile.rs source/crates/vize_atelier_core/examples/
-        {
-          printf 'source_sha=%s\ndriver_sha=%s\nrole=%s\n' "$SOURCE_SHA" "$DRIVER_SHA" "$ROLE"
-          rustc +nightly-2026-10-23 -Vv
-          uname -a
-          sha256sum driver/upstream/forks/oxc_parser/examples/failed_speculation_profile.rs driver/tools/support/compat/parser/frozen-private-facts.rs driver/tools/support/compat/parser/frozen-10682-observer.rs driver/tools/support/compat/parser/historical-10682.tar.gz
-          git -C source diff -- src/lib.rs "$source_parser_relative/src/lib.rs"
-          git -C source status --short
-          echo 'No compiled target restored. Fresh process per timing sample; each sample creates and drops a fresh allocator/parser. OS cache is not flushed.'
-        } > evidence/provenance.txt
-        target="$RUNNER_TEMP/expression-overlap-$ROLE-$SOURCE_SHA-opt"
-        test ! -e "$target"
-        echo "CARGO_TARGET_DIR=$target" >> "$GITHUB_ENV"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/freeze-driver-original-cases-and-source-provenance.sh""#
       }
       new Dynamic {
         name = "Build immutable optimized source and frozen drivers"
         id = "build"
         `working-directory` = "source"
         env { CARGO_PROFILE_CI_OPT_DEBUG = "1" }
-        run = """
-        set -euo pipefail
-        cargo +nightly-2026-10-23 build --locked --profile ci-opt -p vize_oxc_parser --example failed_speculation_profile -p vize_atelier_core --example fuzz_expression_10401_profile --example fuzz_expression_raw_close_observe 2>&1 | tee ../evidence/optimized-build.log
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-immutable-optimized-source-and-frozen-drivers.sh""#
       }
       new Dynamic {
         name = "Compare complete observable packets and separate admission from parser work"
-        run = #"""
-        set -euo pipefail
-        export PROFILE_BINARY="$CARGO_TARGET_DIR/ci-opt/examples/failed_speculation_profile"
-        export GUARD_BINARY="$CARGO_TARGET_DIR/ci-opt/examples/fuzz_expression_10401_profile"
-        export HISTORICAL_OBSERVER="$CARGO_TARGET_DIR/ci-opt/examples/fuzz_expression_raw_close_observe"
-        sha256sum "$PROFILE_BINARY" "$GUARD_BINARY" > evidence/optimized-binaries.sha256
-        python3 - <<'PY'
-        import json, os, subprocess
-        from pathlib import Path
-        root = Path('evidence')
-        for case in json.loads((root/'cases/manifest.json').read_text()):
-            name = case['name']
-            path = root/'cases'/name
-            inspection = subprocess.check_output([os.environ['GUARD_BINARY'], 'inspect', str(path)])
-            (root/f'{name}.admission.json').write_bytes(inspection)
-            if case['require_admission']:
-                assert json.loads(inspection)['safe'], f'{name} no longer reaches parser'
-            with (root/f'{name}.packets.txt').open('wb') as output:
-                subprocess.run([os.environ['PROFILE_BINARY'], 'packets', str(path)], stdout=output, check=True, timeout=90)
-            if 'historical_id' in case:
-                historical_id = case['historical_id']
-                for kind, command in [
-                    ('controls', [os.environ['GUARD_BINARY'], 'controls', str(path)]),
-                    ('program-observer', [os.environ['HISTORICAL_OBSERVER'], str(path)]),
-                ]:
-                    actual = subprocess.check_output(command, timeout=90)
-                    expected = (root/f'cases/historical-packets/{historical_id}.{kind}.json').read_bytes()
-                    assert json.loads(actual) == json.loads(expected), f'{historical_id}: historical complete {kind} changed'
-                    (root/f'{name}.historical-{kind}.json').write_bytes(actual)
-            timings = []
-            for _ in range(5):
-                timings.append(json.loads(subprocess.check_output([os.environ['PROFILE_BINARY'], 'time', str(path), '1'], timeout=30)))
-            (root/f'{name}.timings.json').write_text(json.dumps(timings, indent=2)+'\n')
-        PY
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-complete-observable-packets-and-separate-admission-from-parser-w.sh""#
       }
-      ci.command("Install source profiler", "sudo apt-get update -qq && sudo apt-get install -y valgrind")
+      ci.command("Install source profiler", #". "${{ env.VIZE_CI_FILES }}/install-source-profiler.sh""#)
       new Dynamic {
         name = "Count immutable-source instructions with line attribution"
-        run = """
-        set -euo pipefail
-        binary="$CARGO_TARGET_DIR/ci-opt/examples/failed_speculation_profile"
-        for name in issue-10845.input 10401-append-greater.input minimal-overlap-128.input minimal-overlap-256.input; do
-          timeout 180 valgrind --tool=callgrind --callgrind-out-file="evidence/$name.callgrind" "$binary" time "evidence/cases/$name" 1 > "evidence/$name.profile.json" 2> "evidence/$name.profile.log"
-          callgrind_annotate --inclusive=yes --tree=both --auto=yes "evidence/$name.callgrind" > "evidence/$name.source-profile.txt"
-        done
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/count-immutable-source-instructions-with-line-attribution.sh""#
       }
       new Dynamic {
         name = "Observe all private source facts and require candidate parser regressions"
@@ -179,38 +105,12 @@ jobs {
           VIZE_EXPRESSION_OVERLAP_CASES = "${{ github.workspace }}/evidence/cases"
           VIZE_EXPRESSION_OVERLAP_FACTS = "${{ github.workspace }}/evidence/private-source-facts.txt"
         }
-        run = """
-        set -euo pipefail
-        target="$RUNNER_TEMP/expression-overlap-$ROLE-$SOURCE_SHA-tests"
-        test ! -e "$target"
-        filter=()
-        if [[ "$ROLE" == baseline ]]; then filter=(expression_overlap_private_facts::observe_private_source_facts); fi
-        CARGO_TARGET_DIR="$target" cargo +nightly-2026-10-23 test --locked -p vize_oxc_parser --profile ci "${filter[@]}" -- --nocapture 2>&1 | tee ../evidence/private-parser-tests.log
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/observe-all-private-source-facts-and-require-candidate-parser-regression.sh""#
       }
       new Dynamic {
         name = "Replay original libFuzzer address sanitizer resource regime"
         `working-directory` = "source"
-        run = #"""
-        set -euo pipefail
-        cargo +nightly-2026-10-23 install cargo-fuzz --locked --version 0.13.2 --target-dir "$RUNNER_TEMP/expression-overlap-$ROLE-$SOURCE_SHA-tool"
-        target="$RUNNER_TEMP/expression-overlap-$ROLE-$SOURCE_SHA-asan"
-        test ! -e "$target"
-        export CARGO_TARGET_DIR="$target"
-        cargo +nightly-2026-10-23 fuzz build --fuzz-dir tests/fuzz js_ts_expression -v 2>&1 | tee ../evidence/asan-build.log
-        binary="$target/x86_64-unknown-linux-gnu/release/js_ts_expression"
-        sha256sum "$binary" > ../evidence/asan-binary.sha256
-        for name in issue-10845.input issue-10845.min.input issue-10845.slow-1.input issue-10845.slow-2.input 10401-append-greater.input; do
-          set +e
-          /usr/bin/time -v timeout 120 "$binary" "$GITHUB_WORKSPACE/evidence/cases/$name" -runs=1 -max_len=65536 -timeout=25 -rss_limit_mb=4096 -malloc_limit_mb=2048 > "../evidence/$name.asan.log" 2>&1
-          status=$?
-          set -e
-          printf '%s\n' "$status" > "../evidence/$name.asan.exit"
-          if [[ "$ROLE" == candidate ]]; then test "$status" = 0; fi
-        done
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/replay-original-libfuzzer-address-sanitizer-resource-regime.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -230,6 +130,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 5
     steps = new Listing {
+      ...ci.stageWorkflowScripts("expression-overlap-audit")
       new Dynamic {
         uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
         with {
@@ -239,47 +140,7 @@ jobs {
       }
       new Dynamic {
         name = "Require complete packet parity and at least eightfold shared-work reduction"
-        run = """
-        python3 - <<'PY'
-        import json
-        from pathlib import Path
-        root = Path('evidence')
-        baseline, = root.glob('expression-overlap-baseline-*')
-        candidate, = root.glob('expression-overlap-candidate-*')
-        assert (baseline/'cases/manifest.json').read_bytes() == (candidate/'cases/manifest.json').read_bytes()
-        assert (baseline/'private-source-facts.txt').read_bytes() == (candidate/'private-source-facts.txt').read_bytes(), 'private raw source-fact observations changed'
-        cases = json.loads((baseline/'cases/manifest.json').read_text())
-        for case in cases:
-            name = case['name']
-            assert (baseline/f'{name}.packets.txt').read_bytes() == (candidate/f'{name}.packets.txt').read_bytes(), f'{name}: full packets.txt changed'
-            # The baseline source predates #12772, whose guard rejects the
-            # retained `ee<ep>!!!` inputs before parsing. A required case keeps
-            # its complete admission; every other case must stay rejected.
-            if case['require_admission']:
-                assert (baseline/f'{name}.admission.json').read_bytes() == (candidate/f'{name}.admission.json').read_bytes(), f'{name}: full admission.json changed'
-            else:
-                assert not json.loads((candidate/f'{name}.admission.json').read_text())['safe'], f'{name}: admission no longer rejects it'
-        def instructions(directory, name):
-            for line in (directory/f'{name}.callgrind').read_text().splitlines():
-                if line.startswith('summary: '):
-                    return int(line.split()[1])
-            raise AssertionError(f'No instruction summary for {name}')
-        for name in ['issue-10845.input', '10401-append-greater.input']:
-            before, after = instructions(baseline, name), instructions(candidate, name)
-            assert before > after * 8, (name, before, after)
-            print(f'{name}: {before:,} -> {after:,} instructions ({before/after:.2f}x)')
-            base_memory = json.loads((baseline/f'{name}.timings.json').read_text())[0]['peak_arena_used_bytes']
-            head_memory = json.loads((candidate/f'{name}.timings.json').read_text())[0]['peak_arena_used_bytes']
-            assert base_memory > head_memory * 8, (name, base_memory, head_memory)
-            print(f'{name}: arena {base_memory:,} -> {head_memory:,} bytes')
-        small, large = (instructions(candidate, f'minimal-overlap-{size}.input') for size in [128, 256])
-        assert large < small * 3, ('shared parser work is still superlinear', small, large)
-        for case in ['issue-10845.input', 'issue-10845.min.input', 'issue-10845.slow-1.input', 'issue-10845.slow-2.input', '10401-append-greater.input']:
-            assert (candidate/f'{case}.asan.exit').read_text().strip() == '0', case
-        print(f'All {len(cases)*40} complete packets match; required admission, rejected inputs and sanitizer budgets hold.')
-        PY
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/require-complete-packet-parity-and-at-least-eightfold-shared-work-reduct.sh""#
       }
     }
   }

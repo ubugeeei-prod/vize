@@ -6,6 +6,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/css-color-declaration-admission.yml"
+      ".github/scripts/workflows/css-color-declaration-admission/**"
       "crates/vize_maestro/src/server/annotations/document_color.rs"
       "crates/vize_maestro/src/server/annotations/document_color/**"
       "crates/vize_maestro/src/ide/style.rs"
@@ -27,6 +28,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 15
     env {
+
       CARGO_BUILD_JOBS = "12"
       CARGO_TERM_COLOR = "always"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
@@ -35,6 +37,7 @@ jobs {
       VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("css-color-declaration-admission")
       new Dynamic {
         uses = ci.checkout
         with {
@@ -56,22 +59,12 @@ jobs {
       new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
       new Dynamic {
         name = "Build and receipt the exact source CLI"
-        run = """
-        cargo build --profile ci -p vize
-        node tests/differential/build-receipt.ts
-        node --input-type=module -e "import assert from 'node:assert/strict';import fs from 'node:fs';assert.equal(JSON.parse(fs.readFileSync('target/ci/vize.differential-build.json')).sourceRevision,process.env.SOURCE_SHA)"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-exact-source-cli.sh""#
       }
       new Dynamic {
         name = "Preserve complete public controls and corrected source packets"
         shell = "bash"
-        run = """
-        set -euo pipefail
-        mkdir -p target/vize-tests/css-color-declaration-admission
-        node --test tests/tooling/lsp-css-color-declaration-admission.test.ts 2>&1 | tee target/vize-tests/css-color-declaration-admission/protocol.log
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-complete-public-controls-and-corrected-source-packets.sh""#
       }
       new Dynamic {
         name = "Verify shared parser edges and source work accounting"
@@ -79,11 +72,7 @@ jobs {
         env {
           VIZE_CSS_COLOR_WORK_CAPTURE = "${{ github.workspace }}/target/vize-tests/css-color-declaration-admission/scanner-work.json"
         }
-        run = """
-        set -euo pipefail
-        cargo test --locked --profile ci -p vize_maestro --lib server::annotations::document_color:: -- --nocapture 2>&1 | tee target/vize-tests/css-color-declaration-admission/native.log
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-shared-parser-edges-and-source-work-accounting.sh""#
       }
       new Dynamic {
         name = "Retain owned whole packets and actual source identity"

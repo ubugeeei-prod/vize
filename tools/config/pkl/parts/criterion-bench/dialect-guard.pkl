@@ -6,6 +6,7 @@ name = "dialect-guard"
 `timeout-minutes` = 45
 permissions { contents = "read" }
 steps = new Listing {
+  ...ci.stageWorkflowScripts("criterion-bench")
   new Dynamic {
     name = "Checkout head"
     uses = ci.checkout
@@ -34,14 +35,6 @@ steps = new Listing {
   ci.command("Generate Vue 3 corpus", #"node tools/benchmarks/scripts/generate.mjs "$DIALECT_GUARD_FILE_COUNT""#)
   new Dynamic {
     name = "Compare legacy OFF vs ON"
-    run = #"""
-    node tools/benchmarks/scripts/dialect-guard.ts \
-      --input tools/benchmarks/scripts/__in__ \
-      --off-bin target/off/ci-opt/vize \
-      --on-bin target/on/ci-opt/vize \
-      --out-dir "$GITHUB_WORKSPACE/dialect-guard-out" \
-      --threshold "$DIALECT_GUARD_THRESHOLD_PERCENT"
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/compare-legacy-off-vs-on.sh""#
   }
 }

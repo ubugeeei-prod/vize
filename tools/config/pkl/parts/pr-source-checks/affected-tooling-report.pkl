@@ -1,9 +1,12 @@
+import "../../Actions.pkl" as ci
+
 name = "Affected tooling report"
 `if` = "${{ always() && !contains(needs.*.result, 'cancelled') }}"
 needs = List("pr-source-plan", "affected-tooling-cli", "affected-tooling")
 `runs-on` = "ubuntu-24.04"
 `timeout-minutes` = 5
 steps = new Listing {
+  ...ci.stageWorkflowScripts("pr-source-checks")
   new Dynamic {
     name = "Require every selected tooling worker"
     env {
@@ -11,12 +14,6 @@ steps = new Listing {
       CLI = "${{ needs.affected-tooling-cli.result }}"
       WORKERS = "${{ needs.affected-tooling.result }}"
     }
-    run = """
-    echo "selected=$SELECTED cli=$CLI workers=$WORKERS"
-    [[ "$CLI" == success ]]
-    if [[ "$SELECTED" == true ]]; then [[ "$WORKERS" == success ]]
-    else [[ "$SELECTED" == false && "$WORKERS" == skipped ]]; fi
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/require-every-selected-tooling-worker.sh""#
   }
 }

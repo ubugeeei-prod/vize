@@ -1,16 +1,17 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import test from "node:test";
 
 test("scheduler carrier follows each direct source and allocator dependency", () => {
-  const workflow = fs.readFileSync(
+  const workflow = readAutomationPrograms(
     new URL("../../.github/workflows/lsp-scheduler-cost-carrier.yml", import.meta.url),
-    "utf8",
   );
   const paths = [...workflow.matchAll(/^ {6}- "([^"]+)"$/gm)].map((match) => match[1]);
 
   assert.deepEqual(paths, [
     ".github/workflows/lsp-scheduler-cost-carrier.yml",
+    ".github/scripts/workflows/lsp-scheduler-cost-carrier/**",
+    ".github/scripts/workflows/shared/**",
     "Cargo.toml",
     "Cargo.lock",
     "crates/vize_maestro/Cargo.toml",

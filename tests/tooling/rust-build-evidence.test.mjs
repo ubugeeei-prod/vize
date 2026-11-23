@@ -1,3 +1,4 @@
+import { readWorkflowShell } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
@@ -20,9 +21,8 @@ import {
 } from "../../tools/support/compat/github/rust-build-evidence.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-// The source-plan job has Node but deliberately installs no dependencies.
-// Execute the actual named literal shell block without importing a YAML package.
-const workflowSource = readFileSync(join(root, ".github/workflows/pr-rust-products.yml"), "utf8");
+// The source-plan job runs these commands before installing workspace dependencies.
+const workflowSource = readWorkflowShell("pr-rust-products");
 function workflowStep(name) {
   const marker = `      - name: ${name}\n`;
   const start = workflowSource.indexOf(marker);
@@ -166,6 +166,7 @@ await test("actual PR shell keeps selected arguments, captured stdout and exit0/
         ...process.env,
         PATH: `${bin}:${dirname(process.execPath)}:${process.env.PATH}`,
         RUNNER_TEMP: directory,
+        VIZE_CI_FILES: join(root, ".github/scripts/workflows/pr-rust-products"),
         RUST_PLAN_JSON: JSON.stringify(plan),
         NEXTEST_PROFILE: "pr",
         NEXTEST_FILTER: "package(=vize_l0)",

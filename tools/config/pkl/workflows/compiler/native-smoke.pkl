@@ -44,14 +44,7 @@ local nativeHostSteps = new Listing {
   new Dynamic {
     name = "Smoke CLI"
     shell = "bash"
-    run = """
-    if [ -x target/ci/vize.exe ]; then
-      target/ci/vize.exe --version
-    else
-      target/ci/vize --version
-    fi
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/smoke-cli.sh""#
   }
   ci.command("Build @vizejs/native", "vp run --filter './npm/native' build:ci")
   new Dynamic {
@@ -61,7 +54,7 @@ local nativeHostSteps = new Listing {
   }
   new Dynamic {
     name = "Smoke @vizejs/native"
-    run = #"node -e "const native = require('./npm/native'); if (typeof native.compileSfc !== 'function') throw new Error('compileSfc missing')""#
+    run = #"node "${{ env.VIZE_CI_FILES }}/smoke-vizejs-native.cjs""#
   }
   new Dynamic {
     name = "Package-install smoke for host native package"
@@ -180,7 +173,9 @@ jobs {
         }
       }
     }
-    env = nativeHostEnv
+    env = (nativeHostEnv) {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/native-smoke"
+    }
     steps = nativeHostSteps
   }
 
@@ -227,7 +222,10 @@ jobs {
         }
       }
     }
-    env { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/native-smoke"
+      NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       new Dynamic {
@@ -267,15 +265,7 @@ jobs {
       new Dynamic {
         name = "Install package dependencies"
         shell = "bash"
-        run = #"""
-        vp install --frozen-lockfile --prefer-offline \
-          --filter . \
-          --filter '@vize/tools' \
-          --filter './npm/native...' \
-          --filter './npm/cli...' \
-          --filter './npm/builder/vite...'
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/install-package-dependencies.sh""#
       }
       ci.command("Build @vizejs/native", "vp run --filter './npm/native' build:ci")
       new Dynamic {
@@ -287,11 +277,7 @@ jobs {
         name = "Build npm runtime packages"
         `if` = "${{ matrix.platform.target != 'linux-x64-gnu' || matrix.node-version != '24' }}"
         shell = "bash"
-        run = """
-        vp run --filter './npm/cli' build
-        vp run --filter './npm/builder/vite' build
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-npm-runtime-packages.sh""#
       }
       new Dynamic {
         name = "Build the packed Nuxt release graph"
@@ -303,24 +289,14 @@ jobs {
         `if` = "${{ matrix.platform.target != 'linux-x64-gnu' || matrix.node-version != '24' }}"
         env { VIZE_SMOKE_TIMING_FILE = "${{ runner.temp }}/packed-smoke-timing.jsonl" }
         shell = "bash"
-        run = #"""
-        node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks --bun-runtime-checks \
-          npm/native npm/native/npm/* \
-          npm/cli npm/builder/vite
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/fresh-install-and-runtime-smoke-published-tarballs.sh""#
       }
       new Dynamic {
         name = "Fresh packed Nuxt init, check, and LSP smoke"
         `if` = "${{ matrix.platform.target == 'linux-x64-gnu' && matrix.node-version == '24' }}"
         env { VIZE_SMOKE_TIMING_FILE = "${{ runner.temp }}/packed-smoke-timing.jsonl" }
         shell = "bash"
-        run = #"""
-        read -ra js <<< "$RELEASE_JS_PACKAGES"
-        node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks --bun-runtime-checks \
-          npm/native npm/native/npm/* "${js[@]}"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/fresh-packed-nuxt-init-check-and-lsp-smoke.sh""#
       }
       new Dynamic {
         name = "Retain packed smoke timing"
@@ -358,16 +334,16 @@ jobs {
         }
       }
     }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/native-smoke"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       new Dynamic {
         name = "Read the package version"
         id = "version"
         shell = "bash"
-        run = """
-        node -e 'console.log(`version=${require("./npm/native/package.json").version}`)' >> "$GITHUB_OUTPUT"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/read-the-package-version.sh""#
       }
       new Dynamic {
         name = "Cross-build the musl native binding"
@@ -383,34 +359,18 @@ jobs {
       new Dynamic {
         name = "Install packed runtime dependencies"
         shell = "bash"
-        run = #"""
-        vp install --frozen-lockfile --prefer-offline \
-          --filter . \
-          --filter '@vize/tools' \
-          --filter './npm/native...' \
-          --filter './npm/cli...' \
-          --filter './npm/builder/vite...'
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/install-package-dependencies.sh""#
       }
       new Dynamic {
         name = "Prepare the musl native platform package"
         shell = "bash"
         env { NATIVE_PLATFORM = "${{ matrix.platform }}" }
-        run = """
-        node tools/support/github/stage-built-native-packages.ts npm/native
-        test -f "npm/native/npm/$NATIVE_PLATFORM/vize-vitrine.$NATIVE_PLATFORM.node"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/prepare-the-musl-native-platform-package.sh""#
       }
       new Dynamic {
         name = "Build packed runtime packages"
         shell = "bash"
-        run = """
-        vp run --filter './npm/cli' build
-        vp run --filter './npm/builder/vite' build
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-npm-runtime-packages.sh""#
       }
       new Dynamic {
         name = "Fresh install and runtime smoke in Alpine"
@@ -419,31 +379,7 @@ jobs {
           NATIVE_PACKAGE = "${{ format('@vizejs/native-{0}', matrix.platform) }}"
           NATIVE_PLATFORM = "${{ matrix.platform }}"
         }
-        run = #"""
-        docker run --rm \
-          --env VIZE_SMOKE_TIMING_FILE=/evidence/packed-smoke-timing.jsonl \
-          --env "VIZE_SMOKE_EXPECTED_NATIVE_PACKAGE=$NATIVE_PACKAGE" \
-          --env "NATIVE_PLATFORM=$NATIVE_PLATFORM" \
-          --volume "$GITHUB_WORKSPACE:/work" \
-          --volume "$RUNNER_TEMP:/evidence" \
-          --workdir /work \
-          node:24-alpine@sha256:a34ab6d7f6f4813f4d0c5469d74685604b962fbdbf5793a7bc7b4998ecb867c8 \
-          sh -euxc '
-            set -o pipefail
-            corepack enable
-            npm install --global --allow-scripts=bun bun@1.3.14 vite-plus@0.1.24
-            node tools/commands/release/npm/smoke-release-install.ts \
-              --prepare-manifests --runtime-checks \
-              npm/native "npm/native/npm/$NATIVE_PLATFORM" \
-              npm/cli npm/builder/vite \
-              2>&1 | tee /evidence/musl-smoke.log
-            grep -F "\"package\":\"$VIZE_SMOKE_EXPECTED_NATIVE_PACKAGE\"" \
-              /evidence/musl-smoke.log
-            grep -F '"'"'"schema":"vize.loadedNativeBinding"'"'"' \
-              /evidence/musl-smoke.log
-          '
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/fresh-install-and-runtime-smoke-in-alpine.sh""#
       }
       new Dynamic {
         name = "Retain packed musl smoke evidence"
@@ -479,7 +415,9 @@ jobs {
         }
       }
     }
-    env = nativeHostEnv
+    env = (nativeHostEnv) {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/native-smoke"
+    }
     steps = nativeHostSteps
   }
 }

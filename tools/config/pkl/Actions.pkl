@@ -50,3 +50,21 @@ function workspaceVp(): Dynamic = new {
     `run-install` = false
   }
 }
+
+function stageWorkflowScripts(workflow: String): Listing<Dynamic> = new {
+  new Dynamic {
+    name = "Check out the workflow's scripts"
+    uses = checkout
+    with {
+      ref = "${{ github.workflow_sha }}"
+      path = ".vize-workflow-tools"
+      `persist-credentials` = false
+      `sparse-checkout-cone-mode` = false
+      `sparse-checkout` = "/.github/actions/stage-workflow-scripts/\n/.github/scripts/workflows/shared/\n/.github/scripts/workflows/\(workflow)/"
+    }
+  }
+  new Dynamic {
+    name = "Stage scripts outside the source checkout"
+    uses = "./.vize-workflow-tools/.github/actions/stage-workflow-scripts"
+  }
+}

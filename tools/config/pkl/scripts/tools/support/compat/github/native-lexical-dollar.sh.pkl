@@ -28,7 +28,7 @@ commands {
   printf '%s\n' "$actual_status" > "$packet_root/cargo.status"
   if [[ "$actual_status" != 0 ]]; then cat "$packet_root/cargo.stdout" "$packet_root/cargo.stderr"; exit "$actual_status"; fi
   node tools/support/compat/github/native-lexical-dollar-metadata.mjs "$packet_root"
-  test_binary="$(node -p 'JSON.parse(require("node:fs").readFileSync(process.argv[1],"utf8")).testBinary.path' "$packet_root/metadata.json")"
+  test_binary="$(node tools/support/compat/github/native-lexical-dollar-binary.ts "$packet_root/metadata.json")"
   phase_status=0
   for phase in producer native; do
     case "$phase" in

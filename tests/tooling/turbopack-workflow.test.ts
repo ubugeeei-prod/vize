@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import fs from "node:fs/promises";
@@ -12,12 +13,7 @@ void test(
     skip: process.platform === "win32" ? "the selected Actions job uses Linux bash" : false,
   },
   async () => {
-    const workflow = parse(
-      await fs.readFile(
-        new URL("../../.github/workflows/turbopack-consumers.yml", import.meta.url),
-        "utf8",
-      ),
-    );
+    const workflow = parse(readAutomationPrograms(".github/workflows/turbopack-consumers.yml"));
     const step = workflow.jobs.consumers.steps.find(
       (step: { name?: string }) =>
         step.name === "Check authored positions and existing Rspack behavior",

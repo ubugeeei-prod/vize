@@ -96,7 +96,7 @@ void test("Wild delegation is complementary for every unsupported host or input"
         }
 });
 void test("Core PR and merge gates use the recovery adapter", () => {
-  const pr = parse(fs.readFileSync(".github/workflows/pr-source-checks.yml", "utf8"));
+  const pr = parse(readAutomationPrograms(".github/workflows/pr-source-checks.yml", "utf8"));
   const local = "./.github/actions/setup-wild-http-recovery";
   assert.equal(pr.jobs["pr-playground-test"].steps.filter((s) => s.uses === local).length, 1);
   assert.deepEqual(
@@ -104,14 +104,14 @@ void test("Core PR and merge gates use the recovery adapter", () => {
     new Set(["pr-native-runtime", "pr-playground-test"]),
   );
   assert.deepEqual(jobsUsingAction(pr.jobs, upstream), []);
-  const js = parse(fs.readFileSync(".github/workflows/pr-js-checks.yml", "utf8"));
+  const js = parse(readAutomationPrograms(".github/workflows/pr-js-checks.yml", "utf8"));
   assert.deepEqual(
     jobsUsingAction(js.jobs, local),
     Object.keys(js.jobs).filter((name) => name !== "pr-oxlint-windows-json-config"),
   );
   assert.deepEqual(jobsUsingAction(js.jobs, upstream), []);
   const canonical = parse(
-    fs.readFileSync(".github/workflows/davinci-canonical-corpus.yml", "utf8"),
+    readAutomationPrograms(".github/workflows/davinci-canonical-corpus.yml", "utf8"),
   );
   const steps = canonical.jobs["canonical-observers"].steps;
   assert.deepEqual(
@@ -127,7 +127,7 @@ void test("Core PR and merge gates use the recovery adapter", () => {
     undefined,
   );
   const instructions = parse(
-    fs.readFileSync(".github/workflows/level-instruction-counts.yml", "utf8"),
+    readAutomationPrograms(".github/workflows/level-instruction-counts.yml", "utf8"),
   );
   assert.deepEqual(jobsUsingAction(instructions.jobs, local), ["instruction-counts", "sfc-parse"]);
   assert.deepEqual(jobsUsingAction(instructions.jobs, upstream), []);
@@ -136,7 +136,7 @@ void test("Release-blocking observers and Fresco use the recovery adapter", () =
   const local = "./.github/actions/setup-wild-http-recovery";
   const qualification = "./qualification/.github/actions/setup-wild-http-recovery";
   const asyncAncestry = parse(
-    fs.readFileSync(".github/workflows/async-component-ancestry.yml", "utf8"),
+    readAutomationPrograms(".github/workflows/async-component-ancestry.yml", "utf8"),
   );
   const asyncSteps = asyncAncestry.jobs["whole-project"].steps;
   const qualificationCheckout = asyncSteps.find(

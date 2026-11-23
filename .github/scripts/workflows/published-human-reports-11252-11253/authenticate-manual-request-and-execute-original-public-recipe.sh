@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+root="$RUNNER_TEMP/human-reports-$ROLE-$PHASE"
+pnpm_cli="$(node "$VIZE_CI_FILES/authenticate-manual-request-and-execute-original-public-recipe.cjs" "$(command -v pnpm)")"
+node --experimental-strip-types tools/support/release/human_reports_11252_11253_public/bootstrap.ts \
+  "$REQUEST_BLOB" "$ROLE" "$PHASE" "$root-request"
+node --experimental-strip-types tools/support/release/human_reports_11252_11253_public/run.ts \
+  --execute-public "$root-request/request.json" "$pnpm_cli" "$root-output"

@@ -29,6 +29,7 @@ on {
       "Cargo.lock"
       "docs/davinci/plan/key-manifests.md"
       ".github/workflows/davinci-incremental.yml"
+      ".github/scripts/workflows/davinci-incremental/**"
     }
   }
   workflow_dispatch = null
@@ -104,6 +105,9 @@ jobs {
     name = "Incremental ≡ clean (TS-42)"
     `runs-on` = ci.linux
     `timeout-minutes` = 40
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/davinci-incremental"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -137,7 +141,7 @@ jobs {
       }
       new Dynamic {
         name = "Select original Vue files for resident queries"
-        run = #"git ls-files -z -- '*.vue' '*.vue.txt' > "$RUNNER_TEMP/resident-block-query-files""#
+        run = #". "${{ env.VIZE_CI_FILES }}/select-original-vue-files-for-resident-queries.sh""#
       }
       new Dynamic {
         name = "Compare every borrowed stage with the original files"

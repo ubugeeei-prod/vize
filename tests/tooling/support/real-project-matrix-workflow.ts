@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./automation-source.ts";
 import assert from "node:assert/strict";
 import { parse } from "yaml";
 
@@ -49,19 +50,19 @@ export const shardSummaryCommandPath =
 
 export function readRealProjectMatrixWorkflow(): RealProjectMatrixWorkflow {
   return parse(
-    readRepoFile(".github", "workflows", "real-project-matrix.yml"),
+    readAutomationPrograms(".github", "workflows", "real-project-matrix.yml"),
   ) as RealProjectMatrixWorkflow;
 }
 
 export function readCanonicalCorpusWorkflow(): RealProjectMatrixWorkflow {
   return parse(
-    readRepoFile(".github", "workflows", "davinci-canonical-corpus.yml"),
+    readAutomationPrograms(".github", "workflows", "davinci-canonical-corpus.yml"),
   ) as RealProjectMatrixWorkflow;
 }
 
 export function readDivergenceWorkflow(): RealProjectMatrixWorkflow {
   return parse(
-    readRepoFile(".github", "workflows", "canonical-corpus-divergence.yml"),
+    readAutomationPrograms(".github", "workflows", "canonical-corpus-divergence.yml"),
   ) as RealProjectMatrixWorkflow;
 }
 

@@ -1,0 +1,10 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  cargo build --profile ci-opt -p vize
+  cp target/ci-opt/vize "$RUNNER_TEMP/vize-head"
+  """#
+}

@@ -16,6 +16,7 @@ on {
     types = List("opened", "synchronize", "reopened")
     paths = new Listing {
       ".github/workflows/cross-file-finalization-compare.yml"
+      ".github/scripts/workflows/cross-file-finalization-compare/**"
       ".github/scripts/cross-file-finalization-scope.ts"
       "tests/tooling/cross-file-finalization-scope.test.ts"
       "crates/vize/src/commands/lint/cross_file.rs"
@@ -82,6 +83,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 30
     steps = new Listing {
+      ...ci.stageWorkflowScripts("cross-file-finalization-compare")
       new Dynamic {
         uses = ci.checkout
         with {
@@ -106,20 +108,11 @@ jobs {
       }
       new Dynamic {
         name = "Install frozen tools and checkout the exact matched base"
-        run = """
-        vp install --frozen-lockfile --prefer-offline
-        [[ "$BASE_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-        git worktree add --detach target/finalization-compare-base "$BASE_SOURCE_SHA"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-frozen-tools-and-checkout-the-exact-matched-base.sh""#
       }
       new Dynamic {
         name = "Compile both actual optimized providers into isolated targets"
-        run = """
-        cargo build --locked --manifest-path target/finalization-compare-base/Cargo.toml --profile ci-opt -p vize --target-dir target/finalization-compare-base-build
-        cargo build --locked --profile ci-opt -p vize --target-dir target/finalization-compare-head-build
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compile-both-actual-optimized-providers-into-isolated-targets.sh""#
       }
       new Dynamic {
         name = "Compare full packets and actual source work on identical physical inputs"

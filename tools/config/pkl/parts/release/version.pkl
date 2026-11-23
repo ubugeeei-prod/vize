@@ -24,6 +24,7 @@ outputs {
   editor_platform_artifacts = "${{ steps.resume.outputs.editor_platform_artifacts }}"
 }
 steps = new Listing {
+  ...ci.stageWorkflowScripts("release")
   ci.use(ci.checkout)
   new Dynamic {
     uses = ci.setupNode
@@ -52,14 +53,7 @@ steps = new Listing {
       RELEASE_SOURCE = "${{ inputs.source }}"
       GH_TOKEN = "${{ github.token }}"
     }
-    run = """
-    # Only a commit already on main may be released.
-    status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$RELEASE_SOURCE...$GITHUB_SHA" --jq .status)
-    [[ "$status" == ahead || "$status" == identical ]]
-    git fetch --depth=1 origin "$RELEASE_SOURCE"
-    git checkout --detach FETCH_HEAD
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/check-out-the-requested-main-commit.sh""#
   }
   // The crate quota never refuses a cut; the post-build admission decides crates.
   new Dynamic {
@@ -67,41 +61,20 @@ steps = new Listing {
     id = "resolve"
     `if` = "inputs.npm_resume_run == ''"
     env { RELEASE_VERSION = "${{ inputs.version }}" }
-    run = """
-    mkdir -p "$RUNNER_TEMP/release-quota-tooling"
-    git archive "$GITHUB_SHA" package.json tools/support/release tools/support/archive tests/tooling/release/quota-live-legacy-refusal.ts | tar -x -C "$RUNNER_TEMP/release-quota-tooling"
-    quota_main="$RUNNER_TEMP/release-quota-tooling/tools/support/release/release/main.ts"
-    version="$RELEASE_VERSION"
-    if [[ -z "$version" ]]; then
-      version="$(node "$quota_main" next)"
-    fi
-    echo "version=$version" >> "$GITHUB_OUTPUT"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/resolve-the-requested-version-with-current-workflow-tooling.sh""#
   }
   new Dynamic {
     name = "Stamp, commit and push the release candidate"
     id = "cut"
     `if` = "inputs.npm_resume_run == ''"
     env { RELEASE_VERSION = "${{ steps.resolve.outputs.version }}" }
-    run = #"node tools/support/release/release/main.ts cut ${RELEASE_VERSION:+"$RELEASE_VERSION"}"#
+    run = #". "${{ env.VIZE_CI_FILES }}/cut-release-candidate.sh""#
   }
   new Dynamic {
     name = "Resolve the release channel"
     id = "channel"
     env { RELEASE_VERSION = "${{ steps.resume.outputs.version || steps.cut.outputs.version }}" }
-    run = """
-    npm_tag="$(node tools/commands/release/npm/tag.ts "$RELEASE_VERSION")"
-    echo "npm_tag=$npm_tag" >> "$GITHUB_OUTPUT"
-    if [[ "$npm_tag" == "latest" ]]; then
-      echo "prerelease=false" >> "$GITHUB_OUTPUT"
-      echo "make_latest=true" >> "$GITHUB_OUTPUT"
-    else
-      echo "prerelease=true" >> "$GITHUB_OUTPUT"
-      echo "make_latest=false" >> "$GITHUB_OUTPUT"
-    fi
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/resolve-the-release-channel.sh""#
   }
   new Dynamic {
     name = "Emit the actual created candidate's original producer attestation"

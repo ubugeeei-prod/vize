@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+test ! -e "$RUNNER_TEMP/parcel-cpu"
+mkdir "$RUNNER_TEMP/parcel-cpu"
+VIZE_PARCEL_PROFILE_DIR="$RUNNER_TEMP/parcel-cpu" vp run --no-cache --filter './npm/builder/parcel' test:host -- "$RUNNER_TEMP/parcel-proof"

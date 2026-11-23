@@ -13,41 +13,52 @@ const shellKeywords =
 const interpreter =
   /^(?:node(?:js)?|bun|deno|python(?:\d+(?:\.\d+)*)?|ruby|perl|(?:ba|da|z|k)?sh|pwsh|powershell)(?:\.exe)?$/iu;
 
-export function isProgramInvocation(source: string): boolean {
+export function invocationWords(source: string): string[] | undefined {
   const command = source.trim();
-  if (!command || /[\r\n]/u.test(command)) return false;
+  if (!command || /[\r\n]/u.test(command)) return undefined;
   const tokens: string[] = [];
   let quote = "";
   let word = "";
+  let started = false;
   const finish = () => {
-    if (word) tokens.push(word);
+    if (started) tokens.push(word);
+    started = false;
     word = "";
   };
   const line = command.replace(expression, "ACTIONS_VALUE");
   for (let i = 0; i < line.length; i++) {
     const ch = line[i]!;
     if (ch === "\\" && quote !== "'") {
-      if (++i === line.length) return false;
+      if (++i === line.length) return undefined;
+      started = true;
       word += line[i];
     } else if (quote && ch === quote) {
       quote = "";
     } else if (!quote && (ch === '"' || ch === "'")) {
+      started = true;
       quote = ch;
     } else if (quote !== "'" && (ch === "`" || line.startsWith("$(", i))) {
-      return false;
+      return undefined;
     } else if (!quote && shellOperators.test(ch)) {
-      return false;
+      return undefined;
     } else if (!quote && /\s/u.test(ch)) {
       finish();
     } else {
+      started = true;
       word += ch;
     }
   }
-  if (quote) return false;
+  if (quote) return undefined;
   finish();
+  return tokens;
+}
+
+export function isProgramInvocation(source: string): boolean {
+  const tokens = invocationWords(source);
+  if (!tokens) return false;
   const executable = tokens[0] ?? "";
   if (
-    !/^[\w./-]+$/u.test(executable) ||
+    !/^[\w@./-]+$/u.test(executable) ||
     executable === "ACTIONS_VALUE" ||
     shellKeywords.test(executable)
   )
@@ -60,6 +71,7 @@ export function isProgramInvocation(source: string): boolean {
     for (let cursor = index + 1; cursor < tokens.length; cursor++) {
       const argument = tokens[cursor]!;
       if (argument === "--") break;
+      if (argument === "-" || (shell && /^-[a-z]*s[a-z]*$/iu.test(argument))) return false;
       if (["deno", "bun"].includes(commandName) && argument === "eval") return false;
       if (powershell && /^-(?:c|command|ec|encodedcommand)(?::|$)/iu.test(argument)) return false;
       if (shell && /^-[a-z]*c[a-z]*$/iu.test(argument)) return false;
@@ -75,6 +87,26 @@ export function isProgramInvocation(source: string): boolean {
     }
   }
   return true;
+}
+
+// Look only at interpreter arguments, before any named entrypoint. Commands such as
+// "node tools/check.ts -p file" pass -p to the program, not to Node.
+const inlineProgram =
+  /(?:^|[\s(/;&|])(?:(?:node(?:js)?|bun|deno|ruby|perl|python(?:\d+(?:\.\d+)*)?)\s+(?:(?:--(?:input-type|conditions|env-file|import|require|loader)(?:=|\s+)\S+|--[a-z][\w-]*)\s+)*(?:-(?:[ep]|c)(?:\s|=|["']|$)|--(?:eval|print)(?:\s|=)|(?:-\s+)?<<)|(?:ba|da|z|k)?sh\s+(?:-[a-z]+\s+)*-[a-z]*c[a-z]*(?:\s|$)|(?:pwsh|powershell)(?:\.exe)?\s+(?:-\w+\s+)*-(?:c|command|ec|encodedcommand)(?:\s|:)|(?:deno|bun)\s+eval\s|\beval\s+|\bInvoke-Expression\s+)/imu;
+
+export function validateShellProgram(file: string, source: string): void {
+  const match = inlineProgram.exec(source.replace(/\\\r?\n/gu, " "));
+  if (match)
+    throw new Error(
+      file + ": move embedded interpreter code into a named script: " + match[0].trim(),
+    );
+}
+
+/** Paths are relative to the workflow directory or to a composite action's script directory. */
+export function automationProgramReferences(command: string): string[] {
+  const names =
+    /(?:\$\{\{ env\.VIZE_CI_FILES \}\}|\$VIZE_CI_FILES|\$GITHUB_ACTION_PATH\/scripts)\/([.\w/-]+\.(?:sh|ps1|ts|mts|cts|cjs|mjs|js|py))(?=["'\s:]|$)/gu;
+  return Array.from(command.matchAll(names), ([, name]) => name!);
 }
 
 export function validateAutomationSteps(file: string, document: ConfigValue): void {

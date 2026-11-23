@@ -28,15 +28,15 @@ type Action = { inputs: Record<string, { required?: boolean }>; runs: { steps: S
 const full = parse(checkWorkflowJobSources()) as {
   jobs: Record<string, Job>;
 };
-const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
+const source = parse(readAutomationPrograms(".github", "workflows", "pr-source-checks.yml")) as {
   jobs: Record<string, Job>;
 };
-const producer = parse(readRepoFile(".github", "workflows", "full-source-cli.yml")) as {
+const producer = parse(readAutomationPrograms(".github", "workflows", "full-source-cli.yml")) as {
   jobs: Record<string, Job>;
   on: { workflow_call: { outputs: Record<string, { value: string }> } };
 };
 const benchmarkQualification = parse(
-  readRepoFile(".github", "workflows", "vue-benchmarks-current-qualification.yml"),
+  readAutomationPrograms(".github", "workflows", "vue-benchmarks-current-qualification.yml"),
 ) as { jobs: Record<string, Job> };
 const restoreAction = parse(
   readAutomationPrograms(".github", "actions", "restore-source-cli", "action.yml"),

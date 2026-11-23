@@ -15,6 +15,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/lsp-release-resources"
       CARGO_TERM_COLOR: always
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -28,7 +29,7 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Install the repository Rust toolchain
-        run: rustup toolchain install || rustup show active-toolchain
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh"
       # Same default rust-lld, target, default features and fat release profile
       # as build-release-cli/action.yml. No CI profile or linker override.
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -37,9 +38,7 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
       - name: Build the shipped Linux CLI recipe
-        run: >-
-          cargo build --release -p vize --target x86_64-unknown-linux-gnu
-          --message-format=json-render-diagnostics > "${RUNNER_TEMP}/release-build.jsonl"
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-shipped-linux-cli-recipe.sh"
       - name: Record the measured binary and build identity
         run: >-
           vp exec node tools/support/compat/davinci/lsp-build-identity.ts
@@ -72,19 +71,7 @@ jobs:
           --out "${RUNNER_TEMP}/release-lsp-resource.json"
       - name: Summarize the separate release measurements
         if: ${{ !cancelled() }}
-        run: |
-          {
-            echo '### Same-source shipped fat-LTO LSP supplement'
-            echo 'The scheduled ci-opt gate retains its recipe and ceilings.'
-            echo 'TS-44 uses three runs, 60 edits and 60s idle per run.'
-            echo 'The separate 10k SFC workload is record-only, with all Corsa descendants included.'
-            for result in release-build-identity release-resource release-lsp-resource; do
-              echo "#### ${result}"
-              echo '```json'
-              cat "${RUNNER_TEMP}/${result}.json" || true
-              echo '```'
-            done
-          } >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/summarize-the-separate-release-measurements.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() }}
         with:

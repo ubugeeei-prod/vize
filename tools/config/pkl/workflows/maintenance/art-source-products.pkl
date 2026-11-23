@@ -12,6 +12,7 @@ on {
       "**/*.art.vue"
       "**/*.art.vue.txt"
       ".github/workflows/art-source-products.yml"
+      ".github/scripts/workflows/art-source-products/**"
     }
   }
 }
@@ -32,12 +33,14 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     env {
+
       CARGO_BUILD_JOBS = "24"
       CARGO_INCREMENTAL = "0"
       RUST_MIN_STACK = "16777216"
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("art-source-products")
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
       new Dynamic {
         uses = ci.setupRust
@@ -63,32 +66,17 @@ jobs {
       }
       new Dynamic {
         name = "Select original Vue and colocated gallery sources"
-        run = #"git ls-files -z -- '*.vue' '*.vue.txt' > "$RUNNER_TEMP/gallery-sources""#
+        run = #". "${{ env.VIZE_CI_FILES }}/select-original-vue-and-colocated-gallery-sources.sh""#
       }
       new Dynamic {
         name = "Compare original gallery records, generated modules, Markdown and public warnings"
         `if` = "matrix.suite == 'correctness'"
-        run = """
-        set -euo pipefail
-        flags=(--locked --profile ci-opt -p vize_musea)
-        cargo test "${flags[@]}" --lib
-        cargo clippy "${flags[@]}" --features art-source-products --lib --no-deps -- -D warnings
-        suite=(--features art-source-products --test art_source_products)
-        export VIZE_ART_SOURCE_INPUTS="$RUNNER_TEMP/gallery-sources"
-        cargo test "${flags[@]}" "${suite[@]}"
-        cargo test "${flags[@]}" "${suite[@]}" descriptor_warnings_and_complete_gallery_products_on_original_files -- --ignored --nocapture --test-threads=1
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-gallery-records-generated-modules-markdown-and-public-w.sh""#
       }
       new Dynamic {
         name = "Measure descriptor and warning time, allocations and peak on an independent runner"
         `if` = "matrix.suite == 'performance'"
-        run = """
-        set -euo pipefail
-        export VIZE_ART_SOURCE_INPUTS="$RUNNER_TEMP/gallery-sources"
-        cargo test --locked --profile ci-opt -p vize_musea --features art-source-products --test art_source_products complete_responses_share_the_original_art_surface -- --ignored --nocapture --test-threads=1
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/measure-descriptor-and-warning-time-allocations-and-peak-on-an-independe.sh""#
       }
     }
   }

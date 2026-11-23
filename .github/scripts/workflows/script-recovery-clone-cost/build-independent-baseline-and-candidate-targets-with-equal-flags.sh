@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+for role in base head; do
+  source="$GITHUB_WORKSPACE"
+  if [[ "$role" == base ]]; then source="$RUNNER_TEMP/recovery-base"; fi
+  cargo +1.100.0 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-clone-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -p vize_l0 --example source_recovery_clone_benchmark --message-format json > "evidence/build-$role.jsonl"
+  cp "target/recovery-clone-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/examples/source_recovery_clone_benchmark" "evidence/normal-$role"
+  sha256sum "$source/Cargo.lock" "$source/crates/vize_croquis/src/script_parser/recovery.rs" > "evidence/inputs-$role.sha256"
+done
+sha256sum evidence/normal-base evidence/normal-head > evidence/binaries.sha256
+node "$VIZE_CI_FILES/../shared/recovery-build-pair.ts" source_recovery_clone_benchmark

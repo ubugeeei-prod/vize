@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/style-module-products.yml"
+      - ".github/scripts/workflows/style-module-products/**"
       - "davinci/vize_l1/Cargo.toml"
       - "davinci/vize_l1/src/container/lang.rs"
       - "davinci/vize_l1/src/css.rs"
@@ -40,6 +41,19 @@ jobs:
       RUST_MIN_STACK: "16777216"
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/style-module-products/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -53,26 +67,10 @@ jobs:
             ~/.cargo/git
           key: style-module-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
       - name: Select original Vue sources
-        run: git ls-files -z -- '*.vue' '*.vue.txt' > "$RUNNER_TEMP/style-module-sources"
+        run: . "${{ env.VIZE_CI_FILES }}/select-original-vue-sources.sh"
       - name: Compare original checker options and completion responses
         if: matrix.suite == 'correctness'
-        run: |
-          set -euo pipefail
-          flags=(--locked --profile ci-opt)
-          editor=(-p vize_maestro --features experimental-style-lint-products,micro-profiling --lib)
-          cargo clippy "${flags[@]}" -p vize_patina --features observed-style-rules --lib --no-deps -- -D warnings
-          cargo test "${flags[@]}" -p vize_patina --features observed-style-rules --lib rules::css
-          cargo clippy "${flags[@]}" -p vize_canon --features observed-style-modules --lib --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
-          cargo test "${flags[@]}" -p vize_l1 --features observed-styles --lib css::lang::
-          cargo test "${flags[@]}" -p vize_canon --features observed-style-modules --lib css_module
-          cargo test "${flags[@]}" "${editor[@]}" css_module
-          export VIZE_STYLE_MODULE_INPUTS="$RUNNER_TEMP/style-module-sources"
-          cargo test "${flags[@]}" "${editor[@]}" original_style_module_products_match -- --ignored --nocapture --test-threads=1
-          cargo test "${flags[@]}" "${editor[@]}" original_style_lint_products_match -- --ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/compare-original-checker-options-and-completion-responses.sh"
       - name: Measure complete original and shared member requests
         if: matrix.suite == 'performance'
-        run: |
-          export VIZE_STYLE_MODULE_INPUTS="$RUNNER_TEMP/style-module-sources"
-          cargo test --locked --profile ci-opt -p vize_maestro --features experimental-style-lint-products,micro-profiling --lib paired_style_module_requests -- --ignored --nocapture --test-threads=1
-          cargo test --locked --profile ci-opt -p vize_maestro --features experimental-style-lint-products,micro-profiling --lib paired_style_lint_requests -- --ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/measure-complete-original-and-shared-member-requests.sh"

@@ -10,6 +10,7 @@ on {
       "crates/vize_canon/src/virtual_ts/generator/component_constructors*"
       "tools/support/compat/content-mapper/fixtures/vue-component-meta/**"
       ".github/workflows/content-mapper-vue-component-meta.yml"
+      ".github/scripts/workflows/content-mapper-vue-component-meta/**"
     }
   }
   workflow_dispatch = null
@@ -23,6 +24,9 @@ jobs {
   metadata {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/content-mapper-vue-component-meta"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -54,20 +58,7 @@ jobs {
       new Dynamic { run = "cargo build --locked --profile ci -p vize" }
       new Dynamic {
         name = "Read component metadata and check template diagnostics"
-        run = #"""
-        cp -R tools/support/compat/content-mapper/fixtures/vue-component-meta "$RUNNER_TEMP/component-meta"
-        for input in tests/_fixtures/differential/typechecker/component-meta-13430/*.txt; do
-          cp "$input" "$RUNNER_TEMP/component-meta/$(basename "$input" .txt)"
-        done
-        cd "$RUNNER_TEMP/component-meta"
-        npm install --no-audit --no-fund --legacy-peer-deps tsrs@7.1.0-beta.tsrs4 vue@3.5.46 vue-component-meta@4.0.0-alpha.3
-        mkdir -p node_modules/vize
-        cp -R "$GITHUB_WORKSPACE/npm/cli/"{*.d.*,generated} node_modules/vize/
-        jq --arg cli "$GITHUB_WORKSPACE/target/ci/vize" '.typescript.contentMapper.exec = [$cli, "content-mapper"]' \
-          "$GITHUB_WORKSPACE/npm/cli/package.json" > node_modules/vize/package.json
-        node check.ts
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/read-component-metadata-and-check-template-diagnostics.sh""#
       }
       new Dynamic {
         name = "Check component tag hover and go-to-definition"

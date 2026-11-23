@@ -24,19 +24,15 @@ jobs {
     name = "Licensed 1369 SFC and 51 rule observations"
     `runs-on` = ci.linux
     `timeout-minutes` = 30
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/n8n-whole-corpus-observer"
+    }
     steps = new Listing {
       ci.checkoutAt("${{ github.sha }}")
       new Dynamic {
         name = "Verify the immutable producer and observer checkout"
         env { SOURCE_SHA = "${{ github.sha }}" }
-        run = """
-        [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-        [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
-        git diff --exit-code HEAD --
-        mkdir -p "$RUNNER_TEMP/n8n-whole-corpus-workflow"
-        git rev-parse HEAD > "$RUNNER_TEMP/n8n-whole-corpus-workflow/source-sha.txt"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-the-immutable-producer-and-observer-checkout.sh""#
       }
       ci.workspaceVp()
       new Dynamic {
@@ -55,55 +51,28 @@ jobs {
       new Dynamic {
         name = "Install pinned producer dependencies once"
         id = "install"
-        run = """
-        set -o pipefail
-        vp install --frozen-lockfile --prefer-offline 2>&1 | tee "$RUNNER_TEMP/n8n-whole-corpus-workflow/install.log"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-producer-dependencies-once.sh""#
       }
       new Dynamic {
         name = "Hydrate the licensed read-only n8n source fixture"
         id = "hydrate"
-        run = """
-        set -o pipefail
-        git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n 2>&1 | tee "$RUNNER_TEMP/n8n-whole-corpus-workflow/hydrate.log"
-        git submodule status -- tests/_fixtures/_git/n8n > "$RUNNER_TEMP/n8n-whole-corpus-workflow/fixture-status.txt"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/hydrate-the-licensed-read-only-n8n-source-fixture.sh""#
       }
       new Dynamic {
         name = "Build and authenticate the exact producer once"
         id = "build"
-        run = """
-        set -o pipefail
-        rustc -Vv > "$RUNNER_TEMP/n8n-whole-corpus-workflow/rustc.txt"
-        cargo -V > "$RUNNER_TEMP/n8n-whole-corpus-workflow/cargo.txt"
-        vp node --version > "$RUNNER_TEMP/n8n-whole-corpus-workflow/node.txt"
-        sha256sum Cargo.lock pnpm-lock.yaml tools/benchmarks/scripts/package.json > "$RUNNER_TEMP/n8n-whole-corpus-workflow/dependency-inputs.sha256"
-        cargo build --profile ci -p vize 2>&1 | tee "$RUNNER_TEMP/n8n-whole-corpus-workflow/build.log"
-        vp node tests/differential/build-receipt.ts
-        cp target/ci/vize.differential-build.json "$RUNNER_TEMP/n8n-whole-corpus-workflow/producer-build.json"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-and-authenticate-the-exact-producer-once.sh""#
       }
       new Dynamic {
         name = "Pack the producer public CLI config export"
         id = "pack"
         `working-directory` = "npm/cli"
-        run = """
-        set -o pipefail
-        vp pack 2>&1 | tee "$RUNNER_TEMP/n8n-whole-corpus-workflow/pack.log"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/pack-the-producer-public-cli-config-export.sh""#
       }
       new Dynamic {
         name = "Observe every licensed original in baseline and scoped modes"
         id = "observe"
-        run = """
-        set -o pipefail
-        vp node tests/tooling/support/n8n-whole-corpus-observer.mjs "$GITHUB_WORKSPACE" "$OBSERVER_OUTPUT" 2>&1 | tee "$RUNNER_TEMP/n8n-whole-corpus-workflow/observer.log"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/observe-every-licensed-original-in-baseline-and-scoped-modes.sh""#
       }
       new Dynamic {
         name = "Retain workflow identity and failures alongside complete observations"
@@ -115,16 +84,7 @@ jobs {
           PACK_OUTCOME = "${{ steps.pack.outcome }}"
           OBSERVE_OUTCOME = "${{ steps.observe.outcome }}"
         }
-        run = #"""
-        mkdir -p "$OBSERVER_OUTPUT/workflow"
-        if [[ -d "$RUNNER_TEMP/n8n-whole-corpus-workflow" ]]; then
-          cp -a "$RUNNER_TEMP/n8n-whole-corpus-workflow/." "$OBSERVER_OUTPUT/workflow/"
-        fi
-        printf '{"install":"%s","hydrate":"%s","build":"%s","pack":"%s","observe":"%s"}\n' \
-          "$INSTALL_OUTCOME" "$HYDRATE_OUTCOME" "$BUILD_OUTCOME" "$PACK_OUTCOME" "$OBSERVE_OUTCOME" \
-          > "$OBSERVER_OUTPUT/workflow/step-outcomes.json"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/retain-workflow-identity-and-failures-alongside-complete-observations.sh""#
       }
       new Dynamic {
         name = "Upload complete licensed inputs, provider packets and raw failures before gating"

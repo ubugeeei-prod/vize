@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/router-editor-artifact.yml"
+      ".github/scripts/workflows/router-editor-artifact/**"
       "editors/vscode/test/*router*.mjs"
       "editors/vscode/test/suite/router-*.cjs"
       "tests/fixtures/editor/experimental-router-5.4/**"
@@ -29,6 +30,9 @@ jobs {
     needs = "cli"
     `runs-on` = ci.linux
     `timeout-minutes` = 20
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/router-editor-artifact"
+    }
     steps = new Listing {
       new Dynamic {
         uses = ci.checkout
@@ -36,12 +40,7 @@ jobs {
       }
       new Dynamic {
         name = "Preserve the initial source authority before any qualification step"
-        run = """
-        mkdir -p "$RUNNER_TEMP/router-editor-artifact"
-        git rev-parse HEAD > "$RUNNER_TEMP/router-editor-artifact/source-sha.txt"
-        git rev-parse 'HEAD^{tree}' > "$RUNNER_TEMP/router-editor-artifact/source-tree.txt"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-the-initial-source-authority-before-any-qualification-step.sh""#
       }
       ci.workspaceVp()
       ci.rust("stable")
@@ -52,12 +51,7 @@ jobs {
       }
       new Dynamic {
         name = "Retain the original producer and consumer receipts"
-        run = """
-        cp target/ci/vize.differential-build.json "$RUNNER_TEMP/router-editor-artifact/producer-build.json"
-        cp target/ci/vize.source-build.json "$RUNNER_TEMP/router-editor-artifact/producer-transport.json"
-        cp target/ci/vize.source-use.json "$RUNNER_TEMP/router-editor-artifact/consumer-use.json"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/retain-the-original-producer-and-consumer-receipts.sh""#
       }
       ci.command("Install locked workspace dependencies", "vp install --frozen-lockfile --prefer-offline")
       ci.use("./.github/actions/setup-rust-script")
@@ -66,15 +60,7 @@ jobs {
       new Dynamic {
         name = "Prepare pinned VS Code"
         env { VIZE_TEST_VSCODE_VERSION = "1.107.1" }
-        run = """
-        set -euo pipefail
-        if ! command -v xvfb-run >/dev/null 2>&1; then
-          vize-ci-apt-retry sudo apt-get update
-          vize-ci-apt-retry sudo apt-get install -y xvfb
-        fi
-        timeout --signal=TERM --kill-after=10s 300s vp run --workspace-root test:vscode-extension:download
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/prepare-pinned-vs-code.sh""#
       }
       new Dynamic {
         name = "Check artifact contracts"

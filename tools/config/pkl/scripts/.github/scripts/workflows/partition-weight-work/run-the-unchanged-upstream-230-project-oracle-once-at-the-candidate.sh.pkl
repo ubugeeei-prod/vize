@@ -1,0 +1,14 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  ln -s "$RUNNER_TEMP/partition-provider/node_modules" "$GITHUB_WORKSPACE/tests/node_modules"
+  VIZE_LSP_BIN="$RUNNER_TEMP/partition-weight-target/ci-opt/vize" VIZE_LSP_REQUIRE_SOURCE_BUILD=0 \
+    CORSA_PATH="$RUNNER_TEMP/partition-provider/node_modules/@typescript/typescript-linux-x64/lib/tsc" \
+    node --test --test-reporter=spec tests/tooling/canon-upstream-diagnostics.test.ts > "$RUNNER_TEMP/partition-weight/upstream-230.txt" 2>&1
+  cat "$RUNNER_TEMP/partition-weight/upstream-230.txt"
+  """#
+}

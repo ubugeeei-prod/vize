@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/typescript-plugin.yml"
+      ".github/scripts/workflows/typescript-plugin/**"
       "npm/typescript-plugin/**"
       "npm/native/index.*"
       "npm/native/language-projection.*"
@@ -39,16 +40,16 @@ jobs {
   `packed-consumer` {
     `runs-on` = ci.linux
     `timeout-minutes` = 25
-    env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+    env {
+
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+    }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("typescript-plugin")
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
       new Dynamic {
         name = "Retain the attempted source even if setup fails"
-        run = """
-        mkdir -p "$RUNNER_TEMP/typescript-plugin"
-        git rev-parse HEAD > "$RUNNER_TEMP/typescript-plugin/attempted-source.txt"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/retain-the-attempted-source-even-if-setup-fails.sh""#
       }
       ci.use("./.github/actions/setup-js-package-tests")
       ci.use("./.github/actions/setup-rust-script")
@@ -58,11 +59,7 @@ jobs {
       }
       new Dynamic {
         name = "Build the exact-source native producer"
-        run = """
-        export NODE_OPTIONS="${NODE_OPTIONS:-} --import=file://$GITHUB_WORKSPACE/tools/support/ci/cargo-metadata-observer.ts?capture=$RUNNER_TEMP/typescript-plugin-cargo-metadata"
-        vp run --filter './npm/native' build:ci
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-exact-source-native-producer.sh""#
       }
       new Dynamic {
         name = "Measure the installed package with real tsserver packets"
@@ -80,11 +77,7 @@ jobs {
       new Dynamic {
         name = "Package the same canonical plugin in a production VSIX"
         env { VIZE_TYPESCRIPT_PLUGIN_CAPTURE = "${{ runner.temp }}/typescript-plugin" }
-        run = """
-        vp run --workspace-root package:vscode-extension
-        vp node tests/typescript-plugin/assert-vsix.ts
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/package-the-same-canonical-plugin-in-a-production-vsix.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

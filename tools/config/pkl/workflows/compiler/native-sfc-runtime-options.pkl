@@ -6,6 +6,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/native-sfc-runtime-options.yml"
+      ".github/scripts/workflows/native-sfc-runtime-options/**"
       ".github/actions/setup-rust-script/**"
       ".github/actions/setup-wild-http-recovery/**"
       "crates/vize_vitrine/src/napi/sfc.rs"
@@ -39,6 +40,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     env {
+
       CARGO_BUILD_JOBS = "12"
       CARGO_TERM_COLOR = "always"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
@@ -48,6 +50,7 @@ jobs {
       VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF = "target/vize-tests/sfc-runtime-options"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("native-sfc-runtime-options")
       ci.checkoutAt("7c62954a718a7137dc81c6723db696b674458360")
       new Dynamic {
         name = "Read the candidate qualification recipe without changing producer source"
@@ -69,14 +72,7 @@ jobs {
         }
       }
       new Dynamic {
-        run = """
-        cp qualification/tests/tooling/native-sfc-runtime-options.test.mjs tests/tooling/native-sfc-runtime-options.test.mjs
-        mkdir -p tests/tooling/support
-        cp qualification/tests/tooling/support/script-setup-default-expose.ts tests/tooling/support/script-setup-default-expose.ts
-        cp qualification/tests/tooling/support/setup-component-bracket-reference.ts tests/tooling/support/setup-component-bracket-reference.ts
-        cp qualification/tests/tooling/support/typescript-erasure-reference.ts tests/tooling/support/typescript-erasure-reference.ts
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/native-runtime-options-baseline-cp-qualification-tests-tooling-native-sf.sh""#
       }
       ci.workspaceVp()
       ci.rust("1.99.1")
@@ -96,17 +92,12 @@ jobs {
       ci.command("Build the actual source-native package", "vp run --filter './npm/native' build:ci")
       new Dynamic {
         name = "Seal the selected image and exact source"
-        run = #"GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs"#
+        run = #". "${{ env.VIZE_CI_FILES }}/seal-the-selected-image-and-exact-source.sh""#
       }
       new Dynamic {
         name = "Verify runtime option transport and complete code/maps"
         shell = "bash"
-        run = """
-        set -euo pipefail
-        mkdir -p "$VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF"
-        node --experimental-vm-modules --test --test-name-pattern "^capture all" tests/tooling/native-sfc-runtime-options.test.mjs 2>&1 | tee "$VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF/tap.log"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-runtime-option-transport-and-complete-code-maps.sh""#
       }
       new Dynamic {
         name = "Preserve source identity and all observations"
@@ -127,6 +118,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     env {
+
       CARGO_BUILD_JOBS = "12"
       CARGO_TERM_COLOR = "always"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
@@ -137,6 +129,7 @@ jobs {
       VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF = "target/vize-tests/sfc-runtime-options"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("native-sfc-runtime-options")
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
       ci.workspaceVp()
       ci.rust("1.100.0")
@@ -156,16 +149,11 @@ jobs {
       ci.command("Build the actual source-native package", "vp run --filter './npm/native' build:ci")
       new Dynamic {
         name = "Seal the selected image and exact source"
-        run = #"GITHUB_SHA="$SOURCE_SHA" node npm/native/scripts/native-build-receipt.mjs"#
+        run = #". "${{ env.VIZE_CI_FILES }}/seal-the-selected-image-and-exact-source.sh""#
       }
       new Dynamic {
         name = "Install the actual DOM runtime for standalone execution"
-        run = #"""
-        mkdir -p "$RUNNER_TEMP/sfc-option-runtime"
-        npm --prefix "$RUNNER_TEMP/sfc-option-runtime" install --save-exact --ignore-scripts --no-audit --no-fund vue@3.5.44
-        printf 'VIZE_NATIVE_SFC_RUNTIME_OPTIONS_VUE=%s/sfc-option-runtime\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-actual-dom-runtime-for-standalone-execution.sh""#
       }
       new Dynamic {
         name = "Read the whole before-source packets"
@@ -178,12 +166,7 @@ jobs {
       new Dynamic {
         name = "Verify runtime option transport and complete code/maps"
         shell = "bash"
-        run = """
-        set -euo pipefail
-        mkdir -p "$VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF"
-        node --experimental-vm-modules --test tests/tooling/native-sfc-runtime-options.test.mjs 2>&1 | tee "$VIZE_NATIVE_SFC_RUNTIME_OPTIONS_PROOF/tap.log"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-runtime-option-transport-and-complete-code-maps-2.sh""#
       }
       new Dynamic {
         name = "Preserve source identity and all observations"

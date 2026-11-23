@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -270,7 +271,7 @@ void test("current repository state is explicitly blocked without native product
 });
 
 void test("unmet deletion readiness runs only on explicit Actions dispatch", () => {
-  const workflow = fs.readFileSync(
+  const workflow = readAutomationPrograms(
     new URL("../../.github/workflows/level-deletion-readiness.yml", import.meta.url),
     "utf8",
   );

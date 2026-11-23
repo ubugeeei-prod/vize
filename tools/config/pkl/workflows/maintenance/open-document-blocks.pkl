@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/open-document-blocks.yml"
+      ".github/scripts/workflows/open-document-blocks/**"
       "crates/vize_incremental/**"
       "crates/vize_maestro/Cargo.toml"
       "crates/vize_maestro/src/document/store*"
@@ -30,11 +31,13 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 30
     env {
+
       CARGO_BUILD_JOBS = "24"
       CARGO_INCREMENTAL = "0"
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("open-document-blocks")
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
       new Dynamic {
         uses = ci.setupRust
@@ -46,22 +49,7 @@ jobs {
       new Dynamic {
         name = "Compare the original stages on each selected editor block and revision"
         shell = "bash"
-        run = """
-        set -euo pipefail
-        flags=(--locked --profile ci-opt)
-        stages=(-p vize_incremental --features open-block-queries)
-        editor=(-p vize_maestro --features experimental-resident-blocks)
-        cargo clippy "${flags[@]}" "${stages[@]}" --lib --example open_block_profile --no-deps -- -D warnings
-        cargo clippy "${flags[@]}" "${editor[@]}" --lib --no-deps -- -D warnings
-        cargo test "${flags[@]}" "${stages[@]}" --lib block_query::
-        cargo test "${flags[@]}" "${stages[@]}" --test descriptor
-        cargo test "${flags[@]}" "${editor[@]}" --lib source_project::blocks::tests
-        export VIZE_BLOCK_QUERY_MANIFEST="$RUNNER_TEMP/named-block-originals"
-        git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_BLOCK_QUERY_MANIFEST"
-        cargo test "${flags[@]}" "${editor[@]}" --lib source_project::blocks::tests::original_editor_documents -- --exact --ignored --nocapture
-        cargo run "${flags[@]}" "${stages[@]}" --example open_block_profile
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-original-stages-on-each-selected-editor-block-and-revision.sh""#
       }
     }
   }

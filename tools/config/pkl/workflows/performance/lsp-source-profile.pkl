@@ -6,6 +6,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/lsp-source-profile.yml"
+      ".github/scripts/workflows/lsp-source-profile/**"
       "crates/vize/src/commands/lsp.rs"
       "crates/vize/tests/lsp_profile_cli.rs"
       "crates/vize_maestro/src/server/state/project_contexts/root_discovery.rs"
@@ -45,21 +46,23 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 45
     env {
+
       CARGO_TERM_COLOR = "always"
       NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
       SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("lsp-source-profile")
       ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
-      ci.command("Authenticate the exact source revision", #"test "$(git rev-parse HEAD)" = "$SOURCE_SHA""#)
+      ci.command("Authenticate the exact source revision", #". "${{ env.VIZE_CI_FILES }}/authenticate-the-exact-source-revision.sh""#)
       ci.workspaceVp()
       ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Verify LSP resource evidence helpers"
         run = "vp exec node --test tests/tooling/lsp-resource-cancellation.test.ts tests/tooling/lsp-resource-corsa-gate.test.ts tests/tooling/lsp-resource-finalize.test.ts"
       }
-      ci.command("Install the repository Rust toolchain", "rustup toolchain install || rustup show active-toolchain")
+      ci.command("Install the repository Rust toolchain", #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh""#)
       new Dynamic {
         uses = "./.github/actions/setup-rust-sticky-cache"
         with {
@@ -69,7 +72,7 @@ jobs {
       }
       new Dynamic {
         name = "Build the separately instrumented server"
-        run = #"cargo build --profile ci-opt -p vize --features profiling --message-format=json-render-diagnostics > "${RUNNER_TEMP}/source-build.jsonl""#
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-separately-instrumented-server.sh""#
       }
       new Dynamic {
         name = "Verify real stdio profiling with the instrumented allocator"
@@ -81,36 +84,12 @@ jobs {
       }
       new Dynamic {
         name = "Collect the complete residency oracle and source profiles"
-        run = #"""
-        set -euo pipefail
-        for files in 100 500 2500; do
-          vp exec node tools/support/compat/davinci/lsp-resources.ts \
-            --server target/ci-opt/vize --files "$files" --warm-providers 16 --runs 1 --idle-seconds 10 \
-            --build 'ci-opt with profiling allocator and source-operation counters; observation only' \
-            --profile-json-dir "${RUNNER_TEMP}/source-${files}" \
-            --out "${RUNNER_TEMP}/source-${files}.json"
-        done
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/collect-the-complete-residency-oracle-and-source-profiles.sh""#
       }
       new Dynamic {
         name = "Summarize the scope of these observations"
         `if` = "${{ success() }}"
-        run = """
-        {
-          echo '### LSP source operations and Rust allocation requests'
-          echo 'Every size starts a new server process; no persisted Vize cache is reused.'
-          echo 'Synthetic SFCs; complete residency witnesses, 16 providers and controlled edits.'
-          echo 'Each of 40 hovers enters actual Corsa; its native response is held before same-write cancellation and complete document edit.'
-          echo 'Native request/response frames are retained; the exact parsed outer -32800 response is observed before promise settlement; latency reports all samples with nearest-rank p50/p95/p99.'
-          echo 'Server/process-tree RSS compares identical PID/birth/exe cohorts after matched recovery and 10s quiet windows.'
-          echo 'Every opened-document publication names a sent revision, never regresses within its URI and stops at the final clean fence.'
-          echo 'Source counts and allocator requested bytes are instrumented observations.'
-          echo 'Allocator totals cover Rust only; sampled process-tree RSS includes actual Corsa and the disclosed test-only Node gate proxy.'
-          echo 'These measurements do not qualify TS-44 latency or the private canonical cold-check goal.'
-        } >> "$GITHUB_STEP_SUMMARY"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/summarize-the-scope-of-these-observations.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

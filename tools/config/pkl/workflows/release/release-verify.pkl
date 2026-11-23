@@ -54,8 +54,11 @@ jobs {
       contents = "read"
       actions = "read"
     }
-    env { RELEASE_VERSION = "${{ inputs.version }}" }
+    env {
+      RELEASE_VERSION = "${{ inputs.version }}"
+    }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("release-verify")
       ci.checkoutAt("${{ github.sha }}")
       new Dynamic {
         uses = ci.setupNode
@@ -75,17 +78,7 @@ jobs {
           QUOTA_SOURCE = "${{ inputs.sha }}"
           GH_TOKEN = "${{ github.token }}"
         }
-        run = """
-        [[ "$QUOTA_SOURCE" =~ ^[0-9a-f]{40}$ ]]
-        mkdir -p "$RUNNER_TEMP/release-quota-tooling"
-        git archive "$GITHUB_SHA" package.json tools/support/release tools/support/archive tests/tooling/release/quota-live-legacy-refusal.ts | tar -x -C "$RUNNER_TEMP/release-quota-tooling"
-        status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$QUOTA_SOURCE...$GITHUB_SHA" --jq .status)
-        [[ "$status" == ahead || "$status" == identical ]]
-        git fetch --no-tags --depth=1 origin "$QUOTA_SOURCE"
-        git checkout --detach FETCH_HEAD
-        node "$RUNNER_TEMP/release-quota-tooling/tools/support/release/release/main.ts" quota-dry-run "$RELEASE_VERSION"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/read-histories-from-staged-tooling-against-the-selected-source-without-p.sh""#
       }
       new Dynamic {
         name = "Require legacy 0.602 automatic recovery refusal without fabricated authority"
@@ -113,20 +106,17 @@ jobs {
     `runs-on` = "ubuntu-24.04"
     `timeout-minutes` = 40
     env {
+
       RELEASE_VERSION = "${{ inputs.version }}"
       RELEASE_TAG = "${{ inputs.tag }}"
       RELEASE_SHA = "${{ inputs.sha }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("release-verify")
       ci.checkoutAt("${{ inputs.tag }}")
       new Dynamic {
         name = "Check the release identity"
-        run = #"""
-        [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]
-        [[ "$RELEASE_TAG" == "v$RELEASE_VERSION" ]]
-        [[ "$(git rev-parse HEAD)" == "$RELEASE_SHA" ]]
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/check-the-release-identity.sh""#
       }
       new Dynamic {
         uses = ci.setupNode
@@ -138,11 +128,7 @@ jobs {
       new Dynamic {
         name = "Wait for npm and smoke the published CLI"
         env { RELEASE_PACKAGES = "${{ inputs.packages }}" }
-        run = """
-        read -ra packages <<< "$RELEASE_PACKAGES"
-        node tools/support/release/verify_published/main.ts "$RELEASE_VERSION" "${packages[@]}"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/wait-for-npm-and-smoke-the-published-cli.sh""#
       }
     }
   }
@@ -266,6 +252,7 @@ jobs {
     // github-actions[bot], so dispatch as the maintainer.
     environment = "release-operator"
     steps = new Listing {
+      ...ci.stageWorkflowScripts("release-verify")
       new Dynamic {
         name = "Dispatch release-jsr.yml"
         env {
@@ -273,11 +260,7 @@ jobs {
           JSR_VERSION = "${{ inputs.tag }}"
           JSR_SOURCE = "${{ inputs.sha }}"
         }
-        run = #"""
-        gh workflow run release-jsr.yml --repo "$GITHUB_REPOSITORY" --ref main \
-          -f version="$JSR_VERSION" -f source_sha="$JSR_SOURCE"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/dispatch-release-jsr-yml.sh""#
       }
     }
   }

@@ -4,7 +4,7 @@ import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
+import { checkWorkflowJobSources } from "./support/github-workflows.ts";
 
 type Step = {
   id?: string;
@@ -38,8 +38,8 @@ test("scheduled full tooling requires the original current-source CLI receipt be
   ).runs.steps;
   const build = steps.findIndex((step) => step.uses === "./.github/actions/restore-source-cli");
   const producer =
-    (parse(readRepoFile(".github", "workflows", "full-source-cli.yml")) as Workflow).jobs.cli
-      .steps ?? [];
+    (parse(readAutomationPrograms(".github", "workflows", "full-source-cli.yml")) as Workflow).jobs
+      .cli.steps ?? [];
   const originalBuild = producer.find((step) =>
     /cargo build --profile ci -p vize/.test(step.run ?? ""),
   );
@@ -103,7 +103,9 @@ test("scheduled full tooling requires the original current-source CLI receipt be
 });
 
 test("PR product lanes stay independent of the affected tooling producer", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as Workflow;
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "pr-source-checks.yml"),
+  ) as Workflow;
   assert.equal(workflow.jobs["pr-source-cli"], undefined);
   assert.equal(workflow.jobs["pr-tooling-scripts"], undefined);
   for (const name of [
@@ -127,7 +129,9 @@ test("PR product lanes stay independent of the affected tooling producer", () =>
 });
 
 test("the real tooling report requires the source CLI and every selected worker", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as Workflow;
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "pr-source-checks.yml"),
+  ) as Workflow;
   const report = workflow.jobs["affected-tooling-report"];
   assert.deepEqual(report.needs, ["pr-source-plan", "affected-tooling-cli", "affected-tooling"]);
   const step = report.steps?.find((item) => item.name === "Require every selected tooling worker");

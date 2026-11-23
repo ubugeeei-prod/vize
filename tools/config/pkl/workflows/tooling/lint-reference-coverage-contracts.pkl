@@ -6,6 +6,7 @@ on {
     paths = new Listing {
       ".github/workflows/lint-reference-coverage-contracts.yml"
       ".github/workflows/real-project-matrix.yml"
+      ".github/scripts/workflows/real-project-matrix/**"
       "tools/commands/fixtures/lint-divergence-report.*"
       "tools/support/fixtures/lint_reference_coverage.ts"
       "tools/support/fixtures/lint_divergence/**"

@@ -29,7 +29,10 @@ jobs {
         observer = List("dom", "ssr-pug", "reach")
       }
     }
-    env { VIZE_DAVINCI_DOM_CORPUS_MODE = "${{ inputs.davinci_dom_corpus_mode || 'enforce' }}" }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/davinci-canonical-corpus"
+      VIZE_DAVINCI_DOM_CORPUS_MODE = "${{ inputs.davinci_dom_corpus_mode || 'enforce' }}"
+    }
     steps = new Listing {
       new Dynamic {
         name = "Checkout matrix commit"
@@ -70,7 +73,7 @@ jobs {
       new Dynamic {
         name = "Start observer test build"
         env { OBSERVER = "${{ matrix.observer }}" }
-        run = #"nohup node tools/support/compat/github/canonical-corpus-shards.ts prebuild "$OBSERVER" > "$RUNNER_TEMP/canonical-prebuild.log" 2>&1 &"#
+        run = #". "${{ env.VIZE_CI_FILES }}/start-observer-test-build.sh""#
       }
       new Dynamic {
         name = "Plan canonical corpus identity"
@@ -99,12 +102,7 @@ jobs {
       }
       new Dynamic {
         name = "Select and hydrate full fixture corpus"
-        run = """
-        set -o pipefail
-        node tools/support/compat/fixtures/davinci-dom-corpus-workflow.ts hydrate 2>&1 | tee real-project-davinci-dom-corpus/initial-hydration.log
-        node tools/support/compat/github/canonical-corpus-observer.mjs rehydrate
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/select-and-hydrate-full-fixture-corpus.sh""#
       }
       new Dynamic {
         name = "Capture canonical corpus identity"
@@ -144,7 +142,7 @@ jobs {
       new Dynamic {
         name = "Require complete source IO diagnostic success"
         `if` = "${{ always() && matrix.observer == 'ssr-pug' && steps.corpus_io.outcome != 'success' }}"
-        run = "echo 'Complete source IO diagnostic failed; retained raw evidence grants no gate waiver.' >&2; exit 1"
+        run = #". "${{ env.VIZE_CI_FILES }}/require-complete-source-io-diagnostic-success.sh""#
       }
       new Dynamic {
         name = "Record required observer evidence"

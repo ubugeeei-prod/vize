@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -397,7 +398,7 @@ void test("observation setup refusal executes the original command once with its
 });
 void test("only an explicit label observes the frozen original failure; mandatory gates stay mandatory", () => {
   const workflow = parse(
-    readFileSync(join(root, ".github/workflows/ci-walltime-benchmark.yml"), "utf8"),
+    readAutomationPrograms(join(root, ".github/workflows/ci-walltime-benchmark.yml")),
   );
   const job = workflow.jobs["js-native-fault-diagnostic"];
   const admitted = (event, action, label) =>
@@ -433,7 +434,7 @@ void test("only an explicit label observes the frozen original failure; mandator
   assert.equal(upload.if, "${{ always() }}");
   assert.doesNotMatch(upload.with.path, /fault-cores|core\.\*|\.node/);
   const action = parse(
-    readFileSync(join(root, ".github/actions/test-js-packages-with-history/action.yml"), "utf8"),
+    readAutomationPrograms(join(root, ".github/actions/test-js-packages-with-history/action.yml")),
   );
   const full = action.runs.steps.find((step) => step.name === "Test JS packages");
   const qualification = action.runs.steps.find(

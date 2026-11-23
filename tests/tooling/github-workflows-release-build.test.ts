@@ -22,8 +22,8 @@ type Step = {
   shell?: string;
   env?: Record<string, string>;
 };
-const release = parse(readRepoFile(".github", "workflows", "release.yml"));
-const seed = parse(readRepoFile(".github", "workflows", "release-build-cache.yml"));
+const release = parse(readAutomationPrograms(".github", "workflows", "release.yml"));
+const seed = parse(readAutomationPrograms(".github", "workflows", "release-build-cache.yml"));
 const recipe = (name: string): { runs: { steps: Step[] } } =>
   parse(readAutomationPrograms(".github", "actions", name, "action.yml"));
 

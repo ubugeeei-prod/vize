@@ -1,8 +1,10 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync, readFileSync, mkdirSync, symlinkSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -18,7 +20,7 @@ type ScaleWorkflow = {
 
 function scaleWorkflow(): ScaleWorkflow {
   return parse(
-    readFileSync(
+    readAutomationPrograms(
       new URL("../../.github/workflows/cold-typechecker-scale.yml", import.meta.url),
       "utf8",
     ),
@@ -157,6 +159,9 @@ test("manual Actions comparisons reject absent, mutable or identical baseline id
         cwd,
         env: {
           ...process.env,
+          VIZE_CI_FILES: fileURLToPath(
+            new URL("../../.github/scripts/workflows/cold-typechecker-scale/", import.meta.url),
+          ),
           BASE_SHA: base,
           BENCH_EVENT: "workflow_dispatch",
           RUNNER_TEMP: root,

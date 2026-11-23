@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync, realpathSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,6 +14,15 @@ import {
 export const WORKFLOW = ".github/workflows/typechecker-native-phases.yml";
 export const STEP =
   "Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor";
+export const sourceFiles = {
+  driver:
+    ".github/scripts/workflows/typechecker-native-phases/qualify-declared-template-emits-and-config-scoped-vue-helpers-in-the-sou.sh",
+  recipe: ".github/scripts/workflows/typechecker-native-phases/run-native-qualification.sh",
+  resolver: ".github/scripts/workflows/typechecker-native-phases/resolve-native-binary.ts",
+};
+const fileStep =
+  '. "${{ env.VIZE_CI_FILES }}/qualify-declared-template-emits-and-config-scoped-vue-helpers-in-the-sou.sh"';
+const driverDigest = "3dc91f244812e1333c5f44686f9794f203c515520001b2cb49c1f53b7a8a2af7";
 const REPO = "ubugeeei-prod/vize";
 const INLINE_BEGIN = "  # VIZE_NATIVE_SOURCE_INLINE_BEGIN\n";
 const INLINE_END = "  # VIZE_NATIVE_SOURCE_INLINE_END\n";
@@ -34,7 +43,28 @@ const WRAPPER_PREFIX =
   ].join("\n") + "\n";
 
 /** Execute source-owned commands once; never recurse through a future source wrapper. */
-export function declaredSourceRecipe(run) {
+export function declaredSourceRecipe(run, readSource) {
+  if (run === fileStep) {
+    assert.equal(
+      typeof readSource,
+      "function",
+      "the workflow file requires authenticated Git input",
+    );
+    assert.equal(
+      hash(readSource(sourceFiles.driver)),
+      driverDigest,
+      "unrecognized recipe dispatcher",
+    );
+    const recipe = readSource(sourceFiles.recipe);
+    assert.ok(
+      recipe.startsWith(
+        '#!/usr/bin/env bash\nset -euo pipefail\nunset VIZE_TEST_DISABLE_TSGO\ncd "$NATIVE_PHASE_SOURCE_ROOT"\n',
+      ),
+    );
+    assert.ok(recipe.endsWith("-- --nocapture\n"));
+    const resolver = readSource(sourceFiles.resolver);
+    return { kind: "source-file", recipe, resolver };
+  }
   assert.equal(typeof run, "string");
   if (!run.includes("VIZE_NATIVE_SOURCE_INLINE_")) {
     assert.ok(
@@ -239,9 +269,16 @@ export function selectSourceRecipe({ root, env, event, permission, pin, parse })
     "unrecognized native source campaign condition",
   );
   assert.equal(step.env.VIZE_TEST_REQUIRE_TSGO, "1");
-  const declared = declaredSourceRecipe(step.run);
+  const declared = declaredSourceRecipe(step.run, (file) => {
+    assert.ok(Object.values(sourceFiles).includes(file));
+    const entry = git(root, "ls-tree", source, "--", file).trimEnd();
+    assert.ok(/^100644 blob [a-f0-9]{40}\t/u.test(entry), "expected a regular source-owned file");
+    const bytes = object(root, source, file);
+    assert.equal(bytes, object(root, cut, file), file);
+    return bytes;
+  });
   const executionEnvironment = { ...step.env };
-  if (declared.kind === "source-inline") {
+  if (["source-inline", "source-file"].includes(declared.kind)) {
     assert.equal(executionEnvironment.GH_TOKEN, "${{ github.token }}");
     delete executionEnvironment.GH_TOKEN;
   }
@@ -256,6 +293,9 @@ export function selectSourceRecipe({ root, env, event, permission, pin, parse })
     sourceWorkflowSha256: hash(bytes),
     sourceStepSha256: hash(step.run),
     recipeKind: declared.kind,
+    ...(declared.kind === "source-file"
+      ? { resolver: declared.resolver, resolverSha256: hash(declared.resolver) }
+      : {}),
     recipeSha256: hash(declared.recipe),
     recipe: declared.recipe,
     originalEnvironment: step.env,
@@ -270,7 +310,7 @@ export function selectSourceRecipe({ root, env, event, permission, pin, parse })
 async function main() {
   const env = process.env,
     root = realpathSync(env.NATIVE_PHASE_SOURCE_ROOT);
-  const require = createRequire(join(root, "package.json"));
+  const require = createRequire(join(root, "tools/package.json"));
   const parse = require("yaml").parse;
   const helperPath = "tools/benchmarks/scripts/typechecker-native-source-recipe.mjs";
   const metadataPath = "tools/benchmarks/scripts/typechecker-native-release-metadata.mjs";
@@ -351,6 +391,11 @@ async function main() {
   }
   const recipePath =
     selected.recipe === null ? "" : join(env.RUNNER_TEMP, "native-source-recipe.sh");
+  if (selected.recipeKind === "source-file") {
+    const directory = join(env.RUNNER_TEMP, "native-source-files");
+    mkdirSync(directory);
+    writeFileSync(join(directory, "resolve-native-binary.ts"), selected.resolver, { flag: "wx" });
+  }
   if (recipePath) writeFileSync(recipePath, selected.recipe, { flag: "wx" });
   writeFileSync(
     join(env.RUNNER_TEMP, "native-source-recipe.json"),

@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/scoped-nesting-specificity.yml"
+      ".github/scripts/workflows/scoped-nesting-specificity/**"
       "crates/vize_atelier_sfc/src/vite_plugin/css_scope.rs"
       "crates/vize_atelier_sfc/src/vite_plugin/css_scope/**"
       "crates/vize_atelier_sfc/tests/scoped_nesting_specificity.rs"
@@ -29,6 +30,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 25
     steps = new Listing {
+      ...ci.stageWorkflowScripts("scoped-nesting-specificity")
       ci.checkoutAt("${{ env.HEAD_SHA }}")
       ci.rust("stable")
       ci.wild()
@@ -57,13 +59,7 @@ jobs {
       new Dynamic {
         name = "Compile current source and retain all prior scoped CSS oracles"
         env { VIZE_SCOPED_NESTING_CAPTURE = "${{ runner.temp }}/scoped-nesting-modules.json" }
-        run = """
-        test "$(git rev-parse HEAD)" = "$HEAD_SHA"
-        cargo test --locked --profile ci -p vize_atelier_sfc --lib vite_plugin::css_scope:: -- --nocapture
-        cargo test --locked --profile ci -p vize_atelier_sfc --test scoped_nesting_specificity -- --nocapture
-        cargo test --locked --profile ci -p vize_atelier_sfc --test mixed_style_scope -- --nocapture
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compile-current-source-and-retain-all-prior-scoped-css-oracles.sh""#
       }
       new Dynamic {
         name = "Verify complete scoped CSS and real Chromium cascade and pixels"

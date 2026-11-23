@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -9,9 +10,8 @@ import { parse } from "yaml";
 import { rawPaths } from "../../tools/support/compat/github/native-phase-artifact-files.mjs";
 
 const workflow = parse(
-  readFileSync(
+  readAutomationPrograms(
     new URL("../../.github/workflows/typechecker-native-phases.yml", import.meta.url),
-    "utf8",
   ),
 );
 const job = workflow.jobs["native-phases"];

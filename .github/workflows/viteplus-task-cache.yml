@@ -29,6 +29,7 @@ on:
       - "npm/builder/vite/scripts/task-cache-fixture.ts"
       - "npm/builder/vite/scripts/task-cache-source-cli.ts"
       - ".github/workflows/viteplus-task-cache.yml"
+      - ".github/scripts/workflows/viteplus-task-cache/**"
 
 permissions: { contents: read, actions: read }
 
@@ -48,6 +49,8 @@ jobs:
           - { provider: "1.5.0", runtime: bun, installer: bun }
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 12
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/viteplus-task-cache"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
@@ -95,12 +98,7 @@ jobs:
           VIZE_TASK_CACHE_SOURCE_CLI: ${{ steps.source-cli-binary.outputs.binary }}
           VIZE_TASK_CACHE_SOURCE_RECEIPT: ${{ steps.source-cli-binary.outputs.receipt }}
           VIZE_TASK_CACHE_SOURCE_BINARY_SHA256: ${{ inputs.source_cli_binary_sha256 }}
-        run: |
-          if [ -n "$VIZE_TASK_CACHE_PUBLIC_VERSION" ]; then
-            "$VIZE_TASK_CACHE_RUNTIME" npm/builder/vite/scripts/check-task-cache.ts "$VIZE_TASK_CACHE_PUBLIC_VERSION"
-          else
-            "$VIZE_TASK_CACHE_RUNTIME" npm/builder/vite/scripts/check-task-cache.ts
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/check-real-installed-tasks-and-cache-invalidation.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

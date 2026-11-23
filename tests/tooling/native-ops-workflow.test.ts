@@ -1,6 +1,6 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { parse } from "yaml";
 
@@ -14,9 +14,8 @@ interface Job {
 interface Workflow {
   jobs: Record<string, Job>;
 }
-const source = readFileSync(
+const source = readAutomationPrograms(
   new URL("../../.github/workflows/native-ops-incident.yml", import.meta.url),
-  "utf8",
 );
 const workflow = parse(source) as Workflow;
 // Exact parsed forensic job from reviewed fb244 / workflow blob edf7edfd.

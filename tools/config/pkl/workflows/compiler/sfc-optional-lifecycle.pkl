@@ -21,19 +21,17 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 45
     env {
+
       CARGO_INCREMENTAL = "0"
       CARGO_TERM_COLOR = "never"
       EXPECTED_DRIVER_SHA = "${{ inputs.expected-driver-sha }}"
       CONFLICTING_MODES = "${{ inputs.conflicting-modes }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("sfc-optional-lifecycle")
       new Dynamic {
         name = "Refuse stale or conflicting diagnostic dispatch"
-        run = """
-        [[ "$EXPECTED_DRIVER_SHA" == "$GITHUB_SHA" && "$CONFLICTING_MODES" == false ]]
-        [[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize ]]
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/refuse-stale-or-conflicting-diagnostic-dispatch.sh""#
       }
       new Dynamic {
         name = "Checkout diagnostic driver"
@@ -65,11 +63,7 @@ jobs {
       ci.use("./.github/actions/setup-ubuntu-archive")
       new Dynamic {
         name = "Install the pinned Linux heap observer"
-        run = """
-        vize-ci-apt-retry sudo apt-get update -qq
-        vize-ci-apt-retry sudo apt-get install -y --no-install-recommends valgrind
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-pinned-linux-heap-observer.sh""#
       }
       new Dynamic {
         name = "Install exact source lifecycle dependencies"

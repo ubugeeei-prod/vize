@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+dispatcher=crates/vize/src/commands/content_mapper/dispatch.rs
+tests=crates/vize/src/commands/content_mapper/dispatch/tests.rs
+evidence="$RUNNER_TEMP/worker-admission-before-$BUILD_PROFILE.log"
+artifacts="$RUNNER_TEMP/worker-admission-before-$BUILD_PROFILE.jsonl"
+test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+comparison_dispatcher="$(git rev-parse "$COMPARISON_SHA:$dispatcher")"
+if [ "$comparison_dispatcher" != "765353130eaba123edb530df5c0ade0944639659" ]; then
+  printf 'Historical admission witness not applicable: comparison dispatcher %s\n' "$comparison_dispatcher" > "$evidence"
+  cat "$evidence"
+  exit 0
+fi
+trap 'git show "HEAD:$dispatcher" > "$dispatcher"' EXIT
+git show "$COMPARISON_SHA:$dispatcher" > "$dispatcher"
+printf 'comparison=%s source=%s profile=%s dispatcher=%s tests=%s\n' "$COMPARISON_SHA" "$SOURCE_SHA" "$BUILD_PROFILE" "$(git hash-object "$dispatcher")" "$(git hash-object "$tests")" > "$evidence"
+cargo clean --profile "$BUILD_PROFILE" -p vize
+cargo test --locked --profile "$BUILD_PROFILE" -p vize --lib --no-run --message-format=json > "$artifacts"
+test_image="$(jq -r 'select(.reason == "compiler-artifact" and .target.name == "vize" and .profile.test == true and .executable != null) | .executable' "$artifacts")"
+test -x "$test_image"
+image_hash="$(sha256sum "$test_image" | cut -d' ' -f1)"
+printf 'image=%s sha256=%s\n' "$test_image" "$image_hash" >> "$evidence"
+set +e
+"$test_image" commands::content_mapper::dispatch::tests::admission_waits_before_reading_unknown_malformed_or_uninitialized_requests \
+  --exact --nocapture >> "$evidence" 2>&1
+result=$?
+set -e
+cat "$evidence"
+test "$result" -ne 0
+test "$result" -lt 128
+rg -F 'mapper read beyond the effective-worker admission window' "$evidence"
+rg -F 'test result: FAILED. 0 passed; 1 failed;' "$evidence"
+test "$(sha256sum "$test_image" | cut -d' ' -f1)" = "$image_hash"
+git show "HEAD:$dispatcher" > "$dispatcher"
+trap - EXIT
+git diff --exit-code -- "$dispatcher"

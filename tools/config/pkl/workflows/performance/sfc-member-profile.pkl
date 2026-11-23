@@ -26,6 +26,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 45
     env {
+
       MEMBER_BASE_SHA = "${{ inputs.base_sha }}"
       MEMBER_HEAD_SHA = "${{ inputs.head_sha }}"
       MEMBER_CONFLICTING_MODES = "${{ inputs.conflicting_modes }}"
@@ -34,6 +35,7 @@ jobs {
       CARGO_TERM_COLOR = "never"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("sfc-member-profile")
       new Dynamic {
         name = "Checkout immutable candidate and frozen driver"
         uses = ci.checkout
@@ -46,15 +48,7 @@ jobs {
       }
       new Dynamic {
         name = "Refuse stale, foreign, ambiguous or conflicting dispatch"
-        run = """
-        set -euo pipefail
-        [[ "$MEMBER_BASE_SHA" =~ ^[0-9a-f]{40}$ && "$MEMBER_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-        [[ "$MEMBER_HEAD_SHA" == "$GITHUB_SHA" && "$MEMBER_CONFLICTING_MODES" == false ]]
-        [[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize ]]
-        [[ "$(git -C head rev-parse HEAD)" == "$MEMBER_HEAD_SHA" ]]
-        git -C head merge-base --is-ancestor "$MEMBER_BASE_SHA" "$MEMBER_HEAD_SHA"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/refuse-stale-foreign-ambiguous-or-conflicting-dispatch.sh""#
       }
       new Dynamic {
         name = "Checkout immutable baseline"

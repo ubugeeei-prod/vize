@@ -62,6 +62,8 @@ on {
       "pnpm-lock.yaml"
       "Cargo.lock"
       ".github/workflows/jsx-authored-native-modules.yml"
+      ".github/scripts/workflows/jsx-authored-native-modules/**"
+      ".github/scripts/workflows/shared/**"
     }
   }
 }

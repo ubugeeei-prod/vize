@@ -169,7 +169,7 @@ export function renderWorkflowCatalog(entries: readonly WorkflowEntry[]): string
   const lines = [
     "# Workflow catalog",
     "",
-    "Edit the Pkl sources linked from each group. GitHub runs the generated YAML in this directory.",
+    "Edit the Pkl sources linked from each group. GitHub runs the generated YAML in this directory. Each step invokes a named program. Shell recipes live under `tools/config/pkl/scripts/` and workflow drivers under `.github/scripts/workflows/`. Jobs that qualify an older checkout stage the workflow revision’s drivers before switching source.",
     "Run `node tools/commands/generate/repository-config.ts` to update the workflows and this catalog.",
     "",
     "## Start here",

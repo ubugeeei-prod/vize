@@ -33,20 +33,12 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 90
     steps = new Listing {
+      ...ci.stageWorkflowScripts("vuefes-ssr-style-dependencies")
       ci.checkoutAt("${{ env.QUALIFIER_SHA }}")
       new Dynamic {
         name = "Authenticate the source and retain original declarations"
         env { RUN_HEAD_SHA = "${{ github.sha }}" }
-        run = """
-        test "$(git rev-parse HEAD)" = "$QUALIFIER_SHA"
-        if [[ "${{ github.event_name }}" == workflow_dispatch ]]; then
-          test "$RUN_HEAD_SHA" = "$QUALIFIER_SHA"
-        fi
-        mkdir -p target/vuefes-ssr-style-dependencies
-        git show HEAD:npm/native/index.d.ts > target/vuefes-ssr-style-dependencies/original-index.d.ts
-        node npm/native/scripts/build-ci.mjs --request-ci-capture
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/authenticate-the-source-and-retain-original-declarations.sh""#
       }
       new Dynamic {
         name = "Original full VueFes VRT, with one native build"
@@ -66,11 +58,7 @@ jobs {
       new Dynamic {
         name = "Preserve complete generated declarations"
         `if` = "${{ always() }}"
-        run = """
-        cp npm/native/index.d.ts target/vuefes-ssr-style-dependencies/generated-index.d.ts
-        git diff --binary -- npm/native/index.d.ts > target/vuefes-ssr-style-dependencies/generated-index.diff
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-complete-generated-declarations.sh""#
       }
       new Dynamic {
         name = "Install exact original Vue runtime oracle"
@@ -92,14 +80,7 @@ jobs {
       new Dynamic {
         name = "Native metadata corpus and existing Vite contracts"
         `if` = "${{ !cancelled() }}"
-        run = """
-        vuefes_contract_rc=0
-        node --test tests/tooling/vuefes-failure-*.test.mjs tools/support/compat/vuefes/passive-failure-sidecar.browser.test.mjs || vuefes_contract_rc=$?
-        node --experimental-vm-modules tools/support/compat/vuefes/page-meta-dependencies.ts || vuefes_contract_rc=$?
-        node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test:prepared || vuefes_contract_rc=$?
-        exit "$vuefes_contract_rc"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/native-metadata-corpus-and-existing-vite-contracts.sh""#
       }
       new Dynamic {
         name = "Complete official/native SSR, DOM and hydration differential"

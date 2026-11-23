@@ -32,13 +32,13 @@ type Job = {
     with?: Record<string, unknown>;
   }>;
 };
-const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
+const workflow = parse(readAutomationPrograms(".github", "workflows", "release.yml")) as {
   on: { workflow_dispatch: { inputs: Record<string, unknown> } };
   env: Record<string, string>;
   jobs: Record<string, Job>;
 };
 const needs = (job: string) => [workflow.jobs[job]?.needs ?? []].flat();
-const verify = parse(readRepoFile(".github", "workflows", "release-verify.yml")) as {
+const verify = parse(readAutomationPrograms(".github", "workflows", "release-verify.yml")) as {
   on: { workflow_dispatch: { inputs: Record<string, unknown> } };
   concurrency: Record<string, unknown>;
   jobs: Record<string, Job & { if?: string }>;
@@ -427,7 +427,7 @@ test("the automatic cadence releases a green main commit only after user-facing 
       now: 600 * minute,
     }).release;
   assert.ok(spaced(589 * minute) && !spaced(595 * minute), "at most one release per 10 minutes");
-  const cadence = parse(readRepoFile(".github", "workflows", "release-cadence.yml")) as {
+  const cadence = parse(readAutomationPrograms(".github", "workflows", "release-cadence.yml")) as {
     on: {
       schedule?: Array<{ cron: string }>;
       workflow_run?: { workflows: string[]; types: string[]; branches: string[] };

@@ -33,6 +33,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 45
     env {
+
       CARGO_TERM_COLOR = "never"
       RUSTUP_TOOLCHAIN = "1.100.0"
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
@@ -41,6 +42,7 @@ jobs {
       MEMORY_CONFLICTING_MODES = "${{ inputs.conflicting_modes }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("level-memory-bench")
       new Dynamic {
         name = "Checkout candidate and collector"
         uses = ci.checkout
@@ -62,18 +64,7 @@ jobs {
       }
       new Dynamic {
         name = "Validate exact dispatch and pair before build"
-        run = """
-        set -euo pipefail
-        [[ "$MEMORY_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-        [[ "$MEMORY_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-        [[ "$MEMORY_CONFLICTING_MODES" == false ]]
-        [[ "$MEMORY_BASE_SHA" != "$MEMORY_HEAD_SHA" ]]
-        [[ "$MEMORY_HEAD_SHA" == "$GITHUB_SHA" ]]
-        [[ "$(git -C base rev-parse HEAD)" == "$MEMORY_BASE_SHA" ]]
-        [[ "$(git -C head rev-parse HEAD)" == "$MEMORY_HEAD_SHA" ]]
-        git -C head merge-base --is-ancestor "$MEMORY_BASE_SHA" "$MEMORY_HEAD_SHA"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/validate-exact-dispatch-and-pair-before-build.sh""#
       }
       new Dynamic {
         uses = ci.setupVp
@@ -84,19 +75,14 @@ jobs {
       }
       new Dynamic {
         name = "Install exact measurement Rust and Callgrind identity provider"
-        run = """
-        rustup toolchain install 1.100.0 --profile minimal
-        sudo apt-get update -qq
-        sudo apt-get install -y --no-install-recommends valgrind
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-exact-measurement-rust-and-callgrind-identity-provider.sh""#
       }
       ci.wild()
       // The cache action's nested local action resolves from the workspace root,
       // and this job checks the repository out under head/.
       new Dynamic {
         name = "Expose the nested target action at the workspace root"
-        run = "mkdir -p .github/actions && cp -R head/.github/actions/{reuse-rust-target,setup-rust-sticky-cache} .github/actions/"
+        run = #". "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh""#
       }
       new Dynamic {
         uses = "./head/.github/actions/setup-rust-sticky-cache"

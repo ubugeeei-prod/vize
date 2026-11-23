@@ -22,9 +22,11 @@ import { parse } from "yaml";
 import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const workflow = parse(readFileSync(join(root, ".github/workflows/pr-source-checks.yml"), "utf8"));
+const workflow = parse(
+  readAutomationPrograms(join(root, ".github/workflows/pr-source-checks.yml")),
+);
 const jsChecksPath = "./.github/workflows/pr-js-checks.yml";
-const jsChecks = parse(readFileSync(join(root, jsChecksPath), "utf8"));
+const jsChecks = parse(readAutomationPrograms(join(root, jsChecksPath)));
 const selectedJs = "${{ needs.pr-source-plan.outputs.js == 'true' }}";
 const inputJs = "${{ inputs.run-js }}";
 const selectedGroup = "${{ (inputs.run-js && matrix.group != 'none') }}";

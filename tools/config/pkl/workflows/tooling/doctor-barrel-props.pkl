@@ -8,6 +8,8 @@ on {
     types = List("opened", "synchronize", "reopened")
     paths = new Listing {
       ".github/workflows/doctor-barrel-props.yml"
+      ".github/scripts/workflows/doctor-barrel-props/**"
+      ".github/scripts/workflows/shared/**"
       "crates/vize_croquis_cf/src/rules/props_validation.rs"
       "crates/vize_croquis_cf/src/rules/props_validation/**"
       "crates/vize/tests/doctor_barrel_props_cli.rs"
@@ -35,11 +37,13 @@ jobs {
       }
     }
     env {
+
       ROLE = "${{ matrix.role }}"
       BASELINE_SHA = "3637d6543ecda58d1169737b24d1719c9107151c"
       EXPECTED_SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("doctor-barrel-props")
       new Dynamic {
         uses = ci.checkout
         with {
@@ -59,73 +63,25 @@ jobs {
       new Dynamic {
         name = "Prepare isolated source and initially absent Cargo target"
         shell = "bash"
-        run = #"""
-        source_sha="$EXPECTED_SOURCE_SHA"
-        source_root="$GITHUB_WORKSPACE"
-        if [[ "$ROLE" == baseline ]]; then
-          source_sha="$BASELINE_SHA"
-          source_root="$RUNNER_TEMP/doctor-baseline-source"
-          git worktree add --detach "$source_root" "$source_sha"
-          cp crates/vize/tests/doctor_barrel_props_cli.rs "$source_root/crates/vize/tests/"
-          echo 'mod doctor_barrel_props_cli;' >> "$source_root/crates/vize/tests/main.rs"
-        fi
-        target_root="$RUNNER_TEMP/doctor-barrel-$source_sha-$ROLE-target"
-        test ! -e "$target_root"
-        echo "SOURCE_SHA=$source_sha" >> "$GITHUB_ENV"
-        echo "SOURCE_ROOT=$source_root" >> "$GITHUB_ENV"
-        echo "CARGO_TARGET_DIR=$target_root" >> "$GITHUB_ENV"
-        echo "VIZE_BARREL_PROPS_ARTIFACTS=$RUNNER_TEMP/doctor-barrel-packets" >> "$GITHUB_ENV"
-        mkdir -p "$RUNNER_TEMP/doctor-barrel-packets"
-        printf '%s\n' "$source_sha" > "$RUNNER_TEMP/doctor-barrel-packets/source-sha.txt"
-        git -C "$source_root" status --porcelain > "$RUNNER_TEMP/doctor-barrel-packets/source-status.txt"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/prepare-isolated-source-and-initially-absent-cargo-target.sh""#
       }
       new Dynamic {
         name = "Observe exact baseline reproduction and complete JSON"
         `if` = "${{ matrix.role == 'baseline' }}"
         shell = "bash"
-        run = """
-        cd "$SOURCE_ROOT"
-        status=0
-        /usr/bin/time -v cargo test --locked --profile ci -p vize --test integration doctor_barrel_props_cli::direct_and_reexported_components_have_identical_complete_healthy_reports -- --nocapture > "$VIZE_BARREL_PROPS_ARTIFACTS/test.stdout" 2> "$VIZE_BARREL_PROPS_ARTIFACTS/test.stderr" || status=$?
-        cat "$VIZE_BARREL_PROPS_ARTIFACTS/test.stdout"
-        test "$status" -ne 0
-        python3 - <<'PY'
-        import json, os, pathlib
-        packet = json.loads((pathlib.Path(os.environ['VIZE_BARREL_PROPS_ARTIFACTS']) / 'barrel.json').read_text())
-        codes = {finding['code'] for finding in packet['findings']}
-        assert 'VIZE_DOCTOR_CF_MISSING_REQUIRED_PROP' in codes, packet
-        assert packet['summary']['hasBlockingErrors'], packet
-        PY
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/observe-exact-baseline-reproduction-and-complete-json.sh""#
       }
       new Dynamic {
         name = "Verify source rule and complete CLI contracts"
         `if` = "${{ matrix.role == 'source' }}"
         shell = "bash"
-        run = """
-        cd "$SOURCE_ROOT"
-        cargo test --locked --profile ci -p vize_croquis_cf --lib
-        cargo test --locked --profile ci -p vize --lib commands::doctor::tests::
-        /usr/bin/time -v cargo test --locked --profile ci -p vize --test integration doctor_barrel_props_cli:: -- --nocapture > "$VIZE_BARREL_PROPS_ARTIFACTS/test.stdout" 2> "$VIZE_BARREL_PROPS_ARTIFACTS/test.stderr"
-        cat "$VIZE_BARREL_PROPS_ARTIFACTS/test.stdout"
-        cargo clippy --locked --profile ci -p vize_croquis_cf --lib -- -D warnings
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-source-rule-and-complete-cli-contracts.sh""#
       }
       new Dynamic {
         name = "Preserve binary identity"
         `if` = "${{ always() }}"
         shell = "bash"
-        run = """
-        if [[ -f "$CARGO_TARGET_DIR/ci/vize" ]]; then
-          sha256sum "$CARGO_TARGET_DIR/ci/vize" > "$VIZE_BARREL_PROPS_ARTIFACTS/binary-sha256.txt"
-          "$CARGO_TARGET_DIR/ci/vize" --version > "$VIZE_BARREL_PROPS_ARTIFACTS/binary-version.txt"
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-binary-identity.sh""#
       }
       new Dynamic {
         name = "Preserve every complete report and measurement"

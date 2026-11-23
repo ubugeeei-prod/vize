@@ -2,6 +2,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import {
   chmodSync,
   existsSync,
+  lstatSync,
   mkdirSync,
   readFileSync,
   readdirSync,
@@ -11,7 +12,10 @@ import {
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { validateAutomationSteps } from "../../support/ci/automation-commands.ts";
+import {
+  validateAutomationSteps,
+  validateShellProgram,
+} from "../../support/ci/automation-commands.ts";
 import { renderRepositoryYaml, type ConfigValue } from "../../support/ci/repository-yaml.ts";
 import { readWorkflowEntries, renderWorkflowCatalog } from "../ci/workflow-catalog.ts";
 
@@ -43,7 +47,7 @@ function listProducts(): Product[] {
 
 // A single evaluator shares imported modules across the entire inventory. A raw record
 // separator cannot occur inside a JSON string, including a multiline Actions command.
-function evaluate(products: Product[]): ConfigValue[] {
+function evaluateBatch(products: Product[]): ConfigValue[] {
   const separator = "\u001e";
   const result = spawnSync(
     process.platform === "win32" ? "pkl" : pkl.getExePath(),
@@ -79,6 +83,26 @@ function evaluate(products: Product[]): ConfigValue[] {
   });
 }
 
+function evaluate(products: Product[]): ConfigValue[] {
+  // Leave room for the executable and flags under Windows' command-line limit.
+  const limit = process.platform === "win32" ? 24_000 : 100_000;
+  const batches: Product[][] = [];
+  let batch: Product[] = [];
+  let length = 0;
+  for (const product of products) {
+    const size = path.relative(sources, product.source).length + 3;
+    if (length + size > limit && batch.length) {
+      batches.push(batch);
+      batch = [];
+      length = 0;
+    }
+    batch.push(product);
+    length += size;
+  }
+  if (batch.length) batches.push(batch);
+  return batches.flatMap(evaluateBatch);
+}
+
 function ownedTarget(file: string): boolean {
   if (file === "pnpm-lock.yaml" || file.endsWith("/pnpm-lock.yaml")) return false;
   if (file.startsWith("tests/_fixtures/") || file.includes("/fixtures/")) {
@@ -108,13 +132,19 @@ function verifyInventory(products: Product[]): void {
       "*.yaml",
       "*.yml",
       "*.sh",
+      "*.ps1",
       ".envrc",
     ],
     { cwd: root, encoding: "utf8" },
   )
     .split("\0")
     .filter(Boolean);
-  const missing = paths.filter((file) => ownedTarget(file) && !targets.has(file));
+  const missing = paths.filter(
+    (file) =>
+      !targets.has(file) &&
+      ownedTarget(file) &&
+      lstatSync(path.join(root, file), { throwIfNoEntry: false }) !== undefined,
+  );
   if (missing.length) throw new Error(`Missing Pkl sources for:\n${missing.join("\n")}`);
 }
 
@@ -148,6 +178,7 @@ function main(): void {
     const value = values[index]!;
     if (shell) {
       if (!isScript(value)) throw new Error(`Invalid shell script definition for ${target}`);
+      if (!target.startsWith("tests/_fixtures/")) validateShellProgram(target, value.text);
       if (
         current !== value.text ||
         (process.platform !== "win32" && ((statSync(file).mode & 0o100) !== 0) !== value.executable)
@@ -165,7 +196,7 @@ function main(): void {
       }).stdout ??
       undefined;
     const action = target.startsWith(".github/workflows/") || target.startsWith(".github/actions/");
-    if (target.startsWith(".github/actions/")) validateAutomationSteps(target, value);
+    if (action) validateAutomationSteps(target, value);
     const text = renderRepositoryYaml(value, template, !action);
     if (text !== current) changes.push({ target, text });
   }

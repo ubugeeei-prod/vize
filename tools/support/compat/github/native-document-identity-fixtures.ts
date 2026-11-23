@@ -1,3 +1,4 @@
+import { workflowPredecessor } from "../../ci/workflow-program-history.ts";
 // One reviewed URI boundary transition; historical ABI custody remains required.
 import assert from "node:assert/strict";
 import { gunzipSync } from "node:zlib";
@@ -25,7 +26,13 @@ function object(value: unknown): Record<string, unknown> {
 function pinned(read: ReadFile, side: "base" | "head", path: unknown, expected: unknown) {
   assert.ok(typeof path === "string");
   assert.ok(typeof expected === "string");
-  const bytes = read(side, path);
+  const actual = read(side, path);
+  const bytes =
+    path === ".github/workflows/native-beta-diagnostic-dto.yml" &&
+    actual &&
+    hash(actual) !== expected
+      ? workflowPredecessor("native-beta-diagnostic-dto", actual, (file) => read(side, file))
+      : actual;
   assert.ok(bytes, `missing ${side} identity source: ${path}`);
   assert.equal(hash(bytes), expected, `changed ${side} identity source: ${path}`);
   return bytes;

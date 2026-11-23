@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -51,7 +52,10 @@ const workflows = selectors.map((specification) => {
     "utf8",
   );
   assert.equal(createHash("sha256").update(before).digest("hex"), specification.original);
-  const after = fs.readFileSync(new URL("../../" + specification.file, import.meta.url), "utf8");
+  const after = readAutomationPrograms(
+    new URL("../../" + specification.file, import.meta.url),
+    "utf8",
+  );
   return { specification, before: parse(before) as Workflow, after: parse(after) as Workflow };
 });
 function expression(value: string) {
@@ -211,6 +215,12 @@ test("maximum non-release runners preserve every original job contract", () => {
       // The MSRV SemVer lane follows the Rust 1.100.0 bump; the job is otherwise unchanged.
       const semver = restored.jobs["semver-checks"].steps ?? [];
       assert.equal(restoreRustToolchainPin(semver, "1.99.0"), 2);
+      const marker = semver.find(
+        (step) => step.name === "Use candidate version for SemVer classification",
+      );
+      assert.equal(marker?.run, ': > "$RUNNER_TEMP/semver-change-marker.txt"');
+      // The predecessor represented this single line as a YAML block scalar.
+      marker!.run += "\n";
     }
     if (specification.name === "pr-source-checks") {
       restoreReviewedCheckout(

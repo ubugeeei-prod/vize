@@ -114,6 +114,7 @@ jobs {
     `runs-on` = "ubuntu-24.04"
     `timeout-minutes` = 15
     env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/release-contracts"
       PUBLIC_VERSION = "${{ inputs.version }}"
       PUBLIC_SOURCE_SHA = "${{ inputs.source_sha }}"
       PUBLIC_CANDIDATE = "${{ inputs.candidate }}"
@@ -132,22 +133,7 @@ jobs {
       }
       new Dynamic {
         name = "Validate the explicit public candidate"
-        run = #"""
-        node --input-type=module <<'NODE'
-        import assert from "node:assert/strict";
-        import { mkdirSync, writeFileSync } from "node:fs";
-        import path from "node:path";
-        const { PUBLIC_VERSION: version, PUBLIC_CANDIDATE: candidate, PUBLIC_SOURCE_SHA: source } = process.env;
-        const valid = /^0\.[0-9]+\.0$/.test(version ?? "") && /^[0-9a-f]{40}$/.test(candidate ?? "") && source === candidate;
-        const directory = path.join(process.env.RUNNER_TEMP, "public-release-proof");
-        mkdirSync(directory, { recursive: true });
-        writeFileSync(path.join(directory, "candidate-validation.json"), JSON.stringify({
-          version, candidate, source, accepted: valid, workflowSha: process.env.GITHUB_SHA,
-        }, null, 2) + "\n", { flag: "wx" });
-        assert.equal(valid, true, "an exact public version and matching immutable candidate are required");
-        NODE
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/validate-the-explicit-public-candidate.sh""#
       }
       new Dynamic {
         name = "Install exact public packages in an independent fresh consumer"
@@ -164,17 +150,7 @@ jobs {
           GH_TOKEN = "${{ github.token }}"
           REQUIRED_ICON_SOURCE = "d38ab7e48514566f1776f25439e8777a9856b5a6"
         }
-        run = """
-        gh api "repos/$GITHUB_REPOSITORY/compare/$REQUIRED_ICON_SOURCE...$PUBLIC_CANDIDATE" > "$RUNNER_TEMP/public-release-proof/icons-source-comparison.json"
-        node --input-type=module <<'NODE'
-        import assert from "node:assert/strict";
-        import { readFileSync } from "node:fs";
-        const comparison = JSON.parse(readFileSync(process.env.RUNNER_TEMP + "/public-release-proof/icons-source-comparison.json", "utf8"));
-        assert.equal(comparison.base_commit.sha, process.env.REQUIRED_ICON_SOURCE);
-        assert.ok(["ahead", "identical"].includes(comparison.status));
-        NODE
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/prove-the-candidate-contains-the-required-icon-source.sh""#
       }
       new Dynamic {
         name = "Qualify independent published icon class packets"
@@ -200,6 +176,7 @@ jobs {
     `runs-on` = "ubuntu-24.04"
     `timeout-minutes` = 20
     env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/release-contracts"
       PUBLIC_VERSION = "${{ inputs.version }}"
       PUBLIC_SOURCE_SHA = "${{ inputs.source_sha }}"
       REQUIRED_CPP_SOURCE = "7c2f6f46172404a8f95335a79ee2b95094f6b7ee"
@@ -229,36 +206,11 @@ jobs {
       new Dynamic {
         name = "Prove the immutable tag contains the merged public-instance change"
         env { GH_TOKEN = "${{ github.token }}" }
-        run = #"""
-        [[ "$PUBLIC_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
-        [[ "$PUBLIC_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-        git fetch --no-tags --depth=1 origin "refs/tags/v$PUBLIC_VERSION"
-        [[ "$(git rev-parse 'FETCH_HEAD^{commit}')" == "$PUBLIC_SOURCE_SHA" ]]
-        gh api "repos/$GITHUB_REPOSITORY/compare/$REQUIRED_CPP_SOURCE...$PUBLIC_SOURCE_SHA" > "$RUNNER_TEMP/cpp-source-comparison.json"
-        node --input-type=module <<'NODE'
-        import assert from "node:assert/strict";
-        import { readFileSync, writeFileSync } from "node:fs";
-        const comparison = JSON.parse(readFileSync(process.env.RUNNER_TEMP + "/cpp-source-comparison.json", "utf8"));
-        assert.equal(comparison.base_commit.sha, process.env.REQUIRED_CPP_SOURCE);
-        assert.ok(["ahead", "identical"].includes(comparison.status));
-        writeFileSync(process.env.RUNNER_TEMP + "/cpp-release-identity.json", JSON.stringify({
-          version: process.env.PUBLIC_VERSION, sourceSha: process.env.PUBLIC_SOURCE_SHA,
-          requiredSource: process.env.REQUIRED_CPP_SOURCE, containsRequiredSource: true,
-          comparisonStatus: comparison.status, workflowSha: process.env.GITHUB_SHA,
-          runId: process.env.GITHUB_RUN_ID,
-        }, null, 2) + "\n", { flag: "wx" });
-        NODE
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/prove-the-immutable-tag-contains-the-merged-public-instance-change.sh""#
       }
       new Dynamic {
         name = "Qualify fresh public custom properties and authored directive ownership"
-        run = #"""
-        node tools/support/release/public_custom_properties/verify.ts \
-          "$PUBLIC_VERSION" "$RUNNER_TEMP/public-custom-properties-consumer" \
-          "$RUNNER_TEMP/cpp-release-identity.json"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/qualify-fresh-public-custom-properties-and-authored-directive-ownership.sh""#
       }
       new Dynamic {
         name = "Qualify independent published canonical SDK"
@@ -321,6 +273,7 @@ jobs {
     `runs-on` = "ubuntu-24.04"
     `timeout-minutes` = 20
     env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/release-contracts"
       PUBLIC_VERSION = "${{ inputs.version }}"
       PUBLIC_SOURCE_SHA = "${{ inputs.source_sha }}"
       PUBLIC_CANDIDATE = "${{ inputs.candidate }}"
@@ -346,63 +299,7 @@ jobs {
           CAPABILITY_OBSERVERS = "${{ inputs.additional_observers }}"
           CAPABILITY_CPP = "${{ inputs.custom_properties }}"
         }
-        run = #"""
-        node --input-type=module <<'NODE'
-        import assert from "node:assert/strict";
-        import fs from "node:fs";
-        import path from "node:path";
-        const version = process.env.PUBLIC_VERSION;
-        const source = process.env.PUBLIC_SOURCE_SHA;
-        const required = "7c2f6f46172404a8f95335a79ee2b95094f6b7ee";
-        const repository = "ubugeeei-prod/vize";
-        assert.equal(process.env.GITHUB_REPOSITORY, repository);
-        assert.equal(process.env.GITHUB_REF, "refs/heads/test/public-type-admission-release");
-        assert.equal(process.env.CAPABILITY_PHASE, "type-admission-capability");
-        assert.equal(version, "0.603.0");
-        assert.equal(source, "3778a06863bc70bf63b435ae816cca134d2d438e");
-        assert.equal(process.env.PUBLIC_CANDIDATE, source);
-        for (const name of ["CAPABILITY_ADMISSION", "CAPABILITY_OBSERVERS", "CAPABILITY_CPP"])
-          assert.notEqual(process.env[name], "true", "source-only proof must not select public qualification");
-        assert.ok(process.env.GH_TOKEN);
-        const api = async (endpoint) => {
-          const response = await fetch("https://api.github.com/repos/" + repository + endpoint, {
-            headers: { Authorization: "Bearer " + process.env.GH_TOKEN, Accept: "application/vnd.github+json" },
-            signal: AbortSignal.timeout(30000),
-          });
-          assert.equal(response.status, 200, endpoint);
-          return response.json();
-        };
-        const publishedRelease = await api("/releases/tags/v" + version);
-        const tags = await api("/tags?per_page=100");
-        const tag = tags.find((value) => value.name === "v" + version);
-        assert.ok(tag);
-        assert.equal(tag.commit.sha, source);
-        assert.equal(publishedRelease.tag_name, tag.name);
-        assert.equal(publishedRelease.draft, false);
-        assert.ok(publishedRelease.published_at);
-        const comparison = await api("/compare/" + required + "..." + source);
-        assert.equal(comparison.base_commit.sha, required);
-        assert.equal(comparison.merge_base_commit.sha, required);
-        assert.equal(comparison.behind_by, 0);
-        assert.ok(["ahead", "identical"].includes(comparison.status));
-        const temporary = process.env.RUNNER_TEMP;
-        const write = (name, value) => fs.writeFileSync(path.join(temporary, name), JSON.stringify(value, null, 2) + "\n", { flag: "wx" });
-        write("cpp-source-comparison.json", comparison);
-        write("cpp-release-identity.json", {
-          version, sourceSha: source, requiredSource: required, containsRequiredSource: true,
-          comparisonStatus: comparison.status, workflowSha: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID,
-        });
-        write("public-type-admission-capability-plan.json", {
-          schema: "vize.typeAdmission.sourceCapabilityEligibility.v1", scope: "source-capability-only",
-          coreReleaseEligible: false, version, sourceSha: source, tag, publishedRelease, comparison,
-          workflowSha: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID,
-          mapperHost: { route: "hosted-content-mapper", sdkVersion: "7.1.0-beta",
-            workspace: path.join(temporary, "public-type-admission-capability-host"),
-            setupReceipt: path.join(temporary, "public-type-admission-capability-host-proof/setup.json.txt") },
-        });
-        NODE
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/prove-the-known-public-source-for-the-isolated-host-capability.sh""#
       }
       new Dynamic {
         name = "Authenticate the existing public CLI and native TypeScript provider"

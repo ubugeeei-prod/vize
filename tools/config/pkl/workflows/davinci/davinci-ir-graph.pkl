@@ -12,6 +12,7 @@ on {
       "davinci/vize_l3/**"
       "crates/vize_incremental/**"
       "tests/formal/ir-graph/**"
+      ".github/scripts/workflows/davinci-ir-graph/**"
     }
   }
   workflow_dispatch = null
@@ -32,6 +33,7 @@ jobs {
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("davinci-ir-graph")
       new Dynamic {
         uses = ci.checkout
         with { `persist-credentials` = false }
@@ -49,18 +51,7 @@ jobs {
       }
       new Dynamic {
         name = "Qualify the real lowerer and exact resident snapshots"
-        run = """
-        set -euo pipefail
-        cargo test --locked --profile ci-opt -p vize_l2_to_l3 --features graph-queries
-        cargo test --locked --profile ci-opt -p vize_incremental --features resident-providers
-        cargo test --locked --manifest-path crates/vize_incremental/providers/graph/Cargo.toml --profile ci-opt
-        cargo clippy --locked --profile ci-opt -p vize_l3 -p vize_incremental --features vize_incremental/resident-providers,vize_l3/graph-queries --lib --no-deps -- -D warnings
-        export VIZE_IR_GRAPH_INPUTS="$RUNNER_TEMP/vue-inputs"
-        git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_IR_GRAPH_INPUTS"
-        cargo test --locked --profile ci-opt -p vize_l2_to_l3 --features graph-queries --test native_ir_corpus -- --ignored --nocapture
-        cargo run --locked --manifest-path crates/vize_incremental/providers/graph/Cargo.toml --profile ci-opt --example profile
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/qualify-the-real-lowerer-and-exact-resident-snapshots.sh""#
       }
     }
   }
@@ -69,6 +60,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 15
     steps = new Listing {
+      ...ci.stageWorkflowScripts("davinci-ir-graph")
       new Dynamic {
         uses = ci.checkout
         with { `persist-credentials` = false }
@@ -76,39 +68,12 @@ jobs {
       new Dynamic {
         name = "Install pinned standalone model checkers"
         `working-directory` = "${{ runner.temp }}"
-        run = """
-        set -euo pipefail
-        curl -fsSL --retry 3 -o alloy.jar https://repo.maven.apache.org/maven2/org/alloytools/org.alloytools.alloy.dist/6.2.0/org.alloytools.alloy.dist-6.2.0.jar
-        curl -fsSL --retry 3 -o tlc.jar https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar
-        curl -fsSL --retry 3 -o lean.tar.zst https://github.com/leanprover/lean4/releases/download/v4.33.1/lean-4.33.1-linux.tar.zst
-        sha256sum -c <<'SUMS'
-        6037cbeee0e8423c1c468447ed10f5fcf2f2743a2ffc39cb1c81f2905c0fdb9d  alloy.jar
-        936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88  tlc.jar
-        890afd185370f85666025b883914ab4f4b339136f8c96167b69cfb62aecaf235  lean.tar.zst
-        SUMS
-        tar --zstd -xf lean.tar.zst
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-standalone-model-checkers.sh""#
       }
       new Dynamic {
         name = "Check the unbounded theorem and bounded models"
         `working-directory` = "tests/formal/ir-graph"
-        run = """
-        set -euo pipefail
-        "$RUNNER_TEMP/lean-4.33.1-linux/bin/lean" -DwarningAsError=true Reach.lean | tee "$RUNNER_TEMP/theorem"
-        grep -Fx "'Davinci.exact_answer' does not depend on any axioms" "$RUNNER_TEMP/theorem"
-        java -Djava.awt.headless=true -jar "$RUNNER_TEMP/alloy.jar" exec -q -c '*' -t none -o "$RUNNER_TEMP/instance" Reach.als
-        jq -e '.commands | keys == ["DisconnectedCycle","Exact","MissedSuccessor","ParallelCycle"] and (.Exact | .type == "check" and (.solution | length) == 0) and ([.DisconnectedCycle,.MissedSuccessor,.ParallelCycle] | all(.type == "run" and (.solution | length) == 1))' "$RUNNER_TEMP/instance/receipt.json"
-        grep -Fx "'Davinci.exact_trails' depends on axioms: [propext, Classical.choice, Quot.sound]" "$RUNNER_TEMP/theorem"
-        java -Djava.awt.headless=true -jar "$RUNNER_TEMP/alloy.jar" exec -q -c '*' -t none -o "$RUNNER_TEMP/trail-instances" Trail.als
-        jq -e '.commands | keys == ["DistinctSelfLoops","ExactTrails","ParallelReturn","SingleEdgeReturnsOnlyOnReuse"] and (.ExactTrails | .type == "check" and (.solution | length) == 0) and ([.DistinctSelfLoops,.ParallelReturn,.SingleEdgeReturnsOnlyOnReuse] | all(.type == "run" and (.solution | length) == 1))' "$RUNNER_TEMP/trail-instances/receipt.json"
-        java -cp "$RUNNER_TEMP/tlc.jar" tlc2.TLC -workers 2 -metadir "$RUNNER_TEMP/tlc-ok" -config Publication.cfg Publication.tla
-        result=0
-        java -cp "$RUNNER_TEMP/tlc.jar" tlc2.TLC -workers 1 -metadir "$RUNNER_TEMP/tlc-negative" -config Stale.cfg Publication.tla > "$RUNNER_TEMP/stale" 2>&1 || result=$?
-        test "$result" = 12
-        grep -F 'Invariant CurrentAnswer is violated' "$RUNNER_TEMP/stale"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/check-the-unbounded-theorem-and-bounded-models.sh""#
       }
     }
   }

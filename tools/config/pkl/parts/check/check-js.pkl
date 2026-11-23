@@ -6,7 +6,10 @@ permissions {
   contents = "read"
   actions = "read"
 }
-env { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }
+env {
+  VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/check"
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+}
 steps = new Listing {
   new Dynamic {
     uses = ci.checkout
@@ -48,7 +51,7 @@ steps = new Listing {
   new Dynamic {
     name = "Check JS/TS"
     `if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
-    run = "vp run --no-cache --filter './npm/native' build:debug && vp run --workspace-root check:ci"
+    run = #". "${{ env.VIZE_CI_FILES }}/check-js-ts.sh""#
   }
   new Dynamic {
     name = "Check fast JS/TS"

@@ -14,6 +14,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { parse, stringify } from "yaml";
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import { collectRuntimeProducer } from "./support/mounted-runtime-source.ts";
 
 const keys = [
@@ -303,10 +304,7 @@ function rustCaptureWiring(workflow: RustWorkflow) {
 }
 
 await test("the exact Rust invocation captures failures and uploads only attempt-qualified streams", () => {
-  const source = readFileSync(
-    new URL("../../.github/workflows/pr-rust-products.yml", import.meta.url),
-    "utf8",
-  );
+  const source = readAutomationPrograms(".github/workflows/pr-rust-products.yml");
   const workflow = parse(source) as RustWorkflow;
   rustCaptureWiring(workflow);
   const reformatted = stringify(workflow, { lineWidth: 0 });

@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url";
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -211,13 +213,31 @@ type CensusWorkflow = {
   permissions: Record<string, string>;
   jobs: Record<string, { steps: WorkflowStep[] }>;
 };
+test("the isolated census runtime installs the pinned parser as its sole dependency", (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-census-parser-"));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const program = new URL(
+    "../../.github/scripts/workflows/vts-source-census/install-only-the-pinned-workflow-parser.cjs",
+    import.meta.url,
+  );
+  const result = spawnSync(process.execPath, [fileURLToPath(program)], {
+    cwd: temporary,
+    encoding: "utf8",
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(temporary, "package.json"), "utf8")), {
+    private: true,
+    dependencies: { yaml: "2.9.0" },
+  });
+});
+
 const parserInstallContract = `set -euo pipefail
 parser_link="$GITHUB_WORKSPACE/node_modules/yaml"
 parser_target="$RUNNER_TEMP/census-test-runtime/node_modules/yaml"
 parser_marker="$RUNNER_TEMP/census-test-runtime/workspace-yaml-link-owned"
 mkdir "$RUNNER_TEMP/census-test-runtime"
 cd "$RUNNER_TEMP/census-test-runtime"
-node -e 'require("node:fs").writeFileSync("package.json",JSON.stringify({private:true,dependencies:{yaml:"2.9.0"}}))'
+node "$VIZE_CI_FILES/install-only-the-pinned-workflow-parser.cjs"
 npm install --ignore-scripts --no-audit --no-fund
 test ! -e "$parser_marker"
 test ! -L "$parser_marker"
@@ -259,7 +279,7 @@ case "$parser_state" in
 esac`;
 function censusWorkflow(): CensusWorkflow {
   return parse(
-    fs.readFileSync(".github/workflows/vts-source-census.yml", "utf8"),
+    readAutomationPrograms(".github/workflows/vts-source-census.yml", "utf8"),
   ) as CensusWorkflow;
 }
 function workflowUses(value: unknown): string[] {

@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -28,7 +29,7 @@ const closure = [
 ];
 const prefix = "tools/support/compat/github";
 const workflow = parse(
-  readFileSync(
+  readAutomationPrograms(
     new URL("../../.github/workflows/typechecker-native-phases.yml", import.meta.url),
     "utf8",
   ),

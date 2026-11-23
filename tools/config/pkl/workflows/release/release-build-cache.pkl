@@ -21,6 +21,7 @@ on {
       ".github/actions/setup-rust-sticky-cache/**"
       ".github/actions/reuse-rust-target/**"
       ".github/workflows/release-build-cache.yml"
+      ".github/scripts/workflows/release-build-cache/**"
       "tools/support/github/release-platforms.ts"
       "tools/support/github/build-napi-package.ts"
       "tools/support/github/clean-node-binaries.ts"
@@ -53,6 +54,9 @@ jobs {
       native = "${{ steps.plan.outputs.native_matrix }}"
       version = "${{ steps.next.outputs.version }}"
     }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/release-build-cache"
+    }
     steps = new Listing {
       ci.use(ci.checkout)
       new Dynamic {
@@ -71,12 +75,7 @@ jobs {
         id = "next"
         name = "Read the version the next release stamps"
         shell = "bash"
-        run = #"""
-        set -euo pipefail
-        version=$(node tools/support/release/release/main.ts next)
-        printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
-
-        """#
+        run = #". "${{ env.VIZE_CI_FILES }}/read-the-version-the-next-release-stamps.sh""#
       }
     }
   }

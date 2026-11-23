@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/prettier-plugin.yml"
+      ".github/scripts/workflows/prettier-plugin/**"
       "npm/formatter/prettier/**"
       "npm/native/**"
       "crates/vize_glyph/**"
@@ -30,6 +31,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 20
     steps = new Listing {
+      ...ci.stageWorkflowScripts("prettier-plugin")
       ci.checkoutAt("${{ env.SOURCE_SHA }}")
       new Dynamic {
         uses = ci.setupVp121
@@ -57,15 +59,7 @@ jobs {
       }
       new Dynamic {
         name = "Build exact source binding and package exports"
-        run = """
-        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
-        test "$(node -p 'process.versions.node')" = 24.14.0
-        vp run --workspace-root build:native:test
-        cd npm/formatter/prettier
-        vp check src test vite.config.ts
-        vp pack
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/build-exact-source-binding-and-package-exports.sh""#
       }
       new Dynamic {
         name = "Check real host options, complete goldens, AST/render semantics and format counts"
@@ -90,35 +84,7 @@ jobs {
       new Dynamic {
         name = "Compare installed runtime identity and complete output across consumers"
         shell = "bash"
-        run = """
-        node --input-type=module <<'JS'
-        import assert from 'node:assert/strict';
-        import { readFileSync } from 'node:fs';
-        const report = name => JSON.parse(readFileSync(`${process.env.RUNNER_TEMP}/prettier-${name}-consumer/report.json`, 'utf8'));
-        const current = report('source');
-        const minimum = report('node22');
-        assert.equal(current.node, 'v24.14.0');
-        assert.equal(minimum.node, 'v22.0.0');
-        const identity = value => ({
-          tarball: value.adapterTarballSha256,
-          source: {
-            head: value.sourcePreparation.head,
-            tree: value.sourcePreparation.tree,
-            workingDiff: value.sourcePreparation.workingDiff,
-            binding: value.sourcePreparation.binding,
-            sha256: value.sourcePreparation.sha256,
-          },
-          nativePackage: value.nativePackage,
-          pluginVersion: value.pluginVersion,
-          prettier: value.prettier,
-          golden: value.golden,
-          art: value.art,
-          ignored: value.ignored,
-        });
-        assert.deepEqual(identity(minimum), identity(current));
-        JS
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-installed-runtime-identity-and-complete-output-across-consumers.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

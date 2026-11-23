@@ -6,6 +6,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/published-slot-provider.yml"
+      ".github/scripts/workflows/published-slot-provider/**"
       "tools/support/release/slot_provider_public/**"
       "tests/tooling/release/slot-provider-public.test.ts"
       "tests/tooling/release/slot-provider-cli-files.test.ts"
@@ -96,6 +97,7 @@ jobs {
     `runs-on` = "blacksmith-8vcpu-ubuntu-2404"
     `timeout-minutes` = 30
     steps = new Listing {
+      ...ci.stageWorkflowScripts("published-slot-provider")
       ci.checkoutAt("${{ env.SOURCE_SHA }}")
       new Dynamic {
         name = "Obtain immutable b06 fixtures separately from installed products"
@@ -124,14 +126,7 @@ jobs {
       }
       new Dynamic {
         name = "Isolate immutable fixture inputs"
-        run = """
-        set -euo pipefail
-        [[ "$(git rev-parse HEAD)" == "$GITHUB_SHA" ]]
-        [[ "$(git -C .slot-provider-fixtures rev-parse HEAD)" == "b06a78673f41df01fe29d02bcb42b6b30073e451" ]]
-        git -C .slot-provider-fixtures diff --exit-code
-        mv .slot-provider-fixtures "$RUNNER_TEMP/slot-provider-fixtures"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/isolate-immutable-fixture-inputs.sh""#
       }
       new Dynamic {
         name = "Fresh exact historical public package without source SDK substitutions"
@@ -146,13 +141,7 @@ jobs {
       new Dynamic {
         name = "Preserve every raw failure, input, VTS and installed SDK image"
         `if` = "always()"
-        run = """
-        set -euo pipefail
-        if [[ -d "$RUNNER_TEMP/slot-provider-public" ]]; then
-          tar --exclude=node_modules --exclude=registry-installation -czf "$RUNNER_TEMP/slot-provider-public-raw.tgz" -C "$RUNNER_TEMP" slot-provider-public
-        fi
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-every-raw-failure-input-vts-and-installed-sdk-image.sh""#
       }
       new Dynamic {
         uses = ci.uploadArtifact

@@ -4,6 +4,7 @@ import "../../Actions.pkl" as ci
 `runs-on` = ci.linux
 `timeout-minutes` = 20
 steps = new Listing {
+  ...ci.stageWorkflowScripts("content-mapper-conformance")
   new Dynamic {
     name = "Checkout Vize"
     uses = ci.checkout
@@ -53,31 +54,11 @@ steps = new Listing {
   new Dynamic {
     name = "Build exact upstream tsgo"
     `working-directory` = "typescript-content-mapper/tsc"
-    run = """
-    go build -tags=noembed -trimpath -o "$RUNNER_TEMP/tsgo" ./cmd/tsc
-    cp internal/bundled/libs/*.d.ts "$RUNNER_TEMP/"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/build-exact-upstream-tsgo.sh""#
   }
   new Dynamic {
     name = "Preserve source and provider identity before queries"
-    run = """
-    mkdir -p "$RUNNER_TEMP/event-rename"
-    rustc -Vv > "$RUNNER_TEMP/event-rename/rustc.txt"
-    go version > "$RUNNER_TEMP/event-rename/go.txt"
-    node --version > "$RUNNER_TEMP/event-rename/node.txt"
-    git rev-parse HEAD > "$RUNNER_TEMP/event-rename/source-sha.txt"
-    git -C typescript-content-mapper rev-parse HEAD > "$RUNNER_TEMP/event-rename/provider-source-sha.txt"
-    test "$(cat "$RUNNER_TEMP/event-rename/provider-source-sha.txt")" = "$CONTENT_MAPPER_TYPESCRIPT_SHA"
-    git diff --binary HEAD > "$RUNNER_TEMP/event-rename/source.patch"
-    test ! -s "$RUNNER_TEMP/event-rename/source.patch"
-    sha256sum "$RUNNER_TEMP/tsgo" "$RUNNER_TEMP/"*.d.ts > "$RUNNER_TEMP/event-rename/provider.sha256"
-    sha256sum tests/_fixtures/differential/lsp/event-rename/4075/{bound-emitter,named-model}/cases.json.txt > "$RUNNER_TEMP/event-rename/oracles.sha256"
-    sha256sum pnpm-lock.yaml > "$RUNNER_TEMP/event-rename/dependency-lock.sha256"
-    cp npm/cli/node_modules/vue/package.json "$RUNNER_TEMP/event-rename/vue-package.json"
-    sha256sum npm/cli/node_modules/vue/package.json > "$RUNNER_TEMP/event-rename/vue-package.sha256"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/preserve-source-and-provider-identity-before-queries.sh""#
   }
   new Dynamic {
     name = "Run both whole event rename transaction targets"
@@ -91,25 +72,12 @@ steps = new Listing {
       VIZE_TEST_FIX_HISTORY_CAPTURE_DIR = "${{ runner.temp }}/event-rename/packets"
       VIZE_INLAY_HINT_CAPTURE = "${{ runner.temp }}/event-rename/processes"
     }
-    run = #"""
-    cargo test --locked --profile ci --no-fail-fast -p vize --test integration -- \
-      lsp_bound_event_casing_cli:: \
-      lsp_named_model_transactions_cli:: --nocapture \
-      2>&1 | tee "$RUNNER_TEMP/event-rename/tests.log"
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/run-both-whole-event-rename-transaction-targets.sh""#
   }
   new Dynamic {
     name = "Preserve actual CLI identity and complete artifact inventory"
     `if` = "always()"
-    run = """
-    mkdir -p "$RUNNER_TEMP/event-rename"
-    if [ -f target/ci/vize ]; then
-      sha256sum target/ci/vize > "$RUNNER_TEMP/event-rename/cli.sha256"
-    fi
-    find "$RUNNER_TEMP/event-rename" -type f -print0 | sort -z | xargs -0 sha256sum > "$RUNNER_TEMP/event-rename-inventory.sha256"
-
-    """
+    run = #". "${{ env.VIZE_CI_FILES }}/preserve-actual-cli-identity-and-complete-artifact-inventory.sh""#
   }
   new Dynamic {
     name = "Upload complete event rename observations before result gate"

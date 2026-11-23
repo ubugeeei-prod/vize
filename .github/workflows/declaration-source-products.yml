@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/declaration-source-products.yml"
+      - .github/scripts/workflows/declaration-source-products/**
       - "davinci/vize_l0/src/source_frame.rs"
       - "davinci/vize_l1/Cargo.toml"
       - "davinci/vize_l1/src/embed.rs"
@@ -80,6 +81,19 @@ jobs:
       RUST_MIN_STACK: "16777216"
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/declaration-source-products/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -93,28 +107,13 @@ jobs:
             ~/.cargo/git
           key: declaration-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
       - name: Select tracked original TypeScript declarations
-        run: git ls-files -z -- '*.d.ts' '*.d.mts' '*.d.cts' > "$RUNNER_TEMP/declaration-inputs"
+        run: . "${{ env.VIZE_CI_FILES }}/select-tracked-original-typescript-declarations.sh"
       - name: Compare the projected TypeScript, provider identity and workspace completion
         if: matrix.suite == 'correctness'
-        run: |
-          set -euo pipefail
-          flags=(--locked --profile ci-opt)
-          checker=(-p vize_canon --features authored-declarations --lib)
-          editor=(-p vize_maestro --features experimental-declaration-products,micro-profiling --lib)
-          export VIZE_DECLARATION_INPUTS="$RUNNER_TEMP/declaration-inputs"
-          cargo clippy "${flags[@]}" -p vize_l1 --features authored-declarations --lib --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" "${checker[@]}" --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
-          cargo test "${flags[@]}" "${checker[@]}" batch::vue_template_ref_module::
-          cargo test "${flags[@]}" "${checker[@]}" batch::import_rewriter_dts_tests::
-          cargo test "${flags[@]}" "${editor[@]}" server::state::global_tag_names::
-          cargo test "${flags[@]}" "${editor[@]}" original_declaration_products_match -- --ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/compare-the-projected-typescript-provider-identity-and-workspace-complet.sh"
       - name: Measure complete products for each original declaration
         if: matrix.suite == 'performance'
-        run: |
-          set -euo pipefail
-          export VIZE_DECLARATION_INPUTS="$RUNNER_TEMP/declaration-inputs"
-          cargo test --locked --profile ci-opt -p vize_maestro --features experimental-declaration-products,micro-profiling --lib paired_declaration_products -- --ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/measure-complete-products-for-each-original-declaration.sh"
 
   plain-script-bridges:
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -124,6 +123,19 @@ jobs:
       CARGO_INCREMENTAL: "0"
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/declaration-source-products/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -131,14 +143,7 @@ jobs:
       - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - name: Compare original plain-script projections and editor links
-        run: |
-          set -euo pipefail
-          export VIZE_BRIDGE_INPUTS="$RUNNER_TEMP/original-plain-bridge-inputs"
-          git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_BRIDGE_INPUTS"
-          flags=(--locked --profile ci-opt -p vize_canon --lib --features plain-script-bridges)
-          cargo clippy "${flags[@]}" --no-deps -- -D warnings
-          cargo test --locked --profile ci-opt --lib -p vize_l2 --features script-declaration-queries query::script::declaration::
-          cargo test "${flags[@]}" plain_exports::observed:: -- --include-ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/compare-original-plain-script-projections-and-editor-links.sh"
 
   ambient-component-project:
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -150,6 +155,19 @@ jobs:
       VIZE_TEST_REQUIRE_TSGO: "1"
       VIZE_TEST_TSGO_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/declaration-source-products/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -165,14 +183,7 @@ jobs:
           cache-save: false
           run-install: true
       - name: Check authored ambient components in live native editor sessions
-        run: |
-          set -euo pipefail
-          "$VIZE_TEST_TSGO_PATH" --version
-          flags=(--locked --profile ci-opt -p vize_maestro --features experimental-ambient-project --lib)
-          cargo clippy --locked --profile ci-opt -p vize_canon --features ambient-project-declarations --lib --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" --no-deps -- -D warnings
-          cargo test --locked --profile ci-opt -p vize_canon --features ambient-project-declarations --lib virtual_project::ambient_declarations::
-          cargo test "${flags[@]}" corsa::ambient_project:: -- --include-ignored --nocapture --test-threads=1
+        run: . "${{ env.VIZE_CI_FILES }}/check-authored-ambient-components-in-live-native-editor-sessions.sh"
 
   checked-literal-products:
     name: Original TypeScript assignments and checked tool products
@@ -184,6 +195,19 @@ jobs:
       RUST_MIN_STACK: "16777216"
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/declaration-source-products/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
@@ -191,29 +215,12 @@ jobs:
       - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - name: Compare primitive types, lint and UTF-16 diagnostics with original tools
-        run: |
-          set -euo pipefail
-          npm install --prefix "$RUNNER_TEMP/checked-ts" --ignore-scripts --no-audit --no-fund --save-exact typescript@6.0.3
-          export NODE_PATH="$RUNNER_TEMP/checked-ts/node_modules"
-          export VIZE_LITERAL_INPUTS="$RUNNER_TEMP/original-ts-paths" VIZE_LITERAL_OUTPUT="$RUNNER_TEMP/original-scripts.jsonl"
-          export VIZE_LITERAL_HOVERS="$RUNNER_TEMP/original-hovers.json"
-          git ls-files -z -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.vue' '*.vue.txt' > "$VIZE_LITERAL_INPUTS"
-          flags=(--locked --profile ci-opt --lib)
-          for feature in vize_l2/literal-assignments vize_canon/verified-literal-assignments vize_patina/verified-prefer-const vize_maestro/experimental-literal-products; do
-            cargo clippy "${flags[@]}" -p "${feature%%/*}" --features "${feature#*/}" --no-deps -- -D warnings
-          done
-          cargo test "${flags[@]}" -p vize_l2 --features literal-assignments query::script::assignments::
-          cargo test "${flags[@]}" -p vize_maestro --features experimental-literal-products,micro-profiling source_project::literal_products:: -- --include-ignored --nocapture --test-threads=1
-          node tools/support/compat/davinci/primitive-assignments-oracle.ts "$VIZE_LITERAL_OUTPUT"
+        run: |-
+          . "${{ env.VIZE_CI_FILES }}/compare-primitive-types-lint-and-utf-16-diagnostics-with-original-tools.sh"
 
       - name: Replay the complete typed hover through the ordinary editor
-        run: |
-          set -euo pipefail
-          npm install --prefix "$RUNNER_TEMP/typed-editor" --ignore-scripts --no-audit --no-fund --save-exact @typescript/typescript-linux-x64@7.0.2
-          export CORSA_PATH="$RUNNER_TEMP/typed-editor/node_modules/@typescript/typescript-linux-x64/lib/tsc"
-          "$CORSA_PATH" --version
-          cargo build --locked --profile ci-opt -p vize
-          node tools/support/compat/davinci/literal-hover-oracle.ts target/ci-opt/vize "$RUNNER_TEMP/original-hovers.json"
+        run: |-
+          . "${{ env.VIZE_CI_FILES }}/replay-the-complete-typed-hover-through-the-ordinary-editor.sh"
 
       - name: Read original TypeScript 6.0.3 compiler and conformance fixtures
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -234,23 +241,27 @@ jobs:
           CORSA_PATH: ${{ runner.temp }}/typed-editor/node_modules/@typescript/typescript-linux-x64/lib/tsc
           VIZE_FIRST_OPEN_INPUT: ${{ runner.temp }}/upstream-broken-scripts.jsonl
           NODE_PATH: ${{ runner.temp }}/checked-ts/node_modules
-        run: |
-          set -euo pipefail
-          git -C .typescript-fixtures ls-files -z -- tests/cases/compiler tests/cases/conformance > "$RUNNER_TEMP/upstream-ts-paths"
-          node tools/support/compat/davinci/select-broken-scripts.ts .typescript-fixtures "$RUNNER_TEMP/upstream-ts-paths" "$VIZE_FIRST_OPEN_INPUT"
-          flags=(--locked --profile ci-opt --lib)
-          cargo clippy "${flags[@]}" -p vize_l2 --features recovered-literal-prefix --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" -p vize_maestro --features experimental-recovered-literal-prefix --no-deps -- -D warnings
-          cargo test "${flags[@]}" -p vize_l2 --features recovered-literal-prefix query::script::assignments::prefix::
-          cargo test "${flags[@]}" -p vize_maestro --features experimental-recovered-literal-prefix,micro-profiling source_project::recovered_script:: -- --include-ignored --nocapture --test-threads=1
-          node tools/support/compat/davinci/primitive-assignments-oracle.ts "$VIZE_PREFIX_OUTPUT" --recovered
-          node tools/support/compat/davinci/literal-hover-oracle.ts target/ci-opt/vize "$VIZE_RECOVERED_HOVERS"
+        run: |-
+          . "${{ env.VIZE_CI_FILES }}/compare-restored-document-cursors-and-broken-suffixes-with-typescript.sh"
 
   primitive-assignability-proof:
     name: Verify primitive literal membership in Kani
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/declaration-source-products/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
@@ -262,13 +273,8 @@ jobs:
       - name: Check immutable binding traces and witness unsafe scopes
         env:
           ALLOY_SHA256: "6037cbeee0e8423c1c468447ed10f5fcf2f2743a2ffc39cb1c81f2905c0fdb9d"
-        run: |
-          set -euo pipefail
-          cd "$RUNNER_TEMP"
-          curl -fsSL --retry 3 -o literal-alloy.jar https://repo.maven.apache.org/maven2/org/alloytools/org.alloytools.alloy.dist/6.2.0/org.alloytools.alloy.dist-6.2.0.jar
-          echo "$ALLOY_SHA256  literal-alloy.jar" | sha256sum -c -
-          java -Djava.awt.headless=true -jar literal-alloy.jar exec -q -c '*' -t none -o literal-instances "$GITHUB_WORKSPACE/tests/formal/primitive-assignments/PreferConst.als"
-          jq -e '.commands | keys == ["LaterWrite","NonemptyTrace","RepeatedName","SameTrace"] and (.SameTrace | .type == "check" and (.solution | length) == 0) and ([.LaterWrite,.NonemptyTrace,.RepeatedName] | all(.type == "run" and (.solution | length) == 1))' literal-instances/receipt.json
+        run: |-
+          . "${{ env.VIZE_CI_FILES }}/check-immutable-binding-traces-and-witness-unsafe-scopes.sh"
 
       - name: Verify source relocation for the full 32-bit byte domain
         uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f

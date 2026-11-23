@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/css-compile-source-maps.yml"
+      ".github/scripts/workflows/css-compile-source-maps/**"
       "Cargo.lock"
       "crates/vize_atelier_sfc/Cargo.toml"
       "crates/vize_atelier_sfc/src/css.rs"
@@ -54,6 +55,7 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 30
     steps = new Listing {
+      ...ci.stageWorkflowScripts("css-compile-source-maps")
       new Dynamic {
         uses = ci.checkout
         with {
@@ -77,22 +79,11 @@ jobs {
       }
       new Dynamic {
         name = "Bind actual checkout to its PR merge or exact dispatch role"
-        run = """
-        node --test tests/tooling/css-source-map-event.test.ts
-        node tests/native/css-source-map-event.mjs
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/bind-actual-checkout-to-its-pr-merge-or-exact-dispatch-role.sh""#
       }
       new Dynamic {
         name = "Verify real writer coordinates and complete existing engine contracts"
-        run = """
-        test "$(git rev-parse HEAD)" = "$VIZE_CSS_MAP_SOURCE_SHA"
-        cargo test --locked --profile ci -p vize_lightningcss --test vize_printer_utf16 --test vize_source_map_contract
-        cargo test --locked --profile ci -p vize_atelier_sfc --test css_source_maps --test css_v_bind_source_maps --test css_engine_panic_boundary --test css_nesting_guard
-        cargo test --locked --profile ci -p vize_croquis --test css_v_bind_origins
-        cargo test --locked --profile ci -p vize_atelier_sfc --lib css::
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-real-writer-coordinates-and-complete-existing-engine-contracts.sh""#
       }
       ci.command("Build the exact source native API", "vp run --filter './npm/native' build:ci")
       new Dynamic {
@@ -122,11 +113,13 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 45
     env {
+
       VIZE_CSS_MAP_BASE_SHA = "${{ inputs.base_sha }}"
       CARGO_INCREMENTAL = "0"
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("css-compile-source-maps")
       new Dynamic {
         uses = ci.checkout
         with {
@@ -138,13 +131,7 @@ jobs {
       }
       new Dynamic {
         name = "Validate immutable source roles before baseline checkout"
-        run = """
-        [[ "$VIZE_CSS_MAP_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-        [[ "$VIZE_CSS_MAP_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-        test "$(git -C head rev-parse HEAD)" = "$VIZE_CSS_MAP_SOURCE_SHA"
-        git -C head merge-base --is-ancestor "$VIZE_CSS_MAP_BASE_SHA" "$VIZE_CSS_MAP_SOURCE_SHA"
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/validate-immutable-source-roles-before-baseline-checkout.sh""#
       }
       new Dynamic {
         uses = ci.checkout

@@ -1,0 +1,19 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  flags=(--locked --profile ci-opt -p vize_l1_to_l2 --features template-operand-queries,setup-component-imports,vize_l2/position-index)
+  cargo clippy --locked --profile ci-opt -p vize_l2 -p vize_l1_to_l2 --features vize_l1_to_l2/setup-component-imports --lib --no-deps -- -D warnings
+  cargo test "${flags[@]}" --test expression_queries --test expression_query_alloc
+  export VIZE_EXPRESSION_QUERY_MANIFEST="$RUNNER_TEMP/expression-query-files"
+  git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_EXPRESSION_QUERY_MANIFEST"
+  cargo test "${flags[@]}" --test expression_queries -- corpus::original_vue_files --exact --ignored --nocapture
+  cargo test "${flags[@]}" --test expression_queries -- profile::paired_reference_queries --exact --ignored --nocapture
+  cargo test "${flags[@]}" --test expression_queries -- operand::paired_operand_products --exact --ignored --nocapture --test-threads=1
+  cargo test "${flags[@]}" --test expression_queries -- component_imports::original_vue_files --exact --ignored --nocapture --test-threads=1
+  cargo test "${flags[@]}" --test expression_queries -- component_imports::paired_queries --exact --ignored --nocapture --test-threads=1
+  """#
+}

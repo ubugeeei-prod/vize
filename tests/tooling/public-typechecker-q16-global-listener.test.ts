@@ -1,3 +1,4 @@
+import { archivedWorkflow } from "./support/workflow-history.ts";
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -254,7 +255,7 @@ test("complete actor streams enforce seven clean and seven authored diagnostics 
     }
   }));
 test("only the listener role changes declared ref runner and Node seams of the frozen controller workflow", () => {
-  const workflow = readFileSync(
+  const workflow = archivedWorkflow(
       new URL("../../.github/workflows/public-typechecker-consumer.yml", import.meta.url),
       "utf8",
     ),

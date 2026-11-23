@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Only a commit already on main may be released.
+status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$RELEASE_SOURCE...$GITHUB_SHA" --jq .status)
+[[ "$status" == ahead || "$status" == identical ]]
+git fetch --depth=1 origin "$RELEASE_SOURCE"
+git checkout --detach FETCH_HEAD

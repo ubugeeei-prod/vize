@@ -1,0 +1,27 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+  test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+  test "$GITHUB_SHA" = "$EXPECTED_SOURCE_SHA"
+  test "$GITHUB_WORKFLOW_SHA" = "$EXPECTED_SOURCE_SHA"
+  test -z "$(git status --porcelain)"
+  mkdir -p "$RUNNER_TEMP/official-css-source"
+  git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/official-css-source/git-identity.txt"
+  sha256sum Cargo.toml Cargo.lock rust-toolchain.toml \
+    tools/support/compat/content-mapper/official-css-options.ts \
+    tools/support/compat/content-mapper/official-fixtures.ts \
+    tests/_fixtures/content-mapper/escaton-css-options.json \
+    tests/_fixtures/content-mapper/escaton-component-events.json \
+    tests/_fixtures/content-mapper/escaton-component-props.json \
+    tests/_fixtures/content-mapper/escaton-nested-flow-9433.json \
+    tests/_fixtures/content-mapper/escaton-public-props-9498.json \
+    tests/_fixtures/content-mapper/nuxt-pattern-emit-10195.json \
+    .github/workflows/content-mapper-conformance.yml \
+    > "$RUNNER_TEMP/official-css-source/inputs.sha256"
+  """#
+}

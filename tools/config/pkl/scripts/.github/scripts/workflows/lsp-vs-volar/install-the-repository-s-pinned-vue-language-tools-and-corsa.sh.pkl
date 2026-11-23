@@ -1,0 +1,20 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  # One source of truth: the workspace catalog pins vue-tsc (same release
+  # train as @vue/language-server), TypeScript and the Corsa runtime.
+  # The typecheck-host manifest owns the experimental tsrs pin.
+  pin() { sed -n "s|^    \"\{0,1\}$1\"\{0,1\}: \"\(.*\)\"$|\1|p" pnpm-workspace.yaml | head -1; }
+  vue=$(pin vue-tsc); ts=$(pin typescript); corsa=$(pin @typescript/typescript-linux-x64)
+  tsrs=$(node "$VIZE_CI_FILES/install-the-repository-s-pinned-vue-language-tools-and-corsa.cjs")
+  test -n "$vue" && test -n "$ts" && test -n "$corsa" && test -n "$tsrs"
+  mkdir "$RUNNER_TEMP/tools" && cd "$RUNNER_TEMP/tools"
+  echo '{"private":true}' > package.json
+  npm install --no-audit --no-fund "@vue/language-server@$vue" "@vue/typescript-plugin@$vue" \
+    "typescript@$ts" "@typescript/typescript-linux-x64@$corsa" "tsrs@$tsrs"
+  node "$VIZE_CI_FILES/install-the-repository-s-pinned-vue-language-tools-and-corsa-2.cjs" | tee versions.txt
+  """#
+}

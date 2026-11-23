@@ -1,3 +1,5 @@
+import "../../Actions.pkl" as ci
+
 name = "Dispatch the release verification"
 needs = List("version", "publish-npm")
 `if` = "${{ always() && needs.version.result == 'success' && needs.publish-npm.result == 'success' }}"
@@ -7,6 +9,7 @@ needs = List("version", "publish-npm")
 // whose actor is a scope member, never github-actions[bot].
 environment = "release-operator"
 steps = new Listing {
+  ...ci.stageWorkflowScripts("release")
   new Dynamic {
     name = "Dispatch release-verify.yml"
     env {
@@ -16,11 +19,6 @@ steps = new Listing {
       RELEASE_SHA = "${{ needs.version.outputs.sha }}"
       RELEASE_PACKAGES = "${{ needs.publish-npm.outputs.packages }}"
     }
-    run = #"""
-    gh workflow run release-verify.yml --repo "$GITHUB_REPOSITORY" --ref main \
-      -f version="$RELEASE_VERSION" -f tag="$RELEASE_TAG" -f sha="$RELEASE_SHA" \
-      -f packages="$RELEASE_PACKAGES"
-
-    """#
+    run = #". "${{ env.VIZE_CI_FILES }}/dispatch-release-verify-yml.sh""#
   }
 }

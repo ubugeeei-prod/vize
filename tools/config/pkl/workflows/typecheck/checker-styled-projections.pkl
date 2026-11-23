@@ -5,6 +5,7 @@ on {
   pull_request {
     paths = new Listing {
       ".github/workflows/checker-styled-projections.yml"
+      ".github/scripts/workflows/checker-styled-projections/**"
       "davinci/vize_l1/Cargo.toml"
       "davinci/vize_l1/src/css/bind.rs"
       "davinci/vize_l1/src/container/vue/descriptor*"
@@ -53,11 +54,13 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 25
     env {
+
       CARGO_BUILD_JOBS = "24"
       CARGO_INCREMENTAL = "0"
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("checker-styled-projections")
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
       ci.use("./.github/actions/cache-vp-bootstrap")
       new Dynamic {
@@ -87,24 +90,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare original CSS dependencies, checker documents, mappings and costs"
-        run = """
-        set -euo pipefail
-        node npm/ui/node_modules/typescript/bin/tsc -p crates/vize_canon/tests/styled_projection/checker.tsconfig.json
-        flags=(--locked --profile ci-opt)
-        suite=(-p vize_canon --features styled-projection-tests)
-        cargo clippy "${flags[@]}" -p vize_l1 --features style-bindings --lib --no-deps -- -D warnings
-        cargo clippy "${flags[@]}" -p vize_l4 --features vue-style-projection --lib --no-deps -- -D warnings
-        cargo clippy "${flags[@]}" "${suite[@]}" --test styled_projection --example styled_projection_profile --no-deps -- -D warnings
-        cargo test "${flags[@]}" -p vize_l1 --features style-bindings --lib css::bind::tests
-        cargo test "${flags[@]}" -p vize_l4 --features vue-style-projection --test vue_projection
-        cargo test "${flags[@]}" "${suite[@]}" --lib css_var_usage
-        cargo test "${flags[@]}" "${suite[@]}" --test styled_projection
-        export VIZE_STYLED_CHECKER_INPUTS="$RUNNER_TEMP/styled-checker-inputs"
-        git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_STYLED_CHECKER_INPUTS"
-        cargo test "${flags[@]}" "${suite[@]}" --test styled_projection -- original_styled_files --exact --ignored --nocapture
-        cargo run "${flags[@]}" "${suite[@]}" --example styled_projection_profile
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-css-dependencies-checker-documents-mappings-and-costs.sh""#
       }
     }
   }
@@ -113,12 +99,14 @@ jobs {
     `runs-on` = ci.linux
     `timeout-minutes` = 35
     env {
+
       CARGO_BUILD_JOBS = "24"
       CARGO_INCREMENTAL = "0"
       RUST_MIN_STACK = "16777216"
       RUSTUP_TOOLCHAIN = "1.100.0"
     }
     steps = new Listing {
+      ...ci.stageWorkflowScripts("checker-styled-projections")
       ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
       new Dynamic {
         uses = ci.setupRust
@@ -133,18 +121,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare compiler descriptors, generated CSS and TypeScript, mappings and retained operations"
-        run = """
-        set -euo pipefail
-        flags=(--locked --profile ci-opt)
-        features=(--features vize_canon/original-style-binding-tests)
-        cargo clippy "${flags[@]}" -p vize_l1 -p vize_l1_to_l2 -p vize_l4 -p vize_canon -p vize_atelier_sfc "${features[@]}" --lib --no-deps -- -D warnings
-        cargo test "${flags[@]}" -p vize_canon "${features[@]}" --lib css_var_usage::
-        export VIZE_STYLE_BINDING_INPUTS="$RUNNER_TEMP/original-style-inputs"
-        git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_STYLE_BINDING_INPUTS"
-        cargo test "${flags[@]}" -p vize_canon "${features[@]}" --test original_style_bindings -- --include-ignored --nocapture --test-threads=1
-        cargo run "${flags[@]}" -p vize_canon "${features[@]}" --example original_style_binding_profile
-
-        """
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-compiler-descriptors-generated-css-and-typescript-mappings-and-r.sh""#
       }
     }
   }
