@@ -1,0 +1,102 @@
+import "../../Actions.pkl" as ci
+
+name = "Canon instance directive ownership"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/canon-instance-directives.yml"
+      ".github/scripts/workflows/canon-instance-directives/**"
+      ".github/scripts/workflows/shared/**"
+      "tools/benchmarks/scripts/canon-instance-directives*.ts"
+      "tools/benchmarks/scripts/canon-instance-directives-observer.js"
+      "crates/vize_canon/src/projection/assemble/authored_rules.rs"
+      "crates/vize_canon/src/projection/assemble/authored_rules/**"
+      "tests/tooling/canon-upstream-diagnostics.test.ts"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "canon-instance-directives-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  native {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 60
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/canon-instance-directives"
+      PR_HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = "true"
+      CARGO_INCREMENTAL = "0"
+      CARGO_BUILD_JOBS = "8"
+      GOMAXPROCS = "8"
+      RAYON_NUM_THREADS = "8"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          `persist-credentials` = false
+          `fetch-depth` = 2
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        name = "Verify actual merge parents and immutable product sources"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-actual-merge-parents-and-immutable-product-sources.sh""#
+      }
+      new Dynamic {
+        name = "Install fixed real Vue and both independent checker providers"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-fixed-real-vue-and-both-independent-checker-providers.sh""#
+      }
+      new Dynamic {
+        name = "Build normal base and candidate in separate fresh target directories"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-normal-base-and-candidate-in-separate-fresh-target-directories.sh""#
+      }
+      new Dynamic {
+        name = "Exercise Rust ownership positive and negative controls"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/exercise-rust-ownership-positive-and-negative-controls.sh""#
+      }
+      new Dynamic {
+        name = "Retain real native base red and candidate packets with independent type witnesses"
+        shell = "bash"
+        `timeout-minutes` = 12
+        run = #". "${{ env.VIZE_CI_FILES }}/retain-real-native-base-red-and-candidate-packets-with-independent-type.sh""#
+      }
+      new Dynamic {
+        name = "Run the unchanged 230-project authored upstream oracle"
+        shell = "bash"
+        `timeout-minutes` = 12
+        run = #". "${{ env.VIZE_CI_FILES }}/run-the-unchanged-230-project-authored-upstream-oracle.sh""#
+      }
+      new Dynamic {
+        name = "Preserve bounded evidence without dereferencing project provider links"
+        `if` = "always()"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/preserve-bounded-evidence-without-dereferencing-project-provider-links.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "canon-instance-directives-${{ github.sha }}"
+          path = "${{ runner.temp }}/instance-directives-evidence.tgz"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+const fs = require('node:fs');
+fs.appendFileSync({}, JSON.stringify(process.argv.slice(2)) + '\n');
+if (process.argv.includes('--api')) process.stdout.write('api unavailable');

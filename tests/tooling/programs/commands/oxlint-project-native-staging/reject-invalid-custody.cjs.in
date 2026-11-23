@@ -1,0 +1,6 @@
+assert.throws(() => preloadProjectNative(custody), { code: "ERR_ASSERTION" });
+assert.equal(process.env.NAPI_RS_NATIVE_LIBRARY_PATH, undefined);
+assert.equal(
+  require.cache[custody.binary.path] !== undefined,
+  @@CONTROL_WRONG_IMAGE_EXPORT@@,
+);

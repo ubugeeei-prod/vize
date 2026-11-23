@@ -23,7 +23,8 @@
     "directory": "npm/builder/rspack"
   },
   "files": [
-    "dist"
+    "dist",
+    "scripts/package-tasks.cjs"
   ],
   "type": "module",
   "main": "./dist/index.mjs",
@@ -69,9 +70,9 @@
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "test": "pnpm build && node --test src/*.test.ts src/**/*.test.ts ../shared/*.test.ts",
-    "test:hmr": "pnpm build && node --test test/hmr.test.mjs",
-    "test:update": "pnpm build && node --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
+    "test": "node ./scripts/package-tasks.cjs test",
+    "test:hmr": "node ./scripts/package-tasks.cjs test:hmr",
+    "test:update": "node ./scripts/package-tasks.cjs test:update"
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",

@@ -1,0 +1,7 @@
+`if` = "${{ !inputs.sfc_optional_lifecycle_only && inputs.level_memory_only && !inputs.sfc_member_only }}"
+uses = "./.github/workflows/level-memory-bench.yml"
+with {
+  base_sha = "${{ inputs.base_sha }}"
+  head_sha = "${{ inputs.head_sha }}"
+  conflicting_modes = "${{ inputs.production_only || inputs.vapor_only || inputs.historical_sfc_parse }}"
+}

@@ -1,0 +1,16 @@
+module vize.automation.RepositoryProducts
+
+import "pkl:reflect"
+import* "{actions,workflows,repository,scripts,package-tasks}/*.pkl" as direct
+import* "{actions,workflows,repository,scripts,package-tasks}/**/*.pkl" as nested
+
+output {
+  renderer = new JsonRenderer { omitNullProperties = false }
+  value = new Mapping {
+    for (group in List(direct, nested)) {
+      for (_, product in group) {
+        [reflect.Module(product).uri] = product.output.value
+      }
+    }
+  }
+}

@@ -10,25 +10,6 @@ import { fileURLToPath } from "node:url";
 const moduleEntry = new URL("../../dist/index.mjs", import.meta.url).href;
 const hidePlugin = fileURLToPath(new URL("./fixtures/hide-oxlint-plugin.mjs", import.meta.url));
 
-// Set the built module up in a child process where `oxlint-plugin-vize` cannot resolve.
-const setupScript = `
-const [entry, rootDir, rawOptions] = process.argv.slice(1);
-let resolved = true;
-try {
-  import.meta.resolve("oxlint-plugin-vize");
-} catch {
-  resolved = false;
-}
-if (resolved) throw new Error("oxlint-plugin-vize must not resolve");
-const { default: nuxtModule } = await import(entry);
-await nuxtModule(JSON.parse(rawOptions), {
-  _version: "3.19.3",
-  options: { rootDir, buildDir: rootDir + "/.nuxt", srcDir: rootDir, dev: true, modules: [] },
-  hook() {},
-  callHook: async () => {},
-});
-`;
-
 async function setupWithoutPlugin(t: TestContext, options: Record<string, unknown>) {
   const root = await mkdtemp(path.join(os.tmpdir(), "vize-nuxt-no-plugin-"));
   t.after(() => rm(root, { force: true, recursive: true }));
@@ -38,9 +19,7 @@ async function setupWithoutPlugin(t: TestContext, options: Record<string, unknow
     [
       "--import",
       hidePlugin,
-      "--input-type=module",
-      "--eval",
-      setupScript,
+      fileURLToPath(new URL("../../test/setup-without-plugin.ts", import.meta.url)),
       moduleEntry,
       root,
       JSON.stringify({ compiler: false, musea: false, ...options }),

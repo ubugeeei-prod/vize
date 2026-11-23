@@ -1,0 +1,15 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  rust-script tools/commands/fixtures/typecheck-divergence-report.rs \
+    --report-dir "$FIXTURE_REPORT_DIR" \
+    --shard-index "$FIXTURE_SHARD_INDEX" \
+    --shard-count "$FIXTURE_SHARD_COUNT" \
+    --budget-mode "$BUDGET_MODE" \
+    --vize-bin target/ci/vize \
+    --vue-tsc-bin tests/node_modules/.bin/vue-tsc
+  """#
+}

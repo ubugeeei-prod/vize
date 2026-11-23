@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+archive="${RUNNER_TEMP}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz"
+bash .github/actions/vscode-host-smoke/download-artifact.sh \
+  "https://github.com/helix-editor/helix/releases/download/${HELIX_VERSION}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz" \
+  "${archive}" "${HELIX_SHA256}"
+mkdir -p "${RUNNER_TEMP}/helix"
+tar -xJf "${archive}" -C "${RUNNER_TEMP}/helix" --strip-components=1
+"${RUNNER_TEMP}/helix/hx" --version

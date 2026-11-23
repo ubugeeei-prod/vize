@@ -1,0 +1,17 @@
+import fs from "node:fs";
+import path from "node:path";
+const output = process.argv[process.argv.indexOf("--output") + 1];
+const artifact = path.join(output, @@FIXTURE_CASE_OUTPUT@@);
+fs.mkdirSync(path.dirname(artifact), { recursive: true });
+fs.writeFileSync(
+  artifact,
+  JSON.stringify({
+    filename: @@PATH_BASENAME_FIXTURE_CASE_SOURCE@@,
+    code: "export default {}",
+    css: null,
+    errors: [],
+    warnings: [],
+    script_lang: "js",
+    macro_artifacts: [],
+  }) + "\n",
+);

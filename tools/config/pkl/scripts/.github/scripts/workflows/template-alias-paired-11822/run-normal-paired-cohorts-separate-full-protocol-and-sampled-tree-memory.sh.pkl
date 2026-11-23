@@ -1,0 +1,14 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  node tools/benchmarks/scripts/template-alias-paired-11822-public.ts \
+    --base "$GITHUB_WORKSPACE/base" --base-sha "$BASE_SHA" \
+    --head "$GITHUB_WORKSPACE/candidate" --head-sha "$HEAD_SHA" \
+    --driver-sha "$DRIVER_SHA" --provider "$RUNNER_TEMP/mapper-public-provider" \
+    --output "$RUNNER_TEMP/mapper-public-output" > "$RUNNER_TEMP/mapper-public-stages/controller.log" 2>&1
+  """#
+}

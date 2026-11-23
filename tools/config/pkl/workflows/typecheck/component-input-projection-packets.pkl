@@ -1,0 +1,92 @@
+import "../../Actions.pkl" as ci
+
+name = "Component input projection packets"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/component-input-projection-packets.yml"
+      ".github/scripts/workflows/component-input-projection-packets/**"
+      "crates/vize_canon/src/virtual_ts/component_prop_helpers.txt"
+      "crates/vize_maestro/tests/davinci_ts40_projection_support/evidence.rs"
+      "crates/vize_maestro/tests/davinci_ts40_projection_support/fixtures/**"
+      "tests/_fixtures/differential/typechecker/tsx-single-required-exact-keys/**"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      `base-sha` {
+        description = "Exact original source commit"
+        required = true
+        type = "string"
+      }
+      `head-sha` {
+        description = "Exact component input source commit"
+        required = true
+        type = "string"
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "component-input-packets-${{ github.run_id }}"
+  `cancel-in-progress` = false
+}
+jobs {
+  packets {
+    name = "Complete default and legacy packets (${{ matrix.role }})"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    strategy {
+      `fail-fast` = false
+      matrix {
+        role = List("base", "head")
+      }
+    }
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      SOURCE_SHA = "${{ matrix.role == 'base' && (inputs.base-sha || github.event.pull_request.base.sha) || (inputs.head-sha || github.event.pull_request.head.sha) }}"
+      INSTA_UPDATE = "new"
+      INSTA_FORCE_PASS = "0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("component-input-projection-packets")
+      ci.checkoutAt("${{ env.SOURCE_SHA }}")
+      new Dynamic {
+        name = "Bind the complete capture to its source and driver"
+        env { DRIVER_SHA = "${{ github.sha }}" }
+        run = #". "${{ env.VIZE_CI_FILES }}/bind-the-complete-capture-to-its-source-and-driver.sh""#
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "component-input-packets"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}-${{ matrix.role }}"
+        }
+      }
+      new Dynamic {
+        name = "Run both complete projection modes without accepting pending output"
+        run = #". "${{ env.VIZE_CI_FILES }}/run-both-complete-projection-modes-without-accepting-pending-output.sh""#
+      }
+      new Dynamic {
+        name = "Retain complete packets, original failures, and exact source identity"
+        `if` = "always()"
+        uses = "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"  // v4
+        with {
+          name = "component-input-packets-${{ matrix.role }}-${{ env.SOURCE_SHA }}-${{ github.run_id }}"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+          path = """
+          ${{ env.EVIDENCE }}/
+          crates/vize_maestro/**/*.snap.new
+
+          """
+        }
+      }
+    }
+  }
+}

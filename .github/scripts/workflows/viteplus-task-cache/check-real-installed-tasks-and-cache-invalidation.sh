@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+if [ -n "$VIZE_TASK_CACHE_PUBLIC_VERSION" ]; then
+  "$VIZE_TASK_CACHE_RUNTIME" npm/builder/vite/scripts/check-task-cache.ts "$VIZE_TASK_CACHE_PUBLIC_VERSION"
+else
+  "$VIZE_TASK_CACHE_RUNTIME" npm/builder/vite/scripts/check-task-cache.ts
+fi

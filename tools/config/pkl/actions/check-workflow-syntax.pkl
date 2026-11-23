@@ -1,0 +1,42 @@
+import "../Actions.pkl" as ci
+
+name = "Validate workflow syntax and contexts"
+description = "Run the checksum-pinned workflow checker on the complete workflow inventory"
+inputs {
+  controls {
+    description = "Also exercise the checker's refusal controls during scheduled qualification"
+    required = false
+    ["default"] = "false"
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Install the pinned workflow checker"
+      id = "install"
+      shell = "bash"
+      run = #". "$GITHUB_ACTION_PATH/scripts/install-the-pinned-workflow-checker.sh""#
+    }
+    new Dynamic {
+      name = "Check complete workflow syntax"
+      uses = "./.github/actions/check-workflow-syntax/validate"
+      env {
+        ACTIONLINT_BINARY = "${{ steps.install.outputs.binary }}"
+
+        WORKFLOW_VALIDATOR_CONTROLS = "${{ inputs.controls }}"
+      }
+    }
+    new Dynamic {
+      name = "Preserve workflow diagnostics on failure"
+      `if` = "${{ failure() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "workflow-syntax-${{ github.sha }}-${{ github.run_attempt }}"
+        path = "target/workflow-syntax"
+        `retention-days` = 14
+        `if-no-files-found` = "error"
+      }
+    }
+  }
+}

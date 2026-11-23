@@ -1,5 +1,7 @@
+import { steps, type TaskCommand } from "./task-plan.ts";
+import type { PackageCommand } from "../../support/tasks/package-task.ts";
 import type { PackagePath } from "./task-types.ts";
-import { shellCommand, shellQuote } from "./task-shell.ts";
+import { shellQuote } from "./task-shell.ts";
 
 export const localVp = "./node_modules/.bin/vp";
 
@@ -21,31 +23,20 @@ export const vscodeExtensionPackageBin = (
  * The task catalog uses this for the few packages that must execute their own
  * package-manager scripts directly instead of going through `vp run --filter`.
  */
-export const runInDirectory = (cwd: string, command: string) =>
-  shellCommand(`cd ${cwd} && ${command}`);
+export const runInDirectory = (directory: string, ...commands: TaskCommand[]): PackageCommand[] =>
+  steps(...commands).map((command) => ({ ...command, directory }));
 
-export const runPackageScriptDirectly = (taskName: string, packages: readonly PackagePath[]) =>
-  packages.map((pkg) => runInDirectory(pkg, `pnpm run ${taskName}`)).join(" && ");
+export const runPackageScriptDirectly = (
+  taskName: string,
+  packages: readonly PackagePath[],
+): PackageCommand[] =>
+  packages.map((directory) => ({ program: "pnpm", arguments: ["run", taskName], directory }));
 
-/**
- * Ensures the VS Code extension package has the local binaries required by its
- * package-local tasks.
- */
-export const installVscodeExtensionDependencies = runInDirectory(
-  "editors/vscode",
-  `if ${vscodeExtensionPackageBin("vite-plus", "vp")} --version >/dev/null 2>&1; then exit 0; fi && corepack pnpm install --ignore-workspace --lockfile-dir . --no-lockfile --prefer-offline --ignore-scripts`,
-);
+export const installVscodeExtensionDependencies =
+  "node tools/commands/editors/vscode/ensure-dependencies.ts";
 
-/**
- * Runs one or more commands inside the VS Code extension package.
- *
- * The extension is intentionally isolated from the root workspace install, so
- * this helper performs a minimal package-local install before invoking tooling.
- * That keeps editor-extension tasks reproducible without making every root
- * install pay for VS Code extension dependencies.
- */
-export const runInVscodeExtension = (...commands: string[]) =>
-  `${installVscodeExtensionDependencies} && ${runInDirectory("editors/vscode", commands.join(" && "))}`;
+export const runInVscodeExtension = (...commands: TaskCommand[]): PackageCommand[] =>
+  steps(installVscodeExtensionDependencies, runInDirectory("editors/vscode", ...commands));
 
 /**
  * Builds a filtered `vp run` command for package groups.
@@ -59,19 +50,16 @@ export const runInPackages = (
   options: {
     concurrencyLimit?: number;
   } = {},
-) =>
-  [
-    ...(options.concurrencyLimit == null
-      ? []
-      : [`VP_RUN_CONCURRENCY_LIMIT=${options.concurrencyLimit}`]),
-    "vp",
-    "run",
-    ...packages.map((pkg) => `--filter '${pkg}'`),
-    taskName,
-  ].join(" ");
+): PackageCommand => ({
+  program: "vp",
+  arguments: ["run", ...packages.flatMap((pkg) => ["--filter", pkg]), taskName],
+  ...(options.concurrencyLimit == null
+    ? {}
+    : { environment: { VP_RUN_CONCURRENCY_LIMIT: String(options.concurrencyLimit) } }),
+});
 
 export const runTask = (taskName: string) => `vp run --workspace-root ${taskName}`;
-export const runTasks = (...taskNames: string[]) => taskNames.map(runTask).join(" && ");
+export const runTasks = (...taskNames: string[]) => steps(...taskNames.map(runTask));
 
 export const rustTool = (command: string, ...args: string[]) =>
   rustScript(`tools/commands/${command}.rs`, args);
@@ -93,3 +81,22 @@ export const nodeTool = (command: string, ...args: string[]) =>
 
 export const devApp = (target?: string) =>
   target == null ? nodeTool("tasks/dev-app") : nodeTool("tasks/dev-app", target);
+
+export const stageVscodeTypeScriptPlugin = nodeCommandFromVscodeExtension(
+  "editors/vscode/sync-typescript-plugin",
+  "stage",
+);
+const injectVscodeTypeScriptPlugin = nodeCommandFromVscodeExtension(
+  "editors/vscode/sync-typescript-plugin",
+  "inject",
+  "dist/vize.vsix",
+);
+export const assertVscodePackage = rustToolFromVscodeExtension(
+  "editors/vscode/assert-vsix-package",
+  "dist/vize.vsix",
+);
+export const packageVscodeExtension = steps(
+  stageVscodeTypeScriptPlugin,
+  `${vscodeExtensionPackageBin("@vscode/vsce", "vsce")} package --no-dependencies --out dist/vize.vsix`,
+  injectVscodeTypeScriptPlugin,
+);

@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
@@ -14,10 +15,13 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
+
+import { invocationWords } from "../../tools/support/ci/automation-commands.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import { parse } from "yaml";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const workflow = (path) => parse(readFileSync(join(root, path), "utf8"));
+const workflow = (path) => parse(readAutomationPrograms(join(root, path)));
 const rust = workflow(".github/workflows/pr-rust-checks.yml");
 const products = workflow(".github/workflows/pr-rust-products.yml");
 const differential = workflow(".github/workflows/pr-rust-differential.yml");
@@ -27,7 +31,7 @@ const runnerPath = "tools/support/compat/github/rust-differential-lanes.ts";
 const recipe = workflow(`${recipePath}/action.yml`);
 const fixturePath = "tests/_fixtures/_git/element-plus";
 const hydrationArgs = ["submodule", "update", "--init", "--depth", "1", "--", fixturePath];
-const realGit = execFileSync("/bin/sh", ["-c", "command -v git"], { encoding: "utf8" }).trim();
+const realGit = execFileSync("which", ["git"], { encoding: "utf8" }).trim();
 const fixturePin = execFileSync(realGit, ["ls-tree", "HEAD", fixturePath], {
   cwd: root,
   encoding: "utf8",
@@ -105,7 +109,6 @@ function selectedSteps(lane) {
     .filter((step) => !step.if || runInNewContext(step.if.slice(3, -3), { matrix: { lane } }))
     .flatMap((step) => (step.uses ? workflow(`${step.uses}/action.yml`).runs.steps : [step]));
 }
-const quote = (value) => `'${String(value).replaceAll("'", "'\\''")}'`;
 
 function fixture(lane) {
   const cwd = realpathSync(mkdtempSync(join(tmpdir(), "vize-rust-differential-")));
@@ -127,32 +130,18 @@ function fixture(lane) {
   copyFileSync(join(root, runnerPath), join(cwd, runnerPath));
   writeFileSync(
     join(bin, "git"),
-    `#!/bin/sh
-if [ "$1" = submodule ]; then
-exec "$NODE" -e 'const fs=require("node:fs"),cp=require("node:child_process"),assert=require("node:assert/strict"),path=require("node:path"),args=process.argv.slice(1);assert.deepEqual(args,${JSON.stringify(hydrationArgs)});const tree=cp.execFileSync(process.env.REAL_GIT,["ls-tree","HEAD",args.at(-1)],{encoding:"utf8"}).trim();assert.equal(tree,"160000 commit "+process.env.FIXTURE_PIN+"\\t"+args.at(-1));fs.appendFileSync(process.env.GIT_LOG,JSON.stringify(args)+"\\n");if(process.env.FAIL==="fixture-hydration")process.exit(42);fs.mkdirSync(args.at(-1),{recursive:true});fs.writeFileSync(path.join(args.at(-1),"fixture-pin"),process.env.FIXTURE_PIN);' -- "$@"
-fi
-exec "$REAL_GIT" "$@"
-`,
+    readToolingProgram("commands/rust-differential-sibling/git.sh", {
+      HYDRATION_ARGS: JSON.stringify(hydrationArgs),
+    }),
     { mode: 0o755 },
   );
   writeFileSync(
     join(bin, "cargo"),
-    `#!/bin/sh
-exec "$NODE" -e 'const fs=require("node:fs"),assert=require("node:assert/strict"),args=process.argv.slice(1);if(process.env.REQUIRE_HYDRATION==="1")assert.equal(fs.readFileSync(${JSON.stringify(`${fixturePath}/fixture-pin`)},"utf8"),process.env.FIXTURE_PIN);fs.appendFileSync(process.env.LOG,JSON.stringify({args,tsgo:process.env.VIZE_TEST_REQUIRE_TSGO,disable:process.env.VIZE_TEST_DISABLE_TSGO,iterations:process.env.VIZE_NUXT_CONFIG_ITERATIONS,production:process.env.VIZE_VUE_RUNTIME_PRODUCTION,corpus:process.env.VIZE_DAVINCI_DIFFERENTIAL_CORPUS})+"\\n");if(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")||process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(92);if(args.includes(process.env.FAIL))process.exit(42);' -- "$@"
-`,
+    readToolingProgram("commands/rust-differential-sibling/cargo.sh", {
+      FIXTURE_PATH_FIXTURE_PIN: JSON.stringify(`${fixturePath}/fixture-pin`),
+    }),
     { mode: 0o755 },
   );
-  const script = selectedSteps(lane)
-    .map((step) => {
-      const env = Object.entries(step.env ?? {})
-        .map(
-          ([key, value]) =>
-            `export ${key}=${quote(String(value).replaceAll("${{ matrix.lane }}", lane))}`,
-        )
-        .join("\n");
-      return `(\n${env}\n${step.run}\n)`;
-    })
-    .join("\n");
   const execute = (failure) => {
     const env = {
       ...process.env,
@@ -174,11 +163,48 @@ exec "$NODE" -e 'const fs=require("node:fs"),assert=require("node:assert/strict"
     delete env.VIZE_TEST_DISABLE_TSGO;
     delete env.TEST_CASES_JOB;
     delete env.VIZE_TEST_CASES;
-    return spawnSync("/bin/bash", ["--noprofile", "--norc", "-eo", "pipefail", "-c", script], {
-      cwd,
-      encoding: "utf8",
-      env,
-    });
+    const scripts = join(root, ".github/scripts/workflows/pr-rust-differential");
+    const action = join(root, ".github/actions/test-native-navigation");
+    let result;
+    for (const step of selectedSteps(lane)) {
+      const stepEnv = {
+        ...env,
+        GITHUB_ACTION_PATH: action,
+        VIZE_CI_FILES: scripts,
+        ...Object.fromEntries(
+          Object.entries(step.env ?? {}).map(([key, value]) => [
+            key,
+            String(value).replaceAll("${{ matrix.lane }}", lane),
+          ]),
+        ),
+      };
+      const words = invocationWords(step.run);
+      const [program, ...args] =
+        words && !step.run.includes("$VIZE_CI_FILES")
+          ? words.map((word) =>
+              word.replace(/\$(\w+)/gu, (_, key) => {
+                assert.ok(key in stepEnv, key);
+                return stepEnv[key];
+              }),
+            )
+          : [
+              "/bin/bash",
+              "--noprofile",
+              "--norc",
+              "-eo",
+              "pipefail",
+              automationShellPath(
+                step.run,
+                step.name === "Materialize affected Rust plan"
+                  ? "pr-rust-differential"
+                  : "test-native-navigation",
+              ),
+            ];
+      result = spawnSync(program, args, { cwd, encoding: "utf8", env: stepEnv });
+      if (result.status !== 0) break;
+    }
+    assert.ok(result);
+    return result;
   };
   const records = (filename) =>
     readFileSync(filename, "utf8").trim().split("\n").filter(Boolean).map(JSON.parse);

@@ -25,6 +25,8 @@ jobs:
     timeout-minutes: 3
     outputs:
       nuxt: ${{ steps.plan.outputs.nuxt }}
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/nuxt-style-build"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
@@ -34,11 +36,7 @@ jobs:
         id: plan
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
-        run: |
-          if [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ && ! "$BASE_SHA" =~ ^0+$ ]]; then
-            git fetch --no-tags --depth=1 origin "$BASE_SHA"
-          fi
-          node tools/support/compat/github/plan-product-integrations.ts "$GITHUB_EVENT_NAME" "$BASE_SHA" "$GITHUB_SHA"
+        run: . "${{ env.VIZE_CI_FILES }}/select-changed-product-inputs.sh"
 
   nuxt-style-build:
     name: Nuxt 4 ${{ matrix.case }}
@@ -65,6 +63,8 @@ jobs:
             script: dev-ssr-style.mjs
             proof: nuxt-dev-style-proof
             browser: true
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/nuxt-style-build"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -111,15 +111,7 @@ jobs:
         env:
           FIXTURE: ${{ matrix.fixture }}
           PROOF: ${{ matrix.proof }}
-        run: |
-          adapters="$RUNNER_TEMP/$PROOF/compared-adapters"
-          mkdir -p "$adapters/candidate" "$adapters/published"
-          for adapter in vite-plugin nuxt; do
-            published="$FIXTURE/node_modules/@vizejs/$adapter/dist"
-            if [[ -d "$published" ]]; then cp -R "$published" "$adapters/published/$adapter"; fi
-          done
-          if [[ -d npm/builder/vite/dist ]]; then cp -R npm/builder/vite/dist "$adapters/candidate/vite-plugin"; fi
-          if [[ -d npm/framework/nuxt/dist ]]; then cp -R npm/framework/nuxt/dist "$adapters/candidate/nuxt"; fi
+        run: . "${{ env.VIZE_CI_FILES }}/retain-the-exact-compared-javascript-adapters.sh"
       - name: Upload build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -1,0 +1,58 @@
+#!@@NODE@@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import { spawnSync } from "node:child_process";
+const args = process.argv.slice(2),
+  url = args.at(-1);
+assert.ok([@@PRIMARY@@, @@API@@].includes(url));
+assert.deepEqual(args.slice(0, 7), [
+  "--fail",
+  "--silent",
+  "--show-error",
+  "--location",
+  "--proto",
+  "=https",
+  "--tlsv1.2",
+]);
+const deadlines = [
+  "--connect-timeout",
+  "10",
+  "--max-time",
+  "30",
+  "--speed-limit",
+  "1",
+  "--speed-time",
+  "5",
+];
+if (!@@ORIGINAL@@) assert.deepEqual(args.slice(7, 7 + deadlines.length), deadlines);
+if (!@@ORIGINAL@@ && url === @@API@@) {
+  const retryStart = 7 + deadlines.length;
+  assert.deepEqual(args.slice(retryStart, retryStart + 5), [
+    "--retry",
+    "5",
+    "--retry-all-errors",
+    "--retry-delay",
+    "1",
+  ]);
+}
+const forwarded = [
+  ...args.slice(0, -1),
+  "--cacert",
+  @@CERT@@,
+  @@LOCAL@@ + (url === @@PRIMARY@@ ? "/primary" : "/api"),
+];
+const result = spawnSync("/usr/bin/curl", forwarded, { encoding: "utf8" });
+fs.appendFileSync(
+  @@LOG@@,
+  JSON.stringify({
+    args,
+    forwarded,
+    status: result.status,
+    signal: result.signal,
+    stdout: result.stdout,
+    stderr: result.stderr,
+  }) + "\n",
+);
+process.stdout.write(result.stdout);
+process.stderr.write(result.stderr);
+process.exit(result.status ?? 126);

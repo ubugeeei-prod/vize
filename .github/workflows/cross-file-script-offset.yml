@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/cross-file-script-offset.yml
+      - .github/scripts/workflows/cross-file-script-offset/**
       - crates/vize/src/commands/lint/cross_file.rs
       - crates/vize/src/commands/lint/cross_file/**
       - crates/vize/src/commands/doctor.rs
@@ -24,6 +25,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/cross-file-script-offset.yml
+      - .github/scripts/workflows/cross-file-script-offset/**
       - crates/vize/src/commands/lint/cross_file.rs
       - crates/vize/src/commands/lint/cross_file/**
       - crates/vize/src/commands/doctor.rs
@@ -81,6 +83,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/cross-file-script-offset"
       VIZE_CROSS_FILE_OFFSET_REQUIRE_BEFORE: "1"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -98,11 +101,7 @@ jobs:
         with:
           wild-version: "0.9.0"
       - name: Configure shared packet paths on the runner
-        run: |
-          mkdir -p "$RUNNER_TEMP/cross-file-offset-proof"
-          printf 'VIZE_CROSS_FILE_OFFSET_SOURCE_CLI=%s\n' "$GITHUB_WORKSPACE/target/ci/vize" >> "$GITHUB_ENV"
-          printf 'VIZE_CROSS_FILE_OFFSET_BEFORE_CLI=%s\n' "$RUNNER_TEMP/cross-file-before/node_modules/.bin/vize" >> "$GITHUB_ENV"
-          printf 'VIZE_CROSS_FILE_OFFSET_PROOF=%s\n' "$RUNNER_TEMP/cross-file-offset-proof/packets.json" >> "$GITHUB_ENV"
+        run: . "${{ env.VIZE_CI_FILES }}/configure-shared-packet-paths-on-the-runner.sh"
       - run: vp install --frozen-lockfile --prefer-offline
       - uses: ./.github/actions/restore-source-cli
         id: restore
@@ -110,14 +109,7 @@ jobs:
           producer: ${{ toJSON(needs.producer.outputs) }}
       - name: Install the immutable public before producer outside the workspace
         id: public_before
-        run: |
-          mkdir -p "$RUNNER_TEMP/cross-file-offset-proof"
-          npm view --registry=https://registry.npmjs.org vize@0.601.0 --json > "$RUNNER_TEMP/cross-file-offset-proof/before-registry.json"
-          npm install --registry=https://registry.npmjs.org --prefix "$RUNNER_TEMP/cross-file-before" --ignore-scripts --no-audit --no-fund vize@0.601.0 > "$RUNNER_TEMP/cross-file-offset-proof/before-install.stdout" 2> "$RUNNER_TEMP/cross-file-offset-proof/before-install.stderr"
-          cp "$RUNNER_TEMP/cross-file-before/package-lock.json" "$RUNNER_TEMP/cross-file-offset-proof/before-lock.json"
-          cp "$RUNNER_TEMP/cross-file-before/node_modules/vize/package.json" "$RUNNER_TEMP/cross-file-offset-proof/before-manifest.json"
-          cp target/ci/vize.differential-build.json "$RUNNER_TEMP/cross-file-offset-proof/candidate-build.json"
-          cp target/ci/vize.source-use.json "$RUNNER_TEMP/cross-file-offset-proof/candidate-use.json"
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-immutable-public-before-producer-outside-the-workspace.sh"
       - name: Require complete packets, script spans and unchanged template and doctor controls
         run: vp node --test tests/tooling/cross-file-script-offset.test.ts
       - name: Capture research-only Nuxt ID before packets
@@ -139,16 +131,7 @@ jobs:
         id: nuxt_runtime
         working-directory: ${{ runner.temp }}
         if: ${{ always() && steps.public_before.outcome == 'success' && steps.nuxt_node.outcome == 'success' }}
-        run: |
-          mkdir -p "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime"
-          npm view --registry=https://registry.npmjs.org nuxt@4.6.3 --json > "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/nuxt-registry.json"
-          npm view --registry=https://registry.npmjs.org @nuxt/kit@4.6.3 --json > "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/kit-registry.json"
-          npm view --registry=https://registry.npmjs.org @nuxt/schema@4.6.3 --json > "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/schema-registry.json"
-          npm view --registry=https://registry.npmjs.org rc9@3.1.0 --json > "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/rc9-registry.json"
-          npm view --registry=https://registry.npmjs.org @nuxt/kit@4.6.2 --json > "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/unsupported-kit-registry.json"
-          npm install --registry=https://registry.npmjs.org --prefix "$RUNNER_TEMP/nuxt-runtime-10919" --ignore-scripts --no-audit --no-fund --save-exact nuxt@4.6.3 @nuxt/kit@4.6.3 @nuxt/schema@4.6.3 rc9@3.1.0 nuxt-kit-unsupported@npm:@nuxt/kit@4.6.2 > "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/install.stdout" 2> "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/install.stderr"
-          cp "$RUNNER_TEMP/nuxt-runtime-10919/package-lock.json" "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/package-lock.json"
-          cp "$RUNNER_TEMP/nuxt-runtime-10919/package.json" "$RUNNER_TEMP/cross-file-offset-proof/nuxt-runtime/package.json"
+        run: . "${{ env.VIZE_CI_FILES }}/install-the-genuine-pinned-nuxt-runtime-and-unsupported-version-control.sh"
       - name: Require actual supported Nuxt exclusivity and conservative counterfactuals with counted IO
         if: ${{ always() && steps.public_before.outcome == 'success' && steps.nuxt_runtime.outcome == 'success' }}
         env:

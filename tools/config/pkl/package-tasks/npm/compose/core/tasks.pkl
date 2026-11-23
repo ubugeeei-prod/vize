@@ -1,0 +1,16 @@
+amends "../../../../PackageTasks.pkl"
+
+tasks {
+  ["build"] {
+    module.run("vp", List("pack"))
+    module.run("vp", List("exec", "node", "scripts/build-source-registry.ts"))
+  }
+  ["pretest"] {
+    module.run("vp", List("pack"))
+    module.run("pnpm", List("check:size"))
+  }
+  ["check"] {
+    module.run("vp", List("check", "src", "scripts", "vite.config.ts"))
+    module.run("pnpm", List("check:types"))
+  }
+}

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+cargo test --locked --profile ci -p vize_atelier_sfc --lib vite_plugin::css_scope:: -- --nocapture
+cargo test --locked --profile ci -p vize_atelier_sfc --test scoped_nesting_specificity -- --nocapture
+cargo test --locked --profile ci -p vize_atelier_sfc --test mixed_style_scope -- --nocapture

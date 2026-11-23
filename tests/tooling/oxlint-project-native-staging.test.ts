@@ -1,3 +1,4 @@
+import { readToolingProgram, toolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -193,9 +194,7 @@ function sourcePreloadFixture(t: { after: (cleanup: () => void) => void }) {
   fs.writeFileSync(binary, "module.exports={authoredImage:true};\n");
   fs.writeFileSync(
     wrapper,
-    `globalThis.wrapperLoads=(globalThis.wrapperLoads??0)+1;
-module.exports=require(process.env.NAPI_RS_NATIVE_LIBRARY_PATH);
-`,
+    readToolingProgram("commands/oxlint-project-native-staging/load-authored-image.cjs"),
   );
   const identify = (file: string) => ({ path: file, sha256: sha256(fs.readFileSync(file)) });
   return {
@@ -216,13 +215,11 @@ function runPreloadControl(fixture: ReturnType<typeof sourcePreloadFixture>, bod
   const script = path.join(fixture.root, "control.mjs");
   fs.writeFileSync(
     script,
-    `import assert from 'node:assert/strict';
-import {createRequire} from 'node:module';
-import {preloadProjectNative} from ${JSON.stringify(pathToFileURL(fixture.helper).href)};
-const require=createRequire(import.meta.url),custody=${JSON.stringify(fixture.custody)};
-${body}
-process.stdout.write(JSON.stringify({override:process.env.NAPI_RS_NATIVE_LIBRARY_PATH??null,loads:globalThis.wrapperLoads??0}));
-`,
+    readToolingProgram("commands/oxlint-project-native-staging/inspect-preload.js.in", {
+      PRELOAD: JSON.stringify(pathToFileURL(fixture.helper).href),
+      CUSTODY: JSON.stringify(fixture.custody),
+      PROBE: body,
+    }),
   );
   const env = { ...process.env };
   for (const key of [
@@ -245,17 +242,9 @@ void test("source preload loads only its exact wrapper/image once and leaves hos
   assert.deepEqual(
     runPreloadControl(
       fixture,
-      `
-preloadProjectNative(custody);
-const first=require(custody.wrapper.path),second=require(custody.wrapper.path);
-assert.equal(first,second);
-assert.equal(first,require.cache[custody.binary.path].exports);
-assert.deepEqual(first,{authoredImage:true});
-assert.equal(process.env.NAPI_RS_NATIVE_LIBRARY_PATH,undefined);
-const {spawnSync}=require('node:child_process');
-const host=spawnSync(process.execPath,['-e',"process.stdout.write(JSON.stringify(process.env.NAPI_RS_NATIVE_LIBRARY_PATH??null))"],{encoding:'utf8',timeout:3000});
-assert.equal(host.status,0);assert.equal(host.stdout,'null');assert.equal(host.stderr,'');
-`,
+      readToolingProgram("commands/oxlint-project-native-staging/preload-exact-binding.cjs.in", {
+        CHILD_PROGRAM: JSON.stringify(toolingProgram("process/print-native-override.cjs")),
+      }),
     ),
     { override: null, loads: 1 },
   );
@@ -271,11 +260,7 @@ void test("throwing wrapper preserves the exact error and restores environment b
   assert.deepEqual(
     runPreloadControl(
       fixture,
-      `
-assert.throws(()=>preloadProjectNative(custody),{name:'Error',message:'whole authored wrapper failure'});
-assert.equal(process.env.NAPI_RS_NATIVE_LIBRARY_PATH,undefined);
-assert.equal(require.cache[custody.wrapper.path],undefined);
-`,
+      readToolingProgram("commands/oxlint-project-native-staging/follow-cached-module.cjs"),
     ),
     { override: null, loads: 1 },
   );
@@ -318,11 +303,9 @@ for (const control of [
     assert.deepEqual(
       runPreloadControl(
         fixture,
-        `
-assert.throws(()=>preloadProjectNative(custody),{code:'ERR_ASSERTION'});
-assert.equal(process.env.NAPI_RS_NATIVE_LIBRARY_PATH,undefined);
-assert.equal(require.cache[custody.binary.path]!==undefined,${control === "wrong-image-export"});
-`,
+        readToolingProgram("commands/oxlint-project-native-staging/reject-invalid-custody.cjs.in", {
+          CONTROL_WRONG_IMAGE_EXPORT: control === "wrong-image-export",
+        }),
       ),
       { override: null, loads: expectedLoads },
     );

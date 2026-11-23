@@ -1,3 +1,5 @@
+import { workspaceTaskSteps } from "../../tools/config/vite-plus/task-plan.ts";
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
@@ -8,18 +10,27 @@ import {
 } from "./support/typecheck-dependency.ts";
 import { checkWorkflowJobSources, readRepoFile } from "./support/github-workflows.ts";
 test("test:scripts requires its typecheck dependencies", () => {
-  const command = (testAndBenchmarkTasks["test:scripts"] as { command: string }).command;
+  const command = workspaceTaskSteps(testAndBenchmarkTasks["test:scripts"]).at(-1);
+  const files = [
+    "tests/tooling/*.test.ts",
+    "tests/tooling/*.test.mjs",
+    "tests/tooling/davinci/*.test.ts",
+    "tests/tooling/davinci/*.test.mjs",
+    "tests/tooling/release/*.test.ts",
+  ];
+  assert.deepEqual(command, {
+    program: "node",
+    arguments: ["--test", "--test-concurrency=1", ...files],
+    environment: { VIZE_TEST_REQUIRE_TSGO: "1" },
+    globs: files,
+  });
   const workflow = checkWorkflowJobSources();
-  assert.match(
-    command,
-    /&& VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests\/tooling\/\*\.test\.ts tests\/tooling\/\*\.test\.mjs tests\/tooling\/davinci\/\*\.test\.ts tests\/tooling\/davinci\/\*\.test\.mjs tests\/tooling\/release\/\*\.test\.ts$/,
-  );
   assert.match(
     workflow,
     /\n  test-scripts:\n[\s\S]*?needs: \[full-source-cli, tooling-plan\][\s\S]*?uses: \.\/\.github\/actions\/test-full-tooling[\s\S]*?\n  editor-extensions:\n/,
   );
   assert.match(
-    readRepoFile(".github", "actions", "test-full-tooling", "action.yml"),
+    readAutomationPrograms(".github", "actions", "test-full-tooling", "action.yml"),
     /git submodule update --init --force --depth 1 -- tests\/_fixtures\/_git\/ant-design-vue tests\/_fixtures\/_git\/create-vue tests\/_fixtures\/_git\/layoutit-grid tests\/_fixtures\/_git\/vue-select tests\/_fixtures\/_git\/vue-router && vp install --frozen-lockfile --prefer-offline/,
   );
 });

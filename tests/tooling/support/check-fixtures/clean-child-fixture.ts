@@ -10,6 +10,6 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 test("spawns a node descendant and waits for it", () => {
-  const result = spawnSync(process.execPath, ["-e", "process.exit(0)"], { stdio: "ignore" });
+  const result = spawnSync(process.execPath, ["--version"], { stdio: "ignore" });
   assert.equal(result.status, 0);
 });

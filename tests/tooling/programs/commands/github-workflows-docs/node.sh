@@ -1,0 +1,6 @@
+#!/bin/sh
+if [ "$1" = "--test" ]; then
+  printf '%s\n' '# tests 8' '# pass 8' '# fail 0' '# cancelled 0' '# skipped 0' '# todo 0'
+  exit 17
+fi
+touch "$READINESS_CONTROL_MARKER"

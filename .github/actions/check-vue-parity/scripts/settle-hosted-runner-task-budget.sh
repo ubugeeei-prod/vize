@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+mkdir -p target/vize-tests/metrics/check-fixtures-topology
+baseline_threads="${VIZE_RUNNER_BASELINE_THREADS:-0}"
+if ! [[ "$baseline_threads" =~ ^[0-9]+$ ]]; then
+  baseline_threads=0
+fi
+budget_threads=$((baseline_threads + 96))
+deadline=$((SECONDS + 30))
+sample=0
+thread_count() {
+  local count
+  if [ -d /proc ]; then
+    count="$(grep -sh '^Threads:' /proc/[0-9]*/status | awk -v column=2 -f "$GITHUB_ACTION_PATH/scripts/sum-thread-counts.awk" || true)"
+  else
+    count="$(ps -axo nlwp= 2>/dev/null | awk -v column=1 -f "$GITHUB_ACTION_PATH/scripts/sum-thread-counts.awk" || true)"
+  fi
+  echo "${count:-0}"
+}
+while true; do
+  sample=$((sample + 1))
+  threads_total="$(thread_count)"
+  {
+    echo "sample=$sample"
+    echo "threads_total=$threads_total"
+    echo "baseline_threads=$baseline_threads"
+    echo "budget_threads=$budget_threads"
+  } | tee -a target/vize-tests/metrics/check-fixtures-topology/post-build-settle.txt
+  if [ "$baseline_threads" -eq 0 ] || [ "$threads_total" -le "$budget_threads" ]; then
+    break
+  fi
+  if [ "$SECONDS" -ge "$deadline" ]; then
+    echo "warning=hosted runner thread count did not settle below budget" | tee -a target/vize-tests/metrics/check-fixtures-topology/post-build-settle.txt
+    break
+  fi
+  sleep 1
+done

@@ -1,0 +1,6 @@
+name = "Stage workflow scripts"
+description = "Keep the workflow revision's scripts available across nested and historical checkouts"
+runs {
+  using = "node24"
+  main = "stage.ts"
+}

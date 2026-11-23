@@ -1,0 +1,9 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  exec "$(dirname "$0")/../pkg/tsgo" "$@"
+  """#
+}

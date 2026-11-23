@@ -31,46 +31,25 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     permissions:
+      contents: read
       pull-requests: read
     outputs:
-      audit: ${{ steps.plan.outputs.audit }}
+      audit: ${{ steps.plan.outputs.audit || 'true' }}
     steps:
-      # No candidate checkout: only trusted inline code and read-only API calls.
+      - name: Read the audit planner from the PR base
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /.github/actions/plan-workflow-audit/
       - name: Select workflow security audit
         id: plan
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        with:
-          script: |
-            let audit = true;
-            try {
-              const pr = context.payload.pull_request;
-              const maintainers = ['OWNER', 'MEMBER', 'COLLABORATOR'];
-              if (context.eventName === 'pull_request' &&
-                  maintainers.includes(pr?.author_association) &&
-                  pr?.head?.repo?.full_name === `${context.repo.owner}/${context.repo.repo}`) {
-                const args = { ...context.repo, pull_number: pr.number };
-                const before = (await github.rest.pulls.get(args)).data;
-                if (before.head.sha === pr.head.sha &&
-                    Number.isInteger(before.changed_files) &&
-                    before.changed_files > 0 && before.changed_files < 3000) {
-                  const files = await github.paginate(github.rest.pulls.listFiles, {
-                    ...args, per_page: 100,
-                  });
-                  const after = (await github.rest.pulls.get(args)).data;
-                  const unchanged = after.head.sha === before.head.sha &&
-                    after.changed_files === before.changed_files;
-                  const complete = files.length === before.changed_files;
-                  const workflowsChanged = files.some(file =>
-                    [file.filename, file.previous_filename].some(name =>
-                      typeof name === 'string' && name.startsWith('.github/')));
-                  audit = !unchanged || !complete || workflowsChanged;
-                }
-              }
-            } catch (error) {
-              core.warning(`Unable to prove the audit is unnecessary: ${error.message}`);
-            }
-            core.setOutput('audit', String(audit));
-            await core.summary.addRaw(`Workflow security audit required: ${audit}\n`).write();
+        if: github.event_name == 'pull_request' && hashFiles('.github/actions/plan-workflow-audit/action.yml') != ''
+        uses: ./.github/actions/plan-workflow-audit
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   zizmor:
     name: Run zizmor

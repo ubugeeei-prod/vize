@@ -24,11 +24,10 @@ fn real_typescript_checker_diagnostics_match_original_source_and_exact_mapping()
         projected.push(serde_json::json!({"case":case,"extension":projection.source_kind().extension(),"projected":projection.document().as_str()}));
     }
     let mut child = Command::new("node")
-        .args([
-            "--input-type=module",
-            "-e",
-            include_str!("../../../../tests/tooling/support/native-program-typescript.ts"),
-        ])
+        .arg(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/tooling/support/native-program-typescript.ts"
+        ))
         .current_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

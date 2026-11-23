@@ -7,11 +7,10 @@
 
 use std::{
     borrow::Cow,
-    io::Write as _,
     path::{Path, PathBuf},
-    process::{Command, Stdio},
 };
 
+use crate::commands::node_module::{self, NodeModuleError};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use vize_atelier_sfc::SfcDescriptor;
@@ -175,23 +174,21 @@ fn run_node(pending: &[Pending]) -> Result<Vec<JobResult>, String> {
         })
         .collect();
     let input = serde_json::to_vec(&jobs).map_err(|error| cstr!("{error}"))?;
-    let mut child = Command::new("node")
-        .arg("--input-type=module")
-        .arg("-e")
-        .arg(include_str!("preprocess.mjs"))
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|error| cstr!("could not start node ({error})"))?;
-    if let Some(mut stdin) = child.stdin.take() {
-        stdin
-            .write_all(&input)
-            .map_err(|error| cstr!("could not write to node ({error})"))?;
-    }
-    let output = child
-        .wait_with_output()
-        .map_err(|error| cstr!("node failed ({error})"))?;
+    let (output, written) = node_module::run(
+        "node".as_ref(),
+        &[],
+        "preprocess.mjs",
+        include_str!("preprocess.mjs"),
+        &input,
+    )
+    .map_err(|error| match error {
+        NodeModuleError::Prepare(error) => {
+            cstr!("could not prepare style preprocessor module ({error})")
+        }
+        NodeModuleError::Start(error) => cstr!("could not start node ({error})"),
+        NodeModuleError::Wait(error) => cstr!("node failed ({error})"),
+    })?;
+    written.map_err(|error| cstr!("could not write to node ({error})"))?;
     if !output.status.success() {
         return Err(cstr!(
             "node failed: {}",

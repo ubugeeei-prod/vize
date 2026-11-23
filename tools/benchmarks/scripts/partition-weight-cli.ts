@@ -1,3 +1,4 @@
+import { shellLauncher } from "../../support/process-launcher.ts";
 /** Untimed whole-packet admission for real 1/2/8-shard Corsa executions. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -16,7 +17,6 @@ import { pathToFileURL } from "node:url";
 const hash = (value: Buffer | string) => createHash("sha256").update(value).digest("hex");
 const record = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === "object" && !Array.isArray(value);
-const quote = (value: string) => "'" + value.replaceAll("'", "'\\''") + "'";
 export const partitionBackendObserver = (binary: string, trace: string) =>
   String.raw`
 import fs from "node:fs"; import path from "node:path"; import cp from "node:child_process";
@@ -168,11 +168,9 @@ export function runPartitionWeightCli(binary: string, provider: string, out: str
       const script = join(run, "observe.mjs"),
         launcher = join(run, "tsgo");
       writeFileSync(script, partitionBackendObserver(native, trace));
-      writeFileSync(
-        launcher,
-        "#!/bin/sh\nexec " + quote(process.execPath) + " " + quote(script) + ' "$@"\n',
-        { mode: 0o755 },
-      );
+      writeFileSync(launcher, shellLauncher("exec", { COMMAND: [process.execPath, script] }), {
+        mode: 0o755,
+      });
       const cache = join(run, "cache"),
         tmp = join(run, "tmp");
       mkdirSync(cache);

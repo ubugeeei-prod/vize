@@ -1,10 +1,11 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { spawnSync } from "node:child_process";
 import { parse } from "yaml";
 
 import { aggregateCheckReportResults } from "../../tools/support/compat/github/require-needs-success.ts";
-import { readRepoFile, root } from "./support/github-workflows.ts";
+import { root } from "./support/github-workflows.ts";
 
 type Job = {
   "continue-on-error"?: boolean;
@@ -22,9 +23,9 @@ type Job = {
   uses?: string;
 };
 type Workflow = { name: string; on?: Record<string, unknown>; jobs?: Record<string, Job> };
-const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as Workflow;
+const workflow = parse(readAutomationPrograms(".github", "workflows", "check.yml")) as Workflow;
 const instructionWorkflow = parse(
-  readRepoFile(".github", "workflows", "level-instruction-counts.yml"),
+  readAutomationPrograms(".github", "workflows", "level-instruction-counts.yml"),
 ) as Workflow;
 
 test("instruction ceilings are required in the queue and scheduled qualification", () => {
@@ -144,7 +145,7 @@ test("the actual required Check report command fails a red or missing instructio
 test("full scheduled and manual aggregate commands reject incomplete instruction measurement", () => {
   const report = workflow.jobs?.["full-js-report"];
   const action = parse(
-    readRepoFile(".github", "actions", "report-full-js-qualification", "action.yml"),
+    readAutomationPrograms(".github", "actions", "report-full-js-qualification", "action.yml"),
   ) as { runs: { steps: { run?: string; env?: Record<string, string> }[] } };
   assert.equal(report?.steps?.at(-1)?.uses, "./.github/actions/report-full-js-qualification");
   assert.deepEqual(report?.steps?.at(-1)?.with, { "needs-json": "${{ toJSON(needs) }}" });

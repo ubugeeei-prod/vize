@@ -1,0 +1,25 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  run_required_rust_tests() {
+    local label="$1"
+    shift
+    set +e
+    "$@" > "target/vize-tests/lsp-config-diagnostics/${label}.stdout" 2> "target/vize-tests/lsp-config-diagnostics/${label}.stderr"
+    local status=$?
+    set -e
+    printf '%s\n' "$status" > "target/vize-tests/lsp-config-diagnostics/${label}.status"
+    cat "target/vize-tests/lsp-config-diagnostics/${label}.stdout"
+    cat "target/vize-tests/lsp-config-diagnostics/${label}.stderr" >&2
+    node tools/support/compat/github/run-lsp-config-diagnostics.ts --require-rust-tests "target/vize-tests/lsp-config-diagnostics/${label}.stdout"
+    return "$status"
+  }
+  run_required_rust_tests native-view cargo test --locked --profile ci -p vize_canon --features legacy --lib corsa_bridge::vue_document::build::tests:: -- --nocapture
+  run_required_rust_tests issued-candidates cargo test --locked --profile ci -p vize_canon --features legacy --lib lsp_client::editor_lsp::completion_resolve::issued::tests:: -- --nocapture
+  run_required_rust_tests initial-api-read cargo test --locked --profile ci -p vize_canon --features legacy --lib corsa_bridge::bridge::initial_diagnostics::tests:: -- --nocapture
+  run_required_rust_tests initial-api-dependencies cargo test --locked --profile ci -p vize_maestro --features legacy --lib server::importers::canonical::tests:: -- --nocapture
+  """#
+}

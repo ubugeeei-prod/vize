@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -23,16 +24,15 @@ test("publish_vscode_extension allows corepack pnpm dlx builds for vsce signing 
       `${JSON.stringify({ publisher: "ubugeeei", name: "vize", version: "0.57.0" }, null, 2)}\n`,
     );
     // The gallery probe never lists the version, so only publish reaches the runner.
-    writeFakeCommand(binDir, "curl", "process.exit(22);");
+    writeFakeCommand(
+      binDir,
+      "curl",
+      readToolingProgram("commands/release-command-diagnostics/curl.js"),
+    );
     writeFakeCommand(
       binDir,
       "corepack",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "fs.writeFileSync(process.env.COREPACK_ARGS_LOG, args.join('\\n'));",
-        "process.exit(0);",
-      ].join("\n"),
+      readToolingProgram("commands/publish-vscode-extension-dlx/corepack.js"),
     );
 
     const result = runReleaseCommand("publish_vscode_extension", [vsixPath, packageJsonPath], {
@@ -80,16 +80,15 @@ test("publish_vscode_extension can publish with npx without pnpm hydration", () 
       packageJsonPath,
       `${JSON.stringify({ publisher: "ubugeeei", name: "vize", version: "0.58.0" }, null, 2)}\n`,
     );
-    writeFakeCommand(binDir, "curl", "process.exit(22);");
+    writeFakeCommand(
+      binDir,
+      "curl",
+      readToolingProgram("commands/release-command-diagnostics/curl.js"),
+    );
     writeFakeCommand(
       binDir,
       "npx",
-      [
-        "const fs = require('node:fs');",
-        "const args = process.argv.slice(2);",
-        "fs.writeFileSync(process.env.NPX_ARGS_LOG, args.join('\\n'));",
-        "process.exit(0);",
-      ].join("\n"),
+      readToolingProgram("commands/publish-vscode-extension-dlx/npx.js"),
     );
 
     const result = runReleaseCommand("publish_vscode_extension", [vsixPath, packageJsonPath], {
@@ -135,16 +134,14 @@ test("publish_vscode_extension finishes on a successful publish without waiting 
     writeFakeCommand(
       binDir,
       "curl",
-      "require('node:fs').appendFileSync(process.env.CALLS_LOG, 'curl\\n'); process.exit(22);",
+      readToolingProgram(
+        "commands/publish-vscode-extension-dlx/curl-finishes-successful-without-waiting-listing.js",
+      ),
     );
     writeFakeCommand(
       binDir,
       "vp",
-      [
-        "const args = process.argv.slice(2);",
-        "require('node:fs').appendFileSync(process.env.CALLS_LOG, args[4] + '\\n');",
-        "process.exit(args[4] === 'publish' ? 0 : 1);",
-      ].join("\n"),
+      readToolingProgram("commands/publish-vscode-extension-dlx/vp.js"),
     );
     const result = runReleaseCommand("publish_vscode_extension", [vsixPath, packageJsonPath], {
       env: {

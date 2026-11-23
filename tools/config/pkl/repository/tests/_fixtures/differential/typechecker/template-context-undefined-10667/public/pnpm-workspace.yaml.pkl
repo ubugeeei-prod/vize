@@ -1,0 +1,6 @@
+minimumReleaseAgeExclude = new Listing {
+  "@vizejs/*"
+  "@typescript/*"
+  "typescript"
+  "vize"
+}

@@ -7,6 +7,7 @@ import { assertBundledHelpers } from "./prepare-consumer.mjs";
 import { sourceNativeResolutions } from "./consumer-lock.mjs";
 import { normalHostShutdown } from "./host-process.mjs";
 import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { once } from "node:events";
 import { readPublishedMap } from "./output-source-map.mjs";
 
@@ -64,8 +65,12 @@ void test("public bundle inspection visits nested loader entries and rejects pri
 void test("controlled SIGTERM handles Next's numeric exit without accepting earlier crashes", async (t) => {
   if (process.platform === "win32")
     return t.skip("the actual host job uses Linux signal semantics");
-  async function terminated(script, request) {
-    const child = spawn(process.execPath, ["-e", script], { stdio: ["ignore", "pipe", "pipe"] });
+  async function terminated(behavior, request, exitCode) {
+    const child = spawn(
+      process.execPath,
+      [fileURLToPath(new URL("./shutdown-host.ts", import.meta.url)), behavior, String(exitCode)],
+      { stdio: ["ignore", "pipe", "pipe"] },
+    );
     t.after(() => {
       if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
     });
@@ -80,15 +85,11 @@ void test("controlled SIGTERM handles Next's numeric exit without accepting earl
     const [status, signal] = await closed;
     return normalHostShutdown({ status, signal }, shutdown);
   }
-  const ready = 'process.stdout.write("ready");setInterval(()=>{},1000);';
-  assert.equal(await terminated(ready, true), true);
-  assert.equal(
-    await terminated('process.on("SIGTERM",()=>process.exit(143));' + ready, true),
-    true,
-  );
-  assert.equal(await terminated('process.on("SIGTERM",()=>process.exit(1));' + ready, true), false);
-  assert.equal(await terminated("process.exit(143)", false), false);
-  assert.equal(await terminated("process.exit(1)", false), false);
+  assert.equal(await terminated("signal", true), true);
+  assert.equal(await terminated("handle", true, 143), true);
+  assert.equal(await terminated("handle", true, 1), false);
+  assert.equal(await terminated("exit", false, 143), false);
+  assert.equal(await terminated("exit", false, 1), false);
 });
 
 void test("source custody reads pnpm project documents and rejects alternate native resolutions", () => {

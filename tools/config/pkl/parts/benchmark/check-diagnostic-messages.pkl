@@ -1,0 +1,78 @@
+import "../../Actions.pkl" as ci
+
+name = "Complete checker diagnostic source pairs"
+`if` = "github.event_name == 'workflow_dispatch' && inputs.check_diagnostic_messages"
+`runs-on` = ci.linux
+`timeout-minutes` = 40
+permissions { contents = "read" }
+env {
+
+  CARGO_INCREMENTAL = "0"
+}
+steps = new Listing {
+  ...ci.stageWorkflowScripts("benchmark")
+  new Dynamic {
+    uses = ci.checkout
+    with {
+      path = "head"
+      ref = "${{ env.BENCHMARK_HEAD_SHA }}"
+      `fetch-depth` = 0
+      `persist-credentials` = false
+    }
+  }
+  new Dynamic {
+    uses = ci.checkout
+    with {
+      path = "base"
+      ref = "${{ env.BENCHMARK_BASE_SHA }}"
+      `persist-credentials` = false
+    }
+  }
+  new Dynamic {
+    name = "Validate exact source roles"
+    env { RUN_HEAD_SHA = "${{ github.sha }}" }
+    run = #". "${{ env.VIZE_CI_FILES }}/validate-exact-source-roles.sh""#
+  }
+  ci.rust("stable")
+  ci.wild()
+  new Dynamic {
+    uses = ci.setupVp
+    with {
+      `node-version-file` = "head/package.json"
+      cache = true
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    name = "Install one pinned physical native runtime"
+    `working-directory` = "head"
+    run = "vp install --frozen-lockfile --prefer-offline"
+  }
+  new Dynamic {
+    name = "Validate focused complete-packet observers"
+    run = "node --test head/tools/benchmarks/scripts/check-diagnostic-messages.test.mjs"
+  }
+  new Dynamic {
+    name = "Build sequential source and SHA roles without compilation caches"
+    run = #". "${{ env.VIZE_CI_FILES }}/build-sequential-source-and-sha-roles-without-compilation-caches.sh""#
+  }
+  new Dynamic {
+    name = "Compare whole reports, alternating latency and separate source observations"
+    run = #". "${{ env.VIZE_CI_FILES }}/compare-whole-reports-alternating-latency-and-separate-source-observatio.sh""#
+  }
+  new Dynamic {
+    name = "Retain complete source qualification including failed observations"
+    `if` = "always()"
+    uses = ci.uploadArtifact
+    with {
+      name = "check-diagnostic-messages"
+      path = """
+      check-message-build/
+      check-message-evidence/
+
+      """
+      `if-no-files-found` = "error"
+      `retention-days` = 14
+    }
+  }
+}

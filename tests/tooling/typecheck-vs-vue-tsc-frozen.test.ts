@@ -1,3 +1,5 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { readWorkflowShell } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -308,9 +310,9 @@ test("command failure keeps complete streams/status before any verdict", async (
     const fake = path.join(root, "fake.cjs");
     fs.writeFileSync(
       fake,
-      "#!" +
-        process.execPath +
-        "\nprocess.stdout.write('retained body');process.stderr.write('retained error');process.exitCode=3;\n",
+      readToolingProgram("commands/typecheck-vs-vue-tsc-frozen/retain-terminal-streams.cjs.in", {
+        NODE: process.execPath,
+      }),
     );
     fs.chmodSync(fake, 0o755);
     const out = path.join(root, "call"),
@@ -327,10 +329,7 @@ test("command failure keeps complete streams/status before any verdict", async (
   }
 });
 test("only manual frontdoor executes the fixed cohort; all failure raw is uploaded", () => {
-  const workflow = fs.readFileSync(
-    new URL("../../.github/workflows/typecheck-vs-vue-tsc.yml", import.meta.url),
-    "utf8",
-  );
+  const workflow = readWorkflowShell("typecheck-vs-vue-tsc");
   assert.match(workflow, /if: \$\{\{ github.event_name == 'workflow_dispatch' \}\}/u);
   assert.match(workflow, /git worktree add --detach.*ea22f2cd2aa661b9bdab940e25464eff692b935f/u);
   assert.match(workflow, /node-version: "24.14.0"/u);

@@ -42,6 +42,8 @@ jobs:
   original-projects:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 90
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/lsp-focused-projects"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -75,9 +77,7 @@ jobs:
         continue-on-error: true
         run: node tools/support/compat/github/lsp-focused-campaign.ts dependencies
       - name: Build and receipt one exact-source production server
-        run: |
-          cargo build --profile ci -p vize
-          node tests/differential/build-receipt.ts
+        run: . "${{ env.VIZE_CI_FILES }}/build-and-receipt-one-exact-source-production-server.sh"
       - name: Replay selected complete original LSP packets serially
         id: lifecycle
         # Four unchanged 600s packets, plus custody and process cleanup.
@@ -88,10 +88,7 @@ jobs:
           VIZE_LSP_BIN: target/ci/vize
           VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
           VIZE_LSP_BUILD_RECIPE: "cargo build --profile ci -p vize"
-        run: |
-          test -x "$CORSA_PATH"
-          node tests/tooling/support/lsp/verify-session-captures.ts snapshot "$CAMPAIGN_DIR/lsp-wire-before.json"
-          node tools/support/compat/github/lsp-focused-lifecycle.ts
+        run: . "${{ env.VIZE_CI_FILES }}/replay-selected-complete-original-lsp-packets-serially.sh"
       - name: Verify every source-bound raw session
         if: ${{ always() }}
         run: node tests/tooling/support/lsp/verify-session-captures.ts verify "$CAMPAIGN_DIR/lsp-wire-before.json" "$CAMPAIGN_DIR/lsp-wire-integrity.json"

@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 // Replay the selected original real-project LSP packets serially, retaining
 // every spawn failure, wire verdict and optional resource observation.
 // usage (workflow, CAMPAIGN_DIR and CORSA_PATH set): node lsp-focused-lifecycle.ts
@@ -15,67 +16,6 @@ export const packetCommand = [
   "--test-concurrency=1",
   "tests/tooling/real-project-lsp.test.ts",
 ] as const;
-
-// Reuse the existing Linux sampler without changing the packet or its own
-// Maestro-tree resource oracle. This observer's root also includes the harness
-// and observer; raw PID/birth/exe rows preserve the distinction from native
-// Vize/Corsa work. Trace-only overhead makes these observations unsuitable for
-// paired speed claims.
-export const resourceObserver = `
-import fs from 'node:fs';
-import crypto from 'node:crypto';
-import { createSampler } from './tools/support/compat/davinci/lib/lsp-resource-sampler.ts';
-const [rootPid, directory] = process.argv.slice(1);
-const source = 'tools/support/compat/davinci/lib/lsp-resource-sampler.ts';
-const sampler = createSampler(Number(rootPid));
-const started = process.hrtime.bigint();
-let count = 0;
-const metadata = {
-  sourceRevision: process.env.GITHUB_SHA,
-  samplerSource: source,
-  samplerSha256: crypto.createHash('sha256').update(fs.readFileSync(source)).digest('hex'),
-  rootPid: Number(rootPid),
-  scope: 'workflow harness and sampled descendants, including observer; reparented CPU after leaving the tree is excluded',
-  instrumented: true,
-};
-function record() {
-  const snapshot = sampler.sample();
-  const processes = snapshot.processes.map((entry) => {
-    let executable = null;
-    try { executable = fs.readlinkSync(\`/proc/\${entry.pid}/exe\`); } catch {}
-    return { ...entry, executable };
-  });
-  fs.appendFileSync(\`\${directory}/resource-samples.jsonl\`, JSON.stringify({
-    ...snapshot, processes, wallTime: new Date().toISOString(),
-    elapsedNs: String(process.hrtime.bigint() - started),
-  }) + '\\n');
-  count++;
-  return snapshot;
-}
-record();
-const interval = setInterval(record, 500);
-process.once('SIGTERM', () => {
-  clearInterval(interval);
-  let final;
-  let result;
-  let failure;
-  try { final = record(); } catch (error) { failure = error; }
-  try { result = sampler.stop(); } catch (error) { failure ??= error; }
-  if (failure) {
-    fs.writeFileSync(\`\${directory}/resource-error.txt\`, String(failure));
-    process.exitCode = 1;
-    return;
-  }
-  try {
-    fs.writeFileSync(\`\${directory}/resource-summary.json\`, JSON.stringify({
-      ...metadata, ...result, final, rawSamples: count,
-    }, null, 2) + '\\n');
-  } catch (error) {
-    fs.writeFileSync(\`\${directory}/resource-error.txt\`, String(error));
-    process.exitCode = 1;
-  }
-});
-`;
 
 export class ObserverTimeout extends Error {}
 
@@ -191,7 +131,12 @@ async function replay(
         resourceStreams.push(fs.openSync(path.join(directory, `resource-observer.${stream}`), "w"));
       const [stdout = -1, stderr = -1] = resourceStreams;
       observer = processes.observe(
-        ["node", "--input-type=module", "--eval", resourceObserver, String(process.pid), directory],
+        [
+          "node",
+          fileURLToPath(new URL("./lsp-focused-resource-observer.ts", import.meta.url)),
+          String(process.pid),
+          directory,
+        ],
         stdout,
         stderr,
       );

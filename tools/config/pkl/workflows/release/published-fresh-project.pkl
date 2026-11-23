@@ -1,0 +1,235 @@
+import "../../Actions.pkl" as ci
+
+name = "Published fresh project"
+
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/published-fresh-project.yml"
+      ".github/scripts/workflows/published-fresh-project/**"
+      ".github/workflows/release-verify.yml"
+      ".github/scripts/workflows/release-verify/**"
+      "tools/support/release/verify_published/fresh_project.ts"
+      "tools/support/compat/npm/smoke-loaded-native-package.cjs"
+      "tools/support/release/verify_published/fresh_project_fixture.ts"
+      "tools/support/release/verify_published/lsp_client.ts"
+      "tests/tooling/release/published-fresh-project.test.ts"
+      "tests/tooling/release/release-workflow.test.ts"
+    }
+  }
+  workflow_call {
+    inputs {
+      version {
+        description = "Exact public npm version to qualify"
+        required = true
+        type = "string"
+      }
+      source_ref {
+        description = "Source ref containing the matching verifier"
+        required = true
+        type = "string"
+      }
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      version {
+        description = "Exact public npm version; blank selects the current latest tag"
+        required = false
+        type = "string"
+      }
+      source_ref {
+        description = "Source ref containing the verifier"
+        required = false
+        ["default"] = "main"
+        type = "string"
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+concurrency {
+  group = "published-fresh-project-${{ inputs.version || github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = "${{ github.event_name == 'pull_request' }}"
+}
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+
+jobs {
+  resolve {
+    name = "Resolve the public release"
+    `runs-on` = "ubuntu-24.04"
+    `timeout-minutes` = 5
+    outputs {
+      version = "${{ steps.release.outputs.version }}"
+      source_ref = "${{ steps.release.outputs.source_ref }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("published-fresh-project")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Select an exact version and verifier source"
+        id = "release"
+        shell = "bash"
+        env {
+          REQUESTED_VERSION = "${{ inputs.version }}"
+          REQUESTED_SOURCE = "${{ inputs.source_ref }}"
+          PULL_REQUEST_HEAD = "${{ github.event.pull_request.head.sha }}"
+          EVENT_SHA = "${{ github.sha }}"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/select-an-exact-version-and-verifier-source.sh""#
+      }
+    }
+  }
+
+  `public-hosts` {
+    name = "Public fresh project (${{ matrix.platform }})"
+    needs = "resolve"
+    `runs-on` = "${{ matrix.runner }}"
+    `timeout-minutes` = 20
+    strategy {
+      `fail-fast` = false
+      matrix {
+        include = new Listing {
+          new Dynamic {
+            runner = "ubuntu-22.04"
+            platform = "linux-x64-gnu"
+          }
+          new Dynamic {
+            runner = "ubuntu-22.04-arm"
+            platform = "linux-arm64-gnu"
+          }
+          new Dynamic {
+            runner = "macos-15-intel"
+            platform = "darwin-x64"
+          }
+          new Dynamic {
+            runner = ci.macos
+            platform = "darwin-arm64"
+          }
+          new Dynamic {
+            runner = ci.windows
+            platform = "win32-x64-msvc"
+          }
+          new Dynamic {
+            runner = "windows-11-arm"
+            platform = "win32-arm64-msvc"
+          }
+        }
+      }
+    }
+    steps = new Listing {
+      ci.checkoutAt("${{ needs.resolve.outputs.source_ref }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Initialize and exercise the public npm release"
+        env { VIZE_PUBLISHED_FRESH_EVIDENCE = "${{ runner.temp }}/published-fresh-project/receipt.json" }
+        run = #"node tools/support/release/verify_published/fresh_project.ts "${{ needs.resolve.outputs.version }}""#
+      }
+      new Dynamic {
+        name = "Retain the public fresh-project receipt"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "published-fresh-project-${{ matrix.platform }}-${{ needs.resolve.outputs.version }}"
+          path = "${{ runner.temp }}/published-fresh-project"
+          `if-no-files-found` = "error"
+          `retention-days` = 90
+        }
+      }
+    }
+  }
+
+  `public-musl` {
+    name = "Public fresh project (${{ matrix.platform }})"
+    needs = "resolve"
+    `runs-on` = "${{ matrix.runner }}"
+    `timeout-minutes` = 20
+    strategy {
+      `fail-fast` = false
+      matrix {
+        include = new Listing {
+          new Dynamic {
+            runner = "ubuntu-22.04"
+            platform = "linux-x64-musl"
+          }
+          new Dynamic {
+            runner = "ubuntu-22.04-arm"
+            platform = "linux-arm64-musl"
+          }
+        }
+      }
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("published-fresh-project")
+      ci.checkoutAt("${{ needs.resolve.outputs.source_ref }}")
+      new Dynamic {
+        name = "Initialize and exercise the public npm release in Alpine"
+        shell = "bash"
+        env { RELEASE_VERSION = "${{ needs.resolve.outputs.version }}" }
+        run = #". "${{ env.VIZE_CI_FILES }}/initialize-and-exercise-the-public-npm-release-in-alpine.sh""#
+      }
+      new Dynamic {
+        name = "Retain the public fresh-project receipt"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "published-fresh-project-${{ matrix.platform }}-${{ needs.resolve.outputs.version }}"
+          path = "${{ runner.temp }}/published-fresh-project"
+          `if-no-files-found` = "error"
+          `retention-days` = 90
+        }
+      }
+    }
+  }
+
+  // Bun owns both the package graph and the production server here. Keeping
+  // the project outside the checkout makes a workspace fallback impossible.
+  `public-nuxt-bun` {
+    name = "Public fresh Nuxt (bun, linux-x64-gnu)"
+    needs = "resolve"
+    `runs-on` = "ubuntu-24.04"
+    `timeout-minutes` = 20
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("published-fresh-project")
+      new Dynamic {
+        uses = ci.setupBun
+        with { `bun-version` = "1.3.14" }
+      }
+      new Dynamic {
+        name = "Install, build and serve the exact public Nuxt integration with Bun"
+        env {
+          RELEASE_VERSION = "${{ needs.resolve.outputs.version }}"
+          PROJECT = "${{ runner.temp }}/vize-public-nuxt-bun"
+          DEPLOY = "${{ runner.temp }}/vize-public-nuxt-deploy"
+          EVIDENCE = "${{ runner.temp }}/published-fresh-nuxt"
+          NPM_CONFIG_REGISTRY = "https://registry.npmjs.org/"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/install-build-and-serve-the-exact-public-nuxt-integration-with-bun.sh""#
+      }
+      new Dynamic {
+        name = "Retain the public Nuxt and Bun receipt"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "published-fresh-nuxt-bun-${{ needs.resolve.outputs.version }}"
+          path = "${{ runner.temp }}/published-fresh-nuxt"
+          `if-no-files-found` = "error"
+          `retention-days` = 90
+        }
+      }
+    }
+  }
+}

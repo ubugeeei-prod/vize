@@ -520,6 +520,9 @@ importers:
       playwright:
         specifier: catalog:testing
         version: 1.65.0
+      pythonia:
+        specifier: 1.2.6
+        version: 1.2.6(ws@7.5.14)
       three:
         specifier: catalog:content
         version: 0.187.0
@@ -10222,6 +10225,9 @@ packages:
     resolution: {integrity: sha512-+ys997U96po4Kx/ABpBCqhA9EuxJaQWDQg7295H4hBphv3IZg0boBKuwYpt4YXp6MZ5AmZQnU/tyMTlRpaSejg==}
     engines: {node: '>= 0.4'}
 
+  caller@1.1.0:
+    resolution: {integrity: sha512-n+21IZC3j06YpCWaxmUy5AnVqhmCIM2bQtqQyy00HJlmStRt6kwDX5F9Z97pqwAB+G/tgSz6q/kUBbNyQzIubw==}
+
   camel-case@4.1.2:
     resolution: {integrity: sha512-gxGWBrTT1JuMx6R+o5PTXMmUnhnVzLQ9SNutD4YqKtI6ap897t3tKECYla6gCWEkplXnlNybEkZg9GEGxKFCgw==}
 
@@ -13228,6 +13234,11 @@ packages:
     engines: {node: '>=22.12.0'}
     hasBin: true
 
+  pythonia@1.2.6:
+    resolution: {integrity: sha512-SL/J5+DugD0SP7ohatNps5jSRL+qnAyIOL8MsA6ACsLCml9XY3La1IRnirNkjgPnUItzpiVDGqc2dvBltudHjQ==}
+    peerDependencies:
+      ws: ^7.5.1
+
   qified@0.10.1:
     resolution: {integrity: sha512-+Owyggi9IxT1ePKGafcI87ubSmxol6smwJ+RAHDQlx9+9cPwFWDiKFFCPuWhr9ignlGpZ9vDQLw67N4dcTVFEA==}
     engines: {node: '>=20'}
@@ -14988,6 +14999,18 @@ packages:
 
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
+
+  ws@7.5.14:
+    resolution: {integrity: sha512-u9Oi2nQ8SZnTUAf6spLLKF5TyqoG3Nbbrd4ai6Sjo4P24bycDewhQqtNMIg4bFpnpH/TD4qk4IuAVhT0HIIqug==}
+    engines: {node: '>=8.3.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: ^5.0.2
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
 
   ws@8.22.1:
     resolution: {integrity: sha512-oyL6OPYme/CmiFvNuGzeoxCJ4nOrZE2O1FwM9MWM1AsGri6nLXB2pg+lNA8aLeXMSav0J6eIVS1j6vUPzUtK9g==}
@@ -23170,6 +23193,8 @@ snapshots:
       call-bind-apply-helpers: 1.0.2
       get-intrinsic: 1.3.0
 
+  caller@1.1.0: {}
+
   camel-case@4.1.2:
     dependencies:
       pascal-case: 3.1.2
@@ -26919,6 +26944,12 @@ snapshots:
       - utf-8-validate
       - yauzl
 
+  pythonia@1.2.6(ws@7.5.14):
+    dependencies:
+      caller: 1.1.0
+      chalk: 4.1.2
+      ws: 7.5.14
+
   qified@0.10.1:
     dependencies:
       hookified: 2.2.0
@@ -29400,6 +29431,8 @@ snapshots:
       strip-ansi: 7.2.0
 
   wrappy@1.0.2: {}
+
+  ws@7.5.14: {}
 
   ws@8.22.1: {}
 

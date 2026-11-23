@@ -1,0 +1,10 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  git push origin "HEAD:refs/tags/$RELEASE_TAG"
+  git push origin ":$RELEASE_CANDIDATE"
+  """#
+}

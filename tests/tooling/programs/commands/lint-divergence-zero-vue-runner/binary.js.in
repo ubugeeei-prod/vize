@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+import fs from "node:fs";
+if (process.argv[2] === "--version") process.exit(0);
+if (process.argv[2] !== "lint") process.exit(2);
+fs.appendFileSync(@@MARKER@@, JSON.stringify(process.argv.slice(2)) + "\n");
+process.stdout.write(
+  JSON.stringify(fs.existsSync("App.vue") ? [{ file: "App.vue", messages: [] }] : []),
+);

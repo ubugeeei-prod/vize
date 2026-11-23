@@ -1,3 +1,5 @@
+import { readToolingProgram } from "../tooling/support/program-path.ts";
+import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -18,7 +20,11 @@ export function inspectPrepareNode(binary: string, env: NodeJS.ProcessEnv) {
   const actual: { execPath: string; version: string } = JSON.parse(
     execFileSync(
       executable,
-      ["-p", "JSON.stringify({execPath:process.execPath,version:process.version})"],
+      [
+        fileURLToPath(new URL("../../tools/support/node-runtime-identity.cjs", import.meta.url)),
+        "execPath",
+        "version",
+      ],
       { env: scoped, encoding: "utf8", timeout: 10_000 },
     ),
   );
@@ -70,7 +76,7 @@ export function execBoundPrepareNpx(
     shell,
     windows
       ? '@echo off\r\nset "PATH=%VIZE_APP_CHECK_PREPARE_BIN%;%PATH%"\r\n"%ComSpec%" /d /s /c %~2\r\n'
-      : '#!/bin/sh\nPATH="$VIZE_APP_CHECK_PREPARE_BIN:$PATH"\nexport PATH\nexec /bin/sh "$@"\n',
+      : readToolingProgram("commands/nuxt-check-runtime/prepare-isolated-path.sh"),
     { mode: 0o755 },
   );
   try {

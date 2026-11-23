@@ -1,3 +1,5 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { workspaceTaskSteps } from "../../tools/config/vite-plus/task-plan.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -6,85 +8,55 @@ import { test } from "node:test";
 
 import { commandExists } from "../../tools/config/vite-plus/root-build-task-plugin.ts";
 import {
-  getTaskShellLocaleAssignments,
+  workspaceTaskEnvironment,
   normalizeTaskShellLocale,
-  shellCommand,
-  shellCommandForwardingArguments,
-  withRustTaskEnvironment,
 } from "../../tools/config/vite-plus/task-shell.ts";
 import { checkTasks } from "../../tools/config/vite-plus/tasks/check.ts";
 import { releaseTasks } from "../../tools/config/vite-plus/tasks/release.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
-test("macOS task shells fall back from C.UTF-8 to an installed UTF-8 locale", () => {
-  assert.deepEqual(
-    getTaskShellLocaleAssignments("darwin", {
-      LC_ALL: "C.UTF-8",
-      LC_CTYPE: "C.UTF-8",
-      LANG: "C.UTF-8",
-    }),
-    ["LC_ALL='en_US.UTF-8'", "LC_CTYPE='en_US.UTF-8'", "LANG='en_US.UTF-8'"],
-  );
-});
-
-test("non-macOS task shells do not rewrite C.UTF-8", () => {
-  assert.deepEqual(
-    getTaskShellLocaleAssignments("linux", {
-      LC_ALL: "C.UTF-8",
-      LC_CTYPE: "C.UTF-8",
-      LANG: "C.UTF-8",
-    }),
-    [],
-  );
-});
-
-test("task shell commands apply locale before sh starts", () => {
-  assert.equal(
-    shellCommand("cd examples/vite-musea && pnpm run check", ["LC_ALL='en_US.UTF-8'"]),
-    "env LC_ALL='en_US.UTF-8' sh -c 'cd examples/vite-musea && pnpm run check'",
-  );
-});
-
-test("task shell commands can forward Vite+ task arguments", () => {
-  assert.equal(
-    shellCommandForwardingArguments('node tools/support/release/release/main.ts "$@"', []),
-    "sh -c 'node tools/support/release/release/main.ts \"$@\"' --",
-  );
-});
-
-test("Rust task environments preserve forwarded arguments", () => {
-  const command = withRustTaskEnvironment('node tools/support/release/release/main.ts "$@"', {
-    forwardArguments: true,
+test("task environments preserve the caller's locale and Rust settings", () => {
+  const env = {
+    LANG: "C.UTF-8",
+    VIZE_DARWIN_LIBICONV_LIB: "/nix/iconv/lib",
+    LIBRARY_PATH: "/existing",
+    RUSTFLAGS: "--cfg caller",
+  };
+  const mac = workspaceTaskEnvironment("darwin", env);
+  assert.deepEqual(mac, {
+    ...env,
+    LC_ALL: "en_US.UTF-8",
+    LC_CTYPE: "en_US.UTF-8",
+    LANG: "en_US.UTF-8",
+    LIBRARY_PATH: "/nix/iconv/lib:/existing",
+    RUSTFLAGS: "-L native=/nix/iconv/lib --cfg caller",
   });
-
-  assert.match(command, /sh -c .*node tools\/support\/release\/release\/main\.ts "\$@"/);
-  assert.match(command, / --$/);
+  assert.deepEqual(workspaceTaskEnvironment("darwin", mac), mac);
+  assert.deepEqual(workspaceTaskEnvironment("linux", { LANG: "C.UTF-8" }), { LANG: "C.UTF-8" });
+  assert.equal(env.LANG, "C.UTF-8");
 });
 
-test("release task dispatches the Release workflow and forwards vp run arguments", () => {
-  const command = (releaseTasks.release as { command: string }).command;
-
-  assert.match(command, /node tools\/support\/release\/release\/main\.ts dispatch "\$@"/);
-  assert.doesNotMatch(command, /VIZE_RELEASE_REGISTRY_REFRESH|moon/);
-  assert.match(command, / --$/);
+test("the release task forwards arguments to the Release workflow dispatcher", () => {
+  assert.deepEqual(workspaceTaskSteps(releaseTasks.release), [
+    { program: "node", arguments: ["tools/support/release/release/main.ts", "dispatch"] },
+  ]);
 });
 
-test("repository JS check enforces the v1 alpha warning budget", () => {
-  const command = (checkTasks["check:repo"] as { command: string }).command;
-
-  assert.match(
-    command,
-    /'node' 'tools\/commands\/ci\/check-warning-budget\.ts' '--' '\.\/node_modules\/\.bin\/vp' 'check'/,
-  );
-});
-
-test("iteration JS checks keep the warning budget without repository verification projects", () => {
-  const iteration = (checkTasks["check:iteration"] as { command: string }).command;
-  const full = (checkTasks["check:repo"] as { command: string }).command;
-
-  assert.equal(iteration, full.split(" && ")[0]);
-  assert.doesNotMatch(iteration, /check-project|rust-script/);
-  assert.match(full, / && node tools\/support\/typescript\/check-project\.ts$/);
+test("iteration checks enforce the warning budget and the full repo check then checks all TypeScript projects", () => {
+  const budget = {
+    program: "node",
+    arguments: [
+      "tools/commands/ci/check-warning-budget.ts",
+      "--",
+      "./node_modules/.bin/vp",
+      "check",
+    ],
+  };
+  assert.deepEqual(workspaceTaskSteps(checkTasks["check:iteration"]), [budget]);
+  assert.deepEqual(workspaceTaskSteps(checkTasks["check:repo"]), [
+    budget,
+    { program: "node", arguments: ["tools/support/typescript/check-project.ts"] },
+  ]);
 });
 
 test("normalizing a macOS C.UTF-8 environment updates child-process locale variables", () => {
@@ -111,7 +83,9 @@ test("root build command lookup checks PATH without executing the command", () =
     writeFakeCommand(
       binDir,
       "side-effect-tool",
-      `require("node:fs").writeFileSync(${JSON.stringify(sentinelPath)}, "ran");`,
+      readToolingProgram("commands/task-shell/side-effect-tool.js.in", {
+        SENTINEL_PATH: JSON.stringify(sentinelPath),
+      }),
     );
 
     assert.equal(commandExists("side-effect-tool", { PATH: binDir }), true);

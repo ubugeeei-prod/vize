@@ -1,0 +1,62 @@
+import "../../Actions.pkl" as ci
+
+name = "Production reach accounting"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/production-reach-accounting.yml"
+      ".github/scripts/workflows/production-reach-accounting/**"
+      "crates/vize_atelier_sfc/tests/davinci_production_reach.rs"
+      "crates/vize_atelier_sfc/tests/davinci_production_reach/**"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "production-reach-accounting-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  CARGO_TERM_COLOR = "never"
+  CARGO_BUILD_JOBS = "24"
+}
+jobs {
+  `committed-corpus` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/production-reach-accounting"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "clippy-test"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Verify complete original component-handler production parity"
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-complete-original-component-handler-production-parity.sh""#
+      }
+      new Dynamic {
+        name = "Hold complete committed-corpus parity, selection accounting and reach floors"
+        run = #". "${{ env.VIZE_CI_FILES }}/hold-complete-committed-corpus-parity-selection-accounting-and-reach-flo.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "production-reach-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "production-reach-*.log"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

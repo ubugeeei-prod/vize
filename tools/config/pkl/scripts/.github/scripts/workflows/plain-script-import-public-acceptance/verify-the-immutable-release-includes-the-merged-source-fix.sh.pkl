@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.requireCheckout("SOURCE_SHA")
+  #"node "$VIZE_CI_FILES/verify-the-immutable-release-includes-the-merged-source-fix.ts""#
+}
