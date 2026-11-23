@@ -5,10 +5,21 @@ on:
       - ".github/workflows/ir-pass-composition.yml"
       - "tools/benchmarks/crates/davinci_harness/src/paired.rs"
       - "davinci/vize_l0/Cargo.toml"
+      - davinci/vize_l0/src/diag/witness.rs
       - "davinci/vize_l0/src/pass.rs"
       - "davinci/vize_l0/src/pass/**"
       - "davinci/vize_l0/tests/grouped_passes.rs"
+      - crates/vize_incremental/Cargo.toml
+      - crates/vize_incremental/src/lib.rs
+      - crates/vize_incremental/src/template.rs
+      - crates/vize_incremental/src/template/**
+      - crates/vize_incremental/tests/template_passes/**
       - crates/vize_maestro/Cargo.toml
+      - crates/vize_maestro/src/document/store.rs
+      - crates/vize_maestro/src/source_project.rs
+      - crates/vize_maestro/src/source_project/template.rs
+      - crates/vize_maestro/src/source_project/snapshot.rs
+      - crates/vize_maestro/src/source_project/template/**
       - crates/vize_maestro/src/source_project/query.rs
       - crates/vize_maestro/tests/original_template_requests.rs
       - crates/vize_patina/Cargo.toml
@@ -17,6 +28,7 @@ on:
       - crates/vize_patina/tests/original_template_lint.rs
       - crates/vize_patina/tests/original_template_lint/**
       - tests/formal/template-lint/**
+      - tests/formal/ir-graph/TemplateProjection.lean
       - davinci/vize_l1/Cargo.toml
       - davinci/vize_l1/src/container/vue.rs
       - davinci/vize_l1/src/container/vue/descriptor.rs
@@ -115,6 +127,12 @@ jobs:
           kani-version: 0.68.0
           command: kani
           args: crates/vize_patina/src/rules/facts/max_template_complexity/original/kani.rs --output-format=terse
+      - name: Check the editor's Rust projection on arbitrary UTF-8 ranges
+        uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
+        with:
+          kani-version: 0.68.0
+          command: kani
+          args: crates/vize_incremental/src/template/kani.rs --output-format=terse
   partition:
     name: Prove the Rust group cursor partitions every bounded plan
     runs-on: blacksmith-32vcpu-ubuntu-2404

@@ -4,7 +4,10 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { templateLabelRanking } from "../../tools/support/retired-tooling-languages.ts";
+import {
+  templateLabelRanking,
+  templateSpanProjection,
+} from "../../tools/support/retired-tooling-languages.ts";
 import {
   codenames,
   evaluate,
@@ -153,16 +156,27 @@ void test("workspace members are read from the real Cargo.toml", () => {
   assert.ok(members.includes("davinci/vize_l0"));
 });
 
-void test("the template label theorem requires its production insertion and Kani harness", () => {
+void test("each template theorem requires its own Rust implementation and Kani harness", () => {
   const formal = gates.find((gate) => gate.id === "formal.rust-only")?.measure;
   assert.ok(formal);
-  const { theorem, kernel, harness } = templateLabelRanking;
-  assert.equal(formal(memory({ [theorem]: "", [kernel]: "", [harness]: "" })).pass, true);
-  assert.equal(formal(memory({ [theorem]: "", [kernel]: "" })).pass, false);
-  assert.equal(formal(memory({ [theorem]: "", [harness]: "" })).pass, false);
+  for (const { theorem, kernel, harness } of [templateLabelRanking, templateSpanProjection]) {
+    assert.equal(formal(memory({ [theorem]: "", [kernel]: "", [harness]: "" })).pass, true);
+    assert.equal(formal(memory({ [theorem]: "", [kernel]: "" })).pass, false);
+    assert.equal(formal(memory({ [theorem]: "", [harness]: "" })).pass, false);
+    assert.equal(
+      formal(memory({ [kernel]: "", [harness]: "", "tests/formal/template-lint/Other.lean": "" }))
+        .pass,
+      false,
+    );
+  }
   assert.equal(
-    formal(memory({ [kernel]: "", [harness]: "", "tests/formal/template-lint/Other.lean": "" }))
-      .pass,
+    formal(
+      memory({
+        [templateLabelRanking.kernel]: "",
+        [templateSpanProjection.harness]: "",
+        [templateSpanProjection.theorem]: "",
+      }),
+    ).pass,
     false,
   );
 });
