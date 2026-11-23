@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
@@ -14,82 +14,91 @@ const entrypoints = new Set([
   "runInThisContext",
 ]);
 
-function literalProgram(node: ts.Expression): boolean {
-  if (ts.isParenthesizedExpression(node)) return literalProgram(node.expression);
+const vmModule = (name: ts.Node | undefined) =>
+  name !== undefined &&
+  ts.isStringLiteralLike(name) &&
+  (name.text === "node:vm" || name.text === "vm");
+
+function literalProgram(
+  node: ts.Expression,
+  checker: ts.TypeChecker,
+  seen = new Set<ts.Declaration>(),
+): boolean {
   if (ts.isStringLiteralLike(node)) return true;
-  return (
-    ts.isBinaryExpression(node) &&
-    node.operatorToken.kind === ts.SyntaxKind.PlusToken &&
-    literalProgram(node.left) &&
-    literalProgram(node.right)
-  );
+  if (ts.isParenthesizedExpression(node)) return literalProgram(node.expression, checker, seen);
+  if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.PlusToken) {
+    return literalProgram(node.left, checker, seen) && literalProgram(node.right, checker, seen);
+  }
+  if (!ts.isIdentifier(node)) return false;
+  const declaration = checker.getSymbolAtLocation(node)?.valueDeclaration;
+  if (
+    !declaration ||
+    seen.has(declaration) ||
+    !ts.isVariableDeclaration(declaration) ||
+    !(declaration.parent.flags & ts.NodeFlags.Const) ||
+    !declaration.initializer
+  )
+    return false;
+  return literalProgram(declaration.initializer, checker, new Set(seen).add(declaration));
 }
 
-function vmEntrypoints(source: ts.SourceFile) {
-  const namespaces = new Set<string>();
-  const names = new Set<string>();
-  for (const statement of source.statements) {
-    if (
-      ts.isImportDeclaration(statement) &&
-      ts.isStringLiteral(statement.moduleSpecifier) &&
-      statement.moduleSpecifier.text === "node:vm"
-    ) {
-      const clause = statement.importClause;
-      if (clause?.name) namespaces.add(clause.name.text);
-      const bindings = clause?.namedBindings;
-      if (!bindings) continue;
-      if (ts.isNamespaceImport(bindings)) {
-        namespaces.add(bindings.name.text);
-      } else {
-        for (const entry of bindings.elements) {
-          if (entrypoints.has((entry.propertyName ?? entry.name).text)) names.add(entry.name.text);
-        }
+function loadsVm(node: ts.Expression | undefined, checker: ts.TypeChecker): boolean {
+  if (
+    !node ||
+    !ts.isCallExpression(node) ||
+    !ts.isIdentifier(node.expression) ||
+    node.expression.text !== "require" ||
+    !vmModule(node.arguments[0])
+  )
+    return false;
+  return !checker.getSymbolAtLocation(node.expression)?.declarations?.length;
+}
+
+function vmBinding(node: ts.Expression, checker: ts.TypeChecker): string | undefined {
+  if (loadsVm(node, checker)) return "*";
+  if (!ts.isIdentifier(node)) return;
+  const symbol = checker.getSymbolAtLocation(node);
+  for (const declaration of symbol?.declarations ?? []) {
+    const imported = ts.findAncestor(declaration, ts.isImportDeclaration);
+    if (imported && vmModule(imported.moduleSpecifier)) {
+      if (ts.isImportClause(declaration) || ts.isNamespaceImport(declaration)) return "*";
+      if (ts.isImportSpecifier(declaration)) {
+        const name = (declaration.propertyName ?? declaration.name).text;
+        return name === "default" ? "*" : name;
       }
     }
-    if (!ts.isVariableStatement(statement)) continue;
-    for (const declaration of statement.declarationList.declarations) {
-      const load = declaration.initializer;
+    if (ts.isVariableDeclaration(declaration) && loadsVm(declaration.initializer, checker))
+      return "*";
+    if (ts.isBindingElement(declaration) && ts.isObjectBindingPattern(declaration.parent)) {
+      const owner = declaration.parent.parent;
+      const name = declaration.propertyName ?? declaration.name;
       if (
-        !load ||
-        !ts.isCallExpression(load) ||
-        !ts.isIdentifier(load.expression) ||
-        load.expression.text !== "require" ||
-        !load.arguments[0] ||
-        !ts.isStringLiteral(load.arguments[0]) ||
-        load.arguments[0].text !== "node:vm"
+        ts.isVariableDeclaration(owner) &&
+        loadsVm(owner.initializer, checker) &&
+        (ts.isIdentifier(name) || ts.isStringLiteralLike(name))
       )
-        continue;
-      if (ts.isIdentifier(declaration.name)) namespaces.add(declaration.name.text);
-      if (!ts.isObjectBindingPattern(declaration.name)) continue;
-      for (const entry of declaration.name.elements) {
-        const original = entry.propertyName ?? entry.name;
-        if (
-          ts.isIdentifier(original) &&
-          ts.isIdentifier(entry.name) &&
-          entrypoints.has(original.text)
-        ) {
-          names.add(entry.name.text);
-        }
-      }
+        return name.text;
     }
   }
-  return (method: ts.Expression): boolean =>
-    ts.isIdentifier(method)
-      ? names.has(method.text)
-      : ts.isPropertyAccessExpression(method) &&
-        ts.isIdentifier(method.expression) &&
-        namespaces.has(method.expression.text) &&
-        entrypoints.has(method.name.text);
 }
 
 function inlineVmPrograms(file: string, text: string): number[] {
-  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
-  const isVmEntrypoint = vmEntrypoints(source);
+  const filename = resolve(file);
+  const source = ts.createSourceFile(filename, text, ts.ScriptTarget.Latest, true);
+  const options: ts.CompilerOptions = { allowJs: true, noResolve: true, noLib: true, types: [] };
+  const host = ts.createCompilerHost(options);
+  host.getSourceFile = (name) => (name === filename ? source : undefined);
+  const checker = ts.createProgram([filename], options, host).getTypeChecker();
   const lines: number[] = [];
   function visit(node: ts.Node): void {
     if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
       const argument = node.arguments?.[0];
-      if (argument && isVmEntrypoint(node.expression) && literalProgram(argument)) {
+      const target = node.expression;
+      const method =
+        ts.isPropertyAccessExpression(target) && vmBinding(target.expression, checker) === "*"
+          ? target.name.text
+          : vmBinding(target, checker);
+      if (argument && method && entrypoints.has(method) && literalProgram(argument, checker)) {
         lines.push(source.getLineAndCharacterOfPosition(argument.getStart(source)).line + 1);
       }
     }
@@ -116,14 +125,28 @@ test("VM drivers use named programs and accept source supplied by the compiler",
   assert.deepEqual(inlineVmPrograms("controls.ts", source), [2, 3, 4, 9, 11]);
 });
 
+test("VM imports resolve to their declaration through local scopes", () => {
+  const source = [
+    'import vm, { runInContext } from "node:vm";',
+    'function local() { const { runInContext: run } = require("vm"); run("install()", context); }',
+    'function shadow(vm, runInContext) { vm.runInContext("case"); runInContext("case"); }',
+    'function localName() { const vm = browser; vm.runInContext("case"); }',
+    'function alias(require) { const vm = require("node:vm"); vm.runInContext("case"); }',
+    'function actual() { const body = "install()"; vm.runInContext(body, context); }',
+    'runInContext("observe()", context);',
+    'require("node:vm").runInThisContext("observe()");',
+  ].join("\n");
+  assert.deepEqual(inlineVmPrograms("nested.ts", source), [2, 6, 7, 8]);
+});
+
 test("repository VM entrypoints load their authored programs from files", () => {
   const root = fileURLToPath(new URL("../../", import.meta.url));
   const files = execFileSync(
     "git",
     [
       "grep",
-      "-Ilz",
-      "node:vm",
+      "-IlzE",
+      `['"](node:)?vm['"]`,
       "--",
       "*.ts",
       "*.tsx",

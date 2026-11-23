@@ -11,8 +11,11 @@ const workflow = parse(
   ),
 );
 const job = workflow.jobs["native-phases"];
-const historicalProjectionCondition =
-  "github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.historical_projection_receipt)";
+const historicalProjectionCondition = job.steps.find(
+  (step: { name?: string }) =>
+    step.name ===
+    "Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor",
+)?.if;
 
 function evaluate(value: string, github: object, inputs: object = {}) {
   const expression = /^\$\{\{\s*(.*?)\s*\}\}$/.exec(value)?.[1];
@@ -33,12 +36,8 @@ void test("historical native phase campaigns run only on schedule or explicit im
   });
   assert.equal(job.if, undefined);
   assert.equal(
-    job.steps.find(
-      (step: { name?: string }) =>
-        step.name ===
-        "Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor",
-    )?.if,
     historicalProjectionCondition,
+    "github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.historical_projection_receipt)",
   );
   for (const name of [
     "Qualify original outside-import types with the source CLI and official native oracle",
