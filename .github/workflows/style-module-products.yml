@@ -197,7 +197,7 @@ jobs:
           command: kani
           args: davinci/vize_l4/src/write/source_map/indexed/kani.rs --output-format=terse
       - name: Compare nearest line starts with the LSP iterator on arbitrary short bytes
-        run: cargo kani --manifest-path davinci/vize_l0/Cargo.toml --features lsp-line-break-search --tests --lib --harness nearest_lsp_line_starts_match_every_short_byte_slice --output-format=terse
+        run: env RUSTFLAGS=-Ctarget-feature=+avx2 cargo kani --manifest-path davinci/vize_l0/Cargo.toml --features lsp-line-break-search --tests --lib --harness nearest_lsp_line_starts_match_every_short_byte_slice --output-format=terse
       - name: Verify authored positions for arbitrary finite Unicode text
         run: |
           set -euo pipefail
