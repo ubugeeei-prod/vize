@@ -146,14 +146,13 @@ fn authored_candidates_identify_the_public_file_rename_edits() {
 }
 
 #[test]
-fn jsx_host_suffix_matches_the_editor_dispatcher() {
+fn jsx_hosts_use_the_standalone_editor_dispatcher() {
     for first in ["j", "J", "t", "T"] {
         for second in ["s", "S"] {
             for third in ["x", "X"] {
                 for prefix in ["", "/projects/雪🌱", "/projects/many.dots/App.vue"] {
                     let path = vize_l0::cstr!("{prefix}.{first}{second}{third}");
                     assert!(crate::utils::is_jsx_path(&path));
-                    assert!(is_jsx_host(&path));
                 }
             }
         }
@@ -171,19 +170,19 @@ fn jsx_host_suffix_matches_the_editor_dispatcher() {
         "A.jsxx",
         ".jsX\u{301}",
     ] {
-        assert_eq!(is_jsx_host(path), crate::utils::is_jsx_path(path), "{path}");
+        assert!(!crate::utils::is_jsx_path(path), "{path}");
     }
     let state = ServerState::new();
     let cache = SourceSnapshotCache::default();
     let text = "<script setup>import './leaf';</script>";
-    for name in [".JsX", "Leaf.tSX", "Leaf.tsx.vue"] {
+    for (name, standalone) in [(".JsX", true), ("Leaf.tSX", true), ("Leaf.tsx.vue", false)] {
         let uri = Url::parse(&vize_l0::cstr!("file:///projects/{name}")).unwrap();
         state
             .documents
             .open(uri.clone(), text.into(), 1, "vue".into());
         let snapshot = cache.capture(&state.documents, &uri).unwrap();
         let result = snapshot.script_query_products(&state);
-        if crate::utils::is_jsx_path(uri.path()) {
+        if standalone {
             assert_eq!(result, Err(ScriptQueryRefusal::Language));
         } else {
             assert_eq!(
