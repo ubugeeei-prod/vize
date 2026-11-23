@@ -112,3 +112,66 @@ fn checker_rejects_changed_outputs_and_same_css_with_a_different_definition() {
         Err(ScssMismatch::Replacement(_))
     ));
 }
+
+#[test]
+fn header_validation_uses_real_attribute_names_order_and_optional_values() {
+    for (before, after, accepted) in [
+        ("", "", true),
+        (
+            "scoped lang='scss' module='雪'",
+            "module='雪' lang='scss' scoped",
+            true,
+        ),
+        ("module", "module=''", false),
+        ("scoped lang='scss'", "scoped", false),
+        ("scoped module='雪'", "module='雨' scoped", false),
+        ("lang='scss' scoped", "scoped lang='css'", false),
+    ] {
+        let left = format!("<template><i/></template><style {before}>a{{}}</style>");
+        let right = format!("<template><i/></template><style {after}>a{{}}</style>");
+        let arena = Allocator::default();
+        let left = Vue.observe_descriptor(&arena, &left, options());
+        let right = Vue.observe_descriptor(&arena, &right, options());
+        let left = style_at(&left, 0).unwrap();
+        let right = style_at(&right, 0).unwrap();
+        assert_eq!(
+            same_header(left, right),
+            accepted,
+            "{before:?} -> {after:?}"
+        );
+    }
+}
+
+#[test]
+fn duplicate_and_dynamic_style_flags_retain_their_spelling_and_refuse_an_edit() {
+    use vize_l1::container::vue::DescriptorIssueCode::{DuplicateAttribute, UnsupportedAttribute};
+    for (attrs, expected, issue) in [
+        (
+            ":lang='expr' scoped",
+            [(":lang", Some("expr")), ("scoped", None)],
+            UnsupportedAttribute,
+        ),
+        (
+            "scoped scoped",
+            [("scoped", None), ("scoped", None)],
+            DuplicateAttribute,
+        ),
+    ] {
+        let text = format!("<template><i/></template><style {attrs}>a{{}}</style>");
+        let arena = Allocator::default();
+        let owner = Vue.observe_descriptor(&arena, &text, options());
+        let block = owner
+            .container()
+            .blocks
+            .iter()
+            .find(|b| b.name == "style")
+            .unwrap();
+        let spellings: Vec<_> = block.attrs.iter().map(|a| (a.name, a.value)).collect();
+        assert_eq!(spellings, expected);
+        assert!(owner.issues().iter().any(|entry| entry.code == issue));
+        assert!(matches!(
+            style_at(&owner, 0),
+            Err(StyleFormatError::Descriptor)
+        ));
+    }
+}

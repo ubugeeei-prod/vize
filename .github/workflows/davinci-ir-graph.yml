@@ -43,6 +43,10 @@ jobs:
           cargo test --locked --profile ci-opt -p vize_l2_to_l3 --features graph-queries --test native_ir_corpus -- --ignored --nocapture
           cargo test --locked --manifest-path crates/vize_incremental/providers/graph/Cargo.toml --profile ci-opt --test source_revisions -- --ignored --nocapture
           cargo run --locked --manifest-path crates/vize_incremental/providers/graph/Cargo.toml --profile ci-opt --example profile
+      - name: Measure authored graph source lookups independently
+        run: cargo run --locked --manifest-path crates/vize_incremental/providers/graph/Cargo.toml --profile ci-opt --example source_sites
+      - name: Measure retained recovery source lookups independently
+        run: cargo run --locked --manifest-path crates/vize_incremental/providers/graph/Cargo.toml --profile ci-opt --example recovery_sites
   models:
     name: Reachability theory and snapshot publication
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -84,6 +88,8 @@ jobs:
           set -euo pipefail
           "$RUNNER_TEMP/lean-4.33.1-linux/bin/lean" -DwarningAsError=true Reach.lean | tee "$RUNNER_TEMP/theorem"
           grep -Fx "'Davinci.exact_answer' does not depend on any axioms" "$RUNNER_TEMP/theorem"
+          grep -Fx "'Davinci.authored_slice' depends on axioms: [propext, Quot.sound]" "$RUNNER_TEMP/theorem"
+          grep -Fx "'Davinci.recovery_sites_exact' depends on axioms: [propext, Quot.sound]" "$RUNNER_TEMP/theorem"
           java -Djava.awt.headless=true -jar "$RUNNER_TEMP/alloy.jar" exec -q -c '*' -t none -o "$RUNNER_TEMP/instance" Reach.als
           jq -e '.commands | keys == ["DisconnectedCycle","Exact","MissedSuccessor","ParallelCycle"] and (.Exact | .type == "check" and (.solution | length) == 0) and ([.DisconnectedCycle,.MissedSuccessor,.ParallelCycle] | all(.type == "run" and (.solution | length) == 1))' "$RUNNER_TEMP/instance/receipt.json"
           grep -Fx "'Davinci.exact_trails' depends on axioms: [propext, Classical.choice, Quot.sound]" "$RUNNER_TEMP/theorem"

@@ -15,13 +15,16 @@ fn read_trails(db: &ResidentDatabase, file: SourceFile) -> Result<Vec<Row>, Temp
         first: step,
         second: step,
     };
+    let sites = graph.source_sites();
+    let resolve = |id| {
+        let (span, spelling) = sites.get(id).unwrap();
+        assert_eq!(graph.authored_span(id), Ok(span));
+        assert_eq!(span.slice(file.text(db).as_str()), spelling);
+        span
+    };
     let mut rows = Vec::new();
     let result = graph.visit_two_hop(query, |row| {
-        rows.push((
-            row,
-            graph.authored_span(row.middle).unwrap(),
-            graph.authored_span(row.end).unwrap(),
-        ));
+        rows.push((row, resolve(row.middle), resolve(row.end)));
         ControlFlow::<()>::Continue(())
     })?;
     assert_eq!(result, ControlFlow::Continue(()));

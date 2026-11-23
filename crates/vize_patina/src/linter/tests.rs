@@ -59,3 +59,13 @@ mod typed_prop_defaults;
 mod typescript_only_script_rules;
 mod v_for_unused_vars;
 mod vue_script_suppressions;
+
+/// Keep temporary checker projects under the workspace so TypeScript can resolve
+/// its packages, outside the crate sources swept by the repository corpus.
+pub(super) fn scratch_project_root() -> std::path::PathBuf {
+    std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .ancestors()
+        .nth(2)
+        .expect("Patina lives under the workspace crates directory")
+        .join("target/vize-tests")
+}

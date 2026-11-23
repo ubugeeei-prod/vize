@@ -105,4 +105,35 @@ theorem exact_trails {E O : Type} [DecidableEq E] [DecidableEq O]
 
 #print axioms exact_trails
 
+/-- The original bytes of an operation survive projection from a retained
+    block into the document for any prefix and suffix, including empty spans. -/
+theorem authored_slice {Byte : Type} (before block after : List Byte) (lo hi : Nat)
+    (ordered : lo ≤ hi) (inside : hi ≤ block.length) :
+    ((before ++ (block ++ after)).drop (before.length + lo)).take (hi - lo) =
+      (block.drop lo).take (hi - lo) := by
+  rw [List.drop_length_add_append, List.drop_append_of_le_length (Nat.le_trans ordered inside)]
+  exact List.take_append_of_le_length (by simpa using Nat.sub_le_sub_right inside lo)
+
+#print axioms authored_slice
+
+/-- Retained diagnostics, related labels and witness links may repeat or overlap.
+    After projection their payloads, order, file ranges and exact spelling agree
+    with directly reading every occurrence from the current document. -/
+theorem recovery_sites_exact {Byte Label : Type} (before block after : List Byte)
+    (sites : List (Label × Nat × Nat))
+    (valid : ∀ site ∈ sites, site.2.1 ≤ site.2.2 ∧ site.2.2 ≤ block.length) :
+    sites.map (fun (label, lo, hi) =>
+      (label, before.length + lo, before.length + hi,
+       ((before ++ (block ++ after)).drop (before.length + lo)).take (hi - lo))) =
+    sites.map (fun (label, lo, hi) =>
+      (label, before.length + lo, before.length + hi, (block.drop lo).take (hi - lo))) := by
+  apply List.map_congr_left
+  intro site member
+  obtain ⟨label, lo, hi⟩ := site
+  obtain ⟨ordered, inside⟩ := valid _ member
+  exact congrArg (fun bytes => (label, before.length + lo, before.length + hi, bytes))
+    (authored_slice before block after lo hi ordered inside)
+
+#print axioms recovery_sites_exact
+
 end Davinci
