@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -20,7 +21,7 @@ const content = "verified pinned editor bytes";
 const checksum = createHash("sha256").update(content).digest("hex");
 
 test("both VS Code host suites run after a bounded pinned editor download", () => {
-  const action = readFileSync(path.join(path.dirname(script), "action.yml"), "utf8");
+  const action = readAutomationPrograms(path.join(path.dirname(script), "action.yml"));
   const downloadAt = action.indexOf("- name: Download pinned VS Code with a total time budget");
   assert.ok(downloadAt >= 0);
   for (const name of [
@@ -35,7 +36,7 @@ test("both VS Code host suites run after a bounded pinned editor download", () =
 });
 
 test("the large pinned Zed asset gets a scoped transfer budget with a hard total bound", () => {
-  const action = readFileSync(path.join(path.dirname(script), "action.yml"), "utf8");
+  const action = readAutomationPrograms(path.join(path.dirname(script), "action.yml"));
   const step = action
     .split("- name: Install pinned Zed extension CLI")[1]
     .split(/\n {4}- name: /)[0];
@@ -50,7 +51,7 @@ test("the large pinned Zed asset gets a scoped transfer budget with a hard total
 });
 
 test("Zed grammar packaging uses the pinned WASI SDK through the verified downloader", () => {
-  const action = readFileSync(path.join(path.dirname(script), "action.yml"), "utf8");
+  const action = readAutomationPrograms(path.join(path.dirname(script), "action.yml"));
   const workflow = readFileSync(
     path.resolve(path.dirname(script), "../../workflows/release-zed-host.yml"),
     "utf8",

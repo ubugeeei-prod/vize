@@ -14,154 +14,24 @@ runs {
       name = "Record runner process budget baseline"
       shell = "bash"
       env { RUNNER_ENVIRONMENT = "${{ runner.environment }}" }
-      run = #"""
-      cpu_count() {
-        if command -v nproc >/dev/null 2>&1; then
-          nproc
-        elif command -v sysctl >/dev/null 2>&1; then
-          sysctl -n hw.ncpu 2>/dev/null || echo 1
-        else
-          echo 1
-        fi
-      }
-      thread_count() {
-        local count
-        if [ -d /proc ]; then
-          count="$(grep -sh '^Threads:' /proc/[0-9]*/status | awk '{sum += $2} END {print sum + 0}' || true)"
-        else
-          count="$(ps -axo nlwp= 2>/dev/null | awk '{sum += $1} END {print sum + 0}' || true)"
-        fi
-        echo "${count:-0}"
-      }
-      if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then
-        # Temporary hosted-runner fallback while Blacksmith is degraded.
-        # Restore the vue-parity job to blacksmith-32vcpu-ubuntu-2404 and remove these hosted caps/scales.
-        export RAYON_NUM_THREADS=1
-        export GOMAXPROCS=1
-        export VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR=12
-        export VIZE_TIER_L_BUDGET_SCALE=2
-        export VIZE_PERF_BUDGET_SCALE=2
-      else
-        export RAYON_NUM_THREADS=4
-      fi
-      echo "RAYON_NUM_THREADS=$RAYON_NUM_THREADS" >> "$GITHUB_ENV"
-      if [ -n "${GOMAXPROCS:-}" ]; then
-        echo "GOMAXPROCS=$GOMAXPROCS" >> "$GITHUB_ENV"
-      fi
-      if [ -n "${VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR:-}" ]; then
-        echo "VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR=$VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR" >> "$GITHUB_ENV"
-      fi
-      if [ -n "${VIZE_TIER_L_BUDGET_SCALE:-}" ]; then
-        echo "VIZE_TIER_L_BUDGET_SCALE=$VIZE_TIER_L_BUDGET_SCALE" >> "$GITHUB_ENV"
-      fi
-      if [ -n "${VIZE_PERF_BUDGET_SCALE:-}" ]; then
-        echo "VIZE_PERF_BUDGET_SCALE=$VIZE_PERF_BUDGET_SCALE" >> "$GITHUB_ENV"
-      fi
-      mkdir -p target/vize-tests/metrics/check-fixtures-topology
-      threads_total="$(thread_count)"
-      echo "VIZE_RUNNER_BASELINE_THREADS=$threads_total" >> "$GITHUB_ENV"
-      {
-        echo "runner_environment=$RUNNER_ENVIRONMENT"
-        echo "cpus=$(cpu_count)"
-        echo "rayon_num_threads=$RAYON_NUM_THREADS"
-        echo "gomaxprocs=${GOMAXPROCS:-unset}"
-        echo "budget_cpu_floor=${VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR:-unset}"
-        echo "tier_l_budget_scale=${VIZE_TIER_L_BUDGET_SCALE:-unset}"
-        echo "perf_budget_scale=${VIZE_PERF_BUDGET_SCALE:-unset}"
-        echo "ulimit_u=$(ulimit -u)"
-        echo "ulimit_Hu=$(ulimit -Hu)"
-        echo "cgroup=$(cat /proc/self/cgroup 2>/dev/null | tr '\n' ' ' || echo unavailable)"
-        echo "pids_current=$(cat /sys/fs/cgroup/pids.current 2>/dev/null || echo unavailable)"
-        echo "pids_max=$(cat /sys/fs/cgroup/pids.max 2>/dev/null || echo unavailable)"
-        echo "threads_total=$threads_total"
-      } > target/vize-tests/metrics/check-fixtures-topology/runner-baseline.txt
-      cat target/vize-tests/metrics/check-fixtures-topology/runner-baseline.txt
-
-      """#
+      run = #". "$GITHUB_ACTION_PATH/scripts/record-runner-process-budget-baseline.sh""#
     }
     new Dynamic {
       name = "Hydrate fixtures and install JS dependencies"
       shell = "bash"
-      run = #"""
-      git submodule update --init --depth 1 \
-        tests/_fixtures/_git/create-vue \
-        tests/_fixtures/_git/element-plus \
-        tests/_fixtures/_git/misskey \
-        tests/_fixtures/_git/mobile-web-best-practice \
-        tests/_fixtures/_git/nuxt-ui \
-        tests/_fixtures/_git/pinia \
-        tests/_fixtures/_git/reka-ui \
-        tests/_fixtures/_git/vue-router \
-        tests/_fixtures/_git/vue-element-admin \
-        tests/_fixtures/_git/vue2-elm \
-        tests/_fixtures/_git/vue-vben-admin \
-        tests/_fixtures/_git/vitepress
-      vp install --frozen-lockfile --prefer-offline
-
-      """#
+      run = #". "$GITHUB_ACTION_PATH/scripts/hydrate-fixtures-and-install-js-dependencies.sh""#
     }
     new Dynamic {
       name = "Build vize CLI"
       shell = "bash"
       env { RUNNER_ENVIRONMENT = "${{ runner.environment }}" }
-      run = """
-      cargo_args=(build --profile ci -p vize --features legacy)
-      if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then
-        cargo_args+=(--jobs 2)
-      fi
-      cargo "${cargo_args[@]}"
-      vp exec node tests/differential/build-receipt.ts --legacy
-      cat target/ci/vize.differential-build.json
-      oracle_args=(build --profile ci -p vize_atelier_sfc --features legacy --example cli_build_result_oracle)
-      if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then
-        oracle_args+=(--jobs 2)
-      fi
-      cargo "${oracle_args[@]}"
-
-      """
+      run = #". "$GITHUB_ACTION_PATH/scripts/build-vize-cli.sh""#
     }
     new Dynamic {
       name = "Settle hosted runner task budget"
       `if` = "${{ runner.environment == 'github-hosted' }}"
       shell = "bash"
-      run = """
-      mkdir -p target/vize-tests/metrics/check-fixtures-topology
-      baseline_threads="${VIZE_RUNNER_BASELINE_THREADS:-0}"
-      if ! [[ "$baseline_threads" =~ ^[0-9]+$ ]]; then
-        baseline_threads=0
-      fi
-      budget_threads=$((baseline_threads + 96))
-      deadline=$((SECONDS + 30))
-      sample=0
-      thread_count() {
-        local count
-        if [ -d /proc ]; then
-          count="$(grep -sh '^Threads:' /proc/[0-9]*/status | awk '{sum += $2} END {print sum + 0}' || true)"
-        else
-          count="$(ps -axo nlwp= 2>/dev/null | awk '{sum += $1} END {print sum + 0}' || true)"
-        fi
-        echo "${count:-0}"
-      }
-      while true; do
-        sample=$((sample + 1))
-        threads_total="$(thread_count)"
-        {
-          echo "sample=$sample"
-          echo "threads_total=$threads_total"
-          echo "baseline_threads=$baseline_threads"
-          echo "budget_threads=$budget_threads"
-        } | tee -a target/vize-tests/metrics/check-fixtures-topology/post-build-settle.txt
-        if [ "$baseline_threads" -eq 0 ] || [ "$threads_total" -le "$budget_threads" ]; then
-          break
-        fi
-        if [ "$SECONDS" -ge "$deadline" ]; then
-          echo "warning=hosted runner thread count did not settle below budget" | tee -a target/vize-tests/metrics/check-fixtures-topology/post-build-settle.txt
-          break
-        fi
-        sleep 1
-      done
-
-      """
+      run = #". "$GITHUB_ACTION_PATH/scripts/settle-hosted-runner-task-budget.sh""#
     }
     new Dynamic {
       name = "Check Vue compiler and typecheck parity"
@@ -217,19 +87,7 @@ runs {
       name = "Check glyph formatter corpus properties"
       shell = "bash"
       env { VIZE_TEST_BIN = "target/ci/vize" }
-      run = #"""
-      node --test --test-concurrency=1 \
-        tests/tooling/sfc-baseline-routes.test.ts \
-        tests/tooling/sfc-baselines.test.ts \
-        tests/tooling/vue2-render-signature.test.ts \
-        tests/tooling/glyph-sfc-evidence.test.ts \
-        tests/tooling/sfc-equivalence.test.ts \
-        tests/tooling/glyph-corpus-idempotence.test.ts \
-        tests/tooling/glyph-corpus-parse-preservation.test.ts \
-        tests/tooling/glyph-pug-oracle.test.ts \
-        tests/tooling/glyph-corpus-lint-agreement.test.ts
-
-      """#
+      run = #". "$GITHUB_ACTION_PATH/scripts/check-glyph-formatter-corpus-properties.sh""#
     }
     new Dynamic {
       name = "Check incremental LSP against Misskey and Vue Vben Admin"
@@ -253,14 +111,7 @@ runs {
       name = "Publish incremental LSP summaries"
       `if` = "${{ always() }}"
       shell = "bash"
-      run = """
-      for suite in check-fixtures-topology check-fixtures-cycles vben-batch-incremental misskey-lsp-incremental vben-lsp-incremental misskey-lsp-churn; do
-        if [ -s "target/vize-tests/metrics/$suite/summary.md" ]; then
-          cat "target/vize-tests/metrics/$suite/summary.md" >> "$GITHUB_STEP_SUMMARY"
-        fi
-      done
-
-      """
+      run = #". "$GITHUB_ACTION_PATH/scripts/publish-incremental-lsp-summaries.sh""#
     }
     new Dynamic {
       name = "Upload complete snapshot differences"

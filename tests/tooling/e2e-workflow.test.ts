@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -220,7 +221,7 @@ test("App E2E producers take their runner from the plan; support jobs stay Black
 });
 
 test("shared row action validates the plan and never parallelizes fixture processes", () => {
-  const source = readRepoFile(".github", "actions", "app-e2e-row", "action.yml");
+  const source = readAutomationPrograms(".github", "actions", "app-e2e-row", "action.yml");
   const action = parse(source) as {
     inputs?: Record<string, unknown>;
     runs?: { steps?: Step[]; using?: string };
@@ -291,7 +292,7 @@ test("shared row action validates the plan and never parallelizes fixture proces
 });
 
 test("Testbox still hydrates the exact 17-fixture App inventory", () => {
-  const action = readRepoFile(".github", "actions", "hydrate-app-fixtures", "action.yml");
+  const action = readAutomationPrograms(".github", "actions", "hydrate-app-fixtures", "action.yml");
   const fixtures = [
     "ant-design-vue",
     "directus",

@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { test } from "node:test";
@@ -31,7 +32,7 @@ type Workflow = {
 test("scheduled full tooling requires the original current-source CLI receipt before testing", () => {
   const workflow = parse(checkWorkflowJobSources()) as Workflow;
   const steps = (
-    parse(readRepoFile(".github", "actions", "test-full-tooling", "action.yml")) as {
+    parse(readAutomationPrograms(".github", "actions", "test-full-tooling", "action.yml")) as {
       runs: { steps: Step[] };
     }
   ).runs.steps;
@@ -85,7 +86,9 @@ test("scheduled full tooling requires the original current-source CLI receipt be
   }
   assert.equal(steps[tests].env?.VIZE_LSP_BIN, "${{ github.workspace }}/target/ci/vize");
   assert.equal(steps[tests].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
-  const restore = parse(readRepoFile(".github", "actions", "restore-source-cli", "action.yml")) as {
+  const restore = parse(
+    readAutomationPrograms(".github", "actions", "restore-source-cli", "action.yml"),
+  ) as {
     runs: { steps: Step[] };
   };
   const command = restore.runs.steps.at(-1)?.run ?? "";
@@ -160,7 +163,7 @@ test("the real tooling report requires the source CLI and every selected worker"
 
 test("affected tooling builds the native addon only for a shard that reads it", () => {
   const action = parse(
-    readRepoFile(".github", "actions", "test-affected-tooling", "action.yml"),
+    readAutomationPrograms(".github", "actions", "test-affected-tooling", "action.yml"),
   ) as { runs: { steps: Step[] } };
   const plan = action.runs.steps.find((step) => step.id === "plan");
   assert.match(plan?.run ?? "", /tooling-shard-native-build\.ts/);

@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -24,7 +25,7 @@ type Step = {
 const release = parse(readRepoFile(".github", "workflows", "release.yml"));
 const seed = parse(readRepoFile(".github", "workflows", "release-build-cache.yml"));
 const recipe = (name: string): { runs: { steps: Step[] } } =>
-  parse(readRepoFile(".github", "actions", name, "action.yml"));
+  parse(readAutomationPrograms(".github", "actions", name, "action.yml"));
 
 registerStampGuards();
 
@@ -140,11 +141,11 @@ test("all shipping platforms retain target and ABI guards on accelerated runners
       /CARGO_PROFILE_RELEASE_LTO=thin/,
     );
   }
-  const native = readRepoFile(".github", "actions", "build-release-native", "action.yml");
+  const native = readAutomationPrograms(".github", "actions", "build-release-native", "action.yml");
   // GNU artifacts are gated on the documented floor, never a looser ad hoc ceiling.
   assert.equal((native.match(/verify-glibc-symbols\.ts npm\//g) ?? []).length, 2);
   assert.doesNotMatch(native, /verify-glibc-symbols\.ts --max/);
-  const cli = readRepoFile(".github", "actions", "build-release-cli", "action.yml");
+  const cli = readAutomationPrograms(".github", "actions", "build-release-cli", "action.yml");
   assert.match(cli, /verify-glibc-symbols\.ts "target\/\$RELEASE_TARGET\/release\/vize"/);
   assert.match(cli, /verify-musl-cli-binary\.ts/);
   assert.match(cli, /configure-zig-musl-linkers\.ts/);

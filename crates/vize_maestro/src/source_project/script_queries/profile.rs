@@ -82,6 +82,12 @@ fn combined_original_products() {
     alloc::mark_installed();
     let state = ServerState::new();
     let uri = Url::parse("file:///projects/Query.vue").unwrap();
+    compare(
+        &state,
+        &uri,
+        "whitespace-only script setup",
+        "<script setup lang='ts'>\n</script>",
+    );
     for lang in ["js", "ts", "jsx", "tsx"] {
         for count in [1, 8, 64] {
             let mut source = vize_l0::cstr!(

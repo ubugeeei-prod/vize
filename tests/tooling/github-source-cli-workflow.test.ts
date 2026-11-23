@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -38,10 +39,10 @@ const benchmarkQualification = parse(
   readRepoFile(".github", "workflows", "vue-benchmarks-current-qualification.yml"),
 ) as { jobs: Record<string, Job> };
 const restoreAction = parse(
-  readRepoFile(".github", "actions", "restore-source-cli", "action.yml"),
+  readAutomationPrograms(".github", "actions", "restore-source-cli", "action.yml"),
 ) as Action;
 const toolingAction = parse(
-  readRepoFile(".github", "actions", "test-full-tooling", "action.yml"),
+  readAutomationPrograms(".github", "actions", "test-full-tooling", "action.yml"),
 ) as Action;
 const sourceNeeds = [
   "pr-source-plan",

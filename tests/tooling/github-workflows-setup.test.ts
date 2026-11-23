@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -15,7 +16,7 @@ type WorkflowJob = {
 };
 
 test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () => {
-  const action = readRepoFile(".github", "actions", "setup-ubuntu-archive", "action.yml");
+  const action = readAutomationPrograms(".github", "actions", "setup-ubuntu-archive", "action.yml");
   assert.match(action, /\/etc\/apt\/blacksmith-ubuntu-mirrors\.txt/);
   assert.match(action, /https:\/\/archive\.ubuntu\.com\/ubuntu/);
   assert.match(action, /https:\/\/security\.ubuntu\.com\/ubuntu/);
@@ -26,9 +27,12 @@ test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () =>
   assert.match(action, /Acquire::http::Pipeline-Depth "0";/);
   assert.match(action, /Acquire::https::Pipeline-Depth "0";/);
   assert.match(action, /\/usr\/local\/bin\/vize-ci-apt-retry/);
-  assert.match(action, /VIZE_CI_APT_RETRIES:-4/);
+  assert.match(
+    readRepoFile(".github/actions/setup-ubuntu-archive/scripts/retry-apt.sh"),
+    /VIZE_CI_APT_RETRIES:-4/,
+  );
 
-  const row = readRepoFile(".github", "actions", "app-e2e-row", "action.yml");
+  const row = readAutomationPrograms(".github", "actions", "app-e2e-row", "action.yml");
   const rowSetup = row.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
   const rowApt = row.indexOf("playwright install-deps chromium");
   assert.ok(rowSetup >= 0 && rowSetup < rowApt);
@@ -37,7 +41,7 @@ test("apt-based CI setup pins Blacksmith to the canonical Ubuntu archive", () =>
     /vize-ci-apt-retry vp exec --filter '\.\/tests' -- playwright install-deps chromium/,
   );
 
-  const editor = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const editor = readAutomationPrograms(".github", "actions", "vscode-host-smoke", "action.yml");
   const editorSetup = editor.indexOf("uses: ./.github/actions/setup-ubuntu-archive");
   const editorApt = editor.indexOf("sudo apt-get update");
   assert.ok(editorSetup >= 0 && editorSetup < editorApt);
@@ -145,7 +149,7 @@ test("WASM build jobs set up Node before invoking the TypeScript builders", () =
 });
 
 test("setup-rust-script pins Windows MSVC linkers before cargo install", () => {
-  const action = readRepoFile(".github", "actions", "setup-rust-script", "action.yml");
+  const action = readAutomationPrograms(".github", "actions", "setup-rust-script", "action.yml");
   const linkerIndex = action.indexOf("Configure Windows Rust linker");
   const installIndex = action.indexOf("Install rust-script");
 
@@ -215,7 +219,7 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
   assert.match(job, /node tools\/support\/github\/stage-built-native-packages\.ts npm\/native/);
   assert.doesNotMatch(job, /napi pre-publish/);
   assert.match(
-    readRepoFile(".github", "actions", "release-npm-artifacts", "action.yml"),
+    readAutomationPrograms(".github", "actions", "release-npm-artifacts", "action.yml"),
     /vp exec napi artifacts --output-dir artifacts\n\s+vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish\n/,
   );
   assert.match(

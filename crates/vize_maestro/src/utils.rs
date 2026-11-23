@@ -7,20 +7,24 @@ pub use position::{
     position_to_offset_str,
 };
 
+fn has_ascii_extension(path: &str, extensions: &[&str]) -> bool {
+    path.rsplit_once('.').is_some_and(|(_, extension)| {
+        extensions
+            .iter()
+            .any(|candidate| extension.eq_ignore_ascii_case(candidate))
+    })
+}
+
 /// Returns true for standalone HTML files that should be linted outside the SFC pipeline.
 #[inline]
 pub fn is_standalone_html_path(path: &str) -> bool {
-    let path = path.to_ascii_lowercase();
-    path.ends_with(".html") || path.ends_with(".htm")
+    has_ascii_extension(path, &["html", "htm"])
 }
 
-/// Returns true for JSX/TSX files that should be compiled outside the SFC
-/// pipeline. These surface JSX compiler/lowering diagnostics only — no virtual
-/// TypeScript document is generated for them (see #1497).
+/// Routes JSX and TSX files to the standalone compiler diagnostics (see #1497).
 #[inline]
 pub fn is_jsx_path(path: &str) -> bool {
-    let path = path.to_ascii_lowercase();
-    path.ends_with(".jsx") || path.ends_with(".tsx")
+    has_ascii_extension(path, &["jsx", "tsx"])
 }
 
 /// A TSRX module (`.tsrx`), routed by its file kind.

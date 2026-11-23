@@ -1,0 +1,13 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("cargo", List("test", "--locked", "--profile", "ci", "-p", "vize_atelier_sfc", "--test", "ssr_fragment_css_vars", "--", "--nocapture"))
+  module.command("cargo", List("test", "--locked", "--profile", "ci", "-p", "vize_atelier_ssr", "--features", "legacy-differential", "--test", "ssr_fragment_css_vars", "--", "--nocapture"))
+  module.command("vp", List("node", "--test", "tests/tooling/ssr-fragment-css-vars.test.ts"))
+  module.command("cargo", List("test", "--locked", "--profile", "ci", "-p", "vize_atelier_ssr", "--features", "legacy-differential", "--test", "nested_branch_fragments", "--", "--nocapture"))
+  module.command("vp", List("node", "--test", "tests/tooling/ssr-nested-branch-fragments.test.mjs"))
+  module.command("cargo", List("test", "--locked", "--profile", "ci", "-p", "vize_atelier_ssr", "--features", "legacy-differential", "--test", "scope_attr_forwarding", "--", "--nocapture"))
+  module.command("vp", List("node", "--test", "tests/tooling/ssr-component-scope-attrs.test.ts"))
+}

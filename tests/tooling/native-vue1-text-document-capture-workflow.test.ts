@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import { checkWorkflowJobSources } from "./support/github-workflows.ts";
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -8,11 +9,13 @@ import test from "node:test";
 import { parse } from "yaml";
 
 const read = (path: string) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
-const action = parse(read(".github/actions/test-native-vue1-text-document/action.yml"));
+const action = parse(
+  readAutomationPrograms(".github/actions/test-native-vue1-text-document/action.yml"),
+);
 const combined = parse(read(".github/actions/test-native-historical-text-documents/action.yml"));
 const outer = parse(read(".github/actions/test-native-historical-sfc-documents/action.yml"));
 const workflow = parse(checkWorkflowJobSources());
-const fullTooling = parse(read(".github/actions/test-full-tooling/action.yml"));
+const fullTooling = parse(readAutomationPrograms(".github/actions/test-full-tooling/action.yml"));
 const select = action.runs.steps.find((step: { id?: string }) => step.id === "select");
 
 function selection(event: string, paths: string[], gitStatus = 0, selector = select) {
@@ -102,9 +105,9 @@ test("actual historical selectors run every full qualification and fail closed f
     "test-native-vue2-text-document",
     "test-native-vue2-scriptless-sfc",
   ]) {
-    const selector = parse(read(`.github/actions/${path}/action.yml`)).runs.steps.find(
-      (step: any) => step.id === "select",
-    );
+    const selector = parse(
+      readAutomationPrograms(`.github/actions/${path}/action.yml`),
+    ).runs.steps.find((step: any) => step.id === "select");
     for (const event of ["merge_group", "schedule", "workflow_dispatch"])
       assert.deepEqual(
         selection(event, [], 42, selector),

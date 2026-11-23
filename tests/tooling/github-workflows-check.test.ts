@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -124,7 +125,12 @@ test("the required test-report job posts its result after the gate decides it", 
 
 test("check workflow runs the editor extension host smoke against a real vize server", () => {
   const workflow = checkWorkflowJobSources();
-  const smokeAction = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const smokeAction = readAutomationPrograms(
+    ".github",
+    "actions",
+    "vscode-host-smoke",
+    "action.yml",
+  );
 
   assert.match(
     workflowJobBody(workflow, "editor-extensions"),
@@ -189,7 +195,12 @@ test("check workflow builds local native bindings before JS checks", () => {
   const checkJsJob = workflowJobBody(workflow, "check-js");
   const buildJob = workflowJobBody(workflow, "build-js-packages");
   const playgroundJob = workflowJobBody(workflow, "playground-test");
-  const smallNodeCases = readRepoFile(".github", "actions", "test-small-node-cases", "action.yml");
+  const smallNodeCases = readAutomationPrograms(
+    ".github",
+    "actions",
+    "test-small-node-cases",
+    "action.yml",
+  );
   assert.match(checkJsJob, /vp run --workspace-root check:ci/);
   assert.match(checkJsJob, /uses: \.\/\.github\/actions\/test-small-node-cases/);
   assert.match(smallNodeCases, /vp run --workspace-root check:iteration/);

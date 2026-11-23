@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -110,7 +111,12 @@ test("source planning uses Node and offline metadata before selecting affected p
   assert.equal(js[fast]["continue-on-error"], undefined);
   assert.equal(js[fast].uses, "./.github/actions/test-small-node-cases");
   assert.deepEqual(js[fast].with, { suite: "check-js", job: "check-js", packet: "check-js" });
-  const smallCases = readRepoFile(".github", "actions", "test-small-node-cases", "action.yml");
+  const smallCases = readAutomationPrograms(
+    ".github",
+    "actions",
+    "test-small-node-cases",
+    "action.yml",
+  );
   assert.match(smallCases, /vp run --workspace-root check:iteration/);
   assert.match(smallCases, /github-workflows-source-selection\.test\.ts/);
   assert.match(smallCases, /vp-bootstrap-cache\.test\.mjs/);
@@ -350,7 +356,9 @@ test("existing source CLI producer qualifies every formatter semantic case with 
   const replayName = "Replay complete formatter CLI stock semantics with the source CLI";
   const uploadName = "Preserve complete source formatter semantic observations";
   type Action = { runs: { steps: Step[] } };
-  const action = parse(readRepoFile(".github/actions/test-native-lsp/action.yml")) as Action;
+  const action = parse(
+    readAutomationPrograms(".github/actions/test-native-lsp/action.yml"),
+  ) as Action;
   const check = parse(readRepoFile(".github", "workflows", "check.yml")) as typeof source;
   const requireReplay = (flow: typeof source, producer: typeof action, outer: typeof check) => {
     const job = flow.jobs["pr-native-runtime"];

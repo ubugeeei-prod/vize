@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -67,7 +68,10 @@ test("OpenVue source, license, globs, and App E2E selectors stay pinned together
   assert.match(scripts["test:check"]!, /snapshots\/check\/openvue\.ts/);
   assert.match(scripts["test:lint"]!, /snapshots\/lint\/openvue\.ts/);
   assert.match(
-    fs.readFileSync(path.join(root, ".github/actions/hydrate-app-fixtures/action.yml"), "utf8"),
+    readAutomationPrograms(
+      path.join(root, ".github/actions/hydrate-app-fixtures/action.yml"),
+      "utf8",
+    ),
     /tests\/_fixtures\/_git\/openvue/,
   );
 });

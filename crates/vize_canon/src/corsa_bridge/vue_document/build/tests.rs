@@ -10,8 +10,12 @@ use super::*;
 use crate::corsa_bridge::EditorMirrorSession;
 use crate::corsa_bridge::vue_dependencies_alias::AliasContext;
 
-const HOST: &str = "<script setup lang='ts'>import Child from './Child.vue'; const title = '日本語 🦀';</script><template><Child :title=\"title\" /></template>";
-const CHILD: &str = "<script setup lang='ts'>defineProps<{ title: string }>();</script><template><pre>{{ title }}</pre></template>";
+const HOST: &str = include_str!(
+    "../../../../../../tests/_fixtures/differential/typechecker/editor-mirror-hash-sampling/Host.vue.txt"
+);
+const CHILD: &str = include_str!(
+    "../../../../../../tests/_fixtures/differential/typechecker/editor-mirror-hash-sampling/Child.vue.txt"
+);
 
 fn environment(session: &EditorMirrorSession) -> CorsaProjectEnvironment<'_> {
     // Static defaults keep this test helper's returned borrow explicit.
@@ -365,11 +369,10 @@ fn identical_source_in_separate_roots_keeps_authored_membership() {
     }
     assert_ne!(projects[0].host.request_uri, projects[1].host.request_uri);
     for (project, root) in projects.iter().zip(&roots) {
-        assert_eq!(project.host.dependencies[0].source, CHILD);
-        assert_eq!(
-            project.host.dependencies[0].source_path,
-            root.path().join("Child.vue").canonicalize().unwrap()
-        );
+        let child = root.path().join("Child.vue").canonicalize().unwrap();
+        let dependency = &project.host.dependencies[0];
+        assert_eq!(dependency.source, CHILD);
+        assert_eq!(dependency.source_path.canonicalize().unwrap(), child);
         let mut members = project
             .host
             .materialized_sources
@@ -377,10 +380,7 @@ fn identical_source_in_separate_roots_keeps_authored_membership() {
             .map(|source| source.source_path.clone())
             .collect::<Vec<_>>();
         members.sort();
-        let mut expected = vec![
-            root.path().join("Child.vue").canonicalize().unwrap(),
-            root.path().join("Host.vue").canonicalize().unwrap(),
-        ];
+        let mut expected = vec![child, root.path().join("Host.vue").canonicalize().unwrap()];
         expected.sort();
         assert_eq!(members, expected);
     }

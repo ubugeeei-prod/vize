@@ -11,6 +11,7 @@ import {
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { validateAutomationSteps } from "../../support/ci/automation-commands.ts";
 import { renderRepositoryYaml, type ConfigValue } from "../../support/ci/repository-yaml.ts";
 import { readWorkflowEntries, renderWorkflowCatalog } from "../ci/workflow-catalog.ts";
 
@@ -164,6 +165,7 @@ function main(): void {
       }).stdout ??
       undefined;
     const action = target.startsWith(".github/workflows/") || target.startsWith(".github/actions/");
+    if (target.startsWith(".github/actions/")) validateAutomationSteps(target, value);
     const text = renderRepositoryYaml(value, template, !action);
     if (text !== current) changes.push({ target, text });
   }

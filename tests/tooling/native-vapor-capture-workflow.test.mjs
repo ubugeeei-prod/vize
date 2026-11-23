@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -63,9 +64,8 @@ await test("original native Vapor source qualifies a fresh affected-PR capture w
 });
 
 await test("the required Vapor lane preserves mandatory whole-source payloads", () => {
-  const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
   assertNativeRuntimeHook("vapor", "test-native-vapor");
-  const action = read(".github/actions/test-native-vapor/action.yml");
+  const action = readAutomationPrograms(".github/actions/test-native-vapor/action.yml");
   for (const path of [
     "native-vapor-modules.json",
     "native-vapor-runtime.json",

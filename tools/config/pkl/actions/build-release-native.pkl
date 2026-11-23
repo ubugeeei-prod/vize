@@ -52,15 +52,7 @@ runs {
       name = "Read the repository Rust toolchain"
       id = "rust-toolchain"
       shell = "bash"
-      run = """
-      node --input-type=module <<'JS' >> "$GITHUB_OUTPUT"
-      import { readFileSync } from "node:fs";
-      const channel = /^channel = "([^"]+)"$/m.exec(readFileSync("rust-toolchain.toml", "utf8"))?.[1];
-      if (!channel) throw new Error("Missing repository Rust toolchain channel");
-      console.log(`channel=${channel}`);
-      JS
-
-      """
+      run = #". "$GITHUB_ACTION_PATH/scripts/read-the-repository-rust-toolchain.sh""#
     }
     new Dynamic {
       name = "Setup Rust"
@@ -102,11 +94,7 @@ runs {
       name = "Tune Windows release profile"
       `if` = "runner.os == 'Windows'"
       shell = "bash"
-      run = """
-      echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
-      echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
-
-      """
+      run = #". "$GITHUB_ACTION_PATH/scripts/tune-windows-release-profile.sh""#
     }
     new Dynamic {
       name = "Setup Zig"
@@ -134,15 +122,7 @@ runs {
         VIZE_RELEASE_VERSION = "${{ inputs.release-version }}"
         VIZE_NATIVE_BUILD_RECEIPT = ".artifacts/vize-native/build-receipt.${{ inputs.target }}.json"
       }
-      run = """
-      args=(npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine "$RELEASE_TARGET")
-      if [[ "$RELEASE_CROSS_COMPILE" == true ]]; then args+=(--cross-compile); fi
-      node tools/support/github/build-napi-package.ts "${args[@]}"
-      if [[ "$RUNNER_OS" == Linux && "$RELEASE_TARGET" == *-gnu ]]; then
-        node tools/commands/ci/github/verify-glibc-symbols.ts npm/native/*.linux-*-gnu.node
-      fi
-
-      """
+      run = #". "$GITHUB_ACTION_PATH/scripts/build-vize-native.sh""#
     }
     new Dynamic {
       name = "Collect vize-native artifact"
@@ -172,15 +152,7 @@ runs {
         RELEASE_CROSS_COMPILE = "${{ inputs.cross-compile }}"
         VIZE_RELEASE_VERSION = "${{ inputs.release-version }}"
       }
-      run = """
-      args=(npm/fresco-native ../../crates/vize_fresco/Cargo.toml vize_fresco "$RELEASE_TARGET")
-      if [[ "$RELEASE_CROSS_COMPILE" == true ]]; then args+=(--cross-compile); fi
-      node tools/support/github/build-napi-package.ts "${args[@]}"
-      if [[ "$RUNNER_OS" == Linux && "$RELEASE_TARGET" == *-gnu ]]; then
-        node tools/commands/ci/github/verify-glibc-symbols.ts npm/fresco-native/*.linux-*-gnu.node
-      fi
-
-      """
+      run = #". "$GITHUB_ACTION_PATH/scripts/build-fresco-native.sh""#
     }
     new Dynamic {
       name = "Collect fresco-native artifact"

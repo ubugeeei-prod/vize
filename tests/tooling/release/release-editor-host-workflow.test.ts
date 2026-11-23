@@ -10,6 +10,7 @@ import {
   writeReleaseZedSettings,
 } from "../../editor-conformance/release-zed-settings.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
+import { readAutomationPrograms } from "../support/automation-source.ts";
 
 type Step = {
   env?: Record<string, unknown>;
@@ -30,7 +31,12 @@ type Job = {
 const workflow = parse(readRepoFile(".github", "workflows", "release.yml")) as {
   jobs: Record<string, Job>;
 };
-const editorHostAction = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+const editorHostAction = readAutomationPrograms(
+  ".github",
+  "actions",
+  "vscode-host-smoke",
+  "action.yml",
+);
 const releaseZed = readRepoFile("tests", "editor-conformance", "release-zed.ts");
 const releaseZedHost = readRepoFile(".github", "workflows", "release-zed-host.yml");
 

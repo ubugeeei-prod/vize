@@ -73,6 +73,7 @@ function fixture(callback) {
       local = path.join(root, "action");
     fs.mkdirSync(bin);
     fs.mkdirSync(local);
+    fs.cpSync(path.join(actionPath, "scripts"), path.join(local, "scripts"), { recursive: true });
     const realTar = spawnSync("sh", ["-c", "command -v tar"], { encoding: "utf8" });
     assert.equal(realTar.status, 0);
     const gnuSha = "/opt/homebrew/opt/coreutils/libexec/gnubin/sha256sum";

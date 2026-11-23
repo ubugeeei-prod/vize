@@ -7,7 +7,7 @@ runs {
       name = "Prepare checksum-pinned Pkl and upstream lint dependencies"
       `if` = "env.VIZE_TOOLING_TEST_PLAN != ''"
       shell = "bash"
-      run = "node tools/support/compat/github/prepare-pkl-schema.mjs && node tools/support/compat/github/prepare-vue-benchmarks.ts"
+      run = #". "$GITHUB_ACTION_PATH/scripts/prepare-checksum-pinned-pkl-and-upstream-lint-dependencies.sh""#
     }
     new Dynamic {
       name = "Plan CSS formatter browser dependency"

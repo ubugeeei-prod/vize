@@ -15,14 +15,7 @@ runs {
       name = "Validate full JS partition"
       shell = "bash"
       env { VIZE_JS_PARTITION = "${{ inputs.partition }}" }
-      run = """
-      node --input-type=module <<'NODE'
-      import assert from 'node:assert/strict';
-      import { testedPackageGroups } from './tools/config/vite-plus/tested-package-groups.ts';
-      assert.ok(['all', 'original-project', ...testedPackageGroups.map(({ name }) => name)].includes(process.env.VIZE_JS_PARTITION), 'unknown full JS partition');
-      NODE
-
-      """
+      run = #". "$GITHUB_ACTION_PATH/scripts/validate-full-js-partition.sh""#
     }
     // Composite success() scopes to this action; also retain the outer job guard.
     new Dynamic {

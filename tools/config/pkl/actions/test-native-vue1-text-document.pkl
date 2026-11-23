@@ -16,19 +16,7 @@ runs {
       id = "select"
       shell = "bash"
       env { BASE_SHA = "${{ inputs.comparison-base }}" }
-      run = #"""
-      if [[ "$GITHUB_EVENT_NAME" == "merge_group" || "$GITHUB_EVENT_NAME" == "schedule" || "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-        echo 'selected=true' >> "$GITHUB_OUTPUT"
-      else
-        git diff --name-only "$BASE_SHA" "$GITHUB_SHA" > "$RUNNER_TEMP/vue1-text-document-paths.txt"
-        if rg '^(crates/vize_glyph/src/native_doc(\.rs|/(expression(\.rs|/)|vue1_text(\.rs|/)|document\.rs|printer\.rs))|crates/vize_glyph/tests/(native_vue1_text_document|fixtures/native-vue1-text-doc-1\.0\.28\.json)|davinci/vize_l1/src/|davinci/vize_l0/src/source_frame\.rs|upstream/forks/oxc_parser/src/|tests/tooling/(native-vue1-text-document-(oracle|capture-workflow)\.test\.ts|support/vue1-(pinned-getter|text-document-judge)\.ts)|tests/_fixtures/reference/vue1/|\.github/actions/test-native-(vue1|historical)-text-document|\.github/workflows/pr-source-checks\.yml)' "$RUNNER_TEMP/vue1-text-document-paths.txt"; then
-          echo 'selected=true' >> "$GITHUB_OUTPUT"
-        else
-          echo 'selected=false' >> "$GITHUB_OUTPUT"
-        fi
-      fi
-
-      """#
+      run = #". "$GITHUB_ACTION_PATH/scripts/select-the-original-vue1-document-source-slice.sh""#
     }
     new Dynamic {
       name = "Capture actual original callbacks and complete pinned getter outcomes"
@@ -40,21 +28,7 @@ runs {
         VIZE_GLYPH_VUE1_TEXT_REQUIRE_CAPTURE = "1"
         VIZE_GLYPH_VUE1_TEXT_SOURCE_HEAD = "${{ github.event.pull_request.head.sha || github.sha }}"
       }
-      run = """
-      rm -f "$VIZE_GLYPH_VUE1_TEXT_CAPTURE" "$VIZE_GLYPH_VUE1_TEXT_ORACLE_CAPTURE"
-      set +e
-      cargo test --locked --profile ci -p vize_glyph --test native_vue1_text_document whole_lf_goldens_idempotence_and_capture_use_only_original_callback_documents -- --exact
-      rust_status=$?
-      vp node --test tests/tooling/native-vue1-text-document-oracle.test.ts
-      oracle_status=$?
-      set -e
-      test -s "$VIZE_GLYPH_VUE1_TEXT_CAPTURE"
-      test -s "$VIZE_GLYPH_VUE1_TEXT_ORACLE_CAPTURE"
-      if [[ "$rust_status" != 0 || "$oracle_status" != 0 ]]; then
-        exit 1
-      fi
-
-      """
+      run = #". "$GITHUB_ACTION_PATH/scripts/capture-actual-original-callbacks-and-complete-pinned-getter-outcomes.sh""#
     }
     new Dynamic {
       name = "Retain complete original Vue1 documents and primary observations"

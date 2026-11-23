@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+test -n "$EXPECTED_VERSION"
+test -f "$PREBUILT_SERVER"
+mkdir -p target/ci
+install -m 0755 "$PREBUILT_SERVER" target/ci/vize
+test "$(target/ci/vize --version)" = "vize $EXPECTED_VERSION"

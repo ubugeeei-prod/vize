@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -94,7 +95,7 @@ test("the Vim real-server scenario has a task that runs its Node launcher", () =
 });
 
 test("CI runs all real-server editor scenarios from one built server binary", () => {
-  const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const action = readAutomationPrograms(".github", "actions", "vscode-host-smoke", "action.yml");
 
   // One `cargo build` feeds all scenarios; each must consume that binary.
   assert.match(action, /run: cargo build --profile ci -p vize/);
@@ -160,7 +161,7 @@ test("CI runs all real-server editor scenarios from one built server binary", ()
 });
 
 test("CI hydrates the exact pinned create-vue revision before the packaged host", () => {
-  const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const action = readAutomationPrograms(".github", "actions", "vscode-host-smoke", "action.yml");
   const hydrateAt = action.indexOf("- name: Hydrate pinned create-vue fixture");
   const hostAt = action.indexOf("- name: Run VS Code host smoke against the real server");
 
@@ -176,7 +177,7 @@ test("CI hydrates the exact pinned create-vue revision before the packaged host"
 });
 
 test("CI runs both headless editor specs", () => {
-  const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const action = readAutomationPrograms(".github", "actions", "vscode-host-smoke", "action.yml");
 
   assert.equal(
     taskCommand("test:nvim-extension:headless"),
@@ -231,7 +232,7 @@ test("CI runs both headless editor specs", () => {
 });
 
 test("CI pins vim-lsp before running the Vim real-server scenario", () => {
-  const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const action = readAutomationPrograms(".github", "actions", "vscode-host-smoke", "action.yml");
   const installAt = action.indexOf("- name: Install pinned vim-lsp");
   const scenarioAt = action.indexOf("- name: Run the Vim scenario against the real server");
 
@@ -264,7 +265,7 @@ test("CI pins vim-lsp before running the Vim real-server scenario", () => {
 });
 
 test("CI executes the packaged Emacs ERT suite", () => {
-  const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const action = readAutomationPrograms(".github", "actions", "vscode-host-smoke", "action.yml");
   const steps = actionSteps(action);
 
   assert.equal(
