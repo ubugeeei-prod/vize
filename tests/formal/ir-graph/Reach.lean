@@ -196,4 +196,111 @@ theorem bounded_witness_exact {E V : Type} [DecidableEq V]
 #guard_msgs in
 #print axioms bounded_witness_exact
 
+
+namespace BoundedTrail
+
+def allOrdinalLists (ordinals : List E) : Nat → List (List E)
+  | 0 => [[]]
+  | n+1 => [] :: ordinals.flatMap fun e => (allOrdinalLists ordinals n).map (e :: ·)
+
+/-- Test a complete candidate list against the original directed relationships.
+    The prefix may already own some of the physical ordinals. -/
+def admittedTrail [DecidableEq E] (next : V → E → Option V)
+    (seen : List E) (v : V) : List E → Bool
+  | [] => true
+  | e :: tail => match next v e with
+    | none => false
+    | some w => decide (e ∉ seen) && admittedTrail next (e :: seen) w tail
+
+/-- Preorder of every prefix, before applying the requested minimum length. -/
+def indexedPrefixes [DecidableEq E] (incident : V → List E) (next : V → E → Option V) :
+    Nat → List E → V → List (List E)
+  | 0, _, _ => [[]]
+  | n+1, seen, v => [] :: (incident v).flatMap fun e =>
+      match next v e with
+      | none => []
+      | some w =>
+        if e ∈ seen then [] else (indexedPrefixes incident next n (e :: seen) w).map (e :: ·)
+
+private theorem skip_empty_rows (rows : List E) (keep : E → Bool) (f : E → List A)
+    (empty : ∀ e, keep e = false → f e = []) :
+    (rows.filter keep).flatMap f = rows.flatMap f := by
+  induction rows with
+  | nil => rfl
+  | cons e rest ih => cases h : keep e <;> simp [h, empty, ih]
+
+/-- For any finite fuel, the ordered index emits exactly the retained, admissible
+    original lists. This equality includes both multiplicity and prefix order. -/
+private theorem prefix_rows_exact [DecidableEq E] (ordinals : List E) (incident : V → List E)
+    (next : V → E → Option V)
+    (ordered : ∀ v, incident v = ordinals.filter fun e => (next v e).isSome)
+    (fuel : Nat) (seen : List E) (v : V) :
+    indexedPrefixes incident next fuel seen v =
+      (allOrdinalLists ordinals fuel).filter (admittedTrail next seen v) := by
+  induction fuel generalizing seen v with
+  | zero => rfl
+  | succ n ih =>
+    simp only [indexedPrefixes, allOrdinalLists, List.filter_cons, admittedTrail, ite_true,
+      List.filter_flatMap, ordered v]
+    congr 1
+    rw [skip_empty_rows]
+    · apply congrArg (fun step : E → List (List E) => ordinals.flatMap step)
+      funext e
+      rw [List.filter_map]
+      cases step : next v e with
+      | none => simp [Function.comp_def, admittedTrail, step]
+      | some w =>
+        by_cases used : e ∈ seen <;> simp [Function.comp_def, admittedTrail, step, used, ih]
+    · intro e absent
+      cases found : next v e <;> simp_all
+
+def nextOn [DecidableEq V] (original : E → Option (V × V)) (v : V) (e : E) : Option V :=
+  match original e with
+  | none => none
+  | some (src, dst) => if src = v then some dst else none
+
+private theorem admitted_exact [DecidableEq E] [DecidableEq V]
+    (original : E → Option (V × V)) (rows seen : List E) (v : V) :
+    admittedTrail (nextOn original) seen v rows = true ↔
+      (∀ e ∈ rows, e ∉ seen) ∧ rows.Nodup ∧ (replay original v rows).isSome = true := by
+  induction rows generalizing v seen with
+  | nil => simp [admittedTrail, replay]
+  | cons e rest ih =>
+    cases cell : original e with
+    | none => simp [admittedTrail, nextOn, cell, replay]
+    | some pair =>
+      obtain ⟨src, dst⟩ := pair
+      by_cases start : src = v
+      · subst src
+        simp [admittedTrail, nextOn, cell, replay, ih]
+        constructor
+        · rintro ⟨fresh, avoid, distinct, ran⟩
+          exact ⟨⟨fresh, fun x hx => (avoid x hx).2⟩,
+            ⟨fun used => (avoid e used).1 rfl, distinct⟩, ran⟩
+        · rintro ⟨⟨fresh, avoid⟩, ⟨unused, distinct⟩, ran⟩
+          exact ⟨fresh, fun x hx => ⟨fun same => unused (same ▸ hx), avoid x hx⟩, distinct, ran⟩
+      · simp [admittedTrail, nextOn, cell, start, replay]
+
+/-- Every reported prefix agrees, in ordinal order, with filtering all words
+    through the original relation and the independent witness conditions. -/
+theorem enumeration_exact [DecidableEq E] [DecidableEq V]
+    (ordinals : List E) (original : E → Option (V × V)) (incident : V → List E)
+    (ordered : ∀ v, incident v = ordinals.filter fun e => (nextOn original v e).isSome)
+    (lo hi : Nat) (start : V) :
+    ((indexedPrefixes incident (nextOn original) hi [] start).filter fun xs =>
+        decide (lo ≤ xs.length)) =
+      (allOrdinalLists ordinals hi).filter fun xs =>
+        decide (lo ≤ xs.length ∧ xs.Nodup) && (replay original start xs).isSome := by
+  rw [prefix_rows_exact ordinals incident _ ordered, List.filter_filter]
+  apply congrArg (fun test : List E → Bool => (allOrdinalLists ordinals hi).filter test)
+  funext xs
+  apply Bool.eq_iff_iff.mpr
+  simp [admitted_exact, and_comm, and_left_comm, and_assoc]
+
+/-- info: 'Davinci.BoundedTrail.enumeration_exact' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms enumeration_exact
+
+end BoundedTrail
+
 end Davinci
