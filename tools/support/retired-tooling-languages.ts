@@ -16,7 +16,16 @@ export const templateLabelRanking = {
   kernel: "crates/vize_patina/src/rules/facts/max_template_complexity/original/window.rs",
   harness: "crates/vize_patina/src/rules/facts/max_template_complexity/original/kani.rs",
 } as const;
-export const rustProofReferences = [sourceMapCoordinates, templateLabelRanking] as const;
+export const templateSpanProjection = {
+  theorem: "tests/formal/ir-graph/TemplateProjection.lean",
+  kernel: "crates/vize_incremental/src/template/projection.rs",
+  harness: "crates/vize_incremental/src/template/kani.rs",
+} as const;
+export const rustProofReferences = [
+  sourceMapCoordinates,
+  templateLabelRanking,
+  templateSpanProjection,
+] as const;
 
 export function checkedRustTheorems(paths: readonly string[]): Set<string> {
   return new Set(

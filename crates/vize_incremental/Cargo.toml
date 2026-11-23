@@ -19,6 +19,11 @@ metadata.vize.stability = "experimental"
 block-queries = []
 # Lend an admitted template and its database to optional resident providers.
 resident-providers = ["block-queries"]
+# Memoize the explicitly requested Vue 3 compiler and complexity passes.
+resident-template-passes = [
+  "vize_l0/diagnostic-span-projection",
+  "vize_l1_to_l2/original-template-queries",
+]
 # Share a named open document's descriptor and its selected block stages.
 open-block-queries = ["block-queries"]
 # TS-42's seeded defect (P5-9): weakens the block firewall's equality so the
@@ -55,3 +60,8 @@ required-features = ["open-block-queries"]
 
 [lints]
 workspace = true
+
+[[test]]
+name = "resident_template_cost"
+path = "tests/template_passes/profile.rs"
+required-features = ["resident-template-passes"]
