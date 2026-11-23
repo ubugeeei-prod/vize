@@ -1,3 +1,4 @@
+import { workspaceTaskSteps } from "../../../tools/config/vite-plus/task-plan.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -8,7 +9,6 @@ import {
   editorPlatformAssets,
   editorPlatformMatrix,
 } from "../../../tools/support/release/editor-platforms.ts";
-import { installVscodeExtensionDependencies } from "../../../tools/config/vite-plus/task-commands.ts";
 import { buildTasks } from "../../../tools/config/vite-plus/tasks/build.ts";
 import { readAutomationPrograms } from "../support/automation-source.ts";
 
@@ -130,16 +130,10 @@ test("platform providers install the extension's packager like the universal VSI
     setup("build-editor-platforms", install),
     setup("build-editor-extensions", (step) => step.name === "Package editor extensions"),
   );
-  const command = (task: unknown) => {
-    assert.ok(task !== null && typeof task === "object" && "command" in task);
-    assert.equal(typeof task.command, "string");
-    return String(task.command);
-  };
-  assert.ok(
-    command(buildTasks["package:vscode-extension"]).startsWith(
-      `${installVscodeExtensionDependencies} && `,
-    ),
-  );
+  assert.deepEqual(workspaceTaskSteps(buildTasks["package:vscode-extension"])[0], {
+    program: "node",
+    arguments: ["tools/commands/editors/vscode/ensure-dependencies.ts"],
+  });
 });
 
 test("provider packaging keeps Rust setup for universal and host VSIX tasks", () => {

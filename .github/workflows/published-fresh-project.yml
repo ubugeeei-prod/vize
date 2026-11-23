@@ -8,10 +8,11 @@ on:
       - ".github/workflows/release-verify.yml"
       - ".github/scripts/workflows/release-verify/**"
       - "tools/support/release/verify_published/fresh_project.ts"
-      - "tools/support/release/verify_published/fresh_project_fixture.ts"
-      - "tools/support/release/verify_published/lsp_client.ts"
-      - "tests/tooling/release/published-fresh-project.test.ts"
-      - "tests/tooling/release/release-workflow.test.ts"
+      - tools/support/compat/npm/smoke-loaded-native-package.cjs
+      - tools/support/release/verify_published/fresh_project_fixture.ts
+      - tools/support/release/verify_published/lsp_client.ts
+      - tests/tooling/release/published-fresh-project.test.ts
+      - tests/tooling/release/release-workflow.test.ts
   workflow_call:
     inputs:
       version:
@@ -99,8 +100,7 @@ jobs:
         env:
           VIZE_PUBLISHED_FRESH_EVIDENCE: ${{ runner.temp }}/published-fresh-project/receipt.json
         run: >-
-          node tools/support/release/verify_published/fresh_project.ts
-          "${{ needs.resolve.outputs.version }}"
+          node tools/support/release/verify_published/fresh_project.ts "${{ needs.resolve.outputs.version }}"
       - name: Retain the public fresh-project receipt
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

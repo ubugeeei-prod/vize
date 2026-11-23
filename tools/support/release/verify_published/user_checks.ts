@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 // What a user does first with a freshly installed `vize`: compile, lint, format
 // and open the project in an editor (LSP). Each check runs the published bits.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -14,7 +15,6 @@ const items = [1, 2]
 </template>
 `;
 const UNFORMATTED = `<template><div   class="a">x</div></template>\n`;
-const COMPILE = "<script setup>const n = 1</script><template><p>{{ n }}</p></template>";
 const MISSING_KEY = "vue/require-v-for-key";
 
 type Check = { name: string; run: () => Promise<string | null> };
@@ -38,9 +38,12 @@ export function userChecks(dir: string, version: string): Check[] {
     {
       name: "compileSfc from @vizejs/native",
       run: async () => {
-        const script = `const { compileSfc } = require(require.resolve("@vizejs/native", { paths: [${JSON.stringify(dir)}] }));
-          if (!JSON.stringify(compileSfc(${JSON.stringify(COMPILE)}, { filename: "Smoke.vue" })).includes("createElementBlock")) process.exit(1);`;
-        return (await run(process.execPath, ["-e", script])) === 0 ? null : "unexpected output";
+        return (await run(process.execPath, [
+          fileURLToPath(new URL("./native-compile.cjs", import.meta.url)),
+          dir,
+        ])) === 0
+          ? null
+          : "unexpected output";
       },
     },
     {

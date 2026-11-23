@@ -8,6 +8,7 @@ on:
       - npm/native/**
       - crates/vize_atelier_sfc/src/vite_plugin/**
       - tools/support/compat/vite-style-relative-imports.mjs
+      - tools/support/compat/vite-style-native.cjs
       - tests/_fixtures/_projects/vize-style-relative-imports-host/**
 permissions: { contents: read }
 concurrency:

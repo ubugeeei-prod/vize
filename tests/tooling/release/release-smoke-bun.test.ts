@@ -1,3 +1,4 @@
+import { parse } from "yaml";
 import { readAutomationPrograms } from "../support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -15,14 +16,16 @@ const smokeCommand = path.join(root, "tools/commands/release/npm/smoke-release-i
 test("the Bun lane executes the shared source planner when its graph changes", () => {
   const workflow = readAutomationPrograms(
     path.join(root, ".github/workflows/release-smoke-contracts.yml"),
+    "utf8",
   );
+  const paths: string[] = parse(workflow).on.pull_request.paths;
   for (const source of [
     "tools/support/compat/github/legacy-fix-fixture-report.ts",
     "tools/support/compat/github/native-beta-dto-fixtures.ts",
     "tools/support/compat/github/report-legacy-fix-fixtures.ts",
     "tests/tooling/legacy-fix-fixture-report.test.ts",
   ]) {
-    assert.ok(workflow.includes(`- "${source}"`), `${source} must select the Bun lane`);
+    assert.ok(paths.includes(source), `${source} must select the Bun lane`);
   }
   assert.match(workflow, /name: Shared source planner on Bun 1\.3\.14/);
   assert.match(workflow, /bun test tests\/tooling\/legacy-fix-fixture-report\.test\.ts/);
@@ -98,7 +101,14 @@ test("Bun install and Node/Bun parity execute through the configured runtime", (
       path.resolve(bunInstall!.cwd, "../packs/vizejs-native-1.0.0.tgz"),
     );
     assert.ok(
-      invocations.some(({ args, kind }) => kind === "bun" && args[0] === "-e"),
+      ["native-check.cjs", "native-observation.cjs"].every((name) =>
+        invocations.some(
+          ({ args, cwd, kind }) =>
+            kind === "bun" &&
+            args.length === 1 &&
+            args[0] === path.join(cwd, ".vize-runtime-check", name),
+        ),
+      ),
       "the packed native product must execute through the configured Bun runtime",
     );
 
@@ -289,7 +299,7 @@ const path = require("node:path");
 const stub = ${JSON.stringify(executable)}.toLowerCase();
 if (process.execPath.toLowerCase() === stub) {
   const installing = path.basename(process.argv[1] || "").toLowerCase() === "install";
-  const args = installing ? ["install", ...process.argv.slice(2)] : process.execArgv;
+  const args = installing ? ["install", ...process.argv.slice(2)] : process.argv.slice(1);
   let overrides;
   if (installing) {
     const manifestPath = path.join(process.cwd(), "package.json");

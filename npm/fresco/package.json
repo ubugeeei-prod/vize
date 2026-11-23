@@ -22,7 +22,8 @@
     "directory": "npm/fresco"
   },
   "files": [
-    "dist"
+    "dist",
+    "scripts/package-tasks.cjs"
   ],
   "type": "module",
   "main": "./dist/index.mjs",
@@ -59,9 +60,9 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
-    "check": "vp check src vite.config.ts && vue-tsc --noEmit -p tsconfig.json && vue-tsc --noEmit -p tsconfig.examples.json && vue-tsc --noEmit -p tsconfig.external-plugin.json",
+    "check": "node ./scripts/package-tasks.cjs check",
     "check:fix": "vp check --fix src vite.config.ts",
-    "check:types": "vue-tsc --noEmit -p tsconfig.json && vue-tsc --noEmit -p tsconfig.examples.json",
+    "check:types": "node ./scripts/package-tasks.cjs check:types",
     "fmt": "vp fmt --write src vite.config.ts",
     "test": "vp test run"
   },

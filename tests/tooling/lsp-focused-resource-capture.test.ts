@@ -188,9 +188,10 @@ async function replay(mode: Mode) {
         return 0;
       },
       observe(command, stdout, stderr) {
-        assert.deepEqual(command.slice(0, 3), ["node", "--input-type=module", "--eval"]);
-        assert.match(command[3] ?? "", /lsp-resource-sampler\.ts/);
-        assert.deepEqual(command.slice(4), [String(process.pid), directory]);
+        assert.equal(command[0], "node");
+        assert.equal(path.basename(command[1]!), "lsp-focused-resource-observer.ts");
+        assert.match(fs.readFileSync(command[1]!, "utf8"), /lsp-resource-sampler\.ts/);
+        assert.deepEqual(command.slice(2), [String(process.pid), directory]);
         streams.push(stdout, stderr);
         if (mode === "observer-spawn-failure") throw new Error("fixture observer spawn failure");
         return observer;

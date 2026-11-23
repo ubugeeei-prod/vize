@@ -1,4 +1,4 @@
-// Shell files are distribution artifacts. CI can also use these functions for run steps.
+// Each module renders one named shell program for its consumer.
 open module vize.ci.ShellScript
 
 executable: Boolean = false

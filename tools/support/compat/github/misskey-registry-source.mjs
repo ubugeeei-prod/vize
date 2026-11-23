@@ -49,10 +49,14 @@ const rows = parts.flatMap((part) => part.rows);
 assert.equal(rows.length, metadata.cells);
 assert.equal(new Set(rows.map(([file]) => file)).size, rows.length);
 const named = new Map(rows.map((row) => [row[0], row]));
+const executing = [
+  ...metadata.executing,
+  "tools/support/compat/github/source-counterpart-worker.ts",
+];
 const loaded = new Map([
   [metadataPath, metadataBody],
   ...parts.map(({ file, body }) => [file, body]),
-  ...metadata.executing.map((file) => [file, regular(moduleRoot, file)]),
+  ...executing.map((file) => [file, regular(moduleRoot, file)]),
 ]);
 const proofs = new WeakMap();
 function raw(root, source, files) {

@@ -11,7 +11,7 @@ name = "Benchmark - glibc compatibility"
 // Only a change to the benchmark itself measures on a pull request.
 on {
   pull_request {
-    paths = List(".github/workflows/glibc-floor-bench.yml", ".github/scripts/workflows/glibc-floor-bench/**", "tools/support/github/glibc-floor-bench.ts")
+    paths = List(".github/workflows/glibc-floor-bench.yml", ".github/scripts/workflows/glibc-floor-bench/**", "tools/support/github/glibc-floor-bench.ts", "tools/support/github/glibc-floor-compile.cjs")
   }
   workflow_dispatch {
     inputs {

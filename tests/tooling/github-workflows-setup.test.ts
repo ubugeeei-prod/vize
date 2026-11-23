@@ -1,3 +1,4 @@
+import { packageScripts } from "./support/package-task-source.ts";
 import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -88,7 +89,7 @@ test("docs build isolates musea example cargo checks in a dedicated sticky disk"
   const manifest = JSON.parse(readRepoFile("examples", "vite-musea", "package.json")) as {
     scripts?: Record<string, string>;
   };
-  const checkScript = manifest.scripts?.check;
+  const checkScript = packageScripts("examples/vite-musea", manifest.scripts).check;
   assert.ok(checkScript, "examples/vite-musea/package.json must define a check script");
 
   assert.match(

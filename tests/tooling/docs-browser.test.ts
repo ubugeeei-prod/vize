@@ -1,3 +1,4 @@
+import { packageCommands } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import fs, { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -27,7 +28,7 @@ test("docs build prepares its browser before previews and checks the rendered si
     return command;
   }
 
-  assert.deepEqual(script("build").split(" && "), [
+  assert.deepEqual(packageCommands(repoRoot, "docs", script("build"), "build"), [
     "node ./scripts/ensure-browser.ts",
     "pnpm generate:ui-previews",
     "pnpm generate:reference",

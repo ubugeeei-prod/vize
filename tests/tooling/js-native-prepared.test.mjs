@@ -1,3 +1,5 @@
+import { packageCommands } from "./support/package-task-source.ts";
+import { workspaceTaskSteps } from "../../tools/config/vite-plus/task-plan.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
@@ -18,7 +20,7 @@ import { test } from "node:test";
 
 import { requirePreparedNative, runViteTests } from "../../npm/builder/vite/scripts/run-tests.ts";
 import { testedPackages } from "../../tools/config/vite-plus/task-inputs.ts";
-import { runInPackages, runTask } from "../../tools/config/vite-plus/task-commands.ts";
+import { runInPackages } from "../../tools/config/vite-plus/task-commands.ts";
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -122,9 +124,12 @@ test('filtered reporter case',()=>{assert.equal(process.execPath,${JSON.stringif
 
 void test("standalone Vite tests build first; prepared tests reuse the same native build", () => {
   const manifest = JSON.parse(readFileSync(join(root, "npm/builder/vite/package.json"), "utf8"));
-  assert.equal(
-    manifest.scripts["test:prepared"],
-    'node scripts/run-tests.ts --require-prepared && node --test --test-concurrency=1 "src/**/*.test.ts"',
+  assert.deepEqual(
+    packageCommands(root, "npm/builder/vite", manifest.scripts["test:prepared"], "test:prepared"),
+    [
+      "node scripts/run-tests.ts --require-prepared",
+      "node --test --test-concurrency=1 'src/**/*.test.ts'",
+    ],
   );
   for (const prepared of [false, true]) {
     const calls = [];
@@ -269,9 +274,18 @@ assert.equal(runViteTests(false,packageRun),0); assert.equal(calls,3);
 });
 
 void test("cached root JS tasks preserve selection/order/environment and require successful preparation", () => {
-  const before = `${runTask("build:native:test")} && ${runInPackages("test", testedPackages, { concurrencyLimit: 1 })}`;
-  const after = testAndBenchmarkTasks["test:js"].command;
-  assert.equal(after.replace(`node ${helper} vp run`, "vp run"), before);
+  const after = workspaceTaskSteps(testAndBenchmarkTasks["test:js"]);
+  const selection = runInPackages("test", testedPackages, { concurrencyLimit: 1 });
+  const native = { program: "vp", arguments: ["run", "--workspace-root", "build:native:test"] };
+  const before = [native, selection];
+  assert.deepEqual(after, [
+    native,
+    {
+      ...selection,
+      program: "node",
+      arguments: [helper, selection.program, ...selection.arguments],
+    },
+  ]);
   const fixture = mkdtempSync(join(tmpdir(), "vize-prepared-root-"));
   const events = join(fixture, "events.jsonl");
   const vp = process.env.VIZE_VP_BIN ?? join(root, "node_modules/.bin/vp");
@@ -309,14 +323,23 @@ void test("cached root JS tasks preserve selection/order/environment and require
     }
     commitFixture(fixture);
     let invocation = 0;
-    const run = (command, preparationExit = 0) => {
+    const run = (recipe, preparationExit = 0) => {
       invocation += 1;
       rmSync(events, { force: true });
       for (const pkg of testedPackages)
         appendFileSync(join(fixture, pkg, "probe.mjs"), `// invocation ${invocation}\n`);
+      const runner = new URL("../../tools/support/tasks/package-task.ts", import.meta.url).href;
+      writeFileSync(
+        join(fixture, "run-recipe.mjs"),
+        "import {runPackageTask} from " +
+          JSON.stringify(runner) +
+          ";\nprocess.exitCode=runPackageTask({test:" +
+          JSON.stringify(recipe) +
+          "},['test']);\n",
+      );
       writeFileSync(
         join(fixture, "vite.config.mjs"),
-        `export default { run: { cache:{scripts:true,tasks:true}, tasks: { 'build:native:test': { command:'node prepare.mjs',cache:false },'test:js':{command:${JSON.stringify(command)},cache:false} } } };\n`,
+        "export default {run:{cache:{scripts:true,tasks:true},tasks:{'build:native:test':{command:'node prepare.mjs',cache:false},'test:js':{command:'node run-recipe.mjs',cache:false}}}};\n",
       );
       const result = spawnSync(vp, ["run", "--workspace-root", "test:js"], {
         cwd: fixture,

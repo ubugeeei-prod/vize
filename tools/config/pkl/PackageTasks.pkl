@@ -1,0 +1,20 @@
+open module vize.automation.PackageTasks
+
+class Command {
+  program: String(!isEmpty)
+  arguments: List<String> = List()
+  directory: String?
+  environment: Mapping<String, String> = new {}
+  defaults: Mapping<String, String> = new {}
+  globs: Set<String> = Set()
+  absolutePaths: Set<String> = Set()
+}
+
+tasks: Mapping<String, Listing<Command>>
+
+function run(executable: String, argv: List<String>): Command = new Command {
+  program = executable
+  arguments = argv
+}
+
+output { value = tasks }

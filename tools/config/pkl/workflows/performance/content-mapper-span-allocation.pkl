@@ -8,6 +8,7 @@ on {
       "crates/vize_canon/src/batch/virtual_project/content_mapper/span_normalize.rs"
       "tools/benchmarks/crates/vize/tests/content_mapper_span_profile.rs"
       "tools/benchmarks/scripts/content-mapper-span-profile.ts"
+      "tools/benchmarks/scripts/cold-typechecker-scale-affinity.ts"
       "tools/benchmarks/scripts/content-mapper-span-profile.test.ts"
       ".github/workflows/content-mapper-span-allocation.yml"
       ".github/scripts/workflows/content-mapper-span-allocation/**"

@@ -30,13 +30,14 @@ The Pkl modules in `tools/config/pkl/` own the repository's workflows, composite
 actions, shell entrypoints, pnpm workspace, and service configuration. The
 [workflow catalog](../.github/workflows/README.md) links to each workflow group.
 
-| To change                    | Edit under `tools/config/pkl/`    |
-| ---------------------------- | --------------------------------- |
-| GitHub workflow              | `workflows/<area>/<workflow>.pkl` |
-| Shared action or runner pin  | `Actions.pkl`                     |
-| Composite action             | `actions/<name>.pkl`              |
-| First-party shell entrypoint | `scripts/<output path>.pkl`       |
-| Other YAML configuration     | `repository/<output path>.pkl`    |
+| To change                    | Edit under `tools/config/pkl/`      |
+| ---------------------------- | ----------------------------------- |
+| GitHub workflow              | `workflows/<area>/<workflow>.pkl`   |
+| Shared action or runner pin  | `Actions.pkl`                       |
+| Composite action             | `actions/<name>.pkl`                |
+| First-party shell entrypoint | `scripts/<output path>.pkl`         |
+| Multi-command package script | `package-tasks/<package>/tasks.pkl` |
+| Other YAML configuration     | `repository/<output path>.pkl`      |
 
 After installing workspace dependencies, regenerate the checked-in outputs and verify them:
 
@@ -57,6 +58,12 @@ Group workflows by purpose in the catalog. Dedicated benchmark workflows use the
 display name `Benchmark - <subject>`. Use `ShellScript.pkl` to quote command
 arguments and compose shared recipes. Put runtime logic that needs process I/O
 in a typed driver under `tools/` and call it from the recipe.
+
+A package script invokes its generated `scripts/package-tasks.cjs` entrypoint.
+Declare each command's executable and argument list in the package's `tasks.pkl`.
+Use `directory` and `environment` for package-local setup. Root Vite+ sequences use
+`steps(...)` in `tools/config/vite-plus/tasks/`, and Nix shell hooks read the
+generated files under `tools/nix/scripts/`.
 
 ## Typecheck comparison evidence
 

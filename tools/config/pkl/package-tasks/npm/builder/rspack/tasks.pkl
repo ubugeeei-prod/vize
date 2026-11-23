@@ -1,0 +1,26 @@
+amends "../../../../PackageTasks.pkl"
+
+tasks {
+  ["test"] {
+    module.run("pnpm", List("build"))
+    (module.run("node", List(
+      "--test",
+      "src/*.test.ts",
+      "src/**/*.test.ts",
+      "../shared/*.test.ts",
+    ))) { globs = Set("src/*.test.ts", "src/**/*.test.ts", "../shared/*.test.ts") }
+  }
+  ["test:hmr"] {
+    module.run("pnpm", List("build"))
+    module.run("node", List("--test", "test/hmr.test.mjs"))
+  }
+  ["test:update"] {
+    module.run("pnpm", List("build"))
+    (module.run("node", List(
+      "--test",
+      "--test-update-snapshots",
+      "src/*.test.ts",
+      "src/**/*.test.ts",
+    ))) { globs = Set("src/*.test.ts", "src/**/*.test.ts") }
+  }
+}

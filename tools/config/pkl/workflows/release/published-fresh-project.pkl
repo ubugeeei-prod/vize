@@ -10,6 +10,7 @@ on {
       ".github/workflows/release-verify.yml"
       ".github/scripts/workflows/release-verify/**"
       "tools/support/release/verify_published/fresh_project.ts"
+      "tools/support/compat/npm/smoke-loaded-native-package.cjs"
       "tools/support/release/verify_published/fresh_project_fixture.ts"
       "tools/support/release/verify_published/lsp_client.ts"
       "tests/tooling/release/published-fresh-project.test.ts"

@@ -1,3 +1,4 @@
+import { packageCommands } from "./package-task-source.ts";
 import { stagedWorkflowAction, verifyWorkflowStage } from "./workflow-stage.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -52,6 +53,8 @@ const dynamicPrefixes = new Set([
 // The WASM command was re-reviewed as its TypeScript port and imports (#8840).
 // A changed producer requires review, rather than accepting a new dynamic role.
 const producerHashes = {
+  "examples/vite-musea/scripts/package-tasks.cjs":
+    "238c4edc5a633bece09a0f0cad5858e574cb2b2874a3eb2594b785e17e1c26ef",
   ".github/actions/stage-workflow-scripts/action.yml":
     "3964722bfe0474b2a026449850af68bae0eab7f6a7f94b2ae597dac941fdf58c",
   ".github/actions/stage-workflow-scripts/stage.ts":
@@ -224,9 +227,12 @@ function verifyRecipes(root, docs, e2e) {
   const native = JSON.parse(read(root, "npm/native/package.json"));
   assert.equal(native.scripts["build:ci"], "node ./scripts/build-ci.mjs");
   const example = JSON.parse(read(root, "examples/vite-musea/package.json"));
-  assert.equal(example.scripts.build, "pnpm check && vp build --config vite.app.config.ts");
   assert.equal(
-    example.scripts.check,
+    packageCommands(root, "examples/vite-musea", example.scripts.build, "build").join(" && "),
+    "pnpm check && vp build --config vite.app.config.ts",
+  );
+  assert.equal(
+    packageCommands(root, "examples/vite-musea", example.scripts.check, "check").join(" && "),
     "cargo run --quiet --target-dir ../../.docs-example-target --manifest-path ../../Cargo.toml -p vize -- check && vp check src vite.config.ts vite.app.config.ts vite.ui-gallery.config.ts vite.globals.config.ts musea.preview.ts playwright.config.ts",
   );
   const source = read(root, "npm/native/scripts/formatter-history-ci-build.mjs");

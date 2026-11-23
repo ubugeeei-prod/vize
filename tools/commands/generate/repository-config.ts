@@ -1,3 +1,4 @@
+import { packageTaskRuntime, renderPackageTasks } from "../../support/ci/package-programs.ts";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
   chmodSync,
@@ -26,11 +27,11 @@ const sources = path.join(root, "tools/config/pkl");
 const cliRequire = createRequire(new URL("../../../npm/cli/package.json", import.meta.url));
 const pkl = cliRequire("@pkl-community/pkl") as { getExePath(): string };
 
-type Product = { source: string; target: string; shell: boolean };
+type Product = { source: string; target: string; kind: "yaml" | "shell" | "package" };
 
 function listProducts(): Product[] {
   const products: Product[] = [];
-  for (const area of ["workflows", "actions", "repository", "scripts"]) {
+  for (const area of ["workflows", "actions", "repository", "scripts", "package-tasks"]) {
     const directory = path.join(sources, area);
     for (const entry of readdirSync(directory, { recursive: true, withFileTypes: true })) {
       if (!entry.isFile() || !entry.name.endsWith(".pkl")) continue;
@@ -39,7 +40,13 @@ function listProducts(): Product[] {
       let target = path.relative(directory, source).slice(0, -4).split(path.sep).join("/");
       if (area === "workflows") target = `.github/workflows/${name}.yml`;
       if (area === "actions") target = `.github/actions/${target}/action.yml`;
-      products.push({ source, target, shell: area === "scripts" });
+      if (area === "package-tasks")
+        target = path.posix.join(path.posix.dirname(target), "scripts/package-tasks.cjs");
+      products.push({
+        source,
+        target,
+        kind: area === "scripts" ? "shell" : area === "package-tasks" ? "package" : "yaml",
+      });
     }
   }
   return products.sort((left, right) => left.target.localeCompare(right.target, "en"));
@@ -162,7 +169,7 @@ function isScript(value: ConfigValue): value is { text: string; executable: bool
   );
 }
 
-function main(): void {
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
   if (args.length > 1 || args.some((arg) => arg !== "--check")) {
     throw new Error("Usage: node tools/commands/generate/repository-config.ts [--check]");
@@ -171,12 +178,18 @@ function main(): void {
   const products = listProducts();
   verifyInventory(products);
   const values = evaluate(products);
+  const runtime = await packageTaskRuntime(root);
   const changes: { target: string; text: string; executable?: boolean }[] = [];
-  for (const [index, { target, shell }] of products.entries()) {
+  for (const [index, { target, kind }] of products.entries()) {
     const file = path.join(root, target);
     const current = readOutput(file);
     const value = values[index]!;
-    if (shell) {
+    if (kind === "package") {
+      const text = renderPackageTasks(root, target, value, runtime);
+      if (text !== current) changes.push({ target, text });
+      continue;
+    }
+    if (kind === "shell") {
       if (!isScript(value)) throw new Error(`Invalid shell script definition for ${target}`);
       if (!target.startsWith("tests/_fixtures/")) validateShellProgram(target, value.text);
       if (
@@ -222,4 +235,4 @@ function main(): void {
   console.log(`${products.length} Pkl outputs checked, ${changes.length} updated.`);
 }
 
-main();
+await main();

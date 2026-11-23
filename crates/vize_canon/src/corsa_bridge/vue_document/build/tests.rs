@@ -377,7 +377,7 @@ fn identical_source_in_separate_roots_keeps_authored_membership() {
             .host
             .materialized_sources
             .iter()
-            .map(|source| source.source_path.clone())
+            .map(|source| source.source_path.canonicalize().unwrap())
             .collect::<Vec<_>>();
         members.sort();
         let mut expected = vec![child, root.path().join("Host.vue").canonicalize().unwrap()];

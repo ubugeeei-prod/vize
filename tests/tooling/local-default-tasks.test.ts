@@ -1,3 +1,4 @@
+import { workspaceTaskSteps } from "../../tools/config/vite-plus/task-plan.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -9,8 +10,7 @@ import { fileURLToPath } from "node:url";
 import { buildTasks } from "../../tools/config/vite-plus/tasks/build.ts";
 import { checkTasks } from "../../tools/config/vite-plus/tasks/check.ts";
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
-import { inTestbox, testboxTasks } from "../../tools/config/vite-plus/tasks/testbox.ts";
-import { shellQuote } from "../../tools/config/vite-plus/task-helpers.ts";
+import { testboxTasks } from "../../tools/config/vite-plus/tasks/testbox.ts";
 import { testedPackages } from "../../tools/config/vite-plus/task-inputs.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -31,92 +31,70 @@ const extractTestboxLifecycle = (guide: string): string => {
   return lifecycle;
 };
 
-type TaskShape = {
-  cache?: boolean;
-  command: string;
-};
+const localGraph = (tasks: readonly string[]) =>
+  tasks.map((name) => ({ program: "vp", arguments: ["run", "--workspace-root", name] }));
+const testboxDriver = path.join(root, "tools/commands/ci/testbox.ts");
+const runTestbox = (args: string[], env: NodeJS.ProcessEnv) =>
+  spawnSync(process.execPath, [testboxDriver, ...args], { encoding: "utf8", env });
 
-const taskShape = (value: unknown) => value as TaskShape;
-
-const assertLocalDefault = (
-  localValue: unknown,
-  testboxValue: unknown,
-  nestedTasks: readonly string[],
-) => {
-  const local = taskShape(localValue);
-  const testbox = taskShape(testboxValue);
-
-  assert.equal(local.cache, false);
-  assert.doesNotMatch(local.command, /blacksmith|BLACKSMITH_TESTBOX_ID/);
-  assert.equal(testbox.cache, false);
-  assert.match(
-    testbox.command,
-    /"\$VIZE_BLACKSMITH_BIN" testbox run --id "\$BLACKSMITH_TESTBOX_ID"/,
-  );
-
-  const expectedCommand = nestedTasks.map((task) => `vp run --workspace-root ${task}`).join(" && ");
-  assert.ok(local.command.includes(expectedCommand));
-  assert.ok(testbox.command.includes(shellQuote(expectedCommand)));
-
-  for (const nestedTask of nestedTasks) {
-    const command = `vp run --workspace-root ${nestedTask}`;
-    assert.ok(local.command.includes(command));
-    assert.ok(testbox.command.includes(command));
+test("local defaults and their Testbox aliases execute the same workspace graph", () => {
+  for (const [name, local, remote, nested] of [
+    ["build", buildTasks.build, buildTasks["build:testbox"], ["build:rust", "build:all"]],
+    [
+      "test",
+      testAndBenchmarkTasks.test,
+      testAndBenchmarkTasks["test:testbox"],
+      ["test:rust", "test:js", "test:scripts", "test:zed-extension:unit"],
+    ],
+    ["lint", checkTasks.lint, checkTasks["lint:testbox"], ["check"]],
+  ] as const) {
+    assert.equal((local as { cache: boolean }).cache, false);
+    assert.equal((remote as { cache: boolean }).cache, false);
+    assert.deepEqual(workspaceTaskSteps(local), localGraph(nested));
+    assert.deepEqual(workspaceTaskSteps(remote), [
+      { program: "node", arguments: ["tools/commands/ci/testbox.ts", "run", name] },
+    ]);
   }
-};
-
-test("workspace build, test, and lint default to their local task graphs", () => {
-  assertLocalDefault(buildTasks.build, buildTasks["build:testbox"], ["build:rust", "build:all"]);
-  assertLocalDefault(testAndBenchmarkTasks.test, testAndBenchmarkTasks["test:testbox"], [
-    "test:rust",
-    "test:js",
-    "test:scripts",
-    "test:zed-extension:unit",
-  ]);
-  assertLocalDefault(checkTasks.lint, checkTasks["lint:testbox"], ["check"]);
-
-  const ci = taskShape(checkTasks.ci);
-  assert.equal(ci.cache, false);
-  assert.match(ci.command, /vp run --workspace-root test(?:\s|$)/);
-  assert.doesNotMatch(ci.command, /blacksmith|test:testbox/);
+  assert.deepEqual(
+    workspaceTaskSteps(checkTasks.ci),
+    localGraph(["fmt:all", "clippy", "test", "check:ci"]),
+  );
 });
-
 test("workspace JS tests include the Fresco component suite", () => {
   assert.ok(testedPackages.includes("./npm/fresco"));
-
-  const jsTests = taskShape(testAndBenchmarkTasks["test:js"]);
-  assert.match(jsTests.command, /--filter '\.\/npm\/fresco'(?:\s|$)/);
+  const args = workspaceTaskSteps(testAndBenchmarkTasks["test:js"]).at(-1)?.arguments ?? [];
+  assert.equal(args[args.indexOf("./npm/fresco") - 1], "--filter");
 });
-
 test("branch coverage reports every metric before enforcing thresholds", () => {
-  const command = taskShape(testAndBenchmarkTasks["coverage:source:branch"]).command;
-  const cleanIndex = command.indexOf("cargo clean --target-dir target/llvm-cov-target");
-  const reportIndex = command.indexOf("cargo +nightly llvm-cov -p vize_carton");
-  const enforcementIndex = command.indexOf("tools/commands/ci/source-coverage.ts");
-
-  assert.ok(cleanIndex >= 0);
-  assert.match(command, /cargo \+nightly llvm-cov/);
-  assert.match(command, /--branch(?:\s|$)/);
-  assert.doesNotMatch(command, /--fail-under-/);
-  assert.match(command, /node tools\/commands\/ci\/source-coverage\.ts/);
-  assert.match(command, /(?:^|\s)['"]?--min-lines['"]?\s+['"]?55['"]?(?:\s|$)/);
-  assert.match(command, /(?:^|\s)['"]?--min-functions['"]?\s+['"]?70['"]?(?:\s|$)/);
-  assert.match(command, /(?:^|\s)['"]?--min-regions['"]?\s+['"]?55['"]?(?:\s|$)/);
-  assert.match(command, /(?:^|\s)['"]?--min-branches['"]?\s+['"]?40['"]?(?:\s|$)/);
-  assert.ok(cleanIndex < reportIndex);
-  assert.ok(reportIndex < enforcementIndex);
+  const commands = workspaceTaskSteps(testAndBenchmarkTasks["coverage:source:branch"]);
+  assert.deepEqual(
+    commands.map((command) => command.program),
+    ["node", "cargo", "cargo", "node"],
+  );
+  assert.deepEqual(commands[1]?.arguments, ["clean", "--target-dir", "target/llvm-cov-target"]);
+  assert.ok(commands[2]?.arguments?.includes("--branch"));
+  assert.ok(!commands[2]?.arguments?.some((arg) => arg.startsWith("--fail-under-")));
+  assert.deepEqual(commands[3]?.arguments, [
+    "tools/commands/ci/source-coverage.ts",
+    "--json",
+    "target/llvm-cov/source-branch-summary.json",
+    "--min-lines",
+    "55",
+    "--min-functions",
+    "70",
+    "--min-regions",
+    "55",
+    "--min-branches",
+    "40",
+  ]);
 });
 
 test("Testbox commands fail with an actionable lifecycle when the box id is absent", () => {
-  const result = spawnSync(
-    "/bin/sh",
-    ["-c", `blacksmith() { :; }\n${inTestbox("printf should-not-run")}`],
-    {
-      encoding: "utf8",
-      env: { PATH: "", VIZE_TESTBOX_SHELL: "1", VIZE_BLACKSMITH_BIN: process.execPath },
-    },
-  );
-
+  const result = runTestbox(["run", "build"], {
+    PATH: "",
+    VIZE_TESTBOX_SHELL: "1",
+    VIZE_BLACKSMITH_BIN: process.execPath,
+  });
   assert.equal(result.status, 2);
   assert.equal(result.stdout, "");
   assert.match(result.stderr, /BLACKSMITH_TESTBOX_ID is unset/);
@@ -127,10 +105,7 @@ test("Testbox commands fail with an actionable lifecycle when the box id is abse
 });
 
 test("Testbox commands require the dedicated Nix shell", () => {
-  const result = spawnSync("/bin/sh", ["-c", inTestbox("printf should-not-run")], {
-    encoding: "utf8",
-    env: { PATH: process.env.PATH ?? "" },
-  });
+  const result = runTestbox(["run", "build"], { PATH: process.env.PATH ?? "" });
 
   assert.equal(result.status, 2);
   assert.equal(result.stdout, "");
@@ -140,9 +115,9 @@ test("Testbox commands require the dedicated Nix shell", () => {
 });
 
 test("Testbox commands reject an inherited marker without the pinned executable", () => {
-  const result = spawnSync("/bin/sh", ["-c", inTestbox("printf should-not-run")], {
-    encoding: "utf8",
-    env: { PATH: process.env.PATH ?? "", VIZE_TESTBOX_SHELL: "1" },
+  const result = runTestbox(["run", "build"], {
+    PATH: process.env.PATH ?? "",
+    VIZE_TESTBOX_SHELL: "1",
   });
 
   assert.equal(result.status, 2);
@@ -150,56 +125,40 @@ test("Testbox commands reject an inherited marker without the pinned executable"
   assert.doesNotMatch(result.stderr, /BLACKSMITH_TESTBOX_ID is unset/);
 });
 
-test("Testbox warmup diagnoses branch and authentication prerequisites", () => {
-  const command = taskShape(testboxTasks["testbox:warmup"]).command;
-  const syntax = spawnSync("sh", ["-n"], { encoding: "utf8", input: command });
-
-  assert.equal(syntax.status, 0, syntax.stderr);
-  assert.match(command, /git branch --show-current/);
-  assert.match(command, /git ls-remote --heads origin/);
-  assert.match(command, /git rev-parse HEAD/);
-  assert.match(command, /local_sha/);
-  assert.match(command, /remote_sha/);
-  assert.match(command, /could not query origin/);
-  assert.match(command, /git push --set-upstream origin/);
-  assert.match(command, /"\$VIZE_BLACKSMITH_BIN" testbox warmup \.github\/workflows\/e2e\.yml/);
-  assert.match(command, /--ref "\$branch" --job testbox/);
-  assert.match(
-    command,
-    new RegExp(pushCurrentBranchCommand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
-  );
+test("Testbox lifecycle tasks use the pinned driver", () => {
+  for (const operation of ["warmup", "stop"] as const)
+    assert.deepEqual(
+      workspaceTaskSteps(testboxTasks[("testbox:" + operation) as keyof typeof testboxTasks]),
+      [{ program: "node", arguments: ["tools/commands/ci/testbox.ts", operation] }],
+    );
 });
 
 test("Testbox warmup distinguishes origin failures from an unpushed branch", () => {
-  const command = taskShape(testboxTasks["testbox:warmup"]).command;
   const fake = createFakeBlacksmith(
     "printf '%s\\n' \"$*\" >> \"$FAKE_BLACKSMITH_LOG\"\nprintf '%s\\n' tbx_testbox_id",
   );
   const blacksmithLog = path.join(fake.directory, "calls.log");
-  const harness = [
-    "git() {",
-    '  if [ "$1" = "branch" ]; then printf \'%s\\n\' "$FAKE_BRANCH"; return; fi',
-    '  if [ "$1" = "rev-parse" ]; then printf \'%s\\n\' "$FAKE_LOCAL_SHA"; return; fi',
-    "  if [ \"$FAKE_REMOTE\" = \"error\" ]; then printf '%s\\n' 'credential detail that must stay hidden' >&2; return 3; fi",
-    '  if [ "$FAKE_REMOTE" != "missing" ]; then printf \'%s\\n\' "$FAKE_REMOTE_SHA refs/heads/$FAKE_BRANCH"; fi',
-    "}",
-    "blacksmith() { printf '%s\\n' 'host Blacksmith must not run' >&2; return 91; }",
-    command,
-  ].join("\n");
-
+  fs.writeFileSync(
+    path.join(fake.directory, "git"),
+    [
+      "#!/bin/sh",
+      'if [ "$1" = "branch" ]; then echo "$FAKE_BRANCH"; exit; fi',
+      'if [ "$1" = "rev-parse" ]; then echo "$FAKE_LOCAL_SHA"; exit; fi',
+      'if [ "$FAKE_REMOTE" = "error" ]; then echo "credential detail that must stay hidden" >&2; exit 3; fi',
+      'if [ "$FAKE_REMOTE" != "missing" ]; then echo "$FAKE_REMOTE_SHA refs/heads/$FAKE_BRANCH"; fi',
+    ].join("\n"),
+    { mode: 0o755 },
+  );
   const runWarmup = (extraEnv: NodeJS.ProcessEnv) =>
-    spawnSync("sh", ["-c", harness], {
-      encoding: "utf8",
-      env: {
-        PATH: process.env.PATH ?? "",
-        VIZE_TESTBOX_SHELL: "1",
-        VIZE_BLACKSMITH_BIN: fake.executable,
-        FAKE_BLACKSMITH_LOG: blacksmithLog,
-        FAKE_BRANCH: "feature/testbox",
-        FAKE_LOCAL_SHA: "deadbeef",
-        FAKE_REMOTE_SHA: "deadbeef",
-        ...extraEnv,
-      },
+    runTestbox(["warmup"], {
+      PATH: fake.directory + path.delimiter + (process.env.PATH ?? ""),
+      VIZE_TESTBOX_SHELL: "1",
+      VIZE_BLACKSMITH_BIN: fake.executable,
+      FAKE_BLACKSMITH_LOG: blacksmithLog,
+      FAKE_BRANCH: "feature/testbox",
+      FAKE_LOCAL_SHA: "deadbeef",
+      FAKE_REMOTE_SHA: "deadbeef",
+      ...extraEnv,
     });
 
   try {
@@ -238,6 +197,18 @@ test("the Nix shell exposes local and opt-in Testbox task aliases", () => {
   const vpModule = fs.readFileSync(path.join(root, "tools/nix/vp.nix"), "utf8");
   const devShellModule = fs.readFileSync(path.join(root, "tools/nix/dev-shell.nix"), "utf8");
   const blacksmithModule = fs.readFileSync(path.join(root, "tools/nix/blacksmith.nix"), "utf8");
+  const recipe = (name: string) =>
+    fs.readFileSync(path.join(root, "tools/nix/scripts", name + ".sh"), "utf8");
+  assert.match(
+    blacksmithModule,
+    /clearTestboxEnvironment = builtins\.readFile \.\/scripts\/clear-testbox\.sh/u,
+  );
+  assert.match(
+    blacksmithModule,
+    /renderScript \.\/scripts\/set-testbox\.sh[\s\S]*?BLACKSMITH = "\$\{blacksmith\}"/u,
+  );
+  assert.match(recipe("activate-workspace"), /@CLEAR_TESTBOX@/u);
+  assert.match(recipe("activate-testbox"), /@ACTIVATE_TESTBOX@/u);
   const defaultShell = devShellModule.match(
     /devShell = pkgs\.mkShell \{([\s\S]*?)\n\s*\};\n\s*testboxDevShell/,
   )?.[1];
@@ -245,23 +216,31 @@ test("the Nix shell exposes local and opt-in Testbox task aliases", () => {
     /testboxDevShell = devShell\.overrideAttrs \(previous: \{([\s\S]*?)\n\s*\}\);/,
   )?.[1];
 
+  assert.match(vpModule, /text = builtins\.readFile \.\/scripts\/vp\.sh/u);
+  const launcher = recipe("vp");
   for (const taskName of ["build", "test", "lint"]) {
-    assert.match(vpModule, new RegExp(`(?:\\||\\s)${taskName}(?:\\s|\\||\\))`));
+    assert.match(launcher, new RegExp(`(?:\\||\\s)${taskName}(?:\\s|\\||\\))`));
   }
 
-  assert.match(vpModule, /\| \*:\*\)/);
-  assert.match(vpModule, /exec "\$local_vp" run --workspace-root "\$1"/);
+  assert.match(launcher, /\| \*:\*\)/);
+  assert.match(launcher, /exec "\$local_vp" run --workspace-root "\$1"/);
   assert.ok(defaultShell, "default dev shell");
-  assert.match(defaultShell, /\$\{clearTestboxEnvironment\}/);
+  assert.match(defaultShell, /CLEAR_TESTBOX = clearTestboxEnvironment/u);
   assert.doesNotMatch(defaultShell, /activateTestboxEnvironment/);
   assert.ok(testboxShell, "Testbox dev shell");
-  assert.match(testboxShell, /\$\{activateTestboxEnvironment\}/);
-  assert.match(blacksmithModule, /unset VIZE_TESTBOX_SHELL VIZE_BLACKSMITH_BIN/);
-  assert.match(blacksmithModule, /export VIZE_TESTBOX_SHELL=1/);
-  assert.match(blacksmithModule, /export VIZE_BLACKSMITH_BIN="\$\{blacksmith\}\/bin\/blacksmith"/);
+  assert.match(testboxShell, /ACTIVATE_TESTBOX = activateTestboxEnvironment/u);
+  assert.match(recipe("clear-testbox"), /unset VIZE_TESTBOX_SHELL VIZE_BLACKSMITH_BIN/);
+  assert.match(recipe("set-testbox"), /export VIZE_TESTBOX_SHELL=1/);
+  assert.match(
+    recipe("set-testbox"),
+    /export VIZE_BLACKSMITH_BIN="@BLACKSMITH@\/bin\/blacksmith"/u,
+  );
   assert.match(blacksmithModule, /testbox-environment = testboxEnvironmentCheck/);
-  assert.match(testboxShell, /safe ID capture/);
-  assert.match(testboxShell, /vp build:testbox \/ vp test:testbox \/ vp lint:testbox/);
+  assert.match(recipe("activate-testbox"), /safe ID capture/);
+  assert.match(
+    recipe("activate-testbox"),
+    /vp build:testbox \/ vp test:testbox \/ vp lint:testbox/,
+  );
 });
 
 test("contributor docs use workspace-explicit commands outside the Nix aliases", () => {

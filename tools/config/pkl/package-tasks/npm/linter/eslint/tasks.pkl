@@ -1,0 +1,8 @@
+amends "../../../../PackageTasks.pkl"
+
+tasks {
+  ["test"] {
+    module.run("vp", List("pack"))
+    module.run("node", List("--test", "test/consumer.test.mjs"))
+  }
+}
