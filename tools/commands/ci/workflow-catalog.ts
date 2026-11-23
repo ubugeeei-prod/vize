@@ -133,7 +133,7 @@ export function workflowGroupId(file: string): WorkflowGroupId {
   ) {
     return "06";
   }
-  if (/^(canon-|cross-file|davinci-|level-|compact-collections)/.test(file)) return "07";
+  if (/^(canon-|cross-file|davinci-|ir-pass-composition|level-|compact-collections)/.test(file)) return "07";
   if (
     /^(babel-|bundler-|nuxt|parcel-|rspack-|turbopack-|vite|vitest-|plain-script-import-ref|js-install-closure|void-build|vuefes-)/.test(
       file,
