@@ -1,0 +1,33 @@
+# This explicitly selected provider extends the same resident Salsa database.
+# Keeping its compiler dependencies out of the distributed workspace preserves
+# the release dependency lock and the CLI's build-cache identity.
+[package]
+name = "vize_resident_graph"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+resolver = "3"
+
+[dependencies]
+salsa = { version = "=0.28.5", default-features = false, features = ["macros", "inventory"] }
+vize_incremental = { path = "../..", features = ["resident-providers"] }
+vize_l0 = { path = "../../../../davinci/vize_l0" }
+vize_l1_to_l2 = { path = "../../../../davinci/vize_l1_to_l2" }
+vize_l2 = { path = "../../../../davinci/vize_l2" }
+vize_l2_to_l3 = { path = "../../../../davinci/vize_l2_to_l3", features = ["graph-queries"] }
+vize_l3 = { path = "../../../../davinci/vize_l3", features = ["graph-queries"] }
+
+[dev-dependencies]
+davinci_harness = { path = "../../../../tools/benchmarks/crates/davinci_harness" }
+
+[patch."https://github.com/oxc-project/oxc"]
+oxc_parser = { path = "../../../../upstream/forks/oxc_parser_compat" }
+
+[profile.ci-opt]
+inherits = "release"
+opt-level = 2
+debug = false
+lto = false
+codegen-units = 16

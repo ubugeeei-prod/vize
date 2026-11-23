@@ -86,3 +86,6 @@ mod operands;
 mod component_imports;
 #[cfg(feature = "setup-component-imports")]
 pub use component_imports::{ComponentImportRefusal, SetupComponentImports};
+
+#[cfg(feature = "ir-views")]
+mod ir_views;

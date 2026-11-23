@@ -22,6 +22,8 @@ autotests = false
 metadata.vize.stability = "experimental"
 
 [features]
+# Native L1/L2 views for explicit layered graph consumers.
+ir-views = ["vize_l1/ir-views", "vize_l2/ir-views"]
 # Retain the original L1 syntax alongside both observed L2 analyses.
 original-template-queries = ["observed-template-passes", "vize_l1/independent-template-block"]
 # Share compiler and lint template analyses on an explicitly selected L2 owner.
