@@ -50,15 +50,9 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
 pub struct NoOptionsApi;
 
 impl ScriptRule for NoOptionsApi {
-    fn meta(&self) -> &'static ScriptRuleMeta {
-        &META
-    }
-
-    // Every reported options object originates at an ObjectExpression in this Program.
-    #[cfg(feature = "authored-script-rules")]
-    fn required_authored_spelling(&self) -> Option<&'static str> {
-        Some("{")
-    }
+    // Every reported options object originates at an object literal, including
+    // objects reached through aliases and component factories.
+    super::rule_with_authored_spelling!(META, "{");
 
     #[inline]
     fn uses_ast(&self) -> bool {
