@@ -26,21 +26,8 @@ const driverDigest = "3dc91f244812e1333c5f44686f9794f203c515520001b2cb49c1f53b7a
 const REPO = "ubugeeei-prod/vize";
 const INLINE_BEGIN = "  # VIZE_NATIVE_SOURCE_INLINE_BEGIN\n";
 const INLINE_END = "  # VIZE_NATIVE_SOURCE_INLINE_END\n";
-const WRAPPER_PREFIX =
-  [
-    "set -euo pipefail",
-    '[[ "$GITHUB_WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]] && git fetch --no-tags origin "$GITHUB_WORKFLOW_SHA"',
-    'for helper in typechecker-native-source-recipe.mjs typechecker-native-release-metadata.mjs; do git show "$GITHUB_WORKFLOW_SHA:tools/benchmarks/scripts/$helper" > "$RUNNER_TEMP/$helper"; done',
-    'if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then',
-    '  [[ "$HISTORICAL_PROJECTION_RECEIPT" == true && "$SOURCE_SHA" == "$DRIVER_SHA" ]]',
-    '  recipe=""',
-    "else",
-    '  recipe="$(node "$RUNNER_TEMP/typechecker-native-source-recipe.mjs")"',
-    "fi",
-    'if [[ -n "$recipe" ]]; then',
-    `  if [[ "$(node -p 'Boolean(JSON.parse(require("node:fs").readFileSync(process.env.RUNNER_TEMP+"/native-source-recipe.json")).originalEnvironment.VIZE_TSCONFIG_TYPES_CAPTURE)')" != true ]]; then unset VIZE_TSCONFIG_TYPES_CAPTURE; fi; unset GH_TOKEN; bash --noprofile --norc -e -o pipefail "$recipe"`,
-    "else",
-  ].join("\n") + "\n";
+// Authenticate the dispatcher surrounding the recipe in archived workflows.
+const historicalWrapperDigest = "8494f1946478063c635005005b0b0c7df589dd80b6521f42b534107620002ed3";
 
 /** Execute source-owned commands once; never recurse through a future source wrapper. */
 export function declaredSourceRecipe(run, readSource) {
@@ -78,7 +65,11 @@ export function declaredSourceRecipe(run, readSource) {
   assert.equal(run.split(INLINE_END).length, 2, "Missing/duplicate inline end marker");
   const [prefix, rest] = run.split(INLINE_BEGIN),
     [inline, suffix] = rest.split(INLINE_END);
-  assert.equal(prefix, WRAPPER_PREFIX, "Unrecognized commands outside source inline recipe");
+  assert.equal(
+    hash(prefix),
+    historicalWrapperDigest,
+    "Unrecognized commands outside source inline recipe",
+  );
   assert.equal(suffix, "fi\n", "Unrecognized source wrapper suffix");
   assert.ok(
     inline.startsWith('  unset VIZE_TEST_DISABLE_TSGO\n  cd "$NATIVE_PHASE_SOURCE_ROOT"\n'),

@@ -83,9 +83,11 @@ mod tests {
         let executable = root.join("native-control.sh");
         fs::write(
             &executable,
-            cstr!("#!/bin/sh\nprintf '%s\\n' '{output}'\nexit {exit}\n"),
+            include_str!("../../../../tests/programs/report-native-outcome.sh"),
         )
         .unwrap();
+        fs::write(root.join("native-output"), cstr!("{output}\n")).unwrap();
+        fs::write(root.join("native-status"), exit.to_string()).unwrap();
         fs::set_permissions(&executable, fs::Permissions::from_mode(0o755)).unwrap();
         (temp, project, executable)
     }
@@ -114,24 +116,24 @@ mod tests {
     #[test]
     fn parser_packets_with_abnormal_status_or_extra_bytes_remain_runtime_failures() {
         const DIAGNOSTIC: &str = "source.ts(1,15): error TS1109: Expression expected.";
-        for (exit, extra_stdout, stderr_script, expected_output) in [
-            (17, "", "", DIAGNOSTIC),
+        for (exit, extra_stdout, stderr, expected_output) in [
+            (17, "", b"".as_slice(), DIAGNOSTIC),
             (
                 1,
                 "\nnative transport failed",
-                "",
+                b"",
                 "source.ts(1,15): error TS1109: Expression expected.\nnative transport failed",
             ),
             (
                 1,
                 "",
-                "printf 'unexpected native stderr\\n' >&2",
+                b"unexpected native stderr\n",
                 "unexpected native stderr\nsource.ts(1,15): error TS1109: Expression expected.",
             ),
             (
                 1,
                 "",
-                "printf '\\000\\377' >&2",
+                b"\x00\xff",
                 "\0�\nsource.ts(1,15): error TS1109: Expression expected.",
             ),
         ] {
@@ -140,15 +142,7 @@ mod tests {
                 &cstr!("{DIAGNOSTIC}{extra_stdout}"),
                 exit,
             );
-            let script = fs::read_to_string(&runtime).unwrap();
-            fs::write(
-                &runtime,
-                script.replace(
-                    cstr!("exit {exit}").as_str(),
-                    &cstr!("{stderr_script}\nexit {exit}"),
-                ),
-            )
-            .unwrap();
+            fs::write(runtime.with_file_name("native-error"), stderr).unwrap();
             let error = check_with_cli_classified(&runtime, &project, 1).unwrap_err();
             let CliCheckFailure::Runtime(error) = error else {
                 panic!("an abnormal parser packet cannot silently hand off: {error:?}");
@@ -179,14 +173,7 @@ mod tests {
             project.register_path(&path).unwrap();
         }
         project.materialize().unwrap();
-        let original = fs::read_to_string(&runtime).unwrap();
-        fs::write(
-            &runtime,
-            original.replace(
-                "#!/bin/sh\n",
-                "#!/bin/sh\ncase \"$*\" in *tsconfig.shard1.json*) printf 'native unavailable'; exit 41;; esac\n",
-            ),
-        ).unwrap();
+        fs::write(runtime.with_file_name("fail-shard-one"), b"").unwrap();
         let failure =
             super::super::check_with_cli_sharded(&runtime, &project, 2, (1, 1)).unwrap_err();
         let CliCheckFailure::Runtime(CorsaError::CorsaExecution { exit_code, message }) = failure
@@ -265,7 +252,7 @@ mod tests {
         fs::write(
             &runtime,
             cstr!(
-                "#!/bin/sh\nprintf '%s\\n' \"$*\" >> '{}'\nexit 0\n",
+                include_str!("../../../../tests/programs/record-checker-arguments.sh.in"),
                 recorded.display()
             ),
         )

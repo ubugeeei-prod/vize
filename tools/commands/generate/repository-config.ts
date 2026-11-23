@@ -91,6 +91,7 @@ function ownedTarget(file: string): boolean {
   if (file.startsWith("tests/_fixtures/") || file.includes("/fixtures/")) {
     return (
       file.startsWith("tests/_fixtures/tooling/native-current-recipe-") ||
+      file.startsWith("tools/commands/fixtures/project_deadline/programs/") ||
       file === "crates/vize_maestro/tests/fixtures/corsa-session-wrapper.sh"
     );
   }
@@ -117,6 +118,7 @@ function verifyInventory(products: Product[]): void {
       "*.yaml",
       "*.yml",
       "*.sh",
+      "*.sh.in",
       "*.ps1",
       "*.cmd",
       ".envrc",

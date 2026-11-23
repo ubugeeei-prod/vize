@@ -107,7 +107,11 @@ mod tests {
     fn direct_final_publication_is_the_executable_busy_negative_control() {
         let root = tempfile::TempDir::new().expect("temp root");
         let executable = root.path().join("legacy-wrapper");
-        fs::write(&executable, "#!/bin/sh\nexit 0\n").expect("seed executable");
+        fs::write(
+            &executable,
+            include_str!("../../../../../../../../tests/tooling/programs/process/exit-success.sh"),
+        )
+        .expect("seed executable");
         fs::set_permissions(&executable, Permissions::from_mode(0o755)).expect("chmod executable");
         let _busy_inode = OpenOptions::new()
             .write(true)

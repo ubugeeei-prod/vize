@@ -139,6 +139,8 @@ test("automation clients and executable fixtures load named programs", () => {
       "-z",
       "--",
       ".github",
+      "crates",
+      "davinci",
       "tools",
       "npm",
       "tests/_helpers",
@@ -206,4 +208,47 @@ test("fixture writers take their command bodies from named sources", () => {
     ),
     [],
   );
+});
+
+function inlineRustProcess(source: string): boolean {
+  const launches = /Command::new\(\s*"([^"]+)"\s*\)([^;]{0,1600})/gu;
+  for (const [, executable, chain] of source.matchAll(launches)) {
+    const name = path.posix.basename(executable);
+    if (!interpreters.test(name)) continue;
+    const args = chain.match(/\.args?\(\s*(?:\[\s*)?(?:"--input-type=module",\s*)?"([^"]+)"/u);
+    if (!args) continue;
+    if (/^(?:node(?:js)?|bun|deno|python[\d.]*|perl|ruby)(?:\.exe)?$/iu.test(name)) {
+      if (!isProgramCommand([name, args[1], "program"])) return true;
+    } else if (
+      /\.args?\(\s*(?:\[\s*)?"(?:-[\w]*c|-command|-encodedcommand)"\s*(?:,\s*|\)\s*\.arg\(\s*)(?:b?r?#*")/iu.test(
+        chain,
+      )
+    )
+      return true;
+  }
+  return false;
+}
+
+test("Rust subprocess clients launch named interpreter programs", () => {
+  assert.ok(inlineRustProcess('Command::new("node").arg("-e").arg(source)'));
+  assert.ok(inlineRustProcess('Command::new("node").args(["--input-type=module", "-e", OBSERVE])'));
+  assert.ok(inlineRustProcess('Command::new("/bin/sh").args(["-c", "exit 0"])'));
+  assert.ok(inlineRustProcess('Command::new("pwsh").arg("-Command").arg("Get-Date")'));
+  assert.equal(inlineRustProcess('Command::new("node").arg("probe.cjs").arg("-e")'), false);
+  assert.equal(
+    inlineRustProcess('Command::new("git").args(["-c", "core.hooksPath=/dev/null"])'),
+    false,
+  );
+  const files = execFileSync(
+    "git",
+    ["ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", "*.rs"],
+    { cwd: root, encoding: "utf8", maxBuffer: 8 * 1024 * 1024 },
+  );
+  const embedded: string[] = [];
+  for (const file of files.split("\0")) {
+    if (!file || file.startsWith("upstream/") || !existsSync(path.join(root, file))) continue;
+    const text = readFileSync(path.join(root, file), "utf8");
+    if (text.includes("Command::new") && inlineRustProcess(text)) embedded.push(file);
+  }
+  assert.deepEqual(embedded, []);
 });

@@ -18,13 +18,17 @@ use std::{
     time::{Duration, Instant},
 };
 
-const SCRIPT: &[u8] = b"#!/bin/sh\nexit 0\n";
+const SCRIPT: &[u8] =
+    include_bytes!("../../../../../../tests/tooling/programs/process/exit-success.sh");
 
 struct RetainedWriter(Child);
 impl RetainedWriter {
     fn start(path: &Path, writer: &File) -> Self {
         let mut child = Command::new("/bin/sh")
-            .args(["-c", "printf 'holder-ready\\n'; IFS= read -r release"])
+            .arg(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/programs/retain-writer-descriptor.sh"
+            ))
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::from(writer.try_clone().unwrap()))

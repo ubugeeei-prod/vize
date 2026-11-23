@@ -24,22 +24,19 @@ fn within<T: Send + 'static>(work: impl FnOnce() -> T + Send + 'static) -> T {
         .expect("the config host kept waiting on its child")
 }
 
-fn node(script: &str) -> Command {
+fn node(program: &str) -> Command {
     let mut command = Command::new("node");
-    command
-        .arg("-e")
-        .arg(script)
-        .arg("--")
-        .arg("config-fixture");
+    command.arg(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/programs")
+            .join(program),
+    );
     command
 }
 
 fn is_running(pid: u32) -> bool {
-    let probe = Command::new("node")
-        .arg("-e")
-        .arg(crate::cstr!(
-            "try {{ process.kill({pid}, 0); process.exit(1); }} catch (error) {{ process.exit(error.code === 'ESRCH' ? 0 : 2); }}"
-        ))
+    let probe = node("config-child-is-alive.cjs")
+        .arg(pid.to_string())
         .status()
         .unwrap();
     !probe.success()
@@ -58,19 +55,8 @@ fn drains_stderr_while_waiting_for_the_phase_ack_and_preserves_large_final_paylo
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("policy.mjs");
     let encoded = serde_json::to_string(&[&path]).unwrap();
-    let mut command = node(&crate::cstr!(
-        r#"
-const frame = Buffer.from({encoded:?});
-process.stderr.write('e'.repeat(100000));
-process.stdout.write(`B${{frame.length}}\n`);
-process.stdout.write(frame);
-process.stdin.once('data', ack => {{
-  if (ack.length !== 1 || ack[0] !== 6) process.exit(2);
-  process.stdout.end('R\n' + 'x'.repeat(100000));
-  process.stdin.destroy();
-}});
-"#
-    ));
+    let mut command = node("observe-acknowledged-phase.cjs");
+    command.arg(encoded);
     let mut observed = Vec::new();
     let output = evaluate(
         &mut command,
@@ -96,9 +82,8 @@ fn rejects_truncated_or_oversized_phases_and_reaps_the_child() {
         "",
         "B5\n[\".\"]",
     ] {
-        let mut command = node(&crate::cstr!(
-            "process.stderr.write(\"malformed-specificreason\\n\"); process.stdout.write({frame:?});"
-        ));
+        let mut command = node("write-malformed-config-phase.cjs");
+        command.arg(frame);
         let mut observed: Vec<PathBuf> = Vec::new();
         let Err(error) = evaluate(
             &mut command,
@@ -119,7 +104,7 @@ fn rejects_truncated_or_oversized_phases_and_reaps_the_child() {
 
 #[test]
 fn exit_before_final_payload_retains_actual_status_and_stderr() {
-    let mut command = node("console.error('specificreason 日本語'); process.exit(17);");
+    let mut command = node("exit-before-config-result.cjs");
     let Err(error) = evaluate(&mut command, Some(&mut |_| panic!("no phase emitted"))) else {
         panic!("accepted a child without a result");
     };
@@ -148,7 +133,7 @@ fn startup_exception_before_finally_retains_actual_diagnostic_and_status() {
     // Independent Node execution owns the complete default exception packet,
     // including runtime-specific internal stack frames. Keep the actual throw
     // and argv identical; this oracle never calls the observation transport.
-    let mut direct = node("throw new Error('startup-specificreason');");
+    let mut direct = node("fail-config-startup.cjs");
     direct
         .arg("--observe-config-inputs")
         .stdin(std::process::Stdio::piped());
@@ -160,10 +145,18 @@ fn startup_exception_before_finally_retains_actual_diagnostic_and_status() {
     // header as lines; the observation transport must still preserve every
     // byte of the original packet, as asserted below.
     let mut diagnostic_lines = stderr.lines();
-    assert_eq!(diagnostic_lines.next(), Some("[eval]:1"));
+    let location = diagnostic_lines.next().unwrap().strip_suffix(":1").unwrap();
+    let program =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/programs/fail-config-startup.cjs");
+    assert_eq!(
+        Path::new(location).canonicalize().unwrap(),
+        program.canonicalize().unwrap()
+    );
     assert_eq!(
         diagnostic_lines.next(),
-        Some("throw new Error('startup-specificreason');")
+        include_str!("../../../tests/programs/fail-config-startup.cjs")
+            .lines()
+            .next()
     );
     assert_eq!(diagnostic_lines.next(), Some("^"));
     assert_eq!(diagnostic_lines.next(), Some(""));
@@ -172,7 +165,7 @@ fn startup_exception_before_finally_retains_actual_diagnostic_and_status() {
         Some("Error: startup-specificreason")
     );
 
-    let mut command = node("throw new Error('startup-specificreason');");
+    let mut command = node("fail-config-startup.cjs");
     let Err(error) = evaluate(&mut command, Some(&mut |_| panic!("no phase emitted"))) else {
         panic!("accepted a child without a result");
     };
@@ -211,18 +204,8 @@ fn callback_panic_kills_and_reaps_the_child() {
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("child.pid");
     let encoded = serde_json::to_string(&[&path]).unwrap();
-    let mut command = node(&crate::cstr!(
-        r#"
-const fs = require('node:fs');
-const paths = {encoded};
-fs.writeFileSync(paths[0], String(process.pid));
-process.stderr.write('e'.repeat(100000));
-const frame = Buffer.from(JSON.stringify(paths));
-process.stdout.write(`B${{frame.length}}\n`);
-process.stdout.write(frame);
-setInterval(() => {{}}, 1000);
-"#
-    ));
+    let mut command = node("hold-config-phase.cjs");
+    command.arg(encoded);
     let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         let _ = evaluate(
             &mut command,
@@ -247,14 +230,8 @@ setInterval(() => {{}}, 1000);
 fn a_child_that_keeps_running_after_its_result_line_is_stopped_after_the_grace() {
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("child.pid");
-    let mut command = node(&crate::cstr!(
-        r#"
-require('node:fs').writeFileSync({path:?}, String(process.pid));
-process.stdout.write('{{"value":1}}\n');
-setInterval(() => {{}}, 1000);
-"#,
-        path = path
-    ));
+    let mut command = node("hold-completed-config.cjs");
+    command.arg(&path);
     let started = Instant::now();
     let child = within(move || evaluate(&mut command, None).unwrap());
     let elapsed = started.elapsed();
@@ -273,25 +250,16 @@ setInterval(() => {{}}, 1000);
 fn a_grandchild_holding_the_pipes_never_blocks_the_result() {
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("grandchild.pid");
-    let mut command = node(&crate::cstr!(
-        r#"
-const {{ spawn }} = require('node:child_process');
-const grandchild = spawn(process.execPath, ['-e', 'setInterval(() => {{}}, 1000)'], {{ stdio: 'inherit' }});
-require('node:fs').writeFileSync({path:?}, String(grandchild.pid));
-process.stderr.write('child-specificreason\n');
-process.stdout.write('{{"value":2}}\n', () => process.exit(3));
-"#,
-        path = path
-    ));
+    let mut command = node("leave-config-grandchild.cjs");
+    command.arg(&path);
     let started = Instant::now();
     let output = within(move || evaluate(&mut command, None).unwrap().into_output().unwrap());
     let grandchild = std::fs::read_to_string(path)
         .unwrap()
         .parse::<u32>()
         .unwrap();
-    let _ = Command::new("node")
-        .arg("-e")
-        .arg(crate::cstr!("process.kill({grandchild})"))
+    let _ = node("stop-config-process.cjs")
+        .arg(grandchild.to_string())
         .status();
     assert_eq!(output.status.code(), Some(3));
     assert_eq!(output.stdout, br#"{"value":2}"#);

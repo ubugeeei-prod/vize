@@ -146,7 +146,7 @@ mod tests {
     fn idle_process(own_session: bool) -> Process {
         let mut command = Command::new("node");
         command
-            .args(["-e", "setInterval(()=>{},1000)"])
+            .arg(super::super::test_program("keep-alive.cjs"))
             .stdin(Stdio::null());
         if own_session {
             unsafe {

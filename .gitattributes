@@ -1,6 +1,8 @@
 tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
 # WSL runs these programs and filters directly from Windows checkouts.
 *.sh text eol=lf
+*.sh.in text eol=lf
+crates/vize/tests/programs/*.cmd text eol=lf
 *.awk text eol=lf
 *.jq text eol=lf
 *.sed text eol=lf

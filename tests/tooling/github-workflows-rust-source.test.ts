@@ -1,5 +1,6 @@
 import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -278,7 +279,10 @@ function requireSplitRustRecipes(
         createHash("sha256").update(program).digest("hex"),
         "abbe79bebd07e4edb53465ce29aa21a5a7ef6f7569d3e33e3ab258ad19f2b68a",
       );
-      writePlan.run = `node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'`;
+      writePlan.run = readFileSync(
+        new URL("./fixtures/archived-rust-plan-invocation.txt", import.meta.url),
+        "utf8",
+      ).trimEnd();
       assert.equal(restoreRustToolchainPin(job.steps, "1.99.1"), 1);
       const wild = job.steps.find(
         (step) => step.uses === "./.github/actions/setup-wild-http-recovery",
