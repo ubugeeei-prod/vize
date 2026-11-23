@@ -5,7 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
-  checkedTemplateTheorems,
+  checkedRustTheorems,
   retiredToolingLanguage,
   retiredToolingLanguages as languages,
   independentGraphTheory,
@@ -94,7 +94,7 @@ function retiringFiles(ledger: Ledger, language: Language, tracked: readonly str
   const prefixes = ledger.permanent
     .filter((entry) => entry.language === language)
     .map((entry) => entry.prefix);
-  const checked = checkedTemplateTheorems(tracked);
+  const checked = checkedRustTheorems(tracked);
   return tracked
     .filter(
       (file) =>

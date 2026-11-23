@@ -47,6 +47,8 @@ jobs:
         with: { wild-version: "0.9.0" }
       - name: Qualify the real lowerer and exact resident snapshots
         run: . "${{ env.VIZE_CI_FILES }}/qualify-the-real-lowerer-and-exact-resident-snapshots.sh"
+      - name: Measure authored graph source lookups independently
+        run: cargo run --locked --manifest-path crates/vize_incremental/providers/graph/Cargo.toml --profile ci-opt --example source_sites
   models:
     name: Reachability theory and snapshot publication
     runs-on: blacksmith-32vcpu-ubuntu-2404

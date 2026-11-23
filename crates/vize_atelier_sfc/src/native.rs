@@ -300,6 +300,22 @@ fn emit<L: LinkSink>(
     let document = assemble(parts)
         .map_err(NativeSfcCompileError::Assembly)?
         .into_document();
+    #[cfg(feature = "native-sfc-scss")]
+    if scss && options.source_map {
+        let index =
+            vize_l4::write::source_map::SourceMapIndex::new(observation.descriptor().source());
+        let source_map = Some(index.source_map(&document, options.filename));
+        let css_source_map = css
+            .as_ref()
+            .map(|style| index.source_map(style, options.filename));
+        return Ok(NativeSfcOutput {
+            document,
+            source_map,
+            css,
+            css_source_map,
+            scope_id,
+        });
+    }
     let source_map = options
         .source_map
         .then(|| document.source_map(options.filename, observation.descriptor().source()));

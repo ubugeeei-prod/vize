@@ -4,7 +4,7 @@
 // `--issues` asks GitHub (gh) for issue state; without it issue gates print "unknown".
 import {
   independentGraphTheory,
-  checkedTemplateTheorems,
+  checkedRustTheorems,
 } from "../../support/retired-tooling-languages.ts";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -194,7 +194,7 @@ const measureCodenames = (repo: Repo): Measured => {
 };
 
 const measureRustOnlyFormal = (repo: Repo): Measured => {
-  const checked = checkedTemplateTheorems(repo.paths);
+  const checked = checkedRustTheorems(repo.paths);
   const lean = repo.paths.filter(
     (file) =>
       file !== independentGraphTheory &&

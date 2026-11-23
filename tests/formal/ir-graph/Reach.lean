@@ -49,6 +49,24 @@ theorem exact_answer {rows : List Op} (h : Supported edge root rows)
 
 #print axioms exact_answer
 
+/-- A single root is a complete answer exactly when every selected edge
+    leaving it ends at the root. The relation includes direction and kind. -/
+theorem singleton_exact :
+    (∀ x, Path edge root x ↔ x = root) ↔ (∀ x, edge root x → x = root) := by
+  constructor
+  · intro exact x step
+    exact (exact x).mp (Path.extend Path.seed step)
+  · intro closed x
+    constructor
+    · intro path
+      induction path with
+      | seed => rfl
+      | extend _ step ih => exact closed _ (ih ▸ step)
+    · intro eq
+      exact eq ▸ Path.seed
+
+#print axioms singleton_exact
+
 /-- The input contains the original relationship ordinals in order. A stable
     adjacency list selects those ordinals at one endpoint. -/
 def incidentRows {E O : Type} [DecidableEq O] (edges : List E)
@@ -86,5 +104,16 @@ theorem exact_trails {E O : Type} [DecidableEq E] [DecidableEq O]
   exact push_selection edges edges _ _
 
 #print axioms exact_trails
+
+/-- The original bytes of an operation survive projection from a retained
+    block into the document for any prefix and suffix, including empty spans. -/
+theorem authored_slice {Byte : Type} (before block after : List Byte) (lo hi : Nat)
+    (ordered : lo ≤ hi) (inside : hi ≤ block.length) :
+    ((before ++ (block ++ after)).drop (before.length + lo)).take (hi - lo) =
+      (block.drop lo).take (hi - lo) := by
+  rw [List.drop_length_add_append, List.drop_append_of_le_length (Nat.le_trans ordered inside)]
+  exact List.take_append_of_le_length (by simpa using Nat.sub_le_sub_right inside lo)
+
+#print axioms authored_slice
 
 end Davinci

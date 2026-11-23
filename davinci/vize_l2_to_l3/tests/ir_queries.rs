@@ -76,6 +76,13 @@ fn differential(ir: &L3Ir<'_>) {
                     .map(|(i, edge)| (i as u32, edge))
                     .collect();
                 assert_eq!(index.incident(query).unwrap().collect::<Vec<_>>(), scan);
+                let root = [ReachStep {
+                    op: op.id,
+                    via: None,
+                }];
+                let single = check_reachability(ir, query, &root);
+                assert_eq!(index.check_singleton(query), single);
+                assert_eq!(retained.check_singleton(query), single);
                 let mut visited = Vec::new();
                 let steps = index.reach_with(query, |op| visited.push(op.id)).unwrap();
                 assert_eq!(visited, steps.iter().map(|s| s.op).collect::<Vec<_>>());
@@ -198,6 +205,15 @@ fn checker_rejects_corrupted_witnesses_even_when_the_claimed_set_looks_plausible
         OpGraph::new(&ir).unwrap().reach_with(query(99), |_| {}),
         Err(GraphError::UnknownOp(_))
     ));
+    assert_eq!(
+        graph.check_singleton(ReachQuery {
+            kinds: EdgeKinds::NONE,
+            ..query(99)
+        }),
+        Err(CertificateError::Graph(GraphError::UnknownOp(OpId::new(
+            99
+        ))))
+    );
     let invalid = build(&arena, &[0, 1, 2], &[(2, 99, Data)]);
     assert!(matches!(
         OpGraph::new(&invalid),
