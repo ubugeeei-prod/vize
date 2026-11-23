@@ -15,7 +15,7 @@ fn ascii_between_original_segments() {
         let mut output = String::from("P");
         push_js_string_literal(&mut output, value);
         let literal = output.strip_prefix('P').unwrap();
-        assert!(literal.starts_with("\"Z") && literal.ends_with("Q\""));
+        assert_eq!(literal, serde_json::to_string(value).unwrap());
         assert_eq!(
             serde_json::from_str::<Box<str>>(literal).unwrap().as_ref(),
             value
