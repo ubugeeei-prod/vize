@@ -9,7 +9,6 @@ description = "L2 - the Davinci semantic IR (codename Disegno): the neutral op f
 metadata.vize.stability = "experimental"
 
 [features]
-scss-rules = ["vize_l1/observed-styles"]
 recovered-literal-prefix = ["literal-assignments"]
 # Checked primitive assignment judgments on the actual TypeScript AST.
 literal-assignments = ["script-declaration-queries"]
@@ -22,6 +21,7 @@ setup-component-imports = []
 sparse-region-walk = []
 # Prepare input-neutral modules for explicit analysis and projection.
 module-ir = ["vize_l1/module-ir"]
+scss-rules = ["vize_l1/observed-styles"]
 # Retain original callee and literal ranges for explicit component checks.
 component-sites = ["module-ir", "vize_l1/component-sites"]
 # Build position indexes on explicit demand in resident analysis tools.
