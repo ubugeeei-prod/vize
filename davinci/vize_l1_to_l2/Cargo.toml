@@ -22,6 +22,12 @@ autotests = false
 metadata.vize.stability = "experimental"
 
 [features]
+# Original listener operations and method-reference queries for explicit tool requests.
+component-listener-queries = [
+  "authored-bind-shorthand",
+  "setup-component-imports",
+  "vize_l2/component-listener-queries",
+]
 # Native L1/L2 views for explicit layered graph consumers.
 ir-views = ["vize_l1/ir-views", "vize_l2/ir-views"]
 # Share compiler and lint template analyses on an explicitly selected L2 owner.

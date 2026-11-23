@@ -102,3 +102,6 @@ impl<'a> Builder<'a> {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "component-listener-queries")]
+mod listener;

@@ -19,6 +19,8 @@ pub struct NativeComponent<'a> {
     component: ComponentParse<'a>,
     #[cfg(feature = "authored-bind-shorthand")]
     pub(super) authored_bind_shorthand: bool,
+    #[cfg(feature = "component-listener-queries")]
+    pub(super) event_references: bool,
 }
 
 impl core::fmt::Debug for NativeComponent<'_> {
@@ -68,6 +70,8 @@ impl<'a> NativeComponent<'a> {
             component,
             #[cfg(feature = "authored-bind-shorthand")]
             authored_bind_shorthand: false,
+            #[cfg(feature = "component-listener-queries")]
+            event_references: false,
         })
     }
 

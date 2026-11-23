@@ -197,6 +197,9 @@ pub enum ArtifactError {
     MismatchedJsSource { node: NodeId, span: Span },
     /// Scope tags are not a unique dense set starting at zero.
     InvalidScopeTag { node: NodeId, tag: ScopeTag },
+    /// This diagnostic factory has no File recorder for an original listener reference.
+    #[cfg(feature = "component-listener-queries")]
+    MissingEventRecorder { span: Span },
 }
 
 impl<'a> Artifact<'a> {
