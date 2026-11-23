@@ -57,11 +57,11 @@ jobs {
       }
       new Dynamic {
         name = "Install debugger for synthetic-only hosted controls"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-debugger-for-synthetic-only-hosted-controls.sh""#
+        run = ci.workflowScript("install-debugger-for-synthetic-only-hosted-controls.sh")
       }
       new Dynamic {
         name = "Require and record synthetic diagnostic tools"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-and-record-synthetic-diagnostic-tools.sh""#
+        run = ci.workflowScript("require-and-record-synthetic-diagnostic-tools.sh")
       }
       new Dynamic {
         name = "Validate actual fork, exec, thread and signal propagation"
@@ -106,7 +106,7 @@ jobs {
       }
       new Dynamic {
         name = "Preserve reviewed helpers outside the tested source checkout"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-reviewed-helpers-outside-the-tested-source-checkout.sh""#
+        run = ci.workflowScript("preserve-reviewed-helpers-outside-the-tested-source-checkout.sh")
       }
       new Dynamic {
         name = "Check out the exact original failing source"
@@ -118,7 +118,7 @@ jobs {
       }
       new Dynamic {
         name = "Verify source and record read-only runner context"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-source-and-record-read-only-runner-context.sh""#
+        run = ci.workflowScript("verify-source-and-record-read-only-runner-context.sh")
       }
       ci.use("./.github/actions/cache-vp-bootstrap")
       new Dynamic {
@@ -147,7 +147,7 @@ jobs {
       }
       new Dynamic {
         name = "Require existing diagnostic tools without changing runtime packages"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-existing-diagnostic-tools-without-changing-runtime-packages.sh""#
+        run = ci.workflowScript("require-existing-diagnostic-tools-without-changing-runtime-packages.sh")
       }
       new Dynamic {
         name = "Prove short fork, exec, thread and original signal propagation"
@@ -155,13 +155,13 @@ jobs {
       }
       new Dynamic {
         name = "Run the original source command once"
-        run = #". "${{ env.VIZE_CI_FILES }}/run-the-original-source-command-once.sh""#
+        run = ci.workflowScript("run-the-original-source-command-once.sh")
       }
       new Dynamic {
         name = "Seal a public projection independently of the tracing process"
         id = "public-forensic"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/seal-a-public-projection-independently-of-the-tracing-process.sh""#
+        run = ci.workflowScript("seal-a-public-projection-independently-of-the-tracing-process.sh")
       }
       new Dynamic {
         name = "Preserve only sealed public forensic projections"

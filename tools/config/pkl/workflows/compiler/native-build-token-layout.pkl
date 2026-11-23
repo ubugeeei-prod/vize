@@ -56,7 +56,7 @@ jobs {
         name = "Read the pinned toolchain"
         id = "toolchain"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/read-the-pinned-toolchain.sh""#
+        run = ci.workflowScript("read-the-pinned-toolchain.sh")
       }
       new Dynamic {
         uses = ci.setupRust

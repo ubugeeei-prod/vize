@@ -87,7 +87,7 @@ jobs {
         name = "Require the selected source revision"
         `if` = "github.event_name == 'workflow_dispatch'"
         env { EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/require-the-selected-source-revision.sh""#
+        run = ci.workflowScript("require-the-selected-source-revision.sh")
       }
       new Dynamic {
         uses = ci.setupNode
@@ -214,7 +214,7 @@ jobs {
           PROBE_OUTCOME = "${{ steps.probe.outcome }}"
           AUTOMATIC_OUTCOME = "${{ steps.automatic.outcome }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/refuse-discovery-as-qualification-credit.sh""#
+        run = ci.workflowScript("refuse-discovery-as-qualification-credit.sh")
       }
     }
   }
@@ -241,7 +241,7 @@ jobs {
         name = "Require the reviewed source revision"
         `if` = "github.event_name == 'workflow_dispatch'"
         env { EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/require-the-selected-source-revision.sh""#
+        run = ci.workflowScript("require-the-selected-source-revision.sh")
       }
       ci.workspaceVp()
       ci.command("Install frozen source dependencies", "vp install --frozen-lockfile --prefer-offline")

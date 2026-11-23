@@ -67,7 +67,7 @@ jobs {
       }
       new Dynamic {
         name = "Verify observer bootstrap and source roles"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-observer-bootstrap-and-source-roles.sh""#
+        run = ci.workflowScript("verify-observer-bootstrap-and-source-roles.sh")
       }
       ci.rust("1.100.0")
       ci.wild()
@@ -84,12 +84,12 @@ jobs {
           SOURCE_ROLE = "${{ matrix.role }}"
           CARGO_TARGET_DIR = "${{ github.workspace }}/target"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-canonical-source-image.sh""#
+        run = ci.workflowScript("build-the-canonical-source-image.sh")
       }
       new Dynamic {
         name = "Seal each source role and capture complete API packets before comparisons"
         env { SOURCE_ROLE = "${{ matrix.role }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/seal-each-source-role-and-capture-complete-api-packets-before-comparison.sh""#
+        run = ci.workflowScript("seal-each-source-role-and-capture-complete-api-packets-before-comparison.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

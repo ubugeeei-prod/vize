@@ -106,7 +106,7 @@ jobs {
       new Dynamic {
         name = "Build exact official mapper host"
         `working-directory` = "typescript-content-mapper/tsc"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-exact-official-mapper-host.sh""#
+        run = ci.workflowScript("build-exact-official-mapper-host.sh")
       }
       new Dynamic {
         name = "Run all native and official-host valid invalid repair packets"
@@ -116,12 +116,12 @@ jobs {
           CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
           VIZE_UNICODE_PROP_CAPTURE = "${{ github.workspace }}/target/unicode-prop-packets"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/run-all-native-and-official-host-valid-invalid-repair-packets.sh""#
+        run = ci.workflowScript("run-all-native-and-official-host-valid-invalid-repair-packets.sh")
       }
       new Dynamic {
         name = "Retain complete provider identities"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/retain-complete-provider-identities.sh""#
+        run = ci.workflowScript("retain-complete-provider-identities.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

@@ -77,11 +77,11 @@ jobs {
       new Dynamic {
         name = "Read the pushed commit's profile trailers"
         `if` = "github.event_name == 'push'"
-        run = #". "${{ env.VIZE_CI_FILES }}/read-the-pushed-commit-s-profile-trailers.sh""#
+        run = ci.workflowScript("read-the-pushed-commit-s-profile-trailers.sh")
       }
       new Dynamic {
         name = "Validate inputs"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-inputs.sh""#
+        run = ci.workflowScript("validate-inputs.sh")
       }
       ci.workspaceVp()
       ci.rust("1.100.0")
@@ -89,31 +89,31 @@ jobs {
       ci.use("./.github/actions/setup-rust-script")
       new Dynamic {
         name = "Check out the profiled commits beside the driver"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-out-the-profiled-commits-beside-the-driver.sh""#
+        run = ci.workflowScript("check-out-the-profiled-commits-beside-the-driver.sh")
       }
       new Dynamic {
         name = "Install perf, glibc symbols and FlameGraph"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-perf-glibc-symbols-and-flamegraph.sh""#
+        run = ci.workflowScript("install-perf-glibc-symbols-and-flamegraph.sh")
       }
       new Dynamic {
         name = "Install the locked hosts and corpus packages and hydrate the corpora"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-locked-hosts-and-corpus-packages-and-hydrate-the-corpora.sh""#
+        run = ci.workflowScript("install-the-locked-hosts-and-corpus-packages-and-hydrate-the-corpora.sh")
       }
       ci.command("Test the profile folder and parsers", "node --test tests/tooling/typecheck-profile.test.ts")
       // ci-opt (thin LTO) with frame pointers and an unstripped symbol table, so
       // perf unwinds and names Vize's Rust frames inside node.
       new Dynamic {
         name = "Build the native binding with frame pointers and the vize package"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-native-binding-with-frame-pointers-and-the-vize-package.sh""#
+        run = ci.workflowScript("build-the-native-binding-with-frame-pointers-and-the-vize-package.sh")
       }
       new Dynamic {
         name = "Profile the lanes"
-        run = #". "${{ env.VIZE_CI_FILES }}/profile-the-lanes.sh""#
+        run = ci.workflowScript("profile-the-lanes.sh")
       }
       new Dynamic {
         name = "Write job summary"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/write-job-summary.sh""#
+        run = ci.workflowScript("write-job-summary.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

@@ -54,11 +54,11 @@ jobs {
       new Dynamic {
         name = "Install exact official Volar and TypeScript service providers"
         `working-directory` = "${{ runner.temp }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-exact-official-volar-and-typescript-service-providers.sh""#
+        run = ci.workflowScript("install-exact-official-volar-and-typescript-service-providers.sh")
       }
       new Dynamic {
         name = "Build the actual reviewed native source"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-actual-reviewed-native-source.sh""#
+        run = ci.workflowScript("build-the-actual-reviewed-native-source.sh")
       }
       ci.command("Retain immutable source and actual loaded native identity", "node npm/volar/test/source-receipt.js")
       ci.command("Check portable native projection boundaries", "node --test npm/native/test/language-projection.test.cjs")

@@ -154,7 +154,7 @@ jobs {
           VIZE_TASK_CACHE_SOURCE_RECEIPT = "${{ steps.source-cli-binary.outputs.receipt }}"
           VIZE_TASK_CACHE_SOURCE_BINARY_SHA256 = "${{ inputs.source_cli_binary_sha256 }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/check-real-installed-tasks-and-cache-invalidation.sh""#
+        run = ci.workflowScript("check-real-installed-tasks-and-cache-invalidation.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

@@ -73,7 +73,7 @@ jobs {
       new Dynamic {
         name = "Start observer test build"
         env { OBSERVER = "${{ matrix.observer }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/start-observer-test-build.sh""#
+        run = ci.workflowScript("start-observer-test-build.sh")
       }
       new Dynamic {
         name = "Plan canonical corpus identity"
@@ -102,7 +102,7 @@ jobs {
       }
       new Dynamic {
         name = "Select and hydrate full fixture corpus"
-        run = #". "${{ env.VIZE_CI_FILES }}/select-and-hydrate-full-fixture-corpus.sh""#
+        run = ci.workflowScript("select-and-hydrate-full-fixture-corpus.sh")
       }
       new Dynamic {
         name = "Capture canonical corpus identity"
@@ -142,7 +142,7 @@ jobs {
       new Dynamic {
         name = "Require complete source IO diagnostic success"
         `if` = "${{ always() && matrix.observer == 'ssr-pug' && steps.corpus_io.outcome != 'success' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-complete-source-io-diagnostic-success.sh""#
+        run = ci.workflowScript("require-complete-source-io-diagnostic-success.sh")
       }
       new Dynamic {
         name = "Record required observer evidence"

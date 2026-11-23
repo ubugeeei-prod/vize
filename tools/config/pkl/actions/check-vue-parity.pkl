@@ -14,24 +14,24 @@ runs {
       name = "Record runner process budget baseline"
       shell = "bash"
       env { RUNNER_ENVIRONMENT = "${{ runner.environment }}" }
-      run = #". "$GITHUB_ACTION_PATH/scripts/record-runner-process-budget-baseline.sh""#
+      run = ci.actionScript("record-runner-process-budget-baseline.sh")
     }
     new Dynamic {
       name = "Hydrate fixtures and install JS dependencies"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/hydrate-fixtures-and-install-js-dependencies.sh""#
+      run = ci.actionScript("hydrate-fixtures-and-install-js-dependencies.sh")
     }
     new Dynamic {
       name = "Build vize CLI"
       shell = "bash"
       env { RUNNER_ENVIRONMENT = "${{ runner.environment }}" }
-      run = #". "$GITHUB_ACTION_PATH/scripts/build-vize-cli.sh""#
+      run = ci.actionScript("build-vize-cli.sh")
     }
     new Dynamic {
       name = "Settle hosted runner task budget"
       `if` = "${{ runner.environment == 'github-hosted' }}"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/settle-hosted-runner-task-budget.sh""#
+      run = ci.actionScript("settle-hosted-runner-task-budget.sh")
     }
     new Dynamic {
       name = "Check Vue compiler and typecheck parity"
@@ -87,7 +87,7 @@ runs {
       name = "Check glyph formatter corpus properties"
       shell = "bash"
       env { VIZE_TEST_BIN = "target/ci/vize" }
-      run = #". "$GITHUB_ACTION_PATH/scripts/check-glyph-formatter-corpus-properties.sh""#
+      run = ci.actionScript("check-glyph-formatter-corpus-properties.sh")
     }
     new Dynamic {
       name = "Check incremental LSP against Misskey and Vue Vben Admin"
@@ -111,7 +111,7 @@ runs {
       name = "Publish incremental LSP summaries"
       `if` = "${{ always() }}"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/publish-incremental-lsp-summaries.sh""#
+      run = ci.actionScript("publish-incremental-lsp-summaries.sh")
     }
     new Dynamic {
       name = "Upload complete snapshot differences"

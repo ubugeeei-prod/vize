@@ -57,7 +57,7 @@ jobs {
       new Dynamic {
         name = "Execute the shared planner contract through Bun"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/execute-the-shared-planner-contract-through-bun.sh""#
+        run = ci.workflowScript("execute-the-shared-planner-contract-through-bun.sh")
       }
       new Dynamic {
         name = "Retain Bun planner timing and RSS"
@@ -89,7 +89,7 @@ jobs {
       new Dynamic {
         name = "Execute the shared planner baseline through Node"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/execute-the-shared-planner-baseline-through-node.sh""#
+        run = ci.workflowScript("execute-the-shared-planner-baseline-through-node.sh")
       }
       new Dynamic {
         name = "Retain Node planner timing and RSS"
@@ -139,7 +139,7 @@ jobs {
       new Dynamic {
         name = "Build native provider and Bun-facing packages"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-native-provider-and-bun-facing-packages.sh""#
+        run = ci.workflowScript("build-native-provider-and-bun-facing-packages.sh")
       }
       new Dynamic {
         name = "Compare packed Node and Bun product behavior"
@@ -189,7 +189,7 @@ jobs {
         name = "Measure config runtime storage lifecycle"
         `if` = "runner.os == 'Linux'"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-config-runtime-storage-lifecycle.sh""#
+        run = ci.workflowScript("measure-config-runtime-storage-lifecycle.sh")
       }
       new Dynamic {
         name = "Retain config runtime storage counts and timings"

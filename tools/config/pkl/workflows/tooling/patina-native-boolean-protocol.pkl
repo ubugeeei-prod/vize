@@ -69,15 +69,15 @@ jobs {
       new Dynamic {
         name = "Install the exact reported project runtime independently"
         `working-directory` = "${{ runner.temp }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-exact-reported-project-runtime-independently.sh""#
+        run = ci.workflowScript("install-the-exact-reported-project-runtime-independently.sh")
       }
       new Dynamic {
         name = "Keep captured AST refusal laws and runtime failure severity"
-        run = #". "${{ env.VIZE_CI_FILES }}/keep-captured-ast-refusal-laws-and-runtime-failure-severity.sh""#
+        run = ci.workflowScript("keep-captured-ast-refusal-laws-and-runtime-failure-severity.sh")
       }
       new Dynamic {
         name = "Preserve dynamic module namespaces beside component imports"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-dynamic-module-namespaces-beside-component-imports.sh""#
+        run = ci.workflowScript("preserve-dynamic-module-namespaces-beside-component-imports.sh")
       }
       new Dynamic {
         name = "Preserve all complete boolean reports with the stable runtime"
@@ -85,12 +85,12 @@ jobs {
           CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
           VIZE_SYMBOL_OWNER_CLI_CAPTURE = "${{ github.workspace }}/target/patina-native-boolean/stable-owner-cli.json"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-all-complete-boolean-reports-with-the-stable-runtime.sh""#
+        run = ci.workflowScript("preserve-all-complete-boolean-reports-with-the-stable-runtime.sh")
       }
       new Dynamic {
         name = "Preserve the same complete reports with the reported tsrs runtime"
         env { VIZE_SYMBOL_OWNER_CLI_CAPTURE = "${{ github.workspace }}/target/patina-native-boolean/tsrs-owner-cli.json" }
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-the-same-complete-reports-with-the-reported-tsrs-runtime.sh""#
+        run = ci.workflowScript("preserve-the-same-complete-reports-with-the-reported-tsrs-runtime.sh")
       }
       new Dynamic {
         name = "Capture cold and materialized signature owners with the stable runtime"
@@ -98,12 +98,12 @@ jobs {
         env {
           CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/capture-cold-and-materialized-signature-owners-with-the-stable-runtime.sh""#
+        run = ci.workflowScript("capture-cold-and-materialized-signature-owners-with-the-stable-runtime.sh")
       }
       new Dynamic {
         name = "Capture the same signature owners with the reported tsrs runtime"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/capture-the-same-signature-owners-with-the-reported-tsrs-runtime.sh""#
+        run = ci.workflowScript("capture-the-same-signature-owners-with-the-reported-tsrs-runtime.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

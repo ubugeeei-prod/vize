@@ -16,7 +16,7 @@ runs {
       id = "select"
       shell = "bash"
       env { BASE_SHA = "${{ inputs.comparison-base }}" }
-      run = #". "$GITHUB_ACTION_PATH/scripts/select-the-original-vue2-document-source-slice.sh""#
+      run = ci.actionScript("select-the-original-vue2-document-source-slice.sh")
     }
     new Dynamic {
       name = "Join fresh original TextView outputs to pinned whole goldens"
@@ -26,7 +26,7 @@ runs {
         VIZE_GLYPH_VUE2_TEXT_CAPTURE = "${{ runner.temp }}/native-vue2-text-documents.json"
         VIZE_GLYPH_VUE2_TEXT_SOURCE_HEAD = "${{ github.event.pull_request.head.sha || github.sha }}"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/join-fresh-original-textview-outputs-to-pinned-whole-goldens.sh""#
+      run = ci.actionScript("join-fresh-original-textview-outputs-to-pinned-whole-goldens.sh")
     }
     new Dynamic {
       name = "Retain the actual original Vue2 document capture"

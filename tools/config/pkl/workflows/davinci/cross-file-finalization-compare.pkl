@@ -108,11 +108,11 @@ jobs {
       }
       new Dynamic {
         name = "Install frozen tools and checkout the exact matched base"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-frozen-tools-and-checkout-the-exact-matched-base.sh""#
+        run = ci.workflowScript("install-frozen-tools-and-checkout-the-exact-matched-base.sh")
       }
       new Dynamic {
         name = "Compile both actual optimized providers into isolated targets"
-        run = #". "${{ env.VIZE_CI_FILES }}/compile-both-actual-optimized-providers-into-isolated-targets.sh""#
+        run = ci.workflowScript("compile-both-actual-optimized-providers-into-isolated-targets.sh")
       }
       new Dynamic {
         name = "Compare full packets and actual source work on identical physical inputs"

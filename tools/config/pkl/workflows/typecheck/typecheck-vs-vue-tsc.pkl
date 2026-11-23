@@ -79,7 +79,7 @@ jobs {
       }
       new Dynamic {
         name = "Prepare exact product and frozen provider"
-        run = #". "${{ env.VIZE_CI_FILES }}/prepare-exact-product-and-frozen-provider.sh""#
+        run = ci.workflowScript("prepare-exact-product-and-frozen-provider.sh")
       }
       new Dynamic {
         name = "Build fixed normal product"
@@ -90,12 +90,12 @@ jobs {
       }
       new Dynamic {
         name = "Measure"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure.sh""#
+        run = ci.workflowScript("measure.sh")
       }
       new Dynamic {
         name = "Preserve all raw before any verdict"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-all-raw-before-any-verdict.sh""#
+        run = ci.workflowScript("preserve-all-raw-before-any-verdict.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

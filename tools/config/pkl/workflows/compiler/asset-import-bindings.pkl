@@ -76,12 +76,12 @@ jobs {
       new Dynamic {
         name = "Build immutable before and head producers in separate source targets"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-immutable-before-and-head-producers-in-separate-source-targets.sh""#
+        run = ci.workflowScript("build-immutable-before-and-head-producers-in-separate-source-targets.sh")
       }
       new Dynamic {
         name = "Verify full unchanged packets, actual collision repair and source custody"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-full-unchanged-packets-actual-collision-repair-and-source-custody.sh""#
+        run = ci.workflowScript("verify-full-unchanged-packets-actual-collision-repair-and-source-custody.sh")
       }
       new Dynamic {
         name = "Preserve complete source evidence, images, packets and unnormalized logs"

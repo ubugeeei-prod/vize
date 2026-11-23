@@ -44,7 +44,7 @@ local nativeHostSteps = new Listing {
   new Dynamic {
     name = "Smoke CLI"
     shell = "bash"
-    run = #". "${{ env.VIZE_CI_FILES }}/smoke-cli.sh""#
+    run = ci.workflowScript("smoke-cli.sh")
   }
   ci.command("Build @vizejs/native", "vp run --filter './npm/native' build:ci")
   new Dynamic {
@@ -265,7 +265,7 @@ jobs {
       new Dynamic {
         name = "Install package dependencies"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-package-dependencies.sh""#
+        run = ci.workflowScript("install-package-dependencies.sh")
       }
       ci.command("Build @vizejs/native", "vp run --filter './npm/native' build:ci")
       new Dynamic {
@@ -277,7 +277,7 @@ jobs {
         name = "Build npm runtime packages"
         `if` = "${{ matrix.platform.target != 'linux-x64-gnu' || matrix.node-version != '24' }}"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-npm-runtime-packages.sh""#
+        run = ci.workflowScript("build-npm-runtime-packages.sh")
       }
       new Dynamic {
         name = "Build the packed Nuxt release graph"
@@ -289,14 +289,14 @@ jobs {
         `if` = "${{ matrix.platform.target != 'linux-x64-gnu' || matrix.node-version != '24' }}"
         env { VIZE_SMOKE_TIMING_FILE = "${{ runner.temp }}/packed-smoke-timing.jsonl" }
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/fresh-install-and-runtime-smoke-published-tarballs.sh""#
+        run = ci.workflowScript("fresh-install-and-runtime-smoke-published-tarballs.sh")
       }
       new Dynamic {
         name = "Fresh packed Nuxt init, check, and LSP smoke"
         `if` = "${{ matrix.platform.target == 'linux-x64-gnu' && matrix.node-version == '24' }}"
         env { VIZE_SMOKE_TIMING_FILE = "${{ runner.temp }}/packed-smoke-timing.jsonl" }
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/fresh-packed-nuxt-init-check-and-lsp-smoke.sh""#
+        run = ci.workflowScript("fresh-packed-nuxt-init-check-and-lsp-smoke.sh")
       }
       new Dynamic {
         name = "Retain packed smoke timing"
@@ -343,7 +343,7 @@ jobs {
         name = "Read the package version"
         id = "version"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/read-the-package-version.sh""#
+        run = ci.workflowScript("read-the-package-version.sh")
       }
       new Dynamic {
         name = "Cross-build the musl native binding"
@@ -359,18 +359,18 @@ jobs {
       new Dynamic {
         name = "Install packed runtime dependencies"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-package-dependencies.sh""#
+        run = ci.workflowScript("install-package-dependencies.sh")
       }
       new Dynamic {
         name = "Prepare the musl native platform package"
         shell = "bash"
         env { NATIVE_PLATFORM = "${{ matrix.platform }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/prepare-the-musl-native-platform-package.sh""#
+        run = ci.workflowScript("prepare-the-musl-native-platform-package.sh")
       }
       new Dynamic {
         name = "Build packed runtime packages"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-npm-runtime-packages.sh""#
+        run = ci.workflowScript("build-npm-runtime-packages.sh")
       }
       new Dynamic {
         name = "Fresh install and runtime smoke in Alpine"
@@ -379,7 +379,7 @@ jobs {
           NATIVE_PACKAGE = "${{ format('@vizejs/native-{0}', matrix.platform) }}"
           NATIVE_PLATFORM = "${{ matrix.platform }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/fresh-install-and-runtime-smoke-in-alpine.sh""#
+        run = ci.workflowScript("fresh-install-and-runtime-smoke-in-alpine.sh")
       }
       new Dynamic {
         name = "Retain packed musl smoke evidence"

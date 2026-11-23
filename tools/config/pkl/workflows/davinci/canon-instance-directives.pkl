@@ -53,40 +53,40 @@ jobs {
       new Dynamic {
         name = "Verify actual merge parents and immutable product sources"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-actual-merge-parents-and-immutable-product-sources.sh""#
+        run = ci.workflowScript("verify-actual-merge-parents-and-immutable-product-sources.sh")
       }
       new Dynamic {
         name = "Install fixed real Vue and both independent checker providers"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-fixed-real-vue-and-both-independent-checker-providers.sh""#
+        run = ci.workflowScript("install-fixed-real-vue-and-both-independent-checker-providers.sh")
       }
       new Dynamic {
         name = "Build normal base and candidate in separate fresh target directories"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-normal-base-and-candidate-in-separate-fresh-target-directories.sh""#
+        run = ci.workflowScript("build-normal-base-and-candidate-in-separate-fresh-target-directories.sh")
       }
       new Dynamic {
         name = "Exercise Rust ownership positive and negative controls"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/exercise-rust-ownership-positive-and-negative-controls.sh""#
+        run = ci.workflowScript("exercise-rust-ownership-positive-and-negative-controls.sh")
       }
       new Dynamic {
         name = "Retain real native base red and candidate packets with independent type witnesses"
         shell = "bash"
         `timeout-minutes` = 12
-        run = #". "${{ env.VIZE_CI_FILES }}/retain-real-native-base-red-and-candidate-packets-with-independent-type.sh""#
+        run = ci.workflowScript("retain-real-native-base-red-and-candidate-packets-with-independent-type.sh")
       }
       new Dynamic {
         name = "Run the unchanged 230-project authored upstream oracle"
         shell = "bash"
         `timeout-minutes` = 12
-        run = #". "${{ env.VIZE_CI_FILES }}/run-the-unchanged-230-project-authored-upstream-oracle.sh""#
+        run = ci.workflowScript("run-the-unchanged-230-project-authored-upstream-oracle.sh")
       }
       new Dynamic {
         name = "Preserve bounded evidence without dereferencing project provider links"
         `if` = "always()"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-bounded-evidence-without-dereferencing-project-provider-links.sh""#
+        run = ci.workflowScript("preserve-bounded-evidence-without-dereferencing-project-provider-links.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

@@ -1,3 +1,5 @@
+import "../Actions.pkl" as ci
+
 
 name = "Setup Rust Script"
 description = "Install the pinned rust-script runner used by tools/commands"
@@ -9,12 +11,12 @@ runs {
       name = "Configure Windows Rust linker"
       `if` = "runner.os == 'Windows'"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/configure-windows-rust-linker.sh""#
+      run = ci.actionScript("configure-windows-rust-linker.sh")
     }
     new Dynamic {
       name = "Install rust-script"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/install-rust-script.sh""#
+      run = ci.actionScript("install-rust-script.sh")
     }
   }
 }

@@ -90,7 +90,7 @@ runs {
         BUNDLES_DIRECTORY = "${{ inputs.bundles-directory }}"
         ENFORCE_COMPLETE = "${{ inputs.enforce-complete }}"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/verify-exact-source-and-run-the-shared-receipt-driver.sh""#
+      run = ci.actionScript("verify-exact-source-and-run-the-shared-receipt-driver.sh")
     }
     new Dynamic {
       name = "Publish immutable five-case plan or admission"

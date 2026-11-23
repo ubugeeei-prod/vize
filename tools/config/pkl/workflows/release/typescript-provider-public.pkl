@@ -90,7 +90,7 @@ jobs {
           PRODUCER_RUN = "${{ inputs.producer_run }}"
           GITHUB_READ_TOKEN = "${{ github.token }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/download-and-verify-the-published-bytes-and-original-producer-receipt.sh""#
+        run = ci.workflowScript("download-and-verify-the-published-bytes-and-original-producer-receipt.sh")
       }
       new Dynamic {
         name = "Preserve exact source line endings on Windows"
@@ -113,7 +113,7 @@ jobs {
           REQUIRED_SOURCE = "${{ inputs.required_source }}"
           PRODUCER_SOURCE = "${{ steps.public.outputs.source }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-tag-ancestry-and-retain-both-release-identities.sh""#
+        run = ci.workflowScript("verify-tag-ancestry-and-retain-both-release-identities.sh")
       }
       new Dynamic {
         uses = ci.setupVp
@@ -127,13 +127,13 @@ jobs {
       new Dynamic {
         name = "Install the exact editor harness dependency without a source build"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-exact-editor-harness-dependency-without-a-source-build.sh""#
+        run = ci.workflowScript("install-the-exact-editor-harness-dependency-without-a-source-build.sh")
       }
       new Dynamic {
         name = "Ensure the Linux virtual display"
         `if` = "runner.os == 'Linux'"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/ensure-the-linux-virtual-display.sh""#
+        run = ci.workflowScript("ensure-the-linux-virtual-display.sh")
       }
       new Dynamic {
         name = "Run the published extension in an actual VS Code host"
@@ -142,7 +142,7 @@ jobs {
           VIZE_TYPESCRIPT_PROVIDER_VSIX = "${{ steps.public.outputs.vsix }}"
           VIZE_TYPESCRIPT_PROVIDER_CAPTURE = "${{ runner.temp }}/typescript-provider-public/host"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/run-the-published-extension-in-an-actual-vs-code-host.sh""#
+        run = ci.workflowScript("run-the-published-extension-in-an-actual-vs-code-host.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

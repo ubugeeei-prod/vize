@@ -54,11 +54,11 @@ jobs {
       ci.use("./.github/actions/setup-rust-script")
       new Dynamic {
         name = "Install locked source adapter dependencies and exact CSS host"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-locked-source-adapter-dependencies-and-exact-css-host.sh""#
+        run = ci.workflowScript("install-locked-source-adapter-dependencies-and-exact-css-host.sh")
       }
       new Dynamic {
         name = "Build exact source addon and candidate adapter"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-exact-source-addon-and-candidate-adapter.sh""#
+        run = ci.workflowScript("build-exact-source-addon-and-candidate-adapter.sh")
       }
       new Dynamic {
         name = "Retain all locked adapter tests and cross-root build contracts"
@@ -71,7 +71,7 @@ jobs {
       new Dynamic {
         name = "Retain complete source custody after adapter tests"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/retain-complete-source-custody-after-adapter-tests.sh""#
+        run = ci.workflowScript("retain-complete-source-custody-after-adapter-tests.sh")
       }
       new Dynamic {
         name = "Verify real CSS imports assets checkouts dev and SSR with the source addon"
@@ -93,7 +93,7 @@ jobs {
       new Dynamic {
         name = "Install the untouched reported consumer with exact pnpm"
         `working-directory` = ".tmp/vize-style-relative-public"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-untouched-reported-consumer-with-exact-pnpm.sh""#
+        run = ci.workflowScript("install-the-untouched-reported-consumer-with-exact-pnpm.sh")
       }
       new Dynamic {
         name = "Prove published failure then cold and warm source success on the original consumer"

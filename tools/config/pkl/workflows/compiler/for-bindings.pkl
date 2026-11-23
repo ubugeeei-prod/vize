@@ -97,7 +97,7 @@ jobs {
       new Dynamic {
         name = "Build immutable before and head producers in separate source targets"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-immutable-before-and-head-producers-in-separate-source-targets.sh""#
+        run = ci.workflowScript("build-immutable-before-and-head-producers-in-separate-source-targets.sh")
       }
       new Dynamic {
         name = "Verify authored callback literals and current versus enclosing bindings"

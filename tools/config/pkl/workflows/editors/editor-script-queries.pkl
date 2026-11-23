@@ -81,19 +81,19 @@ jobs {
       }
       new Dynamic {
         name = "Check both original editor readers and their shared parse"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-both-original-editor-readers-and-their-shared-parse.sh""#
+        run = ci.workflowScript("check-both-original-editor-readers-and-their-shared-parse.sh")
       }
       new Dynamic {
         name = "Compare configured script lint results on original Programs"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-configured-script-lint-results-on-original-programs.sh""#
+        run = ci.workflowScript("compare-configured-script-lint-results-on-original-programs.sh")
       }
       new Dynamic {
         name = "Compare the checker diagnostics and both editor products on the same source revision"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-checker-diagnostics-and-both-editor-products-on-the-same-sou.sh""#
+        run = ci.workflowScript("compare-the-checker-diagnostics-and-both-editor-products-on-the-same-sou.sh")
       }
       new Dynamic {
         name = "Compare all configured script readers and full formatter products on each revision"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-all-configured-script-readers-and-full-formatter-products-on-eac.sh""#
+        run = ci.workflowScript("compare-all-configured-script-readers-and-full-formatter-products-on-eac.sh")
       }
     }
   }

@@ -70,11 +70,11 @@ jobs {
       }
       new Dynamic {
         name = "Compare the original packet with native and legacy Rust"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-original-packet-with-native-and-legacy-rust.sh""#
+        run = ci.workflowScript("compare-the-original-packet-with-native-and-legacy-rust.sh")
       }
       new Dynamic {
         name = "Compare the original packet with Chromium"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-original-packet-with-chromium.sh""#
+        run = ci.workflowScript("compare-the-original-packet-with-chromium.sh")
       }
     }
   }

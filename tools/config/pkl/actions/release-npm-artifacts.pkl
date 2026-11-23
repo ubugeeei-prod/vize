@@ -1,3 +1,5 @@
+import "../Actions.pkl" as ci
+
 name = "Restore release npm packages"
 description = "Download the built npm packages and native bindings into npm/ and lay out the native platform packages"
 inputs {
@@ -87,18 +89,18 @@ runs {
       `if` = "inputs.release-tag != ''"
       shell = "bash"
       env { RELEASE_TAG = "${{ inputs.release-tag }}" }
-      run = #". "$GITHUB_ACTION_PATH/scripts/restore-immutable-native-package-metadata.sh""#
+      run = ci.actionScript("restore-immutable-native-package-metadata.sh")
     }
     new Dynamic {
       name = "Lay out native platform packages"
       shell = "bash"
       `working-directory` = "npm/native"
-      run = #". "$GITHUB_ACTION_PATH/scripts/lay-out-native-platform-packages.sh""#
+      run = ci.actionScript("lay-out-native-platform-packages.sh")
     }
     new Dynamic {
       name = "Stage Fresco native binaries"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/stage-fresco-native-binaries.sh""#
+      run = ci.actionScript("stage-fresco-native-binaries.sh")
     }
   }
 }

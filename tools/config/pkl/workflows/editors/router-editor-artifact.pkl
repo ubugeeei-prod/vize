@@ -40,7 +40,7 @@ jobs {
       }
       new Dynamic {
         name = "Preserve the initial source authority before any qualification step"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-the-initial-source-authority-before-any-qualification-step.sh""#
+        run = ci.workflowScript("preserve-the-initial-source-authority-before-any-qualification-step.sh")
       }
       ci.workspaceVp()
       ci.rust("stable")
@@ -51,7 +51,7 @@ jobs {
       }
       new Dynamic {
         name = "Retain the original producer and consumer receipts"
-        run = #". "${{ env.VIZE_CI_FILES }}/retain-the-original-producer-and-consumer-receipts.sh""#
+        run = ci.workflowScript("retain-the-original-producer-and-consumer-receipts.sh")
       }
       ci.command("Install locked workspace dependencies", "vp install --frozen-lockfile --prefer-offline")
       ci.use("./.github/actions/setup-rust-script")
@@ -60,7 +60,7 @@ jobs {
       new Dynamic {
         name = "Prepare pinned VS Code"
         env { VIZE_TEST_VSCODE_VERSION = "1.107.1" }
-        run = #". "${{ env.VIZE_CI_FILES }}/prepare-pinned-vs-code.sh""#
+        run = ci.workflowScript("prepare-pinned-vs-code.sh")
       }
       new Dynamic {
         name = "Check artifact contracts"

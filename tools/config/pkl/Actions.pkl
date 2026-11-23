@@ -24,6 +24,15 @@ function command(label: String, commandLine: String): Dynamic = new {
   run = commandLine
 }
 
+typealias ScriptName = String(matches(Regex("[A-Za-z0-9_][A-Za-z0-9_.-]*")))
+
+function workflowScript(file: ScriptName): String = #". "${{ env.VIZE_CI_FILES }}/\#(file)""#
+
+function actionScript(file: ScriptName): String = #". "$GITHUB_ACTION_PATH/scripts/\#(file)""#
+
+// WSL translates the staged Windows path before its Bash shell expands the variable.
+function wslScript(file: ScriptName): String = #". "$VIZE_CI_FILES/\#(file)""#
+
 function onFailureOf(step: String): String = "failure() && steps.\(step).outcome == 'failure'"
 
 function checkoutAt(revision: String): Dynamic = new {

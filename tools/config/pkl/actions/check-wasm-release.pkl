@@ -34,7 +34,7 @@ runs {
     new Dynamic {
       name = "Test Canon through a consumer without native test dependencies"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/test-canon-through-a-consumer-without-native-test-dependencies.sh""#
+      run = ci.actionScript("test-canon-through-a-consumer-without-native-test-dependencies.sh")
     }
   }
 }

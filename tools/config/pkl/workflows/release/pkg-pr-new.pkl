@@ -38,7 +38,7 @@ jobs {
       }
       new Dynamic {
         name = "Install rust-script"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-rust-script.sh""#
+        run = ci.workflowScript("install-rust-script.sh")
       }
       new Dynamic {
         name = "Install package build dependencies"
@@ -52,7 +52,7 @@ jobs {
         // message and is marked successful so the workflow does not red-light
         // manual previews while waiting on a one-time install action by a maintainer.
         // https://github.com/apps/pkg-pr-new
-        run = #". "${{ env.VIZE_CI_FILES }}/publish-pkg-pr-new-preview.sh""#
+        run = ci.workflowScript("publish-pkg-pr-new-preview.sh")
       }
     }
   }

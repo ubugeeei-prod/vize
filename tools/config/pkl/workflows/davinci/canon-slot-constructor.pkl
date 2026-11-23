@@ -94,28 +94,28 @@ jobs {
       ci.wild()
       new Dynamic {
         name = "Build the exact source CLI in an independent target"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-exact-source-cli-in-an-independent-target.sh""#
+        run = ci.workflowScript("build-the-exact-source-cli-in-an-independent-target.sh")
       }
       new Dynamic {
         name = "Validate direct constructor emission, snapshots and complete constructor packets"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-direct-constructor-emission-snapshots-and-complete-constructor.sh""#
+        run = ci.workflowScript("validate-direct-constructor-emission-snapshots-and-complete-constructor.sh")
       }
       new Dynamic {
         name = "Install the pinned public release baseline and provider"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-pinned-public-release-baseline-and-provider.sh""#
+        run = ci.workflowScript("install-the-pinned-public-release-baseline-and-provider.sh")
       }
       new Dynamic {
         name = "Require the pinned batch diagnostic fixture through the native provider"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-the-pinned-batch-diagnostic-fixture-through-the-native-provider.sh""#
+        run = ci.workflowScript("require-the-pinned-batch-diagnostic-fixture-through-the-native-provider.sh")
       }
       new Dynamic {
         name = "Require exact native negative, real-project, and repair admission"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-exact-native-negative-real-project-and-repair-admission.sh""#
+        run = ci.workflowScript("require-exact-native-negative-real-project-and-repair-admission.sh")
       }
       new Dynamic {
         name = "Preserve raw failures and authored inputs"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-raw-failures-and-authored-inputs.sh""#
+        run = ci.workflowScript("preserve-raw-failures-and-authored-inputs.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -148,7 +148,7 @@ jobs {
       ...ci.stageWorkflowScripts("canon-slot-constructor")
       new Dynamic {
         name = "Require one literal source commit"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-one-literal-source-commit.sh""#
+        run = ci.workflowScript("require-one-literal-source-commit.sh")
       }
       new Dynamic {
         uses = ci.checkout
@@ -190,16 +190,16 @@ jobs {
       new Dynamic {
         name = "Build the unchanged selected source and seal its CLI"
         `if` = "inputs.original27_mode != 'native-props-origin'"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-unchanged-selected-source-and-seal-its-cli.sh""#
+        run = ci.workflowScript("build-the-unchanged-selected-source-and-seal-its-cli.sh")
       }
       new Dynamic {
         name = "Build only the selected source's origin probe test executable"
         `if` = "inputs.original27_mode == 'native-props-origin'"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-only-the-selected-source-s-origin-probe-test-executable.sh""#
+        run = ci.workflowScript("build-only-the-selected-source-s-origin-probe-test-executable.sh")
       }
       new Dynamic {
         name = "Install the original provider without executing its published Vize"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-original-provider-without-executing-its-published-vize.sh""#
+        run = ci.workflowScript("install-the-original-provider-without-executing-its-published-vize.sh")
       }
       new Dynamic {
         name = "Preserve both independent oracles, every current diagnostic and all27 mapper transactions"
@@ -212,12 +212,12 @@ jobs {
       new Dynamic {
         name = "Observe both actual instance hosts and Vue declaration identities in one snapshot"
         `if` = "inputs.original27_mode == 'native-props-origin'"
-        run = #". "${{ env.VIZE_CI_FILES }}/observe-both-actual-instance-hosts-and-vue-declaration-identities-in-one.sh""#
+        run = ci.workflowScript("observe-both-actual-instance-hosts-and-vue-declaration-identities-in-one.sh")
       }
       new Dynamic {
         name = "Preserve complete raw failures and original authored inputs"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-complete-raw-failures-and-original-authored-inputs.sh""#
+        run = ci.workflowScript("preserve-complete-raw-failures-and-original-authored-inputs.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

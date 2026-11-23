@@ -83,7 +83,7 @@ jobs {
           PULL_REQUEST_HEAD = "${{ github.event.pull_request.head.sha }}"
           EVENT_SHA = "${{ github.sha }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/select-an-exact-version-and-verifier-source.sh""#
+        run = ci.workflowScript("select-an-exact-version-and-verifier-source.sh")
       }
     }
   }
@@ -179,7 +179,7 @@ jobs {
         name = "Initialize and exercise the public npm release in Alpine"
         shell = "bash"
         env { RELEASE_VERSION = "${{ needs.resolve.outputs.version }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/initialize-and-exercise-the-public-npm-release-in-alpine.sh""#
+        run = ci.workflowScript("initialize-and-exercise-the-public-npm-release-in-alpine.sh")
       }
       new Dynamic {
         name = "Retain the public fresh-project receipt"
@@ -217,7 +217,7 @@ jobs {
           EVIDENCE = "${{ runner.temp }}/published-fresh-nuxt"
           NPM_CONFIG_REGISTRY = "https://registry.npmjs.org/"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/install-build-and-serve-the-exact-public-nuxt-integration-with-bun.sh""#
+        run = ci.workflowScript("install-build-and-serve-the-exact-public-nuxt-integration-with-bun.sh")
       }
       new Dynamic {
         name = "Retain the public Nuxt and Bun receipt"

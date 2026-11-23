@@ -38,7 +38,7 @@ jobs {
       new Dynamic {
         name = "Authenticate the source and retain original declarations"
         env { RUN_HEAD_SHA = "${{ github.sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/authenticate-the-source-and-retain-original-declarations.sh""#
+        run = ci.workflowScript("authenticate-the-source-and-retain-original-declarations.sh")
       }
       new Dynamic {
         name = "Original full VueFes VRT, with one native build"
@@ -58,7 +58,7 @@ jobs {
       new Dynamic {
         name = "Preserve complete generated declarations"
         `if` = "${{ always() }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-complete-generated-declarations.sh""#
+        run = ci.workflowScript("preserve-complete-generated-declarations.sh")
       }
       new Dynamic {
         name = "Install exact original Vue runtime oracle"
@@ -80,7 +80,7 @@ jobs {
       new Dynamic {
         name = "Native metadata corpus and existing Vite contracts"
         `if` = "${{ !cancelled() }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/native-metadata-corpus-and-existing-vite-contracts.sh""#
+        run = ci.workflowScript("native-metadata-corpus-and-existing-vite-contracts.sh")
       }
       new Dynamic {
         name = "Complete official/native SSR, DOM and hydration differential"

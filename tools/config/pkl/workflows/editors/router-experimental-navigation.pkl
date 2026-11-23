@@ -47,7 +47,7 @@ jobs {
       new Dynamic {
         name = "Require exact source identity"
         env { EXPECTED_SOURCE_SHA = "${{ github.event.pull_request.head.sha || inputs.expected-source-sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/require-exact-source-identity.sh""#
+        run = ci.workflowScript("require-exact-source-identity.sh")
       }
       new Dynamic {
         name = "Setup Rust"
@@ -74,15 +74,15 @@ jobs {
       ci.command("Install frozen source dependencies", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Install independently pinned published checker host"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-independently-pinned-published-checker-host.sh""#
+        run = ci.workflowScript("install-independently-pinned-published-checker-host.sh")
       }
       new Dynamic {
         name = "Install the immutable released Vize oracle"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-immutable-released-vize-oracle.sh""#
+        run = ci.workflowScript("install-the-immutable-released-vize-oracle.sh")
       }
       new Dynamic {
         name = "Build exact source CLI"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-exact-source-cli.sh""#
+        run = ci.workflowScript("build-exact-source-cli.sh")
       }
       new Dynamic {
         name = "Capture complete source and independent reference matrix"

@@ -64,25 +64,25 @@ jobs {
       new Dynamic {
         name = "Check every referenced tooling TypeScript project"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-every-referenced-tooling-typescript-project.sh""#
+        run = ci.workflowScript("check-every-referenced-tooling-typescript-project.sh")
       }
       new Dynamic {
         name = "Build and receipt the exact source CLI"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-exact-source-cli.sh""#
+        run = ci.workflowScript("build-and-receipt-the-exact-source-cli.sh")
       }
       new Dynamic {
         name = "Record source and dependency identities"
-        run = #". "${{ env.VIZE_CI_FILES }}/record-source-and-dependency-identities.sh""#
+        run = ci.workflowScript("record-source-and-dependency-identities.sh")
       }
       new Dynamic {
         name = "Verify complete native packets and requested binding positions"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-complete-native-packets-and-requested-binding-positions.sh""#
+        run = ci.workflowScript("verify-complete-native-packets-and-requested-binding-positions.sh")
       }
       new Dynamic {
         name = "Verify authored tag ranges and exact alias matching"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-authored-tag-ranges-and-exact-alias-matching.sh""#
+        run = ci.workflowScript("verify-authored-tag-ranges-and-exact-alias-matching.sh")
       }
       new Dynamic {
         name = "Retain complete observations and exact source receipt"

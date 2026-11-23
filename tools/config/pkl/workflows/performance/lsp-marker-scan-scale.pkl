@@ -67,7 +67,7 @@ jobs {
         name = "Verify measurement tooling"
         run = "node --test tests/tooling/lsp-marker-scan-compare.test.ts tests/tooling/lsp-marker-scan-source.test.ts tests/tooling/lsp-resource-corpus.test.ts tests/tooling/lsp-resource-finalize.test.ts tests/tooling/lsp-resource-sampler.test.ts"
       }
-      new Dynamic { run = #". "${{ env.VIZE_CI_FILES }}/compare-rustup-toolchain-install-rustup-show-active-too.sh""# }
+      new Dynamic { run = ci.workflowScript("compare-rustup-toolchain-install-rustup-show-active-too.sh") }
       new Dynamic {
         uses = "./.github/actions/setup-rust-sticky-cache"
         with {
@@ -77,15 +77,15 @@ jobs {
       }
       new Dynamic {
         name = "Pin the actual checked-out comparison parents"
-        run = #". "${{ env.VIZE_CI_FILES }}/pin-the-actual-checked-out-comparison-parents.sh""#
+        run = ci.workflowScript("pin-the-actual-checked-out-comparison-parents.sh")
       }
       new Dynamic {
         name = "Validate immutable paired sources"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-immutable-paired-sources.sh""#
+        run = ci.workflowScript("validate-immutable-paired-sources.sh")
       }
       new Dynamic {
         name = "Build distinct baseline and candidate targets with equal flags"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-distinct-baseline-and-candidate-targets-with-equal-flags.sh""#
+        run = ci.workflowScript("build-distinct-baseline-and-candidate-targets-with-equal-flags.sh")
       }
       new Dynamic {
         name = "Verify project markers and unannounced configuration freshness"
@@ -93,11 +93,11 @@ jobs {
       }
       new Dynamic {
         name = "Alternate three fresh ordinary-process rounds"
-        run = #". "${{ env.VIZE_CI_FILES }}/alternate-three-fresh-ordinary-process-rounds.sh""#
+        run = ci.workflowScript("alternate-three-fresh-ordinary-process-rounds.sh")
       }
       new Dynamic {
         name = "Collect separate source callsites and allocator requests"
-        run = #". "${{ env.VIZE_CI_FILES }}/collect-separate-source-callsites-and-allocator-requests.sh""#
+        run = ci.workflowScript("collect-separate-source-callsites-and-allocator-requests.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

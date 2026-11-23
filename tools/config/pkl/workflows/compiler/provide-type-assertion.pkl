@@ -65,27 +65,27 @@ jobs {
       new Dynamic {
         name = "Preserve exact product source identity"
         env { VIZE_PROVIDE_ASSERTION_ARTIFACTS = "${{ runner.temp }}/provide-assertion-packets" }
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-exact-product-source-identity.sh""#
+        run = ci.workflowScript("preserve-exact-product-source-identity.sh")
       }
       new Dynamic {
         name = "Verify source producer metadata and all classifier controls"
         `if` = "${{ matrix.role == 'source' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-source-producer-metadata-and-all-classifier-controls.sh""#
+        run = ci.workflowScript("verify-source-producer-metadata-and-all-classifier-controls.sh")
       }
       new Dynamic {
         name = "Capture whole original and positive negative destructuring controls"
         env { VIZE_PROVIDE_ASSERTION_ARTIFACTS = "${{ runner.temp }}/provide-assertion-packets" }
-        run = #". "${{ env.VIZE_CI_FILES }}/capture-whole-original-and-positive-negative-destructuring-controls.sh""#
+        run = ci.workflowScript("capture-whole-original-and-positive-negative-destructuring-controls.sh")
       }
       new Dynamic {
         name = "Require all twenty seven executed complete packet controls"
         env { PACKETS = "${{ runner.temp }}/provide-assertion-packets" }
-        run = #". "${{ env.VIZE_CI_FILES }}/require-all-twenty-seven-executed-complete-packet-controls.sh""#
+        run = ci.workflowScript("require-all-twenty-seven-executed-complete-packet-controls.sh")
       }
       new Dynamic {
         name = "Preserve actual executable identity"
         `if` = "${{ always() }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-actual-executable-identity.sh""#
+        run = ci.workflowScript("preserve-actual-executable-identity.sh")
       }
       new Dynamic {
         name = "Preserve every raw report and complete native result"

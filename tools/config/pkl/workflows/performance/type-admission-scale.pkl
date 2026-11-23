@@ -69,19 +69,19 @@ jobs {
       new Dynamic {
         name = "Install the exact public baseline providers"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-exact-public-baseline-providers.sh""#
+        run = ci.workflowScript("install-the-exact-public-baseline-providers.sh")
       }
       ci.command("Require the original corpus and diagnostic custody laws", "node --test tests/tooling/type-admission-scale.test.ts")
       new Dynamic {
         name = "Run each original axis and retain every raw diagnostic packet"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/run-each-original-axis-and-retain-every-raw-diagnostic-packet.sh""#
+        run = ci.workflowScript("run-each-original-axis-and-retain-every-raw-diagnostic-packet.sh")
       }
       new Dynamic {
         name = "Package evidence without following workspace dependency symlinks"
         `if` = "${{ always() }}"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/package-evidence-without-following-workspace-dependency-symlinks.sh""#
+        run = ci.workflowScript("package-evidence-without-following-workspace-dependency-symlinks.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

@@ -58,7 +58,7 @@ jobs {
       new Dynamic { run = "cargo build --locked --profile ci -p vize" }
       new Dynamic {
         name = "Read component metadata and check template diagnostics"
-        run = #". "${{ env.VIZE_CI_FILES }}/read-component-metadata-and-check-template-diagnostics.sh""#
+        run = ci.workflowScript("read-component-metadata-and-check-template-diagnostics.sh")
       }
       new Dynamic {
         name = "Check component tag hover and go-to-definition"

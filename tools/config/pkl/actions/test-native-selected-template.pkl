@@ -9,7 +9,7 @@ runs {
       name = "Capture and execute original selected-template modules"
       shell = "bash"
       env { VIZE_L4_SELECTED_TEMPLATE_CAPTURE = "${{ runner.temp }}/native-selected-template-dom.json" }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-and-execute-original-selected-template-modules.sh""#
+      run = ci.actionScript("capture-and-execute-original-selected-template-modules.sh")
     }
     new Dynamic {
       name = "Retain the actual native module and map capture"
@@ -33,7 +33,7 @@ runs {
         VIZE_DEV_ROOT_FRAGMENT_CAPTURE = "${{ runner.temp }}/dev-root-fragment.json"
         VIZE_DEV_ROOT_FRAGMENT_REQUIRE_CAPTURE = "1"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/verify-comment-root-compiler-modules-in-the-actual-vue-runtime.sh""#
+      run = ci.actionScript("verify-comment-root-compiler-modules-in-the-actual-vue-runtime.sh")
     }
     new Dynamic {
       name = "Retain comment-root compiler modules"
@@ -53,7 +53,7 @@ runs {
         VIZE_RUNTIME_PATCH_FLAGS_CAPTURE = "${{ runner.temp }}/runtime-patch-flags.json"
         VIZE_RUNTIME_PATCH_FLAGS_REQUIRE_CAPTURE = "1"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/verify-runtime-sensitive-compiler-patch-flags.sh""#
+      run = ci.actionScript("verify-runtime-sensitive-compiler-patch-flags.sh")
     }
     new Dynamic {
       name = "Retain runtime patch-flag modules"

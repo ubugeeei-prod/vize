@@ -96,23 +96,23 @@ jobs {
       }
       new Dynamic {
         name = "Install Japanese rendering fonts"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-japanese-rendering-fonts.sh""#
+        run = ci.workflowScript("install-japanese-rendering-fonts.sh")
       }
       new Dynamic {
         name = "Check preview resource readiness"
         `if` = "${{ inputs.links-only != true }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-preview-resource-readiness.sh""#
+        run = ci.workflowScript("check-preview-resource-readiness.sh")
       }
       new Dynamic {
         name = "Build docs"
         // The page manifest records this exact source SHA; do not replay an
         // earlier script result when only other source files changed.
-        run = #". "${{ env.VIZE_CI_FILES }}/build-docs.sh""#
+        run = ci.workflowScript("build-docs.sh")
       }
       new Dynamic {
         name = "Verify rendered navigation and Japanese reading paths"
         `if` = "${{ inputs.links-only != true }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-rendered-navigation-and-japanese-reading-paths.sh""#
+        run = ci.workflowScript("verify-rendered-navigation-and-japanese-reading-paths.sh")
       }
       new Dynamic {
         name = "Upload rendered docs screenshots"

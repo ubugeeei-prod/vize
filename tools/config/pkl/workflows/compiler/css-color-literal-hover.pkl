@@ -62,12 +62,12 @@ jobs {
       new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
       new Dynamic {
         name = "Build and receipt the exact source CLI"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-exact-source-cli.sh""#
+        run = ci.workflowScript("build-and-receipt-the-exact-source-cli.sh")
       }
       new Dynamic {
         name = "Retain full current hovers and original color-provider contracts"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/retain-full-current-hovers-and-original-color-provider-contracts.sh""#
+        run = ci.workflowScript("retain-full-current-hovers-and-original-color-provider-contracts.sh")
       }
       new Dynamic {
         name = "Verify selected parser and publication boundaries with actual source work"
@@ -75,7 +75,7 @@ jobs {
         env {
           VIZE_CSS_SELECTED_WORK_CAPTURE = "${{ github.workspace }}/target/vize-tests/css-color-literal-hover/scanner-work.json"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-selected-parser-and-publication-boundaries-with-actual-source-wor.sh""#
+        run = ci.workflowScript("verify-selected-parser-and-publication-boundaries-with-actual-source-wor.sh")
       }
       new Dynamic {
         name = "Retain owned complete packets, source work and provider receipt"

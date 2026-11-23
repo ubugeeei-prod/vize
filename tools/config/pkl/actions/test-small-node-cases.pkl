@@ -28,7 +28,7 @@ runs {
         TEST_CASES_JOB = "${{ inputs.job }}"
         VIZE_TEST_CASES = "${{ runner.temp }}/test-cases-${{ inputs.packet }}.json"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/run-selected-node-tests.sh""#
+      run = ci.actionScript("run-selected-node-tests.sh")
     }
     new Dynamic {
       name = "Upload small Node test cases"

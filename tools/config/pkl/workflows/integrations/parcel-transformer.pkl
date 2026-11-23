@@ -136,7 +136,7 @@ jobs {
       }
       new Dynamic {
         name = "Check the native transformer crate"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-the-native-transformer-crate.sh""#
+        run = ci.workflowScript("check-the-native-transformer-crate.sh")
       }
       ci.command("Build in a real Parcel 3 consumer", "vp run --filter './npm/builder/parcel-native' test:host")
     }
@@ -167,7 +167,7 @@ jobs {
       ci.command("Install locked workspace providers", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Authenticate committed source and observe the actual absent Cargo target"
-        run = #". "${{ env.VIZE_CI_FILES }}/authenticate-committed-source-and-observe-the-actual-absent-cargo-target.sh""#
+        run = ci.workflowScript("authenticate-committed-source-and-observe-the-actual-absent-cargo-target.sh")
       }
       ci.command("Build the actual native source", "vp run --filter './npm/native' build:ci")
       new Dynamic {
@@ -190,7 +190,7 @@ jobs {
       }
       new Dynamic {
         name = "Qualify packed packages in a fresh Parcel consumer"
-        run = #". "${{ env.VIZE_CI_FILES }}/qualify-packed-packages-in-a-fresh-parcel-consumer.sh""#
+        run = ci.workflowScript("qualify-packed-packages-in-a-fresh-parcel-consumer.sh")
       }
       new Dynamic {
         name = "Exercise the default cache frontier without disabling browser caching"
@@ -200,7 +200,7 @@ jobs {
       new Dynamic {
         name = "Preserve source samples and seal the complete evidence"
         `if` = "${{ always() && !cancelled() }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-source-samples-and-seal-the-complete-evidence.sh""#
+        run = ci.workflowScript("preserve-source-samples-and-seal-the-complete-evidence.sh")
       }
       new Dynamic {
         name = "Preserve complete source and host evidence"

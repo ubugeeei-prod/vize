@@ -92,21 +92,21 @@ jobs {
           key = "plugin-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}"
         }
       }
-      ci.command("Select original Vue documents", #". "${{ env.VIZE_CI_FILES }}/select-original-vue-documents.sh""#)
+      ci.command("Select original Vue documents", ci.workflowScript("select-original-vue-documents.sh"))
       new Dynamic {
         name = "Compare original SDK reports and Doctor component records"
         `if` = "matrix.suite == 'correctness'"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-sdk-reports-and-doctor-component-records.sh""#
+        run = ci.workflowScript("compare-original-sdk-reports-and-doctor-component-records.sh")
       }
       new Dynamic {
         name = "Measure complete plugin and Doctor responses"
         `if` = "matrix.suite == 'performance'"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-complete-plugin-and-doctor-responses.sh""#
+        run = ci.workflowScript("measure-complete-plugin-and-doctor-responses.sh")
       }
       new Dynamic {
         name = "Qualify standalone and composed static facts and complexity"
         `if` = "matrix.suite == 'correctness'"
-        run = #". "${{ env.VIZE_CI_FILES }}/qualify-standalone-and-composed-static-facts-and-complexity.sh""#
+        run = ci.workflowScript("qualify-standalone-and-composed-static-facts-and-complexity.sh")
       }
     }
   }
@@ -138,7 +138,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare public stage feeds, Doctor component records and complete request costs"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-public-stage-feeds-doctor-component-records-and-complete-request.sh""#
+        run = ci.workflowScript("compare-public-stage-feeds-doctor-component-records-and-complete-request.sh")
       }
     }
   }

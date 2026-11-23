@@ -82,7 +82,7 @@ jobs {
       // and this job checks the repository out under head/.
       new Dynamic {
         name = "Expose the nested target action at the workspace root"
-        run = #". "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh""#
+        run = ci.workflowScript("expose-the-nested-target-action-at-the-workspace-root.sh")
       }
       new Dynamic {
         uses = "./head/.github/actions/setup-rust-sticky-cache"
@@ -104,7 +104,7 @@ jobs {
       new Dynamic {
         name = "Check candidate CF semantics and lints"
         `working-directory` = "head"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-candidate-cf-semantics-and-lints.sh""#
+        run = ci.workflowScript("check-candidate-cf-semantics-and-lints.sh")
       }
       new Dynamic {
         name = "Compare controlled production storage and traversal"

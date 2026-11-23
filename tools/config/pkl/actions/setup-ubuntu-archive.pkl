@@ -1,3 +1,5 @@
+import "../Actions.pkl" as ci
+
 name = "Stabilize Ubuntu package archive"
 description = "Avoid unhealthy Blacksmith mirror-list entries before apt-based setup"
 
@@ -7,7 +9,7 @@ runs {
     new Dynamic {
       name = "Use HTTPS Ubuntu archives on Blacksmith"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/configure-apt.sh""#
+      run = ci.actionScript("configure-apt.sh")
     }
   }
 }

@@ -43,7 +43,7 @@ jobs {
           EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha }}"
           PR_HEAD = "${{ github.event.pull_request.head.sha }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/admit-the-immutable-event-source-before-building.sh""#
+        run = ci.workflowScript("admit-the-immutable-event-source-before-building.sh")
       }
     }
   }
@@ -75,7 +75,7 @@ jobs {
           EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha }}"
           PR_HEAD = "${{ github.event.pull_request.head.sha }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/require-the-reviewed-source-and-retain-merge-identity.sh""#
+        run = ci.workflowScript("require-the-reviewed-source-and-retain-merge-identity.sh")
       }
       new Dynamic {
         name = "Checkout the pinned source host"
@@ -120,16 +120,16 @@ jobs {
       }
       new Dynamic {
         name = "Retain the original producer receipt and executable hash"
-        run = #". "${{ env.VIZE_CI_FILES }}/retain-the-original-producer-receipt-and-executable-hash.sh""#
+        run = ci.workflowScript("retain-the-original-producer-receipt-and-executable-hash.sh")
       }
       new Dynamic {
         name = "Build the real source host and retain its complete authority"
         `working-directory` = "typescript-content-mapper/tsc"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-real-source-host-and-retain-its-complete-authority.sh""#
+        run = ci.workflowScript("build-the-real-source-host-and-retain-its-complete-authority.sh")
       }
       new Dynamic {
         name = "Bind the source host receipt to this source and run"
-        run = #". "${{ env.VIZE_CI_FILES }}/bind-the-source-host-receipt-to-this-source-and-run.sh""#
+        run = ci.workflowScript("bind-the-source-host-receipt-to-this-source-and-run.sh")
       }
       new Dynamic {
         name = "Check complete consumer packets with an explicit capture-only override"

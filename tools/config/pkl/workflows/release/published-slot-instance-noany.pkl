@@ -100,7 +100,7 @@ jobs {
       new Dynamic {
         name = "Preserve complete failures and physical installed custody"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-complete-failures-and-physical-installed-custody.sh""#
+        run = ci.workflowScript("preserve-complete-failures-and-physical-installed-custody.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

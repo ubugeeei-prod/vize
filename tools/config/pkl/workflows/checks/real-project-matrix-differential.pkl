@@ -45,7 +45,7 @@ jobs {
           GH_TOKEN = "${{ github.token }}"
           RUN_ID = "${{ inputs.matrix_run_id || github.event.workflow_run.id }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/resolve-the-matrix-run.sh""#
+        run = ci.workflowScript("resolve-the-matrix-run.sh")
       }
       ci.checkoutAt("${{ steps.run.outputs.sha }}")
       new Dynamic {

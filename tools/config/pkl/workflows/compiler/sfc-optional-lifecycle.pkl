@@ -31,7 +31,7 @@ jobs {
       ...ci.stageWorkflowScripts("sfc-optional-lifecycle")
       new Dynamic {
         name = "Refuse stale or conflicting diagnostic dispatch"
-        run = #". "${{ env.VIZE_CI_FILES }}/refuse-stale-or-conflicting-diagnostic-dispatch.sh""#
+        run = ci.workflowScript("refuse-stale-or-conflicting-diagnostic-dispatch.sh")
       }
       new Dynamic {
         name = "Checkout diagnostic driver"
@@ -63,7 +63,7 @@ jobs {
       ci.use("./.github/actions/setup-ubuntu-archive")
       new Dynamic {
         name = "Install the pinned Linux heap observer"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-pinned-linux-heap-observer.sh""#
+        run = ci.workflowScript("install-the-pinned-linux-heap-observer.sh")
       }
       new Dynamic {
         name = "Install exact source lifecycle dependencies"

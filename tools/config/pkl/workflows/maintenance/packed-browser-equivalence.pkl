@@ -62,7 +62,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare immutable builds and execute the unpacked public APIs"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-immutable-builds-and-execute-the-unpacked-public-apis.sh""#
+        run = ci.workflowScript("compare-immutable-builds-and-execute-the-unpacked-public-apis.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

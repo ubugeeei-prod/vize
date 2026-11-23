@@ -76,7 +76,7 @@ jobs {
       new Dynamic {
         name = "Resolve the Windows mount"
         shell = "pwsh"
-        run = #". "${{ env.VIZE_CI_FILES }}/resolve-the-windows-mount.ps1""#
+        run = ci.workflowScript("resolve-the-windows-mount.ps1")
       }
       new Dynamic {
         name = "Install Node 24 in WSL2"
@@ -84,7 +84,7 @@ jobs {
         env {
           WSLENV = "VIZE_CI_FILES/p"
         }
-        run = #". "$VIZE_CI_FILES/install-node-24-in-wsl2.sh""#
+        run = ci.wslScript("install-node-24-in-wsl2.sh")
       }
       new Dynamic {
         name = "Measure ext4 and Windows mount"
@@ -97,7 +97,7 @@ jobs {
           MONOREPO_SFCS = "${{ inputs.monorepo_sfcs }}"
           RUNS = "${{ inputs.runs }}"
         }
-        run = #". "$VIZE_CI_FILES/measure-ext4-and-windows-mount.sh""#
+        run = ci.wslScript("measure-ext4-and-windows-mount.sh")
       }
       new Dynamic {
         name = "Measure editor load, edits, requests and memory"
@@ -107,7 +107,7 @@ jobs {
           VIZE_SPEC = "${{ inputs.vize }}"
           LSP_FIXTURES = "${{ inputs.lsp_fixtures }}"
         }
-        run = #". "$VIZE_CI_FILES/measure-editor-load-edits-requests-and-memory.sh""#
+        run = ci.wslScript("measure-editor-load-edits-requests-and-memory.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

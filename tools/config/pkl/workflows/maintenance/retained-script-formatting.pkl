@@ -59,7 +59,7 @@ jobs {
           VIZE_RETAINED_FORMAT_SAMPLE = "${{ runner.temp }}/retained-format-files"
           VIZE_RETAINED_FORMAT_MANIFEST = "${{ runner.temp }}/retained-format-files"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-formatter-results-on-original-files-and-record-paired-requests.sh""#
+        run = ci.workflowScript("compare-formatter-results-on-original-files-and-record-paired-requests.sh")
       }
       new Dynamic {
         name = "Compare shared Vue Program inputs through semantic and formatter APIs"
@@ -67,7 +67,7 @@ jobs {
           VIZE_SCRIPT_PROGRAMS_MANIFEST = "${{ runner.temp }}/vue-script-inputs"
           VIZE_SCRIPT_PROGRAMS_SAMPLE = "${{ runner.temp }}/vue-script-inputs"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-shared-vue-program-inputs-through-semantic-and-formatter-apis.sh""#
+        run = ci.workflowScript("compare-shared-vue-program-inputs-through-semantic-and-formatter-apis.sh")
       }
     }
   }

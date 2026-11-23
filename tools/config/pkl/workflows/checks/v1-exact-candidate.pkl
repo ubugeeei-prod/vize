@@ -84,7 +84,7 @@ jobs {
         name = "Verify the exact candidate checkout"
         shell = "bash"
         env { CANDIDATE_SHA = "${{ inputs.candidate_sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-the-exact-candidate-checkout.sh""#
+        run = ci.workflowScript("verify-the-exact-candidate-checkout.sh")
       }
       new Dynamic {
         uses = ci.setupNode
@@ -102,7 +102,7 @@ jobs {
           CANDIDATE_SHA = "${{ inputs.candidate_sha }}"
           RECEIPT_RUN_ID = "${{ inputs.receipt_run_id }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/bind-the-receipt-run-to-the-exact-candidate.sh""#
+        run = ci.workflowScript("bind-the-receipt-run-to-the-exact-candidate.sh")
       }
       new Dynamic {
         name = "Download the immutable receipt bundle"
@@ -115,7 +115,7 @@ jobs {
           `run-id` = "${{ inputs.receipt_run_id }}"
         }
       }
-      ci.command("Require the canonical receipt bundle name", #". "${{ env.VIZE_CI_FILES }}/require-candidate-receipt.sh""#)
+      ci.command("Require the canonical receipt bundle name", ci.workflowScript("require-candidate-receipt.sh"))
       new Dynamic {
         name = "Derive every host row from the committed manifest"
         id = "plan"
@@ -170,7 +170,7 @@ jobs {
           CANDIDATE_SHA = "${{ inputs.candidate_sha }}"
           HOST_ID = "${{ matrix.id }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/admit-exact-positive-negative-and-qualification-receipts.sh""#
+        run = ci.workflowScript("admit-exact-positive-negative-and-qualification-receipts.sh")
       }
       new Dynamic {
         name = "Preserve immutable host admission"
@@ -217,7 +217,7 @@ jobs {
           VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN_ATTEMPT = "${{ needs.plan.outputs.receipt_run_attempt }}"
           CANDIDATE_SHA = "${{ inputs.candidate_sha }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/assemble-the-exact-candidate-manifest.sh""#
+        run = ci.workflowScript("assemble-the-exact-candidate-manifest.sh")
       }
       new Dynamic {
         name = "Enforce complete exact-candidate host qualification"
@@ -228,7 +228,7 @@ jobs {
           VIZE_NEEDS_PLAN_OUTPUTS_RECEIPT_RUN_ATTEMPT = "${{ needs.plan.outputs.receipt_run_attempt }}"
           CANDIDATE_SHA = "${{ inputs.candidate_sha }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/enforce-complete-exact-candidate-host-qualification.sh""#
+        run = ci.workflowScript("enforce-complete-exact-candidate-host-qualification.sh")
       }
       new Dynamic {
         name = "Preserve the admitted manifest"

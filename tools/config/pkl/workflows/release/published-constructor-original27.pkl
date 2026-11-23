@@ -107,7 +107,7 @@ jobs {
       }
       new Dynamic {
         name = "Isolate the unchanged fixture driver"
-        run = #". "${{ env.VIZE_CI_FILES }}/isolate-the-unchanged-fixture-driver.sh""#
+        run = ci.workflowScript("isolate-the-unchanged-fixture-driver.sh")
       }
       new Dynamic {
         name = "Fresh installed-public capture without source or package overlays"
@@ -122,7 +122,7 @@ jobs {
       new Dynamic {
         name = "Preserve complete raw failures, authored files and installed SDK custody"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-complete-raw-failures-authored-files-and-installed-sdk-custody.sh""#
+        run = ci.workflowScript("preserve-complete-raw-failures-authored-files-and-installed-sdk-custody.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

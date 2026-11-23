@@ -57,7 +57,7 @@ jobs {
       }
       new Dynamic {
         name = "Fetch the exact comparison base or fail"
-        run = #". "${{ env.VIZE_CI_FILES }}/fetch-the-exact-comparison-base-or-fail.sh""#
+        run = ci.workflowScript("fetch-the-exact-comparison-base-or-fail.sh")
       }
       new Dynamic {
         name = "Validate original and ordering scope selection laws"
@@ -112,15 +112,15 @@ jobs {
       }
       new Dynamic {
         name = "Install frozen tools and prepare identical observer-only overlays"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-frozen-tools-and-prepare-identical-observer-only-overlays.sh""#
+        run = ci.workflowScript("install-frozen-tools-and-prepare-identical-observer-only-overlays.sh")
       }
       new Dynamic {
         name = "Verify linear ordering laws and complete raw node identity"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-linear-ordering-laws-and-complete-raw-node-identity.sh""#
+        run = ci.workflowScript("verify-linear-ordering-laws-and-complete-raw-node-identity.sh")
       }
       new Dynamic {
         name = "Compile actual base and head observers into isolated targets"
-        run = #". "${{ env.VIZE_CI_FILES }}/compile-actual-base-and-head-observers-into-isolated-targets.sh""#
+        run = ci.workflowScript("compile-actual-base-and-head-observers-into-isolated-targets.sh")
       }
       new Dynamic {
         name = "Compare one new pass with the old second and third passes"

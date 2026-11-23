@@ -71,7 +71,7 @@ jobs {
       new Dynamic {
         name = "Compare the packaged Node build features against the base commit"
         `if` = "matrix.suite == 'stock-addon'"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-packaged-node-build-features-against-the-base-commit.sh""#
+        run = ci.workflowScript("compare-the-packaged-node-build-features-against-the-base-commit.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -91,7 +91,7 @@ jobs {
       new Dynamic {
         name = "Compare native and Node products on original source"
         `if` = "matrix.suite == 'products'"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-native-and-node-products-on-original-source.sh""#
+        run = ci.workflowScript("compare-native-and-node-products-on-original-source.sh")
       }
     }
   }

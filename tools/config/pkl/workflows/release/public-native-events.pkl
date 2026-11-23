@@ -79,17 +79,17 @@ jobs {
       new Dynamic {
         name = "Prove tag identity and source inclusion"
         env { GH_TOKEN = "${{ github.token }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/prove-tag-identity-and-source-inclusion.sh""#
+        run = ci.workflowScript("prove-tag-identity-and-source-inclusion.sh")
       }
       new Dynamic {
         name = "Install only exact public packages in a fresh consumer"
         `working-directory` = "${{ runner.temp }}"
         env { NPM_CONFIG_REGISTRY = "https://registry.npmjs.org/" }
-        run = #". "${{ env.VIZE_CI_FILES }}/install-only-exact-public-packages-in-a-fresh-consumer.sh""#
+        run = ci.workflowScript("install-only-exact-public-packages-in-a-fresh-consumer.sh")
       }
       new Dynamic {
         name = "Compare every complete VNode packet to the frozen official oracle"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-every-complete-vnode-packet-to-the-frozen-official-oracle.sh""#
+        run = ci.workflowScript("compare-every-complete-vnode-packet-to-the-frozen-official-oracle.sh")
       }
       new Dynamic {
         name = "Preserve full evidence even on failure"
@@ -133,7 +133,7 @@ jobs {
       }
       new Dynamic {
         name = "Validate the explicit public candidate"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-the-explicit-public-candidate.sh""#
+        run = ci.workflowScript("validate-the-explicit-public-candidate.sh")
       }
       new Dynamic {
         name = "Install exact public packages in an independent fresh consumer"
@@ -150,7 +150,7 @@ jobs {
           GH_TOKEN = "${{ github.token }}"
           REQUIRED_ICON_SOURCE = "d38ab7e48514566f1776f25439e8777a9856b5a6"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/prove-the-candidate-contains-the-required-icon-source.sh""#
+        run = ci.workflowScript("prove-the-candidate-contains-the-required-icon-source.sh")
       }
       new Dynamic {
         name = "Qualify independent published icon class packets"
@@ -206,11 +206,11 @@ jobs {
       new Dynamic {
         name = "Prove the immutable tag contains the merged public-instance change"
         env { GH_TOKEN = "${{ github.token }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/prove-the-immutable-tag-contains-the-merged-public-instance-change.sh""#
+        run = ci.workflowScript("prove-the-immutable-tag-contains-the-merged-public-instance-change.sh")
       }
       new Dynamic {
         name = "Qualify fresh public custom properties and authored directive ownership"
-        run = #". "${{ env.VIZE_CI_FILES }}/qualify-fresh-public-custom-properties-and-authored-directive-ownership.sh""#
+        run = ci.workflowScript("qualify-fresh-public-custom-properties-and-authored-directive-ownership.sh")
       }
       new Dynamic {
         name = "Qualify independent published canonical SDK"

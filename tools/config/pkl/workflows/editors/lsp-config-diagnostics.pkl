@@ -65,7 +65,7 @@ jobs {
       new Dynamic {
         name = "Build and receipt the same Vue parity producer"
         id = "producer"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-same-vue-parity-producer.sh""#
+        run = ci.workflowScript("build-and-receipt-the-same-vue-parity-producer.sh")
       }
       new Dynamic {
         name = "Run the unchanged original performance case with native phase tracing"
@@ -74,37 +74,37 @@ jobs {
       new Dynamic {
         name = "Protect cold local responses and existing initial diagnostic controls"
         `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/protect-cold-local-responses-and-existing-initial-diagnostic-controls.sh""#
+        run = ci.workflowScript("protect-cold-local-responses-and-existing-initial-diagnostic-controls.sh")
       }
       new Dynamic {
         name = "Verify native preparation and request freshness laws"
         `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-native-preparation-and-request-freshness-laws.sh""#
+        run = ci.workflowScript("verify-native-preparation-and-request-freshness-laws.sh")
       }
       new Dynamic {
         name = "Verify real union ownership and reverse open-order regressions"
         `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-real-union-ownership-and-reverse-open-order-regressions.sh""#
+        run = ci.workflowScript("verify-real-union-ownership-and-reverse-open-order-regressions.sh")
       }
       new Dynamic {
         name = "Verify whole native views and issued candidate freshness with nonzero tests"
         `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-whole-native-views-and-issued-candidate-freshness-with-nonzero-te.sh""#
+        run = ci.workflowScript("verify-whole-native-views-and-issued-candidate-freshness-with-nonzero-te.sh")
       }
       new Dynamic {
         name = "Resolve the original native candidate after unchanged sibling diagnostics"
         `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/resolve-the-original-native-candidate-after-unchanged-sibling-diagnostic.sh""#
+        run = ci.workflowScript("resolve-the-original-native-candidate-after-unchanged-sibling-diagnostic.sh")
       }
       new Dynamic {
         name = "Preserve the original atomic rename and unsafe-name refusal contract"
         `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-the-original-atomic-rename-and-unsafe-name-refusal-contract.sh""#
+        run = ci.workflowScript("preserve-the-original-atomic-rename-and-unsafe-name-refusal-contract.sh")
       }
       new Dynamic {
         name = "Observe the original six symlink workspace layouts"
         `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/observe-the-original-six-symlink-workspace-layouts.sh""#
+        run = ci.workflowScript("observe-the-original-six-symlink-workspace-layouts.sh")
       }
       new Dynamic {
         name = "Retain source, binary, raw process output, native phases, and metrics"

@@ -30,7 +30,7 @@ runs {
       }
     }
     new Dynamic {
-      run = #". "$GITHUB_ACTION_PATH/scripts/install-wild.sh""#
+      run = ci.actionScript("install-wild.sh")
       shell = "bash"
       env { GITHUB_TOKEN = "${{ github.token }}" }
       `if` = "${{ runner.os == 'Linux' && runner.arch == 'X64' && inputs.wild-version == '\(assets.wild.version)' && inputs.download-retries == '5' }}"

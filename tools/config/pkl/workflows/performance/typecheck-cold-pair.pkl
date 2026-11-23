@@ -112,7 +112,7 @@ jobs {
       new Dynamic {
         name = "Validate inputs"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-inputs.sh""#
+        run = ci.workflowScript("validate-inputs.sh")
       }
       new Dynamic {
         uses = ci.checkout
@@ -130,12 +130,12 @@ jobs {
       new Dynamic {
         name = "Drop a partial wild configuration"
         `if` = "steps.wild.outcome == 'failure'"
-        run = #". "${{ env.VIZE_CI_FILES }}/drop-a-partial-wild-configuration.sh""#
+        run = ci.workflowScript("drop-a-partial-wild-configuration.sh")
       }
       new Dynamic {
         name = "Build both commits"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-both-commits.sh""#
+        run = ci.workflowScript("build-both-commits.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -164,7 +164,7 @@ jobs {
       new Dynamic {
         name = "Validate inputs"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-inputs.sh""#
+        run = ci.workflowScript("validate-inputs.sh")
       }
       new Dynamic {
         uses = ci.checkout
@@ -179,7 +179,7 @@ jobs {
       new Dynamic {
         name = "Build both commits"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-both-commits-2.sh""#
+        run = ci.workflowScript("build-both-commits-2.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -229,7 +229,7 @@ jobs {
           ALLOW = "${{ inputs.allow_output_change && '--allow-output-change' || '' }}"
           STRACE = "${{ inputs.strace && '--strace' || '' }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/measure.sh""#
+        run = ci.workflowScript("measure.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -276,7 +276,7 @@ jobs {
       new Dynamic {
         name = "Resolve the Windows mount"
         shell = "pwsh"
-        run = #". "${{ env.VIZE_CI_FILES }}/resolve-the-windows-mount.ps1""#
+        run = ci.workflowScript("resolve-the-windows-mount.ps1")
       }
       new Dynamic {
         name = "Install Node 24 in WSL2"
@@ -284,7 +284,7 @@ jobs {
         env {
           WSLENV = "VIZE_CI_FILES/p"
         }
-        run = #". "$VIZE_CI_FILES/install-node-24-in-wsl2.sh""#
+        run = ci.wslScript("install-node-24-in-wsl2.sh")
       }
       new Dynamic {
         name = "Measure ext4 and the Windows mount"
@@ -297,7 +297,7 @@ jobs {
           CHECKERS = "${{ inputs.checkers }}"
           ALLOW = "${{ inputs.allow_output_change && '--allow-output-change' || '' }}"
         }
-        run = #". "$VIZE_CI_FILES/measure-ext4-and-the-windows-mount.sh""#
+        run = ci.wslScript("measure-ext4-and-the-windows-mount.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -348,7 +348,7 @@ jobs {
           CHECKERS = "${{ inputs.checkers }}"
           ALLOW = "${{ inputs.allow_output_change && '--allow-output-change' || '' }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/measure.ps1""#
+        run = ci.workflowScript("measure.ps1")
       }
       new Dynamic {
         uses = ci.uploadArtifact

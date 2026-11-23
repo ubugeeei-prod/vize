@@ -112,11 +112,11 @@ jobs {
       }
       new Dynamic {
         name = "Materialize affected Rust plan"
-        run = #". "${{ env.VIZE_CI_FILES }}/materialize-affected-rust-plan.sh""#
+        run = ci.workflowScript("materialize-affected-rust-plan.sh")
       }
       new Dynamic {
         name = "Select Clippy and doctest runtime envelope"
-        run = #". "${{ env.VIZE_CI_FILES }}/select-clippy-and-doctest-runtime-envelope.sh""#
+        run = ci.workflowScript("select-clippy-and-doctest-runtime-envelope.sh")
       }
       new Dynamic {
         name = "Clippy affected crates"
@@ -178,7 +178,7 @@ jobs {
         name = "Require Rust source test cases"
         id = "cases"
         `if` = "${{ !cancelled() }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-source-test-cases.sh""#
+        run = ci.workflowScript("require-source-test-cases.sh")
       }
       new Dynamic {
         name = "Upload Rust source test cases"

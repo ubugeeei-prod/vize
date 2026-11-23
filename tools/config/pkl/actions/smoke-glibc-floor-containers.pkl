@@ -1,3 +1,5 @@
+import "../Actions.pkl" as ci
+
 name = "Smoke Linux GNU artifacts on old glibc"
 description = "Run the Linux GNU release artifacts inside Amazon Linux 2023 (glibc 2.34: the Vercel build image and the Vercel Functions / AWS Lambda runtime), AlmaLinux 8 (glibc 2.28: the oldest glibc official Node.js 22+ runs on) and CentOS 7 (glibc 2.17: the documented floor itself). The caller lays out npm/native/npm/<platform> and builds npm/cli, npm/builder/unplugin and npm/builder/vite first."
 inputs {
@@ -28,7 +30,7 @@ runs {
       `if` = "inputs.cli == '' && inputs.platform == 'linux-x64-gnu'"
       shell = "bash"
       env { PLATFORM = "${{ inputs.platform }}" }
-      run = #". "$GITHUB_ACTION_PATH/scripts/load-the-binding-on-centos-7-glibc-2-17.sh""#
+      run = ci.actionScript("load-the-binding-on-centos-7-glibc-2-17.sh")
     }
     new Dynamic {
       name = "Run the release CLI on glibc 2.17, 2.28 and 2.34"

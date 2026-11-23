@@ -33,7 +33,7 @@ runs {
     new Dynamic {
       name = "Hydrate CLI and fact corpus fixtures and install JS dependencies"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/hydrate-cli-and-fact-corpus-fixtures-and-install-js-dependencies.sh""#
+      run = ci.actionScript("hydrate-cli-and-fact-corpus-fixtures-and-install-js-dependencies.sh")
     }
     new Dynamic {
       uses = "./.github/actions/restore-source-cli"

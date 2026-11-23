@@ -57,7 +57,7 @@ jobs {
       new Dynamic {
         name = "Bind the complete capture to its source and driver"
         env { DRIVER_SHA = "${{ github.sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/bind-the-complete-capture-to-its-source-and-driver.sh""#
+        run = ci.workflowScript("bind-the-complete-capture-to-its-source-and-driver.sh")
       }
       ci.rust("1.100.0")
       ci.wild()
@@ -70,7 +70,7 @@ jobs {
       }
       new Dynamic {
         name = "Run both complete projection modes without accepting pending output"
-        run = #". "${{ env.VIZE_CI_FILES }}/run-both-complete-projection-modes-without-accepting-pending-output.sh""#
+        run = ci.workflowScript("run-both-complete-projection-modes-without-accepting-pending-output.sh")
       }
       new Dynamic {
         name = "Retain complete packets, original failures, and exact source identity"

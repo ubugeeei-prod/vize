@@ -95,7 +95,7 @@ jobs {
           PR_HEAD = "${{ github.event.pull_request.head.sha }}"
           EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/admit-the-exact-reviewed-source.sh""#
+        run = ci.workflowScript("admit-the-exact-reviewed-source.sh")
       }
       new Dynamic {
         uses = ci.setupNode
@@ -112,20 +112,20 @@ jobs {
       }
       new Dynamic {
         name = "Install pinned independent framework and native compilers"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-independent-framework-and-native-compilers.sh""#
+        run = ci.workflowScript("install-pinned-independent-framework-and-native-compilers.sh")
       }
       new Dynamic {
         name = "Compare actual source declaration consumers against the frozen C3 preimage"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-actual-source-declaration-consumers-against-the-frozen-c3-preima.sh""#
+        run = ci.workflowScript("compare-actual-source-declaration-consumers-against-the-frozen-c3-preima.sh")
       }
       new Dynamic {
         name = "Query intrinsic Any identities and compare complete production diagnostics"
-        run = #". "${{ env.VIZE_CI_FILES }}/query-intrinsic-any-identities-and-compare-complete-production-diagnosti.sh""#
+        run = ci.workflowScript("query-intrinsic-any-identities-and-compare-complete-production-diagnosti.sh")
       }
       new Dynamic {
         name = "Preserve raw protocol, diagnostics, type queries and source custody"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-raw-protocol-diagnostics-type-queries-and-source-custody.sh""#
+        run = ci.workflowScript("preserve-raw-protocol-diagnostics-type-queries-and-source-custody.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

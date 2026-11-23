@@ -81,11 +81,11 @@ jobs {
           VIZE_LITERAL_STYLE_CASE_CAPTURE = "${{ runner.temp }}/vapor-literal-styles/head-attribute-case.json"
           VIZE_LITERAL_STYLE_PRIORITY_CAPTURE = "${{ runner.temp }}/vapor-literal-styles/head-priority.json"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/observe-exact-source-evaluator-and-complete-compiler-packets.sh""#
+        run = ci.workflowScript("observe-exact-source-evaluator-and-complete-compiler-packets.sh")
       }
       new Dynamic {
         name = "Observe the same inputs against the actual unchanged baseline"
-        run = #". "${{ env.VIZE_CI_FILES }}/observe-the-same-inputs-against-the-actual-unchanged-baseline.sh""#
+        run = ci.workflowScript("observe-the-same-inputs-against-the-actual-unchanged-baseline.sh")
       }
       new Dynamic {
         name = "Install the independent syntax observer"
@@ -94,7 +94,7 @@ jobs {
       new Dynamic {
         name = "Compare complete packets and explicit authored module successors"
         env { VIZE_STYLE_AST_TYPESCRIPT = "${{ runner.temp }}/style-ast-provider/node_modules/typescript" }
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-complete-packets-and-explicit-authored-module-successors.sh""#
+        run = ci.workflowScript("compare-complete-packets-and-explicit-authored-module-successors.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

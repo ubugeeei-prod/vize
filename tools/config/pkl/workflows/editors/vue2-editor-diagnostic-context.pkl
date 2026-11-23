@@ -58,11 +58,11 @@ jobs {
       }
       new Dynamic {
         name = "Install pinned provider and Vue 2 fixture"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-pinned-provider-and-vue-2-fixture.sh""#
+        run = ci.workflowScript("install-pinned-provider-and-vue-2-fixture.sh")
       }
       new Dynamic {
         name = "Build exact source CLI with its receipt"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-exact-source-cli-with-its-receipt.sh""#
+        run = ci.workflowScript("build-exact-source-cli-with-its-receipt.sh")
       }
       new Dynamic {
         name = "Verify whole CLI packets and original editor edit cycles"
@@ -73,7 +73,7 @@ jobs {
           VIZE_LSP_BUILD_RECIPE = "cargo build --profile ci -p vize --features legacy"
           RAYON_NUM_THREADS = "4"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-whole-cli-packets-and-original-editor-edit-cycles.sh""#
+        run = ci.workflowScript("verify-whole-cli-packets-and-original-editor-edit-cycles.sh")
       }
       new Dynamic {
         name = "Retain complete source-built editor wires"

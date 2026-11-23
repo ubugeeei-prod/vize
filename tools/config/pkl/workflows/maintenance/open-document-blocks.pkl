@@ -49,7 +49,7 @@ jobs {
       new Dynamic {
         name = "Compare the original stages on each selected editor block and revision"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-original-stages-on-each-selected-editor-block-and-revision.sh""#
+        run = ci.workflowScript("compare-the-original-stages-on-each-selected-editor-block-and-revision.sh")
       }
     }
   }

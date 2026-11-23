@@ -43,7 +43,7 @@ jobs {
           GH_REPO = "${{ github.repository }}"
           EVIDENCE_RUN_ID = "${{ inputs.evidence_run_id }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/download-exact-sha-differential-evidence.sh""#
+        run = ci.workflowScript("download-exact-sha-differential-evidence.sh")
       }
       new Dynamic {
         name = "Check deletion readiness"

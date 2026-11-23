@@ -20,7 +20,7 @@ runs {
         VIZE_JSX_FALSY_RECEIPT = "${{ runner.temp }}/jsx-value-sensitive-runtime.json"
         VIZE_JSX_VAPOR_SLOTS_SSR_CAPTURE = "${{ runner.temp }}/jsx-vapor-runtime-slots-ssr.json"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/test-fresh-native-ssr-modules-with-pinned-vue-runtime.sh""#
+      run = ci.actionScript("test-fresh-native-ssr-modules-with-pinned-vue-runtime.sh")
     }
     new Dynamic {
       name = "Test fresh whole scriptless SFC SSR modules"
@@ -31,7 +31,7 @@ runs {
         VIZE_NATIVE_SFC_SSR_RUNTIME_CAPTURE = "${{ runner.temp }}/native-sfc-ssr-runtime.json"
         VIZE_L4_SSR_REQUIRE_NATIVE = "1"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/test-fresh-whole-scriptless-sfc-ssr-modules.sh""#
+      run = ci.actionScript("test-fresh-whole-scriptless-sfc-ssr-modules.sh")
     }
     new Dynamic {
       name = "Test fresh whole primitive setup SFC SSR modules"
@@ -42,7 +42,7 @@ runs {
         VIZE_NATIVE_SETUP_SSR_RUNTIME_CAPTURE = "${{ runner.temp }}/native-setup-ssr-runtime.json"
         VIZE_L4_SSR_REQUIRE_NATIVE = "1"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/test-fresh-whole-primitive-setup-sfc-ssr-modules.sh""#
+      run = ci.actionScript("test-fresh-whole-primitive-setup-sfc-ssr-modules.sh")
     }
     new Dynamic {
       name = "Capture genuine original input Model SSR values in both runtime modes"
@@ -55,7 +55,7 @@ runs {
         VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_PRIMARY_CAPTURE = "${{ runner.temp }}/native-original-input-model-sfc-ssr-primary"
         VIZE_NATIVE_ORIGINAL_INPUT_MODEL_SFC_SSR_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-input-model-sfc-ssr-runtime"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-genuine-original-input-model-ssr-values-in-both-runtime-modes.sh""#
+      run = ci.actionScript("capture-genuine-original-input-model-ssr-values-in-both-runtime-modes.sh")
     }
     new Dynamic {
       name = "Preserve fresh SSR modules and actual runtime outcomes"

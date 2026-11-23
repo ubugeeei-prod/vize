@@ -69,19 +69,19 @@ jobs {
       }
       new Dynamic {
         name = "Pin source and toolchain identity"
-        run = #". "${{ env.VIZE_CI_FILES }}/pin-source-and-toolchain-identity.sh""#
+        run = ci.workflowScript("pin-source-and-toolchain-identity.sh")
       }
       new Dynamic {
         name = "Select the required physical native provider"
-        run = #". "${{ env.VIZE_CI_FILES }}/select-the-required-physical-native-provider.sh""#
+        run = ci.workflowScript("select-the-required-physical-native-provider.sh")
       }
       new Dynamic {
         name = "Require native visibility and three-process storage acceptance"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-native-visibility-and-three-process-storage-acceptance.sh""#
+        run = ci.workflowScript("require-native-visibility-and-three-process-storage-acceptance.sh")
       }
       new Dynamic {
         name = "Require exact batch packets and linked-target ownership invariants"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-exact-batch-packets-and-linked-target-ownership-invariants.sh""#
+        run = ci.workflowScript("require-exact-batch-packets-and-linked-target-ownership-invariants.sh")
       }
       new Dynamic {
         name = "Preserve exact native evidence paths in one portable archive"

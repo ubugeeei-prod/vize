@@ -13,7 +13,7 @@ runs {
         VIZE_NATIVE_HANDLER_LOCAL_SFC_DOM_REQUIRE_CAPTURE = "1"
         VIZE_NATIVE_HANDLER_LOCAL_SFC_DOM_RUNTIME_CAPTURE = "${{ runner.temp }}/native-handler-local-sfc-dom-runtime.json"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/capture-and-execute-original-block-local-handler-components.sh""#
+      run = ci.actionScript("capture-and-execute-original-block-local-handler-components.sh")
     }
     new Dynamic {
       name = "Upload original local-handler whole components and runtime"

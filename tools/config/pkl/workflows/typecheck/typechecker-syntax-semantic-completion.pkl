@@ -31,7 +31,7 @@ jobs {
       ci.checkoutAt("${{ env.QUALIFIER_SHA }}")
       new Dynamic {
         name = "Authenticate the complete source"
-        run = #". "${{ env.VIZE_CI_FILES }}/authenticate-the-complete-source.sh""#
+        run = ci.workflowScript("authenticate-the-complete-source.sh")
       }
       new Dynamic {
         name = "Original complete App E2E check row, sharing its native build"
@@ -57,7 +57,7 @@ jobs {
           VIZE_TEST_REQUIRE_PIN_INPUT_FIXTURE = "1"
           VIZE_NATIVE_SYNTAX_CAPTURE_DIR = "${{ github.workspace }}/target/native-syntax-completion/packets"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/actual-generator-and-native-completion-controls.sh""#
+        run = ci.workflowScript("actual-generator-and-native-completion-controls.sh")
       }
       new Dynamic {
         name = "Retain all whole-source qualification packets"

@@ -53,19 +53,19 @@ jobs {
       ci.wild()
       new Dynamic {
         name = "Authenticate actual merge parents and untouched normal products"
-        run = #". "${{ env.VIZE_CI_FILES }}/authenticate-actual-merge-parents-and-untouched-normal-products.sh""#
+        run = ci.workflowScript("authenticate-actual-merge-parents-and-untouched-normal-products.sh")
       }
       new Dynamic {
         name = "Add identical explicit profiling-only source observers"
-        run = #". "${{ env.VIZE_CI_FILES }}/add-identical-explicit-profiling-only-source-observers.sh""#
+        run = ci.workflowScript("add-identical-explicit-profiling-only-source-observers.sh")
       }
       new Dynamic {
         name = "Compare full packets and fresh normal mapper processes"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-full-packets-and-fresh-normal-mapper-processes.sh""#
+        run = ci.workflowScript("compare-full-packets-and-fresh-normal-mapper-processes.sh")
       }
       new Dynamic {
         name = "Require immutable complete constructor packets"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-immutable-complete-constructor-packets.sh""#
+        run = ci.workflowScript("require-immutable-complete-constructor-packets.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

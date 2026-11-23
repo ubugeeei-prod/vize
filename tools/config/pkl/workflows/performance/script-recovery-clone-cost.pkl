@@ -61,7 +61,7 @@ jobs {
       }
       new Dynamic {
         name = "Check full parser packets and source laws without timing qualification"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-full-parser-packets-and-source-laws-without-timing-qualification.sh""#
+        run = ci.workflowScript("check-full-parser-packets-and-source-laws-without-timing-qualification.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -106,15 +106,15 @@ jobs {
       }
       new Dynamic {
         name = "Preserve the immutable profile-only pair and shared carrier"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-the-immutable-profile-only-pair-and-shared-carrier.sh""#
+        run = ci.workflowScript("preserve-the-immutable-profile-only-pair-and-shared-carrier.sh")
       }
       new Dynamic {
         name = "Build independent instrumented roles and admit the small allocation law"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-independent-instrumented-roles-and-admit-the-small-allocation-law.sh""#
+        run = ci.workflowScript("build-independent-instrumented-roles-and-admit-the-small-allocation-law.sh")
       }
       new Dynamic {
         name = "Enforce allocation and parse-call laws on huge authored sources"
-        run = #". "${{ env.VIZE_CI_FILES }}/enforce-allocation-and-parse-call-laws-on-huge-authored-sources.sh""#
+        run = ci.workflowScript("enforce-allocation-and-parse-call-laws-on-huge-authored-sources.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -182,23 +182,23 @@ jobs {
       }
       new Dynamic {
         name = "Preserve exact source identities and the shared benchmark carrier"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-exact-source-identities-and-the-shared-benchmark-carrier.sh""#
+        run = ci.workflowScript("preserve-exact-source-identities-and-the-shared-benchmark-carrier.sh")
       }
       new Dynamic {
         name = "Compare complete parser packets and exact source counter controls"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-complete-parser-packets-and-exact-source-counter-controls.sh""#
+        run = ci.workflowScript("compare-complete-parser-packets-and-exact-source-counter-controls.sh")
       }
       new Dynamic {
         name = "Build independent baseline and candidate targets with equal flags"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-independent-baseline-and-candidate-targets-with-equal-flags.sh""#
+        run = ci.workflowScript("build-independent-baseline-and-candidate-targets-with-equal-flags.sh")
       }
       new Dynamic {
         name = "Admit the small carrier before the huge-file matrix"
-        run = #". "${{ env.VIZE_CI_FILES }}/admit-the-small-carrier-before-the-huge-file-matrix.sh""#
+        run = ci.workflowScript("admit-the-small-carrier-before-the-huge-file-matrix.sh")
       }
       new Dynamic {
         name = "Measure actual-code Unicode and CRLF sources on each size axis"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-actual-code-unicode-and-crlf-sources-on-each-size-axis.sh""#
+        run = ci.workflowScript("measure-actual-code-unicode-and-crlf-sources-on-each-size-axis.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

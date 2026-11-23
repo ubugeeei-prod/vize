@@ -72,16 +72,16 @@ jobs {
           key = "native-navigation-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}"
         }
       }
-      ci.command("Select tracked original Vue inputs", #". "${{ env.VIZE_CI_FILES }}/select-tracked-original-vue-inputs.sh""#)
+      ci.command("Select tracked original Vue inputs", ci.workflowScript("select-tracked-original-vue-inputs.sh"))
       new Dynamic {
         name = "Check real File membership and complete editor responses"
         `if` = "matrix.suite == 'correctness'"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-real-file-membership-and-complete-editor-responses.sh""#
+        run = ci.workflowScript("check-real-file-membership-and-complete-editor-responses.sh")
       }
       new Dynamic {
         name = "Measure complete requests through the editor mailbox"
         `if` = "matrix.suite == 'performance'"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-complete-requests-through-the-editor-mailbox.sh""#
+        run = ci.workflowScript("measure-complete-requests-through-the-editor-mailbox.sh")
       }
     }
   }

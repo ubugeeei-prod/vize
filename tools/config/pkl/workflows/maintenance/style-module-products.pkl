@@ -112,16 +112,16 @@ jobs {
           key = "style-module-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}"
         }
       }
-      ci.command("Select original Vue sources", #". "${{ env.VIZE_CI_FILES }}/select-original-vue-sources.sh""#)
+      ci.command("Select original Vue sources", ci.workflowScript("select-original-vue-sources.sh"))
       new Dynamic {
         name = "Compare original checker options and completion responses"
         `if` = "matrix.suite == 'correctness'"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-checker-options-and-completion-responses.sh""#
+        run = ci.workflowScript("compare-original-checker-options-and-completion-responses.sh")
       }
       new Dynamic {
         name = "Measure complete original and shared member requests"
         `if` = "matrix.suite == 'performance'"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-complete-original-and-shared-member-requests.sh""#
+        run = ci.workflowScript("measure-complete-original-and-shared-member-requests.sh")
       }
     }
   }
@@ -159,11 +159,11 @@ jobs {
       }
       new Dynamic {
         name = "Install the repository's pinned Sass implementation"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-repository-s-pinned-sass-implementation.sh""#
+        run = ci.workflowScript("install-the-repository-s-pinned-sass-implementation.sh")
       }
       new Dynamic {
         name = "Compare the original preprocessor, shared products and authored editor locations"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-the-original-preprocessor-shared-products-and-authored-editor-locations.sh""#
+        run = ci.workflowScript("compare-the-original-preprocessor-shared-products-and-authored-editor-locations.sh")
       }
     }
   }
@@ -185,7 +185,7 @@ jobs {
       }
       new Dynamic {
         name = "Verify authored positions for arbitrary finite Unicode text"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-authored-positions-for-arbitrary-finite-unicode-text.sh""#
+        run = ci.workflowScript("verify-authored-positions-for-arbitrary-finite-unicode-text.sh")
       }
     }
   }

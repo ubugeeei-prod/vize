@@ -72,7 +72,7 @@ jobs {
         }
       }
       new Dynamic {
-        run = #". "${{ env.VIZE_CI_FILES }}/native-runtime-options-baseline-cp-qualification-tests-tooling-native-sf.sh""#
+        run = ci.workflowScript("native-runtime-options-baseline-cp-qualification-tests-tooling-native-sf.sh")
       }
       ci.workspaceVp()
       ci.rust("1.99.1")
@@ -92,12 +92,12 @@ jobs {
       ci.command("Build the actual source-native package", "vp run --filter './npm/native' build:ci")
       new Dynamic {
         name = "Seal the selected image and exact source"
-        run = #". "${{ env.VIZE_CI_FILES }}/seal-the-selected-image-and-exact-source.sh""#
+        run = ci.workflowScript("seal-the-selected-image-and-exact-source.sh")
       }
       new Dynamic {
         name = "Verify runtime option transport and complete code/maps"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-runtime-option-transport-and-complete-code-maps.sh""#
+        run = ci.workflowScript("verify-runtime-option-transport-and-complete-code-maps.sh")
       }
       new Dynamic {
         name = "Preserve source identity and all observations"
@@ -149,11 +149,11 @@ jobs {
       ci.command("Build the actual source-native package", "vp run --filter './npm/native' build:ci")
       new Dynamic {
         name = "Seal the selected image and exact source"
-        run = #". "${{ env.VIZE_CI_FILES }}/seal-the-selected-image-and-exact-source.sh""#
+        run = ci.workflowScript("seal-the-selected-image-and-exact-source.sh")
       }
       new Dynamic {
         name = "Install the actual DOM runtime for standalone execution"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-actual-dom-runtime-for-standalone-execution.sh""#
+        run = ci.workflowScript("install-the-actual-dom-runtime-for-standalone-execution.sh")
       }
       new Dynamic {
         name = "Read the whole before-source packets"
@@ -166,7 +166,7 @@ jobs {
       new Dynamic {
         name = "Verify runtime option transport and complete code/maps"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-runtime-option-transport-and-complete-code-maps-2.sh""#
+        run = ci.workflowScript("verify-runtime-option-transport-and-complete-code-maps-2.sh")
       }
       new Dynamic {
         name = "Preserve source identity and all observations"

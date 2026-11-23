@@ -79,7 +79,7 @@ jobs {
       new Dynamic {
         name = "Resolve the latest immutable public preview version"
         id = "preview"
-        run = #". "${{ env.VIZE_CI_FILES }}/resolve-the-latest-immutable-public-preview-version.sh""#
+        run = ci.workflowScript("resolve-the-latest-immutable-public-preview-version.sh")
       }
       new Dynamic {
         name = "Generate a PR preview from that public release"

@@ -80,7 +80,7 @@ jobs {
       new Dynamic {
         name = "Read the package version"
         id = "version"
-        run = #". "${{ env.VIZE_CI_FILES }}/read-the-package-version.sh""#
+        run = ci.workflowScript("read-the-package-version.sh")
       }
       new Dynamic {
         name = "Build the release native binding (gates the glibc floor)"
@@ -94,16 +94,16 @@ jobs {
       }
       new Dynamic {
         name = "Install packed runtime dependencies"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-packed-runtime-dependencies.sh""#
+        run = ci.workflowScript("install-packed-runtime-dependencies.sh")
       }
       new Dynamic {
         name = "Prepare the native platform package"
         env { NATIVE_PLATFORM = "${{ matrix.platform }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/prepare-the-native-platform-package.sh""#
+        run = ci.workflowScript("prepare-the-native-platform-package.sh")
       }
       new Dynamic {
         name = "Build packed runtime packages"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-packed-runtime-packages.sh""#
+        run = ci.workflowScript("build-packed-runtime-packages.sh")
       }
       new Dynamic {
         uses = "./.github/actions/smoke-glibc-floor-containers"
@@ -145,7 +145,7 @@ jobs {
       new Dynamic {
         name = "Read the package version"
         id = "version"
-        run = #". "${{ env.VIZE_CI_FILES }}/read-the-package-version.sh""#
+        run = ci.workflowScript("read-the-package-version.sh")
       }
       new Dynamic {
         name = "Build the release CLI (gates the glibc floor)"
@@ -200,7 +200,7 @@ jobs {
       new Dynamic {
         name = "Unpack the release CLI"
         env { TARGET = "${{ matrix.target }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/unpack-the-release-cli.sh""#
+        run = ci.workflowScript("unpack-the-release-cli.sh")
       }
       new Dynamic {
         uses = "./.github/actions/smoke-glibc-floor-containers"

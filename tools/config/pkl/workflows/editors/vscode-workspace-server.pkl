@@ -52,7 +52,7 @@ jobs {
       ci.command("Package and validate the production VSIX", "vp run --workspace-root package:vscode-extension")
       new Dynamic {
         name = "Ensure virtual display"
-        run = #". "${{ env.VIZE_CI_FILES }}/ensure-virtual-display.sh""#
+        run = ci.workflowScript("ensure-virtual-display.sh")
       }
       new Dynamic {
         name = "Run installed VSIX with the pinned workspace engine"

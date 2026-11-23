@@ -47,7 +47,7 @@ jobs {
           REQUESTED_BASE = "${{ github.event.pull_request.base.sha || inputs.base_sha }}"
           REQUESTED_HEAD = "${{ github.event.pull_request.head.sha || github.sha }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/select-and-record-exact-comparison-commits.sh""#
+        run = ci.workflowScript("select-and-record-exact-comparison-commits.sh")
       }
       new Dynamic {
         uses = ci.setupRust
@@ -62,7 +62,7 @@ jobs {
       // and this job checks the repository out under head/.
       new Dynamic {
         name = "Expose the nested target action at the workspace root"
-        run = #". "${{ env.VIZE_CI_FILES }}/expose-the-nested-target-action-at-the-workspace-root.sh""#
+        run = ci.workflowScript("expose-the-nested-target-action-at-the-workspace-root.sh")
       }
       new Dynamic {
         uses = "./head/.github/actions/setup-rust-sticky-cache"
@@ -75,19 +75,19 @@ jobs {
       new Dynamic {
         name = "Focused production regressions and lint"
         `working-directory` = "head"
-        run = #". "${{ env.VIZE_CI_FILES }}/focused-production-regressions-and-lint.sh""#
+        run = ci.workflowScript("focused-production-regressions-and-lint.sh")
       }
       new Dynamic {
         name = "Install identical measurement harness on baseline"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-identical-measurement-harness-on-baseline.sh""#
+        run = ci.workflowScript("install-identical-measurement-harness-on-baseline.sh")
       }
       new Dynamic {
         name = "Build exact production base and head"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-exact-production-base-and-head.sh""#
+        run = ci.workflowScript("build-exact-production-base-and-head.sh")
       }
       new Dynamic {
         name = "Alternate measurements and check graph parity"
-        run = #". "${{ env.VIZE_CI_FILES }}/alternate-measurements-and-check-graph-parity.sh""#
+        run = ci.workflowScript("alternate-measurements-and-check-graph-parity.sh")
       }
       new Dynamic {
         name = "Upload raw samples"

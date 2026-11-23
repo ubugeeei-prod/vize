@@ -1,3 +1,5 @@
+import "../Actions.pkl" as ci
+
 name = "Restore the same-run source-built CLI and SFC oracle"
 description = "Preserve producer custody and bind a separate immutable consumer attempt."
 inputs {
@@ -32,7 +34,7 @@ runs {
         SOURCE_CLI_PRODUCER_ATTEMPT = "${{ steps.producer.outputs.producer-attempt }}"
         SOURCE_CLI_RECEIPT_SHA256 = "${{ steps.producer.outputs.receipt-sha256 }}"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/validate-and-install-original-producer-binaries-and-receipt.sh""#
+      run = ci.actionScript("validate-and-install-original-producer-binaries-and-receipt.sh")
     }
   }
 }

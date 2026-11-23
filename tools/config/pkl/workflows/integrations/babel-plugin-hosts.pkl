@@ -70,11 +70,11 @@ jobs {
       ci.use("./.github/actions/setup-rust-script")
       new Dynamic {
         name = "Install frozen source and exact isolated host graphs"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-frozen-source-and-exact-isolated-host-graphs.sh""#
+        run = ci.workflowScript("install-frozen-source-and-exact-isolated-host-graphs.sh")
       }
       new Dynamic {
         name = "Build the actual source compiler and both public package entrypoints"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-actual-source-compiler-and-both-public-package-entrypoints.sh""#
+        run = ci.workflowScript("build-the-actual-source-compiler-and-both-public-package-entrypoints.sh")
       }
       new Dynamic {
         name = "Check actual packed Babel 7 and 8 ESM and CommonJS consumers"
@@ -82,7 +82,7 @@ jobs {
           VIZE_BABEL_NATIVE_ROOT = "${{ github.workspace }}/npm/native"
           VIZE_BABEL_HOST_OUTPUT = "${{ runner.temp }}/babel-plugin/hosts"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/check-actual-packed-babel-7-and-8-esm-and-commonjs-consumers.sh""#
+        run = ci.workflowScript("check-actual-packed-babel-7-and-8-esm-and-commonjs-consumers.sh")
       }
       new Dynamic {
         name = "Measure complete host transforms and the real native-call boundary"
@@ -91,7 +91,7 @@ jobs {
           VIZE_BABEL_NATIVE_ROOT = "${{ github.workspace }}/npm/native"
           VIZE_BABEL_PROFILE_OUTPUT = "${{ runner.temp }}/babel-plugin/profile.json"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-complete-host-transforms-and-the-real-native-call-boundary.sh""#
+        run = ci.workflowScript("measure-complete-host-transforms-and-the-real-native-call-boundary.sh")
       }
       new Dynamic {
         name = "Qualify eight supported client SSR and hydration rows"
@@ -101,7 +101,7 @@ jobs {
           VIZE_BABEL_RUNTIME_OUTPUT = "${{ runner.temp }}/babel-plugin/runtime"
           VIZE_BABEL_RUNTIME_ROLE = "supported"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/qualify-eight-supported-client-ssr-and-hydration-rows.sh""#
+        run = ci.workflowScript("qualify-eight-supported-client-ssr-and-hydration-rows.sh")
       }
       new Dynamic {
         name = "Qualify additive actual native CSSOM and HTML style guards"
@@ -110,7 +110,7 @@ jobs {
           VIZE_BABEL_NATIVE_ROOT = "${{ github.workspace }}/npm/native"
           VIZE_BABEL_STYLE_GUARD_OUTPUT = "${{ runner.temp }}/babel-plugin/style-guards"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/qualify-additive-actual-native-cssom-and-html-style-guards.sh""#
+        run = ci.workflowScript("qualify-additive-actual-native-cssom-and-html-style-guards.sh")
       }
       new Dynamic {
         name = "Check package source and declarations"

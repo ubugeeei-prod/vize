@@ -241,7 +241,7 @@ jobs {
         name = "File canonical divergence issue"
         env { GH_TOKEN = "${{ github.token }}" }
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/file-canonical-divergence-issue.sh""#
+        run = ci.workflowScript("file-canonical-divergence-issue.sh")
       }
     }
   }

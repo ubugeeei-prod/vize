@@ -122,7 +122,7 @@ jobs {
           BASE = "${{ inputs.base }}"
           HEAD = "${{ inputs.head || github.sha }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/shas.sh""#
+        run = ci.workflowScript("shas.sh")
       }
     }
   }
@@ -151,7 +151,7 @@ jobs {
       ...ci.stageWorkflowScripts("content-mapper-replay")
       new Dynamic {
         name = "Validate inputs"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-inputs.sh""#
+        run = ci.workflowScript("validate-inputs.sh")
       }
       new Dynamic {
         uses = ci.checkout
@@ -171,7 +171,7 @@ jobs {
       new Dynamic {
         name = "Build"
         `if` = "env.VARIANT == 'cli' || env.PROFILE_INPUT == 'true'"
-        run = #". "${{ env.VIZE_CI_FILES }}/build.sh""#
+        run = ci.workflowScript("build.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -204,7 +204,7 @@ jobs {
       ...ci.stageWorkflowScripts("content-mapper-replay")
       new Dynamic {
         name = "Validate inputs"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-inputs-2.sh""#
+        run = ci.workflowScript("validate-inputs-2.sh")
       }
       new Dynamic {
         uses = ci.checkout
@@ -235,35 +235,35 @@ jobs {
       }
       new Dynamic {
         name = "Hydrate the corpora and install the locked hosts and corpus packages"
-        run = #". "${{ env.VIZE_CI_FILES }}/hydrate-the-corpora-and-install-the-locked-hosts-and-corpus-packages.sh""#
+        run = ci.workflowScript("hydrate-the-corpora-and-install-the-locked-hosts-and-corpus-packages.sh")
       }
       new Dynamic {
         name = "Build the npm launcher and the native binding for base and head"
         `if` = "env.LAUNCHER == 'true'"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-npm-launcher-and-the-native-binding-for-base-and-head.sh""#
+        run = ci.workflowScript("build-the-npm-launcher-and-the-native-binding-for-base-and-head.sh")
       }
       new Dynamic {
         name = "Record tsc's request streams"
-        run = #". "${{ env.VIZE_CI_FILES }}/record-tsc-s-request-streams.sh""#
+        run = ci.workflowScript("record-tsc-s-request-streams.sh")
       }
       new Dynamic {
         name = "Replay"
-        run = #". "${{ env.VIZE_CI_FILES }}/replay.sh""#
+        run = ci.workflowScript("replay.sh")
       }
       new Dynamic {
         name = "Host runs through a timing proxy"
         `if` = "env.HOST_RUNS != '0'"
-        run = #". "${{ env.VIZE_CI_FILES }}/host-runs-through-a-timing-proxy.sh""#
+        run = ci.workflowScript("host-runs-through-a-timing-proxy.sh")
       }
       new Dynamic {
         name = "Count allocations"
         `if` = "env.PROFILE == 'true'"
-        run = #". "${{ env.VIZE_CI_FILES }}/count-allocations.sh""#
+        run = ci.workflowScript("count-allocations.sh")
       }
       new Dynamic {
         name = "Profile the head CLI and count syscalls"
         `if` = "env.PROFILE == 'true'"
-        run = #". "${{ env.VIZE_CI_FILES }}/profile-the-head-cli-and-count-syscalls.sh""#
+        run = ci.workflowScript("profile-the-head-cli-and-count-syscalls.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

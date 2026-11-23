@@ -65,15 +65,15 @@ jobs {
       new Dynamic {
         name = "Capture exact backend maps and code equality"
         env { VIZE_JSX_BACKEND_ORIGIN_CAPTURE = "${{ runner.temp }}/jsx-backend-origins/origins.json" }
-        run = #". "${{ env.VIZE_CI_FILES }}/capture-exact-backend-maps-and-code-equality.sh""#
+        run = ci.workflowScript("capture-exact-backend-maps-and-code-equality.sh")
       }
       new Dynamic {
         name = "Measure complete default backends before and after the source change"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-complete-default-backends-before-and-after-the-source-change.sh""#
+        run = ci.workflowScript("measure-complete-default-backends-before-and-after-the-source-change.sh")
       }
       new Dynamic {
         name = "Compare whole backend outputs and report measured default overhead"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-whole-backend-outputs-and-report-measured-default-overhead.sh""#
+        run = ci.workflowScript("compare-whole-backend-outputs-and-report-measured-default-overhead.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

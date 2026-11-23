@@ -46,7 +46,7 @@ jobs {
       }
       new Dynamic {
         name = "Build vize CLI and SFC oracle with original receipts"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-vize-cli-and-sfc-oracle-with-original-receipts.sh""#
+        run = ci.workflowScript("build-vize-cli-and-sfc-oracle-with-original-receipts.sh")
       }
       new Dynamic {
         name = "Pack original source binaries and receipt"

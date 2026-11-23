@@ -94,7 +94,7 @@ jobs {
       }
       new Dynamic {
         name = "Ensure the native process observer"
-        run = #". "${{ env.VIZE_CI_FILES }}/ensure-the-native-process-observer.sh""#
+        run = ci.workflowScript("ensure-the-native-process-observer.sh")
       }
       new Dynamic {
         name = "Install the frozen real Vue fixture dependency"
@@ -111,7 +111,7 @@ jobs {
           VIZE_COMPARE_HISTORICAL = "${{ inputs.historical }}"
           VIZE_PACKAGE_REFRESH_TRIGGER_HEAD = "${{ github.event.pull_request.head.sha || '' }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-unchanged-tests-with-one-physical-historical-sdk.sh""#
+        run = ci.workflowScript("compare-unchanged-tests-with-one-physical-historical-sdk.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -215,12 +215,12 @@ jobs {
           FEATURE = "${{ matrix.feature }}"
           INSTA_UPDATE = "new"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/check-the-complete-editor-projection-and-offset-probes.sh""#
+        run = ci.workflowScript("check-the-complete-editor-projection-and-offset-probes.sh")
       }
       new Dynamic {
         name = "Retain pending snapshots for manual review"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/retain-pending-snapshots-for-manual-review.sh""#
+        run = ci.workflowScript("retain-pending-snapshots-for-manual-review.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

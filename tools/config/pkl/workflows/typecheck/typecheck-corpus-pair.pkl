@@ -89,7 +89,7 @@ jobs {
       ...ci.stageWorkflowScripts("typecheck-corpus-pair")
       new Dynamic {
         name = "Validate inputs"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-inputs.sh""#
+        run = ci.workflowScript("validate-inputs.sh")
       }
       new Dynamic {
         uses = ci.checkout
@@ -101,11 +101,11 @@ jobs {
       ci.use("./.github/actions/setup-rust-script")
       new Dynamic {
         name = "Check out base and head beside the driver"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-out-base-and-head-beside-the-driver.sh""#
+        run = ci.workflowScript("check-out-base-and-head-beside-the-driver.sh")
       }
       new Dynamic {
         name = "Hydrate the pinned corpora and install the locked hosts and corpus packages"
-        run = #". "${{ env.VIZE_CI_FILES }}/hydrate-the-pinned-corpora-and-install-the-locked-hosts-and-corpus-packa.sh""#
+        run = ci.workflowScript("hydrate-the-pinned-corpora-and-install-the-locked-hosts-and-corpus-packa.sh")
       }
       new Dynamic {
         name = "Test the pair parsers and the byte probe"
@@ -124,13 +124,13 @@ jobs {
       }
       new Dynamic {
         name = "Build the native binding and the vize package for base and head"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-native-binding-and-the-vize-package-for-base-and-head.sh""#
+        run = ci.workflowScript("build-the-native-binding-and-the-vize-package-for-base-and-head.sh")
       }
       new Dynamic {
         name = "Measure the corpora"
         id = "measure"
         env { VIZE_PAIR_RUNNER_LABEL = ci.linux }
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-the-corpora.sh""#
+        run = ci.workflowScript("measure-the-corpora.sh")
       }
       // Reads the traced probe runs the measure step left behind.
       new Dynamic {
@@ -147,7 +147,7 @@ jobs {
       new Dynamic {
         name = "Write job summary"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/write-job-summary.sh""#
+        run = ci.workflowScript("write-job-summary.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

@@ -97,7 +97,7 @@ jobs {
       new Dynamic {
         name = "Authenticate manual request and execute original public recipe"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/authenticate-manual-request-and-execute-original-public-recipe.sh""#
+        run = ci.workflowScript("authenticate-manual-request-and-execute-original-public-recipe.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

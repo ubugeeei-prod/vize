@@ -61,13 +61,13 @@ jobs {
           PACKAGE_ROUTE_ASSOCIATED_HEAD = "${{ github.event.pull_request.head.sha || github.sha }}"
         }
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-one-fresh-canon-test-image-and-run-eight-exact-source-laws.sh""#
+        run = ci.workflowScript("build-one-fresh-canon-test-image-and-run-eight-exact-source-laws.sh")
       }
       new Dynamic {
         name = "Package source and test receipts"
         `if` = "always()"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/package-source-and-test-receipts.sh""#
+        run = ci.workflowScript("package-source-and-test-receipts.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

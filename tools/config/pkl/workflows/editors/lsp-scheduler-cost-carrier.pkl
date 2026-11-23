@@ -50,26 +50,26 @@ jobs {
           `persist-credentials` = false
         }
       }
-      new Dynamic { run = #". "${{ env.VIZE_CI_FILES }}/census-rustup-toolchain-install-rustup-show-active-too.sh""# }
+      new Dynamic { run = ci.workflowScript("census-rustup-toolchain-install-rustup-show-active-too.sh") }
       new Dynamic {
         name = "Preserve exact source and allocator custody"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-exact-source-and-allocator-custody.sh""#
+        run = ci.workflowScript("preserve-exact-source-and-allocator-custody.sh")
       }
       new Dynamic {
         name = "Calibrate then count exactly one synchronous Rust carrier"
-        run = #". "${{ env.VIZE_CI_FILES }}/calibrate-then-count-exactly-one-synchronous-rust-carrier.sh""#
+        run = ci.workflowScript("calibrate-then-count-exactly-one-synchronous-rust-carrier.sh")
       }
       new Dynamic {
         name = "Preserve all original twenty laws and indexed queue laws without profiling"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-all-original-twenty-laws-and-indexed-queue-laws-without-profili.sh""#
+        run = ci.workflowScript("preserve-all-original-twenty-laws-and-indexed-queue-laws-without-profili.sh")
       }
       new Dynamic {
         name = "Compile normal library with test hooks and operands absent"
-        run = #". "${{ env.VIZE_CI_FILES }}/compile-normal-library-with-test-hooks-and-operands-absent.sh""#
+        run = ci.workflowScript("compile-normal-library-with-test-hooks-and-operands-absent.sh")
       }
       new Dynamic {
         name = "Check shipped library without lint exceptions"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-shipped-library-without-lint-exceptions.sh""#
+        run = ci.workflowScript("check-shipped-library-without-lint-exceptions.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

@@ -80,23 +80,23 @@ jobs {
       }
       new Dynamic {
         name = "Freeze driver, original cases and source provenance"
-        run = #". "${{ env.VIZE_CI_FILES }}/freeze-driver-original-cases-and-source-provenance.sh""#
+        run = ci.workflowScript("freeze-driver-original-cases-and-source-provenance.sh")
       }
       new Dynamic {
         name = "Build immutable optimized source and frozen drivers"
         id = "build"
         `working-directory` = "source"
         env { CARGO_PROFILE_CI_OPT_DEBUG = "1" }
-        run = #". "${{ env.VIZE_CI_FILES }}/build-immutable-optimized-source-and-frozen-drivers.sh""#
+        run = ci.workflowScript("build-immutable-optimized-source-and-frozen-drivers.sh")
       }
       new Dynamic {
         name = "Compare complete observable packets and separate admission from parser work"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-complete-observable-packets-and-separate-admission-from-parser-w.sh""#
+        run = ci.workflowScript("compare-complete-observable-packets-and-separate-admission-from-parser-w.sh")
       }
-      ci.command("Install source profiler", #". "${{ env.VIZE_CI_FILES }}/install-source-profiler.sh""#)
+      ci.command("Install source profiler", ci.workflowScript("install-source-profiler.sh"))
       new Dynamic {
         name = "Count immutable-source instructions with line attribution"
-        run = #". "${{ env.VIZE_CI_FILES }}/count-immutable-source-instructions-with-line-attribution.sh""#
+        run = ci.workflowScript("count-immutable-source-instructions-with-line-attribution.sh")
       }
       new Dynamic {
         name = "Observe all private source facts and require candidate parser regressions"
@@ -105,12 +105,12 @@ jobs {
           VIZE_EXPRESSION_OVERLAP_CASES = "${{ github.workspace }}/evidence/cases"
           VIZE_EXPRESSION_OVERLAP_FACTS = "${{ github.workspace }}/evidence/private-source-facts.txt"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/observe-all-private-source-facts-and-require-candidate-parser-regression.sh""#
+        run = ci.workflowScript("observe-all-private-source-facts-and-require-candidate-parser-regression.sh")
       }
       new Dynamic {
         name = "Replay original libFuzzer address sanitizer resource regime"
         `working-directory` = "source"
-        run = #". "${{ env.VIZE_CI_FILES }}/replay-original-libfuzzer-address-sanitizer-resource-regime.sh""#
+        run = ci.workflowScript("replay-original-libfuzzer-address-sanitizer-resource-regime.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -140,7 +140,7 @@ jobs {
       }
       new Dynamic {
         name = "Require complete packet parity and at least eightfold shared-work reduction"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-complete-packet-parity-and-at-least-eightfold-shared-work-reduct.sh""#
+        run = ci.workflowScript("require-complete-packet-parity-and-at-least-eightfold-shared-work-reduct.sh")
       }
     }
   }

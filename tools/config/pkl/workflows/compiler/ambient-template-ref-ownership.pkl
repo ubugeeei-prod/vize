@@ -57,7 +57,7 @@ jobs {
       }
       new Dynamic {
         name = "Install independent pinned framework and native providers"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-independent-pinned-framework-and-native-providers.sh""#
+        run = ci.workflowScript("install-independent-pinned-framework-and-native-providers.sh")
       }
       new Dynamic {
         name = "Qualify independent framework original and repair packets"
@@ -70,7 +70,7 @@ jobs {
           VIZE_TEST_CONTENT_MAPPER_VUE = "${{ runner.temp }}/ambient-ref-provider/node_modules/vue"
           VIZE_AMBIENT_TEMPLATE_REF_CAPTURE = "${{ runner.temp }}/ambient-ref-evidence/source"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/qualify-original-native-cli-and-mapper-ownership-through-repairs.sh""#
+        run = ci.workflowScript("qualify-original-native-cli-and-mapper-ownership-through-repairs.sh")
       }
       new Dynamic {
         name = "Preserve complete packets"

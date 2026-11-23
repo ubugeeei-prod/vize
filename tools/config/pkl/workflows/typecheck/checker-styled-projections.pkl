@@ -90,7 +90,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare original CSS dependencies, checker documents, mappings and costs"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-css-dependencies-checker-documents-mappings-and-costs.sh""#
+        run = ci.workflowScript("compare-original-css-dependencies-checker-documents-mappings-and-costs.sh")
       }
     }
   }
@@ -121,7 +121,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare compiler descriptors, generated CSS and TypeScript, mappings and retained operations"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-compiler-descriptors-generated-css-and-typescript-mappings-and-r.sh""#
+        run = ci.workflowScript("compare-compiler-descriptors-generated-css-and-typescript-mappings-and-r.sh")
       }
     }
   }

@@ -78,7 +78,7 @@ jobs {
           EVENT_NAME = "${{ github.event_name }}"
           OBSERVATION_PR = "${{ github.event.pull_request.number }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/record-exact-comparison-sources.sh""#
+        run = ci.workflowScript("record-exact-comparison-sources.sh")
       }
       ci.rust("1.100.0")
       new Dynamic {
@@ -104,30 +104,30 @@ jobs {
       }
       new Dynamic {
         name = "Build normal source binaries in independent fresh targets"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-normal-source-binaries-in-independent-fresh-targets.sh""#
+        run = ci.workflowScript("build-normal-source-binaries-in-independent-fresh-targets.sh")
       }
       new Dynamic {
         name = "Validate identical normal build recipes"
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-identical-normal-build-recipes.sh""#
+        run = ci.workflowScript("validate-identical-normal-build-recipes.sh")
       }
       new Dynamic {
         name = "Generate identical public inputs and pin the native runtime"
         `working-directory` = "driver"
-        run = #". "${{ env.VIZE_CI_FILES }}/generate-identical-public-inputs-and-pin-the-native-runtime.sh""#
+        run = ci.workflowScript("generate-identical-public-inputs-and-pin-the-native-runtime.sh")
       }
       new Dynamic {
         name = "Observe alternating latency, separate memory, and binary sizes"
-        run = #". "${{ env.VIZE_CI_FILES }}/observe-alternating-latency-separate-memory-and-binary-sizes.sh""#
+        run = ci.workflowScript("observe-alternating-latency-separate-memory-and-binary-sizes.sh")
       }
       new Dynamic {
         name = "Publish the observation summary"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/publish-the-observation-summary.sh""#
+        run = ci.workflowScript("publish-the-observation-summary.sh")
       }
       new Dynamic {
         name = "Package evidence without traversing dependency symlinks"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/package-evidence-without-traversing-dependency-symlinks.sh""#
+        run = ci.workflowScript("package-evidence-without-traversing-dependency-symlinks.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

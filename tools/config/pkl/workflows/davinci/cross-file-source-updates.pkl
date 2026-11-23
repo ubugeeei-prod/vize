@@ -50,7 +50,7 @@ jobs {
       ci.command("Install frozen workspace tools", "vp install --frozen-lockfile --prefer-offline")
       new Dynamic {
         name = "Observe exact retained-owner regression packets"
-        run = #". "${{ env.VIZE_CI_FILES }}/observe-exact-retained-owner-regression-packets.sh""#
+        run = ci.workflowScript("observe-exact-retained-owner-regression-packets.sh")
       }
       new Dynamic {
         name = "Preserve complete regression packets and source identities"

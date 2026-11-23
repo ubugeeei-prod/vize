@@ -68,7 +68,7 @@ jobs {
       }
       new Dynamic {
         name = "Verify original artifacts, decisions, emitted bytes and authored links"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-original-artifacts-decisions-emitted-bytes-and-authored-links.sh""#
+        run = ci.workflowScript("verify-original-artifacts-decisions-emitted-bytes-and-authored-links.sh")
       }
     }
   }

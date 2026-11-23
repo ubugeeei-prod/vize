@@ -78,7 +78,7 @@ jobs {
       new Dynamic {
         name = "Compare retained and independent producers and the mounted reference"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-retained-and-independent-producers-and-the-mounted-reference.sh""#
+        run = ci.workflowScript("compare-retained-and-independent-producers-and-the-mounted-reference.sh")
       }
     }
   }

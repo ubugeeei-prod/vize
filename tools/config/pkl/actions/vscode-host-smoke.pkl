@@ -72,7 +72,7 @@ runs {
     new Dynamic {
       name = "Hydrate pinned create-vue fixture"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/hydrate-pinned-create-vue-fixture.sh""#
+      run = ci.actionScript("hydrate-pinned-create-vue-fixture.sh")
     }
     new Dynamic {
       name = "Install JS dependencies"
@@ -89,7 +89,7 @@ runs {
         ZED_EXTENSION_CLI_SHA = "9ee3c503a4bbbc6b4a0f8a789acca4871d773223"
         ZED_EXTENSION_CLI_SHA256 = "a6fca5ef11ff23f0ef8b03bd2453270591c9fc6c03700c3c92017e5082ada757"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/install-pinned-zed-extension-cli.sh""#
+      run = ci.actionScript("install-pinned-zed-extension-cli.sh")
     }
     new Dynamic {
       name = "Validate the Zed extension"
@@ -97,7 +97,7 @@ runs {
       `working-directory` = "editors/zed"
       // The pinned 114 MB SDK needs more than the downloader's 90s default on slower runners.
       env { VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS = "180" }
-      run = #". "$GITHUB_ACTION_PATH/scripts/validate-the-zed-extension.sh""#
+      run = ci.actionScript("validate-the-zed-extension.sh")
     }
     new Dynamic {
       name = "Install pinned Zed editor"
@@ -106,7 +106,7 @@ runs {
         ZED_VERSION = "1.27.0"
         ZED_SHA256 = "719f6bf649ea8d87961adbf728e178561bac3f598d72d7949558d1150cfc43dd"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/install-pinned-zed-editor.sh""#
+      run = ci.actionScript("install-pinned-zed-editor.sh")
     }
     new Dynamic {
       name = "Install pinned Helix"
@@ -115,7 +115,7 @@ runs {
         HELIX_VERSION = "25.07.1"
         HELIX_SHA256 = "3f08e63ecd388fff657ad39722f88bb03dcf326f1f2da2700d99e1dc40ab2e8b"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/install-pinned-helix.sh""#
+      run = ci.actionScript("install-pinned-helix.sh")
     }
     new Dynamic {
       name = "Build vize CLI"
@@ -131,7 +131,7 @@ runs {
         PREBUILT_SERVER = "${{ inputs.prebuilt-server }}"
         EXPECTED_VERSION = "${{ inputs.expected-version }}"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/install-and-verify-the-supplied-release-cli.sh""#
+      run = ci.actionScript("install-and-verify-the-supplied-release-cli.sh")
     }
     new Dynamic {
       name = "Check the Helix package with the official CLI"
@@ -141,7 +141,7 @@ runs {
         HELIX_RUNTIME = "${{ runner.temp }}/helix/runtime"
         VIZE_SERVER_PATH = "${{ github.workspace }}/target/ci/vize"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/check-the-helix-package-with-the-official-cli.sh""#
+      run = ci.actionScript("check-the-helix-package-with-the-official-cli.sh")
     }
     new Dynamic {
       name = "Stabilize Ubuntu package archive"
@@ -150,7 +150,7 @@ runs {
     new Dynamic {
       name = "Ensure xvfb is available"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/ensure-xvfb-is-available.sh""#
+      run = ci.actionScript("ensure-xvfb-is-available.sh")
     }
     new Dynamic {
       name = "Install Neovim"
@@ -159,23 +159,23 @@ runs {
         NVIM_SHA256 = "a74740047e73b2b380d63a474282814063d10650cd6cc95efa16d1713c7e616c"
         NVIM_VERSION = "v0.11.4"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/install-neovim.sh""#
+      run = ci.actionScript("install-neovim.sh")
     }
     new Dynamic {
       name = "Ensure Vim is available"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/ensure-vim-is-available.sh""#
+      run = ci.actionScript("ensure-vim-is-available.sh")
     }
     new Dynamic {
       name = "Install pinned vim-lsp"
       shell = "bash"
       env { VIM_LSP_COMMIT = "474c656659b5fb51eec6770309e0211c8aa49b5b" }
-      run = #". "$GITHUB_ACTION_PATH/scripts/install-pinned-vim-lsp.sh""#
+      run = ci.actionScript("install-pinned-vim-lsp.sh")
     }
     new Dynamic {
       name = "Ensure Emacs is available"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/ensure-emacs-is-available.sh""#
+      run = ci.actionScript("ensure-emacs-is-available.sh")
     }
     new Dynamic {
       name = "Download pinned VS Code with a total time budget"
@@ -197,7 +197,7 @@ runs {
       `if` = "inputs.prebuilt-vsix != ''"
       shell = "bash"
       env { PREBUILT_VSIX = "${{ inputs.prebuilt-vsix }}" }
-      run = #". "$GITHUB_ACTION_PATH/scripts/restore-and-verify-the-supplied-release-vsix.sh""#
+      run = ci.actionScript("restore-and-verify-the-supplied-release-vsix.sh")
     }
     new Dynamic {
       name = "Run VS Code host smoke against the real server"
@@ -212,7 +212,7 @@ runs {
         VIZE_RELEASE_HOST_WORKSPACE = "${{ inputs.release-workspace }}"
         VIZE_RELEASE_HOST_EVIDENCE = "${{ inputs.release-evidence }}"
       }
-      run = #". "$GITHUB_ACTION_PATH/scripts/run-vs-code-host-smoke-against-the-real-server.sh""#
+      run = ci.actionScript("run-vs-code-host-smoke-against-the-real-server.sh")
     }
     new Dynamic {
       name = "Retain the real host failure before fixture cleanup"

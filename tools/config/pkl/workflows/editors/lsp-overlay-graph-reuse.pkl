@@ -86,19 +86,19 @@ jobs {
       }
       new Dynamic {
         name = "Capture identical test-only instrumentation at the exact parent source"
-        run = #". "${{ env.VIZE_CI_FILES }}/capture-identical-test-only-instrumentation-at-the-exact-parent-source.sh""#
+        run = ci.workflowScript("capture-identical-test-only-instrumentation-at-the-exact-parent-source.sh")
       }
       new Dynamic {
         name = "Assert all cache, source map and lifecycle regressions at the literal candidate"
-        run = #". "${{ env.VIZE_CI_FILES }}/assert-all-cache-source-map-and-lifecycle-regressions-at-the-literal-can.sh""#
+        run = ci.workflowScript("assert-all-cache-source-map-and-lifecycle-regressions-at-the-literal-can.sh")
       }
       new Dynamic {
         name = "Require all six complete paired observation packets"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-all-six-complete-paired-observation-packets.sh""#
+        run = ci.workflowScript("require-all-six-complete-paired-observation-packets.sh")
       }
       new Dynamic {
         name = "Build and receipt the exact source server"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-exact-source-server.sh""#
+        run = ci.workflowScript("build-and-receipt-the-exact-source-server.sh")
       }
       new Dynamic {
         name = "Preserve complete real-native protocol packets and imported-type negative controls"

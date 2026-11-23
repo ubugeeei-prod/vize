@@ -141,7 +141,7 @@ jobs {
       }
       new Dynamic {
         name = "Select original Vue files for resident queries"
-        run = #". "${{ env.VIZE_CI_FILES }}/select-original-vue-files-for-resident-queries.sh""#
+        run = ci.workflowScript("select-original-vue-files-for-resident-queries.sh")
       }
       new Dynamic {
         name = "Compare every borrowed stage with the original files"

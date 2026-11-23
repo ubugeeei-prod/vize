@@ -51,7 +51,7 @@ jobs {
       new Dynamic {
         name = "Install Callgrind and matching client request headers"
         `if` = "env.MEASURE == 'true'"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-callgrind-and-matching-client-request-headers.sh""#
+        run = ci.workflowScript("install-callgrind-and-matching-client-request-headers.sh")
       }
       new Dynamic {
         uses = "./.github/actions/setup-wild-http-recovery"
@@ -73,7 +73,7 @@ jobs {
       new Dynamic {
         name = "Test default harness and client request windows"
         `if` = "env.MEASURE == 'true'"
-        run = #". "${{ env.VIZE_CI_FILES }}/test-default-harness-and-client-request-windows.sh""#
+        run = ci.workflowScript("test-default-harness-and-client-request-windows.sh")
       }
       new Dynamic {
         name = "Measure original formatter routines three times without Criterion sampling"
@@ -90,17 +90,17 @@ jobs {
         env {
           BASE_SHA = "${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-pinned-registry-and-immutable-base-ratchet.sh""#
+        run = ci.workflowScript("verify-pinned-registry-and-immutable-base-ratchet.sh")
       }
       new Dynamic {
         name = "Enforce pinned ceilings"
         `if` = "env.MEASURE == 'true'"
-        run = #". "${{ env.VIZE_CI_FILES }}/enforce-pinned-ceilings.sh""#
+        run = ci.workflowScript("enforce-pinned-ceilings.sh")
       }
       new Dynamic {
         name = "Enforce original formatter ceilings"
         `if` = "env.MEASURE == 'true'"
-        run = #". "${{ env.VIZE_CI_FILES }}/enforce-original-formatter-ceilings.sh""#
+        run = ci.workflowScript("enforce-original-formatter-ceilings.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -146,7 +146,7 @@ jobs {
       }
       new Dynamic {
         name = "Install measurement tools"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-measurement-tools.sh""#
+        run = ci.workflowScript("install-measurement-tools.sh")
       }
       new Dynamic {
         uses = "./.github/actions/setup-wild-http-recovery"
@@ -161,11 +161,11 @@ jobs {
       }
       new Dynamic {
         name = "Verify native descriptor compatibility"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-native-descriptor-compatibility.sh""#
+        run = ci.workflowScript("verify-native-descriptor-compatibility.sh")
       }
       new Dynamic {
         name = "Measure both parsers three times and enforce parity"
-        run = #". "${{ env.VIZE_CI_FILES }}/measure-both-parsers-three-times-and-enforce-parity.sh""#
+        run = ci.workflowScript("measure-both-parsers-three-times-and-enforce-parity.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

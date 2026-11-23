@@ -52,7 +52,7 @@ jobs {
       // The runner's rustup installs the toolchain pinned in rust-toolchain.toml.
       new Dynamic {
         name = "Install the repository Rust toolchain"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh""#
+        run = ci.workflowScript("install-the-repository-rust-toolchain.sh")
       }
       // No Wild: the server links with rust-lld like the shipped x86_64 Linux
       // CLI, so crates/vize/build.rs folds identical code and packs relocations.
@@ -68,7 +68,7 @@ jobs {
       // use fat LTO and one codegen unit on top of it.
       new Dynamic {
         name = "Build the measured server"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-the-measured-server.sh""#
+        run = ci.workflowScript("build-the-measured-server.sh")
       }
       new Dynamic {
         name = "Record the measured binary and build identity"
@@ -87,7 +87,7 @@ jobs {
         name = "No ceiling is loosened against the base"
         `if` = "${{ !cancelled() && github.event_name == 'pull_request' }}"
         env { BASE_SHA = "${{ github.event.pull_request.base.sha }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/no-ceiling-is-loosened-against-the-base.sh""#
+        run = ci.workflowScript("no-ceiling-is-loosened-against-the-base.sh")
       }
       new Dynamic {
         name = "The measurement holds every pinned ceiling"
@@ -97,7 +97,7 @@ jobs {
       new Dynamic {
         name = "Summarize"
         `if` = "${{ !cancelled() }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/summarize.sh""#
+        run = ci.workflowScript("summarize.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -124,7 +124,7 @@ jobs {
     }
     steps = new Listing {
       ci.use(ci.checkout)
-      ci.command("Install the repository Rust toolchain", #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain-2.sh""#)
+      ci.command("Install the repository Rust toolchain", ci.workflowScript("install-the-repository-rust-toolchain-2.sh"))
       ci.wild()
       new Dynamic {
         uses = "./.github/actions/setup-rust-sticky-cache"
@@ -144,7 +144,7 @@ jobs {
       new Dynamic {
         name = "Summarize the isolated session"
         `if` = "${{ !cancelled() }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/summarize-the-isolated-session.sh""#
+        run = ci.workflowScript("summarize-the-isolated-session.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact
@@ -170,7 +170,7 @@ jobs {
       ci.use(ci.checkout)
       ci.workspaceVp()
       ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
-      ci.command("Install the repository Rust toolchain", #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain-2.sh""#)
+      ci.command("Install the repository Rust toolchain", ci.workflowScript("install-the-repository-rust-toolchain-2.sh"))
       // No Wild: the server links with rust-lld like the shipped x86_64 Linux
       // CLI, so crates/vize/build.rs folds identical code and packs relocations.
       new Dynamic {
@@ -200,7 +200,7 @@ jobs {
       new Dynamic {
         name = "Summarize the actual scope and every process"
         `if` = "${{ !cancelled() }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/summarize-the-actual-scope-and-every-process.sh""#
+        run = ci.workflowScript("summarize-the-actual-scope-and-every-process.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

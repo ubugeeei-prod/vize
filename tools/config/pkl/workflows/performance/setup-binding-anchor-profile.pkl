@@ -62,15 +62,15 @@ jobs {
       ci.wild()
       new Dynamic {
         name = "Build role-isolated exact source observers"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-role-isolated-exact-source-observers.sh""#
+        run = ci.workflowScript("build-role-isolated-exact-source-observers.sh")
       }
       new Dynamic {
         name = "Compare fresh generation packets and allocation pressure"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-fresh-generation-packets-and-allocation-pressure.sh""#
+        run = ci.workflowScript("compare-fresh-generation-packets-and-allocation-pressure.sh")
       }
       new Dynamic {
         name = "Require complete constructor projection byte parity"
-        run = #". "${{ env.VIZE_CI_FILES }}/require-complete-constructor-projection-byte-parity.sh""#
+        run = ci.workflowScript("require-complete-constructor-projection-byte-parity.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

@@ -54,6 +54,10 @@ match on Unix. The renderer keeps existing YAML comments and layout where possib
 pnpm owns lockfiles. Upstream reproductions and historical fixture inputs keep
 their original bytes.
 
+Use `ci.workflowScript("build.sh")` for a staged workflow program and
+`ci.actionScript("build.sh")` for a composite action’s `scripts/build.sh`.
+WSL steps use `ci.wslScript("build.sh")` so Bash receives the translated path.
+
 Group workflows by purpose in the catalog. Dedicated benchmark workflows use the
 display name `Benchmark - <subject>`. Use `ShellScript.pkl` to quote command
 arguments and verify source revisions, for example `module.requireCheckout("SOURCE_SHA")`.

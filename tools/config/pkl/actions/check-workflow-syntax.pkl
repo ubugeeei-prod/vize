@@ -16,7 +16,7 @@ runs {
       name = "Install the pinned workflow checker"
       id = "install"
       shell = "bash"
-      run = #". "$GITHUB_ACTION_PATH/scripts/install-the-pinned-workflow-checker.sh""#
+      run = ci.actionScript("install-the-pinned-workflow-checker.sh")
     }
     new Dynamic {
       name = "Check complete workflow syntax"

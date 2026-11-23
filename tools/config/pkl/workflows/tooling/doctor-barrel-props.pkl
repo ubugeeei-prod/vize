@@ -63,25 +63,25 @@ jobs {
       new Dynamic {
         name = "Prepare isolated source and initially absent Cargo target"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/prepare-isolated-source-and-initially-absent-cargo-target.sh""#
+        run = ci.workflowScript("prepare-isolated-source-and-initially-absent-cargo-target.sh")
       }
       new Dynamic {
         name = "Observe exact baseline reproduction and complete JSON"
         `if` = "${{ matrix.role == 'baseline' }}"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/observe-exact-baseline-reproduction-and-complete-json.sh""#
+        run = ci.workflowScript("observe-exact-baseline-reproduction-and-complete-json.sh")
       }
       new Dynamic {
         name = "Verify source rule and complete CLI contracts"
         `if` = "${{ matrix.role == 'source' }}"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/verify-source-rule-and-complete-cli-contracts.sh""#
+        run = ci.workflowScript("verify-source-rule-and-complete-cli-contracts.sh")
       }
       new Dynamic {
         name = "Preserve binary identity"
         `if` = "${{ always() }}"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-binary-identity.sh""#
+        run = ci.workflowScript("preserve-binary-identity.sh")
       }
       new Dynamic {
         name = "Preserve every complete report and measurement"

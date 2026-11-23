@@ -103,7 +103,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare original reference packets and allocation windows"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-reference-packets-and-allocation-windows.sh""#
+        run = ci.workflowScript("compare-original-reference-packets-and-allocation-windows.sh")
       }
     }
   }
@@ -132,7 +132,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare project render sites and ordered dependency targets"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-project-render-sites-and-ordered-dependency-targets.sh""#
+        run = ci.workflowScript("compare-project-render-sites-and-ordered-dependency-targets.sh")
       }
     }
   }
@@ -163,7 +163,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare original component props and editor diagnostics"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-component-props-and-editor-diagnostics.sh""#
+        run = ci.workflowScript("compare-original-component-props-and-editor-diagnostics.sh")
       }
     }
   }
@@ -193,7 +193,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare every original listener, semantic edit and paired resident request"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-every-original-listener-semantic-edit-and-paired-resident-request.sh""#
+        run = ci.workflowScript("compare-every-original-listener-semantic-edit-and-paired-resident-request.sh")
       }
     }
   }
@@ -235,7 +235,7 @@ jobs {
       }
       new Dynamic {
         name = "Compare original OXC symbols, component listeners and public editor requests"
-        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-oxc-symbols-component-listeners-and-public-editor-requests.sh""#
+        run = ci.workflowScript("compare-original-oxc-symbols-component-listeners-and-public-editor-requests.sh")
       }
     }
   }

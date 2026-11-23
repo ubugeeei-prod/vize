@@ -78,7 +78,7 @@ jobs {
           QUOTA_SOURCE = "${{ inputs.sha }}"
           GH_TOKEN = "${{ github.token }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/read-histories-from-staged-tooling-against-the-selected-source-without-p.sh""#
+        run = ci.workflowScript("read-histories-from-staged-tooling-against-the-selected-source-without-p.sh")
       }
       new Dynamic {
         name = "Require legacy 0.602 automatic recovery refusal without fabricated authority"
@@ -116,7 +116,7 @@ jobs {
       ci.checkoutAt("${{ inputs.tag }}")
       new Dynamic {
         name = "Check the release identity"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-the-release-identity.sh""#
+        run = ci.workflowScript("check-the-release-identity.sh")
       }
       new Dynamic {
         uses = ci.setupNode
@@ -128,7 +128,7 @@ jobs {
       new Dynamic {
         name = "Wait for npm and smoke the published CLI"
         env { RELEASE_PACKAGES = "${{ inputs.packages }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/wait-for-npm-and-smoke-the-published-cli.sh""#
+        run = ci.workflowScript("wait-for-npm-and-smoke-the-published-cli.sh")
       }
     }
   }
@@ -260,7 +260,7 @@ jobs {
           JSR_VERSION = "${{ inputs.tag }}"
           JSR_SOURCE = "${{ inputs.sha }}"
         }
-        run = #". "${{ env.VIZE_CI_FILES }}/dispatch-release-jsr-yml.sh""#
+        run = ci.workflowScript("dispatch-release-jsr-yml.sh")
       }
     }
   }

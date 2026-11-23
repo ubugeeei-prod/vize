@@ -75,7 +75,7 @@ jobs {
         id = "next"
         name = "Read the version the next release stamps"
         shell = "bash"
-        run = #". "${{ env.VIZE_CI_FILES }}/read-the-version-the-next-release-stamps.sh""#
+        run = ci.workflowScript("read-the-version-the-next-release-stamps.sh")
       }
     }
   }

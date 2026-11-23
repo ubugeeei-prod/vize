@@ -50,24 +50,24 @@ jobs {
       ci.wild()
       new Dynamic {
         name = "Build one exact normal source CLI and preserve Cargo identity"
-        run = #". "${{ env.VIZE_CI_FILES }}/build-one-exact-normal-source-cli-and-preserve-cargo-identity.sh""#
+        run = ci.workflowScript("build-one-exact-normal-source-cli-and-preserve-cargo-identity.sh")
       }
       new Dynamic {
         name = "Install one pinned independent public framework provider"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-one-pinned-independent-public-framework-provider.sh""#
+        run = ci.workflowScript("install-one-pinned-independent-public-framework-provider.sh")
       }
       new Dynamic {
         name = "Check the pinned complete batch-diagnostic fixture with the same native compiler"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-the-pinned-complete-batch-diagnostic-fixture-with-the-same-native.sh""#
+        run = ci.workflowScript("check-the-pinned-complete-batch-diagnostic-fixture-with-the-same-native.sh")
       }
       new Dynamic {
         name = "Preserve published false negatives and prove source invalid poison repair"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-published-false-negatives-and-prove-source-invalid-poison-repai.sh""#
+        run = ci.workflowScript("preserve-published-false-negatives-and-prove-source-invalid-poison-repai.sh")
       }
       new Dynamic {
         name = "Package raw provider input configurations whole packets and compiler receipts"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/package-raw-provider-input-configurations-whole-packets-and-compiler-rec.sh""#
+        run = ci.workflowScript("package-raw-provider-input-configurations-whole-packets-and-compiler-rec.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

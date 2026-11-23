@@ -73,43 +73,43 @@ jobs {
       new Dynamic {
         name = "Prepare the isolated public consumer"
         `working-directory` = "${{ github.workspace }}"
-        run = #". "${{ env.VIZE_CI_FILES }}/prepare-the-isolated-public-consumer.sh""#
+        run = ci.workflowScript("prepare-the-isolated-public-consumer.sh")
       }
       new Dynamic {
         name = "Install the public JSR package (Node)"
         `working-directory` = "${{ runner.temp }}/jsr-public-consumer"
         `if` = "matrix.runtime == 'node'"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-public-jsr-package-node.sh""#
+        run = ci.workflowScript("install-the-public-jsr-package-node.sh")
       }
       new Dynamic {
         name = "Check the public types and execute every entry point (Node)"
         `working-directory` = "${{ runner.temp }}/jsr-public-consumer"
         `if` = "matrix.runtime == 'node'"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-the-public-types-and-execute-every-entry-point-node.sh""#
+        run = ci.workflowScript("check-the-public-types-and-execute-every-entry-point-node.sh")
       }
       new Dynamic {
         name = "Install the public JSR package (Bun)"
         `working-directory` = "${{ runner.temp }}/jsr-public-consumer"
         `if` = "matrix.runtime == 'bun'"
-        run = #". "${{ env.VIZE_CI_FILES }}/install-the-public-jsr-package-bun.sh""#
+        run = ci.workflowScript("install-the-public-jsr-package-bun.sh")
       }
       new Dynamic {
         name = "Check the public types and execute every entry point (Bun)"
         `working-directory` = "${{ runner.temp }}/jsr-public-consumer"
         `if` = "matrix.runtime == 'bun'"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-the-public-types-and-execute-every-entry-point-bun.sh""#
+        run = ci.workflowScript("check-the-public-types-and-execute-every-entry-point-bun.sh")
       }
       new Dynamic {
         name = "Check the public types and execute every entry point (Deno)"
         `working-directory` = "${{ runner.temp }}/jsr-public-consumer"
         `if` = "matrix.runtime == 'deno'"
-        run = #". "${{ env.VIZE_CI_FILES }}/check-the-public-types-and-execute-every-entry-point-deno.sh""#
+        run = ci.workflowScript("check-the-public-types-and-execute-every-entry-point-deno.sh")
       }
       new Dynamic {
         name = "Preserve public metadata and dependency locks"
         `working-directory` = "${{ runner.temp }}/jsr-public-consumer"
         `if` = "always()"
-        run = #". "${{ env.VIZE_CI_FILES }}/preserve-public-metadata-and-dependency-locks.sh""#
+        run = ci.workflowScript("preserve-public-metadata-and-dependency-locks.sh")
       }
       new Dynamic {
         uses = ci.uploadArtifact

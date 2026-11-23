@@ -64,7 +64,7 @@ jobs {
         id = "main"
         shell = "bash"
         env { GITHUB_TOKEN = "${{ github.token }}" }
-        run = #". "${{ env.VIZE_CI_FILES }}/validate-completed-build-and-actual-pages-publication-floor.sh""#
+        run = ci.workflowScript("validate-completed-build-and-actual-pages-publication-floor.sh")
       }
       new Dynamic {
         name = "Checkout docs build"
