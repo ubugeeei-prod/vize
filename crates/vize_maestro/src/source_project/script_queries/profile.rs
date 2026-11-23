@@ -108,6 +108,7 @@ fn combined_original_products() {
         let name = std::str::from_utf8(entry).unwrap();
         if (i % 67 == 0
             || name.contains("document-symbol-outline")
+            || name.ends_with("/transition-custom-child-6881/sources/Fullessential.vue")
             || name.ends_with("/ScriptEnd.vue.txt"))
             && let Ok(text) = std::fs::read_to_string(root.join(name))
         {
