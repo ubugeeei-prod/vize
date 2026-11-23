@@ -57,6 +57,11 @@ fn terminal_lookahead_preserves_the_entire_ordinary_parser_return() {
     .into_iter()
     .map(str::to_owned)
     .collect();
+    for first in ["0", "1", "_", "$", "0x", "0o", "0b", "1e", "eval", "await"] {
+        for byte in 0u8..=127 {
+            inputs.push(format!("{first}{}0", char::from(byte)));
+        }
+    }
     for n in 0..80 {
         inputs.push(format!("a_{}{}", "x".repeat(n), n));
         inputs.push(format!("{n}{}", "0".repeat(n)));
@@ -87,5 +92,46 @@ fn terminal_lookahead_preserves_the_entire_ordinary_parser_return() {
                 );
             }
         }
+    }
+}
+
+#[test]
+fn repeated_input_requires_the_original_grammar_and_bytes_and_reparses_the_authored_site() {
+    let arena = Allocator::default();
+    let js = SourceType::mjs();
+    let ts = SourceType::ts().with_module(true);
+    for text in ["count", "5", "a /* comment */", "x as T", "bad +", "", "雪"] {
+        let first = text.to_owned();
+        let second = text.to_owned();
+        let original = EmbeddingInput::prepare_in(&arena, &first, js, EmbeddingGoal::Expr)
+            .unwrap()
+            .observe_terminal_expression();
+        let prepared = original.prepared_expression().unwrap();
+        assert!(prepared.prepare_matching("different", js).is_none());
+        assert!(prepared.prepare_matching(&second, ts).is_none());
+        let repeated =
+            prepared.prepare_matching(&second, js).unwrap().observe_terminal_expression();
+        let independent =
+            EmbeddingInput::prepare_in(&arena, &second, js, EmbeddingGoal::Expr).unwrap().observe();
+        assert!(std::ptr::eq(repeated.content(), second.as_str()));
+        assert_eq!(repeated.parsed.program.source_text, original.parsed.program.source_text);
+        assert!(!std::ptr::eq(
+            repeated.parsed.program.source_text,
+            original.parsed.program.source_text
+        ));
+        assert_eq!(
+            format!("{:?}", repeated.parsed.program),
+            format!("{:?}", independent.parsed.program)
+        );
+        assert_eq!(
+            format!("{:?}", repeated.diagnostics()),
+            format!("{:?}", independent.diagnostics())
+        );
+        assert_eq!(repeated.hole(), independent.hole());
+        assert_eq!(repeated.parser_content_span(), independent.parser_content_span());
+    }
+    for goal in [EmbeddingGoal::Parameters, EmbeddingGoal::HandlerBody] {
+        let original = EmbeddingInput::prepare_in(&arena, "arg", js, goal).unwrap().observe();
+        assert!(original.prepared_expression().is_none());
     }
 }
