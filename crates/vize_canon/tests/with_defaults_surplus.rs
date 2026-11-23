@@ -10,6 +10,11 @@ use vize_l0::{ToCompactString, cstr};
 const CASES: &str =
     include_str!("../../../tests/_fixtures/content-mapper/with-defaults-surplus.json");
 
+const HOST_PROGRAM: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/programs/check-with-defaults-surplus.cjs"
+);
+
 #[test]
 fn complete_native_mapper_modules_accept_surplus_defaults_and_keep_declared_type_errors() {
     let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -71,10 +76,7 @@ fn complete_native_mapper_modules_accept_surplus_defaults_and_keep_declared_type
     let request = evidence.join("requests.json");
     std::fs::write(&request, serde_json::to_vec_pretty(&requests).unwrap()).unwrap();
     let output = Command::new("node")
-        .arg(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/tests/programs/check-with-defaults-surplus.cjs"
-        ))
+        .arg(HOST_PROGRAM)
         .arg(workspace)
         .arg(&request)
         .output()
@@ -86,7 +88,8 @@ fn complete_native_mapper_modules_accept_surplus_defaults_and_keep_declared_type
         evidence.join("process.json"),
         serde_json::to_vec_pretty(&json!({
             "sourceSha": std::env::var("GITHUB_SHA").ok(),
-            "host": HOST, "requests": requests,
+            "host": std::fs::read_to_string(HOST_PROGRAM).unwrap(),
+            "requests": requests,
             "exitCode": output.status.code(), "success": output.status.success(),
         }))
         .unwrap(),

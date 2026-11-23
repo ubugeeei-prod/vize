@@ -39,6 +39,11 @@ const amount: number = instance.$props.amount
 const wrong: string = instance.$props.amount
 "#;
 
+const HOST_PROGRAM: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/programs/check-public-component-inputs.cjs"
+);
+
 #[test]
 fn complete_native_component_modules_preserve_public_and_declared_input_contracts() {
     let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -123,10 +128,7 @@ fn complete_native_component_modules_preserve_public_and_declared_input_contract
     std::fs::write(project.path().join("modules.json"), &modules).unwrap();
     std::fs::write(evidence.join("modules.json"), &modules).unwrap();
     let output = Command::new("node")
-        .arg(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/tests/programs/check-public-component-inputs.cjs"
-        ))
+        .arg(HOST_PROGRAM)
         .arg(workspace)
         .arg(project.path())
         .output()
@@ -136,7 +138,8 @@ fn complete_native_component_modules_preserve_public_and_declared_input_contract
     std::fs::write(
         evidence.join("process.json"),
         serde_json::to_vec_pretty(&json!({
-            "sourceSha": std::env::var("GITHUB_SHA").ok(), "host": HOST,
+            "sourceSha": std::env::var("GITHUB_SHA").ok(),
+            "host": std::fs::read_to_string(HOST_PROGRAM).unwrap(),
             "exitCode": output.status.code(), "success": output.status.success(),
         }))
         .unwrap(),
