@@ -4,6 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { templateLabelRanking } from "../../tools/support/retired-tooling-languages.ts";
 import {
   codenames,
   evaluate,
@@ -150,4 +151,18 @@ void test("issue gates are unknown offline and fail while an issue is open", () 
 void test("workspace members are read from the real Cargo.toml", () => {
   const members = workspaceMembers(fs.readFileSync(path.join(root, "Cargo.toml"), "utf8"));
   assert.ok(members.includes("davinci/vize_l0"));
+});
+
+void test("the template label theorem requires its production insertion and Kani harness", () => {
+  const formal = gates.find((gate) => gate.id === "formal.rust-only")?.measure;
+  assert.ok(formal);
+  const { theorem, kernel, harness } = templateLabelRanking;
+  assert.equal(formal(memory({ [theorem]: "", [kernel]: "", [harness]: "" })).pass, true);
+  assert.equal(formal(memory({ [theorem]: "", [kernel]: "" })).pass, false);
+  assert.equal(formal(memory({ [theorem]: "", [harness]: "" })).pass, false);
+  assert.equal(
+    formal(memory({ [kernel]: "", [harness]: "", "tests/formal/template-lint/Other.lean": "" }))
+      .pass,
+    false,
+  );
 });

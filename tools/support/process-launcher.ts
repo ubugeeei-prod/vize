@@ -31,5 +31,6 @@ export function configuredNodeLauncher(
   if (program.split(slot).length !== 2)
     throw new Error("Expected one settings slot in " + source.href);
   const encoded = JSON.stringify(JSON.stringify(settings));
-  return "#!" + process.execPath + "\n" + program.replace(slot, () => encoded);
+  const configured = program.replace(slot, () => encoded);
+  return configured.startsWith("#!") ? configured : "#!" + process.execPath + "\n" + configured;
 }

@@ -94,6 +94,15 @@ impl<'a> CheckedTemplateBlock<'_, 'a> {
     pub fn container_index(self) -> usize {
         self.view.container_index()
     }
+    /// Complete original opening tag, including delimiters and attributes.
+    #[must_use]
+    pub fn open_tag(self) -> Span {
+        #[expect(
+            clippy::indexing_slicing,
+            reason = "the selection index was minted from this immutable descriptor's block list"
+        )]
+        self.view.owner.container.blocks[self.container_index()].open_tag
+    }
     /// The original opening and closing tag name spans.
     pub fn tag_names(self) -> Result<(Span, Span), TemplateFrameNameRefusal> {
         let names = self.view.frame_names()?;

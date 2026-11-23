@@ -1,4 +1,3 @@
-import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -14,7 +13,11 @@ import {
   sharedBaselineOutput,
   writeVueTsc,
 } from "./_helpers/typecheck-divergence-report-fixture.ts";
-import { writeVueTscFixture } from "./_helpers/typecheck-divergence-checker-fakes.ts";
+import {
+  type PreSemanticProbe,
+  writeVueTscFixture,
+} from "./_helpers/typecheck-divergence-checker-fakes.ts";
+import { readToolingProgram } from "./support/program-path.ts";
 import { buildRustScript } from "./support/rust-script-build.ts";
 
 const linuxOnly = { skip: process.platform !== "linux" };
@@ -45,11 +48,8 @@ function commandLabels(fixture: ReturnType<typeof setup>) {
     )
     .map((name) => readJson(path.join(directory, name)).label);
 }
-function fakeBaseline(
-  fixture: ReturnType<typeof setup>,
-  output: string,
-  probe: { output?: string; exitCode?: number },
-) {
+
+function fakeBaseline(fixture: ReturnType<typeof setup>, output: string, probe: PreSemanticProbe) {
   const files = [path.join(fixture.fixtureRoot, "src/App.vue")];
   const declaration = path.join(fixture.fixtureRoot, "src/env.d.ts");
   if (fs.existsSync(declaration)) files.push(declaration);
@@ -260,17 +260,12 @@ test("pre-semantic checking cannot change either configuration authority", linux
   for (const target of ["generated", "authored"] as const) {
     const fixture = setup();
     try {
-      const marker = 'if (process.argv.includes("--noCheck")) {';
-      const source = fs.readFileSync(fixture.vueTsc, "utf8");
-      assert.ok(source.includes(marker));
-      const changedPath =
-        target === "generated"
-          ? 'process.argv[process.argv.indexOf("-p") + 1]'
-          : JSON.stringify(path.join(fixture.fixtureRoot, "tsconfig.json"));
-      fs.writeFileSync(
-        fixture.vueTsc,
-        source.replace(marker, `${marker}\nfs.appendFileSync(${changedPath}, "\\n");`),
-      );
+      fakeBaseline(fixture, sharedBaselineOutput, {
+        appendNewlineToConfig:
+          target === "generated"
+            ? "generated"
+            : { path: path.join(fixture.fixtureRoot, "tsconfig.json") },
+      });
       const result = executeFixture(fixture);
       assert.equal(result.status, 1, result.stderr);
       const packet = readJson(path.join(fixture.reportDir, "fixture-baseline-unusable.json"));

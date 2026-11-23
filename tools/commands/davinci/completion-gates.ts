@@ -2,7 +2,10 @@
 // Definitions: docs/davinci/completion-gates.md. Usage:
 //   node tools/commands/davinci/completion-gates.ts [--json] [--issues]
 // `--issues` asks GitHub (gh) for issue state; without it issue gates print "unknown".
-import { independentGraphTheory } from "../../support/retired-tooling-languages.ts";
+import {
+  independentGraphTheory,
+  templateLabelRanking,
+} from "../../support/retired-tooling-languages.ts";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -191,9 +194,13 @@ const measureCodenames = (repo: Repo): Measured => {
 };
 
 const measureRustOnlyFormal = (repo: Repo): Measured => {
+  const rankingChecked =
+    repo.paths.includes(templateLabelRanking.kernel) &&
+    repo.paths.includes(templateLabelRanking.harness);
   const lean = repo.paths.filter(
     (file) =>
       file !== independentGraphTheory &&
+      !(file === templateLabelRanking.theorem && rankingChecked) &&
       (file.endsWith(".lean") ||
         /(^|\/)(lakefile\.(lean|toml)|lean-toolchain|lake-manifest\.json)$/.test(file) ||
         (file.startsWith(".github/workflows/") &&
