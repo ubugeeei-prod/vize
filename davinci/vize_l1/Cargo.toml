@@ -18,6 +18,8 @@ metadata.vize.stability = "experimental"
 [features]
 # Observe a sequence of original expressions using their shared resource checks.
 retained-expressions = ["oxc_parser/terminal-embedding"]
+# Name the original source/semantic view for explicit layered consumers.
+ir-views = []
 # Original file coordinates for CSS binding calls in all Vue style languages.
 original-style-bindings = []
 # Prepare input-neutral modules for explicit analysis and projection.
