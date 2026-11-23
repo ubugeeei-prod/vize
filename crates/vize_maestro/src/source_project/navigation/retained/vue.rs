@@ -34,6 +34,12 @@ pub(in crate::source_project::navigation) fn run(
     control
         .sfc_productions
         .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    #[cfg(feature = "experimental-lexical-arrow-queries")]
+    let lower_sfc_native = if control.lexical_arrow_initializers {
+        vize_l1_to_l2::native_file::lower_sfc_with_lexical_initializers
+    } else {
+        lower_sfc_native
+    };
     let observation = lower_sfc_native(&arena, snapshot.source(), configuration.options());
     if control.retired() {
         return;

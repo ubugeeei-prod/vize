@@ -135,7 +135,7 @@ fn empty_rejection<'a>(
 
 struct Context<'component, 'a> {
     allocator: &'a Allocator,
-    component: &'component NativeComponent<'a>,
+    component: block::ComponentInput<'component, 'a>,
     lang: Lang,
     holes: &'component mut Vec<NativeHole>,
     diagnostics: &'component mut Vec<Diagnostic>,

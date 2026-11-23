@@ -35,7 +35,13 @@ pub(super) fn retained_product(imports: &SetupComponentImports<'_, '_>) -> Vec<S
 
 pub(super) fn draw(source: &str) -> (Croquis, u32, usize) {
     let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
-    let template = descriptor.template.unwrap();
+    draw_descriptor(&descriptor)
+}
+
+pub(super) fn draw_descriptor(
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+) -> (Croquis, u32, usize) {
+    let template = descriptor.template.as_ref().unwrap();
     let arena = Allocator::new();
     let (root, issues) = Parser::new(&arena, &template.content).parse();
     let mut drawer = Drawer::with_options(DrawerOptions {
@@ -43,7 +49,7 @@ pub(super) fn draw(source: &str) -> (Croquis, u32, usize) {
         track_usage: true,
         ..Default::default()
     });
-    drawer.draw_script_setup(&descriptor.script_setup.unwrap().content);
+    drawer.draw_script_setup(&descriptor.script_setup.as_ref().unwrap().content);
     drawer.draw_template(&root);
     (drawer.finish(), template.loc.start as u32, issues.len())
 }

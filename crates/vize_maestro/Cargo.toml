@@ -9,6 +9,11 @@ description = "Maestro - Language Server Protocol implementation for Vize Vue te
 publish = false
 
 [features]
+experimental-lexical-arrow-queries = [
+  "experimental-component-listeners",
+  "experimental-navigation-products",
+  "vize_l1_to_l2/lexical-arrow-initializers",
+]
 # Rewrite event rename edits against a retained current component File.
 experimental-component-listeners = ["native", "vize_l1_to_l2/component-listener-queries"]
 experimental-recovered-literal-prefix = [

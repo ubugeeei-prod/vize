@@ -5,6 +5,7 @@
 //! Unsupported syntax stops resolution; an empty successful result therefore
 //! means an analyzed expression with no references, never missing facts.
 
+#[cfg(not(feature = "lexical-arrow-initializers"))]
 use alloc::vec::Vec;
 use vize_l0::Span;
 
@@ -84,7 +85,10 @@ pub struct Occurrence<'a> {
 #[derive(Debug)]
 pub struct ResolutionTable<'a> {
     expression: JsExpr<'a>,
+    #[cfg(not(feature = "lexical-arrow-initializers"))]
     occurrences: Vec<Occurrence<'a>>,
+    #[cfg(feature = "lexical-arrow-initializers")]
+    occurrences: Occurrences<'a>,
 }
 
 impl<'a> ResolutionTable<'a> {
@@ -126,6 +130,27 @@ pub fn resolve_expression<'a>(
     let occurrences = sink::resolve(expression, bindings)?;
     Ok(ResolutionTable {
         expression: *expression,
+        #[cfg(not(feature = "lexical-arrow-initializers"))]
         occurrences,
+        #[cfg(feature = "lexical-arrow-initializers")]
+        occurrences: Occurrences::Owned(occurrences),
     })
+}
+
+#[cfg(feature = "lexical-arrow-initializers")]
+#[derive(Debug)]
+enum Occurrences<'a> {
+    Owned(alloc::vec::Vec<Occurrence<'a>>),
+    Arena(&'a [Occurrence<'a>]),
+}
+
+#[cfg(feature = "lexical-arrow-initializers")]
+impl<'a> core::ops::Deref for Occurrences<'a> {
+    type Target = [Occurrence<'a>];
+    fn deref(&self) -> &Self::Target {
+        match self {
+            Self::Owned(rows) => rows,
+            Self::Arena(rows) => rows,
+        }
+    }
 }

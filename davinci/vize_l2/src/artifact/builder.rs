@@ -326,3 +326,11 @@ impl<'a> Builder<'a> {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "lexical-arrow-initializers")]
+impl Builder<'_> {
+    pub(crate) fn reserve_template_storage(&mut self, roots: usize, expressions: usize) {
+        self.parts.root.ops.reserve(roots);
+        self.parts.provenance.reserve_exact(roots + expressions);
+    }
+}
