@@ -157,9 +157,9 @@ export async function buildHeadingHashFixture(output: string) {
       source.indexOf("async function externalizeSharedPageAssets("),
     );
   assert.equal(extract(esm), extract(cjs), "ESM and CJS must apply the same pre-hashing repair");
-  const repair = vm.runInNewContext(extract(esm) + "\nvizeRepairSsgHashTargets") as (
-    html: string,
-  ) => string;
+  const context = vm.createContext({});
+  vm.runInContext(extract(esm), context);
+  const repair = context.vizeRepairSsgHashTargets as (html: string) => string;
   const start = "<!-- ox-content:scripts:start -->",
     end = "<!-- ox-content:scripts:end -->";
   const input = `untouched-prefix${start}<script>${originalCore.source}</script>${end}untouched-suffix`;

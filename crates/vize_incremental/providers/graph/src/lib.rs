@@ -1,7 +1,9 @@
 //! Resident queries over the selected template's own source and expression
 //! language. Positions become document-absolute only through the current view.
+mod recovery;
 mod source_sites;
 
+pub use recovery::{TemplateGraphObservation, TemplateRecovery};
 pub use source_sites::TemplateSourceSites;
 
 use std::{borrow::Borrow, ops::ControlFlow};

@@ -6,6 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createContext, runInContext } from "node:vm";
+import { runVmProgram, vmProgramSource } from "./support/vm-programs.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const source = readFileSync(path.join(root, "docs/scripts/capture-page-render.ts"), "utf8");
@@ -36,30 +37,8 @@ function closure(marker: string): string {
 const producer = closure("original = await page.evaluateHandle(");
 const current = closure("layout = await original.evaluate(");
 
-// Original literal proof closure at 705d927623a91a7bdd930b34f3656ed2d1862874.
-// The implementation under test is extracted above, rather than reimplemented here.
-const original = `(async ({ content, snapshot, before }) => {
-  const after = snapshot();
-  const packets = (nodes) => nodes.map(({ node: _node, ...packet }) => packet);
-  const beforePackets = packets(before);
-  const afterPackets = packets(after);
-  const hash = async (packet) => [
-    ...new Uint8Array(await crypto.subtle.digest(
-      "SHA-256", new TextEncoder().encode(JSON.stringify(packet)),
-    )),
-  ].map((byte) => byte.toString(16).padStart(2, "0")).join("");
-  const sameNodes = document.querySelector(".content") === content &&
-    before.length === after.length && before.every((entry, index) => entry.node === after[index].node);
-  return {
-    descendants: before.length - 1,
-    elements: before.filter((entry) => entry.type === Node.ELEMENT_NODE).length,
-    textNodes: before.filter((entry) => entry.type === Node.TEXT_NODE).length,
-    rectangles: before.reduce((sum, entry) => sum + entry.rectangles.length, 0),
-    beforeSha256: await hash(beforePackets),
-    afterSha256: await hash(afterPackets),
-    identical: sameNodes && JSON.stringify(beforePackets) === JSON.stringify(afterPackets),
-  };
-})`;
+// The reference keeps the original proof closure from 705d927623a91a7bdd930b34f3656ed2d1862874.
+const original = vmProgramSource("original-capture-proof.js.txt");
 
 const literal = `日本語 😃 e\u0301 \u2028 \u2029 \ud800 \udfff \u0000\n\t"\\ <`;
 const fixture: Record[] = [
@@ -97,43 +76,16 @@ async function exercise(code: string, after: Record[], options: Options = {}) {
   let digests = 0;
   const context = createContext({
     fixture: structuredClone(fixture),
-    afterRecords: structuredClone(after),
     TextEncoder,
     Uint8Array,
   });
-  runInContext(
-    `
-    let records = fixture;
-    class DocumentNode {
-      constructor(index) { this.index = index; }
-      get nodeType() { return records[this.index].type; }
-      get nodeValue() { return records[this.index].source; }
-    }
-    class Element extends DocumentNode {
-      get outerHTML() { return records[this.index].source; }
-      getBoundingClientRect() { return rect(records[this.index].bounds); }
-      getClientRects() { return records[this.index].rectangles.map(rect); }
-    }
-    const rect = ([x, y, width, height]) => ({ x, y, width, height });
-    const makeNode = (index) => new (records[index].type === 1 ? Element : DocumentNode)(index);
-    let nodes = records.map((_, index) => makeNode(index));
-    const Node = { ELEMENT_NODE: 1, TEXT_NODE: 3 };
-    const NodeFilter = { SHOW_ALL: -1 };
-    const document = {
-      querySelector: () => nodes[0],
-      createTreeWalker: () => { let index = 1; return { nextNode: () => nodes[index++] ?? null }; },
-      createRange: () => {
-        let node;
-        return {
-          selectNodeContents: (value) => { node = value; },
-          getBoundingClientRect: () => rect(records[node.index].bounds),
-          getClientRects: () => records[node.index].rectangles.map(rect),
-        };
-      },
-    };
-  `,
-    context,
-  );
+  const document = runVmProgram("capture-document.js", context) as {
+    replaceRecords(records: Record[], replaceNode: boolean): void;
+    installInheritedToJSON(): void;
+    nativeStringify: typeof JSON.stringify;
+    recordStringify(callback: typeof JSON.stringify): void;
+    mutateDocument(): void;
+  };
   const snapshot = (runInContext(producer, context) as () => Snapshot)();
   // The actual producer owns fresh data arrays; DOM references remain only in node.
   for (const entry of snapshot.before) {
@@ -155,31 +107,21 @@ async function exercise(code: string, after: Record[], options: Options = {}) {
       inspect(descriptor.value);
     }
   }
-  runInContext(
-    "records = afterRecords; nodes = records.map((_, index) => nodes[index] ?? makeNode(index));",
-    context,
-  );
-  if (options.replaceNode) runInContext("nodes[1] = makeNode(1);", context);
+  document.replaceRecords(structuredClone(after), Boolean(options.replaceNode));
   const expectedPackets = [snapshot.before, snapshot.snapshot()].map((entries) =>
     entries.map(({ node: _node, ...packet }) => packet),
   );
   const expectedJson = expectedPackets.map((packet) => JSON.stringify(packet));
-  if (options.inheritedToJson)
-    runInContext(
-      'let roots = 0; Array.prototype.toJSON = function(key) { return key === "" && ++roots > 2 ? [...this, roots] : this; };',
-      context,
-    );
-  const nativeJson = runInContext("JSON.stringify", context) as typeof JSON.stringify;
-  context.recordStringify = (value: unknown, ...extra: unknown[]) => {
+  if (options.inheritedToJson) document.installInheritedToJSON();
+  document.recordStringify((value: unknown, ...extra: unknown[]) => {
     assert.equal(extra.length, 0, "packet serialization has no replacer or formatting argument");
     serializations += 1;
     events.push(`json:${serializations}`);
     if (serializations === options.throwStringify) throw new Error("stringify rejected");
-    const text = nativeJson(value);
+    const text = document.nativeStringify(value);
     strings.push(text);
     return text;
-  };
-  runInContext("JSON.stringify = recordStringify;", context);
+  });
   context.crypto = {
     subtle: {
       digest: async (algorithm: string, data: Uint8Array) => {
@@ -188,11 +130,7 @@ async function exercise(code: string, after: Record[], options: Options = {}) {
         events.push(`digest:${index}`);
         bytes.push(Buffer.from(data));
         await Promise.resolve();
-        if (options.mutateDocument)
-          runInContext(
-            "records[0].source = 'changed during await'; records[1].bounds[2] += 1;",
-            context,
-          );
+        if (options.mutateDocument) document.mutateDocument();
         if (index === options.rejectDigest) throw new Error(`digest ${index} rejected`);
         const hash = await webcrypto.subtle.digest(algorithm, data);
         events.push(`resolved:${index}`);
