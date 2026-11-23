@@ -34,16 +34,6 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         &mut self,
         in_ts_namespace_body: bool,
     ) -> (ArenaVec<'a, Directive<'a>>, ArenaVec<'a, Statement<'a>>) {
-        #[cfg(feature = "terminal-embedding")]
-        if core::any::TypeId::of::<C>()
-            == core::any::TypeId::of::<crate::embedding::terminal::TerminalExpression>()
-            && let Some(statement) = self.terminal_embedding_statement()
-        {
-            let mut statements = ArenaVec::with_capacity_in(1, self);
-            statements.push(statement);
-            return (ArenaVec::new_in(self), statements);
-        }
-
         let mut directives = ArenaVec::new_in(self);
         let mut statements = ArenaVec::new_in(self);
 
