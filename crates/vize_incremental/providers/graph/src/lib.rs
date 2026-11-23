@@ -1,13 +1,15 @@
 //! Resident queries over the selected template's own source and expression
 //! language. Positions become document-absolute only through the current view.
-use std::borrow::Borrow;
+use std::{borrow::Borrow, ops::ControlFlow};
 use vize_incremental::{block_query::BlockView, db::Block};
 use vize_l0::{Allocator, Lang, Span, diag::Diagnostic};
 use vize_l1_to_l2::native::{NativeHole, lower_component_native};
 use vize_l2::artifact::ArtifactError;
 use vize_l3::{
     op::OpId,
-    query::{CertificateError, GraphError, OpGraph, ReachQuery, ReachStep},
+    query::{
+        CertificateError, GraphError, OpGraph, ReachQuery, ReachStep, TwoHopMatch, TwoHopQuery,
+    },
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -19,6 +21,7 @@ pub enum TemplateGraphError {
         diagnostics: Vec<Diagnostic>,
     },
     Graph(GraphError),
+    OutsideBlock(Span),
     Certificate(CertificateError),
 }
 
@@ -135,6 +138,38 @@ pub struct TemplateReachBatch<'db> {
 }
 
 impl<'db> TemplateReachBatch<'db> {
+    /// Stream typed relationship pairs from this cached original graph.
+    pub fn visit_two_hop<B>(
+        &self,
+        query: TwoHopQuery,
+        visit: impl FnMut(TwoHopMatch) -> ControlFlow<B>,
+    ) -> Result<ControlFlow<B>, TemplateGraphError> {
+        self.graph
+            .visit_two_hop(query, visit)
+            .map_err(TemplateGraphError::Graph)
+    }
+
+    /// Certify the entire ordered answer against this snapshot's retained L3 rows.
+    pub fn check_two_hop(
+        &self,
+        query: TwoHopQuery,
+        rows: &[TwoHopMatch],
+    ) -> Result<(), vize_l3::query::TrailError> {
+        self.graph.check_two_hop(query, rows)
+    }
+
+    /// Resolve a matched operation only when the consumer requests its current source site.
+    pub fn authored_span(&self, op: OpId) -> Result<Span, TemplateGraphError> {
+        let original = self
+            .graph
+            .operation(op)
+            .ok_or(TemplateGraphError::Graph(GraphError::UnknownOp(op)))?
+            .span;
+        self.view
+            .authored_span(original)
+            .ok_or(TemplateGraphError::OutsideBlock(original))
+    }
+
     pub fn reachable(
         &self,
         query: ReachQuery,
