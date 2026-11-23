@@ -2,12 +2,7 @@ steps = new Listing {
   new Dynamic {
     name = "Install locked Vue dependency and pinned syntax corpus"
     shell = "bash"
-    run = """
-    set -euo pipefail
-    node tools/support/github/vp-install.ts --filter './npm/builder/vite...' --filter './npm/cli...'
-    git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus
-
-    """
+    run = #". "$GITHUB_ACTION_PATH/scripts/install-locked-vue-dependency-and-pinned-syntax-corpus.sh""#
   }
   new Dynamic {
     name = "Test inherited Options API template members keep their declared types"
@@ -18,15 +13,7 @@ steps = new Listing {
       VIZE_CACHE_CUSTODY_CAPTURE_DIR = "${{ runner.temp }}/native-snapshot-source/inherited-options-native-raw"
       VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR = "${{ runner.temp }}/native-snapshot-source"
     }
-    run = """
-    set -euo pipefail
-    unset VIZE_TEST_DISABLE_TSGO
-    cargo test --locked --profile ci -p vize_canon --features cache-custody --lib batch::type_checker::tests::recent_issues::options_api_inherited_template_members:: -- --nocapture
-    cargo test --locked --profile ci -p vize_canon --lib virtual_ts::scope::globals::instance::tests::options_api_inherited_members_are_declared_from_the_authored_instance -- --exact --nocapture
-    cargo test --locked --profile ci -p vize_canon --lib virtual_ts::tests::inherited_options::test_options_api_unresolved_extends_declares_template_refs_from_the_instance -- --exact --nocapture
-    cargo test --locked --profile ci -p vize_canon --lib virtual_ts::tests::inherited_calls:: -- --nocapture
-
-    """
+    run = #". "$GITHUB_ACTION_PATH/scripts/test-inherited-options-api-template-members-keep-their-declared-types.sh""#
   }
   new Dynamic {
     name = "Test memberless Vue preparation against its acknowledged same-owner pull"
@@ -35,59 +22,6 @@ steps = new Listing {
       VIZE_TEST_REQUIRE_TSGO = "1"
       VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR = "${{ runner.temp }}/native-snapshot-source"
     }
-    run = #"""
-    set -euo pipefail
-    unset VIZE_TEST_DISABLE_TSGO
-    capture="$VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR/memberless-preparation"
-    mkdir -p "$capture"
-    set +e
-    cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::configured_project::shared_transport::tests::native::replay::actual_memberless_vue_preparation_reattaches_same_editor_owner -- --ignored --exact --nocapture --color never >"$capture/test.stdout" 2>"$capture/test.stderr"
-    status=$?
-    set -e
-    printf '%s\n' "$status" >"$capture/test.status"
-    cat "$capture/test.stdout"
-    cat "$capture/test.stderr" >&2
-    node --input-type=module - "$capture" <<'NODE'
-    import { readFileSync, writeFileSync } from 'node:fs';
-    import { createHash } from 'node:crypto';
-    import { execFileSync } from 'node:child_process';
-    import { join } from 'node:path';
-    const directory = process.argv[2];
-    const stdout = readFileSync(join(directory, 'test.stdout'));
-    const stderr = readFileSync(join(directory, 'test.stderr'));
-    const status = Number(readFileSync(join(directory, 'test.status'), 'utf8').trim());
-    const name = 'lsp_client::editor_lsp::configured_project::shared_transport::tests::native::replay::actual_memberless_vue_preparation_reattaches_same_editor_owner';
-    const executed = stdout.toString('utf8').includes(`test ${name} ... ok`) && /^test result: ok\. 1 passed; 0 failed; 0 ignored; /m.test(stdout.toString('utf8')) ? 1 : 0;
-    const digest = bytes => createHash('sha256').update(bytes).digest('hex');
-    writeFileSync(join(directory, 'test-run.json'), JSON.stringify({
-      source: execFileSync('git', ['rev-parse', 'HEAD'], {encoding: 'utf8'}).trim(),
-      githubSha: process.env.GITHUB_SHA, run: process.env.GITHUB_RUN_ID, attempt: process.env.GITHUB_RUN_ATTEMPT,
-      status, executed, name, stdoutSha256: digest(stdout), stderrSha256: digest(stderr)
-    }, null, 2) + '\n');
-    if (status !== 0) process.exit(status);
-    if (executed !== 1) throw new Error('exact memberless preparation law did not execute once successfully');
-    for (const file of ['without-editor/prepared-vs-native.json', 'without-editor/materialized-tsconfig.json', 'without-editor/materialized-ui-package.json', 'with-editor/prepared-vs-native.json', 'with-editor/materialized-tsconfig.json', 'with-editor/materialized-ui-package.json']) {
-      JSON.parse(readFileSync(join(directory, file), 'utf8'));
-    }
-    for (const world of ['ordered-without-editor', 'ordered-with-editor']) {
-      for (const file of ['prepared-vs-native.json', 'materialized-tsconfig.json', 'materialized-ui-package.json', 'world.json', 'other-before-app/world.json', 'other-before-app/materialized-tsconfig.json', 'other-prepared-vs-native.json']) {
-        JSON.parse(readFileSync(join(directory, world, file), 'utf8'));
-      }
-      let observations = 0;
-      for (const file of ['materialized-ui-package.json', 'materialized-ui-package.absent.json']) {
-        let value;
-        try { value = JSON.parse(readFileSync(join(directory, world, 'other-before-app', file), 'utf8')); }
-        catch (error) { if (error.code === 'ENOENT') continue; throw error; }
-        if (file === 'materialized-ui-package.absent.json' &&
-            (value.status !== 'absent-after-materialization' || typeof value.path !== 'string' || value.path.length === 0)) {
-          throw new Error('invalid first-world UI absence observation');
-        }
-        observations++;
-      }
-      if (observations !== 1) throw new Error('exactly one first-world UI package observation required');
-    }
-    NODE
-
-    """#
+    run = #". "$GITHUB_ACTION_PATH/scripts/test-memberless-vue-preparation-against-its-acknowledged-same-owner-pull.sh""#
   }
 }

@@ -16,19 +16,7 @@ runs {
       id = "select"
       shell = "bash"
       env { BASE_SHA = "${{ inputs.comparison-base }}" }
-      run = #"""
-      if [[ "$GITHUB_EVENT_NAME" == "merge_group" || "$GITHUB_EVENT_NAME" == "schedule" || "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-        echo 'selected=true' >> "$GITHUB_OUTPUT"
-      else
-        git diff --name-only "$BASE_SHA" "$GITHUB_SHA" > "$RUNNER_TEMP/vue2-text-document-paths.txt"
-        if rg '^(crates/vize_glyph/src/native_doc(\.rs|/(expression(\.rs|/)|vue2_text(\.rs|/)))|crates/vize_glyph/tests/(native_vue2_text_document|fixtures/native-vue2-text-doc-2\.7\.16\.json)|tests/tooling/(native-vue2-text-document-oracle\.test\.ts|support/vue2-pinned)|\.github/actions/test-native-vue2-text-document/|\.github/workflows/pr-source-checks\.yml)' "$RUNNER_TEMP/vue2-text-document-paths.txt"; then
-          echo 'selected=true' >> "$GITHUB_OUTPUT"
-        else
-          echo 'selected=false' >> "$GITHUB_OUTPUT"
-        fi
-      fi
-
-      """#
+      run = #". "$GITHUB_ACTION_PATH/scripts/select-the-original-vue2-document-source-slice.sh""#
     }
     new Dynamic {
       name = "Join fresh original TextView outputs to pinned whole goldens"
@@ -38,13 +26,7 @@ runs {
         VIZE_GLYPH_VUE2_TEXT_CAPTURE = "${{ runner.temp }}/native-vue2-text-documents.json"
         VIZE_GLYPH_VUE2_TEXT_SOURCE_HEAD = "${{ github.event.pull_request.head.sha || github.sha }}"
       }
-      run = """
-      rm -f "$VIZE_GLYPH_VUE2_TEXT_CAPTURE"
-      cargo test --locked --profile ci -p vize_glyph --test native_vue2_text_document whole_print_goldens_and_idempotence_capture_only_real_original_docs -- --exact
-      test -s "$VIZE_GLYPH_VUE2_TEXT_CAPTURE"
-      vp node --test tests/tooling/native-vue2-text-document-oracle.test.ts
-
-      """
+      run = #". "$GITHUB_ACTION_PATH/scripts/join-fresh-original-textview-outputs-to-pinned-whole-goldens.sh""#
     }
     new Dynamic {
       name = "Retain the actual original Vue2 document capture"

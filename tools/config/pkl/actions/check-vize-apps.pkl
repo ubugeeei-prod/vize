@@ -27,12 +27,12 @@ runs {
       name = "Build public Vue config APIs"
       shell = "bash"
       // Pack the checked-in sources directly; CLI build hooks also regenerate rule types.
-      run = "(cd npm/cli && vp pack) && (cd npm/builder/vite && vp pack)"
+      run = #". "$GITHUB_ACTION_PATH/scripts/build-public-vue-config-apis.sh""#
     }
     new Dynamic {
       name = "Build vize CLI"
       shell = "bash"
-      run = "cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts"
+      run = #". "$GITHUB_ACTION_PATH/scripts/build-vize-cli.sh""#
     }
     new Dynamic {
       name = "Install vize CLI"

@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -34,7 +35,7 @@ const evidenceJs = "${{ !cancelled() && inputs.run-js }}";
 const groupCommand =
   'node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"';
 const historyActionPath = "./.github/actions/test-js-packages-with-history";
-const history = parse(readFileSync(join(root, historyActionPath, "action.yml"), "utf8"));
+const history = parse(readAutomationPrograms(join(root, historyActionPath, "action.yml")));
 
 function recordingCli(directory, source = "process.exit(0);") {
   const calls = join(directory, "calls.jsonl");
@@ -64,7 +65,11 @@ void test("full partitions validate the actual inventory and retain every origin
   for (const partition of ["all", "builders", "ui", "oxlint", "original-project"]) {
     const result = spawnSync("/bin/bash", ["-c", validate.run], {
       cwd: root,
-      env: { ...process.env, VIZE_JS_PARTITION: partition },
+      env: {
+        ...process.env,
+        GITHUB_ACTION_PATH: join(root, historyActionPath),
+        VIZE_JS_PARTITION: partition,
+      },
       encoding: "utf8",
       timeout: 10_000,
     });
@@ -90,7 +95,11 @@ void test("full partitions validate the actual inventory and retain every origin
   for (const partition of ["", "none", "all; exit 0", "builders,ui", "unknown"]) {
     const result = spawnSync("/bin/bash", ["-c", validate.run], {
       cwd: root,
-      env: { ...process.env, VIZE_JS_PARTITION: partition },
+      env: {
+        ...process.env,
+        GITHUB_ACTION_PATH: join(root, historyActionPath),
+        VIZE_JS_PARTITION: partition,
+      },
       encoding: "utf8",
       timeout: 10_000,
     });

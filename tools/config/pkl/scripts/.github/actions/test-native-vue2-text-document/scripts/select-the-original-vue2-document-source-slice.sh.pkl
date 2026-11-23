@@ -1,0 +1,18 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  if [[ "$GITHUB_EVENT_NAME" == "merge_group" || "$GITHUB_EVENT_NAME" == "schedule" || "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+    echo 'selected=true' >> "$GITHUB_OUTPUT"
+  else
+    git diff --name-only "$BASE_SHA" "$GITHUB_SHA" > "$RUNNER_TEMP/vue2-text-document-paths.txt"
+    if rg '^(crates/vize_glyph/src/native_doc(\.rs|/(expression(\.rs|/)|vue2_text(\.rs|/)))|crates/vize_glyph/tests/(native_vue2_text_document|fixtures/native-vue2-text-doc-2\.7\.16\.json)|tests/tooling/(native-vue2-text-document-oracle\.test\.ts|support/vue2-pinned)|\.github/actions/test-native-vue2-text-document/|\.github/workflows/pr-source-checks\.yml)' "$RUNNER_TEMP/vue2-text-document-paths.txt"; then
+      echo 'selected=true' >> "$GITHUB_OUTPUT"
+    else
+      echo 'selected=false' >> "$GITHUB_OUTPUT"
+    fi
+  fi
+  """#
+}

@@ -1,0 +1,10 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  unset VIZE_TEST_DISABLE_TSGO
+  cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::options_api_global_augmentation::authored_options_methods_keep_module_augmentations_typed -- --exact --nocapture
+  """#
+}

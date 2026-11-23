@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -7,7 +8,9 @@ import { differentialMatrix } from "../../tools/support/compat/github/rust-diffe
 const action = "./.github/actions/test-native-navigation";
 
 test("native Program and Vue whole responses share the same actual feature validation recipe", () => {
-  const recipe = parse(readRepoFile(".github", "actions", "test-native-navigation", "action.yml"));
+  const recipe = parse(
+    readAutomationPrograms(".github", "actions", "test-native-navigation", "action.yml"),
+  );
   assert.equal(recipe.runs.using, "composite");
   assert.equal(recipe.runs.steps.length, 1);
   const step = recipe.runs.steps[0];

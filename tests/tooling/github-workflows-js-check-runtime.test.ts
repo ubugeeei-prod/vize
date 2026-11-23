@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { parse } from "yaml";
@@ -45,7 +46,9 @@ test("workflow context validation belongs to the unconditional required JS gate"
 });
 
 test("workflow checker release recovery stays bounded and version locked", () => {
-  const action = parse(readRepoFile(".github", "actions", "check-workflow-syntax", "action.yml"));
+  const action = parse(
+    readAutomationPrograms(".github", "actions", "check-workflow-syntax", "action.yml"),
+  );
   const install = action.runs.steps.find(
     (step: { name?: string }) => step.name === "Install the pinned workflow checker",
   ).run as string;

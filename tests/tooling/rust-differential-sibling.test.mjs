@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
@@ -17,7 +18,7 @@ import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
-const workflow = (path) => parse(readFileSync(join(root, path), "utf8"));
+const workflow = (path) => parse(readAutomationPrograms(join(root, path)));
 const rust = workflow(".github/workflows/pr-rust-checks.yml");
 const products = workflow(".github/workflows/pr-rust-products.yml");
 const differential = workflow(".github/workflows/pr-rust-differential.yml");

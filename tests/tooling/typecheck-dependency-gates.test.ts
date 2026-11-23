@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
@@ -19,7 +20,7 @@ test("test:scripts requires its typecheck dependencies", () => {
     /\n  test-scripts:\n[\s\S]*?needs: \[full-source-cli, tooling-plan\][\s\S]*?uses: \.\/\.github\/actions\/test-full-tooling[\s\S]*?\n  editor-extensions:\n/,
   );
   assert.match(
-    readRepoFile(".github", "actions", "test-full-tooling", "action.yml"),
+    readAutomationPrograms(".github", "actions", "test-full-tooling", "action.yml"),
     /git submodule update --init --force --depth 1 -- tests\/_fixtures\/_git\/ant-design-vue tests\/_fixtures\/_git\/create-vue tests\/_fixtures\/_git\/layoutit-grid tests\/_fixtures\/_git\/vue-select tests\/_fixtures\/_git\/vue-router && vp install --frozen-lockfile --prefer-offline/,
   );
 });

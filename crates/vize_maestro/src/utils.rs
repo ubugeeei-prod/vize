@@ -10,17 +10,17 @@ pub use position::{
 /// Returns true for standalone HTML files that should be linted outside the SFC pipeline.
 #[inline]
 pub fn is_standalone_html_path(path: &str) -> bool {
-    let path = path.to_ascii_lowercase();
-    path.ends_with(".html") || path.ends_with(".htm")
+    path.rsplit_once('.').is_some_and(|(_, extension)| {
+        extension.eq_ignore_ascii_case("html") || extension.eq_ignore_ascii_case("htm")
+    })
 }
 
-/// Returns true for JSX/TSX files that should be compiled outside the SFC
-/// pipeline. These surface JSX compiler/lowering diagnostics only — no virtual
-/// TypeScript document is generated for them (see #1497).
+/// Routes JSX and TSX files to the standalone compiler diagnostics (see #1497).
 #[inline]
 pub fn is_jsx_path(path: &str) -> bool {
-    let path = path.to_ascii_lowercase();
-    path.ends_with(".jsx") || path.ends_with(".tsx")
+    path.as_bytes().last_chunk::<4>().is_some_and(|suffix| {
+        suffix.eq_ignore_ascii_case(b".jsx") || suffix.eq_ignore_ascii_case(b".tsx")
+    })
 }
 
 /// A TSRX module (`.tsrx`), routed by its file kind.

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+bash .github/actions/vscode-host-smoke/download-artifact.sh \
+  "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
+  "${RUNNER_TEMP}/nvim.tar.gz" "${NVIM_SHA256}"
+sudo tar -C /opt -xzf "${RUNNER_TEMP}/nvim.tar.gz"
+sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
+nvim --version | head -1

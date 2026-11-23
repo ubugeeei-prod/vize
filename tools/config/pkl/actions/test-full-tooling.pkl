@@ -33,7 +33,7 @@ runs {
     new Dynamic {
       name = "Hydrate CLI and fact corpus fixtures and install JS dependencies"
       shell = "bash"
-      run = "git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/layoutit-grid tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline && node tools/support/compat/github/prepare-vue-benchmarks.ts"
+      run = #". "$GITHUB_ACTION_PATH/scripts/hydrate-cli-and-fact-corpus-fixtures-and-install-js-dependencies.sh""#
     }
     new Dynamic {
       uses = "./.github/actions/restore-source-cli"

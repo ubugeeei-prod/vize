@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -30,7 +31,7 @@ void test("Wild adapter reverse expansion retains the whole pinned original acti
     "80d1b927f19f7df0e00d99b44361104c13f2221d630bbd080f7dc6eb066fe61a",
   );
   const before = parse(original),
-    after = parse(action),
+    after = parse(readAutomationPrograms(".github/actions/setup-wild-http-recovery/action.yml")),
     delegate = after.runs.steps.shift();
   assert.equal(delegate.uses, upstream);
   assert.deepEqual(delegate.with, {

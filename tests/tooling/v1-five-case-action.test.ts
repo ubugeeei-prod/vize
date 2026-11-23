@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -11,7 +12,7 @@ const sourceSha = "1".repeat(40);
 const candidateSha = "2".repeat(40);
 
 void test("the reusable Action publishes the same plan or admission artifact", () => {
-  const actionSource = readFileSync(
+  const actionSource = readAutomationPrograms(
     path.join(root, ".github/actions/v1-five-case-receipts/action.yml"),
     "utf8",
   );

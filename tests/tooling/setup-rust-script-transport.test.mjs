@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -43,7 +44,7 @@ function executable(file, lines) {
   fs.writeFileSync(file, lines.join("\n") + "\n", { mode: 0o755 });
 }
 function installScript(original) {
-  let body = fs.readFileSync(path.join(actionPath, "action.yml"), "utf8");
+  let body = readAutomationPrograms(path.join(actionPath, "action.yml"));
   if (original) {
     const replacement = '          "$BASH" "$GITHUB_ACTION_PATH/download-prebuilt.sh" "$archive"';
     assert.equal(body.split(replacement).length, 2);

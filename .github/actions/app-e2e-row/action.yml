@@ -53,21 +53,7 @@ runs:
         PLANNED_CACHE_KEY: ${{ inputs.cache-key }}
         PLANNED_WORKTREE_ID: ${{ inputs.worktree-id }}
         PLANNED_ARTIFACT_STEM: ${{ inputs.artifact-stem }}
-      run: |
-        set -euo pipefail
-        planner=(node tools/commands/ci/github/app-e2e-plan.ts --profile "$PLAN_PROFILE" --suite "$PLAN_SUITE" --shard "$PLAN_SHARD")
-        test "$("${planner[@]}" --field task)" = "$PLANNED_TASK"
-        test "$("${planner[@]}" --field timeout)" = "$PLANNED_TIMEOUT"
-        test "$("${planner[@]}" --field needs-playwright)" = "$PLANNED_BROWSER"
-        test "$("${planner[@]}" --field cache-key)" = "$PLANNED_CACHE_KEY"
-        test "$("${planner[@]}" --field worktree-id)" = "$PLANNED_WORKTREE_ID"
-        test "$("${planner[@]}" --field artifact-stem)" = "$PLANNED_ARTIFACT_STEM"
-        mapfile -t fixture_paths < <("${planner[@]}" --field fixtures)
-        if (( ${#fixture_paths[@]} == 0 )); then
-          echo "::error title=Empty App E2E shard::planner selected no fixtures"
-          exit 1
-        fi
-        git submodule update --init --recursive --depth 1 -- "${fixture_paths[@]}"
+      run: . "$GITHUB_ACTION_PATH/scripts/validate-and-hydrate-planned-fixtures.sh"
 
     - name: Setup Wild linker
       uses: ./.github/actions/setup-wild-http-recovery
@@ -89,34 +75,11 @@ runs:
     - name: Provision Node 22 for authored Nuxt fixture preparation
       if: inputs.suite == 'check' || inputs.suite == 'build'
       shell: bash
-      run: |
-        set -euo pipefail
-        runtime=target/app-e2e-logs/nuxt-prepare-runtime
-        mkdir -p "$runtime"
-        node -p 'JSON.stringify({execPath:process.execPath,version:process.version})' > "$runtime/checker-before.json"
-        vp --version > "$runtime/vp-version.txt"
-        vp env install 22 > "$runtime/node22-install.log" 2>&1
-        vp env exec --node 22 node -e 'require("node:fs").writeFileSync(process.argv[1], JSON.stringify({execPath:process.execPath,version:process.version}) + "\n")' "$runtime/node22.json" > "$runtime/node22-exec.log" 2>&1
-        prep_node22="$(node -p 'const r=JSON.parse(require("node:fs").readFileSync(process.argv[1],"utf8")); if(!/^v22\./.test(r.version)) throw new Error("Nuxt preparation requires Node 22"); r.execPath' "$runtime/node22.json")"
-        test -x "$prep_node22"
-        sha256sum "$prep_node22" > "$runtime/node22.sha256"
-        node -p 'JSON.stringify({execPath:process.execPath,version:process.version})' > "$runtime/checker-after.json"
-        cmp "$runtime/checker-before.json" "$runtime/checker-after.json"
-        printf '%s\n' "VIZE_APP_CHECK_PREPARE_NODE22=$prep_node22" >> "$GITHUB_ENV"
+      run: . "$GITHUB_ACTION_PATH/scripts/provision-node-22-for-authored-nuxt-fixture-preparation.sh"
 
     - name: Install JavaScript dependencies
       shell: bash
-      run: |
-        vp install --frozen-lockfile --prefer-offline \
-          --filter './tests...' \
-          --filter './npm/native...' \
-          --filter './npm/cli...' \
-          --filter './npm/builder/vite...' \
-          --filter './npm/framework/nuxt-lint-config...' \
-          --filter './npm/linter/oxlint...' \
-          --filter './npm/framework/nuxt...' \
-          --filter './npm/builder/vite-musea...' \
-          --filter './npm/framework/musea-nuxt...'
+      run: . "$GITHUB_ACTION_PATH/scripts/install-javascript-dependencies.sh"
 
     - name: Prepare original pinned ReKa providers
       if: inputs.suite == 'check'
@@ -133,15 +96,7 @@ runs:
 
     - name: Build local Vize packages
       shell: bash
-      run: |
-        node tools/support/github/run-many.ts \
-          vp run --filter './npm/cli' build -- \
-          vp run --filter './npm/builder/vite' build -- \
-          vp run --filter './npm/framework/nuxt-lint-config' build -- \
-          vp run --filter './npm/linter/oxlint' build -- \
-          vp run --filter './npm/builder/vite-musea' build -- \
-          vp run --filter './npm/framework/nuxt' build -- \
-          vp run --filter './npm/framework/musea-nuxt' build
+      run: . "$GITHUB_ACTION_PATH/scripts/build-local-vize-packages.sh"
 
     - name: Stabilize Ubuntu package archive
       if: inputs.needs-playwright == 'true'
@@ -178,12 +133,7 @@ runs:
         PLANNED_BROWSER: ${{ inputs.needs-playwright }}
         VIZE_TEST_WORKTREE_ID: ${{ inputs.worktree-id }}
         VIZE_APP_CHECK_CAPTURE_DIR: ${{ github.workspace }}/target/app-e2e-logs/check-authority
-      run: |
-        set -euo pipefail
-        mkdir -p target/app-e2e-logs
-        timeout --signal=TERM --kill-after=15s "$PLANNED_TIMEOUT" \
-          vp run --no-cache --filter './tests' "$PLANNED_TASK" 2>&1 \
-          | tee "target/app-e2e-logs/$PLAN_PROFILE-$PLAN_SUITE-$PLAN_SHARD.log"
+      run: . "$GITHUB_ACTION_PATH/scripts/run-planned-app-e2e-row.sh"
 
     - name: Upload App E2E row artifacts
       if: ${{ cancelled() || failure() || steps.run.outcome == 'failure' }}
@@ -207,9 +157,4 @@ runs:
       env:
         ROW_OUTCOME: ${{ steps.run.outcome }}
         ROW_ID: ${{ inputs.profile }}:${{ inputs.suite }}:${{ inputs.shard }}
-      run: |
-        echo "App E2E row $ROW_ID: $ROW_OUTCOME" >> "$GITHUB_STEP_SUMMARY"
-        if [[ "$ROW_OUTCOME" != "success" ]]; then
-          echo "::error title=App E2E row failed::$ROW_ID failed; inspect its unique artifact"
-          exit 1
-        fi
+      run: . "$GITHUB_ACTION_PATH/scripts/report-app-e2e-row.sh"

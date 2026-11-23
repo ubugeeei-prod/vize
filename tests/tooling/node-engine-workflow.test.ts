@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -36,7 +37,12 @@ test("check workflow runs declared Node engine compatibility matrix", () => {
     job: "node-engine-compat (${{ matrix.node-version }})",
     packet: "node-engine-${{ matrix.node-version }}",
   });
-  const action = readRepoFile(".github", "actions", "test-small-node-cases", "action.yml");
+  const action = readAutomationPrograms(
+    ".github",
+    "actions",
+    "test-small-node-cases",
+    "action.yml",
+  );
   for (const file of [
     "tests/tooling/node-engine-matrix.test.ts",
     "tests/tooling/package-manifests.test.ts",
