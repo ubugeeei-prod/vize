@@ -21,7 +21,8 @@
   },
   "files": [
     "dist",
-    "registry"
+    "registry",
+    "scripts/package-tasks.cjs"
   ],
   "type": "module",
   "sideEffects": [
@@ -1167,16 +1168,16 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack && vp exec node scripts/build-source-registry.ts",
+    "build": "node ./scripts/package-tasks.cjs build",
     "dev": "vp pack --watch",
-    "lint:sfc": "vp exec node scripts/lint-sfc.ts src && vp exec node scripts/check-renderers.ts src",
-    "pretest": "vp pack && pnpm check:size && pnpm check:tree-shaking",
-    "test": "vp test run && vp test run --config vite.production-vue.config.ts",
+    "lint:sfc": "node ./scripts/package-tasks.cjs lint:sfc",
+    "pretest": "node ./scripts/package-tasks.cjs pretest",
+    "test": "node ./scripts/package-tasks.cjs test",
     "check:catalog": "vp test run src/catalog/family-catalog.test.ts",
-    "check:static": "vp check src scripts vite.config.ts tsconfig.typecheck.json && vue-tsc --noEmit -p tsconfig.typecheck.json",
-    "check:vapor-runtime": "vp exec node --test scripts/vapor-runtime/css-properties-hydration.test.ts scripts/vapor-runtime/scoped-union-props.test.ts scripts/vapor-runtime/scoped-union-controls.test.ts && vp exec node scripts/check-vapor-runtime.ts",
+    "check:static": "node ./scripts/package-tasks.cjs check:static",
+    "check:vapor-runtime": "node ./scripts/package-tasks.cjs check:vapor-runtime",
     "check:story-testbed": "vp exec node scripts/story-testbed.ts check --format json",
-    "check": "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed && pnpm check:vapor-runtime",
+    "check": "node ./scripts/package-tasks.cjs check",
     "check:fix": "vp check --fix src scripts vite.config.ts tsconfig.typecheck.json",
     "build:registry": "vp exec node scripts/build-source-registry.ts",
     "check:examples": "vp exec node scripts/generate-gallery.ts --check",

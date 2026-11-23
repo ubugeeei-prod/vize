@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args.includes("--listFilesOnly")) {
+  process.stdout.write(@@MEMBER_N@@);
+} else {
+  process.stdout.write(@@STDOUT@@);
+  if (args.includes("--extendedDiagnostics")) process.stdout.write(@@FOOTER@@);
+  process.stderr.write(@@STDERR@@);
+  process.exitCode = 3;
+}

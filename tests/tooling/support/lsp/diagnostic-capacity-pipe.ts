@@ -3,7 +3,11 @@ import { waitUntil } from "./diagnostic-capacity.ts";
 import type { NativeDiagnosticsGate } from "./responsive-lint-native-gate.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import type { NativeLife } from "./responsive-lint-native-gate.ts";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { getSystemErrorMessage } from "node:util";
+import { readNativeProcess, type NativeLife } from "./responsive-lint-native-gate.ts";
 
 export type SocketDescriptor = {
   pid: number;
@@ -61,49 +65,49 @@ export function decodeNativeSockets(
 
 /** Read kernel socket queue lengths without opening, peeking at, or consuming the RPC stream. */
 export function nativeIpcEvidence(lives: NativeLife[]): IpcEvidence {
-  const code = [
-    "import sys,json,os,re,subprocess",
-    "lives=json.loads(sys.argv[1]);descriptors=[];processes=[]",
-    "for expected in lives:",
-    " pid=expected['pid'];raw=open('/proc/'+str(pid)+'/stat').read();fields=raw[raw.rfind(') ')+2:].split()",
-    " assert fields[19]==expected['birthTicks'] and fields[0]=='T'",
-    " assert os.path.realpath('/proc/'+str(pid)+'/exe')==expected['executable']",
-    " processes.append(dict(expected,state=fields[0],rawStat=raw))",
-    " for name in os.listdir('/proc/'+str(pid)+'/fd'):",
-    "  try: link=os.readlink('/proc/'+str(pid)+'/fd/'+name)",
-    "  except FileNotFoundError: continue",
-    "  match=re.fullmatch(r'socket:\\[(\\d+)\\]',link)",
-    "  if match: descriptors.append({'pid':pid,'fd':int(name),'inode':match[1],'birthTicks':expected['birthTicks'],'executable':expected['executable']})",
-    "output=subprocess.run(['ss','--unix','--all','--numeric','--processes','--extended','--no-header'],capture_output=True,text=True,check=True).stdout",
-    "owned={row['pid'] for row in lives}",
-    "lines=[line for line in output.splitlines() if any(int(pid) in owned for pid in re.findall(r'pid=(\\d+),fd=',line))]",
-    "print(json.dumps({'raw':lines,'descriptors':descriptors,'processes':processes}))",
-  ].join("\n");
-  const parsed: unknown = JSON.parse(
-    execFileSync("python3", ["-c", code, JSON.stringify(lives)], {
-      encoding: "utf8",
-      timeout: 10_000,
-    }),
+  const descriptors: SocketDescriptor[] = [];
+  const owned = new Set(lives.map(({ pid }) => pid));
+  const processes = lives.map((expected) => {
+    const { life } = readNativeProcess(expected.pid);
+    assert.equal(life.birthTicks, expected.birthTicks);
+    assert.equal(life.executable, expected.executable);
+    assert.equal(life.state, "T");
+    const directory = `/proc/${life.pid}/fd`;
+    for (const fd of fs.readdirSync(directory)) {
+      let link;
+      try {
+        link = fs.readlinkSync(path.join(directory, fd));
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") continue;
+        throw error;
+      }
+      const inode = /^socket:\[(\d+)\]$/u.exec(link)?.[1];
+      if (inode)
+        descriptors.push({
+          pid: life.pid,
+          fd: Number(fd),
+          inode,
+          birthTicks: life.birthTicks,
+          executable: life.executable,
+        });
+    }
+    return { ...expected, state: life.state, rawStat: life.rawStat };
+  });
+  const output = execFileSync(
+    "ss",
+    ["--unix", "--all", "--numeric", "--processes", "--extended", "--no-header"],
+    { encoding: "utf8", timeout: 10_000 },
   );
-  assert.ok(
-    parsed &&
-      typeof parsed === "object" &&
-      "raw" in parsed &&
-      "descriptors" in parsed &&
-      "processes" in parsed,
-  );
-  assert.ok(
-    Array.isArray(parsed.raw) &&
-      Array.isArray(parsed.descriptors) &&
-      Array.isArray(parsed.processes),
-  );
-  const raw = parsed.raw as string[],
-    descriptors = parsed.descriptors as SocketDescriptor[];
+  const raw = output
+    .split(/\r?\n/u)
+    .filter((line) =>
+      Array.from(line.matchAll(/pid=(\d+),fd=/gu)).some((match) => owned.has(Number(match[1]))),
+    );
   return {
     source: "Linux AF_UNIX SOCK_DIAG",
     raw,
-    processes: parsed.processes as NativeLife[],
     descriptors,
+    processes,
     channels: decodeNativeSockets(raw, descriptors),
   };
 }
@@ -124,61 +128,93 @@ export function nativeIpcGrew(before: IpcEvidence, after: IpcEvidence): boolean 
 
 /** Retain identities before the parent exits; later orphan cleanup never signals a reused PID. */
 export function ownedProcessSnapshot(owner: number): NativeLife[] {
-  const code = [
-    "import os,json,sys",
-    "all={}",
-    "for name in os.listdir('/proc'):",
-    " if not name.isdecimal(): continue",
-    " try:",
-    "  raw=open('/proc/'+name+'/stat').read();f=raw[raw.rfind(') ')+2:].split()",
-    "  all[int(name)]={'pid':int(name),'parent':int(f[1]),'birthTicks':f[19],'state':f[0],'executable':os.path.realpath('/proc/'+name+'/exe'),'rawStat':raw}",
-    " except OSError: pass",
-    "root=int(sys.argv[1]);owned=[]",
-    "for pid,row in all.items():",
-    " seen=set();current=pid",
-    " while current in all and current not in seen:",
-    "  if current==root: owned.append(row);break",
-    "  seen.add(current);current=all[current]['parent']",
-    "print(json.dumps(owned))",
-  ].join("\n");
-  return JSON.parse(
-    execFileSync("python3", ["-c", code, String(owner)], {
-      encoding: "utf8",
-      timeout: 10_000,
-    }),
-  ) as NativeLife[];
+  const all = new Map<number, NativeLife & { parent: number }>();
+  for (const entry of fs.readdirSync("/proc")) {
+    if (!/^\d+$/u.test(entry)) continue;
+    try {
+      const { life, parent } = readNativeProcess(Number(entry), true);
+      all.set(life.pid, { ...life, parent });
+    } catch (error) {
+      if (!(error as NodeJS.ErrnoException).code) throw error;
+    }
+  }
+  return [...all.values()].filter((life) => {
+    const seen = new Set<number>();
+    let pid = life.pid;
+    while (all.has(pid) && !seen.has(pid)) {
+      if (pid === owner) return true;
+      seen.add(pid);
+      pid = all.get(pid)!.parent;
+    }
+    return false;
+  });
+}
+
+let signalWorker: string | undefined;
+function signalWorkerPath(): string {
+  if (signalWorker) return signalWorker;
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-pidfd-"));
+  const binary = path.join(temporary, "inspect");
+  const cleanup = () => fs.rmSync(temporary, { recursive: true, force: true });
+  try {
+    execFileSync(
+      "cc",
+      [
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Werror",
+        path.join(import.meta.dirname, "diagnostic-capacity-pidfd.c"),
+        "-o",
+        binary,
+      ],
+      { timeout: 10_000 },
+    );
+  } catch (error) {
+    cleanup();
+    throw error;
+  }
+  process.once("exit", cleanup);
+  signalWorker = binary;
+  return binary;
 }
 
 export function signalBoundProcesses(
   lives: NativeLife[],
   action: "SIGCONT" | "SIGTERM" | "SIGKILL" | "observe",
 ) {
-  const code = [
-    "import os,json,sys,signal",
-    "rows=[]",
-    "for expected in json.loads(sys.argv[1]):",
-    " row={'pid':expected['pid'],'birthTicks':expected['birthTicks'],'alive':False,'signal':sys.argv[2],'sent':False}",
-    " fd=None",
-    " try:",
-    "  fd=os.pidfd_open(expected['pid'],0)",
-    "  raw=open('/proc/'+str(expected['pid'])+'/stat').read();f=raw[raw.rfind(') ')+2:].split()",
-    "  match=f[19]==expected['birthTicks'] and os.path.realpath('/proc/'+str(expected['pid'])+'/exe')==expected['executable']",
-    "  row.update(matched=match,pidfdBound=True,state=f[0],alive=match and f[0]!='Z')",
-    "  if match and f[0]!='Z' and sys.argv[2]!='observe': signal.pidfd_send_signal(fd,getattr(signal,sys.argv[2]));row['sent']=True",
-    " except ProcessLookupError: pass",
-    " except FileNotFoundError: pass",
-    " except OSError as error: row['error']=str(error)",
-    " finally:",
-    "  if fd is not None: os.close(fd)",
-    " rows.append(row)",
-    "print(json.dumps(rows))",
-  ].join("\n");
-  return JSON.parse(
-    execFileSync("python3", ["-c", code, JSON.stringify(lives), action], {
-      encoding: "utf8",
-      timeout: 10_000,
-    }),
-  ) as { pid: number; birthTicks: string; alive: boolean; matched?: boolean; error?: string }[];
+  if (lives.length === 0) return [];
+  const args = lives.flatMap(({ pid, birthTicks, executable }) => [
+    String(pid),
+    birthTicks,
+    executable,
+  ]);
+  const lines = execFileSync(signalWorkerPath(), [action, ...args], {
+    encoding: "utf8",
+    timeout: 10_000,
+  })
+    .trimEnd()
+    .split("\n");
+  assert.equal(lines.length, lives.length);
+  return lives.map(({ pid, birthTicks }, index) => {
+    const { errorNumber, ...status } = JSON.parse(lines[index]!) as {
+      errorNumber?: number;
+      matched?: boolean;
+      pidfdBound?: boolean;
+      state?: string;
+      alive?: boolean;
+      sent?: boolean;
+    };
+    return {
+      pid,
+      birthTicks,
+      signal: action,
+      alive: false,
+      sent: false,
+      ...status,
+      ...(errorNumber === undefined ? {} : { error: getSystemErrorMessage(-errorNumber) }),
+    };
+  });
 }
 
 export async function cleanupCapacitySession(session: LspSession, gate?: NativeDiagnosticsGate) {

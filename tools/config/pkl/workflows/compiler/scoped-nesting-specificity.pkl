@@ -1,0 +1,89 @@
+import "../../Actions.pkl" as ci
+
+name = "Scoped nesting specificity"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/scoped-nesting-specificity.yml"
+      ".github/scripts/workflows/scoped-nesting-specificity/**"
+      "crates/vize_atelier_sfc/src/vite_plugin/css_scope.rs"
+      "crates/vize_atelier_sfc/src/vite_plugin/css_scope/**"
+      "crates/vize_atelier_sfc/tests/scoped_nesting_specificity.rs"
+      "crates/vize_atelier_sfc/tests/fixtures/scoped_nesting_specificity.json"
+      "tests/tooling/scoped-nesting-specificity.test.mjs"
+      "tests/_fixtures/differential/compiler/scoped-list-nesting-10606/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "scoped-nesting-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_TERM_COLOR = "always"
+  HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
+}
+jobs {
+  `scoped-cascade` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("scoped-nesting-specificity")
+      ci.checkoutAt("${{ env.HEAD_SHA }}")
+      ci.rust("stable")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "scoped-nesting-specificity"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          `run-install` = false
+          cache = true
+          `cache-save` = false
+        }
+      }
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      new Dynamic {
+        uses = "./.github/actions/install-playwright-browsers"
+        with { workspace = "./tests" }
+      }
+      new Dynamic {
+        name = "Compile current source and retain all prior scoped CSS oracles"
+        env { VIZE_SCOPED_NESTING_CAPTURE = "${{ runner.temp }}/scoped-nesting-modules.json" }
+        run = ci.workflowScript("compile-current-source-and-retain-all-prior-scoped-css-oracles.sh")
+      }
+      new Dynamic {
+        name = "Verify complete scoped CSS and real Chromium cascade and pixels"
+        env {
+          VIZE_SCOPED_NESTING_CAPTURE = "${{ runner.temp }}/scoped-nesting-modules.json"
+          VIZE_SCOPED_NESTING_REQUIRE_SOURCE = "1"
+          VIZE_SCOPED_NESTING_RUNTIME_CAPTURE = "${{ runner.temp }}/scoped-nesting-runtime.json"
+        }
+        run = "vp node --test tests/tooling/scoped-nesting-specificity.test.mjs"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "scoped-nesting-${{ env.HEAD_SHA }}-${{ github.run_id }}"
+          path = """
+          ${{ runner.temp }}/scoped-nesting-modules.json
+          ${{ runner.temp }}/scoped-nesting-runtime.json
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

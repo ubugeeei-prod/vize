@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -16,6 +17,10 @@ void test("the actual Vite package command discovers new tests and preserves fai
   const records = path.join(directory, "observed.jsonl");
   try {
     fs.mkdirSync(path.join(directory, "scripts"));
+    fs.copyFileSync(
+      path.join(root, "npm/builder/vite/scripts/package-tasks.cjs"),
+      path.join(directory, "scripts/package-tasks.cjs"),
+    );
     fs.writeFileSync(
       path.join(directory, "package.json"),
       JSON.stringify({
@@ -27,28 +32,17 @@ void test("the actual Vite package command discovers new tests and preserves fai
     // image. The existing js-native-prepared tests own its real native contract.
     fs.writeFileSync(
       path.join(directory, "scripts/run-tests.ts"),
-      `
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-assert.deepEqual(process.argv.slice(2), ['--require-prepared']);
-fs.appendFileSync(process.env.VIZE_DISCOVERY_RECORDS, JSON.stringify({phase:'prepared'})+String.fromCharCode(10));
-process.exit(Number(process.env.VIZE_DISCOVERY_PREPARE_STATUS || 0));
-`,
+      readToolingProgram("commands/vite-test-discovery/record-prepare-step.js"),
     );
     const writeTest = (file: string, fails = false) => {
       const target = path.join(directory, file);
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.writeFileSync(
         target,
-        `
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import { test } from 'node:test';
-test(${JSON.stringify(file)}, () => {
-  fs.appendFileSync(process.env.VIZE_DISCOVERY_RECORDS, JSON.stringify({phase:'test',file:${JSON.stringify(file)}})+String.fromCharCode(10));
-  assert.equal(${fails}, false);
-});
-`,
+        readToolingProgram("commands/vite-test-discovery/report-discovered-case.js.in", {
+          FILE: JSON.stringify(file),
+          FAILS: fails,
+        }),
       );
     };
     const run = (prepareStatus = 0) => {

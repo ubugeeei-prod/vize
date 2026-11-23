@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -264,11 +265,11 @@ void test(
       // A protocol test executable, not a source-build or native qualification.
       fs.writeFileSync(
         binaryPath,
-        `#!${process.execPath}\nconst fs=require('node:fs'),assert=require('node:assert/strict');
-if(process.argv[2]==='--version'){console.log('vize 0.0.0-dev');process.exit(0);}
-for(const [file,bytes] of ${JSON.stringify(expectedFiles)})assert.deepEqual(fs.readFileSync(file),Buffer.from(bytes,'base64'));
-assert.deepEqual(fs.readdirSync('.').sort(),['Layout.vue','src','tsconfig.json']);
-fs.mkdirSync('out');fs.writeFileSync('out/Layout.json',JSON.stringify({filename:'Layout.vue',code:${JSON.stringify(expected.toString())},css:null,errors:[],warnings:[],script_lang:'ts',macro_artifacts:[]}));\n`,
+        readToolingProgram("commands/differential-compiler-project/binary-path.cjs.in", {
+          NODE: process.execPath,
+          EXPECTED_FILES: JSON.stringify(expectedFiles),
+          EXPECTED_TO_STRING: JSON.stringify(expected.toString()),
+        }),
       );
       fs.chmodSync(binaryPath, 0o755);
       writeBuildReceipt(repo);

@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -8,30 +9,7 @@ import { decodeFrames, frameMessage, LspWire } from "../differential/lsp-wire.ts
 void test("LSP wire client captures split real subprocess frames and a clean shutdown", async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "lsp-wire-law-"));
   const script = path.join(dir, "fake.ts");
-  fs.writeFileSync(
-    script,
-    `
-    let buffer = Buffer.alloc(0);
-    process.stdin.on('data', chunk => {
-      buffer = Buffer.concat([buffer, chunk]);
-      while (true) {
-        const end = buffer.indexOf('\\r\\n\\r\\n');
-        if (end < 0) return;
-        const length = Number(buffer.subarray(0, end).toString().match(/Content-Length: (\\d+)/)[1]);
-        if (buffer.length < end + 4 + length) return;
-        const message = JSON.parse(buffer.subarray(end + 4, end + 4 + length));
-        buffer = buffer.subarray(end + 4 + length);
-        if (message.method === 'exit') { process.exit(0); }
-        if (message.id) {
-          const body = JSON.stringify({jsonrpc: '2.0', id: message.id, result: message.method === 'shutdown' ? null : '😀あ'});
-          const frame = Buffer.from('Content-Length: ' + Buffer.byteLength(body) + '\\r\\n\\r\\n' + body);
-          process.stdout.write(frame.subarray(0, 7));
-          process.stdout.write(frame.subarray(7));
-        }
-      }
-    });
-  `,
-  );
+  fs.writeFileSync(script, readToolingProgram("commands/differential-lsp-wire/respond-to-lsp.js"));
   const wire = new LspWire(process.execPath, [script], dir);
   try {
     assert.deepEqual(await wire.request("unicode", { source: "あ" }), {

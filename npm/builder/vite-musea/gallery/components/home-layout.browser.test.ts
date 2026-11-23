@@ -91,7 +91,7 @@ await test(
                 status: [status.left - rect.left, rect.right - status.right],
                 statusLines: [...statusText.getClientRects()].filter((line) => line.width > 0)
                   .length,
-                tags: [...card.querySelectorAll(".home-card-tag")].map((tag) =>
+                tags: [...card.querySelectorAll(".home-card-tags .tag-badge")].map((tag) =>
                   tag.textContent?.trim(),
                 ),
               };

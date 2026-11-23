@@ -1,0 +1,90 @@
+import "../../Actions.pkl" as ci
+
+name = "Leading newline runtime"
+on {
+  pull_request {
+    paths = new Listing {
+      "crates/vize_armature/src/parser/**"
+      "crates/vize_armature/tests/_fixtures/first_newline_parser_*"
+      "crates/vize_armature/tests/_fixtures/tokenizer_parser_*.bin"
+      "crates/vize_atelier_vapor/src/lower/element/template.rs"
+      "crates/vize_atelier_vapor/src/lower/element/template/**"
+      "davinci/vize_l1_to_l2/src/lower/**"
+      "davinci/vize_l1_to_l2/tests/pre_textarea_first_newline.rs"
+      "davinci/vize_l1_to_l2/tests/text_pass.rs"
+      "davinci/vize_l1_to_l2/tests/text_singleton.rs"
+      "tests/tooling/pre-textarea-first-newline.test.mjs"
+      "tests/tooling/support/first-newline-vapor-oracle.mjs"
+      "tests/_fixtures/differential/compiler/pre-textarea-first-newline/**"
+      "tests/_fixtures/differential/compiler/first-newline-runtime.manifest.json"
+      "tests/_fixtures/differential/compiler/manifest.json"
+      ".github/workflows/pre-textarea-first-newline.yml"
+      ".github/scripts/workflows/pre-textarea-first-newline/**"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "first-newline-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  runtime {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/pre-textarea-first-newline"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067"  // master
+        with { toolchain = "1.100.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "first-newline"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          `run-install` = true
+        }
+      }
+      ci.use("./.github/actions/setup-ubuntu-archive")
+      ci.command("Install Chromium", "vize-ci-apt-retry vp exec --filter './tests' -- playwright install --with-deps chromium")
+      new Dynamic {
+        name = "Build the actual CLI and run source-bound browser observations"
+        env {
+          VIZE_FIRST_NEWLINE_BIN = "${{ github.workspace }}/target/ci/vize"
+          VIZE_FIRST_NEWLINE_CAPTURE = "${{ runner.temp }}/first-newline-observations.json"
+        }
+        run = ci.workflowScript("build-the-actual-cli-and-run-source-bound-browser-observations.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "first-newline-${{ github.sha }}-${{ github.run_attempt }}"
+          path = """
+          ${{ runner.temp }}/first-newline-source.txt
+          ${{ runner.temp }}/first-newline-observations.json
+          ${{ runner.temp }}/first-newline-tokenizer-*
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

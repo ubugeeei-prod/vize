@@ -1,8 +1,8 @@
+import { readWorkflowShell } from "../../../tests/tooling/support/automation-source.ts";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import TOML from "@iarna/toml";
 import { canonSource } from "./typechecker-native-canon-lib-scope.mjs";
-import { physicalSource } from "./typechecker-native-canon-lib-source.mjs";
 
 const repository = fileURLToPath(new URL("../../../", import.meta.url));
 export const actual = canonSource(process.env.NATIVE_PHASE_SOURCE_ROOT ?? repository);
@@ -30,9 +30,7 @@ for (const declarations of Object.values(rootManifest.patch ?? {})) {
 export const canonManifest = "crates/vize_canon/Cargo.toml";
 export const integration = "crates/vize_canon/tests/ambient_declarations.rs";
 export const library = "crates/vize_canon/src/corsa_bridge/outside_import_editor_tests.rs";
-export const workflow = physicalSource(repository).read(
-  ".github/workflows/typechecker-native-phases.yml",
-);
+export const workflow = readWorkflowShell("typechecker-native-phases");
 export function source(changes = {}) {
   const files = new Map(texts);
   for (const [file, text] of Object.entries(changes)) {

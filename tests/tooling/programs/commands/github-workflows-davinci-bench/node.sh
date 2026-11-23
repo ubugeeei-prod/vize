@@ -1,0 +1,3 @@
+#!/bin/sh
+printf '%s\n' '{"selected":["vize_glyph"],"reason":"from impact script"}' > "$GITHUB_WORKSPACE/criterion-impact.json"
+printf '%s\n' 'has_suites=true' >> "$GITHUB_OUTPUT"

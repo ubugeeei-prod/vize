@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
@@ -224,7 +225,11 @@ test("forged Node identities and npx shims fail before an install is permitted",
     const node = path.join(f.root, path.basename(process.execPath));
     if (process.platform !== "win32") {
       const identity = JSON.stringify({ execPath: process.execPath, version: process.version });
-      fs.writeFileSync(node, `#!/bin/sh\nprintf '%s' '${identity}'\n`, { mode: 0o755 });
+      fs.writeFileSync(
+        node,
+        readToolingProgram("commands/reka-check-prepare/node.sh", { IDENTITY: identity }),
+        { mode: 0o755 },
+      );
       assert.throws(() => inspectPrepareNode(node, process.env), /shim changed runtime/);
       let installs = 0;
       assert.throws(
@@ -268,7 +273,7 @@ test("forged Node identities and npx shims fail before an install is permitted",
     assert.equal(installs, 0);
     assert.throws(() => inspectRekaNpx({ PATH: f.root }), /refuses an npx shim/);
     assert.equal(
-      execFileSync(process.execPath, ["-p", "process.version"], { encoding: "utf8" }).trim(),
+      execFileSync(process.execPath, ["--version"], { encoding: "utf8" }).trim(),
       process.version,
     );
   } finally {

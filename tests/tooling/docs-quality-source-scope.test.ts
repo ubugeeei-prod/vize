@@ -1,3 +1,4 @@
+import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -61,7 +62,7 @@ void test("the actual reader remains Node-only and Docs checks do not build the 
     "tests/tooling/docs-more-guides.test.ts",
   ])
     assert.ok(localImportInputs(consumer).files.includes(reader), consumer);
-  const rendering = readFileSync(join(root, ".github/workflows/build-docs.yml"), "utf8");
+  const rendering = readAutomationPrograms(join(root, ".github/workflows/build-docs.yml"));
   assert.match(rendering, /vp run --filter '\.\/npm\/native' build:ci/);
   assert.doesNotMatch(rendering, /verify-more-guides-render/);
   const japaneseReading = rendering
@@ -70,9 +71,11 @@ void test("the actual reader remains Node-only and Docs checks do not build the 
   assert.ok(japaneseReading, "the reviewed Japanese browser checks remain enrolled");
   assert.match(japaneseReading, /if: \$\{\{ inputs\.links-only != true \}\}/);
   assert.ok(
-    japaneseReading.includes(
-      'defaultNavigationRenderRoutes.filter(route => route.startsWith("/ja/"))',
-    ),
+    workflowProgram(
+      "build-docs",
+      japaneseReading,
+      "verify-rendered-navigation-and-japanese-reading-paths.ts",
+    ).includes('defaultNavigationRenderRoutes.filter((route) => route.startsWith("/ja/"))'),
   );
   assert.ok(
     japaneseReading.includes(
@@ -82,7 +85,7 @@ void test("the actual reader remains Node-only and Docs checks do not build the 
   assert.ok(japaneseReading.includes("node docs/scripts/verify-ja-editorial-render.ts"));
   assert.doesNotMatch(rendering, /verify-og-images/);
   assert.doesNotMatch(
-    readFileSync(join(root, ".github/workflows/pr-source-checks.yml"), "utf8"),
+    readAutomationPrograms(join(root, ".github/workflows/pr-source-checks.yml")),
     /pr-source-cli|test:scripts:pr/,
   );
 });

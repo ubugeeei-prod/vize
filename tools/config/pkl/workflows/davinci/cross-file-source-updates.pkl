@@ -1,0 +1,68 @@
+import "../../Actions.pkl" as ci
+
+name = "Cross-file retained import updates"
+`run-name` = "Cross-file retained updates @ ${{ github.event.pull_request.head.sha || github.sha }}"
+on {
+  workflow_dispatch = null
+  pull_request {
+    types = List("opened", "synchronize", "reopened")
+    paths = new Listing {
+      ".github/workflows/cross-file-source-updates.yml"
+      ".github/scripts/workflows/cross-file-source-updates/**"
+      "crates/vize_croquis_cf/src/analyzer/core/deps.rs"
+      "crates/vize_croquis_cf/src/analyzer/core/deps/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "cross-file-source-updates-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  CARGO_INCREMENTAL = "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  EXPECTED_SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+}
+jobs {
+  `retained-owner-graphs` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("cross-file-source-updates")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      ci.workspaceVp()
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "cross-file-sfc-effects"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.command("Install frozen workspace tools", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Observe exact retained-owner regression packets"
+        run = ci.workflowScript("observe-exact-retained-owner-regression-packets.sh")
+      }
+      new Dynamic {
+        name = "Preserve complete regression packets and source identities"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "cross-file-source-updates-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "target/vize-tests/cross-file-source-updates"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

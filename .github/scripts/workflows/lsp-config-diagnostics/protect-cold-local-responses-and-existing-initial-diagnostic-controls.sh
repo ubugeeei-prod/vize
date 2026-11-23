@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set +e
+node --test --test-concurrency=1 tests/tooling/lsp-startup-local-interactive.test.ts tests/tooling/lsp-initial-diagnostics-version.test.ts tests/tooling/native-config-preload-observations.test.ts tests/tooling/native-config-compile-cache.test.ts > target/vize-tests/lsp-config-diagnostics/controls.stdout 2> target/vize-tests/lsp-config-diagnostics/controls.stderr
+status=$?
+cat target/vize-tests/lsp-config-diagnostics/controls.stdout
+cat target/vize-tests/lsp-config-diagnostics/controls.stderr >&2
+printf '%s\n' "$status" > target/vize-tests/lsp-config-diagnostics/controls.status
+exit "$status"

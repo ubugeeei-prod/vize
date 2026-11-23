@@ -1,14 +1,16 @@
 import { cacheInputs, packedPackages } from "../task-inputs.ts";
 import {
+  assertVscodePackage,
+  packageVscodeExtension,
+  stageVscodeTypeScriptPlugin,
+  steps,
   defineTasks,
   nodeCommand,
-  nodeCommandFromVscodeExtension,
   nodeTool,
   noCacheTask,
   runInPackages,
   runInVscodeExtension,
   runPackageScriptDirectly,
-  rustToolFromVscodeExtension,
   runTask,
   runTasks,
   task,
@@ -16,58 +18,38 @@ import {
 } from "../task-helpers.ts";
 import { inTestbox } from "./testbox.ts";
 
-const stageVscodeTypeScriptPlugin = nodeCommandFromVscodeExtension(
-  "editors/vscode/sync-typescript-plugin",
-  "stage",
-);
-const injectVscodeTypeScriptPlugin = nodeCommandFromVscodeExtension(
-  "editors/vscode/sync-typescript-plugin",
-  "inject",
-  "dist/vize.vsix",
-);
-const assertVscodePackage = rustToolFromVscodeExtension(
-  "editors/vscode/assert-vsix-package",
-  "dist/vize.vsix",
-);
-const packageVscodeExtension = [
-  stageVscodeTypeScriptPlugin,
-  `${vscodeExtensionPackageBin("@vscode/vsce", "vsce")} package --no-dependencies --out dist/vize.vsix`,
-  injectVscodeTypeScriptPlugin,
-].join(" && ");
 const localBuildCommand = runTasks("build:rust", "build:all");
 
-/**
- * Build and packaging tasks for the repository's compiled artifacts.
- *
- * This group owns the expensive production-oriented work: Rust workspace
- * builds, npm package packing, WASM generation, and editor extension bundles.
- * Keeping those targets together makes dependency edges such as
- * `build:editor-extensions` -> `check:zed-extension` easy to audit without
- * forcing unrelated test or release commands into the same module.
- */
+function editorArchive(editor: string, verify: string, options: string[] = []) {
+  const archive = editor + "-vize-extension.tar.gz";
+  return noCacheTask(
+    steps(
+      {
+        program: "tar",
+        arguments: [...options, "-czf", archive, "-C", "editors", editor],
+        environment: { COPYFILE_DISABLE: "1", LC_ALL: "C", LANG: "C" },
+      },
+      nodeCommand(verify, archive),
+    ),
+  );
+}
+
 export const buildTasks = defineTasks({
   // Local is the default so a clean checkout never needs hosted credentials.
   // Testbox remains an explicit CI-parity opt-in with the same task graph.
   build: noCacheTask(localBuildCommand),
-  "build:testbox": noCacheTask(inTestbox(localBuildCommand)),
+  "build:testbox": noCacheTask(inTestbox("build")),
   "build:all": noCacheTask(runTasks("build:runtime", "package:editor-extensions")),
   "build:rust": task("cargo build --workspace", { input: cacheInputs.rust }),
   "build:runtime": noCacheTask(runTasks("build:native", "build:wasm", "build:packages")),
   "build:packages": noCacheTask(runInPackages("build", packedPackages)),
   "build:native": noCacheTask(runPackageScriptDirectly("build", ["./npm/native"])),
-  // Fast variant for test pipelines: dev cargo profile via the local
-  // `build:debug` script. We deliberately route through `build:debug`
-  // (which wraps `build-local.mjs --no-js`) rather than `build:ci`
-  // because `build:ci` regenerates `index.js` / `index.d.ts` and
-  // wipes the manual JSON.parse wrappers that the token API depends on.
-  // The dev profile shaves ~2 minutes off the release-profile build and
-  // matches the profile that vite-plugin-vize uses for standalone tests.
-  // test:js reuses this successful build instead of invoking Cargo again.
+  // The debug build preserves the token API wrappers in index.js and is reused by test:js.
   "build:native:test": noCacheTask(runPackageScriptDirectly("build:debug", ["./npm/native"])),
   "build:wasm": task(nodeTool("tasks/build-vitrine-wasm", "nodejs", "npm/builder/vite/wasm")),
   "build:wasm-web": task(nodeTool("tasks/build-vitrine-wasm", "web", "playground/src/wasm")),
   "build:vite-plugin": noCacheTask(
-    `${runInPackages("build", ["./npm/cli"])} && ${runInPackages("build", ["./npm/builder/vite"])}`,
+    steps(runInPackages("build", ["./npm/cli"]), runInPackages("build", ["./npm/builder/vite"])),
   ),
   "build:nuxt-stack": noCacheTask(
     runInPackages("build", [
@@ -92,34 +74,32 @@ export const buildTasks = defineTasks({
   "check:zed-extension": task("cargo check --manifest-path editors/zed/Cargo.toml", {
     input: ["editors/zed/**"],
   }),
-  "package:zed-extension": noCacheTask(
-    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar --exclude 'zed/target' -czf zed-vize-extension.tar.gz -C editors zed && ${nodeCommand("editors/zed/assert-zed-package", "zed-vize-extension.tar.gz")}`,
-  ),
-  "package:nvim-extension": noCacheTask(
-    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf nvim-vize-extension.tar.gz -C editors nvim && ${nodeCommand("editors/neovim/assert-nvim-package", "nvim-vize-extension.tar.gz")}`,
-  ),
-  "package:vim-extension": noCacheTask(
-    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf vim-vize-extension.tar.gz -C editors vim && ${nodeCommand("editors/vim/assert-vim-package", "vim-vize-extension.tar.gz")}`,
-  ),
-  "package:helix-extension": noCacheTask(
-    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf helix-vize-extension.tar.gz -C editors helix && ${nodeCommand("editors/helix/assert-helix-package", "helix-vize-extension.tar.gz")}`,
-  ),
-  "package:emacs-extension": noCacheTask(
-    `COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf emacs-vize-extension.tar.gz -C editors emacs && ${nodeCommand("editors/emacs/assert-emacs-package", "emacs-vize-extension.tar.gz")}`,
-  ),
+  "package:zed-extension": editorArchive("zed", "editors/zed/assert-zed-package", [
+    "--exclude",
+    "zed/target",
+  ]),
+  "package:nvim-extension": editorArchive("nvim", "editors/neovim/assert-nvim-package"),
+  "package:vim-extension": editorArchive("vim", "editors/vim/assert-vim-package"),
+  "package:helix-extension": editorArchive("helix", "editors/helix/assert-helix-package"),
+  "package:emacs-extension": editorArchive("emacs", "editors/emacs/assert-emacs-package"),
   "package:editor-extensions": noCacheTask(
-    `${runInVscodeExtension(
-      `${vscodeExtensionPackageBin("typescript", "tsc")} --noEmit`,
-      `${vscodeExtensionPackageBin("vite-plus", "vp")} check src vite.config.ts`,
-      packageVscodeExtension,
-      assertVscodePackage,
-    )} && ${runTask("check:zed-extension")} && ${runTask(
-      "test:zed-extension:unit",
-    )} && ${runTask("package:zed-extension")} && ${runTask(
-      "package:nvim-extension",
-    )} && ${runTask("package:vim-extension")} && ${runTask(
-      "package:helix-extension",
-    )} && ${runTask("package:emacs-extension")}`,
+    steps(
+      runInVscodeExtension(
+        vscodeExtensionPackageBin("typescript", "tsc", "--noEmit"),
+        vscodeExtensionPackageBin("vite-plus", "vp", "check", "src", "vite.config.ts"),
+        packageVscodeExtension,
+        assertVscodePackage,
+      ),
+      runTasks(
+        "check:zed-extension",
+        "test:zed-extension:unit",
+        "package:zed-extension",
+        "package:nvim-extension",
+        "package:vim-extension",
+        "package:helix-extension",
+        "package:emacs-extension",
+      ),
+    ),
   ),
   "install:plugin": noCacheTask("vp install --filter './npm/builder/vite'"),
 });

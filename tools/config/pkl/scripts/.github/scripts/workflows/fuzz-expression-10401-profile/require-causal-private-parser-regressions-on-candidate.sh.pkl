@@ -1,0 +1,12 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  target="$RUNNER_TEMP/expression-10401-$ROLE-$SOURCE_SHA-tests"
+  test ! -e "$target"
+  CARGO_TARGET_DIR="$target" cargo +nightly-2026-10-23 test --locked -p vize_oxc_parser --profile ci type_argument_close_tests 2>&1 | tee ../evidence/causal-tests.log
+  """#
+}

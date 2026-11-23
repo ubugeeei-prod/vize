@@ -1,0 +1,81 @@
+import "../../Actions.pkl" as ci
+
+name = "Native syntax and semantic completion"
+on {
+  workflow_dispatch {
+    inputs {
+      source_ref {
+        description = "Complete immutable commit SHA for the composed source"
+        required = true
+        type = "string"
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "typechecker-syntax-completion-${{ inputs.source_ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_TERM_COLOR = "always"
+  QUALIFIER_SHA = "${{ inputs.source_ref }}"
+}
+jobs {
+  `native-syntax-completion` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 105
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("typechecker-syntax-semantic-completion")
+      ci.checkoutAt("${{ env.QUALIFIER_SHA }}")
+      new Dynamic {
+        name = "Authenticate the complete source"
+        run = ci.workflowScript("authenticate-the-complete-source.sh")
+      }
+      new Dynamic {
+        name = "Original complete App E2E check row, sharing its native build"
+        env { VIZE_APP_CHECK_CAPTURE_DIR = "${{ github.workspace }}/target/native-syntax-completion/original-app-packets" }
+        uses = "./.github/actions/app-e2e-row"
+        with {
+          profile = "full"
+          suite = "check"
+          shard = "all"
+          task = "test:check"
+          timeout = "75m"
+          `needs-playwright` = "false"
+          `cache-key` = "app-e2e-full-check-all"
+          `worktree-id` = "ci-app-e2e-full-check-all"
+          `artifact-stem` = "full-check-all"
+        }
+      }
+      new Dynamic {
+        name = "Actual generator and native completion controls"
+        `if` = "${{ !cancelled() }}"
+        env {
+          VIZE_TEST_REQUIRE_TSGO = "1"
+          VIZE_TEST_REQUIRE_PIN_INPUT_FIXTURE = "1"
+          VIZE_NATIVE_SYNTAX_CAPTURE_DIR = "${{ github.workspace }}/target/native-syntax-completion/packets"
+        }
+        run = ci.workflowScript("actual-generator-and-native-completion-controls.sh")
+      }
+      new Dynamic {
+        name = "Retain all whole-source qualification packets"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "native-syntax-completion-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.QUALIFIER_SHA }}"
+          path = """
+          target/native-syntax-completion/
+          target/app-e2e-logs/
+          tests/app/results/
+          tests/snapshots/check/**/__snapshots__/*.snap.actual
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

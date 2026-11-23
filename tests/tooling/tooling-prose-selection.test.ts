@@ -47,3 +47,10 @@ void test("PRs select readers by name, while the merge tier stays complete", () 
   assert.ok(mixed.tests.length < mixed.totalTests / 4);
   assert.ok(prose.tests.every((file) => mixed.tests.includes(file)));
 });
+
+void test("an edit to a named program selects the suites that import its owner", () => {
+  const program = "tests/tooling/programs/commands/typecheck-divergence/mutation-diagnostics.js";
+  const selected = planToolingTests([program]).tests;
+  assert.ok(selected.includes("tests/tooling/typecheck-divergence-mutation-oracle.test.ts"));
+  assert.ok(selected.includes("tests/tooling/typecheck-divergence-report-rejections.test.ts"));
+});

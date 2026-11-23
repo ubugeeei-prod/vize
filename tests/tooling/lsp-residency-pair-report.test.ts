@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -8,7 +9,7 @@ import { test } from "node:test";
 import { summarizeResidencyPair } from "../../tools/benchmarks/scripts/lsp-residency-pair-report.ts";
 
 const sha = (digit: string): string => digit.repeat(40);
-const workflow = fs.readFileSync(
+const workflow = readAutomationPrograms(
   new URL("../../.github/workflows/lsp-residency-pair.yml", import.meta.url),
   "utf8",
 );

@@ -1,0 +1,10 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  printf 'Version @@VERSION@@\n'
+  printf '# changed\n' >> "$0"
+  """#
+}

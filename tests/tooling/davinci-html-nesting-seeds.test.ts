@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 // Davinci P4-11a / P4-11b — TS-37 seeded HTML nesting classes.
 //
 // `seed-defects.rs --html-nesting` appends one snippet per checker class
@@ -71,7 +72,10 @@ test("the seeded classes are exactly the checker's classes plus the composed one
 test("the assertion fails when the linter finds nothing (non-vacuous)", () => {
   const bin = fs.mkdtempSync(path.join(os.tmpdir(), "davinci-html-nesting-bin-"));
   const fake = path.join(bin, "vize");
-  fs.writeFileSync(fake, '#!/bin/sh\n[ "$1" = "--version" ] && echo vize && exit 0\necho "[]"\n');
+  fs.writeFileSync(
+    fake,
+    readToolingProgram("commands/davinci-html-nesting-seeds/lint-template-seed.sh"),
+  );
   fs.chmodSync(fake, 0o755);
   try {
     const { result: silent, out: silentOut } = seed({ ...process.env, VIZE_BIN: fake });

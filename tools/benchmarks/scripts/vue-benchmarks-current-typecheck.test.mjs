@@ -12,6 +12,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
+import { toolingProgram, processResultArgs } from "../../../tests/tooling/support/program-path.ts";
+
 import {
   captureProcess,
   decodeCapture,
@@ -27,9 +29,13 @@ import { vizeTypecheckConfig } from "./vize-typecheck-config.mjs";
 await test("binary streams and failed status are retained before malformed JSON is rejected", () => {
   const root = mkdtempSync(join(tmpdir(), "vize-current-typecheck-raw-"));
   try {
-    const script =
-      "process.stdout.write(Buffer.from([0,255,195,40]));process.stderr.write(Buffer.from([254,0,128]));process.exit(7)";
-    const captured = captureProcess(root, "stub", process.execPath, ["-e", script], root);
+    const captured = captureProcess(
+      root,
+      "stub",
+      process.execPath,
+      processResultArgs({ stdout: [0, 255, 195, 40], stderr: [254, 0, 128], status: 7 }),
+      root,
+    );
     assert.equal(captured.observation.status, 7);
     assert.equal(captured.observation.signal, null);
     assert.deepEqual(readFileSync(join(root, "stub.stdout.bin")), Buffer.from([0, 255, 195, 40]));
@@ -70,8 +76,13 @@ await test("missing executable preserves ENOENT and null outputs without becomin
 await test("terminated stub retains the actual signal before parsing can proceed", () => {
   const root = mkdtempSync(join(tmpdir(), "vize-current-typecheck-signal-"));
   try {
-    const script = "process.kill(process.pid, 'SIGTERM')";
-    const captured = captureProcess(root, "terminated", process.execPath, ["-e", script], root);
+    const captured = captureProcess(
+      root,
+      "terminated",
+      process.execPath,
+      [toolingProgram("process/terminate-self.js")],
+      root,
+    );
     const stored = JSON.parse(readFileSync(join(root, "terminated.json")));
     assert.equal(stored.status, null);
     assert.equal(stored.signal, "SIGTERM");

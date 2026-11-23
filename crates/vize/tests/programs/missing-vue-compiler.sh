@@ -1,0 +1,4 @@
+#!/bin/sh
+echo "node:internal/modules/esm/resolve:271" >&2
+echo "Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/node_modules/vue/compiler-sfc'" >&2
+exit 1

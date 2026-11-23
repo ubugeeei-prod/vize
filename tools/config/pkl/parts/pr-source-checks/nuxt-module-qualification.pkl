@@ -1,0 +1,3 @@
+name = "Nuxt and Vite release products"
+`if` = "${{ github.event_name == 'merge_group' }}"
+uses = "./.github/workflows/nuxt-vite-release-products.yml"

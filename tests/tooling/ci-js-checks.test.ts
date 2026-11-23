@@ -1,3 +1,5 @@
+import { workspaceTaskSteps } from "../../tools/config/vite-plus/task-plan.ts";
+import { packageScripts } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -15,29 +17,26 @@ import {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-type TaskShape = {
-  command: string;
-};
-
-const taskShape = (value: unknown) => value as TaskShape;
-
 test("CI JS checks keep native-backed UI lint behind the native build", () => {
-  const command = taskShape(checkTasks["check:ci"]).command;
-  const uiStaticCommand = "--filter './npm/ui' check:static";
-  const uiStaticIndex = command.indexOf(uiStaticCommand);
+  const commands = workspaceTaskSteps(checkTasks["check:ci"]);
+  const last = commands.at(-1);
+  assert.deepEqual(last, {
+    program: "vp",
+    arguments: ["run", "--filter", "./npm/ui", "check:static"],
+    environment: { VP_RUN_CONCURRENCY_LIMIT: "1" },
+  });
+  assert.ok(commands.slice(0, -1).every((step) => !step.arguments?.includes("./npm/ui")));
   const manifest = JSON.parse(
     fs.readFileSync(path.join(root, "npm", "ui", "package.json"), "utf8"),
   ) as { scripts?: Record<string, string> };
 
   assert.deepEqual(nativeBuiltCheckPackages, ["./npm/ui"]);
   assert.ok(!checkedPackagesBeforeNativeBuild.includes("./npm/ui"));
-  assert.notEqual(uiStaticIndex, -1);
-  assert.doesNotMatch(command.slice(0, uiStaticIndex), /--filter '\.\/npm\/ui' check(?:\s|$)/);
   assert.equal(
-    manifest.scripts?.["check:static"],
+    packageScripts("npm/ui", manifest.scripts)["check:static"],
     "vp check src scripts vite.config.ts tsconfig.typecheck.json && vue-tsc --noEmit -p tsconfig.typecheck.json",
   );
-  assert.deepEqual(manifest.scripts?.check?.split(/\s*&&\s*/), [
+  assert.deepEqual(packageScripts("npm/ui", manifest.scripts).check?.split(/\s*&&\s*/), [
     "pnpm lint:sfc",
     "pnpm check:static",
     "pnpm check:story-testbed",

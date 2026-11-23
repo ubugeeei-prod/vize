@@ -1,0 +1,2 @@
+import {runPackageTask} from @@RUNNER@@;
+process.exitCode=runPackageTask({test:@@RECIPE@@},['test']);

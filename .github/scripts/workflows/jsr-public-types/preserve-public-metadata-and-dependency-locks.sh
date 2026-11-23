@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+curl --fail --silent --show-error --location -A vize-jsr-public-types/1.0 https://jsr.io/@vizejs/vize/meta.json -o public-metadata.json
+node "$VIZE_CI_FILES/preserve-public-metadata-and-dependency-locks.ts"

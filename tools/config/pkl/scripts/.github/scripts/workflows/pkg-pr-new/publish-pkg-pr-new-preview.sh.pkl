@@ -1,0 +1,31 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  set -e
+  OUTPUT_FILE=$(mktemp)
+  if vp exec pkg-pr-new publish --pnpm --packageManager=pnpm --comment=update \
+    './npm/cli' \
+    './npm/create-fresco' \
+    './npm/builder/vite' \
+    './npm/linter/oxlint' \
+    './npm/builder/unplugin' \
+    './npm/fresco' \
+    './npm/mcp-musea' \
+    './npm/builder/vite-musea' \
+    './npm/builder/rspack' \
+    './npm/framework/musea-nuxt' \
+    './npm/framework/nuxt-lint-config' \
+    './npm/framework/nuxt' \
+    './npm/ui' 2>&1 | tee "$OUTPUT_FILE"; then
+    exit 0
+  fi
+  if grep -q "The app https://github.com/apps/pkg-pr-new is not installed" "$OUTPUT_FILE"; then
+    echo "::warning::pkg-pr-new GitHub App is not installed on this repository. Install https://github.com/apps/pkg-pr-new to enable preview publishing. Skipping for now."
+    exit 0
+  fi
+  exit 1
+  """#
+}

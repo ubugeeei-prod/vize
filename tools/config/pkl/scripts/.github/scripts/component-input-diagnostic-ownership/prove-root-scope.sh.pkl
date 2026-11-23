@@ -1,0 +1,14 @@
+amends "../../../../ShellScript.pkl"
+
+commands {
+  module.strictMode
+  #"""
+
+  capture="$RUNNER_TEMP/component-input-ownership"
+  """#
+  module.makeDirectory("capture")
+  #"""
+  cargo test --locked --profile ci -p vize_canon --lib 'root_callback_owners::tests::' -- --nocapture > "$capture/root-callback-unit.stdout" 2> "$capture/root-callback-unit.stderr"
+  cargo test --locked --profile ci -p vize_canon --lib 'helper_modes::aria_' -- --nocapture > "$capture/aria-witness-unit.stdout" 2> "$capture/aria-witness-unit.stderr"
+  """#
+}

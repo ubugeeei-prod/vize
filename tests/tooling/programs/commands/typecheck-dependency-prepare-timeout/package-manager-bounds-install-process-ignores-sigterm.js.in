@@ -1,0 +1,4 @@
+const { spawn } = await import("node:child_process");
+process.on("SIGTERM", () => {});
+spawn(process.execPath, [@@CHILD_PROGRAM@@], { stdio: "inherit" });
+setInterval(() => {}, 1000);

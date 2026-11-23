@@ -18,7 +18,7 @@ test("fake publication refuses dotted development tables and keeps genuine norma
     const stop = Symbol("fake child exit");
     let actual: number | null = null;
     try {
-      vm.runInNewContext(assertPublishManifestIsSanitized.join("\n"), {
+      vm.runInNewContext(assertPublishManifestIsSanitized, {
         args: ["publish", "-p", "vize_lightningcss"],
         fs: { readFileSync: () => manifest, existsSync: () => false },
         path,

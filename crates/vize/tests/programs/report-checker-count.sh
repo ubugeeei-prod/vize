@@ -1,0 +1,9 @@
+#!/bin/sh
+previous=''
+for arg in "$@"; do
+  if [ "$previous" = '--checkers' ]; then
+    printf '%s\n' "$arg" >> "$VIZE_TEST_CHECKER_LOG"
+  fi
+  previous="$arg"
+done
+exit 0

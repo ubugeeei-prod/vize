@@ -1,0 +1,9 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  printf '%s\n' "$@" > "$ZIG_ARGS_LOG"
+  """#
+}

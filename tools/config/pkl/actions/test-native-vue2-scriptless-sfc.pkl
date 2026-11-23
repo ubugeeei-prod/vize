@@ -1,0 +1,51 @@
+import "../Actions.pkl" as ci
+
+name = "Capture complete original Vue2 SFC documents"
+description = "Join fresh native whole-source output and frames to independent pinned primary references"
+inputs {
+  `comparison-base` {
+    required = true
+    description = "Literal source base from the enclosing source tooling plan"
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Select the original whole Vue2 SFC source slice"
+      id = "select"
+      shell = "bash"
+      env { BASE_SHA = "${{ inputs.comparison-base }}" }
+      run = ci.actionScript("select-the-original-whole-vue2-sfc-source-slice.sh")
+    }
+    new Dynamic {
+      name = "Capture every complete original SFC Doc before judging the primary join"
+      `if` = "${{ steps.select.outputs.selected == 'true' }}"
+      shell = "bash"
+      env {
+        VIZE_GLYPH_VUE2_SFC_CAPTURE = "${{ runner.temp }}/native-vue2-scriptless-sfc.json"
+        VIZE_GLYPH_VUE2_SFC_RUNTIME_CAPTURE = "${{ runner.temp }}/native-vue2-scriptless-sfc-runtime.json"
+        VIZE_GLYPH_VUE2_SFC_SOURCE_HEAD = "${{ github.event.pull_request.head.sha || github.sha }}"
+      }
+      run = ci.actionScript("capture-every-complete-original-sfc-doc-before-judging-the-primary-join.sh")
+    }
+    new Dynamic {
+      name = "Retain the actual whole Vue2 SFC output and source frames"
+      `if` = "${{ always() && steps.select.outputs.selected == 'true' }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "native-vue2-scriptless-sfc-${{ github.run_id }}-${{ github.sha }}"
+        path = """
+        ${{ runner.temp }}/native-vue2-scriptless-sfc.json
+        ${{ runner.temp }}/native-vue2-scriptless-sfc-rust.log
+        ${{ runner.temp }}/native-vue2-scriptless-sfc-oracle.log
+        ${{ runner.temp }}/native-vue2-scriptless-sfc-status.json
+        ${{ runner.temp }}/native-vue2-scriptless-sfc-runtime.json
+
+        """
+        `if-no-files-found` = "error"
+        `retention-days` = 14
+      }
+    }
+  }
+}

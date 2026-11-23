@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -173,7 +174,10 @@ void test("matrix execution preserves full configuration packets and coverage", 
     const executable = path.join(scratch, "vize.mjs");
     fs.writeFileSync(
       executable,
-      `process.stdout.write(${JSON.stringify(JSON.stringify(output))}); process.exit(1);\n`,
+      readToolingProgram(
+        "commands/typechecker-configuration-qualification/return-config-output.js.in",
+        { OUTPUT: JSON.stringify(JSON.stringify(output)) },
+      ),
     );
     const run = runTool(
       {
@@ -263,7 +267,7 @@ void test("setup-only packets remain rejected as non-semantic qualification", ()
     const executable = path.join(scratch, "vize.mjs");
     fs.writeFileSync(
       executable,
-      'process.stderr.write("Error: IO error: Workspace package alias overlaps another package link\\n"); process.exit(1);\n',
+      readToolingProgram("commands/typechecker-configuration-qualification/emit-config-error.js"),
     );
     const project = {
       id: "setup-configuration",

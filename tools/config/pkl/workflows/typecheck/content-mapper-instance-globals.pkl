@@ -1,0 +1,160 @@
+import "../../Actions.pkl" as ci
+
+name = "Consumer instance globals capture"
+
+// #6830: off the PR tier; its campaign test runs in nightly Full qualification.
+on {
+  workflow_dispatch {
+    inputs {
+      `expected-source-sha` {
+        description = "Exact reviewed source commit"
+        required = true
+        type = "string"
+      }
+      `capture-only` {
+        description = "Retain discovery observations without qualification credit"
+        required = false
+        type = "boolean"
+        ["default"] = false
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "instance-globals-10617-${{ github.ref }}"
+  `cancel-in-progress` = false
+}
+
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+
+jobs {
+  `admit-source` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("content-mapper-instance-globals")
+      new Dynamic {
+        name = "Admit the immutable event source before building"
+        env {
+          SOURCE_EVENT = "${{ github.event_name }}"
+          EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha }}"
+          PR_HEAD = "${{ github.event.pull_request.head.sha }}"
+        }
+        run = ci.workflowScript("admit-the-immutable-event-source-before-building.sh")
+      }
+    }
+  }
+  `source-cli` {
+    needs = "admit-source"
+    uses = "./.github/workflows/full-source-cli.yml"
+  }
+  `real-beta-host` {
+    needs = "source-cli"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/content-mapper-instance-globals"
+      VIZE_SOURCE_CLI_RECEIPT_SHA256 = "${{ needs.source-cli.outputs.receipt-sha256 }}"
+    }
+    steps = new Listing {
+      new Dynamic {
+        name = "Checkout the same source as the immutable producer"
+        uses = ci.checkout
+        with {
+          `fetch-depth` = 2
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Require the reviewed source and retain merge identity"
+        env {
+          SOURCE_EVENT = "${{ github.event_name }}"
+          EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha }}"
+          PR_HEAD = "${{ github.event.pull_request.head.sha }}"
+        }
+        run = ci.workflowScript("require-the-reviewed-source-and-retain-merge-identity.sh")
+      }
+      new Dynamic {
+        name = "Checkout the pinned source host"
+        uses = ci.checkout
+        with {
+          repository = "microsoft/TypeScript"
+          ref = "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799"
+          path = "typescript-content-mapper"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Setup the source host Go runtime"
+        uses = "actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c"  // v6.1.0
+        with {
+          `go-version-file` = "typescript-content-mapper/tsc/go.mod"
+          `cache-dependency-path` = "typescript-content-mapper/tsc/go.sum"
+        }
+      }
+      new Dynamic {
+        name = "Setup the producer Rust runtime"
+        uses = ci.setupRust
+        with { toolchain = "stable" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Setup Vite Plus"
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          cache = true
+          `run-install` = false
+        }
+      }
+      ci.command("Install frozen source dependencies", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        uses = "./.github/actions/restore-source-cli"
+        with { producer = "${{ toJSON(needs.source-cli.outputs) }}" }
+      }
+      new Dynamic {
+        name = "Retain the original producer receipt and executable hash"
+        run = ci.workflowScript("retain-the-original-producer-receipt-and-executable-hash.sh")
+      }
+      new Dynamic {
+        name = "Build the real source host and retain its complete authority"
+        `working-directory` = "typescript-content-mapper/tsc"
+        run = ci.workflowScript("build-the-real-source-host-and-retain-its-complete-authority.sh")
+      }
+      new Dynamic {
+        name = "Bind the source host receipt to this source and run"
+        run = ci.workflowScript("bind-the-source-host-receipt-to-this-source-and-run.sh")
+      }
+      new Dynamic {
+        name = "Check complete consumer packets with an explicit capture-only override"
+        env {
+          VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+          VIZE_TEST_BIN = "${{ github.workspace }}/target/ci/vize"
+          VIZE_TEST_GLOBALS_REQUIRED = "1"
+          VIZE_TEST_GLOBALS_DISCOVERY = "${{ github.event_name == 'workflow_dispatch' && inputs.capture-only && '1' || '0' }}"
+          VIZE_TEST_GLOBALS_SOURCE_HOST = "${{ runner.temp }}/instance-globals-source-host/tsgo"
+          VIZE_TEST_GLOBALS_SOURCE_HOST_RECEIPT = "${{ runner.temp }}/instance-globals-10617/source-host.json"
+          VIZE_TEST_GLOBALS_HOST_MATRIX_REQUIRED = "1"
+          VIZE_TEST_GLOBALS_OUTPUT = "${{ runner.temp }}/instance-globals-10617/consumer"
+        }
+        run = "vp node --test --test-concurrency=1 tests/tooling/content-mapper-instance-globals-packet-authority.test.ts tests/tooling/content-mapper-instance-globals-10617.test.ts"
+      }
+      new Dynamic {
+        name = "Retain complete packets, generated code and format discoveries"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "instance-globals-10617-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/instance-globals-10617/"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+}

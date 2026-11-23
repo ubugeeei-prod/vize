@@ -1,0 +1,320 @@
+import "../../Actions.pkl" as ci
+
+local buildSteps = import("../../parts/content-mapper-pair/build.pkl").steps
+
+name = "Content mapper pair"
+`run-name` = "Content mapper pair ${{ inputs.head }} vs ${{ inputs.base }} (${{ inputs.sizes }})"
+// Two commits answer one content-mapper request stream on Linux, WSL2 (ext4 and
+// the Windows mount) and native Windows, balancing both build orders per replicate.
+on {
+  workflow_dispatch {
+    inputs {
+      base {
+        description = #"Full 40-hex commit measured first (the "before")"#
+        type = "string"
+        required = true
+      }
+      head {
+        description = "Full 40-hex commit compared against it"
+        type = "string"
+        required = true
+      }
+      sizes {
+        description = "Comma-separated SFC counts of the generated projects"
+        type = "string"
+        ["default"] = "1000,5000"
+      }
+      runs {
+        description = "Balanced AB+BA replicates per build"
+        type = "string"
+        ["default"] = "5"
+      }
+      allow_output_change {
+        description = "Publish timing even when the builds answer differently"
+        type = "boolean"
+        ["default"] = false
+      }
+      reference_mapper {
+        description = "Also time @vue/content-mapper (pinned in tools/benchmarks/typecheck-hosts) as a reference row"
+        type = "boolean"
+        ["default"] = false
+      }
+      syscall_census {
+        description = "Also count the Linux filesystem syscalls per transform for both builds (strace)"
+        type = "boolean"
+        ["default"] = false
+      }
+      memory_probe {
+        description = "Also time the head build's Linux burst peak RSS by worker count (taskset) and mimalloc options"
+        type = "boolean"
+        ["default"] = false
+      }
+      windows_probe {
+        description = "Also time the head build on Windows with stdout to NUL and with a Defender exclusion"
+        type = "boolean"
+        ["default"] = false
+      }
+    }
+  }
+  // Registers the dispatch-only workflow from its PR; only the tests run there.
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/content-mapper-pair.yml"
+      ".github/scripts/workflows/content-mapper-pair/**"
+      "tools/benchmarks/scripts/content-mapper-pair*.ts"
+      "tools/benchmarks/scripts/content-mapper-burst-windows.ps1"
+      "tests/tooling/content-mapper-pair*.test.ts"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "content-mapper-pair-${{ github.event.pull_request.number || inputs.head }}-${{ inputs.base }}-${{ inputs.sizes }}"
+  `cancel-in-progress` = true
+}
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_TERM_COLOR = "always"
+  CARGO_INCREMENTAL = "0"
+}
+jobs {
+  test {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic { run = "node --test tests/tooling/content-mapper-pair.test.ts" }
+    }
+  }
+
+  // Linux and Windows build separately so the Linux and WSL2 cells start
+  // without waiting for the slower Windows build.
+  `build-linux` {
+    `if` = "github.event_name == 'workflow_dispatch'"
+    needs = "test"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 90
+    env {
+
+      BASE = "${{ inputs.base }}"
+      HEAD = "${{ inputs.head }}"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+      PAIR_OS = "linux"
+      PAIR_EXE = "vize"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("content-mapper-pair")
+      ...buildSteps
+    }
+  }
+
+  `build-windows` {
+    `if` = "github.event_name == 'workflow_dispatch'"
+    needs = "test"
+    `runs-on` = ci.windows
+    `timeout-minutes` = 90
+    env {
+
+      BASE = "${{ inputs.base }}"
+      HEAD = "${{ inputs.head }}"
+      PAIR_OS = "windows"
+      PAIR_EXE = "vize.exe"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("content-mapper-pair")
+      ...buildSteps
+    }
+  }
+
+  linux {
+    needs = "build-linux"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 90
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/content-mapper-pair"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          name = "pair-bin-linux"
+          path = "pair-bin"
+        }
+      }
+      new Dynamic {
+        name = "Measure"
+        env {
+          SIZES = "${{ inputs.sizes }}"
+          RUNS = "${{ inputs.runs }}"
+          ALLOW = "${{ inputs.allow_output_change && '--allow-output-change' || '' }}"
+          REFERENCE = "${{ inputs.reference_mapper }}"
+        }
+        run = ci.workflowScript("measure.sh")
+      }
+      new Dynamic {
+        name = "Memory probe"
+        `if` = "inputs.memory_probe"
+        env { SIZES = "${{ inputs.sizes }}" }
+        run = ci.workflowScript("memory-probe.sh")
+      }
+      new Dynamic {
+        name = "Syscall census"
+        `if` = "inputs.syscall_census"
+        env { SIZES = "${{ inputs.sizes }}" }
+        run = ci.workflowScript("syscall-census.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "pair-linux"
+          path = "${{ runner.temp }}/pair-out/"
+          `if-no-files-found` = "warn"
+        }
+      }
+    }
+  }
+
+  wsl2 {
+    needs = "build-linux"
+    // WSL2 needs nested virtualization; Blacksmith Windows runners lack it.
+    `runs-on` = "windows-2025"
+    `timeout-minutes` = 150
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/content-mapper-pair"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = "Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364"  // v7.0.0
+        with {
+          distribution = "Ubuntu-24.04"
+          `wsl-version` = "2"
+          `wsl-shell-user` = "root"
+          `additional-packages` = "ca-certificates curl time xz-utils"
+        }
+      }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          name = "pair-bin-linux"
+          path = "pair-bin"
+        }
+      }
+      new Dynamic {
+        name = "Resolve the Windows mount"
+        shell = "pwsh"
+        run = ci.workflowScript("resolve-the-windows-mount.ps1")
+      }
+      new Dynamic {
+        name = "Install Node 24 in WSL2"
+        shell = "wsl-bash {0}"
+        env {
+          WSLENV = "VIZE_CI_FILES/p"
+        }
+        run = ci.wslScript("install-node-24-in-wsl2.sh")
+      }
+      new Dynamic {
+        name = "Measure ext4 and the Windows mount"
+        shell = "wsl-bash {0}"
+        env {
+          WSLENV = "SIZES/u:RUNS/u:ALLOW/u:REFERENCE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u:VIZE_CI_FILES/p"
+          SIZES = "${{ inputs.sizes }}"
+          RUNS = "${{ inputs.runs }}"
+          ALLOW = "${{ inputs.allow_output_change && '--allow-output-change' || '' }}"
+          REFERENCE = "${{ inputs.reference_mapper }}"
+        }
+        run = ci.wslScript("measure-ext4-and-the-windows-mount.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "pair-wsl2"
+          path = "${{ runner.temp }}/vize-pair/out/"
+          `if-no-files-found` = "warn"
+        }
+      }
+    }
+  }
+
+  windows {
+    needs = "build-windows"
+    `runs-on` = ci.windows
+    `timeout-minutes` = 90
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/content-mapper-pair"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          name = "pair-bin-windows"
+          path = "pair-bin"
+        }
+      }
+      new Dynamic {
+        name = "Measure"
+        shell = "pwsh"
+        env {
+          SIZES = "${{ inputs.sizes }}"
+          RUNS = "${{ inputs.runs }}"
+          ALLOW = "${{ inputs.allow_output_change && '--allow-output-change' || '' }}"
+          REFERENCE = "${{ inputs.reference_mapper }}"
+        }
+        run = ci.workflowScript("measure.ps1")
+      }
+      new Dynamic {
+        name = "Probe Windows burst costs"
+        `if` = "inputs.windows_probe"
+        shell = "pwsh"
+        env { SIZES = "${{ inputs.sizes }}" }
+        run = ci.workflowScript("probe-windows-burst-costs.ps1")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "pair-windows"
+          path = "${{ runner.temp }}/pair-out/"
+          `if-no-files-found` = "warn"
+        }
+      }
+    }
+  }
+}

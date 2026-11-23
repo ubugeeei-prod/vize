@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "../support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -25,7 +26,9 @@ type Job = {
   with?: Record<string, string>;
 };
 
-const published = parse(readRepoFile(".github", "workflows", "published-fresh-project.yml")) as {
+const published = parse(
+  readAutomationPrograms(".github", "workflows", "published-fresh-project.yml"),
+) as {
   on: {
     pull_request: { paths: string[] };
     workflow_call: { inputs: Record<string, { required?: boolean }> };
@@ -33,7 +36,9 @@ const published = parse(readRepoFile(".github", "workflows", "published-fresh-pr
   };
   jobs: Record<string, Job>;
 };
-const releaseVerify = parse(readRepoFile(".github", "workflows", "release-verify.yml")) as {
+const releaseVerify = parse(
+  readAutomationPrograms(".github", "workflows", "release-verify.yml"),
+) as {
   jobs: Record<string, Job>;
 };
 const verifier = readRepoFile(

@@ -4,6 +4,7 @@ import { mkdtempSync, readFileSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test, type TestContext } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 
 import {
   type ColdLane,
@@ -126,11 +127,16 @@ void test(
     const dir = scratch(t);
     const sampler = startRssSampler(join(dir, "rss.jsonl"));
     t.after(sampler.stop);
-    const hold = "const b = Buffer.alloc(64 << 20, 1); setTimeout(() => b.length, 400);";
-    const parent = `require("node:child_process").spawnSync(process.execPath, ["-e", ${JSON.stringify(hold)}])`;
-    const result = spawnSync(process.execPath, ["-e", parent], {
-      env: { ...process.env, [RSS_TAG]: "sampled" },
-    });
+    const result = spawnSync(
+      process.execPath,
+      [
+        toolingProgram("process/run-node-child.js"),
+        toolingProgram("process/retain-child-memory.js"),
+      ],
+      {
+        env: { ...process.env, [RSS_TAG]: "sampled" },
+      },
+    );
     assert.equal(result.status, 0);
     const tree = sampler.take("sampled");
     assert.ok(tree, "no record for the tagged tree");

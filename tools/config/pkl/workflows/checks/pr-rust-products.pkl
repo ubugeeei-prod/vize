@@ -1,0 +1,291 @@
+import "../../Actions.pkl" as ci
+
+name = "Rust product checks"
+on {
+  workflow_call {
+    inputs {
+      `run-rust` {
+        type = "boolean"
+        required = true
+      }
+      `rust-plan` {
+        type = "string"
+        required = true
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+
+// PR and queue cohorts build the same affected test binaries from the warm
+// read-only `nextest-ci` clone and start beside Clippy, instead of waiting
+// for one serial build and moving a multi-GB archive.
+jobs {
+  `pr-rust-shard` {
+    permissions {
+      contents = "read"
+      actions = "read"
+    }
+    name = "Rust tests (${{ matrix.name }})"
+    `if` = "${{ inputs.run-rust }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    strategy {
+      `fail-fast` = false
+      matrix = "${{ fromJSON(inputs.rust-plan).testMatrix }}"
+    }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/pr-rust-products"
+      CARGO_BUILD_JOBS = "24"
+      VIZE_NUXT_CONFIG_ITERATIONS = "100"
+      RUST_TEST_THREADS = "4"
+      // Type checker PRs use the full profile so they select the same tests as
+      // the merge group. The PR filter still drops audited cases in other cohorts.
+      NEXTEST_PROFILE = "${{ (github.event_name == 'merge_group' || matrix.cohort == 'typechecker') && 'full' || 'pr' }}"
+      VIZE_TEMPLATE_EMIT_TS40_CAPTURE = "${{ github.workspace }}/target/nextest/${{ github.event_name == 'merge_group' && 'full' || 'pr' }}/template-emit-ts40-projection"
+      COHORT = "${{ matrix.cohort }}"
+      NEXTEST_FILTER = "${{ matrix.filter }}"
+      RUST_PLAN_JSON = "${{ inputs.rust-plan }}"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.rust("1.100.0")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "nextest-ci"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/cache-vp-bootstrap")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = true
+        }
+      }
+      new Dynamic {
+        uses = "taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1"  // v2
+        with { tool = "cargo-nextest@0.9.146" }
+      }
+      new Dynamic {
+        name = "Test complete Inspector production and descriptor oracles"
+        `if` = "${{ matrix.cohort == 'cli-and-integrations' && contains(fromJSON(inputs.rust-plan).packages, 'vize') }}"
+        run = "node --test tests/tooling/inspector-production-mode.test.ts tests/tooling/inspector-ssr-css-vars.test.ts"
+      }
+      new Dynamic {
+        name = "Test canonical native content classification"
+        `if` = "${{ matrix.cohort == 'lint-and-format' && contains(fromJSON(inputs.rust-plan).packages, 'vize_patina') }}"
+        run = "node --test tests/tooling/patina-native-svg-content-oracle.test.ts"
+      }
+      new Dynamic {
+        name = "Select Rust runtime envelope"
+        run = ci.workflowScript("select-rust-runtime-envelope.sh")
+      }
+      new Dynamic {
+        name = "Prepare the mandatory full-profile Content Mapper host"
+        `if` = "${{ env.NEXTEST_PROFILE == 'full' && matrix.cohort == 'cli-and-integrations' }}"
+        run = ci.workflowScript("prepare-the-mandatory-full-profile-content-mapper-host.sh")
+      }
+      ci.command("Install Pkl CLI", "npm install --global @pkl-community/pkl@0.27.2")
+      new Dynamic {
+        name = "Hydrate the required ElementPlus projection fixture"
+        `if` = "${{ (github.event_name == 'merge_group' || matrix.cohort == 'typechecker') && contains(fromJSON(inputs.rust-plan).packages, 'vize_canon') }}"
+        uses = "./.github/actions/hydrate-pinned-fixture"
+        with { fixture = "tests/_fixtures/_git/element-plus" }
+      }
+      new Dynamic {
+        name = "Build and run the affected Rust test cohort"
+        id = "cohort"
+        // Preserve affected package feature unification; the shared cohort
+        // registry partitions test binaries by their actual product surface.
+        env {
+          VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE = "${{ runner.temp }}/mounted-runtime-producer-failures"
+          VIZE_MOUNTED_RUNTIME_PRODUCER_EVIDENCE_FAILURES_ONLY = "1"
+        }
+        run = ci.workflowScript("build-and-run-the-affected-rust-test-cohort.sh")
+      }
+      new Dynamic {
+        name = "Retain the Content Mapper host proof"
+        `if` = "${{ always() && env.NEXTEST_PROFILE == 'full' && matrix.cohort == 'cli-and-integrations' }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "content-mapper-host-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/mq-content-mapper-host-proof/"
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+      new Dynamic {
+        name = "Record Rust test cases"
+        id = "cases"
+        `if` = "${{ !cancelled() && hashFiles(format('target/nextest/{0}/junit.xml', env.NEXTEST_PROFILE)) != '' }}"
+        env { TEST_CASES_JOB = "Rust tests (${{ matrix.name }})" }
+        run = #"node tools/support/compat/github/test-cases.ts nextest "target/nextest/$NEXTEST_PROFILE/junit.xml" "$RUNNER_TEMP/test-cases-rust-$COHORT.json""#
+      }
+      new Dynamic {
+        name = "Upload Rust test cases"
+        `if` = "${{ !cancelled() && steps.cases.outcome == 'success' }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "test-cases-rust-${{ matrix.cohort }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/test-cases-rust-${{ matrix.cohort }}.json"
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+      new Dynamic {
+        name = "Observe every computed-event snapshot with the same compiled binary"
+        // Artifact transport only: the original cohort failure and report stay red.
+        `if` = "${{ !cancelled() && matrix.cohort == 'typechecker' && steps.cohort.outcome == 'failure' }}"
+        env { VIZE_ORIGINAL_COHORT_OUTCOME = "${{ steps.cohort.outcome }}" }
+        run = #"node tools/support/compat/github/capture-computed-event-snapshots.ts "$RUNNER_TEMP/rust-build-evidence""#
+      }
+      new Dynamic {
+        name = "Retain genuine pending Canon snapshot observations"
+        // Observation transport only; the original failed test remains failed.
+        // Pending files are reviewed before any checked-in golden changes.
+        `if` = "${{ failure() && matrix.cohort == 'typechecker' }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "pending-canon-snapshots-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = """
+          crates/vize/**/*.snap.new
+          crates/vize_canon/**/*.snap.new
+          crates/vize_canon/src/virtual_ts/snapshots/computed-event-capture.json
+
+          """
+          `if-no-files-found` = "ignore"
+          `retention-days` = 7
+        }
+      }
+      new Dynamic {
+        name = "Retain genuine pending Maestro snapshot observations"
+        // Pending observations never accept or hide the original failure.
+        `if` = "${{ failure() && matrix.cohort == 'language-server' }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "pending-maestro-snapshots-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "crates/vize_maestro/**/*.snap.new"
+          `if-no-files-found` = "ignore"
+          `retention-days` = 7
+        }
+      }
+      new Dynamic {
+        name = "Retain genuine pending Vapor snapshot observations"
+        // Pending observations never accept or hide the original failure.
+        `if` = "${{ failure() && matrix.cohort == 'vapor-compiler' }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "pending-vapor-snapshots-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "crates/vize_atelier_vapor/**/*.snap.new"
+          `if-no-files-found` = "ignore"
+          `retention-days` = 7
+        }
+      }
+      new Dynamic {
+        name = "Preserve actual Rust build units and fresh timing HTML"
+        `if` = "${{ always() }}"
+        run = #"node tools/support/compat/github/rust-build-evidence.ts collect "$RUNNER_TEMP/rust-build-evidence""#
+      }
+      new Dynamic {
+        name = "Upload Rust build evidence"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "rust-build-evidence-${{ matrix.cohort }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}"
+          path = "${{ runner.temp }}/rust-build-evidence/"
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+      new Dynamic {
+        name = "Upload Rust cohort results"
+        `if` = "${{ !cancelled() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "rust-test-cohort-${{ matrix.cohort }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "target/nextest/${{ env.NEXTEST_PROFILE }}/"
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+      new Dynamic {
+        name = "Preserve rejected mounted runtime producer streams"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "mounted-runtime-producer-failures-${{ matrix.cohort }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = """
+          ${{ runner.temp }}/mounted-runtime-producer-failures/*.failure.json
+          ${{ runner.temp }}/mounted-runtime-producer-failures/*.stdout.bin
+          ${{ runner.temp }}/mounted-runtime-producer-failures/*.stderr.bin
+
+          """
+          `if-no-files-found` = "ignore"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+
+  `rust-product-report` {
+    name = "Rust product report"
+    permissions {
+      contents = "read"
+      actions = "read"
+      `pull-requests` = "read"
+    }
+    // A superseded run reports nothing: its required check fails in test-report.
+    `if` = "${{ always() && !contains(needs.*.result, 'cancelled') }}"
+    needs = List("pr-rust-shard")
+    `runs-on` = "ubuntu-24.04"
+    `timeout-minutes` = 10
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          `fetch-depth` = 1
+          // The report gate needs only its script closure and the bootstrap action.
+          `sparse-checkout-cone-mode` = false
+          `sparse-checkout` = """
+          /package.json
+          /.github/actions/cache-vp-bootstrap/
+          /tools/support/compat/github/require-rust-tier.ts
+          /tools/support/compat/github/require-needs-success.ts
+
+          """
+        }
+      }
+      ci.use("./.github/actions/cache-vp-bootstrap")
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Require the complete Rust tier"
+        env {
+          RUN_RUST = "${{ inputs.run-rust }}"
+          NEEDS_JSON = "${{ toJSON(needs) }}"
+          GH_TOKEN = "${{ github.token }}"
+        }
+        run = "node tools/support/compat/github/require-rust-tier.ts --products"
+      }
+    }
+  }
+}

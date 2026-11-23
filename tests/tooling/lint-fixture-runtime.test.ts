@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -18,12 +19,12 @@ test(
       for (const dir of [native, local]) fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(
         path.join(native, "vp"),
-        '#!/bin/sh\nprintf "native environment: %s" "$*"\n',
+        readToolingProgram("commands/lint-fixture-runtime/print-native-environment.sh"),
         { mode: 0o755 },
       );
       fs.writeFileSync(
         path.join(local, "vp"),
-        '#!/bin/sh\necho "Command env not found" >&2\nexit 1\n',
+        readToolingProgram("commands/lint-fixture-runtime/reject-env-command.sh"),
         { mode: 0o755 },
       );
       const env = { ...process.env, PATH: `${local}${path.delimiter}${process.env.PATH ?? ""}` };

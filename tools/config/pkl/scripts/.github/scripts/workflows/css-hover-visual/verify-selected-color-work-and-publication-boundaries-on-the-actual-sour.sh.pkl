@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("mkdir", List("-p", "target/vize-tests/css-color-literal-hover"))
+  module.command("cargo", List("test", "--locked", "--profile", "ci", "-p", "vize_maestro", "--lib", "server::annotations::document_color::", "--", "--nocapture"))
+}

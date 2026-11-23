@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+cargo test -p vize_atelier_dom --profile ci --test integration dev_root_fragment::
+NODE_ENV=development vp node --test tests/tooling/dev-root-fragment-runtime.test.ts
+NODE_ENV=production vp node --test tests/tooling/dev-root-fragment-runtime.test.ts

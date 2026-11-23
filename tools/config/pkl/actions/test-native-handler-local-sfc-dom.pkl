@@ -1,0 +1,34 @@
+import "../Actions.pkl" as ci
+
+name = "Original handler block-local SFC runtime"
+description = "Capture complete original local-handler components and pinned Vue execution"
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Capture and execute original block-local handler components"
+      shell = "bash"
+      env {
+        VIZE_NATIVE_HANDLER_LOCAL_SFC_DOM_CAPTURE = "${{ runner.temp }}/native-handler-local-sfc-dom-capture.json"
+        VIZE_NATIVE_HANDLER_LOCAL_SFC_DOM_REQUIRE_CAPTURE = "1"
+        VIZE_NATIVE_HANDLER_LOCAL_SFC_DOM_RUNTIME_CAPTURE = "${{ runner.temp }}/native-handler-local-sfc-dom-runtime.json"
+      }
+      run = ci.actionScript("capture-and-execute-original-block-local-handler-components.sh")
+    }
+    new Dynamic {
+      name = "Upload original local-handler whole components and runtime"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "native-handler-local-sfc-dom-${{ github.sha }}-${{ github.run_attempt }}"
+        path = """
+        ${{ runner.temp }}/native-handler-local-sfc-dom-capture.json
+        ${{ runner.temp }}/native-handler-local-sfc-dom-runtime.json
+
+        """
+        `if-no-files-found` = "error"
+        `retention-days` = 7
+      }
+    }
+  }
+}

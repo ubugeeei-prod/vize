@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 
 import {
   asciiLowercase,
@@ -111,11 +112,7 @@ test("directory reads keep raw entries and report opendir failures like the orig
     );
     const missing = spawnSync(
       process.execPath,
-      [
-        "--input-type=module",
-        "-e",
-        `import { readDir } from ${JSON.stringify(runtime)}; console.log(JSON.stringify(readDir("missing")));`,
-      ],
+      [toolingProgram("release/read-missing-release-directory.js"), runtime],
       { cwd: root, encoding: "utf8" },
     );
     assert.equal(missing.status, 0);

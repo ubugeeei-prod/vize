@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+mkdir -p production-perf
+target/ci-opt/examples/davinci_production_perf production-perf/samples.json
+{
+  git rev-parse HEAD
+  rustc --version --verbose
+  uname -a
+  lscpu
+} > production-perf/runner.txt

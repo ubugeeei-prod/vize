@@ -1,0 +1,17 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.collectFailuresMode
+  #"""
+  unset VIZE_TEST_DISABLE_TSGO
+  mixed_ref_status=0
+  cargo test --locked --profile ci -p vize_croquis --lib script_parser::tests::destructure_spans::destructured_bindings_keep_authored_identifier_spans -- --exact --nocapture || mixed_ref_status=1
+  cargo test --locked --profile ci -p vize_canon --features legacy --lib virtual_ts::tests::unused_refs::mixed_scripts:: -- --nocapture || mixed_ref_status=1
+  cargo test --locked --profile ci -p vize_canon --features legacy --lib virtual_ts::scope::event_handler::contextual_listener::tests::contextual_listener_complete_projection_and_mapping_packets -- --exact --nocapture || mixed_ref_status=1
+  cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::dynamic_template_refs::mixed_scripts::native_cli_mixed_script_static_refs_keep_destructured_reads_and_true_unused --ignored --exact --nocapture || mixed_ref_status=1
+  cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_cli::dynamic_template_refs::mixed_scripts::protocol::standard_tsgo_mixed_script_static_refs_keep_runtime_reads_and_authored_errors --ignored --exact --nocapture || mixed_ref_status=1
+  exit "$mixed_ref_status"
+  """#
+}

@@ -1,0 +1,116 @@
+import "../../Actions.pkl" as ci
+
+name = "Native diagnostic warm-up"
+`run-name` = "Native diagnostic warm-up @ ${{ github.event.pull_request.head.sha }}"
+on {
+  pull_request {
+    paths = new Listing {
+      "crates/vize_maestro/src/ide/diagnostics/**"
+      "crates/vize_maestro/src/server/**"
+      "editors/vscode/src/extension-core.ts"
+      "tests/tooling/lsp-native-diagnostic-warmup.test.ts"
+      ".github/workflows/lsp-native-diagnostic-warmup.yml"
+      ".github/scripts/workflows/lsp-native-diagnostic-warmup/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "native-diagnostic-warmup-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  VIZE_TEST_REQUIRE_TSGO = "1"
+  VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS = "1"
+  VIZE_TRACE_EDITOR_PREPARATION = "1"
+  VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+  RAYON_NUM_THREADS = "4"
+}
+jobs {
+  `retained-native-answer` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    strategy {
+      `fail-fast` = false
+      matrix {
+        role = List("baseline", "candidate")
+      }
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("lsp-native-diagnostic-warmup")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          cache = true
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      ci.wild()
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      new Dynamic {
+        name = "Build each exact source in its own initially absent role and SHA target"
+        id = "producer"
+        env {
+          ROLE = "${{ matrix.role }}"
+          // Immutable pre-fix source: future rebases must still reproduce the original drop.
+          BASE_SHA = "3a4bf713f85589a50da5d0a7aaf8ae33fdcdc004"
+          HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
+        }
+        run = ci.workflowScript("build-each-exact-source-in-its-own-initially-absent-role-and-sha-target.sh")
+      }
+      new Dynamic {
+        name = "Reproduce the old drop or retain the complete real native answer"
+        env {
+          CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+        }
+        run = ci.workflowScript("reproduce-the-old-drop-or-retain-the-complete-real-native-answer.sh")
+      }
+      new Dynamic {
+        name = "Preserve source freshness, assembly oracles, recovery and editor controls"
+        `if` = "${{ !cancelled() && matrix.role == 'candidate' && steps.producer.outcome == 'success' }}"
+        env {
+          CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+          VIZE_LSP_NATIVE_DIAGNOSTIC_TIMEOUT_MS = "120000"
+        }
+        run = ci.workflowScript("preserve-source-freshness-assembly-oracles-recovery-and-editor-controls.sh")
+      }
+      new Dynamic {
+        name = "Stage each exact producer's receipt and actual raw stdio captures"
+        `if` = "${{ !cancelled() && steps.producer.outcome == 'success' }}"
+        run = ci.workflowScript("stage-each-exact-producer-s-receipt-and-actual-raw-stdio-captures.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "native-diagnostic-warmup-${{ matrix.role }}-${{ github.run_id }}-${{ github.event.pull_request.head.sha }}"
+          path = """
+          target/vize-tests/native-diagnostic-warmup-10604/
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 3
+        }
+      }
+    }
+  }
+}

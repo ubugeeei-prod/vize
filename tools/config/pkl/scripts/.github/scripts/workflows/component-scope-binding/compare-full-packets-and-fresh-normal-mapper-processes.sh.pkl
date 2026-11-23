@@ -1,0 +1,32 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  evidence="$RUNNER_TEMP/component-scope-binding-evidence"
+  affinity=$(node "$VIZE_CI_FILES/../shared/runner-resources.ts" first 8)
+  printf '%s\n' "$affinity" > "$evidence/affinity.txt"
+  mkdir "$RUNNER_TEMP/component-scope-binding-input"
+  export VIZE_COMPONENT_PROFILE_FILE="$RUNNER_TEMP/component-scope-binding-input/Bindings.vue"
+  node "$VIZE_CI_FILES/compare-full-packets-and-fresh-normal-mapper-processes.ts" > "$evidence/cases.tsv"
+  for round in 1 2 3; do
+    order='base head'
+    if [[ "$round" == 2 ]]; then order='head base'; fi
+    while read -r shape count script_bindings; do
+        for role in $order; do
+          binary=$(cat "$evidence/$role.profile-binary")
+          export VIZE_COMPONENT_PROFILE_SOURCE=$(cat "$evidence/$role.source")
+          export VIZE_COMPONENT_PROFILE_SHAPE="$shape" VIZE_COMPONENT_PROFILE_COUNT="$count" VIZE_COMPONENT_PROFILE_BINDINGS="$script_bindings"
+          for mode in runtime-off allocation; do
+            name="$role-$shape-$count-$script_bindings-$mode-$round"
+            export VIZE_COMPONENT_PROFILE_MODE="$mode" VIZE_COMPONENT_PROFILE_OUTPUT="$evidence/$name.json"
+            taskset -c "$affinity" "$binary" --exact component_scope_binding_generation_profile --ignored --nocapture > "$evidence/$name.stdout" 2> "$evidence/$name.stderr"
+          done
+        done
+    done < "$evidence/cases.tsv"
+  done
+  taskset -c "$affinity" node tools/benchmarks/scripts/component-scope-binding-evidence.ts "$evidence" --correctness
+  """#
+}

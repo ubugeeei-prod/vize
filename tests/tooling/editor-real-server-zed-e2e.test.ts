@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
@@ -16,7 +17,7 @@ test("the Zed real-server scenario has a task that runs its Rust Script launcher
 });
 
 test("CI validates Zed with the pinned official extension CLI before the real-server scenario", () => {
-  const action = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
+  const action = readAutomationPrograms(".github", "actions", "vscode-host-smoke", "action.yml");
   const installAt = action.indexOf("- name: Install pinned Zed extension CLI");
   const validateAt = action.indexOf("- name: Validate the Zed extension");
   const scenarioAt = action.indexOf("- name: Run the Zed scenario against the real server");

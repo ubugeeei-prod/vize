@@ -11,13 +11,18 @@ import {
   qualifyStarListingSDK,
   qualifyStarListingMain,
   starListingLexicalReader,
+  starListingProgramPaths,
 } from "../../tools/support/compat/github/empty-vue-star-listing-source.mjs";
 
 const root = fs.realpathSync(new URL("../../", import.meta.url));
 const manifestPath = "tools/support/compat/github/empty-vue-star-listing-source.json";
 const manifest = JSON.parse(fs.readFileSync(path.join(root, manifestPath)));
 const rows = manifest.parts.flatMap(([file]) => JSON.parse(fs.readFileSync(path.join(root, file))));
-const executing = [manifestPath, ...manifest.parts.map(([file]) => file), ...manifest.executing];
+const executing = [
+  manifestPath,
+  ...manifest.parts.map(([file]) => file),
+  ...starListingProgramPaths,
+];
 const files = [...rows.map(([file]) => file), ...executing];
 const execution = "crates/vize_canon/tests/empty_vue_star_exports/execution.rs";
 const sha = (body) => createHash("sha256").update(body).digest("hex");

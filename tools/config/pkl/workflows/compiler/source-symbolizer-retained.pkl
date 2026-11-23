@@ -1,0 +1,193 @@
+import "../../Actions.pkl" as ci
+
+name = "Retained source-line replay"
+on {
+  pull_request {
+    types = List("opened", "synchronize", "reopened")
+    paths = new Listing {
+      ".github/workflows/source-symbolizer-retained.yml"
+      ".github/scripts/workflows/source-symbolizer-retained/**"
+      ".github/scripts/workflows/shared/**"
+      "tools/benchmarks/scripts/source-symbolizer-*.ts"
+      "tools/benchmarks/scripts/source-symbolizer-adapter.cjs"
+      "tools/benchmarks/scripts/source-symbolizer-matching-symbols.sh"
+      "tools/benchmarks/scripts/source-symbolizer-matching-symbols.awk"
+      "tests/tooling/source-symbolizer-protocol.test.ts"
+      "tools/benchmarks/scripts/cold-evidence-*.ts"
+      "tests/tooling/cold-evidence-thin.test.ts"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      metadata_run_id {
+        type = "string"
+        ["default"] = ""
+      }
+      metadata_artifact_id {
+        type = "string"
+        ["default"] = ""
+      }
+      metadata_summary_only {
+        type = "boolean"
+        ["default"] = false
+      }
+    }
+  }
+}
+permissions {
+  contents = "read"
+  actions = "read"
+}
+concurrency {
+  group = "retained-source-replay-${{ github.event.pull_request.number || github.ref }}-${{ inputs.metadata_artifact_id != '' && 'metadata' || 'source' }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  controls {
+    `runs-on` = ci.linux
+    steps = new Listing {
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic { run = "node --test tests/tooling/source-symbolizer-protocol.test.ts" }
+      new Dynamic {
+        run = "node --test tests/tooling/cold-evidence-thin.test.ts tests/tooling/retired-tooling-languages.test.ts"
+      }
+    }
+  }
+  offline {
+    `if` = "${{ github.event_name == 'workflow_dispatch' && inputs.metadata_artifact_id == '' }}"
+    needs = "controls"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/source-symbolizer-retained"
+    }
+    steps = new Listing {
+      ci.checkoutAt("${{ github.sha }}")
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Install offline tools only"
+        run = ci.workflowScript("install-offline-tools-only.sh")
+      }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          `artifact-ids` = "12745086928"
+          `run-id` = "40526358411"
+          `github-token` = "${{ github.token }}"
+          path = "${{ runner.temp }}/original-normal"
+        }
+      }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          `artifact-ids` = "12766658865"
+          `run-id` = "40566229000"
+          `github-token` = "${{ github.token }}"
+          path = "${{ runner.temp }}/original-carrier"
+        }
+      }
+      new Dynamic {
+        name = "Restore byte-sealed images and decode existing data only"
+        run = ci.workflowScript("restore-byte-sealed-images-and-decode-existing-data-only.sh")
+      }
+      new Dynamic {
+        name = "Preserve raw frames, independent source witness, and exact census"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "retained-source-${{ github.run_id }}"
+          path = "${{ runner.temp }}/retained-source"
+          `if-no-files-found` = "warn"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+
+  `thin-metadata` {
+    `if` = "${{ github.event_name == 'workflow_dispatch' && inputs.metadata_artifact_id != '' }}"
+    needs = "controls"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 8
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/source-symbolizer-retained"
+    }
+    steps = new Listing {
+      ci.checkoutAt("${{ github.sha }}")
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Bind the requested completed artifact"
+        env {
+          GH_TOKEN = "${{ github.token }}"
+          SOURCE_RUN = "${{ inputs.metadata_run_id }}"
+          SOURCE_ARTIFACT = "${{ inputs.metadata_artifact_id }}"
+        }
+        run = ci.workflowScript("bind-the-requested-completed-artifact.sh")
+      }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          `artifact-ids` = "${{ inputs.metadata_artifact_id }}"
+          `run-id` = "${{ inputs.metadata_run_id }}"
+          `github-token` = "${{ github.token }}"
+          path = "${{ runner.temp }}/thin-download"
+        }
+      }
+      new Dynamic {
+        name = "Copy allowlisted text from one archive without executing it"
+        `if` = "${{ !inputs.metadata_summary_only }}"
+        env {
+          SOURCE_RUN = "${{ inputs.metadata_run_id }}"
+          SOURCE_ARTIFACT = "${{ inputs.metadata_artifact_id }}"
+        }
+        run = ci.workflowScript("copy-allowlisted-text-from-one-archive-without-executing-it.sh")
+      }
+      new Dynamic {
+        name = "Preserve metadata and extraction custody"
+        `if` = "${{ always() && !inputs.metadata_summary_only }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "cold-metadata-${{ github.run_id }}"
+          path = "${{ runner.temp }}/thin-metadata"
+          `if-no-files-found` = "warn"
+          `retention-days` = 14
+        }
+      }
+      new Dynamic {
+        name = "Verify capsule custody and derive the bounded summary remotely"
+        `if` = "${{ inputs.metadata_summary_only }}"
+        run = ci.workflowScript("verify-capsule-custody-and-derive-the-bounded-summary-remotely.sh")
+      }
+      new Dynamic {
+        name = "Preserve the small summary separately from raw metadata"
+        `if` = "${{ always() && inputs.metadata_summary_only }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "cold-summary-${{ github.run_id }}"
+          path = "${{ runner.temp }}/metadata-summary"
+          `if-no-files-found` = "warn"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+cargo test --locked --profile ci -p vize_canon --lib content_mapper_config::typed_router_tests:: -- --nocapture
+cargo test --locked --profile ci -p vize --lib commands::content_mapper::typed_router_tests:: -- --nocapture
+cargo test --locked --profile ci -p vize_canon --test fix_history_diagnostics content_mapper_experimental_router_context_preserves_published_page_types -- --nocapture

@@ -1,0 +1,9 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("cargo", List("test", "--locked", "-p", "vize_atelier_sfc", "script::context::type_world"))
+  module.command("cargo", List("test", "--locked", "-p", "vize_atelier_sfc", "script::context::source_snapshot"))
+  module.command("cargo", List("clippy", "--locked", "-p", "vize_atelier_sfc", "--lib", "--example", "type_snapshot_bench", "--", "-D", "warnings"))
+}

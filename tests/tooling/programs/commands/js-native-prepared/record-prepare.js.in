@@ -1,0 +1,3 @@
+import fs from "node:fs";
+fs.appendFileSync(@@EVENTS@@, JSON.stringify({ prepare: true }) + "\n");
+process.exit(Number(process.env.VIZE_PREPARE_EXIT ?? 0));

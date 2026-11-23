@@ -1,0 +1,10 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  printf '%s' "$$" > "$PROBE_DIR/parent-pid"
+  . "$1"
+  """#
+}

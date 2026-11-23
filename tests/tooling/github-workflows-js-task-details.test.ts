@@ -1,23 +1,12 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { installToolingProgram, toolingProgram } from "./support/program-path.ts";
 
-const helper = fileURLToPath(
-  new URL(
-    "../../.github/actions/test-js-packages-with-history/native-fault-evidence.ts",
-    import.meta.url,
-  ),
-);
-const importHelper = `const fault = await import(${JSON.stringify(pathToFileURL(helper).href)});
-const unavailable = () => { const error = new Error("typed observation gap"); error.name = "PermissionError"; throw error; };
-fault.observers.privateGuest = () => ({ privateFirecrackerGuest: false });
-fault.observers.sourceSnapshot = unavailable;
-`;
 const environment = (fixture: string) => ({
   ...process.env,
   GITHUB_ACTIONS: "true",
@@ -49,33 +38,26 @@ for (const [originalStatus, detailsStatus] of statuses) {
     const fixture = mkdtempSync(join(tmpdir(), "vize-js-task-details-"));
     try {
       const calls = join(fixture, "calls.jsonl");
-      writeFileSync(
-        join(fixture, "vp"),
-        `#!${process.execPath}
-import fs from "node:fs";
-const args = process.argv.slice(2);
-fs.appendFileSync(${JSON.stringify(calls)}, JSON.stringify(args) + "\\n");
-if (args.includes("--last-details")) {
-  process.stdout.write("task child exit=17\\n");
-  process.stderr.write("task stderr\\n");
-  const status = ${JSON.stringify(detailsStatus)};
-  if (typeof status === "string") process.kill(process.pid, status);
-  else process.exit(status);
-} else process.exit(${originalStatus});
-`,
-        { mode: 0o755 },
-      );
+      installToolingProgram(join(fixture, "vp"), "workflow/mock-task-details.js");
       const command = ["vp", "run", "--workspace-root", "test:js:builders"];
-      const source =
-        importHelper +
-        `fault.observers.observeDescendants = () => {};
-${detailsStatus === "unavailable" ? "fault.observers.taskDetails = unavailable;" : ""}
-process.exitCode = await fault.main(["--", ...${JSON.stringify(command)}], "linux");`;
-      const result = spawnSync(process.execPath, ["--input-type=module", "-e", source], {
-        cwd: fixture,
-        env: { ...environment(fixture), PATH: `${fixture}:${process.env.PATH}` },
-        encoding: "utf8",
-      });
+      const result = spawnSync(
+        process.execPath,
+        [
+          toolingProgram("workflow/run-observed-command.js"),
+          detailsStatus === "unavailable" ? "task-details-unavailable" : "task-details",
+          ...command,
+        ],
+        {
+          cwd: fixture,
+          env: {
+            ...environment(fixture),
+            VIZE_DETAILS_STATUS: JSON.stringify(detailsStatus),
+            VIZE_ORIGINAL_STATUS: String(originalStatus),
+            PATH: `${fixture}:${process.env.PATH}`,
+          },
+          encoding: "utf8",
+        },
+      );
       assert.equal(result.status, originalStatus, result.stderr);
       assert.equal(result.stdout, "");
       assert.equal(result.stderr, "");

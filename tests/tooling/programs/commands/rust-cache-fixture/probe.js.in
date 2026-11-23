@@ -1,0 +1,21 @@
+#!@@NODE@@
+import { spawnSync } from "node:child_process";
+import { basename } from "node:path";
+const path = process.argv[3];
+const name =
+  basename(path) === "registry"
+    ? "registry"
+    : basename(path) === "git"
+      ? "git"
+      : path === process.env.VIZE_FAKE_SECONDARY_PATH
+        ? "secondary"
+        : "target";
+const result = spawnSync(
+  process.execPath,
+  [
+    process.env.VIZE_FAKE_CACHE_ROOT + "/backend.mjs",
+    JSON.stringify({ kind: "probe", name, path }),
+  ],
+  { stdio: "inherit" },
+);
+process.exit(result.status ?? 1);

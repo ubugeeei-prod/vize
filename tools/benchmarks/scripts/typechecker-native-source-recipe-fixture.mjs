@@ -7,7 +7,7 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import { dirname, join } from "node:path";
 import { gunzipSync } from "node:zlib";
-import { WORKFLOW } from "./typechecker-native-source-recipe.mjs";
+import { sourceFiles, WORKFLOW } from "./typechecker-native-source-recipe.mjs";
 const require = createRequire(import.meta.url);
 export const { parse } = require("yaml");
 export const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
@@ -159,6 +159,15 @@ assert.equal(
 );
 assert.equal(currentRequiredRun, integrationBinaryRun(passiveRequiredRun));
 
+export const workingSource = (file) =>
+  readFileSync(new URL("../../../" + file, import.meta.url), "utf8");
+export const namedRequiredRun =
+  "#!/usr/bin/env bash\n" +
+  currentRequiredRun.replace(
+    /^export VIZE_TEST_TSGO_PATH=.*$/mu,
+    'export VIZE_TEST_TSGO_PATH="$(node "$VIZE_NATIVE_RECIPE_FILES/resolve-native-binary.ts")"',
+  );
+
 export function git(root, ...args) {
   const r = spawnSync("git", args, {
     cwd: root,
@@ -193,7 +202,11 @@ export function fixture(run, { workflow } = {}) {
       put(root, row.path, row.before);
     }
     put(root, "crates/vize/src/recipe-control.rs", "// unchanged production control\n");
-    if (workflow !== undefined) put(root, WORKFLOW, workflow);
+    if (workflow !== undefined) {
+      put(root, WORKFLOW, workflow);
+      if (workflow === currentBytes)
+        for (const file of Object.values(sourceFiles)) put(root, file, workingSource(file));
+    }
     const cut = commit(root);
     for (const row of frozen.files)
       put(root, row.path, row.path === WORKFLOW && workflow !== undefined ? workflow : row.after);
