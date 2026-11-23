@@ -192,4 +192,13 @@ impl<'db> BlockView<'db> {
             .is_inline_html()
             .then_some((self.db, self.block))
     }
+
+    /// Lend the tracked template and the exact block text used to admit it.
+    #[inline]
+    pub fn template_input_with_text(self) -> Option<(&'db ResidentDatabase, Block<'db>, &'db str)> {
+        let source = self.source();
+        source
+            .is_inline_html()
+            .then_some((self.db, self.block, source.text.as_str()))
+    }
 }

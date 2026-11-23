@@ -3,6 +3,7 @@ import path from "node:path";
 import { stripTypeScriptTypes } from "node:module";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
+import { runVmProgram } from "./vm-programs.ts";
 import { EventEmitter } from "node:events";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -124,9 +125,8 @@ export function createDiscovery(
     describeCapabilities: () => "original description",
     trace,
   });
-  const discovery = new vm.Script(
-    `${body}\nnew WorkspaceLspConfigDiscovery([], message => trace.push(message));`,
-  ).runInContext(context);
+  new vm.Script(body).runInContext(context);
+  const discovery = runVmProgram("workspace-config-discovery.js", context);
   const setFolders = (paths) => {
     const previous = workspace.workspaceFolders;
     const next = paths.map(workspaceFolder);

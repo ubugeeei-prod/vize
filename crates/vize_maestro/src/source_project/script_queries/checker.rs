@@ -13,7 +13,10 @@ impl SourceSnapshot {
         let mut diagnostics = Vec::new();
         let editor = self.with_script_blocks(state, |out, root, name, block| {
             let checker = ScriptDiagnosticProfile::for_language(block.lang.as_deref());
-            out.read_script(root, name, block, Some(checker.source_type()), |syntax| {
+            // An empty program has no syntax diagnostics in any checker grammar.
+            // read_script still validates the authored frame and emits its outline.
+            let grammar = (!block.content.is_empty()).then_some(checker.source_type());
+            out.read_script(root, name, block, grammar, |syntax| {
                 diagnostics.extend(
                     checker
                         .diagnostics(syntax)

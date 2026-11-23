@@ -69,6 +69,8 @@ fn declaration_profiles_and_recovered_imports_match_both_original_readers() {
         "<script lang='ts'>const value = 1;\n<!-- HTML comment\nconst answer = value;</script>",
         "<script>const loaded = require('./one'); const other = import('./two');</script>",
         "<script></script><script setup>  </script><style>.a{}</style>",
+        "<!-- 🌱 -->\r\n<script lang='ts'></script>\r\n<script\nsetup lang='tsx'></script>",
+        "<script>import './ordinary'</script><script setup lang='ts'></script>",
         "<template><span/></template>",
         "<script>let a</script><script>let b</script>",
     ] {
@@ -78,6 +80,33 @@ fn declaration_profiles_and_recovered_imports_match_both_original_readers() {
         counts.responses >= 8 && counts.symbols >= 8 && counts.candidates >= 7,
         "{counts:?}"
     );
+}
+
+#[test]
+fn empty_blocks_preserve_requested_grammars_and_propagate_reader_errors() {
+    let state = ServerState::new();
+    let uri = Url::parse("file:///projects/Empty.vue").unwrap();
+    let text = "<script lang='ts' setup></script>";
+    state
+        .documents
+        .open(uri.clone(), text.into(), 1, "vue".into());
+    let snapshot = SourceSnapshotCache::default()
+        .capture(&state.documents, &uri)
+        .unwrap();
+    for profile in [
+        ScriptQueryProducts::script_type(Some("ts")),
+        SourceType::tsx(),
+    ] {
+        let mut visits = Vec::new();
+        let result = snapshot.with_script_blocks(&state, |products, root, name, block| {
+            products.read_script(root, name, block, Some(profile), |syntax| {
+                visits.push((name, syntax.source_type(), syntax.block().span()));
+                Err(ScriptQueryRefusal::Language)
+            })
+        });
+        assert_eq!(result, Err(ScriptQueryRefusal::Language));
+        assert_eq!(visits, [("script setup", profile, Span::new(24, 24))]);
+    }
 }
 
 #[test]
