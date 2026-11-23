@@ -68,9 +68,31 @@ pub(crate) fn emit<L: LinkSink>(
     syntax: &[StyleSyntax<'_>],
     scope_id: Option<ScopeId<'_>>,
     trim: bool,
+    #[cfg(feature = "native-sfc-scss")] scss: bool,
 ) -> Result<Option<EmitDocument>, NativeSfcCompileError> {
     let mut output = EmitDocument::new(L::RECORDING);
     for original in descriptor.styles() {
+        #[cfg(feature = "native-sfc-scss")]
+        if scss
+            && let [lang] = original.attrs()
+            && lang.name == "lang"
+            && vize_l1::container::lang::style_lang(lang.value)
+                == Ok(vize_l1::css::lang::StyleLanguage::Scss)
+        {
+            use vize_l1::css::lang::StyleLanguage;
+            use vize_l2::lang::scss::ScssProgram;
+            let program = StyleLanguage::Scss
+                .with_original_structure(original.block(), ScssProgram::lower)
+                .map_err(|issue| NativeSfcCompileError::Scss {
+                    container_index: original.container_index(),
+                    issue,
+                })?;
+            if !output.is_empty() {
+                output.push_str("\n");
+            }
+            vize_l4::targets::scss::append(&mut output, &program);
+            continue;
+        }
         if original.attrs().iter().any(|attr| attr.name == "scoped") {
             super::scoped::append(original, syntax, scope_id, &mut output, trim)?;
         } else {

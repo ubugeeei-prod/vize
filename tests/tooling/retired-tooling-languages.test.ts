@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
+  coordinateTheory,
   retiredToolingLanguage,
   retiredToolingLanguages as languages,
   independentGraphTheory,
@@ -97,6 +98,7 @@ function retiringFiles(ledger: Ledger, language: Language, tracked: readonly str
     .filter(
       (file) =>
         file !== independentGraphTheory &&
+        file !== coordinateTheory &&
         retiredToolingLanguage(file) === language &&
         !prefixes.some((prefix) => file.startsWith(prefix)),
     )
