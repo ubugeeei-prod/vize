@@ -7,6 +7,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 interface ProcessRow {
+  readonly pid: number;
+  readonly birth_ticks: number;
   readonly executable?: string;
   readonly executables?: readonly string[];
   readonly cpu_seconds: number;
@@ -207,11 +209,12 @@ const semanticReceipt = (run: MeasurementRun): unknown => ({
 
 const processFor = (rows: readonly ProcessRow[], server: string): ProcessRow => {
   const resolved = path.resolve(server);
-  const matches = rows.filter((row) =>
-    [...(row.executable == null ? [] : [row.executable]), ...(row.executables ?? [])].some(
-      (executable) => path.resolve(executable) === resolved,
-    ),
-  );
+  const matches = rows.filter((row) => {
+    const executables = [...(row.executables ?? [])];
+    if (row.executable != null) executables.push(row.executable);
+    // A forked bridge can briefly share the server image before it executes Node.
+    return executables.length > 0 && executables.every((exe) => path.resolve(exe) === resolved);
+  });
   assert.equal(matches.length, 1, "one exact Maestro server process is required");
   return matches[0]!;
 };
@@ -220,6 +223,13 @@ const metricRow = (measurement: Measurement, profile: AllocationProfile): Metric
   const run = measurement.per_run[0]!;
   const serverPeak = processFor(run.observed_processes, measurement.server);
   const serverIdle = processFor(run.idle_processes, measurement.server);
+  assert.ok(Number.isSafeInteger(serverIdle.pid) && serverIdle.pid > 0, "server PID is required");
+  assert.ok(
+    Number.isSafeInteger(serverIdle.birth_ticks) && serverIdle.birth_ticks > 0,
+    "server process birth ticks are required",
+  );
+  assert.equal(serverPeak.pid, serverIdle.pid, "server PID changed between observations");
+  assert.equal(serverPeak.birth_ticks, serverIdle.birth_ticks, "server process lifetime changed");
   const edit = run.controlled_edits.find((entry) => entry.edit === "body change");
   assert.ok(edit, "controlled edit timing is required");
   assert.ok(Number.isFinite(edit.elapsed_ms), "controlled edit timing is required");
