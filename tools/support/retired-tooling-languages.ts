@@ -11,6 +11,21 @@ export const templateLabelRanking = {
   kernel: "crates/vize_patina/src/rules/facts/max_template_complexity/original/window.rs",
   harness: "crates/vize_patina/src/rules/facts/max_template_complexity/original/kani.rs",
 } as const;
+export const templateSpanProjection = {
+  theorem: "tests/formal/ir-graph/TemplateProjection.lean",
+  kernel: "crates/vize_incremental/src/template/projection.rs",
+  harness: "crates/vize_incremental/src/template/kani.rs",
+} as const;
+const templateProofs = [templateLabelRanking, templateSpanProjection] as const;
+
+export function checkedTemplateTheorems(paths: readonly string[]): Set<string> {
+  return new Set(
+    templateProofs
+      .filter(({ kernel, harness }) => paths.includes(kernel) && paths.includes(harness))
+      .map(({ theorem }) => theorem),
+  );
+}
+
 export const retiredToolingLedger = "tools/config/retired-tooling-languages.json";
 export const retiredToolingLedgerTest = "tests/tooling/retired-tooling-languages.test.ts";
 export const retiredToolingLanguages = ["py", "lean", "mbt", "mjs"] as const;
@@ -37,7 +52,9 @@ export function retiredToolingDrift(paths: readonly string[], cwd: string): bool
     const language = retiredToolingLanguage(path);
     return language ? [{ path, language }] : [];
   });
-  if (paths.includes(templateLabelRanking.kernel) || paths.includes(templateLabelRanking.harness)) {
+  if (
+    templateProofs.some(({ kernel, harness }) => paths.includes(kernel) || paths.includes(harness))
+  ) {
     return true;
   }
   if (changed.length === 0) return false;
