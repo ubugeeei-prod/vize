@@ -1,0 +1,112 @@
+{
+  "docs/package.json": [
+    {
+      "current_sha256": "9de99893b0877b0b8e7480c9847483c59d8b01277d35d2d9774b4d6b7fa4b077",
+      "previous_sha256": "517ec5bcb9d6a8ec3868d31f9c213d481c7875c33840ec9b7c4da3a004f7a01c",
+      "edits": [
+        {
+          "current": "    \"pythonia\": \"1.2.6\",\n",
+          "previous": ""
+        }
+      ]
+    },
+    {
+      "current_sha256": "517ec5bcb9d6a8ec3868d31f9c213d481c7875c33840ec9b7c4da3a004f7a01c",
+      "previous_sha256": "d0fde98a1c1b819ea6d1aa88da09ed06816d88e255d7a4b93a9a77386a075138",
+      "edits": [
+        {
+          "current": "    \"dev\": \"node ./scripts/package-tasks.cjs dev\",\n    \"build\": \"node ./scripts/package-tasks.cjs build\",\n",
+          "previous": "    \"dev\": \"node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && pnpm generate:metadata && vp build && pnpm generate:og-images && vp preview\",\n    \"build\": \"node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && pnpm generate:metadata && vp build && node ./scripts/finish-build.ts\",\n"
+        }
+      ]
+    }
+  ],
+  "npm/builder/unplugin/package.json": [
+    {
+      "current_sha256": "2b1218d3c3c9e24a9dbc473efe94756b74c78b2c8aa739e947e5b76f744a6da6",
+      "previous_sha256": "d1663b75cc91684f2f1f67f90c52be6ddea1f0174338bf34435657aa8b13debf",
+      "edits": [
+        {
+          "current": "    \"dist\",\n    \"scripts/package-tasks.cjs\"\n",
+          "previous": "    \"dist\"\n"
+        },
+        {
+          "current": "    \"test\": \"node ./scripts/package-tasks.cjs test\",\n",
+          "previous": "    \"test\": \"vp pack && node --test src/*.test.ts src/**/*.test.ts\",\n"
+        }
+      ]
+    }
+  ],
+  "npm/builder/unplugin/example/package.json": [
+    {
+      "current_sha256": "90c834fa63e24b7c30f9cee8b4829fe350e8bccdf297b93e037a389a77f108ef",
+      "previous_sha256": "b476d3f91323fc97dc3da3e122f1599e39ea8c734cba8ca8b68564585d32f554",
+      "edits": [
+        {
+          "current": "    \"build\": \"node ./scripts/package-tasks.cjs build\",\n    \"build:bun\": \"node ./scripts/package-tasks.cjs build:bun\",\n",
+          "previous": "    \"build\": \"vp run --filter @vizejs/unplugin build && node build/build-all.ts\",\n    \"build:bun\": \"vp run --filter @vizejs/unplugin build && bun run build/bun.ts\",\n"
+        },
+        {
+          "current": "    \"test\": \"node ./scripts/package-tasks.cjs test\"\n",
+          "previous": "    \"test\": \"vp run --filter @vizejs/unplugin build && node --test test/builders.test.ts\"\n"
+        }
+      ]
+    }
+  ],
+  "npm/cli/package.json": [
+    {
+      "current_sha256": "0fe343f7ba147aa7cf08f495b09d5f81ff7b469b2a062695c004651638bb6616",
+      "previous_sha256": "835515952fb317caaa9403f566efee0bc66d44dc6150170595237de2192919a8",
+      "edits": [
+        {
+          "current": "    \"pkl\",\n    \"scripts/package-tasks.cjs\"\n",
+          "previous": "    \"pkl\"\n"
+        },
+        {
+          "current": "    \"build\": \"node ./scripts/package-tasks.cjs build\",\n",
+          "previous": "    \"build\": \"vp run --workspace-root generate:rule-types && vp pack\",\n"
+        },
+        {
+          "current": "    \"test\": \"node ./scripts/package-tasks.cjs test\"\n",
+          "previous": "    \"test\": \"vp pack && vp test run tests/config.test.ts tests/vite-project-config.test.ts tests/vite-module-config.test.ts tests/define-config.test.ts tests/corsa-runtime.test.ts tests/setup.test.ts tests/setup-oxlint-config.test.ts tests/init.test.ts tests/init-frameworks.test.ts tests/init-tsconfig.test.ts tests/init-prompt.test.ts tests/init-config-free.test.ts tests/init-workspace.test.ts\"\n"
+        }
+      ]
+    }
+  ],
+  "pnpm-lock.yaml": [
+    {
+      "current_sha256": "f70a28ee91cdde0551e473c30eceedcda7e40c0d58e155c283f60005d063a8d4",
+      "previous_sha256": "378bc86c1206d67d1fb6a762734c184607440caae523b19bf421a52ce3cc7b53",
+      "edits": [
+        {
+          "current": "      pythonia:\n        specifier: 1.2.6\n        version: 1.2.6(ws@7.5.14)\n",
+          "previous": ""
+        },
+        {
+          "current": "  caller@1.1.0:\n    resolution: {integrity: sha512-n+21IZC3j06YpCWaxmUy5AnVqhmCIM2bQtqQyy00HJlmStRt6kwDX5F9Z97pqwAB+G/tgSz6q/kUBbNyQzIubw==}\n\n",
+          "previous": ""
+        },
+        {
+          "current": "  pythonia@1.2.6:\n    resolution: {integrity: sha512-SL/J5+DugD0SP7ohatNps5jSRL+qnAyIOL8MsA6ACsLCml9XY3La1IRnirNkjgPnUItzpiVDGqc2dvBltudHjQ==}\n    peerDependencies:\n      ws: ^7.5.1\n\n",
+          "previous": ""
+        },
+        {
+          "current": "  ws@7.5.14:\n    resolution: {integrity: sha512-u9Oi2nQ8SZnTUAf6spLLKF5TyqoG3Nbbrd4ai6Sjo4P24bycDewhQqtNMIg4bFpnpH/TD4qk4IuAVhT0HIIqug==}\n    engines: {node: '>=8.3.0'}\n    peerDependencies:\n      bufferutil: ^4.0.1\n      utf-8-validate: ^5.0.2\n    peerDependenciesMeta:\n      bufferutil:\n        optional: true\n      utf-8-validate:\n        optional: true\n\n",
+          "previous": ""
+        },
+        {
+          "current": "  caller@1.1.0: {}\n\n",
+          "previous": ""
+        },
+        {
+          "current": "  pythonia@1.2.6(ws@7.5.14):\n    dependencies:\n      caller: 1.1.0\n      chalk: 4.1.2\n      ws: 7.5.14\n\n",
+          "previous": ""
+        },
+        {
+          "current": "  ws@7.5.14: {}\n\n",
+          "previous": ""
+        }
+      ]
+    }
+  ]
+}

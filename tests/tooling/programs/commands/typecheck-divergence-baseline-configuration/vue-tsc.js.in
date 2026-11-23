@@ -1,0 +1,2 @@
+process.stdout.write(@@DETAIL_N_SHARED_BASELINE_OUTPUT_PATH_JOIN_FIX@@);
+process.exit(2);

@@ -1,0 +1,7 @@
+import fs from "node:fs";
+fs.writeFileSync(
+  @@OUTPUT@@,
+  JSON.stringify(
+    Object.fromEntries(@@VARIABLES@@.map((name) => [name, process.env[name] ?? null])),
+  ),
+);

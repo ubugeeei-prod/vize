@@ -1,0 +1,132 @@
+import "../../Actions.pkl" as ci
+
+name = "JSR package checks"
+on {
+  pull_request {
+    paths = new Listing {
+      "jsr/**"
+      "npm/**/package.json"
+      "tools/support/release/jsr/**"
+      "tests/tooling/jsr-package.test.ts"
+      "tests/tooling/jsr-public-preview-consumers.test.ts"
+      "tests/tooling/release-jsr-workflow.test.ts"
+      "tests/tooling/jsr-fresh-provenance.test.ts"
+      ".github/workflows/jsr-package.yml"
+      ".github/scripts/workflows/jsr-package/**"
+      ".github/workflows/release-jsr.yml"
+      ".github/scripts/workflows/release-jsr/**"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      `published-version` {
+        description = "Optionally verify an existing published JSR version read-only in a fresh Deno cache"
+        type = "string"
+        required = false
+        ["default"] = ""
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "jsr-package-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  package {
+    name = "JSR publish dry-run"
+    `runs-on` = "ubuntu-24.04"
+    `timeout-minutes` = 20
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/jsr-package"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Install frozen tooling dependencies"
+        run = "vp install --frozen-lockfile --prefer-offline --filter vize-workspace --filter @vize/tests --ignore-scripts"
+      }
+      new Dynamic {
+        uses = "denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed"  // v2
+        with { `deno-version` = "2.9.7" }
+      }
+      new Dynamic {
+        uses = ci.setupBun
+        with { `bun-version` = "1.3.14" }
+      }
+      new Dynamic {
+        name = "Test package generation"
+        run = "node --test tests/tooling/jsr-package.test.ts tests/tooling/jsr-public-preview-consumers.test.ts tests/tooling/release-jsr-workflow.test.ts tests/tooling/jsr-fresh-provenance.test.ts"
+      }
+      new Dynamic {
+        name = "Verify scoped dependency age with the actual Deno runtime"
+        env {
+          JSR_CONSUMER_PUBLISHED_VERSION = "${{ github.event_name == 'workflow_dispatch' && inputs.published-version || '' }}"
+        }
+        run = #"node tools/support/release/jsr/verify-consumer-age.mjs "$RUNNER_TEMP/jsr-consumer-age""#
+      }
+      new Dynamic {
+        name = "Resolve the latest immutable public preview version"
+        id = "preview"
+        run = ci.workflowScript("resolve-the-latest-immutable-public-preview-version.sh")
+      }
+      new Dynamic {
+        name = "Generate a PR preview from that public release"
+        env { JSR_PREVIEW_VERSION = "${{ steps.preview.outputs.version }}" }
+        run = #"node tools/support/release/jsr/package.ts prepare-preview-all "$RUNNER_TEMP/jsr-packages" "$JSR_PREVIEW_VERSION""#
+      }
+      new Dynamic {
+        name = "Check every publication graph and public type surface"
+        run = #"node tools/support/release/jsr/verify-staged.ts dry-run "$RUNNER_TEMP/jsr-packages""#
+      }
+      new Dynamic {
+        name = "Import the staged entry points under Deno"
+        env { DENO_DIR = "${{ runner.temp }}/staged-jsr-deno" }
+        run = #"node tools/support/release/jsr/public-preview-consumers.ts staged-deno "$RUNNER_TEMP/jsr-deno-consumer" "$RUNNER_TEMP/jsr-packages/vize""#
+      }
+      new Dynamic {
+        name = "Install the public preview in a fresh Bun project and execute the tool APIs"
+        env { JSR_PREVIEW_VERSION = "${{ steps.preview.outputs.version }}" }
+        run = #"node tools/support/release/jsr/public-preview-consumers.ts bun "$RUNNER_TEMP/jsr-bun-consumer" "$JSR_PREVIEW_VERSION""#
+      }
+      new Dynamic {
+        name = "Preserve actual Deno consumer commands and outcomes"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "jsr-consumer-age-${{ github.sha }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/jsr-consumer-age/"
+          `if-no-files-found` = "warn"
+          `retention-days` = 14
+        }
+      }
+      new Dynamic {
+        name = "Preserve the fresh Bun preview install and runtime outcome"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "jsr-bun-preview-${{ github.sha }}-${{ github.run_attempt }}"
+          path = """
+          ${{ runner.temp }}/jsr-bun-consumer/*.log
+          ${{ runner.temp }}/jsr-bun-consumer/*.json
+          ${{ runner.temp }}/jsr-bun-consumer/*.lock
+
+          """
+          `if-no-files-found` = "warn"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

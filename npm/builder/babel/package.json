@@ -14,7 +14,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "scripts/package-tasks.cjs"
   ],
   "type": "module",
   "main": "./dist/index.cjs",
@@ -37,7 +38,7 @@
   },
   "scripts": {
     "build": "vp pack",
-    "check": "vp check src vite.config.ts && tsc -p test/tsconfig.json",
+    "check": "node ./scripts/package-tasks.cjs check",
     "test": "node --test test/packed-hosts.test.ts test/runtime-renderers.test.ts test/style-guards.test.ts"
   },
   "dependencies": {

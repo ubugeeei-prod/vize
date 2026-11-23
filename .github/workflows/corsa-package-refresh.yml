@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/corsa-package-refresh.yml
+      - .github/scripts/workflows/corsa-package-refresh/**
       - tools/support/compat/github/corsa-package-refresh/**
       - tests/tooling/corsa-package-refresh-bootstrap.test.ts
       - crates/vize_canon/src/batch/**
@@ -41,6 +42,8 @@ jobs:
     if: ${{ !inputs.import_geometry }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/corsa-package-refresh"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -59,11 +62,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.100.0 }
       - name: Ensure the native process observer
-        run: |
-          if ! command -v strace >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y strace
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/ensure-the-native-process-observer.sh"
       - name: Install the frozen real Vue fixture dependency
         run: vp install --filter './tests' --frozen-lockfile --prefer-offline --ignore-scripts
       - name: Verify observer bootstrap and source roles
@@ -73,10 +72,7 @@ jobs:
           VIZE_PACKAGE_REFRESH_CAPTURE: ${{ runner.temp }}/corsa-package-refresh
           VIZE_COMPARE_HISTORICAL: ${{ inputs.historical }}
           VIZE_PACKAGE_REFRESH_TRIGGER_HEAD: ${{ github.event.pull_request.head.sha || '' }}
-        run: |
-          cp -R tools/support/compat/github/corsa-package-refresh "$RUNNER_TEMP/corsa-package-refresh-harness"
-          vp node "$RUNNER_TEMP/corsa-package-refresh-harness/compare.mjs"
-          vp node "$RUNNER_TEMP/corsa-package-refresh-harness/fixture.mjs"
+        run: . "${{ env.VIZE_CI_FILES }}/compare-unchanged-tests-with-one-physical-historical-sdk.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -120,6 +116,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix: { feature: [default, legacy] }
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/corsa-package-refresh"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
@@ -134,19 +132,10 @@ jobs:
           VIZE_TEMPLATE_EMIT_TS40_CAPTURE: ${{ runner.temp }}/projection-import-geometry/packets
           FEATURE: ${{ matrix.feature }}
           INSTA_UPDATE: new
-        run: |
-          mkdir -p "$RUNNER_TEMP/projection-import-geometry"
-          git rev-parse HEAD > "$RUNNER_TEMP/projection-import-geometry/source.sha"
-          args=()
-          if [[ "$FEATURE" == legacy ]]; then args+=(--features legacy); fi
-          set -o pipefail
-          cargo test --locked --profile ci -p vize_maestro "${args[@]}" --test davinci_ts40_projection -- --nocapture 2>&1 | tee "$RUNNER_TEMP/projection-import-geometry/execution.log"
+        run: . "${{ env.VIZE_CI_FILES }}/check-the-complete-editor-projection-and-offset-probes.sh"
       - name: Retain pending snapshots for manual review
         if: always()
-        run: |
-          directory="$RUNNER_TEMP/projection-import-geometry/pending-snapshots"
-          mkdir -p "$directory"
-          find crates/vize_maestro/tests/snapshots -name '*.snap.new' -exec cp {} "$directory/" \;
+        run: . "${{ env.VIZE_CI_FILES }}/retain-pending-snapshots-for-manual-review.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

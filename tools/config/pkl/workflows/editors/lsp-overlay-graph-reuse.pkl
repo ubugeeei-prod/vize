@@ -1,0 +1,135 @@
+import "../../Actions.pkl" as ci
+
+name = "LSP independent overlay graphs"
+
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/lsp-overlay-graph-reuse.yml"
+      ".github/scripts/workflows/lsp-overlay-graph-reuse/**"
+      "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/**"
+      "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache.rs"
+      "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/prepare.rs"
+      "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/prepare_materialize.rs"
+      "crates/vize_canon/src/corsa_bridge/source_catalog.rs"
+      "crates/vize_canon/src/corsa_bridge/source_catalog/**"
+      "crates/vize_canon/src/corsa_bridge/vue_document/model.rs"
+      "crates/vize_canon/src/corsa_bridge/vue_document/build/host_edit.rs"
+      "crates/vize_canon/src/lsp_client/canon_file_cache.rs"
+      "crates/vize_canon/src/lsp_client.rs"
+      "crates/vize_canon/src/lsp_client/bootstrap.rs"
+      "crates/vize_canon/src/lsp_client/session_paths.rs"
+      "crates/vize_canon/src/lsp_client/immutable_batch.rs"
+      "crates/vize_canon/src/lsp_client/immutable_batch/**"
+      "crates/vize_canon/src/corsa_bridge/bridge/documents.rs"
+      "crates/vize_canon/src/lsp_client/tracked_documents.rs"
+      "crates/vize_canon/src/lsp_client/tracked_documents/**"
+      "crates/vize_canon/src/lsp_client/session/replay.rs"
+      "crates/vize_canon/src/lsp_client/workspace_project.rs"
+      "crates/vize_canon/src/lsp_client/lifecycle.rs"
+      "tests/tooling/lsp-overlay-graph-reuse.test.ts"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      compare_ref {
+        description = "Exact parent source SHA for the paired preparation observation"
+        required = true
+        type = "string"
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "lsp-overlay-graph-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  paired {
+    name = "Complete overlay custody and paired graph observations"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 60
+    env {
+
+      CARGO_TERM_COLOR = "never"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+      NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+      BASE_SHA = "${{ github.event.pull_request.base.sha || inputs.compare_ref }}"
+      OBSERVATION_ROOT = "${{ github.workspace }}/target/differential/overlay-graphs"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("lsp-overlay-graph-reuse")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha || github.sha }}"
+          `persist-credentials` = false
+          `fetch-depth` = 0
+        }
+      }
+      ci.workspaceVp()
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "test-scripts"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Capture identical test-only instrumentation at the exact parent source"
+        run = ci.workflowScript("capture-identical-test-only-instrumentation-at-the-exact-parent-source.sh")
+      }
+      new Dynamic {
+        name = "Assert all cache, source map and lifecycle regressions at the literal candidate"
+        run = ci.workflowScript("assert-all-cache-source-map-and-lifecycle-regressions-at-the-literal-can.sh")
+      }
+      new Dynamic {
+        name = "Require all six complete paired observation packets"
+        run = ci.workflowScript("require-all-six-complete-paired-observation-packets.sh")
+      }
+      new Dynamic {
+        name = "Build and receipt the exact source server"
+        run = ci.workflowScript("build-and-receipt-the-exact-source-server.sh")
+      }
+      new Dynamic {
+        name = "Preserve complete real-native protocol packets and imported-type negative controls"
+        env {
+          VIZE_LSP_BIN = "${{ github.workspace }}/target/ci/vize"
+          VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+          VIZE_TEST_REQUIRE_TSGO = "1"
+          VIZE_EDITOR_CONFIG_VUE_ROOT = "${{ runner.temp }}/native-lsp-provider/node_modules/vue"
+          VIZE_TRACE_EDITOR_PREPARATION = "1"
+          VIZE_PROJECT_NAVIGATION_VUE_ROOT = "${{ runner.temp }}/native-lsp-provider/node_modules/vue"
+        }
+        run = "node --test --test-concurrency=1 tests/tooling/lsp-overlay-graph-reuse.test.ts tests/tooling/lsp-implementation-capability.test.ts"
+      }
+      new Dynamic {
+        name = "Preserve successful and failed complete paired observations"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "overlay-graphs-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = """
+          target/differential/overlay-graphs/
+          target/differential/lsp-overlay-graph-reuse/
+          target/differential/lsp-sessions/
+          target/differential/implementation-canon/
+          target/ci/vize.differential-build.json
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

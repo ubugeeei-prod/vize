@@ -1,0 +1,234 @@
+import "../../Actions.pkl" as ci
+
+name = "Canon slot constructor admission"
+on {
+  pull_request {
+    paths = new Listing {
+      "crates/vize_canon/src/virtual_ts/expressions/generic_props_call.rs"
+      "crates/vize_canon/src/virtual_ts/expressions/constructor_instance.rs"
+      "crates/vize_canon/src/virtual_ts/scope/component_props.rs"
+      "crates/vize_canon/src/batch/type_checker/tests/recent_issues/generic_constructor_slots/correlated_props.rs"
+      "tests/_fixtures/differential/typechecker/constructor-props-correlation-11023/**"
+      "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-resolver.d.ts.txt"
+      "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-resolver.d.ts.txt"
+      "crates/vize_canon/src/virtual_ts/helpers/preamble.rs"
+      "crates/vize_canon/src/virtual_ts/helpers/shared_types.rs"
+      "crates/vize_canon/src/virtual_ts/scope/slot_scope/payload.rs"
+      "crates/vize_canon/src/virtual_ts/tests/slot_component_bindings.rs"
+      "crates/vize_canon/src/snapshots/vize_canon__tests__virtual_ts_tests__virtual_ts_scoped_slots.snap"
+      "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_scoped_slot_expressions.snap"
+      "crates/vize_canon/snapshots/vize_canon__virtual_ts__tests__virtual_ts_reserved_prop_and_hyphenated_slot_names.snap"
+      "crates/vize_canon/tests/zero_argument_slot_constructor_diagnostics.rs"
+      "crates/vize_canon/tests/support/fix_history_runner.rs"
+      "tests/differential/typechecker-registry.ts"
+      "tests/_fixtures/differential/typechecker/manifest.json"
+      "tests/_fixtures/differential/typechecker/zero-argument-slot-constructor-11013/**"
+      "tools/benchmarks/scripts/canon-slot-constructor-*.ts"
+      "tools/support/compat/content-mapper/constructor-original27-current.ts"
+      "tests/tooling/constructor-original27-current.test.ts"
+      ".github/workflows/canon-slot-constructor.yml"
+      ".github/scripts/workflows/canon-slot-constructor/**"
+      ".github/scripts/workflows/shared/**"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      original27_source {
+        description = "Exact 40-hex source commit for an original27 current-source observation (no public qualification)"
+        required = true
+        type = "string"
+      }
+      original27_mode {
+        description = "Current27 capture, or one imported-case SDK origin metadata probe (no diagnostic admission)"
+        type = "choice"
+        ["default"] = "capture"
+        options = List("capture", "native-props-origin")
+      }
+      native_vue_return_observation {
+        description = "Observe source-owned Vue return metadata in the existing Origin session; no admission"
+        type = "boolean"
+        ["default"] = false
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "canon-slot-constructor-${{ github.event.pull_request.number || github.run_id }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  admission {
+    `if` = "github.event_name == 'pull_request'"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/canon-slot-constructor"
+      CARGO_BUILD_JOBS = "4"
+      CARGO_INCREMENTAL = "0"
+      GOMAXPROCS = "2"
+      RAYON_NUM_THREADS = "2"
+      NODE_DISABLE_COMPILE_CACHE = "1"
+      PR_HEAD = "${{ github.event.pull_request.head.sha }}"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          `fetch-depth` = 2
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24.14.0"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Validate current original27 observer refusal controls"
+        run = "node --test tests/tooling/constructor-original27-current.test.ts"
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        name = "Build the exact source CLI in an independent target"
+        run = ci.workflowScript("build-the-exact-source-cli-in-an-independent-target.sh")
+      }
+      new Dynamic {
+        name = "Validate direct constructor emission, snapshots and complete constructor packets"
+        run = ci.workflowScript("validate-direct-constructor-emission-snapshots-and-complete-constructor.sh")
+      }
+      new Dynamic {
+        name = "Install the pinned public release baseline and provider"
+        run = ci.workflowScript("install-the-pinned-public-release-baseline-and-provider.sh")
+      }
+      new Dynamic {
+        name = "Require the pinned batch diagnostic fixture through the native provider"
+        run = ci.workflowScript("require-the-pinned-batch-diagnostic-fixture-through-the-native-provider.sh")
+      }
+      new Dynamic {
+        name = "Require exact native negative, real-project, and repair admission"
+        run = ci.workflowScript("require-exact-native-negative-real-project-and-repair-admission.sh")
+      }
+      new Dynamic {
+        name = "Preserve raw failures and authored inputs"
+        `if` = "always()"
+        run = ci.workflowScript("preserve-raw-failures-and-authored-inputs.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "slot-constructor-${{ github.sha }}"
+          path = "${{ runner.temp }}/slot-constructor-evidence.tgz"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+
+  `original27-current` {
+    `if` = "github.event_name == 'workflow_dispatch' && github.repository == 'ubugeeei-prod/vize'"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    env {
+
+      CAPTURE_SOURCE = "${{ inputs.original27_source }}"
+      ORIGINAL27_MODE = "${{ inputs.original27_mode || 'capture' }}"
+      NATIVE_VUE_RETURN_OBSERVATION = "${{ inputs.native_vue_return_observation && 'true' || 'false' }}"
+      CARGO_BUILD_JOBS = "4"
+      CARGO_INCREMENTAL = "0"
+      GOMAXPROCS = "2"
+      RAYON_NUM_THREADS = "2"
+      NODE_DISABLE_COMPILE_CACHE = "1"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("canon-slot-constructor")
+      new Dynamic {
+        name = "Require one literal source commit"
+        run = ci.workflowScript("require-one-literal-source-commit.sh")
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ inputs.original27_source }}"
+          path = "original27-source"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "a8ce1ec166a53b380e74dbf7189cc8578c80c676"
+          path = "original27-fixtures"
+          `persist-credentials` = false
+          `sparse-checkout-cone-mode` = false
+          `sparse-checkout` = """
+          /tools/support/compat/content-mapper/constructor-overload-original27.ts
+          /tests/_fixtures/differential/typechecker/constructor-overload-11023-original27/
+
+          """
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24.14.0"
+          `package-manager-cache` = false
+        }
+      }
+      ci.command("Validate observer contracts", "node --test tests/tooling/constructor-original27-current.test.ts")
+      ci.rust("1.100.0")
+      ci.wild()
+      ci.command("Prepare one explicit observation directory", #"mkdir "$RUNNER_TEMP/original27-current-evidence""#)
+      new Dynamic {
+        name = "Build the unchanged selected source and seal its CLI"
+        `if` = "inputs.original27_mode != 'native-props-origin'"
+        run = ci.workflowScript("build-the-unchanged-selected-source-and-seal-its-cli.sh")
+      }
+      new Dynamic {
+        name = "Build only the selected source's origin probe test executable"
+        `if` = "inputs.original27_mode == 'native-props-origin'"
+        run = ci.workflowScript("build-only-the-selected-source-s-origin-probe-test-executable.sh")
+      }
+      new Dynamic {
+        name = "Install the original provider without executing its published Vize"
+        run = ci.workflowScript("install-the-original-provider-without-executing-its-published-vize.sh")
+      }
+      new Dynamic {
+        name = "Preserve both independent oracles, every current diagnostic and all27 mapper transactions"
+        `if` = "inputs.original27_mode != 'native-props-origin'"
+        run = """
+        node tools/support/compat/content-mapper/constructor-original27-current.ts capture "$GITHUB_WORKSPACE/original27-source" "$CAPTURE_SOURCE" "$GITHUB_WORKSPACE/original27-fixtures" "$RUNNER_TEMP/original27-current-provider" "$RUNNER_TEMP/original27-current-evidence"
+
+        """
+      }
+      new Dynamic {
+        name = "Observe both actual instance hosts and Vue declaration identities in one snapshot"
+        `if` = "inputs.original27_mode == 'native-props-origin'"
+        run = ci.workflowScript("observe-both-actual-instance-hosts-and-vue-declaration-identities-in-one.sh")
+      }
+      new Dynamic {
+        name = "Preserve complete raw failures and original authored inputs"
+        `if` = "always()"
+        run = ci.workflowScript("preserve-complete-raw-failures-and-original-authored-inputs.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "${{ inputs.original27_mode == 'native-props-origin' && 'native-props-origin' || 'original27-current' }}-${{ inputs.original27_source }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/original27-current.tgz"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

@@ -1,3 +1,5 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -37,7 +39,7 @@ interface Workflow {
 }
 
 function readWorkflow(file: string): Workflow {
-  return parse(readRepoFile(".github", "workflows", file)) as Workflow;
+  return parse(readAutomationPrograms(".github", "workflows", file)) as Workflow;
 }
 
 function workflowJob(workflow: Workflow, name: string): WorkflowJob {
@@ -70,6 +72,7 @@ test("docs build evidence is immutable per SHA and has no Pages authority", () =
   assert.deepEqual(events.push?.branches, ["main"]);
   assert.deepEqual(events.push?.paths, [
     ".github/workflows/build-docs.yml",
+    ".github/scripts/workflows/build-docs/**",
     "docs/**",
     "!docs/davinci/decisions/**",
     "npm/compose/core/examples/**",
@@ -89,7 +92,7 @@ test("docs build evidence is immutable per SHA and has no Pages authority", () =
   assert.deepEqual(Object.keys(workflow.jobs ?? {}).sort(), ["build-docs", "build-playground"]);
   assert.equal(workflow.permissions?.contents, "read");
 
-  const source = readRepoFile(".github", "workflows", "build-docs.yml");
+  const source = readAutomationPrograms(".github", "workflows", "build-docs.yml");
   assert.doesNotMatch(source, /pages:\s*write|id-token:\s*write|actions\/deploy-pages/);
   for (const artifact of ["docs", "playground", "musea-examples"]) {
     const upload = Object.values(workflow.jobs ?? {})
@@ -154,11 +157,21 @@ test("full Docs checks real preview resources before building and retains the ra
   assert.equal(
     reading.run,
     [
-      'ja_reading_routes=$(node --input-type=module -e \'import { defaultNavigationRenderRoutes } from "./docs/scripts/navigation-render-routes.ts"; process.stdout.write(defaultNavigationRenderRoutes.filter(route => route.startsWith("/ja/")).join(","))\')',
+      'ja_reading_routes=$(node "$VIZE_CI_FILES/verify-rendered-navigation-and-japanese-reading-paths.ts")',
       'node docs/scripts/verify-navigation-render.ts --routes "$ja_reading_routes"',
       "node docs/scripts/verify-ja-editorial-render.ts",
       "",
     ].join("\n"),
+  );
+  const routeProgram = workflowProgram(
+    "build-docs",
+    reading.run!,
+    "verify-rendered-navigation-and-japanese-reading-paths.ts",
+  );
+  assert.ok(
+    routeProgram.includes(
+      'defaultNavigationRenderRoutes.filter((route) => route.startsWith("/ja/")).join(",")',
+    ),
   );
   const japaneseRoutes = defaultNavigationRenderRoutes.filter((route) => route.startsWith("/ja/"));
   assert.deepEqual(
@@ -223,18 +236,10 @@ test("Docs resource fixture preserves Node exit failure even after a passing TAP
   try {
     const bin = join(temporary, "bin");
     mkdirSync(bin);
-    writeFileSync(join(bin, "vp"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
-    writeFileSync(
-      join(bin, "node"),
-      `#!/bin/sh
-if [ "$1" = "--test" ]; then
-  printf '%s\\n' '# tests 8' '# pass 8' '# fail 0' '# cancelled 0' '# skipped 0' '# todo 0'
-  exit 17
-fi
-touch "$READINESS_CONTROL_MARKER"
-`,
-      { mode: 0o755 },
-    );
+    writeFileSync(join(bin, "vp"), readToolingProgram("process/exit-success.sh"), { mode: 0o755 });
+    writeFileSync(join(bin, "node"), readToolingProgram("commands/github-workflows-docs/node.sh"), {
+      mode: 0o755,
+    });
     const script = join(temporary, "step.sh");
     const marker = join(temporary, "unexpected-receipt");
     writeFileSync(script, step.run!);

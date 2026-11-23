@@ -23,6 +23,7 @@
 mod contracts;
 mod execution;
 mod membership;
+mod package_task_history;
 mod projection;
 mod qualification;
 mod support;

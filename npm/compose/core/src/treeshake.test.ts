@@ -1601,25 +1601,8 @@ void test("unused sibling exports of the same module are eliminated", async () =
 
 void test("importing an entry executes no module-level browser-global access", () => {
   for (const [name, entry] of Object.entries(entries)) {
-    // The peer dependency is imported before the traps are installed, so the
-    // probe measures this package (plus its bundled dependencies) only. The
-    // throwing getters fail even a `typeof window` guard hoisted to module
-    // scope, keeping capability detection lazy by construction. The probe
-    // runs `src/*.ts` through the same type-stripping runtime as this suite.
-    const probe = [
-      'import "vue";',
-      'for (const name of ["window", "document", "navigator"]) {',
-      "  Object.defineProperty(globalThis, name, {",
-      "    configurable: true,",
-      "    get() {",
-      "      throw new Error(`[import-side-effect] module-level access to globalThis.${name}`);",
-      "    },",
-      "  });",
-      "}",
-      `await import(${JSON.stringify(pathToFileURL(entry).href)});`,
-    ].join("\n");
-
-    const result = spawnSync(process.execPath, ["--input-type=module", "--eval", probe], {
+    const driver = fileURLToPath(new URL("../test/import-side-effects.ts", import.meta.url));
+    const result = spawnSync(process.execPath, [driver, pathToFileURL(entry).href], {
       cwd: packageRoot,
       encoding: "utf8",
     });

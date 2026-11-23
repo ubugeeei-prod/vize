@@ -1,0 +1,10 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  : > '@@MARKER@@'
+  exit 0
+  """#
+}

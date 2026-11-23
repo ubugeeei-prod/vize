@@ -1,0 +1,127 @@
+import "../../Actions.pkl" as ci
+
+name = "Vue Benchmarks Current Qualification"
+
+// Periodically replay the complete original 5489 lint and typecheck validators
+// against the source-built CLI from this exact main commit. This is a
+// correctness observation: any remaining plant failure keeps the workflow red
+// and every raw stream is retained for attribution.
+on {
+  workflow_dispatch = null
+  schedule = new Listing {
+    new Dynamic { cron = "53 6 * * 1" }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "vue-benchmarks-current-qualification-${{ github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  EXPECTED_SOURCE_SHA = "${{ github.sha }}"
+  EXECUTED_WORKFLOW_SHA = "${{ github.workflow_sha }}"
+}
+
+jobs {
+  `source-cli` { uses = "./.github/workflows/full-source-cli.yml" }
+
+  `current-qualification` {
+    name = "current-qualification"
+    needs = "source-cli"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("vue-benchmarks-current-qualification")
+      new Dynamic {
+        name = "Refuse a branch, stale main, or unreviewed workflow source"
+        shell = "bash"
+        run = ci.workflowScript("refuse-a-branch-stale-main-or-unreviewed-workflow-source.sh")
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          `fetch-depth` = 1
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Verify current main and hydrate the fixed read-only upstream input"
+        shell = "bash"
+        run = ci.workflowScript("verify-current-main-and-hydrate-the-fixed-read-only-upstream-input.sh")
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          cache = false
+          `run-install` = false
+        }
+      }
+      ci.rust("stable")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/restore-source-cli"
+        with { producer = "${{ toJSON(needs.source-cli.outputs) }}" }
+      }
+      ci.command("Run process-custody controls", "node --test tools/benchmarks/scripts/vue-benchmarks-current-typecheck.test.mjs")
+      new Dynamic {
+        name = "Materialize the frozen minimal reference installation"
+        shell = "bash"
+        run = ci.workflowScript("materialize-the-frozen-minimal-reference-installation.sh")
+      }
+      new Dynamic {
+        name = "Observe all eleven original lint pairs"
+        id = "lint"
+        `continue-on-error` = true
+        env { VIZE_SOURCE_CLI_RECEIPT_SHA256 = "${{ needs.source-cli.outputs.receipt-sha256 }}" }
+        run = "node --test tests/tooling/vue-benchmarks-current-lint.test.ts"
+      }
+      new Dynamic {
+        name = "Observe all 154 original typecheck plants"
+        id = "typecheck"
+        `if` = "${{ !cancelled() }}"
+        `continue-on-error` = true
+        shell = "bash"
+        run = ci.workflowScript("observe-all-154-original-typecheck-plants.sh")
+      }
+      new Dynamic {
+        name = "Recheck source, gitlink, and provider custody"
+        `if` = "${{ always() }}"
+        shell = "bash"
+        run = ci.workflowScript("recheck-source-gitlink-and-provider-custody.sh")
+      }
+      new Dynamic {
+        name = "Retain every successful and failed observation"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "vue-benchmarks-current-qualification-${{ github.sha }}-${{ github.run_attempt }}"
+          path = """
+          target/differential/vue-benchmarks-current-lint/
+          target/ci/vize.differential-build.json
+          ${{ runner.temp }}/vue-benchmarks-current-typecheck/
+          ${{ runner.temp }}/vue-benchmarks-current-provider/package.json
+          ${{ runner.temp }}/vue-benchmarks-current-provider/package-lock.json
+
+          """
+          `include-hidden-files` = true
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+      new Dynamic {
+        name = "Require complete original lint and typecheck qualification"
+        `if` = "${{ always() && !cancelled() }}"
+        env {
+          LINT_OUTCOME = "${{ steps.lint.outcome }}"
+          TYPECHECK_OUTCOME = "${{ steps.typecheck.outcome }}"
+        }
+        run = ci.workflowScript("require-complete-original-lint-and-typecheck-qualification.sh")
+      }
+    }
+  }
+}

@@ -9,8 +9,8 @@ function requiredEnvironment(name: string): string {
   return value;
 }
 
-function writeExecutable(target: string, contents: string): void {
-  fs.writeFileSync(target, contents);
+function installWrapper(target: string, filename: string): void {
+  fs.copyFileSync(new URL("./zig-musl/" + filename, import.meta.url), target);
   fs.chmodSync(target, 0o755);
 }
 
@@ -21,31 +21,7 @@ function configureTarget(
   zigTarget: string,
 ): string {
   const cc = path.join(linkerDirectory, `zig-cc-${zigTarget}`);
-  writeExecutable(
-    cc,
-    `#!/usr/bin/env bash
-set -euo pipefail
-args=()
-skip_next=0
-for arg in "$@"; do
-  if (( skip_next )); then
-    skip_next=0
-    continue
-  fi
-  case "$arg" in
-    --target=*)
-      ;;
-    --target)
-      skip_next=1
-      ;;
-    *)
-      args+=("$arg")
-      ;;
-  esac
-done
-exec zig cc -target ${zigTarget} "\${args[@]}"
-`,
-  );
+  installWrapper(cc, "cc.sh");
   const targetVariable = rustTarget.toLowerCase();
   return [
     `CARGO_TARGET_${rustTarget}_LINKER=rust-lld`,
@@ -63,7 +39,7 @@ export function configureZigMuslLinkers(arguments_: readonly string[]): number {
   const linkerDirectory = path.join(requiredEnvironment("RUNNER_TEMP"), "vize-zig-linkers");
   fs.mkdirSync(linkerDirectory, { recursive: true });
   const zigAr = path.join(linkerDirectory, "zig-ar");
-  writeExecutable(zigAr, '#!/usr/bin/env bash\nexec zig ar "$@"\n');
+  installWrapper(zigAr, "ar.sh");
   const variables = [
     configureTarget(linkerDirectory, zigAr, "X86_64_UNKNOWN_LINUX_MUSL", "x86_64-linux-musl"),
     configureTarget(linkerDirectory, zigAr, "AARCH64_UNKNOWN_LINUX_MUSL", "aarch64-linux-musl"),

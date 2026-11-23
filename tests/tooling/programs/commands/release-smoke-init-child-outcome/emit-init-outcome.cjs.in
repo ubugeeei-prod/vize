@@ -1,0 +1,10 @@
+const fs = require("node:fs");
+fs.writeFileSync(
+  "actual-child.json",
+  JSON.stringify({ pid: process.pid, argv: process.argv.slice(2) }),
+);
+fs.writeSync(1, @@STDOUT@@);
+fs.writeSync(2, @@STDERR@@);
+const termination = @@TERMINATION@@;
+if (typeof termination === "number") process.exit(termination);
+process.kill(process.pid, termination);

@@ -1,0 +1,46 @@
+amends "../../../../PackageTasks.pkl"
+
+tasks {
+  ["test"] {
+    module.run("vp", List("pack"))
+    module.run("vp", List(
+      "test",
+      "run",
+      "src/file-state.test.ts",
+      "src/batched-rules.test.ts",
+      "src/script-safe-source.test.ts",
+      "src/active-rule-collection.test.ts",
+      "src/v-on-event-options.test.ts",
+      "src/v-on-event-tuple-options.test.ts",
+      "src/prop-name-options.test.ts",
+      "src/component-name-options.test.ts",
+      "src/block-limit-options.test.ts",
+    ))
+    module.run("node", List("src/test.ts"))
+    module.run("node", List("src/script-location.test.ts"))
+    module.run("node", List("src/casing-options.test.ts"))
+    module.run("node", List("src/router-globals.test.ts"))
+    module.run("node", List("src/plugin-rules.test.ts"))
+    module.run("node", List("src/template-style-fixes.test.mjs"))
+    module.run("node", List("src/html-binding.test.mjs"))
+    module.run("node", List(
+      "--test",
+      "src/component-name-source.test.ts",
+      "src/eslint-source.test.ts",
+      "src/attribute-options.test.ts",
+      "src/attribute-ignore-tags.test.ts",
+      "src/cli/files-dotfiles.test.ts",
+      "src/cli/oxlint.test.ts",
+      "src/cli/report-format.test.ts",
+      "src/cli/type-aware-vue.test.ts",
+    ))
+    module.run("node", List("src/eslint-acceptance.test.mjs"))
+    module.run("node", List("src/v-on-event-autofix-host.test.ts"))
+    module.run("node", List("src/v-on-event-tuple-eslint.test.ts"))
+    module.run("node", List("src/attribute-eslint.test.ts"))
+    module.run("node", List("src/prop-name-eslint.test.ts"))
+    module.run("node", List("src/component-name-eslint.test.ts"))
+    module.run("node", List("src/attribute-ignore-tags-eslint.test.ts"))
+    module.run("node", List("src/attribute-ignore-tags-oxlint.test.ts"))
+  }
+}

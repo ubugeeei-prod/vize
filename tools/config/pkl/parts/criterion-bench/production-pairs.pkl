@@ -1,0 +1,85 @@
+import "../../Actions.pkl" as ci
+
+`if` = "${{ !inputs.sfc_optional_lifecycle_only && inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}"
+name = "Production pairs (measurement ${{ matrix.repetition }})"
+`runs-on` = ci.linux
+`timeout-minutes` = 30
+permissions { contents = "read" }
+strategy {
+  `fail-fast` = false
+  matrix {
+    repetition = List(1, 2, 3)
+  }
+}
+steps = new Listing {
+  ...ci.stageWorkflowScripts("criterion-bench")
+  new Dynamic {
+    uses = ci.checkout
+    with {
+      ref = "${{ inputs.head_sha }}"
+      `fetch-depth` = 0
+      `persist-credentials` = false
+    }
+  }
+  new Dynamic {
+    name = "Validate exact production comparison head"
+    env {
+      BASE_SHA = "${{ inputs.base_sha }}"
+      HEAD_SHA = "${{ inputs.head_sha }}"
+      DISPATCH_SHA = "${{ github.sha }}"
+    }
+    run = #". "${{ env.VIZE_CI_FILES }}/validate-exact-production-comparison-head.sh""#
+  }
+  new Dynamic {
+    uses = ci.setupRust
+    with {
+      toolchain = "stable"
+      components = "clippy"
+    }
+  }
+  ci.wild()
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      key = "davinci-production-pairs-${{ matrix.repetition }}"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    uses = ci.setupVp
+    with {
+      `node-version-file` = "package.json"
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    name = "Check scoped selector and benchmark compile contract"
+    run = #". "${{ env.VIZE_CI_FILES }}/check-scoped-selector-and-benchmark-compile-contract.sh""#
+  }
+  new Dynamic {
+    name = "Build before timed windows"
+    run = "vp exec cargo build --profile ci-opt -p vize_atelier_sfc --features davinci-production-bench --example davinci_production_perf"
+  }
+  new Dynamic {
+    name = "Measure shipping adapter pairs"
+    env { VIZE_BENCH_HEAD_SHA = "${{ inputs.head_sha }}" }
+    run = #". "${{ env.VIZE_CI_FILES }}/measure-shipping-adapter-pairs.sh""#
+  }
+  new Dynamic {
+    name = "Collect detailed bridge attribution in a separate binary"
+    `if` = "${{ matrix.repetition == 1 }}"
+    env { VIZE_BENCH_HEAD_SHA = "${{ inputs.head_sha }}" }
+    run = #". "${{ env.VIZE_CI_FILES }}/collect-detailed-bridge-attribution-in-a-separate-binary.sh""#
+  }
+  new Dynamic {
+    name = "Upload raw samples and separate attribution profiles"
+    `if` = "always()"
+    uses = ci.uploadArtifact
+    with {
+      name = "davinci-production-perf-${{ matrix.repetition }}"
+      path = "production-perf/"
+      `if-no-files-found` = "warn"
+      `retention-days` = 30
+    }
+  }
+}

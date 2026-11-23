@@ -1,0 +1,19 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  vp exec pnpm --dir npm/linter/oxlint pack --pack-destination "$VIZE_ESLINT_EVIDENCE"
+  vp exec pnpm --dir npm/linter/eslint pack --pack-destination "$VIZE_ESLINT_EVIDENCE"
+  export VIZE_ESLINT_PACKED_CONSUMER="$RUNNER_TEMP/eslint-packed-$SOURCE_SHA"
+  mkdir -p "$VIZE_ESLINT_PACKED_CONSUMER"
+  node "$VIZE_CI_FILES/qualify-packed-public-entries-in-an-isolated-consumer.ts"
+  cp npm/linter/eslint/test/packed-consumer.mjs "$VIZE_ESLINT_PACKED_CONSUMER/consumer.mjs"
+  (cd "$VIZE_ESLINT_PACKED_CONSUMER" && node consumer.mjs) > "$VIZE_ESLINT_EVIDENCE/packed-consumer.json"
+  cp "$VIZE_ESLINT_PACKED_CONSUMER/package.json" "$VIZE_ESLINT_EVIDENCE/packed-package.json"
+  cp "$VIZE_ESLINT_PACKED_CONSUMER/pnpm-lock.yaml" "$VIZE_ESLINT_EVIDENCE/packed-pnpm-lock.yaml"
+  node "$VIZE_CI_FILES/qualify-packed-public-entries-in-an-isolated-consumer-2.ts"
+  """#
+}

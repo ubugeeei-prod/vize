@@ -146,8 +146,11 @@ mod tests {
     fn typed_identity_preserves_raw_display_distinguishes_errors_status_and_source() {
         let make = |nonce: &str, reason: &str, status: u8, source: &str| {
             let mut output = Command::new("node")
-                .arg("-e")
-                .arg(crate::cstr!("process.exit({status});").as_str())
+                .arg(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/tests/programs/exit-with-diagnostic.cjs"
+                ))
+                .arg(crate::cstr!("{status}").as_str())
                 .output()
                 .unwrap();
             output.stderr = crate::cstr!("{reason}\n../../vize-config-module-{nonce}/config.mjs\n")
@@ -184,8 +187,11 @@ mod tests {
     fn absent_or_empty_owned_metadata_keeps_the_original_strict_identity_contract() {
         for artifacts in [Vec::new(), vec![(String::new(), "anything".into())]] {
             let output = Command::new("node")
-                .arg("-e")
-                .arg("process.stderr.write('exact authored error'); process.exit(17);")
+                .arg(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/tests/programs/exit-with-diagnostic.cjs"
+                ))
+                .args(["17", "exact authored error"])
                 .output()
                 .unwrap();
             let error =

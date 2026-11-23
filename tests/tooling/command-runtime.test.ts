@@ -6,6 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
+import { processResultArgs, toolingProgram } from "./support/program-path.ts";
+
 import {
   addMissingVariables,
   collectStdout,
@@ -85,12 +87,12 @@ void test("durable writes create with a mode and truncate existing files in plac
 void test("child processes report exit codes, signals and spawn failures", () => {
   // A Node child must not inherit this runner's private test-child marker.
   const { NODE_TEST_CONTEXT: _context, ...env } = process.env;
-  const node = (source: string) => [process.execPath, ["-e", source], { env }] as const;
-  assert.equal(runCommand(...node("process.exit(7)")), 7);
-  const output = collectStdout(...node("process.stdout.write('日本語'); process.exit(3)"));
+  const node = (args: string[]) => [process.execPath, args, { env }] as const;
+  assert.equal(runCommand(...node([toolingProgram("process/exit-with-status.js"), "7"])), 7);
+  const output = collectStdout(...node(processResultArgs({ stdout: "日本語", status: 3 })));
   assert.deepEqual(output, { exitCode: 3, stdout: "日本語" });
   if (process.platform !== "win32") {
-    assert.equal(runCommand(...node("process.kill(process.pid, 'SIGTERM')")), 15);
+    assert.equal(runCommand(...node([toolingProgram("process/terminate-self.js")])), 15);
   }
   assert.throws(() => runCommand(path.join(repoRoot, "missing-command"), []), { code: "ENOENT" });
   assert.throws(() => collectStdout("vize-missing-command", []), { code: "ENOENT" });
@@ -100,11 +102,7 @@ void test("an unexpected command error exits with status 1 and its message on st
   const runtime = pathToFileURL(path.join(repoRoot, "tools/support/command-runtime.ts")).href;
   const result = spawnSync(
     process.execPath,
-    [
-      "--input-type=module",
-      "-e",
-      `import { runEntrypoint } from ${JSON.stringify(runtime)}; runEntrypoint(() => { throw new Error("boom"); });`,
-    ],
+    [toolingProgram("workflow/throw-from-command-entrypoint.js"), runtime],
     { encoding: "utf8" },
   );
   assert.deepEqual([result.status, result.stdout, result.stderr], [1, "", "boom\n"]);

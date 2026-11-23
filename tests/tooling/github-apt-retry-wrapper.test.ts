@@ -1,3 +1,5 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -8,17 +10,12 @@ import { test } from "node:test";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 function retryWrapperSource(): string {
-  const action = readRepoFile(".github", "actions", "setup-ubuntu-archive", "action.yml");
-  const start = action.indexOf("sudo tee /usr/local/bin/vize-ci-apt-retry >/dev/null <<'BASH'\n");
-  assert.notEqual(start, -1);
-  const bodyStart = action.indexOf("\n", start) + 1;
-  const bodyEnd = action.indexOf("\n        BASH", bodyStart);
-  assert.notEqual(bodyEnd, -1);
-  return action
-    .slice(bodyStart, bodyEnd)
-    .split("\n")
-    .map((line) => line.replace(/^        /, ""))
-    .join("\n");
+  const action = readAutomationPrograms(".github", "actions", "setup-ubuntu-archive", "action.yml");
+  assert.match(
+    action,
+    /sudo tee \/usr\/local\/bin\/vize-ci-apt-retry[^\n]*scripts\/retry-apt\.sh/u,
+  );
+  return readRepoFile(".github/actions/setup-ubuntu-archive/scripts/retry-apt.sh");
 }
 
 test("apt retry wrapper preserves observable retry behavior", () => {
@@ -30,19 +27,12 @@ test("apt retry wrapper preserves observable retry behavior", () => {
     const probe = path.join(dir, "probe.sh");
     mkdirSync(bin);
     writeFileSync(wrapper, retryWrapperSource(), { mode: 0o755 });
-    writeFileSync(sudo, "#!/usr/bin/env bash\nexit 0\n", { mode: 0o755 });
-    writeFileSync(
-      probe,
-      [
-        "#!/usr/bin/env bash",
-        'count="$(cat "$1" 2>/dev/null || true)"',
-        'count="$((10#${count:-0} + 1))"',
-        'printf "%s" "$count" > "$1"',
-        "if (( count >= 10#$2 )); then exit 0; fi",
-        'exit "$3"',
-      ].join("\n"),
-      { mode: 0o755 },
-    );
+    writeFileSync(sudo, readToolingProgram("commands/github-apt-retry-wrapper/exit-0.sh"), {
+      mode: 0o755,
+    });
+    writeFileSync(probe, readToolingProgram("commands/github-apt-retry-wrapper/probe.sh"), {
+      mode: 0o755,
+    });
 
     const run = (retries: string, passAfter: string, status: string) => {
       const countFile = path.join(dir, `count-${retries}-${passAfter}-${status}`);

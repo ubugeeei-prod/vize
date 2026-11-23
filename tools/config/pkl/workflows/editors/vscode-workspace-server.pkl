@@ -1,0 +1,148 @@
+import "../../Actions.pkl" as ci
+
+name = "VS Code workspace server"
+
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/vscode-workspace-server.yml"
+      ".github/scripts/workflows/vscode-workspace-server/**"
+      "editors/vscode/**"
+      "tests/tooling/vscode-workspace-server*.test.mjs"
+    }
+  }
+  workflow_dispatch = null
+}
+concurrency {
+  group = "vscode-workspace-server-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+permissions { contents = "read" }
+
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  VIZE_TEST_SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+}
+
+jobs {
+  linux {
+    name = "Build production VSIX and verify Linux workspace engine"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("vscode-workspace-server")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          `run-install` = false
+          cache = true
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      ci.command("Install locked dependencies", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Verify workspace resolution and bounded stdio sessions"
+        run = "vp node --test tests/tooling/vscode-workspace-server.test.mjs tests/tooling/vscode-workspace-server-identity.test.mjs tests/tooling/vscode-server-trust.test.ts"
+      }
+      ci.command("Check the extension", "vp run --workspace-root check:vscode-extension")
+      ci.command("Package and validate the production VSIX", "vp run --workspace-root package:vscode-extension")
+      new Dynamic {
+        name = "Ensure virtual display"
+        run = ci.workflowScript("ensure-virtual-display.sh")
+      }
+      new Dynamic {
+        name = "Run installed VSIX with the pinned workspace engine"
+        run = "xvfb-run -a vp node editors/vscode/test/run-workspace-server-host.mjs"
+      }
+      new Dynamic {
+        name = "Run installed VSIX in Restricted Mode"
+        run = "xvfb-run -a vp node editors/vscode/test/run-workspace-server-restricted-host.ts"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        with {
+          name = "workspace-server-vsix-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = """
+          editors/vscode/dist/vize.vsix
+          editors/vscode/dist/extension.cjs
+          editors/vscode/dist/workspace-server-package.json
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "workspace-server-Linux-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = """
+          editors/vscode/.vscode-test/workspace-server/
+          editors/vscode/.vscode-test/workspace-server-restricted/
+
+          """
+          `if-no-files-found` = "warn"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+
+  windows {
+    name = "Verify the same installed VSIX with a Windows workspace engine"
+    needs = "linux"
+    `runs-on` = ci.windows
+    `timeout-minutes` = 25
+    steps = new Listing {
+      ci.command("Preserve patch and source line endings", "git config --global core.autocrlf false")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          `run-install` = false
+          cache = true
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      ci.command("Install locked dependencies", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Verify Windows resolution and bounded stdio sessions"
+        run = "vp node --test tests/tooling/vscode-workspace-server.test.mjs tests/tooling/vscode-workspace-server-identity.test.mjs tests/tooling/vscode-server-trust.test.ts"
+      }
+      ci.command("Check the extension and install host dependencies", "vp run --workspace-root check:vscode-extension")
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          name = "workspace-server-vsix-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = "editors/vscode/dist"
+        }
+      }
+      new Dynamic {
+        name = "Verify the producer hashes and run its installed VSIX"
+        run = "vp node editors/vscode/test/run-workspace-server-host.mjs"
+      }
+      ci.command("Run the installed VSIX in Restricted Mode", "vp node editors/vscode/test/run-workspace-server-restricted-host.ts")
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "workspace-server-Windows-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = """
+          editors/vscode/.vscode-test/workspace-server/
+          editors/vscode/.vscode-test/workspace-server-restricted/
+
+          """
+          `if-no-files-found` = "warn"
+          `retention-days` = 7
+        }
+      }
+    }
+  }
+}

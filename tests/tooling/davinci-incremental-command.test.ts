@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { chmodSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -13,21 +14,7 @@ test("incremental equivalence accepts complete normal and seeded scope evidence"
   const fakeBin = mkdtempSync(path.join(tmpdir(), "vize-incremental-command-"));
   context.after(() => rmSync(fakeBin, { recursive: true, force: true }));
   const cargo = path.join(fakeBin, "cargo");
-  writeFileSync(
-    cargo,
-    `#!/usr/bin/env node
-const seeded = process.argv.includes("seeded-stale-cache");
-process.stdout.write([
-  "files=3",
-  "steps_applied=5",
-  "comparisons=7",
-  "blocks_compared=11",
-  \`mismatches=\${seeded ? 2 : 0}\`,
-  "",
-].join("\\n"));
-process.exitCode = seeded ? 1 : 0;
-`,
-  );
+  writeFileSync(cargo, readToolingProgram("commands/davinci-incremental-command/cargo.cjs"));
   chmodSync(cargo, 0o755);
   const env = { ...process.env, PATH: `${fakeBin}:${process.env.PATH ?? ""}` };
 
@@ -55,7 +42,7 @@ test("incremental equivalence fails closed when the harness reports no scope", (
   const fakeBin = mkdtempSync(path.join(tmpdir(), "vize-incremental-empty-"));
   context.after(() => rmSync(fakeBin, { recursive: true, force: true }));
   const cargo = path.join(fakeBin, "cargo");
-  writeFileSync(cargo, "#!/bin/sh\nprintf 'mismatches=0\\n'\n");
+  writeFileSync(cargo, readToolingProgram("commands/davinci-incremental-command/cargo.sh"));
   chmodSync(cargo, 0o755);
 
   const result = spawnSync(process.execPath, [command, "--fixtures", "tests/_fixtures/_projects"], {

@@ -9,27 +9,11 @@ use vize_l0::{ToCompactString, cstr};
 
 const CASES: &str =
     include_str!("../../../tests/_fixtures/content-mapper/with-defaults-surplus.json");
-const HOST: &str = r#"
-const fs = require('node:fs');
-const path = require('node:path');
-const { createRequire } = require('node:module');
-const fromTests = createRequire(path.join(process.argv[1], 'tests/package.json'));
-const ts = fromTests('typescript');
-const cases = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
-const options = { strict: true, skipLibCheck: true, noEmit: true, types: [],
-  target: ts.ScriptTarget.ESNext, jsx: ts.JsxEmit.Preserve,
-  module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler };
-const rows = cases.map(({ name, directory, files }) => {
-  const program = ts.createProgram(files.map(file => path.join(directory, file)), options);
-  const diagnostics = ts.getPreEmitDiagnostics(program).map(d => ({
-    code: d.code, category: d.category, start: d.start, length: d.length,
-    file: d.file && path.relative(directory, d.file.fileName),
-    message: ts.flattenDiagnosticMessageText(d.messageText, '\n')
-  }));
-  return { name, diagnostics };
-});
-process.stdout.write(JSON.stringify({ typescript: ts.version, rows }));
-"#;
+
+const HOST_PROGRAM: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/tests/programs/check-with-defaults-surplus.cjs"
+);
 
 #[test]
 fn complete_native_mapper_modules_accept_surplus_defaults_and_keep_declared_type_errors() {
@@ -92,8 +76,7 @@ fn complete_native_mapper_modules_accept_surplus_defaults_and_keep_declared_type
     let request = evidence.join("requests.json");
     std::fs::write(&request, serde_json::to_vec_pretty(&requests).unwrap()).unwrap();
     let output = Command::new("node")
-        .arg("-e")
-        .arg(HOST)
+        .arg(HOST_PROGRAM)
         .arg(workspace)
         .arg(&request)
         .output()
@@ -105,7 +88,8 @@ fn complete_native_mapper_modules_accept_surplus_defaults_and_keep_declared_type
         evidence.join("process.json"),
         serde_json::to_vec_pretty(&json!({
             "sourceSha": std::env::var("GITHUB_SHA").ok(),
-            "host": HOST, "requests": requests,
+            "host": std::fs::read_to_string(HOST_PROGRAM).unwrap(),
+            "requests": requests,
             "exitCode": output.status.code(), "success": output.status.success(),
         }))
         .unwrap(),

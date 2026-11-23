@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -162,7 +163,11 @@ await test("actual report retains complete raw packets and scores a neighboring 
       const fake = path.join(projectDir, "fake-vize.mjs");
       fs.writeFileSync(
         fake,
-        `#!/usr/bin/env node\nprocess.stdout.write(${JSON.stringify(JSON.stringify([{ file: entry.finding.file, messages: [entry.finding] }]))});\n`,
+        readToolingProgram("commands/lint-reference-coverage/emit-file-finding.cjs.in", {
+          FINDINGS: JSON.stringify(
+            JSON.stringify([{ file: entry.finding.file, messages: [entry.finding] }]),
+          ),
+        }),
       );
       fs.chmodSync(fake, 0o755);
       const registry = path.join(projectDir, "registry.json");
@@ -188,7 +193,9 @@ await test("actual report retains complete raw packets and scores a neighboring 
       ) => {
         fs.writeFileSync(
           fake,
-          `#!/usr/bin/env node\nprocess.stdout.write(${JSON.stringify(JSON.stringify([{ file: entry.finding.file, messages }]))});\n`,
+          readToolingProgram("commands/lint-reference-coverage/emit-file-messages.cjs.in", {
+            FINDINGS: JSON.stringify(JSON.stringify([{ file: entry.finding.file, messages }])),
+          }),
         );
         const presetArgs = preset === "all-mapped" ? ["--all-mapped-rules"] : ["--preset", preset];
         const result = spawnSync(

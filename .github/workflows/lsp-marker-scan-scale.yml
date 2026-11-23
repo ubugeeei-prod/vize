@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - .github/workflows/lsp-marker-scan-scale.yml
+      - .github/scripts/workflows/lsp-marker-scan-scale/**
+      - .github/scripts/workflows/shared/**
       - crates/vize_maestro/src/server/state/project_contexts/root_discovery/**
       - crates/vize_maestro/src/server/state/project_contexts/root_discovery.rs
       - tools/support/compat/davinci/lsp-*.ts
@@ -36,6 +38,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 90
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/lsp-marker-scan-scale"
       REQUESTED_BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
       EXPECTED_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       FILES: ${{ inputs.files || '2500' }}
@@ -56,69 +59,25 @@ jobs:
           tests/tooling/lsp-resource-corpus.test.ts
           tests/tooling/lsp-resource-finalize.test.ts
           tests/tooling/lsp-resource-sampler.test.ts
-      - run: rustup toolchain install || rustup show active-toolchain
+      - run: . "${{ env.VIZE_CI_FILES }}/compare-rustup-toolchain-install-rustup-show-active-too.sh"
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: lsp-marker-scan-head
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Pin the actual checked-out comparison parents
-        run: |
-          mkdir -p "$RUNNER_TEMP/lsp-marker-evidence"
-          node tools/support/compat/davinci/lsp-marker-scan-source.ts "$RUNNER_TEMP/lsp-marker-evidence/source-selection.json"
+        run: . "${{ env.VIZE_CI_FILES }}/pin-the-actual-checked-out-comparison-parents.sh"
       - name: Validate immutable paired sources
-        run: |
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$FILES" =~ ^(2500|10000)$ ]]
-          test "$BASE_SHA" != "$(git rev-parse HEAD)"
-          git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA"
-          git worktree add --detach "$RUNNER_TEMP/lsp-marker-base" "$BASE_SHA"
-          node tools/support/compat/davinci/lsp-marker-scan-source.ts "$RUNNER_TEMP/lsp-marker-evidence/source-selection.json" --record-production-diff
-          mkdir -p "$RUNNER_TEMP/lsp-marker-evidence"
-          git rev-parse HEAD > "$RUNNER_TEMP/lsp-marker-evidence/head.sha"
-          git -C "$RUNNER_TEMP/lsp-marker-base" rev-parse HEAD > "$RUNNER_TEMP/lsp-marker-evidence/base.sha"
-          cat /proc/cpuinfo > "$RUNNER_TEMP/lsp-marker-evidence/cpuinfo.txt"
-          uname -a > "$RUNNER_TEMP/lsp-marker-evidence/kernel.txt"
+        run: . "${{ env.VIZE_CI_FILES }}/validate-immutable-paired-sources.sh"
       - name: Build distinct baseline and candidate targets with equal flags
-        run: |
-          bench_node=$(command -v node)
-          for role in base head; do
-            source="$GITHUB_WORKSPACE"
-            target="$GITHUB_WORKSPACE/target"
-            if [[ "$role" == base ]]; then
-              source="$RUNNER_TEMP/lsp-marker-base"
-              target="$RUNNER_TEMP/lsp-marker-base-target"
-            fi
-            cd "$source"
-            for variant in normal profile; do
-              features=()
-              if [[ "$variant" == profile ]]; then features=(--features profiling); fi
-              CARGO_TARGET_DIR="$target" cargo build --locked --profile ci-opt -p vize "${features[@]}" --message-format=json-render-diagnostics > "$RUNNER_TEMP/lsp-marker-evidence/$role-$variant-build.jsonl"
-              "$bench_node" "$GITHUB_WORKSPACE/tools/support/compat/davinci/lsp-build-identity.ts" "$target/ci-opt/vize" ci-opt "$RUNNER_TEMP/lsp-marker-evidence/$role-$variant-build.jsonl" "$RUNNER_TEMP/lsp-marker-evidence/$role-$variant-identity.json"
-              cp "$target/ci-opt/vize" "$RUNNER_TEMP/lsp-marker-$role-$variant"
-            done
-          done
+        run: . "${{ env.VIZE_CI_FILES }}/build-distinct-baseline-and-candidate-targets-with-equal-flags.sh"
       - name: Verify project markers and unannounced configuration freshness
         run: >-
           cargo test --locked --profile ci-opt -p vize_maestro
           server::state::project_contexts -- --nocapture
       - name: Alternate three fresh ordinary-process rounds
-        run: |
-          bench_cpu_set=$(python3 -c 'import os; print(",".join(map(str, sorted(os.sched_getaffinity(0))[:8])))')
-          printf '%s\n' "$bench_cpu_set" > "$RUNNER_TEMP/lsp-marker-evidence/affinity.txt"
-          for round in 1 2 3; do
-            order='base head'
-            if [[ "$round" == 2 ]]; then order='head base'; fi
-            for role in $order; do
-              taskset -c "$bench_cpu_set" node tools/support/compat/davinci/lsp-resources.ts --server "$RUNNER_TEMP/lsp-marker-$role-normal" --files "$FILES" --warm-providers 16 --runs 1 --idle-seconds 10 --build 'ci-opt default features; normal allocator; setup excluded' --out "$RUNNER_TEMP/lsp-marker-evidence/$role-normal-$round.json"
-            done
-          done
+        run: . "${{ env.VIZE_CI_FILES }}/alternate-three-fresh-ordinary-process-rounds.sh"
       - name: Collect separate source callsites and allocator requests
-        run: |
-          bench_cpu_set=$(cat "$RUNNER_TEMP/lsp-marker-evidence/affinity.txt")
-          for role in base head; do
-            taskset -c "$bench_cpu_set" node tools/support/compat/davinci/lsp-resources.ts --server "$RUNNER_TEMP/lsp-marker-$role-profile" --files "$FILES" --warm-providers 16 --runs 1 --idle-seconds 10 --build 'ci-opt profiling; source counts and cumulative Rust requests only' --profile-json-dir "$RUNNER_TEMP/lsp-marker-evidence/profile-$role" --out "$RUNNER_TEMP/lsp-marker-evidence/$role-profile.json"
-          done
-          node tools/support/compat/davinci/lsp-marker-scan-compare.ts "$RUNNER_TEMP/lsp-marker-evidence"
+        run: . "${{ env.VIZE_CI_FILES }}/collect-separate-source-callsites-and-allocator-requests.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:

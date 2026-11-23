@@ -151,36 +151,38 @@ interface ObjectUrlState {
   restore(): void;
 }
 
+function trackObjectUrls(): void {
+  const create = Reflect.get(URL, "createObjectURL") as typeof URL.createObjectURL;
+  const revoke = Reflect.get(URL, "revokeObjectURL") as typeof URL.revokeObjectURL;
+  const state: ObjectUrlState = {
+    live: new Set(),
+    created: [],
+    revoked: [],
+    createdAfterUnmount: [],
+    unmounted: false,
+    restore() {
+      URL.createObjectURL = create;
+      URL.revokeObjectURL = revoke;
+    },
+  };
+  URL.createObjectURL = function (object) {
+    const url = Reflect.apply(create, this, [object]) as string;
+    state.live.add(url);
+    state.created.push(url);
+    if (state.unmounted) state.createdAfterUnmount.push(url);
+    return url;
+  };
+  URL.revokeObjectURL = function (url) {
+    Reflect.apply(revoke, this, [url]);
+    state.live.delete(url);
+    state.revoked.push(url);
+  };
+  Reflect.set(window, "__museaVrtLifecycleUrls", state);
+}
+
 /** Observe original native operations with unchanged arguments, bytes, and return values. */
 export async function observeObjectUrls(page: Page) {
-  await page.addInitScript(() => {
-    const create = Reflect.get(URL, "createObjectURL") as typeof URL.createObjectURL;
-    const revoke = Reflect.get(URL, "revokeObjectURL") as typeof URL.revokeObjectURL;
-    const state: ObjectUrlState = {
-      live: new Set(),
-      created: [],
-      revoked: [],
-      createdAfterUnmount: [],
-      unmounted: false,
-      restore() {
-        URL.createObjectURL = create;
-        URL.revokeObjectURL = revoke;
-      },
-    };
-    URL.createObjectURL = function (object) {
-      const url = Reflect.apply(create, this, [object]) as string;
-      state.live.add(url);
-      state.created.push(url);
-      if (state.unmounted) state.createdAfterUnmount.push(url);
-      return url;
-    };
-    URL.revokeObjectURL = function (url) {
-      Reflect.apply(revoke, this, [url]);
-      state.live.delete(url);
-      state.revoked.push(url);
-    };
-    Reflect.set(window, "__museaVrtLifecycleUrls", state);
-  });
+  await page.addInitScript(trackObjectUrls);
   return {
     async unmounted() {
       await page.evaluate(() => {

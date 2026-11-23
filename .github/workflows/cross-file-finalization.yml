@@ -6,6 +6,7 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - .github/workflows/cross-file-finalization.yml
+      - .github/scripts/workflows/cross-file-finalization/**
       - crates/vize_croquis_cf/src/analyzer/core/files.rs
       - crates/vize_croquis_cf/src/analyzer/core/accessors.rs
       - crates/vize_croquis_cf/src/analyzer/core/accessors/**
@@ -28,6 +29,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/cross-file-finalization/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -51,36 +65,15 @@ jobs:
       - name: Install frozen workspace tools
         run: vp install --frozen-lockfile --prefer-offline
       - name: Verify complete analyzer reset and file ID reuse
-        run: |
-          mkdir -p target/vize-tests/cross-file-clear-template-facts
-          cargo test --locked --profile ci -p vize_croquis_cf --lib -- analyzer::core::accessors::clear_tests:: --nocapture > target/vize-tests/cross-file-clear-template-facts/rust.stdout 2> target/vize-tests/cross-file-clear-template-facts/rust.stderr
-          cat target/vize-tests/cross-file-clear-template-facts/rust.stdout
-          node --input-type=module <<'JS'
-          import assert from 'node:assert/strict';
-          import fs from 'node:fs';
-          assert.match(fs.readFileSync('target/vize-tests/cross-file-clear-template-facts/rust.stdout', 'utf8'), /test result: ok\. 4 passed; 0 failed; 0 ignored;/u);
-          JS
+        run: . "${{ env.VIZE_CI_FILES }}/verify-complete-analyzer-reset-and-file-id-reuse.sh"
       - name: Build and receipt the actual source CLI
-        run: |
-          cargo build --locked --profile ci -p vize
-          node tests/differential/build-receipt.ts
+        run: . "${{ env.VIZE_CI_FILES }}/build-and-receipt-the-actual-source-cli.sh"
       - name: Verify descriptor and complete report regressions
-        run: |
-          mkdir -p target/vize-tests/cross-file-sfc-effects
-          cargo test --locked --profile ci -p vize --lib -- commands::lint::cross_file::effect_summary_tests:: --nocapture > target/vize-tests/cross-file-sfc-effects/rust.stdout 2> target/vize-tests/cross-file-sfc-effects/rust.stderr
-          cat target/vize-tests/cross-file-sfc-effects/rust.stdout
-          node --input-type=module <<'JS'
-          import assert from 'node:assert/strict';
-          import fs from 'node:fs';
-          const raw = fs.readFileSync('target/vize-tests/cross-file-sfc-effects/rust.stdout', 'utf8');
-          assert.match(raw, /test result: ok\. 5 passed; 0 failed; 0 ignored;/u);
-          JS
+        run: . "${{ env.VIZE_CI_FILES }}/verify-descriptor-and-complete-report-regressions.sh"
       - name: Compare complete public and source CLI packets with the actual WASM reference
         run: node tests/tooling/support/cross-file-sfc-effects.ts
       - name: Build and observe the optimized source dependency phases
-        run: |
-          cargo build --locked --profile ci-opt -p vize
-          node tests/tooling/support/cross-file-finalization.ts
+        run: . "${{ env.VIZE_CI_FILES }}/build-and-observe-the-optimized-source-dependency-phases.sh"
       - name: Preserve complete packets, provider identities and phase profiles
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -97,6 +90,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/cross-file-finalization/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -123,15 +129,7 @@ jobs:
       - name: Install frozen workspace tools
         run: vp install --frozen-lockfile --prefer-offline
       - name: Verify actual block grammars and binding owners
-        run: |
-          mkdir -p target/vize-tests/cross-file-wasm-effects
-          cargo test --locked --profile ci -p vize_vitrine --no-default-features --features wasm --lib -- wasm::cross_file::effect_summary::tests:: --nocapture > target/vize-tests/cross-file-wasm-effects/rust.stdout 2> target/vize-tests/cross-file-wasm-effects/rust.stderr
-          cat target/vize-tests/cross-file-wasm-effects/rust.stdout
-          node --input-type=module <<'JS'
-          import assert from 'node:assert/strict';
-          import fs from 'node:fs';
-          assert.match(fs.readFileSync('target/vize-tests/cross-file-wasm-effects/rust.stdout', 'utf8'), /test result: ok\. 6 passed; 0 failed; 0 ignored;/u);
-          JS
+        run: . "${{ env.VIZE_CI_FILES }}/verify-actual-block-grammars-and-binding-owners.sh"
       - name: Build the existing actual WASM release configuration
         run: node tools/support/tasks/build-vize-wasm-package.ts
       - name: Verify whole source WASM responses against actual public observations

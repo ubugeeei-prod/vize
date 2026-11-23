@@ -4,6 +4,7 @@ import fs, { mkdtempSync, rmSync } from "node:fs";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 
 import { repoRoot } from "./_helpers/tool-commands.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
@@ -25,12 +26,14 @@ test("github/run-many executes command groups in order", () => {
     const result = runMany(
       [
         "node",
-        "-e",
-        `require('node:fs').appendFileSync(${JSON.stringify(outputPath)}, 'a')`,
+        toolingProgram("process/append-command-marker.js"),
+        outputPath,
+        "a",
         "--",
         "node",
-        "-e",
-        `require('node:fs').appendFileSync(${JSON.stringify(outputPath)}, 'b')`,
+        toolingProgram("process/append-command-marker.js"),
+        outputPath,
+        "b",
       ],
       tempDir,
     );
@@ -50,16 +53,18 @@ test("github/run-many stops at the first failing command group", () => {
     const result = runMany(
       [
         "node",
-        "-e",
-        `require('node:fs').appendFileSync(${JSON.stringify(outputPath)}, 'a')`,
+        toolingProgram("process/append-command-marker.js"),
+        outputPath,
+        "a",
         "--",
         "node",
-        "-e",
-        "process.exit(7)",
+        toolingProgram("process/exit-with-status.js"),
+        "7",
         "--",
         "node",
-        "-e",
-        `require('node:fs').appendFileSync(${JSON.stringify(outputPath)}, 'b')`,
+        toolingProgram("process/append-command-marker.js"),
+        outputPath,
+        "b",
       ],
       tempDir,
     );

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+[[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
+capture="$RUNNER_TEMP/constructor-emitter"
+baseline="$RUNNER_TEMP/constructor-base"
+mkdir -p "$capture"
+git worktree add --detach "$baseline" "$BASE_SHA"
+observer=crates/vize_canon/tests/constructor_emission_projection.rs
+cp "$observer" "$baseline/$observer"
+cmp "$observer" "$baseline/$observer"
+git -C "$baseline" diff --exit-code -- crates/vize_canon/src
+(cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/constructor-target-base" VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/base.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture) > "$capture/base.log" 2>&1
+CARGO_TARGET_DIR="$RUNNER_TEMP/constructor-target-head" VIZE_CONSTRUCTOR_PROJECTION_CAPTURE="$capture/head.json" cargo test --locked --profile ci -p vize_canon --test constructor_emission_projection complete_constructor_projection_packets -- --exact --nocapture > "$capture/head.log" 2>&1

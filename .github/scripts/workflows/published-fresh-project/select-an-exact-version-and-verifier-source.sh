@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+version="$REQUESTED_VERSION"
+if [[ -z "$version" ]]; then
+  version=$(npm view --registry=https://registry.npmjs.org vize dist-tags.latest --json |
+    node "$VIZE_CI_FILES/select-an-exact-version-and-verifier-source.cjs")
+fi
+[[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+source_ref="$REQUESTED_SOURCE"
+if [[ -z "$source_ref" ]]; then
+  source_ref="${PULL_REQUEST_HEAD:-$EVENT_SHA}"
+fi
+[[ -n "$source_ref" ]]
+printf 'version=%s\nsource_ref=%s\n' "$version" "$source_ref" >> "$GITHUB_OUTPUT"

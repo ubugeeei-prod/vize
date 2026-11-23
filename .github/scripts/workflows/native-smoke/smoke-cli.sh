@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+if [ -x target/ci/vize.exe ]; then
+  target/ci/vize.exe --version
+else
+  target/ci/vize --version
+fi

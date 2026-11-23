@@ -7,15 +7,6 @@ import { setupAndDevTasks } from "./tasks/setup-dev.ts";
 import { testAndBenchmarkTasks } from "./tasks/test-benchmark.ts";
 import { testboxTasks } from "./tasks/testbox.ts";
 
-/**
- * Fully assembled root Vite+ task catalog.
- *
- * Each imported task group owns one workflow family, which keeps the root
- * `vite.config.ts` type-safe and compact while preserving detailed comments
- * close to the shell commands they explain. This file should stay a thin
- * composition layer: add new task behavior in a focused `tasks/*` module and
- * expose it here only by spreading that module's catalog.
- */
 export const taskCatalog = defineTasks({
   ...setupAndDevTasks,
   ...buildTasks,

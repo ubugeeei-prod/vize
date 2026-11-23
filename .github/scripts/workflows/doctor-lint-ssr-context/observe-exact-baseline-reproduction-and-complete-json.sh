@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+cd "$SOURCE_ROOT"
+status=0
+/usr/bin/time -v cargo test --locked --profile ci -p vize --test integration doctor_lint_ssr_context_cli::nuxt_client_only_configuration_applies_to_complete_doctor_and_lint_packets -- --nocapture > "$VIZE_SSR_CONTEXT_ARTIFACTS/test.stdout" 2> "$VIZE_SSR_CONTEXT_ARTIFACTS/test.stderr" || status=$?
+cat "$VIZE_SSR_CONTEXT_ARTIFACTS/test.stdout"
+test "$status" -ne 0
+node "$VIZE_CI_FILES/verify-diagnostic-packet.ts"

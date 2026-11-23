@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs, { mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -6,7 +7,6 @@ import { tmpdir } from "node:os";
 import { test } from "node:test";
 
 import { repoRoot } from "./_helpers/tool-commands.ts";
-import { readRepoFile } from "./support/github-workflows.ts";
 
 const commandPath = "tools/support/github/clean-node-binaries.ts";
 
@@ -44,13 +44,13 @@ test("github/clean-node-binaries removes only top-level .node files", () => {
 });
 
 test("release recipes clean native binaries with Node type stripping", () => {
-  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const workflow = readAutomationPrograms(".github", "workflows", "release.yml");
   assert.match(
-    readRepoFile(".github", "actions", "build-release-native", "action.yml"),
+    readAutomationPrograms(".github", "actions", "build-release-native", "action.yml"),
     /run: node tools\/support\/github\/clean-node-binaries\.ts npm\/native npm\/fresco-native$/m,
   );
   assert.match(
-    readRepoFile(".github", "actions", "release-npm-artifacts", "action.yml"),
+    readAutomationPrograms(".github", "actions", "release-npm-artifacts", "action.yml"),
     /node tools\/support\/github\/clean-node-binaries\.ts npm\/fresco-native$/m,
   );
   assert.doesNotMatch(workflow, /tools\/moon\/cmd\/github\/clean_node_binaries/);

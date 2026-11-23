@@ -1,0 +1,176 @@
+import "../../Actions.pkl" as ci
+
+name = "Davinci Canon distinct-host scaling"
+
+on {
+  workflow_dispatch {
+    inputs {
+      original_control_sha {
+        description = "Literal published v0.433 control commit for the original400 pair"
+        required = false
+        type = "string"
+      }
+      original_after_sha {
+        description = "Root-frozen literal release-cut commit; never a branch or tag"
+        required = false
+        type = "string"
+      }
+      original_after_tree {
+        description = "Root-frozen literal release-cut Git tree"
+        required = false
+        type = "string"
+      }
+      original_manifest_sha256 {
+        description = "SHA256 of the complete canonical changed Git-entry manifest"
+        required = false
+        type = "string"
+      }
+      original_public_authority {
+        description = "Frozen published Linux CLI/tag/cut/source-artifact authority JSON; requires all four cut inputs"
+        required = false
+        type = "string"
+      }
+      original_public_authority_sha256 {
+        description = "SHA256 of the exact published authority input JSON; no source rebuild in this mode"
+        required = false
+        type = "string"
+      }
+    }
+  }
+}
+
+concurrency {
+  group = "davinci-canon-scaling-${{ github.sha }}"
+  `cancel-in-progress` = false
+}
+
+permissions {
+  contents = "read"
+  actions = "read"
+}
+
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+
+jobs {
+  compare {
+    name = "${{ matrix.case }} / ${{ matrix.files }} open and warmed providers"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+
+      VIZE_TRACE_EDITOR_PREPARATION = "1"
+      WARM_REQUEST_BUILD_PROFILE = "release"
+      VIZE_LSP_BUILD_RECIPE = "cargo build --release -p vize"
+      ORIGINAL_CUT_REQUESTED = "${{ inputs.original_control_sha != '' || inputs.original_after_sha != '' || inputs.original_after_tree != '' || inputs.original_manifest_sha256 != '' || inputs.original_public_authority != '' || inputs.original_public_authority_sha256 != '' }}"
+      ORIGINAL_PUBLIC_REQUESTED = "${{ inputs.original_public_authority != '' || inputs.original_public_authority_sha256 != '' }}"
+      ORIGINAL_PUBLIC_AUTHORITY = "${{ inputs.original_public_authority }}"
+      ORIGINAL_PUBLIC_AUTHORITY_SHA256 = "${{ inputs.original_public_authority_sha256 }}"
+      ORIGINAL_CONTROL_SHA = "${{ inputs.original_control_sha }}"
+      ORIGINAL_AFTER_SHA = "${{ inputs.original_after_sha }}"
+      ORIGINAL_AFTER_TREE = "${{ inputs.original_after_tree }}"
+      ORIGINAL_MANIFEST_SHA256 = "${{ inputs.original_manifest_sha256 }}"
+    }
+    strategy {
+      `fail-fast` = false
+      matrix = #"${{ fromJSON((github.event_name == 'pull_request' || inputs.original_control_sha != '' || inputs.original_after_sha != '' || inputs.original_after_tree != '' || inputs.original_manifest_sha256 != '' || inputs.original_public_authority != '' || inputs.original_public_authority_sha256 != '') && '{"include":[{"case":"paired-original","files":400}]}' || '{"include":[{"case":"before","files":32,"source":"18a105fd5fa7ebbe385881dc6052ed44f12b498b"},{"case":"before","files":512,"source":"18a105fd5fa7ebbe385881dc6052ed44f12b498b"},{"case":"after","files":32,"source":"fba75ade0ca66d9b1bfbdafb22251878f9c15de1"},{"case":"after","files":512,"source":"fba75ade0ca66d9b1bfbdafb22251878f9c15de1"}]}') }}"#
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("davinci-canon-scaling")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.event.pull_request.head.sha || (env.ORIGINAL_CUT_REQUESTED == 'true' && github.sha) || matrix.source }}"
+          `fetch-depth` = 0
+        }
+      }
+      ci.workspaceVp()
+      ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Install the repository Rust toolchain"
+        `if` = "${{ env.ORIGINAL_PUBLIC_REQUESTED != 'true' }}"
+        run = ci.workflowScript("install-the-repository-rust-toolchain.sh")
+      }
+      new Dynamic {
+        `if` = "${{ env.ORIGINAL_PUBLIC_REQUESTED != 'true' }}"
+        uses = ci.setupWild
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        `if` = "${{ env.ORIGINAL_PUBLIC_REQUESTED != 'true' }}"
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "davinci-canon-scaling"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}-${{ matrix.case }}-${{ matrix.files }}"
+        }
+      }
+      new Dynamic {
+        name = "Save exact source and protocol provenance"
+        `if` = "${{ github.event_name == 'workflow_dispatch' && env.ORIGINAL_CUT_REQUESTED != 'true' }}"
+        env {
+          SOURCE_SHA = "${{ matrix.source }}"
+          CASE = "${{ matrix.case }}"
+          FILES = "${{ matrix.files }}"
+        }
+        run = "node tools/benchmarks/scripts/davinci-canon-scaling-receipt.ts methodology"
+      }
+      new Dynamic {
+        name = "Build the measured production server"
+        `if` = "${{ github.event_name == 'workflow_dispatch' && env.ORIGINAL_CUT_REQUESTED != 'true' }}"
+        run = #"cargo build --profile ci-opt -p vize --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16'"#
+      }
+      new Dynamic {
+        name = "Measure the identical bounded distinct-host protocol"
+        `if` = "${{ github.event_name == 'workflow_dispatch' && env.ORIGINAL_CUT_REQUESTED != 'true' }}"
+        env { FILES = "${{ matrix.files }}" }
+        run = #"timeout --signal=TERM --kill-after=30s 15m vp exec node tools/support/compat/davinci/lsp-resources.ts --server target/ci-opt/vize --files "$FILES" --warm-providers "$FILES" --runs 1 --idle-seconds 10 --out "$RUNNER_TEMP/lsp-resource.json""#
+      }
+      new Dynamic {
+        name = "Save binary identity and exact command with every result"
+        `if` = "${{ always() && github.event_name == 'workflow_dispatch' && env.ORIGINAL_CUT_REQUESTED != 'true' }}"
+        run = "node tools/benchmarks/scripts/davinci-canon-scaling-receipt.ts attach"
+      }
+      new Dynamic {
+        name = "Bind the original warm-request pair to its actual source baseline"
+        `if` = "${{ github.event_name == 'pull_request' || env.ORIGINAL_CUT_REQUESTED == 'true' }}"
+        env {
+          HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
+          BASE_SHA = "${{ github.event.pull_request.base.sha }}"
+          GH_TOKEN = "${{ github.token }}"
+        }
+        run = ci.workflowScript("bind-the-original-warm-request-pair-to-its-actual-source-baseline.sh")
+      }
+      new Dynamic {
+        name = "Build the original baseline with the identical shipping release recipe"
+        `if` = "${{ (github.event_name == 'pull_request' || env.ORIGINAL_CUT_REQUESTED == 'true') && env.ORIGINAL_PUBLIC_REQUESTED != 'true' }}"
+        run = "vp exec node tests/performance/support/warm-type-backed-build.ts before"
+      }
+      new Dynamic {
+        name = "Build the original warm-request successor with the identical shipping release recipe"
+        `if` = "${{ (github.event_name == 'pull_request' || env.ORIGINAL_CUT_REQUESTED == 'true') && env.ORIGINAL_PUBLIC_REQUESTED != 'true' }}"
+        run = "vp exec node tests/performance/support/warm-type-backed-build.ts after"
+      }
+      new Dynamic {
+        name = "Compare every original400 warm packet and invalidation control on this worker"
+        `if` = "${{ github.event_name == 'pull_request' || env.ORIGINAL_CUT_REQUESTED == 'true' }}"
+        run = ci.workflowScript("compare-every-original400-warm-packet-and-invalidation-control-on-this-w.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "${{ always() }}"
+        with {
+          name = "canon-distinct-host-${{ matrix.case }}-${{ matrix.files }}"
+          path = """
+          ${{ runner.temp }}/lsp-resource.json
+          ${{ runner.temp }}/source-methodology.json
+          ${{ runner.temp }}/warm-pair/**
+
+          """
+          `if-no-files-found` = "warn"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [ -n "$PREBUILT_VSIX" ]; then
+  xvfb-run -a vp node editors/vscode/test/run-extension-host-real.mjs
+else
+  xvfb-run -a vp run --workspace-root test:vscode-extension:host-real
+fi

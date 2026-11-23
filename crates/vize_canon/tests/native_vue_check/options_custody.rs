@@ -31,7 +31,17 @@ fn inherited_options_changed_at_lsp_startup_refuse_without_sfc_or_root_writes() 
         std::fs::write(&replacement, &changed).unwrap();
         let pid_path = root.path().join("overlay.pid");
         let wrapper = root.path().join("tsc");
-        std::fs::write(&wrapper, cstr!("#!/bin/sh\nif [ \"$1\" = \"--lsp\" ]; then\n echo \"$$\" > {}\n cat {} > {}\nfi\nexec {} \"$@\"\n", quote(&pid_path), quote(&replacement), quote(&base), quote(&backend()))).unwrap();
+        std::fs::write(
+            &wrapper,
+            cstr!(
+                include_str!("../programs/replace-selected-config.sh.in"),
+                quote(&pid_path),
+                quote(&replacement),
+                quote(&base),
+                quote(&backend())
+            ),
+        )
+        .unwrap();
         std::fs::set_permissions(&wrapper, std::fs::Permissions::from_mode(0o755)).unwrap();
         let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
             corsa_path: Some(wrapper),

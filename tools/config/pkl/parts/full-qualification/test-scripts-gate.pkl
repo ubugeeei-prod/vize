@@ -1,0 +1,14 @@
+import "../../Actions.pkl" as ci
+
+name = "test-scripts"  // Release preflight requires exactly one successful job with this exact name.
+`runs-on` = ci.linux
+`if` = "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
+`timeout-minutes` = 5
+needs = List("full-source-cli", "tooling-plan", "test-scripts")
+steps = new Listing {
+  ci.use(ci.checkout)
+  new Dynamic {
+    uses = "./.github/actions/report-full-js-qualification"
+    with { `needs-json` = "${{ toJSON(needs) }}" }
+  }
+}

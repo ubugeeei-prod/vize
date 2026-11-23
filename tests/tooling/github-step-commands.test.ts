@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs, { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -83,12 +84,9 @@ test("github/install-playwright-browsers resolves Playwright from its installed 
     writeFakeCommand(
       binDir,
       "vp",
-      [
-        "require('node:fs').writeFileSync(",
-        `  ${JSON.stringify(argsPath)},`,
-        "  process.argv.slice(2).join('\\n'),",
-        ");",
-      ].join("\n"),
+      readToolingProgram("commands/github-step-commands/vp.js.in", {
+        ARGS_PATH: JSON.stringify(argsPath),
+      }),
     );
 
     for (const workspace of ["", "./tests"]) {
@@ -139,15 +137,10 @@ test("github/build-napi-package builds Apple targets with cargo and writes the e
     writeFakeCommand(
       binDir,
       "cargo",
-      [
-        "const fs = require('node:fs');",
-        "const path = require('node:path');",
-        `const argsPath = ${JSON.stringify(commandArgsPath)};`,
-        `const artifactPath = ${JSON.stringify(artifactPath)};`,
-        "fs.writeFileSync(argsPath, process.argv.slice(2).join('\\n'));",
-        "fs.mkdirSync(path.dirname(artifactPath), { recursive: true });",
-        "fs.writeFileSync(artifactPath, 'apple-native');",
-      ].join("\n"),
+      readToolingProgram("commands/github-step-commands/cargo.js.in", {
+        COMMAND_ARGS_PATH: JSON.stringify(commandArgsPath),
+        ARTIFACT_PATH: JSON.stringify(artifactPath),
+      }),
     );
 
     const result = runToolCommand(

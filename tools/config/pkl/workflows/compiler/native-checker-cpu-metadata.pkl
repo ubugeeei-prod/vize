@@ -1,0 +1,108 @@
+import "../../Actions.pkl" as ci
+
+name = "Native checker CPU attribution"
+on {
+  pull_request {
+    types = List("opened", "synchronize", "reopened")
+    paths = new Listing {
+      ".github/workflows/native-checker-cpu-metadata.yml"
+      ".github/scripts/workflows/native-checker-cpu-metadata/**"
+      "tools/benchmarks/scripts/native-checker-cpu-*.ts"
+      "tests/tooling/native-checker-cpu-metadata.test.ts"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      capture_run_id {
+        type = "string"
+        ["default"] = "40526358411"
+      }
+      capture_artifact_id {
+        type = "string"
+        ["default"] = "12745086928"
+      }
+    }
+  }
+}
+permissions {
+  contents = "read"
+  actions = "read"
+}
+concurrency {
+  group = "native-checker-cpu-metadata-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `identity-controls` {
+    `runs-on` = ci.linux
+    steps = new Listing {
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic { run = "node --test tests/tooling/native-checker-cpu-metadata.test.ts" }
+    }
+  }
+  metadata {
+    `if` = "${{ github.event_name == 'workflow_dispatch' }}"
+    needs = "identity-controls"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/native-checker-cpu-metadata"
+    }
+    steps = new Listing {
+      ci.checkoutAt("${{ github.sha }}")
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        uses = "actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c"
+        with {
+          `go-version` = "1.27.2"
+          cache = false
+        }
+      }
+      new Dynamic {
+        name = "Install offline tools and the fixed public SDK image"
+        env {
+          CAPTURE_RUN = "${{ inputs.capture_run_id }}"
+          CAPTURE_ARTIFACT = "${{ inputs.capture_artifact_id }}"
+        }
+        run = ci.workflowScript("install-offline-tools-and-the-fixed-public-sdk-image.sh")
+      }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          `artifact-ids` = "${{ inputs.capture_artifact_id }}"
+          `run-id` = "${{ inputs.capture_run_id }}"
+          `github-token` = "${{ github.token }}"
+          path = "${{ runner.temp }}/checker-capture"
+        }
+      }
+      new Dynamic {
+        name = "Resolve recorded checker CPU through the byte-matched SDK"
+        run = ci.workflowScript("resolve-recorded-checker-cpu-through-the-byte-matched-sdk.sh")
+      }
+      new Dynamic {
+        name = "Preserve SDK build IDs, verified PC conversion, and function self samples"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "native-checker-metadata-${{ github.run_id }}"
+          path = "${{ runner.temp }}/checker-metadata"
+          `if-no-files-found` = "warn"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

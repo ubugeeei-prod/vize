@@ -49,6 +49,19 @@ jobs:
       matrix: ${{ steps.plan.outputs.matrix }}
       count: ${{ steps.plan.outputs.count }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/e2e/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Detect app readiness changes
         id: changes
         uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4.0.2
@@ -114,18 +127,16 @@ jobs:
         env:
           EXPECTED_SHA: ${{ github.sha }}
           SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
-          echo "Tested merge SHA $EXPECTED_SHA for source head $SOURCE_HEAD_SHA" >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/verify-readiness-merge-sha.sh"
       - name: Plan readiness rows
         if: steps.changes.outputs.readiness == 'true'
         id: plan
-        run: echo "matrix=$(node tools/commands/ci/github/app-e2e-plan.ts --profile readiness)" >> "$GITHUB_OUTPUT" && echo "count=$(node tools/commands/ci/github/app-e2e-plan.ts --profile readiness --field count)" >> "$GITHUB_OUTPUT"
+        run: . "${{ env.VIZE_CI_FILES }}/plan-readiness-rows.sh"
       - name: Write readiness plan evidence
         if: steps.changes.outputs.readiness == 'true'
         env:
           E2E_SOURCE_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: mkdir -p target/app-e2e-plan && node tools/commands/ci/github/app-e2e-plan.ts --profile readiness --field evidence > target/app-e2e-plan/readiness.json
+        run: . "${{ env.VIZE_CI_FILES }}/write-readiness-plan-evidence.sh"
       - name: Upload readiness plan evidence
         if: steps.changes.outputs.readiness == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -142,6 +153,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.app-readiness-plan.outputs.matrix) }}
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/e2e"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -150,7 +163,8 @@ jobs:
       - name: Verify producer SHA
         env:
           EXPECTED_SHA: ${{ github.sha }}
-        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/verify-producer-sha.sh"
       - uses: ./.github/actions/app-e2e-row
         with:
           profile: ${{ matrix.profile }}
@@ -190,20 +204,25 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/e2e/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Validate optional target SHA
         if: ${{ inputs.target_sha != '' }}
         env:
           REQUESTED_TARGET_SHA: ${{ inputs.target_sha }}
           RUN_HEAD_SHA: ${{ github.sha }}
-        run: |
-          if [[ ! "$REQUESTED_TARGET_SHA" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "::error title=Invalid target_sha::target_sha must be a full lowercase 40-character commit SHA"
-            exit 1
-          fi
-          if [[ "$RUN_HEAD_SHA" != "$REQUESTED_TARGET_SHA" ]]; then
-            echo "::error title=Dispatch ref mismatch::--ref must point at $REQUESTED_TARGET_SHA (got $RUN_HEAD_SHA)"
-            exit 1
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/validate-optional-target-sha.sh"
       - name: Begin Testbox
         id: begin-testbox
         uses: useblacksmith/begin-testbox@233448af4bfdc6fca509a7f0974411ac6d8a8043 # v2
@@ -242,28 +261,26 @@ jobs:
       matrix: ${{ steps.plan.outputs.matrix }}
       count: ${{ steps.plan.outputs.count }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/e2e/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Validate target SHA
         if: ${{ github.event_name == 'workflow_dispatch' }}
         env:
           REQUESTED_SUITE: ${{ inputs.suite }}
           REQUESTED_TARGET_SHA: ${{ inputs.target_sha }}
           RUN_HEAD_SHA: ${{ github.sha }}
-        run: |
-          if [[ -z "$REQUESTED_TARGET_SHA" ]]; then
-            if [[ "$REQUESTED_SUITE" == "all" ]]; then
-              echo "::error title=Missing target_sha::target_sha is required when suite=all"
-              exit 1
-            fi
-            exit 0
-          fi
-          if [[ ! "$REQUESTED_TARGET_SHA" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "::error title=Invalid target_sha::target_sha must be a full lowercase 40-character commit SHA"
-            exit 1
-          fi
-          if [[ "$RUN_HEAD_SHA" != "$REQUESTED_TARGET_SHA" ]]; then
-            echo "::error title=Dispatch ref mismatch::--ref must point at $REQUESTED_TARGET_SHA (got $RUN_HEAD_SHA)"
-            exit 1
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/validate-target-sha.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ env.E2E_TARGET_SHA }}
@@ -273,16 +290,17 @@ jobs:
       - name: Verify full App E2E SHA
         env:
           EXPECTED_SHA: ${{ env.E2E_TARGET_SHA }}
-        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/verify-producer-sha.sh"
       - name: Plan full rows
         id: plan
         env:
           REQUESTED_SUITE: ${{ github.event_name == 'workflow_dispatch' && inputs.suite || 'all' }}
-        run: echo "suite=$REQUESTED_SUITE" >> "$GITHUB_OUTPUT" && echo "matrix=$(node tools/commands/ci/github/app-e2e-plan.ts --profile full --suite "$REQUESTED_SUITE")" >> "$GITHUB_OUTPUT" && echo "count=$(node tools/commands/ci/github/app-e2e-plan.ts --profile full --suite "$REQUESTED_SUITE" --field count)" >> "$GITHUB_OUTPUT"
+        run: . "${{ env.VIZE_CI_FILES }}/plan-full-rows.sh"
       - name: Write full plan evidence
         env:
           REQUESTED_SUITE: ${{ github.event_name == 'workflow_dispatch' && inputs.suite || 'all' }}
-        run: mkdir -p target/app-e2e-plan && node tools/commands/ci/github/app-e2e-plan.ts --profile full --suite "$REQUESTED_SUITE" --field evidence > target/app-e2e-plan/full.json
+        run: . "${{ env.VIZE_CI_FILES }}/write-full-plan-evidence.sh"
       - name: Upload full plan evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -300,6 +318,19 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.app-e2e-plan.outputs.matrix) }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/e2e/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ env.E2E_TARGET_SHA }}
@@ -307,7 +338,8 @@ jobs:
       - name: Verify producer SHA
         env:
           EXPECTED_SHA: ${{ env.E2E_TARGET_SHA }}
-        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+        shell: bash
+        run: . "${{ env.VIZE_CI_FILES }}/verify-producer-sha.sh"
       - uses: ./.github/actions/app-e2e-row
         with:
           profile: ${{ matrix.profile }}
