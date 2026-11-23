@@ -1,5 +1,5 @@
 //! Run the configured standalone rules on a Program already read by another tool.
-use super::{ScriptLintResult, ScriptLinter, SfcScriptContext};
+use super::{ScriptLintResult, ScriptLinter, ScriptRule, SfcScriptContext};
 use oxc_ast::ast::Program;
 use oxc_span::{FileExtension, SourceType};
 use vize_l0::SourceBlock;
@@ -66,6 +66,19 @@ impl AuthoredScriptRules<'_> {
         self.grammar
     }
 
+    /// Return the complete empty result when every configured rule consumes syntax
+    /// and its required spelling is absent in this physical script. Byte readers,
+    /// undeclared spellings and escaped identifiers keep their original evaluation.
+    pub fn empty_result_for(&self, block: SourceBlock<'_>) -> Option<ScriptLintResult> {
+        let bytes = block.source().as_bytes();
+        let mut escaped = None;
+        self.linter
+            .rules
+            .iter()
+            .all(|rule| rule.uses_ast() && !may_match(rule.as_ref(), bytes, &mut escaped))
+            .then(ScriptLintResult::default)
+    }
+
     /// A caller without shared syntax can request the complete standalone result.
     pub fn lint_source(&self, block: SourceBlock<'_>) -> ScriptLintResult {
         if self.grammar.is_some() {
@@ -101,10 +114,7 @@ impl AuthoredScriptRules<'_> {
         for rule in &self.linter.rules {
             if rule.uses_ast() {
                 if let Some(program) = program {
-                    if let Some(spelling) = rule.required_authored_spelling()
-                        && memchr::memmem::find(bytes, spelling.as_bytes()).is_none()
-                        && !*escaped.get_or_insert_with(|| memchr::memchr(b'\\', bytes).is_some())
-                    {
+                    if !may_match(rule.as_ref(), bytes, &mut escaped) {
                         continue;
                     }
                     rule.check_program_with_sfc(
@@ -121,4 +131,11 @@ impl AuthoredScriptRules<'_> {
         }
         result
     }
+}
+
+fn may_match(rule: &dyn ScriptRule, bytes: &[u8], escaped: &mut Option<bool>) -> bool {
+    rule.required_authored_spelling().is_none_or(|spelling| {
+        memchr::memmem::find(bytes, spelling.as_bytes()).is_some()
+            || *escaped.get_or_insert_with(|| memchr::memchr(b'\\', bytes).is_some())
+    })
 }

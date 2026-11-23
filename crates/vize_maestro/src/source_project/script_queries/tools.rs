@@ -63,6 +63,13 @@ impl SourceSnapshot {
             } else {
                 editor_type
             };
+            let empty_lint = match lint_type {
+                Some(grammar) if grammar != editor_type && grammar != checker_type => {
+                    rules.empty_result_for(frame)
+                }
+                _ => None,
+            };
+            let lint_type = lint_type.filter(|_| empty_lint.is_none());
             visit_authored_profiles(
                 frame,
                 &[Some(editor_type), Some(checker_type), lint_type],
@@ -94,7 +101,7 @@ impl SourceSnapshot {
                 },
             )?;
             if lint_type.is_none() {
-                let result = rules.lint_source(frame);
+                let result = empty_lint.unwrap_or_else(|| rules.lint_source(frame));
                 *lint = Some(ScriptBlockLint {
                     span: frame.span(),
                     result,
