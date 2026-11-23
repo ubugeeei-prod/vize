@@ -140,3 +140,7 @@ impl<T> Intervals<T> {
         Ok(Self::sorted(entries))
     }
 }
+
+#[cfg(test)]
+#[path = "tests/checked_points.rs"]
+mod checked_points;

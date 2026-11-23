@@ -10,6 +10,7 @@ on:
       - "davinci/vize_l3/**"
       - "crates/vize_incremental/**"
       - "tests/formal/ir-graph/**"
+      - "tests/formal/position-index/**"
   workflow_dispatch:
 permissions: { contents: read }
 concurrency:
@@ -35,6 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           cargo test --locked --profile ci-opt -p vize_l2_to_l3 --features graph-queries
+          cargo test --locked --profile ci-opt -p vize_l2 --features position-index --lib query::position::index::
           cargo test --locked --profile ci-opt -p vize_incremental --features resident-providers
           cargo test --locked --manifest-path crates/vize_incremental/providers/graph/Cargo.toml --profile ci-opt
           cargo clippy --locked --profile ci-opt -p vize_l3 -p vize_incremental --features vize_incremental/resident-providers,vize_l3/graph-queries --lib --no-deps -- -D warnings
@@ -68,6 +70,9 @@ jobs:
           set -euo pipefail
           "$RUNNER_TEMP/lean-4.33.1-linux/bin/lean" -DwarningAsError=true Reach.lean | tee "$RUNNER_TEMP/theorem"
           grep -Fx "'Davinci.exact_answer' does not depend on any axioms" "$RUNNER_TEMP/theorem"
+          "$RUNNER_TEMP/lean-4.33.1-linux/bin/lean" -DwarningAsError=true ../position-index/Intervals.lean > "$RUNNER_TEMP/positions"
+          grep -Fx "'Davinci.PositionIndex.point_eq_scan' depends on axioms: [propext, Classical.choice, Quot.sound]" "$RUNNER_TEMP/positions"
+          grep -Fx "'Davinci.PositionIndex.selected_rows' depends on axioms: [propext, Classical.choice, Quot.sound]" "$RUNNER_TEMP/positions"
           java -Djava.awt.headless=true -jar "$RUNNER_TEMP/alloy.jar" exec -q -c '*' -t none -o "$RUNNER_TEMP/instance" Reach.als
           jq -e '.commands | keys == ["DisconnectedCycle","Exact","MissedSuccessor","ParallelCycle"] and (.Exact | .type == "check" and (.solution | length) == 0) and ([.DisconnectedCycle,.MissedSuccessor,.ParallelCycle] | all(.type == "run" and (.solution | length) == 1))' "$RUNNER_TEMP/instance/receipt.json"
           grep -Fx "'Davinci.exact_trails' depends on axioms: [propext, Classical.choice, Quot.sound]" "$RUNNER_TEMP/theorem"
