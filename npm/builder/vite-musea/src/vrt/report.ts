@@ -1,19 +1,9 @@
-/**
- * VRT report generation for Musea.
- *
- * Generates HTML and JSON reports from VRT results for visual review
- * and CI integration.
- */
-
 import path from "node:path";
 
 import type { VrtResult, VrtSummary } from "./types.js";
 import { escapeHtml } from "../html.js";
 
-/**
- * Generate VRT report in HTML format.
- * Supports side-by-side, overlay, and slider comparison modes.
- */
+/** The report opens directly from disk, including its status controls. */
 export function generateVrtReport(results: VrtResult[], summary: VrtSummary): string {
   const formatDuration = (ms: number): string => {
     if (ms < 1000) return `${ms}ms`;
@@ -30,6 +20,29 @@ export function generateVrtReport(results: VrtResult[], summary: VrtSummary): st
     hour: "2-digit",
     minute: "2-digit",
   });
+
+  const statusFilters = [
+    { value: "failed", label: "Failed", count: summary.failed },
+    { value: "error", label: "Errors", count: summary.errors ?? 0 },
+    { value: "passed", label: "Passed", count: summary.passed },
+    { value: "new", label: "New", count: summary.new },
+  ];
+  const filters = [{ value: "all", label: "All", count: summary.total }, ...statusFilters];
+
+  const hiddenResultSelectors = statusFilters
+    .map(
+      ({ value }) =>
+        `.filters:has([value="${value}"]:checked) ~ .results .result:not([data-status="${value}"])`,
+    )
+    .join(",\n    ");
+  const filterControls = filters
+    .map(
+      ({ value, label, count }) => `<label class="filter-btn">
+        <input type="radio" name="status" value="${value}"${value === "all" ? " checked" : ""}>
+        ${label}<span class="count">(${count})</span>
+      </label>`,
+    )
+    .join("\n      ");
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -99,13 +112,17 @@ export function generateVrtReport(results: VrtResult[], summary: VrtSummary): st
     .filters { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
     .filter-btn { background: var(--musea-bg-secondary); border: 1px solid var(--musea-border); color: var(--musea-text); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8125rem; font-weight: 500; transition: all 0.15s ease; }
     .filter-btn:hover { background: var(--musea-bg-tertiary); border-color: var(--musea-text-muted); }
-    .filter-btn.active { background: var(--musea-accent); border-color: var(--musea-accent); color: #fff; }
+    .filter-btn:has(:checked) { background: var(--musea-accent); border-color: var(--musea-accent); color: #fff; }
     .filter-btn .count { opacity: 0.7; margin-left: 0.25rem; }
 
-    /* Comparison mode toggle */
     .compare-modes { display: flex; gap: 0.25rem; margin-bottom: 1.5rem; background: var(--musea-bg-secondary); border-radius: 6px; padding: 0.25rem; width: fit-content; }
     .compare-mode-btn { background: none; border: none; color: var(--musea-text-muted); padding: 0.375rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 500; transition: all 0.15s ease; }
-    .compare-mode-btn.active { background: var(--musea-bg-tertiary); color: var(--musea-text); }
+    .compare-mode-btn:has(:checked) { background: var(--musea-bg-tertiary); color: var(--musea-text); }
+
+    .filter-btn, .compare-mode-btn { position: relative; }
+    .filter-btn input, .compare-mode-btn input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+    .filter-btn:has(:focus-visible), .compare-mode-btn:has(:focus-visible) { outline: 2px solid var(--musea-info); outline-offset: 2px; }
+    ${hiddenResultSelectors} { display: none; }
 
     .results { display: flex; flex-direction: column; gap: 0.75rem; }
     .result { background: var(--musea-bg-secondary); border: 1px solid var(--musea-border); border-radius: 8px; overflow: hidden; transition: border-color 0.15s ease; }
@@ -191,18 +208,14 @@ export function generateVrtReport(results: VrtResult[], summary: VrtSummary): st
         : ""
     }
 
-    <div class="filters">
-      <button class="filter-btn active" data-filter="all">All<span class="count">(${summary.total})</span></button>
-      <button class="filter-btn" data-filter="failed">Failed<span class="count">(${summary.failed})</span></button>
-      <button class="filter-btn" data-filter="error">Errors<span class="count">(${summary.errors ?? 0})</span></button>
-      <button class="filter-btn" data-filter="passed">Passed<span class="count">(${summary.passed})</span></button>
-      <button class="filter-btn" data-filter="new">New<span class="count">(${summary.new})</span></button>
+    <div class="filters" role="radiogroup" aria-label="Result status">
+      ${filterControls}
     </div>
 
-    <div class="compare-modes">
-      <button class="compare-mode-btn active" data-mode="side-by-side">Side by Side</button>
-      <button class="compare-mode-btn" data-mode="overlay">Overlay</button>
-      <button class="compare-mode-btn" data-mode="slider">Slider</button>
+    <div class="compare-modes" role="radiogroup" aria-label="Comparison mode">
+      <label class="compare-mode-btn"><input type="radio" name="mode" value="side-by-side" checked>Side by Side</label>
+      <label class="compare-mode-btn"><input type="radio" name="mode" value="overlay">Overlay</label>
+      <label class="compare-mode-btn"><input type="radio" name="mode" value="slider">Slider</label>
     </div>
 
     <div class="results">
@@ -259,28 +272,6 @@ export function generateVrtReport(results: VrtResult[], summary: VrtSummary): st
     </div>
   </main>
 
-  <script>
-    // Filter buttons
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const filter = btn.dataset.filter;
-        document.querySelectorAll('.result').forEach(result => {
-          result.style.display = (filter === 'all' || result.dataset.status === filter) ? 'block' : 'none';
-        });
-      });
-    });
-
-    // Compare mode buttons
-    document.querySelectorAll('.compare-mode-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.compare-mode-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        // Mode switching would update result-images display; this is a static report for now
-      });
-    });
-  </script>
 </body>
 </html>`;
 

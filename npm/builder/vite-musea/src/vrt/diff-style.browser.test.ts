@@ -158,7 +158,7 @@ void test(
           assert.equal(response.headers.get("X-Content-Type-Options"), "nosniff");
           assert.deepEqual(Buffer.from(await response.arrayBuffer()), bytes);
 
-          const page = await runner.getBrowser()!.newPage();
+          const page = await runner.getBrowser()!.newPage({ javaScriptEnabled: false });
           try {
             await page.goto(`${base}/consumer`);
             await page.locator("#diff").evaluate((image) => (image as HTMLImageElement).decode());
@@ -174,6 +174,21 @@ void test(
             await writeFile(htmlPath, generateVrtReport([diff], summary));
             await writeFile(path.join(root, "report.json"), generateVrtJsonReport([diff], summary));
             await page.goto(pathToFileURL(htmlPath).href);
+            assert.equal(await page.locator("script").count(), 0);
+            const result = page.locator('.result[data-status="failed"]');
+            assert.ok(await result.isVisible());
+            for (const name of [/^Passed/, /^Errors/, /^New/]) {
+              await page.getByRole("radio", { name }).check();
+              assert.ok(await result.isHidden());
+            }
+            for (const name of [/^Failed/, /^All/]) {
+              await page.getByRole("radio", { name }).check();
+              assert.ok(await result.isVisible());
+            }
+            const overlay = page.getByRole("radio", { name: "Overlay" });
+            await overlay.check();
+            await overlay.press("ArrowRight");
+            assert.ok(await page.getByRole("radio", { name: "Slider" }).isChecked());
             const image = page.getByAltText(label, { exact: true });
             await image.evaluate((element) => (element as HTMLImageElement).decode());
             assert.deepEqual(
