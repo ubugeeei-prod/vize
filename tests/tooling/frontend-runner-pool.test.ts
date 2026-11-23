@@ -18,7 +18,11 @@ import {
 } from "./support/frontend-case-reporting.ts";
 import { restorePlaygroundCaseReporting } from "./support/frontend-playground-reporting.ts";
 import { helperAbiStep, restoreContentMapperHelperAbi } from "./support/frontend-helper-abi.ts";
-import { restorePinnedWildAction, restoreRustToolchainPin } from "./support/github-workflows.ts";
+import {
+  checkWorkflowJobSources,
+  restorePinnedWildAction,
+  restoreRustToolchainPin,
+} from "./support/github-workflows.ts";
 
 type Step = { name?: string; uses?: string; if?: string; with?: Record<string, unknown> } & Record<
   string,
@@ -56,7 +60,13 @@ const workflows = selectors.map((specification) => {
     new URL("../../" + specification.file, import.meta.url),
     "utf8",
   );
-  return { specification, before: parse(before) as Workflow, after: parse(after) as Workflow };
+  const workflow = parse(after) as Workflow;
+  if (specification.name === "check") {
+    // The schedule-only job now runs through the qualified reusable workflow.
+    const complete = parse(checkWorkflowJobSources(after)) as Workflow;
+    workflow.jobs["branch-coverage"] = complete.jobs["branch-coverage"];
+  }
+  return { specification, before: parse(before) as Workflow, after: workflow };
 });
 function expression(value: string) {
   return value

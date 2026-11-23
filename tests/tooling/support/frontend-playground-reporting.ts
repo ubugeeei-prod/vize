@@ -83,3 +83,23 @@ export function restorePlaygroundCaseReporting(workflow: Workflow, original: Wor
   assert.deepEqual(target, before);
   workflow.jobs["pr-playground-test"] = structuredClone(before);
 }
+
+export function restoreFullPlaygroundVrtGate(job: Job) {
+  const steps = job.steps;
+  assert(steps);
+  const index = steps.length - 3;
+  const [vrt, report, diff] = steps.slice(index);
+  assert.deepEqual(vrt, {
+    name: "Run VRT",
+    run: "vp run --filter './playground' test:vrt",
+    id: "vrt",
+  });
+  steps[index] = { name: vrt.name, run: vrt.run, "continue-on-error": true, id: vrt.id };
+  assert.deepEqual([report.name, diff.name], ["Upload VRT report", "Upload VRT diff artifacts"]);
+  const previousCondition = "steps.vrt.outcome == 'failure'";
+  for (const upload of [report, diff]) {
+    assert.equal(upload.if, "failure() && " + previousCondition);
+    upload.if = previousCondition;
+  }
+  steps.push({ name: "Fail if VRT failed", if: previousCondition, run: "exit 1" });
+}
