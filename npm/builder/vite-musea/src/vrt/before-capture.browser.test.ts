@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
-import { createServer } from "node:http";
 import { mkdir, mkdtemp, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 import { PNG } from "pngjs";
+import { createPreviewFixtureServer } from "../browser-fixtures/preview-server.ts";
 import type { ArtFileInfo, BeforeCaptureContext } from "../types/index.ts";
 import { MuseaVrtRunner } from "./runner.ts";
 import type { CliOptions } from "../cli/index.ts";
@@ -33,12 +33,11 @@ void test(
   async () => {
     await mkdir(output, { recursive: true });
     const snapshotDir = await mkdtemp(path.join(output, "play-"));
-    const server = createServer((_request, response) => {
-      response.setHeader("Content-Type", "text/html");
-      response.end(`<style>html,body{margin:0}#state{width:160px;height:120px;background:#f00}</style>
-        <main class="musea-variant"><output id="state">Initial</output></main>
-        <script>window.__museaRunPlay=async()=>{await new Promise(r=>setTimeout(r,20));const state=document.querySelector('#state');state.textContent='Played';state.style.background='#00f'};window.postMessage({type:'musea:ready'},location.origin);</script>`);
-    });
+    const server = await createPreviewFixtureServer(
+      `<style>html,body{margin:0}#state{width:160px;height:120px;background:#f00}</style>
+       <main class="musea-variant"><output id="state">Initial</output></main>`,
+      "play-before-capture.js",
+    );
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
     const address = server.address();
     assert.ok(address && typeof address !== "string");
@@ -80,12 +79,11 @@ void test(
     await mkdir(output, { recursive: true });
     const snapshotDir = await mkdtemp(path.join(output, "direct-"));
     const observations: unknown[] = [];
-    const server = createServer((_request, response) => {
-      response.setHeader("Content-Type", "text/html");
-      response.end(
-        `<style>html,body{margin:0}form{height:40px}#result{display:block;height:80px;background:#ff0000}input{width:80px}</style><main class="musea-variant"><form><label>Message<input name="message" /></label><button>Apply</button></form><output id="result">Initial</output></main><script>document.querySelector('form').onsubmit=(event)=>{event.preventDefault();const result=document.querySelector('#result');result.textContent=document.querySelector('input').value;result.style.background='#0000ff'};</script>`,
-      );
-    });
+    const server = await createPreviewFixtureServer(
+      `<style>html,body{margin:0}form{height:40px}#result{display:block;height:80px;background:#ff0000}input{width:80px}</style>
+       <main class="musea-variant"><form><label>Message<input name="message" /></label><button>Apply</button></form><output id="result">Initial</output></main>`,
+      "submit-message.js",
+    );
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
     const address = server.address();
     assert.ok(address && typeof address !== "string");
@@ -193,23 +191,8 @@ void test(
     const { createVrtOptions } = await import("../cli/commands.ts");
     await mkdir(output, { recursive: true });
     const snapshotDir = await mkdtemp(path.join(output, "configured-"));
-    const config = path.join(output, "interaction.config.ts");
-    const carrier = pathToFileURL(
-      fileURLToPath(new URL("../plugin/options.ts", import.meta.url)),
-    ).href;
-    await writeFile(
-      config,
-      `import assert from 'node:assert/strict';
-    import { attachMuseaOptions } from ${JSON.stringify(carrier)};
-    export default { plugins: [attachMuseaOptions({name:'musea-fixture'}, {vrt: {
-      capture: { waitForNetwork: false, waitForPreviewReady: false, settleTime: 0,
-        beforeCapture: async (page, context) => {
-          assert.equal(context.variantName, 'Submitted');
-          await page.getByRole('button', {name: 'Prepare'}).click();
-          assert.equal(await page.locator('#result').textContent(), 'Prepared by config');
-        }
-      }
-    }})] };`,
+    const config = fileURLToPath(
+      new URL("../browser-fixtures/interaction.config.ts", import.meta.url),
     );
     const configured = await loadMuseaVrtOptions(config, output);
     assert.equal(typeof configured?.capture?.beforeCapture, "function");
@@ -224,12 +207,10 @@ void test(
       browserArgs: [],
     } as unknown as CliOptions);
     assert.equal(projected.capture?.beforeCapture, configured!.capture!.beforeCapture);
-    const server = createServer((_request, response) => {
-      response.setHeader("Content-Type", "text/html");
-      response.end(
-        `<div class="musea-variant"><button onclick="document.querySelector('#result').textContent='Prepared by config'">Prepare</button><output id="result">Initial</output></div>`,
-      );
-    });
+    const server = await createPreviewFixtureServer(
+      '<div class="musea-variant"><button>Prepare</button><output id="result">Initial</output></div>',
+      "prepare-from-config.js",
+    );
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
     const address = server.address();
     assert.ok(address && typeof address !== "string");
