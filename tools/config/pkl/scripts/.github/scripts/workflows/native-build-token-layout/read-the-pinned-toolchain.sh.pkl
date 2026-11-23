@@ -1,0 +1,7 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"node "$VIZE_CI_FILES/read-the-pinned-toolchain.ts" >> "$GITHUB_OUTPUT""#
+}

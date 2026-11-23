@@ -1,0 +1,18 @@
+#!@@NODE@@
+const fs = require("node:fs");
+const body = fs.readFileSync(0, "utf8");
+fs.appendFileSync(
+  @@API_JSONL@@,
+  JSON.stringify({ args: process.argv.slice(2), body }) + "\n",
+);
+process.stdout.write(
+  JSON.stringify(
+    process.argv[3] === "graphql"
+      ? @@METADATA_PAGE_RELEASES@@
+      : body
+        ? { body: @@GENERATED@@ }
+        : process.argv[3].includes("/compare/")
+          ? @@COMMITS@@
+          : @@RELEASES@@,
+  ),
+);

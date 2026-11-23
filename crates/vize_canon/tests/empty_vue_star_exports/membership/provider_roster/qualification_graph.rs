@@ -40,6 +40,7 @@ use fresco::{
     fresco_update, verify_fresco_update,
 };
 mod tooling;
+mod translation_worker;
 use tooling::{
     BABEL_MANIFEST, ESLINT_MANIFEST, OXLINT_MANIFEST, PRETTIER_MANIFEST, ToolingQualificationGraph,
     tooling_update, verify_tooling_update,
@@ -262,6 +263,13 @@ fn verify_parcel_update(
 }
 
 pub(super) fn authorize(previous: &Value, lock: &[u8], package: &[u8]) -> Checked<Option<Value>> {
+    if let Some(previous_lock) =
+        crate::package_task_history::before_translation_worker("pnpm-lock.yaml", lock)
+    {
+        let previous_update = authorize(previous, &previous_lock, package)?
+            .ok_or("the translation worker requires a qualified dependency graph")?;
+        return translation_worker::successor(&previous_update, &previous_lock, lock).map(Some);
+    }
     if let Ok(previous_lock) = entry_packages::reconstruct_lock_predecessor(lock) {
         let previous_update = authorize(previous, &previous_lock, package)?
             .ok_or("entry packages require a qualification predecessor")?;

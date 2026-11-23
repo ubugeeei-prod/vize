@@ -46,7 +46,7 @@ test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
   // Both builds target libraries only. A host executable does not establish
   // the portability claim merely because WASI provides std.
   assert.ok(
-    job.includes(`        run: ${defaultLane} && ${noDefaultLane}`),
+    job.includes(`${defaultLane} && ${noDefaultLane}`),
     "TS-24 must build all seven libraries with and without default features",
   );
   assert.doesNotMatch(job, /cargo build[^\n]*-p vize_carton[^\n]*wasm32-wasip2/);

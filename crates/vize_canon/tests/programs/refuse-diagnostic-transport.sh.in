@@ -1,0 +1,3 @@
+#!/bin/sh
+case "$1" in --api|--lsp) printf '%s\n' "$1" >> '{quoted_attempts}'; exec node '{quoted_peer}' '{quoted_captures}' "$@";; esac
+exec '{quoted}' "$@"

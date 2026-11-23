@@ -1,8 +1,10 @@
+import { readToolingProgram } from "./support/program-path.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { parse } from "yaml";
 import { parse as parseToml } from "@iarna/toml";
 import { test } from "node:test";
@@ -63,9 +65,8 @@ await test("original native Vapor source qualifies a fresh affected-PR capture w
 });
 
 await test("the required Vapor lane preserves mandatory whole-source payloads", () => {
-  const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
   assertNativeRuntimeHook("vapor", "test-native-vapor");
-  const action = read(".github/actions/test-native-vapor/action.yml");
+  const action = readAutomationPrograms(".github/actions/test-native-vapor/action.yml");
   for (const path of [
     "native-vapor-modules.json",
     "native-vapor-runtime.json",
@@ -130,7 +131,10 @@ function assertRuntimeToolchainPreparation(workflow, configuration) {
 }
 
 const nativeRuntimeWorkflow = parse(
-  readFileSync(new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url), "utf8"),
+  readAutomationPrograms(
+    new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url),
+    "utf8",
+  ),
 );
 const nativeRustConfiguration = parseToml(
   readFileSync(new URL("../../rust-toolchain.toml", import.meta.url), "utf8"),
@@ -210,35 +214,23 @@ function verifyInstalledRuntimeToolchain(components, targets, fail = "") {
     const trace = join(fixture, "calls.jsonl");
     writeFileSync(
       join(fixture, "rustup"),
-      `#!${process.execPath}\n` +
-        String.raw`
-const fs = require('node:fs');
-const args = process.argv.slice(2);
-fs.appendFileSync(process.env.RUSTUP_TEST_TRACE, JSON.stringify(args) + '\n');
-if (args[0] === process.env.RUSTUP_TEST_FAIL) process.exit(42);
-if (JSON.stringify(args) === JSON.stringify(['run', process.env.VIZE_NATIVE_RUST_TOOLCHAIN, 'rustc', '--version', '--verbose'])) {
-  console.log('rustc fixture\nhost: x86_64-unknown-linux-gnu');
-} else if (JSON.stringify(args) === JSON.stringify(['component', 'list', '--toolchain', process.env.VIZE_NATIVE_RUST_TOOLCHAIN, '--installed'])) {
-  console.log(process.env.RUSTUP_TEST_COMPONENTS);
-} else if (JSON.stringify(args) === JSON.stringify(['target', 'list', '--toolchain', process.env.VIZE_NATIVE_RUST_TOOLCHAIN, '--installed'])) {
-  console.log(process.env.RUSTUP_TEST_TARGETS);
-} else {
-  console.error('unexpected Rustup operation', args);
-  process.exit(43);
-}
-`,
+      readToolingProgram("commands/native-vapor-capture-workflow/rustup.cjs.in", {
+        NODE: process.execPath,
+      }),
       { mode: 0o755 },
     );
     const { runtime, verification } = assertRuntimeToolchainPreparation(
       nativeRuntimeWorkflow,
       nativeRustConfiguration,
     );
-    const result = spawnSync("/bin/bash", ["-c", verification.run], {
+    const verificationScript = automationShellPath(verification.run, "pr-source-checks");
+    const result = spawnSync("/bin/bash", [verificationScript], {
       encoding: "utf8",
       timeout: 10_000,
       env: {
         ...process.env,
         ...runtime.env,
+        VIZE_CI_FILES: dirname(verificationScript),
         PATH: `${fixture}:${process.env.PATH}`,
         RUSTUP_TEST_TRACE: trace,
         RUSTUP_TEST_COMPONENTS: components.join("\n"),

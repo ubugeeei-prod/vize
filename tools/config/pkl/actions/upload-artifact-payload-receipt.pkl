@@ -1,0 +1,24 @@
+import "../Actions.pkl" as ci
+
+name = "Retain complete artifact consumer receipt"
+description = "Preserve the source-bound consumer receipt even after a failed or cancelled step"
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Retain the full consumer verification receipt"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "artifact-payload-consumer-${{ github.sha }}-${{ github.run_attempt }}"
+        path = """
+        ${{ runner.temp }}/payload-restore.json
+        ${{ runner.temp }}/payload-restore-resources.txt
+
+        """
+        `if-no-files-found` = "error"
+        `retention-days` = 14
+      }
+    }
+  }
+}

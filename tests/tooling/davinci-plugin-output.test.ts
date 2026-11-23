@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { compileFunction } from "node:vm";
+import { toolingProgram } from "./support/program-path.ts";
 
 const require = createRequire(import.meta.url);
 const native = require("../../npm/native/index.js");
@@ -152,22 +153,17 @@ test("Vapor output comments retain templates and map opt-in", () => {
 test("fresh Node processes validate persistent output entries before skipping JavaScript", () => {
   const directory = mkdtempSync(path.join(tmpdir(), "vize-output-plugin-"));
   const run = (mayCall: boolean) => {
-    const program = `
-      const native = require(${JSON.stringify(require.resolve("../../npm/native/index.js"))});
-      let calls = 0;
-      const plugin = {
-        name: "persistent-output", family: "output", version: "1", fingerprint: "license-v1", cacheInputs: [],
-        run() {
-          if (!${JSON.stringify(mayCall)}) throw new Error("cache hit called JavaScript");
-          calls++;
-          return JSON.stringify([{placement:"prepend",comment:"persistent license"}]);
-        }
-      };
-      const result = native.compileWithOutputPlugins(${JSON.stringify(source)}, [plugin],
-        ${JSON.stringify(options)}, {cache:true,cacheDir:${JSON.stringify(directory)}});
-      process.stdout.write(JSON.stringify({result:result.result,cost:result.plugins[0],calls}));
-    `;
-    const child = spawnSync(process.execPath, ["-e", program], { encoding: "utf8" });
+    const program = [
+      toolingProgram("plugins/compile-with-cached-output-plugin.cjs"),
+      JSON.stringify({
+        nativeLibrary: require.resolve("../../npm/native/index.js"),
+        mayCall,
+        source,
+        options,
+        cacheDirectory: directory,
+      }),
+    ];
+    const child = spawnSync(process.execPath, [...program], { encoding: "utf8" });
     assert.equal(child.status, 0, child.stderr);
     return JSON.parse(child.stdout);
   };

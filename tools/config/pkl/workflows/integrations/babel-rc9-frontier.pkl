@@ -1,0 +1,96 @@
+import "../../Actions.pkl" as ci
+
+name = "Babel rc9 ABI frontier"
+on {
+  workflow_dispatch = null
+  push {
+    branches = List("ci/babel-rc9-frontier-evidence")
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "babel-rc9-frontier-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = false
+}
+env {
+  SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `unsupported-frontier` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("babel-rc9-frontier")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ env.SOURCE_SHA }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version` = "24.14.0"
+          `run-install` = false
+          cache = true
+          `cache-save` = false
+        }
+      }
+      ci.rust("stable")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "babel-plugin-hosts"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Install frozen source and exact isolated host graphs"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-frozen-source-and-exact-isolated-host-graphs.sh""#
+      }
+      new Dynamic {
+        name = "Build the actual source compiler and both public package entrypoints"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-actual-source-compiler-and-both-public-package-entrypoints.sh""#
+      }
+      new Dynamic {
+        name = "Retain four strict unsupported rc9 functional frontier rows"
+        `if` = "always()"
+        env {
+          VIZE_BABEL_NATIVE_ROOT = "${{ github.workspace }}/npm/native"
+          VIZE_BABEL_RUNTIME_OUTPUT = "${{ runner.temp }}/babel-plugin/runtime"
+          VIZE_BABEL_RUNTIME_ROLE = "frontier"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/retain-four-strict-unsupported-rc9-functional-frontier-rows.sh""#
+      }
+      new Dynamic {
+        name = "Check package source and declarations"
+        `if` = "always()"
+        run = "vp run --filter './npm/builder/babel' check"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "babel-rc9-unsupported-frontier-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SOURCE_SHA }}"
+          path = """
+          ${{ runner.temp }}/babel-plugin
+          !${{ runner.temp }}/babel-plugin/**/node_modules/**
+          npm/native/.artifacts/native/build-token-receipt.json
+          npm/native/*.node
+          npm/builder/babel/test/hosts/fixtures/babel7/package-lock.json
+          npm/builder/babel/test/hosts/fixtures/babel8/package-lock.json
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

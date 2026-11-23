@@ -5,6 +5,7 @@ import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 import { commandPhase, processChannels } from "./support/pty-command.ts";
 
 const helper = new URL("./support/pty-command.ts", import.meta.url).pathname;
@@ -143,11 +144,15 @@ void test(
   "PTY command answers its prompt through a controlling terminal",
   { skip: process.platform === "win32" },
   () => {
-    const script =
-      'test -t 0 || exit 9; printf "Continue? "; read answer; echo "got:$answer"; exit 3';
     const result = spawnSync(
       process.execPath,
-      [helper, "Continue?", "yes\n", "/bin/sh", "-c", script],
+      [
+        helper,
+        "Continue?",
+        "yes\n",
+        "/bin/sh",
+        toolingProgram("process/answer-terminal-prompt.sh"),
+      ],
       { encoding: "utf8", timeout: 30_000 },
     );
     assert.equal(result.error, undefined, result.stderr);
@@ -155,7 +160,7 @@ void test(
     assert.match(result.stdout, /got:yes/u);
     const unanswered = spawnSync(
       process.execPath,
-      [helper, "Never", "x\n", "/bin/sh", "-c", "exit 0"],
+      [helper, "Never", "x\n", "/bin/sh", toolingProgram("process/exit-success.sh")],
       {
         encoding: "utf8",
         timeout: 30_000,

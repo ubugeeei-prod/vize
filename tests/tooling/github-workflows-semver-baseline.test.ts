@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -69,16 +70,7 @@ test("registry failures cannot turn the first-publish baseline into a skipped ch
   writeFakeCommand(
     bin,
     "curl",
-    [
-      "const fs = require('node:fs');",
-      "const args = process.argv.slice(2);",
-      "const output = args[args.indexOf('--output') + 1];",
-      "if (args.at(-1).includes('static.crates.io')) { fs.writeFileSync(output, 'changed Rust API'); process.stdout.write('200'); process.exit(0); }",
-      "const mode = process.env.SEMVER_REGISTRY_MODE;",
-      "if (mode === '404' || mode === '403') { fs.writeFileSync(output, 'missing'); process.stdout.write(mode); process.exit(22); }",
-      "fs.writeFileSync(output, mode === 'malformed' ? 'bad json' : JSON.stringify({ name: 'vize_l1_to_l2', vers: '0.428.1', yanked: false }));",
-      "process.stdout.write('200');",
-    ].join("\n"),
+    readToolingProgram("commands/github-workflows-semver-baseline/curl.js"),
   );
   try {
     for (const [mode, diagnostic] of [
@@ -219,23 +211,21 @@ test("release SemVer invokes the required check with the immutable baseline and 
   writeFakeCommand(
     bin,
     "cargo",
-    [
-      "const fs = require('node:fs');",
-      "fs.appendFileSync(process.env.SEMVER_TEST_LOG, JSON.stringify(process.argv.slice(2)) + '\\n');",
-    ].join("\n"),
+    readToolingProgram("commands/github-workflows-semver-baseline/cargo.js"),
   );
   writeFakeCommand(
     bin,
     "semver-node",
-    [
-      "const fs = require('node:fs');",
-      "fs.appendFileSync(process.env.SEMVER_HELPER_LOG, JSON.stringify(process.argv.slice(2)) + '\\n');",
-      "if (process.env.SEMVER_TEST_FAIL) process.exit(1);",
-      "if (process.env.SEMVER_TEST_ROOT) process.stdout.write(process.env.SEMVER_TEST_ROOT + '\\n');",
-    ].join("\n"),
+    readToolingProgram("commands/github-workflows-semver-baseline/semver-node.js"),
   );
   // This dispatch fixture has no merge parent; the exact-base test uses real Git.
-  writeFakeCommand(bin, "git", "process.exit(1);");
+  writeFakeCommand(
+    bin,
+    "git",
+    readToolingProgram(
+      "commands/fixture-tool-matrix-compiler/vize-requires-explicit-zero-file-expectation.js",
+    ),
+  );
   const script = path.join(repoRoot, "tools/commands/ci/github/check-semver.ts");
   const run = (extra: NodeJS.ProcessEnv = {}) => {
     fs.writeFileSync(log, "");

@@ -1,0 +1,13 @@
+#!@@NODE@@
+const { writeFileSync } = require("node:fs");
+const { spawnSync } = require("node:child_process");
+const a = process.argv.slice(2),
+  sep = a.indexOf("--");
+if (a[0] === "--version") {
+  console.log("fixture-perf 1");
+  process.exit(0);
+}
+const events = a[a.indexOf("-e") + 1].split(",");
+writeFileSync(a[a.indexOf("--output") + 1], events.map((e) => "7,," + e + ",100,50.00").join("\n"));
+const c = spawnSync(a[sep + 1], a.slice(sep + 2), { stdio: "inherit", env: process.env });
+process.exit(c.status);

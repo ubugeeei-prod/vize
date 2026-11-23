@@ -1,55 +1,45 @@
-import { spawn } from "node:child_process";
-import { createInterface } from "node:readline";
+import { Worker } from "node:worker_threads";
 
 export function createArgosClient(python: string) {
-  const script = `
-import json
-import sys
-import argostranslate.translate
-
-LOCALE_MAP = {"zh-CN": "zh", "pt-BR": "pt"}
-for line in sys.stdin:
-    request = json.loads(line)
-    try:
-        target = LOCALE_MAP.get(request["locale"], request["locale"])
-        translated = argostranslate.translate.translate(request["text"], "en", target)
-        response = {"id": request["id"], "translated": translated}
-    except Exception as error:
-        response = {"id": request["id"], "error": str(error)}
-    print(json.dumps(response, ensure_ascii=False), flush=True)
-`;
-  const child = spawn(python, ["-u", "-c", script], { stdio: ["pipe", "pipe", "inherit"] });
+  const worker = new Worker(new URL("./argos-worker.ts", import.meta.url), {
+    env: { ...process.env, PYTHON_BIN: python, REQ_TIMEOUT: "0" },
+  });
   const pending = new Map<
     number,
-    { resolve: (text: string) => void; reject: (error: unknown) => void }
+    { resolve: (text: string) => void; reject: (error: Error) => void }
   >();
   let nextId = 0;
-  createInterface({ input: child.stdout }).on("line", (line) => {
-    const response = JSON.parse(line) as { id: number; error?: string; translated: string };
+  let stopped: Error | undefined;
+
+  function stop(error: Error): void {
+    stopped ??= error;
+    for (const request of pending.values()) request.reject(stopped);
+    pending.clear();
+  }
+
+  worker.on("message", (response: { id: number; error?: string; translated: string }) => {
     const request = pending.get(response.id);
     if (!request) return;
     pending.delete(response.id);
-    if (response.error) request.reject(new Error(response.error));
+    if (response.error !== undefined) request.reject(new Error(response.error));
     else request.resolve(response.translated);
   });
-  child.on("exit", (code) => {
-    for (const request of pending.values()) {
-      request.reject(new Error(`Argos translation process exited with code ${code}`));
-    }
-    pending.clear();
-  });
+  worker.on("error", stop);
+  worker.on("exit", (code) => stop(new Error(`Argos translation worker exited with code ${code}`)));
 
   return {
     translate(text: string, locale: string): Promise<string> {
-      return new Promise<string>((resolveTranslation, rejectTranslation) => {
-        const id = nextId;
-        nextId += 1;
-        pending.set(id, { resolve: resolveTranslation, reject: rejectTranslation });
-        child.stdin.write(`${JSON.stringify({ id, text, locale })}\n`);
+      if (stopped) return Promise.reject(stopped);
+      return new Promise<string>((resolve, reject) => {
+        const id = nextId++;
+        pending.set(id, { resolve, reject });
+        worker.postMessage({ id, text, locale });
       });
     },
     close() {
-      child.stdin.end();
+      if (stopped) return;
+      stopped = new Error("Argos translation client is closed");
+      worker.postMessage(null);
     },
   };
 }

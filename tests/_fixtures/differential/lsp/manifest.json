@@ -5103,6 +5103,47 @@
       }
     },
     {
+      "id": "lsp/regression/whitespace-script-setup-outline",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "whitespace-script-setup-outline",
+        "files": [
+          {
+            "path": "WrongMember.vue.txt",
+            "sha256": "d58c99bd85f389f47b0f9984b81cb69fdc3e8aeb0607160705daa23b10005c99"
+          }
+        ]
+      },
+      "case": {
+        "path": "whitespace-script-setup-outline/case.json",
+        "sha256": "ef479dc6f2a3719b469c57cd9eed9860955b1ecb724b22e96d3f4ebf8507b987"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/workspace-tsconfig-inheritance-9842",
       "state": "active",
       "targets": [

@@ -227,7 +227,7 @@ fn fake_tool(project: &Project, name: &str, body: &str) -> String {
     use std::os::unix::fs::PermissionsExt;
     let path = project.registry(name);
     fs::create_dir_all(path.parent().unwrap()).unwrap();
-    fs::write(&path, vize_l0::cstr!("#!/bin/sh\n{body}").as_str()).unwrap();
+    fs::write(&path, body).unwrap();
     fs::set_permissions(&path, fs::Permissions::from_mode(0o755)).unwrap();
     String::from(path.to_str().unwrap())
 }
@@ -242,7 +242,7 @@ fn pulls_from_npm_and_https_namespaces_with_verified_hashes() {
         &project,
         "fake-npm.sh",
         &vize_l0::cstr!(
-            "if [ \"$1\" = view ]; then echo 1.1.0; exit 0; fi\ntar -czf \"$4/acme-ui-1.0.0.tgz\" -C '{}' package\n",
+            include_str!("../../../../tests/programs/pack-registry-npm.sh.in"),
             project.registry("packed").display()
         ),
     );
@@ -252,7 +252,7 @@ fn pulls_from_npm_and_https_namespaces_with_verified_hashes() {
         &project,
         "fake-curl.sh",
         &vize_l0::cstr!(
-            "case \" $* \" in *\" --proto-redir =https \"*) ;; *) exit 97 ;; esac\nfor a; do last=\"$a\"; done\nwhile [ \"$1\" != --output ]; do shift; done\ncp \"{}/${{last#https://acme.test/r/}}\" \"$2\"\n",
+            include_str!("../../../../tests/programs/serve-registry-curl.sh.in"),
             served.display()
         ),
     );

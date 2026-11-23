@@ -86,7 +86,10 @@ for (let sample = 0; sample < samples; sample += 1) {
     for (let version = 0; version < versions; version += 1) {
       fs.writeFileSync(
         path.join(binaryRoot, `vp-${version}.mjs`),
-        'process.stdout.write(JSON.stringify([{scope:"vue",value:"no-v-html"}]));\n',
+        fs.readFileSync(
+          new URL("./fixtures/vite-plus-rule-catalog/list-vue-lint-rules.js", import.meta.url),
+          "utf8",
+        ),
       );
     }
     const started = process.hrtime.bigint();

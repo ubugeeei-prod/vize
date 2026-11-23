@@ -1,0 +1,10 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  : > "$VIZE_TEST_AMBIENT_PM_MARKER"
+  printf '%s\n' "$VIZE_TEST_AMBIENT_GLOBAL_ROOT"
+  """#
+}

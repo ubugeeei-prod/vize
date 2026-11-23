@@ -45,7 +45,9 @@ on:
   pull_request:
     paths:
       - .github/workflows/content-mapper-pair.yml
+      - .github/scripts/workflows/content-mapper-pair/**
       - tools/benchmarks/scripts/content-mapper-pair*.ts
+      - tools/benchmarks/scripts/content-mapper-burst-windows.ps1
       - tests/tooling/content-mapper-pair*.test.ts
 permissions: { contents: read }
 concurrency:
@@ -80,11 +82,22 @@ jobs:
       PAIR_OS: linux
       PAIR_EXE: vize
     steps: &build-steps
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/content-mapper-pair/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Validate inputs
         shell: bash
-        run: |
-          [[ "$BASE" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$HEAD" =~ ^[0-9a-f]{40}$ ]]
+        run: . "${{ env.VIZE_CI_FILES }}/validate-inputs.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
       - name: Setup MSVC toolchain
@@ -98,21 +111,7 @@ jobs:
         with: { wild-version: "0.9.0" }
       - name: Build both commits
         shell: bash
-        run: |
-          set -euo pipefail
-          target="$RUNNER_TEMP/pair-target"
-          mkdir -p pair-bin
-          for side in base head; do
-            sha=$BASE; [[ $side == head ]] && sha=$HEAD
-            git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
-            git worktree add --detach "$RUNNER_TEMP/src-$side" "$sha"
-            (cd "$RUNNER_TEMP/src-$side" && rustc -Vv) > "pair-bin/$side-rustc.txt"
-            # One target directory: the second build recompiles only what differs.
-            (cd "$RUNNER_TEMP/src-$side" && CARGO_TARGET_DIR="$target" cargo build --profile ci-opt -p vize --bin vize)
-            mkdir -p "pair-bin/$side"
-            cp "$target/ci-opt/$PAIR_EXE" "pair-bin/$side/"
-          done
-          ls -l pair-bin/*
+        run: . "${{ env.VIZE_CI_FILES }}/build-both-commits.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pair-bin-${{ env.PAIR_OS }}
@@ -135,6 +134,8 @@ jobs:
     needs: build-linux
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 90
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/content-mapper-pair"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
@@ -148,70 +149,17 @@ jobs:
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
           REFERENCE: ${{ inputs.reference_mapper }}
-        run: |
-          set -euo pipefail
-          [[ "$SIZES" =~ ^[0-9]+(,[0-9]+)*$ ]] && [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
-          if ! /usr/bin/time --version 2>&1 | grep -qi 'GNU time'; then
-            sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends time
-          fi
-          chmod +x pair-bin/*/vize
-          reference=()
-          if [[ "$REFERENCE" == "true" ]]; then
-            npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund > /dev/null
-            hosts=tools/benchmarks/typecheck-hosts/node_modules
-            reference=(--reference "vue-mapper=$hosts/@vue/content-mapper/server.js" --typescript "$hosts/typescript")
-          fi
-          node tools/benchmarks/scripts/content-mapper-pair.ts \
-            --bin base=pair-bin/base/vize --bin head=pair-bin/head/vize "${reference[@]}" \
-            --root "$RUNNER_TEMP/pair" --sizes "$SIZES" --runs "$RUNS" $ALLOW \
-            --label linux-ext4 --out "$RUNNER_TEMP/pair-out" > /dev/null
-          cat "$RUNNER_TEMP/pair-out/pair-linux-ext4.md" >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/measure.sh"
       - name: Memory probe
         if: inputs.memory_probe
         env:
           SIZES: ${{ inputs.sizes }}
-        run: |
-          set -euo pipefail
-          size=$(echo "$SIZES" | tr "," "\n" | sort -n | tail -1)
-          project="$RUNNER_TEMP/pair/vue-$size"
-          stream="$RUNNER_TEMP/pair/stream-$size.bin"
-          bin="$PWD/pair-bin/head/vize"
-          probe() {
-            local label=$1; shift
-            local peaks=()
-            for _ in 1 2 3; do
-              (cd "$project" && env "$@" /usr/bin/time -f "%M %e %U %S" -o "$RUNNER_TEMP/mem.txt" "$bin" content-mapper < "$stream" > /dev/null)
-              peaks+=("$(cat "$RUNNER_TEMP/mem.txt")")
-            done
-            printf '%s\n' "${peaks[@]}" | sort -n | sed -n 2p | awk -v l="$label" '{ printf "| %s | %.1f | %.2f | %.2f |\n", l, $1 / 1024, $2, $3 + $4 }'
-          }
-          {
-            echo "### Linux burst memory probe ($size SFCs, head, median of 3, $(nproc) vCPUs)"
-            echo ""
-            echo "| variant | peak RSS MiB | wall s | CPU s |"
-            echo "|---|---|---|---|"
-            probe "all cores, default" X=1
-            for cores in 4 8 16; do probe "taskset $cores cores" X=1 taskset -c "0-$((cores - 1))"; done
-            probe "MIMALLOC_PURGE_DELAY=0" MIMALLOC_PURGE_DELAY=0
-            probe "MIMALLOC_ARENA_EAGER_COMMIT=0" MIMALLOC_ARENA_EAGER_COMMIT=0
-            probe "both mimalloc options" MIMALLOC_PURGE_DELAY=0 MIMALLOC_ARENA_EAGER_COMMIT=0
-            probe "THP never (madvise off)" MIMALLOC_ALLOW_LARGE_OS_PAGES=0
-            echo ""
-            cat /sys/kernel/mm/transparent_hugepage/enabled | sed 's/^/THP: /'
-          } | tee -a "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/memory-probe.sh"
       - name: Syscall census
         if: inputs.syscall_census
         env:
           SIZES: ${{ inputs.sizes }}
-        run: |
-          set -euo pipefail
-          sudo apt-get install -y --no-install-recommends strace > /dev/null
-          size=$(echo "$SIZES" | tr "," "\n" | sort -n | head -1)
-          node tools/benchmarks/scripts/content-mapper-census.ts \
-            --bin base=pair-bin/base/vize --bin head=pair-bin/head/vize \
-            --project "$RUNNER_TEMP/pair/vue-$size" --stream "$RUNNER_TEMP/pair/stream-$size.bin" \
-            --label "linux-ext4, $size SFCs" --out "$RUNNER_TEMP/pair-out/census.md" > /dev/null
-          cat "$RUNNER_TEMP/pair-out/census.md" >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/syscall-census.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with: { name: pair-linux, path: "${{ runner.temp }}/pair-out/", if-no-files-found: warn }
@@ -221,6 +169,8 @@ jobs:
     # WSL2 needs nested virtualization; Blacksmith Windows runners lack it.
     runs-on: windows-2025
     timeout-minutes: 150
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/content-mapper-pair"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
@@ -234,25 +184,12 @@ jobs:
         with: { name: pair-bin-linux, path: pair-bin }
       - name: Resolve the Windows mount
         shell: pwsh
-        run: |
-          $windowsPath = [System.IO.Path]::GetFullPath($env:RUNNER_TEMP)
-          $drive = $windowsPath.Substring(0, 1).ToLowerInvariant()
-          $tail = $windowsPath.Substring(2).Replace('\', '/')
-          $mount = "/mnt/$drive$tail"
-          wsl.exe test -d $mount
-          if ($LASTEXITCODE -ne 0) { throw "WSL mount is unavailable: $mount" }
-          "WSL_MOUNT_ROOT=$mount/vize-pair" | Out-File -FilePath $env:GITHUB_ENV -Append
+        run: . "${{ env.VIZE_CI_FILES }}/resolve-the-windows-mount.ps1"
       - name: Install Node 24 in WSL2
         shell: wsl-bash {0}
-        run: |
-          set -euo pipefail
-          version=24.14.0
-          curl -fsSLO "https://nodejs.org/dist/v$version/node-v$version-linux-x64.tar.xz"
-          curl -fsSLO "https://nodejs.org/dist/v$version/SHASUMS256.txt"
-          grep " node-v$version-linux-x64.tar.xz$" SHASUMS256.txt | sha256sum --check
-          tar -xJf "node-v$version-linux-x64.tar.xz" -C /usr/local --strip-components=1
-          node --version
-          uname -a
+        run: . "$VIZE_CI_FILES/install-node-24-in-wsl2.sh"
+        env:
+          WSLENV: "VIZE_CI_FILES/p"
       - name: Measure ext4 and the Windows mount
         shell: wsl-bash {0}
         env:
@@ -260,32 +197,8 @@ jobs:
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
           REFERENCE: ${{ inputs.reference_mapper }}
-          WSLENV: SIZES/u:RUNS/u:ALLOW/u:REFERENCE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u
-        run: |
-          set -euo pipefail
-          [[ "$SIZES" =~ ^[0-9]+(,[0-9]+)*$ ]] && [[ "$RUNS" =~ ^[1-9][0-9]?$ ]]
-          # Binaries run from ext4 in both cells; only the project location differs.
-          bin="$HOME/pair-bin"
-          mkdir -p "$bin/base" "$bin/head" "$WSL_MOUNT_ROOT"
-          cp pair-bin/base/vize "$bin/base/vize" && cp pair-bin/head/vize "$bin/head/vize"
-          chmod +x "$bin"/*/vize
-          summary_path=$(wslpath "$GITHUB_STEP_SUMMARY")
-          reference=()
-          if [[ "$REFERENCE" == "true" ]]; then
-            # Install on ext4: a node_modules on the Windows mount would also time 9P module loading.
-            mkdir -p "$HOME/hosts"
-            cp tools/benchmarks/typecheck-hosts/package.json tools/benchmarks/typecheck-hosts/package-lock.json "$HOME/hosts/"
-            npm ci --prefix "$HOME/hosts" --ignore-scripts --no-audit --no-fund > /dev/null
-            reference=(--reference "vue-mapper=$HOME/hosts/node_modules/@vue/content-mapper/server.js" --typescript "$HOME/hosts/node_modules/typescript")
-          fi
-          for entry in "wsl2-ext4=$HOME/vize-pair" "wsl2-windows-mount=$WSL_MOUNT_ROOT/projects"; do
-            label=${entry%%=*}
-            node tools/benchmarks/scripts/content-mapper-pair.ts \
-              --bin "base=$bin/base/vize" --bin "head=$bin/head/vize" "${reference[@]}" \
-              --root "${entry#*=}" --sizes "$SIZES" --runs "$RUNS" $ALLOW \
-              --label "$label" --out "$WSL_MOUNT_ROOT/out" > /dev/null
-            cat "$WSL_MOUNT_ROOT/out/pair-$label.md" >> "$summary_path"
-          done
+          WSLENV: "SIZES/u:RUNS/u:ALLOW/u:REFERENCE/u:WSL_MOUNT_ROOT/u:GITHUB_STEP_SUMMARY/u:VIZE_CI_FILES/p"
+        run: . "$VIZE_CI_FILES/measure-ext4-and-the-windows-mount.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -297,6 +210,8 @@ jobs:
     needs: build-windows
     runs-on: blacksmith-32vcpu-windows-2025
     timeout-minutes: 90
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/content-mapper-pair"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
@@ -311,57 +226,13 @@ jobs:
           RUNS: ${{ inputs.runs }}
           ALLOW: ${{ inputs.allow_output_change && '--allow-output-change' || '' }}
           REFERENCE: ${{ inputs.reference_mapper }}
-        run: |
-          if ($env:SIZES -notmatch '^[0-9]+(,[0-9]+)*$' -or $env:RUNS -notmatch '^[1-9][0-9]?$') { throw "invalid inputs" }
-          $out = Join-Path $env:RUNNER_TEMP 'pair-out'
-          $extra = @(); if ($env:ALLOW) { $extra += $env:ALLOW }
-          if ($env:REFERENCE -eq 'true') {
-            npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund | Out-Null
-            if ($LASTEXITCODE -ne 0) { throw "hosts install failed" }
-            $hosts = "$PWD\tools\benchmarks\typecheck-hosts\node_modules"
-            $extra += @('--reference', "vue-mapper=$hosts\@vue\content-mapper\server.js", '--typescript', "$hosts\typescript")
-          }
-          node tools/benchmarks/scripts/content-mapper-pair.ts `
-            --bin "base=$PWD\pair-bin\base\vize.exe" --bin "head=$PWD\pair-bin\head\vize.exe" `
-            --root (Join-Path $env:RUNNER_TEMP 'pair') --sizes $env:SIZES --runs $env:RUNS @extra `
-            --label windows-ntfs --out $out | Out-Null
-          if ($LASTEXITCODE -ne 0) { throw "pair failed" }
-          Get-Content (Join-Path $out 'pair-windows-ntfs.md') | Add-Content $env:GITHUB_STEP_SUMMARY
+        run: . "${{ env.VIZE_CI_FILES }}/measure.ps1"
       - name: Probe Windows burst costs
         if: inputs.windows_probe
         shell: pwsh
         env:
           SIZES: ${{ inputs.sizes }}
-        run: |
-          $size = ($env:SIZES -split ',' | ForEach-Object { [int]$_ } | Measure-Object -Maximum).Maximum
-          $root = Join-Path $env:RUNNER_TEMP 'pair'
-          $project = Join-Path $root "vue-$size"
-          $stream = Join-Path $root "stream-$size.bin"
-          $out = Join-Path $root 'probe.out'
-          $exe = "$PWD\pair-bin\head\vize.exe"
-          $defender = $null -ne (Get-Command Get-MpComputerStatus -ErrorAction SilentlyContinue) -and
-            $null -ne (Get-MpComputerStatus -ErrorAction SilentlyContinue)
-          "Defender available: $defender" | Write-Output
-          function Median([scriptblock]$run) {
-            $samples = foreach ($i in 1..5) {
-              $w = [System.Diagnostics.Stopwatch]::StartNew(); & $run; $w.Stop(); $w.Elapsed.TotalMilliseconds
-            }
-            [math]::Round(($samples | Sort-Object)[2])
-          }
-          function StartProcess([string]$target) {
-            Start-Process -FilePath $exe -ArgumentList 'content-mapper' -WorkingDirectory $project `
-              -RedirectStandardInput $stream -RedirectStandardOutput $target -NoNewWindow -Wait
-          }
-          $rows = @("### Windows burst probe ($size SFCs, head, median of 5)", '', '| launch | stdout | wall ms |', '|---|---|---|')
-          $rows += "| Start-Process redirect | file | $(Median { StartProcess $out }) |"
-          $rows += "| Start-Process redirect | NUL | $(Median { StartProcess 'NUL' }) |"
-          if ($defender) {
-            Add-MpPreference -ExclusionPath $root, (Split-Path $exe)
-            Start-Sleep -Seconds 2
-            $rows += "| Start-Process redirect, Defender exclusion | file | $(Median { StartProcess $out }) |"
-          }
-          $rows | Write-Output
-          $rows + '' | Add-Content $env:GITHUB_STEP_SUMMARY
+        run: . "${{ env.VIZE_CI_FILES }}/probe-windows-burst-costs.ps1"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with: { name: pair-windows, path: "${{ runner.temp }}/pair-out/", if-no-files-found: warn }

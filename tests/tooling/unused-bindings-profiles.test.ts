@@ -1,3 +1,5 @@
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
+import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import {
   mkdtempSync,
@@ -80,7 +82,7 @@ await test("equal output still requires both debug detectors and the actual corp
 
 await test("the controlled comparison is manual-only and retains the real seeded CLI recall", () => {
   const workflow = parse(
-    readFileSync(
+    readAutomationPrograms(
       new URL("../../.github/workflows/davinci-unused-bindings.yml", import.meta.url),
       "utf8",
     ),
@@ -320,7 +322,7 @@ await test("unhashed, missing and escaped unit evidence stays explicitly unavail
 
 await test("tee preserves Cargo success/failure and partial raw output without invoking real Cargo", () => {
   const workflow = parse(
-    readFileSync(
+    readAutomationPrograms(
       new URL("../../.github/workflows/davinci-unused-bindings.yml", import.meta.url),
       "utf8",
     ),
@@ -336,10 +338,14 @@ await test("tee preserves Cargo success/failure and partial raw output without i
           "bash",
           [
             "-e",
-            "-c",
-            `cargo() { printf '%s\\n' '{"reason":"compiler-artifact","filenames":[]}'; return ${status}; };\n${script}`,
+            fileURLToPath(new URL("./programs/capture-cargo-status.sh", import.meta.url)),
+            automationShellPath(script!, "davinci-unused-bindings"),
           ],
-          { cwd: root, encoding: "utf8" },
+          {
+            cwd: root,
+            encoding: "utf8",
+            env: { ...process.env, MOCK_CARGO_STATUS: String(status) },
+          },
         );
         assert.equal(result.status, status, result.stderr);
         if (name.startsWith("Check"))

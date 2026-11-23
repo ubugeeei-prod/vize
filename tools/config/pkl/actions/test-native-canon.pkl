@@ -1,0 +1,11 @@
+name = "Test native typechecker product laws"
+description = "Require native snapshot ownership, projection ranges and syntax/semantic completion"
+runs {
+  using = "composite"
+  steps = new Listing {
+    ...import("../parts/test-native-canon/snapshots.pkl").steps
+    ...import("../parts/test-native-canon/vue-projects.pkl").steps
+    ...import("../parts/test-native-canon/cli-diagnostics.pkl").steps
+    ...import("../parts/test-native-canon/beta-editor.pkl").steps
+  }
+}

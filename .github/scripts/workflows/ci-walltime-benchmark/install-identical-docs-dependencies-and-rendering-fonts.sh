@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+node tools/support/github/vp-install.ts --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends fonts-noto-cjk

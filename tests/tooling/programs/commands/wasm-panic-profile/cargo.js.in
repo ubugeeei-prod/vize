@@ -1,0 +1,9 @@
+require("node:fs").writeFileSync(
+  @@RECORD@@,
+  JSON.stringify({
+    panic: process.env.CARGO_PROFILE_RELEASE_PANIC,
+    flags: process.env.RUSTFLAGS,
+    args: process.argv.slice(2),
+  }),
+);
+process.exit(17);

@@ -1,0 +1,30 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  qualification="$GITHUB_WORKSPACE/target/differential/attribute-entity-qualification-8142/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+  mkdir -p "$qualification/croquis"
+  coordinates=target/differential/slot-declaration-physical-8142
+  if [[ -d "$coordinates" ]]; then
+    mv "$coordinates" "$qualification/croquis/preexisting-packets"
+  fi
+  set +e
+  cargo test --locked --profile ci -p vize_croquis --lib \
+    drawer::template::slot_scope_tests:: -- --nocapture 2>&1 | tee "$qualification/croquis/cargo.log"
+  pipeline_status=("${PIPESTATUS[@]}")
+  test_status=${pipeline_status[0]}
+  capture_status=${pipeline_status[1]}
+  set -e
+  printf '%s\n' "$test_status" > "$qualification/croquis/status.txt"
+  printf '%s\n' "$capture_status" > "$qualification/croquis/capture-status.txt"
+  if [[ -d "$coordinates" ]]; then
+    mv "$coordinates" "$qualification/croquis/packets"
+  fi
+  if [[ "$capture_status" != 0 ]]; then
+    exit "$capture_status"
+  fi
+  exit "$test_status"
+  """#
+}

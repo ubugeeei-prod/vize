@@ -1,0 +1,24 @@
+amends "../../../../PackageTasks.pkl"
+
+tasks {
+  ["build"] {
+    module.run("vp", List("pack"))
+    module.run("node", List("scripts/assert-root-import-graph.ts"))
+    module.run("vp", List("build", "--config", "gallery-vite.config.ts"))
+  }
+  ["test"] {
+    module.run("pnpm", List("--dir", "../vite", "build"))
+    (module.run("vp", List(
+      "exec",
+      "tsx",
+      "--test",
+      "--test-reporter=spec",
+      "--test-reporter=tap",
+      "--test-reporter-destination=stdout",
+      "--test-reporter-destination=stderr",
+      "src/*.test.ts",
+      "src/**/*.test.ts",
+      "gallery/components/*.test.ts",
+    ))) { globs = Set("src/*.test.ts", "src/**/*.test.ts", "gallery/components/*.test.ts") }
+  }
+}

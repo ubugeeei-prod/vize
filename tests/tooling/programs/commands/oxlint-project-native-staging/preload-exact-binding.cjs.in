@@ -1,0 +1,15 @@
+preloadProjectNative(custody);
+const first = require(custody.wrapper.path),
+  second = require(custody.wrapper.path);
+assert.equal(first, second);
+assert.equal(first, require.cache[custody.binary.path].exports);
+assert.deepEqual(first, { authoredImage: true });
+assert.equal(process.env.NAPI_RS_NATIVE_LIBRARY_PATH, undefined);
+const { spawnSync } = require("node:child_process");
+const host = spawnSync(process.execPath, [@@CHILD_PROGRAM@@], {
+  encoding: "utf8",
+  timeout: 3000,
+});
+assert.equal(host.status, 0);
+assert.equal(host.stdout, "null");
+assert.equal(host.stderr, "");

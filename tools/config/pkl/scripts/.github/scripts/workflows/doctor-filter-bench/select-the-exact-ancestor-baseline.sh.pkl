@@ -1,0 +1,13 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  module.requireCommitShas(List("REQUESTED_BASE"))
+  module.requireCommitShas(List("HEAD_SHA"))
+  #"""
+  git -C head merge-base --is-ancestor "$REQUESTED_BASE" "$HEAD_SHA"
+  echo "BASE_SHA=$(git -C head merge-base "$REQUESTED_BASE" "$HEAD_SHA")" >> "$GITHUB_ENV"
+  """#
+}

@@ -1,0 +1,12 @@
+#!@@NODE@@
+const fs = require("node:fs");
+const {
+  VIZE_DAVINCI_DIFFERENTIAL_CORPUS: corpus,
+  VIZE_VUE_RUNTIME_PRODUCTION: production,
+  VIZE_TEST_REQUIRE_TSGO: tsgo,
+} = process.env;
+fs.appendFileSync(
+  process.env.COMMAND_LOG,
+  JSON.stringify({ args: process.argv.slice(2), corpus, production, tsgo }) + "\n",
+);
+if (process.argv.includes(process.env.FAIL_TARGET)) process.exit(42);

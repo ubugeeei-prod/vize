@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+npm install --prefix "$RUNNER_TEMP/checked-ts" --ignore-scripts --no-audit --no-fund --save-exact typescript@6.0.3
+export NODE_PATH="$RUNNER_TEMP/checked-ts/node_modules"
+export VIZE_LITERAL_INPUTS="$RUNNER_TEMP/original-ts-paths" VIZE_LITERAL_OUTPUT="$RUNNER_TEMP/original-scripts.jsonl"
+export VIZE_LITERAL_HOVERS="$RUNNER_TEMP/original-hovers.json"
+git ls-files -z -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.vue' '*.vue.txt' > "$VIZE_LITERAL_INPUTS"
+flags=(--locked --profile ci-opt --lib)
+for feature in vize_l2/literal-assignments vize_canon/verified-literal-assignments vize_patina/verified-prefer-const vize_maestro/experimental-literal-products; do
+  cargo clippy "${flags[@]}" -p "${feature%%/*}" --features "${feature#*/}" --no-deps -- -D warnings
+done
+cargo test "${flags[@]}" -p vize_l2 --features literal-assignments query::script::assignments::
+cargo test "${flags[@]}" -p vize_maestro --features experimental-literal-products,micro-profiling source_project::literal_products:: -- --include-ignored --nocapture --test-threads=1
+node tools/support/compat/davinci/primitive-assignments-oracle.ts "$VIZE_LITERAL_OUTPUT"

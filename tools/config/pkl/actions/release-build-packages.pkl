@@ -1,0 +1,62 @@
+import "../Actions.pkl" as ci
+
+name = "Build release npm packages"
+description = "Build the JS npm packages and upload them as one npm-packages artifact rooted at npm/"
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Setup Vite+ and Node.js"
+      uses = ci.setupVp
+      with {
+        `node-version-file` = "package.json"
+        cache = true
+        `run-install` = false
+      }
+    }
+    ci.use("./.github/actions/setup-rust-script")
+    new Dynamic {
+      name = "Install package build dependencies"
+      shell = "bash"
+      run = "node tools/support/github/vp-install.ts --filter './npm/cli...' --filter './npm/create-fresco...' --filter './npm/builder/vite...' --filter './npm/linter/oxlint...' --filter './npm/builder/unplugin...' --filter './npm/fresco...' --filter './npm/mcp-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/rspack...' --filter './npm/framework/musea-nuxt...' --filter './npm/framework/nuxt-lint-config...' --filter './npm/framework/nuxt...' --filter './npm/marquette...' --filter './npm/compose/core...' --filter './npm/compose/router...' --filter './npm/compose/data...' --filter './npm/ui...' --filter './npm/builder/babel...'"
+    }
+    new Dynamic {
+      name = "Build release npm packages"
+      shell = "bash"
+      run = "node tools/support/github/run-many.ts vp run --filter './npm/cli' build -- vp run --filter './npm/create-fresco' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/linter/oxlint' build -- vp run --filter './npm/builder/unplugin' build -- vp run --filter './npm/fresco' build -- vp run --filter './npm/mcp-musea' build -- vp run --filter './npm/builder/vite-musea' build -- vp run --filter './npm/builder/vite-musea' build:gallery -- vp run --filter './npm/builder/rspack' build -- vp run --filter './npm/framework/musea-nuxt' build -- vp run --filter './npm/framework/nuxt-lint-config' build -- vp run --filter './npm/framework/nuxt' build -- vp run --filter './npm/marquette' build -- vp run --filter './npm/compose/core' build -- vp run --filter './npm/compose/router' build -- vp run --filter './npm/compose/data' build -- vp run --filter './npm/ui' build -- vp run --filter './npm/builder/babel' build"
+    }
+    // Paths share the npm/ root, so downloading into npm/ restores every package in place.
+    new Dynamic {
+      name = "Upload npm packages"
+      uses = ci.uploadArtifact
+      with {
+        name = "npm-packages"
+        path = """
+        npm/cli
+        npm/create-fresco
+        npm/builder/vite
+        npm/linter/oxlint
+        npm/builder/unplugin
+        npm/fresco
+        npm/mcp-musea
+        npm/builder/vite-musea
+        npm/builder/rspack
+        npm/framework/musea-nuxt
+        npm/framework/nuxt-lint-config
+        npm/framework/nuxt
+        npm/marquette
+        npm/compose/core
+        npm/compose/router
+        npm/compose/data
+        npm/ui
+        npm/plugin-sdk
+        npm/builder/babel
+        !npm/**/node_modules
+
+        """
+        `if-no-files-found` = "error"
+        `compression-level` = 1
+      }
+    }
+  }
+}

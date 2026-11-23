@@ -1,9 +1,8 @@
+import { readAutomationPrograms } from "../support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
-
-import { readRepoFile } from "../support/github-workflows.ts";
 
 type Step = { uses?: string; with?: Record<string, unknown> };
 type Job = {
@@ -23,7 +22,7 @@ type CratePublicationFacts = {
   version?: string;
 };
 
-const release = parse(readRepoFile(".github", "workflows", "release.yml")) as {
+const release = parse(readAutomationPrograms(".github", "workflows", "release.yml")) as {
   jobs: Record<string, Job>;
 };
 

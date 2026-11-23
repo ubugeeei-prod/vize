@@ -1,0 +1,17 @@
+const args = process.argv.slice(2);
+if (args.includes("--version")) {
+  console.log("Version: 1.78.0");
+  process.exit(0);
+}
+if (args.includes("--debug")) {
+  console.log(args.at(-1));
+  process.exit(0);
+}
+if (args.some((arg) => arg.includes("oxlint-vize-original-"))) {
+  process.stdout.write(@@ORIGINAL_STDOUT@@);
+  process.stderr.write("whole original stderr\n");
+  process.exit(@@METADATA_STATUS@@);
+}
+process.stdout.write(@@BRIDGE_STDOUT@@);
+process.stderr.write("authored bridge failure\n");
+process.exit(@@BRIDGE_STATUS@@);

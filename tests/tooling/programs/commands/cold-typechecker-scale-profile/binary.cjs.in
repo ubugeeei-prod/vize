@@ -1,0 +1,5 @@
+#!@@NODE@@
+const fs = require("node:fs");
+if (!fs.existsSync("tsconfig.json")) throw Error("fixture must precede perf");
+fs.writeFileSync(process.env.TMPDIR + "/checker-ran", "yes");
+console.log(JSON.stringify({ fileCount: 2000, errorCount: 0, warningCount: 0, files: [] }));

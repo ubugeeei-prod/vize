@@ -1,0 +1,23 @@
+#!@@NODE@@
+const fs = require("node:fs"),
+  assert = require("node:assert/strict");
+if (process.argv[2] === "--version") {
+  console.log("vize 0.0.0-dev");
+  process.exit(0);
+}
+for (const [file, bytes] of @@EXPECTED_FILES@@)
+  assert.deepEqual(fs.readFileSync(file), Buffer.from(bytes, "base64"));
+assert.deepEqual(fs.readdirSync(".").sort(), ["Layout.vue", "src", "tsconfig.json"]);
+fs.mkdirSync("out");
+fs.writeFileSync(
+  "out/Layout.json",
+  JSON.stringify({
+    filename: "Layout.vue",
+    code: @@EXPECTED_TO_STRING@@,
+    css: null,
+    errors: [],
+    warnings: [],
+    script_lang: "ts",
+    macro_artifacts: [],
+  }),
+);

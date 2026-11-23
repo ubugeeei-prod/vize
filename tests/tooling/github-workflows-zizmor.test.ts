@@ -1,3 +1,4 @@
+import { auditRequired } from "../../.github/actions/plan-workflow-audit/plan.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { Script } from "node:vm";
@@ -101,15 +102,24 @@ test("zizmor plans with read-only API calls and no candidate checkout", () => {
   const plan = workflow.jobs.plan;
   assert.equal(plan["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
   assert.equal(plan["timeout-minutes"], 5);
-  assert.deepEqual(plan.permissions, { "pull-requests": "read" });
-  assert.deepEqual(plan.outputs, { audit: "${{ steps.plan.outputs.audit }}" });
-  assert.equal(plan.steps.length, 1);
-  assert.equal(plan.steps[0].id, "plan");
+  assert.deepEqual(plan.permissions, { contents: "read", "pull-requests": "read" });
+  assert.equal(plan.outputs.audit, "${{ steps.plan.outputs.audit || 'true' }}");
+  assert.equal(plan.steps.length, 2);
+  const [checkout, select] = plan.steps;
+  assert.equal(checkout.uses, "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd");
+  assert.equal(checkout.if, "github.event_name == 'pull_request'");
+  assert.deepEqual(checkout.with, {
+    ref: "${{ github.event.pull_request.base.sha }}",
+    "persist-credentials": false,
+    "sparse-checkout-cone-mode": false,
+    "sparse-checkout": "/.github/actions/plan-workflow-audit/",
+  });
+  assert.equal(select.id, "plan");
+  assert.equal(select.uses, "./.github/actions/plan-workflow-audit");
   assert.equal(
-    plan.steps[0].uses,
-    "actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd",
+    select.if,
+    "github.event_name == 'pull_request' && hashFiles('.github/actions/plan-workflow-audit/action.yml') != ''",
   );
-  assert.doesNotMatch(plan.steps[0].with.script, /require\(|import\(|exec\(|spawn\(/);
 });
 
 test("a failed or incomplete audit plan cannot skip the scanner", () => {
@@ -150,10 +160,6 @@ type SelectionCase = {
 };
 
 async function runSelector(options: SelectionCase = {}) {
-  const workflow = parse(readRepoFile(".github", "workflows", "zizmor.yml"));
-  const script = workflow.jobs.plan.steps[0].with.script as string;
-  const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
-  const select = new AsyncFunction("context", "github", "core", script);
   const head = "a".repeat(40);
   const files = options.files ?? [{ filename: "davinci/vize_l1/src/lib.rs" }];
   const changedFiles = options.changedFiles ?? files.length;
@@ -172,51 +178,33 @@ async function runSelector(options: SelectionCase = {}) {
     },
   };
   const warnings: string[] = [];
-  const outputs: Record<string, string> = {};
   let requests = 0;
   let listed = false;
-  await select(
-    context,
+  const audit = await auditRequired(
+    context.eventName,
+    `${context.repo.owner}/${context.repo.repo}`,
+    context.payload.pull_request,
     {
-      rest: {
-        pulls: {
-          get: async () => {
-            requests++;
-            if (options.apiFailure === "get") throw new Error("GitHub API unavailable");
-            return {
-              data: {
-                head: {
-                  sha: requests === 1 ? (options.beforeHead ?? head) : (options.afterHead ?? head),
-                },
-                changed_files:
-                  requests === 1 ? changedFiles : (options.afterChangedFiles ?? changedFiles),
-              },
-            };
+      async snapshot() {
+        requests++;
+        if (options.apiFailure === "get") throw new Error("GitHub API unavailable");
+        return {
+          head: {
+            sha: requests === 1 ? (options.beforeHead ?? head) : (options.afterHead ?? head),
           },
-          listFiles: () => {},
-        },
+          changed_files:
+            requests === 1 ? changedFiles : (options.afterChangedFiles ?? changedFiles),
+        };
       },
-      paginate: async (_method: unknown, args: Record<string, unknown>) => {
-        assert.deepEqual(args, {
-          owner: "ubugeeei-prod",
-          repo: "vize",
-          pull_number: 42,
-          per_page: 100,
-        });
+      async files() {
         listed = true;
         if (options.apiFailure === "paginate") throw new Error("File API unavailable");
         return files;
       },
     },
-    {
-      setOutput: (name: string, value: string) => {
-        outputs[name] = value;
-      },
-      warning: (message: string) => warnings.push(message),
-      summary: { addRaw: () => ({ write: async () => {} }) },
-    },
+    (warning) => warnings.push(warning),
   );
-  return { audit: outputs.audit, warnings, requests, listed };
+  return { audit: String(audit), warnings, requests, listed };
 }
 
 test("only complete, unchanged maintainer source PRs skip zizmor", async () => {

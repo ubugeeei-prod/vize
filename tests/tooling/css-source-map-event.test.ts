@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -98,7 +99,10 @@ await test("the actual dedicated workflow checks event source and retains role p
   const root = fileURLToPath(new URL("../../", import.meta.url)),
     { parse } = createRequire(import.meta.url)("yaml");
   const workflow = parse(
-    fs.readFileSync(path.join(root, ".github/workflows/css-compile-source-maps.yml"), "utf8"),
+    readAutomationPrograms(
+      path.join(root, ".github/workflows/css-compile-source-maps.yml"),
+      "utf8",
+    ),
   );
   assert.equal(workflow.env.VIZE_CSS_MAP_SOURCE_SHA, "${{ github.sha }}");
   assert.equal(

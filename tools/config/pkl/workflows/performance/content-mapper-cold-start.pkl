@@ -1,0 +1,96 @@
+import "../../Actions.pkl" as ci
+
+name = "Content Mapper Cold Start"
+
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/content-mapper-cold-start.yml"
+      ".github/scripts/workflows/content-mapper-cold-start/**"
+      "crates/vize/Cargo.toml"
+      "crates/vize/tests/content_mapper_tsgo_cli/memo_expression.rs"
+      "tests/tooling/content-mapper-process-receipt.test.ts"
+      "tools/support/compat/content-mapper/process-receipt.ts"
+      "tools/support/release/type-admission-mapper-host.ts"
+    }
+  }
+  // Still the full qualification of every main commit (no paths), but post-merge:
+  // not a required check, so a queue run gated nothing while it competed with
+  // every queue entry for runners. cancel-in-progress coalesces merge bursts.
+  push {
+    branches = List("main")
+  }
+  workflow_dispatch = null
+}
+concurrency {
+  group = "content-mapper-cold-start-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+permissions { contents = "read" }
+
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+
+jobs {
+  `macos-arm64` {
+    `runs-on` = ci.macos
+    `timeout-minutes` = 20
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/content-mapper-cold-start"
+    }
+    steps = new Listing {
+      new Dynamic {
+        name = "Checkout source"
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        name = "Setup Rust"
+        uses = ci.setupRust
+        with { toolchain = "stable" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "content-mapper-cold-start"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Setup Vite Plus"
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          cache = true
+          `run-install` = true
+        }
+      }
+      new Dynamic {
+        name = "Prepare the exact macOS Content Mapper host"
+        run = #". "${{ env.VIZE_CI_FILES }}/prepare-the-exact-macos-content-mapper-host.sh""#
+      }
+      new Dynamic {
+        name = "Capture the first post-build mapper process"
+        run = "cargo test --locked -p vize --test integration -- content_mapper_tsgo_cli::memo_expression::memo_dependencies_check_members_and_preserve_unused_controls --exact --nocapture --test-threads=1"
+      }
+      new Dynamic {
+        name = "Upload mapper process and provider receipts"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "content-mapper-cold-start-${{ github.sha }}-${{ github.run_attempt }}"
+          path = """
+          ${{ runner.temp }}/cold-content-mapper-receipts/
+          ${{ runner.temp }}/cold-content-mapper-host-proof/
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

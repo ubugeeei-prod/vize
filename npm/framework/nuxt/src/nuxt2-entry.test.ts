@@ -162,22 +162,14 @@ void test("packed Nuxt module uses a jiti-safe require entry and keeps the ESM e
 
     // Neither entry may load unused Vite APIs when a Vue 2 host owns compilation.
     // Vite 7 (used by Nuxt Bridge) has no parseSync export.
+    const probe = path.join(fixtureRoot, "load-nuxt.mjs");
+    fs.copyFileSync(new URL("../test/load-nuxt.js", import.meta.url), probe);
     const esmProbe = JSON.parse(
-      execFileSync(
-        process.execPath,
-        [
-          "--input-type=module",
-          "--eval",
-          [
-            'const loaded = await import("@vizejs/nuxt");',
-            "process.stdout.write(JSON.stringify({",
-            "  type: typeof loaded.default,",
-            `  viteLoads: globalThis[${JSON.stringify(viteLoadMarker)}],`,
-            "}));",
-          ].join("\n"),
-        ],
-        { cwd: fixtureRoot, encoding: "utf8", timeout: SUBPROCESS_TIMEOUT_MS },
-      ),
+      execFileSync(process.execPath, [probe, viteLoadMarker], {
+        cwd: fixtureRoot,
+        encoding: "utf8",
+        timeout: SUBPROCESS_TIMEOUT_MS,
+      }),
     ) as { type?: string; viteLoads?: number };
     assert.deepEqual(esmProbe, { type: "function" });
     delete (globalThis as Record<string, unknown>)[viteLoadMarker];

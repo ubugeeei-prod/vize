@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -151,7 +152,7 @@ test("source changes and runtime witnesses require the executable native carrier
   ])
     assert(planNativeRuntime([path]).matrix.lane.includes("selected-template"), path);
   const action = parse(
-    readFileSync(
+    readAutomationPrograms(
       new URL("../../.github/actions/test-native-selected-template/action.yml", import.meta.url),
       "utf8",
     ),

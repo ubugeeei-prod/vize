@@ -1,0 +1,24 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  mkdir -p allocation-evidence
+  git rev-parse HEAD > allocation-evidence/head.sha
+  git cat-file commit HEAD > allocation-evidence/head.commit
+  node "$VIZE_CI_FILES/../shared/first-parent.ts" allocation-evidence/head.commit write allocation-evidence/base.sha
+  allocation_base_sha=$(cat allocation-evidence/base.sha)
+  [[ "$allocation_base_sha" =~ ^[0-9a-f]{40}$ ]]
+  if [[ "$EVENT_KIND" == workflow_dispatch ]]; then test "$allocation_base_sha" = "$DECLARED_BASE_SHA"; fi
+  git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$allocation_base_sha"
+  git worktree add --detach "$RUNNER_TEMP/recovery-allocation-base" "$allocation_base_sha"
+  test "$(git -C "$RUNNER_TEMP/recovery-allocation-base" rev-parse HEAD)" = "$allocation_base_sha"
+  cp davinci/vize_l0/examples/source_recovery_clone_benchmark.rs "$RUNNER_TEMP/recovery-allocation-base/davinci/vize_l0/examples/"
+  git diff --name-status "$allocation_base_sha" HEAD > allocation-evidence/source-diff.txt
+  rustc +1.100.0 -vV > allocation-evidence/rustc.txt
+  lscpu > allocation-evidence/cpu.txt
+  node "$VIZE_CI_FILES/record-allocation-pair.ts"
+  """#
+}

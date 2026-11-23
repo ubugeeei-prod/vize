@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+unset NAPI_RS_NATIVE_LIBRARY_PATH
+node qualification/tools/support/cross_file/async_component/verify.ts target/ci/vize npm/native/index.js target/vize-tests/async-component ${VIZE_MATRIX_ROLE} "$SOURCE_SHA" "$EXPECTED_TOKEN"

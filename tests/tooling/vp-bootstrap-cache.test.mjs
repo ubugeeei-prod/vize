@@ -1,5 +1,6 @@
+import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
@@ -11,7 +12,7 @@ import {
 import { plannedRunner, plannedRunnerJobs } from "./support/planned-runner.ts";
 
 const root = new URL("../../", import.meta.url);
-const workflow = (path) => parse(readFileSync(new URL(path, root), "utf8"));
+const workflow = (path) => parse(readAutomationPrograms(new URL(path, root)));
 
 void test("bootstrap caches rotate daily with compatible pinned-runtime fallback", () => {
   const version = "24.14.0";
@@ -303,10 +304,15 @@ void test("one trusted main producer owns the selected Linux source dependency-s
     assert.equal(runInNewContext(producer.if, { github: { event_name, ref } }), expected);
 
   const commands = producer.steps.map((step) => step.run ?? "").join("\n");
-  assert.match(commands, /assert\.equal\(process\.platform, 'linux'\)/);
-  assert.match(commands, /assert\.equal\(process\.arch, 'x64'\)/);
-  assert.match(commands, /process\.versions\.node, manifest\.devEngines\.runtime\.version/);
-  assert.match(commands, /rev-parse.*HEAD.*process\.env\.GITHUB_SHA/);
+  const identity = workflowProgram(
+    "rust-pr-target-seed",
+    commands,
+    "require-the-source-and-runtime-identity-used-by-rust-workers.ts",
+  );
+  assert.match(identity, /assert\.equal\(process\.platform, "linux"\)/);
+  assert.match(identity, /assert\.equal\(process\.arch, "x64"\)/);
+  assert.match(identity, /process\.versions\.node, manifest\.devEngines\.runtime\.version/);
+  assert.match(identity, /rev-parse.*HEAD[\s\S]*process\.env\.GITHUB_SHA/);
   const final = producer.steps.at(-1);
   assert.equal(final.if, undefined, "failed identity validation must stop the producer");
   assert.equal(final["continue-on-error"], undefined);

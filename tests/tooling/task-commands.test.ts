@@ -29,7 +29,12 @@ function workspace(t: TestContext) {
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const bin = path.join(root, "bin");
   const log = path.join(root, "calls.log");
-  return { root, bin, log, env: { PATH: pathWith(bin), SDKROOT: "sdk", RUSTFLAGS: undefined } };
+  return {
+    root,
+    bin,
+    log,
+    env: { PATH: pathWith(bin), SDKROOT: "sdk", RUSTFLAGS: undefined, LIBRARY_PATH: undefined },
+  };
 }
 
 void test("WASM flags, caches and macOS SDK paths follow the inherited environment", () => {
@@ -63,7 +68,7 @@ void test("the macOS SDK falls back from xcrun to the standard install locations
   const candidate = path.join(root, "MacOSX.sdk");
   fs.mkdirSync(candidate);
   writeRecordingCommand(bin, "xcrun", log, {
-    script: "if (process.argv.includes('--sdk')) process.exit(1);",
+    hook: { name: "reject-sdk-lookup", args: [] },
     stdout: "  /from/xcrun \n",
   });
   const originalPath = process.env.PATH;
@@ -94,7 +99,7 @@ void test("the macOS SDK falls back from xcrun to the standard install locations
 void test("build-vitrine-wasm installs the pinned bindgen once and binds into the output", (t) => {
   const { root, bin, log, env } = workspace(t);
   writeRecordingCommand(bin, "cargo", log, {
-    script: `if (process.argv[2] === 'install') { const p = require('node:path').join(process.argv[process.argv.length - 1], 'bin'); fs.mkdirSync(p, { recursive: true }); fs.copyFileSync(${JSON.stringify(path.join(bin, "wasm-bindgen"))}, require('node:path').join(p, 'wasm-bindgen')); fs.copyFileSync(${JSON.stringify(path.join(bin, ".wasm-bindgen.cjs"))}, require('node:path').join(p, '.wasm-bindgen.cjs')); }`,
+    hook: { name: "install-wasm-bindgen", args: [bin] },
   });
   writeRecordingCommand(bin, "wasm-bindgen", log, { exitCodes: [5] });
 

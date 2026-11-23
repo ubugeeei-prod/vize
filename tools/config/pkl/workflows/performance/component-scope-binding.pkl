@@ -1,0 +1,102 @@
+import "../../Actions.pkl" as ci
+
+name = "Component scope binding allocation profile"
+on {
+  pull_request {
+    paths = new Listing {
+      "crates/vize_canon/src/virtual_ts/scope/component_props.rs"
+      "crates/vize_canon/src/virtual_ts/scope/component_props/bindings.rs"
+      "crates/vize_canon/src/virtual_ts/scope/component_prop_expressions.rs"
+      "tools/benchmarks/crates/vize/tests/component_scope_binding_profile.rs"
+      "tools/benchmarks/scripts/component-scope-binding-evidence.ts"
+      "tools/benchmarks/scripts/component-scope-binding-cases.ts"
+      ".github/workflows/component-scope-binding.yml"
+      ".github/scripts/workflows/component-scope-binding/**"
+      ".github/scripts/workflows/shared/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "component-scope-binding-profile-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  compare {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/component-scope-binding"
+      EVENT_BASE_SHA = "${{ github.event.pull_request.base.sha }}"
+      PR_HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RAYON_NUM_THREADS = "8"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        name = "Authenticate actual merge parents and untouched normal products"
+        run = #". "${{ env.VIZE_CI_FILES }}/authenticate-actual-merge-parents-and-untouched-normal-products.sh""#
+      }
+      new Dynamic {
+        name = "Add identical explicit profiling-only source observers"
+        run = #". "${{ env.VIZE_CI_FILES }}/add-identical-explicit-profiling-only-source-observers.sh""#
+      }
+      new Dynamic {
+        name = "Compare full packets and fresh normal mapper processes"
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-full-packets-and-fresh-normal-mapper-processes.sh""#
+      }
+      new Dynamic {
+        name = "Require immutable complete constructor packets"
+        run = #". "${{ env.VIZE_CI_FILES }}/require-immutable-complete-constructor-packets.sh""#
+      }
+      new Dynamic {
+        name = "Package complete raw evidence without following workspace links"
+        `if` = "always()"
+        run = #". "${{ env.VIZE_CI_FILES }}/package-complete-raw-evidence-without-following-workspace-links.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "component-scope-binding-summary-${{ github.sha }}"
+          path = """
+          ${{ runner.temp }}/component-scope-binding-evidence/comparison.json
+          ${{ runner.temp }}/component-scope-binding-evidence/provenance.json
+          ${{ runner.temp }}/component-scope-binding-evidence/binaries.json
+          ${{ runner.temp }}/component-scope-binding-evidence/*-binary.json
+          ${{ runner.temp }}/component-scope-binding-evidence/profiling-overlays.json
+
+          """
+          `retention-days` = 14
+        }
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "component-scope-binding-raw-${{ github.sha }}"
+          path = "${{ runner.temp }}/component-scope-binding-raw.tgz"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

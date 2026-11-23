@@ -56,16 +56,12 @@ try {
   const importFd = fs.openSync(importLog, "w");
   let imported: ReturnType<typeof spawnSync>;
   try {
-    imported = spawnSync(
-      process.execPath,
-      ["--input-type=module", "--eval", 'await import("@vizejs/nuxt")'],
-      {
-        cwd: fixture,
-        env: { ...sourceBinding.environment, NO_COLOR: "1" },
-        stdio: ["ignore", importFd, importFd],
-        timeout: 30_000,
-      },
-    );
+    imported = spawnSync(process.execPath, [path.join(fixture, "probe-module.mjs")], {
+      cwd: fixture,
+      env: { ...sourceBinding.environment, NO_COLOR: "1" },
+      stdio: ["ignore", importFd, importFd],
+      timeout: 30_000,
+    });
   } finally {
     fs.closeSync(importFd);
   }

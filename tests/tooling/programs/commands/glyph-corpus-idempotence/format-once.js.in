@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+import fs from "node:fs";
+if (@@CHANGE@@) {
+  const file = "src/App.vue";
+  const source = fs.readFileSync(file, "utf8");
+  if (source === "<template><p>x</p></template>\n") {
+    fs.writeFileSync(file, "<template>\n  <p>x</p>\n</template>\n");
+  }
+}

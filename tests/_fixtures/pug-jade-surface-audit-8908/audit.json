@@ -209,7 +209,7 @@
           "anchor": "Pug-template Quasar application (211 of 215 pinned SFCs use"
         },
         {
-          "path": ".github/workflows/real-project-matrix.yml",
+          "path": ".github/scripts/workflows/real-project-matrix/check-glyph-formatter-corpus-properties.sh",
           "anchor": "tests/tooling/glyph-pug-oracle.test.ts tests/tooling/davinci-pug-corpus-oracle.test.ts"
         },
         {

@@ -115,3 +115,17 @@ export async function preparePermalinkContext(context: BrowserContext) {
     await route.fulfill({ json: data });
   });
 }
+
+export function seedConflictingPalette(key: string): void {
+  if (localStorage.getItem("musea:permalink-fixture-initialized")) return;
+  localStorage.setItem("musea:permalink-fixture-initialized", "true");
+  localStorage.setItem(
+    key,
+    JSON.stringify({
+      version: 1,
+      values: { label: "wrong persisted label" },
+      customProps: [],
+      deletedPaletteProps: [],
+    }),
+  );
+}

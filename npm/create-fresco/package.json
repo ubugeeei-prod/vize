@@ -25,7 +25,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "scripts/package-tasks.cjs"
   ],
   "type": "module",
   "sideEffects": false,
@@ -43,7 +44,7 @@
   },
   "scripts": {
     "build": "vp pack",
-    "check": "vp check README.md package.json tsconfig.json src vite.config.ts && tsc --noEmit -p tsconfig.json",
+    "check": "node ./scripts/package-tasks.cjs check",
     "check:fix": "vp check --fix README.md package.json tsconfig.json src vite.config.ts",
     "check:types": "tsc --noEmit -p tsconfig.json",
     "fmt": "vp fmt --write README.md package.json tsconfig.json src vite.config.ts",

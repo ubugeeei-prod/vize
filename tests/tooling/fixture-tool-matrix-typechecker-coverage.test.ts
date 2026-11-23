@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -214,14 +215,19 @@ test("fixture matrix writes exact raw and compact transitive coverage evidence",
   fs.writeFileSync(path.join(fixtureDir, "packages", "Dep.ts"), "export {};\n");
   fs.writeFileSync(
     executable,
-    `#!/usr/bin/env node\nprocess.stdout.write(JSON.stringify(${JSON.stringify(
-      output([
-        ".storybook/Hidden.ts",
-        "node_modules/pkg/Injected.ts",
-        "packages/Dep.ts",
-        "src/App.vue",
-      ]),
-    )}));\n`,
+    readToolingProgram(
+      "commands/fixture-tool-matrix-typechecker-coverage/emit-typecheck-coverage.cjs.in",
+      {
+        VALUE: JSON.stringify(
+          output([
+            ".storybook/Hidden.ts",
+            "node_modules/pkg/Injected.ts",
+            "packages/Dep.ts",
+            "src/App.vue",
+          ]),
+        ),
+      },
+    ),
   );
   fs.chmodSync(executable, 0o755);
 
@@ -274,41 +280,10 @@ test("fixture matrix isolates no-tsconfig typechecker projects from ancestor dis
   fs.writeFileSync(path.join(fixtureDir, "src", "App.vue"), "<template />\n");
   fs.writeFileSync(
     executable,
-    `#!/usr/bin/env node
-import fs from "node:fs";
-import path from "node:path";
-const args = process.argv.slice(2);
-const tsconfigIndex = args.indexOf("--tsconfig");
-const tsconfig = tsconfigIndex === -1 ? null : args[tsconfigIndex + 1];
-const source = tsconfig == null ? null : fs.readFileSync(path.resolve(process.cwd(), tsconfig), "utf8");
-fs.writeFileSync(${JSON.stringify(invocationPath)}, JSON.stringify({ args, tsconfig, source }));
-const output =
-  tsconfig == null
-    ? {
-        files: [{ file: "src/App.vue", diagnostics: [] }],
-        programs: [
-          {
-            root: ".",
-            files: [
-              "src/App.vue",
-              path.resolve(process.cwd(), "../../node_modules/@types/node/assert.d.ts"),
-            ],
-          },
-        ],
-        errorCount: 0,
-        warningCount: 0,
-        fileCount: 1,
-      }
-    : {
-        files: [{ file: "src/App.vue", diagnostics: [] }],
-        programs: [
-          { root: ".", tsconfig, compilerOptions: {}, files: ["src/App.vue"] },
-        ],
-        errorCount: 0,
-        warningCount: 0,
-        fileCount: 1,
-      };
-process.stdout.write(JSON.stringify(output));\n`,
+    readToolingProgram(
+      "commands/fixture-tool-matrix-typechecker-coverage/read-workspace-coverage.js.in",
+      { INVOCATION_PATH: JSON.stringify(invocationPath) },
+    ),
   );
   fs.chmodSync(executable, 0o755);
 

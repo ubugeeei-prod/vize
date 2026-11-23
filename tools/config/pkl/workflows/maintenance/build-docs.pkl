@@ -1,0 +1,231 @@
+import "../../Actions.pkl" as ci
+
+name = "Docs build"
+`run-name` = "${{ github.event_name == 'workflow_dispatch' && format('Docs build @ {0}', github.sha) || format('Docs build {0} @ {1}', github.event_name, github.sha) }}"
+
+on {
+  push {
+    branches = List("main")
+    // Publish authored pages, copyable examples and their generators immediately.
+    // Other code-only pushes use nightly builds or exact-SHA release dispatches.
+    paths = new Listing {
+      ".github/workflows/build-docs.yml"
+      ".github/scripts/workflows/build-docs/**"
+      "docs/**"
+      "!docs/davinci/decisions/**"
+      "npm/compose/core/examples/**"
+      "npm/ui/src/**/examples/**"
+      "npm/ui/scripts/generate-reference-docs.ts"
+      "npm/ui/scripts/reference-docs/**"
+      "tests/tooling/docs-preview-readiness-browser.test.ts"
+      "playground/**"
+      "examples/vite-musea/**"
+    }
+  }
+  schedule = new Listing {
+    new Dynamic { cron = "41 5 * * *" }
+  }
+  workflow_dispatch = null  // The merge queue builds the same site and checks the reviewed routes' links
+
+  // and anchors without the browser captures (Check / docs-build).
+  workflow_call {
+    inputs {
+      `links-only` {
+        type = "boolean"
+        ["default"] = false
+      }
+    }
+  }
+}
+
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+
+permissions { contents = "read" }
+
+// Release preflight consumes this workflow as immutable evidence for github.sha.
+// Keep tag dispatch separate from a scheduled main build at the same SHA.
+concurrency {
+  group = "docs-build-${{ github.event_name }}-${{ github.ref }}-${{ github.sha }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  `build-docs` {
+    `runs-on` = ci.linux
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/build-docs"
+      NODE_OPTIONS = "--max-old-space-size=8192"
+      VIZE_DOCS_LINKS_ONLY = "${{ inputs.links-only && '1' || '0' }}"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        name = "Setup Rust"
+        uses = ci.setupRust
+        with { toolchain = "stable" }
+      }
+      new Dynamic {
+        name = "Setup Wild linker"
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "docs-napi"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Setup Vite+ and Node.js"
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          cache = true
+          `run-install` = false
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Install JS dependencies"
+        run = "node tools/support/github/vp-install.ts --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'"
+      }
+      new Dynamic {
+        name = "Build @vizejs/vite-plugin"
+        run = "node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build"
+      }
+      new Dynamic {
+        name = "Install Japanese rendering fonts"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-japanese-rendering-fonts.sh""#
+      }
+      new Dynamic {
+        name = "Check preview resource readiness"
+        `if` = "${{ inputs.links-only != true }}"
+        run = #". "${{ env.VIZE_CI_FILES }}/check-preview-resource-readiness.sh""#
+      }
+      new Dynamic {
+        name = "Build docs"
+        // The page manifest records this exact source SHA; do not replay an
+        // earlier script result when only other source files changed.
+        run = #". "${{ env.VIZE_CI_FILES }}/build-docs.sh""#
+      }
+      new Dynamic {
+        name = "Verify rendered navigation and Japanese reading paths"
+        `if` = "${{ inputs.links-only != true }}"
+        run = #". "${{ env.VIZE_CI_FILES }}/verify-rendered-navigation-and-japanese-reading-paths.sh""#
+      }
+      new Dynamic {
+        name = "Upload rendered docs screenshots"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "docs-render-evidence"
+          path = "docs-render-evidence"
+          `if-no-files-found` = "error"
+        }
+      }
+      new Dynamic {
+        name = "Upload docs artifact"
+        uses = ci.uploadArtifact
+        with {
+          name = "docs"
+          path = "docs/dist"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+
+  `build-playground` {
+    `runs-on` = ci.linux
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        name = "Setup Rust"
+        uses = ci.setupRust
+        with {
+          toolchain = "stable"
+          targets = "wasm32-unknown-unknown"
+        }
+      }
+      new Dynamic {
+        name = "Setup Wild linker"
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "docs-wasm"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+          `secondary-key` = "docs-example"
+          `secondary-target-path` = ".docs-example-target"
+          `secondary-cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      // wasm-bindgen outputs only: both directories also hold tracked sources.
+      new Dynamic {
+        name = "Cache WASM build"
+        id = "cache-wasm"
+        uses = ci.cache
+        with {
+          path = """
+          npm/wasm/vize_vitrine*
+          playground/src/wasm/vize_vitrine*
+
+          """
+          key = "${{ runner.os }}-docs-wasm-v2-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'crates/**/Cargo.toml', 'davinci/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/support/github/build-vitrine-wasm.ts', 'tools/support/tasks/build-vitrine-wasm.ts', 'tools/support/command-runtime.ts') }}"
+        }
+      }
+      new Dynamic {
+        name = "Install wasm-bindgen-cli"
+        `if` = "steps.cache-wasm.outputs.cache-hit != 'true'"
+        uses = "taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1"  // v2
+        with { tool = "wasm-bindgen-cli@0.2.129" }
+      }
+      new Dynamic {
+        name = "Setup Vite+ and Node.js"
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          cache = true
+          `run-install` = false
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Build WASM"
+        `if` = "steps.cache-wasm.outputs.cache-hit != 'true'"
+        run = "node tools/support/github/build-vitrine-wasm.ts npm/wasm playground/src/wasm"
+      }
+      new Dynamic {
+        name = "Install JS dependencies"
+        run = "node tools/support/github/vp-install.ts --filter './playground...' --filter './examples/vite-musea...' --filter './npm/builder/vite-musea...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...'"
+      }
+      new Dynamic {
+        name = "Build npm packages"
+        run = "node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build -- vp run --filter './npm/builder/vite-musea' build"
+      }
+      ci.command("Build playground", "vp run --filter './playground' build")
+      ci.command("Build musea-examples", "vp run --filter './examples/vite-musea' build")
+      new Dynamic {
+        name = "Upload playground artifact"
+        uses = ci.uploadArtifact
+        with {
+          name = "playground"
+          path = "playground/dist"
+          `if-no-files-found` = "error"
+        }
+      }
+      new Dynamic {
+        name = "Upload musea-examples artifact"
+        uses = ci.uploadArtifact
+        with {
+          name = "musea-examples"
+          path = "examples/vite-musea/dist"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+}

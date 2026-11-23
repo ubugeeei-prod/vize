@@ -1,0 +1,26 @@
+import fs from "node:fs";
+import { spawn } from "node:child_process";
+import { setTimeout } from "node:timers/promises";
+const index = process.env.VIZE_OXLINT_MIXED_WORKER;
+const fatal = @@FATAL@@;
+if (fatal && index === "0") {
+  spawn(process.execPath, [@@DESCENDANT@@], {
+    stdio: ["ignore", "inherit", "inherit"],
+  });
+  while (!fs.existsSync("descendant-started")) await setTimeout(10);
+}
+fs.writeFileSync("started-" + index, String(process.pid));
+for (let attempt = 0; !fs.existsSync("started-" + (1 - Number(index))); attempt++) {
+  if (attempt > 200) throw Error("fixed workers were serialized");
+  await setTimeout(10);
+}
+await new Promise((resolve) => process.stdout.write("control-worker-" + index + "\n", resolve));
+await new Promise((resolve) => process.stderr.write("control-stderr-" + index + "\n", resolve));
+fs.writeFileSync("ready-" + index, "streams flushed");
+if (fatal) {
+  if (index === "0") {
+    while (!fs.existsSync("ready-1")) await setTimeout(10);
+    process.exit(7);
+  }
+  await setTimeout(60000);
+}

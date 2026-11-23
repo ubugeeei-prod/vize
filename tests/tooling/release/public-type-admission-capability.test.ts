@@ -1,5 +1,7 @@
+import { readAutomationPrograms, workflowProgram } from "../support/automation-source.ts";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { requiredEnv } from "../../../.github/scripts/workflows/shared/files.ts";
+import { stripTypeScriptTypes } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
@@ -16,10 +18,7 @@ type Job = { if?: string; steps: Step[] };
 type Workflow = { jobs: Record<string, Job> };
 const observerName = "Qualify independent published template type admission";
 const workflows = ["public-native-events.yml", "release-contracts.yml"].map(
-  (name) =>
-    parse(
-      readFileSync(new URL("../../../.github/workflows/" + name, import.meta.url), "utf8"),
-    ) as Workflow,
+  (name) => parse(readAutomationPrograms(".github", "workflows", name)) as Workflow,
 );
 function job(workflow: Workflow, name: string): Job {
   const value = workflow.jobs[name];
@@ -97,9 +96,14 @@ test("the actual source-capability proof rejects mixed or false public identitie
     (step) => step.name === "Prove the known public source for the isolated host capability",
   );
   assert.ok(proof?.run);
-  const match = /node --input-type=module <<'NODE'\n([\s\S]+?)\nNODE/.exec(proof.run);
-  assert.ok(match?.[1]);
-  const script = match[1].replace(/^import .*;\n/gm, "");
+  const module = workflowProgram(
+    "release-contracts",
+    proof.run,
+    "prove-the-known-public-source-for-the-isolated-host-capability.ts",
+  );
+  const script = stripTypeScriptTypes(module)
+    .replace(/^import .*;\n/gm, "")
+    .replace(/^export \{\};?$/gm, "");
   const source = "3778a06863bc70bf63b435ae816cca134d2d438e";
   const base = "7c2f6f46172404a8f95335a79ee2b95094f6b7ee";
   const baseline = {
@@ -155,7 +159,7 @@ test("the actual source-capability proof rejects mixed or false public identitie
     });
     const run = () =>
       runInNewContext(
-        "(async () => { " + script + " })()",
+        "const requiredEnv = " + requiredEnv.toString() + "; (async () => { " + script + " })()",
         {
           assert,
           path,

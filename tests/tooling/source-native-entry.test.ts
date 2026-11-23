@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 import { stageSourceNativeEntrypoint } from "../../tools/support/compat/nuxt/source-native-entry.ts";
 
 const published =
@@ -35,11 +36,11 @@ function fixture() {
 }
 
 function importShape(entry: string) {
-  const script = `import * as api from ${JSON.stringify(pathToFileURL(entry).href)};
-    console.log(JSON.stringify({ cjs: typeof api.default.typeProjectInputs,
-      esm: typeof api.typeProjectInputs,
-      result: api.typeProjectInputs?.("/project/tsconfig.json", "7") ?? null }));`;
-  const result = spawnSync(process.execPath, ["--input-type=module", "--eval", script], {
+  const script = [
+    toolingProgram("native/inspect-source-native-exports.js"),
+    pathToFileURL(entry).href,
+  ];
+  const result = spawnSync(process.execPath, [...script], {
     encoding: "utf8",
   });
   assert.equal(result.status, 0, result.stderr);

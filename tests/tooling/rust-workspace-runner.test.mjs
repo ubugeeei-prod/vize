@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -40,12 +41,18 @@ function fixture(
   git("-c", "user.name=CI Test", "-c", "user.email=ci@example.invalid", "commit", "-qm", "source");
   writeFileSync(
     join(cwd, "rustc"),
-    `#!${process.execPath}\nconsole.log('rustc ${configuration.compiler ?? "1.99.1"} (fixture)\\nhost: fixture');\n`,
+    readToolingProgram("commands/rust-workspace-runner/rustc.cjs.in", {
+      NODE: process.execPath,
+      CONFIGURATION_COMPILER: configuration.compiler ?? "1.99.1",
+    }),
     { mode: 0o755 },
   );
   writeFileSync(
     cargo,
-    `#!${process.execPath}\nconst fs = require('node:fs'); const args = process.argv.slice(2); if (args.join(' ') === 'nextest --version') { console.log('cargo-nextest ${version}'); } else if (args.join(' ') === '-Vv') { console.log('cargo 1.99.1 (fixture)'); } else { fs.appendFileSync(process.env.CALLS, JSON.stringify(args)+'\\n'); if (args.includes(process.env.FAIL)) process.exit(37); if (args.includes('list')) console.log(JSON.stringify({'rust-suites':{fixture:{'binary-id':'fixture',status:'listed','package-name':'fixture','binary-name':'fixture',testcases:{case:{ignored:false,'filter-match':{status:'matches'}}}}}})); }\n`,
+    readToolingProgram("commands/rust-workspace-runner/cargo.cjs.in", {
+      NODE: process.execPath,
+      VERSION: version,
+    }),
     { mode: 0o755 },
   );
   const result = spawnSync(

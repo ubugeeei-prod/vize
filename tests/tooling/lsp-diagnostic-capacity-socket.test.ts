@@ -23,9 +23,8 @@ test(
   async () => {
     const directory = fs.mkdtempSync("/tmp/tsgo-api-capacity-calibration-");
     const socket = path.join(directory, "api");
-    const program =
-      "require('node:net').createServer(s=>{s.pause();process.stdout.write('accepted\\n')}).listen(process.argv[1],()=>process.stdout.write('ready\\n'))";
-    const child = spawn(process.execPath, ["-e", program, socket], {
+    const receiver = path.join(import.meta.dirname, "support/lsp/diagnostic-capacity-receiver.ts");
+    const child = spawn(process.execPath, [receiver, socket], {
       stdio: ["pipe", "pipe", "pipe"],
     });
     let output = "",

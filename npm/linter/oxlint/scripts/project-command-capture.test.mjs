@@ -6,6 +6,10 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  toolingProgram,
+  readToolingProgram,
+} from "../../../../tests/tooling/support/program-path.ts";
 import { captureProjectCommand } from "./project-command-capture.mjs";
 import {
   originalSfcSourceCommand,
@@ -15,12 +19,7 @@ import {
 void test("same actual command/argv/cwd/env/stdin retains complete binary and UTF8 results", async (t) => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-command-capture-"));
   t.after(() => fs.rmSync(cwd, { recursive: true, force: true }));
-  const args = [
-    "-e",
-    `const fs=require('node:fs');process.stdout.write(fs.readFileSync(0));process.stdout.write(JSON.stringify([process.argv.slice(1),process.cwd(),process.env.VIZE_CAPTURE]));process.stderr.write(Buffer.from([0,255,228,184,173]));process.exitCode=7;`,
-    "whole",
-    "日本語",
-  ];
+  const args = [toolingProgram("process/capture-project-command.js"), "whole", "日本語"];
   for (const encoding of [undefined, "utf8"]) {
     const options = {
       cwd,
@@ -43,10 +42,7 @@ void test("spawn failure and combined output overflow remain fatal complete outc
   assert.notEqual(missing.status, 0);
   const overflow = await captureProjectCommand(
     process.execPath,
-    [
-      "-e",
-      "process.stdout.write('abcdefgh');process.stderr.write('ijklmnop');setInterval(()=>{},1000)",
-    ],
+    [toolingProgram("process/overflow-command-streams.js")],
     { maxBuffer: 12, timeout: 3000 },
   );
   assert.equal(overflow.error.code, "ENOBUFS");
@@ -55,11 +51,14 @@ void test("spawn failure and combined output overflow remain fatal complete outc
 });
 
 void test("timeout escalates for ignored SIGTERM and drains descendants after leader closure", async () => {
-  const script = `const {spawn}=require('node:child_process');const child=spawn(process.execPath,['-e',"process.on('SIGTERM',()=>{});setInterval(()=>{},1000)"],{stdio:'ignore'});process.stdout.write(JSON.stringify({pid:process.pid,child:child.pid})+'\\n');process.on('SIGTERM',()=>{});setInterval(()=>{},1000);`;
-  const result = await captureProjectCommand(process.execPath, ["-e", script], {
-    timeout: 500,
-    maxBuffer: 1024,
-  });
+  const result = await captureProjectCommand(
+    process.execPath,
+    [toolingProgram("process/capture-project-tree.js"), "hold"],
+    {
+      timeout: 500,
+      maxBuffer: 1024,
+    },
+  );
   assert.equal(result.error.code, "ETIMEDOUT");
   assert.equal(result.signal, "SIGKILL");
   const ids = JSON.parse(result.stdout.toString());
@@ -69,13 +68,7 @@ void test("timeout escalates for ignored SIGTERM and drains descendants after le
   }
   const normal = await captureProjectCommand(
     process.execPath,
-    [
-      "-e",
-      script.replace(
-        "process.on('SIGTERM',()=>{});setInterval(()=>{},1000);",
-        "process.exitCode=0;setTimeout(()=>process.exit(0),10);",
-      ),
-    ],
+    [toolingProgram("process/capture-project-tree.js"), "exit"],
     { timeout: 3000, maxBuffer: 1024 },
   );
   assert.equal(normal.status, 0);
@@ -94,33 +87,30 @@ for (const mode of ["cancel", "missing-object", "missing-command"])
     if (mode !== "missing-command")
       fs.writeFileSync(
         path.join(root, "bin/git"),
-        `#!${process.execPath}
-const fs=require('node:fs'),root=process.env.VIZE_REFERENCE_CONTROL,args=process.argv.slice(2);
-fs.appendFileSync(root+'/commands.jsonl',JSON.stringify({pid:process.pid,args})+'\\n');
-if(args[0]==='cat-file') {
- process.stdout.write('whole exists stdout');process.stderr.write('whole exists stderr');
- if(process.env.VIZE_REFERENCE_MODE==='cancel') {fs.writeFileSync(root+'/ready',String(process.pid));setInterval(()=>{},1000);}
- else process.exitCode=128;
-} else if(args[0]==='fetch') process.exitCode=0;
-else {process.stdout.write('refuse invalid tree authority');process.exitCode=0;}
-`,
+        readToolingProgram(
+          new URL("./test-programs/project-command-capture/git.cjs.in", import.meta.url),
+          {
+            NODE: process.execPath,
+          },
+        ),
         { mode: 0o755 },
       );
     const moduleUrl = (name) => JSON.stringify(new URL(name, import.meta.url).href);
     const driver = path.join(root, "driver.mjs");
     fs.writeFileSync(
       driver,
-      `import fs from 'node:fs';
-import {prepareReferenceSource} from ${moduleUrl("./n8n-reference-source.mjs")};
-import {runQualificationBranches} from ${moduleUrl("./project-qualification-branches.mjs")};
-const root=${JSON.stringify(root)},mode=${JSON.stringify(mode)};
-const timer=mode==='cancel'?setInterval(()=>{if(fs.existsSync(root+'/ready')){clearInterval(timer);process.kill(process.pid,'SIGTERM');}},10):null;
-try {await runQualificationBranches([
- {id:'mixedDirectory8507',run:()=>new Promise(resolve=>setTimeout(()=>{fs.writeFileSync(root+'/remaining.done','complete');resolve();},150))},
- {id:'n8n',run:()=>prepareReferenceSource(root+'/output')},
-],root+'/branch-outcomes.json');process.exitCode=2;}
-catch {process.exitCode=1;}finally{clearInterval(timer);}
-`,
+      readToolingProgram(
+        new URL(
+          "./test-programs/project-command-capture/capture-project-branch.js.in",
+          import.meta.url,
+        ),
+        {
+          REFERENCE: moduleUrl("./n8n-reference-source.mjs"),
+          QUALIFICATION: moduleUrl("./project-qualification-branches.mjs"),
+          PROJECT: JSON.stringify(root),
+          MODE: JSON.stringify(mode),
+        },
+      ),
     );
     const child = spawn(process.execPath, [driver], {
       env: {
@@ -207,7 +197,9 @@ function sourceMatrixAuthority(t) {
   );
   fs.writeFileSync(
     path.join(root, "npm/native/index.js"),
-    "module.exports=require(process.env.NAPI_RS_NATIVE_LIBRARY_PATH);\n",
+    readToolingProgram(
+      new URL("./test-programs/project-command-capture/load-staged-binding.cjs", import.meta.url),
+    ),
   );
   const plugin = file("plugin.mjs", "// authored plugin control\n");
   const manifest = file("host-package.json", '{"name":"oxlint","version":"1.86.0"}\n');
@@ -321,10 +313,7 @@ void test("source command isolates overrides and uses the one existing host/addo
   assert.equal(environment.NODE_OPTIONS, "--require=/foreign.cjs");
   const observed = await captureProjectCommand(
     process.execPath,
-    [
-      "-e",
-      "process.stdout.write(JSON.stringify([process.cwd(),process.env.NAPI_RS_NATIVE_LIBRARY_PATH??null,process.env.VIZE_PREFER_WORKSPACE_BINDING,process.env.NODE_OPTIONS??null]));process.stderr.write('whole stderr\\n');",
-    ],
+    [toolingProgram("native/print-source-command-environment.js")],
     actual.options,
   );
   assert.equal(observed.status, 0);

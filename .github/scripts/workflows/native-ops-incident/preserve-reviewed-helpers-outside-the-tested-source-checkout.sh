@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+mkdir "$RUNNER_TEMP/native-ops-harness"
+cp -R .github/scripts/native-ops-driver.ts .github/scripts/native-ops "$RUNNER_TEMP/native-ops-harness/"
+sha256sum "$RUNNER_TEMP/native-ops-harness/"*.ts "$RUNNER_TEMP/native-ops-harness/native-ops/"*
