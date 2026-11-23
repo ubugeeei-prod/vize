@@ -98,4 +98,24 @@ theorem authored_slice {Byte : Type} (before block after : List Byte) (lo hi : N
 
 #print axioms authored_slice
 
+/-- Retained diagnostics, related labels and witness links may repeat or overlap.
+    After projection their payloads, order, file ranges and exact spelling agree
+    with directly reading every occurrence from the current document. -/
+theorem recovery_sites_exact {Byte Label : Type} (before block after : List Byte)
+    (sites : List (Label × Nat × Nat))
+    (valid : ∀ site ∈ sites, site.2.1 ≤ site.2.2 ∧ site.2.2 ≤ block.length) :
+    sites.map (fun (label, lo, hi) =>
+      (label, before.length + lo, before.length + hi,
+       ((before ++ (block ++ after)).drop (before.length + lo)).take (hi - lo))) =
+    sites.map (fun (label, lo, hi) =>
+      (label, before.length + lo, before.length + hi, (block.drop lo).take (hi - lo))) := by
+  apply List.map_congr_left
+  intro site member
+  obtain ⟨label, lo, hi⟩ := site
+  obtain ⟨ordered, inside⟩ := valid _ member
+  exact congrArg (fun bytes => (label, before.length + lo, before.length + hi, bytes))
+    (authored_slice before block after lo hi ordered inside)
+
+#print axioms recovery_sites_exact
+
 end Davinci

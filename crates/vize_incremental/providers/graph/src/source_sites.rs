@@ -33,7 +33,7 @@ impl<'db> TemplateSourceSites<'db> {
     }
 }
 
-fn project(text: &str, start: u32, span: Span) -> Option<(Span, &str)> {
+pub(super) fn project(text: &str, start: u32, span: Span) -> Option<(Span, &str)> {
     let spelling = text.get(span.start as usize..span.end as usize)?;
     let authored = Span::new(start.checked_add(span.start)?, start.checked_add(span.end)?);
     Some((authored, spelling))

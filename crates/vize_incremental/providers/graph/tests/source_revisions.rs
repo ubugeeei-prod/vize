@@ -12,7 +12,10 @@ use vize_l3::{
     op::OpId,
     query::{Direction, EdgeKinds, GraphError, OpGraph, ReachQuery, check_reachability},
 };
-use vize_resident_graph::{TemplateGraphError, TemplateQueries, TemplateReachBatch};
+use vize_resident_graph::{
+    TemplateGraphError, TemplateGraphObservation, TemplateQueries, TemplateReachBatch,
+    TemplateRecovery,
+};
 
 #[derive(Debug, Default, PartialEq, Eq)]
 struct Counts {
@@ -23,6 +26,7 @@ struct Counts {
     diagnostics: usize,
     accepted: usize,
     projected: usize,
+    recovery_sites: usize,
     checked_answers: usize,
     witnessed: usize,
 }
@@ -114,8 +118,55 @@ fn checked_graph(
     }
 }
 
+fn checked_recovery(
+    recovery: TemplateRecovery<'_>,
+    retained: &TemplateGraphError,
+    source: &str,
+    block: BlockView<'_>,
+) -> usize {
+    let TemplateGraphError::Incomplete { holes, diagnostics } = retained else {
+        panic!("retained error must describe this incomplete block");
+    };
+    assert!(std::ptr::eq(recovery.holes(), holes.as_slice()));
+    assert!(std::ptr::eq(recovery.diagnostics(), diagnostics.as_slice()));
+    let mut sites = 0;
+    let mut check = |span: Span| {
+        let expected = position(block, source, span);
+        let (authored, spelling) = recovery.source_site(span).unwrap();
+        assert_eq!(authored, expected);
+        assert_eq!(
+            Some(spelling),
+            source.get(expected.start as usize..expected.end as usize)
+        );
+        let local = &block.source().text[span.start as usize..span.end as usize];
+        assert!(std::ptr::eq(spelling, local));
+        sites += 1;
+    };
+    for hole in recovery.holes() {
+        check(hole.span);
+    }
+    for diagnostic in recovery.diagnostics() {
+        check(diagnostic.span);
+        for part in &diagnostic.parts {
+            check(part.span);
+        }
+        if let Some(chain) = diagnostic.witness_chain() {
+            for link in chain.links() {
+                check(link.span);
+            }
+        }
+    }
+    let outside = Span::new(u32::MAX, 0);
+    assert_eq!(
+        recovery.source_site(outside),
+        Err(TemplateGraphError::OutsideBlock(outside))
+    );
+    sites
+}
+
 fn selected(source: &str, block: BlockView<'_>, lang: Lang, counts: &mut Counts) {
     let batch = block.reach_batch(lang);
+    let observation = TemplateGraphObservation::read(block, lang);
     let query = request(OpId::new(0), Direction::Forward);
     let verify_refusal = |error: &TemplateGraphError, batch: Option<&TemplateGraphError>| {
         assert_eq!(batch, Some(error));
@@ -123,6 +174,10 @@ fn selected(source: &str, block: BlockView<'_>, lang: Lang, counts: &mut Counts)
     };
     if block.template_input().is_none() {
         verify_refusal(&TemplateGraphError::UnsupportedBlock, batch.err());
+        assert_eq!(
+            observation.err(),
+            Some(&TemplateGraphError::UnsupportedBlock)
+        );
         counts.unavailable += 1;
         return;
     }
@@ -140,25 +195,20 @@ fn selected(source: &str, block: BlockView<'_>, lang: Lang, counts: &mut Counts)
                 &TemplateGraphError::Construction(rejected.error),
                 batch.err(),
             );
+            assert_eq!(
+                observation.err(),
+                Some(&TemplateGraphError::Construction(rejected.error))
+            );
             counts.construction_errors += 1;
             return;
         }
     };
     if !native.is_supported() || !native.diagnostics.is_empty() {
-        for hole in &native.holes {
-            position(block, source, hole.span);
-        }
-        for diagnostic in &native.diagnostics {
-            position(block, source, diagnostic.span);
-            for part in &diagnostic.parts {
-                position(block, source, part.span);
-            }
-            if let Some(chain) = diagnostic.witness_chain() {
-                for link in chain.links() {
-                    position(block, source, link.span);
-                }
-            }
-        }
+        let TemplateGraphObservation::Incomplete(issues) = observation.unwrap() else {
+            panic!("fresh native lowering returned incomplete source");
+        };
+        counts.recovery_sites +=
+            checked_recovery(issues, batch.as_ref().err().unwrap(), source, block);
         counts.incomplete += 1;
         counts.holes += native.holes.len();
         counts.diagnostics += native.diagnostics.len();
@@ -171,6 +221,13 @@ fn selected(source: &str, block: BlockView<'_>, lang: Lang, counts: &mut Counts)
         );
         return;
     }
+    let TemplateGraphObservation::Complete(graph) = observation.unwrap() else {
+        panic!("fresh native lowering admitted a complete graph");
+    };
+    assert_eq!(
+        graph.authored_span(OpId::new(0)),
+        batch.as_ref().unwrap().authored_span(OpId::new(0))
+    );
     counts.accepted += 1;
     let native = vize_l2_to_l3::lower(&arena, native.artifact.root());
     checked_graph(source, block, lang, native.l3ir(), batch.unwrap(), counts);
@@ -296,6 +353,7 @@ fn graph_answers_across_original_source_edits() {
         totals.diagnostics += count.diagnostics;
         totals.accepted += count.accepted;
         totals.projected += count.projected;
+        totals.recovery_sites += count.recovery_sites;
         totals.checked_answers += count.checked_answers;
         totals.witnessed += count.witnessed;
     }
