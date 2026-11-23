@@ -124,10 +124,8 @@ fn header_validation_uses_real_attribute_names_order_and_optional_values() {
         ),
         ("module", "module=''", false),
         ("scoped lang='scss'", "scoped", false),
-        (":lang='expr' scoped", ":lang='expr' scoped", true),
-        (":lang='expr' scoped", "scoped :lang='expr'", false),
-        ("scoped scoped module", "scoped scoped module", true),
-        ("scoped scoped module", "scoped module scoped", false),
+        ("scoped module='雪'", "module='雨' scoped", false),
+        ("lang='scss' scoped", "scoped lang='css'", false),
     ] {
         let left = format!("<template><i/></template><style {before}>a{{}}</style>");
         let right = format!("<template><i/></template><style {after}>a{{}}</style>");
@@ -141,5 +139,39 @@ fn header_validation_uses_real_attribute_names_order_and_optional_values() {
             accepted,
             "{before:?} -> {after:?}"
         );
+    }
+}
+
+#[test]
+fn duplicate_and_dynamic_style_flags_retain_their_spelling_and_refuse_an_edit() {
+    use vize_l1::container::vue::DescriptorIssueCode::{DuplicateAttribute, UnsupportedAttribute};
+    for (attrs, expected, issue) in [
+        (
+            ":lang='expr' scoped",
+            [(":lang", Some("expr")), ("scoped", None)],
+            UnsupportedAttribute,
+        ),
+        (
+            "scoped scoped",
+            [("scoped", None), ("scoped", None)],
+            DuplicateAttribute,
+        ),
+    ] {
+        let text = format!("<template><i/></template><style {attrs}>a{{}}</style>");
+        let arena = Allocator::default();
+        let owner = Vue.observe_descriptor(&arena, &text, options());
+        let block = owner
+            .container()
+            .blocks
+            .iter()
+            .find(|b| b.name == "style")
+            .unwrap();
+        let spellings: Vec<_> = block.attrs.iter().map(|a| (a.name, a.value)).collect();
+        assert_eq!(spellings, expected);
+        assert!(owner.issues().iter().any(|entry| entry.code == issue));
+        assert!(matches!(
+            style_at(&owner, 0),
+            Err(StyleFormatError::Descriptor)
+        ));
     }
 }
