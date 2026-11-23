@@ -1,8 +1,3 @@
-import {
-  packageTaskRuntime,
-  renderPackageTasks,
-  validatePackageScripts,
-} from "../../support/ci/package-programs.ts";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
   chmodSync,
@@ -21,6 +16,11 @@ import {
   validateAutomationSteps,
   validateShellProgram,
 } from "../../support/ci/automation-commands.ts";
+import {
+  packageTaskRuntime,
+  renderPackageTasks,
+  validatePackageScripts,
+} from "../../support/ci/package-programs.ts";
 import { renderRepositoryYaml, type ConfigValue } from "../../support/ci/repository-yaml.ts";
 import { readWorkflowEntries, renderWorkflowCatalog } from "../ci/workflow-catalog.ts";
 
@@ -86,16 +86,32 @@ function evaluate(products: Product[]): ConfigValue[] {
   });
 }
 
+// These snapshots are compared with the original reports and workflow revisions.
+const archivedFixtureInputs = new Set([
+  "crates/vize_patina/tests/fixtures/issue-7905/original-command.sh",
+  "tests/_fixtures/differential/lint-regressions/router-app-reachability-7932/original/command.sh",
+  "tests/_fixtures/differential/lsp/string-literal-completion-original/reproduction.sh",
+  "tests/_fixtures/differential/vite-native-image-identity/native-smoke-before.yml",
+  "tests/_fixtures/differential/workflows/native-smoke-babel-inventory-10702/after.yml",
+  "tests/_fixtures/differential/workflows/native-smoke-babel-inventory-10702/before.yml",
+  "tests/tooling/fixtures/real-project-matrix-original-67e3.yml",
+  "tests/tooling/fixtures/setup-wild-original-0bbbfa5d.yml",
+]);
+
+const vendoredDirectories = [
+  "upstream/",
+  "crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755/reference/",
+  "tests/_fixtures/_projects/lint-dependencies/npmx.dev/",
+  "tests/_fixtures/reference/vue2/",
+  "tests/_fixtures/reka-tsconfig-provider/",
+];
+
 function ownedTarget(file: string): boolean {
-  if (file === "pnpm-lock.yaml" || file.endsWith("/pnpm-lock.yaml")) return false;
-  if (file.startsWith("tests/_fixtures/") || file.includes("/fixtures/")) {
-    return (
-      file.startsWith("tests/_fixtures/tooling/native-current-recipe-") ||
-      file.startsWith("tools/commands/fixtures/project_deadline/programs/") ||
-      file === "crates/vize_maestro/tests/fixtures/corsa-session-wrapper.sh"
-    );
-  }
-  return !file.startsWith("upstream/");
+  return (
+    path.posix.basename(file) !== "pnpm-lock.yaml" &&
+    !archivedFixtureInputs.has(file) &&
+    !vendoredDirectories.some((directory) => file.startsWith(directory))
+  );
 }
 
 function verifyInventory(products: Product[]): void {
@@ -119,6 +135,11 @@ function verifyInventory(products: Product[]): void {
       "*.yml",
       "*.sh",
       "*.sh.in",
+      "*.bash",
+      "*.zsh",
+      "*.ksh",
+      "*.fish",
+      "*.bat",
       "*.ps1",
       "*.cmd",
       ".envrc",
