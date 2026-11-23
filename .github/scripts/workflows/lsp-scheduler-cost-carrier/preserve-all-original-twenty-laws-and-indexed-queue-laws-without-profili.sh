@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cargo test --locked --profile ci -p vize_maestro --lib server::initial_diagnostics:: -- --test-threads=1 2>&1 | tee scheduler-evidence/normal-laws.log
+node "$VIZE_CI_FILES/verify-normal-laws.ts"

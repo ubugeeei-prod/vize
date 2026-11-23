@@ -1,4 +1,4 @@
-name: Tool Benchmark
+name: Benchmark - Tool comparison
 
 on:
   workflow_dispatch:
@@ -133,6 +133,19 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/tool-benchmark/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Checkout benchmark commit
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -187,31 +200,12 @@ jobs:
 
       - name: Compare Vize with existing tools
         env:
+          VIZE_BENCHMARK_REVISION: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
           VIZE_BENCH_REF: ${{ github.ref_name }}
-        run: |
-          # Restore benchmark metadata label with:
-          node tools/benchmarks/scripts/compare-tools.mjs \
-            --input tools/benchmarks/scripts/__in__ \
-            --vize-bin target/release/vize \
-            --runs "$VIZE_TOOL_BENCH_RUNS" \
-            --warmups "$VIZE_TOOL_BENCH_WARMUPS" \
-            --check-file-count "$VIZE_TOOL_BENCH_CHECK_FILE_COUNT" \
-            --vite-file-count "$VIZE_TOOL_BENCH_VITE_FILE_COUNT" \
-            --nuxt-file-count "$VIZE_TOOL_BENCH_NUXT_FILE_COUNT" \
-            --musea-file-count "$VIZE_TOOL_BENCH_MUSEA_FILE_COUNT" \
-            --large-blocks "$VIZE_TOOL_BENCH_LARGE_BLOCKS" \
-            ${VIZE_TOOL_BENCH_TASKS:+--tasks "$VIZE_TOOL_BENCH_TASKS"} \
-            --runner-label "blacksmith-32vcpu-ubuntu-2404" \
-            --commit "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" \
-            --ref "$VIZE_BENCH_REF" \
-            --repository "${{ github.repository }}" \
-            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            --out tool-benchmark-summary.md \
-            --json tool-benchmark-results.json \
-            --doc performance-blacksmith.md
+        run: . "${{ env.VIZE_CI_FILES }}/compare-vize-with-existing-tools.sh"
 
       - name: Write job summary
-        run: cat tool-benchmark-summary.md >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/write-job-summary.sh"
 
       - name: Upload tool benchmark results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -268,6 +262,19 @@ jobs:
       actions: read
       contents: write
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/tool-benchmark/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Checkout benchmark branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -292,17 +299,4 @@ jobs:
       - name: Commit benchmark snapshot
         env:
           VIZE_BENCH_REF: ${{ github.ref_name }}
-        run: |
-          node tools/benchmarks/scripts/publish-snapshot.mjs --json tool-benchmark-artifact/tool-benchmark-results.json
-          node tools/benchmarks/scripts/publish-snapshot.mjs --check
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md tools/benchmarks/results/tool-benchmark-latest.json \
-            docs/content/architecture/performance{,-blacksmith}.md \
-            docs/content/{ja,zh-CN,fr,pt-BR}/architecture/performance{,-blacksmith}.md
-          if git diff --cached --quiet; then
-            echo "No benchmark snapshot changes to commit."
-          else
-            git commit -m "docs: update blacksmith benchmark snapshot"
-            git push origin "HEAD:refs/heads/$VIZE_BENCH_REF"
-          fi
+        run: . "${{ env.VIZE_CI_FILES }}/commit-benchmark-snapshot.sh"

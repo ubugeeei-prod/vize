@@ -1,0 +1,20 @@
+amends "../../../PackageTasks.pkl"
+
+tasks {
+  ["build"] {
+    module.run("vp", List("pack"))
+    module.run("node", List("scripts/check-size.ts"))
+  }
+  ["check"] {
+    module.run("vp", List(
+      "check",
+      "README.md",
+      "package.json",
+      "tsconfig.json",
+      "src",
+      "scripts",
+      "vite.config.ts",
+    ))
+    module.run("tsc", List("--noEmit", "-p", "tsconfig.json"))
+  }
+}

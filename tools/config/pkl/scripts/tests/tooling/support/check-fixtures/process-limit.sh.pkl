@@ -1,0 +1,9 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+executable = false
+
+commands {
+  #"prefix=${1:--}"#
+  #"ulimit "${prefix}u" 2>/dev/null || ulimit "${prefix}p""#
+}

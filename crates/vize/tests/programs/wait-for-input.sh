@@ -1,0 +1,2 @@
+#!/bin/sh
+read line

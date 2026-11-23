@@ -1,0 +1,29 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  for round in 0 1 2 3; do
+    if (( round % 2 == 0 )); then order=(base head); else order=(head base); fi
+    if (( round == 0 )); then phase=warmup; else phase="sample-${round}"; fi
+    for role in "${order[@]}"; do
+      if [[ "$role" = base ]]; then sha="$BASE_SHA"; else sha="$SOURCE_SHA"; fi
+      target="${RUNNER_TEMP}/${role}-target"
+      git checkout --detach "$sha"
+      test "$(git rev-parse HEAD)" = "$sha"
+      profile="$OBSERVATION_ROOT/${phase}-${role}-profile"
+      vp exec node tools/support/compat/davinci/lsp-resources.ts \
+        --server "$target/ci-opt/vize" --files 2500 --open-files 2500 \
+        --warm-providers 16 --runs 1 --idle-seconds 10 \
+        --build "ci-opt profiling; exact ${role} ${sha}; 32-vCPU runner" \
+        --profile-json-dir "$profile" \
+        --out "$OBSERVATION_ROOT/${phase}-${role}.json" \
+        > "$OBSERVATION_ROOT/${phase}-${role}.stdout" \
+        2> "$OBSERVATION_ROOT/${phase}-${role}.stderr"
+    done
+  done
+  git checkout --detach "$SOURCE_SHA"
+  """#
+}

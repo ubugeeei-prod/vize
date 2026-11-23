@@ -1,0 +1,18 @@
+amends "../../../../ShellScript.pkl"
+import "../../../../NativeChecks.pkl" as native
+
+commands {
+  module.strictMode
+  module.unsetVariable("VIZE_TEST_DISABLE_TSGO")
+  module.inSourceRoot()
+  #"VIZE_UNCHECKED_INDEX_CAPTURE="$RUNNER_TEMP/unchecked-index-access" cargo test --locked --profile ci-opt -p vize --test check_template_emit_cli --test check_vue_helper_scope_cli --test lint_unchecked_indexed_access_cli --test check_canon_define_model_modifiers_cli --test lsp_generic_prop_hover_cli --test lsp_data_aria_attributes_cli --test tsconfig_diamond --test check_tsconfig_types_extends_cli --test lsp_bare_script_symbols_cli --test check_tsconfig_bom_cli --test check_tsconfig_ignore_cli --test check_jsx_slot_parameter_types_cli --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture"#
+  native.envSetup
+  native.emitTests
+  native.vueHelperTests
+  native.projectionCapture
+  native.projectionMatrix
+  native.projectionReceipt
+  native.templateReceipt
+  native.vueHelperReceipt
+  native.optionChecks
+}

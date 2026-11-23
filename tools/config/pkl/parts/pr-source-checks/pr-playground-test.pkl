@@ -1,0 +1,170 @@
+import "../../Actions.pkl" as ci
+
+name = "PR playground browser tests"
+`if` = "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}"
+needs = "pr-source-plan"
+`runs-on` = "${{ needs.pr-source-plan.outputs.playground == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}"
+`timeout-minutes` = 60
+env {
+
+  CARGO_BUILD_JOBS = "12"
+  RUN_PLAYGROUND = "${{ needs.pr-source-plan.outputs.playground }}"
+}
+steps = new Listing {
+  ...ci.stageWorkflowScripts("pr-source-checks")
+  new Dynamic {
+    name = "Explain unrelated skip"
+    `if` = "${{ env.RUN_PLAYGROUND != 'true' }}"
+    run = #". "${{ env.VIZE_CI_FILES }}/explain-unrelated-skip-3.sh""#
+  }
+  new Dynamic {
+    uses = ci.checkout
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' }}"
+  }
+  new Dynamic {
+    uses = ci.setupRust
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' }}"
+    with {
+      toolchain = "stable"
+      targets = "wasm32-unknown-unknown"
+    }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-wild-http-recovery"  // v0.9.0
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' }}"
+    with { `wild-version` = "0.9.0" }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' }}"
+    with {
+      key = "build-js-packages"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-script"
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' }}"
+  }
+  new Dynamic {
+    name = "Cache WASM build"
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' }}"
+    id = "cache-wasm"
+    uses = ci.cache
+    with {
+      path = "playground/src/wasm/vize_vitrine*"
+      key = "${{ runner.os }}-wasm-v2-${{ hashFiles('crates/**/*.rs', 'davinci/**/*.rs', 'crates/**/Cargo.toml', 'davinci/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/support/github/build-vitrine-wasm.ts', 'tools/support/tasks/build-vitrine-wasm.ts', 'tools/support/command-runtime.ts') }}"
+    }
+  }
+  new Dynamic {
+    name = "Install wasm-bindgen-cli"
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' && steps.cache-wasm.outputs.cache-hit != 'true' }}"
+    uses = "taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1"  // v2
+    with { tool = "wasm-bindgen-cli@0.2.129" }
+  }
+  new Dynamic {
+    uses = "./.github/actions/cache-vp-bootstrap"
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' }}"
+  }
+  new Dynamic {
+    uses = ci.setupVp121
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' }}"
+    with {
+      version = "latest"
+      `node-version-file` = "package.json"
+      cache = true
+      `cache-save` = false
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    name = "Build WASM"
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' && steps.cache-wasm.outputs.cache-hit != 'true' }}"
+    run = "node tools/support/github/build-vitrine-wasm.ts playground/src/wasm"
+  }
+  new Dynamic {
+    name = "Install JS dependencies"
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' }}"
+    run = "vp install --frozen-lockfile --prefer-offline"
+  }
+  new Dynamic {
+    name = "Build playground dependencies"
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' }}"
+    run = #". "${{ env.VIZE_CI_FILES }}/build-playground-dependencies.sh""#
+  }
+  new Dynamic {
+    name = "Cache Playwright browsers"
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' }}"
+    id = "cache-playwright"
+    uses = ci.cache
+    with {
+      path = "~/.cache/ms-playwright"
+      key = "${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}"
+    }
+  }
+  new Dynamic {
+    name = "Install Playwright browsers"
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' && steps.cache-playwright.outputs.cache-hit != 'true' }}"
+    uses = "./.github/actions/install-playwright-browsers"
+  }
+  new Dynamic {
+    name = "Run playground tests"
+    id = "browser-cases"
+    `if` = "${{ env.RUN_PLAYGROUND == 'true' }}"
+    env {
+      TEST_CASES_JOB = "PR playground browser tests"
+      VIZE_TEST_CASES = "${{ runner.temp }}/test-cases-playground-browser.json"
+    }
+    run = "node tools/support/compat/github/js-test-cases.ts capture -- vp run --filter './playground' test:browser"
+  }
+  new Dynamic {
+    name = "Run VRT"
+    `if` = "${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' }}"
+    env { VIZE_PLAYWRIGHT_CASES = "e2e/vrt/test-results/case-report.json" }
+    run = "vp exec --filter './playground' -- playwright test"
+    id = "vrt"
+  }
+  new Dynamic {
+    name = "Collect playground test cases"
+    id = "cases"
+    `if` = "${{ !cancelled() && env.RUN_PLAYGROUND == 'true' }}"
+    env {
+      TEST_CASES_JOB = "PR playground browser tests"
+      RUN_VRT = "${{ github.event_name == 'merge_group' }}"
+      VRT_OUTCOME = "${{ steps.vrt.outcome }}"
+    }
+    run = #". "${{ env.VIZE_CI_FILES }}/collect-playground-test-cases.sh""#
+  }
+  new Dynamic {
+    name = "Upload playground test cases"
+    `if` = "${{ !cancelled() && steps.cases.outcome != 'skipped' }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "test-cases-playground-${{ github.run_attempt }}"
+      path = "${{ runner.temp }}/test-cases-playground.json"
+      `if-no-files-found` = "error"
+      `retention-days` = 7
+    }
+  }
+  new Dynamic {
+    name = "Upload VRT report"
+    `if` = ci.onFailureOf("vrt")
+    uses = ci.uploadArtifact
+    with {
+      name = "pr-playground-vrt-report"
+      path = "playground/playwright-report/"
+      `if-no-files-found` = "ignore"
+      `retention-days` = 7
+    }
+  }
+  new Dynamic {
+    name = "Upload VRT diff artifacts"
+    `if` = ci.onFailureOf("vrt")
+    uses = ci.uploadArtifact
+    with {
+      name = "pr-vrt-diff"
+      path = "playground/e2e/vrt/test-results/"
+      `retention-days` = 7
+    }
+  }
+}

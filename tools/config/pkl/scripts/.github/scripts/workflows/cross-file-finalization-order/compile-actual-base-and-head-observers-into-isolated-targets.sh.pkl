@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("cargo", List("build", "--locked", "--manifest-path", "target/finalization-order-base/Cargo.toml", "--profile", "ci", "-p", "vize", "--example", "cross_file_finalization_order", "--target-dir", "target/finalization-order-base-build"))
+  module.command("cargo", List("build", "--locked", "--profile", "ci", "-p", "vize", "--example", "cross_file_finalization_order", "--target-dir", "target/finalization-order-head-build"))
+}

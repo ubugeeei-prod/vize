@@ -1,3 +1,4 @@
+import { readToolingProgram, toolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -113,22 +114,12 @@ test("seeded mutation oracle bounds a Vize mutation process that ignores SIGTERM
     );
     fs.writeFileSync(
       fixture.vize,
-      `#!/usr/bin/env node
-import { spawn } from "node:child_process";
-if (process.argv.includes("--version")) { console.log("vize 0.0.0-test"); process.exit(0); }
-process.on("SIGTERM", () => {});
-spawn(process.execPath, ["-e", ${JSON.stringify(
-        String.raw`const fs = require("node:fs");
-process.on("SIGTERM", () => {});
-const stat = fs.readFileSync("/proc/self/stat", "utf8");
-const fields = stat.slice(stat.lastIndexOf(")") + 1).trim().split(/\s+/u);
-fs.writeFileSync(${JSON.stringify(readyPath)}, JSON.stringify({ pid: process.pid, parentPid: process.ppid, group: Number(fields[2]), session: Number(fields[3]) }));
-process.stdout.write("mutation-child-started\n");
-process.stderr.write("mutation-child-evidence\n");
-setInterval(() => {}, 1000);`,
-      )}], { stdio: "inherit" });
-setInterval(() => {}, 1000);
-`,
+      readToolingProgram("commands/typecheck-divergence-mutation-oracle/fixture-vize.js.in", {
+        CHILD_ARGS: JSON.stringify([
+          toolingProgram("process/record-linux-process-group.cjs"),
+          readyPath,
+        ]),
+      }),
     );
     fs.chmodSync(fixture.vize, 0o755);
 

@@ -102,33 +102,40 @@ test("async ancestry workflow wires the bounded selector into its historical pro
     "utf8",
   );
   assert.match(workflow, /fetch-depth: \$\{\{ matrix\.role == 'candidate' && '0' \|\| '1' \}\}/);
+  // This test also runs from a sparse qualification checkout against the candidate in cwd.
+  const directory = path.join(process.cwd(), ".github/scripts/workflows/async-component-ancestry");
+  const step = "qualify-parent-precision-controls.sh";
+  assert.ok(workflow.includes('run: . "${{ env.VIZE_CI_FILES }}/' + step + '"'));
+  const shell = readFileSync(path.join(directory, step), "utf8");
   assert.match(
-    workflow,
+    shell,
     /node --test qualification\/tests\/tooling\/async-component-ancestry-workflow\.test\.ts/,
   );
+  const verifier = "verify-historical-precision-controls.ts";
+  assert.ok(shell.includes('node "$VIZE_CI_FILES/' + verifier + '"'));
+  const program = readFileSync(path.join(directory, verifier), "utf8");
   assert.match(
-    workflow,
-    /qualification\/tools\/support\/cross_file\/async_component\/feature-delta\.ts/,
+    program,
+    /qualification\/tools\/support\/cross_file\/async_component\/feature-delta\.ts/u,
   );
-  assert.match(workflow, /merged_squash = "deda174ca6da0fc54a4f7483acbd3f71c382095c"/);
-  assert.match(workflow, /\["git", "merge-base", "--is-ancestor", merged_squash, head\]/);
+  assert.match(program, /landedMerge\s*=\s*"deda174ca6da0fc54a4f7483acbd3f71c382095c"/u);
+  assert.match(program, /git\("merge-base", "--is-ancestor", landedMerge, head\)/u);
   assert.match(
-    workflow,
-    /parent, spec\["feature"\], landed_feature, landed_merge, head,\s+"--", "crates", "davinci"/,
+    program,
+    /parent,\s*feature,\s*landedFeature,\s*landedMerge,\s*head,\s*"--",\s*"crates",\s*"davinci"/u,
   );
-  assert.match(workflow, /delta\["historicalParent"\] == parent/);
-  assert.match(workflow, /delta\["historicalFeature"\] == spec\["feature"\]/);
-  assert.match(workflow, /delta\["landedFeature"\] == landed_feature/);
-  assert.match(workflow, /delta\["landedMerge"\] == landed_merge/);
-  assert.match(workflow, /delta\["head"\] == head/);
-  assert.match(workflow, /"featureDelta": delta/);
-  assert.match(workflow, /\["git", "worktree", "add", "--detach"/);
-  assert.match(workflow, /cwd=worktree/);
-  assert.match(workflow, /"CARGO_TARGET_DIR": str\(root \/ "target"\)/);
-  assert.doesNotMatch(workflow, /pathlib\.Path\(p\)\.write_bytes/);
-  assert.doesNotMatch(
-    workflow,
-    /\["git", "diff", "--name-only", parent, head/,
-    "a historical parent-to-head diff admits unrelated main and later feature changes",
-  );
+  for (const [field, value] of Object.entries({
+    historicalParent: "parent",
+    historicalFeature: "feature",
+    landedFeature: "landedFeature",
+    landedMerge: "landedMerge",
+    head: "head",
+  }))
+    assert.ok(program.includes("assert.equal(delta." + field + ", " + value + ")"));
+  assert.match(program, /featureDelta: delta/u);
+  assert.match(program, /git\("worktree", "add", "--detach", worktree, parent\)/u);
+  assert.match(program, /cwd: worktree/u);
+  assert.match(program, /CARGO_TARGET_DIR: join\(process.cwd\(\), "target"\)/u);
+  assert.doesNotMatch(program, /writeFileSync\(component,/u);
+  assert.doesNotMatch(program, /git\("diff", "--name-only", parent, head/u);
 });

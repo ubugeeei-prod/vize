@@ -3,12 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vp run --filter @vizejs/unplugin build && node build/build-all.ts",
-    "build:bun": "vp run --filter @vizejs/unplugin build && bun run build/bun.ts",
+    "build": "node ./scripts/package-tasks.cjs build",
+    "build:bun": "node ./scripts/package-tasks.cjs build:bun",
     "check": "vp check src build test",
     "check:fix": "vp check --fix src build test",
     "fmt": "vp fmt --write src build test",
-    "test": "vp run --filter @vizejs/unplugin build && node --test test/builders.test.ts"
+    "test": "node ./scripts/package-tasks.cjs test"
   },
   "dependencies": {
     "vue": "catalog:vue-production"

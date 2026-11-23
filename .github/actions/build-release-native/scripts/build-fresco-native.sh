@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+args=(npm/fresco-native ../../crates/vize_fresco/Cargo.toml vize_fresco "$RELEASE_TARGET")
+if [[ "$RELEASE_CROSS_COMPILE" == true ]]; then args+=(--cross-compile); fi
+node tools/support/github/build-napi-package.ts "${args[@]}"
+if [[ "$RUNNER_OS" == Linux && "$RELEASE_TARGET" == *-gnu ]]; then
+  node tools/commands/ci/github/verify-glibc-symbols.ts npm/fresco-native/*.linux-*-gnu.node
+fi

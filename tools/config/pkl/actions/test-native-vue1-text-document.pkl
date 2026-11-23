@@ -1,0 +1,49 @@
+import "../Actions.pkl" as ci
+
+name = "Capture original Vue1 interpolation documents"
+description = "Join fresh checked Glyph output to independent whole LF goldens and pinned getter outcomes"
+inputs {
+  `comparison-base` {
+    required = true
+    description = "Literal source comparison base used by the enclosing tooling plan"
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Select the original Vue1 document source slice"
+      id = "select"
+      shell = "bash"
+      env { BASE_SHA = "${{ inputs.comparison-base }}" }
+      run = #". "$GITHUB_ACTION_PATH/scripts/select-the-original-vue1-document-source-slice.sh""#
+    }
+    new Dynamic {
+      name = "Capture actual original callbacks and complete pinned getter outcomes"
+      `if` = "${{ steps.select.outputs.selected == 'true' }}"
+      shell = "bash"
+      env {
+        VIZE_GLYPH_VUE1_TEXT_CAPTURE = "${{ runner.temp }}/native-vue1-text-documents.json"
+        VIZE_GLYPH_VUE1_TEXT_ORACLE_CAPTURE = "${{ runner.temp }}/native-vue1-text-document-getters.json"
+        VIZE_GLYPH_VUE1_TEXT_REQUIRE_CAPTURE = "1"
+        VIZE_GLYPH_VUE1_TEXT_SOURCE_HEAD = "${{ github.event.pull_request.head.sha || github.sha }}"
+      }
+      run = #". "$GITHUB_ACTION_PATH/scripts/capture-actual-original-callbacks-and-complete-pinned-getter-outcomes.sh""#
+    }
+    new Dynamic {
+      name = "Retain complete original Vue1 documents and primary observations"
+      `if` = "${{ always() && steps.select.outputs.selected == 'true' }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "native-vue1-text-documents-${{ github.run_id }}-${{ github.sha }}"
+        path = """
+        ${{ runner.temp }}/native-vue1-text-documents.json
+        ${{ runner.temp }}/native-vue1-text-document-getters.json
+
+        """
+        `if-no-files-found` = "error"
+        `retention-days` = 14
+      }
+    }
+  }
+}

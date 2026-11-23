@@ -1,0 +1,38 @@
+import "../Actions.pkl" as ci
+
+name = "Native original attribute values"
+description = "Qualify pinned original history and the strict current class successor"
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Prepare the pinned plugin isolation runtime"
+      `if` = "${{ !cancelled() }}"
+      shell = "bash"
+      run = "vp exec node tools/support/compat/davinci/plugin-sandbox-image.ts"
+    }
+    new Dynamic {
+      name = "Capture original native values and verify independent runtime evidence"
+      `if` = "${{ !cancelled() }}"
+      shell = "bash"
+      env {
+        VIZE_NATIVE_ATTRIBUTE_VALUES_7502_CAPTURE = "${{ runner.temp }}/native-attribute-values-7502/first.capture.json"
+        VIZE_NATIVE_ATTRIBUTE_VALUES_7502_BUILD_RECEIPT = "${{ runner.temp }}/native-attribute-values-7502/build-receipt.json"
+        VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR = "${{ runner.temp }}/native-attribute-values-7502"
+        VIZE_NATIVE_ATTRIBUTE_VALUES_7502_HISTORY_RECEIPT = "${{ runner.temp }}/native-attribute-values-7502/history-receipt.json"
+      }
+      run = #". "$GITHUB_ACTION_PATH/scripts/capture-original-native-values-and-verify-independent-runtime-evidence.sh""#
+    }
+    new Dynamic {
+      name = "Upload complete native attribute build, custody and runtime evidence"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "native-attribute-values-7502-${{ github.sha }}-${{ github.run_attempt }}"
+        path = "${{ runner.temp }}/native-attribute-values-7502"
+        `if-no-files-found` = "error"
+        `retention-days` = 7
+      }
+    }
+  }
+}

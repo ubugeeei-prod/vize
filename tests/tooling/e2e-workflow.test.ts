@@ -1,8 +1,9 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile, workflowJobRunsOn } from "./support/github-workflows.ts";
+import { workflowJobRunsOn } from "./support/github-workflows.ts";
 
 const BLACKSMITH_RUNNER = "blacksmith-32vcpu-ubuntu-2404";
 
@@ -38,7 +39,7 @@ type Workflow = {
 };
 
 const loadWorkflow = (): Workflow =>
-  parse(readRepoFile(".github", "workflows", "e2e.yml")) as Workflow;
+  parse(readAutomationPrograms(".github", "workflows", "e2e.yml")) as Workflow;
 const namedStep = (job: Job | undefined, name: string): Step => {
   const found = job?.steps?.find((step) => step.name === name);
   assert.ok(found, `missing step ${name}`);
@@ -200,7 +201,7 @@ test("every producer and aggregator checks out the exact event target", () => {
 });
 
 test("App E2E producers take their runner from the plan; support jobs stay Blacksmith", () => {
-  const source = readRepoFile(".github", "workflows", "e2e.yml");
+  const source = readAutomationPrograms(".github", "workflows", "e2e.yml");
   // Which label each row gets is the planner's call and is asserted in
   // app-e2e-plan.test.ts; the workflow only has to defer to it.
   for (const job of ["app-readiness-producer", "app-e2e-producer"]) {
@@ -220,7 +221,7 @@ test("App E2E producers take their runner from the plan; support jobs stay Black
 });
 
 test("shared row action validates the plan and never parallelizes fixture processes", () => {
-  const source = readRepoFile(".github", "actions", "app-e2e-row", "action.yml");
+  const source = readAutomationPrograms(".github", "actions", "app-e2e-row", "action.yml");
   const action = parse(source) as {
     inputs?: Record<string, unknown>;
     runs?: { steps?: Step[]; using?: string };
@@ -291,7 +292,7 @@ test("shared row action validates the plan and never parallelizes fixture proces
 });
 
 test("Testbox still hydrates the exact 17-fixture App inventory", () => {
-  const action = readRepoFile(".github", "actions", "hydrate-app-fixtures", "action.yml");
+  const action = readAutomationPrograms(".github", "actions", "hydrate-app-fixtures", "action.yml");
   const fixtures = [
     "ant-design-vue",
     "directus",

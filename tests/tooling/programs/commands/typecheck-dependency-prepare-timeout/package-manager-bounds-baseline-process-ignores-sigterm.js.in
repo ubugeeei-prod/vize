@@ -1,0 +1,10 @@
+if (managerArgs[0] === "install") {
+  @@SUCCESS_BODY@@
+} else {
+  const { spawn } = await import("node:child_process");
+  fs.mkdirSync(".generated", { recursive: true });
+  fs.writeFileSync(".generated/tsconfig.json", "{}\n");
+  process.on("SIGTERM", () => {});
+  spawn(process.execPath, [@@CHILD_PROGRAM@@], { stdio: "inherit" });
+  setInterval(() => {}, 1000);
+}

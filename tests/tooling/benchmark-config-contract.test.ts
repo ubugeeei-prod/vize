@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -24,30 +25,12 @@ function binaryFixture(t: TestContext, behavior: string) {
   const binary = path.join(directory, "vize");
   fs.writeFileSync(
     binary,
-    `#!${process.execPath}
-const fs = require("node:fs");
-const {pathToFileURL} = require("node:url");
-const mode = ${JSON.stringify(behavior)};
-const filename = process.argv[4];
-const legacy = filename === "vize.config.json";
-const output = ${JSON.stringify(CONFIG_PROBE_OUTPUT)};
-(async () => {
-  if (mode === "changed-binary") fs.appendFileSync(__filename, "\\n");
-  if (legacy && mode !== "old" && mode !== "both" && mode !== "wrong-legacy" && mode !== "changed-binary") {
-    if (mode === "extra-stdout") process.stdout.write("unexpected\\n");
-    if (mode === "modified-input") fs.writeFileSync("Probe.vue", output);
-    process.stderr.write(mode === "unknown" ? "permission denied\\n" : mode === "partial-retirement" ? "prefix " + ${JSON.stringify(RETIRED_FORMATTER_ERROR)} : ${JSON.stringify(RETIRED_FORMATTER_ERROR)});
-    process.exitCode = 2;
-    return;
-  }
-  let policy;
-  if (legacy) policy = JSON.parse(fs.readFileSync(filename, "utf8"));
-  else policy = (await import(pathToFileURL(require("node:path").resolve(filename)).href)).default.vue;
-  const supports = legacy || (mode !== "old" && mode !== "ignored-canonical");
-  if (mode === "wrong-legacy" && legacy) fs.writeFileSync("Probe.vue", "wrong\\n");
-  else fs.writeFileSync("Probe.vue", supports && policy.formatter.tabWidth === 3 ? output : "<template>\\n  <p>hello</p>\\n</template>\\n");
-})().catch(error => { process.stderr.write(String(error)); process.exitCode = 2; });
-`,
+    readToolingProgram("commands/benchmark-config-contract/binary.cjs.in", {
+      NODE: process.execPath,
+      BEHAVIOR: JSON.stringify(behavior),
+      CONFIG_PROBE_OUTPUT: JSON.stringify(CONFIG_PROBE_OUTPUT),
+      RETIRED_FORMATTER_ERROR: JSON.stringify(RETIRED_FORMATTER_ERROR),
+    }),
     { mode: 0o755 },
   );
   return { directory, binary };

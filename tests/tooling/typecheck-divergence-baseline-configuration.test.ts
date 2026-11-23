@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -143,9 +144,11 @@ test("a config error against the materialized baseline project is unusable", () 
     const detail = `${baselineProject}(3,3): error TS18002: The 'files' list in config file is empty.`;
     writeVueTsc(
       fixture.vueTsc,
-      `process.stdout.write(${JSON.stringify(
-        `${detail}\n${sharedBaselineOutput}${path.join(fixture.fixtureRoot, "src/App.vue")}\n`,
-      )}); process.exit(2);`,
+      readToolingProgram("commands/typecheck-divergence-baseline-configuration/vue-tsc.js.in", {
+        DETAIL_N_SHARED_BASELINE_OUTPUT_PATH_JOIN_FIX: JSON.stringify(
+          `${detail}\n${sharedBaselineOutput}${path.join(fixture.fixtureRoot, "src/App.vue")}\n`,
+        ),
+      }),
     );
     const result = run(fixture);
     assert.equal(result.status, 1);

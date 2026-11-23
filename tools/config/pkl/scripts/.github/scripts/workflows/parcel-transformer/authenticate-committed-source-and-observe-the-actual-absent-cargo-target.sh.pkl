@@ -1,0 +1,12 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.requireCheckout("SOURCE_SHA")
+  #"""
+  test -z "$(git status --porcelain --untracked-files=normal)"
+  node tools/support/compat/parcel/native-target.mjs before "$GITHUB_WORKSPACE"
+  node npm/native/scripts/build-ci.mjs --request-ci-capture
+  """#
+}

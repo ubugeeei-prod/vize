@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+flags=(--locked --profile ci-opt)
+export VIZE_INSPECTOR_TEMPLATE_INPUTS="$RUNNER_TEMP/inspector-templates"
+git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_INSPECTOR_TEMPLATE_INPUTS"
+cargo clippy "${flags[@]}" -p vize_curator --features inspector-template-products --lib --no-deps -- -D warnings
+cargo test "${flags[@]}" -p vize_curator --features inspector-template-products --lib inspector:: -- --include-ignored --nocapture --test-threads=1
+cargo test "${flags[@]}" -p vize --no-default-features --features inspector-template-products --test inspector_template_products -- --include-ignored --nocapture --test-threads=1

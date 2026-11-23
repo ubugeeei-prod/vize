@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l4 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 && cargo build -p vize_l0 -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l4 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 --no-default-features

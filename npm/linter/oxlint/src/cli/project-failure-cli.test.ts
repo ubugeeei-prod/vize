@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../../../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -34,18 +35,18 @@ for (const failure of ["preparation", "json", "unavailable", "metadata"])
     // Authored protocol process, not a real-host or source-native oracle.
     fs.writeFileSync(
       engine,
-      `
-      const args = process.argv.slice(2);
-      if (args.includes('--version')) { console.log('Version: 1.78.0'); process.exit(0); }
-      if (args.includes('--debug')) { console.log(args.at(-1)); process.exit(0); }
-      if (args.some(arg => arg.includes('oxlint-vize-original-'))) {
-        process.stdout.write(${JSON.stringify(original)});
-        process.stderr.write('whole original stderr\\n'); process.exit(${failure === "metadata" ? 1 : 2});
-      }
-      process.stdout.write(${JSON.stringify(["json", "metadata"].includes(failure) ? "{}\n" : "")});
-      process.stderr.write('authored bridge failure\\n');
-      process.exit(${failure === "json" ? 0 : failure === "metadata" ? 2 : 1});
-    `,
+      readToolingProgram(
+        new URL(
+          "../../scripts/test-programs/project-failure-cli/emit-engine-failure.js.in",
+          import.meta.url,
+        ),
+        {
+          ORIGINAL_STDOUT: JSON.stringify(original),
+          METADATA_STATUS: failure === "metadata" ? 1 : 2,
+          BRIDGE_STDOUT: JSON.stringify(["json", "metadata"].includes(failure) ? "{}\n" : ""),
+          BRIDGE_STATUS: failure === "json" ? 0 : failure === "metadata" ? 2 : 1,
+        },
+      ),
     );
     const result = spawnSync(process.execPath, [cli, "-f", "json", "Original.vue"], {
       cwd: root,

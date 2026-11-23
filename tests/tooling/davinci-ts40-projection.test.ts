@@ -1,5 +1,5 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
-import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -64,9 +64,8 @@ test("TS-40 verifier fails closed on diagnostic drift", () => {
 });
 
 test("TS-40 baselines are wired into exact Content Mapper CI", () => {
-  const workflow = fs.readFileSync(
+  const workflow = readAutomationPrograms(
     path.join(root, ".github/workflows/content-mapper-conformance.yml"),
-    "utf8",
   );
   const parsed = parse(workflow) as {
     on: {

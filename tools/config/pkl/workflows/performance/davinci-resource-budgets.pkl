@@ -1,0 +1,222 @@
+import "../../Actions.pkl" as ci
+
+name = "Davinci resource budgets"
+
+// TS-44 (Davinci P5-11a): the resident `vize lsp` measured against the
+// `docs/davinci/plan/budgets.toml [resource]` ceilings on the reference
+// runner. Every recorded number names this workflow's measure command; the
+// ratchet step rejects a loosened or dropped ceiling against the PR base.
+//
+on {
+  // Daily, offset from the other nightly lanes.
+  schedule = new Listing {
+    new Dynamic { cron = "53 5 * * *" }
+  }
+  workflow_dispatch {
+    inputs {
+      include_release {
+        description = "Also measure the shipped fat-LTO Linux CLI at the same source revision"
+        type = "boolean"
+        ["default"] = false
+      }
+    }
+  }
+}
+
+concurrency {
+  group = "davinci-resource-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}"
+  `cancel-in-progress` = true
+}
+
+permissions { contents = "read" }
+
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+  RESOURCE_PRESET = "linux-x64-ci"
+}
+
+jobs {
+  resource {
+    name = "TS-44 resource budgets (linux-x64-ci)"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/davinci-resource-budgets"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.workspaceVp()
+      ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+      // The runner's rustup installs the toolchain pinned in rust-toolchain.toml.
+      new Dynamic {
+        name = "Install the repository Rust toolchain"
+        run = #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain.sh""#
+      }
+      // No Wild: the server links with rust-lld like the shipped x86_64 Linux
+      // CLI, so crates/vize/build.rs folds identical code and packs relocations.
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "davinci-resource"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      // The optimized profile check-bench measures; shipped release binaries
+      // use fat LTO and one codegen unit on top of it.
+      new Dynamic {
+        name = "Build the measured server"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-the-measured-server.sh""#
+      }
+      new Dynamic {
+        name = "Record the measured binary and build identity"
+        run = #"vp exec node tools/support/compat/davinci/lsp-build-identity.ts target/ci-opt/vize ci-opt "${RUNNER_TEMP}/resource-build.jsonl" "${RUNNER_TEMP}/resource-build-identity.json""#
+      }
+      new Dynamic {
+        name = "Measure the resident server"
+        run = #"rust-script tools/commands/davinci/resource-budgets.rs --measure --preset "${RESOURCE_PRESET}" --runs 3 --keystrokes 20 --idle-seconds 60 --server target/ci-opt/vize --out "${RUNNER_TEMP}/resource.json""#
+      }
+      new Dynamic {
+        name = "Every number carries its methodology"
+        `if` = "${{ !cancelled() }}"
+        run = "rust-script tools/commands/davinci/resource-budgets.rs --validate"
+      }
+      new Dynamic {
+        name = "No ceiling is loosened against the base"
+        `if` = "${{ !cancelled() && github.event_name == 'pull_request' }}"
+        env { BASE_SHA = "${{ github.event.pull_request.base.sha }}" }
+        run = #". "${{ env.VIZE_CI_FILES }}/no-ceiling-is-loosened-against-the-base.sh""#
+      }
+      new Dynamic {
+        name = "The measurement holds every pinned ceiling"
+        `if` = "${{ !cancelled() }}"
+        run = #"rust-script tools/commands/davinci/resource-budgets.rs --check --measurement "${RUNNER_TEMP}/resource.json""#
+      }
+      new Dynamic {
+        name = "Summarize"
+        `if` = "${{ !cancelled() }}"
+        run = #". "${{ env.VIZE_CI_FILES }}/summarize.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "${{ !cancelled() }}"
+        with {
+          name = "resource-${{ env.RESOURCE_PRESET }}"
+          path = """
+          ${{ runner.temp }}/resource.json
+          ${{ runner.temp }}/resource-build-identity.json
+
+          """
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+
+  `resident-resource` {
+    name = "Synthetic 10k-file resident resources (P5-4b)"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/davinci-resource-budgets"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.command("Install the repository Rust toolchain", #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain-2.sh""#)
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "davinci-resident-resource"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Build the isolated resident session"
+        run = #"cargo build --profile ci-opt -p vize_incremental --example resource_session --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16'"#
+      }
+      new Dynamic {
+        name = "Measure and enforce the unchanged reference RSS ceilings"
+        run = #"node tools/commands/davinci/resident-resources.ts --server target/ci-opt/examples/resource_session --files 10000 --edits 32 --runs 3 --out "${RUNNER_TEMP}/resident-resource.json""#
+      }
+      new Dynamic {
+        name = "Summarize the isolated session"
+        `if` = "${{ !cancelled() }}"
+        run = #". "${{ env.VIZE_CI_FILES }}/summarize-the-isolated-session.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "${{ !cancelled() }}"
+        with {
+          name = "resident-resource-${{ env.RESOURCE_PRESET }}"
+          path = "${{ runner.temp }}/resident-resource.json"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+
+  `production-lsp-resource` {
+    name = "Production 10k open SFC process-tree RSS (record only)"
+    `if` = "github.event_name == 'workflow_dispatch'"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 60
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/davinci-resource-budgets"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.workspaceVp()
+      ci.command("Install JS dependencies", "vp install --frozen-lockfile --prefer-offline")
+      ci.command("Install the repository Rust toolchain", #". "${{ env.VIZE_CI_FILES }}/install-the-repository-rust-toolchain-2.sh""#)
+      // No Wild: the server links with rust-lld like the shipped x86_64 Linux
+      // CLI, so crates/vize/build.rs folds identical code and packs relocations.
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "davinci-resource"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Verify assertion, module, and source length gates"
+        run = "vp exec node --test tests/tooling/davinci-assertion-lint.test.ts tests/tooling/davinci-module-layout.test.ts tests/tooling/source-file-lengths.test.ts"
+      }
+      new Dynamic {
+        name = "Build the production server"
+        run = #"cargo build --profile ci-opt -p vize --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16'"#
+      }
+      new Dynamic {
+        name = "Verify the protocol and controlled edit oracle"
+        run = #"vp exec node tools/support/compat/davinci/lsp-resources.ts --server target/ci-opt/vize --files 2 --runs 1 --idle-seconds 10 --build "ci-opt: release, thin LTO, 16 codegen units" --out "${RUNNER_TEMP}/lsp-resource-smoke.json""#
+      }
+      new Dynamic {
+        name = "Measure 10000 open buffers, 16 production providers, and Corsa"
+        run = #"timeout --signal=TERM --kill-after=30s 45m vp exec node tools/support/compat/davinci/lsp-resources.ts --server target/ci-opt/vize --files 10000 --warm-providers 16 --runs 1 --idle-seconds 10 --build "ci-opt: release, thin LTO, 16 codegen units" --out "${RUNNER_TEMP}/lsp-resource.json""#
+      }
+      new Dynamic {
+        name = "Summarize the actual scope and every process"
+        `if` = "${{ !cancelled() }}"
+        run = #". "${{ env.VIZE_CI_FILES }}/summarize-the-actual-scope-and-every-process.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "${{ always() }}"
+        with {
+          name = "production-lsp-resource-linux-x64-ci"
+          path = "${{ runner.temp }}/lsp-resource*.json"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+
+  `release-resource` {
+    name = "Shipped Linux CLI resource comparison"
+    `if` = "github.event_name == 'workflow_dispatch' && inputs.include_release"
+    uses = "./.github/workflows/lsp-release-resources.yml"
+  }
+}

@@ -1,0 +1,23 @@
+import "../../Actions.pkl" as ci
+
+name = "Build Native - ${{ matrix.settings.target }}"
+needs = "version"
+`if` = "needs.version.outputs.ref != ''"
+`runs-on` = "${{ matrix.settings.host }}"
+`timeout-minutes` = 60
+strategy {
+  `fail-fast` = false
+  matrix { settings = "${{ fromJSON(needs.version.outputs.native_matrix) }}" }
+}
+steps = new Listing {
+  ci.checkoutAt("${{ needs.version.outputs.ref }}")
+  new Dynamic {
+    uses = "./.github/actions/build-release-native"
+    with {
+      target = "${{ matrix.settings.target }}"
+      `cross-compile` = "${{ matrix.settings.cross_compile }}"
+      `release-version` = "${{ needs.version.outputs.version }}"
+      `authorized-release` = "true"
+    }
+  }
+}

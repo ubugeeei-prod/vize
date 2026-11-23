@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawn, execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -197,25 +198,17 @@ await test("already-created versions verify the exact archive without requiring 
   writeFakeCommand(
     bin,
     "vp",
-    `require('node:fs').appendFileSync(${JSON.stringify(trace)}, 'UNEXPECTED PUBLISH\\n'); process.exit(1);`,
+    readToolingProgram("commands/publish-npm-package-tarball/vp.js.in", {
+      TRACE: JSON.stringify(trace),
+    }),
   );
   writeFakeCommand(
     bin,
     "curl",
-    [
-      "const url = new URL(process.argv.at(-1));",
-      "if (url.pathname.endsWith('.tgz')) {",
-      "  if (process.env.TEST_PROBE_MODE === 'frame') process.stderr.write('unexpected diagnostic frame\\n');",
-      `  const child = require('node:child_process').spawnSync(${JSON.stringify(curl)}, process.argv.slice(2), { stdio: 'inherit' });`,
-      "  process.exit(child.status ?? 1);",
-      "}",
-      "if (process.env.TEST_METADATA_DELAY_MS && url.searchParams.get('vize-publish-check')?.endsWith('-1')) await new Promise((resolve) => setTimeout(resolve, Number(process.env.TEST_METADATA_DELAY_MS)));",
-      "const probe = url.searchParams.get('vize-publish-check')?.endsWith('-1');",
-      "const mode = process.env.TEST_PROBE_MODE;",
-      "const body = { name: '@vizejs/example', version: probe && mode === 'version' ? '9.9.9' : '1.2.3', 'dist-tags': { latest: probe && mode === 'tag' ? '9.9.9' : probe && mode === 'tag-older' ? '0.9.9' : '1.2.3' },",
-      `  dist: { tarball: process.env.TEST_TARBALL_URL, integrity: ${JSON.stringify(integrity)} } };`,
-      "process.stdout.write(JSON.stringify(body) + 'VIZE_HTTP_STATUS:200');",
-    ].join("\n"),
+    readToolingProgram("commands/publish-npm-package-tarball/curl.js.in", {
+      CURL: JSON.stringify(curl),
+      INTEGRITY: JSON.stringify(integrity),
+    }),
   );
   const run = (route: string, metadataDelayMs = 0, mode = "") =>
     new Promise<{ code: number | null; stdout: string; stderr: string }>((resolve, reject) => {

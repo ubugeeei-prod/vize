@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+case "$GITHUB_EVENT_NAME" in
+  pull_request|merge_group) ;;
+  *) exit 1 ;;
+esac
+# Disabling tsgo makes the typechecker batch return in a few milliseconds.
+# That cohort requires the same runtime on pull_request and merge_group.
+if [[ "$COHORT" == "typechecker" || "$GITHUB_EVENT_NAME" == "merge_group" ]]; then
+  printf 'VIZE_TEST_REQUIRE_TSGO=1\n' >> "$GITHUB_ENV"
+else
+  printf 'VIZE_TEST_DISABLE_TSGO=1\n' >> "$GITHUB_ENV"
+fi
+if [[ "$COHORT" == "typechecker" ]]; then
+  runtime="$GITHUB_WORKSPACE/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+  test -x "$runtime"
+  printf 'CORSA_PATH=%s\n' "$runtime" >> "$GITHUB_ENV"
+  # Packet-only JSON leaves enter the existing cohort artifact; no project links.
+  printf 'VIZE_JSX_ATTRIBUTE_PACKET_DIR=%s\n' "$GITHUB_WORKSPACE/target/nextest/$NEXTEST_PROFILE/jsx-attribute-packets/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-$GITHUB_SHA" >> "$GITHUB_ENV"
+fi
+if [[ "$COHORT" == "typechecker" || "$COHORT" == "language-server" || "$COHORT" == "vapor-compiler" ]]; then
+  # Insta's CI default writes no pending observations. NewFile retains
+  # actual .snap.new bytes while every mismatch still fails the test.
+  test "${INSTA_FORCE_PASS:-0}" = "0"
+  printf 'INSTA_UPDATE=new\nINSTA_FORCE_PASS=0\n' >> "$GITHUB_ENV"
+fi

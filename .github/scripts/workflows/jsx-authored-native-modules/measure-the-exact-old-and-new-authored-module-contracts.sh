@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+baseline="$RUNNER_TEMP/jsx-authored-base"
+observer=crates/vize_atelier_jsx/tests/authored_module_profile.rs
+git worktree add --detach "$baseline" "$BASE_SHA"
+cp "$observer" "$baseline/$observer"
+cmp "$observer" "$baseline/$observer"
+role_observer=crates/vize_atelier_jsx/tests/ssr_functional_role_packet.rs
+cp "$role_observer" "$baseline/$role_observer"
+cmp "$role_observer" "$baseline/$role_observer"
+git -C "$baseline" diff --exit-code -- crates/*/src
+(cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-authored-base-target" VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture)
+VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/head-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture
+(cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-authored-base-target" VIZE_JSX_FUNCTIONAL_ROLE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/base-functional-role.json" cargo test --locked --profile ci -p vize_atelier_jsx --test ssr_functional_role_packet -- --nocapture)
+VIZE_JSX_FUNCTIONAL_ROLE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/head-functional-role.json" cargo test --locked --profile ci -p vize_atelier_jsx --test ssr_functional_role_packet -- --nocapture
+git -C "$baseline" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/base-source.txt"
+sha256sum "$observer" "$baseline/$observer" "$role_observer" "$baseline/$role_observer" > "$RUNNER_TEMP/jsx-authored-native/observer.sha256"
+# A separate source tree/target isolates the actual static-value
+# change from the earlier standalone-to-authored-module transition.
+stable_base="$RUNNER_TEMP/jsx-stability-base"
+git worktree add --detach "$stable_base" 664c7dc3846c068a756b7562e11eab35a9497d9d
+cp "$observer" "$stable_base/$observer"
+cmp "$observer" "$stable_base/$observer"
+git -C "$stable_base" diff --exit-code -- crates/*/src
+(cd "$stable_base" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-stability-base-target" VIZE_JSX_AUTHORED_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-authored-native/stability-base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test authored_module_profile -- --nocapture)
+git -C "$stable_base" rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-authored-native/stability-base-source.txt"
+sha256sum "$observer" "$stable_base/$observer" > "$RUNNER_TEMP/jsx-authored-native/stability-observer.sha256"
+stability_oracle=crates/vize_atelier_jsx/tests/native_component_stability.rs
+stability_packet=tests/_fixtures/differential/jsx/authored-native-modules-10700/component-stability.json
+cp "$stability_oracle" "$stable_base/$stability_oracle"
+cp "$stability_packet" "$stable_base/$stability_packet"
+cmp "$stability_oracle" "$stable_base/$stability_oracle"
+cmp "$stability_packet" "$stable_base/$stability_packet"
+(cd "$stable_base" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-stability-base-target" VIZE_JSX_COMPONENT_STABILITY_EXPECT_OLD=1 VIZE_JSX_COMPONENT_STABILITY_CAPTURE="$RUNNER_TEMP/jsx-authored-native/stability-base-packets.json" cargo test --locked --profile ci -p vize_atelier_jsx --test native_component_stability -- --nocapture)
+sha256sum "$stability_oracle" "$stable_base/$stability_oracle" > "$RUNNER_TEMP/jsx-authored-native/stability-oracle.sha256"

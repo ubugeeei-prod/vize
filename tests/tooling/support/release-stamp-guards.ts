@@ -9,7 +9,6 @@ import { fileURLToPath } from "node:url";
 const command = fileURLToPath(
   new URL("../../../tools/support/release/release/main.ts", import.meta.url),
 );
-const stamp = new URL("../../../tools/support/release/release/stamp.ts", import.meta.url);
 const invalid = [
   "",
   " ",
@@ -110,19 +109,8 @@ export function registerStampGuards(): void {
     const result = spawnSync(
       process.execPath,
       [
-        "--input-type=module",
-        "-e",
-        `
-      import assert from "node:assert/strict";
-      import fs from "node:fs";
-      import {stampVersion} from ${JSON.stringify(stamp.href)};
-      let calls = 0;
-      for (const name of ["opendirSync", "statSync", "lstatSync", "existsSync", "accessSync", "openSync", "readFileSync", "writeFileSync", "appendFileSync", "mkdirSync"])
-        fs[name] = () => {calls++; throw new Error("stamp target IO forbidden");};
-      for (const version of ${JSON.stringify(invalid)}) assert.equal(await stampVersion("0.1.0", version), false);
-      assert.equal(calls, 0);
-      process.stdout.write(JSON.stringify({cases: ${invalid.length}, targetIoCalls: calls}));
-    `,
+        fileURLToPath(new URL("./release-stamp-no-io.ts", import.meta.url)),
+        JSON.stringify(invalid),
       ],
       { encoding: "utf8" },
     );

@@ -6,6 +6,7 @@ on:
       - tests/_fixtures/differential/typechecker/snapshot-source-text/**
       - tests/tooling/support/native-beta-dto/**
       - .github/workflows/native-beta-diagnostic-dto.yml
+      - .github/scripts/workflows/native-beta-diagnostic-dto/**
       - Cargo.toml
       - Cargo.lock
   workflow_dispatch: {}
@@ -37,6 +38,19 @@ jobs:
       SDK_VERSION: ${{ matrix.sdk.version }}
       SDK_SHA256: ${{ matrix.sdk.sha256 }}
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/native-beta-diagnostic-dto/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ env.HEAD_SHA }}
@@ -50,32 +64,20 @@ jobs:
         with: { wild-version: "0.9.0" }
       - name: Install exact official SDK into an isolated consumer
         working-directory: ${{ runner.temp }}
-        run: |
-          sdk_root="$RUNNER_TEMP/native-dto-sdk-$SDK_VERSION"
-          npm install --prefix "$sdk_root" --ignore-scripts --no-audit --no-fund "typescript@$SDK_VERSION"
-          echo "SDK_ROOT=$sdk_root" >> "$GITHUB_ENV"
-          command -v strace
+        run: . "${{ env.VIZE_CI_FILES }}/install-exact-official-sdk-into-an-isolated-consumer.sh"
       - name: Pin before production bytes and identical observer separately
         run: node tests/tooling/support/native-beta-dto/prepare-role.ts
       - name: Pin actual native image and retain all raw process streams
         run: node tests/tooling/support/native-beta-dto/provider.ts
       - name: Exercise same source and SDK error, repair, hover, refs and foreign-file control
         shell: bash
-        run: |
-          set -euo pipefail
-          cd "$VIZE_NATIVE_DTO_SOURCE_ROOT"
-          test ! -e "$CARGO_TARGET_DIR"
-          cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::tests::native_beta::actual_sdk_semantic_error_repair_navigation_and_two_file_scope_are_complete --no-run --message-format=json >"$VIZE_NATIVE_DTO_CAPTURE/build.jsonl" 2>"$VIZE_NATIVE_DTO_CAPTURE/build.stderr"
-          node "$GITHUB_WORKSPACE/tests/tooling/support/native-beta-dto/run-source.ts"
+        run: . "${{ env.VIZE_CI_FILES }}/exercise-same-source-and-sdk-error-repair-hover-refs-and-foreign-file-co.sh"
       - name: Verify closed raw native frames and exact per-file request shapes
         if: ${{ !cancelled() }}
         run: node tests/tooling/support/native-beta-dto/audit-wire.ts
       - name: Keep strict known DTO, unknown fields, source ownership and both envelope controls
         if: ${{ matrix.role == 'after' && matrix.sdk.version == '7.0.2' }}
-        run: |
-          cargo test --locked --profile ci -p vize_canon --lib lsp_client::initial_diagnostics::
-          cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::
-          cargo clippy --locked --profile ci -p vize_canon --lib -- -D warnings
+        run: . "${{ env.VIZE_CI_FILES }}/keep-strict-known-dto-unknown-fields-source-ownership-and-both-envelope.sh"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:

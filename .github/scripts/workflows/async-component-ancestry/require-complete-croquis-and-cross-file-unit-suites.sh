@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+mkdir -p target/vize-tests/async-component
+cargo test --locked --profile ci -p vize_croquis -p vize_croquis_cf --lib -- --nocapture >target/vize-tests/async-component/units.stdout 2>target/vize-tests/async-component/units.stderr
+cat target/vize-tests/async-component/units.stdout
+cat target/vize-tests/async-component/units.stderr >&2
+node "$VIZE_CI_FILES/verify-async-component-unit-tests.ts"

@@ -1,0 +1,6 @@
+
+import fs from "node:fs";
+fs.appendFileSync("invocations.txt", "@@EXIT_STATUS@@\n");
+await new Promise((resolve) => process.stdout.write(Buffer.from(@@STDOUT@@), resolve));
+await new Promise((resolve) => process.stderr.write(Buffer.from(@@STDERR@@), resolve));
+process.exitCode = @@EXIT_STATUS@@;

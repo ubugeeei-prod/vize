@@ -20,6 +20,14 @@ mod process_session;
 #[cfg(target_os = "linux")]
 use process_session::{cleanup_session, session_members};
 
+#[cfg(all(test, target_os = "linux"))]
+fn test_program(name: &str) -> PathBuf {
+    crate::common::repo_root()
+        .unwrap()
+        .join("tools/commands/fixtures/project_deadline/programs")
+        .join(name)
+}
+
 pub struct ProjectContext {
     pub directory: PathBuf,
     started: Instant,

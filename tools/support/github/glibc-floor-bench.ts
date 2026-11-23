@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 /**
  * Compares the Linux GNU release linking recipes on one runner: the same
  * source built against the runner's glibc (`host`, the recipe before the
@@ -73,20 +74,6 @@ function vueFiles(directory: string): string[] {
 }
 
 // Loads one binding in a fresh process and compiles every corpus file 5 times.
-const compileScript = `
-const fs = require("node:fs");
-const [binding, list] = process.argv.slice(1);
-const native = require(binding);
-const sources = fs.readFileSync(list, "utf8").split("\\n").filter(Boolean)
-  .map((file) => [file, fs.readFileSync(file, "utf8")]);
-const started = process.hrtime.bigint();
-let bytes = 0;
-for (let pass = 0; pass < 5; pass += 1) {
-  for (const [filename, source] of sources) bytes += native.compileSfc(source, { filename }).code.length;
-}
-process.stdout.write(String(Number(process.hrtime.bigint() - started) / 1e9) + " " + bytes);
-`;
-
 function timed(command: string, args: readonly string[], cwd: string): number {
   const started = process.hrtime.bigint();
   const result = spawnSync(command, args, { cwd, encoding: "utf8", maxBuffer: 1 << 30 });
@@ -125,9 +112,13 @@ export function runBench(args: readonly string[]): number {
       "binding-compile",
       options.binding,
       (binding) => {
-        const result = spawnSync(process.execPath, ["-e", compileScript, binding, list], {
-          encoding: "utf8",
-        });
+        const result = spawnSync(
+          process.execPath,
+          [fileURLToPath(new URL("./glibc-floor-compile.cjs", import.meta.url)), binding, list],
+          {
+            encoding: "utf8",
+          },
+        );
         if (result.status !== 0) throw new Error(`compile bench failed\n${result.stderr}`);
         return Number(result.stdout.split(" ")[0]);
       },

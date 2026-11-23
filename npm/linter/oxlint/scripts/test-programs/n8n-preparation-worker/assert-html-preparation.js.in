@@ -1,0 +1,7 @@
+import fs from "node:fs";
+fs.writeFileSync(
+  process.env.VIZE_OXLINT_HTML_CAPTURE,
+  JSON.stringify({ complete: true, qualified: { controlled: true } }),
+);
+fs.writeFileSync(@@MARKER@@, JSON.stringify({ owner: process.ppid }));
+console.log("complete HTML raw output");

@@ -1,0 +1,16 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = null
+
+commands {
+  #"""
+  #!/bin/bash
+  set -euo pipefail
+  if [ "$1" != "$EXTRACTOR" ]; then exec /bin/bash "$@"; fi
+  printf '%s\n' "$@" > "$HELPER_LOG"
+  if [ "$FIXTURE_DIGEST" = true ]; then
+    exec /bin/bash "$1" "$2" "$3" "$ARCHIVE_DIGEST"
+  fi
+  exec /bin/bash "$@"
+  """#
+}

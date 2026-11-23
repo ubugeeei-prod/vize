@@ -1,0 +1,9 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  printf 'mismatches=0\n'
+  """#
+}

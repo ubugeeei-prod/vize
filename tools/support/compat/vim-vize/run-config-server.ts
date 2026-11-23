@@ -1,3 +1,4 @@
+import { shellLauncher } from "../../process-launcher.ts";
 // Actual Vim + pinned vim-lsp config integration; every request reaches vize lsp.
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
@@ -36,12 +37,9 @@ const workspace = path.join(output, "workspace");
 fs.mkdirSync(workspace);
 const pidFile = path.join(output, "native.pid");
 const wrapper = path.join(output, "native-server.sh");
-const quote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
-fs.writeFileSync(
-  wrapper,
-  `#!/bin/sh\nexec 3<&0\n${quote(binary)} "$@" <&3 &\nnative=$!\nexec 3<&-\nprintf '%s\\n' "$native" > ${quote(pidFile)}\nwait "$native"\n`,
-  { mode: 0o755 },
-);
+fs.writeFileSync(wrapper, shellLauncher("record-pid", { COMMAND: binary, PID_FILE: pidFile }), {
+  mode: 0o755,
+});
 const result = spawnSync(
   vim,
   [

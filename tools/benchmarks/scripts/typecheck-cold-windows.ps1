@@ -1,0 +1,38 @@
+param([string]$Executable, [string]$Directory, [string]$OutputFile)
+$ErrorActionPreference = 'Stop'
+$start = @{
+  FilePath = $Executable
+  ArgumentList = $env:VIZE_CHECK_ARGUMENTS
+  WorkingDirectory = $Directory
+  RedirectStandardOutput = $OutputFile
+  RedirectStandardError = "$OutputFile.err"
+  NoNewWindow = $true
+  PassThru = $true
+}
+$child = Start-Process @start
+# Keeping the handle open makes the exit code and CPU time readable after exit.
+$null = $child.Handle
+$vizePeak = 0
+$children = @{}
+while (-not $child.HasExited) {
+  $child.Refresh()
+  $vizePeak = [Math]::Max([int64]$vizePeak, $child.PeakWorkingSet64)
+  foreach ($descendant in Get-CimInstance Win32_Process -Filter "ParentProcessId=$($child.Id)") {
+    $pidKey = $descendant.ProcessId
+    $peak = [int64]$descendant.PeakWorkingSetSize
+    if (-not $children.ContainsKey($pidKey) -or $children[$pidKey] -lt $peak) {
+      $children[$pidKey] = $peak
+    }
+  }
+  Start-Sleep -Milliseconds 250
+}
+$child.WaitForExit()
+$childKiB = 0
+foreach ($peak in $children.Values) { $childKiB += $peak }
+@{
+  exit = $child.ExitCode
+  cpu = $child.TotalProcessorTime.TotalSeconds
+  vizePeak = $vizePeak
+  childKiB = $childKiB
+  wallMs = ($child.ExitTime - $child.StartTime).TotalMilliseconds
+} | ConvertTo-Json -Compress

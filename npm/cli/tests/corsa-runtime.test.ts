@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -49,15 +50,16 @@ function fixture(options: { supportsConfigStdin?: boolean } = {}) {
   );
   fs.writeFileSync(
     path.join(stub, "index.cjs"),
-    `const fs = require("node:fs");
-${options.supportsConfigStdin ? "exports.supportsCliConfigStdin = () => true;" : ""}
-exports.runCli = (args) => {
-  const config = args.indexOf("--config");
-  const result = { args, environment: Object.fromEntries(${JSON.stringify(environmentNames)}.map(name => [name, process.env[name] ?? null])) };
-  if (config >= 0) result.configPayload = fs.readFileSync(args[config + 1], "utf8");
-  process.stdout.write(JSON.stringify(result));
-};
-`,
+    readToolingProgram(
+      new URL(
+        "../scripts/test-programs/corsa-runtime/observe-corsa-config.cjs.in",
+        import.meta.url,
+      ),
+      {
+        SUPPORTS_CONFIG_STDIN: Boolean(options.supportsConfigStdin),
+        ENVIRONMENT_KEYS: JSON.stringify(environmentNames),
+      },
+    ),
   );
   const installed = path.join(packageRoot, "bin", "vize");
   fs.cpSync(fileURLToPath(new URL("../dist", import.meta.url)), path.join(packageRoot, "dist"), {

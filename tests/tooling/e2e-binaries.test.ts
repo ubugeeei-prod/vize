@@ -3,9 +3,9 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const helperModuleUrl = new URL("../_helpers/apps.ts", import.meta.url).href;
 
 interface HelperCommandResult {
   status: number | null;
@@ -21,10 +21,7 @@ test("compiler e2e binary helpers respect explicit env overrides", () => {
       CORSA_BIN: corsaBin,
       VIZE_BIN: vizeBin,
     },
-    script: [
-      `if (helpers.VIZE_BIN !== ${JSON.stringify(vizeBin)}) throw new Error(helpers.VIZE_BIN);`,
-      `if (helpers.CORSA_BIN !== ${JSON.stringify(corsaBin)}) throw new Error(helpers.CORSA_BIN);`,
-    ].join("\n"),
+    mode: "paths",
   });
 
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
@@ -38,7 +35,7 @@ test("compiler e2e binary helpers fail loudly when the vize override is missing"
       CORSA_BIN: corsaBin,
       VIZE_BIN: vizeBin,
     },
-    script: "helpers.requireVizeAndCorsaBins();",
+    mode: "require",
   });
 
   assert.notEqual(result.status, 0);
@@ -53,7 +50,7 @@ test("compiler e2e binary helpers fail loudly when the checker override is missi
       CORSA_BIN: corsaBin,
       VIZE_BIN: process.execPath,
     },
-    script: "helpers.requireVizeAndCorsaBins();",
+    mode: "require",
   });
 
   assert.notEqual(result.status, 0);
@@ -63,17 +60,11 @@ test("compiler e2e binary helpers fail loudly when the checker override is missi
 
 function runAppsHelper(options: {
   env: Record<"CORSA_BIN" | "VIZE_BIN", string>;
-  script: string;
+  mode: "paths" | "require";
 }): HelperCommandResult {
   const result = spawnSync(
     process.execPath,
-    [
-      "--input-type=module",
-      "--eval",
-      [`const helpers = await import(${JSON.stringify(helperModuleUrl)});`, options.script].join(
-        "\n",
-      ),
-    ],
+    [toolingProgram("runtime/inspect-e2e-binaries.js"), options.mode],
     {
       cwd: root,
       encoding: "utf8",

@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
@@ -43,7 +44,7 @@ test("only actual selected SFC product and acceptance inputs add the source capt
 
 test("the required setup lane captures whole selected SFCs after native setup modules", () => {
   assertNativeRuntimeHook("setup", "test-native-js-setup");
-  const setup = read(".github/actions/test-native-js-setup/action.yml");
+  const setup = readAutomationPrograms(".github/actions/test-native-js-setup/action.yml");
   const upload = setup.indexOf("- name: Upload native JS setup module and runtime captures");
   const selected = setup.indexOf(
     "- name: Capture whole original selected SFC components and runtime",
@@ -55,7 +56,7 @@ test("the required setup lane captures whole selected SFCs after native setup mo
 });
 
 test("selected SFC hosted acceptance requires actual whole Rust capture and retains exact-SHA artifacts", () => {
-  const action = read(".github/actions/test-native-selected-sfc-dom/action.yml");
+  const action = readAutomationPrograms(".github/actions/test-native-selected-sfc-dom/action.yml");
   assert.match(action, /VIZE_NATIVE_SELECTED_SFC_DOM_REQUIRE_CAPTURE: "1"/);
   assert.match(action, /VIZE_NATIVE_SELECTED_SFC_DOM_CAPTURE: \$\{\{ runner\.temp \}\}/);
   assert.match(action, /VIZE_NATIVE_SELECTED_SFC_DOM_RUNTIME_CAPTURE: \$\{\{ runner\.temp \}\}/);

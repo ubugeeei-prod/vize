@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
+import { processResultArgs, toolingProgram } from "./support/program-path.ts";
 import {
   fixture,
   frames,
@@ -194,12 +196,12 @@ void test("host raw descriptors and argv are durable before a controlled Node ch
   try {
     process.env.ADMISSION_DEADLINE_MS = String(Date.now() + 10_000);
     const output = join(root, "process");
-    const code = `const fs=require('node:fs');const p=${JSON.stringify(output)};for(const name of ['stdout.raw','stderr.raw','spawn.json','baseline.json'])if(!fs.existsSync(p+'/'+name))process.exit(9);process.stdout.write('full output');process.exit(2);`;
-    const result = await run(output, [process.execPath, "-e", code], root);
+    const argv = [process.execPath, toolingProgram("native/check-admission-files.js"), output];
+    const result = await run(output, argv, root);
     assert.equal(result.status, 2);
     assert.equal(result.text, "full output");
     assert.equal(result.timedOut, false);
-    assert.equal(JSON.parse(readFileSync(join(output, "spawn.json"), "utf8")).argv[2], code);
+    assert.deepEqual(JSON.parse(readFileSync(join(output, "spawn.json"), "utf8")).argv, argv);
   } finally {
     if (previous === undefined) delete process.env.ADMISSION_DEADLINE_MS;
     else process.env.ADMISSION_DEADLINE_MS = previous;
@@ -221,7 +223,7 @@ void test("a process deadline retains partial raw output and fails outside seman
     await assert.rejects(
       run(
         output,
-        [process.execPath, "-e", "process.stdout.write('partial');setInterval(()=>{},1000);"],
+        [process.execPath, ...processResultArgs({ stdout: "partial", keepAlive: true })],
         root,
       ),
       /timeout\/crash\/survivor/u,
@@ -342,10 +344,9 @@ void test("a detached immediate orphan remains owned after its parent exits", as
     process.env.ADMISSION_DEADLINE_MS = String(Date.now() + 15_000);
     const marker = join(root, "escaped.json"),
       output = join(root, "process");
-    const descendant = `require('node:fs').writeFileSync(${JSON.stringify(marker)},JSON.stringify({pid:process.pid}));setInterval(()=>{},1000);`;
-    const parent = `const child=require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(descendant)}],{detached:true,stdio:'ignore'});child.unref();`;
+    const probe = toolingProgram("native/observe-process-tree.js");
     await assert.rejects(
-      run(output, [process.execPath, "-e", parent], root),
+      run(output, [process.execPath, probe, "parent", marker], root),
       /timeout\/crash\/survivor/u,
     );
     escaped = JSON.parse(readFileSync(marker, "utf8")).pid;
@@ -378,7 +379,7 @@ void test("known child cleanup survives a failed whole-process inventory", async
   const { OwnedProcesses, ownerVariable } =
     await import("../../tools/support/compat/content-mapper/admission-hosts-owned.ts");
   const nonce = randomUUID();
-  const child = spawn(process.execPath, ["-e", "setInterval(()=>{},1000)"], {
+  const child = spawn(process.execPath, [toolingProgram("process/hold-process-open.js")], {
     env: { ...process.env, [ownerVariable]: nonce },
     stdio: "ignore",
   });
@@ -435,7 +436,7 @@ void test("missing child close is bounded and keeps an incomplete raw result", a
     await assert.rejects(
       run(
         output,
-        [process.execPath, "-e", "process.stdout.write('partial');setInterval(()=>{},1000)"],
+        [process.execPath, ...processResultArgs({ stdout: "partial", keepAlive: true })],
         root,
       ),
       /timeout\/crash\/survivor/u,

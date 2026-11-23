@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -176,7 +177,7 @@ void test("invalid UTF8 remains a fatal read_to_string failure while whole binar
 });
 
 void test("diagnostics cannot suppress the ordinary SSR worker or become an accepted gate failure", () => {
-  const workflow = readFileSync(".github/workflows/davinci-canonical-corpus.yml", "utf8");
+  const workflow = readAutomationPrograms(".github/workflows/davinci-canonical-corpus.yml", "utf8");
   const diagnostic = workflow.indexOf("- name: Diagnose complete original corpus source IO");
   const ssr = workflow.indexOf("- name: Run L4 SSR and pug L1 differential corpora");
   const fatal = workflow.indexOf("- name: Require complete source IO diagnostic success");

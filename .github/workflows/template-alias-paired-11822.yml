@@ -14,6 +14,7 @@ on:
   pull_request:
     paths:
       - .github/workflows/template-alias-paired-11822.yml
+      - .github/scripts/workflows/template-alias-paired-11822/**
       - tools/benchmarks/scripts/template-alias-paired-11822*
       - tests/_helpers/template-alias-typescript-11822.ts
       - tests/_fixtures/tooling/public-mapper-provider/**
@@ -58,15 +59,21 @@ jobs:
       TEMPLATE_ALIAS_RUNNER: blacksmith-32vcpu-ubuntu-2404
       CARGO_BUILD_JOBS: "32"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/template-alias-paired-11822/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Establish shared processing deadline and original artifact directory
-        run: |
-          set -euo pipefail
-          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          started="$(date +%s%3N)"
-          echo "TEMPLATE_ALIAS_STARTED_MS=$started" >> "$GITHUB_ENV"
-          echo "TEMPLATE_ALIAS_DEADLINE_MS=$((started + 53 * 60000))" >> "$GITHUB_ENV"
-          mkdir -p "$RUNNER_TEMP/mapper-public-stages"
+        run: . "${{ env.VIZE_CI_FILES }}/establish-shared-processing-deadline-and-original-artifact-directory.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.sha }}
@@ -95,37 +102,13 @@ jobs:
           toolchain: "1.100.0"
       - name: Qualify public driver and install independent public provider
         working-directory: driver
-        run: |
-          set -euo pipefail
-          within_budget() {
-            local remaining=$((TEMPLATE_ALIAS_DEADLINE_MS - $(date +%s%3N)))
-            test "$remaining" -gt 0
-            local seconds=$(((remaining + 999) / 1000))
-            if [ "$seconds" -gt 300 ]; then seconds=300; fi
-            timeout --signal=TERM --kill-after=5s "${seconds}s" "$@"
-          }
-          within_budget vp install --frozen-lockfile --filter . --filter ./npm/cli... > "$RUNNER_TEMP/mapper-public-stages/driver-install.log" 2>&1
-          within_budget node tools/benchmarks/scripts/template-alias-paired-11822-contracts.ts > "$RUNNER_TEMP/mapper-public-stages/contracts.log" 2>&1
-          mkdir "$RUNNER_TEMP/mapper-public-provider"
-          cp tests/_fixtures/tooling/public-mapper-provider/package.json.txt "$RUNNER_TEMP/mapper-public-provider/package.json"
-          cp tests/_fixtures/tooling/public-mapper-provider/package-lock.json.txt "$RUNNER_TEMP/mapper-public-provider/package-lock.json"
-          (cd "$RUNNER_TEMP/mapper-public-provider" && within_budget npm ci --ignore-scripts --no-audit --no-fund) > "$RUNNER_TEMP/mapper-public-stages/provider-install.log" 2>&1
+        run: . "${{ env.VIZE_CI_FILES }}/qualify-public-driver-and-install-independent-public-provider.sh"
       - name: Build independent normal Node CLI and NAPI source capsules
         working-directory: driver
-        run: |
-          set -euo pipefail
-          node tools/benchmarks/scripts/template-alias-paired-11822-cpu.ts "$RUNNER_TEMP/mapper-public-stages/cpu-preflight.json"
-          node tools/benchmarks/scripts/template-alias-paired-11822-source.ts --source "$GITHUB_WORKSPACE/base" --sha "$BASE_SHA" > "$RUNNER_TEMP/mapper-public-stages/base.log" 2>&1
-          node tools/benchmarks/scripts/template-alias-paired-11822-source.ts --source "$GITHUB_WORKSPACE/candidate" --sha "$HEAD_SHA" > "$RUNNER_TEMP/mapper-public-stages/candidate.log" 2>&1
+        run: . "${{ env.VIZE_CI_FILES }}/build-independent-normal-node-cli-and-napi-source-capsules.sh"
       - name: Run normal paired cohorts, separate full protocol and sampled tree memory populations
         working-directory: driver
-        run: |
-          set -euo pipefail
-          node tools/benchmarks/scripts/template-alias-paired-11822-public.ts \
-            --base "$GITHUB_WORKSPACE/base" --base-sha "$BASE_SHA" \
-            --head "$GITHUB_WORKSPACE/candidate" --head-sha "$HEAD_SHA" \
-            --driver-sha "$DRIVER_SHA" --provider "$RUNNER_TEMP/mapper-public-provider" \
-            --output "$RUNNER_TEMP/mapper-public-output" > "$RUNNER_TEMP/mapper-public-stages/controller.log" 2>&1
+        run: . "${{ env.VIZE_CI_FILES }}/run-normal-paired-cohorts-separate-full-protocol-and-sampled-tree-memory.sh"
       - name: Retain source-bound stages and original observations
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

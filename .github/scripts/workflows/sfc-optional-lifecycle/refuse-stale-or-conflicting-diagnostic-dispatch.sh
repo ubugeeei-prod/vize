@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+[[ "$EXPECTED_DRIVER_SHA" == "$GITHUB_SHA" && "$CONFLICTING_MODES" == false ]]
+[[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize ]]

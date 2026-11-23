@@ -1,3 +1,4 @@
+import { actionNodeProgramPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -5,19 +6,16 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { readRepoFile, root } from "./support/github-workflows.ts";
+import { root } from "./support/github-workflows.ts";
 
 void test("the adjacent-attribute certificate refuses a version-matching foreign host image", () => {
-  const action = parse(readRepoFile(".github/actions/test-native-canon/action.yml")) as {
+  const action = parse(readAutomationPrograms(".github/actions/test-native-canon/action.yml")) as {
     runs: { steps: { name?: string; run?: string }[] };
   };
   const step = action.runs.steps.find(
     ({ name }) => name === "Test legal SFC attribute boundaries with the existing beta checker",
   );
-  const script = step?.run?.match(
-    /node --input-type=module - "\$capture" <<'NODE'\n([\s\S]*?)\nNODE(?:\n|$)/u,
-  )?.[1];
-  assert.ok(script, "execute the actual qualification producer");
+  const script = actionNodeProgramPath("test-native-canon", step?.run);
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-parser-host-certificate-"));
   try {
     const packageRoot = path.join(temporary, "node_modules/@typescript/typescript-linux-x64");
@@ -61,9 +59,8 @@ void test("the adjacent-attribute certificate refuses a version-matching foreign
     }
     fs.writeFileSync(path.join(capture, "test.stderr"), cells.join("\n") + "\n");
     fs.writeFileSync(path.join(capture, "test.status"), "0\n");
-    const result = spawnSync(process.execPath, ["--input-type=module", "-", capture], {
+    const result = spawnSync(process.execPath, [script, capture], {
       cwd: root,
-      input: script,
       encoding: "utf8",
       env: {
         PATH: process.env.PATH,

@@ -1,0 +1,79 @@
+import "../../Actions.pkl" as ci
+
+name = "Binding origin source laws"
+on {
+  workflow_dispatch = null
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/binding-origin-laws.yml"
+      ".github/scripts/workflows/binding-origin-laws/**"
+      ".github/scripts/workflows/shared/**"
+      "crates/vize_canon/src/binding_origins/**"
+      "crates/vize_canon/src/lib.rs"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "binding-origin-laws-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  laws {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 40
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/binding-origin-laws"
+      CARGO_BUILD_JOBS = "4"
+      RAYON_NUM_THREADS = "4"
+      CARGO_INCREMENTAL = "0"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          `persist-credentials` = false
+          `fetch-depth` = 0
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        name = "Build one fresh image, run 23 origin laws and two native API carriers"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/build-one-fresh-image-run-23-origin-laws-and-two-native-api-carriers.sh""#
+      }
+      new Dynamic {
+        name = "Package actual compiler and test receipts"
+        `if` = "always()"
+        shell = "bash"
+        run = #". "${{ env.VIZE_CI_FILES }}/package-actual-compiler-and-test-receipts.sh""#
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "binding-origin-source-laws-${{ github.sha }}"
+          path = "${{ runner.temp }}/binding-origin-admission.tgz"
+          `retention-days` = 14
+        }
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "binding-origin-native-metadata-${{ github.sha }}"
+          path = "${{ runner.temp }}/binding-origin-native-metadata.tgz"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

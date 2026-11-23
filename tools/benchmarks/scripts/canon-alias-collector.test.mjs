@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../../../tests/tooling/support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -16,6 +17,8 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { cases } from "./canon-alias-corpus.mjs";
 import {
+  aliasSourcePaths,
+  directoryListingAliasSources,
   directoryModuleResolver,
   expectedFiles,
   sourceContract,
@@ -68,11 +71,7 @@ void test("the successor preserves the original corpus and pins both independent
 });
 
 void test("the explicit directory-module successor preserves the eight alias contracts", () => {
-  const resolverPath = "crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution.rs";
-  const actual = createHash("sha256")
-    .update(readFileSync(new URL(`../../../${resolverPath}`, import.meta.url)))
-    .digest("hex");
-  assert.equal(actual, directoryModuleResolver.resolverSha256);
+  const actual = directoryModuleResolver.resolverSha256;
   assert.equal(directoryModuleResolver.originalSuccessorSha256, successorSha256);
   assert.equal(directoryModuleResolver.originalResolverSha256, resolver.selected);
   for (const collectorMode of ["historical", "selected"]) {
@@ -88,6 +87,32 @@ void test("the explicit directory-module successor preserves the eight alias con
   assert.throws(
     () => sourceContract(actual, collector.historical, "head"),
     /Head must satisfy selected CLI membership/,
+  );
+});
+
+void test("the directory-listing resolver and SDK collector qualify together for all eight inputs", () => {
+  const sourceHash = (file) =>
+    createHash("sha256")
+      .update(readFileSync(new URL("../../../" + file, import.meta.url)))
+      .digest("hex");
+  const pair = {
+    resolver: sourceHash(aliasSourcePaths.resolver),
+    collector: sourceHash(aliasSourcePaths.collector),
+  };
+  assert.deepEqual(pair, directoryListingAliasSources);
+  const qualified = sourceContract(pair.resolver, pair.collector, "head");
+  const original = sourceContract(resolver.selected, collector.selected, "head");
+  assert.deepEqual(
+    cases.map((item) => expectedFiles(item, qualified)),
+    cases.map((item) => expectedFiles(item, original)),
+  );
+  assert.throws(
+    () => sourceContract(pair.resolver, collector.selected, "base"),
+    /Unqualified directory-listing/,
+  );
+  assert.throws(
+    () => sourceContract(resolver.selected, pair.collector, "base"),
+    /Unqualified directory-listing/,
   );
 });
 
@@ -132,15 +157,19 @@ void test("only the two missing-selected memberships change; all original case f
 void test("unknown actual source rejects before preparation can execute a trap CLI", () => {
   const root = mkdtempSync(join(os.tmpdir(), "canon-collector-source-control-"));
   const marker = join(root, "CLI-MUST-NOT-RUN");
-  const resolverPath = "crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution.rs";
-  const collectorPath = "crates/vize/src/commands/check/imports_aliases.rs";
-  const oldCollector = execFileSync("tar", [
-    "-xOzf",
-    fileURLToPath(new URL("historical-eight-case.tar.gz", successorUrl)),
-    collectorPath,
-  ]);
+  const { resolver: resolverPath, collector: collectorPath } = aliasSourcePaths;
+  const archived = (file) =>
+    execFileSync("tar", [
+      "-xOzf",
+      fileURLToPath(new URL("historical-eight-case.tar.gz", successorUrl)),
+      file,
+    ]);
+  const archivedResolver = archived(resolverPath);
+  const oldCollector = archived(collectorPath);
+  assert.equal(createHash("sha256").update(archivedResolver).digest("hex"), resolver.selected);
   assert.equal(createHash("sha256").update(oldCollector).digest("hex"), collector.historical);
-  const selectedResolver = readFileSync(new URL(`../../../${resolverPath}`, import.meta.url));
+  const selectedResolver = readFileSync(new URL("../../../" + resolverPath, import.meta.url));
+  const selectedCollector = readFileSync(new URL("../../../" + collectorPath, import.meta.url));
   const put = (side, path, bytes) => {
     const target = join(root, side, path);
     mkdirSync(dirname(target), { recursive: true });
@@ -148,9 +177,13 @@ void test("unknown actual source rejects before preparation can execute a trap C
   };
   try {
     for (const side of ["base", "head"]) {
-      put(side, resolverPath, selectedResolver);
+      put(side, resolverPath, archivedResolver);
       put(side, collectorPath, oldCollector);
-      put(side, "target/ci-opt/vize", `#!/bin/sh\n: > '${marker}'\nexit 0\n`);
+      put(
+        side,
+        "target/ci-opt/vize",
+        readToolingProgram("commands/canon-alias-collector/side.sh", { MARKER: marker }),
+      );
       chmodSync(join(root, side, "target/ci-opt/vize"), 0o755);
     }
     for (const [id, source, pattern] of [
@@ -159,7 +192,7 @@ void test("unknown actual source rejects before preparation can execute a trap C
       ["known-wrong-head", null, /Head must satisfy selected CLI membership/],
     ]) {
       put("head", resolverPath, selectedResolver);
-      put("head", collectorPath, oldCollector);
+      put("head", collectorPath, source ? selectedCollector : oldCollector);
       if (source) put("head", source, "// unqualified source\n");
       assert.throws(
         () =>

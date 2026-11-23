@@ -1,7 +1,7 @@
+import { readAutomationPrograms, workflowProgram } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { readRepoFile } from "./support/github-workflows.ts";
 
 type Step = {
   name?: string;
@@ -17,7 +17,7 @@ type Workflow = {
 
 test("native capacity admission requires real source, nonzero laws, both native cases and retained evidence", () => {
   const workflow = parse(
-    readRepoFile(".github/workflows/lsp-native-diagnostic-coverage.yml"),
+    readAutomationPrograms(".github/workflows/lsp-native-diagnostic-coverage.yml"),
   ) as Workflow;
   const job = workflow.jobs.coverage;
   assert.equal(job.env.VIZE_TEST_REQUIRE_TSGO, "1");
@@ -42,7 +42,13 @@ test("native capacity admission requires real source, nonzero laws, both native 
   );
   assert.ok(laws?.run);
   assert.ok(laws.run.includes("server::initial_diagnostics::"));
-  assert.ok(laws.run.includes("nonzero scheduler laws with zero ignored tests are required"));
+  assert.ok(
+    workflowProgram(
+      "lsp-native-diagnostic-coverage",
+      laws.run,
+      "verify-scheduler-laws.ts",
+    ).includes("nonzero scheduler laws with zero ignored tests are required"),
+  );
   const native = job.steps.find(
     (step) => step.name === "Observe all native errors, complete repairs and checked idle",
   );
@@ -68,7 +74,9 @@ test("native capacity admission requires real source, nonzero laws, both native 
 });
 
 test("ordinary source tooling retains complete capacity packets on success and failure without unrelated workspaces", () => {
-  const action = parse(readRepoFile(".github/actions/test-affected-tooling/action.yml")) as {
+  const action = parse(
+    readAutomationPrograms(".github/actions/test-affected-tooling/action.yml"),
+  ) as {
     runs: { steps: Step[] };
   };
   const step = action.runs.steps.find(

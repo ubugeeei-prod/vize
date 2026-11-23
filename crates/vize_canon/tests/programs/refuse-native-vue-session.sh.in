@@ -1,0 +1,15 @@
+#!/bin/sh
+fail=false
+if [ "{api}" = true ]; then
+  for arg in "$@"; do
+    case "$arg" in --callbacks=*) fail=true ;; esac
+  done
+elif [ "$1" = --lsp ]; then
+  fail=true
+fi
+if [ "$fail" = true ]; then
+  echo "$$" > {pid}
+  if [ "{pause}" = true ]; then sleep 1; fi
+  exit 23
+fi
+exec {backend} "$@"

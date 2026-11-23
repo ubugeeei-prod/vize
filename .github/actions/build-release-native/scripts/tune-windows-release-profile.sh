@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
+echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"

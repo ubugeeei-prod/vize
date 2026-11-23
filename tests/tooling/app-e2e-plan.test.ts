@@ -1,3 +1,4 @@
+import { packageScripts } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -178,11 +179,10 @@ test("upstream app fixtures keep deterministic CI setup", () => {
 });
 
 test("planned tasks, fixtures, and mutable identities are exact and unique", () => {
-  const scripts = (
-    JSON.parse(fs.readFileSync(path.join(root, "tests/package.json"), "utf8")) as {
-      scripts: Record<string, string>;
-    }
-  ).scripts;
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, "tests/package.json"), "utf8")) as {
+    scripts: Record<string, string>;
+  };
+  const scripts = packageScripts("tests", manifest.scripts);
   const gitmodulePaths = new Set(
     execFileSync("git", ["config", "-f", ".gitmodules", "--get-regexp", "path"], {
       cwd: root,

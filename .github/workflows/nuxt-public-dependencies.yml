@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/nuxt-public-dependencies.yml
+      - .github/scripts/workflows/nuxt-public-dependencies/**
       - npm/framework/nuxt/**
       - pnpm-workspace.yaml
       - pnpm-lock.yaml
@@ -13,6 +14,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/nuxt-public-dependencies.yml
+      - .github/scripts/workflows/nuxt-public-dependencies/**
       - npm/framework/nuxt/**
       - pnpm-workspace.yaml
       - pnpm-lock.yaml
@@ -33,6 +35,19 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/nuxt-public-dependencies/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -49,41 +64,11 @@ jobs:
       - name: Capture every actual patched Braces instance and consumer path
         run: vp node tools/support/security/nuxt-kit-census.ts "$RUNNER_TEMP/nuxt-public-kit-proof"
       - name: Preserve the original pinned Kit and Braces consumer graph
-        run: |
-          baseline_sha=9157b9fa83dbdc98100be084be288f21d0d1bc18
-          baseline_root="$RUNNER_TEMP/nuxt-kit-before-source"
-          git fetch --no-tags --depth=1 origin "$baseline_sha"
-          git worktree add --detach "$baseline_root" "$baseline_sha"
-          (cd "$baseline_root" && pnpm install --frozen-lockfile --ignore-scripts)
-          vp node tools/support/security/nuxt-kit-census.ts "$RUNNER_TEMP/nuxt-public-kit-proof/before" "$baseline_root"
+        run: . "${{ env.VIZE_CI_FILES }}/preserve-the-original-pinned-kit-and-braces-consumer-graph.sh"
       - name: Require every original whole consumer packet after the explicit oracle move
-        run: |
-          vp node --input-type=module <<'JS'
-          import assert from "node:assert/strict";
-          import fs from "node:fs";
-          import path from "node:path";
-          const artifacts = path.join(process.env.RUNNER_TEMP, "nuxt-public-kit-proof");
-          const before = JSON.parse(fs.readFileSync(path.join(artifacts, "before/installed-consumer-census.json"), "utf8"));
-          const after = JSON.parse(fs.readFileSync(path.join(artifacts, "installed-consumer-census.json"), "utf8"));
-          assert.equal(before.head, "9157b9fa83dbdc98100be084be288f21d0d1bc18");
-          for (const packet of [before, after]) assert.equal(packet.proofSourceSha256, packet.executedProofSourceSha256);
-          assert.equal(before.proofSourceSha256, after.proofSourceSha256);
-          const normalized = (packet, field) => JSON.parse(JSON.stringify(packet[field]).replaceAll(path.resolve(packet.root), "<ROOT>"));
-          for (const field of ["instances", "consumers"]) assert.deepEqual(normalized(after, field), normalized(before, field));
-          assert.equal(before.moduleKit.version, "3.11.2");
-          assert.equal(after.moduleKit.version, "3.21.8");
-          assert.equal(before.explicitDevOracle, null);
-          const identity = ({ braces, ...identity }) => identity;
-          assert.deepEqual(before.kitChokidar, identity(before.consumers.find((packet) => packet.name === "chokidar")));
-          assert.deepEqual(after.explicitDevOracle, identity(after.consumers.find((packet) => packet.name === "chokidar")));
-          assert.equal(after.kitChokidar.version, "5.0.0");
-          assert.equal(JSON.parse(after.kitChokidar.manifestBytes).dependencies.braces, undefined);
-          fs.writeFileSync(path.join(artifacts, "census-transition.json"), JSON.stringify({ before: before.head, after: after.head, everyOriginalWholeConsumerPreserved: true }, null, 2) + "\n");
-          JS
+        run: . "${{ env.VIZE_CI_FILES }}/require-every-original-whole-consumer-packet-after-the-explicit-oracle-m.sh"
       - name: Build the candidate Nuxt module
-        run: |
-          pnpm --filter @vizejs/nuxt-lint-config build
-          pnpm --filter @vizejs/nuxt build
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-candidate-nuxt-module.sh"
       - name: Pack the actual publishable manifest
         working-directory: npm/framework/nuxt
         run: pnpm pack --pack-destination "$RUNNER_TEMP/nuxt-public-kit-pack"

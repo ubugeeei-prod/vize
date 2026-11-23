@@ -6,36 +6,19 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const child = `
-  import { createRequire } from "node:module";
-  import { defineFactProvider, definePlugin } from ${JSON.stringify(pathToFileURL(path.join(root, "npm/plugin-sdk/index.js")).href)};
-  const native = createRequire(import.meta.url)(${JSON.stringify(path.join(root, "npm/native/index.js"))});
-  const color = process.argv[2];
-  let calls = 0;
-  const provider = defineFactProvider({
-    name: "tokens", version: "disk-provider-1", visit: ["ui.element"],
-    provides: ["tokens/colors"], cacheInputs: [{name:"palette", value:color}],
-    provide(batch) { calls += 1; return {"tokens/colors": batch.nodes.map(node => [node.id, color])}; }
-  });
-  const rule = definePlugin({
-    name: "disk-fact-rule", version: "1", visit: ["ui.element"],
-    demands: ["tokens/colors"], cacheInputs: [],
-    rules: { contrast(ctx) {
-      const colors = ctx.facts("tokens/colors");
-      for (const node of ctx.nodes) ctx.report(node, colors.get(node.id));
-    }}
-  });
-  const result = native.lintWithPlugins("<template><button>Go</button></template>", [rule], {
-    filename:"DiskProvider.vue", cache:true, cacheDir:process.argv[1], factProviders:[provider]
-  });
-  process.stdout.write(JSON.stringify({calls, diagnostics:result.diagnostics,
-    provider:result.factProviders[0], rule:result.plugins[0]}));
-`;
+const child = [
+  toolingProgram("plugins/compile-with-cached-fact-provider.js"),
+  JSON.stringify({
+    sdkModule: pathToFileURL(path.join(root, "npm/plugin-sdk/index.js")).href,
+    nativeLibrary: path.join(root, "npm/native/index.js"),
+  }),
+];
 
 function run(dir: string, color: string) {
-  const result = spawnSync(process.execPath, ["--input-type=module", "-e", child, dir, color], {
+  const result = spawnSync(process.execPath, [...child, dir, color], {
     encoding: "utf8",
   });
   assert.equal(result.status, 0, result.stderr);

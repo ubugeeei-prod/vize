@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -51,8 +52,8 @@ export function restoreRustToolchainPin(
 
 /** Inspect the actual caller and its closed full-only callee without rewriting jobs. */
 export function checkWorkflowJobSources(
-  caller = readRepoFile(".github", "workflows", "check.yml"),
-  callee = readRepoFile(".github", "workflows", "full-qualification.yml"),
+  caller = readAutomationPrograms(".github", "workflows", "check.yml"),
+  callee = readAutomationPrograms(".github", "workflows", "full-qualification.yml"),
 ): string {
   const expectedCaller = `  full-qualification:
     name: Full qualification
@@ -94,6 +95,7 @@ jobs:
     "editor-extensions",
     "editor-host-smoke",
     "nuxt-module-qualification",
+    "branch-coverage",
   ]);
   for (const id of ids)
     assert.ok(!caller.includes(`\n  ${id}:\n`), `duplicate caller/callee job: ${id}`);

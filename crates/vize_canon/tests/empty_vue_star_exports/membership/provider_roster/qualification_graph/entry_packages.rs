@@ -162,7 +162,9 @@ mod tests {
     #[test]
     fn current_lock_reconstructs_one_already_qualified_predecessor() {
         let repository = support::repository();
-        let lock = fs::read(repository.join("pnpm-lock.yaml")).unwrap();
+        let lock = crate::package_task_history::read("pnpm-lock.yaml")
+            .unwrap()
+            .into_bytes();
         let package = fs::read(repository.join("package.json")).unwrap();
         let workspace = fs::read(repository.join("pnpm-workspace.yaml")).unwrap();
         let previous_lock = reconstruct_lock_predecessor(&lock).unwrap();
