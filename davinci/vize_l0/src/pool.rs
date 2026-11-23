@@ -197,7 +197,10 @@ mod tests {
             {
                 let inner = acquire();
                 assert_eq!(checked_out(), 2);
-                // Nesting takes a second arena rather than sharing one.
+                let _ = inner.alloc_str("nested compile");
+                assert_eq!(outer.allocated_bytes(), 0);
+                assert_ne!(inner.allocated_bytes(), outer.allocated_bytes());
+                #[cfg(debug_assertions)]
                 assert_ne!(inner.stamp(), outer.stamp());
             }
             assert_eq!(checked_out(), 1);
