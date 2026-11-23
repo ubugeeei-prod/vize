@@ -22,13 +22,16 @@ void test(
     const entrypoint = resolveFixturePath("basic", "entry.ts");
     fs.writeFileSync(
       driver,
-      readToolingProgram("commands/bun/build-with-bun.js.in", {
-        PLUGIN: JSON.stringify(plugin),
-        ENTRY: JSON.stringify(entrypoint),
-        OUTPUT_DIRECTORY: JSON.stringify(outdir),
-        PROJECT: JSON.stringify(root),
-        REPORT: JSON.stringify(report),
-      }),
+      readToolingProgram(
+        new URL("../scripts/test-programs/bun/build-with-bun.js.in", import.meta.url),
+        {
+          PLUGIN: JSON.stringify(plugin),
+          ENTRY: JSON.stringify(entrypoint),
+          OUTPUT_DIRECTORY: JSON.stringify(outdir),
+          PROJECT: JSON.stringify(root),
+          REPORT: JSON.stringify(report),
+        },
+      ),
     );
     const result = spawnSync("bun", ["run", driver], {
       cwd: root,

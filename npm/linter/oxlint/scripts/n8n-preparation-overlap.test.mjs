@@ -30,9 +30,15 @@ function campaign(t, mode, failure, timeoutMs = 6000) {
   fs.writeFileSync(config, JSON.stringify(f));
   fs.writeFileSync(
     worker,
-    readToolingProgram("commands/n8n-preparation-overlap/record-worker-overlap.js.in", {
-      HOST_CONCURRENCY: JSON.stringify(module),
-    }),
+    readToolingProgram(
+      new URL(
+        "./test-programs/n8n-preparation-overlap/record-worker-overlap.js.in",
+        import.meta.url,
+      ),
+      {
+        HOST_CONCURRENCY: JSON.stringify(module),
+      },
+    ),
   );
   const jobs = ["first", "second"].map((id) => ({
     id,

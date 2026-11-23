@@ -43,7 +43,15 @@ void test("rule discovery uses a bounded owned cache without process-temporary f
     path.join(packageRoot, "package.json"),
     JSON.stringify({ name: "vite-plus", bin: { vp: "bin/vp.mjs" } }),
   );
-  fs.writeFileSync(binary, readToolingProgram("commands/vite-plus-runtime/list-vue-lint-rules.js"));
+  fs.writeFileSync(
+    binary,
+    readToolingProgram(
+      new URL(
+        "../../scripts/test-programs/vite-plus-runtime/list-vue-lint-rules.js",
+        import.meta.url,
+      ),
+    ),
+  );
 
   const previous = {
     cwd: process.cwd(),

@@ -24,7 +24,9 @@ function subprocesses(t, failures = []) {
   const script = path.join(root, "child.mjs");
   fs.writeFileSync(
     script,
-    readToolingProgram("commands/ci-host-concurrency/sample-peak-workers.js"),
+    readToolingProgram(
+      new URL("./test-programs/ci-host-concurrency/sample-peak-workers.js", import.meta.url),
+    ),
   );
   return ["first", "second", "third"].map((id) => {
     const output = path.join(root, id);

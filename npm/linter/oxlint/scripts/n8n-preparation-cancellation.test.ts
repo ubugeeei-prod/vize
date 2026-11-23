@@ -19,20 +19,32 @@ void test("real preparation cancellation joins baseline and both complete host p
   const waiting = path.join(f.artifacts, "waiting-child.mjs");
   fs.writeFileSync(
     waiting,
-    readToolingProgram("commands/n8n-preparation-cancellation/wait-for-cancellation.js.in", {
-      CHILD_PROGRAM: JSON.stringify(toolingProgram("process/ignore-termination.js")),
-    }),
+    readToolingProgram(
+      new URL(
+        "./test-programs/n8n-preparation-cancellation/wait-for-cancellation.js.in",
+        import.meta.url,
+      ),
+      {
+        CHILD_PROGRAM: JSON.stringify(toolingProgram("process/ignore-termination.js")),
+      },
+    ),
   );
   const driver = path.join(f.artifacts, "driver.mjs");
   fs.writeFileSync(
     driver,
-    readToolingProgram("commands/n8n-preparation-cancellation/cancel-preparation.js.in", {
-      COMMAND_CAPTURE: url("./project-command-capture.mjs"),
-      HOST_CONCURRENCY: url("./ci-host-concurrency.mjs"),
-      OVERLAP: url("./n8n-preparation-overlap.mjs"),
-      PROJECT: JSON.stringify(f),
-      WAITING: JSON.stringify(waiting),
-    }),
+    readToolingProgram(
+      new URL(
+        "./test-programs/n8n-preparation-cancellation/cancel-preparation.js.in",
+        import.meta.url,
+      ),
+      {
+        COMMAND_CAPTURE: url("./project-command-capture.mjs"),
+        HOST_CONCURRENCY: url("./ci-host-concurrency.mjs"),
+        OVERLAP: url("./n8n-preparation-overlap.mjs"),
+        PROJECT: JSON.stringify(f),
+        WAITING: JSON.stringify(waiting),
+      },
+    ),
   );
   const child = spawn(process.execPath, [driver], { stdio: "ignore" });
   t.after(() => {

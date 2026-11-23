@@ -35,14 +35,25 @@ function fixture(t, mode) {
   const environment = { ...process.env, FIXTURE_ROOT: root, FIXTURE_MODE: mode };
   fs.writeFileSync(
     path.join(root, "src/mixed-directory-8507.test.mjs"),
-    readToolingProgram("commands/project-qualification-branches/exercise-mixed-worker.js.in", {
-      CHILD_PROGRAM: JSON.stringify(toolingProgram("process/ignore-termination.js")),
-    }),
+    readToolingProgram(
+      new URL(
+        "./test-programs/project-qualification-branches/exercise-mixed-worker.js.in",
+        import.meta.url,
+      ),
+      {
+        CHILD_PROGRAM: JSON.stringify(toolingProgram("process/ignore-termination.js")),
+      },
+    ),
   );
   const remainingScript = path.join(root, "remaining.mjs");
   fs.writeFileSync(
     remainingScript,
-    readToolingProgram("commands/project-qualification-branches/record-remaining-work.js"),
+    readToolingProgram(
+      new URL(
+        "./test-programs/project-qualification-branches/record-remaining-work.js",
+        import.meta.url,
+      ),
+    ),
   );
   const output = path.join(root, "mixed");
   fs.mkdirSync(output);
@@ -171,12 +182,18 @@ void test("real parent cancellation joins both groups and preserves evidence bef
   const moduleUrl = (name) => JSON.stringify(new URL(name, import.meta.url).href);
   fs.writeFileSync(
     driver,
-    readToolingProgram("commands/project-qualification-branches/qualify-project-branches.js.in", {
-      QUALIFICATION: moduleUrl("./project-qualification-branches.mjs"),
-      CONCURRENCY: moduleUrl("./ci-host-concurrency.mjs"),
-      WORKERS: moduleUrl("../src/test-support/mixed-directory-8507-workers.mjs"),
-      PROJECT: JSON.stringify(f),
-    }),
+    readToolingProgram(
+      new URL(
+        "./test-programs/project-qualification-branches/qualify-project-branches.js.in",
+        import.meta.url,
+      ),
+      {
+        QUALIFICATION: moduleUrl("./project-qualification-branches.mjs"),
+        CONCURRENCY: moduleUrl("./ci-host-concurrency.mjs"),
+        WORKERS: moduleUrl("../src/test-support/mixed-directory-8507-workers.mjs"),
+        PROJECT: JSON.stringify(f),
+      },
+    ),
   );
   const child = spawn(process.execPath, [driver], { stdio: "ignore" });
   t.after(() => {

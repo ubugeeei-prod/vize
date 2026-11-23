@@ -23,23 +23,37 @@ void test("the actual host worker runs all original preparation commands before 
   const npm = path.join(bin, "npm");
   fs.writeFileSync(
     npm,
-    readToolingProgram("commands/n8n-preparation-worker/npm.js.in", { NODE: process.execPath }),
+    readToolingProgram(
+      new URL("./test-programs/n8n-preparation-worker/npm.js.in", import.meta.url),
+      { NODE: process.execPath },
+    ),
   );
   fs.chmodSync(npm, 0o755);
   // These isolated child fixtures prove the production worker's command and
   // scheduling boundaries only; no native implementation is substituted or qualified.
   fs.writeFileSync(
     path.join(packageDir, "src/project-transport.test.ts"),
-    readToolingProgram("commands/n8n-preparation-worker/exercise-project-transport.js"),
+    readToolingProgram(
+      new URL(
+        "./test-programs/n8n-preparation-worker/exercise-project-transport.js",
+        import.meta.url,
+      ),
+    ),
   );
   for (const file of ["script-safe-transport.test.ts", "original-ignore.test.ts"])
     fs.writeFileSync(path.join(packageDir, "src", file), "// Controlled command membership.\n");
   const marker = path.join(f.artifacts, "html-preparation.done");
   fs.writeFileSync(
     path.join(packageDir, "src/html-cli.test.mjs"),
-    readToolingProgram("commands/n8n-preparation-worker/assert-html-preparation.js.in", {
-      MARKER: JSON.stringify(marker),
-    }),
+    readToolingProgram(
+      new URL(
+        "./test-programs/n8n-preparation-worker/assert-html-preparation.js.in",
+        import.meta.url,
+      ),
+      {
+        MARKER: JSON.stringify(marker),
+      },
+    ),
   );
   const configuration = path.join(output, "worker-config.json");
   fs.writeFileSync(

@@ -6,10 +6,10 @@ export function toolingProgram(name: string): string {
 }
 
 export function readToolingProgram(
-  name: string,
+  name: string | URL,
   values: Readonly<Record<string, unknown>> = {},
 ): string {
-  const source = readFileSync(toolingProgram(name), "utf8");
+  const source = readFileSync(typeof name === "string" ? toolingProgram(name) : name, "utf8");
   return source.replace(/@@([A-Z][A-Z0-9_]*)@@/gu, (_, key: string) => {
     if (!Object.hasOwn(values, key))
       throw new Error("Missing fixture argument " + key + " in " + name);

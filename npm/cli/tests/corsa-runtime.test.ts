@@ -50,10 +50,16 @@ function fixture(options: { supportsConfigStdin?: boolean } = {}) {
   );
   fs.writeFileSync(
     path.join(stub, "index.cjs"),
-    readToolingProgram("commands/corsa-runtime/observe-corsa-config.cjs.in", {
-      SUPPORTS_CONFIG_STDIN: Boolean(options.supportsConfigStdin),
-      ENVIRONMENT_KEYS: JSON.stringify(environmentNames),
-    }),
+    readToolingProgram(
+      new URL(
+        "../scripts/test-programs/corsa-runtime/observe-corsa-config.cjs.in",
+        import.meta.url,
+      ),
+      {
+        SUPPORTS_CONFIG_STDIN: Boolean(options.supportsConfigStdin),
+        ENVIRONMENT_KEYS: JSON.stringify(environmentNames),
+      },
+    ),
   );
   const installed = path.join(packageRoot, "bin", "vize");
   fs.cpSync(fileURLToPath(new URL("../dist", import.meta.url)), path.join(packageRoot, "dist"), {

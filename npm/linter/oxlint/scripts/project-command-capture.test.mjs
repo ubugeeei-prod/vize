@@ -87,21 +87,30 @@ for (const mode of ["cancel", "missing-object", "missing-command"])
     if (mode !== "missing-command")
       fs.writeFileSync(
         path.join(root, "bin/git"),
-        readToolingProgram("commands/project-command-capture/git.cjs.in", {
-          NODE: process.execPath,
-        }),
+        readToolingProgram(
+          new URL("./test-programs/project-command-capture/git.cjs.in", import.meta.url),
+          {
+            NODE: process.execPath,
+          },
+        ),
         { mode: 0o755 },
       );
     const moduleUrl = (name) => JSON.stringify(new URL(name, import.meta.url).href);
     const driver = path.join(root, "driver.mjs");
     fs.writeFileSync(
       driver,
-      readToolingProgram("commands/project-command-capture/capture-project-branch.js.in", {
-        REFERENCE: moduleUrl("./n8n-reference-source.mjs"),
-        QUALIFICATION: moduleUrl("./project-qualification-branches.mjs"),
-        PROJECT: JSON.stringify(root),
-        MODE: JSON.stringify(mode),
-      }),
+      readToolingProgram(
+        new URL(
+          "./test-programs/project-command-capture/capture-project-branch.js.in",
+          import.meta.url,
+        ),
+        {
+          REFERENCE: moduleUrl("./n8n-reference-source.mjs"),
+          QUALIFICATION: moduleUrl("./project-qualification-branches.mjs"),
+          PROJECT: JSON.stringify(root),
+          MODE: JSON.stringify(mode),
+        },
+      ),
     );
     const child = spawn(process.execPath, [driver], {
       env: {
@@ -188,7 +197,9 @@ function sourceMatrixAuthority(t) {
   );
   fs.writeFileSync(
     path.join(root, "npm/native/index.js"),
-    readToolingProgram("commands/project-command-capture/load-staged-binding.cjs"),
+    readToolingProgram(
+      new URL("./test-programs/project-command-capture/load-staged-binding.cjs", import.meta.url),
+    ),
   );
   const plugin = file("plugin.mjs", "// authored plugin control\n");
   const manifest = file("host-package.json", '{"name":"oxlint","version":"1.86.0"}\n');

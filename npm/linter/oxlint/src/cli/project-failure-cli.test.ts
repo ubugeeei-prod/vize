@@ -35,12 +35,18 @@ for (const failure of ["preparation", "json", "unavailable", "metadata"])
     // Authored protocol process, not a real-host or source-native oracle.
     fs.writeFileSync(
       engine,
-      readToolingProgram("commands/project-failure-cli/emit-engine-failure.js.in", {
-        ORIGINAL_STDOUT: JSON.stringify(original),
-        METADATA_STATUS: failure === "metadata" ? 1 : 2,
-        BRIDGE_STDOUT: JSON.stringify(["json", "metadata"].includes(failure) ? "{}\n" : ""),
-        BRIDGE_STATUS: failure === "json" ? 0 : failure === "metadata" ? 2 : 1,
-      }),
+      readToolingProgram(
+        new URL(
+          "../../scripts/test-programs/project-failure-cli/emit-engine-failure.js.in",
+          import.meta.url,
+        ),
+        {
+          ORIGINAL_STDOUT: JSON.stringify(original),
+          METADATA_STATUS: failure === "metadata" ? 1 : 2,
+          BRIDGE_STDOUT: JSON.stringify(["json", "metadata"].includes(failure) ? "{}\n" : ""),
+          BRIDGE_STATUS: failure === "json" ? 0 : failure === "metadata" ? 2 : 1,
+        },
+      ),
     );
     const result = spawnSync(process.execPath, [cli, "-f", "json", "Original.vue"], {
       cwd: root,

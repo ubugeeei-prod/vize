@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -153,7 +153,9 @@ test("automation clients and executable fixtures load named programs", () => {
       /(?:^|\/)(?:_?fixtures|__fixtures__|testdata)\//u.test(file)
     )
       continue;
-    const text = readFileSync(path.join(root, file), "utf8");
+    const source = path.join(root, file);
+    if (!existsSync(source)) continue;
+    const text = readFileSync(source, "utf8");
     for (const line of inlineFixtureBodies(file, text)) failures.push(file + ":" + line);
     if (/(?:\.d|\.test|\.spec)\.[cm]?[jt]s$/u.test(file)) continue;
     const program = file.endsWith(".in") ? text.replace(/@@[A-Z][A-Z0-9_]*@@/gu, "argument") : text;
