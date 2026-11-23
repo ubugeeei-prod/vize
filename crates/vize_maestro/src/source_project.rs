@@ -43,3 +43,6 @@ pub use script_queries::tools::{ScriptBlockLint, ScriptToolAnalysis, ScriptToolP
 
 #[cfg(feature = "experimental-literal-products")]
 pub mod literal_products;
+
+#[cfg(feature = "experimental-recovered-literal-prefix")]
+pub mod recovered_script;

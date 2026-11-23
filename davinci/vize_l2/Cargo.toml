@@ -9,6 +9,7 @@ description = "L2 - the Davinci semantic IR (codename Disegno): the neutral op f
 metadata.vize.stability = "experimental"
 
 [features]
+recovered-literal-prefix = ["literal-assignments"]
 # Checked primitive assignment judgments on the actual TypeScript AST.
 literal-assignments = ["script-declaration-queries"]
 # Name the original source/semantic view for explicit layered consumers.

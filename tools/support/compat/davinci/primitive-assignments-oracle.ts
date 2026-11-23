@@ -5,19 +5,21 @@ import { createReadStream } from "node:fs";
 import { createRequire } from "node:module";
 import type { TypeScriptApi } from "../../../../tests/_helpers/template-alias-typescript-11822.ts";
 const ts: TypeScriptApi = createRequire(import.meta.url)("typescript");
-interface Claim {
+interface OperandSpans {
   binding: [number, number];
   annotation: [number, number];
   initializer: [number, number];
   expected: string;
   actual: string;
-  message: string | null;
 }
+type Claim = OperandSpans & ({ message: string | null } | { assignable: boolean });
 interface Input {
   name: string;
   source: string;
   tsx: boolean;
-  complete: boolean;
+  complete?: boolean;
+  covered?: number;
+  recovery?: "retained" | "first-open" | "upstream-original";
   claims: Claim[];
 }
 
@@ -40,6 +42,7 @@ function examine(input: Input) {
     byte(node.end),
   ];
   const vars = original.statements.flatMap((st) => {
+    if (input.covered !== undefined && byte(st.end) > input.covered) return [];
     if (
       !ts.isVariableStatement(st) ||
       st.modifiers?.some((m) => m.kind === ts.SyntaxKind.DeclareKeyword)
@@ -60,10 +63,13 @@ function examine(input: Input) {
     });
   });
   assert.equal(claims.length, vars.length, input.name);
-  if (vars.length === 0) return false;
+  if (vars.length === 0 && input.covered === undefined) return false;
   const host = ts.createCompilerHost(options);
   host.getSourceFile = (name) => (name === filename ? original : undefined);
   const program = ts.createProgram([filename], options, host);
+  if (input.covered !== undefined) {
+    assert.ok(program.getSyntacticDiagnostics(original).length > 0, input.name);
+  }
   const checker = program.getTypeChecker();
   const claimedDiagnostics = [];
   const names = new Set<string>();
@@ -83,8 +89,15 @@ function examine(input: Input) {
       checker.typeToString(checker.getBaseTypeOfLiteralType(actual)),
       input.name,
     );
-    assert.equal(row.message === null, checker.isTypeAssignableTo(actual, expected), input.name);
-    if (row.message !== null) claimedDiagnostics.push([row.binding, row.message]);
+    const assignable = checker.isTypeAssignableTo(actual, expected);
+    if ("message" in row) {
+      assert.equal(input.covered, undefined);
+      assert.equal(row.message === null, assignable, input.name);
+      if (row.message !== null) claimedDiagnostics.push([row.binding, row.message]);
+    } else {
+      assert.ok(input.covered !== undefined);
+      assert.equal(row.assignable, assignable, input.name);
+    }
   }
   if (!input.complete || names.size !== vars.length) return false;
   const diagnostics = program
@@ -102,6 +115,11 @@ let scripts = 0,
   bindings = 0,
   mismatches = 0,
   complete = 0;
+const recovery = {
+  retained: { scripts: 0, bindings: 0, mismatches: 0 },
+  "first-open": { scripts: 0, bindings: 0, mismatches: 0 },
+  "upstream-original": { scripts: 0, bindings: 0, mismatches: 0 },
+};
 // JSON permits literal U+2028 and U+2029 in source strings. Only LF is a
 // record delimiter; terminal line readers can also split at those code points.
 async function* inputRecords(path: string): AsyncGenerator<string> {
@@ -119,12 +137,37 @@ async function* inputRecords(path: string): AsyncGenerator<string> {
 }
 for await (const line of inputRecords(process.argv[2])) {
   const entry: Input = JSON.parse(line);
+  assert.equal(typeof entry.covered === "number", process.argv[3] === "--recovered");
   if (examine(entry)) complete++;
   scripts++;
   bindings += entry.claims.length;
-  mismatches += entry.claims.filter((c) => c.message !== null).length;
+  const failed = entry.claims.filter((c) =>
+    "message" in c ? c.message !== null : !c.assignable,
+  ).length;
+  mismatches += failed;
+  if (entry.covered !== undefined) {
+    assert.ok(
+      entry.recovery === "retained" ||
+        entry.recovery === "first-open" ||
+        entry.recovery === "upstream-original",
+    );
+    const mode = recovery[entry.recovery];
+    mode.scripts++;
+    mode.bindings += entry.claims.length;
+    mode.mismatches += failed;
+  }
 }
-assert.ok(scripts > 0 && bindings > 0 && mismatches > 0 && complete > 0);
+assert.ok(scripts > 0 && bindings > 0 && mismatches > 0);
+if (process.argv[3] !== "--recovered") assert.ok(complete > 0);
+else {
+  for (const [name, mode] of Object.entries(recovery)) {
+    assert.ok(mode.scripts > 0, name);
+    if (name !== "upstream-original") assert.ok(mode.bindings > 0 && mode.mismatches > 0, name);
+    console.log(
+      `TypeScript ${ts.version} ${name} scripts=${mode.scripts} bindings=${mode.bindings} mismatches=${mode.mismatches}`,
+    );
+  }
+}
 console.log(
   `TypeScript ${ts.version} original scripts=${scripts} checked bindings=${bindings} mismatches=${mismatches} complete diagnostic comparisons=${complete}`,
 );

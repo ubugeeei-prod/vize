@@ -22,10 +22,13 @@ on:
       - "crates/vize_patina/Cargo.toml"
       - "crates/vize_patina/src/checked_prefer_const.rs"
       - "crates/vize_patina/src/rules/opinionated/vue/script_unused/**"
+      - "crates/vize_maestro/src/source_project/recovered_script*"
+      - "crates/vize_maestro/src/source_project/recovered_script/**"
       - "crates/vize_maestro/src/source_project/literal_products*"
       - "crates/vize_maestro/src/source_project/literal_products/**"
       - "tools/support/compat/davinci/primitive-assignments-oracle.ts"
       - "tools/support/compat/davinci/literal-hover-oracle.ts"
+      - "tools/support/compat/davinci/select-broken-scripts.ts"
       - "tests/formal/primitive-assignments/**"
       - "crates/vize_canon/Cargo.toml"
       - "crates/vize_canon/src/batch.rs"
@@ -212,6 +215,37 @@ jobs:
           cargo build --locked --profile ci-opt -p vize
           node tools/support/compat/davinci/literal-hover-oracle.ts target/ci-opt/vize "$RUNNER_TEMP/original-hovers.json"
 
+      - name: Read original TypeScript 6.0.3 compiler and conformance fixtures
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          repository: microsoft/TypeScript
+          ref: 050880ce59e30b356b686bd3144efe24f875ebc8
+          path: .typescript-fixtures
+          persist-credentials: false
+          sparse-checkout: |
+            tests/cases/compiler
+            tests/cases/conformance
+
+      - name: Compare restored document cursors and broken suffixes with TypeScript
+        env:
+          VIZE_PREFIX_INPUT: ${{ runner.temp }}/original-scripts.jsonl
+          VIZE_PREFIX_OUTPUT: ${{ runner.temp }}/original-edits.jsonl
+          VIZE_RECOVERED_HOVERS: ${{ runner.temp }}/recovered-hovers.json
+          CORSA_PATH: ${{ runner.temp }}/typed-editor/node_modules/@typescript/typescript-linux-x64/lib/tsc
+          VIZE_FIRST_OPEN_INPUT: ${{ runner.temp }}/upstream-broken-scripts.jsonl
+          NODE_PATH: ${{ runner.temp }}/checked-ts/node_modules
+        run: |
+          set -euo pipefail
+          git -C .typescript-fixtures ls-files -z -- tests/cases/compiler tests/cases/conformance > "$RUNNER_TEMP/upstream-ts-paths"
+          node tools/support/compat/davinci/select-broken-scripts.ts .typescript-fixtures "$RUNNER_TEMP/upstream-ts-paths" "$VIZE_FIRST_OPEN_INPUT"
+          flags=(--locked --profile ci-opt --lib)
+          cargo clippy "${flags[@]}" -p vize_l2 --features recovered-literal-prefix --no-deps -- -D warnings
+          cargo clippy "${flags[@]}" -p vize_maestro --features experimental-recovered-literal-prefix --no-deps -- -D warnings
+          cargo test "${flags[@]}" -p vize_l2 --features recovered-literal-prefix query::script::assignments::prefix::
+          cargo test "${flags[@]}" -p vize_maestro --features experimental-recovered-literal-prefix,micro-profiling source_project::recovered_script:: -- --include-ignored --nocapture --test-threads=1
+          node tools/support/compat/davinci/primitive-assignments-oracle.ts "$VIZE_PREFIX_OUTPUT" --recovered
+          node tools/support/compat/davinci/literal-hover-oracle.ts target/ci-opt/vize "$VIZE_RECOVERED_HOVERS"
+
   primitive-assignability-proof:
     name: Verify primitive literal membership in Kani
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -235,3 +269,10 @@ jobs:
           echo "$ALLOY_SHA256  literal-alloy.jar" | sha256sum -c -
           java -Djava.awt.headless=true -jar literal-alloy.jar exec -q -c '*' -t none -o literal-instances "$GITHUB_WORKSPACE/tests/formal/primitive-assignments/PreferConst.als"
           jq -e '.commands | keys == ["LaterWrite","NonemptyTrace","RepeatedName","SameTrace"] and (.SameTrace | .type == "check" and (.solution | length) == 0) and ([.LaterWrite,.NonemptyTrace,.RepeatedName] | all(.type == "run" and (.solution | length) == 1))' literal-instances/receipt.json
+
+      - name: Verify source relocation for the full 32-bit byte domain
+        uses: model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f
+        with:
+          kani-version: "0.68.0"
+          command: kani
+          args: davinci/vize_l2/src/query/script/assignments/prefix/kani.rs --output-format=terse
