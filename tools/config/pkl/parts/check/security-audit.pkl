@@ -1,0 +1,58 @@
+import "../../Actions.pkl" as ci
+
+needs = "iteration-plan"
+`runs-on` = "${{ needs.iteration-plan.outputs.dependencies == 'true' && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}"
+`timeout-minutes` = 20
+env {
+
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+}
+steps = new Listing {
+  ...ci.stageWorkflowScripts("check")
+  new Dynamic {
+    uses = ci.checkout
+    `if` = "${{ needs.iteration-plan.outputs.dependencies == 'true' }}"
+  }
+  new Dynamic {
+    uses = ci.setupVp121
+    `if` = "${{ needs.iteration-plan.outputs.dependencies == 'true' }}"
+    with {
+      version = "latest"
+      `node-version-file` = "package.json"
+      cache = true
+      `cache-save` = false
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    uses = ci.setupRust
+    `if` = "${{ needs.iteration-plan.outputs.dependencies == 'true' }}"
+    with { toolchain = "stable" }
+  }
+  new Dynamic {
+    name = "Install JS dependencies"
+    `if` = "${{ needs.iteration-plan.outputs.dependencies == 'true' }}"
+    run = "vp install --frozen-lockfile --prefer-offline"
+  }
+  new Dynamic {
+    name = "Audit production npm dependencies"
+    `if` = "${{ needs.iteration-plan.outputs.dependencies == 'true' }}"
+    run = "node tools/commands/ci/npm-audit-retry.ts"
+  }
+  new Dynamic {
+    name = "Install cargo-audit"
+    `if` = "${{ needs.iteration-plan.outputs.dependencies == 'true' }}"
+    uses = "taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1"  // v2
+    with { tool = "cargo-audit" }
+  }
+  new Dynamic {
+    name = "Audit Rust dependencies"
+    `if` = "${{ needs.iteration-plan.outputs.dependencies == 'true' }}"
+    run = "cargo audit --deny warnings"
+  }
+  new Dynamic {
+    name = "Report unchanged inputs"
+    `if` = "${{ needs.iteration-plan.outputs.dependencies != 'true' }}"
+    run = #". "${{ env.VIZE_CI_FILES }}/report-unchanged-inputs.sh""#
+  }
+}

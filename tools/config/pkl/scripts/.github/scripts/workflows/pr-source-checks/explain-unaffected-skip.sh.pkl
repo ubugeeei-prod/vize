@@ -1,0 +1,7 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"echo 'The WASM release crate depends on no changed Rust package.' >> "$GITHUB_STEP_SUMMARY""#
+}

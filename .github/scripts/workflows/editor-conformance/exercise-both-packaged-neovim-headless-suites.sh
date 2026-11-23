@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+PATH="$(dirname "${VIZE_TEST_NVIM_PATH}"):$PATH"
+export PATH
+test "$(command -v nvim)" = "${VIZE_TEST_NVIM_PATH}"
+command -v nvim
+nvim --version | head -1
+vp run --workspace-root test:nvim-extension:headless

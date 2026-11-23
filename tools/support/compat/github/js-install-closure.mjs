@@ -199,23 +199,7 @@ async function capture(role, directory, destination) {
   assert.equal(install.status, 0, install.stderr);
   const installMilliseconds = performance.now() - started;
   const probe = run("issuer", process.execPath, [
-    "--input-type=module",
-    "-e",
-    `
-    import { createRequire } from 'node:module';
-    import { readFileSync } from 'node:fs';
-    import { pathToFileURL } from 'node:url';
-    try {
-      await import(pathToFileURL(process.cwd() + '/npm/builder/shared/mapped-module.ts'));
-      const require = createRequire(pathToFileURL(process.cwd() + '/npm/builder/shared/package.json'));
-      const filename = require.resolve('webpack-sources/package.json');
-      console.log(JSON.stringify({ filename, version: JSON.parse(readFileSync(filename)).version }));
-    } catch (error) {
-      console.error(error.stack);
-      console.log(JSON.stringify({ code: error.code, message: error.message }));
-      process.exitCode = 1;
-    }
-  `,
+    fileURLToPath(new URL("./js-install-issuer.ts", import.meta.url)),
   ]);
   const tests = run("source-maps", process.execPath, [
     "--test",

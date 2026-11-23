@@ -37,14 +37,10 @@ runs:
       env:
         BASE_SHA: ${{ inputs.base }}
         TOOLING_SHARD: ${{ inputs.shard }}/${{ inputs.total }}
-      run: |
-        if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags origin "$BASE_SHA"; fi
-        node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json"
-        native_build="$(node tools/support/compat/github/tooling-shard-native-build.ts "$RUNNER_TEMP/tooling-plan.json" "$TOOLING_SHARD")"
-        echo "native-build=$native_build" >> "$GITHUB_OUTPUT"
+      run: . "$GITHUB_ACTION_PATH/scripts/select-the-same-affected-tooling-tests-as-the-planner.sh"
     - name: Hydrate CLI and fact corpus fixtures and install JS dependencies
       shell: bash
-      run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/layoutit-grid tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline
+      run: . "$GITHUB_ACTION_PATH/scripts/hydrate-cli-and-fact-corpus-fixtures-and-install-js-dependencies.sh"
     - uses: ./.github/actions/restore-source-cli
       with: { producer: "${{ inputs.producer }}" }
     - name: Prepare the pinned plugin isolation runtime
@@ -72,7 +68,7 @@ runs:
         VIZE_TOOLING_TEST_TIER: pr
         VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
         VIZE_TOOLING_TEST_SHARD: ${{ inputs.shard }}/${{ inputs.total }}
-      run: node tools/commands/ci/verify-tool-layout.ts && node tools/support/compat/github/run-tooling-tests.mjs
+      run: . "$GITHUB_ACTION_PATH/scripts/test-affected-tooling-scripts.sh"
     - name: Upload tooling test cases
       if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

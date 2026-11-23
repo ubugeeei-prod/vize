@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+node --experimental-strip-types tools/commands/fixtures/typecheck-dependency-prepare.ts \
+  --output-dir "$FIXTURE_REPORT_DIR" \
+  --shard-index "$FIXTURE_SHARD_INDEX" \
+  --shard-count "$FIXTURE_SHARD_COUNT" \
+  --timeout-ms 600000

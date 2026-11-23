@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("node", List("tools/support/github/clean-node-binaries.ts", "npm/fresco-native"))
+  module.command("node", List("tools/support/github/collect-native-artifacts.ts", "npm/fresco-native/artifacts", "npm/fresco-native", "fresco-native"))
+}

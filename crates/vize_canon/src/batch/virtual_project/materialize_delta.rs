@@ -408,17 +408,20 @@ fn revision(path: &Path) -> CorsaResult<u64> {
 }
 
 fn hash_materialized_file(bytes: &[u8]) -> u64 {
-    HASHED_MATERIALIZED_FILES.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    #[cfg(test)]
+    HASHED_MATERIALIZED_FILES.set(HASHED_MATERIALIZED_FILES.get() + 1);
     hash_bytes(bytes)
 }
 
-static HASHED_MATERIALIZED_FILES: std::sync::atomic::AtomicUsize =
-    std::sync::atomic::AtomicUsize::new(0);
+#[cfg(test)]
+thread_local! {
+    static HASHED_MATERIALIZED_FILES: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
 
-/// Files read to hash a mirror snapshot since the previous take.
+/// Number of mirror files hashed on the calling test thread since its last sample.
 #[cfg(test)]
 pub(crate) fn take_materialized_hash_count() -> usize {
-    HASHED_MATERIALIZED_FILES.swap(0, std::sync::atomic::Ordering::Relaxed)
+    HASHED_MATERIALIZED_FILES.replace(0)
 }
 
 #[cfg(test)]

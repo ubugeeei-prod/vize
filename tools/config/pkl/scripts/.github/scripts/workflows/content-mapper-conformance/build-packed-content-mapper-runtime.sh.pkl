@@ -1,0 +1,10 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  vp run --filter './npm/native' build:ci
+  (cd npm/cli && vp pack)
+  """#
+}

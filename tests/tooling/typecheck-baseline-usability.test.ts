@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -54,12 +55,10 @@ function fakeBaseline(
   if (fs.existsSync(declaration)) files.push(declaration);
   writeVueTsc(
     fixture.vueTsc,
-    `if (process.argv.includes("--listFilesOnly")) {
-      process.stdout.write(${JSON.stringify(`${files.join("\n")}\n`)});
-      process.exit(0);
-    }
-    process.stdout.write(${JSON.stringify(output)});
-    process.exit(2);`,
+    readToolingProgram("commands/typecheck-baseline-usability/vue-tsc.js.in", {
+      FILES_JOIN_N_N: JSON.stringify(`${files.join("\n")}\n`),
+      OUTPUT: JSON.stringify(output),
+    }),
     fixture.invocationPath,
     probe,
   );

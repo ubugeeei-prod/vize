@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+npm ci --prefix tools/benchmarks/typecheck-hosts --ignore-scripts --no-audit --no-fund
+if [[ -n "$NUXT_SIZES" ]]; then npm ci --prefix tools/benchmarks/nuxt-app --ignore-scripts --no-audit --no-fund; fi
+if ! /usr/bin/time --version 2>&1 | grep -qi 'GNU time'; then
+  sudo apt-get update -qq
+  sudo apt-get install -y --no-install-recommends time
+fi
+/usr/bin/time --version

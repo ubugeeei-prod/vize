@@ -1,0 +1,128 @@
+import "../../Actions.pkl" as ci
+
+name = "Checker projections for inline Vue styles"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/checker-styled-projections.yml"
+      ".github/scripts/workflows/checker-styled-projections/**"
+      "davinci/vize_l1/Cargo.toml"
+      "davinci/vize_l1/src/css/bind.rs"
+      "davinci/vize_l1/src/container/vue/descriptor*"
+      "davinci/vize_l1/src/container/vue/descriptor/**"
+      "davinci/vize_l1_to_l2/src/native_file*"
+      "davinci/vize_l1_to_l2/src/native_file/**"
+      "davinci/vize_l4/Cargo.toml"
+      "davinci/vize_l4/src/framework/vue.rs"
+      "davinci/vize_l4/src/targets/ts/vue.rs"
+      "davinci/vize_l4/tests/vue_projection/**"
+      "crates/vize_canon/Cargo.toml"
+      "crates/vize_canon/tests/styled_projection/**"
+      "crates/vize_canon/src/batch/virtual_project/document.rs"
+      "crates/vize_canon/src/batch/virtual_project/css_var_usage.rs"
+      "crates/vize_croquis/src/sfc/css_transform.rs"
+      "crates/vize_atelier_sfc/Cargo.toml"
+      "crates/vize_atelier_sfc/src/vite_plugin.rs"
+      "crates/vize_atelier_sfc/src/parse/**"
+      "crates/vize_croquis/Cargo.toml"
+      "crates/vize_croquis/src/drawer.rs"
+      "crates/vize_croquis/src/sfc/parse/**"
+      "crates/vize_canon/src/virtual_ts.rs"
+      "davinci/vize_l1/src/css/bind/**"
+      "davinci/vize_l1_to_l2/Cargo.toml"
+      "davinci/vize_l1_to_l2/src/lower.rs"
+      "davinci/vize_l4/src/targets.rs"
+      "davinci/vize_l1_to_l2/src/lower/css*"
+      "davinci/vize_l1_to_l2/src/lower/css/**"
+      "davinci/vize_l4/src/targets/css.rs"
+      "crates/vize_atelier_sfc/src/vite_plugin/css_vars.rs"
+      "crates/vize_canon/src/virtual_ts/style_bindings.rs"
+      "crates/vize_canon/src/batch/virtual_project/css_var_usage/**"
+      "crates/vize_canon/tests/original_style_bindings/**"
+      "crates/vize_croquis/src/drawer/helpers/identifiers.rs"
+      "crates/vize_croquis/src/drawer/helpers/identifiers/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "checker-styled-projections-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  `styled-projections` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("checker-styled-projections")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      ci.use("./.github/actions/cache-vp-bootstrap")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Install the pinned production ambient checker and Vue types"
+        run = "node tools/support/github/vp-install.ts --filter vize-workspace --filter './npm/ui...' --filter './npm/cli'"
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Compare original CSS dependencies, checker documents, mappings and costs"
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-original-css-dependencies-checker-documents-mappings-and-costs.sh""#
+      }
+    }
+  }
+
+  `original-style-bindings` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 35
+    env {
+
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("checker-styled-projections")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Compare compiler descriptors, generated CSS and TypeScript, mappings and retained operations"
+        run = #". "${{ env.VIZE_CI_FILES }}/compare-compiler-descriptors-generated-css-and-typescript-mappings-and-r.sh""#
+      }
+    }
+  }
+}

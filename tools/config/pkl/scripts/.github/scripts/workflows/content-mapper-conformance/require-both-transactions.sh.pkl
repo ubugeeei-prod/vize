@@ -1,0 +1,9 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  test "$TRANSACTIONS_OUTCOME" = success
+  """#
+}

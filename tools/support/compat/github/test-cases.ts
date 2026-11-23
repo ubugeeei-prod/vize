@@ -15,6 +15,22 @@ import {
   parseJson,
 } from "../../json-value.ts";
 
+export function renderReporterLauncher(
+  family: "js" | "job",
+  tool: string,
+  variables: Readonly<Record<string, string>>,
+): string {
+  const quote = (value: string) => "'" + value.replaceAll("'", "'\\''") + "'";
+  const environment = Object.entries(variables).map(([name, value]) => {
+    if (!/^[A-Za-z_]\w*$/u.test(name)) throw new Error("Invalid environment name: " + name);
+    return quote(name + "=" + value);
+  });
+  return readFileSync(new URL("./reporters/" + family + ".sh", import.meta.url), "utf8").replace(
+    /@@VIZE_REPORT_(TOOL|ENV)@@/gu,
+    (_, field: string) => (field === "TOOL" ? quote(tool) : environment.join(" ")),
+  );
+}
+
 export type Outcome = "passed" | "failed" | "skipped";
 const OUTCOMES: readonly Outcome[] = ["passed", "failed", "skipped"];
 export interface TestCase {

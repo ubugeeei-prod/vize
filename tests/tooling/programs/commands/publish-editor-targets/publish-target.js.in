@@ -1,0 +1,26 @@
+const fs = require("node:fs");
+const args = process.argv.slice(2);
+const file = process.env.STATE;
+const state = fs.existsSync(file)
+  ? JSON.parse(fs.readFileSync(file))
+  : { calls: [], published: false };
+state.calls.push([@@TOOL@@, ...args]);
+const expected = process.env.TARGET,
+  mode = process.env.MODE;
+const probe = @@PROBE@@;
+if (probe) {
+  const other = expected === "darwin-x64" ? "linux-x64" : "darwin-x64";
+  const selected =
+    mode === "exact" || (state.published && mode !== "wrong-after") ? expected : other;
+  const version = !state.published && mode === "wrong-version" ? "0.56.0" : "0.57.0";
+  const row = { version, targetPlatform: selected, flags: "validated" };
+  if (!state.published && mode === "universal") delete row.targetPlatform;
+  const gallery = @@GALLERY@@;
+  gallery.results[0].extensions[0].versions = [row];
+  process.stdout.write(JSON.stringify(args.at(-1).includes("marketplace") ? gallery : row));
+} else if (args[4] === "publish") {
+  state.published = true;
+} else if (args[4] !== "create-namespace") {
+  process.exitCode = 19;
+}
+fs.writeFileSync(file, JSON.stringify(state));

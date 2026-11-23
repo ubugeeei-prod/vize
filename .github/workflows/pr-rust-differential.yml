@@ -23,6 +23,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/pr-rust-differential"
       CARGO_BUILD_JOBS: "24"
       RUST_TEST_THREADS: "4"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
@@ -59,7 +60,7 @@ jobs:
         if: ${{ matrix.lane == 'program' || matrix.lane == 'sfc-project' || matrix.lane == 'navigation' }}
         run: git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus
       - name: Materialize affected Rust plan
-        run: node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'
+        run: . "${{ env.VIZE_CI_FILES }}/materialize-affected-rust-plan.sh"
       - name: Run affected feature and production corpora
         if: ${{ matrix.lane != 'navigation' && matrix.lane != 'none' }}
         env: { DIFFERENTIAL_LANE: "${{ matrix.lane }}" }
@@ -79,7 +80,7 @@ jobs:
       - name: Require Rust differential test cases
         id: cases
         if: ${{ !cancelled() && matrix.lane != 'none' }}
-        run: test -s "$VIZE_TEST_CASES"
+        run: . "${{ env.VIZE_CI_FILES }}/require-differential-test-cases.sh"
       - name: Upload Rust differential test cases
         if: ${{ !cancelled() && steps.cases.outcome == 'success' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

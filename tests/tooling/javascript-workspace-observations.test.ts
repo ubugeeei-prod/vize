@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import test from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 import { currentNoDupeKeysPacket } from "../../tools/support/compat/nuxt/javascript-workspace-lint.ts";
 import { ownedSessionDirectory } from "./support/lsp/javascript-workspace-captures.ts";
 
@@ -58,12 +59,7 @@ void test("parallel capture producers each retain exactly their own session", as
       [0, 1, 2].map(() =>
         produce(
           process.execPath,
-          [
-            "--input-type=module",
-            "-e",
-            'import fs from "node:fs"; import path from "node:path"; fs.mkdtempSync(path.join(process.argv[1], `${process.pid}-1-`)); console.log(process.pid);',
-            directory,
-          ],
+          [toolingProgram("workflow/create-capture-session.js"), directory],
           { timeout: 5000 },
         ),
       ),

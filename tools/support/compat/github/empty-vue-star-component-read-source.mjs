@@ -112,6 +112,7 @@ for (const row of [...data.changes, ...data.sdkCollisions]) {
 const executing = [
   directory + "empty-vue-star-component-read-source.mjs",
   directory + "source-counterpart-snapshot.mjs",
+  directory + "source-counterpart-worker.ts",
   "tests/tooling/empty-vue-star-component-read-source.test.mjs",
   "tests/tooling/misskey-registry-source.test.mjs",
   "tests/tooling/warm-type-backed-empty-vue-star-custody.test.ts",

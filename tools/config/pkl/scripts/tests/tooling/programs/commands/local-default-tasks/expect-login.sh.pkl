@@ -1,0 +1,7 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"[ "$1 $2" = "auth login" ]"#
+}

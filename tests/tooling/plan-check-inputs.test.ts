@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { toolingProgram } from "./support/program-path.ts";
 import { planCheckInputs } from "../../tools/support/compat/github/plan-check-inputs.ts";
 
 await test("prose and tooling metadata do not rebuild product apps", () => {
@@ -262,9 +263,7 @@ await test("changing shared ownership changes the actual scanner and selector to
       const output = execFileSync(
         process.execPath,
         [
-          "--input-type=module",
-          "-e",
-          "const { planCheckInputs } = await import(process.argv[1]); console.log(JSON.stringify(planCheckInputs([process.argv[2]])));",
+          toolingProgram("workflow/inspect-check-plan.js"),
           pathToFileURL(join(cwd, planner)).href,
           path,
         ],

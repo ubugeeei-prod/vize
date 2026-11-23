@@ -75,27 +75,10 @@ fn complete_original_n8n_template_keeps_the_legacy_module_bytes() {
 
 fn execute_props(module: &str) {
     let mut child = Command::new("node")
-        .arg("-e")
-        .arg(
-            r#"
-const assert = require('node:assert/strict');
-let code = '';
-process.stdin.setEncoding('utf8');
-process.stdin.on('data', chunk => code += chunk);
-process.stdin.on('end', () => {
-  const vnode = (_type, props) => props;
-  const Vue = { openBlock() {}, resolveComponent: name => name,
-    createBlock: vnode, createVNode: vnode, createElementBlock: vnode,
-    createElementVNode: vnode };
-  const render = new Function('Vue', 'isInPopOutWindow', code + '\nreturn render;');
-  for (const value of [false, true]) {
-    const output = render(Vue, value)({}, [], {}, {}, {}, {});
-    assert.deepEqual(output, { teleported: !value, after: 42 });
-  }
-  process.stdout.write('ok\n');
-});
-"#,
-        )
+        .arg(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/programs/execute-emitted-props.cjs"
+        ))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

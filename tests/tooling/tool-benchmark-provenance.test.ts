@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -43,9 +44,17 @@ const READY_VERSIONS = {
 
 test("probeVersion reports the first --version line, or null", () => {
   withTempDir((dir) => {
-    const good = writeFakeBinary(dir, "good.sh", '#!/bin/sh\necho "tool 1.2.3"\necho "extra"\n');
-    const failing = writeFakeBinary(dir, "bad.sh", "#!/bin/sh\nexit 3\n");
-    const silent = writeFakeBinary(dir, "silent.sh", "#!/bin/sh\nexit 0\n");
+    const good = writeFakeBinary(
+      dir,
+      "good.sh",
+      readToolingProgram("commands/tool-benchmark-provenance/report-tool-version.sh"),
+    );
+    const failing = writeFakeBinary(
+      dir,
+      "bad.sh",
+      readToolingProgram("commands/tool-benchmark-provenance/exit-3.sh"),
+    );
+    const silent = writeFakeBinary(dir, "silent.sh", readToolingProgram("process/exit-success.sh"));
 
     assert.equal(probeVersion(good), "tool 1.2.3");
     assert.equal(probeVersion(failing), null);
@@ -57,7 +66,11 @@ test("probeVersion reports the first --version line, or null", () => {
 
 test("resolveFirstExisting skips empty candidates and missing paths", () => {
   withTempDir((dir) => {
-    const present = writeFakeBinary(dir, "present.sh", "#!/bin/sh\nexit 0\n");
+    const present = writeFakeBinary(
+      dir,
+      "present.sh",
+      readToolingProgram("process/exit-success.sh"),
+    );
     assert.equal(resolveFirstExisting([undefined, "", path.join(dir, "absent"), present]), present);
     assert.equal(resolveFirstExisting([path.join(dir, "absent")]), null);
   });
@@ -65,7 +78,11 @@ test("resolveFirstExisting skips empty candidates and missing paths", () => {
 
 test("a resolvable tsgo makes the backend ready and records its exact version", () => {
   withTempDir((dir) => {
-    const tsgo = writeFakeBinary(dir, "tsgo", '#!/bin/sh\necho "7.0.0-dev.20260602.1"\n');
+    const tsgo = writeFakeBinary(
+      dir,
+      "tsgo",
+      readToolingProgram("commands/tool-benchmark-provenance/report-native-version.sh"),
+    );
     assert.deepEqual(resolveBackend([tsgo]), {
       engine: "tsgo-native",
       corsaPath: tsgo,
@@ -91,7 +108,11 @@ test("a missing TypeScript 7/Corsa runtime makes the backend not ready with an e
 
 test("a tsgo that cannot answer --version makes the backend not ready", () => {
   withTempDir((dir) => {
-    const tsgo = writeFakeBinary(dir, "tsgo", "#!/bin/sh\nexit 9\n");
+    const tsgo = writeFakeBinary(
+      dir,
+      "tsgo",
+      readToolingProgram("commands/tool-benchmark-provenance/exit-9.sh"),
+    );
     assert.deepEqual(resolveBackend([tsgo]), {
       engine: "tsgo-native",
       corsaPath: tsgo,

@@ -25,7 +25,8 @@
     "directory": "npm/framework/nuxt"
   },
   "files": [
-    "dist"
+    "dist",
+    "scripts/package-tasks.cjs"
   ],
   "type": "module",
   "main": "./dist/nuxt2-entry.cjs",
@@ -50,7 +51,7 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
-    "test": "pnpm --filter @vizejs/nuxt-lint-config build && pnpm build && pnpm run test:unit",
+    "test": "node ./scripts/package-tasks.cjs test",
     "test:unit": "node --test src/*.test.ts src/**/*.test.ts src/lint/checker/*.test.ts",
     "test:packed-entry": "node --test src/nuxt2-entry.test.ts",
     "check": "vp check src vite.config.ts",

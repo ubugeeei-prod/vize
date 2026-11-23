@@ -1,0 +1,115 @@
+import "../../Actions.pkl" as ci
+
+name = "Historical SFC Parse Replay"
+
+on {
+  workflow_call {
+    inputs {
+      base_sha {
+        required = true
+        type = "string"
+      }
+      head_sha {
+        required = true
+        type = "string"
+      }
+      repetition {
+        required = true
+        type = "number"
+      }
+      conflicting_modes {
+        required = true
+        type = "boolean"
+      }
+    }
+  }
+}
+
+jobs {
+  replay {
+    name = "SFC parse replay (measurement ${{ inputs.repetition }})"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 35
+    permissions { contents = "read" }
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/harness/.github/scripts/workflows/sfc-parse-replay"
+      CARGO_TERM_COLOR = "never"
+      CARGO_INCREMENTAL = "0"
+      RUSTUP_TOOLCHAIN = "1.98.0"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+      REPLAY_BASE_SHA = "${{ inputs.base_sha }}"
+      REPLAY_HEAD_SHA = "${{ inputs.head_sha }}"
+      REPLAY_CONFLICTING_MODES = "${{ inputs.conflicting_modes }}"
+    }
+    steps = new Listing {
+      new Dynamic {
+        name = "Checkout trusted replay driver"
+        uses = ci.checkout
+        with {
+          ref = "${{ github.sha }}"
+          path = "harness"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "harness/package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Validate frozen historical pair before checkout"
+        `working-directory` = "harness"
+        run = #". "${{ env.VIZE_CI_FILES }}/validate-frozen-historical-pair-before-checkout.sh""#
+      }
+      new Dynamic {
+        name = "Checkout historical base"
+        uses = ci.checkout
+        with {
+          ref = "${{ inputs.base_sha }}"
+          path = "base"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Checkout historical head"
+        uses = ci.checkout
+        with {
+          ref = "${{ inputs.head_sha }}"
+          path = "head"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067"  // master
+        with { toolchain = "1.98.0" }
+      }
+      ci.wild()
+      new Dynamic {
+        name = "Verify recipe guards"
+        `working-directory` = "harness"
+        run = "node --test tests/tooling/sfc-parse-replay.test.ts"
+      }
+      new Dynamic {
+        name = "Build both binaries then measure adjacent pairs"
+        env {
+          VIZE_INPUTS_REPETITION = "${{ inputs.repetition }}"
+        }
+        run = #". "${{ env.VIZE_CI_FILES }}/build-both-binaries-then-measure-adjacent-pairs.sh""#
+      }
+      new Dynamic {
+        name = "Upload every sample and provenance, including failed attempts"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "sfc-parse-replay-${{ inputs.repetition }}"
+          path = "sfc-parse-replay/"
+          `if-no-files-found` = "warn"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

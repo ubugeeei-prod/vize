@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -13,6 +14,11 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
+
+import {
+  invocationWords,
+  isProgramCommand,
+} from "../../../tools/support/ci/automation-commands.ts";
 
 const actionDir = fileURLToPath(
   new URL("../../../.github/actions/setup-rust-sticky-cache", import.meta.url),
@@ -135,7 +141,7 @@ export function cacheFixture(callback) {
     const probe = join(cwd, "bin/mountpoint");
     writeFileSync(
       probe,
-      `#!${process.execPath}\nimport { spawnSync } from "node:child_process";\nimport { basename } from "node:path";\nconst path=process.argv[3]; const name=basename(path)==="registry"?"registry":basename(path)==="git"?"git":path===process.env.VIZE_FAKE_SECONDARY_PATH?"secondary":"target";\nconst result=spawnSync(process.execPath,[process.env.VIZE_FAKE_CACHE_ROOT+"/backend.mjs",JSON.stringify({kind:"probe",name,path})],{stdio:"inherit"});process.exit(result.status??1);\n`,
+      readToolingProgram("commands/rust-cache-fixture/probe.js.in", { NODE: process.execPath }),
     );
     chmodSync(probe, 0o755);
     const context = (eventName = "push", ref = "refs/heads/main") => ({
@@ -257,8 +263,8 @@ export function executeCacheAction(
   const posts = [];
   for (const step of steps) {
     if (step.if && !value(step.if, inputs, outputs)) continue;
-    const githubScript = step.uses?.startsWith("actions/github-script@");
-    if (step.run || githubScript) {
+    const policy = step.uses === "./.github/actions/setup-rust-sticky-cache/cache-policy";
+    if (step.run || policy) {
       const file = join(cwd, `output-${step.id}.txt`);
       writeFileSync(file, "");
       const stepEnv = Object.fromEntries(
@@ -267,11 +273,25 @@ export function executeCacheAction(
           String(value(expr, inputs, outputs)),
         ]),
       );
-      const program = githubScript ? process.execPath : "bash";
-      const args = githubScript
-        ? ["--input-type=commonjs", "--eval", `void (async () => {\n${step.with.script}\n})()`]
-        : ["-e", "-c", step.run];
-      const result = execute(program, args, cwd, {
+      const words = policy
+        ? [
+            process.execPath,
+            join(
+              actionDir,
+              "cache-policy",
+              parse(readFileSync(join(actionDir, "cache-policy/action.yml"), "utf8")).runs.main,
+            ),
+          ]
+        : invocationWords(step.run);
+      assert.ok(
+        words && (policy || isProgramCommand(words)),
+        "cache steps must name their program",
+      );
+      const [program, ...args] = words.map((word) =>
+        word.replaceAll("$GITHUB_ACTION_PATH", actionDir),
+      );
+      const command = program === "." ? ["bash", "-e", ...args] : [program, ...args];
+      const result = execute(command[0], command.slice(1), cwd, {
         ...env,
         ...stepEnv,
         GITHUB_OUTPUT: file,

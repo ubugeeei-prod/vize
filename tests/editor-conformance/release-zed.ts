@@ -1,3 +1,4 @@
+import { shellLauncher } from "../../tools/support/process-launcher.ts";
 // Launch the packaged Zed extension in the actual pinned Linux editor against
 // a project that the packaged `vize init` prepared. The extension must resolve
 // `vize` from PATH, start the exact candidate through the transparent tap, and
@@ -36,7 +37,7 @@ async function main() {
   const tap = path.resolve(import.meta.dirname, "lsp-tap.mjs");
   fs.writeFileSync(
     path.join(shim, "vize"),
-    `#!/bin/sh\nexec ${quote(process.execPath)} ${quote(tap)} ${quote(server)} "$@"\n`,
+    shellLauncher("exec", { COMMAND: [process.execPath, tap, server] }),
     { mode: 0o755 },
   );
 
@@ -148,10 +149,6 @@ function requiredDirectory(name: string): string {
   const value = requiredPath(name);
   assert.ok(fs.statSync(value).isDirectory(), `${name} must name a directory`);
   return value;
-}
-
-function quote(value: string): string {
-  return `'${value.replaceAll("'", `'\\''`)}'`;
 }
 
 await main();

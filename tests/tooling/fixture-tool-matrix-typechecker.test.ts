@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -246,8 +247,7 @@ test("fixture tool matrix records typechecker schema failures", () => {
   fs.writeFileSync(path.join(fixtureDir, "src", "App.vue"), "<template />\n");
   fs.writeFileSync(
     executable,
-    `#!/usr/bin/env node
-process.stdout.write(JSON.stringify({ files: [], programs: [], errorCount: 0, warningCount: 0, fileCount: 0 }));\n`,
+    readToolingProgram("commands/fixture-tool-matrix-typechecker/empty-typecheck-report.cjs"),
   );
   fs.chmodSync(executable, 0o755);
 
@@ -285,9 +285,7 @@ test("fixture tool matrix classifies setup failures before JSON parsing", () => 
   fs.writeFileSync(path.join(fixtureDir, "src", "App.vue"), "<template />\n");
   fs.writeFileSync(
     executable,
-    `#!/usr/bin/env node
-process.stderr.write("Error: IO error: Workspace package alias overlaps another package link\\n");
-process.exit(1);\n`,
+    readToolingProgram("commands/fixture-tool-matrix-typechecker/report-alias-overlap.cjs"),
   );
   fs.chmodSync(executable, 0o755);
 
@@ -332,8 +330,7 @@ test("fixture tool matrix rejects partial typechecker coverage", () => {
   fs.writeFileSync(path.join(fixtureDir, "src", "Card.vue"), "<template />\n");
   fs.writeFileSync(
     executable,
-    `#!/usr/bin/env node
-process.stdout.write(JSON.stringify({ files: [{ file: "src/App.vue", diagnostics: [] }], programs: [{ root: ".", files: ["src/App.vue"] }], errorCount: 0, warningCount: 0, fileCount: 1 }));\n`,
+    readToolingProgram("commands/fixture-tool-matrix-typechecker/report-file-diagnostic.cjs"),
   );
   fs.chmodSync(executable, 0o755);
 

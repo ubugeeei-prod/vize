@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+mkdir evidence
+test "$(git -C source rev-parse HEAD)" = "$SOURCE_SHA"
+test "$(git -C driver rev-parse HEAD)" = "$DRIVER_SHA"
+node driver/tools/support/compat/parser/expression-overlap-cases.ts driver "$GITHUB_WORKSPACE/evidence/cases"
+source_parser=source/upstream/forks/oxc_parser
+source_parser_relative=upstream/forks/oxc_parser
+if [[ ! -d "$source_parser" ]]; then
+  source_parser=source/vendor/oxc_parser
+  source_parser_relative=vendor/oxc_parser
+fi
+test -d "$source_parser"
+cp driver/upstream/forks/oxc_parser/examples/failed_speculation_profile.rs "$source_parser/examples/"
+cp driver/tools/support/compat/parser/frozen-private-facts.rs "$source_parser/src/expression_overlap_private_facts.rs"
+printf '\n#[cfg(test)]\nmod expression_overlap_private_facts;\n' >> "$source_parser/src/lib.rs"
+cp driver/tools/support/compat/parser/frozen-10682-observer.rs source/crates/vize_atelier_core/examples/fuzz_expression_raw_close_observe.rs
+cp driver/crates/vize_atelier_core/examples/fuzz_expression_10401_profile.rs source/crates/vize_atelier_core/examples/
+{
+  printf 'source_sha=%s\ndriver_sha=%s\nrole=%s\n' "$SOURCE_SHA" "$DRIVER_SHA" "$ROLE"
+  rustc +nightly-2026-10-23 -Vv
+  uname -a
+  sha256sum driver/upstream/forks/oxc_parser/examples/failed_speculation_profile.rs driver/tools/support/compat/parser/frozen-private-facts.rs driver/tools/support/compat/parser/frozen-10682-observer.rs driver/tools/support/compat/parser/historical-10682.tar.gz
+  git -C source diff -- src/lib.rs "$source_parser_relative/src/lib.rs"
+  git -C source status --short
+  echo 'No compiled target restored. Fresh process per timing sample; each sample creates and drops a fresh allocator/parser. OS cache is not flushed.'
+} > evidence/provenance.txt
+target="$RUNNER_TEMP/expression-overlap-$ROLE-$SOURCE_SHA-opt"
+test ! -e "$target"
+echo "CARGO_TARGET_DIR=$target" >> "$GITHUB_ENV"

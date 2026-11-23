@@ -1,4 +1,4 @@
-name: Fresco dimension benchmark
+name: Benchmark - Fresco dimensions
 
 on:
   schedule:
@@ -27,17 +27,15 @@ jobs:
       fail-fast: false
       matrix:
         replica: [1, 2, 3]
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/fresco-dimension-bench"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
       - name: Record exact source of both parser implementations
-        run: |
-          set -euo pipefail
-          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
-          echo "BASE_SHA=$HEAD_SHA" >> "$GITHUB_ENV"
+        run: . "${{ env.VIZE_CI_FILES }}/record-exact-source-of-both-parser-implementations.sh"
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with:
           toolchain: stable

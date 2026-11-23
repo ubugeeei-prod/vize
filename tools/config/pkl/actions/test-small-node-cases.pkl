@@ -1,0 +1,45 @@
+import "../Actions.pkl" as ci
+
+name = "Test small Node case list"
+description = "Run one fixed Check test list and retain its shared case packet"
+inputs {
+  suite {
+    required = true
+    description = "Fixed small-suite selector"
+  }
+  job {
+    required = true
+    description = "Actions display name recorded in the packet"
+  }
+  packet {
+    required = true
+    description = "Unique packet and artifact suffix"
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Run selected Node tests"
+      id = "cases"
+      shell = "bash"
+      env {
+        SMALL_NODE_SUITE = "${{ inputs.suite }}"
+        TEST_CASES_JOB = "${{ inputs.job }}"
+        VIZE_TEST_CASES = "${{ runner.temp }}/test-cases-${{ inputs.packet }}.json"
+      }
+      run = #". "$GITHUB_ACTION_PATH/scripts/run-selected-node-tests.sh""#
+    }
+    new Dynamic {
+      name = "Upload small Node test cases"
+      `if` = "${{ !cancelled() && steps.cases.outcome != 'skipped' }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "test-cases-${{ inputs.packet }}-${{ github.run_attempt }}"
+        path = "${{ runner.temp }}/test-cases-${{ inputs.packet }}.json"
+        `if-no-files-found` = "error"
+        `retention-days` = 7
+      }
+    }
+  }
+}

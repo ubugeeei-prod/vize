@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+cargo test --locked --profile ci -p vize_l4 --test native_dom_static_class -- --nocapture
+NODE_ENV=development vp node --test tests/tooling/native-dom-static-class-reference.test.ts
+NODE_ENV=production vp node --test tests/tooling/native-dom-static-class-reference.test.ts
+test -s "$VIZE_L4_DOM_STATIC_CLASS_CAPTURE"
+test -s "${VIZE_L4_DOM_STATIC_CLASS_RUNTIME_CAPTURE}.development.json"
+test -s "${VIZE_L4_DOM_STATIC_CLASS_RUNTIME_CAPTURE}.production.json"

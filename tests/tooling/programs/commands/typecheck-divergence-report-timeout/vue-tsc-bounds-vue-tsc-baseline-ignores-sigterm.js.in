@@ -1,0 +1,7 @@
+import { spawn } from "node:child_process";
+process.on("SIGTERM", () => {});
+const child = spawn(process.execPath, [@@CHILD_PROGRAM@@], { stdio: "inherit" });
+fs.writeFileSync(@@CHILD_PID@@, String(child.pid));
+process.stdout.write("baseline-started\n");
+process.stderr.write("baseline-evidence\n");
+setInterval(() => {}, 1000);

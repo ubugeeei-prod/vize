@@ -1,0 +1,13 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  bench_cpu_set=$(cat "$RUNNER_TEMP/lsp-marker-evidence/affinity.txt")
+  for role in base head; do
+    taskset -c "$bench_cpu_set" node tools/support/compat/davinci/lsp-resources.ts --server "$RUNNER_TEMP/lsp-marker-$role-profile" --files "$FILES" --warm-providers 16 --runs 1 --idle-seconds 10 --build 'ci-opt profiling; source counts and cumulative Rust requests only' --profile-json-dir "$RUNNER_TEMP/lsp-marker-evidence/profile-$role" --out "$RUNNER_TEMP/lsp-marker-evidence/$role-profile.json"
+  done
+  node tools/support/compat/davinci/lsp-marker-scan-compare.ts "$RUNNER_TEMP/lsp-marker-evidence"
+  """#
+}

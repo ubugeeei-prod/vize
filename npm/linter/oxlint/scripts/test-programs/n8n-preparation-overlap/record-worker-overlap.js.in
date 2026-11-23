@@ -1,0 +1,16 @@
+
+import fs from "node:fs";
+import path from "node:path";
+import { waitForReplayReady } from @@HOST_CONCURRENCY@@;
+const [file,id,failure]=process.argv.slice(2), f=JSON.parse(fs.readFileSync(file));
+for (const phase of ["install","transport","htmlTransport"])
+ fs.writeFileSync(path.join(f.artifacts,id+"."+phase),phase+"\r\n");
+console.log("whole host stdout " + id);
+console.error("whole host stderr " + id);
+if (failure==="host" && id==="first") process.exit(7);
+try {
+ await waitForReplayReady(f);
+ if (!fs.existsSync(path.join(f.artifacts,"baseline.done"))) throw Error("early replay");
+ fs.writeFileSync(path.join(f.artifacts,id+".replay"),"complete original replay");
+} catch {process.exitCode=1;}
+fs.writeFileSync(path.join(f.artifacts,id+".done"),"terminal evidence");

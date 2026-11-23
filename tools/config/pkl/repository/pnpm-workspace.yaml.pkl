@@ -1,0 +1,330 @@
+packages = new Listing {
+  "playground"
+  "npm/*"
+  "npm/builder/*"
+  "npm/linter/*"
+  "npm/formatter/*"
+  "npm/entry/*"
+  "npm/compose/*"
+  "editors"
+  "editors/*"
+  "npm/framework/*"
+  "npm/ui"
+  "!editors/vscode-art"
+  "!editors/vscode"
+  "npm/builder/vite/example"
+  "npm/builder/rspack/example"
+  "npm/builder/unplugin/example"
+  "npm/fresco/examples/*"
+  "examples/vite-musea"
+  "examples/oxlint-vize"
+  "examples/jsx-tsx"
+  "docs"
+  "tests"
+  "tools"
+  "tests/tooling/jsx-vapor-oracle"
+  "tests/tooling/tsrx-oracle"
+  "tests/tooling/vue-setup-await-oracle"
+  "tools/benchmarks/scripts"
+  "crates/vize_patina/tests/fixtures/unsafe-template-binding/reports-8752-8755"
+}
+
+minimumReleaseAgeExclude = new Listing {
+  "hono@4.13.16"
+  // First-party native binaries are published by our own release; any version.
+  "@vizejs/native-*"
+  "@vue/compiler-core@3.6.0-rc.11"
+  "@vue/compiler-dom@3.6.0-rc.11"
+  "@vue/compiler-sfc@3.6.0-rc.11"
+  "@vue/compiler-ssr@3.6.0-rc.11"
+  "@vue/compiler-vapor@3.6.0-rc.11"
+  "@vue/reactivity@3.6.0-rc.11"
+  "@vue/runtime-core@3.6.0-rc.11"
+  "@vue/runtime-dom@3.6.0-rc.11"
+  "@vue/runtime-vapor@3.6.0-rc.11"
+  "@vue/server-renderer@3.6.0-rc.11"
+  "@vue/shared@3.6.0-rc.11"
+  "vue@3.6.0-rc.11"
+}
+
+patchedDependencies {
+  `@ox-content/vite-plugin@3.8.2` = "patches/@ox-content__vite-plugin@3.8.2.patch"
+  `braces@3.0.3` = "patches/braces@3.0.3.patch"
+  `deepmerge@4.3.1` = "patches/deepmerge@4.3.1.patch"
+  `picomatch@2.3.2` = "patches/picomatch@2.3.2.patch"
+  `picomatch@4.0.7` = "patches/picomatch@4.0.7.patch"
+  `vscode-languageclient@9.0.1` = "patches/vscode-languageclient@9.0.1.patch"
+}
+
+overrides {
+  `@ox-content/vite-plugin@2.88.0>shiki` = "-"
+  `@azure/msal-node>uuid` = "11.1.1"
+  `@hono/node-server` = "2.1.6"
+  `@babel/plugin-syntax-jsx` = "7.29.7"
+  // Must stay on the v3 line: Nuxt 4.6 imports the streaming helpers added in
+  // 3.4 while its generated `.nuxt/unhead-options.mjs` still uses v3 exports.
+  `@unhead/vue` = "3.4.3"
+  `brace-expansion@2` = "2.1.2"
+  // 5.0.9 is still inside GHSA-qhr7-859c-m2p7 / GHSA-6j4f-fj2g-mc7p / GHSA-q2hr-2g5m-vwhr.
+  `brace-expansion@>=5.0.0 <5.0.12` = "5.0.12"
+  `body-parser@>=2.0.0 <2.4.0` = "2.4.0"
+  defu = "6.1.7"
+  devalue = "5.9.3"
+  dompurify = "3.4.17"
+  esbuild = "0.28.1"
+  `fast-uri` = "3.1.9"
+  `glob@>=9.0.0 <=14.0.1` = "14.0.2"
+  `glob>minimatch` = "11.0.1"
+  h3 = "1.15.11"
+  `happy-dom@>=17.0.0 <=21.0.3` = "21.0.4"
+  hono = "4.13.16"
+  `ip-address` = "10.7.4"
+  `launch-editor` = "2.14.2"
+  minimatch = "11.0.1"
+  `nanoid@>=3.0.0 <3.3.17` = "3.3.17"
+  nanotar = "0.3.0"
+  nitropack = "2.13.4"
+  `node-forge` = "1.4.3"
+  `postcss@>=8.0.0 <8.5.26` = "8.5.26"
+  nuxt = "4.6.4"
+  qs = "6.16.1"
+  `readdir-glob>minimatch` = "11.0.1"
+  `shell-quote` = "1.11.0"
+  // v4 removes unsafe argument forms; Devtools' default import is patched below.
+  `simple-git` = "4.0.1"
+  `simple-git>@simple-git/argv-parser` = "2.0.1"
+  `seroval@<=1.6.2` = "1.6.3"
+  `serialize-javascript@>=7.0.0 <7.1.3` = "7.1.4"
+  `source-map-js@>=1.0.0 <1.2.2` = "1.2.2"
+  `proxy-addr@>=1.1.0 <2.0.8` = "2.0.8"
+  `postcss-selector-parser@>=7.0.0 <7.1.6` = "7.1.6"
+  `tinypool@>=2.0.0 <2.1.2` = "2.1.2"
+  // Stable production Vue only: preserve literal beta/RC and test oracle aliases.
+  `vue@3.5.41` = "3.5.42"
+  srvx = "0.11.15"
+  svgo = "4.1.0"
+  tar = "7.5.21"
+  undici = "8.12.2"
+  `vite@>=7.0.0 <7.3.5` = "7.3.5"
+  `vite@>=8.0.0 <8.1.6` = "8.1.6"
+  `vite@>=8.2.0 <8.2.4` = "8.2.4"
+  yaml = "2.9.1"
+  `zod@>=4.0.0 <4.6.6` = "4.6.6"
+}
+
+// Plugin consumer host; the frozen differential Babel oracle stays separate.
+catalogs {
+  `babel-plugin-host` {
+    `@babel/core` = "8.1.0"
+    `@types/convert-source-map` = "2.0.3"
+  }
+
+  // Real @vue/babel-plugin-jsx toolchain, used only as the differential oracle
+  // for JSX/TSX babel-compatibility tests (crates/vize_atelier_jsx/tests/babel_compat).
+  // Bump deliberately: a version change re-records the committed ground truth.
+  `babel-jsx-oracle` {
+    `@babel/core` = "7.29.0"
+    `@babel/plugin-syntax-typescript` = "7.28.6"
+    // Declaration-only prerequisite for the strict mounted/source oracle tests.
+    `@types/babel__core` = "7.20.5"
+    `@vue/babel-plugin-jsx` = "2.0.1"
+  }
+
+  // Real vue-jsx-vapor compiler/runtime used only by the mounted JSX semantic
+  // differential oracle. Bump deliberately: a version change requires a
+  // reviewed verdict-inventory update.
+  `jsx-vapor-oracle` {
+    vue = "3.6.0-rc.10"
+    `vue-jsx-vapor` = "3.2.26"
+  }
+
+  // Reference TSRX compiler for the Vue host profile, used only by the TSRX
+  // differential oracle (tests/tooling/tsrx-oracle). Bump deliberately: a
+  // version change re-records tests/_fixtures/tsrx/reference.json.
+  `tsrx-oracle` {
+    `@tsrx/core` = "0.5.5"
+    `@tsrx/vue` = "0.3.5"
+  }
+
+  // Official legacy Vue compiler baselines used by the formatter's
+  // dialect-aware SFC semantic-preservation oracle. These aliases must remain
+  // exact so evidence can name one compiler implementation unambiguously.
+  `legacy-vue-oracle` {
+    `@babel/parser` = "7.29.0"
+    `vue-sfc-compiler-2-6` = "npm:vue-template-compiler@2.6.14"
+    `vue-sfc-compiler-2-7` = "npm:@vue/compiler-sfc@2.7.16"
+  }
+
+  // Real @nuxt/eslint toolchain, used only as the differential oracle for the
+  // Nuxt lint config port (npm/framework/nuxt/test/nuxt-eslint-compat).
+  // Bump deliberately: a version change re-records the committed ground truth.
+  `nuxt-eslint-oracle` {
+    `@nuxt/eslint` = "1.16.0"
+    `@nuxt/eslint-config` = "1.16.0"
+  }
+
+  // Independent Pug compiler used by the real-project formatter semantic
+  // oracle. Bump deliberately because its generated HTML is ground truth.
+  `pug-oracle` { pug = "3.0.4" }
+
+  // Shared repo and file-system utilities.
+  `repo-tooling` {
+    `@iarna/toml` = "2.2.5"
+    `@pkl-community/pkl` = "0.30.2"
+    ajv = "8.20.0"
+    glob = "14.0.2"
+    `json-schema-to-typescript` = "16.0.0"
+    `pkg-pr-new` = "0.0.93"
+    prettier = "3.9.10"
+    semver = "7.8.6"
+    tinyglobby = "0.2.17"
+    zigpty = "0.2.1"
+  }
+
+  // TypeScript toolchain shared across workspace packages.
+  typescript {
+    `@types/node` = "25.9.2"
+    tsx = "4.23.15"
+    typescript = "6.0.3"
+    `vue-tsc` = "3.3.14"
+  }
+
+  // Private immutable comparison runtime for tests and release qualification.
+  // Published CLI and editor packages must not depend on this catalog.
+  `corsa-runtime` {
+    `@typescript/typescript-darwin-arm64` = "7.0.2"
+    `@typescript/typescript-darwin-x64` = "7.0.2"
+    `@typescript/typescript-linux-arm64` = "7.0.2"
+    `@typescript/typescript-linux-x64` = "7.0.2"
+    `@typescript/typescript-win32-arm64` = "7.0.2"
+    `@typescript/typescript-win32-x64` = "7.0.2"
+  }
+
+  // Vite / Vite Plus stack and adjacent build-time plugins.
+  `vite-stack` {
+    vite = "npm:@voidzero-dev/vite-plus-core@0.1.24"
+    vitest = "npm:@voidzero-dev/vite-plus-test@0.1.24"
+    `vite-plus` = "0.1.24"
+    tsdown = "0.22.14"
+    `@vitejs/plugin-vue` = "6.0.10"
+    `vite-node` = "6.0.0"
+    `vite-plugin-inspect` = "12.1.0"
+    unplugin = "3.7.0"
+  }
+
+  // Stable Vue ecosystem packages retained for independent test oracles.
+  `vue-stable` {
+    vue = "3.5.35"
+    `@vue/compiler-dom` = "3.5.35"
+    `@vue/compiler-sfc` = "3.5.35"
+    `@vue/runtime-core` = "3.5.35"
+    `@vue/runtime-dom` = "3.5.35"
+    `@vue/test-utils` = "2.4.10"
+    `vue-router` = "4.5.1"
+  }
+
+  // Shipping Vue dependencies are separate from the immutable test oracle.
+  `vue-production` { vue = "3.5.42" }
+
+  // Vue beta track used by the playground and benchmark harnesses.
+  `vue-beta` {
+    vue = "3.6.0-beta.10"
+    `@vue/compiler-sfc` = "3.6.0-beta.10"
+    `@vue/compiler-vapor` = "3.6.0-beta.10"
+  }
+
+  // Test runners and browser automation.
+  testing {
+    `@playwright/test` = "1.65.0"
+    `happy-dom` = "21.0.4"
+    playwright = "1.65.0"
+  }
+
+  // Lint and formatting toolchain.
+  linting {
+    oxfmt = "0.63.0"
+    oxlint = "1.78.0"
+    `@oxlint/plugins` = "1.78.0"
+  }
+
+  // Bundlers beyond the Vite stack.
+  bundlers {
+    `@rspack/cli` = "2.3.1"
+    `@rspack/core` = "2.3.1"
+    esbuild = "0.28.2"
+    rollup = "4.68.0"
+    webpack = "5.112.2"
+  }
+
+  // External framework integrations and native build helpers.
+  integrations {
+    `@modelcontextprotocol/sdk` = "1.32.2"
+    `@napi-rs/cli` = "3.10.12"
+    `@nuxt/kit` = "4.5.2"
+    `@ox-content/vite-plugin` = "3.8.2"
+  }
+
+  // Runtime Kit stays on the Nuxt 2-compatible v3 line. The CJS entry loads it
+  // through native dynamic import; do not restore the vulnerable c12 v1/tar v6 graph.
+  `nuxt-module` { `@nuxt/kit` = "3.21.8" }
+
+  // Rendering / content tooling used by docs, playgrounds, and galleries.
+  content {
+    `@mdi/js` = "7.4.47"
+    `@tsdown/css` = "0.22.14"
+    `@types/pngjs` = "6.0.5"
+    `highlight.js` = "11.12.0"
+    marked = "18.1.3"
+    `marked-highlight` = "2.2.4"
+    `monaco-editor` = "0.57.0"
+    pngjs = "7.0.0"
+    three = "0.187.0"
+  }
+
+  // The product does not ship a syntax highlighter. These official VS Code
+  // runtimes validate Vize's own editor grammars in tests only.
+  `textmate-runtime` {
+    `vscode-oniguruma` = "2.0.1"
+    `vscode-textmate` = "9.3.2"
+  }
+
+  // JS-side OXC transform bridge.
+  oxc {
+    `oxc-parser` = "0.157.0"
+    `oxc-transform` = "0.157.0"
+  }
+
+  // Published native binary packages that are installed optionally at runtime.
+  `native-binaries` {
+    `@vizejs/native-darwin-arm64` = "0.474.0"
+    `@vizejs/native-darwin-x64` = "0.474.0"
+    `@vizejs/native-linux-arm64-gnu` = "0.474.0"
+    `@vizejs/native-linux-arm64-musl` = "0.474.0"
+    `@vizejs/native-linux-x64-gnu` = "0.474.0"
+    `@vizejs/native-linux-x64-musl` = "0.474.0"
+    `@vizejs/native-win32-arm64-msvc` = "0.474.0"
+    `@vizejs/native-win32-x64-msvc` = "0.474.0"
+  }
+}
+
+peerDependencyRules {
+  allowAny = List("vite", "vitest")
+  allowedVersions {
+    vite = "*"
+    vitest = "*"
+  }
+}
+
+allowBuilds {
+  `@parcel/watcher` = false
+  // Native providers are optional for the test-only Parcel stack. Keep installs
+  // reproducible without compiling addons or fetching a WASM fallback.
+  `@swc/core` = false
+  `core-js` = false
+  esbuild = true
+  `lmdb@2.8.5` = false
+  `msgpackr-extract` = false
+  puppeteer = false
+  `unrs-resolver` = false
+  `vue-demi` = false
+}

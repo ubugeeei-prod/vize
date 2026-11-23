@@ -1,0 +1,5 @@
+const nativeBinding = require("./native-binding");
+module.exports = nativeBinding;
+module.exports.TypeResolutionBatch = nativeBinding.TypeResolutionBatch;
+module.exports.beginTypeResolutionBatch = nativeBinding.beginTypeResolutionBatch;
+module.exports.compileSfc = nativeBinding.compileSfc;

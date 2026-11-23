@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/checker-diagnostic-positions.yml"
+      - ".github/scripts/workflows/checker-diagnostic-positions/**"
       - "davinci/vize_l0/Cargo.toml"
       - "davinci/vize_l0/src/line_index.rs"
       - "davinci/vize_l0/src/line_index/**"
@@ -27,6 +28,19 @@ jobs:
       CARGO_INCREMENTAL: "0"
       RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/checker-diagnostic-positions/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { ref: "${{ github.event.pull_request.head.sha }}", persist-credentials: false }
       - uses: ./.github/actions/cache-vp-bootstrap
@@ -44,15 +58,4 @@ jobs:
       - uses: ./.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - name: Compare complete original projection outcomes and repeated queries
-        run: |
-          set -euo pipefail
-          flags=(--locked --profile ci-opt -p vize_l4 --features diagnostic-positions)
-          cargo test --locked --profile ci-opt -p vize_l0 --features diagnostic-positions --lib line_index
-          cargo clippy --locked --profile ci-opt -p vize_l0 --features diagnostic-positions --lib --no-deps -- -D warnings
-          cargo clippy "${flags[@]}" --lib --test program_projection --no-deps -- -D warnings
-          cargo test "${flags[@]}" --test program_projection --test vue_projection --test jsx_module_projection
-          export VIZE_DIAGNOSTIC_INPUTS="$RUNNER_TEMP/checker-position-inputs"
-          git ls-files -z -- '*.vue' '*.js' '*.mjs' '*.cjs' '*.ts' '*.mts' '*.cts' '*.jsx' '*.tsx' \
-            '*.vue.txt' '*.js.txt' '*.mjs.txt' '*.cjs.txt' '*.ts.txt' '*.mts.txt' '*.cts.txt' '*.jsx.txt' '*.tsx.txt' > "$VIZE_DIAGNOSTIC_INPUTS"
-          VIZE_DIAGNOSTIC_TIMINGS=1 cargo test "${flags[@]}" --test program_projection -- diagnostic_positions::original_projected_diagnostics --exact --ignored --nocapture
-          cargo test "${flags[@]}" --test program_projection -- diagnostic_positions::profile::paired_queries --exact --ignored --nocapture
+        run: . "${{ env.VIZE_CI_FILES }}/compare-complete-original-projection-outcomes-and-repeated-queries.sh"

@@ -1,3 +1,9 @@
+import {
+  installToolingProgram,
+  toolingProgram,
+  readToolingProgram,
+} from "./support/program-path.ts";
+import { automationShellPath, readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { execFileSync, spawn, spawnSync } from "node:child_process";
@@ -30,13 +36,13 @@ type Step = {
   "continue-on-error"?: boolean;
 };
 
-for (const [name, source, exitedBeforeCleanup] of [
-  ["live server", "setInterval(() => {}, 1000)", false],
-  ["prior failure exit", "process.exit(7)", true],
-  ["prior signal exit", 'process.kill(process.pid, "SIGTERM")', true],
+for (const [name, args, exitedBeforeCleanup] of [
+  ["live server", [toolingProgram("process/hold-process-open.js")], false],
+  ["prior failure exit", [toolingProgram("process/exit-with-status.js"), "7"], true],
+  ["prior signal exit", [toolingProgram("process/terminate-self.js")], true],
 ] as const) {
   void test(`development cleanup records ${name} without relabeling a prior exit`, async () => {
-    const server = spawn(process.execPath, ["--eval", source]);
+    const server = spawn(process.execPath, args);
     if (exitedBeforeCleanup) await once(server, "exit");
     else await once(server, "spawn");
     const controlledTermination = developmentProcessIsRunning(server);
@@ -76,7 +82,7 @@ void test("the default Nuxt fork may compile only inside the launched process tr
 });
 
 void test("the process snapshot authenticates a real child and refuses its parent", async () => {
-  const child = spawn(process.execPath, ["--eval", "setInterval(() => {}, 1000)"]);
+  const child = spawn(process.execPath, [toolingProgram("process/hold-process-open.js")]);
   await once(child, "spawn");
   try {
     assert.ok(child.pid);
@@ -163,7 +169,7 @@ void test(
   "consumer cleanup restores its SDK when the child already exited by signal",
   { timeout: 2_000 },
   async () => {
-    const server = spawn(process.execPath, ["--eval", 'process.kill(process.pid, "SIGTERM")']);
+    const server = spawn(process.execPath, [toolingProgram("process/terminate-self.js")]);
     await once(server, "exit");
     assert.equal(server.exitCode, null);
     assert.equal(server.signalCode, "SIGTERM");
@@ -176,7 +182,7 @@ void test(
 );
 const fixture = new URL("tools/support/compat/nuxt/fixtures/nuxt5-dev-runtime/", root);
 const workflow = parse(
-  fs.readFileSync(new URL(".github/workflows/nuxt3-module-build.yml", root), "utf8"),
+  readAutomationPrograms(new URL(".github/workflows/nuxt3-module-build.yml", root)),
 ) as {
   on: { pull_request?: unknown; push: { paths: string[] } };
   jobs: Record<string, { "runs-on": string; "timeout-minutes": number; steps: Step[] }>;
@@ -310,27 +316,26 @@ void test("the development command uses the captured producer and forwards the c
   try {
     const bin = path.join(directory, "bin");
     fs.mkdirSync(bin);
-    fs.writeFileSync(path.join(bin, "node"), '#!/bin/sh\nprintf "ambient" > "$AMBIENT_LOG"\n', {
-      mode: 0o755,
-    });
+    installToolingProgram(path.join(bin, "node"), "workflow/record-ambient-node.cjs");
     const runner = path.join(directory, "tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts");
     fs.mkdirSync(path.dirname(runner), { recursive: true });
-    fs.writeFileSync(
-      runner,
-      'require("node:fs").writeFileSync(process.env.PROBE_LOG, JSON.stringify({producer:process.execPath,args:process.argv.slice(2)}));\n',
-    );
+    fs.copyFileSync(toolingProgram("workflow/record-nuxt-producer.cjs"), runner);
     const current = find("Verify source-bound Nuxt 5 development stylesheets and hydration").run;
     assert.ok(current);
-    for (const [name, command] of [
-      ["captured", current],
+    for (const [name, executable, args] of [
+      ["captured", "/bin/bash", ["-e", automationShellPath(current, "nuxt3-module-build")]],
       [
         "ambient-before",
-        'node tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts "$RUNNER_TEMP/nuxt5-dev-runtime-proof/acceptance"',
+        "node",
+        [
+          "tools/support/compat/nuxt/nuxt5-dev-runtime-build.ts",
+          path.join(directory, "nuxt5-dev-runtime-proof/acceptance"),
+        ],
       ],
-    ]) {
+    ] as const) {
       const probe = path.join(directory, name + ".json");
       const ambient = path.join(directory, name + ".log");
-      const result = spawnSync("/bin/bash", ["-e", "-c", command], {
+      const result = spawnSync(executable, args, {
         cwd: directory,
         encoding: "utf8",
         env: {
@@ -339,7 +344,7 @@ void test("the development command uses the captured producer and forwards the c
           RUNNER_TEMP: directory,
           VIZE_NUXT_SOURCE_NODE: process.execPath,
           PROBE_LOG: probe,
-          AMBIENT_LOG: ambient,
+          AMBIENT_NODE_LOG: ambient,
         },
       });
       assert.equal(result.error, undefined);
@@ -371,12 +376,19 @@ void test("the actual development install shell retains npm failure and its raw 
   try {
     fs.writeFileSync(
       path.join(directory, "npm"),
-      "#!/bin/sh\nprintf 'controlled-install-failure\\n'\nexit 17\n",
+      readToolingProgram("commands/nuxt5-dev-runtime/npm.sh"),
       { mode: 0o755 },
     );
     const result = spawnSync(
       "/bin/bash",
-      ["--noprofile", "--norc", "-e", "-o", "pipefail", "-c", step.run],
+      [
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        automationShellPath(step.run, "nuxt3-module-build"),
+      ],
       {
         encoding: "utf8",
         env: {

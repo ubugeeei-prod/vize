@@ -1,0 +1,4 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+assert.equal(fs.existsSync(@@RECEIPT@@), false);
+process.exit(4);

@@ -1,3 +1,4 @@
+import { shellLauncher } from "../../process-launcher.ts";
 // Drive the packaged Emacs integration through real Eglot, with every native
 // packet retained by the shared transparent tap. No simulated LSP connection.
 import assert from "node:assert/strict";
@@ -48,13 +49,9 @@ type Observation = {
   authoredConfig: { file: string; source: string } | null;
 };
 
-function shellQuote(value: string) {
-  return `'${value.replaceAll("'", "'\\''")}'`;
-}
-
 /** Keep the original pipe before POSIX asynchronous-list stdin defaults apply. */
 export function nativeProcessWrapper(server: string, pidFile: string) {
-  return `#!/bin/sh\nexec 3<&0\n${shellQuote(server)} "$@" <&3 &\nnative=$!\nexec 3<&-\nprintf '%s\\n' "$native" > ${shellQuote(pidFile)}\nwait "$native"\n`;
+  return shellLauncher("record-pid", { COMMAND: server, PID_FILE: pidFile });
 }
 
 /** A zombie has terminated even when the editor killed its launcher before reaping. */
@@ -158,9 +155,13 @@ async function main() {
   fs.writeFileSync(nativeWrapper, nativeProcessWrapper(server, nativePidFile), { mode: 0o755 });
   fs.writeFileSync(
     path.join(bin, "vize"),
-    `#!/bin/sh\nexec ${shellQuote(process.execPath)} ${shellQuote(
-      path.join(repository, "tests/editor-conformance/lsp-tap.mjs"),
-    )} ${shellQuote(nativeWrapper)} "$@"\n`,
+    shellLauncher("exec", {
+      COMMAND: [
+        process.execPath,
+        path.join(repository, "tests/editor-conformance/lsp-tap.mjs"),
+        nativeWrapper,
+      ],
+    }),
     { mode: 0o755 },
   );
   const transcript = path.join(output, "transcript.jsonl");

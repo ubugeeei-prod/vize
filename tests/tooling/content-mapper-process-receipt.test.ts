@@ -5,12 +5,15 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+
+import { toolingProgram } from "./support/program-path.ts";
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import { parse } from "yaml";
 import {
   MAPPER_HOST_TARGETS,
   mapperHostTarget,
 } from "../../tools/support/release/type-admission-mapper-host.ts";
-import { readRepoFile, root } from "./support/github-workflows.ts";
+import { root } from "./support/github-workflows.ts";
 
 const proxy = path.join(root, "tools/support/compat/content-mapper/process-receipt.ts");
 type ProcessReceipt = {
@@ -59,7 +62,9 @@ test("the qualified mapper host selects exact Linux and macOS arm64 images", () 
 });
 
 test("the macOS cold-start workflow runs once and retains complete process evidence", () => {
-  const workflow = parse(readRepoFile(".github", "workflows", "content-mapper-cold-start.yml")) as {
+  const workflow = parse(
+    readAutomationPrograms(".github", "workflows", "content-mapper-cold-start.yml"),
+  ) as {
     jobs: Record<
       string,
       {
@@ -97,17 +102,8 @@ test(
   "the mapper proxy preserves protocol bytes and records a nonzero child exit",
   withDirectory((directory) => {
     const receipt = path.join(directory, "receipt.json");
-    const child = [
-      "let body = '';",
-      "process.stdin.setEncoding('utf8');",
-      "process.stdin.on('data', (chunk) => { body += chunk; });",
-      "process.stdin.on('end', () => {",
-      "  process.stdout.write('OUT:' + body);",
-      "  process.stderr.write('ERR');",
-      "  process.exitCode = 23;",
-      "});",
-    ].join("\n");
-    const result = spawnSync(process.execPath, [proxy, receipt, process.execPath, "-e", child], {
+    const child = toolingProgram("native/relay-mapper-request.js");
+    const result = spawnSync(process.execPath, [proxy, receipt, process.execPath, child], {
       input: "request\n",
       encoding: "utf8",
     });
@@ -122,7 +118,7 @@ test(
     assert.equal(packet.lifecycle, "closed");
     assert.equal(typeof packet.finishedAt, "string");
     assert.deepEqual(packet.command.file, process.execPath);
-    assert.deepEqual(packet.command.args, ["-e", child]);
+    assert.deepEqual(packet.command.args, [child]);
     assert.equal(packet.spawnError, null);
     assert.deepEqual(packet.exit, { code: 23, signal: null });
     assert.deepEqual(packet.transport.stdin, { ended: true, error: null });
@@ -175,7 +171,7 @@ test(
     const receipt = path.join(directory, "receipt.json");
     const result = spawnSync(
       process.execPath,
-      [proxy, receipt, process.execPath, "-e", 'process.kill(process.pid, "SIGTERM")'],
+      [proxy, receipt, process.execPath, toolingProgram("process/terminate-self.js")],
       { encoding: "utf8" },
     );
     assert.equal(result.error, undefined);
@@ -193,11 +189,8 @@ test(
   { skip: process.platform === "win32" },
   withDirectory(async (directory) => {
     const receipt = path.join(directory, "receipt.json");
-    const child = [
-      "process.stdin.once('data', (chunk) => process.stdout.write('ACK:' + chunk));",
-      "process.stdin.resume();",
-    ].join("\n");
-    const proxyProcess = spawn(process.execPath, [proxy, receipt, process.execPath, "-e", child], {
+    const child = toolingProgram("native/acknowledge-mapper-request.js");
+    const proxyProcess = spawn(process.execPath, [proxy, receipt, process.execPath, child], {
       stdio: ["pipe", "pipe", "pipe"],
     });
     proxyProcess.stdin.write("request\n");

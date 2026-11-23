@@ -5,6 +5,7 @@ import { createHash, type BinaryLike } from "node:crypto";
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { coldScaleAffinity } from "./cold-typechecker-scale-affinity.ts";
 import {
   readAssets,
   relocatePacket,
@@ -332,10 +333,7 @@ function build(directory: string) {
 
 function measure(directory: string) {
   const binaries = read<Record<Role, BinaryRecord>>(join(directory, "binaries.json"));
-  const affinity = run("python3", [
-    "-c",
-    "import os; print(','.join(map(str,sorted(os.sched_getaffinity(0))[:8])))",
-  ]).trim();
+  const affinity = coldScaleAffinity(readFileSync("/proc/self/status", "utf8"));
   write(join(directory, "resources.json"), {
     affinity,
     runner: process.env.RUNNER_NAME,

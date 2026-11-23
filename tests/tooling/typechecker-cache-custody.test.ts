@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -65,12 +66,9 @@ void test("actual backend observer preserves argv/bytes and distinguishes first 
     // Protocol stubs validate custody laws only; they are not Vize/hardware evidence.
     fs.writeFileSync(
       backend,
-      `#!${process.execPath}
-const fs=require("node:fs"),a=process.argv.slice(2);
-fs.writeFileSync(a[a.indexOf("--tsBuildInfoFile")+1],"current-run build info");
-process.stdout.write("native stdout 日本\\n"); process.stderr.write("native stderr\\n");
-process.exit(2);
-`,
+      readToolingProgram("commands/typechecker-cache-custody/backend.cjs.in", {
+        NODE: process.execPath,
+      }),
       { mode: 0o755 },
     );
     const observer = createColdBackendObserver(backend, out);
