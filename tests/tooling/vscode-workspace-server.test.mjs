@@ -156,6 +156,19 @@ function discovery(
   };
 }
 
+await test("the bundled protocol fixture keeps its portable Node interpreter under a native filename", async (t) => {
+  const f = fixture(t);
+  const bundled = f.server(path.join(f.directory, "vize.exe"));
+  assert.equal(fs.readFileSync(bundled, "utf8").split("\n", 1)[0], "#!/usr/bin/env node");
+  const invocation = serverInvocation(bundled);
+  assert.equal(invocation.command, process.execPath);
+  const { stdout } = await promisify(execFile)(invocation.command, [
+    ...invocation.args,
+    "--version",
+  ]);
+  assert.equal(stdout.trim(), "vize 9.8.7");
+});
+
 await test("workspace npm bin wins over extension version after real stdio initialize and shutdown", async (t) => {
   const f = fixture(t);
   const local = f.install();

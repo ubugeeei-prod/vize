@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const options = JSON.parse("@@PROGRAM_SETTINGS@@");
 const fs = require("node:fs");
 function log(event) {
