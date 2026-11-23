@@ -463,3 +463,10 @@ mod tests;
 mod uri_snapshot_tests;
 #[cfg(test)]
 mod version_tests;
+
+#[cfg(feature = "experimental-literal-products")]
+impl Document {
+    pub(crate) fn position_text(&self) -> &DocumentText {
+        &self.content
+    }
+}

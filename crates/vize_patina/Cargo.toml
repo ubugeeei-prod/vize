@@ -10,6 +10,7 @@ metadata.vize.stability = "compatibility-preview"
 autotests = false
 
 [features]
+verified-prefer-const = ["vize_l2/literal-assignments"]
 # Share the original style structure with checker and editor consumers.
 observed-style-rules = ["vize_l1/observed-styles"]
 # Read template diagnostics from a requested lossless compiler/lint session.
