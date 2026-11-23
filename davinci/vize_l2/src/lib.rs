@@ -74,3 +74,6 @@ pub mod module;
 /// Source-bound Vue/JS file semantics and its canonical component region.
 #[cfg(feature = "ir-views")]
 pub use file::FileArtifact as L2Ir;
+
+#[cfg(feature = "expanded-css")]
+pub mod style;

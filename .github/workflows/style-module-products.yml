@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - ".github/workflows/style-module-products.yml"
+      - "davinci/vize_l0/Cargo.toml"
+      - "davinci/vize_l0/src/line_index.rs"
+      - "davinci/vize_l0/src/line_index/lsp_breaks.rs"
       - "davinci/vize_l1/Cargo.toml"
       - "davinci/vize_l1/src/container/lang.rs"
       - "davinci/vize_l1/src/css.rs"
@@ -23,12 +26,15 @@ on:
       - "crates/vize_maestro/src/ide/completion/template/css_modules/**"
       - "davinci/vize_l1_to_l2/**"
       - "davinci/vize_l2/Cargo.toml"
+      - "davinci/vize_l2/src/lib.rs"
       - "davinci/vize_l2/src/lang/mod.rs"
+      - "davinci/vize_l2/src/style.rs"
       - "davinci/vize_l2/src/lang/scss.rs"
       - "davinci/vize_l2/src/lang/scss/**"
       - "davinci/vize_l4/Cargo.toml"
       - "davinci/vize_l4/src/targets.rs"
-      - "davinci/vize_l4/src/targets/scss.rs"
+      - "davinci/vize_l4/src/targets/css_rules.rs"
+      - "davinci/vize_l4/tests/expanded_css.rs"
       - "crates/vize_atelier_sfc/Cargo.toml"
       - "crates/vize_atelier_sfc/src/lib.rs"
       - "crates/vize_atelier_sfc/src/scss.rs"
@@ -153,6 +159,9 @@ jobs:
           cargo test "${flags[@]}" -p vize_l1_to_l2 --features component-text-condense --lib
           cargo clippy "${flags[@]}" -p vize_l2 --features scss-rules --lib --no-deps -- -D warnings
           cargo clippy "${flags[@]}" -p vize_l4 --features scoped-scss,indexed-source-maps --lib --no-deps -- -D warnings
+          cargo test "${flags[@]}" -p vize_l0 --features lsp-line-break-search --lib line_index::lsp_breaks
+          cargo test "${flags[@]}" -p vize_l4 --no-default-features --features expanded-css --test expanded_css
+          cargo test "${flags[@]}" -p vize_l4 --no-default-features --features scoped-expanded-css --doc append_scoped
           cargo test "${flags[@]}" -p vize_l4 --features indexed-source-maps --lib write::source_map::indexed
           cargo test "${flags[@]}" -p vize_l4 --features indexed-source-maps,serde_json/preserve_order --lib write::source_map::indexed
           cargo clippy "${flags[@]}" "${host[@]}" --lib --no-deps -- -D warnings

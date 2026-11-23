@@ -3,6 +3,52 @@ use vize_l0::Span;
 use vize_l4::write::source_map::SourceMapIndex;
 
 #[test]
+fn value_links_follow_aliases_and_nested_declarations_in_source_order() {
+    use vize_l0::SourceRoot;
+    use vize_l2::style::ExpandedRules;
+
+    let prefix = "😀\r\n";
+    let scss = concat!(
+        "$v: red;\r$alias: $v;\n.a { first:$alias; pair:$v $alias;",
+        ".b { literal:\r\n 7px; back:$v } again:$alias; }\r\n",
+        "$v: blue; .c { same:$v; list:0 $alias; across:\n $v; later:$v; }"
+    );
+    let source = format!("{prefix}{scss}");
+    let block = SourceRoot::new(&source)
+        .unwrap()
+        .block(source.strip_prefix(prefix).unwrap(), prefix.len() as u32)
+        .unwrap();
+    let program = StyleLanguage::Scss
+        .with_original_structure(block, ScssProgram::lower)
+        .unwrap();
+    let span = |word: &str| {
+        let start = source.find(word).unwrap() as u32;
+        Some(Span::new(start, start + word.len() as u32))
+    };
+    let mut locate = program.value_links();
+    let links: Vec<_> = program
+        .runs()
+        .iter()
+        .flat_map(|rule| &rule.declarations)
+        .map(|property| (property.name, locate(property)))
+        .collect();
+    assert_eq!(
+        links,
+        [
+            ("first", span("red")),
+            ("pair", None),
+            ("literal", span("7px")),
+            ("back", span("red")),
+            ("again", span("red")),
+            ("same", None),
+            ("list", None),
+            ("across", None),
+            ("later", span("blue")),
+        ]
+    );
+}
+
+#[test]
 #[ignore = "optimized paired measurements on dense ASCII, Unicode and short lines"]
 fn mapped_targets_share_reverse_order_unicode_coordinates() {
     mark_installed();
