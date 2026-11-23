@@ -28,13 +28,10 @@ function withInstalledConfig(run: (directory: string, loads: string) => void): v
         path.join(dependency, "package.json"),
         JSON.stringify({ name, type, exports: `./${entry}` }),
       );
-      const record = `appendFileSync(${JSON.stringify(loads)}, ${JSON.stringify(name + "\n")});`;
-      fs.writeFileSync(
+      const source = type === "module" ? "unavailable-transform.js" : "unavailable-native.cjs";
+      fs.copyFileSync(
+        new URL("./fixtures/installed-config/" + source, import.meta.url),
         path.join(dependency, entry),
-        `${type === "module" ? 'import { appendFileSync } from "node:fs";' : 'const { appendFileSync } = require("node:fs");'}
-${record}
-throw new Error(${JSON.stringify(`${name}: deliberately unavailable binding`)});
-`,
       );
     }
     run(directory, loads);
@@ -43,8 +40,10 @@ throw new Error(${JSON.stringify(`${name}: deliberately unavailable binding`)});
   }
 }
 
-function execute(directory: string, script: string): void {
-  const result = spawnSync(process.execPath, ["--input-type=module", "-e", script], {
+function execute(directory: string, name: string, ...args: string[]): void {
+  const driver = path.join(directory, name + ".mjs");
+  fs.copyFileSync(new URL("./fixtures/installed-config/" + name + ".js", import.meta.url), driver);
+  const result = spawnSync(process.execPath, [driver, ...args], {
     cwd: directory,
     encoding: "utf8",
     timeout: 15_000,
@@ -59,58 +58,18 @@ function execute(directory: string, script: string): void {
 
 test("installed defineConfig preserves imported CLI settings without loading native bindings", () => {
   withInstalledConfig((directory, loads) => {
-    const shared = {
-      linter: {
-        enabled: true,
-        preset: "incremental",
-        rules: { "vue/attribute-hyphenation": "warn", "vue/require-v-for-key": "error" },
-        ruleOptions: {
-          "vue/attribute-hyphenation": "always",
-          "vue/component-name-in-template-casing": { casing: "PascalCase" },
-          "vue/sfc-element-order": { order: ["script", "template", "style"] },
-        },
-      },
-      entries: [
-        {
-          files: ["src/Fragment.vue"],
-          linter: { rules: { "vue/no-multiple-template-root": "off" } },
-        },
-      ],
-    };
-    fs.writeFileSync(
+    fs.copyFileSync(
+      new URL("./fixtures/installed-config/shared-config.js", import.meta.url),
       path.join(directory, "shared.mjs"),
-      `export const shared = ${JSON.stringify(shared)};\n`,
     );
-    execute(
-      directory,
-      `import assert from "node:assert/strict";
-import { defineConfig, normalizeGlobalTypes } from "vize/config";
-import { shared } from "./shared.mjs";
-assert.equal(defineConfig(shared), shared);
-const array = [shared];
-assert.equal(defineConfig(array), array);
-const factory = () => shared;
-assert.equal(defineConfig(factory), factory);
-const asyncFactory = async () => shared;
-assert.equal(defineConfig(asyncFactory), asyncFactory);
-assert.deepEqual(normalizeGlobalTypes({ types: { UserId: "string" } }), { UserId: { type: "string" } });
-`,
-    );
+    execute(directory, "define");
     assert.equal(fs.existsSync(loads), false, "helper import must not load either native binding");
   });
 });
 
 test("installed resolveConfigExport still requires native structural normalization", () => {
   withInstalledConfig((directory, loads) => {
-    execute(
-      directory,
-      `import assert from "node:assert/strict";
-import { resolveConfigExport } from "vize/config";
-await assert.rejects(resolveConfigExport({ linter: { enabled: true } }), {
-  message: "@vizejs/native: deliberately unavailable binding",
-});
-`,
-    );
+    execute(directory, "resolve");
     assert.equal(fs.readFileSync(loads, "utf8"), "@vizejs/native\n");
   });
 });
@@ -121,13 +80,7 @@ test("installed canonical Vite config keeps native normalization failures visibl
       path.join(directory, "vite.config.mjs"),
       "export default {vue:{linter:{enabled:true}}};",
     );
-    execute(
-      directory,
-      `import assert from "node:assert/strict";
-import { loadConfig } from "vize/config";
-await assert.rejects(loadConfig(process.cwd()), (error) => error.message.endsWith("@vizejs/native: deliberately unavailable binding"));
-`,
-    );
+    execute(directory, "canonical");
     assert.equal(fs.readFileSync(loads, "utf8"), "@vizejs/native\n");
   });
 });
@@ -138,15 +91,7 @@ test("installed TypeScript Vite config loading still requires its native transfo
       path.join(directory, "vite.config.ts"),
       "export default { vue: { linter: { enabled: true } } };\n",
     );
-    execute(
-      directory,
-      `import assert from "node:assert/strict";
-import { loadConfig } from "vize/config";
-await assert.rejects(loadConfig(process.cwd()), {
-  message: "oxc-transform: deliberately unavailable binding",
-});
-`,
-    );
+    execute(directory, "typescript");
     assert.equal(fs.readFileSync(loads, "utf8"), "oxc-transform\n");
   });
 });
@@ -159,14 +104,7 @@ test("installed retired config files report migration without loading native bin
         path.join(directory, file),
         extension === "json" ? "{}" : "export default {};",
       );
-      execute(
-        directory,
-        `import assert from "node:assert/strict";
-import { loadConfig } from "vize/config";
-await assert.rejects(loadConfig(process.cwd()), /vize\\.config\\.\\* is no longer supported/);
-await assert.rejects(loadConfig(process.cwd(), {configFile:${JSON.stringify(file)}}), /vize\\.config\\.\\* is no longer supported/);
-`,
-      );
+      execute(directory, "retired", file);
       assert.equal(
         fs.existsSync(loads),
         false,

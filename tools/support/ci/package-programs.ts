@@ -29,6 +29,26 @@ export async function packageTaskRuntime(root: string): Promise<string> {
   return entry.code.trimEnd();
 }
 
+export function validatePackageScripts(
+  root: string,
+  directory: string,
+  taskNames: readonly string[],
+): void {
+  const { scripts = {} } = JSON.parse(
+    readFileSync(path.join(root, directory, "package.json"), "utf8"),
+  ) as { scripts?: Record<string, string> };
+  for (const name of taskNames) {
+    if (!/^[\w:-]+$/u.test(name) || scripts[name] !== "node ./scripts/package-tasks.cjs " + name)
+      throw new Error(directory + ": missing package script for " + name);
+  }
+  for (const [name, command] of Object.entries(scripts)) {
+    if (!isProgramInvocation(command))
+      throw new Error(directory + ": move " + name + " into the package's Pkl task definition");
+    if (command.startsWith("node ./scripts/package-tasks.cjs ") && !taskNames.includes(name))
+      throw new Error(directory + ": undefined package task " + name);
+  }
+}
+
 export function renderPackageTasks(
   root: string,
   target: string,
@@ -38,9 +58,6 @@ export function renderPackageTasks(
   if (!tasks || Array.isArray(tasks) || typeof tasks !== "object")
     throw new Error("Invalid package tasks for " + target);
   const directory = path.dirname(path.dirname(target));
-  const { scripts } = JSON.parse(
-    readFileSync(path.join(root, directory, "package.json"), "utf8"),
-  ) as { scripts: Record<string, string> };
   for (const [name, commands] of Object.entries(tasks)) {
     if (!Array.isArray(commands) || commands.length === 0)
       throw new Error("Empty package task: " + name);
@@ -57,16 +74,7 @@ export function renderPackageTasks(
         throw new Error(directory + " / " + name + ": expected a named program");
     }
   }
-  for (const name of Object.keys(tasks)) {
-    if (!/^[\w:-]+$/u.test(name) || scripts[name] !== "node ./scripts/package-tasks.cjs " + name)
-      throw new Error(directory + ": missing package script for " + name);
-  }
-  for (const [name, command] of Object.entries(scripts)) {
-    if (!isProgramInvocation(command))
-      throw new Error(directory + ": move " + name + " into the package's Pkl task definition");
-    if (command.startsWith("node ./scripts/package-tasks.cjs ") && !Object.hasOwn(tasks, name))
-      throw new Error(directory + ": undefined package task " + name);
-  }
+  validatePackageScripts(root, directory, Object.keys(tasks));
   return (
     "// Generated from tools/config/pkl/package-tasks/" +
     directory +

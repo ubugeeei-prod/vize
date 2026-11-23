@@ -59,7 +59,8 @@ display name `Benchmark - <subject>`. Use `ShellScript.pkl` to quote command
 arguments and compose shared recipes. Put runtime logic that needs process I/O
 in a typed driver under `tools/` and call it from the recipe.
 
-A package script invokes its generated `scripts/package-tasks.cjs` entrypoint.
+The generator checks every first-party package script for inline commands.
+A multi-command package script invokes its generated `scripts/package-tasks.cjs` entrypoint.
 Declare each command's executable and argument list in the package's `tasks.pkl`.
 Use `directory` and `environment` for package-local setup. Root Vite+ sequences use
 `steps(...)` in `tools/config/vite-plus/tasks/`, and Nix shell hooks read the

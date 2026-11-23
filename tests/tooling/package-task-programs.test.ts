@@ -11,6 +11,7 @@ import {
   isProgramCommand,
   isProgramInvocation,
 } from "../../tools/support/ci/automation-commands.ts";
+import { validatePackageScripts } from "../../tools/support/ci/package-programs.ts";
 import { runPackageTask } from "../../tools/support/tasks/package-task.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -33,6 +34,22 @@ test("every repository package script invokes one program", () => {
   }
 });
 
+test("packages can introduce their first command and must declare their first generated task", (t) => {
+  const root = mkdtempSync(path.join(tmpdir(), "vize-package-manifest-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const manifest = path.join(root, "package.json");
+  writeFileSync(manifest, JSON.stringify({ scripts: { clean: "node clean.ts" } }));
+  validatePackageScripts(root, ".", []);
+  writeFileSync(manifest, JSON.stringify({ scripts: { clean: "clean && verify" } }));
+  assert.throws(() => validatePackageScripts(root, ".", []), /Pkl task definition/u);
+  writeFileSync(
+    manifest,
+    JSON.stringify({ scripts: { clean: "node ./scripts/package-tasks.cjs clean" } }),
+  );
+  assert.throws(() => validatePackageScripts(root, ".", []), /undefined package task clean/u);
+  validatePackageScripts(root, ".", ["clean"]);
+});
+
 test("every workspace task invokes one named entrypoint", () => {
   for (const [name, task] of Object.entries(taskCatalog)) {
     assert.ok(
@@ -53,16 +70,7 @@ test("package sequences preserve cwd, environment, forwarded arguments and the f
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   const other = path.join(directory, "working directory");
   mkdirSync(other);
-  const recorder = path.join(directory, "record.cjs");
-  writeFileSync(
-    recorder,
-    [
-      'const fs = require("node:fs");',
-      "const [output,code,...argv]=process.argv.slice(2);",
-      'fs.appendFileSync(output,JSON.stringify([process.cwd(),process.env.VIZE_PACKAGE_TASK_PROBE,argv])+"\\n");',
-      "process.exitCode=Number(code);",
-    ].join("\n"),
-  );
+  const recorder = fileURLToPath(new URL("./support/package-task-recorder.ts", import.meta.url));
   const output = path.join(directory, "receipts");
   const command = (work: string, status: number) => ({
     program: process.execPath,

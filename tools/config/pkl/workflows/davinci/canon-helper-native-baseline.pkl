@@ -5,6 +5,8 @@ on {
   pull_request {
     paths = new Listing {
       "tools/benchmarks/scripts/canon-helper-*.ts"
+      "tools/support/process-launcher.ts"
+      "tools/support/launchers/exec*.sh"
       "tools/benchmarks/scripts/canon-template-helper-carrier.ts"
       "tests/tooling/canon-helper-native-proxy.test.ts"
       ".github/workflows/canon-helper-native-baseline.yml"

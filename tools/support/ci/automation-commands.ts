@@ -68,12 +68,16 @@ export function isProgramCommand(tokens: readonly string[]): boolean {
   )
     return false;
   for (const [index, token] of tokens.entries()) {
-    const commandName = path.posix.basename(token);
+    const commandName = path.win32
+      .basename(token)
+      .replace(/\.exe$/iu, "")
+      .toLowerCase();
     if (!interpreter.test(commandName)) continue;
     const shell = /^(?:ba|da|z|k)?sh$/u.test(commandName);
     const powershell = /^(?:pwsh|powershell)/iu.test(commandName);
     for (let cursor = index + 1; cursor < tokens.length; cursor++) {
       const argument = tokens[cursor]!;
+      if (/^(?:--(?:import|loader|experimental-loader)=)?data:/iu.test(argument)) return false;
       if (argument === "--") break;
       if (argument === "-" || (shell && /^-[a-z]*s[a-z]*$/iu.test(argument))) return false;
       if (["deno", "bun"].includes(commandName) && argument === "eval") return false;
@@ -85,9 +89,19 @@ export function isProgramCommand(tokens: readonly string[]): boolean {
       // Flags after the entry point are arguments to that program (e.g. tsc -p).
       if (!argument.startsWith("-")) break;
       if (
-        ["-r", "--require", "--import", "--loader", "--input-type", "--env-file"].includes(argument)
-      )
+        [
+          "-r",
+          "--require",
+          "--import",
+          "--loader",
+          "--experimental-loader",
+          "--input-type",
+          "--env-file",
+        ].includes(argument)
+      ) {
+        if (/^data:/iu.test(tokens[cursor + 1] ?? "")) return false;
         cursor++;
+      }
     }
   }
   return true;

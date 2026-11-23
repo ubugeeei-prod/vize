@@ -14,8 +14,10 @@ fn current_binding(path: &str, body: &[u8]) -> Value {
 }
 
 fn current_lock_before_entry_packages() -> Vec<u8> {
-    let current = fs::read(support::repository().join("pnpm-lock.yaml")).unwrap();
-    entry_packages::reconstruct_lock_predecessor(&current).unwrap_or(current)
+    let lock = crate::package_task_history::read("pnpm-lock.yaml")
+        .unwrap()
+        .into_bytes();
+    entry_packages::reconstruct_lock_predecessor(&lock).unwrap_or(lock)
 }
 
 fn current_workspace_before_entry_packages() -> Vec<u8> {

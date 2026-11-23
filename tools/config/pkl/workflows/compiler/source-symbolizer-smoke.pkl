@@ -8,6 +8,9 @@ on {
       ".github/workflows/source-symbolizer-smoke.yml"
       ".github/scripts/workflows/source-symbolizer-smoke/**"
       "tools/benchmarks/scripts/source-symbolizer-*.ts"
+      "tools/benchmarks/scripts/source-symbolizer-adapter.cjs"
+      "tools/benchmarks/scripts/source-symbolizer-matching-symbols.sh"
+      "tests/tooling/support/source-symbolizer-decoder.ts"
       "tests/tooling/source-symbolizer-protocol.test.ts"
     }
   }

@@ -9,6 +9,8 @@ on {
       ".github/scripts/workflows/source-symbolizer-retained/**"
       ".github/scripts/workflows/shared/**"
       "tools/benchmarks/scripts/source-symbolizer-*.ts"
+      "tools/benchmarks/scripts/source-symbolizer-adapter.cjs"
+      "tools/benchmarks/scripts/source-symbolizer-matching-symbols.sh"
       "tests/tooling/source-symbolizer-protocol.test.ts"
       "tools/benchmarks/scripts/cold-evidence-*.ts"
       "tests/tooling/cold-evidence-thin.test.ts"

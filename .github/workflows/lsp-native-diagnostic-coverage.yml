@@ -7,6 +7,7 @@ on:
       - ".github/scripts/workflows/shared/**"
       - "tests/tooling/lsp-diagnostic-capacity*.test.ts"
       - "tests/tooling/support/lsp/diagnostic-capacity*.ts"
+      - tests/tooling/support/lsp/diagnostic-capacity-pidfd.c
       - "crates/vize_maestro/src/server/open_document.rs"
       - "crates/vize_maestro/src/server/diagnostic_publishing.rs"
       - "crates/vize_maestro/src/server/diagnostic_publishing/**"
@@ -61,9 +62,7 @@ jobs:
       - run: . "${{ env.VIZE_CI_FILES }}/coverage-rustup-toolchain-install-rustup-show-active-too.sh"
       - name: Verify exact token, version, UTF16 and duplicate controls
         run: >-
-          vp exec node --test tests/tooling/lsp-diagnostic-capacity-oracle.test.ts
-          tests/tooling/lsp-diagnostic-capacity-socket.test.ts
-          tests/tooling/lsp-diagnostic-capacity-workflow.test.ts
+          vp exec node --test tests/tooling/lsp-diagnostic-capacity-oracle.test.ts tests/tooling/lsp-diagnostic-capacity-socket.test.ts tests/tooling/lsp-diagnostic-capacity-workflow.test.ts
       - name: Prove the same conservation law fails on the original scheduler
         run: . "${{ env.VIZE_CI_FILES }}/prove-the-same-conservation-law-fails-on-the-original-scheduler.sh"
       - name: Build the exact source once in its own target
@@ -76,8 +75,7 @@ jobs:
         env:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
         run: >-
-          vp exec node --test --test-concurrency=1 tests/tooling/lsp-diagnostic-capacity.test.ts
-          tests/tooling/lsp-diagnostic-capacity-reopen.test.ts
+          vp exec node --test --test-concurrency=1 tests/tooling/lsp-diagnostic-capacity.test.ts tests/tooling/lsp-diagnostic-capacity-reopen.test.ts
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
