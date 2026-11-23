@@ -161,3 +161,10 @@ impl SourceSnapshotCache {
         });
     }
 }
+
+#[cfg(feature = "experimental-resident-template-passes")]
+impl SourceSnapshot {
+    pub(super) fn source_owner(&self) -> &Arc<String> {
+        &self.source
+    }
+}

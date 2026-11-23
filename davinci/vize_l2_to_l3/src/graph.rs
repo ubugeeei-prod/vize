@@ -11,5 +11,5 @@ impl<'a> Lowered<'a> {
 /// Lower the root from a complete native L2 file.
 #[must_use]
 pub fn lower_ir<'a>(allocator: &'a Allocator, file: &vize_l2::L2Ir<'_>) -> Lowered<'a> {
-    lower(allocator, file.artifact().root())
+    lower(allocator, file.root_region())
 }

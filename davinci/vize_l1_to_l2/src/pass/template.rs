@@ -8,6 +8,11 @@ use vize_l2::{analysis::template, provenance::ProvenanceSink};
 /// Both L2 query results from the shared traversal.
 pub use vize_l2::analysis::template::TemplateFacts as TemplateAnalysis;
 
+#[cfg(feature = "original-template-queries")]
+mod original;
+#[cfg(feature = "original-template-queries")]
+pub use original::OriginalTemplate;
+
 /// The two registered analyses use the original stage, pass names and masks.
 pub const PLAN: Pipeline = Pipeline::new(L2_STAGE, &[hoist::DESC, cfg::DESC]);
 const _: () = {
