@@ -131,6 +131,15 @@ fn case_dir(name: &str) -> std::path::PathBuf {
 
 #[test]
 fn open_session_projects_are_outside_the_authored_vue_corpus() {
+    let corpus = || {
+        let mut paths = Vec::new();
+        davinci_test_support::corpus::collect_vue_files(
+            Path::new(env!("CARGO_MANIFEST_DIR")),
+            &mut paths,
+        );
+        paths
+    };
+    let before = corpus();
     let case = case_dir("corpus-isolation");
     let parent = case.parent().unwrap();
     std::fs::create_dir_all(parent).unwrap();
@@ -141,12 +150,7 @@ fn open_session_projects_are_outside_the_authored_vue_corpus() {
     let transient = project.path().join("Child.vue");
     std::fs::write(&transient, "<template><p/></template>").unwrap();
 
-    let mut authored = Vec::new();
-    davinci_test_support::corpus::collect_vue_files(
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR")),
-        &mut authored,
-    );
-    assert!(!authored.contains(&transient), "{transient:?}");
+    assert_eq!(corpus(), before, "open test project {transient:?}");
 }
 
 pub(in crate::linter::corsa_session) fn test_corsa_path() -> Option<PathBuf> {
