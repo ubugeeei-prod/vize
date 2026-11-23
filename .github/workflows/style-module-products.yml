@@ -6,6 +6,9 @@ on:
       - "davinci/vize_l0/Cargo.toml"
       - "davinci/vize_l0/src/line_index.rs"
       - "davinci/vize_l0/src/line_index/lsp_breaks.rs"
+      - "davinci/vize_l0/src/line_index/lsp_breaks/**"
+      - "davinci/vize_l0/src/line_index/line_breaks.rs"
+      - "davinci/vize_l0/tests/lsp_line_breaks.rs"
       - "davinci/vize_l1/Cargo.toml"
       - "davinci/vize_l1/src/container/lang.rs"
       - "davinci/vize_l1/src/css.rs"
@@ -160,6 +163,7 @@ jobs:
           cargo clippy "${flags[@]}" -p vize_l2 --features scss-rules --lib --no-deps -- -D warnings
           cargo clippy "${flags[@]}" -p vize_l4 --features scoped-scss,indexed-source-maps --lib --no-deps -- -D warnings
           cargo test "${flags[@]}" -p vize_l0 --features lsp-line-break-search --lib line_index::lsp_breaks
+          cargo test "${flags[@]}" -p vize_l0 --features lsp-line-break-search --test lsp_line_breaks
           cargo test "${flags[@]}" -p vize_l4 --no-default-features --features expanded-css --test expanded_css
           cargo test "${flags[@]}" -p vize_l4 --no-default-features --features scoped-expanded-css --doc append_scoped
           cargo test "${flags[@]}" -p vize_l4 --features indexed-source-maps --lib write::source_map::indexed
@@ -192,6 +196,8 @@ jobs:
           kani-version: "0.68.0"
           command: kani
           args: davinci/vize_l4/src/write/source_map/indexed/kani.rs --output-format=terse
+      - name: Compare nearest line starts with the LSP iterator on arbitrary short bytes
+        run: cargo kani --manifest-path davinci/vize_l0/Cargo.toml --features lsp-line-break-search --tests --lib --harness nearest_lsp_line_starts_match_every_short_byte_slice --output-format=terse
       - name: Verify authored positions for arbitrary finite Unicode text
         run: |
           set -euo pipefail
@@ -199,5 +205,8 @@ jobs:
           curl -fsSL --retry 3 -o lean.tar.zst https://github.com/leanprover/lean4/releases/download/v4.33.1/lean-4.33.1-linux.tar.zst
           echo '890afd185370f85666025b883914ab4f4b339136f8c96167b69cfb62aecaf235  lean.tar.zst' | sha256sum -c
           tar --zstd -xf lean.tar.zst
+          lean-4.33.1-linux/bin/lean -DwarningAsError=true "$GITHUB_WORKSPACE/tests/formal/source-map/LineBreaks.lean" | tee line-breaks.log
+          grep -Fx "'Davinci.SourceMap.LineBreaks.first_exact' does not depend on any axioms" line-breaks.log
+          grep -Fx "'Davinci.SourceMap.LineBreaks.last_exact' depends on axioms: [propext]" line-breaks.log
           lean-4.33.1-linux/bin/lean -DwarningAsError=true "$GITHUB_WORKSPACE/tests/formal/source-map/Coordinates.lean" | tee theorem.log
           grep -Fx "'Davinci.SourceMap.column_exact' depends on axioms: [propext, Quot.sound]" theorem.log
