@@ -7,7 +7,10 @@ use vize_l0::{
 };
 use vize_l1::{container::vue::DescriptorOptions, markup::SurfaceParseOptions};
 use vize_l1_to_l2::native_file::lower_sfc_native;
-use vize_l3::query::{Direction, EdgeKinds, OpGraph, ReachQuery, check_reachability};
+use vize_l3::query::{
+    Direction, EdgeKinds, EdgePattern, OpGraph, ReachQuery, TwoHopQuery, check_reachability,
+    check_two_hop_matches,
+};
 
 #[test]
 #[ignore = "supply the tracked or real-project corpus via VIZE_IR_GRAPH_INPUTS"]
@@ -22,6 +25,7 @@ fn original_graphs_and_lossless_recovery() {
     let mut graphs = 0;
     let mut queries = 0;
     let mut reached = 0;
+    let (mut patterns, mut trails) = (0, 0);
     let mut bytes = 0;
     let options = DescriptorOptions {
         version: VueVersion::V3,
@@ -85,6 +89,31 @@ fn original_graphs_and_lossless_recovery() {
                     })
                     .unwrap();
                 check_reachability(ir, q, &steps).unwrap_or_else(|e| panic!("{path}: {e:?}"));
+                for second in [Direction::Forward, Direction::Reverse] {
+                    let pattern = TwoHopQuery {
+                        start: op.id,
+                        first: EdgePattern {
+                            direction,
+                            kinds: EdgeKinds::ALL,
+                        },
+                        second: EdgePattern {
+                            direction: second,
+                            kinds: EdgeKinds::ALL,
+                        },
+                    };
+                    let mut rows = Vec::new();
+                    let result = index
+                        .visit_two_hop(pattern, |row| {
+                            rows.push(row);
+                            std::ops::ControlFlow::<()>::Continue(())
+                        })
+                        .unwrap();
+                    assert!(result.is_continue());
+                    check_two_hop_matches(ir, pattern, &rows)
+                        .unwrap_or_else(|e| panic!("{path}: {e:?}"));
+                    patterns += 1;
+                    trails += rows.len();
+                }
                 reached += steps.len();
                 queries += 1;
             }
@@ -92,7 +121,8 @@ fn original_graphs_and_lossless_recovery() {
     }
     assert!(graphs > 0 && refused > 0 && queries > 0);
     assert_eq!(total, invalid_utf8 + admitted + refused);
+    assert!(trails > 0 && patterns == 2 * queries);
     println!(
-        "graph corpus files={total} bytes={bytes} invalid_utf8={invalid_utf8} admitted={admitted} rejected={refused} nonempty={graphs} queries={queries} witnessed_ops={reached}"
+        "graph corpus files={total} bytes={bytes} invalid_utf8={invalid_utf8} admitted={admitted} rejected={refused} nonempty={graphs} queries={queries} witnessed_ops={reached} two_hop_queries={patterns} ordered_trails={trails}"
     );
 }
