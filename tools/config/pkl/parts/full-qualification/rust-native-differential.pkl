@@ -1,0 +1,52 @@
+import "../../Actions.pkl" as ci
+
+`runs-on` = ci.linux
+`if` = "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}"
+`timeout-minutes` = 45
+env { VIZE_NUXT_CONFIG_ITERATIONS = "100" }
+steps = new Listing {
+  ci.use(ci.checkout)
+  new Dynamic {
+    uses = ci.setupRust
+    with {
+      toolchain = "stable"
+      components = "clippy"
+    }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-wild-http-recovery"
+    with { `wild-version` = "0.9.0" }
+  }
+  new Dynamic {
+    uses = ci.setupVp
+    with {
+      `node-version-file` = "package.json"
+      cache = true
+      `run-install` = true
+    }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      key = "clippy-test"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  ci.use("./.github/actions/setup-rust-script")
+  new Dynamic {
+    name = "Install Pkl CLI and hydrate pinned native fixture"
+    run = "npm install --global @pkl-community/pkl@0.27.2 && git submodule update --init --force --depth 1 -- tests/_fixtures/_git/element-plus"
+  }
+  new Dynamic {
+    name = "Test"
+    env { VIZE_TEST_REQUIRE_TSGO = "1" }
+    uses = "./.github/actions/test-rust-workspace-differential"
+    // The required full-rust-report verifies the sibling's source-bound
+    // complete inventory, JUnit and doctests as well as this native tail.
+    with { `workspace-already-tested` = "true" }
+  }
+  new Dynamic {
+    uses = "./.github/actions/retain-sfc-runtime"
+    `if` = "${{ always() }}"
+  }
+}

@@ -1,0 +1,188 @@
+import "../../Actions.pkl" as ci
+
+name = "Nuxt scoped style build"
+// #6830: off the PR tier; main runs it per commit and nightly.
+on {
+  push {
+    branches = List("main", "davinci")
+  }
+  workflow_call = null
+  schedule = new Listing {
+    new Dynamic { cron = "29 3 * * *" }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+
+concurrency {
+  group = "nuxt-style-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+
+jobs {
+  plan {
+    name = "Select affected Nuxt integration"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 3
+    outputs { nuxt = "${{ steps.plan.outputs.nuxt }}" }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Select changed product inputs"
+        id = "plan"
+        env {
+          BASE_SHA = "${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}"
+        }
+        run = """
+        if [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ && ! "$BASE_SHA" =~ ^0+$ ]]; then
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+        fi
+        node tools/support/compat/github/plan-product-integrations.ts "$GITHUB_EVENT_NAME" "$BASE_SHA" "$GITHUB_SHA"
+
+        """
+      }
+    }
+  }
+
+  `nuxt-style-build` {
+    name = "Nuxt 4 ${{ matrix.case }}"
+    needs = "plan"
+    `if` = "${{ needs.plan.outputs.nuxt == 'true' }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 15
+    strategy {
+      `fail-fast` = false
+      matrix {
+        include = new Listing {
+          new Dynamic {
+            `case` = "scoped CSS"
+            fixture = "tests/_fixtures/_projects/nuxt-scoped-style-build"
+            script = "style-build.ts"
+            proof = "nuxt-style-proof"
+            browser = false
+          }
+          new Dynamic {
+            `case` = "critical CSS"
+            fixture = "tests/_fixtures/_projects/nuxt-critical-css-build"
+            script = "critical-css-build.ts"
+            proof = "nuxt-critical-css-proof"
+            browser = true
+          }
+          new Dynamic {
+            `case` = "dev SSR styles"
+            fixture = "tests/_fixtures/_projects/nuxt-dev-ssr-style"
+            script = "dev-ssr-style.mjs"
+            proof = "nuxt-dev-style-proof"
+            browser = true
+          }
+        }
+      }
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      ci.workspaceVp()
+      new Dynamic {
+        name = "Install adapter and browser test dependencies"
+        run = "vp install --filter './npm/builder/vite...' --filter './npm/framework/nuxt...' --filter './tests' --frozen-lockfile --prefer-offline"
+      }
+      new Dynamic {
+        name = "Build the candidate JavaScript adapter"
+        `working-directory` = "npm/builder/vite"
+        run = "vp pack"
+      }
+      new Dynamic {
+        name = "Build the candidate Nuxt integration"
+        `working-directory` = "npm/framework/nuxt"
+        run = "vp pack"
+      }
+      new Dynamic {
+        name = "Cache pinned fixture package downloads"
+        uses = ci.cache
+        with {
+          path = "~/.npm"
+          key = "nuxt-fixture-npm-${{ runner.os }}-${{ hashFiles(format('{0}/package-lock.json', matrix.fixture)) }}"
+          `restore-keys` = "nuxt-fixture-npm-${{ runner.os }}-"
+        }
+      }
+      new Dynamic {
+        name = "Install the exact published Nuxt reproduction"
+        `working-directory` = "${{ matrix.fixture }}"
+        run = "npm ci --prefer-offline --no-audit --no-fund"
+      }
+      new Dynamic {
+        name = "Cache Chromium"
+        `if` = "${{ matrix.browser }}"
+        uses = ci.cache
+        with {
+          path = "~/.cache/ms-playwright"
+          key = "${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-ubuntu-archive"
+        `if` = "${{ matrix.browser }}"
+      }
+      new Dynamic {
+        name = "Install Chromium"
+        `if` = "${{ matrix.browser }}"
+        `working-directory` = "tests"
+        run = "vize-ci-apt-retry vp exec playwright install --with-deps chromium"
+      }
+      new Dynamic {
+        name = "Verify stock, released failure, and candidate behavior"
+        env {
+          REGRESSION_SCRIPT = "${{ matrix.script }}"
+          PROOF = "${{ matrix.proof }}"
+        }
+        run = #"node "tools/support/compat/nuxt/$REGRESSION_SCRIPT" "$RUNNER_TEMP/$PROOF""#
+      }
+      new Dynamic {
+        name = "Retain the exact compared JavaScript adapters"
+        `if` = "${{ always() }}"
+        env {
+          FIXTURE = "${{ matrix.fixture }}"
+          PROOF = "${{ matrix.proof }}"
+        }
+        run = """
+        adapters="$RUNNER_TEMP/$PROOF/compared-adapters"
+        mkdir -p "$adapters/candidate" "$adapters/published"
+        for adapter in vite-plugin nuxt; do
+          published="$FIXTURE/node_modules/@vizejs/$adapter/dist"
+          if [[ -d "$published" ]]; then cp -R "$published" "$adapters/published/$adapter"; fi
+        done
+        if [[ -d npm/builder/vite/dist ]]; then cp -R npm/builder/vite/dist "$adapters/candidate/vite-plugin"; fi
+        if [[ -d npm/framework/nuxt/dist ]]; then cp -R npm/framework/nuxt/dist "$adapters/candidate/nuxt"; fi
+
+        """
+      }
+      new Dynamic {
+        name = "Upload build and SSR evidence"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "${{ matrix.proof }}-${{ github.sha }}"
+          // The proof workspaces link their complete npm installation. Retain
+          // observations, fixtures and compared adapters without re-uploading it.
+          path = """
+          ${{ runner.temp }}/${{ matrix.proof }}
+          !${{ runner.temp }}/${{ matrix.proof }}/**/node_modules/**
+
+          """
+          `if-no-files-found` = "ignore"
+        }
+      }
+    }
+  }
+}

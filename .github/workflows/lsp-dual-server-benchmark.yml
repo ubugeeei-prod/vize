@@ -1,4 +1,4 @@
-name: Same-wire LSP benchmark
+name: Benchmark - LSP server comparison
 
 on:
   pull_request:

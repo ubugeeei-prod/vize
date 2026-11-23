@@ -1,0 +1,127 @@
+import "../../Actions.pkl" as ci
+
+name = "Typecheck vs vue-tsc"
+
+// One fixed comparative diagnostic/timing packet; ordinary PRs validate pure contracts only.
+on {
+  workflow_dispatch {}
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/typecheck-vs-vue-tsc.yml"
+      "tools/benchmarks/scripts/typecheck-vs-vue-tsc*.ts"
+      "tests/tooling/typecheck-vs-vue-tsc*.test.ts"
+      "tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/**"
+    }
+  }
+}
+
+concurrency {
+  group = "typecheck-vs-vue-tsc-${{ github.event.pull_request.number || github.run_id }}"
+  `cancel-in-progress` = "${{ github.event_name == 'pull_request' }}"
+}
+permissions { contents = "read" }
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  NODE_DISABLE_COMPILE_CACHE = "1"
+}
+jobs {
+  contracts {
+    name = "comparative-source-contracts"
+    `runs-on` = ci.linux
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24.14.0"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Fetch immutable product source oracle"
+        run = "git fetch --no-tags --depth=1 origin ea22f2cd2aa661b9bdab940e25464eff692b935f"
+      }
+      new Dynamic {
+        name = "Validate complete evidence and refusal controls"
+        run = "node --test tests/tooling/typecheck-vs-vue-tsc-evidence.test.ts tests/tooling/typecheck-vs-vue-tsc-frozen.test.ts"
+      }
+    }
+  }
+  bench {
+    `if` = "${{ github.event_name == 'workflow_dispatch' }}"
+    needs = "contracts"
+    name = "fixed-2500-and-misskey"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 240
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          `persist-credentials` = false
+          `fetch-depth` = 2
+        }
+      }
+      ci.rust("1.99.1")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "24.14.0"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Prepare exact product and frozen provider"
+        run = """
+        mkdir "$RUNNER_TEMP/comparative"
+        git fetch --no-tags --depth=1 origin ea22f2cd2aa661b9bdab940e25464eff692b935f
+        git worktree add --detach "$RUNNER_TEMP/comparative/source" ea22f2cd2aa661b9bdab940e25464eff692b935f
+        mkdir "$RUNNER_TEMP/comparative/provider"
+        cp tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/package.json.txt "$RUNNER_TEMP/comparative/provider/package.json"
+        cp tests/_fixtures/tooling/typecheck-vs-vue-tsc-provider/package-lock.json.txt "$RUNNER_TEMP/comparative/provider/package-lock.json"
+        test "$(node --version)" = v24.14.0
+        test "$(npm --version)" = 11.9.0
+        (cd "$RUNNER_TEMP/comparative/provider" && npm ci --ignore-scripts --no-audit --no-fund) > "$RUNNER_TEMP/comparative/provider-install.stdout" 2> "$RUNNER_TEMP/comparative/provider-install.stderr"
+
+        """
+      }
+      new Dynamic {
+        name = "Build fixed normal product"
+        run = """
+        node tools/benchmarks/scripts/cold-typechecker-scale-build.ts --source-root "$RUNNER_TEMP/comparative/source" --target-dir "$RUNNER_TEMP/comparative/target" --binary "$RUNNER_TEMP/comparative/vize" --receipt "$RUNNER_TEMP/comparative/vize.build.json" --role normal
+
+        """
+      }
+      new Dynamic {
+        name = "Measure"
+        run = """
+        node tools/benchmarks/scripts/typecheck-vs-vue-tsc-frozen.ts --source-root "$RUNNER_TEMP/comparative/source" --binary "$RUNNER_TEMP/comparative/vize" --provider "$RUNNER_TEMP/comparative/provider" --out "$RUNNER_TEMP/comparative/observations"
+        cat "$RUNNER_TEMP/comparative/observations/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+        """
+      }
+      new Dynamic {
+        name = "Preserve all raw before any verdict"
+        `if` = "always()"
+        run = """
+        node -e 'const fs=require("node:fs");const p=process.env.RUNNER_TEMP+"/comparative";fs.mkdirSync(p,{recursive:true});fs.writeFileSync(p+"/controller.json",JSON.stringify({head:process.env.GITHUB_SHA,ref:process.env.GITHUB_REF,run:process.env.GITHUB_RUN_ID,event:process.env.GITHUB_EVENT_NAME}));'
+        tar -czf "$RUNNER_TEMP/typecheck-vs-vue-tsc-raw.tgz" -C "$RUNNER_TEMP/comparative" --exclude=target --exclude=source --exclude=provider/node_modules --exclude=vize --exclude=observations/misskey --exclude=observations/synthetic-project .
+
+        """
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "typecheck-vs-vue-tsc-raw-${{ github.run_id }}"
+          path = "${{ runner.temp }}/typecheck-vs-vue-tsc-raw.tgz"
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

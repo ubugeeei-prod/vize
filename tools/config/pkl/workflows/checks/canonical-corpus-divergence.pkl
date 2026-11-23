@@ -1,0 +1,252 @@
+import "../../Actions.pkl" as ci
+
+name = "Canonical corpus divergence"
+// Called by the Real Project Matrix once per canonical observer (dom, ssr,
+// reach) on schedule and dispatch runs: reduce the first legacy-vs-native
+// difference to a minimized witness, promote it to a draft fixture PR, and file
+// the pickup issue. Every job reads only the caller run's observer evidence.
+on {
+  workflow_call {
+    inputs {
+      observer {
+        description = "Divergence observer (dom, ssr or reach)"
+        type = "string"
+        required = true
+      }
+      evidence {
+        description = "Observer evidence artifact prefix"
+        type = "string"
+        required = true
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+env { CARGO_TERM_COLOR = "always" }
+jobs {
+  reduce {
+    name = "reduce canonical ${{ inputs.observer }} divergence"
+    `if` = "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
+    permissions {
+      contents = "read"
+      actions = "read"
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+      OBSERVER = "${{ inputs.observer }}"
+      REDUCTION_DIR = "real-project-${{ inputs.observer }}-reduction"
+    }
+    steps = new Listing {
+      new Dynamic {
+        name = "Checkout matrix commit"
+        uses = ci.checkout
+        with {
+          `persist-credentials` = false
+          ref = "${{ github.sha }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Download canonical observer evidence"
+        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        with {
+          name = "${{ inputs.evidence }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}"
+          path = "real-project-${{ inputs.observer }}-corpus"
+        }
+      }
+      new Dynamic {
+        name = "Plan one bounded reduction"
+        id = "reduction"
+        run = #"node tools/support/compat/github/canonical-corpus-divergence-reduction.mjs plan "$OBSERVER" "real-project-$OBSERVER-corpus" "$REDUCTION_DIR""#
+      }
+      new Dynamic {
+        name = "Hydrate the selected pinned fixture"
+        `if` = "${{ steps.reduction.outputs.required == 'true' }}"
+        env { FIXTURE_PATH = "${{ steps.reduction.outputs.fixture_path }}" }
+        run = #"git submodule update --init --depth 1 -- "$FIXTURE_PATH""#
+      }
+      new Dynamic {
+        name = "Setup Rust"
+        `if` = "${{ steps.reduction.outputs.required == 'true' }}"
+        uses = ci.setupRust
+        with { toolchain = "stable" }
+      }
+      new Dynamic {
+        name = "Setup Rust cache"
+        `if` = "${{ steps.reduction.outputs.required == 'true' }}"
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "canonical-corpus-divergence-reduction"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Build source reducer"
+        `if` = "${{ steps.reduction.outputs.required == 'true' }}"
+        run = "cargo build --locked --profile ci -p vize"
+      }
+      // The SSR and production-reach oracles are the corpora's own comparisons,
+      // run by the reducer as `--script` predicates beside target/ci/vize.
+      new Dynamic {
+        name = "Build SSR divergence predicate"
+        `if` = "${{ steps.reduction.outputs.required == 'true' && inputs.observer == 'ssr' }}"
+        run = "cargo build --locked --profile ci -p vize_atelier_ssr --features legacy-differential --example ssr_lane_divergence"
+      }
+      new Dynamic {
+        name = "Build production DOM divergence predicate"
+        `if` = "${{ steps.reduction.outputs.required == 'true' && inputs.observer == 'reach' }}"
+        run = "cargo build --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --example dom_production_divergence"
+      }
+      new Dynamic {
+        name = "Reduce the first divergence witness"
+        `if` = "${{ steps.reduction.outputs.required == 'true' }}"
+        run = #"node tools/support/compat/github/canonical-corpus-divergence-reduction.mjs run "$REDUCTION_DIR/reduction-plan.json" "$REDUCTION_DIR" target/ci/vize"#
+      }
+      new Dynamic {
+        name = "Upload reduced witness and provenance"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "canonical-corpus-${{ inputs.observer }}-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}"
+          path = "${{ env.REDUCTION_DIR }}"
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+
+  promote {
+    name = "promote canonical ${{ inputs.observer }} divergence fixture"
+    `if` = "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
+    needs = "reduce"
+    permissions {
+      actions = "read"
+      contents = "write"
+      `pull-requests` = "write"
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    env {
+      REDUCTION_DIR = "real-project-${{ inputs.observer }}-reduction"
+      PROMOTION_DIR = "real-project-${{ inputs.observer }}-promotion"
+    }
+    steps = new Listing {
+      new Dynamic {
+        name = "Checkout matrix commit"
+        uses = ci.checkout
+        with {
+          `persist-credentials` = false
+          ref = "${{ github.sha }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Download canonical reduction"
+        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        with {
+          name = "canonical-corpus-${{ inputs.observer }}-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}"
+          path = "${{ env.REDUCTION_DIR }}"
+        }
+      }
+      new Dynamic {
+        name = "Promote minimized witness to a draft fixture PR"
+        env { GH_TOKEN = "${{ github.token }}" }
+        run = #"node tools/support/compat/github/canonical-corpus-divergence-promotion.mjs publish "$REDUCTION_DIR" "$PROMOTION_DIR""#
+      }
+      new Dynamic {
+        name = "Upload fixture promotion receipt"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "canonical-corpus-${{ inputs.observer }}-promotion-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}"
+          path = "${{ env.PROMOTION_DIR }}"
+          `if-no-files-found` = "error"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+
+  `file-issue` {
+    name = "file canonical ${{ inputs.observer }} divergence"
+    `if` = "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}"
+    needs = List("reduce", "promote")
+    permissions {
+      contents = "read"
+      actions = "read"
+      issues = "write"
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    env { OBSERVER = "${{ inputs.observer }}" }
+    steps = new Listing {
+      new Dynamic {
+        name = "Checkout matrix commit"
+        uses = ci.checkout
+        with {
+          `persist-credentials` = false
+          ref = "${{ github.sha }}"
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Download canonical observer evidence"
+        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        with {
+          name = "${{ inputs.evidence }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}"
+          path = "real-project-${{ inputs.observer }}-corpus"
+        }
+      }
+      new Dynamic {
+        name = "Download canonical reduction"
+        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        with {
+          name = "canonical-corpus-${{ inputs.observer }}-reduction-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}"
+          path = "real-project-${{ inputs.observer }}-reduction"
+        }
+      }
+      new Dynamic {
+        name = "Download canonical fixture promotion"
+        `continue-on-error` = true
+        uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+        with {
+          name = "canonical-corpus-${{ inputs.observer }}-promotion-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}"
+          path = "real-project-${{ inputs.observer }}-promotion"
+        }
+      }
+      new Dynamic {
+        name = "File canonical divergence issue"
+        env { GH_TOKEN = "${{ github.token }}" }
+        shell = "bash"
+        run = """
+        args=(publish "$OBSERVER" "real-project-$OBSERVER-corpus" "real-project-$OBSERVER-reduction")
+        if [[ -s "real-project-$OBSERVER-promotion/promotion.json" ]]; then
+          args+=("real-project-$OBSERVER-promotion")
+        fi
+        node tools/support/compat/github/canonical-corpus-divergence-issue.mjs "${args[@]}"
+
+        """
+      }
+    }
+  }
+}

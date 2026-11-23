@@ -1,0 +1,48 @@
+import "../Actions.pkl" as ci
+
+name = "Check the WASM release build"
+description = "Type-check the exact @vizejs/wasm release crate configuration on its own warm disk."
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      uses = ci.setupNode
+      with {
+        `node-version-file` = "package.json"
+        `package-manager-cache` = false
+      }
+    }
+    new Dynamic {
+      uses = ci.setupRust
+      with {
+        toolchain = "1.100.0"
+        targets = "wasm32-unknown-unknown"
+      }
+    }
+    new Dynamic {
+      uses = "./.github/actions/setup-rust-sticky-cache"
+      with {
+        key = "wasm-check"
+        `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+      }
+    }
+    new Dynamic {
+      name = "Check the release WASM crate without the native feature"
+      shell = "bash"
+      run = "node tools/support/tasks/build-vize-wasm-package.ts --check"
+    }
+    new Dynamic {
+      name = "Test Canon through a consumer without native test dependencies"
+      shell = "bash"
+      run = """
+      cargo tree --locked -p vize_test_runner -e features -i vize_canon --prefix none > "$RUNNER_TEMP/canon-portable-features.txt"
+      if rg --quiet --fixed-strings 'vize_canon feature "native"' "$RUNNER_TEMP/canon-portable-features.txt"; then
+        echo 'The portable consumer unexpectedly enables Canon native features.' >&2
+        exit 1
+      fi
+      cargo test --locked -p vize_test_runner --test portable_canon
+
+      """
+    }
+  }
+}

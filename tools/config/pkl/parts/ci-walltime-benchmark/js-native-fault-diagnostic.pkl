@@ -1,0 +1,94 @@
+import "../../Actions.pkl" as ci
+
+`if` = "${{ github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'ci-native-fault-diagnostic' }}"
+`runs-on` = ci.linux
+`timeout-minutes` = 35
+env {
+  NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+  CARGO_BUILD_JOBS = "12"
+}
+steps = new Listing {
+  ci.checkoutAt("${{ github.sha }}")
+  new Dynamic {
+    name = "Retain diagnostic orchestration before checking out the failed source"
+    run = #"""
+    mkdir -p "$RUNNER_TEMP/js-native-fault-evidence-orchestration"
+    cp .github/actions/test-js-packages-with-history/native-fault-evidence.ts "$RUNNER_TEMP/native-fault-evidence.ts"
+    cp .github/actions/test-js-packages-with-history/native-fault-core.ts "$RUNNER_TEMP/native-fault-core.ts"
+    cp .github/actions/test-js-packages-with-history/native-fault-support.ts "$RUNNER_TEMP/native-fault-support.ts"
+    cp .github/actions/test-js-packages-with-history/native-fault-retention.ts "$RUNNER_TEMP/native-fault-retention.ts"
+    cp .github/actions/test-js-packages-with-history/native-fault-resources.ts "$RUNNER_TEMP/native-fault-resources.ts"
+    node --input-type=module <<'NODE'
+    import { execFileSync } from 'node:child_process';
+    import { createHash } from 'node:crypto';
+    import { readFileSync, writeFileSync } from 'node:fs';
+    import path from 'node:path';
+    const directory = process.env.RUNNER_TEMP;
+    const receipt = {
+      orchestration: execFileSync('git', ['rev-parse', 'HEAD', 'HEAD^{tree}'], { encoding: 'utf8' }).trim().split('\n'),
+      helpers: ['native-fault-evidence.ts', 'native-fault-core.ts', 'native-fault-support.ts', 'native-fault-retention.ts', 'native-fault-resources.ts'].map(file => ({
+        file, sha256: createHash('sha256').update(readFileSync(path.join(directory, file))).digest('hex'),
+      })),
+      reportedFailureHead: '0b82a31fc9dd8634786fc17ec3bd3eeb8427ae6e',
+      physicalFailedSource: '0b82a31fc9dd8634786fc17ec3bd3eeb8427ae6e',
+      physicalFailedTree: 'b865787dc492550b568d7cea3bcf458f75b11cfb',
+      originalRun: 41700735853, originalFailedJob: 126145257863,
+    };
+    writeFileSync(path.join(directory, 'js-native-fault-evidence-orchestration/identity.json'), `${JSON.stringify(receipt, null, 2)}\n`);
+    NODE
+
+    """#
+  }
+  ci.checkoutAt("0b82a31fc9dd8634786fc17ec3bd3eeb8427ae6e")
+  new Dynamic {
+    name = "Authenticate the exact physical failed source"
+    run = """
+    test "$(git rev-parse HEAD)" = 0b82a31fc9dd8634786fc17ec3bd3eeb8427ae6e
+    test "$(git rev-parse 'HEAD^{tree}')" = b865787dc492550b568d7cea3bcf458f75b11cfb
+    test -z "$(git status --porcelain --untracked-files=no)"
+
+    """
+  }
+  ci.use("./.github/actions/cache-vp-bootstrap")
+  new Dynamic {
+    uses = ci.setupVp121
+    // Pin the `latest` image used by the retained 2026-11-03 run.
+    with {
+      version = "1.4.0"
+      `node-version-file` = "package.json"
+      cache = true
+      `cache-save` = false
+      `run-install` = false
+    }
+  }
+  ci.rust("stable")
+  ci.wild()
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      key = "test-js-packages"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  ci.command("Install the unchanged builders dependencies", "node tools/support/compat/github/install-js-checks.ts builders")
+  new Dynamic {
+    name = "Observe the original mandatory JS command once"
+    run = #"node "$RUNNER_TEMP/native-fault-evidence.ts" -- vp run --workspace-root test:js:builders"#
+  }
+  new Dynamic {
+    name = "Preserve bounded diagnostics and original native build receipts"
+    `if` = "${{ always() }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "js-native-fault-controlled-${{ github.sha }}-${{ github.run_attempt }}"
+      path = """
+      ${{ runner.temp }}/js-native-fault-evidence-*/**/*.json
+      npm/native/.artifacts/native/formatter-history/*.json
+      npm/native/.artifacts/native/formatter-history/*.log
+
+      """
+      `if-no-files-found` = "error"
+      `retention-days` = 14
+    }
+  }
+}

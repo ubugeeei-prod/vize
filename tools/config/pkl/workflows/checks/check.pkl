@@ -1,0 +1,64 @@
+import "../../Actions.pkl" as ci
+
+name = "Check"
+`run-name` = "${{ github.event_name == 'workflow_dispatch' && format('Check full @ {0}', github.sha) || format('Check {0} @ {1}', github.event_name, github.sha) }}"
+on {
+  push {
+    branches = List("main", "davinci")
+  }
+  pull_request {}
+  merge_group {
+    types = List("checks_requested")
+    branches = List("main")
+  }
+  // Daily 03:11 UTC, staggered from native smoke and e2e.
+  schedule = new Listing {
+    new Dynamic { cron = "11 3 * * *" }
+  }
+  workflow_dispatch {
+    inputs {
+      `release-qualification` {
+        description = "Qualify an immutable release source without repeating daily source coverage"
+        type = "boolean"
+        required = false
+        ["default"] = false
+      }
+      `compare-rust-test-profile` {
+        description = "Also run the original test profile and require exact same-source ci parity"
+        type = "boolean"
+        required = false
+        ["default"] = false
+      }
+    }
+  }
+}
+// A push to main must not cancel an exact-SHA full validation used by release.
+concurrency {
+  group = "check-v3-${{ github.workflow }}-${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') && format('full-{0}', github.sha) || (github.event.pull_request.number || github.ref) }}"
+  `cancel-in-progress` = true
+}
+permissions { contents = "read" }
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `iteration-plan` = import("../../parts/check/iteration-plan.pkl")
+  `pr-source-checks` = import("../../parts/check/pr-source-checks.pkl")
+  `instruction-counts` = import("../../parts/check/instruction-counts.pkl")
+  `level-dependency-direction` = import("../../parts/check/level-dependency-direction.pkl")
+  `nix-flake` = import("../../parts/check/nix-flake.pkl")
+  `fmt-rust` = import("../../parts/check/fmt-rust.pkl")
+  `check-js` = import("../../parts/check/check-js.pkl")
+  `semver-checks` = import("../../parts/check/semver-checks.pkl")
+  `security-audit` = import("../../parts/check/security-audit.pkl")
+  `node-engine-compat` = import("../../parts/check/node-engine-compat.pkl")
+  `check-vize-apps` = import("../../parts/check/check-vize-apps.pkl")
+  `vue-parity` = import("../../parts/check/vue-parity.pkl")
+  `full-qualification` = import("../../parts/check/full-qualification.pkl")
+  `full-js-report` = import("../../parts/check/full-js-report.pkl")
+  coverage = import("../../parts/check/coverage.pkl")
+  `source-coverage` = import("../../parts/check/source-coverage.pkl")
+  `branch-coverage` = import("../../parts/check/branch-coverage.pkl")
+  `test-report` = import("../../parts/check/test-report.pkl")
+}

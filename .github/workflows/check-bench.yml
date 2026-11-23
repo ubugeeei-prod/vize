@@ -1,4 +1,4 @@
-name: Check Benchmark Gate
+name: Benchmark - Type checking gate
 
 # Fail-closed budget/report job for `vize check` (#3283): tools/benchmarks/scripts/check-gate.mjs
 # refuses to emit any timing unless the measured binary reports every planted

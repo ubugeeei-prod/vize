@@ -1,0 +1,26 @@
+name = "Dispatch the release verification"
+needs = List("version", "publish-npm")
+`if` = "${{ always() && needs.version.result == 'success' && needs.publish-npm.result == 'success' }}"
+`runs-on` = "ubuntu-24.04"
+`timeout-minutes` = 5
+// release-verify.yml dispatches JSR, which only accepts OIDC publishes
+// whose actor is a scope member, never github-actions[bot].
+environment = "release-operator"
+steps = new Listing {
+  new Dynamic {
+    name = "Dispatch release-verify.yml"
+    env {
+      GH_TOKEN = "${{ secrets.RELEASE_OPERATOR_TOKEN }}"
+      RELEASE_VERSION = "${{ needs.version.outputs.version }}"
+      RELEASE_TAG = "${{ needs.version.outputs.tag }}"
+      RELEASE_SHA = "${{ needs.version.outputs.sha }}"
+      RELEASE_PACKAGES = "${{ needs.publish-npm.outputs.packages }}"
+    }
+    run = #"""
+    gh workflow run release-verify.yml --repo "$GITHUB_REPOSITORY" --ref main \
+      -f version="$RELEASE_VERSION" -f tag="$RELEASE_TAG" -f sha="$RELEASE_SHA" \
+      -f packages="$RELEASE_PACKAGES"
+
+    """#
+  }
+}

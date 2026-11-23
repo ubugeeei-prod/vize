@@ -1,0 +1,28 @@
+import "../Actions.pkl" as ci
+
+name = "Retain differential product corpus evidence"
+description = "Keep formatter API artifacts, product observations and source-built CLI receipts."
+inputs {
+  shard {
+    description = "Tooling shard identity within this workflow job."
+    ["default"] = "full"
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Upload differential product corpus evidence"
+      uses = ci.uploadArtifact
+      with {
+        name = "formatter-api-corpus-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}-${{ inputs.shard }}"
+        path = """
+        target/differential/
+        target/ci/vize.differential-build.json
+
+        """
+        `if-no-files-found` = "warn"
+      }
+    }
+  }
+}

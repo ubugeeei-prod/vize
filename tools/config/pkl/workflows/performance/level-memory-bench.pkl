@@ -1,0 +1,131 @@
+import "../../Actions.pkl" as ci
+
+name = "Benchmark - Level memory"
+
+// Paired runs require a base after the 104-row registry landed. The base and
+// head registry and budget files must be byte-identical; the collector rejects
+// an earlier or mismatched baseline before measuring.
+//
+on {
+  workflow_call {
+    inputs {
+      base_sha {
+        required = true
+        type = "string"
+      }
+      head_sha {
+        required = true
+        type = "string"
+      }
+      conflicting_modes {
+        required = true
+        type = "boolean"
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+jobs {
+  memory {
+    name = "Original104 normal-mode memory pairs"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    env {
+      CARGO_TERM_COLOR = "never"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+      MEMORY_BASE_SHA = "${{ inputs.base_sha }}"
+      MEMORY_HEAD_SHA = "${{ inputs.head_sha }}"
+      MEMORY_CONFLICTING_MODES = "${{ inputs.conflicting_modes }}"
+    }
+    steps = new Listing {
+      new Dynamic {
+        name = "Checkout candidate and collector"
+        uses = ci.checkout
+        with {
+          ref = "${{ inputs.head_sha }}"
+          path = "head"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Checkout baseline"
+        uses = ci.checkout
+        with {
+          ref = "${{ inputs.base_sha }}"
+          path = "base"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Validate exact dispatch and pair before build"
+        run = """
+        set -euo pipefail
+        [[ "$MEMORY_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+        [[ "$MEMORY_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+        [[ "$MEMORY_CONFLICTING_MODES" == false ]]
+        [[ "$MEMORY_BASE_SHA" != "$MEMORY_HEAD_SHA" ]]
+        [[ "$MEMORY_HEAD_SHA" == "$GITHUB_SHA" ]]
+        [[ "$(git -C base rev-parse HEAD)" == "$MEMORY_BASE_SHA" ]]
+        [[ "$(git -C head rev-parse HEAD)" == "$MEMORY_HEAD_SHA" ]]
+        git -C head merge-base --is-ancestor "$MEMORY_BASE_SHA" "$MEMORY_HEAD_SHA"
+
+        """
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "head/package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Install exact measurement Rust and Callgrind identity provider"
+        run = """
+        rustup toolchain install 1.100.0 --profile minimal
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends valgrind
+
+        """
+      }
+      ci.wild()
+      // The cache action's nested local action resolves from the workspace root,
+      // and this job checks the repository out under head/.
+      new Dynamic {
+        name = "Expose the nested target action at the workspace root"
+        run = "mkdir -p .github/actions && cp -R head/.github/actions/{reuse-rust-target,setup-rust-sticky-cache} .github/actions/"
+      }
+      new Dynamic {
+        uses = "./head/.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "level-memory-v1"
+          `target-path` = "head/target"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./head/.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Test missing, stale, forged and partial evidence refusal"
+        run = "node --test head/tests/tooling/level-memory-collector.test.mjs"
+      }
+      new Dynamic {
+        name = "Build all thirteen original providers and collect all paired observations"
+        run = #"node head/tools/benchmarks/scripts/level-memory.mjs "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/head" "$GITHUB_WORKSPACE/level-memory""#
+      }
+      new Dynamic {
+        name = "Retain whole reports and process provenance on success or failure"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "level-memory-${{ inputs.head_sha }}-${{ github.run_attempt }}"
+          path = "level-memory/"
+          `if-no-files-found` = "warn"
+          `retention-days` = 30
+        }
+      }
+    }
+  }
+}

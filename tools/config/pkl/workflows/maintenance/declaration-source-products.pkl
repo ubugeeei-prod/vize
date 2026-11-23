@@ -1,0 +1,372 @@
+import "../../Actions.pkl" as ci
+
+name = "Declaration source products"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/declaration-source-products.yml"
+      "davinci/vize_l0/src/source_frame.rs"
+      "davinci/vize_l1/Cargo.toml"
+      "davinci/vize_l1/src/embed.rs"
+      "davinci/vize_l1/src/embed/authored_program.rs"
+      "davinci/vize_l1/src/embed/declaration_program.rs"
+      "davinci/vize_l2/Cargo.toml"
+      "davinci/vize_l2/src/query/script.rs"
+      "davinci/vize_l2/src/query/script/**"
+      "crates/vize_croquis/src/sfc/types.rs"
+      "crates/vize_canon/src/virtual_ts.rs"
+      "crates/vize_canon/src/virtual_ts/generated_names.rs"
+      "crates/vize_canon/src/virtual_ts/generator.rs"
+      "crates/vize_canon/src/virtual_ts/generator/script_module.rs"
+      "crates/vize_canon/src/virtual_ts/generator/script_module/**"
+      "crates/vize_canon/src/virtual_ts/text_buf.rs"
+      "crates/vize_canon/src/literal_assignments.rs"
+      "crates/vize_patina/Cargo.toml"
+      "crates/vize_patina/src/checked_prefer_const.rs"
+      "crates/vize_patina/src/rules/opinionated/vue/script_unused/**"
+      "crates/vize_maestro/src/source_project/recovered_script*"
+      "crates/vize_maestro/src/source_project/recovered_script/**"
+      "crates/vize_maestro/src/source_project/literal_products*"
+      "crates/vize_maestro/src/source_project/literal_products/**"
+      "tools/support/compat/davinci/primitive-assignments-oracle.ts"
+      "tools/support/compat/davinci/literal-hover-oracle.ts"
+      "tools/support/compat/davinci/select-broken-scripts.ts"
+      "tests/formal/primitive-assignments/**"
+      "crates/vize_canon/Cargo.toml"
+      "crates/vize_canon/src/batch.rs"
+      "crates/vize_canon/src/batch/declaration*.rs"
+      "crates/vize_canon/src/batch/declaration_path/**"
+      "crates/vize_canon/src/batch/vue_template_ref*.rs"
+      "crates/vize_maestro/Cargo.toml"
+      "crates/vize_maestro/src/server.rs"
+      "crates/vize_maestro/src/server/state.rs"
+      "crates/vize_maestro/src/server/state/workspace_project_files.rs"
+      "crates/vize_maestro/src/server/state/workspace_project_files/**"
+      "crates/vize_maestro/src/server/state/global_components*"
+      "crates/vize_maestro/src/server/state/global_components/**"
+      "crates/vize_maestro/src/ide/hover.rs"
+      "crates/vize_maestro/src/ide/hover/**"
+      "tests/differential/lsp-history.ts"
+      "crates/vize_maestro/src/ide/diagnostics.rs"
+      "crates/vize_maestro/src/ide/diagnostics/corsa*"
+      "crates/vize_maestro/src/ide/diagnostics/corsa/**"
+      "crates/vize_canon/src/corsa_bridge.rs"
+      "crates/vize_canon/src/corsa_bridge/bridge.rs"
+      "crates/vize_canon/src/batch/virtual_project.rs"
+      "crates/vize_canon/src/batch/virtual_project/ambient_declarations*"
+      "crates/vize_canon/src/corsa_bridge/editor_session.rs"
+      "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/build.rs"
+      "tests/_fixtures/differential/typechecker/ambient-global-slot-host-3011/**"
+      "crates/vize_maestro/src/server/state/global_tag_names*"
+      "crates/vize_maestro/src/server/state/global_tag_names/**"
+      "crates/vize_maestro/src/source_project/snapshot.rs"
+      "**/*.d.ts"
+      "**/*.d.mts"
+      "**/*.d.cts"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "declaration-source-products-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  declarations {
+    name = "Declaration products ${{ matrix.suite }}"
+    strategy {
+      `fail-fast` = false
+      matrix {
+        suite = List("correctness", "performance")
+      }
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = ci.cache
+        with {
+          path = """
+          ~/.cargo/registry
+          ~/.cargo/git
+
+          """
+          key = "declaration-products-cargo-${{ runner.os }}-${{ runner.arch }}-${{ env.RUSTUP_TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}"
+        }
+      }
+      new Dynamic {
+        name = "Select tracked original TypeScript declarations"
+        run = #"git ls-files -z -- '*.d.ts' '*.d.mts' '*.d.cts' > "$RUNNER_TEMP/declaration-inputs""#
+      }
+      new Dynamic {
+        name = "Compare the projected TypeScript, provider identity and workspace completion"
+        `if` = "matrix.suite == 'correctness'"
+        run = """
+        set -euo pipefail
+        flags=(--locked --profile ci-opt)
+        checker=(-p vize_canon --features authored-declarations --lib)
+        editor=(-p vize_maestro --features experimental-declaration-products,micro-profiling --lib)
+        export VIZE_DECLARATION_INPUTS="$RUNNER_TEMP/declaration-inputs"
+        cargo clippy "${flags[@]}" -p vize_l1 --features authored-declarations --lib --no-deps -- -D warnings
+        cargo clippy "${flags[@]}" "${checker[@]}" --no-deps -- -D warnings
+        cargo clippy "${flags[@]}" "${editor[@]}" --no-deps -- -D warnings
+        cargo test "${flags[@]}" "${checker[@]}" batch::vue_template_ref_module::
+        cargo test "${flags[@]}" "${checker[@]}" batch::import_rewriter_dts_tests::
+        cargo test "${flags[@]}" "${editor[@]}" server::state::global_tag_names::
+        cargo test "${flags[@]}" "${editor[@]}" original_declaration_products_match -- --ignored --nocapture --test-threads=1
+
+        """
+      }
+      new Dynamic {
+        name = "Measure complete products for each original declaration"
+        `if` = "matrix.suite == 'performance'"
+        run = """
+        set -euo pipefail
+        export VIZE_DECLARATION_INPUTS="$RUNNER_TEMP/declaration-inputs"
+        cargo test --locked --profile ci-opt -p vize_maestro --features experimental-declaration-products,micro-profiling --lib paired_declaration_products -- --ignored --nocapture --test-threads=1
+
+        """
+      }
+    }
+  }
+
+  `plain-script-bridges` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Compare original plain-script projections and editor links"
+        run = """
+        set -euo pipefail
+        export VIZE_BRIDGE_INPUTS="$RUNNER_TEMP/original-plain-bridge-inputs"
+        git ls-files -z -- '*.vue' '*.vue.txt' > "$VIZE_BRIDGE_INPUTS"
+        flags=(--locked --profile ci-opt -p vize_canon --lib --features plain-script-bridges)
+        cargo clippy "${flags[@]}" --no-deps -- -D warnings
+        cargo test --locked --profile ci-opt --lib -p vize_l2 --features script-declaration-queries query::script::declaration::
+        cargo test "${flags[@]}" plain_exports::observed:: -- --include-ignored --nocapture --test-threads=1
+
+        """
+      }
+    }
+  }
+
+  `ambient-component-project` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 25
+    env {
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_TEST_TSGO_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+    }
+    steps = new Listing {
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      ci.use("./.github/actions/cache-vp-bootstrap")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = true
+        }
+      }
+      new Dynamic {
+        name = "Check authored ambient components in live native editor sessions"
+        run = """
+        set -euo pipefail
+        "$VIZE_TEST_TSGO_PATH" --version
+        flags=(--locked --profile ci-opt -p vize_maestro --features experimental-ambient-project --lib)
+        cargo clippy --locked --profile ci-opt -p vize_canon --features ambient-project-declarations --lib --no-deps -- -D warnings
+        cargo clippy "${flags[@]}" --no-deps -- -D warnings
+        cargo test --locked --profile ci-opt -p vize_canon --features ambient-project-declarations --lib virtual_project::ambient_declarations::
+        cargo test "${flags[@]}" corsa::ambient_project:: -- --include-ignored --nocapture --test-threads=1
+
+        """
+      }
+    }
+  }
+
+  `checked-literal-products` {
+    name = "Original TypeScript assignments and checked tool products"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+      CARGO_BUILD_JOBS = "24"
+      CARGO_INCREMENTAL = "0"
+      RUST_MIN_STACK = "16777216"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+    }
+    steps = new Listing {
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Compare primitive types, lint and UTF-16 diagnostics with original tools"
+        run = """
+        set -euo pipefail
+        npm install --prefix "$RUNNER_TEMP/checked-ts" --ignore-scripts --no-audit --no-fund --save-exact typescript@6.0.3
+        export NODE_PATH="$RUNNER_TEMP/checked-ts/node_modules"
+        export VIZE_LITERAL_INPUTS="$RUNNER_TEMP/original-ts-paths" VIZE_LITERAL_OUTPUT="$RUNNER_TEMP/original-scripts.jsonl"
+        export VIZE_LITERAL_HOVERS="$RUNNER_TEMP/original-hovers.json"
+        git ls-files -z -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.vue' '*.vue.txt' > "$VIZE_LITERAL_INPUTS"
+        flags=(--locked --profile ci-opt --lib)
+        for feature in vize_l2/literal-assignments vize_canon/verified-literal-assignments vize_patina/verified-prefer-const vize_maestro/experimental-literal-products; do
+          cargo clippy "${flags[@]}" -p "${feature%%/*}" --features "${feature#*/}" --no-deps -- -D warnings
+        done
+        cargo test "${flags[@]}" -p vize_l2 --features literal-assignments query::script::assignments::
+        cargo test "${flags[@]}" -p vize_maestro --features experimental-literal-products,micro-profiling source_project::literal_products:: -- --include-ignored --nocapture --test-threads=1
+        node tools/support/compat/davinci/primitive-assignments-oracle.ts "$VIZE_LITERAL_OUTPUT"
+
+        """
+      }
+      new Dynamic {
+        name = "Replay the complete typed hover through the ordinary editor"
+        run = """
+        set -euo pipefail
+        npm install --prefix "$RUNNER_TEMP/typed-editor" --ignore-scripts --no-audit --no-fund --save-exact @typescript/typescript-linux-x64@7.0.2
+        export CORSA_PATH="$RUNNER_TEMP/typed-editor/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+        "$CORSA_PATH" --version
+        cargo build --locked --profile ci-opt -p vize
+        node tools/support/compat/davinci/literal-hover-oracle.ts target/ci-opt/vize "$RUNNER_TEMP/original-hovers.json"
+
+        """
+      }
+      new Dynamic {
+        name = "Read original TypeScript 6.0.3 compiler and conformance fixtures"
+        uses = ci.checkout
+        with {
+          repository = "microsoft/TypeScript"
+          ref = "050880ce59e30b356b686bd3144efe24f875ebc8"
+          path = ".typescript-fixtures"
+          `persist-credentials` = false
+          `sparse-checkout` = """
+          tests/cases/compiler
+          tests/cases/conformance
+
+          """
+        }
+      }
+      new Dynamic {
+        name = "Compare restored document cursors and broken suffixes with TypeScript"
+        env {
+          VIZE_PREFIX_INPUT = "${{ runner.temp }}/original-scripts.jsonl"
+          VIZE_PREFIX_OUTPUT = "${{ runner.temp }}/original-edits.jsonl"
+          VIZE_RECOVERED_HOVERS = "${{ runner.temp }}/recovered-hovers.json"
+          CORSA_PATH = "${{ runner.temp }}/typed-editor/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+          VIZE_FIRST_OPEN_INPUT = "${{ runner.temp }}/upstream-broken-scripts.jsonl"
+          NODE_PATH = "${{ runner.temp }}/checked-ts/node_modules"
+        }
+        run = """
+        set -euo pipefail
+        git -C .typescript-fixtures ls-files -z -- tests/cases/compiler tests/cases/conformance > "$RUNNER_TEMP/upstream-ts-paths"
+        node tools/support/compat/davinci/select-broken-scripts.ts .typescript-fixtures "$RUNNER_TEMP/upstream-ts-paths" "$VIZE_FIRST_OPEN_INPUT"
+        flags=(--locked --profile ci-opt --lib)
+        cargo clippy "${flags[@]}" -p vize_l2 --features recovered-literal-prefix --no-deps -- -D warnings
+        cargo clippy "${flags[@]}" -p vize_maestro --features experimental-recovered-literal-prefix --no-deps -- -D warnings
+        cargo test "${flags[@]}" -p vize_l2 --features recovered-literal-prefix query::script::assignments::prefix::
+        cargo test "${flags[@]}" -p vize_maestro --features experimental-recovered-literal-prefix,micro-profiling source_project::recovered_script:: -- --include-ignored --nocapture --test-threads=1
+        node tools/support/compat/davinci/primitive-assignments-oracle.ts "$VIZE_PREFIX_OUTPUT" --recovered
+        node tools/support/compat/davinci/literal-hover-oracle.ts target/ci-opt/vize "$VIZE_RECOVERED_HOVERS"
+
+        """
+      }
+    }
+  }
+
+  `primitive-assignability-proof` {
+    name = "Verify primitive literal membership in Kani"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 15
+    steps = new Listing {
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = "model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f"
+        with {
+          `kani-version` = "0.68.0"
+          command = "kani"
+          args = "davinci/vize_l2/src/query/script/assignments/kani.rs --output-format=terse"
+        }
+      }
+      new Dynamic {
+        name = "Check immutable binding traces and witness unsafe scopes"
+        env { ALLOY_SHA256 = "6037cbeee0e8423c1c468447ed10f5fcf2f2743a2ffc39cb1c81f2905c0fdb9d" }
+        run = """
+        set -euo pipefail
+        cd "$RUNNER_TEMP"
+        curl -fsSL --retry 3 -o literal-alloy.jar https://repo.maven.apache.org/maven2/org/alloytools/org.alloytools.alloy.dist/6.2.0/org.alloytools.alloy.dist-6.2.0.jar
+        echo "$ALLOY_SHA256  literal-alloy.jar" | sha256sum -c -
+        java -Djava.awt.headless=true -jar literal-alloy.jar exec -q -c '*' -t none -o literal-instances "$GITHUB_WORKSPACE/tests/formal/primitive-assignments/PreferConst.als"
+        jq -e '.commands | keys == ["LaterWrite","NonemptyTrace","RepeatedName","SameTrace"] and (.SameTrace | .type == "check" and (.solution | length) == 0) and ([.LaterWrite,.NonemptyTrace,.RepeatedName] | all(.type == "run" and (.solution | length) == 1))' literal-instances/receipt.json
+
+        """
+      }
+      new Dynamic {
+        name = "Verify source relocation for the full 32-bit byte domain"
+        uses = "model-checking/kani-github-action@f838096619a707b0f6b2118cf435eaccfa33e51f"
+        with {
+          `kani-version` = "0.68.0"
+          command = "kani"
+          args = "davinci/vize_l2/src/query/script/assignments/prefix/kani.rs --output-format=terse"
+        }
+      }
+    }
+  }
+}

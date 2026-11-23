@@ -1,0 +1,181 @@
+import "../../Actions.pkl" as ci
+
+name = "Nuxt 2 Bridge host runtimes"
+`run-name` = "Nuxt 2 Bridge host runtime @ ${{ github.event.pull_request.head.sha || github.sha }}"
+on {
+  pull_request {
+    branches = List("main")
+    paths = new Listing {
+      ".github/workflows/nuxt2-bridge-module-build.yml"
+      ".github/actions/setup-rust-sticky-cache/**"
+      ".github/actions/setup-rust-script/**"
+      ".github/actions/setup-wild-http-recovery/**"
+      ".github/actions/setup-ubuntu-archive/**"
+      "tools/support/json-value.ts"
+      "tools/support/compat/nuxt/host-types.ts"
+      "tests/tooling/nuxt2-bridge-*.test.ts"
+      "npm/framework/nuxt/**"
+      "npm/framework/nuxt-lint-config/**"
+      "npm/cli/**"
+      "npm/native/**"
+      "npm/linter/oxlint/**"
+      "crates/vize_carton/src/config/**"
+      "davinci/vize_l0/src/config/**"
+      "tools/support/compat/nuxt/fixtures/nuxt2-bridge-module-build/**"
+      "tools/support/compat/nuxt/nuxt2-module-build.ts"
+      "tools/support/compat/nuxt/nuxt2-bridge-source.ts"
+      "tools/support/compat/nuxt/nuxt2-lint-config.ts"
+      "tools/support/compat/nuxt/nuxt2-typecheck.ts"
+      "tools/support/compat/nuxt/fixtures/nuxt2-typecheck/**"
+      "tools/support/compat/nuxt/nuxt-auto-init-config.ts"
+    }
+  }
+  push {
+    branches = List("main")
+    paths = new Listing {
+      ".github/workflows/nuxt2-bridge-module-build.yml"
+      ".github/actions/setup-rust-sticky-cache/**"
+      ".github/actions/setup-rust-script/**"
+      ".github/actions/setup-wild-http-recovery/**"
+      ".github/actions/setup-ubuntu-archive/**"
+      "tools/support/json-value.ts"
+      "tools/support/compat/nuxt/host-types.ts"
+      "tests/tooling/nuxt2-bridge-*.test.ts"
+      "npm/framework/nuxt/**"
+      "npm/framework/nuxt-lint-config/**"
+      "npm/cli/**"
+      "npm/native/**"
+      "npm/linter/oxlint/**"
+      "crates/vize_carton/src/config/**"
+      "davinci/vize_l0/src/config/**"
+      "tools/support/compat/nuxt/fixtures/nuxt2-bridge-module-build/**"
+      "tools/support/compat/nuxt/nuxt2-module-build.ts"
+      "tools/support/compat/nuxt/nuxt2-bridge-source.ts"
+      "tools/support/compat/nuxt/nuxt2-lint-config.ts"
+      "tools/support/compat/nuxt/nuxt2-typecheck.ts"
+      "tools/support/compat/nuxt/fixtures/nuxt2-typecheck/**"
+      "tools/support/compat/nuxt/nuxt-auto-init-config.ts"
+    }
+  }
+  // The required merge-queue source report calls both Bridge builders here.
+  workflow_call = null
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+
+concurrency {
+  group = "nuxt2-bridge-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+
+jobs {
+  `nuxt2-bridge-module-build` {
+    name = "Nuxt 2 Bridge ${{ matrix.builder }} SSR, hydration and HMR"
+    strategy {
+      `fail-fast` = false
+      matrix {
+        builder = List("webpack", "vite")
+      }
+    }
+    env { VIZE_NUXT2_BRIDGE_BUILDER = "${{ matrix.builder }}" }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    steps = new Listing {
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version` = "24"
+          cache = true
+          `run-install` = false
+        }
+      }
+      ci.command("Install workspace tooling", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067"  // master
+        with { toolchain = "1.100.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "nuxt2-bridge-config-source-native"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      ci.command("Build the source configuration normalizer", "vp run --no-cache --filter './npm/native' build:debug")
+      new Dynamic {
+        name = "Build the canonical Vize configuration loader"
+        `working-directory` = "npm/cli"
+        run = "vp pack"
+      }
+      new Dynamic {
+        name = "Build the candidate Nuxt lint preset"
+        `working-directory` = "npm/framework/nuxt-lint-config"
+        run = "vp pack"
+      }
+      new Dynamic {
+        name = "Build the candidate Nuxt integration"
+        `working-directory` = "npm/framework/nuxt"
+        run = "vp pack"
+      }
+      new Dynamic {
+        name = "Build the source Oxlint bridge"
+        `working-directory` = "npm/linter/oxlint"
+        run = "vp pack"
+      }
+      ci.command("Verify transactional source fixture preparation", "vp node --test tests/tooling/nuxt2-bridge-*.test.ts")
+      new Dynamic {
+        name = "Verify both packed entries without loading Vue 3-only Vite APIs"
+        run = "pnpm --dir npm/framework/nuxt run test:packed-entry"
+      }
+      new Dynamic {
+        name = "Verify version-specific plans and original modern oracle"
+        run = "vp node --test npm/framework/nuxt-lint-config/src/*.test.ts npm/framework/nuxt/src/lint/generation*.test.ts npm/framework/nuxt/src/builder.test.ts npm/framework/nuxt/src/lint/checker/setup.test.ts"
+      }
+      new Dynamic {
+        name = "Install the Nuxt 2 reproduction"
+        `working-directory` = "tools/support/compat/nuxt/fixtures/nuxt2-bridge-module-build"
+        run = "npm ci --legacy-peer-deps --no-audit --no-fund"
+      }
+      ci.use("./.github/actions/setup-ubuntu-archive")
+      new Dynamic {
+        name = "Install Chromium for the Nuxt 2 runtime check"
+        id = "chromium"
+        `working-directory` = "tests"
+        run = "vize-ci-apt-retry vp exec playwright install --with-deps chromium"
+      }
+      new Dynamic {
+        name = "Verify the identical Bridge Vite host without loading the adapter"
+        `if` = "matrix.builder == 'vite'"
+        env { VIZE_NUXT2_BRIDGE_PLAIN_HOST = "true" }
+        run = #"vp env exec node tools/support/compat/nuxt/nuxt2-module-build.ts "$RUNNER_TEMP/nuxt2-bridge-plain-host-proof" bridge-vite"#
+      }
+      new Dynamic {
+        name = "Verify candidate webpack build, SSR, hydration and dev HMR"
+        `if` = "${{ !cancelled() && steps.chromium.outcome == 'success' }}"
+        run = #"vp env exec node tools/support/compat/nuxt/nuxt2-module-build.ts "$RUNNER_TEMP/nuxt2-bridge-proof" "bridge-${{ matrix.builder }}""#
+      }
+      new Dynamic {
+        name = "Upload Nuxt 2 build and SSR evidence"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "nuxt2-bridge-proof-${{ matrix.builder }}-${{ github.event.pull_request.head.sha || github.sha }}"
+          path = """
+          ${{ runner.temp }}/nuxt2-bridge-proof
+          ${{ runner.temp }}/nuxt2-bridge-plain-host-proof
+
+          """
+          `if-no-files-found` = "ignore"
+        }
+      }
+    }
+  }
+}

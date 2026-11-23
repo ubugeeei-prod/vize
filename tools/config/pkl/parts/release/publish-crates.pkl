@@ -1,0 +1,70 @@
+import "../../Actions.pkl" as ci
+
+name = "Publish crates"
+needs = List("version", "tag", "publication-quota")
+`if` = "${{ !cancelled() && needs.publication-quota.result == 'success' && needs.publication-quota.outputs.crates == 'publish' && needs.version.result == 'success' && (needs.tag.result == 'success' || (inputs.npm_resume_run != '' && needs.tag.result == 'skipped')) }}"
+`runs-on` = "ubuntu-24.04"
+`timeout-minutes` = 30
+environment = "crates-io"
+permissions {
+  contents = "read"
+  actions = "read"
+  `id-token` = "write"
+}
+steps = new Listing {
+  ci.checkoutAt("${{ needs.version.outputs.tag }}")
+  new Dynamic {
+    uses = ci.setupNode
+    with {
+      `node-version-file` = "package.json"
+      `package-manager-cache` = false
+    }
+  }
+  ci.rust("stable")
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      `reuse-target` = "true"
+      `restore-trusted` = "true"
+      key = "release-crates"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    name = "Recheck quota before any new crate write, including failed-job recovery"
+    env {
+      GITHUB_TOKEN = "${{ github.token }}"
+      RELEASE_VERSION = "${{ needs.version.outputs.version }}"
+      RELEASE_SHA = "${{ needs.version.outputs.sha }}"
+      RELEASE_PRODUCER_RUN = "${{ inputs.npm_resume_run || github.run_id }}"
+      RELEASE_QUOTA_EVIDENCE = "${{ runner.temp }}/crate-quota/report.json"
+    }
+    run = """
+    git fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+    mkdir -p "$RUNNER_TEMP/release-quota-tooling"
+    git archive "$GITHUB_SHA" package.json tools/support/release tools/support/archive tests/tooling/release/quota-live-legacy-refusal.ts | tar -x -C "$RUNNER_TEMP/release-quota-tooling"
+    node "$RUNNER_TEMP/release-quota-tooling/tools/support/release/release/main.ts" quota "$RELEASE_VERSION"
+
+    """
+  }
+  new Dynamic {
+    uses = "rust-lang/crates-io-auth-action@b7e9a28eded4986ec6b1fa40eeee8f8f165559ec"  // v1
+    id = "crates-io-auth"
+  }
+  new Dynamic {
+    name = "Publish to crates.io"
+    env { CARGO_REGISTRY_TOKEN = "${{ steps.crates-io-auth.outputs.token }}" }
+    run = "node tools/support/release/publish_crates/main.ts"
+  }
+  new Dynamic {
+    name = "Retain the crate write admission receipt"
+    `if` = "always()"
+    uses = ci.uploadArtifact
+    with {
+      name = "crate-quota-${{ needs.version.outputs.tag }}-${{ github.run_attempt }}"
+      path = "${{ runner.temp }}/crate-quota"
+      `if-no-files-found` = "error"
+      `retention-days` = 90
+    }
+  }
+}

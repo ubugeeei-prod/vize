@@ -1,0 +1,453 @@
+import "../Actions.pkl" as ci
+
+name = "Editor real-server end-to-end"
+description = "Run VS Code, Zed, Neovim, Vim, and Helix real-server scenarios plus packaged specs"
+
+inputs {
+  `prebuilt-server` {
+    description = "Optional exact release binary to install instead of building from source"
+    required = false
+    ["default"] = ""
+  }
+  `prebuilt-vsix` {
+    description = "Optional exact release VSIX to install in the real VS Code host"
+    required = false
+    ["default"] = ""
+  }
+  `expected-version` {
+    description = "Plain release version required from the prebuilt server"
+    required = false
+    ["default"] = ""
+  }
+  `expected-source-sha` {
+    description = "Exact checked-out source commit required by the real-server scenarios"
+    required = false
+    ["default"] = ""
+  }
+  `release-workspace` {
+    description = "Fresh project initialized by the packaged release CLI"
+    required = false
+    ["default"] = ""
+  }
+  `release-evidence` {
+    description = "Directory that retains packaged-host identity and diagnostic evidence"
+    required = false
+    ["default"] = ""
+  }
+}
+
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Setup Vite+ and Node.js"
+      uses = ci.setupVp
+      with {
+        `node-version-file` = "package.json"
+        cache = true
+        `run-install` = false
+      }
+    }
+    new Dynamic {
+      name = "Setup Rust"
+      uses = ci.setupRust
+      with {
+        toolchain = "stable"
+        targets = "wasm32-wasip2"
+      }
+    }
+    new Dynamic {
+      name = "Setup Wild linker"
+      uses = ci.setupWild
+      with { `wild-version` = "0.9.0" }
+    }
+    new Dynamic {
+      uses = "./.github/actions/setup-rust-sticky-cache"
+      with {
+        key = "editor-host-smoke"
+        `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+      }
+    }
+    ci.use("./.github/actions/setup-rust-script")
+    new Dynamic {
+      name = "Hydrate pinned create-vue fixture"
+      shell = "bash"
+      run = #"""
+      git submodule update --init --force --depth 1 -- tests/_fixtures/_git/create-vue
+      test "$(git rev-parse HEAD:tests/_fixtures/_git/create-vue)" = \
+        "$(git -C tests/_fixtures/_git/create-vue rev-parse HEAD)"
+
+      """#
+    }
+    new Dynamic {
+      name = "Install JS dependencies"
+      shell = "bash"
+      env { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }
+      run = "vp install --frozen-lockfile --prefer-offline"
+    }
+    new Dynamic {
+      name = "Install pinned Zed extension CLI"
+      shell = "bash"
+      // The pinned 167 MB asset takes about 150s at the observed CI throughput.
+      env {
+        VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS = "180"
+        ZED_EXTENSION_CLI_SHA = "9ee3c503a4bbbc6b4a0f8a789acca4871d773223"
+        ZED_EXTENSION_CLI_SHA256 = "a6fca5ef11ff23f0ef8b03bd2453270591c9fc6c03700c3c92017e5082ada757"
+      }
+      run = #"""
+      set -euo pipefail
+      timeout --signal=TERM --kill-after=10s 300s \
+        bash .github/actions/vscode-host-smoke/download-artifact.sh \
+        "https://zed-extension-cli.nyc3.digitaloceanspaces.com/${ZED_EXTENSION_CLI_SHA}/x86_64-unknown-linux-gnu/zed-extension" \
+        "${RUNNER_TEMP}/zed-extension" "${ZED_EXTENSION_CLI_SHA256}"
+      chmod +x "${RUNNER_TEMP}/zed-extension"
+
+      """#
+    }
+    new Dynamic {
+      name = "Validate the Zed extension"
+      shell = "bash"
+      `working-directory` = "editors/zed"
+      // The pinned 114 MB SDK needs more than the downloader's 90s default on slower runners.
+      env { VIZE_EDITOR_DOWNLOAD_TIMEOUT_SECONDS = "180" }
+      run = #"""
+      set -euo pipefail
+      mkdir -p "${RUNNER_TEMP}/zed-extension-scratch"
+      wasi_archive="${RUNNER_TEMP}/wasi-sdk-25.0-x86_64-linux.tar.gz"
+      bash "${GITHUB_WORKSPACE}/.github/actions/vscode-host-smoke/download-artifact.sh" \
+        "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-25/wasi-sdk-25.0-x86_64-linux.tar.gz" \
+        "$wasi_archive" \
+        "52640dde13599bf127a95499e61d6d640256119456d1af8897ab6725bcf3d89c" \
+        "https://api.github.com/repos/WebAssembly/wasi-sdk/releases/assets/212790091"
+      tar -xzf "$wasi_archive" -C "${RUNNER_TEMP}/zed-extension-scratch"
+      mv "${RUNNER_TEMP}/zed-extension-scratch/wasi-sdk-25.0-x86_64-linux" \
+        "${RUNNER_TEMP}/zed-extension-scratch/wasi-sdk"
+      test -x "${RUNNER_TEMP}/zed-extension-scratch/wasi-sdk/bin/clang"
+      mkdir -p "${RUNNER_TEMP}/zed-extension-output"
+      "${RUNNER_TEMP}/zed-extension" \
+        --source-dir . \
+        --scratch-dir "${RUNNER_TEMP}/zed-extension-scratch" \
+        --output-dir "${RUNNER_TEMP}/zed-extension-output"
+      mkdir -p "${RUNNER_TEMP}/zed-extension-installed"
+      tar -xzf "${RUNNER_TEMP}/zed-extension-output/archive.tar.gz" \
+        -C "${RUNNER_TEMP}/zed-extension-installed"
+
+      """#
+    }
+    new Dynamic {
+      name = "Install pinned Zed editor"
+      shell = "bash"
+      env {
+        ZED_VERSION = "1.27.0"
+        ZED_SHA256 = "719f6bf649ea8d87961adbf728e178561bac3f598d72d7949558d1150cfc43dd"
+      }
+      run = #"""
+      set -euo pipefail
+      archive="${RUNNER_TEMP}/zed-linux-x86_64.tar.gz"
+      bash .github/actions/vscode-host-smoke/download-artifact.sh \
+        "https://github.com/zed-industries/zed/releases/download/v${ZED_VERSION}/zed-linux-x86_64.tar.gz" \
+        "$archive" "$ZED_SHA256" \
+        "https://api.github.com/repos/zed-industries/zed/releases/assets/710065550"
+      mkdir -p "${RUNNER_TEMP}/zed"
+      tar -xzf "$archive" -C "${RUNNER_TEMP}/zed"
+      "${RUNNER_TEMP}/zed/zed.app/bin/zed" --version
+
+      """#
+    }
+    new Dynamic {
+      name = "Install pinned Helix"
+      shell = "bash"
+      env {
+        HELIX_VERSION = "25.07.1"
+        HELIX_SHA256 = "3f08e63ecd388fff657ad39722f88bb03dcf326f1f2da2700d99e1dc40ab2e8b"
+      }
+      run = #"""
+      set -euo pipefail
+      archive="${RUNNER_TEMP}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz"
+      bash .github/actions/vscode-host-smoke/download-artifact.sh \
+        "https://github.com/helix-editor/helix/releases/download/${HELIX_VERSION}/helix-${HELIX_VERSION}-x86_64-linux.tar.xz" \
+        "${archive}" "${HELIX_SHA256}"
+      mkdir -p "${RUNNER_TEMP}/helix"
+      tar -xJf "${archive}" -C "${RUNNER_TEMP}/helix" --strip-components=1
+      "${RUNNER_TEMP}/helix/hx" --version
+
+      """#
+    }
+    new Dynamic {
+      name = "Build vize CLI"
+      `if` = "inputs.prebuilt-server == ''"
+      shell = "bash"
+      run = "cargo build --profile ci -p vize"
+    }
+    new Dynamic {
+      name = "Install and verify the supplied release CLI"
+      `if` = "inputs.prebuilt-server != ''"
+      shell = "bash"
+      env {
+        PREBUILT_SERVER = "${{ inputs.prebuilt-server }}"
+        EXPECTED_VERSION = "${{ inputs.expected-version }}"
+      }
+      run = """
+      set -euo pipefail
+      test -n "$EXPECTED_VERSION"
+      test -f "$PREBUILT_SERVER"
+      mkdir -p target/ci
+      install -m 0755 "$PREBUILT_SERVER" target/ci/vize
+      test "$(target/ci/vize --version)" = "vize $EXPECTED_VERSION"
+
+      """
+    }
+    new Dynamic {
+      name = "Check the Helix package with the official CLI"
+      shell = "bash"
+      env {
+        XDG_CONFIG_HOME = "${{ runner.temp }}/helix-config"
+        HELIX_RUNTIME = "${{ runner.temp }}/helix/runtime"
+        VIZE_SERVER_PATH = "${{ github.workspace }}/target/ci/vize"
+      }
+      run = """
+      set -euo pipefail
+      mkdir -p "${XDG_CONFIG_HOME}/helix"
+      cp editors/helix/languages.toml "${XDG_CONFIG_HOME}/helix/languages.toml"
+      node tools/commands/editors/helix/assert-helix-health.ts "${RUNNER_TEMP}/helix/hx"
+
+      """
+    }
+    new Dynamic {
+      name = "Stabilize Ubuntu package archive"
+      uses = "./.github/actions/setup-ubuntu-archive"
+    }
+    new Dynamic {
+      name = "Ensure xvfb is available"
+      shell = "bash"
+      run = """
+      if ! command -v xvfb-run >/dev/null 2>&1; then
+        vize-ci-apt-retry sudo apt-get update
+        vize-ci-apt-retry sudo apt-get install -y xvfb
+      fi
+
+      """
+    }
+    new Dynamic {
+      name = "Install Neovim"
+      shell = "bash"
+      env {
+        NVIM_SHA256 = "a74740047e73b2b380d63a474282814063d10650cd6cc95efa16d1713c7e616c"
+        NVIM_VERSION = "v0.11.4"
+      }
+      run = #"""
+      set -euo pipefail
+      bash .github/actions/vscode-host-smoke/download-artifact.sh \
+        "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
+        "${RUNNER_TEMP}/nvim.tar.gz" "${NVIM_SHA256}"
+      sudo tar -C /opt -xzf "${RUNNER_TEMP}/nvim.tar.gz"
+      sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
+      nvim --version | head -1
+
+      """#
+    }
+    new Dynamic {
+      name = "Ensure Vim is available"
+      shell = "bash"
+      run = """
+      set -euo pipefail
+      if ! command -v vim || ! vim --version | grep -F '+timers' >/dev/null; then
+        vize-ci-apt-retry sudo apt-get update
+        vize-ci-apt-retry sudo apt-get install -y vim-nox
+      fi
+      vim --version | sed -n '1,2p'
+      vim --version | grep -F '+timers' >/dev/null
+
+      """
+    }
+    new Dynamic {
+      name = "Install pinned vim-lsp"
+      shell = "bash"
+      env { VIM_LSP_COMMIT = "474c656659b5fb51eec6770309e0211c8aa49b5b" }
+      run = """
+      set -euo pipefail
+      git init "${RUNNER_TEMP}/vim-lsp"
+      git -C "${RUNNER_TEMP}/vim-lsp" remote add origin https://github.com/prabirshrestha/vim-lsp.git
+      git -C "${RUNNER_TEMP}/vim-lsp" fetch --depth 1 origin "${VIM_LSP_COMMIT}"
+      git -C "${RUNNER_TEMP}/vim-lsp" checkout --detach FETCH_HEAD
+      cd "${RUNNER_TEMP}/vim-lsp"
+      test "$(git rev-parse HEAD)" = "${VIM_LSP_COMMIT}"
+
+      """
+    }
+    new Dynamic {
+      name = "Ensure Emacs is available"
+      shell = "bash"
+      run = """
+      if ! command -v emacs >/dev/null 2>&1; then
+        vize-ci-apt-retry sudo apt-get update
+        vize-ci-apt-retry sudo apt-get install -y emacs-nox
+      fi
+
+      """
+    }
+    new Dynamic {
+      name = "Download pinned VS Code with a total time budget"
+      shell = "bash"
+      env { VIZE_TEST_VSCODE_VERSION = "1.107.1" }
+      run = "timeout --signal=TERM --kill-after=10s 300s vp run --workspace-root test:vscode-extension:download"
+    }
+    new Dynamic {
+      name = "Run VS Code host lifecycle and delayed-response regressions"
+      shell = "bash"
+      env {
+        NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+        VIZE_TEST_VSCODE_VERSION = "1.107.1"
+      }
+      run = "xvfb-run -a vp run --workspace-root test:vscode-extension:host"
+    }
+    new Dynamic {
+      name = "Restore and verify the supplied release VSIX"
+      `if` = "inputs.prebuilt-vsix != ''"
+      shell = "bash"
+      env { PREBUILT_VSIX = "${{ inputs.prebuilt-vsix }}" }
+      run = """
+      set -euo pipefail
+      test -f "$PREBUILT_VSIX"
+      mkdir -p editors/vscode/dist
+      install -m 0644 "$PREBUILT_VSIX" editors/vscode/dist/vize.vsix
+      cmp "$PREBUILT_VSIX" editors/vscode/dist/vize.vsix
+
+      """
+    }
+    new Dynamic {
+      name = "Run VS Code host smoke against the real server"
+      shell = "bash"
+      env {
+        NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+        VIZE_SERVER_PATH = "${{ github.workspace }}/target/ci/vize"
+        VIZE_TEST_VSCODE_VERSION = "1.107.1"
+        VIZE_LSP_TRACE_NATIVE_SCOPE = "1"
+        VIZE_REAL_HOST_ARTIFACT_DIR = "${{ github.workspace }}/editors/vscode/.vscode-test/host-smoke-real/failure"
+        PREBUILT_VSIX = "${{ inputs.prebuilt-vsix }}"
+        VIZE_RELEASE_HOST_WORKSPACE = "${{ inputs.release-workspace }}"
+        VIZE_RELEASE_HOST_EVIDENCE = "${{ inputs.release-evidence }}"
+      }
+      run = """
+      set -euo pipefail
+      if [ -n "$PREBUILT_VSIX" ]; then
+        xvfb-run -a vp node editors/vscode/test/run-extension-host-real.mjs
+      else
+        xvfb-run -a vp run --workspace-root test:vscode-extension:host-real
+      fi
+
+      """
+    }
+    new Dynamic {
+      name = "Retain the real host failure before fixture cleanup"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "vscode-real-host-failure"
+        path = """
+        editors/vscode/.vscode-test/host-smoke-real/failure/
+        editors/vscode/.vscode-test/host-smoke/failure/
+        editors/vscode/.vscode-test/host-smoke/output-channel/
+        editors/vscode/.vscode-test/host-smoke/fake-server/existing-config-events/
+
+        """
+        `include-hidden-files` = true
+        `if-no-files-found` = "ignore"
+        `retention-days` = 7
+      }
+    }
+    new Dynamic {
+      name = "Run the packaged Neovim unit spec"
+      shell = "bash"
+      env { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }
+      run = "vp run --workspace-root test:nvim-extension:headless"
+    }
+    new Dynamic {
+      name = "Run the packaged Vim unit spec"
+      shell = "bash"
+      env { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }
+      run = "vp run --workspace-root test:vim-extension:headless"
+    }
+    new Dynamic {
+      name = "Run the packaged Emacs ERT suite"
+      shell = "bash"
+      env { NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169" }
+      run = "vp run --workspace-root test:emacs-extension:headless"
+    }
+    new Dynamic {
+      name = "Run real Emacs Eglot project configuration"
+      shell = "bash"
+      env {
+        VIZE_SERVER_PATH = "${{ github.workspace }}/target/ci/vize"
+        VIZE_EMACS_ARTIFACT_DIR = "${{ runner.temp }}/emacs-native-config"
+        VIZE_E2E_WORKSPACE = "${{ inputs.release-workspace }}"
+        VIZE_EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha || github.sha }}"
+      }
+      run = "vp run --workspace-root test:emacs-extension:real-server"
+    }
+    new Dynamic {
+      name = "Retain complete Emacs Eglot configuration evidence"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "emacs-native-config"
+        path = "${{ runner.temp }}/emacs-native-config"
+        `if-no-files-found` = "ignore"
+        `retention-days` = 7
+      }
+    }
+    new Dynamic {
+      name = "Run the Neovim scenario against the real server"
+      shell = "bash"
+      env {
+        NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+        VIZE_SERVER_PATH = "${{ github.workspace }}/target/ci/vize"
+        VIZE_E2E_WORKSPACE = "${{ inputs.release-workspace }}"
+      }
+      run = "vp run --workspace-root test:nvim-extension:real-server"
+    }
+    new Dynamic {
+      name = "Run the Vim scenario against the real server"
+      shell = "bash"
+      env {
+        NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+        VIZE_SERVER_PATH = "${{ github.workspace }}/target/ci/vize"
+        VIZE_TEST_VIM_LSP_PATH = "${{ runner.temp }}/vim-lsp"
+        VIZE_E2E_WORKSPACE = "${{ inputs.release-workspace }}"
+        VIZE_EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha || github.sha }}"
+      }
+      run = "vp run --workspace-root test:vim-extension:real-server"
+    }
+    new Dynamic {
+      name = "Run the Zed scenario against the real server"
+      shell = "bash"
+      env {
+        NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+        VIZE_SERVER_PATH = "${{ github.workspace }}/target/ci/vize"
+      }
+      run = "vp run --workspace-root test:zed-extension:real-server"
+    }
+    new Dynamic {
+      name = "Run the Helix scenario against the real server"
+      shell = "bash"
+      env {
+        NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+        VIZE_SERVER_PATH = "${{ github.workspace }}/target/ci/vize"
+      }
+      run = "vp run --workspace-root test:helix-extension:real-server"
+    }
+    new Dynamic {
+      name = "Run actual Zed with the packaged release extension"
+      `if` = "inputs.release-workspace != ''"
+      shell = "bash"
+      env {
+        VIZE_RELEASE_ZED_EVIDENCE = "${{ inputs.release-evidence }}/hosts/zed"
+        VIZE_RELEASE_ZED_EXTENSION = "${{ runner.temp }}/zed-extension-installed"
+        VIZE_RELEASE_ZED_WORKSPACE = "${{ inputs.release-workspace }}"
+        VIZE_SERVER_PATH = "${{ github.workspace }}/target/ci/vize"
+        VIZE_TEST_ZED_PATH = "${{ runner.temp }}/zed/zed.app/bin/zed"
+      }
+      run = "xvfb-run -a node tests/editor-conformance/release-zed.ts"
+    }
+  }
+}

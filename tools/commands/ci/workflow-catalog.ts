@@ -5,11 +5,13 @@ import { fileURLToPath } from "node:url";
 
 interface WorkflowEntry {
   readonly file: string;
+  readonly groupId: WorkflowGroupId;
   readonly name: string;
 }
 
 interface WorkflowGroup {
   readonly id: string;
+  readonly directory: string;
   readonly title: string;
   readonly description: string;
 }
@@ -17,64 +19,75 @@ interface WorkflowGroup {
 const groups = [
   {
     id: "01",
+    directory: "checks",
     title: "Pull request orchestration",
     description:
       "Start here for required checks, change planning, merge queues, and full qualification.",
   },
   {
     id: "02",
+    directory: "release",
     title: "Release and public acceptance",
     description:
       "Publication, registry, and installed-consumer evidence. Trusted-publishing workflows are protected surfaces.",
   },
   {
     id: "03",
+    directory: "performance",
     title: "Benchmarks and profiling",
     description:
       "Wall time, allocation, instruction, memory, scaling, and reproducible benchmark runs.",
   },
   {
     id: "04",
+    directory: "typecheck",
     title: "Type checking and content mapping",
     description: "Typechecker, content-mapper, Corsa, and TypeScript-provider qualification.",
   },
   {
     id: "05",
+    directory: "editors",
     title: "Language services and editors",
     description:
       "LSP behavior, editor packages, VSIX hosts, overlays, navigation, and hover checks.",
   },
   {
     id: "06",
+    directory: "compiler",
     title: "SFC, JSX, and compiler correctness",
     description:
       "SFC compilation, JSX, bindings, templates, Vapor, recovery, and native correctness.",
   },
   {
     id: "07",
+    directory: "davinci",
     title: "Davinci, Canon, and Level",
     description:
       "Davinci migration, Canon ownership, Level lowering, and cross-file graph contracts.",
   },
   {
     id: "08",
+    directory: "integrations",
     title: "Builders and framework integrations",
     description: "Babel, Nuxt, Parcel, Rspack, Turbopack, Vite, Vitest, and consumer hosts.",
   },
   {
     id: "09",
+    directory: "tooling",
     title: "Lint, format, and developer tooling",
     description:
       "ESLint, Oxlint, Prettier, formatter, doctor, configuration, and tooling contracts.",
   },
   {
     id: "10",
+    directory: "apps",
     title: "Applications and UI packages",
     description:
       "Musea, Fresco, playground, app E2E, UI packages, and browser-facing integrations.",
   },
   {
     id: "11",
+    directory: "maintenance",
     title: "Security, maintenance, and documentation",
     description:
       "Security audits, dependency upkeep, scheduled maintenance, docs, and repository hygiene.",
@@ -94,68 +107,18 @@ const startHere = [
   ["08", "release.yml", "Protected release orchestration; do not casually edit"],
 ] as const;
 
-export function workflowGroupId(file: string): WorkflowGroupId {
-  if (
-    /^(check(?:-|\.)|pr-|full-|v1-(?:supported-matrix|exact-candidate)|title-policy|rust-pr-target-seed|merge-queue|e2e|canonical-corpus|real-project-matrix)/.test(
-      file,
-    )
-  ) {
-    return "01";
+export function readWorkflowEntries(root: string): readonly WorkflowEntry[] {
+  const directory = path.join(root, ".github/workflows");
+  const sources = path.join(root, "tools/config/pkl/workflows");
+  const groupByName = new Map<string, WorkflowGroupId>();
+  for (const group of groups) {
+    for (const source of readdirSync(path.join(sources, group.directory))) {
+      if (!source.endsWith(".pkl")) continue;
+      const name = path.basename(source, ".pkl");
+      assert.ok(!groupByName.has(name), `Duplicate workflow source for ${name}`);
+      groupByName.set(name, group.id);
+    }
   }
-  if (/release|(^|-)published-|(^|-)public(?:-|\.yml)|^(pkg-pr|jsr-|corsa-package)/.test(file)) {
-    return "02";
-  }
-  if (
-    /(bench|benchmark|profile|scaling|scale|memory|instruction|allocation|walltime|cold-|resource-budget|source-operation|recovery-cost|clone-cost|partition-weight|persistent-batch|component-scope-binding)/.test(
-      file,
-    )
-  ) {
-    return "03";
-  }
-  if (
-    /^(typecheck|typechecker|typescript-provider|content-mapper|corsa-|checker-|component-input-(?:diagnostic|projection))/.test(
-      file,
-    )
-  ) {
-    return "04";
-  }
-  if (
-    /^(lsp-|editor-|vscode-|typescript-plugin|volar-|router-|named-sfc|css-hover|vue2-editor|zed-|helix-|vim-|neovim-|emacs-)/.test(
-      file,
-    )
-  ) {
-    return "05";
-  }
-  if (
-    /^(native-|sfc-|jsx-|vapor-|binding-|template-|recovery-|for-bindings|defaulted-|async-|asset-import|ambient-template|compiler-|cross-file-script|unicode-|provide-type|expression-|css-|empty-generic|l1-|narrowed-slot|pre-textarea|scoped-nesting|source-symbolizer|typed-context|vue2-ir)/.test(
-      file,
-    )
-  ) {
-    return "06";
-  }
-  if (/^(canon-|cross-file|davinci-|ir-pass-composition|level-|compact-collections)/.test(file))
-    return "07";
-  if (
-    /^(babel-|bundler-|nuxt|parcel-|rspack-|turbopack-|vite|vitest-|plain-script-import-ref|js-install-closure|void-build|vuefes-)/.test(
-      file,
-    )
-  ) {
-    return "08";
-  }
-  if (
-    /^(eslint-|oxlint-|prettier-|formatter-|lint-|doctor-|n8n-|patina-|workspace-|windows-config|config-|pkl-)/.test(
-      file,
-    )
-  ) {
-    return "09";
-  }
-  if (/^(musea-|fresco|playground-|app-|ui-|mounted-runtime)/.test(file)) return "10";
-  // Group 11 is the explicit default for security, maintenance, documentation,
-  // and workflows that do not belong to a more specific product area.
-  return "11";
-}
-
-export function readWorkflowEntries(directory: string): readonly WorkflowEntry[] {
   return readdirSync(directory)
     .filter((file) => /\.ya?ml$/.test(file))
     .sort()
@@ -163,13 +126,15 @@ export function readWorkflowEntries(directory: string): readonly WorkflowEntry[]
       const source = readFileSync(path.join(directory, file), "utf8");
       const name = /^name:\s*(.+?)\s*$/m.exec(source)?.[1];
       assert.ok(name != null && name !== "", `${file} must declare a workflow name`);
-      return { file, name };
+      const groupId = groupByName.get(path.basename(file, path.extname(file)));
+      assert.ok(groupId, `Missing Pkl workflow source for ${file}`);
+      return { file, groupId, name };
     });
 }
 
 function workflowRows(entries: readonly WorkflowEntry[], groupId: WorkflowGroupId) {
   return entries
-    .filter((candidate) => workflowGroupId(candidate.file) === groupId)
+    .filter((candidate) => candidate.groupId === groupId)
     .map(
       (entry, index) =>
         [
@@ -204,12 +169,8 @@ export function renderWorkflowCatalog(entries: readonly WorkflowEntry[]): string
   const lines = [
     "# Workflow catalog",
     "",
-    "GitHub only discovers workflow files directly under this directory, so the files",
-    "cannot be organized into subdirectories without changing how Actions finds them.",
-    "This generated, numbered catalog is the navigation layer; reusable implementation",
-    "belongs in `.github/actions/` or typed drivers under `tools/`.",
-    "",
-    "Regenerate with `node tools/commands/ci/workflow-catalog.ts`.",
+    "Edit the Pkl sources linked from each group. GitHub runs the generated YAML in this directory.",
+    "Run `node tools/commands/generate/repository-config.ts` to update the workflows and this catalog.",
     "",
     "## Start here",
     "",
@@ -236,22 +197,15 @@ export function renderWorkflowCatalog(entries: readonly WorkflowEntry[]): string
   ];
   for (const group of groups) {
     const rows = workflowRows(entries, group.id);
-    const idWidth = Math.max("ID".length, ...rows.map(([id]) => id.length));
-    const workflowWidth = Math.max("Workflow".length, ...rows.map(([, name]) => name.length));
-    const fileWidth = Math.max("File".length, ...rows.map(([, , file]) => file.length));
     lines.push(
       `## ${group.id} ${group.title}`,
       "",
       group.description,
       "",
-      `| ${"ID".padEnd(idWidth)} | ${"Workflow".padEnd(workflowWidth)} | ${"File".padEnd(fileWidth)} |`,
-      `| ${"-".repeat(idWidth)} | ${"-".repeat(workflowWidth)} | ${"-".repeat(fileWidth)} |`,
+      `[Edit the Pkl sources](../../tools/config/pkl/workflows/${group.directory}/)`,
+      "",
+      ...markdownTable(["ID", "Workflow", "File"], rows),
     );
-    for (const [id, name, file] of rows) {
-      lines.push(
-        `| ${id.padEnd(idWidth)} | ${name.padEnd(workflowWidth)} | ${file.padEnd(fileWidth)} |`,
-      );
-    }
     lines.push("");
   }
   return `${lines.join("\n").trimEnd()}\n`;
@@ -262,7 +216,7 @@ if (process.argv[1] != null && path.resolve(process.argv[1]) === scriptPath) {
   const root = path.resolve(path.dirname(scriptPath), "../../..");
   const directory = path.join(root, ".github/workflows");
   const output = path.join(directory, "README.md");
-  const expected = renderWorkflowCatalog(readWorkflowEntries(directory));
+  const expected = renderWorkflowCatalog(readWorkflowEntries(root));
   if (process.argv.includes("--check")) {
     assert.equal(readFileSync(output, "utf8"), expected, "workflow catalog is stale");
   } else writeFileSync(output, expected);

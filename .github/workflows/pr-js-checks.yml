@@ -81,12 +81,14 @@ jobs:
       - name: Test Vite+ rule catalog custody on Bun
         if: ${{ inputs.run-js && matrix.group == 'builders' }}
         run: bun test npm/builder/vite/src/vite-plus/runtime.test.ts
+      - name: Install the pinned Vue Router fixture
+        if: ${{ inputs.run-js && matrix.group == 'builders' }}
+        working-directory: tests/_fixtures/_projects/vue-router-define-page
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Test definePage metadata with Vue Router and Vite
         if: ${{ inputs.run-js && matrix.group == 'builders' }}
         working-directory: tests/_fixtures/_projects/vue-router-define-page
-        run: |
-          npm ci --ignore-scripts --no-audit --no-fund
-          node --test router.test.ts
+        run: node --test router.test.ts
       - name: Test content mapper capability launch on Bun
         if: ${{ inputs.run-js && matrix.group == 'builders' }}
         run: bun test npm/cli/tests/content-mapper-bun.test.ts

@@ -1,0 +1,176 @@
+import "../../Actions.pkl" as ci
+
+name = "Davinci Incremental"
+
+// Phase 5 incrementality suites (docs/davinci/plan/test-suites.md):
+// - TS-43 key stability runs on two platforms against one committed golden, so
+// a platform-dependent byte in any key recipe fails on at least one lane.
+// - TS-42 incremental ≡ clean runs the committed edit scripts through the
+// resident tier over the corpus shard and every committed fixture, and proves
+// it catches a seeded stale-cache defect. Every PR touching the resident tier
+// (crates/vize_incremental/**) runs it.
+//
+on {
+  push {
+    branches = List("main", "davinci")
+    paths = new Listing {
+      "davinci/vize_l0/**"
+      "davinci/vize_l1/**"
+      "davinci/vize_l2/**"
+      "davinci/vize_l1_to_l2/**"
+      "crates/vize_incremental/**"
+      "crates/vize_croquis/src/sfc/**"
+      "crates/vize_croquis/src/croquis/alpha*"
+      "crates/vize_croquis/src/croquis/alpha/**"
+      "crates/vize_maestro/src/ide/completion/template/component_*"
+      "crates/vize_maestro/src/ide/completion/template/component_interface/**"
+      "tools/commands/davinci/incremental-equivalence*"
+      "tools/commands/davinci/incremental-equivalence/**"
+      "Cargo.lock"
+      "docs/davinci/plan/key-manifests.md"
+      ".github/workflows/davinci-incremental.yml"
+    }
+  }
+  workflow_dispatch = null
+}
+concurrency {
+  group = "davinci-incremental-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}"
+  `cancel-in-progress` = true
+}
+
+permissions { contents = "read" }
+
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+
+jobs {
+  `key-stability` {
+    name = "Key stability (TS-43, ${{ matrix.platform.target }})"
+    `runs-on` = "${{ matrix.platform.runner }}"
+    `timeout-minutes` = 30
+    strategy {
+      `fail-fast` = false
+      matrix {
+        platform = new Listing {
+          new Dynamic {
+            runner = ci.linux
+            target = "linux-x64-gnu"
+          }
+          new Dynamic {
+            runner = ci.macos
+            target = "darwin-arm64"
+          }
+        }
+      }
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.rust("stable")
+      new Dynamic {
+        uses = ci.setupWild
+        `if` = "runner.os == 'Linux'"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        `if` = "runner.os == 'Linux'"
+        with {
+          key = "davinci-incremental"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        uses = "Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32"  // v2
+        `if` = "runner.os != 'Linux'"
+        with {
+          `shared-key` = "davinci-incremental-${{ matrix.platform.target }}"
+          `cache-workspace-crates` = "true"
+        }
+      }
+      new Dynamic {
+        name = "Compare the L0 TS-43 golden keys"
+        run = "cargo test -p vize_l0 --test artifact_keys --test key_manifests --test hash_domains -- --nocapture"
+      }
+      ci.command("Compare the L2 TS-43 golden keys", "cargo test -p vize_l2 --test sfc_summary --test global_summary -- --nocapture")
+    }
+  }
+
+  `incremental-equivalence` {
+    name = "Incremental ≡ clean (TS-42)"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 40
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        name = "Hydrate the corpus shard"
+        run = "git submodule update --init --depth 1 -- tests/_fixtures/_git/splitpanes tests/_fixtures/_git/layoutit-grid tests/_fixtures/_git/cssgridgenerator"
+      }
+      ci.rust("stable")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "davinci-incremental-equivalence"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Setup stable Node"
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      ci.command("Resident tier tests (firewall accounting, committed plane)", "cargo test -p vize_incremental")
+      new Dynamic {
+        name = "Check borrowed stages and selective invalidation"
+        run = "cargo test --locked --profile ci-opt -p vize_incremental --features block-queries --lib block_query::"
+      }
+      new Dynamic {
+        name = "Select original Vue files for resident queries"
+        run = #"git ls-files -z -- '*.vue' '*.vue.txt' > "$RUNNER_TEMP/resident-block-query-files""#
+      }
+      new Dynamic {
+        name = "Compare every borrowed stage with the original files"
+        env {
+          VIZE_BLOCK_QUERY_MANIFEST = "${{ runner.temp }}/resident-block-query-files"
+          RUST_MIN_STACK = "16777216"
+        }
+        run = "cargo test --locked --profile ci-opt -p vize_incremental --features block-queries --lib block_query::corpus::original_documents -- --exact --ignored --nocapture"
+      }
+      new Dynamic {
+        name = "Check allocations for borrowed stages and file positions"
+        run = "cargo run --locked --profile ci-opt -p vize_incremental --features block-queries --example resident_block_alloc"
+      }
+      new Dynamic {
+        name = "Compare paired first and repeated resident requests"
+        run = "cargo test --locked --profile ci-opt -p vize_incremental --features block-queries --test resident_block_profile -- --exact paired_resident_requests --ignored --nocapture"
+      }
+      new Dynamic {
+        name = "TS-42 production alpha interfaces over the corpus shard"
+        run = "cargo test -p vize_maestro production_alpha_corpus_edits_match_clean -- --ignored --nocapture"
+      }
+      new Dynamic {
+        name = "TS-42 over the corpus shard and the committed fixtures"
+        run = "node tools/commands/davinci/incremental-equivalence.ts --corpus-shard --fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools"
+      }
+      new Dynamic {
+        name = "Verify the seeded stale-cache defect fixture"
+        run = "cargo test -p vize_incremental --features seeded-stale-cache --test equivalence"
+      }
+      new Dynamic {
+        name = "Prove TS-42 catches the seeded stale-cache defect"
+        run = "node tools/commands/davinci/incremental-equivalence.ts --corpus-shard --fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools --seeded"
+      }
+    }
+  }
+}

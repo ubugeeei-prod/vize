@@ -45,7 +45,6 @@
   ".github/workflows/rust-pr-target-seed.yml": 1,
   ".github/workflows/script-recovery-clone-cost.yml": 2,
   ".github/workflows/script-recovery-cost.yml": 1,
-  ".github/workflows/string-storage-bench.yml": 2,
   ".github/workflows/typechecker-native-phases.yml": 2,
   ".github/workflows/typescript-provider-public.yml": 3,
   ".github/workflows/typescript-provider-vsix.yml": 2,

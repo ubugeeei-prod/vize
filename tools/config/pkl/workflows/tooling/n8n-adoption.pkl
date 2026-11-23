@@ -1,0 +1,361 @@
+import "../../Actions.pkl" as ci
+
+name = "n8n adoption fixture"
+
+// Historical before/after source builds and the complete adoption corpus are
+// a nightly campaign. Current compiler and editor regressions stay in Check.
+on {
+  schedule = new Listing {
+    new Dynamic { cron = "17 4 * * *" }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+
+concurrency {
+  group = "n8n-adoption-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+
+jobs {
+  fixture {
+    name = "Pinned n8n adoption corpus"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.workspaceVp()
+      ci.command("Hydrate the read-only licensed n8n fixture", "git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n")
+      new Dynamic {
+        name = "Verify complete fixture and frozen adoption configuration"
+        env { VIZE_N8N_FIXTURE_REQUIRED = "1" }
+        run = "vp node --test tests/tooling/n8n-adoption-fixture.test.ts"
+      }
+    }
+  }
+
+  `compiler-custody` {
+    name = "Complete n8n compiler source before and after"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+      RUSTUP_TOOLCHAIN = "1.100.0"
+      VIZE_N8N_CAPTURE_BASELINE = "f5699c195e627ad26aa1c8efd4a59266120cd9b9"
+      VIZE_N8N_REPAIR_ANCHOR = "311e3c8a0e1a42d91381ba3769ef9fcfc6c1f826"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      ci.workspaceVp()
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067"  // stable
+        with { toolchain = "1.100.0" }
+      }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "n8n-compiler-custody"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Hydrate the same licensed read-only originals"
+        run = "git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n"
+      }
+      new Dynamic {
+        name = "Fetch the immutable capture-only source and pinned official compiler"
+        run = #"""
+        git fetch origin "$VIZE_N8N_CAPTURE_BASELINE" "$VIZE_N8N_REPAIR_ANCHOR"
+        curl --fail --location --retry 5 --retry-all-errors \
+          --output "$RUNNER_TEMP/n8n-official-compiler.mjs" \
+          https://unpkg.com/@vue/compiler-sfc@3.5.26/dist/compiler-sfc.esm-browser.js
+        echo "4bd5cbcf9bdae4e4264be4ddb14e416074ad96909c56ba9b604e93d5b76b06ec  $RUNNER_TEMP/n8n-official-compiler.mjs" | sha256sum --check
+
+        """#
+      }
+      new Dynamic {
+        name = "Build and capture both authenticated source states with the same recipe"
+        run = #"""
+        vp node tests/tooling/support/n8n-compiler-custody.mjs \
+          "$VIZE_N8N_CAPTURE_BASELINE" \
+          "$VIZE_N8N_REPAIR_ANCHOR" \
+          tests/_fixtures/_git/n8n \
+          "target/n8n-compiler-custody/${{ github.run_id }}-${{ github.run_attempt }}" \
+          "$RUNNER_TEMP/n8n-official-compiler.mjs"
+        vp node --input-type=module - "target/n8n-compiler-custody/${{ github.run_id }}-${{ github.run_attempt }}/capture.json" <<'NODE'
+        import assert from 'node:assert/strict';
+        import fs from 'node:fs';
+        const { before, after } = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+        assert.equal(before.rustc, after.rustc, 'both source phases require the same actual compiler');
+        assert.equal(before.cargo, after.cargo, 'both source phases require the same actual Cargo');
+        assert.match(after.rustc, /^rustc 1\.100\.0 \(0ef1bc386 2026-11-09\)/u);
+        assert.notEqual(before.binary.sha256, after.binary.sha256, 'distinct production states require distinct producers');
+        NODE
+
+        """#
+      }
+      new Dynamic {
+        name = "Verify whole legacy slot binding producer handoff"
+        env { VIZE_TEST_REQUIRE_TSGO = "1" }
+        run = "cargo test --locked --profile ci -p vize_atelier_core --features legacy --test legacy_template_sugar --test legacy_slot_binding_handoff_8142 -- --nocapture"
+      }
+      new Dynamic {
+        name = "Verify source SFC default-slot runtime and iterator laws"
+        run = "cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test n8n_default_slot_loops --test slot_parameter_entities_8142 -- --nocapture"
+      }
+      new Dynamic {
+        name = "Retain whole default and legacy attribute entity parser captures"
+        `if` = "${{ !cancelled() }}"
+        run = #"""
+        qualification="$GITHUB_WORKSPACE/target/differential/attribute-entity-qualification-8142/${{ github.run_id }}-${{ github.run_attempt }}"
+        mkdir -p "$qualification"
+        git rev-parse HEAD > "$qualification/source-sha.txt"
+        rustc -Vv > "$qualification/rustc.txt"
+        cargo -V > "$qualification/cargo.txt"
+        failed=0
+        for phase in default legacy-native; do
+          phase_dir="$qualification/$phase"
+          mkdir -p "$phase_dir/tokenizer-captures"
+          entity_packets=target/differential/attribute-entity-consumer-8142
+          if [[ -d "$entity_packets" ]]; then
+            mv "$entity_packets" "$phase_dir/preexisting-attribute-packets"
+          fi
+          args=(--locked --profile ci -p vize_armature --lib)
+          if [[ "$phase" == legacy-native ]]; then
+            args+=(--features legacy,native-lex-parity)
+          fi
+          set +e
+          VIZE_TOKENIZER_CAPTURE_DIR="$phase_dir/tokenizer-captures" \
+            cargo test "${args[@]}" -- --nocapture 2>&1 | tee "$phase_dir/cargo.log"
+          pipeline_status=("${PIPESTATUS[@]}")
+          test_status=${pipeline_status[0]}
+          capture_status=${pipeline_status[1]}
+          set -e
+          printf '%s\n' "$test_status" > "$phase_dir/status.txt"
+          printf '%s\n' "$capture_status" > "$phase_dir/capture-status.txt"
+          if [[ -d "$entity_packets" ]]; then
+            mv "$entity_packets" "$phase_dir/attribute-packets"
+          fi
+          if [[ "$test_status" != 0 || "$capture_status" != 0 ]]; then
+            failed=1
+          fi
+        done
+        exit "$failed"
+
+        """#
+      }
+      new Dynamic {
+        name = "Retain all authored physical declaration and invalid-window laws"
+        `if` = "${{ !cancelled() }}"
+        run = #"""
+        qualification="$GITHUB_WORKSPACE/target/differential/attribute-entity-qualification-8142/${{ github.run_id }}-${{ github.run_attempt }}"
+        mkdir -p "$qualification/croquis"
+        coordinates=target/differential/slot-declaration-physical-8142
+        if [[ -d "$coordinates" ]]; then
+          mv "$coordinates" "$qualification/croquis/preexisting-packets"
+        fi
+        set +e
+        cargo test --locked --profile ci -p vize_croquis --lib \
+          drawer::template::slot_scope_tests:: -- --nocapture 2>&1 | tee "$qualification/croquis/cargo.log"
+        pipeline_status=("${PIPESTATUS[@]}")
+        test_status=${pipeline_status[0]}
+        capture_status=${pipeline_status[1]}
+        set -e
+        printf '%s\n' "$test_status" > "$qualification/croquis/status.txt"
+        printf '%s\n' "$capture_status" > "$qualification/croquis/capture-status.txt"
+        if [[ -d "$coordinates" ]]; then
+          mv "$coordinates" "$qualification/croquis/packets"
+        fi
+        if [[ "$capture_status" != 0 ]]; then
+          exit "$capture_status"
+        fi
+        exit "$test_status"
+
+        """#
+      }
+      new Dynamic {
+        name = "Install pinned TypeScript consumer for the original typed slot controls"
+        run = "vp install --frozen-lockfile --prefer-offline"
+      }
+      new Dynamic {
+        name = "Verify whole inline setup default parameters and original typed callback runtime laws"
+        run = """
+        cargo test --locked --profile ci -p vize_atelier_core --lib inline_immutable_setup_defaults_keep_exact_authored_parameter_packets -- --nocapture
+        cargo test --locked --profile ci -p vize_l1_to_l2 --lib inline_immutable_setup_defaults_keep_exact_authored_parameter_packets -- --nocapture
+        cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test slot_default_setup_bindings_8142 -- --nocapture
+
+        """
+      }
+      new Dynamic {
+        name = "Verify every n8n compiler regression and changed-source refusal"
+        env {
+          VIZE_N8N_CONTROL_PACKET_DIR = "${{ github.workspace }}/target/n8n-compiler-custody/${{ github.run_id }}-${{ github.run_attempt }}/authored"
+        }
+        run = #"""
+        cargo test --locked --profile ci --no-fail-fast -p vize_l1_to_l2 --features legacy-differential \
+          --test davinci_dom_n8n_diagnosed \
+          --test davinci_dom_n8n_default_loops \
+          --test davinci_dom_n8n_helper_props \
+          --test davinci_dom_n8n_if_key_modes -- --nocapture
+
+        """#
+      }
+      new Dynamic {
+        name = "Upload complete source, official modules, maps and diagnostic vectors"
+        `if` = "${{ !cancelled() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "n8n-compiler-before-after-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "target/n8n-compiler-custody"
+          `if-no-files-found` = "error"
+        }
+      }
+      new Dynamic {
+        name = "Upload complete legacy slot binding observations"
+        `if` = "${{ !cancelled() && hashFiles('target/differential/legacy-slot-binding-handoff-8142/whole-packets.json') != '' }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "legacy-slot-binding-handoff-8142-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "target/differential/legacy-slot-binding-handoff-8142"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+      new Dynamic {
+        name = "Upload whole slot entity compiler and pinned runtime observations"
+        `if` = "${{ !cancelled() && hashFiles('target/differential/slot-parameter-entities-8142/compiler-packets.json') != '' }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "n8n-slot-entity-runtime-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "target/differential/slot-parameter-entities-8142"
+          `if-no-files-found` = "error"
+        }
+      }
+      new Dynamic {
+        name = "Upload complete attribute entity BEFORE and authored actual AFTER observations"
+        `if` = "${{ !cancelled() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "n8n-attribute-entity-8142-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "target/differential/attribute-entity-qualification-8142/${{ github.run_id }}-${{ github.run_attempt }}"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+      new Dynamic {
+        name = "Upload all original typed slot compiler and runtime packets"
+        `if` = "${{ !cancelled() && hashFiles('target/differential/slot-default-setup-bindings-8142/compiler-packets.json') != '' }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "n8n-slot-default-setup-bindings-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "target/differential/slot-default-setup-bindings-8142"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+
+  `authored-editor` {
+    name = "Authored n8n navigation and type diagnostics"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    env {
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+      VIZE_LSP_BIN = "target/ci/vize"
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.workspaceVp()
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067"  // stable
+        with { toolchain = "stable" }
+      }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "n8n-authored-editor"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.command("Install pinned source and typechecker dependencies", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Build and authenticate the current-source LSP"
+        run = "cargo build --profile ci -p vize && vp node tests/differential/build-receipt.ts"
+      }
+      new Dynamic {
+        name = "Preserve ordinary default-export navigation"
+        run = "cargo test --profile ci -p vize_maestro --lib ide::definition::service::import_target::default_export::tests -- --nocapture"
+      }
+      new Dynamic {
+        name = "Check original n8n navigation and unsaved diagnostic repair"
+        run = "vp node --test tests/tooling/n8n-authored-editor.test.ts"
+      }
+      new Dynamic {
+        name = "Build the current public CLI config export"
+        run = "vp pack"
+        `working-directory` = "npm/cli"
+      }
+      ci.command("Hydrate unchanged licensed n8n CLI inputs", "git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n")
+      new Dynamic {
+        name = "Verify current-source CLI configuration, entries and independent witnesses"
+        run = #"""
+        vp node --test tests/tooling/n8n-cli-config-contract.test.mjs tests/tooling/n8n-cli-config-failure-custody.test.mjs
+        vp node tests/tooling/support/n8n-cli-config-acceptance.mjs \
+          "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}"
+        vp node tests/tooling/support/n8n-cli-config-semantic-acceptance.mjs \
+          "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/semantic-routing"
+
+        """#
+      }
+      new Dynamic {
+        name = "Verify both slot modifier options through whole source CLI and JSON-RPC packets"
+        run = #"vp node tests/tooling/support/n8n-slot-options-acceptance.ts "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/slot-options""#
+      }
+      new Dynamic {
+        name = "Verify retained parameter grammar through whole source CLI and JSON-RPC packets"
+        run = """
+        cargo test --locked --profile ci -p vize_patina --test integration -- valid_v_slot_regression:: valid_v_slot_parameter_bindings::
+        vp node --test tests/tooling/patina-slot-parameter-bindings-oracle.test.ts
+        vp node tests/tooling/support/n8n-slot-parameters-acceptance.ts "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/slot-parameters"
+
+        """
+      }
+      new Dynamic {
+        name = "Compare whole-corpus lint findings with eslint-plugin-vue"
+        run = #"vp node tests/tooling/support/n8n-lint-parity.ts target/ci/vize "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/lint-parity""#
+      }
+      new Dynamic {
+        name = "Upload whole CLI and independent oracle packets"
+        `if` = "${{ !cancelled() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "n8n-cli-config-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = """
+          target/n8n-cli-config
+          target/differential/lsp-sessions
+          target/differential/slot-parameter-source-packets.json
+          target/differential/slot-parameter-legacy-packets.json
+
+          """
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+}

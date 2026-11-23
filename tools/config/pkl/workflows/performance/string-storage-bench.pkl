@@ -1,0 +1,132 @@
+import "../../Actions.pkl" as ci
+
+name = "Benchmark - String storage"
+
+on {
+  workflow_dispatch {
+    inputs {
+      base_sha {
+        description = "Full ancestor commit SHA"
+        required = true
+        type = "string"
+      }
+      head_sha {
+        description = "Full candidate commit SHA"
+        required = true
+        type = "string"
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "string-storage-${{ github.ref }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  `bounded-storage` {
+    name = "String storage (measurement ${{ matrix.repetition }})"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    strategy {
+      `fail-fast` = false
+      matrix {
+        repetition = List(1, 2, 3)
+      }
+    }
+    env {
+      CARGO_INCREMENTAL = 0
+      CARGO_PROFILE_RELEASE_LTO = "thin"
+      CARGO_PROFILE_RELEASE_CODEGEN_UNITS = 16
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ github.sha }}"
+          path = "head"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          ref = "${{ inputs.base_sha }}"
+          path = "base"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "head/package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "stable"
+          components = "clippy"
+        }
+      }
+      ci.wild()
+      // The cache action's nested local action resolves from the workspace root,
+      // and this job checks the repository out under head/.
+      new Dynamic {
+        name = "Expose the nested target action at the workspace root"
+        run = "mkdir -p .github/actions && cp -R head/.github/actions/{reuse-rust-target,setup-rust-sticky-cache} .github/actions/"
+      }
+      new Dynamic {
+        uses = "./head/.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "string-storage"
+          `cache-key-suffix` = "${{ matrix.repetition }}"
+          `target-path` = "head/target"
+        }
+      }
+      new Dynamic {
+        name = "Validate exact commits and use identical benchmark harness"
+        env {
+          BASE_SHA = "${{ inputs.base_sha }}"
+          HEAD_SHA = "${{ inputs.head_sha }}"
+          DISPATCH_SHA = "${{ github.sha }}"
+        }
+        run = "node head/tools/benchmarks/scripts/string-storage.ts prepare"
+      }
+      new Dynamic {
+        name = "Check candidate CF semantics and lints"
+        `working-directory` = "head"
+        run = """
+        cargo test --profile ci -p vize_croquis_cf
+        cargo clippy -p vize_croquis_cf --lib --tests -- -D warnings
+
+        """
+      }
+      new Dynamic {
+        name = "Compare controlled production storage and traversal"
+        run = "node head/tools/benchmarks/scripts/string-storage.ts measure"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "string-storage-${{ matrix.repetition }}"
+          path = """
+          reports/
+          head/target/base/criterion/
+          head/target/head/criterion/
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

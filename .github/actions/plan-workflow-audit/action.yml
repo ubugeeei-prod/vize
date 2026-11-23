@@ -1,0 +1,8 @@
+name: Plan workflow security audit
+description: Check the complete pull request file list at a stable revision
+outputs:
+  audit:
+    description: Whether the workflow security audit is required
+runs:
+  using: node24
+  main: plan.ts

@@ -1,0 +1,25 @@
+import "../../Actions.pkl" as ci
+
+name = "WASM release build check"
+needs = "pr-source-plan"
+`runs-on` = "${{ contains(fromJSON(needs.pr-source-plan.outputs.rust-plan).packages, 'vize_vitrine') && 'blacksmith-32vcpu-ubuntu-2404' || 'ubuntu-24.04' }}"
+`timeout-minutes` = 20
+env {
+  CARGO_BUILD_JOBS = "24"
+  AFFECTED = "${{ contains(fromJSON(needs.pr-source-plan.outputs.rust-plan).packages, 'vize_vitrine') }}"
+}
+steps = new Listing {
+  new Dynamic {
+    name = "Explain unaffected skip"
+    `if` = "${{ env.AFFECTED != 'true' }}"
+    run = #"echo 'The WASM release crate depends on no changed Rust package.' >> "$GITHUB_STEP_SUMMARY""#
+  }
+  new Dynamic {
+    uses = ci.checkout
+    `if` = "${{ env.AFFECTED == 'true' }}"
+  }
+  new Dynamic {
+    uses = "./.github/actions/check-wasm-release"
+    `if` = "${{ env.AFFECTED == 'true' }}"
+  }
+}

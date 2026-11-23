@@ -1,0 +1,1 @@
+uses = "./.github/workflows/level-dependencies.yml"

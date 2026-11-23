@@ -1,4 +1,4 @@
-name: CI walltime comparison
+name: Benchmark - CI wall time
 run-name: CI walltime comparison @ ${{ github.sha }}
 on:
   pull_request:

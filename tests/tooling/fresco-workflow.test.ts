@@ -32,6 +32,7 @@ type WorkflowJob = {
 };
 
 type WorkflowStep = {
+  env?: Record<string, unknown>;
   if?: string;
   "continue-on-error"?: boolean;
   name?: string;
@@ -107,12 +108,26 @@ test("repeated Fresco and storage measurements stay outside ordinary PR and queu
     assert.equal(storage.on.workflow_dispatch.inputs[sha].type, "string");
   }
   assert.deepEqual(storage.jobs["bounded-storage"].strategy.matrix.repetition, [1, 2, 3]);
+  const checkout = workflowUsesStep(storage.jobs["bounded-storage"], "actions/checkout@");
+  assert.equal(checkout.with?.ref, "${{ github.sha }}");
+  assert.equal(checkout.with?.path, "head");
   const validate = workflowStep(
     storage.jobs["bounded-storage"],
     "Validate exact commits and use identical benchmark harness",
   );
-  assert.match(validate.run ?? "", /\[\[ "\$HEAD_SHA" == "\$DISPATCH_SHA" \]\]/);
-  assert.match(validate.run ?? "", /merge-base --is-ancestor "\$BASE_SHA" "\$HEAD_SHA"/);
+  assert.equal(validate.run, "node head/tools/benchmarks/scripts/string-storage.ts prepare");
+  assert.deepEqual(validate.env, {
+    BASE_SHA: "${{ inputs.base_sha }}",
+    HEAD_SHA: "${{ inputs.head_sha }}",
+    DISPATCH_SHA: "${{ github.sha }}",
+  });
+  assert.equal(
+    workflowStep(
+      storage.jobs["bounded-storage"],
+      "Compare controlled production storage and traversal",
+    ).run,
+    "node head/tools/benchmarks/scripts/string-storage.ts measure",
+  );
 });
 
 test("affected Fresco conformance keeps NAPI compilation, strict lints and consumer checks daily", () => {

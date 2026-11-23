@@ -1,0 +1,220 @@
+import "../../Actions.pkl" as ci
+
+name = "Native operational incident trace"
+on {
+  pull_request {
+    branches = List("main")
+    paths = new Listing {
+      ".github/scripts/native-ops-driver.ts"
+      ".github/scripts/native-ops-data.ts"
+      ".github/workflows/native-ops-incident.yml"
+      "tests/tooling/native-ops-workflow.test.ts"
+    }
+  }
+  workflow_dispatch {
+    inputs {
+      authorization {
+        description = "Root-reviewed one replay only; never product qualification."
+        type = "choice"
+        required = true
+        ["default"] = "not-authorized"
+        options = List("not-authorized", "reviewed-one-replay")
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "native-ops-710-original-once"
+  `cancel-in-progress` = false
+}
+
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+
+jobs {
+  `observer-control` {
+    `if` = "${{ github.event_name == 'pull_request' }}"
+    name = "Short-lived native observer control only"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with { `node-version` = "24.14.0" }
+      }
+      new Dynamic {
+        name = "Install debugger for synthetic-only hosted controls"
+        run = """
+        sudo apt-get update
+        sudo apt-get install --no-install-recommends --no-upgrade gdb
+
+        """
+      }
+      new Dynamic {
+        name = "Require and record synthetic diagnostic tools"
+        run = """
+        command -v gdb
+        command -v cc
+        mkdir -p "$RUNNER_TEMP/native-ops-pr-private"
+        gdb --version > "$RUNNER_TEMP/native-ops-pr-private/gdb-version.txt"
+        cc --version > "$RUNNER_TEMP/native-ops-pr-private/cc-version.txt"
+        dpkg-query --show gdb libc6 > "$RUNNER_TEMP/native-ops-pr-private/package-versions.txt"
+
+        """
+      }
+      new Dynamic {
+        name = "Validate actual fork, exec, thread and signal propagation"
+        run = #"node .github/scripts/native-ops-driver.ts control "$RUNNER_TEMP/native-ops-pr-private""#
+      }
+      new Dynamic {
+        name = "Seal public control projection independently"
+        id = "public-control"
+        `if` = "always()"
+        run = #"node .github/scripts/native-ops-driver.ts publish "$RUNNER_TEMP/native-ops-pr-private" "$RUNNER_TEMP/native-ops-pr-public""#
+      }
+      new Dynamic {
+        name = "Preserve sealed control-only observations"
+        `if` = "${{ always() && steps.public-control.outcome == 'success' }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "native-ops-control-only-${{ github.run_id }}"
+          path = "${{ runner.temp }}/native-ops-pr-public/"
+          `if-no-files-found` = "error"
+        }
+      }
+    }
+  }
+
+  `forensic-only` {
+    `if` = "${{ github.event_name == 'workflow_dispatch' && inputs.authorization == 'reviewed-one-replay' && github.run_attempt == 1 }}"
+    name = "Unchanged 710 builders with event-stop observation"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 35
+    env {
+      NODE_OPTIONS = "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      CARGO_BUILD_JOBS = "12"
+      VIZE_JS_PACKAGE_GROUP = "builders"
+    }
+    steps = new Listing {
+      new Dynamic {
+        name = "Check out the reviewed observer orchestration"
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      new Dynamic {
+        name = "Preserve reviewed helpers outside the tested source checkout"
+        run = """
+        mkdir "$RUNNER_TEMP/native-ops-harness"
+        cp .github/scripts/native-ops-driver.ts .github/scripts/native-ops-data.ts "$RUNNER_TEMP/native-ops-harness/"
+        sha256sum "$RUNNER_TEMP/native-ops-harness/"*.ts
+
+        """
+      }
+      new Dynamic {
+        name = "Check out the exact original failing source"
+        uses = ci.checkout
+        with {
+          ref = "710dfca619c82d76078a72ee64629632c798dea5"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Verify source and record read-only runner context"
+        run = """
+        test "$(git rev-parse HEAD)" = 710dfca619c82d76078a72ee64629632c798dea5
+        mkdir "$RUNNER_TEMP/native-ops-private"
+        uname -a > "$RUNNER_TEMP/native-ops-private/uname.txt"
+        cat /proc/self/limits > "$RUNNER_TEMP/native-ops-private/initial-limits.txt"
+        cat /proc/cpuinfo > "$RUNNER_TEMP/native-ops-private/cpuinfo.txt"
+
+        """
+      }
+      ci.use("./.github/actions/cache-vp-bootstrap")
+      new Dynamic {
+        uses = ci.setupVp121
+        // Matches the actual old VP image, not a product dependency change.
+        with {
+          version = "1.4.0"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = false
+        }
+      }
+      ci.rust("stable")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "test-js-packages"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Install the unchanged original JS package group dependencies"
+        run = #"node tools/support/compat/github/install-js-checks.ts "$VIZE_JS_PACKAGE_GROUP""#
+      }
+      new Dynamic {
+        name = "Require existing diagnostic tools without changing runtime packages"
+        run = """
+        command -v gdb
+        command -v cc
+        gdb --version > "$RUNNER_TEMP/native-ops-private/gdb-version.txt"
+        cc --version > "$RUNNER_TEMP/native-ops-private/control-cc-version.txt"
+
+        """
+      }
+      new Dynamic {
+        name = "Prove short fork, exec, thread and original signal propagation"
+        run = #"node "$RUNNER_TEMP/native-ops-harness/native-ops-driver.ts" control "$RUNNER_TEMP/native-ops-private/control""#
+      }
+      new Dynamic {
+        name = "Run the original source command once"
+        run = #"""
+        node "$RUNNER_TEMP/native-ops-harness/native-ops-driver.ts" original \
+          "$RUNNER_TEMP/native-ops-private/original" \
+          "$RUNNER_TEMP/native-ops-private/control/control-complete.json"
+
+        """#
+      }
+      new Dynamic {
+        name = "Seal a public projection independently of the tracing process"
+        id = "public-forensic"
+        `if` = "always()"
+        run = #"""
+        node "$RUNNER_TEMP/native-ops-harness/native-ops-driver.ts" publish \
+          "$RUNNER_TEMP/native-ops-private" "$RUNNER_TEMP/native-ops-public" \
+          "$RUNNER_TEMP/js-native-fault-evidence-*" \
+          "npm/native/.artifacts/native/formatter-history" \
+          "target/template-style-fixes-7905.json" \
+          "target/oxlint-original-locations-7904.json" \
+          "target/oxlint-original-project-checks-7903.json" \
+          "target/oxlint-script-safe-carrier-7903.json" \
+          "target/oxlint-original-html-binding-7903" \
+          "target/vize-tests/original-sfc-host-7004-7005-*"
+
+        """#
+      }
+      new Dynamic {
+        name = "Preserve only sealed public forensic projections"
+        `if` = "${{ always() && steps.public-forensic.outcome == 'success' }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "native-ops-forensic-only-710-${{ github.run_id }}-${{ github.run_attempt }}"
+          path = "${{ runner.temp }}/native-ops-public/"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

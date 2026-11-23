@@ -1,0 +1,64 @@
+import "../../Actions.pkl" as ci
+
+name = "Smoke Linux GNU on old glibc - ${{ matrix.platform }}"
+needs = List("version", "build-packages", "build-native", "build-cli")
+`if` = "needs.version.outputs.ref != ''"
+`runs-on` = "${{ matrix.runner }}"
+`timeout-minutes` = 30
+strategy {
+  `fail-fast` = false
+  matrix {
+    include = new Listing {
+      new Dynamic {
+        runner = ci.linux
+        target = "x86_64-unknown-linux-gnu"
+        platform = "linux-x64-gnu"
+      }
+      new Dynamic {
+        runner = "blacksmith-32vcpu-ubuntu-2404-arm"
+        target = "aarch64-unknown-linux-gnu"
+        platform = "linux-arm64-gnu"
+      }
+    }
+  }
+}
+steps = new Listing {
+  ci.checkoutAt("${{ needs.version.outputs.ref }}")
+  new Dynamic {
+    uses = "./.github/actions/setup-runtime-package-managers"
+    with { `node-version-file` = "package.json" }
+  }
+  ci.use("./.github/actions/release-npm-artifacts")
+  new Dynamic {
+    uses = "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c"  // v8.0.1
+    with {
+      name = "cli-${{ matrix.target }}"
+      path = ".artifacts/cli-archive"
+    }
+  }
+  new Dynamic {
+    name = "Unpack the release CLI"
+    env {
+      TARGET = "${{ matrix.target }}"
+      PLATFORM = "${{ matrix.platform }}"
+    }
+    run = #"""
+    mkdir -p .artifacts/cli
+    tar -xzf ".artifacts/cli-archive/vize-$TARGET.tar.gz" -C .artifacts/cli
+    node tools/commands/ci/github/verify-glibc-symbols.ts .artifacts/cli/vize \
+      "npm/native/npm/$PLATFORM/vize-vitrine.$PLATFORM.node"
+
+    """#
+  }
+  new Dynamic {
+    uses = "./.github/actions/smoke-glibc-floor-containers"
+    with { platform = "${{ matrix.platform }}" }
+  }
+  new Dynamic {
+    uses = "./.github/actions/smoke-glibc-floor-containers"
+    with {
+      platform = "${{ matrix.platform }}"
+      cli = ".artifacts/cli/vize"
+    }
+  }
+}

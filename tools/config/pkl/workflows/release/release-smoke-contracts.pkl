@@ -1,0 +1,260 @@
+import "../../Actions.pkl" as ci
+
+name = "Release smoke contracts"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/release-smoke-contracts.yml"
+      ".github/workflows/release.yml"
+      ".github/actions/release-npm-artifacts/**"
+      ".github/actions/setup-runtime-package-managers/**"
+      "tools/commands/release/npm/smoke-release-install.ts"
+      "tools/support/release/smoke_release_install/**"
+      "tools/support/compat/npm/smoke-*"
+      "tools/support/compat/github/legacy-fix-fixture-report.ts"
+      "tools/support/compat/github/native-beta-dto-fixtures.ts"
+      "tools/support/compat/github/report-legacy-fix-fixtures.ts"
+      "npm/cli/**"
+      "npm/native/**"
+      "npm/builder/vite/**"
+      "npm/linter/oxlint/**"
+      "crates/vize_carton/src/config/loader/js/runtime_file.rs"
+      "crates/vize_carton/src/config/loader/js/runtime_file/tests.rs"
+      "tests/tooling/release/release-smoke-*"
+      "tests/tooling/legacy-fix-fixture-report.test.ts"
+      "tests/tooling/support/release-smoke-*"
+      "tests/tooling/github-workflows-release-build.test.ts"
+      "tests/tooling/release/release-workflow.test.ts"
+      "tests/tooling/native-build-token.test.ts"
+      "tests/tooling/native-binding-identity.test.ts"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "release-smoke-contracts-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+jobs {
+  `bun-planner` {
+    name = "Shared source planner on Bun 1.3.14"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.use("./.github/actions/setup-runtime-package-managers")
+      new Dynamic {
+        name = "Execute the shared planner contract through Bun"
+        shell = "bash"
+        run = #"""
+        for phase in cold warm; do
+          /usr/bin/time --verbose --output="$RUNNER_TEMP/bun-planner-$phase.txt" \
+            bun test tests/tooling/legacy-fix-fixture-report.test.ts
+        done
+        cat "$RUNNER_TEMP"/bun-planner-*.txt
+
+        """#
+      }
+      new Dynamic {
+        name = "Retain Bun planner timing and RSS"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "bun-planner-performance"
+          path = "${{ runner.temp }}/bun-planner-*.txt"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+
+  `node-planner-baseline` {
+    name = "Shared source planner on Node 24.14.0"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.use("./.github/actions/setup-runtime-package-managers")
+      new Dynamic {
+        name = "Execute the shared planner baseline through Node"
+        shell = "bash"
+        run = #"""
+        for phase in cold warm; do
+          /usr/bin/time --verbose --output="$RUNNER_TEMP/node-planner-$phase.txt" \
+            node --test tests/tooling/legacy-fix-fixture-report.test.ts
+        done
+        cat "$RUNNER_TEMP"/node-planner-*.txt
+
+        """#
+      }
+      new Dynamic {
+        name = "Retain Node planner timing and RSS"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "node-planner-performance"
+          path = "${{ runner.temp }}/node-planner-*.txt"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+
+  `bun-products` {
+    name = "Packed products on Bun 1.3.14"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.use("./.github/actions/setup-runtime-package-managers")
+      ci.rust("stable")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "bun-products"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Install product build dependencies"
+        shell = "bash"
+        run = "vp install --frozen-lockfile --prefer-offline --filter . --filter '@vize/tools' --filter './npm/native...' --filter './npm/cli...' --filter './npm/builder/vite...' --filter './npm/linter/oxlint...'"
+      }
+      new Dynamic {
+        name = "Build native provider and Bun-facing packages"
+        shell = "bash"
+        run = """
+        vp run --filter './npm/native' build:ci
+        node tools/support/github/stage-built-native-packages.ts npm/native
+        vp run --filter './npm/cli' build
+        vp run --filter './npm/builder/vite' build
+        vp run --filter './npm/linter/oxlint' build
+
+        """
+      }
+      new Dynamic {
+        name = "Compare packed Node and Bun product behavior"
+        shell = "bash"
+        run = "node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks --bun-runtime-checks npm/native npm/native/npm/* npm/cli npm/builder/vite npm/linter/oxlint"
+      }
+    }
+  }
+
+  contracts {
+    name = "Release smoke contracts (${{ matrix.os }})"
+    `runs-on` = "${{ matrix.os }}"
+    `timeout-minutes` = 15
+    strategy {
+      `fail-fast` = false
+      matrix {
+        os = new Listing {
+          ci.linux
+          "${{ vars.VIZE_RELEASE_MACOS_RUNNER || 'blacksmith-12vcpu-macos-15' }}"
+          ci.windows
+        }
+      }
+    }
+    steps = new Listing {
+      new Dynamic {
+        uses = ci.checkout
+        with { `persist-credentials` = false }
+      }
+      ci.use("./.github/actions/setup-runtime-package-managers")
+      ci.rust("stable")
+      new Dynamic {
+        uses = "Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32"  // v2
+        with {
+          `shared-key` = "config-runtime-storage-${{ runner.os }}-${{ runner.arch }}"
+          `cache-workspace-crates` = "true"
+        }
+      }
+      new Dynamic {
+        name = "Verify owned config runtime storage and locking"
+        shell = "bash"
+        run = "cargo test --locked -p vize_carton --lib runtime_file::tests -- --nocapture"
+      }
+      new Dynamic {
+        name = "Measure config runtime storage lifecycle"
+        `if` = "runner.os == 'Linux'"
+        shell = "bash"
+        run = #"""
+        for round in 1 2 3; do
+          if (( round % 2 == 1 )); then
+            lanes=(base head)
+          else
+            lanes=(head base)
+          fi
+          order="${lanes[0]}-${lanes[1]}"
+          for position in 0 1; do
+            lane="${lanes[$position]}"
+            VIZE_RUNTIME_BENCH_LANE="$lane" \
+              VIZE_RUNTIME_BENCH_ROUND="$round" \
+              VIZE_RUNTIME_BENCH_ORDER="$order" \
+              VIZE_RUNTIME_BENCH_SAMPLES=21 \
+              VIZE_RUNTIME_BENCH_ITERATIONS=64 \
+              VIZE_RUNTIME_BENCH_OUTPUT="$RUNNER_TEMP/config-runtime-$round-$position-$lane.json" \
+              /usr/bin/time --verbose --output="$RUNNER_TEMP/config-runtime-$round-$position-$lane.time.txt" \
+              cargo test --locked -p vize_carton --lib runtime_storage_benchmark \
+                -- --ignored --nocapture
+          done
+        done
+        cat "$RUNNER_TEMP"/config-runtime-*.json "$RUNNER_TEMP"/config-runtime-*.time.txt
+
+        """#
+      }
+      new Dynamic {
+        name = "Retain config runtime storage counts and timings"
+        `if` = "${{ !cancelled() && runner.os == 'Linux' }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "config-runtime-storage-${{ github.sha }}-${{ github.run_attempt }}-${{ runner.os }}"
+          path = """
+          ${{ runner.temp }}/config-runtime-*.json
+          ${{ runner.temp }}/config-runtime-*.time.txt
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+      new Dynamic {
+        name = "Install source contract dependencies"
+        shell = "bash"
+        run = "vp install --frozen-lockfile --prefer-offline --filter vize-workspace --filter '@vize/tests' --filter '@vize/tools' --ignore-scripts"
+      }
+      new Dynamic {
+        name = "Require the stable Node release smoke contracts"
+        shell = "bash"
+        run = "node --test tests/tooling/release/release-smoke-parity-peer-copy.test.ts tests/tooling/release/release-smoke-install.test.ts tests/tooling/release/release-smoke-runtime-oracle.test.ts tests/tooling/release/release-smoke-typescript-runtime.test.ts"
+      }
+      new Dynamic {
+        name = "Require installed public native image and existing image-token laws"
+        shell = "bash"
+        run = "node --test tests/tooling/release/release-smoke-public-native.test.ts tests/tooling/native-build-token.test.ts tests/tooling/native-binding-identity.test.ts"
+      }
+      new Dynamic {
+        name = "Require release caller and fresh-project workflow wiring"
+        shell = "bash"
+        run = "node --test tests/tooling/github-workflows-release-build.test.ts tests/tooling/release/release-workflow.test.ts tests/tooling/release/release-smoke-init-fresh.test.ts tests/tooling/release/release-smoke-init-toolchain.test.ts tests/tooling/release/release-smoke-init-workspace.test.ts tests/tooling/release/release-smoke-musl.test.ts"
+      }
+    }
+  }
+}

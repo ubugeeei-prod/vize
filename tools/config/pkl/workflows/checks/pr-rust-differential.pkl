@@ -1,0 +1,145 @@
+import "../../Actions.pkl" as ci
+
+name = "Required Rust differential checks"
+on {
+  workflow_call {
+    inputs {
+      `run-rust` {
+        type = "boolean"
+        required = true
+      }
+      `rust-plan` {
+        type = "string"
+        required = true
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+
+jobs {
+  differential {
+    name = "Rust product differential (${{ matrix.lane }})"
+    strategy {
+      `fail-fast` = false
+      matrix = "${{ fromJSON(inputs.rust-plan).differentialMatrix }}"
+    }
+    `if` = "${{ github.event_name == 'merge_group' && inputs.run-rust }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 15
+    env {
+      CARGO_BUILD_JOBS = "24"
+      RUST_TEST_THREADS = "4"
+      VIZE_NUXT_CONFIG_ITERATIONS = "100"
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      RUST_PLAN_JSON = "${{ inputs.rust-plan }}"
+      TEST_CASES_JOB = "Rust product differential (${{ matrix.lane }})"
+      VIZE_TEST_CASES = "test-cases-rust-differential-${{ matrix.lane }}.json"
+    }
+    steps = new Listing {
+      ci.use(ci.checkout)
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          components = "clippy"
+          toolchain = "1.100.0"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      ci.use("./.github/actions/cache-vp-bootstrap")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "clippy-test"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.command("Install Pkl CLI", "npm install --global @pkl-community/pkl@0.27.2")
+      new Dynamic {
+        name = "Install product oracle dependencies"
+        run = "node tools/support/github/vp-install.ts --filter vize-workspace --filter './tests...' --filter './npm/ui...'"
+      }
+      new Dynamic {
+        name = "Hydrate pinned Element Plus fixture"
+        `if` = "${{ matrix.lane == 'program' || matrix.lane == 'sfc-project' || matrix.lane == 'navigation' }}"
+        run = "git submodule update --init --depth 1 -- tests/_fixtures/_git/element-plus"
+      }
+      new Dynamic {
+        name = "Materialize affected Rust plan"
+        run = #"node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'"#
+      }
+      new Dynamic {
+        name = "Run affected feature and production corpora"
+        `if` = "${{ matrix.lane != 'navigation' && matrix.lane != 'none' }}"
+        env { DIFFERENTIAL_LANE = "${{ matrix.lane }}" }
+        run = #"node tools/support/compat/github/rust-differential-lanes.ts "$DIFFERENTIAL_LANE" "$RUNNER_TEMP/rust-plan.json""#
+      }
+      new Dynamic {
+        name = "Test native Program and Vue navigation responses"
+        id = "navigation"
+        `if` = "${{ matrix.lane == 'navigation' }}"
+        uses = "./.github/actions/test-native-navigation"
+      }
+      new Dynamic {
+        name = "Record native navigation case"
+        `if` = "${{ always() && matrix.lane == 'navigation' }}"
+        env {
+          NAVIGATION_OUTCOME = "${{ steps.navigation.outcome == 'success' && 'passed' || (steps.navigation.outcome == 'skipped' && 'skipped' || 'failed') }}"
+        }
+        run = #"node tools/support/compat/github/rust-test-cases.ts record --label "Native Program and Vue navigation responses" --path crates/vize_maestro --outcome "$NAVIGATION_OUTCOME""#
+      }
+      new Dynamic {
+        name = "Require Rust differential test cases"
+        id = "cases"
+        `if` = "${{ !cancelled() && matrix.lane != 'none' }}"
+        run = #"test -s "$VIZE_TEST_CASES""#
+      }
+      new Dynamic {
+        name = "Upload Rust differential test cases"
+        `if` = "${{ !cancelled() && steps.cases.outcome == 'success' }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "test-cases-rust-differential-${{ matrix.lane }}-${{ github.run_attempt }}"
+          path = "${{ env.VIZE_TEST_CASES }}"
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+        }
+      }
+      new Dynamic {
+        name = "Retain complete SFC runtime child outcomes"
+        `if` = "${{ always() }}"
+        uses = ci.uploadArtifact
+        with {
+          name = "vapor-sfc-runtime-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}-${{ matrix.lane }}"
+          path = """
+          target/nextest/*/vapor-sfc/
+          target/nextest/*/ssr-nested-dynamic-arguments/
+          target/nextest/*/ssr-v-pre-boundaries/
+          target/nextest/*/ssr-component-camel-boundaries/
+          target/nextest/*/ssr-literal-slot-boundaries/
+
+          """
+          `if-no-files-found` = "ignore"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,170 @@
+steps = new Listing {
+  new Dynamic {
+    name = "Test complete native snapshot text and owner refusals"
+    shell = "bash"
+    env {
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR = "${{ runner.temp }}/native-snapshot-source"
+    }
+    run = """
+    unset VIZE_TEST_DISABLE_TSGO
+    cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::tests::native::actual_native_snapshot_retains_complete_stdlib_and_overlay_text_with_owner_refusals -- --ignored --exact --nocapture
+
+    """
+  }
+  new Dynamic {
+    name = "Test real compiler-kind diagnostics against complete native pull packets"
+    shell = "bash"
+    env {
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR = "${{ runner.temp }}/native-snapshot-source"
+    }
+    run = #"""
+    set -euo pipefail
+    unset VIZE_TEST_DISABLE_TSGO
+    capture="$VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR/compiler-kinds"
+    mkdir -p "$capture"
+    set +e
+    cargo test --locked --profile ci -p vize_canon --lib lsp_client::editor_lsp::snapshot_source::tests::native::actual_native_compiler_kind_reads_match_whole_ts_and_generated_vue_pull_packets -- --ignored --exact --nocapture --color never >"$capture/test.stdout" 2>"$capture/test.stderr"
+    status=$?
+    set -e
+    printf '%s\n' "$status" >"$capture/test.status"
+    cat "$capture/test.stdout"
+    cat "$capture/test.stderr" >&2
+    node --input-type=module - "$capture" <<'NODE'
+    import { readFileSync, writeFileSync } from 'node:fs';
+    import { createHash } from 'node:crypto';
+    import { execFileSync } from 'node:child_process';
+    import { join } from 'node:path';
+    const directory = process.argv[2];
+    const stdout = readFileSync(join(directory, 'test.stdout'));
+    const stderr = readFileSync(join(directory, 'test.stderr'));
+    const status = Number(readFileSync(join(directory, 'test.status'), 'utf8').trim());
+    const name = 'lsp_client::editor_lsp::snapshot_source::tests::native::actual_native_compiler_kind_reads_match_whole_ts_and_generated_vue_pull_packets';
+    const executed = stdout.toString('utf8').includes(`test ${name} ... ok`) && /^test result: ok\. 1 passed; 0 failed; 0 ignored; /m.test(stdout.toString('utf8')) ? 1 : 0;
+    const digest = bytes => createHash('sha256').update(bytes).digest('hex');
+    writeFileSync(join(directory, 'test-run.json'), JSON.stringify({
+      source: execFileSync('git', ['rev-parse', 'HEAD'], {encoding: 'utf8'}).trim(),
+      githubSha: process.env.GITHUB_SHA, run: process.env.GITHUB_RUN_ID, attempt: process.env.GITHUB_RUN_ATTEMPT,
+      status, executed, name, stdoutSha256: digest(stdout), stderrSha256: digest(stderr)
+    }, null, 2) + '\n');
+    if (status !== 0) process.exit(status);
+    if (executed !== 1) throw new Error('exact compiler-kind law did not execute once successfully');
+    for (const file of ['provider.json', 'source.ts.json', 'View.vue.ts.json']) {
+      JSON.parse(readFileSync(join(directory, file), 'utf8'));
+    }
+    NODE
+
+    """#
+  }
+  new Dynamic {
+    name = "Test legacy projection anchors and complete diagnostic ranges"
+    shell = "bash"
+    env { VIZE_DAVINCI_DIFFERENTIAL_CORPUS = "${{ github.workspace }}" }
+    run = "cargo test --locked --profile ci -p vize_canon --features legacy-differential --test davinci_projection_differential -- --nocapture"
+  }
+  new Dynamic {
+    name = "Test complete model event overload contracts with the native checker"
+    shell = "bash"
+    env { VIZE_TEST_REQUIRE_TSGO = "1" }
+    run = """
+    unset VIZE_TEST_DISABLE_TSGO
+    cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::generic_component_listener_payload::overload_depth::emit_overload_tail_accumulator_preserves_shapes_and_all_events -- --exact --nocapture
+
+    """
+  }
+  new Dynamic {
+    name = "Test declared public-instance member types with the native checker"
+    shell = "bash"
+    env {
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR = "${{ runner.temp }}/native-snapshot-source"
+    }
+    run = """
+    unset VIZE_TEST_DISABLE_TSGO
+    cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::setup_custom_properties::custom_property_member_types_and_native_type_queries_remain_exact -- --exact --nocapture
+
+    """
+  }
+  new Dynamic {
+    name = "Test capture-free component instances with exact native member diagnostics"
+    shell = "bash"
+    env {
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_UNKNOWN_COMPAT_CAPTURE = "${{ runner.temp }}/capture-free-instance"
+    }
+    run = """
+    unset VIZE_TEST_DISABLE_TSGO
+    cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::component_render_h_props:: -- --nocapture
+
+    """
+  }
+  new Dynamic {
+    name = "Test authored Options API module augmentations with the native checker"
+    shell = "bash"
+    env {
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR = "${{ runner.temp }}/native-snapshot-source"
+    }
+    run = """
+    unset VIZE_TEST_DISABLE_TSGO
+    cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::options_api_global_augmentation::authored_options_methods_keep_module_augmentations_typed -- --exact --nocapture
+
+    """
+  }
+  new Dynamic {
+    name = "Test plain Options API globals and record selected dialect observations"
+    shell = "bash"
+    env {
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR = "${{ runner.temp }}/native-snapshot-source"
+    }
+    run = """
+    unset VIZE_TEST_DISABLE_TSGO
+    cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::plain_options_global_augmentation::plain_options_module_augmentations_keep_modern_this_typed -- --exact --nocapture
+
+    """
+  }
+  new Dynamic {
+    name = "Test repeated loop source reads and public-instance alias shadowing"
+    shell = "bash"
+    env { VIZE_TEST_REQUIRE_TSGO = "1" }
+    run = """
+    unset VIZE_TEST_DISABLE_TSGO
+    cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::setup_custom_properties::loop_sources_keep_authored_reads_and_parent_scope -- --exact --nocapture
+
+    """
+  }
+  new Dynamic {
+    name = "Test typed legacy mixin methods without erasing native findings"
+    shell = "bash"
+    env {
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR = "${{ runner.temp }}/native-snapshot-source"
+    }
+    run = """
+    set -euo pipefail
+    unset VIZE_TEST_DISABLE_TSGO
+    cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::options_api_inherited_members:: -- --nocapture
+    cargo test --locked --profile ci -p vize_canon --features legacy --lib batch::type_checker::tests::recent_issues::legacy_js_mixin_receiver:: -- --nocapture
+    cargo test --locked --profile ci -p vize_canon --lib virtual_ts::generator::options_api_bridge::inherited::tests::native_mixin_method_laws_preserve_opaque_and_constructor_types -- --exact --nocapture
+
+    """
+  }
+  new Dynamic {
+    name = "Test typed external props in the selected legacy dialect"
+    shell = "bash"
+    env {
+      VIZE_TEST_REQUIRE_TSGO = "1"
+      VIZE_SNAPSHOT_SOURCE_CAPTURE_DIR = "${{ runner.temp }}/native-snapshot-source"
+    }
+    run = """
+    set -euo pipefail
+    unset VIZE_TEST_DISABLE_TSGO
+    cargo test --locked --profile ci -p vize_canon --lib batch::type_checker::tests::recent_issues::legacy_external_component_props:: -- --nocapture
+    cargo test --locked --profile ci -p vize_canon --lib virtual_ts::legacy_vue2_vuetify_tests:: -- --nocapture --test-threads=1
+    cargo test --locked --profile ci -p vize_canon --lib virtual_ts::scope::inline_callback_classifier:: -- --nocapture
+
+    """
+  }
+}

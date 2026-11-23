@@ -1,0 +1,323 @@
+import "../Actions.pkl" as ci
+
+name = "Native static Vapor runtime"
+description = "Capture genuine original modules and maps and execute the pinned Vapor runtime"
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Test original Vapor modules, maps, and refusals"
+      shell = "bash"
+      env {
+        VIZE_NATIVE_VAPOR_CAPTURE = "${{ runner.temp }}/native-vapor-modules.json"
+        VIZE_NATIVE_VAPOR_RUNTIME_CAPTURE = "${{ runner.temp }}/native-vapor-runtime.json"
+        VIZE_NATIVE_VAPOR_CLASS_RUNTIME_CAPTURE = "${{ runner.temp }}/native-vapor-class-runtime"
+        VIZE_NATIVE_VAPOR_SFC_CAPTURE = "${{ runner.temp }}/native-vapor-sfc-modules.json"
+        VIZE_NATIVE_VAPOR_SFC_RUNTIME_CAPTURE = "${{ runner.temp }}/native-vapor-sfc-runtime.json"
+        VIZE_NATIVE_VAPOR_PRIMARY_LIFECYCLE_CAPTURE = "${{ runner.temp }}/native-vapor-primary-lifecycle.json"
+        VIZE_NATIVE_VAPOR_PROCESS_CAPTURE = "${{ runner.temp }}/native-vapor-processes.jsonl"
+        VIZE_NATIVE_VAPOR_SETUP_SFC_CAPTURE = "${{ runner.temp }}/native-vapor-setup-sfc-modules.json"
+        VIZE_NATIVE_VAPOR_SETUP_SFC_RUNTIME_CAPTURE = "${{ runner.temp }}/native-vapor-setup-sfc-runtime.json"
+        VIZE_JSX_VAPOR_SLOTS_CAPTURE = "${{ runner.temp }}/jsx-runtime-slots-vapor.json"
+        VIZE_NATIVE_VAPOR_REQUIRE_CAPTURE = "1"
+      }
+      run = """
+      cargo test --locked --profile ci -p vize_l4 --test native_vapor
+      test -s "$VIZE_NATIVE_VAPOR_CAPTURE"
+      vp node --test tests/tooling/native-vapor-reference.test.mjs
+      test -s "$VIZE_NATIVE_VAPOR_RUNTIME_CAPTURE"
+      test -s "$VIZE_NATIVE_VAPOR_CAPTURE.class-cases.json"
+      vp node --test tests/tooling/native-vapor-static-class-reference.test.mjs
+      test -s "$VIZE_NATIVE_VAPOR_CLASS_RUNTIME_CAPTURE.development.stdout"
+      test -s "$VIZE_NATIVE_VAPOR_CLASS_RUNTIME_CAPTURE.production.stdout"
+      cargo test --locked --profile ci -p vize_atelier_sfc --test native_vapor_sfc
+      test -s "$VIZE_NATIVE_VAPOR_SFC_CAPTURE"
+      vp node --test tests/tooling/native-vapor-sfc-reference.test.mjs
+      test -s "$VIZE_NATIVE_VAPOR_SFC_RUNTIME_CAPTURE"
+      test -s "$VIZE_NATIVE_VAPOR_PRIMARY_LIFECYCLE_CAPTURE"
+      test -s "$VIZE_NATIVE_VAPOR_PROCESS_CAPTURE"
+      cargo test --locked --profile ci -p vize_atelier_sfc --test native_vapor_setup_sfc
+      test -s "$VIZE_NATIVE_VAPOR_SETUP_SFC_CAPTURE"
+      vp node --test tests/tooling/native-vapor-setup-sfc-reference.test.mjs
+      test -s "$VIZE_NATIVE_VAPOR_SETUP_SFC_RUNTIME_CAPTURE"
+      cargo test --locked --profile ci -p vize_atelier_jsx --test v_slots_forwarding
+      test -s "$VIZE_JSX_VAPOR_SLOTS_CAPTURE"
+      vp node --test tests/tooling/jsx-runtime-slots-vapor.test.mjs
+      test -s "$VIZE_JSX_VAPOR_SLOTS_CAPTURE.runtime.json"
+
+      """
+    }
+    new Dynamic {
+      name = "Capture original input Models with the real inline Vapor runtime"
+      id = "native-input-model-vapor"
+      `if` = "${{ !cancelled() }}"
+      shell = "bash"
+      env {
+        VIZE_NATIVE_ORIGINAL_INPUT_MODEL_VAPOR_CAPTURE = "${{ runner.temp }}/native-original-input-model-vapor-capture.json"
+        VIZE_NATIVE_ORIGINAL_INPUT_MODEL_VAPOR_REQUIRE_CAPTURE = "1"
+        VIZE_NATIVE_ORIGINAL_INPUT_MODEL_VAPOR_PRIMARY_CAPTURE = "${{ runner.temp }}/native-original-input-model-vapor-primary"
+        VIZE_NATIVE_ORIGINAL_INPUT_MODEL_VAPOR_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-input-model-vapor-runtime"
+      }
+      run = #"""
+      model_l3_status=0
+      cargo test --locked --profile ci -p vize_l3 --test native_model_vapor -- --nocapture || model_l3_status=$?
+      model_rust_status=0
+      cargo test --locked --profile ci -p vize_atelier_sfc --lib native_vapor_setup::tests:: -- --nocapture || model_rust_status=$?
+      model_development_status=0
+      NODE_ENV=development vp node --test tests/tooling/native-original-input-model-vapor-reference.test.ts || model_development_status=$?
+      model_production_status=0
+      NODE_ENV=production vp node --test tests/tooling/native-original-input-model-vapor-reference.test.ts || model_production_status=$?
+      printf '{"l3":%s,"rust":%s,"development":%s,"production":%s}\n' "$model_l3_status" "$model_rust_status" "$model_development_status" "$model_production_status" > "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_VAPOR_CAPTURE}.statuses.json"
+      test "$model_l3_status" -eq 0
+      test "$model_rust_status" -eq 0
+      test "$model_development_status" -eq 0
+      test "$model_production_status" -eq 0
+      test -s "$VIZE_NATIVE_ORIGINAL_INPUT_MODEL_VAPOR_CAPTURE"
+      test -s "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_VAPOR_PRIMARY_CAPTURE}.development.json"
+      test -s "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_VAPOR_PRIMARY_CAPTURE}.production.json"
+      test -s "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_VAPOR_RUNTIME_CAPTURE}.development.json"
+      test -s "${VIZE_NATIVE_ORIGINAL_INPUT_MODEL_VAPOR_RUNTIME_CAPTURE}.production.json"
+
+      """#
+    }
+    new Dynamic {
+      name = "Observe original checkbox Models with all three real runtime targets"
+      id = "native-model-checkbox"
+      `if` = "${{ !cancelled() }}"
+      shell = "bash"
+      env {
+        VIZE_NATIVE_MODEL_CHECKBOX_CAPTURE = "${{ runner.temp }}/native-original-input-model-checkbox-capture.json"
+        VIZE_NATIVE_MODEL_CHECKBOX_REQUIRE_CAPTURE = "1"
+        VIZE_NATIVE_MODEL_CHECKBOX_PRIMARY_CAPTURE = "${{ runner.temp }}/native-original-input-model-checkbox-primary"
+        VIZE_NATIVE_MODEL_CHECKBOX_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-input-model-checkbox-runtime"
+      }
+      run = #"""
+      model_checkbox_l1_status=0
+      cargo test --locked --profile ci -p vize_l1 --lib markup::htmlish::view::operand::model::tests:: -- --nocapture || model_checkbox_l1_status=$?
+      model_checkbox_l2_status=0
+      cargo test --locked --profile ci -p vize_l2 --lib file::region::native::model::tests::checkbox:: -- --nocapture || model_checkbox_l2_status=$?
+      model_checkbox_l3_status=0
+      cargo test --locked --profile ci -p vize_l3 --test native_model_lazy native_model_checkbox:: -- --nocapture || model_checkbox_l3_status=$?
+      model_checkbox_rust_status=0
+      cargo test --locked --profile ci -p vize_atelier_sfc --lib native_selected_setup::tests::original_input_model_checkbox::three_original_checkbox_models_retain_all_target_mode_attempts_before_verdict -- --exact --nocapture || model_checkbox_rust_status=$?
+      model_checkbox_dom_development_status=0
+      VIZE_NATIVE_MODEL_CHECKBOX_TARGET=dom NODE_ENV=development vp node --test tests/tooling/native-input-model-checkbox-reference.test.ts || model_checkbox_dom_development_status=$?
+      model_checkbox_dom_production_status=0
+      VIZE_NATIVE_MODEL_CHECKBOX_TARGET=dom NODE_ENV=production vp node --test tests/tooling/native-input-model-checkbox-reference.test.ts || model_checkbox_dom_production_status=$?
+      model_checkbox_ssr_development_status=0
+      VIZE_NATIVE_MODEL_CHECKBOX_TARGET=ssr NODE_ENV=development vp node --test tests/tooling/native-input-model-checkbox-reference.test.ts || model_checkbox_ssr_development_status=$?
+      model_checkbox_ssr_production_status=0
+      VIZE_NATIVE_MODEL_CHECKBOX_TARGET=ssr NODE_ENV=production vp node --test tests/tooling/native-input-model-checkbox-reference.test.ts || model_checkbox_ssr_production_status=$?
+      model_checkbox_vapor_development_status=0
+      VIZE_NATIVE_MODEL_CHECKBOX_TARGET=vapor NODE_ENV=development vp node --test tests/tooling/native-input-model-checkbox-reference.test.ts || model_checkbox_vapor_development_status=$?
+      model_checkbox_vapor_production_status=0
+      VIZE_NATIVE_MODEL_CHECKBOX_TARGET=vapor NODE_ENV=production vp node --test tests/tooling/native-input-model-checkbox-reference.test.ts || model_checkbox_vapor_production_status=$?
+      printf '{"l1":%s,"l2":%s,"l3":%s,"rust":%s,"domDevelopment":%s,"domProduction":%s,"ssrDevelopment":%s,"ssrProduction":%s,"vaporDevelopment":%s,"vaporProduction":%s}\n' "$model_checkbox_l1_status" "$model_checkbox_l2_status" "$model_checkbox_l3_status" "$model_checkbox_rust_status" "$model_checkbox_dom_development_status" "$model_checkbox_dom_production_status" "$model_checkbox_ssr_development_status" "$model_checkbox_ssr_production_status" "$model_checkbox_vapor_development_status" "$model_checkbox_vapor_production_status" > "${VIZE_NATIVE_MODEL_CHECKBOX_CAPTURE}.statuses.json"
+      for status in "$model_checkbox_l1_status" "$model_checkbox_l2_status" "$model_checkbox_l3_status" "$model_checkbox_rust_status" "$model_checkbox_dom_development_status" "$model_checkbox_dom_production_status" "$model_checkbox_ssr_development_status" "$model_checkbox_ssr_production_status" "$model_checkbox_vapor_development_status" "$model_checkbox_vapor_production_status"; do
+        test "$status" -eq 0
+      done
+      test -s "$VIZE_NATIVE_MODEL_CHECKBOX_CAPTURE"
+      for target in dom ssr vapor; do
+        for mode in development production; do
+          test -s "${VIZE_NATIVE_MODEL_CHECKBOX_PRIMARY_CAPTURE}.${target}.${mode}.json"
+          test -s "${VIZE_NATIVE_MODEL_CHECKBOX_RUNTIME_CAPTURE}.${target}.${mode}.json"
+        done
+      done
+
+      """#
+    }
+    new Dynamic {
+      name = "Observe original number Models with all three real runtime targets"
+      id = "native-model-number"
+      `if` = "${{ !cancelled() }}"
+      shell = "bash"
+      env {
+        VIZE_NATIVE_MODEL_NUMBER_CAPTURE = "${{ runner.temp }}/native-original-input-model-number-capture.json"
+        VIZE_NATIVE_MODEL_NUMBER_REQUIRE_CAPTURE = "1"
+        VIZE_NATIVE_MODEL_NUMBER_PRIMARY_CAPTURE = "${{ runner.temp }}/native-original-input-model-number-primary"
+        VIZE_NATIVE_MODEL_NUMBER_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-input-model-number-runtime"
+      }
+      run = #"""
+      model_number_l1_status=0
+      cargo test --locked --profile ci -p vize_l1 --lib markup::htmlish::view::operand::model::tests::number:: -- --nocapture || model_number_l1_status=$?
+      model_number_l2_status=0
+      cargo test --locked --profile ci -p vize_l2 --lib file::region::native::model::tests::number:: -- --nocapture || model_number_l2_status=$?
+      model_number_l3_status=0
+      cargo test --locked --profile ci -p vize_l3 --test native_model_lazy native_model_number:: -- --nocapture || model_number_l3_status=$?
+      model_number_rust_status=0
+      cargo test --locked --profile ci -p vize_atelier_sfc --lib native_selected_setup::tests::original_input_model_number::three_original_number_models_retain_all_target_mode_attempts_before_verdict -- --exact --nocapture || model_number_rust_status=$?
+      model_number_dom_development_status=0
+      VIZE_NATIVE_MODEL_NUMBER_TARGET=dom NODE_ENV=development vp node --test tests/tooling/native-input-model-number-reference.test.ts || model_number_dom_development_status=$?
+      model_number_dom_production_status=0
+      VIZE_NATIVE_MODEL_NUMBER_TARGET=dom NODE_ENV=production vp node --test tests/tooling/native-input-model-number-reference.test.ts || model_number_dom_production_status=$?
+      model_number_ssr_development_status=0
+      VIZE_NATIVE_MODEL_NUMBER_TARGET=ssr NODE_ENV=development vp node --test tests/tooling/native-input-model-number-reference.test.ts || model_number_ssr_development_status=$?
+      model_number_ssr_production_status=0
+      VIZE_NATIVE_MODEL_NUMBER_TARGET=ssr NODE_ENV=production vp node --test tests/tooling/native-input-model-number-reference.test.ts || model_number_ssr_production_status=$?
+      model_number_vapor_development_status=0
+      VIZE_NATIVE_MODEL_NUMBER_TARGET=vapor NODE_ENV=development vp node --test tests/tooling/native-input-model-number-reference.test.ts || model_number_vapor_development_status=$?
+      model_number_vapor_production_status=0
+      VIZE_NATIVE_MODEL_NUMBER_TARGET=vapor NODE_ENV=production vp node --test tests/tooling/native-input-model-number-reference.test.ts || model_number_vapor_production_status=$?
+      printf '{"l1":%s,"l2":%s,"l3":%s,"rust":%s,"domDevelopment":%s,"domProduction":%s,"ssrDevelopment":%s,"ssrProduction":%s,"vaporDevelopment":%s,"vaporProduction":%s}\n' "$model_number_l1_status" "$model_number_l2_status" "$model_number_l3_status" "$model_number_rust_status" "$model_number_dom_development_status" "$model_number_dom_production_status" "$model_number_ssr_development_status" "$model_number_ssr_production_status" "$model_number_vapor_development_status" "$model_number_vapor_production_status" > "${VIZE_NATIVE_MODEL_NUMBER_CAPTURE}.statuses.json"
+      for status in "$model_number_l1_status" "$model_number_l2_status" "$model_number_l3_status" "$model_number_rust_status" "$model_number_dom_development_status" "$model_number_dom_production_status" "$model_number_ssr_development_status" "$model_number_ssr_production_status" "$model_number_vapor_development_status" "$model_number_vapor_production_status"; do
+        test "$status" -eq 0
+      done
+      test -s "$VIZE_NATIVE_MODEL_NUMBER_CAPTURE"
+      for target in dom ssr vapor; do
+        for mode in development production; do
+          test -s "${VIZE_NATIVE_MODEL_NUMBER_PRIMARY_CAPTURE}.${target}.${mode}.json"
+          test -s "${VIZE_NATIVE_MODEL_NUMBER_RUNTIME_CAPTURE}.${target}.${mode}.json"
+        done
+      done
+
+      """#
+    }
+    new Dynamic {
+      name = "Observe original trim and lazy Models with all three real runtime targets"
+      id = "native-model-modifiers"
+      `if` = "${{ !cancelled() }}"
+      shell = "bash"
+      env {
+        VIZE_NATIVE_MODEL_MODIFIERS_CAPTURE = "${{ runner.temp }}/native-original-input-model-modifiers-capture.json"
+        VIZE_NATIVE_MODEL_MODIFIERS_REQUIRE_CAPTURE = "1"
+        VIZE_NATIVE_MODEL_MODIFIERS_PRIMARY_CAPTURE = "${{ runner.temp }}/native-original-input-model-modifiers-primary"
+        VIZE_NATIVE_MODEL_MODIFIERS_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-input-model-modifiers-runtime"
+      }
+      run = #"""
+      model_modifier_l1_status=0
+      cargo test --locked --profile ci -p vize_l1 --lib markup::htmlish::view::operand::model::tests:: -- --nocapture || model_modifier_l1_status=$?
+      model_modifier_l2_status=0
+      cargo test --locked --profile ci -p vize_l2 --lib file::region::native::model::tests:: -- --nocapture || model_modifier_l2_status=$?
+      model_modifier_l3_status=0
+      cargo test --locked --profile ci -p vize_l3 --test native_model_trim --test native_model_lazy -- --nocapture || model_modifier_l3_status=$?
+      model_modifier_rust_status=0
+      cargo test --locked --profile ci -p vize_atelier_sfc --lib native_selected_setup::tests::original_input_model_modifiers::six_original_models_retain_all_target_mode_attempts_before_verdict -- --exact --nocapture || model_modifier_rust_status=$?
+      model_modifier_dom_development_status=0
+      VIZE_NATIVE_MODEL_MODIFIERS_TARGET=dom NODE_ENV=development vp node --test tests/tooling/native-input-model-modifiers-reference.test.ts || model_modifier_dom_development_status=$?
+      model_modifier_dom_production_status=0
+      VIZE_NATIVE_MODEL_MODIFIERS_TARGET=dom NODE_ENV=production vp node --test tests/tooling/native-input-model-modifiers-reference.test.ts || model_modifier_dom_production_status=$?
+      model_modifier_ssr_development_status=0
+      VIZE_NATIVE_MODEL_MODIFIERS_TARGET=ssr NODE_ENV=development vp node --test tests/tooling/native-input-model-modifiers-reference.test.ts || model_modifier_ssr_development_status=$?
+      model_modifier_ssr_production_status=0
+      VIZE_NATIVE_MODEL_MODIFIERS_TARGET=ssr NODE_ENV=production vp node --test tests/tooling/native-input-model-modifiers-reference.test.ts || model_modifier_ssr_production_status=$?
+      model_modifier_vapor_development_status=0
+      VIZE_NATIVE_MODEL_MODIFIERS_TARGET=vapor NODE_ENV=development vp node --test tests/tooling/native-input-model-modifiers-reference.test.ts || model_modifier_vapor_development_status=$?
+      model_modifier_vapor_production_status=0
+      VIZE_NATIVE_MODEL_MODIFIERS_TARGET=vapor NODE_ENV=production vp node --test tests/tooling/native-input-model-modifiers-reference.test.ts || model_modifier_vapor_production_status=$?
+      printf '{"l1":%s,"l2":%s,"l3":%s,"rust":%s,"domDevelopment":%s,"domProduction":%s,"ssrDevelopment":%s,"ssrProduction":%s,"vaporDevelopment":%s,"vaporProduction":%s}\n' "$model_modifier_l1_status" "$model_modifier_l2_status" "$model_modifier_l3_status" "$model_modifier_rust_status" "$model_modifier_dom_development_status" "$model_modifier_dom_production_status" "$model_modifier_ssr_development_status" "$model_modifier_ssr_production_status" "$model_modifier_vapor_development_status" "$model_modifier_vapor_production_status" > "${VIZE_NATIVE_MODEL_MODIFIERS_CAPTURE}.statuses.json"
+      for status in "$model_modifier_l1_status" "$model_modifier_l2_status" "$model_modifier_l3_status" "$model_modifier_rust_status" "$model_modifier_dom_development_status" "$model_modifier_dom_production_status" "$model_modifier_ssr_development_status" "$model_modifier_ssr_production_status" "$model_modifier_vapor_development_status" "$model_modifier_vapor_production_status"; do
+        test "$status" -eq 0
+      done
+      test -s "$VIZE_NATIVE_MODEL_MODIFIERS_CAPTURE"
+      for target in dom ssr vapor; do
+        for mode in development production; do
+          test -s "${VIZE_NATIVE_MODEL_MODIFIERS_PRIMARY_CAPTURE}.${target}.${mode}.json"
+          test -s "${VIZE_NATIVE_MODEL_MODIFIERS_RUNTIME_CAPTURE}.${target}.${mode}.json"
+        done
+      done
+
+      """#
+    }
+    new Dynamic {
+      name = "Capture original trim Models with all three real runtime targets"
+      id = "native-model-trim"
+      `if` = "${{ !cancelled() }}"
+      shell = "bash"
+      env {
+        VIZE_NATIVE_MODEL_TRIM_CAPTURE = "${{ runner.temp }}/native-original-input-model-trim-capture.json"
+        VIZE_NATIVE_MODEL_TRIM_REQUIRE_CAPTURE = "1"
+        VIZE_NATIVE_MODEL_TRIM_PRIMARY_CAPTURE = "${{ runner.temp }}/native-original-input-model-trim-primary"
+        VIZE_NATIVE_MODEL_TRIM_RUNTIME_CAPTURE = "${{ runner.temp }}/native-original-input-model-trim-runtime"
+      }
+      run = #"""
+      model_trim_l1_status=0
+      cargo test --locked --profile ci -p vize_l1 --lib markup::htmlish::view::operand::model::tests:: -- --nocapture || model_trim_l1_status=$?
+      model_trim_l2_status=0
+      cargo test --locked --profile ci -p vize_l2 --lib file::region::native::model::tests:: -- --nocapture || model_trim_l2_status=$?
+      model_trim_l3_status=0
+      cargo test --locked --profile ci -p vize_l3 --test native_model_trim -- --nocapture || model_trim_l3_status=$?
+      model_trim_rust_status=0
+      cargo test --locked --profile ci -p vize_atelier_sfc --test native_input_model_trim -- --nocapture || model_trim_rust_status=$?
+      model_trim_dom_development_status=0
+      VIZE_NATIVE_MODEL_TRIM_TARGET=dom NODE_ENV=development vp node --test tests/tooling/native-input-model-trim-reference.test.ts || model_trim_dom_development_status=$?
+      model_trim_dom_production_status=0
+      VIZE_NATIVE_MODEL_TRIM_TARGET=dom NODE_ENV=production vp node --test tests/tooling/native-input-model-trim-reference.test.ts || model_trim_dom_production_status=$?
+      model_trim_ssr_development_status=0
+      VIZE_NATIVE_MODEL_TRIM_TARGET=ssr NODE_ENV=development vp node --test tests/tooling/native-input-model-trim-reference.test.ts || model_trim_ssr_development_status=$?
+      model_trim_ssr_production_status=0
+      VIZE_NATIVE_MODEL_TRIM_TARGET=ssr NODE_ENV=production vp node --test tests/tooling/native-input-model-trim-reference.test.ts || model_trim_ssr_production_status=$?
+      model_trim_vapor_development_status=0
+      VIZE_NATIVE_MODEL_TRIM_TARGET=vapor NODE_ENV=development vp node --test tests/tooling/native-input-model-trim-reference.test.ts || model_trim_vapor_development_status=$?
+      model_trim_vapor_production_status=0
+      VIZE_NATIVE_MODEL_TRIM_TARGET=vapor NODE_ENV=production vp node --test tests/tooling/native-input-model-trim-reference.test.ts || model_trim_vapor_production_status=$?
+      printf '{"l1":%s,"l2":%s,"l3":%s,"rust":%s,"domDevelopment":%s,"domProduction":%s,"ssrDevelopment":%s,"ssrProduction":%s,"vaporDevelopment":%s,"vaporProduction":%s}\n' "$model_trim_l1_status" "$model_trim_l2_status" "$model_trim_l3_status" "$model_trim_rust_status" "$model_trim_dom_development_status" "$model_trim_dom_production_status" "$model_trim_ssr_development_status" "$model_trim_ssr_production_status" "$model_trim_vapor_development_status" "$model_trim_vapor_production_status" > "${VIZE_NATIVE_MODEL_TRIM_CAPTURE}.statuses.json"
+      test "$model_trim_l1_status" -eq 0
+      test "$model_trim_l2_status" -eq 0
+      test "$model_trim_l3_status" -eq 0
+      test "$model_trim_rust_status" -eq 0
+      test "$model_trim_dom_development_status" -eq 0
+      test "$model_trim_dom_production_status" -eq 0
+      test "$model_trim_ssr_development_status" -eq 0
+      test "$model_trim_ssr_production_status" -eq 0
+      test "$model_trim_vapor_development_status" -eq 0
+      test "$model_trim_vapor_production_status" -eq 0
+      test -s "$VIZE_NATIVE_MODEL_TRIM_CAPTURE"
+      for target in dom ssr vapor; do
+        for mode in development production; do
+          test -s "${VIZE_NATIVE_MODEL_TRIM_PRIMARY_CAPTURE}.${target}.${mode}.json"
+          test -s "${VIZE_NATIVE_MODEL_TRIM_RUNTIME_CAPTURE}.${target}.${mode}.json"
+        done
+      done
+
+      """#
+    }
+    new Dynamic {
+      name = "Upload original Vapor module and runtime captures"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "native-vapor-${{ github.sha }}-${{ github.run_attempt }}"
+        path = """
+        ${{ runner.temp }}/native-vapor-modules.json
+        ${{ runner.temp }}/native-vapor-modules.json.class-successor.json
+        ${{ runner.temp }}/native-vapor-modules.json.class-cases.json
+        ${{ runner.temp }}/native-vapor-class-runtime.*
+        ${{ runner.temp }}/native-vapor-runtime.json
+        ${{ runner.temp }}/native-vapor-sfc-modules.json
+        ${{ runner.temp }}/native-vapor-sfc-runtime.json
+        ${{ runner.temp }}/native-vapor-primary-lifecycle.json
+        ${{ runner.temp }}/native-vapor-processes.jsonl
+        ${{ runner.temp }}/native-vapor-setup-sfc-modules.json
+        ${{ runner.temp }}/native-vapor-setup-sfc-runtime.json
+        ${{ runner.temp }}/jsx-runtime-slots-vapor.json
+        ${{ runner.temp }}/jsx-runtime-slots-vapor.json.runtime.json
+        ${{ runner.temp }}/native-original-input-model-vapor-capture.json
+        ${{ runner.temp }}/native-original-input-model-vapor-capture.json.statuses.json
+        ${{ runner.temp }}/native-original-input-model-vapor-primary.development.json
+        ${{ runner.temp }}/native-original-input-model-vapor-primary.production.json
+        ${{ runner.temp }}/native-original-input-model-vapor-runtime.development.json
+        ${{ runner.temp }}/native-original-input-model-vapor-runtime.production.json
+        ${{ runner.temp }}/native-original-input-model-trim-capture.json
+        ${{ runner.temp }}/native-original-input-model-trim-capture.json.statuses.json
+        ${{ runner.temp }}/native-original-input-model-trim-primary.*.json
+        ${{ runner.temp }}/native-original-input-model-trim-runtime.*.json
+        ${{ runner.temp }}/native-original-input-model-modifiers-capture.json
+        ${{ runner.temp }}/native-original-input-model-modifiers-capture.json.statuses.json
+        ${{ runner.temp }}/native-original-input-model-modifiers-primary.*.json
+        ${{ runner.temp }}/native-original-input-model-modifiers-runtime.*.json
+        ${{ runner.temp }}/native-original-input-model-checkbox-capture.json
+        ${{ runner.temp }}/native-original-input-model-checkbox-capture.json.statuses.json
+        ${{ runner.temp }}/native-original-input-model-checkbox-primary.*.json
+        ${{ runner.temp }}/native-original-input-model-checkbox-runtime.*.json
+        ${{ runner.temp }}/native-original-input-model-number-capture.json
+        ${{ runner.temp }}/native-original-input-model-number-capture.json.statuses.json
+        ${{ runner.temp }}/native-original-input-model-number-primary.*.json
+        ${{ runner.temp }}/native-original-input-model-number-runtime.*.json
+
+        """
+        `if-no-files-found` = "error"
+        `retention-days` = 7
+      }
+    }
+  }
+}

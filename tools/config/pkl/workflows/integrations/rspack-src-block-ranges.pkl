@@ -1,0 +1,74 @@
+import "../../Actions.pkl" as ci
+
+name = "Rspack external block ranges"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/rspack-src-block-ranges.yml"
+      "npm/builder/shared/**"
+      "npm/builder/rspack/**"
+      "npm/native/**"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "rspack-src-block-ranges-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+env {
+  SOURCE_SHA = "${{ github.event.pull_request.head.sha }}"
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `source-ranges` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    steps = new Listing {
+      ci.checkoutAt("${{ env.SOURCE_SHA }}")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = false
+        }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "clippy-test"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic {
+        name = "Install the locked adapter and native dependencies"
+        run = "vp install --frozen-lockfile --prefer-offline --filter '@vizejs/rspack-plugin...' --filter '@vizejs/builder-shared...' --filter '@vizejs/native...'"
+      }
+      new Dynamic {
+        name = "Prepare the exact source native image"
+        run = """
+        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+        vp run --workspace-root build:native:test
+
+        """
+      }
+      new Dynamic {
+        name = "Retain original src boundaries, complete modules and source maps"
+        run = #"""
+        node npm/native/scripts/test-preparation.mjs node --test \
+          npm/builder/rspack/src/shared/src-blocks.test.ts \
+          npm/builder/rspack/src/shared/source-map.test.ts \
+          npm/builder/rspack/src/loader/index.test.ts
+
+        """#
+      }
+    }
+  }
+}

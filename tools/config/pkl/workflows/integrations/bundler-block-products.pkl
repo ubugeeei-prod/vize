@@ -1,0 +1,117 @@
+import "../../Actions.pkl" as ci
+
+name = "Bundler block products"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/bundler-block-products.yml"
+      "tools/commands/levels/codegen-equivalence.ts"
+      "tools/commands/levels/native-addon-identity.ts"
+      "tools/support/compat/npm/stock-addon-rustc.rs"
+      "tests/tooling/native-addon-identity.test.ts"
+      "tools/support/compat/npm/bundler-block-products.ts"
+      "davinci/vize_l1/src/container/vue/boundary*"
+      "davinci/vize_l1/src/container/vue/boundary/**"
+      "crates/vize_atelier_sfc/Cargo.toml"
+      "crates/vize_atelier_sfc/src/parse/**"
+      "crates/vize_atelier_sfc/src/bundler.rs"
+      "crates/vize_atelier_sfc/src/bundler/blocks*"
+      "crates/vize_atelier_sfc/src/bundler/blocks/**"
+      "crates/vize_atelier_sfc/tests/bundler_block_products.rs"
+      "crates/vize_vitrine/Cargo.toml"
+      "crates/vize_vitrine/src/napi/sfc/bundler*"
+      "crates/vize_vitrine/src/napi/sfc/bundler/**"
+      "crates/vize_vitrine/src/napi/sfc/types.rs"
+    }
+  }
+}
+permissions { contents = "read" }
+concurrency {
+  group = "bundler-block-products-${{ github.event.pull_request.number }}"
+  `cancel-in-progress` = true
+}
+jobs {
+  bundler {
+    name = "Bundler blocks ${{ matrix.suite }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 40
+    strategy {
+      `fail-fast` = false
+      matrix {
+        suite = List("products", "stock-addon")
+      }
+    }
+    env {
+      CARGO_INCREMENTAL = "0"
+      CARGO_BUILD_JOBS = "24"
+      RUSTUP_TOOLCHAIN = "1.100.0"
+      BASE_SHA = "${{ github.event.pull_request.base.sha }}"
+      HEAD_SHA = "${{ github.event.pull_request.head.sha }}"
+    }
+    steps = new Listing {
+      ci.checkoutAt("${{ github.event.pull_request.head.sha }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with { `node-version` = 24 }
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        name = "Compare the packaged Node build features against the base commit"
+        `if` = "matrix.suite == 'stock-addon'"
+        run = """
+        set -euo pipefail
+        git fetch --no-tags --depth=1 origin "$BASE_SHA" "$HEAD_SHA"
+        VIZE_CODEGEN_PROBE=1 node --test tests/tooling/native-addon-identity.test.ts
+        status=0
+        node tools/commands/levels/codegen-equivalence.ts "$BASE_SHA" "$HEAD_SHA" vize_vitrine node-addon default "$RUNNER_TEMP/stock-addon.json" --control-plugin-identity || status=$?
+        # The real builds stamp their respective Git SHA and source closure into the plugin cache key.
+        test "$status" = 1
+        node tools/commands/levels/native-addon-identity.ts "$RUNNER_TEMP/stock-addon.json" | tee "$RUNNER_TEMP/stock-addon-identity.json"
+        node tools/support/compat/npm/bundler-block-products.ts --stock "$RUNNER_TEMP/stock-addon.json"
+
+        """
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always() && matrix.suite == 'stock-addon'"
+        with {
+          name = "bundler-stock-addon"
+          path = """
+          ${{ runner.temp }}/stock-addon.json
+          ${{ runner.temp }}/stock-addon-identity.json
+          ${{ runner.temp }}/stock-addon.json.executables-*/base
+          ${{ runner.temp }}/stock-addon.json.executables-*/head*
+          !${{ runner.temp }}/stock-addon.json.executables-*/*.node
+
+          """
+        }
+      }
+      new Dynamic {
+        name = "Compare native and Node products on original source"
+        `if` = "matrix.suite == 'products'"
+        run = """
+        set -euo pipefail
+        flags=(--locked --profile ci-opt)
+        rust=(-p vize_atelier_sfc --features bundler-block-products)
+        cargo clippy "${flags[@]}" "${rust[@]}" --lib --no-deps -- -D warnings
+        cargo test "${flags[@]}" "${rust[@]}" --lib bundler::tests
+        cargo test "${flags[@]}" "${rust[@]}" --test bundler_block_products -- --include-ignored --nocapture --test-threads=1
+        cargo build "${flags[@]}" -p vize_vitrine --features experimental-bundler-block-products,legacy --lib
+        cp target/ci-opt/libvize_vitrine.so "$RUNNER_TEMP/bundler-blocks.node"
+        node tools/support/compat/npm/bundler-block-products.ts "$RUNNER_TEMP/bundler-blocks.node"
+
+        """
+      }
+    }
+  }
+}

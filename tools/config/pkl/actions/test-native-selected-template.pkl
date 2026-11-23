@@ -1,0 +1,98 @@
+import "../Actions.pkl" as ci
+
+name = "Execute original selected-template DOM modules"
+description = "Capture genuine L1-L4 modules and run their pinned Vue laws"
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Capture and execute original selected-template modules"
+      shell = "bash"
+      env { VIZE_L4_SELECTED_TEMPLATE_CAPTURE = "${{ runner.temp }}/native-selected-template-dom.json" }
+      run = """
+      rm -f "$VIZE_L4_SELECTED_TEMPLATE_CAPTURE"
+      cargo test -p vize_l4 --profile ci --test native_selected_template complete_original_selected_templates_keep_custody_and_exact_output -- --exact
+      vp node tools/support/compat/davinci/selected-template-dom.ts "$VIZE_L4_SELECTED_TEMPLATE_CAPTURE"
+
+      """
+    }
+    new Dynamic {
+      name = "Retain the actual native module and map capture"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "native-selected-template-dom-${{ github.run_id }}-${{ github.sha }}"
+        path = "${{ runner.temp }}/native-selected-template-dom.json"
+        `if-no-files-found` = "error"
+        `retention-days` = 14
+      }
+    }
+    new Dynamic {
+      name = "Execute original selected-template literal modules"
+      uses = "./.github/actions/test-native-selected-template-literals"
+    }
+    new Dynamic {
+      name = "Verify comment-root compiler modules in the actual Vue runtime"
+      shell = "bash"
+      env {
+        VIZE_DEV_ROOT_FRAGMENT_CAPTURE = "${{ runner.temp }}/dev-root-fragment.json"
+        VIZE_DEV_ROOT_FRAGMENT_REQUIRE_CAPTURE = "1"
+      }
+      run = """
+      cargo test -p vize_atelier_dom --profile ci --test integration dev_root_fragment::
+      NODE_ENV=development vp node --test tests/tooling/dev-root-fragment-runtime.test.ts
+      NODE_ENV=production vp node --test tests/tooling/dev-root-fragment-runtime.test.ts
+
+      """
+    }
+    new Dynamic {
+      name = "Retain comment-root compiler modules"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "dev-root-fragment-${{ github.run_id }}-${{ github.sha }}"
+        path = "${{ runner.temp }}/dev-root-fragment.json"
+        `if-no-files-found` = "error"
+        `retention-days` = 7
+      }
+    }
+    new Dynamic {
+      name = "Verify runtime-sensitive compiler patch flags"
+      shell = "bash"
+      env {
+        VIZE_RUNTIME_PATCH_FLAGS_CAPTURE = "${{ runner.temp }}/runtime-patch-flags.json"
+        VIZE_RUNTIME_PATCH_FLAGS_REQUIRE_CAPTURE = "1"
+      }
+      run = #"""
+      # The shared target is a build cache, not exact-head evidence. Make the
+      # compiler and this capture newer than cached fingerprints before Cargo
+      # decides whether to relink the integration test.
+      touch crates/vize_atelier_core/src/codegen/element/block.rs \
+        crates/vize_atelier_core/src/codegen/children.rs \
+        crates/vize_atelier_core/src/codegen/emit.rs \
+        crates/vize_atelier_core/src/codegen/slots/detect.rs \
+        crates/vize_atelier_core/src/codegen/slots/generate.rs \
+        crates/vize_atelier_dom/tests/runtime_patch_flags.rs \
+        davinci/vize_l4/src/targets/dom/artifact/fragment.rs \
+        davinci/vize_l4/src/targets/dom/artifact/vnode.rs \
+        davinci/vize_l4/src/targets/dom/artifact/component.rs \
+        davinci/vize_l4/src/targets/dom/artifact/component/children_arg.rs \
+        davinci/vize_l4/src/targets/dom/artifact/slots.rs
+      cargo test -p vize_atelier_dom --profile ci --test integration runtime_patch_flags::
+      NODE_ENV=development vp node --test tests/tooling/runtime-patch-flags.test.ts
+
+      """#
+    }
+    new Dynamic {
+      name = "Retain runtime patch-flag modules"
+      `if` = "${{ always() }}"
+      uses = ci.uploadArtifact
+      with {
+        name = "runtime-patch-flags-${{ github.run_id }}-${{ github.sha }}"
+        path = "${{ runner.temp }}/runtime-patch-flags.json"
+        `if-no-files-found` = "error"
+        `retention-days` = 7
+      }
+    }
+  }
+}

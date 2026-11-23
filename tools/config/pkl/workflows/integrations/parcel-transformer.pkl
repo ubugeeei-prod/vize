@@ -1,0 +1,244 @@
+import "../../Actions.pkl" as ci
+
+name = "Parcel transformer"
+
+on {
+  push {
+    tags = List("v*")
+  }
+  pull_request {
+    paths = new Listing {
+      "npm/builder/parcel/**"
+      "npm/builder/parcel-native/**"
+      "npm/native/**"
+      "crates/**"
+      "davinci/**"
+      "Cargo.toml"
+      "Cargo.lock"
+      "tools/support/compat/parcel/**"
+      ".github/workflows/parcel-transformer.yml"
+    }
+  }
+  // Hosted macOS arm64 capacity is scarce, so pull requests build the per-platform
+  // packages only when the native plugin itself changes; main still builds every
+  // target nightly, and tags and dispatches always do.
+  schedule = new Listing {
+    new Dynamic { cron = "37 2 * * *" }
+  }
+  workflow_dispatch {
+    inputs {
+      publish {
+        description = "Publish every native package through npm trusted publishing"
+        type = "boolean"
+        ["default"] = false
+      }
+      version {
+        description = "Exact package version override for a manual release recovery"
+        type = "string"
+        ["default"] = ""
+      }
+      `default-cache-frontier` {
+        description = "Exercise the known default development HTTP-cache frontier"
+        type = "boolean"
+        ["default"] = false
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "parcel-transformer-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env {
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  CARGO_TERM_COLOR = "always"
+  CARGO_INCREMENTAL = "0"
+  VIZE_NATIVE_CI_FORMATTER_HISTORY = "1"
+  SOURCE_SHA = "${{ github.sha }}"
+  TRIGGER_HEAD_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+}
+
+jobs {
+  `packaging-changes` {
+    name = "Plan native packaging"
+    `if` = "${{ github.event_name == 'pull_request' }}"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 5
+    permissions {
+      contents = "read"
+      `pull-requests` = "read"
+    }
+    outputs { packages = "${{ steps.changes.outputs.packages }}" }
+    steps = new Listing {
+      new Dynamic {
+        name = "Detect native plugin package changes"
+        id = "changes"
+        uses = "dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706"  // v4.0.2
+        with {
+          filters = """
+          packages:
+            - 'npm/builder/parcel-native/**'
+            - 'crates/vize_parcel_transformer/**'
+            - '.github/workflows/parcel-transformer.yml'
+
+          """
+        }
+      }
+    }
+  }
+
+  `native-plugin-packages` {
+    needs = "packaging-changes"
+    `if` = "${{ !cancelled() && (github.event_name != 'pull_request' || needs.packaging-changes.outputs.packages == 'true') }}"
+    permissions {
+      contents = "read"
+      `id-token` = "write"
+    }
+    uses = "parcel-bundler/parcel/.github/workflows/native-plugin.yml@2bcfb43e725b2688b787e497e0b0b4105c353222"  // v3.0.0-alpha.2
+    with {
+      paths = "npm/builder/parcel-native"
+      publish = "${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || inputs.publish == true }}"
+      version = "${{ inputs.version }}"
+      `rust-toolchain` = "1.100.0"
+    }
+  }
+
+  `native-consumer` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    steps = new Listing {
+      ci.checkoutAt("${{ env.SOURCE_SHA }}")
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067"  // stable
+        with { toolchain = "1.100.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      ci.use("./.github/actions/setup-ubuntu-archive")
+      new Dynamic {
+        name = "Install the locked Parcel 3 consumer"
+        run = "vp install --frozen-lockfile --prefer-offline --filter './npm/builder/parcel-native...'"
+      }
+      new Dynamic {
+        name = "Check the native transformer crate"
+        run = """
+        cargo test -p vize_parcel_transformer
+        cargo clippy -p vize_parcel_transformer --all-targets -- -D warnings
+
+        """
+      }
+      ci.command("Build in a real Parcel 3 consumer", "vp run --filter './npm/builder/parcel-native' test:host")
+    }
+  }
+
+  `packed-host` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      ci.checkoutAt("${{ env.SOURCE_SHA }}")
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067"  // stable
+        with { toolchain = "1.100.0" }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      ci.use("./.github/actions/setup-ubuntu-archive")
+      ci.command("Install locked workspace providers", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        name = "Authenticate committed source and observe the actual absent Cargo target"
+        run = """
+        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+        test -z "$(git status --porcelain --untracked-files=normal)"
+        node tools/support/compat/parcel/native-target.mjs before "$GITHUB_WORKSPACE"
+        node npm/native/scripts/build-ci.mjs --request-ci-capture
+
+        """
+      }
+      ci.command("Build the actual native source", "vp run --filter './npm/native' build:ci")
+      new Dynamic {
+        name = "Bind target absence to the actual compiler artifact"
+        run = #"node tools/support/compat/parcel/native-target.mjs after "$GITHUB_WORKSPACE""#
+      }
+      new Dynamic {
+        name = "Build the published adapter shape"
+        `working-directory` = "npm/builder/parcel"
+        run = "vp pack"
+      }
+      new Dynamic {
+        name = "Validate geometry and configuration"
+        run = "node --test npm/builder/parcel/src/*.test.ts tools/support/compat/parcel/profile-analysis.test.ts tools/support/compat/parcel/native-analysis.test.ts tools/support/compat/parcel/native-target.test.mjs tools/support/compat/parcel/reporter-config.test.ts"
+      }
+      new Dynamic {
+        name = "Install the fixture browser"
+        `working-directory` = "npm/builder/parcel"
+        run = "vize-ci-apt-retry vp exec playwright install --with-deps chromium"
+      }
+      new Dynamic {
+        name = "Qualify packed packages in a fresh Parcel consumer"
+        run = """
+        test ! -e "$RUNNER_TEMP/parcel-cpu"
+        mkdir "$RUNNER_TEMP/parcel-cpu"
+        VIZE_PARCEL_PROFILE_DIR="$RUNNER_TEMP/parcel-cpu" vp run --no-cache --filter './npm/builder/parcel' test:host -- "$RUNNER_TEMP/parcel-proof"
+
+        """
+      }
+      new Dynamic {
+        name = "Exercise the default cache frontier without disabling browser caching"
+        `if` = "github.event_name == 'workflow_dispatch' && inputs.default-cache-frontier"
+        run = #"vp run --no-cache --filter './npm/builder/parcel' test:recovery-frontier -- "$RUNNER_TEMP/parcel-default-cache-frontier""#
+      }
+      new Dynamic {
+        name = "Preserve source samples and seal the complete evidence"
+        `if` = "${{ always() && !cancelled() }}"
+        run = """
+        if test -d "$RUNNER_TEMP/parcel-cpu"; then
+          node tools/support/compat/parcel/profile.mjs "$RUNNER_TEMP/parcel-proof" "$RUNNER_TEMP/parcel-cpu"
+        fi
+
+        """
+      }
+      new Dynamic {
+        name = "Preserve complete source and host evidence"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "parcel-transformer-${{ env.SOURCE_SHA }}"
+          `include-hidden-files` = true
+          `if-no-files-found` = "error"
+          `retention-days` = 7
+          path = """
+          ${{ runner.temp }}/parcel-proof/
+          !${{ runner.temp }}/parcel-proof/**/node_modules/**
+          ${{ runner.temp }}/parcel-cpu/
+          ${{ runner.temp }}/parcel-default-cache-frontier/
+          !${{ runner.temp }}/parcel-default-cache-frontier/**/node_modules/**
+          npm/native/.artifacts/native/formatter-history/
+
+          """
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,133 @@
+import "../../Actions.pkl" as ci
+
+name = "Nuxt 2 module build"
+`run-name` = "Nuxt 2 host runtime @ ${{ github.event.pull_request.head.sha || github.sha }}"
+on {
+  pull_request {
+    branches = List("main")
+    paths = new Listing {
+      ".github/workflows/nuxt2-module-build.yml"
+      "npm/framework/nuxt/**"
+      "npm/framework/nuxt-lint-config/**"
+      "npm/cli/**"
+      "npm/native/**"
+      "crates/vize_carton/src/config/**"
+      "davinci/vize_l0/src/config/**"
+      "tools/support/compat/nuxt/fixtures/nuxt2-module-build/**"
+      "tools/support/compat/nuxt/nuxt2-module-build.ts"
+      "tools/support/compat/nuxt/nuxt2-bridge-source.ts"
+      "tools/support/compat/nuxt/nuxt2-lint-config.ts"
+      "tools/support/compat/nuxt/nuxt2-typecheck.ts"
+      "tools/support/compat/nuxt/fixtures/nuxt2-typecheck/**"
+      "tools/support/compat/nuxt/nuxt-auto-init-config.ts"
+    }
+  }
+  push {
+    branches = List("main")
+    paths = new Listing {
+      ".github/workflows/nuxt2-module-build.yml"
+      "npm/framework/nuxt/**"
+      "npm/framework/nuxt-lint-config/**"
+      "npm/cli/**"
+      "npm/native/**"
+      "crates/vize_carton/src/config/**"
+      "davinci/vize_l0/src/config/**"
+      "tools/support/compat/nuxt/fixtures/nuxt2-module-build/**"
+      "tools/support/compat/nuxt/nuxt2-module-build.ts"
+      "tools/support/compat/nuxt/nuxt2-bridge-source.ts"
+      "tools/support/compat/nuxt/nuxt2-lint-config.ts"
+      "tools/support/compat/nuxt/nuxt2-typecheck.ts"
+      "tools/support/compat/nuxt/fixtures/nuxt2-typecheck/**"
+      "tools/support/compat/nuxt/nuxt-auto-init-config.ts"
+    }
+  }
+  // The required merge-queue source report calls this exact host campaign.
+  workflow_call = null
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+
+concurrency {
+  group = "nuxt2-module-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+env { FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true }
+
+jobs {
+  `nuxt2-module-build` {
+    name = "Nuxt 2 webpack SSR, hydration and HMR"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 20
+    steps = new Listing {
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version` = "24"
+          cache = true
+          `run-install` = false
+        }
+      }
+      ci.command("Install workspace tooling", "vp install --frozen-lockfile --prefer-offline")
+      new Dynamic {
+        uses = "dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067"  // master
+        with { toolchain = "1.100.0" }
+      }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "nuxt2-config-source-native"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      ci.command("Build the source configuration normalizer", "vp run --no-cache --filter './npm/native' build:debug")
+      new Dynamic {
+        name = "Build the canonical Vize configuration loader"
+        `working-directory` = "npm/cli"
+        run = "vp pack"
+      }
+      new Dynamic {
+        name = "Build the candidate Nuxt lint preset"
+        `working-directory` = "npm/framework/nuxt-lint-config"
+        run = "vp pack"
+      }
+      new Dynamic {
+        name = "Build the candidate Nuxt integration"
+        `working-directory` = "npm/framework/nuxt"
+        run = "vp pack"
+      }
+      new Dynamic {
+        name = "Verify version-specific plans and original modern oracle"
+        run = "vp node --test npm/framework/nuxt-lint-config/src/*.test.ts npm/framework/nuxt/src/lint/generation*.test.ts npm/framework/nuxt/src/builder.test.ts npm/framework/nuxt/src/lint/checker/setup.test.ts"
+      }
+      new Dynamic {
+        name = "Install the Nuxt 2 reproduction"
+        `working-directory` = "tools/support/compat/nuxt/fixtures/nuxt2-module-build"
+        run = "npm ci --legacy-peer-deps --no-audit --no-fund"
+      }
+      ci.use("./.github/actions/setup-ubuntu-archive")
+      new Dynamic {
+        name = "Install Chromium for the Nuxt 2 runtime check"
+        `working-directory` = "tests"
+        run = "vize-ci-apt-retry vp exec playwright install --with-deps chromium"
+      }
+      new Dynamic {
+        name = "Verify candidate webpack build, SSR, hydration and dev HMR"
+        run = #"vp env exec node tools/support/compat/nuxt/nuxt2-module-build.ts "$RUNNER_TEMP/nuxt2-module-proof""#
+      }
+      new Dynamic {
+        name = "Upload Nuxt 2 build and SSR evidence"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "nuxt2-module-proof-${{ github.sha }}"
+          path = "${{ runner.temp }}/nuxt2-module-proof"
+          `if-no-files-found` = "ignore"
+        }
+      }
+    }
+  }
+}

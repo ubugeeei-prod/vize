@@ -1,0 +1,190 @@
+import "../../Actions.pkl" as ci
+
+`if` = "github.event_name == 'workflow_dispatch' && inputs.targeted-test != 'generic-body-error' && inputs.targeted-test != 'reported-q16' && !inputs.router-experimental-only && (inputs.official-css-options-only || inputs.published-defaults-only)"
+`runs-on` = ci.linux
+`timeout-minutes` = 15
+env { EXPECTED_SOURCE_SHA = "${{ inputs.expected-source-sha }}" }
+steps = new Listing {
+  new Dynamic {
+    name = "Require the explicit public scope and absent runtime overrides"
+    `if` = "inputs.published-defaults-only"
+    env { SOURCE_MODE = "${{ inputs.official-css-options-only }}" }
+    shell = "bash"
+    run = """
+    test "$SOURCE_MODE" != true
+    [[ "$GITHUB_REF" == refs/heads/* ]]
+    for key in NODE_OPTIONS VIZE_PREFER_WORKSPACE_BINDING NAPI_RS_NATIVE_LIBRARY_PATH NAPI_RS_FORCE_WASI VIZE_ALLOW_NATIVE_VERSION_MISMATCH CORSA_PATH CORSA_EXECUTABLE TSGO_PATH TSGO_EXECUTABLE TSRS_PATH TSRS_EXECUTABLE VIZE_PUBLIC_NATIVE_CUSTODY VIZE_OXLINT_NATIVE_CUSTODY VIZE_CORSA_DEV_PATHS CARGO_BIN_EXE_vize SOURCE_SHA VIZE_TEST_REQUIRE_TSGO VIZE_TEST_DISABLE_TSGO VIZE_TEST_FIX_HISTORY_CAPTURE_DIR VIZE_INLAY_HINT_CAPTURE VIZE_LSP_PASSIVE_EVIDENCE RUSTC_WRAPPER RUSTC_WORKSPACE_WRAPPER RUSTFLAGS CARGO_ENCODED_RUSTFLAGS CARGO_BUILD_RUSTC RUSTC RUSTUP_TOOLCHAIN; do
+      test -z "${!key:-}"
+    done
+
+    """
+  }
+  new Dynamic {
+    name = "Require an unambiguous focused campaign"
+    env { EVENT_RENAME_ONLY = "${{ inputs.event-rename-only }}" }
+    run = """
+    test "$EVENT_RENAME_ONLY" != true
+
+    """
+  }
+  new Dynamic {
+    name = "Checkout the reviewed Vize source"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    uses = ci.checkout
+    with { `persist-credentials` = false }
+  }
+  new Dynamic {
+    name = "Checkout the actual public validation actor"
+    `if` = "inputs.published-defaults-only"
+    uses = ci.checkout
+    with {
+      ref = "${{ github.workflow_sha }}"
+      `fetch-depth` = 0
+      `persist-credentials` = false
+    }
+  }
+  new Dynamic {
+    name = "Authenticate source and recipe before any build"
+    shell = "bash"
+    run = #"""
+    set -euo pipefail
+    [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+    test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+    test "$GITHUB_SHA" = "$EXPECTED_SOURCE_SHA"
+    test "$GITHUB_WORKFLOW_SHA" = "$EXPECTED_SOURCE_SHA"
+    test -z "$(git status --porcelain)"
+    mkdir -p "$RUNNER_TEMP/official-css-source"
+    git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/official-css-source/git-identity.txt"
+    sha256sum Cargo.toml Cargo.lock rust-toolchain.toml \
+      tools/support/compat/content-mapper/official-css-options.ts \
+      tools/support/compat/content-mapper/official-fixtures.ts \
+      tests/_fixtures/content-mapper/escaton-css-options.json \
+      tests/_fixtures/content-mapper/escaton-component-events.json \
+      tests/_fixtures/content-mapper/escaton-component-props.json \
+      tests/_fixtures/content-mapper/escaton-nested-flow-9433.json \
+      tests/_fixtures/content-mapper/escaton-public-props-9498.json \
+      tests/_fixtures/content-mapper/nuxt-pattern-emit-10195.json \
+      .github/workflows/content-mapper-conformance.yml \
+      > "$RUNNER_TEMP/official-css-source/inputs.sha256"
+
+    """#
+  }
+  new Dynamic {
+    name = "Setup pinned Node and Vite Plus"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    uses = ci.setupVp121
+    with {
+      version = "latest"
+      `node-version-file` = "package.json"
+      cache = true
+      `cache-save` = false
+      `run-install` = false
+    }
+  }
+  new Dynamic {
+    name = "Setup pinned Node for public packages only"
+    `if` = "inputs.published-defaults-only"
+    uses = ci.setupNode
+    with {
+      `node-version-file` = "package.json"
+      `package-manager-cache` = false
+    }
+  }
+  new Dynamic {
+    name = "Setup repository Rust toolchain"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    uses = ci.setupRust
+    with { toolchain = "1.100.0" }
+  }
+  new Dynamic {
+    uses = ci.setupWild
+    `if` = "${{ !inputs.published-defaults-only }}"
+    with { `wild-version` = "0.9.0" }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    with {
+      key = "content-mapper-official-css-options"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  new Dynamic {
+    name = "Install frozen workspace dependencies"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    run = "vp install --frozen-lockfile --prefer-offline"
+  }
+  new Dynamic {
+    name = "Verify native legacy projection compatibility"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    env { VIZE_TEMPLATE_EMIT_TS40_CAPTURE = "${{ runner.temp }}/official-css-source/ts40-legacy" }
+    run = "cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture"
+  }
+  new Dynamic {
+    name = "Build the real packed mapper runtime"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    run = """
+    vp run --filter './npm/native' build:ci
+    (cd npm/cli && vp pack)
+    node tools/support/github/stage-built-native-packages.ts npm/native
+    sha256sum npm/native/vize-vitrine.linux-x64-gnu.node > "$RUNNER_TEMP/official-css-source/native-image.sha256"
+
+    """
+  }
+  new Dynamic {
+    name = "Run original public failures and fresh packed official host controls"
+    `if` = "${{ !inputs.published-defaults-only }}"
+    id = "official"
+    run = #"node tools/support/compat/content-mapper/official-css-options.ts --output "$RUNNER_TEMP/official-css-options" --fixture tests/_fixtures/content-mapper/escaton-component-events.json --fixture tests/_fixtures/content-mapper/escaton-component-props.json --fixture tests/_fixtures/content-mapper/escaton-nested-flow-9433.json --fixture tests/_fixtures/content-mapper/escaton-public-props-9498.json --fixture tests/_fixtures/content-mapper/nuxt-pattern-emit-10195.json"#
+  }
+  new Dynamic {
+    name = "Run exact published reporter fixtures"
+    `if` = "inputs.published-defaults-only"
+    env {
+      PUBLIC_REPORT = "${{ inputs.published-report }}"
+      PUBLIC_CUT = "${{ inputs.cut }}"
+      PUBLIC_HEAD = "${{ inputs.head }}"
+      PUBLIC_TAG = "${{ inputs.tag }}"
+      PUBLIC_SOURCE_PR = "${{ inputs.source_pr }}"
+      PUBLIC_RELEASE_RUN = "${{ inputs.release_run }}"
+      PUBLIC_ACTOR = "${{ github.workflow_sha }}"
+      PUBLIC_INPUTS = "${{ runner.temp }}/official-css-source/public-inputs.json"
+    }
+    shell = "bash"
+    run = #"""
+    case "$PUBLIC_REPORT" in
+      9499) public_fixture=tests/_fixtures/content-mapper/with-defaults-surplus.json ;;
+      9498) public_fixture=tests/_fixtures/content-mapper/escaton-public-props-9498.json ;;
+      *) echo "Unsupported published report" >&2; exit 2 ;;
+    esac
+    sha256sum "$public_fixture" >> "$RUNNER_TEMP/official-css-source/inputs.sha256"
+    node --input-type=module - <<'JS'
+    import fs from 'node:fs';
+    import { officialActorInputs } from './tools/support/compat/content-mapper/official-fixtures.ts';
+    const keys = ['PUBLIC_CUT', 'PUBLIC_HEAD', 'PUBLIC_TAG', 'PUBLIC_SOURCE_PR', 'PUBLIC_RELEASE_RUN', 'PUBLIC_ACTOR'];
+    const inputs = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+    officialActorInputs(inputs);
+    fs.writeFileSync(process.env.PUBLIC_INPUTS, JSON.stringify(inputs, null, 2) + '\n');
+    JS
+    node tools/support/compat/content-mapper/official-css-options.ts --candidate-only --explicit-fixtures-only --public-version "${PUBLIC_TAG#v}" --public-inputs "$PUBLIC_INPUTS" --fixture "$public_fixture" --output "$RUNNER_TEMP/official-css-options"
+
+    """#
+  }
+  new Dynamic {
+    name = "Retain complete official compiler diagnostics and package evidence"
+    `if` = "always()"
+    uses = ci.uploadArtifact
+    with {
+      name = "official-css-options-${{ github.sha }}-${{ github.run_attempt }}"
+      `if-no-files-found` = "error"
+      `include-hidden-files` = true
+      path = """
+      ${{ runner.temp }}/official-css-source/
+      ${{ runner.temp }}/official-css-options/
+      !${{ runner.temp }}/official-css-options/**/node_modules
+      !${{ runner.temp }}/official-css-options/**/node_modules/**
+
+      """
+    }
+  }
+}

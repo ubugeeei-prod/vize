@@ -1,0 +1,51 @@
+import "../../Actions.pkl" as ci
+
+`if` = "${{ github.event_name == 'workflow_dispatch' && inputs.component == 'n8n-baseline' }}"
+`runs-on` = ci.linux
+`timeout-minutes` = 60
+env { CARGO_BUILD_JOBS = "12" }
+steps = new Listing {
+  new Dynamic {
+    uses = ci.checkout
+    with { ref = "${{ github.sha }}" }
+  }
+  ci.use("./.github/actions/setup-js-package-tests")
+  new Dynamic {
+    name = "Build the same source native binary and bridge once"
+    run = """
+    vp run --workspace-root build:native:test
+    vp run --filter './npm/linter/oxlint' build
+
+    """
+  }
+  new Dynamic {
+    name = "Serial baseline with unchanged concurrent project hosts"
+    env { VIZE_N8N_BASELINE_MODE = "serial" }
+    run = "node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/n8n-baseline-serial.json"
+  }
+  new Dynamic {
+    name = "Partitioned baseline with unchanged concurrent project hosts"
+    `if` = "${{ !cancelled() }}"
+    env { VIZE_N8N_BASELINE_MODE = "partitioned" }
+    run = "node npm/linter/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/n8n-baseline-partitioned.json"
+  }
+  new Dynamic {
+    name = "Preserve both complete baseline campaigns and the one native build"
+    `if` = "${{ always() }}"
+    uses = ci.uploadArtifact
+    with {
+      name = "ci-walltime-n8n-baseline-${{ github.sha }}"
+      path = """
+      target/ci-walltime/
+      target/oxlint-original-project-transport/
+      npm/native/.artifacts/native/formatter-history/build-receipt.json
+      npm/native/.artifacts/native/formatter-history/build-process.json
+      npm/native/.artifacts/native/formatter-history/cargo.stdout.bin
+      npm/native/.artifacts/native/formatter-history/cargo.stderr.bin
+
+      """
+      `if-no-files-found` = "error"
+      `retention-days` = 14
+    }
+  }
+}

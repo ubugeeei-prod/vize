@@ -1,0 +1,43 @@
+import "../../Actions.pkl" as ci
+
+name = "Full qualification"
+on {
+  workflow_call {
+    inputs {
+      `compare-rust-test-profile` {
+        type = "boolean"
+        ["default"] = false
+      }
+    }
+  }
+}
+permissions { contents = "read" }
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+}
+jobs {
+  `v1-supported-matrix` = import("../../parts/full-qualification/v1-supported-matrix.pkl")
+  `full-source-cli` = import("../../parts/full-qualification/full-source-cli.pkl")
+  `tooling-plan` = import("../../parts/full-qualification/tooling-plan.pkl")
+  `test-scripts` = import("../../parts/full-qualification/test-scripts.pkl")
+  `test-scripts-gate` = import("../../parts/full-qualification/test-scripts-gate.pkl")
+  `build-js-packages` = import("../../parts/full-qualification/build-js-packages.pkl")
+  `full-js-package-tests` = import("../../parts/full-qualification/full-js-package-tests.pkl")
+  `full-js-original-project` = import("../../parts/full-qualification/full-js-original-project.pkl")
+  `test-js-packages` = import("../../parts/full-qualification/test-js-packages.pkl")
+  `full-rust-workspace` = import("../../parts/full-qualification/full-rust-workspace.pkl")
+  `full-rust-report` = import("../../parts/full-qualification/full-rust-report.pkl")
+  // Publishes the T1 native-only acceptance census and zero-fallback verdict
+  // from the bundle entries the product runners above wrote (#6853, #6854).
+  // Record-only: missing or failed producers show up as unmeasured coordinates.
+  `differential-acceptance` = import("../../parts/full-qualification/differential-acceptance.pkl")
+  `rust-clippy-portability` = import("../../parts/full-qualification/rust-clippy-portability.pkl")
+  `rust-davinci-allocations` = import("../../parts/full-qualification/rust-davinci-allocations.pkl")
+  `rust-native-differential` = import("../../parts/full-qualification/rust-native-differential.pkl")
+  `clippy-and-test` = import("../../parts/full-qualification/clippy-and-test.pkl")
+  `playground-test` = import("../../parts/full-qualification/playground-test.pkl")
+  `editor-extensions` = import("../../parts/full-qualification/editor-extensions.pkl")
+  `editor-host-smoke` = import("../../parts/full-qualification/editor-host-smoke.pkl")
+  `nuxt-module-qualification` = import("../../parts/full-qualification/nuxt-module-qualification.pkl")
+}

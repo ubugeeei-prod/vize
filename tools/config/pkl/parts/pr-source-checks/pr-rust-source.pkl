@@ -1,0 +1,15 @@
+name = "PR Rust Clippy, tests, and fixtures"
+permissions {
+  contents = "read"
+  actions = "read"
+}
+`if` = "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}"
+needs = "pr-source-plan"
+uses = "./.github/workflows/pr-rust-checks.yml"
+// Every PR and queue candidate must execute Rust checks. The planner
+// narrows packages; it cannot disable test or Clippy acceptance.
+with {
+  `run-rust` = true
+  `rust-plan` = "${{ needs.pr-source-plan.outputs.rust-plan }}"
+  `run-source-contracts` = "${{ needs.pr-source-plan.outputs.source-contracts == 'true' }}"
+}

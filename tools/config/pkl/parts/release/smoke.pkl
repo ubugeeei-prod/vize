@@ -1,0 +1,35 @@
+import "../../Actions.pkl" as ci
+
+name = "Smoke package tarballs"
+needs = List("version", "build-packages", "build-native", "build-wasm")
+`runs-on` = ci.linux
+`timeout-minutes` = 20
+steps = new Listing {
+  ci.checkoutAt("${{ needs.version.outputs.ref }}")
+  new Dynamic {
+    uses = "./.github/actions/setup-runtime-package-managers"
+    with { `node-version-file` = "package.json" }
+  }
+  ci.use("./.github/actions/release-npm-artifacts")
+  new Dynamic {
+    name = "Smoke install release package tarballs"
+    env { VIZE_SMOKE_TIMING_FILE = "${{ runner.temp }}/packed-smoke-timing.jsonl" }
+    run = #"""
+    read -ra js <<< "$RELEASE_JS_PACKAGES"
+    node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks --bun-runtime-checks \
+      npm/native npm/native/npm/* npm/fresco-native "${js[@]}"
+
+    """#
+  }
+  new Dynamic {
+    name = "Retain packed smoke timing"
+    `if` = "always()"
+    uses = ci.uploadArtifact
+    with {
+      name = "packed-smoke-timing"
+      path = "${{ runner.temp }}/packed-smoke-timing.jsonl"
+      `if-no-files-found` = "warn"
+      `retention-days` = 14
+    }
+  }
+}

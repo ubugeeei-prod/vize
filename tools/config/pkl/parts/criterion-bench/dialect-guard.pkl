@@ -1,0 +1,47 @@
+import "../../Actions.pkl" as ci
+
+`if` = "${{ !inputs.sfc_optional_lifecycle_only && !inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only && !inputs.sfc_member_only }}"
+name = "dialect-guard"
+`runs-on` = ci.linux
+`timeout-minutes` = 45
+permissions { contents = "read" }
+steps = new Listing {
+  new Dynamic {
+    name = "Checkout head"
+    uses = ci.checkout
+    with { ref = "${{ inputs.head_sha }}" }
+  }
+  ci.rust("stable")
+  ci.wild()
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      key = "dialect-guard"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  // The corpus generator and guard driver are plain Node (no npm deps).
+  ci.workspaceVp()
+  new Dynamic {
+    name = "Install locked config dependencies"
+    run = "vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts"
+  }
+  // A vize binary with the legacy Vue feature OFF (the shipped Vue 3 build)
+  // and one with it ON. Distinct target dirs keep the two feature sets from
+  // invalidating each other's incremental cache.
+  ci.command("Build vize (legacy OFF)", "cargo build --profile ci-opt -p vize --target-dir target/off")
+  ci.command("Build vize (legacy ON)", "cargo build --profile ci-opt -p vize --features legacy --target-dir target/on")
+  ci.command("Generate Vue 3 corpus", #"node tools/benchmarks/scripts/generate.mjs "$DIALECT_GUARD_FILE_COUNT""#)
+  new Dynamic {
+    name = "Compare legacy OFF vs ON"
+    run = #"""
+    node tools/benchmarks/scripts/dialect-guard.ts \
+      --input tools/benchmarks/scripts/__in__ \
+      --off-bin target/off/ci-opt/vize \
+      --on-bin target/on/ci-opt/vize \
+      --out-dir "$GITHUB_WORKSPACE/dialect-guard-out" \
+      --threshold "$DIALECT_GUARD_THRESHOLD_PERCENT"
+
+    """#
+  }
+}

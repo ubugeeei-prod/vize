@@ -1,0 +1,6 @@
+name = "Validate workflow syntax"
+description = "Validate workflow syntax using the runner Node runtime"
+runs {
+  using = "node24"
+  main = "main.ts"
+}
