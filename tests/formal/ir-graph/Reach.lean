@@ -136,4 +136,64 @@ theorem recovery_sites_exact {Byte Label : Type} (before block after : List Byte
 
 #print axioms recovery_sites_exact
 
+/-- A row identity looks up its two endpoints in the original selected relation.
+    A failed lookup covers a missing ordinal or a kind excluded by the query. -/
+inductive ConnectedTrail {E V : Type} (original : E → Option (V × V)) :
+    V → List E → V → Prop where
+  | stop (v) : ConnectedTrail original v [] v
+  | extend {a b z edge rest} : original edge = some (a, b) → edge ∉ rest →
+      ConnectedTrail original b rest z → ConnectedTrail original a (edge :: rest) z
+
+def replay {E V : Type} [DecidableEq V] (original : E → Option (V × V)) (at_ : V) :
+    List E → Option V
+  | [] => some at_
+  | edge :: rest => do
+      let (src, dst) ← original edge
+      if src = at_ then replay original dst rest else none
+
+/-- Checking physical relationship identity independently of endpoint replay is
+    equivalent to the edge-distinct trail derivation, at every finite length. -/
+theorem bounded_witness_exact {E V : Type} [DecidableEq V]
+    (original : E → Option (V × V)) (lo hi : Nat) (rows : List E) (start finish : V) :
+    (lo ≤ rows.length ∧ rows.length ≤ hi ∧ rows.Nodup ∧
+      replay original start rows = some finish) ↔
+    (lo ≤ rows.length ∧ rows.length ≤ hi ∧ ConnectedTrail original start rows finish) := by
+  have path : ∀ (xs : List E) (a z : V),
+      (xs.Nodup ∧ replay original a xs = some z) ↔ ConnectedTrail original a xs z := by
+    intro xs
+    induction xs with
+    | nil =>
+      intro a z
+      constructor
+      · rintro ⟨_, h⟩
+        have h' : a = z := Option.some.inj h
+        subst z
+        exact .stop a
+      · intro h
+        cases h
+        exact ⟨by simp, rfl⟩
+    | cons e rest ih =>
+      intro a z
+      constructor
+      · rintro ⟨unique, ran⟩
+        obtain ⟨unused, tail⟩ := List.nodup_cons.mp unique
+        cases cell : original e with
+        | none => simp [replay, cell] at ran
+        | some pair =>
+          obtain ⟨from_, to_⟩ := pair
+          by_cases starts : from_ = a
+          · subst from_
+            exact .extend cell unused ((ih to_ z).mp ⟨tail, by simpa [replay, cell] using ran⟩)
+          · simp [replay, cell, starts] at ran
+      · intro h
+        cases h with
+        | extend cell unused tail =>
+          obtain ⟨unique, ran⟩ := (ih _ _).mpr tail
+          exact ⟨List.nodup_cons.mpr ⟨unused, unique⟩, by simpa [replay, cell] using ran⟩
+  exact and_congr_right (fun _ => and_congr_right (fun _ => path rows start finish))
+
+/-- info: 'Davinci.bounded_witness_exact' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms bounded_witness_exact
+
 end Davinci
