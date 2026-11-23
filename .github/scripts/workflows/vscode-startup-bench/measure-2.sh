@@ -6,7 +6,7 @@ mkdir -p "$temp/server"
 cp ext-builds/server/vize.exe "$temp/server/vize.exe"
 "$temp/server/vize.exe" --version
 VIZE_TEST_VSCODE_VERSION="$VSCODE_VERSION" vp run --workspace-root test:vscode-extension:download
-code=$(cd editors/vscode && VIZE_TEST_VSCODE_VERSION="$VSCODE_VERSION" node test/download-vscode.mjs | sed -n 's/^Verified VS Code [^:]*: //p' | tail -1 | tr -d '\r')
+code=$(cd editors/vscode && VIZE_TEST_VSCODE_VERSION="$VSCODE_VERSION" node test/download-vscode.mjs | sed -n -f "$VIZE_CI_FILES/verified-editor-path.sed" | tail -1 | tr -d '\r')
 test -f "$code"
 mkdir -p "$temp/out"
 for layout in $LAYOUTS; do

@@ -2,7 +2,7 @@
 set -euo pipefail
 # Verify the repository toolchain setup here, before a Cargo proxy can
 # implicitly download missing components inside a runtime test step.
-host=$(rustup run "$VIZE_NATIVE_RUST_TOOLCHAIN" rustc --version --verbose | sed -n 's/^host: //p')
+host=$(rustup run "$VIZE_NATIVE_RUST_TOOLCHAIN" rustc --version --verbose | sed -n -f "$VIZE_CI_FILES/../shared/rust-host-triple.sed")
 test -n "$host"
 components=$(rustup component list --toolchain "$VIZE_NATIVE_RUST_TOOLCHAIN" --installed)
 targets=$(rustup target list --toolchain "$VIZE_NATIVE_RUST_TOOLCHAIN" --installed)

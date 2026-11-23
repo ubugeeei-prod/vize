@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 [[ "$RUN_ID" =~ ^[0-9]+$ ]]
 gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" > "$RUNNER_TEMP/matrix-run.json"
-jq -e '.path == ".github/workflows/real-project-matrix.yml" and .head_branch == "main" and .status == "completed" and (.display_title | contains("scoped-diagnostic") | not)' "$RUNNER_TEMP/matrix-run.json"
-jq -r '"id=\(.id)\nattempt=\(.run_attempt)\nsha=\(.head_sha)"' "$RUNNER_TEMP/matrix-run.json" >> "$GITHUB_OUTPUT"
+jq -e -f "$VIZE_CI_FILES/check-matrix-run.jq" "$RUNNER_TEMP/matrix-run.json"
+jq -r -f "$VIZE_CI_FILES/matrix-outputs.jq" "$RUNNER_TEMP/matrix-run.json" >> "$GITHUB_OUTPUT"

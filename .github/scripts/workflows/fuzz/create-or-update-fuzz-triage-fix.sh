@@ -38,7 +38,7 @@ existing_fix="$(
     --state open \
     --search "${title} in:title" \
     --json number \
-    --jq '.[0].number // ""'
+    --jq "$(<"$VIZE_CI_FILES/first-pr-number.jq")"
 )"
 
 if [ -n "$existing_fix" ]; then

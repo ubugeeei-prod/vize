@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-base=$(gh api "repos/$GITHUB_REPOSITORY/compare/$TARGET_SHA...$HEAD_SHA" --jq .merge_base_commit.sha)
+base=$(gh api "repos/$GITHUB_REPOSITORY/compare/$TARGET_SHA...$HEAD_SHA" --jq "$(<"$VIZE_CI_FILES/merge-base-sha.jq")")
 [[ "$base" =~ ^[a-f0-9]{40}$ ]]
 git fetch --no-tags --depth=1 origin "$base" "$HEAD_SHA"
 node tools/commands/levels/codegen-equivalence.ts "$base" "$HEAD_SHA" vize bin:vize "$MODE" "$RUNNER_TEMP/cli.json"

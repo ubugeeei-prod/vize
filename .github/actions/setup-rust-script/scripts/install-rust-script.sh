@@ -3,7 +3,7 @@ set -euo pipefail
 rust_script_version="0.34.0"
 download_defer_status=75
 if command -v rust-script >/dev/null 2>&1; then
-  installed_version="$(rust-script --version | sed -E 's/^rust-script[[:space:]]+([^[:space:]]+).*/\1/')"
+  installed_version="$(rust-script --version | sed -E -f "${BASH_SOURCE[0]%/*}/rust-script-version.sed")"
   if [ "$installed_version" = "$rust_script_version" ]; then
     rust-script --version
     exit 0
@@ -35,7 +35,7 @@ if [ "$rust_script_installed" != true ]; then
 fi
 export PATH="$cargo_bin:$PATH"
 echo "$cargo_bin" >> "$GITHUB_PATH"
-installed_version="$(rust-script --version | sed -E 's/^rust-script[[:space:]]+([^[:space:]]+).*/\1/')"
+installed_version="$(rust-script --version | sed -E -f "${BASH_SOURCE[0]%/*}/rust-script-version.sed")"
 if [ "$installed_version" != "$rust_script_version" ]; then
   echo "::error::expected rust-script ${rust_script_version}, got $(rust-script --version)" >&2
   exit 1

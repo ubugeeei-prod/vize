@@ -30,10 +30,7 @@ for ((i = 1; i < ${#streams[@]}; i += 2)); do
     mkdir -p "$out/io"
     (cd "$project" && strace -ff -qq -e trace=read,write,writev -e signal=none -o "$out/io/$corpus.$side" "$sbin" content-mapper < "$stream" > /dev/null)
     # fd 0 reads and fd 1 writes: calls, bytes, and calls under 4 KiB.
-    cat "$out/io/$corpus.$side".* | awk -v side="$side" -v corpus="$corpus" '
-      match($0, /^(read|write|writev)\([01],/) { op = substr($0, RSTART, RLENGTH - 1) ")"; n = $NF + 0; calls[op]++; bytes[op] += n; if (n < 4096) small[op]++ }
-      END { for (op in calls) printf "| %s | %s | %s | %d | %.1f | %d |\n", corpus, side, op, calls[op], bytes[op] / 1048576, small[op] }
-    ' >> "$out/io.md"
+    cat "$out/io/$corpus.$side".* | awk -v side="$side" -v corpus="$corpus" -f "$VIZE_CI_FILES/syscall-io.awk" >> "$out/io.md"
     rm -r "$out/io"
   done
 done
@@ -44,10 +41,10 @@ done
   echo "|---|---|---|---|---|---|"
   sort "$out/io.md"
   echo ""
-  for f in "$out"/*.strace-c.txt; do echo "<details><summary>$(basename "$f")</summary>"; echo ""; echo '```'; awk 'n++ < 30' "$f"; echo '```'; echo "</details>"; done
+  for f in "$out"/*.strace-c.txt; do echo "<details><summary>$(basename "$f")</summary>"; echo ""; echo '```'; head -n 30 "$f"; echo '```'; echo "</details>"; done
   echo ""
   echo "## perf (head CLI, frame pointers)"
-  for f in "$out"/*.stat.txt; do echo '```'; awk 'NF && !/^#/' "$f"; echo '```'; done
-  for f in "$out"/*.self.txt; do echo "<details><summary>$(basename "$f") (self, dso and symbol)</summary>"; echo ""; echo '```'; awk 'NF && !/^#/ && n++ < 60' "$f"; echo '```'; echo "</details>"; done
-  for f in "$out"/*.children.txt; do echo "<details><summary>$(basename "$f") (inclusive)</summary>"; echo ""; echo '```'; awk 'NF && !/^#/ && n++ < 80' "$f"; echo '```'; echo "</details>"; done
+  for f in "$out"/*.stat.txt; do echo '```'; awk -f "$VIZE_CI_FILES/perf-report-lines.awk" "$f"; echo '```'; done
+  for f in "$out"/*.self.txt; do echo "<details><summary>$(basename "$f") (self, dso and symbol)</summary>"; echo ""; echo '```'; awk -v limit=60 -f "$VIZE_CI_FILES/perf-report-lines.awk" "$f"; echo '```'; echo "</details>"; done
+  for f in "$out"/*.children.txt; do echo "<details><summary>$(basename "$f") (inclusive)</summary>"; echo ""; echo '```'; awk -v limit=80 -f "$VIZE_CI_FILES/perf-report-lines.awk" "$f"; echo '```'; echo "</details>"; done
 } >> "$GITHUB_STEP_SUMMARY"

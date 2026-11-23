@@ -12,7 +12,7 @@ commands {
   npm install --no-audit --no-fund --legacy-peer-deps tsrs@7.1.0-beta.tsrs4 vue@3.5.46 vue-component-meta@4.0.0-alpha.3
   mkdir -p node_modules/vize
   cp -R "$GITHUB_WORKSPACE/npm/cli/"{*.d.*,generated} node_modules/vize/
-  jq --arg cli "$GITHUB_WORKSPACE/target/ci/vize" '.typescript.contentMapper.exec = [$cli, "content-mapper"]' \
+  jq --arg cli "$GITHUB_WORKSPACE/target/ci/vize" -f "$VIZE_CI_FILES/configure-content-mapper.jq" \
     "$GITHUB_WORKSPACE/npm/cli/package.json" > node_modules/vize/package.json
   node check.ts
   """#

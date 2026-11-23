@@ -7,7 +7,7 @@ commands {
   # One source of truth: the workspace catalog pins vue-tsc (same release
   # train as @vue/language-server), TypeScript and the Corsa runtime.
   # The typecheck-host manifest owns the experimental tsrs pin.
-  pin() { sed -n "s|^    \"\{0,1\}$1\"\{0,1\}: \"\(.*\)\"$|\1|p" pnpm-workspace.yaml | head -1; }
+  pin() { awk -v package_name="$1" -f "$VIZE_CI_FILES/catalog-version.awk" pnpm-workspace.yaml; }
   vue=$(pin vue-tsc); ts=$(pin typescript); corsa=$(pin @typescript/typescript-linux-x64)
   tsrs=$(node "$VIZE_CI_FILES/install-the-repository-s-pinned-vue-language-tools-and-corsa.cjs")
   test -n "$vue" && test -n "$ts" && test -n "$corsa" && test -n "$tsrs"

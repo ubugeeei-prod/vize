@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 for attempt in 1 2 3; do
-  cargo fetch --locked --target "$(rustc -vV | sed -n 's/^host: //p')" && exit 0
+  cargo fetch --locked --target "$(rustc -vV | sed -n -f "$VIZE_CI_FILES/../shared/rust-host-triple.sed")" && exit 0
   echo "::warning title=crates.io fetch::attempt $attempt failed"
   sleep $((attempt * 30))
 done
