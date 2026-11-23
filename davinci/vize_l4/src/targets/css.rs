@@ -19,14 +19,13 @@ pub fn emit_style_bindings(
 ) -> String {
     let block = style.block();
     let source = block.source();
-    let mut calls = style.calls().peekable();
-    if calls.peek().is_none() {
+    if !style.has_calls() {
         return String::from(source);
     }
     let mut output = String::with_capacity(source.len());
     let mut previous = 0;
     let mut remaining = source;
-    for call in calls {
+    for call in style.calls() {
         let start = (call.span.start - block.start()) as usize;
         let (gap, rest) = remaining.split_at(start - previous);
         output.push_str(gap);
