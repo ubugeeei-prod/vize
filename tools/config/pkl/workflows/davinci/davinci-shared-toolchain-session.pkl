@@ -1,0 +1,113 @@
+import "../../Actions.pkl" as ci
+
+name = "Shared toolchain session"
+on {
+  pull_request {
+    paths = new Listing {
+      ".github/workflows/davinci-shared-toolchain-session.yml"
+      ".github/scripts/workflows/davinci-shared-toolchain-session/**"
+      "crates/vize_maestro/src/source_project/scoped_component.rs"
+      "crates/vize_maestro/src/source_project/toolchain_session.rs"
+      "crates/vize_maestro/src/source_project/toolchain_session/**"
+      "crates/vize_incremental/providers/graph/tests/incremental.rs"
+      "crates/vize_atelier_sfc/tests/bundler_toolchain_session.rs"
+      "crates/vize_atelier_sfc/src/native.rs"
+      "crates/vize_atelier_sfc/src/native/styles.rs"
+      "crates/vize_atelier_sfc/tests/component_scss/**"
+      "crates/vize_maestro/Cargo.toml"
+      "tests/fixtures/shared-toolchain/**"
+    }
+  }
+  workflow_dispatch = null
+}
+permissions { contents = "read" }
+concurrency {
+  group = "shared-toolchain-session-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  CARGO_INCREMENTAL = "0"
+  CARGO_BUILD_JOBS = "24"
+  RUST_MIN_STACK = "16777216"
+  RUSTUP_TOOLCHAIN = "1.100.0"
+  HEAD_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+}
+jobs {
+  replay {
+    name = "Compiler, lint, format, typed editor and incremental graph"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("davinci-shared-toolchain-session")
+      ci.checkoutAt("${{ env.HEAD_SHA }}")
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy"
+        }
+      }
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version-file` = "package.json"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        name = "Replay the original editor revisions in a single feature build and resident graph"
+        run = ". \"${{ env.VIZE_CI_FILES }}/replay-the-original-editor-revisions-in-a-single-feature-build-and-resident-graph.sh\""
+      }
+    }
+  }
+  stock {
+    name = "Stock CLI and packaged Node addon (${{ matrix.mode }})"
+    strategy {
+      `fail-fast` = false
+      matrix {
+        mode = List("default", "portable")
+      }
+    }
+    `runs-on` = ci.linux
+    `timeout-minutes` = 45
+    env {
+      MODE = "${{ matrix.mode }}"
+      GH_TOKEN = "${{ github.token }}"
+      DEFAULT_BRANCH = "${{ github.event.repository.default_branch }}"
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("davinci-shared-toolchain-session")
+      ci.checkoutAt("${{ env.HEAD_SHA }}")
+      ci.rust("1.100.0")
+      new Dynamic {
+        uses = "./.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = ci.setupNode
+        with { `node-version` = 24 }
+      }
+      new Dynamic {
+        name = "Compare the complete integration to its default-branch ancestor"
+        run = ". \"${{ env.VIZE_CI_FILES }}/compare-the-complete-integration-to-its-default-branch-ancestor.sh\""
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "shared-toolchain-stock-${{ matrix.mode }}"
+          path = """
+          ${{ runner.temp }}/cli.json
+          ${{ runner.temp }}/addon.json
+          ${{ runner.temp }}/identity.json
+
+          """
+        }
+      }
+    }
+  }
+}

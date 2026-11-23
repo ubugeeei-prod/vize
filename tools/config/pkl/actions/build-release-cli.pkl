@@ -1,0 +1,154 @@
+import "../Actions.pkl" as ci
+
+name = "Build release CLI"
+description = "Shared exact-checkout CLI recipe for release and trusted cache warming"
+inputs {
+  target {
+    required = true
+    description = "Rust target triple"
+  }
+  `release-version` {
+    required = true
+    description = "Exact version embedded in release binaries"
+  }
+  archive {
+    required = true
+    description = "CLI archive name"
+  }
+  `authorized-release` {
+    required = false
+    ["default"] = "false"
+    description = "Candidate authorization already passed in the caller"
+  }
+  `upload-artifacts` {
+    required = false
+    ["default"] = "true"
+    description = "Upload artifacts from this checkout"
+  }
+}
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      uses = ci.setupNode
+      with {
+        `node-version-file` = "package.json"
+        `package-manager-cache` = false
+      }
+    }
+    new Dynamic {
+      name = "Enable long paths (Windows)"
+      `if` = "runner.os == 'Windows'"
+      shell = "bash"
+      run = "git config --system core.longpaths true"
+    }
+    new Dynamic {
+      name = "Select the Windows target SDK"
+      `if` = "runner.os == 'Windows'"
+      uses = "ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756"  // v1
+      with { arch = "${{ startsWith(inputs.target, 'aarch64-') && 'amd64_arm64' || 'amd64' }}" }
+    }
+    new Dynamic {
+      name = "Read the repository Rust toolchain"
+      id = "rust-toolchain"
+      shell = "bash"
+      run = ci.actionScript("read-the-repository-rust-toolchain.sh")
+    }
+    new Dynamic {
+      name = "Setup Rust"
+      uses = ci.setupRust
+      with {
+        toolchain = "${{ steps.rust-toolchain.outputs.channel }}"
+        targets = "${{ inputs.target }}"
+      }
+    }
+    new Dynamic {
+      name = "Setup Zig (Linux CLI)"
+      `if` = "runner.os == 'Linux'"
+      uses = "goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406"  // v2
+      // A pinned release: the default nightly master re-downloads (and can time out) every run.
+      with { version = "0.15.1" }
+    }
+    // GNU CLIs link through cargo-zigbuild against the documented glibc floor
+    // (tools/support/github/glibc-floor.ts), x64 and the arm64 cross build alike.
+    new Dynamic {
+      name = "Setup cargo-zigbuild (Linux GNU CLI)"
+      `if` = "endsWith(inputs.target, '-unknown-linux-gnu')"
+      uses = "./.github/actions/setup-cargo-zigbuild"
+    }
+    new Dynamic {
+      name = "Configure Zig linker (Linux musl CLI)"
+      `if` = "endsWith(inputs.target, '-musl')"
+      shell = "bash"
+      run = "node tools/commands/ci/github/configure-zig-musl-linkers.ts"
+    }
+    new Dynamic {
+      name = "Mount Rust sticky disks (Linux)"
+      `if` = "runner.os == 'Linux'"
+      uses = "./.github/actions/setup-rust-sticky-cache"
+      // Reuse only Cargo outputs whose recorded source blobs still match.
+      with {
+        `reuse-target` = "true"
+        `restore-trusted` = "${{ inputs.authorized-release }}"
+        key = "release-cli-${{ inputs.target }}"
+        `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+      }
+    }
+    new Dynamic {
+      name = "Cache Rust (non-Linux)"
+      `if` = "runner.os != 'Linux'"
+      uses = "Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32"  // v2
+      with {
+        `shared-key` = "release-cli-${{ inputs.target }}"
+        `cache-workspace-crates` = "true"
+        `save-if` = "${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || inputs.authorized-release == 'true' }}"
+      }
+    }
+    new Dynamic {
+      name = "Tune Windows release profile"
+      `if` = "runner.os == 'Windows'"
+      shell = "bash"
+      run = ci.actionScript("tune-windows-release-profile.sh")
+    }
+    new Dynamic {
+      name = "Build CLI"
+      shell = "bash"
+      env {
+        RELEASE_TARGET = "${{ inputs.target }}"
+        VIZE_RELEASE_VERSION = "${{ inputs.release-version }}"
+      }
+      run = ci.actionScript("build-cli.sh")
+    }
+    new Dynamic {
+      name = "Create archive (Unix)"
+      `if` = "runner.os != 'Windows'"
+      shell = "bash"
+      env {
+        RELEASE_TARGET = "${{ inputs.target }}"
+        RELEASE_ARCHIVE = "${{ inputs.archive }}"
+      }
+      run = ci.actionScript("create-archive-unix.sh")
+    }
+    new Dynamic {
+      name = "Create archive (Windows)"
+      `if` = "runner.os == 'Windows'"
+      shell = "bash"
+      env {
+        RELEASE_TARGET = "${{ inputs.target }}"
+        RELEASE_ARCHIVE = "${{ inputs.archive }}"
+      }
+      run = #"node tools/support/github/create-cli-archive.ts "$RELEASE_TARGET" "$RELEASE_ARCHIVE" vize.exe"#
+    }
+    new Dynamic {
+      name = "Upload artifact"
+      `if` = "inputs.upload-artifacts == 'true'"
+      uses = ci.uploadArtifact
+      with {
+        name = "cli-${{ inputs.target }}"
+        path = "${{ inputs.archive }}"
+        `if-no-files-found` = "error"
+        `compression-level` = 0
+      }
+    }
+  }
+}

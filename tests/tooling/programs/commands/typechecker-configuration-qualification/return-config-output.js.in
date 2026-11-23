@@ -1,0 +1,2 @@
+process.stdout.write(@@OUTPUT@@);
+process.exit(1);

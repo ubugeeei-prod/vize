@@ -1,0 +1,142 @@
+import "../../Actions.pkl" as ci
+
+name = "Focused real-project LSP qualification"
+`run-name` = "LSP ${{ inputs.packet_scope }}${{ inputs.trace_preparation && ' preparation trace' || '' }} @ ${{ github.sha }}"
+
+// Replays the complete existing Matrix packet for its four original failures.
+// This is a bounded investigation, not qualification of the full ecosystem.
+on {
+  workflow_dispatch {
+    inputs {
+      source_sha {
+        description = "Exact reviewed main SHA (must equal the dispatched ref)"
+        required = true
+        type = "string"
+      }
+      packet_scope {
+        description = "Complete original packets to replay (subsets are not four-project qualification)"
+        ["default"] = "original-four"
+        type = "choice"
+        options = List("original-four", "residual-two", "misskey-only")
+      }
+      trace_preparation {
+        description = "Record existing preparation phases (instrumented observation, not paired performance)"
+        ["default"] = false
+        type = "boolean"
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "lsp-focused-projects-${{ inputs.source_sha }}"
+  `cancel-in-progress` = false
+}
+
+env {
+  CARGO_TERM_COLOR = "always"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  EXPECTED_SOURCE = "${{ inputs.source_sha }}"
+  PACKET_SCOPE = "${{ inputs.packet_scope }}"
+  VIZE_TRACE_EDITOR_PREPARATION = "${{ inputs.trace_preparation && '1' || '0' }}"
+  CAMPAIGN_DIR = "real-project-results/lsp-focused"
+}
+
+jobs {
+  `original-projects` {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 90
+    env {
+      VIZE_CI_FILES = "${{ github.workspace }}/.github/scripts/workflows/lsp-focused-projects"
+    }
+    steps = new Listing {
+      ci.checkoutAt("${{ github.sha }}")
+      ci.workspaceVp()
+      new Dynamic {
+        name = "Freeze the exact source, registry selection, and fixture pins"
+        run = "node tools/support/compat/github/lsp-focused-campaign.ts plan"
+      }
+      new Dynamic {
+        uses = ci.setupRust
+        with {
+          toolchain = "1.100.0"
+          components = "clippy,rust-src,rustfmt"
+          targets = "wasm32-unknown-unknown,wasm32-wasip2"
+        }
+      }
+      ci.use("./.github/actions/setup-rust-script")
+      new Dynamic { run = "corepack enable" }
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        // The existing source CLI producers build this exact default-feature
+        // ci profile in test-scripts; use its normal trusted-main namespace.
+        with {
+          key = "test-scripts"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic {
+        name = "Prepare the original pinned project dependencies"
+        id = "dependencies"
+        `continue-on-error` = true
+        run = "node tools/support/compat/github/lsp-focused-campaign.ts dependencies"
+      }
+      new Dynamic {
+        name = "Build and receipt one exact-source production server"
+        run = ci.workflowScript("build-and-receipt-one-exact-source-production-server.sh")
+      }
+      new Dynamic {
+        name = "Replay selected complete original LSP packets serially"
+        id = "lifecycle"
+        // Four unchanged 600s packets, plus custody and process cleanup.
+        `timeout-minutes` = 45
+        env {
+          CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+          REAL_PROJECT_LSP_TIMEOUT_MS = "600000"
+          VIZE_LSP_BIN = "target/ci/vize"
+          VIZE_LSP_REQUIRE_SOURCE_BUILD = "1"
+          VIZE_LSP_BUILD_RECIPE = "cargo build --profile ci -p vize"
+        }
+        run = ci.workflowScript("replay-selected-complete-original-lsp-packets-serially.sh")
+      }
+      new Dynamic {
+        name = "Verify every source-bound raw session"
+        `if` = "${{ always() }}"
+        run = #"node tests/tooling/support/lsp/verify-session-captures.ts verify "$CAMPAIGN_DIR/lsp-wire-before.json" "$CAMPAIGN_DIR/lsp-wire-integrity.json""#
+      }
+      new Dynamic {
+        name = "Verify trace resource custody independently of packet acceptance"
+        `if` = "${{ always() && inputs.trace_preparation }}"
+        env {
+          CORSA_PATH = "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc"
+          VIZE_LSP_BIN = "target/ci/vize"
+        }
+        run = "node tools/support/compat/github/lsp-focused-campaign.ts verify-resources"
+      }
+      new Dynamic {
+        name = "Refuse missing selected projects, stale binaries, or failed preparation"
+        `if` = "${{ always() }}"
+        run = "node tools/support/compat/github/lsp-focused-campaign.ts refuse"
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "${{ always() }}"
+        with {
+          name = "lsp-focused-${{ inputs.packet_scope }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}"
+          path = """
+          real-project-results/lsp-focused/
+          target/ci/vize.differential-build.json
+          target/differential/lsp-sessions/
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 3
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+amends "../../../../ShellScript.pkl"
+
+interpreter = "sh"
+executable = false
+
+commands {
+  #"exec @@COMMAND@@"#
+}

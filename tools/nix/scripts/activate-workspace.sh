@@ -1,0 +1,11 @@
+@CLEAR_TESTBOX@
+export VIZE_WORKSPACE_ROOT="$PWD"
+export PATH="@VP@/bin:$VIZE_WORKSPACE_ROOT/node_modules/.bin:$PATH"
+export PLAYWRIGHT_BROWSERS_PATH="$PWD/.cache/ms-playwright"
+export WASM_PACK_CACHE="$PWD/.cache/wasm-pack"
+@DARWIN@
+
+echo "Vize dev shell ready."
+echo "Nix provides Node, pnpm, Gauche, Rust, wasm-pack, wasm-bindgen, and binaryen."
+echo "Run: vp install --frozen-lockfile"
+echo "Local defaults: vp check / vp fmt / vp dev / vp build / vp test / vp lint"

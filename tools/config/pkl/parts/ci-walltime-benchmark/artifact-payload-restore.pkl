@@ -1,0 +1,23 @@
+import "../../Actions.pkl" as ci
+
+needs = "artifact-payload"
+`if` = "${{ github.event_name == 'workflow_dispatch' && inputs.component == 'artifact-payload' }}"
+`runs-on` = ci.linux
+`timeout-minutes` = 60
+steps = new Listing {
+  new Dynamic {
+    uses = ci.checkout
+    with { ref = "${{ github.sha }}" }
+  }
+  new Dynamic {
+    uses = "./.github/actions/restore-artifact-payload"
+    with {
+      artifact_id = "${{ inputs.artifact_id }}"
+      artifact_source_sha = "${{ inputs.artifact_source_sha }}"
+    }
+  }
+  new Dynamic {
+    uses = "./.github/actions/upload-artifact-payload-receipt"
+    `if` = "${{ always() }}"
+  }
+}

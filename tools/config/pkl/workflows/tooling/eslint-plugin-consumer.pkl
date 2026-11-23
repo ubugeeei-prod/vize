@@ -1,0 +1,177 @@
+import "../../Actions.pkl" as ci
+
+name = "ESLint plugin consumer"
+
+on {
+  workflow_dispatch {}
+  pull_request {
+    paths = new Listing {
+      "npm/linter/eslint/**"
+      "npm/linter/oxlint/src/eslint*"
+      "npm/linter/oxlint/src/native.ts"
+      "npm/linter/oxlint/src/configs.ts"
+      "npm/linter/oxlint/package.json"
+      "pnpm-lock.yaml"
+      ".github/workflows/eslint-plugin-consumer.yml"
+      ".github/scripts/workflows/eslint-plugin-consumer/**"
+    }
+  }
+}
+
+permissions { contents = "read" }
+
+concurrency {
+  group = "eslint-plugin-consumer-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+
+jobs {
+  consumer {
+    `runs-on` = ci.linux
+    `timeout-minutes` = 30
+    env {
+
+      CARGO_BUILD_JOBS = "12"
+      CARGO_TERM_COLOR = "always"
+      VIZE_PREFER_WORKSPACE_BINDING = "1"
+      VIZE_ESLINT_EVIDENCE = "${{ github.workspace }}/target/eslint-consumer"
+      SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+    }
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("eslint-plugin-consumer")
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        uses = ci.setupVp121
+        with {
+          version = "latest"
+          `node-version-file` = "package.json"
+          cache = true
+          `cache-save` = false
+          `run-install` = false
+        }
+      }
+      ci.rust("1.100.0")
+      ci.wild()
+      new Dynamic {
+        uses = "./.github/actions/setup-rust-sticky-cache"
+        with {
+          key = "test-scripts"
+          `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+        }
+      }
+      new Dynamic { run = "vp install --frozen-lockfile --prefer-offline" }
+      new Dynamic {
+        name = "Build the actual source native addon and shared rule bridge"
+        run = ci.workflowScript("build-the-actual-source-native-addon-and-shared-rule-bridge.sh")
+      }
+      new Dynamic {
+        name = "Preserve exact source and dependency authority"
+        shell = "bash"
+        run = ci.workflowScript("preserve-exact-source-and-dependency-authority.sh")
+      }
+      new Dynamic {
+        name = "Qualify real flat-config consumers, source authority and call counts"
+        shell = "bash"
+        run = ci.workflowScript("qualify-real-flat-config-consumers-source-authority-and-call-counts.sh")
+      }
+      new Dynamic {
+        name = "Verify no physical SFC reads, including native code"
+        shell = "bash"
+        run = ci.workflowScript("verify-no-physical-sfc-reads-including-native-code.sh")
+      }
+      new Dynamic {
+        name = "Qualify packed public entries in an isolated consumer"
+        shell = "bash"
+        run = ci.workflowScript("qualify-packed-public-entries-in-an-isolated-consumer.sh")
+      }
+      new Dynamic {
+        name = "Stage the same source addon for supported Node and TypeScript consumers"
+        shell = "bash"
+        run = ci.workflowScript("stage-the-same-source-addon-for-supported-node-and-typescript-consumers.sh")
+      }
+      new Dynamic {
+        name = "Share packed exports and source addon without rebuilding native code"
+        uses = ci.uploadArtifact
+        with {
+          name = "eslint-packed-source-${{ env.SOURCE_SHA }}"
+          path = """
+          target/eslint-consumer/*.tgz
+          target/eslint-consumer/source.json
+          target/eslint-consumer/consumer.json
+          target/eslint-consumer/native-package/**
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+      new Dynamic {
+        name = "Retain complete source-native packets, raw traces and timings"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "eslint-plugin-consumer-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SOURCE_SHA }}"
+          path = "target/eslint-consumer/**"
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+
+  `supported-consumer` {
+    name = "ESLint packed consumer (Node ${{ matrix.node }}, TS ${{ matrix.typescript }})"
+    needs = "consumer"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 10
+    strategy {
+      `fail-fast` = false
+      matrix {
+        node = List("22.13.0", "24.14.0")
+        typescript = List("4.8.4", "5.9.3", "6.0.3")
+      }
+    }
+    env {
+      SOURCE_SHA = "${{ github.event.pull_request.head.sha || github.sha }}"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+    }
+    steps = new Listing {
+      ci.checkoutAt("${{ github.event.pull_request.head.sha || github.sha }}")
+      new Dynamic {
+        uses = ci.setupNode
+        with {
+          `node-version` = "${{ matrix.node }}"
+          `package-manager-cache` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.downloadArtifact
+        with {
+          name = "eslint-packed-source-${{ env.SOURCE_SHA }}"
+          path = "${{ runner.temp }}/eslint-packed-source"
+        }
+      }
+      new Dynamic {
+        name = "Check installed public exports with the exact supported providers"
+        run = #"node --experimental-strip-types npm/linter/eslint/test/legacy-consumer.ts --artifacts "$RUNNER_TEMP/eslint-packed-source" --output "$RUNNER_TEMP/eslint-compatibility" --node "${{ matrix.node }}" --typescript "${{ matrix.typescript }}""#
+      }
+      new Dynamic {
+        name = "Retain install logs, exact providers and complete failure/clean packets"
+        `if` = "always()"
+        uses = ci.uploadArtifact
+        with {
+          name = "eslint-supported-consumer-node-${{ matrix.node }}-typescript-${{ matrix.typescript }}-${{ env.SOURCE_SHA }}"
+          path = """
+          ${{ runner.temp }}/eslint-compatibility/*.json
+          ${{ runner.temp }}/eslint-compatibility/project*/package*.json
+          ${{ runner.temp }}/eslint-compatibility/project*/consumer.mjs
+
+          """
+          `if-no-files-found` = "error"
+          `retention-days` = 14
+        }
+      }
+    }
+  }
+}

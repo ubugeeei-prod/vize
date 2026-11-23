@@ -29,9 +29,22 @@ jobs:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       CARGO_BUILD_JOBS: "12"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/pr-js-checks/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Explain documentation-only skip
         if: ${{ !(inputs.run-js && matrix.group != 'none') }}
-        run: echo 'JS package checks skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/explain-documentation-only-skip.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ (inputs.run-js && matrix.group != 'none') }}
       - uses: ./.github/actions/cache-vp-bootstrap
@@ -81,12 +94,14 @@ jobs:
       - name: Test Vite+ rule catalog custody on Bun
         if: ${{ inputs.run-js && matrix.group == 'builders' }}
         run: bun test npm/builder/vite/src/vite-plus/runtime.test.ts
+      - name: Install the pinned Vue Router fixture
+        if: ${{ inputs.run-js && matrix.group == 'builders' }}
+        working-directory: tests/_fixtures/_projects/vue-router-define-page
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Test definePage metadata with Vue Router and Vite
         if: ${{ inputs.run-js && matrix.group == 'builders' }}
         working-directory: tests/_fixtures/_projects/vue-router-define-page
-        run: |
-          npm ci --ignore-scripts --no-audit --no-fund
-          node --test router.test.ts
+        run: node --test router.test.ts
       - name: Test content mapper capability launch on Bun
         if: ${{ inputs.run-js && matrix.group == 'builders' }}
         run: bun test npm/cli/tests/content-mapper-bun.test.ts
@@ -153,9 +168,22 @@ jobs:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       CARGO_BUILD_JOBS: "12"
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/pr-js-checks/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Explain documentation-only skip
         if: ${{ !inputs.run-js }}
-        run: echo 'Oxlint project qualification skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/explain-documentation-only-skip-2.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ inputs.run-js }}
       - uses: ./.github/actions/cache-vp-bootstrap
@@ -263,9 +291,22 @@ jobs:
       TEST_CASES_JOB: "PR package conformance (${{ matrix.surface }})"
       VIZE_TEST_CASES: test-cases-js-conformance-${{ matrix.surface }}.json
     steps:
+      - name: Check out the workflow's scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .vize-workflow-tools
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |-
+            /.github/actions/stage-workflow-scripts/
+            /.github/scripts/workflows/shared/
+            /.github/scripts/workflows/pr-js-checks/
+      - name: Stage scripts outside the source checkout
+        uses: ./.vize-workflow-tools/.github/actions/stage-workflow-scripts
       - name: Explain documentation-only skip
         if: ${{ !(inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
-        run: echo 'Fresco and UI conformance skipped because this PR changes no package, compiler, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
+        run: . "${{ env.VIZE_CI_FILES }}/explain-documentation-only-skip-3.sh"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ (inputs.run-js && fromJSON(inputs.js-plan).conformance[matrix.surface]) }}
       - uses: ./.github/actions/cache-vp-bootstrap
@@ -300,12 +341,10 @@ jobs:
         run: node tools/support/compat/github/job-test-cases.ts setup "$RUNNER_TEMP/ui-conformance-test-cases"
       - name: Check Fresco native declarations and consumer types
         if: ${{ inputs.run-js && matrix.surface == 'fresco' && fromJSON(inputs.js-plan).conformance.fresco }}
-        run: vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types
+        run: . "${{ env.VIZE_CI_FILES }}/check-fresco-native-declarations-and-consumer-types.sh"
       - name: Lint Fresco NAPI call sites and test corpus
         if: ${{ inputs.run-js && matrix.surface == 'fresco' && fromJSON(inputs.js-plan).conformance.fresco }}
-        run: |
-          cargo clippy --locked --profile ci -p vize_fresco --features napi --lib -- -D warnings
-          cargo clippy --locked --profile ci -p vize_fresco --lib --tests -- -D warnings
+        run: . "${{ env.VIZE_CI_FILES }}/lint-fresco-napi-call-sites-and-test-corpus.sh"
       - name: Check UI package conformance
         if: ${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
         run: node .github/actions/test-js-packages-with-history/native-fault-evidence.ts --ui-conformance
@@ -334,13 +373,7 @@ jobs:
       - name: Verify packaged direct-child props with source native on Node 22
         if: ${{ inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
         shell: bash
-        run: |
-          set -euo pipefail
-          capture="$RUNNER_TEMP/direct-child-props-source-11809"
-          mkdir -p "$capture"
-          node npm/native/scripts/native-build-receipt.mjs >"$capture/producer.stdout" 2>"$capture/producer.stderr"
-          (cd npm/cli && vp pack) >"$capture/cli-pack.stdout" 2>"$capture/cli-pack.stderr"
-          node tools/support/compat/content-mapper/direct-child-props-11809.ts --capture "$capture" >"$capture/consumer.stdout" 2>"$capture/consumer.stderr"
+        run: . "${{ env.VIZE_CI_FILES }}/verify-packaged-direct-child-props-with-source-native-on-node-22.sh"
       - name: Retain source reporter archives and whole outcomes
         if: ${{ always() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -358,14 +391,7 @@ jobs:
         env:
           VIZE_IMPORTED_TYPES_REQUIRE_SOURCE: "1"
           VIZE_IMPORTED_TYPES_SOURCE_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          bindings=("$GITHUB_WORKSPACE"/npm/native/*.node)
-          test "${#bindings[@]}" -eq 1
-          capture="$RUNNER_TEMP/imported-type-project"
-          mkdir -p "$capture"
-          node tests/native/imported-type-project-stats.ts "${bindings[0]}" "$capture/receipt.json"
+        run: . "${{ env.VIZE_CI_FILES }}/verify-imported-type-projects-with-the-built-native-image.sh"
       - name: Retain imported type project inputs and source receipts
         if: ${{ always() && inputs.run-js && matrix.surface == 'ui' && fromJSON(inputs.js-plan).conformance.ui }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

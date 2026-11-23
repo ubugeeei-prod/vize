@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 import {
   mountedRuntimeDevtools,
   withMountedRuntimeDevtools,
@@ -12,14 +13,7 @@ test("an unsettled runtime child retains its last phase without claiming a cause
   const support = new URL("./support/mounted-runtime-devtools.ts", import.meta.url).href;
   const child = spawnSync(
     process.execPath,
-    [
-      "--input-type=module",
-      "--eval",
-      `import { runtimeProcessEvidence } from ${JSON.stringify(support)};
-const evidence = runtimeProcessEvidence();
-evidence.phase("close mounted DOM", { backend: "vdom", fixtureIndex: 0 });
-await new Promise(() => {});`,
-    ],
+    [toolingProgram("runtime/leave-mounted-phase-pending.js"), support],
     { encoding: "utf8" },
   );
   assert.equal(child.error, undefined);
@@ -45,15 +39,7 @@ test("completed runtime children retain the exact success protocol and emit no e
   const support = new URL("./support/mounted-runtime-devtools.ts", import.meta.url).href;
   const child = spawnSync(
     process.execPath,
-    [
-      "--input-type=module",
-      "--eval",
-      `import { runtimeProcessEvidence } from ${JSON.stringify(support)};
-const evidence = runtimeProcessEvidence();
-evidence.phase("assert fixture observations");
-process.stdout.write('{"passed":1}');
-evidence.complete();`,
-    ],
+    [toolingProgram("runtime/complete-mounted-phase.js"), support],
     { encoding: "utf8" },
   );
   assert.equal(child.error, undefined);
@@ -67,17 +53,7 @@ test("a pending cleanup retains the original trace rejection in real child exit 
   const support = new URL("./support/mounted-runtime-devtools.ts", import.meta.url).href;
   const child = spawnSync(
     process.execPath,
-    [
-      "--input-type=module",
-      "--eval",
-      `import { runtimeProcessEvidence, withMountedRuntimeDevtools } from ${JSON.stringify(support)};
-const evidence = runtimeProcessEvidence();
-evidence.phase("trace", { backend: "vdom", fixtureIndex: 0 });
-await withMountedRuntimeDevtools(false,
-  () => { evidence.phase("close mounted DOM"); return new Promise(() => {}); },
-  async () => { throw new Error("original trace rejection witness"); },
-  { enabled: false, onFailure: evidence.failure });`,
-    ],
+    [toolingProgram("runtime/reject-mounted-trace.js"), support],
     { encoding: "utf8" },
   );
   assert.equal(child.error, undefined);

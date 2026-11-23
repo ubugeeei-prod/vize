@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.command("cargo", List("build", "--locked", "--profile", "ci-opt", "-p", "vize"))
+  module.command("node", List("tests/tooling/support/cross-file-finalization.ts"))
+}

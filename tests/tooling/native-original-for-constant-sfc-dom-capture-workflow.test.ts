@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
@@ -28,7 +29,7 @@ test("every constant source, emitter-only or full capture input requires a real 
 });
 
 test("actual constant action source builds all eleven whole modules before mandatory fresh dev and prod processes", () => {
-  const action = fs.readFileSync(
+  const action = readAutomationPrograms(
     new URL("../../.github/actions/test-native-selected-sfc-dom/action.yml", import.meta.url),
     "utf8",
   );

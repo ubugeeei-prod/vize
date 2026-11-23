@@ -10,7 +10,8 @@ import {
 } from "../../tools/benchmarks/scripts/typechecker-native-source-recipe.mjs";
 import {
   currentBytes,
-  currentRequiredRun,
+  namedRequiredRun,
+  workingSource,
   fixture,
   hash,
 } from "../../tools/benchmarks/scripts/typechecker-native-source-recipe-fixture.mjs";
@@ -78,7 +79,7 @@ test("a historical finalized release payload authenticates the complete source r
       const step = workflow.jobs["native-phases"].steps.find(
         (candidate: { name: string }) => candidate.name === STEP,
       );
-      const original = declaredSourceRecipe(step.run);
+      const original = declaredSourceRecipe(step.run, workingSource);
       assert.equal(selected.mode, "immutable-source-step");
       assert.ok("cut" in selected);
       assert.equal(selected.source, f.source);
@@ -87,8 +88,8 @@ test("a historical finalized release payload authenticates the complete source r
       assert.equal(selected.recipe, original.recipe);
       assert.equal(selected.recipeSha256, hash(original.recipe));
       assert.equal(selected.sourceStepSha256, hash(step.run));
-      assert.equal(selected.recipe.replace(/^  /gmu, ""), currentRequiredRun);
-      assert.equal(selected.recipeKind, "source-inline");
+      assert.equal(selected.recipe, namedRequiredRun);
+      assert.equal(selected.recipeKind, "source-file");
       assert.deepEqual(selected.originalEnvironment, step.env);
       const execution = { ...step.env };
       delete execution.GH_TOKEN;

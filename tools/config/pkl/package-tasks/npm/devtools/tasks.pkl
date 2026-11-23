@@ -1,0 +1,8 @@
+amends "../../../PackageTasks.pkl"
+
+tasks {
+  ["check"] {
+    module.run("vp", List("check", "src", "vite.config.ts", "tsconfig.json", "tsconfig.typecheck.json"))
+    module.run("vp", List("exec", "vue-tsc", "--noEmit", "-p", "tsconfig.typecheck.json"))
+  }
+}

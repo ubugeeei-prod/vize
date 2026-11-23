@@ -1,0 +1,149 @@
+import "../../Actions.pkl" as ci
+
+name = "PR performance observation"
+
+// Measurements only. This workflow is deliberately independent of Check,
+// merge_group, release gates, and the existing historical benchmark budgets.
+on {
+  pull_request {
+    types = List("opened", "synchronize", "reopened")
+  }
+  workflow_dispatch {
+    inputs {
+      base_sha {
+        description = "Exact base commit to compare"
+        required = true
+        type = "string"
+      }
+      head_sha {
+        description = "Exact authored head commit; independent of the measurement driver"
+        required = true
+        type = "string"
+      }
+    }
+  }
+}
+
+permissions { contents = "read" }
+concurrency {
+  group = "pr-performance-observation-${{ github.event.pull_request.number || github.ref }}"
+  `cancel-in-progress` = true
+}
+env {
+  BASE_SHA = "${{ github.event.pull_request.base.sha || inputs.base_sha }}"
+  HEAD_SHA = "${{ github.event.pull_request.head.sha || inputs.head_sha }}"
+  DRIVER_SHA = "${{ github.workflow_sha }}"
+  CARGO_INCREMENTAL = "0"
+  CARGO_BUILD_JOBS = "8"
+  GOMAXPROCS = "8"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 = true
+  RUSTUP_TOOLCHAIN = "1.100.0"
+}
+
+jobs {
+  observe {
+    name = "Performance observations (optional)"
+    `runs-on` = ci.linux
+    `timeout-minutes` = 50
+    steps = new Listing {
+      ...ci.stageWorkflowScripts("pr-performance-observation")
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "driver"
+          ref = "${{ env.DRIVER_SHA }}"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "head"
+          ref = "${{ env.HEAD_SHA }}"
+          `fetch-depth` = 0
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        uses = ci.checkout
+        with {
+          path = "base"
+          ref = "${{ env.BASE_SHA }}"
+          `persist-credentials` = false
+        }
+      }
+      new Dynamic {
+        name = "Record exact comparison sources"
+        env {
+          EVENT_NAME = "${{ github.event_name }}"
+          OBSERVATION_PR = "${{ github.event.pull_request.number }}"
+        }
+        run = ci.workflowScript("record-exact-comparison-sources.sh")
+      }
+      ci.rust("1.100.0")
+      new Dynamic {
+        uses = "./driver/.github/actions/setup-wild-http-recovery"
+        with { `wild-version` = "0.9.0" }
+      }
+      new Dynamic {
+        uses = ci.setupVp
+        with {
+          `node-version-file` = "driver/package.json"
+          `run-install` = false
+        }
+      }
+      new Dynamic {
+        name = "Install one pinned physical dependency provider"
+        `working-directory` = "driver"
+        run = "vp install --frozen-lockfile --prefer-offline"
+      }
+      new Dynamic {
+        name = "Validate measurement and source custody controls"
+        `working-directory` = "driver"
+        run = "node --test tests/tooling/pr-performance-observation.test.ts tools/benchmarks/scripts/pr-performance-observation.test.ts tools/benchmarks/scripts/pr-performance-build.test.ts"
+      }
+      new Dynamic {
+        name = "Build normal source binaries in independent fresh targets"
+        run = ci.workflowScript("build-normal-source-binaries-in-independent-fresh-targets.sh")
+      }
+      new Dynamic {
+        name = "Validate identical normal build recipes"
+        run = ci.workflowScript("validate-identical-normal-build-recipes.sh")
+      }
+      new Dynamic {
+        name = "Generate identical public inputs and pin the native runtime"
+        `working-directory` = "driver"
+        run = ci.workflowScript("generate-identical-public-inputs-and-pin-the-native-runtime.sh")
+      }
+      new Dynamic {
+        name = "Observe alternating latency, separate memory, and binary sizes"
+        run = ci.workflowScript("observe-alternating-latency-separate-memory-and-binary-sizes.sh")
+      }
+      new Dynamic {
+        name = "Publish the observation summary"
+        `if` = "always()"
+        run = ci.workflowScript("publish-the-observation-summary.sh")
+      }
+      new Dynamic {
+        name = "Package evidence without traversing dependency symlinks"
+        `if` = "always()"
+        run = ci.workflowScript("package-evidence-without-traversing-dependency-symlinks.sh")
+      }
+      new Dynamic {
+        uses = ci.uploadArtifact
+        `if` = "always()"
+        with {
+          name = "pr-performance-${{ github.event.pull_request.number || 'manual' }}-${{ env.HEAD_SHA }}-${{ github.run_attempt }}"
+          path = """
+          performance-observation.tgz
+          performance-observation/measurements/summary.md
+          performance-observation/measurements/report.json
+
+          """
+          `if-no-files-found` = "warn"
+          `retention-days` = 90
+        }
+      }
+    }
+  }
+}

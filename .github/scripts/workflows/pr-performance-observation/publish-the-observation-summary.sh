@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+if [[ -f performance-observation/measurements/summary.md ]]; then
+  cat performance-observation/measurements/summary.md >> "$GITHUB_STEP_SUMMARY"
+else
+  printf '%s\n' '### PR performance observation' '' 'No qualified comparison was produced. Inspect the failed measurement/build step and retained evidence; this is not a performance improvement.' >> "$GITHUB_STEP_SUMMARY"
+fi

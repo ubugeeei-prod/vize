@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -60,7 +61,7 @@ test("editor authority rejects changed complete declaration bytes and changed pa
 });
 
 test("artifact workflow executes the installed VSIX with same-source receipt custody and always retains failures", () => {
-  const workflow = fs.readFileSync(
+  const workflow = readAutomationPrograms(
     path.join(root, ".github/workflows/router-editor-artifact.yml"),
     "utf8",
   );

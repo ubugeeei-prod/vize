@@ -1,0 +1,60 @@
+import "../../Actions.pkl" as ci
+
+name = "Build @vizejs/wasm"
+needs = "version"
+`if` = "needs.version.outputs.ref != ''"
+`runs-on` = ci.linux
+`timeout-minutes` = 30
+steps = new Listing {
+  ...ci.stageWorkflowScripts("release")
+  ci.checkoutAt("${{ needs.version.outputs.ref }}")
+  new Dynamic {
+    uses = ci.setupNode
+    with {
+      `node-version-file` = "package.json"
+      `package-manager-cache` = false
+    }
+  }
+  new Dynamic {
+    uses = ci.setupRust
+    with {
+      toolchain = "stable"
+      targets = "wasm32-unknown-unknown"
+    }
+  }
+  new Dynamic {
+    uses = "./.github/actions/setup-rust-sticky-cache"
+    with {
+      `reuse-target` = "true"
+      `restore-trusted` = "true"
+      key = "release-wasm"
+      `cache-key-suffix` = "${{ runner.os }}-${{ runner.arch }}"
+    }
+  }
+  ci.use("./.github/actions/setup-rust-script")
+  new Dynamic {
+    uses = "taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1"  // v2
+    with { tool = "wasm-bindgen-cli@0.2.129" }
+  }
+  ci.command("Build WASM", "node tools/support/tasks/build-vize-wasm-package.ts")
+  new Dynamic {
+    uses = ci.setupVp
+    with {
+      `node-version-file` = "package.json"
+      `run-install` = true
+    }
+  }
+  new Dynamic {
+    name = "Smoke @vizejs/wasm"
+    run = #". "${{ env.VIZE_CI_FILES }}/smoke-vizejs-wasm.sh""#
+  }
+  new Dynamic {
+    uses = ci.uploadArtifact
+    with {
+      name = "npm-package-wasm"
+      path = "npm/wasm"
+      `if-no-files-found` = "error"
+      `compression-level` = 1
+    }
+  }
+}

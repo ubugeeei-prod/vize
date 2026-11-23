@@ -1,0 +1,8 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  "node --test --test-concurrency=1 tests/tooling/lsp-tag-prefix-classification.test.ts tests/tooling/lsp-template-completion.test.ts 2>&1 | tee target/vize-tests/tag-prefix-classification-10622/protocol.log"
+}

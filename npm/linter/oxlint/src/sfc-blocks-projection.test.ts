@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -297,8 +298,10 @@ for (const key of bindingOverrideKeys) {
         output: path.join(root, "output"),
         expectation: "public-0.458",
       };
-      const script = `import assert from 'node:assert/strict'; import {runOriginalSfcHostMatrix} from ${JSON.stringify(new URL("./test-support/original-sfc-host-matrix.ts", import.meta.url).href)}; await assert.rejects(runOriginalSfcHostMatrix(${JSON.stringify(options)}), {message: ${JSON.stringify(`public baseline cannot inherit${key}`)}});`;
-      const result = spawnSync(process.execPath, ["--input-type=module", "--eval", script], {
+      const driver = fileURLToPath(
+        new URL("./test-support/refuse-binding-override.ts", import.meta.url),
+      );
+      const result = spawnSync(process.execPath, [driver, JSON.stringify(options), key], {
         env,
         encoding: "utf8",
         timeout: 10_000,

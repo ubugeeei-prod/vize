@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -30,7 +31,9 @@ function fixture(t: TestContext) {
   git("commit", "-qm", "synthetic integrity source");
   const binary = path.join(root, "target/ci/vize");
   fs.mkdirSync(path.dirname(binary), { recursive: true });
-  fs.writeFileSync(binary, '#!/bin/sh\nprintf "vize 1.0.0-dev\\n"\n', { mode: 0o755 });
+  fs.writeFileSync(binary, readToolingProgram("commands/lsp-session-capture-integrity/binary.sh"), {
+    mode: 0o755,
+  });
   writeBuildReceipt(root);
   let launch: VerifiedLspLaunch | undefined;
   resolveVizeLaunchCommand(undefined, binary, {

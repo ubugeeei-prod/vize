@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -20,7 +21,7 @@ await test("the actual TypeScript report preserves complete raw fatal results be
     const executable = path.join(cwd, "fake-vize.mjs");
     fs.writeFileSync(
       executable,
-      '#!/usr/bin/env node\nprocess.stdout.write(JSON.stringify([{ file: "Malformed.vue", messages: [] }]));\n',
+      readToolingProgram("commands/lint-divergence-raw-errors/report-malformed-source.cjs"),
     );
     fs.chmodSync(executable, 0o755);
     const registry = path.join(cwd, "registry.json");

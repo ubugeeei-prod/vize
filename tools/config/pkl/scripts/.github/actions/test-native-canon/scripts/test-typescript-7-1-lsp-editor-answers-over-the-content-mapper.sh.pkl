@@ -1,0 +1,12 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  test "$("$VIZE_TEST_CONTENT_MAPPER_TSGO" --version)" = "Version 7.1.0-beta"
+  cargo test --locked --profile ci -p vize --test integration -- content_mapper_tsgo_editor_accuracy:: --nocapture 2>&1 | tee "$RUNNER_TEMP/editor-accuracy.log"
+  grep -Eq '^test result: ok\. [1-9][0-9]* passed; 0 failed' "$RUNNER_TEMP/editor-accuracy.log"
+  """#
+}

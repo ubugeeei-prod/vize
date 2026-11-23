@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+node tools/support/github/run-many.ts vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
+vp run --no-cache --filter './docs' build

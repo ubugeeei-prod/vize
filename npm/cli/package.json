@@ -46,7 +46,8 @@
     "dist",
     "src",
     "schemas",
-    "pkl"
+    "pkl",
+    "scripts/package-tasks.cjs"
   ],
   "type": "module",
   "main": "./dist/index.mjs",
@@ -101,12 +102,12 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp run --workspace-root generate:rule-types && vp pack",
+    "build": "node ./scripts/package-tasks.cjs build",
     "check": "vp check src tests vite.config.ts",
     "check:fix": "vp check --fix src tests vite.config.ts",
     "fmt": "vp fmt --write src tests vite.config.ts",
     "generate:rule-types": "vp run --workspace-root generate:rule-types",
-    "test": "vp pack && vp test run tests/config.test.ts tests/vite-project-config.test.ts tests/vite-module-config.test.ts tests/define-config.test.ts tests/corsa-runtime.test.ts tests/setup.test.ts tests/setup-oxlint-config.test.ts tests/init.test.ts tests/init-frameworks.test.ts tests/init-tsconfig.test.ts tests/init-prompt.test.ts tests/init-config-free.test.ts tests/init-workspace.test.ts"
+    "test": "node ./scripts/package-tasks.cjs test"
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",

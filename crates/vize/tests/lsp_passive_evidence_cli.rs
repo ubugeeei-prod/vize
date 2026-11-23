@@ -167,7 +167,10 @@ fn deadline_capture_precedes_owner_kill_and_preserves_both_owned_packets() {
     let root = case.path().join("capture");
     let mut command = Command::new("sh");
     command
-        .args(["-c", "read line"])
+        .arg(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/programs/wait-for-input.sh"
+        ))
         .stdin(std::process::Stdio::piped());
     let mut child = command.spawn().unwrap();
     let mut capture = Passive::with_root(root.clone(), child.id(), &command, false);

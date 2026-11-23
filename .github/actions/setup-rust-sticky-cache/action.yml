@@ -38,7 +38,7 @@ runs:
   steps:
     - name: Select the Rust cache backend
       id: cache-policy
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+      uses: ./.github/actions/setup-rust-sticky-cache/cache-policy
       env:
         VIZE_CACHE_ACTION_PATH: ${{ github.action_path }}
         VIZE_CACHE_RUNNER_ENVIRONMENT: ${{ runner.environment }}
@@ -51,11 +51,6 @@ runs:
         VIZE_CACHE_SECONDARY_SUFFIX: ${{ inputs.secondary-cache-key-suffix }}
         VIZE_CACHE_SECONDARY_PATH: ${{ inputs.secondary-target-path }}
         VIZE_CACHE_RESTORE_TRUSTED: ${{ inputs.restore-trusted }}
-      with:
-        script: |
-          const script = require('node:url').pathToFileURL(`${process.env.VIZE_CACHE_ACTION_PATH}/cache-policy.ts`);
-          const { runCachePolicy } = await import(script.href);
-          runCachePolicy();
 
     - name: Mount Cargo registry sticky disk
       if: ${{ steps.cache-policy.outputs.sticky == 'true' }}
@@ -92,16 +87,12 @@ runs:
     - name: Check which trusted sticky paths were actually mounted
       id: cache-mounts
       if: ${{ steps.cache-policy.outputs.sticky == 'true' }}
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+      uses: ./.github/actions/setup-rust-sticky-cache/cache-policy
       env:
         VIZE_CACHE_ACTION_PATH: ${{ github.action_path }}
+        VIZE_CACHE_MODE: --mounted
         VIZE_CACHE_TARGET_PATH: ${{ steps.cache-policy.outputs.target-path }}
         VIZE_CACHE_SECONDARY_PATH: ${{ steps.cache-policy.outputs.secondary-path }}
-      with:
-        script: |
-          const script = require('node:url').pathToFileURL(`${process.env.VIZE_CACHE_ACTION_PATH}/cache-policy.ts`);
-          const { runCachePolicy } = await import(script.href);
-          runCachePolicy('--mounted');
 
     # Trusted sticky clones are already mounted. Lookup-only never extracts a
     # second cache into them. Mounted targets commit through the sticky provider;

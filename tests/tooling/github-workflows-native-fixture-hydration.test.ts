@@ -1,3 +1,5 @@
+import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
+import { workspaceTaskSteps } from "../../tools/config/vite-plus/task-plan.ts";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -87,21 +89,33 @@ test("whole-workspace source coverage prepares the native fixture in its own run
     path: "${{ runner.temp }}/source-coverage-native-syntax/",
     "if-no-files-found": "warn",
   });
-  const taskSource = readRepoFile("tools", "config", "vite-plus", "tasks", "test-benchmark.ts");
-  const source = taskSource
-    .split("const rustSourceCoverageCommand = [")[1]
-    .split("const rustBranchCoverageCommand")[0];
-  assert.match(
-    source,
-    /"cargo llvm-cov nextest --workspace --profile full --test-threads 8 --json --summary-only"/,
-  );
-  assert.match(taskSource, /"coverage:source": task\(rustSourceCoverageCommand,/);
-  const branch = taskSource.split("const rustBranchCoverageCommand = [")[1].split("/**")[0];
-  assert.match(
-    branch,
-    /"cargo \+nightly llvm-cov -p vize_carton -p vize_armature -p vize_atelier_core"/,
-  );
-  assert.doesNotMatch(branch, /--workspace|-p vize_canon/);
+  const source = workspaceTaskSteps(testAndBenchmarkTasks["coverage:source"]);
+  const branch = workspaceTaskSteps(testAndBenchmarkTasks["coverage:source:branch"]);
+  const sourceCargo = source.find((step) => step.program === "cargo")!;
+  const branchCargo = branch.find((step) => step.arguments?.includes("llvm-cov"))!;
+  assert.deepEqual(sourceCargo.arguments?.slice(0, 9), [
+    "llvm-cov",
+    "nextest",
+    "--workspace",
+    "--profile",
+    "full",
+    "--test-threads",
+    "8",
+    "--json",
+    "--summary-only",
+  ]);
+  assert.deepEqual(branchCargo.arguments?.slice(0, 8), [
+    "+nightly",
+    "llvm-cov",
+    "-p",
+    "vize_carton",
+    "-p",
+    "vize_armature",
+    "-p",
+    "vize_atelier_core",
+  ]);
+  assert.ok(!branchCargo.arguments?.includes("--workspace"));
+  assert.ok(!branchCargo.arguments?.includes("vize_canon"));
   assert.equal(
     check().jobs["branch-coverage"].steps.some((step: { run?: string }) =>
       step.run?.includes(hydrationCommand),
@@ -181,7 +195,9 @@ test("the actual preparation restores a pinned gitlink despite empty checkout an
         step.run?.includes(hydrationCommand),
       )
       .run.split(" && ")[1];
-    execFileSync("bash", ["-e", "-c", preparation], { cwd: checkout, env, stdio: "pipe" });
+    const [program, ...args] = preparation.trim().split(/\s+/u);
+    assert.equal(program, "git");
+    execFileSync(program, args, { cwd: checkout, env, stdio: "pipe" });
     consumer();
     assert.equal(
       git(upstream, "rev-parse", "HEAD"),
@@ -191,13 +207,13 @@ test("the actual preparation restores a pinned gitlink despite empty checkout an
     git(actual, "checkout", "-q", newer);
     fs.writeFileSync(path.join(actual, "README.md"), "dirty wrong revision\n");
     assert.throws(consumer);
-    execFileSync("bash", ["-e", "-c", preparation], { cwd: checkout, env, stdio: "pipe" });
+    execFileSync(program, args, { cwd: checkout, env, stdio: "pipe" });
     consumer();
 
     const missing = path.join(directory, "missing-checkout");
     git(directory, "clone", "-q", pathToFileURL(checkout).href, missing);
     fs.renameSync(upstream, path.join(directory, "unavailable-upstream"));
-    const unavailable = spawnSync("bash", ["-e", "-c", preparation], {
+    const unavailable = spawnSync(program, args, {
       cwd: missing,
       env,
       encoding: "utf8",

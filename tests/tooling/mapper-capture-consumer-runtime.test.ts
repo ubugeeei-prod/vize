@@ -12,6 +12,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 import { prepareWorkspace } from "../../tools/benchmarks/scripts/template-alias-paired-11822-custody.ts";
 import { mapperCaptureAsset } from "../../tools/benchmarks/scripts/template-alias-paired-11822-capture.ts";
 
@@ -42,11 +43,7 @@ test("the actual mapper caller installs a byte-identical JS consumer runtime wit
       files: [],
       typescript: {
         contentMapper: {
-          exec: [
-            "node",
-            "-e",
-            'if (process.argv.at(-1) !== "forwarded") process.exit(9); process.stdin.pipe(process.stdout);',
-          ],
+          exec: ["node", toolingProgram("native/echo-forwarded-mapper-input.js")],
         },
       },
     }),
@@ -74,11 +71,7 @@ test("the actual mapper caller installs a byte-identical JS consumer runtime wit
   assert.equal(captureRoot, capture);
   assert.equal(configuration, join(capture, "command.json"));
   assert.deepEqual(JSON.parse(readFileSync(configuration, "utf8")), {
-    command: [
-      process.execPath,
-      "-e",
-      'if (process.argv.at(-1) !== "forwarded") process.exit(9); process.stdin.pipe(process.stdout);',
-    ],
+    command: [process.execPath, toolingProgram("native/echo-forwarded-mapper-input.js")],
     packageRoot: closure.packageRoot,
   });
   const body = Buffer.from(JSON.stringify({ id: 1, text: "日本語", directives: [[0, 1]] }));

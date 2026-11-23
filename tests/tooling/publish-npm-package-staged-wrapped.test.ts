@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -5,10 +6,10 @@ import path from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
 
-import { fakeNpmArchiveSource } from "./support/fake-npm-registry.ts";
+import { fakeRegistryArchivePath } from "./support/fake-npm-registry.ts";
 
 import { repoRoot, runReleaseCommand } from "./support/release-command.ts";
-import { fakeJsonStateTransaction, writeFakeCommand } from "./support/fake-command.ts";
+import { fakeStateTransactionPath, writeFakeCommand } from "./support/fake-command.ts";
 
 const fixturePath = path.join(
   repoRoot,
@@ -89,38 +90,15 @@ for (const row of cases) {
       writeFakeCommand(
         binDir,
         "vp",
-        [
-          "const fs = require('node:fs');",
-          "const state = JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'));",
-          "state.publishCalls++;",
-          "state.invocations.push({ arguments: process.argv.slice(2), cwd: process.cwd() });",
-          "if (process.env.WRAP_GENERIC === '1' && state.publishCalls === 3) state.published = true;",
-          "fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
-          "if (state.published) process.exit(0);",
-          "process[process.env.WRAP_STREAM].write(fs.readFileSync(process.env.WRAP_DETAIL));",
-          "process.exit(1);",
-        ].join("\n"),
+        readToolingProgram("commands/publish-npm-package-staged-wrapped/vp.js"),
       );
       writeFakeCommand(
         binDir,
         "curl",
-        [
-          fakeNpmArchiveSource,
-          "const fs = require('node:fs');",
-          "const url = new URL(process.argv.at(-1));",
-          "const exact = url.pathname.endsWith('/0.433.0');",
-          fakeJsonStateTransaction,
-          "const state = mutateFakeJsonState(process.env.VP_STATE_PATH, (state) => {",
-          "  if (exact) state.versionChecks++; else state.tagChecks++;",
-          "});",
-          "const visible = process.env.WRAP_HIDDEN !== '1' && (state.published",
-          "  || (state.publishCalls === 1 && (!exact || state.versionChecks >= 3)));",
-          "if (!visible) { process.stdout.write('{}VIZE_HTTP_STATUS:404'); process.exit(0); }",
-          "const name = '@vizejs/native-darwin-arm64';",
-          "const tag = process.env.WRAP_WRONG_TAG === '1' ? '0.434.0' : '0.433.0';",
-          "const body = exact ? { name, version: '0.433.0', dist: fakeDist(name, '0.433.0') } : { name, 'dist-tags': { latest: tag } };",
-          "process.stdout.write(JSON.stringify(body) + 'VIZE_HTTP_STATUS:200');",
-        ].join("\n"),
+        readToolingProgram("commands/publish-npm-package-staged-wrapped/curl.js.in", {
+          ARCHIVE_MODULE: JSON.stringify(fakeRegistryArchivePath),
+          STATE_MODULE: JSON.stringify(fakeStateTransactionPath),
+        }),
       );
       const result = runReleaseCommand("publish_npm_package", [packageDir, "--provenance"], {
         env: {

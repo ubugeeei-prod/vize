@@ -20,7 +20,7 @@ import { promisify } from "node:util";
 
 import { importConfigModuleWithDependencies } from "../../crates/vize_carton/src/config/loader/module-runtime.mjs";
 import { resolveViteConfigExport } from "../../crates/vize_carton/src/config/loader/vite-runtime.mjs";
-import { nativeLoaderScript as nativeScript } from "./support/native-config-script.ts";
+import { nativeLoaderPath } from "./support/native-config-script.ts";
 
 const require = createRequire(join(process.cwd(), "package.json"));
 const vitePlus = dirname(require.resolve("vite-plus/package.json"));
@@ -102,11 +102,10 @@ test("declaration-only Vite preserves the installation and uses real project Vit
     assert.equal(await readFile(counter, "utf8"), "module\nsource\n");
     assert.ok(phases.some((paths) => paths.includes(join(stub, "package.json"))));
     assert.ok(phases.some((paths) => paths.includes(join(stub, "index.js"))));
-    const output = await execute(
-      process.execPath,
-      ["--input-type=module", "-e", await nativeScript(), selected],
-      { cwd: root, timeout: 10_000 },
-    );
+    const output = await execute(process.execPath, [await nativeLoaderPath(), selected], {
+      cwd: root,
+      timeout: 10_000,
+    });
     assert.equal(output.stderr, "");
     const native = JSON.parse(output.stdout);
     assert.deepEqual(native.config, loaded.value);
@@ -130,11 +129,10 @@ test("a declaration-only package without either runtime retains direct native mo
   await project(async (root) => {
     const selected = join(root, "vite.config.mjs");
     await writeFile(selected, "export default {vue:{formatter:{printWidth:94}}};");
-    const output = await execute(
-      process.execPath,
-      ["--input-type=module", "-e", await nativeScript(), selected],
-      { cwd: root, timeout: 10_000 },
-    );
+    const output = await execute(process.execPath, [await nativeLoaderPath(), selected], {
+      cwd: root,
+      timeout: 10_000,
+    });
     assert.equal(output.stderr, "");
     assert.deepEqual(JSON.parse(output.stdout).config, {
       typeChecker: { jsxTypecheck: true },

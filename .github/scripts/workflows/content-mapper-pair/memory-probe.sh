@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+size=$(echo "$SIZES" | tr "," "\n" | sort -n | tail -1)
+project="$RUNNER_TEMP/pair/vue-$size"
+stream="$RUNNER_TEMP/pair/stream-$size.bin"
+bin="$PWD/pair-bin/head/vize"
+probe() {
+  local label=$1; shift
+  local peaks=()
+  for _ in 1 2 3; do
+    (cd "$project" && env "$@" /usr/bin/time -f "%M %e %U %S" -o "$RUNNER_TEMP/mem.txt" "$bin" content-mapper < "$stream" > /dev/null)
+    peaks+=("$(cat "$RUNNER_TEMP/mem.txt")")
+  done
+  printf '%s\n' "${peaks[@]}" | sort -n | awk -v label="$label" -f "$VIZE_CI_FILES/median-memory-row.awk"
+}
+{
+  echo "### Linux burst memory probe ($size SFCs, head, median of 3, $(nproc) vCPUs)"
+  echo ""
+  echo "| variant | peak RSS MiB | wall s | CPU s |"
+  echo "|---|---|---|---|"
+  probe "all cores, default" X=1
+  for cores in 4 8 16; do probe "taskset $cores cores" X=1 taskset -c "0-$((cores - 1))"; done
+  probe "MIMALLOC_PURGE_DELAY=0" MIMALLOC_PURGE_DELAY=0
+  probe "MIMALLOC_ARENA_EAGER_COMMIT=0" MIMALLOC_ARENA_EAGER_COMMIT=0
+  probe "both mimalloc options" MIMALLOC_PURGE_DELAY=0 MIMALLOC_ARENA_EAGER_COMMIT=0
+  probe "THP never (madvise off)" MIMALLOC_ALLOW_LARGE_OS_PAGES=0
+  echo ""
+  printf 'THP: %s\n' "$(< /sys/kernel/mm/transparent_hugepage/enabled)"
+} | tee -a "$GITHUB_STEP_SUMMARY"

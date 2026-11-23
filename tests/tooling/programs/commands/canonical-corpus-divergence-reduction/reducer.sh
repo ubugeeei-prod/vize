@@ -1,0 +1,3 @@
+#!/bin/sh
+printf '<template><span/></template>' > "$5"
+printf 'reduce: 58 -> 28 bytes, 1-minimal\n' >&2

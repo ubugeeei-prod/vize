@@ -18,6 +18,7 @@ on:
       - tools/benchmarks/scripts/public-typechecker-q16/**
       - tests/tooling/public-typechecker-q16*.test.ts
       - .github/workflows/public-typechecker-consumer.yml
+      - .github/scripts/workflows/public-typechecker-consumer/**
       - tools/benchmarks/scripts/public-typechecker-consumer.ts
       - tests/_fixtures/differential/typechecker/dependency-probe-history-10936/**
       - tools/benchmarks/scripts/public-typechecker-11317/**
@@ -34,6 +35,8 @@ jobs:
     if: github.event_name != 'workflow_dispatch' || inputs.consumer == 'legacy-0.602'
     runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 20
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/public-typechecker-consumer"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false }
@@ -41,37 +44,17 @@ jobs:
         with: { node-version-file: package.json, package-manager-cache: false }
       - name: Install a fresh public 0.602 consumer
         shell: bash
-        run: |
-          set -euo pipefail
-          mkdir "$RUNNER_TEMP/public-provider"
-          cd "$RUNNER_TEMP/public-provider"
-          cat > package.json <<'JSON'
-          {"private":true,"dependencies":{"vize":"0.602.0","@vizejs/native":"0.602.0","vue":"3.5.44","typescript":"6.0.3","typescript-native":"npm:typescript@7.1.0-beta"}}
-          JSON
-          npm install --ignore-scripts --no-audit --no-fund
+        run: . "${{ env.VIZE_CI_FILES }}/install-a-fresh-public-0-602-consumer.sh"
       - name: Verify the published standalone archive
         shell: bash
-        run: |
-          set -euo pipefail
-          mkdir "$RUNNER_TEMP/public-cli"
-          cd "$RUNNER_TEMP/public-cli"
-          curl --fail --location --retry 3 --output vize.tar.gz https://github.com/ubugeeei-prod/vize/releases/download/v0.602.0/vize-x86_64-unknown-linux-gnu.tar.gz
-          printf '%s\n' '4a75062b16eeee03449c0e471f3776be383f16e99e0820fe6a170b40e63ff93e  vize.tar.gz' | sha256sum --check -
-          tar -xzf vize.tar.gz
-          test -x vize
+        run: . "${{ env.VIZE_CI_FILES }}/verify-the-published-standalone-archive.sh"
       - name: Run complete public mutation and repair packets
         shell: bash
-        run: |
-          set -euo pipefail
-          node tools/benchmarks/scripts/public-typechecker-consumer.ts --provider "$RUNNER_TEMP/public-provider" --binary "$RUNNER_TEMP/public-cli/vize" --archive "$RUNNER_TEMP/public-cli/vize.tar.gz" --out "$RUNNER_TEMP/public-acceptance"
+        run: . "${{ env.VIZE_CI_FILES }}/run-complete-public-mutation-and-repair-packets.sh"
       - name: Package only owned evidence
         if: always()
         shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/public-acceptance"
-          cp "$RUNNER_TEMP/public-provider/package.json" "$RUNNER_TEMP/public-provider/package-lock.json" "$RUNNER_TEMP/public-acceptance/" 2>/dev/null || true
-          tar --exclude='*/node_modules' -czf "$RUNNER_TEMP/public-acceptance.tgz" -C "$RUNNER_TEMP" public-acceptance
+        run: . "${{ env.VIZE_CI_FILES }}/package-only-owned-evidence.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
@@ -94,6 +77,8 @@ jobs:
     needs: contracts-11317
     runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 30
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/public-typechecker-consumer"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false }
@@ -101,10 +86,7 @@ jobs:
         with: { node-version: 24.22.1, package-manager-cache: false }
       - name: Provision the reported npm version separately
         shell: bash
-        run: |
-          set -euo pipefail
-          npm install --prefix "$RUNNER_TEMP/11317-manager" npm@11.19.1 --ignore-scripts --no-audit --no-fund
-          test "$(node "$RUNNER_TEMP/11317-manager/node_modules/npm/bin/npm-cli.js" --version)" = 11.19.1
+        run: . "${{ env.VIZE_CI_FILES }}/provision-the-reported-npm-version-separately.sh"
       - name: Retain the original command and all nine JSON vectors for each public version
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -112,10 +94,7 @@ jobs:
       - name: Package only owned data
         if: always()
         shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/public-11317-evidence"
-          tar -czf "$RUNNER_TEMP/public-11317-evidence.tgz" -C "$RUNNER_TEMP" public-11317-evidence
+        run: . "${{ env.VIZE_CI_FILES }}/package-only-owned-data.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
@@ -138,6 +117,8 @@ jobs:
     needs: contracts-11339
     runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 45
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/public-typechecker-consumer"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false }
@@ -152,10 +133,7 @@ jobs:
       - name: Package owned data after success or refusal
         if: always()
         shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/public-11339-evidence"
-          tar -czf "$RUNNER_TEMP/public-11339-evidence.tgz" -C "$RUNNER_TEMP" public-11339-evidence
+        run: . "${{ env.VIZE_CI_FILES }}/package-owned-data-after-success-or-refusal.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
@@ -178,6 +156,8 @@ jobs:
     needs: contracts-q16
     runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.consumer == 'q16-first-subset' && (github.ref == 'refs/heads/test/published-generic-arrow-tsx-20261103' || github.ref == 'refs/heads/test/published-global-component-listener-11373-20261103') && 'ubuntu-24.04' || 'blacksmith-8vcpu-ubuntu-2404' }}
     timeout-minutes: 40
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/public-typechecker-consumer"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with: { persist-credentials: false }
@@ -194,10 +174,7 @@ jobs:
       - name: Package only owned evidence after capture or refusal
         if: always()
         shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/public-q16-evidence"
-          tar -czf "$RUNNER_TEMP/public-q16-evidence.tgz" -C "$RUNNER_TEMP" public-q16-evidence
+        run: . "${{ env.VIZE_CI_FILES }}/package-only-owned-evidence-after-capture-or-refusal.sh"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:

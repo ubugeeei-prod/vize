@@ -22,6 +22,7 @@ on:
       - ".github/actions/reuse-rust-target/**"
       - ".github/actions/cache-vp-bootstrap/**"
       - ".github/workflows/rust-pr-target-seed.yml"
+      - ".github/scripts/workflows/rust-pr-target-seed/**"
       - "package.json"
       - "pnpm-lock.yaml"
   schedule:
@@ -40,6 +41,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/rust-pr-target-seed"
       CARGO_BUILD_JOBS: "24"
       VIZE_TEST_DISABLE_TSGO: "1"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
@@ -66,13 +68,9 @@ jobs:
         run: node tools/support/compat/github/run-affected-rust.ts "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --no-run
       - name: Build the merge-queue workspace producer
         # The queue runs these two builds over the whole workspace.
-        run: |
-          cargo clippy --workspace --profile ci -- -D warnings -D clippy::wildcard_imports
-          cargo test --workspace --profile ci --no-run
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-merge-queue-workspace-producer.sh"
       - name: Build the PR feature lanes
-        run: |
-          cargo test -p vize_armature --features native-lex-parity,legacy --lib --test markup_lex_parity --no-run
-          cargo test -p vize_l1 --features legacy-differential --test surface_corpus --no-run
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-pr-feature-lanes.sh"
       - name: Seed native Program and Vue navigation
         uses: ./.github/actions/test-native-navigation
 
@@ -137,6 +135,7 @@ jobs:
       matrix:
         lane: [js-packages, tooling-worker, source-cli]
     env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/rust-pr-target-seed"
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -163,7 +162,7 @@ jobs:
         with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - name: Build the source CLI and SFC oracle like the producer
         if: ${{ matrix.lane == 'source-cli' }}
-        run: cargo build --profile ci -p vize && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle
+        run: . "${{ env.VIZE_CI_FILES }}/build-the-source-cli-and-sfc-oracle-like-the-producer.sh"
       - name: Install native package dependencies
         if: ${{ matrix.lane != 'source-cli' }}
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
@@ -203,6 +202,8 @@ jobs:
     permissions: { contents: read, actions: write }
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
+    env:
+      VIZE_CI_FILES: "${{ github.workspace }}/.github/scripts/workflows/rust-pr-target-seed"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/cache-vp-bootstrap
@@ -214,18 +215,6 @@ jobs:
           cache-save: true
           run-install: false
       - name: Require the source and runtime identity used by Rust workers
-        run: |
-          node --input-type=module <<'NODE'
-          import assert from 'node:assert/strict';
-          import { execFileSync } from 'node:child_process';
-          import { readFileSync } from 'node:fs';
-          const manifest = JSON.parse(readFileSync('package.json', 'utf8'));
-          assert.equal(process.platform, 'linux');
-          assert.equal(process.arch, 'x64');
-          assert.equal(process.versions.node, manifest.devEngines.runtime.version);
-          assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), process.env.GITHUB_SHA);
-          NODE
+        run: . "${{ env.VIZE_CI_FILES }}/require-the-source-and-runtime-identity-used-by-rust-workers.sh"
       - name: Validate the complete frozen dependency store before saving
-        run: |
-          vp install --frozen-lockfile --prefer-offline
-          git diff --exit-code -- package.json pnpm-lock.yaml pnpm-workspace.yaml
+        run: . "${{ env.VIZE_CI_FILES }}/validate-the-complete-frozen-dependency-store-before-saving.sh"

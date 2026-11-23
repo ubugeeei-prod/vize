@@ -1,3 +1,4 @@
+import { packageScripts } from "./support/package-task-source.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -82,9 +83,18 @@ test("elk dev and visual app-e2e are wired to the deterministic rendered fixture
   );
   assert.equal(new Set(elkVisualRoutes.map((route) => route.name)).size, elkVisualRoutes.length);
 
-  assert.match(packageJson.scripts?.["test:dev:elk"] ?? "", /app\/dev\/elk\.spec\.ts/);
-  assert.match(packageJson.scripts?.["test:dev:ci"] ?? "", /app\/dev\/elk\.spec\.ts/);
-  assert.match(packageJson.scripts?.["test:vrt:elk"] ?? "", /app\/vrt\/elk\.spec\.ts/);
+  assert.match(
+    packageScripts("tests", packageJson.scripts)?.["test:dev:elk"] ?? "",
+    /app\/dev\/elk\.spec\.ts/,
+  );
+  assert.match(
+    packageScripts("tests", packageJson.scripts)?.["test:dev:ci"] ?? "",
+    /app\/dev\/elk\.spec\.ts/,
+  );
+  assert.match(
+    packageScripts("tests", packageJson.scripts)?.["test:vrt:elk"] ?? "",
+    /app\/vrt\/elk\.spec\.ts/,
+  );
 });
 
 test("elk readiness gating consumes the route-specific links and thresholds", () => {

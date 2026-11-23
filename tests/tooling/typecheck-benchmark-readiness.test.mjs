@@ -10,6 +10,7 @@ import {
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 
 import {
   CORPUS_PLANT_FILE,
@@ -198,7 +199,7 @@ void test("the runner retains diagnostics and rejects missing executables", (t) 
   const dir = project(t);
   const result = runTypecheckCommand(
     process.execPath,
-    ["-e", "console.log('checked'); process.exitCode = 1"],
+    [toolingProgram("native/emit-check-diagnostic.js")],
     { cwd: dir },
   );
   assert.equal(result.status, 1);

@@ -1,0 +1,4 @@
+#!@@NODE@@
+const fs = require("node:fs");
+fs.writeFileSync(process.env.TMPDIR + "/probe", "fresh temporary directory");
+console.log(JSON.stringify({ fileCount: 2000, errorCount: 0, warningCount: 0, files: [] }));

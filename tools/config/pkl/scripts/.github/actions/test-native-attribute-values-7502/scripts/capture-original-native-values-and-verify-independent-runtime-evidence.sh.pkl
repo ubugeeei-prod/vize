@@ -1,0 +1,21 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  #"""
+  mkdir -p "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR"
+  set +e
+  vp node tests/tooling/support/native-attribute-values-7502-history.ts "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR" > "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/history.stdout.txt" 2> "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/history.stderr.txt"
+  history_status=$?
+  vp node tests/tooling/support/native-attribute-values-7502-build.ts "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR" > "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/hosted-build.stdout.txt" 2> "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/hosted-build.stderr.txt"
+  build_status=$?
+  vp node tests/tooling/support/native-attribute-values-7502-judge.ts > "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/judge.stdout.txt" 2> "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/judge.stderr.txt"
+  judge_status=$?
+  set -e
+  printf '{"historyExitStatus":%d,"buildExitStatus":%d,"judgeExitStatus":%d}\n' "$history_status" "$build_status" "$judge_status" > "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/action-processes.json"
+  cat "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/history.stdout.txt" "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/history.stderr.txt" "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/hosted-build.stdout.txt" "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/hosted-build.stderr.txt" "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/judge.stdout.txt" "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/judge.stderr.txt"
+  if [[ "$history_status" -ne 0 || "$build_status" -ne 0 || "$judge_status" -ne 0 ]]; then exit 1; fi
+  """#
+}

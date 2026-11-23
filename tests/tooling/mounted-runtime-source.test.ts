@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { test } from "node:test";
+import { toolingProgram } from "./support/program-path.ts";
 import { collectRuntimeProducer, runtimeSourceCache } from "./support/mounted-runtime-source.ts";
 
 test("one generated-code promise per mode preserves identity and never retries failure", async () => {
@@ -29,9 +30,8 @@ function run(stdout: Buffer, stderr: Buffer, end = "") {
   const child = spawn(
     process.execPath,
     [
-      "-e",
-      `require('node:fs').writeSync(1, Buffer.from(process.argv[1], 'hex'));
-       require('node:fs').writeSync(2, Buffer.from(process.argv[2], 'hex')); ${end}`,
+      toolingProgram("runtime/emit-mounted-packet.js"),
+      end,
       stdout.toString("hex"),
       stderr.toString("hex"),
     ],
@@ -46,7 +46,7 @@ test("producer acceptance requires the complete canonical packet and strict natu
   const packet = Buffer.from('{"code":"export const value = 1;"}\n');
   assert.equal(await run(packet, Buffer.alloc(0)), "export const value = 1;");
   const failures: [Buffer, Buffer, string][] = [
-    [packet, Buffer.alloc(0), "process.exit(1)"],
+    [packet, Buffer.alloc(0), "failure"],
     [packet, Buffer.from([255, 13, 27]), ""],
     [Buffer.from([254, 0, 10, 97]), Buffer.alloc(0), ""],
     [Buffer.from('{"code":"x","ignored":true}\n'), Buffer.alloc(0), ""],
@@ -54,8 +54,7 @@ test("producer acceptance requires the complete canonical packet and strict natu
     [Buffer.concat([packet, Buffer.from("\n")]), Buffer.alloc(0), ""],
     [Buffer.alloc(0), Buffer.alloc(0), ""],
   ];
-  if (process.platform !== "win32")
-    failures.push([packet, Buffer.alloc(0), "process.kill(process.pid, 'SIGTERM')"]);
+  if (process.platform !== "win32") failures.push([packet, Buffer.alloc(0), "SIGTERM"]);
   for (const [stdout, stderr, end] of failures) {
     await assert.rejects(run(stdout, stderr, end), (error) => {
       assert.ok(error instanceof Error);
@@ -66,8 +65,8 @@ test("producer acceptance requires the complete canonical packet and strict natu
       assert.deepEqual(evidence.stderrBytes, [...stderr]);
       assert.equal(evidence.stdout, stdout.toString("utf8"));
       assert.equal(evidence.stderr, stderr.toString("utf8"));
-      assert.equal(evidence.exitCode, end === "process.exit(1)" ? 1 : end ? null : 0);
-      assert.equal(evidence.signal, end.includes("SIGTERM") ? "SIGTERM" : null);
+      assert.equal(evidence.exitCode, end === "failure" ? 1 : end ? null : 0);
+      assert.equal(evidence.signal, end === "SIGTERM" ? "SIGTERM" : null);
       assert.ok(Number.isInteger(evidence.pid));
       assert.equal(evidence.spawnError, null);
       assert.equal(evidence.inputError, null);

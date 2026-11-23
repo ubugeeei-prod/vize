@@ -5,6 +5,7 @@ import path from "node:path";
 import ts from "typescript";
 import { test } from "vite-plus/test";
 
+import { packageCommands } from "../../../../tests/tooling/support/package-task-source.ts";
 import { uiFamilyCatalog } from "../catalog/family-catalog.ts";
 
 test("package check keeps the UI source corpus on the toolchain gate", async () => {
@@ -12,19 +13,27 @@ test("package check keeps the UI source corpus on the toolchain gate", async () 
     readonly scripts: Readonly<Record<string, string>>;
   };
 
-  assert.equal(
-    manifest.scripts["lint:sfc"],
-    "vp exec node scripts/lint-sfc.ts src && vp exec node scripts/check-renderers.ts src",
-  );
+  const commands = (name: string) =>
+    packageCommands(path.resolve("../.."), "npm/ui", manifest.scripts[name], name);
+
+  assert.deepEqual(commands("lint:sfc"), [
+    "vp exec node scripts/lint-sfc.ts src",
+    "vp exec node scripts/check-renderers.ts src",
+  ]);
   assert.equal(
     manifest.scripts["check:story-testbed"],
     "vp exec node scripts/story-testbed.ts check --format json",
   );
-  assert.equal(
-    manifest.scripts.check,
-    "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed && pnpm check:vapor-runtime",
-  );
-  assert.match(manifest.scripts["check:static"], /vue-tsc --noEmit -p tsconfig\.typecheck\.json/);
+  assert.deepEqual(commands("check"), [
+    "pnpm lint:sfc",
+    "pnpm check:static",
+    "pnpm check:story-testbed",
+    "pnpm check:vapor-runtime",
+  ]);
+  assert.deepEqual(commands("check:static"), [
+    "vp check src scripts vite.config.ts tsconfig.typecheck.json",
+    "vue-tsc --noEmit -p tsconfig.typecheck.json",
+  ]);
   assert.equal(manifest.scripts.fmt, "vp fmt --write src scripts vite.config.ts");
 });
 

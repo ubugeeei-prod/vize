@@ -110,15 +110,28 @@ fn check(source: &str, cases: Value) {
     }
 }
 
+fn runtime_output(
+    stdout: &[u8],
+    stderr: &[u8],
+    status: u8,
+    signal: Option<&str>,
+) -> std::process::Output {
+    Command::new("node")
+        .arg(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/programs/emit-runtime-result.cjs"
+        ))
+        .arg(
+            json!({ "stdout": stdout, "stderr": stderr, "status": status, "signal": signal })
+                .to_string(),
+        )
+        .output()
+        .unwrap()
+}
+
 #[test]
 fn runtime_failure_preserves_silent_child_status_and_original_case() {
-    let output = Command::new("node")
-        .args([
-            "-e",
-            "require('node:fs').writeSync(1, 'partial stdout'); process.exit(13)",
-        ])
-        .output()
-        .unwrap();
+    let output = runtime_output(b"partial stdout", b"", 13, None);
     assert_eq!(output.status.code(), Some(13));
     assert!(output.stderr.is_empty());
     let cases = json!([{"context": {"items": ["original"]}}]);
@@ -138,13 +151,7 @@ fn runtime_failure_preserves_silent_child_status_and_original_case() {
 fn runtime_failure_preserves_real_child_signal_and_both_streams() {
     use std::os::unix::process::ExitStatusExt;
 
-    let output = Command::new("node")
-        .args([
-            "-e",
-            "require('node:fs').writeSync(1, 'before signal'); require('node:fs').writeSync(2, 'signal stderr'); process.kill(process.pid, 'SIGTERM')",
-        ])
-        .output()
-        .unwrap();
+    let output = runtime_output(b"before signal", b"signal stderr", 0, Some("SIGTERM"));
     let report =
         validate_runtime_output("vapor", "source", &json!([{}]), "code", &output).unwrap_err();
     assert_eq!(output.status.code(), None);
@@ -170,10 +177,7 @@ fn runtime_protocol_failures_preserve_complete_successful_child_output() {
             "runtime result mismatch: expected {\"passed\":1}, received {\"passed\":0}",
         ),
     ] {
-        let output = Command::new("node")
-            .args(["-e", "process.stdout.write(process.argv[1])", stdout])
-            .output()
-            .unwrap();
+        let output = runtime_output(stdout.as_bytes(), b"", 0, None);
         assert!(output.status.success());
         let report =
             validate_runtime_output("ssr", "source", &json!([{}]), "code", &output).unwrap_err();

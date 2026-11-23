@@ -1,3 +1,5 @@
+import { writeFakeVize } from "./support/fake-vize-command.ts";
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -31,13 +33,6 @@ function runToolMatrix(args: string[]) {
     );
   }
   return { outputDir, result };
-}
-
-function writeFakeVize(directory: string, body: string) {
-  const executable = path.join(directory, "fake-vize.mjs");
-  fs.writeFileSync(executable, `#!/usr/bin/env node\n${body}\n`);
-  fs.chmodSync(executable, 0o755);
-  return executable;
 }
 
 function toolMatrixEvents(stderr: string) {
@@ -74,12 +69,9 @@ test("fixture tool matrix emits progress while a tool invocation is running", ()
   const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-tool-progress-"));
   const executable = writeFakeVize(
     fakeDir,
-    `if (process.argv[2] === "--version") process.exit(0);
-setTimeout(() => {
-  process.stdout.write("not json");
-  process.stderr.write("synthetic failure");
-  process.exit(2);
-}, 80);`,
+    readToolingProgram(
+      "commands/fixture-tool-matrix-report-heartbeat/vize-emits-progress-while-invocation-is-running.js",
+    ),
   );
   const { outputDir, result } = runToolMatrix([
     "--project",
@@ -120,10 +112,9 @@ test("fixture tool matrix bounds timeout when child descendants inherit stdio", 
   const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-tool-timeout-tree-"));
   const executable = writeFakeVize(
     fakeDir,
-    `import { spawn } from "node:child_process";
-if (process.argv[2] === "--version") process.exit(0);
-spawn(process.execPath, ["-e", "setTimeout(() => {}, 4000)"], { stdio: "inherit" });
-setInterval(() => {}, 1000);`,
+    readToolingProgram(
+      "commands/fixture-tool-matrix-report-heartbeat/vize-bounds-timeout-child-descendants-inherit-stdio.js",
+    ),
   );
   const startedAt = Date.now();
   const { outputDir, result } = runToolMatrix([

@@ -3,6 +3,8 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
+
+import { processResultArgs } from "../support/program-path.ts";
 import { Recorder, sha256 } from "../../../tools/support/config/windows_consumer/common.ts";
 import { asArray, asNumber, asRecord, asString } from "../../../tools/support/json-value.ts";
 import {
@@ -365,8 +367,7 @@ test("failed inert tooling child leaves exact raw bytes before process assertion
       "inert",
       [
         process.execPath,
-        "-e",
-        "process.stdout.write(Buffer.from([255,0,97]));process.stderr.write('retained');process.exitCode=2",
+        ...processResultArgs({ stdout: [255, 0, 97], stderr: "retained", status: 2 }),
       ],
       root,
     );

@@ -1,0 +1,10 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "sh"
+
+commands {
+  #"""
+  touch '@@SENTINEL@@'
+  exit 99
+  """#
+}

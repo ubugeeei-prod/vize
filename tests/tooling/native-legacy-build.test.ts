@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import { ciBuildCommand } from "../../npm/native/scripts/formatter-history-ci-build.mjs";
 import fs, { mkdtempSync, rmSync } from "node:fs";
@@ -63,7 +64,9 @@ test("github/build-napi-package keeps legacy features scoped to vize_vitrine", (
     writeFakeCommand(
       binDir,
       "vp",
-      `require("node:fs").writeFileSync(${JSON.stringify(argsPath)}, process.argv.slice(2).join("\\n"));`,
+      readToolingProgram("commands/native-legacy-build/vp.js.in", {
+        ARGS_PATH: JSON.stringify(argsPath),
+      }),
     );
 
     const runForCrate = (crateName: string): string => {

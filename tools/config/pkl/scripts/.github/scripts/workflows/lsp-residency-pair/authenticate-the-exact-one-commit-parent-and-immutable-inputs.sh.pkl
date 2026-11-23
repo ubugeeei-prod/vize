@@ -1,0 +1,14 @@
+amends "../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  module.strictMode
+  module.requireCommitShas(List("BASE_SHA"))
+  module.requireCommitShas(List("SOURCE_SHA"))
+  module.requireCheckout("SOURCE_SHA")
+  #"""
+  test "$(git rev-parse "$SOURCE_SHA^")" = "$BASE_SHA"
+  git diff --exit-code "$BASE_SHA" "$SOURCE_SHA" -- Cargo.lock pnpm-lock.yaml package.json
+  """#
+}

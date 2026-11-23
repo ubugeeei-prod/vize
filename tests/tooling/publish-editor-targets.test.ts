@@ -1,3 +1,4 @@
+import { readToolingProgram } from "./support/program-path.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { tmpdir } from "node:os";
@@ -31,24 +32,11 @@ function observe(t: TestContext, script: string, target: string, mode = "publish
   );
   fs.writeFileSync(archive, "synthetic publisher unit input");
   const body = (tool: string) =>
-    [
-      "const fs=require('node:fs');const args=process.argv.slice(2);",
-      "const file=process.env.STATE;const state=fs.existsSync(file)?JSON.parse(fs.readFileSync(file)): {calls:[],published:false};",
-      `state.calls.push([${JSON.stringify(tool)},...args]);`,
-      "const expected=process.env.TARGET,mode=process.env.MODE;",
-      `const probe=${tool === "curl"};`,
-      "if(probe){",
-      " const other=expected==='darwin-x64'?'linux-x64':'darwin-x64';",
-      " const selected=mode==='exact'||(state.published&&mode!=='wrong-after')?expected:other;",
-      " const version=!state.published&&mode==='wrong-version'?'0.56.0':'0.57.0';",
-      " const row={version,targetPlatform:selected,flags:'validated'};",
-      " if(!state.published&&mode==='universal')delete row.targetPlatform;",
-      // Marketplace probes POST to the gallery; Open VSX GETs one version.
-      ` const gallery=${JSON.stringify(galleryWith([]))};gallery.results[0].extensions[0].versions=[row];`,
-      " process.stdout.write(JSON.stringify(args.at(-1).includes('marketplace')?gallery:row));",
-      "}else if(args[4]==='publish'){state.published=true;}else if(args[4]!=='create-namespace'){process.exitCode=19;}",
-      "fs.writeFileSync(file,JSON.stringify(state));",
-    ].join("\n");
+    readToolingProgram("commands/publish-editor-targets/publish-target.js.in", {
+      TOOL: JSON.stringify(tool),
+      PROBE: tool === "curl",
+      GALLERY: JSON.stringify(galleryWith([])),
+    });
   writeFakeCommand(bin, "vp", body("vp"));
   writeFakeCommand(bin, "curl", body("curl"));
   const state = path.join(root, "state.json");

@@ -1,0 +1,3 @@
+#!@@NODE@@
+console.error("No permission to enable instructions event.");
+process.exit(255);

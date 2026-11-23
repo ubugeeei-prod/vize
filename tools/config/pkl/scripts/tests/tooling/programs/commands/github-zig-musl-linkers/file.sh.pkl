@@ -1,0 +1,9 @@
+amends "../../../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  printf 'ELF static-pie\n'
+  """#
+}

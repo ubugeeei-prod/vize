@@ -1,0 +1,18 @@
+cmp \
+  @SOURCE@/crates/vize/src/commands/inspector/official_compiler.ts \
+  @ORIGINAL_OFFICIAL_COMPILER@
+cmp \
+  @SOURCE@/crates/vize_canon/src/virtual_ts/helpers/pattern_matching.d.ts \
+  @ORIGINAL_PATTERN_MATCHING_D@
+cmp \
+  @SOURCE@/crates/vize_patina/src/html_content_model/whatwg.tsv \
+  @ORIGINAL_WHATWG@
+cmp \
+  @SOURCE@/crates/vize_carton/src/config/loader/module-runtime.mjs \
+  @ORIGINAL_MODULE_RUNTIME@
+cmp \
+  @SOURCE@/crates/vize_carton/src/config/loader/vite-runtime-validation.js \
+  @ORIGINAL_VITE_RUNTIME_VALIDATION@
+test ! -e @SOURCE@/playground/package.json
+test ! -e @SOURCE@/crates/vize_canon/tests/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap
+touch "$out"

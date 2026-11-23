@@ -1,0 +1,15 @@
+import "../Actions.pkl" as ci
+
+name = "Hydrate app fixtures"
+description = "Checkout only the pinned fixtures exercised by App E2E"
+
+runs {
+  using = "composite"
+  steps = new Listing {
+    new Dynamic {
+      name = "Hydrate exercised app fixtures"
+      shell = "bash"
+      run = ci.actionScript("hydrate-exercised-app-fixtures.sh")
+    }
+  }
+}

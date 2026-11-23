@@ -1,0 +1,10 @@
+amends "../../../../ShellScript.pkl"
+
+interpreter = "bash"
+
+commands {
+  #"""
+  TIMEFORMAT='__tcbench %R %U %S'
+  time "$@"
+  """#
+}

@@ -1,3 +1,4 @@
+import { readToolingProgram } from "../support/program-path.ts";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -25,44 +26,7 @@ test("the release command forwards all tarballs to the fresh-project oracle", ()
     );
     fs.writeFileSync(
       path.join(helpers, "smoke-release-init-fresh.mjs"),
-      `import assert from "node:assert/strict";
-import fs from "node:fs";
-import path from "node:path";
-export function runFreshProjectInitChecks(context) {
-  assert.deepEqual([...context.packed.keys()], ["@vizejs/other-platform", "vize"]);
-  assert.deepEqual([...context.versions.values()], ["0.0.0-oracle", "0.0.0-oracle"]);
-  for (const tarball of context.packed.values()) {
-    assert.ok(fs.statSync(tarball).isFile());
-    assert.equal(tarball, fs.realpathSync.native(tarball));
-  }
-  assert.equal(context.repoRoot, fs.realpathSync.native(process.env.VIZE_REPO_ROOT));
-  assert.equal(context.installDir, process.cwd());
-  assert.equal(context.tempDir, path.dirname(context.installDir));
-  assert.equal(process.env.COREPACK_HOME, path.join(context.tempDir, "corepack"));
-  assert.equal(process.env.COREPACK_ENABLE_DOWNLOAD_PROMPT, "0");
-  for (const name of [
-    "CORSA_PATH",
-    "CORSA_EXECUTABLE",
-    "TSGO_PATH",
-    "TSGO_EXECUTABLE",
-    "TSRS_PATH",
-    "TSRS_EXECUTABLE",
-  ]) {
-    assert.equal(process.env[name], undefined);
-  }
-  assert.ok(fs.statSync(context.vizeBin).isFile());
-  assert.deepEqual(Object.keys(context.peers).sort(), [
-    "oxlint",
-    "typescript",
-    "typescript-native",
-    "vite",
-    "vite-plus",
-    "vue",
-  ]);
-  assert.equal(context.peers["typescript-native"], "npm:typescript@7.1.0-beta");
-  throw new Error("fresh-project oracle reached with complete packed context");
-}
-`,
+      readToolingProgram("commands/release-smoke-runtime-oracle/verify-fresh-init.js.in"),
     );
     const cli = path.join(temporary, "cli");
     const platform = path.join(temporary, "platform");
@@ -121,25 +85,9 @@ test("the release command rejects a packed CLI that accepts every broken project
     );
     // This deliberately broken checker handles setup successfully, then always
     // returns a clean report. The real release entrypoint must catch that lie.
-    const historicalFalseCleanCli = `#!/usr/bin/env node
-const fs = require("node:fs");
-const path = require("node:path");
-const args = process.argv.slice(2);
-if (args[0] === "init") {
-  const project = args[1] && !args[1].startsWith("-") ? args[1] : process.cwd();
-  const filename = path.join(project, "package.json");
-  const manifest = JSON.parse(fs.readFileSync(filename, "utf8"));
-  manifest.scripts = { "vize:check": "vize check" };
-  fs.writeFileSync(filename, JSON.stringify(manifest));
-  const js = !manifest.devDependencies.typescript;
-  fs.writeFileSync(path.join(project, "tsconfig.json"), JSON.stringify({
-    compilerOptions: js ? { allowJs: true, checkJs: true } : {},
-  }));
-  fs.writeFileSync(path.join(project, "vize.config.ts"), "export default {};\\n");
-} else {
-  console.log(JSON.stringify({ errorCount: 0, files: [] }));
-}
-`;
+    const historicalFalseCleanCli = readToolingProgram(
+      "commands/release-smoke-runtime-oracle/historical-false-clean-cli.cjs.in",
+    );
     const configFreeFalseCleanCli = historicalFalseCleanCli.replace(
       '  fs.writeFileSync(path.join(project, "vize.config.ts"), "export default {};\\n");\n',
       "",

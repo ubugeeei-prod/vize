@@ -1,3 +1,4 @@
+import { readAutomationPrograms } from "./support/automation-source.ts";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -25,13 +26,13 @@ type Job = {
   env?: Record<string, string>;
   strategy?: { matrix?: unknown };
 };
-const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
+const source = parse(readAutomationPrograms(".github", "workflows", "pr-source-checks.yml")) as {
   jobs: Record<string, Job>;
 };
 const check = parse(checkWorkflowJobSources()) as {
   jobs: Record<string, Job>;
 };
-const jsChecks = parse(readRepoFile(".github", "workflows", "pr-js-checks.yml")) as {
+const jsChecks = parse(readAutomationPrograms(".github", "workflows", "pr-js-checks.yml")) as {
   jobs: Record<string, Job>;
 };
 const recipe = parse(
@@ -40,11 +41,15 @@ const recipe = parse(
   inputs: Record<string, { default: string }>;
   runs: { using: string; steps: Step[] };
 };
-const rust = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
+const rust = parse(readAutomationPrograms(".github", "workflows", "pr-rust-checks.yml")) as {
   jobs: Record<string, Job>;
 };
-const products = parse(readRepoFile(".github/workflows/pr-rust-products.yml")) as typeof rust;
-const differential = parse(readRepoFile(".github", "workflows", "pr-rust-differential.yml")) as {
+const products = parse(
+  readAutomationPrograms(".github/workflows/pr-rust-products.yml"),
+) as typeof rust;
+const differential = parse(
+  readAutomationPrograms(".github", "workflows", "pr-rust-differential.yml"),
+) as {
   jobs: Record<string, Job>;
 };
 const actionPath = "./.github/actions/test-rust-workspace-differential";
@@ -160,11 +165,9 @@ test("queue scope reaches the planner and every selected source lane remains req
     commands(source.jobs["pr-playground-test"]),
     /vp exec --filter '\.\/playground' -- playwright test/,
   );
-  const vrtFailure = source.jobs["pr-playground-test"].steps?.find(
-    (step) => step.name === "Fail if VRT failed",
-  );
-  assert.match(vrtFailure?.if ?? "", /steps\.vrt\.outcome == 'failure'/);
-  assert.equal(vrtFailure?.run, "exit 1");
+  const vrt = source.jobs["pr-playground-test"].steps?.find((step) => step.name === "Run VRT");
+  assert.ok(vrt);
+  assert.notEqual(vrt["continue-on-error"], true);
 });
 test("queue Rust keeps affected doctests beside archive builds and the differential feature tail", () => {
   assert.equal(source.jobs["pr-rust-source"].uses, "./.github/workflows/pr-rust-checks.yml");

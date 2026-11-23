@@ -1,0 +1,29 @@
+import fs from "node:fs";
+import path from "node:path";
+import { spawn } from "node:child_process";
+const root = process.env.FIXTURE_ROOT,
+  index = process.env.VIZE_OXLINT_MIXED_WORKER;
+const mode = process.env.FIXTURE_MODE;
+const child = spawn(process.execPath, [@@CHILD_PROGRAM@@], { stdio: "ignore" });
+fs.writeSync(1, "whole stdout " + index + "\n");
+fs.writeSync(2, "whole stderr " + index + "\n");
+fs.writeFileSync(
+  path.join(root, index + ".ready.json"),
+  JSON.stringify({ pid: process.pid, child: child.pid }),
+);
+if (mode === "timeout") process.on("SIGTERM", () => {});
+if (mode === "deadline-prefix" || mode === "deadline-history")
+  setTimeout(() => fs.writeFileSync(path.join(root, index + ".after-deadline"), "late"), 800);
+const timer = setInterval(() => {
+  if (!fs.existsSync(path.join(root, "remaining.started"))) return;
+  if (mode === "success" || (mode === "closed-leader-red" && index === "0")) {
+    clearInterval(timer);
+    process.exit(0);
+  }
+  if (mode === "red" && index === "0") process.exit(7);
+  if (mode === "closed-leader-red" && index === "1") {
+    clearInterval(timer);
+    setTimeout(() => process.exit(7), 200);
+  }
+  if (mode === "child-cancel" && index === "0") process.kill(process.pid, "SIGTERM");
+}, 10);

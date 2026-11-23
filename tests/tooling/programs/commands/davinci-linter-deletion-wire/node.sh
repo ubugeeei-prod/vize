@@ -1,0 +1,4 @@
+#!/bin/sh
+printf '%s\n' "$@" > "$RECORDER_ARGUMENTS"
+mkdir -p "$2"
+printf '{}\n' > "$2/linter-deletion-readiness.json"

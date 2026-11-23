@@ -24,6 +24,7 @@ import { runRustCaseCommand } from "./rust-test-cases.ts";
 import {
   mergePackets,
   ownedPath,
+  renderReporterLauncher,
   packet,
   parsePacket,
   vitestCases,
@@ -164,56 +165,11 @@ async function execCargo(args: readonly string[]): Promise<void> {
   });
 }
 
-function shellValue(value: string): string {
-  return `'${value.replaceAll("'", `'"'"'`)}'`;
-}
-
-type CaptureEnvironment = Readonly<Record<string, string>>;
-
-/** A persistent job shim that remains valid through task-runner env filtering. */
-export function jobTestShell(tool: "node" | "vp" | "cargo", values: CaptureEnvironment): string {
-  const restore = Object.entries(values)
-    .map(([name, value]) => `export ${name}=${shellValue(value)}`)
-    .join("\n");
-  const capture = `exec "$VIZE_JOB_TEST_CASE_NODE" "$VIZE_JOB_TEST_CASE_TOOL" exec-${tool} -- "$@"`;
-  if (tool === "cargo")
-    return `#!/bin/bash\n${restore}\nif [[ "\${1-}" == "test" ]]; then ${capture}; fi\nexec "$VIZE_JOB_TEST_CASE_CARGO" "$@"\n`;
-  if (tool === "vp")
-    return `#!/bin/bash\n${restore}\nif [[ "\${1-}" == "test" && "\${2-}" == "run" ]]; then ${capture}; fi\nexec "$VIZE_JOB_TEST_CASE_VP" "$@"\n`;
-  return `#!/bin/bash
-${restore}
-script=""
-previous=""
-after=()
-for argument in "$@"; do
-  if [[ -n "$previous" ]]; then previous=""; continue; fi
-  if [[ -z "$script" ]]; then
-    case "$argument" in
-      -e|--eval|-p|--print|-r|--require|--import|--loader|--experimental-loader|--test-reporter|--test-reporter-destination)
-        previous=1
-        continue
-        ;;
-    esac
-    if [[ "$argument" == "--test" ]]; then ${capture}; fi
-    if [[ "$argument" == -* ]]; then continue; fi
-    script="$argument"
-    continue
-  fi
-  after+=("$argument")
-done
-normalized="\${script//\\\\//}"
-base="\${normalized##*/}"
-capture_script=0
-if [[ "$normalized" != */node_modules/* ]]; then
-  if [[ "$base" =~ \\.(test|spec)\\.[cm]?[jt]sx?$ || "$base" =~ ^(test|tests|run-tests|run-host|host)\\.[cm]?[jt]sx?$ || "$base" =~ -judge\\.[cm]?[jt]sx?$ || "$normalized" == */test/* || "$normalized" == */tests/* || "$normalized" == */support/compat/parcel/run.ts ]]; then
-    capture_script=1
-  fi
-fi
-if [[ "$base" == "vp" && "\${after[0]-}" == "test" && "\${after[1]-}" == "run" ]]; then capture_script=1; fi
-if [[ ( "$base" == "tsx" || ( "$base" == "cli.mjs" && "$normalized" == */tsx/* ) ) && " \${after[*]-} " == *" --test "* ]]; then capture_script=1; fi
-if [[ "$capture_script" == 1 ]]; then ${capture}; fi
-exec "$VIZE_JOB_TEST_CASE_NODE" "$@"
-`;
+export function jobTestShell(
+  tool: "node" | "vp" | "cargo",
+  values: Readonly<Record<string, string>>,
+): string {
+  return renderReporterLauncher("job", tool, values);
 }
 
 function setup(directory: string): void {

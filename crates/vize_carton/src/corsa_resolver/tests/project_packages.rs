@@ -219,7 +219,7 @@ fn default_discovery_never_uses_ambient_runtime_or_package_manager() {
     let npm = root.join("bin/npm");
     fs::write(
         &npm,
-        "#!/bin/sh\n: > \"$VIZE_TEST_AMBIENT_PM_MARKER\"\nprintf '%s\\n' \"$VIZE_TEST_AMBIENT_GLOBAL_ROOT\"\n",
+        include_str!("../../../tests/programs/record-ambient-package-manager.sh"),
     )
     .unwrap();
     fs::set_permissions(&npm, fs::Permissions::from_mode(0o755)).unwrap();

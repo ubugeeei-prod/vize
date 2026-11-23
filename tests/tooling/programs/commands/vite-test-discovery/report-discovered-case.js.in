@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import { test } from "node:test";
+test(@@FILE@@, () => {
+  fs.appendFileSync(
+    process.env.VIZE_DISCOVERY_RECORDS,
+    JSON.stringify({ phase: "test", file: @@FILE@@ }) + String.fromCharCode(10),
+  );
+  assert.equal(@@FAILS@@, false);
+});
