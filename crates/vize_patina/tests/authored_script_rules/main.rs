@@ -21,13 +21,16 @@ fn check(linter: &ScriptLinter, block: SourceBlock<'_>) -> ScriptLintResult {
         .unwrap_or_else(oxc_span::SourceType::mjs);
     let syntax = AuthoredProgram::parse(&arena, block, grammar);
     let actual = linter.lint_authored(syntax).unwrap();
-    assert_eq!(
-        format!("{actual:?}"),
-        format!("{expected:?}"),
-        "{}",
-        block.source()
-    );
+    assert_same_result(&actual, &expected, block.source());
     actual
+}
+
+fn assert_same_result(actual: &ScriptLintResult, expected: &ScriptLintResult, source: &str) {
+    assert_eq!(
+        vize_l0::cstr!("{actual:?}"),
+        vize_l0::cstr!("{expected:?}"),
+        "{source}"
+    );
 }
 
 fn scripts(source: &str, mut read: impl FnMut(SourceBlock<'_>)) -> bool {
@@ -80,6 +83,32 @@ fn configured_rules_preserve_diagnostic_order_fixes_recovery_and_frame() {
 }
 
 #[test]
+fn a_distinct_lint_grammar_is_optional_only_for_a_known_empty_result() {
+    let vapor = ScriptLinter::with_vapor_rules();
+    let mut mixed = ScriptLinter::with_vapor_rules();
+    mixed.add_rule(Box::new(NoReactiveDestructure));
+    let all = ScriptLinter::with_all_rules();
+    for (source, empty) in [
+        ("import x from './x'; const id = x;", true),
+        ("const broken: = ;", true),
+        ("export default defineComponent({})", false),
+        ("import 'vue'; nextTick()", false),
+        ("getCurrentInstance()", false),
+        (r"ctx['$ne\x78tTick']()", false),
+        ("const obj = {}; export default defineComponent(obj)", false),
+    ] {
+        let block = SourceRoot::new(source).unwrap().whole_block();
+        let direct = vapor.authored_rules().empty_result_for(block);
+        assert_eq!(direct.is_some(), empty, "{source}");
+        if let Some(result) = direct {
+            assert_same_result(&result, &vapor.lint(source, 0), source);
+        }
+        assert!(mixed.authored_rules().empty_result_for(block).is_none());
+        assert!(all.authored_rules().empty_result_for(block).is_none());
+    }
+}
+
+#[test]
 fn ast_rules_require_the_original_standalone_grammar() {
     let lint = ScriptLinter::with_vapor_rules();
     let block = SourceRoot::new("nextTick()").unwrap().whole_block();
@@ -114,11 +143,18 @@ fn for_originals(mut read: impl FnMut(usize, &str, &str)) -> usize {
 #[ignore = "original Vue source manifest"]
 fn original_configured_rule_packets_match() {
     let all = ScriptLinter::with_all_rules();
+    let vapor = ScriptLinter::with_vapor_rules();
+    let mut empty_vapor_blocks = 0;
     let (mut files, mut descriptors, mut blocks, mut findings, mut fixes) = (0, 0, 0, 0, 0);
     let invalid = for_originals(|_, _, source| {
         files += 1;
         descriptors += usize::from(scripts(source, |block| {
             blocks += 1;
+            if let Some(result) = vapor.authored_rules().empty_result_for(block) {
+                let original = vapor.lint(block.source(), block.start() as usize);
+                assert_same_result(&result, &original, block.source());
+                empty_vapor_blocks += 1;
+            }
             let result = check(&all, block);
             findings += result.diagnostics.len();
             fixes += result
@@ -129,6 +165,7 @@ fn original_configured_rule_packets_match() {
         }));
     });
     assert!(blocks > 0);
+    eprintln!("authored_empty_vapor_blocks={empty_vapor_blocks}");
     eprintln!(
         "authored_script_lint files={files} descriptors={descriptors} blocks={blocks} diagnostics={findings} fixes={fixes} invalid={invalid}"
     );

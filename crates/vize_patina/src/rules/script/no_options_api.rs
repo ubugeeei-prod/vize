@@ -54,6 +54,12 @@ impl ScriptRule for NoOptionsApi {
         &META
     }
 
+    // Every reported options object originates at an ObjectExpression in this Program.
+    #[cfg(feature = "authored-script-rules")]
+    fn required_authored_spelling(&self) -> Option<&'static str> {
+        Some("{")
+    }
+
     #[inline]
     fn uses_ast(&self) -> bool {
         true
